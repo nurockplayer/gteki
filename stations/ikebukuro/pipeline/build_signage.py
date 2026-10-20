@@ -24,8 +24,8 @@ from build_station import wall_segments, write_json  # noqa: E402
 
 CLEAR_BELOW_SIGN = 2.25  # m above walking surface
 MIN_CLEAR = 2.0          # never lower than this; a low ceiling shrinks the panel instead
-SIGN_H = 0.42
-MIN_SIGN_H = 0.2         # below this a sign is unreadable: try elsewhere or omit it
+SIGN_H = 0.48            # the housing: a 0.42 m panel plus a 0.03 m frame top and bottom (scene/signs.ts)
+MIN_SIGN_H = 0.23        # housing for a 0.2 m panel; smaller is unreadable: try elsewhere or omit it
 FLUSH_GAP = 0.02         # under a low ceiling the panel is mounted flush
 CEIL_GAP = 0.08
 
