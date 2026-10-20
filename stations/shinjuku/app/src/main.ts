@@ -11,9 +11,9 @@ import { createSearchIndex } from "@gteki/search";
 import { loadShinjukuBundle } from "../../data/bundle.ts";
 import planJson from "../../data/plan.json";
 import { buildStation } from "../../scene/build.ts";
-import { pointInRings, type Plan } from "../../scene/layout.ts";
-import { Player, PLAYER_RADIUS, sweepCamera, type GuidePoint, type MoveInput } from "./player.ts";
-import { floorLabel, narrate, summarizeRoute, routeMapFrame, nearbyExits, UNKNOWN_LABELS, type Maneuver } from "./narrate.ts";
+import { pointInRings, WalkWorld, type Plan } from "../../scene/layout.ts";
+import { Player, PLAYER_RADIUS, sweepCamera, chooseFollowCamera, type GuidePoint, type MoveInput } from "./player.ts";
+import { floorLabel, narrate, summarizeRoute, routeMapFrame, nearbyExits, explainStepFreeFailure, UNKNOWN_LABELS, type Maneuver } from "./narrate.ts";
 import { createAvatar } from "./avatar.ts";
 import { createStationAudio } from "./audio.ts";
 import { CROWD_LIMIT, createCrowd } from "./crowd.ts";
@@ -196,6 +196,12 @@ avatar.object.traverse((o) => ((o as THREE.Mesh).castShadow = false));
 const cam = { yaw: player.heading, pitch: -0.18, dist: 3.6, firstPerson: false, userTurnedAt: -10 };
 const camPos = new THREE.Vector3();
 const camTarget = new THREE.Vector3();
+// The camera clears human-height props. Walker collision remains the complete world.
+// Full-height architecture and floor/ceiling slabs still constrain every camera candidate.
+const cameraWorld = new WalkWorld({ ...layout, runWalls: [], levels: layout.levels.map((level) => ({
+  ...level, railings: [], walls: level.walls.filter((wall) => wall.zMax - wall.zMin > 1.9),
+})) });
+cameraWorld.addWalls(station.propWalls.filter((wall) => wall.zMax - wall.zMin > 1.9));
 const cameraSurfaces = [...layout.levels.flatMap((l) => [...l.slabs, ...l.ceilings]), ...layout.pads, ...layout.streetPads];
 let cameraDistance = cam.dist;
 let stairPitch = 0;
@@ -211,39 +217,42 @@ function updateCamera(dt: number, t: number) {
     avatar.object.visible = true;
     return;
   }
-  // gentle auto-follow behind the character while moving and the user is not steering the camera
-  if (t - cam.userTurnedAt > 1.4 && player.speed > 0.4) {
-    let d = player.heading - cam.yaw;
-    d = Math.atan2(Math.sin(d), Math.cos(d));
-    cam.yaw += d * (1 - Math.exp(-1.6 * dt));
+  const onRun = Math.abs(player.climbing) > 0.15;
+  const target = player.guide?.[player.guideIndex];
+  const pathHeading = target && onRun ? Math.atan2(target.x - player.x, target.y - player.y) : player.heading;
+  // Stair framing follows the actual run even at the first captured guide frame.
+  if (t - cam.userTurnedAt > 1.4 && (player.speed > 0.05 || player.carriedByEscalator)) {
+    const d = Math.atan2(Math.sin(pathHeading - cam.yaw), Math.cos(pathHeading - cam.yaw));
+    cam.yaw += d * (camInit ? 1 - Math.exp(-(onRun ? 7 : 3) * dt) : 1);
   }
-  stairPitch += ((reducedMotion ? 0 : Math.min(0, player.climbing) * 0.13) - stairPitch) * (1 - Math.exp(-5 * dt));
-  const bob = bobEnabled && !reducedMotion ? -Math.cos(player.stridePhase * 2) * 0.012 * Math.min(1, player.speed / 1.45) : 0;
-  const head = { x: player.x, y: player.y, z: player.z + (cam.firstPerson ? 1.62 : 1.45) + bob };
-  const pitch = cam.pitch + stairPitch;
-  const fwd = { x: Math.sin(cam.yaw) * Math.cos(pitch), y: Math.cos(cam.yaw) * Math.cos(pitch), z: Math.sin(pitch) };
+  const targetPitch = onRun ? -0.22 - Math.max(0, -player.climbing) * 0.06 : 0;
+  stairPitch += (targetPitch - stairPitch) * (camInit ? 1 - Math.exp(-5 * dt) : 1);
+  const bob = bobEnabled && !reducedMotion && !player.carriedByEscalator ? -Math.cos(player.stridePhase * 2) * 0.012 * Math.min(1, player.speed / 1.45) : 0;
+  const head = { x: player.x, y: player.y, z: player.z + (cam.firstPerson ? 1.62 : 1.1) + bob };
   transitionFocus *= Math.exp(-3 * dt);
-  const followDistance = cam.dist - (reducedMotion ? 0 : transitionFocus * 0.45);
-  const desired = { x: head.x - fwd.x * followDistance, y: head.y - fwd.y * followDistance, z: head.z - fwd.z * followDistance };
-  const safe = sweepCamera(head, cam.firstPerson ? head : desired, world, cameraSurfaces);
-  const available = Math.hypot(safe.x - head.x, safe.y - head.y, safe.z - head.z);
-  // Pull in immediately; recover slowly. Never impose a minimum boom through a wall.
-  cameraDistance = !camInit || available < cameraDistance ? available : cameraDistance + (available - cameraDistance) * (1 - Math.exp(-3 * dt));
-  const want = new THREE.Vector3(head.x - fwd.x * cameraDistance, head.z - fwd.z * cameraDistance, -(head.y - fwd.y * cameraDistance));
-  const look = new THREE.Vector3(head.x + fwd.x * 4, head.z + fwd.z * 4, -(head.y + fwd.y * 4));
-  if (!camInit) {
+  const pitch = cam.pitch - 0.1 + stairPitch - (reducedMotion ? 0 : transitionFocus * 0.04);
+  const safe = cam.firstPerson ? head : chooseFollowCamera(head, cam.yaw, pitch, cam.dist, cameraWorld, cameraSurfaces);
+  const want = new THREE.Vector3(safe.x, safe.z, -safe.y);
+  const lookAhead = cam.firstPerson ? 4 : 1.15;
+  const look = new THREE.Vector3(head.x + Math.sin(cam.yaw) * lookAhead, head.z + (cam.firstPerson ? Math.sin(cam.pitch) * 4 : 0.15), -(head.y + Math.cos(cam.yaw) * lookAhead));
+  if (!camInit || reducedMotion || cam.firstPerson) {
     camPos.copy(want);
     camTarget.copy(look);
     camInit = true;
   }
-  const k = 1 - Math.exp(-14 * dt);
-  camPos.lerp(want, k);
-  camTarget.lerp(look, 1 - Math.exp(-20 * dt));
-  const final = sweepCamera(head, { x: camPos.x, y: -camPos.z, z: camPos.y }, world, cameraSurfaces);
-  camPos.set(final.x, final.z, -final.y);
+  camPos.lerp(want, 1 - Math.exp(-8 * dt));
+  camTarget.lerp(look, 1 - Math.exp(-12 * dt));
+  const final = sweepCamera(head, { x: camPos.x, y: -camPos.z, z: camPos.y }, cameraWorld, cameraSurfaces);
+  // Smoothing across two safe candidates can cross a corner. Use the safe candidate
+  // immediately in that case, then recover smoothly once the corridor opens.
+  const smoothedClearance = Math.hypot(final.x - head.x, final.y - head.y, final.z - head.z);
+  const candidateClearance = Math.hypot(safe.x - head.x, safe.y - head.y, safe.z - head.z);
+  if (smoothedClearance < Math.min(1.6, candidateClearance * 0.8)) camPos.copy(want);
+  else camPos.set(final.x, final.z, -final.y);
+  cameraDistance = Math.hypot(camPos.x - head.x, -camPos.z - head.y, camPos.y - head.z);
   camera.position.copy(camPos);
   camera.lookAt(camTarget);
-  avatar.object.visible = !cam.firstPerson && camPos.distanceTo(new THREE.Vector3(player.x, player.z + 1.2, -player.y)) > 0.9;
+  avatar.object.visible = !cam.firstPerson && cameraDistance >= 0.9;
 }
 
 // ------------------------------------------------------------ input
@@ -507,12 +516,30 @@ function computeRoute() {
       unknown_start: "出発地が不明です。Unknown origin.",
       unknown_goal: "目的地が不明です。Unknown destination.",
     };
+    if (profile().stepFree && r.reason === "no_path" && !/paid area/.test(r.message)) {
+      const refusal = explainStepFreeFailure(bundle, router, origin, goal, profile());
+      showRouteError(`${refusal.reason.ja} ${refusal.reason.en}`);
+      if (refusal.alternative) {
+        const alternative = refusal.alternative;
+        const button = document.createElement("button");
+        button.className = "ghost alternative";
+        const name = poiName(alternative.poi);
+        button.textContent = `段差なし: ${name.ja} · Step-free: ${name.en} · ${alternative.distanceM} m`;
+        button.onclick = () => {
+          toPick = { kind: "poi", poi: alternative.poi };
+          $<HTMLInputElement>("to").value = name.ja;
+          computeRoute();
+        };
+        $("route-error").appendChild(button);
+      }
+      return;
+    }
     return showRouteError(why[r.reason] ?? r.message);
   }
   clearRoute();
   route = r;
   maneuvers = narrate(bundle, r);
-  routePts = r.nodeIds.map((id, i) => ({ ...nodeById.get(id)!.position, z: nodeZ(id), nodeId: id, elevator: i > 0 && r.steps[i - 1]!.mode === "elevator" }));
+  routePts = r.nodeIds.map((id, i) => ({ ...nodeById.get(id)!.position, z: nodeZ(id), nodeId: id, elevator: i > 0 && r.steps[i - 1]!.mode === "elevator", escalator: i > 0 && r.steps[i - 1]!.mode === "escalator" }));
   // start the guide from the player's current position when starting "here"
   if (fromPick.kind === "here") routePts.unshift({ x: player.x, y: player.y, z: player.z, nodeId: "here" });
   drawRibbon();
@@ -525,9 +552,11 @@ function computeRoute() {
 }
 function showRouteError(msg: string) {
   clearRoute();
+  $("results").replaceChildren();
   $("route-error").textContent = msg;
   $("route-error").classList.remove("hidden");
   setPanel(true);
+  requestAnimationFrame(() => $("route-error").scrollIntoView({ block: "nearest" }));
 }
 function clearRoute() {
   route = null;
@@ -586,7 +615,7 @@ function drawRibbon() {
     const zb = b.z + lift;
     pos.push(a.x + nx, za, -(a.y + ny), a.x - nx, za, -(a.y - ny), b.x + nx, zb, -(b.y + ny), b.x - nx, zb, -(b.y - ny));
     const L3 = Math.hypot(L, b.z - a.z);
-    uv.push(0, -acc / 0.8, 1, -acc / 0.8, 0, -(acc + L3) / 0.8, 1, -(acc + L3) / 0.8);
+    uv.push(0, acc / 0.8, 1, acc / 0.8, 0, (acc + L3) / 0.8, 1, (acc + L3) / 0.8);
     acc += L3;
     idx.push(base, base + 2, base + 1, base + 1, base + 2, base + 3);
   }
@@ -612,7 +641,7 @@ function renderRoutePanel() {
   $("route-origin").textContent = fromPick.kind === "poi" ? `出発 From: ${poiName(fromPick.poi).ja} / ${poiName(fromPick.poi).en} · 選択した位置から開始 / Start places you at this origin` : "現在のアバター位置から開始 · Start from the avatar’s current location";
   $("route-dist").textContent = `${summary.distanceM} m`;
   $("route-eta").textContent = `約 ${summary.minutes} 分 · ~${summary.minutes} min`;
-  $("route-floors").textContent = `${summary.floorLabels.join(" → ")} · ${summary.floorChanges} 回の階移動 / floor changes`;
+  $("route-floors").textContent = `${summary.floorLabels.join(" → ")} · ${summary.floorChanges} 回の階移動 / floor changes${profile().stepFree ? " · 段差なし Step-free" : ""}`;
   $("route-fare").textContent = `${summary.fare.ja} · ${summary.fare.en}`;
   const ol = $("steps");
   ol.innerHTML = "";
@@ -643,9 +672,19 @@ function renderRoutePanel() {
   $("prov").textContent = `根拠 Evidence: ${src.map((s) => s.publisher).filter((v, i, a) => a.indexOf(v) === i).join(", ")} · データ Data ${route.oldestSourceDate ?? "未確認 / unverified"} · 確認 Checked ${route.evidenceCheckedDate ?? "未確認 / unverified"} · 高さは推定 Heights estimated · 現地表示を確認 Check local signs`;
   const trust = route.synthetic ? "仮想データ Synthetic" : "公開データ由来 · Public-data route";
   const freshness = route.stale === true ? "古い可能性 · May be outdated" : route.stale === null ? "時効未確認 · Freshness unverified" : "";
-  $("journey-evidence").textContent = `${trust} · ${route.oldestSourceDate ?? "date unknown"}${freshness ? " · " + freshness : ""} · ${summary.fare.ja} / ${summary.fare.en} · ${$("unknowns").textContent} · 高さは推定 Heights estimated`;
+  $("evidence-detail").textContent = `${trust} · ${route.oldestSourceDate ?? "date unknown"}${freshness ? " · " + freshness : ""} · ${summary.fare.ja} / ${summary.fare.en} · ${$("unknowns").textContent} · 高さは推定 Heights estimated`;
+  const unverified = route.unknowns.length;
+  $("evidence-toggle").textContent = `ⓘ 未確認 ${unverified} · Unverified ${unverified}`;
+  $("hours-chip").classList.toggle("hidden", !route.unknowns.some((u) => u.kind === "hours"));
+  $<HTMLDetailsElement>("evidence-disclosure").open = false;
   $("journey-evidence").classList.remove("hidden");
 }
+$("guide-speed").onclick = () => {
+  const speed = player.guideSpeedMultiplier === 1 ? 2 : player.guideSpeedMultiplier === 2 ? 4 : 1;
+  player.setGuideSpeed(speed);
+  $("guide-speed").textContent = `×${speed}`;
+  $("guide-speed").setAttribute("aria-label", `案内速度 ${speed} 倍 · Guide speed ${speed} times. Click to change`);
+};
 function toggleGuide() {
   if (!route) return;
   if (journey === "arrived") { setPanel(true, true); return; }
@@ -705,10 +744,14 @@ function showArrival() {
   const end = routePts[routePts.length - 1]!;
   const floorId = nodeById.get(end.nodeId)?.floorId ?? p.floorId;
   $("arrival-name").textContent = `${name.ja} · ${name.en}`;
-  $("arrival-place").textContent = `${floorLabel(floorById.get(floorId ?? "")).short} · ${CATEGORY[p.category] ?? "施設 · Facility"} · 高さは推定 / Estimated height`;
+  const floor = floorById.get(floorId ?? "");
+  $("arrival-eyebrow").textContent = p.category === "exit" && floor?.ordinal === 0
+    ? "地上に出ました · You are at street level" : "◎ 到着しました · You have arrived";
+  $("arrival-place").textContent = `${floorLabel(floor).short} · ${CATEGORY[p.category] ?? "施設 · Facility"}`;
   // Graph-routed distances on the destination floor; no invented exit numbers or compass directions.
-  const exits = nearbyExits(bundle, router, end.nodeId, profile());
-  $("arrival-exits").textContent = exits.length ? `近くの出口 Nearby exits: ${exits.map((x) => `${poiName(x.poi).ja} / ${poiName(x.poi).en} · ${x.distanceM} m`).join(" · ")}` : "近くの出口: 同じ階の検証済み経路（80 m以内）なし · No verified same-floor exit route within 80 m";
+  const exits = p.category === "exit" ? [] : nearbyExits(bundle, router, end.nodeId, profile());
+  $("arrival-exits").textContent = exits.length ? `近くの出口 Nearby exits: ${exits.map((x) => `${poiName(x.poi).ja} / ${poiName(x.poi).en} · ${x.distanceM} m`).join(" · ")}` : "";
+  $("arrival-exits").hidden = exits.length === 0;
   $("arrival").classList.remove("hidden");
   $("guide").textContent = "▶ 出発 Start";
   audio.arrivalChime();
@@ -716,7 +759,7 @@ function showArrival() {
 }
 
 function showFloorToast(m: Maneuver) {
-  if (!m.fromFloorLabel || !m.toFloorLabel || m.startIndex === lastVertical) return;
+  if (!m.fromFloorLabel || !m.toFloorLabel || m.fromFloorLabel === m.toFloorLabel || m.startIndex === lastVertical) return;
   lastVertical = m.startIndex;
   const mode = { stairs: "階段 · Stairs", escalator: "エスカレーター · Escalator", elevator: "エレベーター · Elevator", ramp: "スロープ · Ramp" }[m.kind as "stairs" | "escalator" | "elevator" | "ramp"] ?? "";
   $("floor-toast").textContent = `${m.fromFloorLabel} → ${m.toFloorLabel} · ${mode}`;
@@ -774,8 +817,9 @@ function projectLabel(id: string, point: GuidePoint, height: number, clamp: bool
   el.classList.toggle("hidden", !visible);
   if (!visible) return;
   // Keep labels clear of header, footer and the phone sheet.
-  const bottom = innerWidth <= 600 ? (journey === "preview" ? innerHeight * 0.42 : innerHeight - 250) : innerHeight - 110;
-  const x = Math.max(90, Math.min(innerWidth - 90, (p.x + 1) * innerWidth / 2));
+  const bottom = innerWidth <= 600 ? (journey === "preview" ? innerHeight * 0.42 : innerHeight - 324) : innerHeight - 110;
+  const margin = el.offsetWidth / 2 + 12;
+  const x = Math.max(margin, Math.min(innerWidth - margin, (p.x + 1) * innerWidth / 2));
   const y = Math.max(180, Math.min(bottom, (1 - p.y) * innerHeight / 2));
   el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
 }
@@ -959,14 +1003,18 @@ function step(dt: number, render = true) {
   }
   if (!document.querySelector("dialog[open]")) player.update(dt, input, cam.yaw);
   else { player.speed = player.vx = player.vy = player.stridePhase = 0; }
-  if (!render) return;
+  if (!render) {
+    // Fast-forward uses the same camera integration as normal play, without GPU work.
+    updateCamera(dt, performance.now() / 1000);
+    return;
+  }
   station.update(dt, t);
   crowd.update(dt, { x: player.x, y: player.y, z: player.z });
   updateCamera(dt, performance.now() / 1000);
   avatar.object.position.set(player.x, player.z, -player.y);
   avatar.object.rotation.y = -player.heading + Math.PI; // avatar faces -Z (north) at rotation 0... heading 0 = north
   avatar.object.rotation.y = -player.heading;
-  avatar.update(dt, player.speed, { onStairs: Math.abs(player.climbing) > 0.2, climbing: player.climbing });
+  avatar.update(dt, player.carriedByEscalator ? 0 : player.speed, { onStairs: !player.carriedByEscalator && Math.abs(player.climbing) > 0.2, climbing: player.carriedByEscalator ? 0 : player.climbing });
   fill.position.set(player.x, player.z + 2.4, -player.y);
   if (!reducedMotion) chevronTex.offset.y = (chevronTex.offset.y - dt * 0.65) % 1;
   ribbonPlayer.value.set(player.x, player.z, -player.y);
@@ -974,7 +1022,7 @@ function step(dt: number, render = true) {
   const fl = floorLabel(lv);
   $("floor-label").textContent = fl.short;
   $("floor-sub").textContent = `推定 ${lv.renderElevationM.toFixed(0)} m · est.`;
-  audio.update(dt, { x: player.x, y: player.y, z: player.z, heading: cam.yaw }, { speed: player.speed, onStairs: Math.abs(player.climbing) > 0.2, onEscalator: false, levelLabel: fl.short, ceilingHeight: 3.2 });
+  audio.update(dt, { x: player.x, y: player.y, z: player.z, heading: cam.yaw }, { speed: player.carriedByEscalator ? 0 : player.speed, onStairs: Math.abs(player.climbing) > 0.2, onEscalator: player.carriedByEscalator, levelLabel: fl.short, ceilingHeight: 3.2 });
   if (route) updateNext();
   updateWorldLabels();
   if (performance.now() > toastUntil) $("floor-toast").classList.add("hidden");
@@ -1023,14 +1071,16 @@ window.__gteki = {
   },
   guide: toggleGuide,
   /** Capture real guide progress, never manufacture an arrival event. */
-  walkUntil(stage: "stairs" | "arrival", maxSeconds = 600) {
+  walkUntil(stage: "stairs" | "arrival", maxSeconds = 600, minRunDistance = 0) {
     if (!route) return { ok: false, reason: "no route" };
     let elapsed = 0;
     for (; elapsed < maxSeconds; elapsed += 1 / 30) {
       step(1 / 30, false);
       const stepIndex = Math.max(0, player.guideIndex - 1 - (routePts[0]?.nodeId === "here" ? 1 : 0));
       const mode = route.steps[stepIndex]?.mode;
-      if (stage === "stairs" && player.guide && (mode === "stairs" || mode === "escalator") && Math.abs(player.climbing) > 0.2) { camInit = false; step(0); return { ok: true, elapsed, mode }; }
+      const runStart = routePts[Math.max(0, player.guideIndex - 1)]!;
+      const alongRun = Math.hypot(player.x - runStart.x, player.y - runStart.y, player.z - runStart.z);
+      if (stage === "stairs" && player.guide && (mode === "stairs" || mode === "escalator") && Math.abs(player.climbing) > 0.2 && alongRun >= minRunDistance) { camInit = false; step(0); return { ok: true, elapsed, mode }; }
       if (stage === "arrival" && journey === "arrived") { camInit = false; step(0); return { ok: true, elapsed }; }
       if (!player.guide) return { ok: false, reason: "guide stopped", elapsed };
     }
@@ -1073,5 +1123,5 @@ window.__gteki = {
   },
   crowd,
   station,
-  state: () => ({ crowd: crowd.count, x: player.x, y: player.y, z: player.z, heading: player.heading, floor: floorLabel(floorAtZ(player.z)).short, fps: Math.round(fps), guiding: !!player.guide, journey, cameraDistance: +cameraDistance.toFixed(2), reducedMotion, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
+  state: () => ({ crowd: crowd.count, x: player.x, y: player.y, z: player.z, heading: player.heading, floor: floorLabel(floorAtZ(player.z)).short, fps: Math.round(fps), guiding: !!player.guide, journey, stepFree: profile().stepFree, destination: toPick?.kind === "poi" ? toPick.poi.id : null, cameraDistance: +cameraDistance.toFixed(2), avatarVisible: avatar.object.visible, carried: player.carriedByEscalator, guideSpeed: player.guideSpeedMultiplier, reducedMotion, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
 };

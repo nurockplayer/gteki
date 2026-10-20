@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#101215" />
     <title>GTEki — 新宿駅 都営大江戸線</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23172125'/%3E%3Cpath d='M24 10H12v12h12v-6h-7' fill='none' stroke='%23efdab7' stroke-width='3'/%3E%3C/svg%3E" />
     <link rel="stylesheet" href="./src/style.css" />
   </head>
   <body>
@@ -48,17 +49,17 @@
         <div id="prov" class="prov"></div>
         <details><summary>道順を確認 · Route steps</summary><ol id="steps" class="steps"></ol></details>
       </div>
-      <div id="route-error" class="route-error hidden"></div>
+      <div id="route-error" role="alert" class="route-error hidden"></div>
       </div>
     </section>
 
-    <div id="next" class="next hidden"><span id="next-icon">↑</span><div><b id="next-ja"></b><small id="next-en"></small></div><button id="guide-pause" class="ghost" aria-label="案内歩行を開閉 Toggle guide">Ⅱ</button></div>
-    <div id="journey-evidence" class="journey-evidence hidden"></div>
+    <div id="next" class="next hidden"><span id="next-icon">↑</span><div><b id="next-ja"></b><small id="next-en"></small></div><button id="guide-speed" class="ghost" aria-label="案内速度 1 倍 · Guide speed 1 times. Click to change">×1</button><button id="guide-pause" class="ghost" aria-label="案内歩行を開閉 Toggle guide">Ⅱ</button></div>
+    <div id="journey-evidence" class="journey-evidence hidden"><details id="evidence-disclosure"><summary id="evidence-toggle">ⓘ 未確認 · Unverified</summary><div id="evidence-detail"></div></details><span id="hours-chip">営業時間 未確認 · Hours unverified</span></div>
     <div id="floor-toast" class="floor-toast hidden" role="status" aria-live="polite"></div>
     <div id="maneuver-anchor" class="world-label hidden" aria-hidden="true"></div>
     <div id="destination-label" class="world-label destination-label hidden" aria-hidden="true"></div>
     <section id="arrival" class="arrival hidden" role="status" aria-live="polite" aria-label="到着 Arrival">
-      <span class="eyebrow">◎ 到着しました · You have arrived</span><h2 id="arrival-name"></h2><p id="arrival-place"></p><p id="arrival-exits"></p>
+      <span id="arrival-eyebrow" class="eyebrow">◎ 到着しました · You have arrived</span><h2 id="arrival-name"></h2><p id="arrival-place"></p><p id="arrival-exits"></p>
       <div class="arrival-actions"><button id="route-again" class="ghost">ここから再検索 Route again</button><button id="new-destination" class="primary">次の目的地 New destination</button></div>
     </section>
     <button id="prompt" class="prompt hidden"></button>
