@@ -74,7 +74,7 @@ T_B = T_A · S_A_end · RotY(180°) · inverse(S_B_start)
    ```
 
    Every generator parameter is listed in its family module's `DEFAULTS`, for example the passage width/length/wall/floor/ceiling styles, the gate aisle count and wide aisles, the stair rise and landing, and the escalator step width. If a variant uses sourced measurements, set `"dimension_basis": "station-verified"` and record the evidence in your lane. Never hand-edit GLBs: the generator is the source of truth.
-4. **Posters.** `poster_lightbox` takes `poster_image` (a repo-relative JPEG/PNG). An image larger than the build's `tex_res` is downscaled to fit, and each image gets its own `gteki_poster_custom_*` material. Only use images your lane has cleared.
+4. **Posters.** `poster_lightbox` takes `poster_image` (a repo-relative JPEG/PNG). An image larger than the build's `tex_res` is downscaled to fit, and each image gets its own `gteki_poster_custom_*` material. Only use images your lane has cleared. The path must stay inside the repository (absolute paths and `..` escapes are rejected), and a custom image needs `poster_provenance` and `poster_license` params: the GLB's `provenance`/`license` and its manifest entry then name the image's own rights instead of the kit's.
 
 ## Animating gate flaps
 

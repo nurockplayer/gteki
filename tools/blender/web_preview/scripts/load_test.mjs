@@ -81,6 +81,25 @@ if (!files.length) {
   process.exit(1);
 }
 
+// The library is what its manifest lists: a GLB missing from glb/ (or one the manifest does not
+// know) must fail here too, not only in the validator that `build.sh all` runs first.
+const manifestPath = path.resolve(process.env.GTEKI_MANIFEST || path.join(libraryDir, 'manifest.json'));
+let listed;
+try {
+  const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
+  listed = manifest.assets.map(asset => path.basename(asset.file)).sort();
+} catch (error) {
+  console.error(`FAIL manifest ${manifestPath}: ${error.message}`);
+  process.exit(1);
+}
+const missing = listed.filter(name => !files.includes(name));
+const unlisted = files.filter(name => !listed.includes(name));
+if (missing.length || unlisted.length) {
+  if (missing.length) console.error(`FAIL listed in the manifest but missing from ${glbDir}: ${missing.join(', ')}`);
+  if (unlisted.length) console.error(`FAIL in ${glbDir} but not in the manifest: ${unlisted.join(', ')}`);
+  process.exit(1);
+}
+
 let failures = 0;
 for (const filename of files) {
   const fullPath = path.join(glbDir, filename);

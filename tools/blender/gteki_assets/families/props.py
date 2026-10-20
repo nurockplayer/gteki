@@ -267,15 +267,23 @@ def poster_lightbox(asset_id, params, tex_res):
     z0, z1 = p["mount_height"], p["mount_height"] + H
     mname = f"gteki_poster_0{n}"
     rel = p["poster_image"] or f"{POSTER_DIR}/poster_0{n}.jpg"
+    rights = None
     if p["poster_image"]:
         # one material per image, so posters sharing a number but not an image can coexist
         mname = "gteki_poster_custom_" + hashlib.sha256(os.path.normpath(rel).encode()).hexdigest()[:8]
-    repo = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-    if not os.path.exists(rel if os.path.isabs(rel) else os.path.join(repo, rel)):
+        # the kit's provenance and licence cover only its own posters (assets/library/PROVENANCE.md)
+        rights = (p.get("poster_provenance"), p.get("poster_license"))
+        if not all(isinstance(x, str) and x.strip() for x in rights):
+            raise ValueError("poster_image requires params.poster_provenance and params.poster_license "
+                             "(non-empty strings) describing the supplied artwork")
+    if not os.path.exists(materials.repo_path(rel)):
         raise FileNotFoundError(f"poster image {rel} not found (pass params.poster_image to override)")
     materials.register(mname, image=rel, emit_image=True, emit_strength=1.2, rough=0.15)
     a = _asset(asset_id, "gteki_", p, tex_res, basis=contract.GENERIC_TYPICAL,
                notes="Poster area defaults to the widely published B1 sheet (0.73 x 1.03 m) inside a 35 mm frame; poster art maps with cover-fit crop of a 2:3 image. Back plane at y=0.")
+    if rights:
+        a.provenance = f"{contract.PROVENANCE}; poster image {rel}: {rights[0]}"
+        a.license = f"poster image: {rights[1]}; everything else: {contract.LICENSE}"
     gap = 0.012
     outer = (-W / 2, W / 2, z0, z1)
     inner = (-W / 2 + bar, W / 2 - bar, z0 + bar, z1 - bar)

@@ -120,6 +120,9 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
             failures.append((aid, repr(e)))
             continue
         entry["tags"] = item.get("tags", [])
+        if asset.license != contract.LICENSE or asset.provenance != contract.PROVENANCE:
+            # supplied artwork (custom posters) carries its own rights, not the library-wide claim
+            entry["license"], entry["provenance"] = asset.license, asset.provenance
         entry["build_seconds"] = round(time.time() - t0, 2)
         entries.append(entry)
         print(f"[gteki] {aid}: {entry['triangles']} tris, {entry['bytes'] / 1024:.0f} KiB, {entry['build_seconds']} s", flush=True)

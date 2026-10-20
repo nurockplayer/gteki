@@ -158,7 +158,7 @@ def external_image(name, tex_res):
     """(path, long side) of the image to embed for a material with a supplied
     `image`, downscaled (cached, deterministic JPEG) when its long side exceeds
     `tex_res`; images already within the cap are embedded unchanged."""
-    src = os.path.join(_repo_root(), SPECS[name]["image"])
+    src = repo_path(SPECS[name]["image"])
     img = bpy.data.images.load(src, check_existing=True)
     w, h = img.size
     if max(w, h) <= tex_res:
@@ -208,6 +208,18 @@ def texture_plan(name, tex_res):
 
 def _repo_root():
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+
+
+def repo_path(rel):
+    """Absolute path of a repo-relative file. Absolute paths and paths that resolve outside the
+    repository (`..`, symlinks) are rejected, so a catalog cannot embed an arbitrary host file."""
+    if not isinstance(rel, str) or not rel or os.path.isabs(rel):
+        raise ValueError(f"image path {rel!r} must be repo-relative")
+    root = os.path.realpath(_repo_root())
+    path = os.path.realpath(os.path.join(root, rel))
+    if os.path.commonpath([root, path]) != root:
+        raise ValueError(f"image path {rel!r} resolves outside the repository")
+    return path
 
 
 def _jpeg_copy(path, quality=88):

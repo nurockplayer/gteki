@@ -54,6 +54,8 @@ class Asset:
         self.dimension_basis = dimension_basis
         self.tex_res = tex_res
         self.notes = notes
+        self.provenance = contract.PROVENANCE  # families override these for supplied artwork
+        self.license = contract.LICENSE
         self.placement = "free"
         self.materials = []
         self.parts = []  # (group, Part)
@@ -206,8 +208,8 @@ class Asset:
             "placement": self.placement,
             "fidelity": contract.FIDELITY,
             "navigation": contract.NAVIGATION,
-            "provenance": contract.PROVENANCE,
-            "license": contract.LICENSE,
+            "provenance": self.provenance,
+            "license": self.license,
         }
         if self.notes:
             meta["notes"] = self.notes

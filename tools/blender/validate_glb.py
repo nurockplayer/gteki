@@ -107,6 +107,17 @@ def triangle_corners(order, mode):
     return []
 
 
+def _area3(p, q, r):
+    """Area of a 3D triangle."""
+    u, w = [q[i] - p[i] for i in range(3)], [r[i] - p[i] for i in range(3)]
+    return 0.5 * math.sqrt((u[1]*w[2] - u[2]*w[1])**2 + (u[2]*w[0] - u[0]*w[2])**2 + (u[0]*w[1] - u[1]*w[0])**2)
+
+
+# A lightmap triangle whose geometry covers at least 1 mm^2 must keep some UV area; slivers below
+# that (stair-nosing seams) may collapse when UVs are snapped to the 1/65536 grid.
+COLLAPSED_UV_AREA, VISIBLE_GEOMETRY_M2 = 1e-12, 1e-6
+
+
 def _cross(o, a, b):
     return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
 
@@ -372,6 +383,7 @@ class Validator:
                 return
             checked_meshes.add(node["mesh"])
             tris = []
+            collapsed = 0
             for primitive in meshes[node["mesh"]].get("primitives", []):
                 mode = primitive.get("mode", 4)
                 if mode not in (4, 5, 6):
@@ -405,7 +417,16 @@ class Validator:
                          if "indices" in primitive else list(range(len(uv))))
                 if any(v >= len(uv) for v in order):
                     continue  # reported by the index range check
-                tris += [tuple(uv[i] for i in corners) for corners in triangle_corners(order, mode)]
+                positions = read(self.index(accessors, primitive["attributes"]["POSITION"]))
+                for corners in triangle_corners(order, mode):
+                    tri = tuple(uv[i] for i in corners)
+                    tris.append(tri)
+                    if (positions and abs(_area(tri)) <= COLLAPSED_UV_AREA
+                            and _area3(*(positions[i] for i in corners)) >= VISIBLE_GEOMETRY_M2):
+                        collapsed += 1
+            if collapsed:
+                self.message("FAIL", f"node {node.get('name')!r} has {collapsed} lightmap UV (TEXCOORD_1) triangles "
+                             "collapsed to a point or line although their geometry is at least 1 mm^2")
             overlapping = uv_overlaps(tris)
             if overlapping:
                 self.message("FAIL", f"node {node.get('name')!r} lightmap UV (TEXCOORD_1) has "
@@ -564,10 +585,13 @@ def self_test():
                                  (1, ("TEXCOORD_0",), "FAIL"), (1, ("TEXCOORD_0", "TEXCOORD_1"), "PASS")):
         textured = copy.deepcopy(doc)
         textured["materials"][0]["pbrMetallicRoughness"] = dict(baseColorTexture=dict(index=0, texCoord=coord))
-        textured["accessors"].append(dict(bufferView=0, byteOffset=8, componentType=5126, count=3, type="VEC2"))
+        uv_data = binary + struct.pack("<6f", 0, 0, 1, 0, 0, 1)
+        textured["buffers"][0]["byteLength"] = len(uv_data)
+        textured["bufferViews"].append(dict(buffer=0, byteOffset=len(binary), byteLength=24))
+        textured["accessors"].append(dict(bufferView=1, componentType=5126, count=3, type="VEC2"))
         for attr in attrs:
             textured["meshes"][0]["primitives"][0]["attributes"][attr] = 1
-        assert Validator("tiny.glb", encode_glb(textured, binary)).check()["status"] == status, (coord, attrs)
+        assert Validator("tiny.glb", encode_glb(textured, uv_data)).check()["status"] == status, (coord, attrs)
     # extension slots and KHR_texture_transform overrides are checked too
     for info, status in ((dict(index=0, extensions=dict(KHR_texture_transform=dict(texCoord=2))), "FAIL"),
                          (dict(index=0, texCoord=2, extensions=dict(KHR_texture_transform=dict(texCoord=0))), "PASS")):
@@ -609,6 +633,7 @@ def self_test():
     assert lightmapped(apart, attrs=("POSITION",)) == "PASS"  # full builds carry no UV1
     assert lightmapped((math.nan,) + apart[1:]) == "FAIL"
     assert lightmapped((1e6,) + apart[1:]) == "FAIL"  # rejected before the overlap grid
+    assert lightmapped((0, 0, .5, .5, 1, 1) + apart[6:]) == "FAIL"  # first triangle (1.4 m^2) collapsed to a line
     assert uv_overlaps([((0, 0), (1e6, 0), (0, 1)), ((0, 0), (1, 0), (0, 1))]) == [(0, 1)]  # coarse grid, same answer
     unorm = struct.pack("<12H", *(round(c * 65535) for c in apart))  # normalized UNORM16 is valid glTF
     assert lightmapped(None, profile="mobile", uv_bytes=unorm, componentType=5123, normalized=True) == "PASS"
@@ -618,7 +643,7 @@ def self_test():
     assert lightmapped(apart, count=5) == "FAIL"  # one UV per vertex
     assert lightmapped(tuple(c + 2 * (k % 2 == 0) for k, c in enumerate(apart))) == "FAIL"  # outside the unit square
     print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs, "
-          "texCoord (core, extension, transform, extras), lightmap (overlap, strips, fans, range, NaN, mobile UV1)")
+          "texCoord (core, extension, transform, extras), lightmap (overlap, strips, fans, range, NaN, collapsed, mobile UV1)")
 
 
 def main():
