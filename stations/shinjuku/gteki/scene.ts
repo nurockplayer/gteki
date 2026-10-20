@@ -5,9 +5,11 @@
  */
 import { WALKER_BODY, type BuildScene, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
 import type * as THREE from "three";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
+import { surfaceEntrances } from "../scene/surface-layout.ts";
 import plan from "../data/plan.json" with { type: "json" };
 
 export const buildScene: BuildScene = (ctx) => {
@@ -52,6 +54,23 @@ export const buildScene: BuildScene = (ctx) => {
     addProxy(g);
   }
   built.root.add(proxies);
+
+  // The street context (PLATEAU surface) is shown only when the viewer is where it can be seen; the lane
+  // app reports its camera via setViewer, but scene-api's update() carries no camera. A draw-nothing probe
+  // (empty geometry, never culled) reports whichever camera renders the station, every render.
+  const probeMat = new T.MeshBasicMaterial({ colorWrite: false, depthWrite: false, depthTest: false });
+  const probe = new T.Mesh(new T.BufferGeometry(), probeMat);
+  probe.name = "viewer probe (draws nothing)";
+  probe.frustumCulled = false;
+  // update() runs before each render, so it re-reports the last seen camera's *current* position; the
+  // probe alone would lag a frame (the render list is already built when onBeforeRender fires).
+  let viewCamera: THREE.Camera | null = null;
+  const reportViewer = (cam: THREE.Camera) => built.setViewer?.({ x: cam.position.x, y: -cam.position.z, z: cam.position.y });
+  probe.onBeforeRender = (_r, _s, cam) => {
+    viewCamera = cam;
+    reportViewer(cam);
+  };
+  built.root.add(probe);
 
   // Level walls only block bodies near their own level (bodyMax); approximate that for the
   // explorer's height-band walker by capping the wall band at bodyMax + 1.7 m body height.
@@ -99,6 +118,16 @@ export const buildScene: BuildScene = (ctx) => {
   const caps = [
     ...layout.levels.filter((lv) => underground.has(lv.floorId)).flatMap((lv) => lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 1, true))),
     ...layout.soffits.filter((s) => underground.has(s.floorId)).map(soffitGeometry),
+    // Street entrance canopies: the glass roof sits at 3.08 m; cap just below it so the follow camera
+    // stays under the canopy instead of looking down onto the bright glazing.
+    ...surfaceEntrances(layout, ctx.bundle).map((e) => {
+      const n = { x: -e.u.y, y: e.u.x };
+      const corner = (sl: number, sw: number) => [e.center.x + e.u.x * e.halfLength * sl + n.x * e.halfWidth * sw, 3.0, -(e.center.y + e.u.y * e.halfLength * sl + n.y * e.halfWidth * sw)];
+      const g = new T.BufferGeometry();
+      g.setAttribute("position", new T.Float32BufferAttribute([corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, 1)].flat(), 3));
+      g.setIndex([0, 1, 2, 0, 2, 3]);
+      return g;
+    }),
   ];
   if (caps.length) {
     // Position-only, non-indexed copies so every cap merges into one raycast mesh.
@@ -119,6 +148,29 @@ export const buildScene: BuildScene = (ctx) => {
       cameraBlockers.push(m);
     }
   }
+  // Underground station: it owns its lighting, as in the lane app. The explorer's default sun cast hard
+  // pillar shadows across B1 floors through no opening at all. Same hemisphere and image-based light as
+  // the lane app (app/src/main.ts), applied to the station's own materials only.
+  const hemi = new T.HemisphereLight("#fff6ea", "#4a4642", 0.85);
+  hemi.name = "station hemisphere";
+  built.root.add(hemi);
+  let envMap: THREE.Texture | null = null;
+  if (ctx.renderer) {
+    const pmrem = new T.PMREMGenerator(ctx.renderer);
+    envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
+    const tex = envMap;
+    built.root.traverse((o) => {
+      for (const m of [(o as THREE.Mesh).material].flat()) {
+        if (m instanceof T.MeshStandardMaterial && !m.envMap) {
+          m.envMap = tex;
+          m.envMapIntensity = 0.55;
+          m.needsUpdate = true;
+        }
+      }
+    });
+  }
+
   const nodes = new Map(ctx.bundle.nodes.map((n) => [n.id, n]));
   const spawnPoints: SpawnPoint[] = (ctx.bundle.spawnNodeIds ?? []).flatMap((id) => {
     const n = nodes.get(id);
@@ -136,12 +188,17 @@ export const buildScene: BuildScene = (ctx) => {
     cameraBlockers,
     walls,
     spawnPoints,
-    environment: { background: 0x0d0e10, exposure: 0.92 },
-    update: (dt, t) => built.update(dt, t),
+    environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
+    update: (dt, t) => {
+      if (viewCamera) reportViewer(viewCamera);
+      built.update(dt, t);
+    },
     dispose() {
       built.dispose();
-      for (const m of [...walkable, ...colliders]) m.geometry.dispose();
+      for (const m of [...walkable, ...colliders, probe]) m.geometry.dispose();
       proxyMat.dispose();
+      probeMat.dispose();
+      envMap?.dispose();
     },
   };
   return scene;
