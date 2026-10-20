@@ -161,7 +161,9 @@ Evidence stills:
   content is computed from the verified graph. Positions are not real sign locations.
 - **Crowd** is ambient decoration on verified edges, clamped to surveyed walkable lanes. It is
   not a pedestrian-flow model.
-- **Openings into unmodelled space** (fare areas, shops) render as a lit haze and block movement.
+- **Openings into unmodelled space** (fare areas, shops) block movement and render as a fogged
+  continuation of the opening's own floor and ceiling heights, ray-traced per pixel in the shader
+  (parallax, no geometry). It shows that the space continues, not what is there.
 - **Exit stairs** end in a daylight portal. There is no street-level model yet.
 - **Single risers** modelled as two floor levels (e.g. a 0.19 m step between landings on the
   Exit 39 stair) are passable on stair edges only, so walk-only and step-free routing stay

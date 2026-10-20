@@ -119,23 +119,46 @@ const shopPaint: Paint = (g, size, rnd) => {
   for (let i = 0; i <= 2; i++) g.fillRect(i * (size / 2) - 3, 0, 6, size);
 };
 
-/** Vertical haze gradient in world height (UV0 is metric box projection, so v ~ height). */
-function hazeTexture(THREE: ThreeNS) {
-  const c = document.createElement("canvas");
-  c.width = 4;
-  c.height = 256;
-  const g = c.getContext("2d")!;
-  const grd = g.createLinearGradient(0, 256, 0, 0);
-  grd.addColorStop(0, "#6f685e");
-  grd.addColorStop(0.45, "#a39b8f");
-  grd.addColorStop(1, "#d8d2c6");
-  g.fillStyle = grd;
-  g.fillRect(0, 0, 4, 256);
-  const t = new THREE.CanvasTexture(c);
-  t.wrapS = THREE.RepeatWrapping;
-  t.wrapT = THREE.ClampToEdgeWrapping;
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
+function beyondMaterial(THREE: ThreeNS) {
+  const m = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+  m.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader
+      .replace("#include <common>", "#include <common>\nattribute vec2 band;\nvarying vec2 vBand;\nvarying vec3 vWorldP;")
+      .replace("#include <project_vertex>", "#include <project_vertex>\nvBand = band;\nvWorldP = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+    sh.fragmentShader = sh.fragmentShader
+      .replace("#include <common>", "#include <common>\nvarying vec2 vBand;\nvarying vec3 vWorldP;")
+      .replace(
+        "vec4 diffuseColor = vec4( diffuse, opacity );",
+        // cameraPosition is not uploaded for basic materials; recover the eye from the view matrix.
+        `vec3 eye = -transpose(mat3(viewMatrix)) * viewMatrix[3].xyz;
+        vec3 rd = normalize(vWorldP - eye);
+        vec3 fogc = vec3(0.15, 0.145, 0.135); // lightmapped surfaces sit at ~0.1-0.25 linear before ACES
+        vec3 col = fogc;
+        float t = 1e3;
+        // Renderer y is TP height; x/z are metric, so the floor tile and fixture grids match the station's.
+        if (rd.y < -0.01) {
+          t = (vBand.x - vWorldP.y) / rd.y;
+          vec3 h = vWorldP + rd * t;
+          vec2 q = h.xz / 0.6, w = fwidth(q);
+          vec2 f = fract(q);
+          float grout = 1.0 - smoothstep(0.035, 0.035 + w.x, f.x) * smoothstep(0.035, 0.035 + w.y, f.y);
+          grout *= 1.0 - smoothstep(0.1, 0.4, max(w.x, w.y)); // no shimmer where tiles get sub-pixel
+          col = mix(vec3(0.27, 0.26, 0.245), vec3(0.17, 0.165, 0.155), grout * exp(-t / 5.0));
+        } else if (rd.y > 0.01) {
+          t = (vBand.y - vWorldP.y) / rd.y;
+          vec3 h = vWorldP + rd * t;
+          vec2 q = h.xz / vec2(2.4, 3.0), w = fwidth(q);
+          vec2 f = abs(fract(q) - 0.5);
+          float lamp = (1.0 - smoothstep(0.07, 0.07 + w.x, f.x)) * (1.0 - smoothstep(0.32, 0.32 + w.y, f.y));
+          lamp *= (1.0 - smoothstep(0.03, 0.12, max(w.x, w.y))) * exp(-t / 8.0); // grazing rays: fade, never streak
+          col = mix(vec3(0.06, 0.058, 0.055), vec3(1.6, 1.55, 1.45), lamp);
+        }
+        col = mix(col, fogc, 1.0 - exp(-max(t, 0.0) / 10.0));
+        vec4 diffuseColor = vec4(col * diffuse, opacity);`,
+      );
+  };
+  m.customProgramCacheKey = () => "gteki-ikebukuro-beyond-4";
+  return m;
 }
 
 export interface StationMaterials {
@@ -153,7 +176,6 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
   const stairMap = canvasTexture(THREE, size / 2, 1.2, stairPaint, 41);
   const colMap = canvasTexture(THREE, 256, 1.2, columnPaint, 53);
   const shopMap = canvasTexture(THREE, 256, 2.4, shopPaint, 61);
-  const hazeMap = hazeTexture(THREE);
 
   const lit: THREE_NS.MeshStandardMaterial[] = [];
   const std = (p: THREE_NS.MeshStandardMaterialParameters, baked = true) => {
@@ -174,9 +196,10 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     light_fixtures: new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.97, 0.92).multiplyScalar(2.2) }),
     // Openings to the street at the top of exit stairs: daylight.
     portal_sky: new THREE.MeshBasicMaterial({ color: new THREE.Color(0.86, 0.92, 1.0).multiplyScalar(2.4), side: THREE.DoubleSide }),
-    // Openings into spaces the open data does not model (fare areas, shops): a lit haze that reads as
-    // "the station continues" without inventing geometry; brighter towards the ceiling.
-    portal_beyond: new THREE.MeshBasicMaterial({ map: hazeMap, color: 0xffffff, side: THREE.DoubleSide }),
+    // Openings into spaces the open data does not model (fare areas, shops): a fogged continuation of the
+    // opening's own floor and ceiling heights, ray-traced per pixel behind the opening (no geometry, no
+    // layout claims), so it reads as "the station continues" with parallax instead of a flat bright wall.
+    portal_beyond: beyondMaterial(THREE),
   };
 
   return {
@@ -190,7 +213,7 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     },
     dispose() {
       for (const m of Object.values(byRole)) m.dispose();
-      for (const t of [floorMap, floorRough, wallMap, ceilMap, stairMap, colMap, shopMap, hazeMap]) t.dispose();
+      for (const t of [floorMap, floorRough, wallMap, ceilMap, stairMap, colMap, shopMap]) t.dispose();
     },
   };
 }

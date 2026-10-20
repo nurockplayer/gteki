@@ -74,17 +74,46 @@ function splitPortals(THREE: ThreeNS, mesh: THREE_NS.Mesh) {
     const target = Math.abs(n.y) > 0.9 && cy > 31 ? sky : beyond;
     target.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
   }
-  const make = (arr: number[]) => {
+  const make = (arr: number[], band: boolean) => {
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.Float32BufferAttribute(arr, 3));
-    // v follows TP height (B1 floor ~26 m to ceiling ~31 m) for the haze gradient.
-    const uv: number[] = [];
-    for (let i = 1; i < arr.length; i += 3) uv.push(0.5, Math.min(1, Math.max(0, (arr[i] - 26.5) / 4.5)));
-    g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+    if (band) g.setAttribute("band", new THREE.Float32BufferAttribute(openingBands(arr), 2));
     g.computeVertexNormals();
     return g;
   };
-  return { sky: make(sky), beyond: make(beyond) };
+  return { sky: make(sky, false), beyond: make(beyond, true) };
+}
+
+/** Per-vertex (bottom, top) height of the opening each triangle belongs to (connected by shared vertices). */
+function openingBands(arr: number[]): number[] {
+  const tris = arr.length / 9;
+  const parent = Array.from({ length: tris }, (_, i) => i);
+  const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+  const owner = new Map<string, number>();
+  for (let t = 0; t < tris; t++) {
+    for (let k = 0; k < 3; k++) {
+      const o = t * 9 + k * 3;
+      const key = `${arr[o].toFixed(2)},${arr[o + 1].toFixed(2)},${arr[o + 2].toFixed(2)}`;
+      const prev = owner.get(key);
+      if (prev === undefined) owner.set(key, t);
+      else parent[find(t)] = find(prev);
+    }
+  }
+  const lo = new Map<number, number>(), hi = new Map<number, number>();
+  for (let t = 0; t < tris; t++) {
+    const r = find(t);
+    for (let k = 0; k < 3; k++) {
+      const y = arr[t * 9 + k * 3 + 1];
+      lo.set(r, Math.min(lo.get(r) ?? Infinity, y));
+      hi.set(r, Math.max(hi.get(r) ?? -Infinity, y));
+    }
+  }
+  const out: number[] = [];
+  for (let t = 0; t < tris; t++) {
+    const r = find(t);
+    for (let k = 0; k < 3; k++) out.push(lo.get(r)!, hi.get(r)!);
+  }
+  return out;
 }
 
 /** Small studio-like environment for reflections, built with ctx.THREE (no example imports). */
