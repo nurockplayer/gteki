@@ -168,7 +168,7 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     stairs_ramps: std({ map: stairMap, roughness: 0.7 }),
     barriers: std({ map: colMap, roughness: 0.32, metalness: 0.15, side: THREE.DoubleSide }),
     floor_elements: std({ color: 0x9b958c, roughness: 0.6 }),
-    transport: std({ color: 0x8c9198, roughness: 0.32, metalness: 0.75 }),
+    transport: std({ color: 0x9aa0a7, roughness: 0.38, metalness: 0.35 }),
     windows: std({ map: shopMap, emissiveMap: shopMap, emissive: 0xffffff, emissiveIntensity: 1.15, roughness: 0.15, side: THREE.DoubleSide }, false),
     doors: std({ map: shopMap, emissiveMap: shopMap, emissive: 0xffffff, emissiveIntensity: 1.35, roughness: 0.2, side: THREE.DoubleSide }, false),
     light_fixtures: new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.97, 0.92).multiplyScalar(2.2) }),

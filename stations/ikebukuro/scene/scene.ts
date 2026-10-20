@@ -177,7 +177,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   for (const role of ["floor", "barriers", "transport", "wall", "stairs_ramps", "ceiling", "floor_elements"]) {
     const m = mats.byRole[role] as THREE_NS.MeshStandardMaterial;
     m.envMap = env;
-    m.envMapIntensity = role === "floor" ? 0.35 : role === "ceiling" ? 0.05 : 0.2;
+    // Brushed-steel escalators need visible reflections: the baked lightmap only lights the diffuse part.
+    m.envMapIntensity = role === "floor" ? 0.35 : role === "ceiling" ? 0.05 : role === "transport" ? 0.9 : 0.2;
   }
 
   const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy());

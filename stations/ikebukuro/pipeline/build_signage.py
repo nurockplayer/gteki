@@ -20,7 +20,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 from floorquery import Surfaces  # noqa: E402
-from build_station import wall_segments  # noqa: E402
+from build_station import wall_segments, write_json  # noqa: E402
 
 CLEAR_BELOW_SIGN = 2.25  # m above walking surface
 MIN_CLEAR = 2.0          # never lower than this; a low ceiling shrinks the panel instead
@@ -252,8 +252,7 @@ def main():
                 "back": sorted(blocks.values(), key=lambda b: ARROW_ORDER[b["arrow"]]),
             })
     out = os.path.join(ROOT, "scene", "signage.json")
-    json.dump({"generatedFrom": "gteki/graph.json + gteki/pois.json (verified edges only)", "signs": signs},
-              open(out, "w"), ensure_ascii=False, indent=1)
+    write_json(out, {"generatedFrom": "gteki/graph.json + gteki/pois.json (verified edges only)", "signs": signs}, indent=1)
     print(f"{len(signs)} signs -> {out}")
 
 

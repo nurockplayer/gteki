@@ -32,6 +32,14 @@ STAIR_TOL = 0.9   # stairs/escalators: treads are discrete
 WALL_PIECE = 0.5  # m
 
 
+def write_json(path, obj, indent=None):
+    """Write via a temp file and rename, so a watching dev server never reads a half-written file."""
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(obj, f, ensure_ascii=False, indent=indent)
+    os.replace(tmp, path)
+
+
 def _z_at(tz, t):
     """Heights where a vertical polygon, given as (t along footprint, z) vertices, meets the line t."""
     out = []
@@ -331,10 +339,9 @@ def main():
                 sys.exit(1)
     os.makedirs(OUT_DIR, exist_ok=True)
     for name, obj in (("station.json", station), ("graph.json", graph), ("pois.json", pois)):
-        with open(os.path.join(OUT_DIR, name), "w") as f:
-            json.dump(obj, f, ensure_ascii=False, indent=1)
-    with open(os.path.join(ROOT, "scene", "crowd_lanes.json"), "w") as f:
-        json.dump({"generatedFrom": "gteki/graph.json + PLATEAU walkable grid", "lanes": crowd_lanes(grid, edges_out)}, f)
+        write_json(os.path.join(OUT_DIR, name), obj, indent=1)
+    write_json(os.path.join(ROOT, "scene", "crowd_lanes.json"),
+               {"generatedFrom": "gteki/graph.json + PLATEAU walkable grid", "lanes": crowd_lanes(grid, edges_out)})
     v = sum(1 for e in edges_out if e["verification"] == "verified")
     print(f"OK: {len(nodes)} nodes, {len(edges_out)} edges ({v} verified), "
           f"{sum(e['lengthM'] for e in edges_out if e['verification'] == 'verified'):.0f} m verified")
