@@ -385,3 +385,30 @@ describe("moving walkway entry turns (PR #15 Codex review 7)", () => {
     expect(ja).toContain("左へ曲がり、動く歩道で約10m");
   });
 });
+
+describe("elevators and endpoint evidence (PR #15 Codex review 8)", () => {
+  it("never derives a heading from a lift's plan displacement", () => {
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("lift", "a", "up1", { mode: "elevator", lengthM: null, geometry: [{ x: 10, y: 0, z: 0 }, { x: 10, y: 3, z: 4 }] }),
+      edge("u-e", "up1", "up-e"),
+    ]);
+    const up = b.nodes.find((n) => n.id === "upper")!;
+    b.nodes.push({ ...up, id: "up1", position: { x: 10, y: 3, z: 4 } }, { ...up, id: "up-e", position: { x: 20, y: 3, z: 4 } });
+    const texts = describeRoute(b, ok(createRouter(b).route("start", "up-e", base)), "en").map((i) => i.text);
+    expect(texts.filter((t) => /Turn (left|right|back)/.test(t))).toEqual([]);
+  });
+
+  it("endpoint POI evidence joins sources, freshness and the checked date", () => {
+    const b = createSyntheticBundle();
+    for (const s of b.sources) s.datasetDate = "2026-09-01";
+    b.sources.push({ ...b.sources[0]!, id: "poi-survey", datasetDate: "2016-01-01" });
+    const poiEvidence = { sourceIds: ["poi-survey"], method: "field-survey", checkedDate: "2030-01-01" };
+    const plain = ok(createRouter(b).route("start", "goal", { ...base, today: "2026-10-20" }));
+    expect(plain.stale).toBe(false);
+    const withPoi = ok(createRouter(b).route("start", "goal", { ...base, today: "2026-10-20" }, [poiEvidence]));
+    expect(withPoi.sourceIds).toContain("poi-survey");
+    expect(withPoi.stale).toBe(true);
+    expect(withPoi.evidenceCheckedDate).toBe("2030-01-01");
+  });
+});

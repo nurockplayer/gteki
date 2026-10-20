@@ -103,20 +103,30 @@ export interface StationSceneModule {
 const WALKABLE_ROLES = new Set(["floor", "stairs_ramps", "walkable", "ramp", "stairs"]);
 const COLLIDER_ROLES = new Set(["wall", "walls", "barriers", "barrier", "transport", "collider"]);
 
-/** glTF extras arrive as userData; also accept "<role>" or "<role>_<n>" object names. */
+/**
+ * glTF extras arrive as userData; also accept "<role>" or "<role>_<n>" object names. A role is trimmed and
+ * lowercased, and an empty one counts as absent (same normalisation as the Godot loader).
+ */
 export function roleOf(object: THREE.Object3D): string | null {
   const extra = object.userData?.gteki_role;
-  if (typeof extra === "string") return extra;
-  const name = object.name.toLowerCase();
-  for (const role of [...WALKABLE_ROLES, ...COLLIDER_ROLES]) if (name === role || name.startsWith(`${role}_`) || name.startsWith(`${role}.`)) return role;
+  if (typeof extra === "string" && extra.trim() !== "") return extra.trim().toLowerCase();
+  // GLTFLoader sanitises node names ("floor.001" → "floor001") and keeps the authored one in userData.name.
+  const authored = typeof object.userData?.name === "string" ? (object.userData.name as string) : null;
+  for (const raw of authored === null ? [object.name] : [authored, object.name]) {
+    const name = raw.toLowerCase();
+    for (const role of [...WALKABLE_ROLES, ...COLLIDER_ROLES]) if (name === role || name.startsWith(`${role}_`) || name.startsWith(`${role}.`)) return role;
+  }
   return null;
 }
 
 /**
  * Classify a GLB scene by `gteki_role`: floor/stairs_ramps → walkable, wall/barriers → colliders.
  * Collider-only meshes are hidden unless `showColliders`. Children inherit their parent's role.
+ * `assetRole` is the manifest's asset-wide role: in a "collision"/"visual+collision" asset every mesh
+ * without its own walkable/collider role still collides, and a "collision" asset is never drawn
+ * (the same rule as the Godot loader).
  */
-export function sceneFromGlbRoles(root: THREE.Object3D, opts: { showColliders?: boolean } = {}): { walkable: THREE.Object3D[]; colliders: THREE.Object3D[] } {
+export function sceneFromGlbRoles(root: THREE.Object3D, opts: { showColliders?: boolean; assetRole?: "visual" | "collision" | "visual+collision" } = {}): { walkable: THREE.Object3D[]; colliders: THREE.Object3D[] } {
   const walkable: THREE.Object3D[] = [];
   const colliders: THREE.Object3D[] = [];
   const visit = (object: THREE.Object3D, inherited: string | null) => {
@@ -132,5 +142,13 @@ export function sceneFromGlbRoles(root: THREE.Object3D, opts: { showColliders?: 
     for (const child of object.children) visit(child, role);
   };
   visit(root, null);
+  if (opts.assetRole && opts.assetRole !== "visual") {
+    const tagged = new Set<THREE.Object3D>([...walkable, ...colliders]);
+    root.traverse((object) => {
+      if ((object as THREE.Mesh).isMesh !== true) return;
+      if (!tagged.has(object)) colliders.push(object);
+      if (opts.assetRole === "collision" && !opts.showColliders) object.visible = false;
+    });
+  }
   return { walkable, colliders };
 }

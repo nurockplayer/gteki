@@ -1,4 +1,4 @@
-import type { Edge, StationBundle, Vec3N } from "@gteki/schema";
+import type { Edge, EvidenceRef, StationBundle, Vec3N } from "@gteki/schema";
 import { isOpenAt } from "@gteki/schema";
 import { DEFAULT_PROFILE, DEFAULT_STALE_AFTER_DAYS } from "./index.ts";
 import type { Router, RouteProfile, RouteResult, RouteStep, RouteUnknown } from "./index.ts";
@@ -176,7 +176,7 @@ export function createRouter(bundle: StationBundle): Router {
     return true;
   }
 
-  function result(goal: string, previous: Map<string, Previous>, profile: RouteProfile): RouteResult {
+  function result(goal: string, previous: Map<string, Previous>, profile: RouteProfile, endpointEvidence: readonly EvidenceRef[]): RouteResult {
     // Starts have no predecessor, so the walk back ends at whichever start the path came from.
     const path: Previous[] = [];
     let fromNodeId = goal;
@@ -254,6 +254,11 @@ export function createRouter(bundle: StationBundle): Router {
     });
     // Node coordinates are drawn and measured too, so their sources are dependencies like edge evidence.
     for (const nodeId of nodeIds) for (const ref of nodes.get(nodeId)!.sourceRefs) sourceIds.add(ref.sourceId);
+    // So is whatever ties the chosen origin/destination (e.g. a POI) to these connector nodes.
+    for (const evidence of endpointEvidence) {
+      for (const sourceId of evidence.sourceIds) sourceIds.add(sourceId);
+      if (evidenceCheckedDate === null || evidence.checkedDate > evidenceCheckedDate) evidenceCheckedDate = evidence.checkedDate;
+    }
     let oldestSourceDate: string | null = null;
     const undatedSourceIds: string[] = [];
     for (const sourceId of [...sourceIds].sort()) {
@@ -302,7 +307,7 @@ export function createRouter(bundle: StationBundle): Router {
       return fromNode !== undefined && toNode !== undefined && measureEdge(edge, fromNode.position, toNode.position) !== null &&
         permits(edge, profile, new Set(profile.avoidModes), new Set(profile.extraClosedEdgeIds));
     },
-    route(fromNodeIds, toNodeIds, profile = DEFAULT_PROFILE) {
+    route(fromNodeIds, toNodeIds, profile = DEFAULT_PROFILE, endpointEvidence = []) {
       const requestedStarts = typeof fromNodeIds === "string" ? [fromNodeIds] : fromNodeIds;
       const starts = [...new Set(requestedStarts.filter((id) => nodes.has(id)))];
       if (starts.length === 0) return { ok: false, reason: "unknown_start", message: `Unknown start node: ${requestedStarts.join(", ")}` };
@@ -323,7 +328,7 @@ export function createRouter(bundle: StationBundle): Router {
       for (let current = queue.pop(); current; current = queue.pop()) {
         if (settled.has(current.nodeId) || current.cost !== distances.get(current.nodeId)) continue;
         settled.add(current.nodeId);
-        if (goals.has(current.nodeId)) return result(current.nodeId, previous, profile);
+        if (goals.has(current.nodeId)) return result(current.nodeId, previous, profile, endpointEvidence);
         for (const traversal of adjacency.get(current.nodeId)!) {
           if (settled.has(traversal.toNodeId) || !permits(traversal.edge, profile, avoided, closed)) continue;
           const cost = current.cost + traversal.measurement.cost;

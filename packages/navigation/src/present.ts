@@ -189,12 +189,13 @@ function stepPlanLength(points: PolylinePoint[], stepIndex: number): number {
  * offset, nor repeats one. A lift ride is never looked through: its doors may face anywhere.
  */
 function turnDelta(points: PolylinePoint[], steps: RouteResult["steps"], i: number): number | null {
-  const hasHeading = (k: number) => stepPlanLength(points, k) >= MIN_HEADING_STEP_M;
+  // A lift's plan displacement is motion through the shaft, not which way its doors face: never a heading.
+  const hasHeading = (k: number) => steps[k]!.mode !== "elevator" && stepPlanLength(points, k) >= MIN_HEADING_STEP_M;
   if (!hasHeading(i)) return null;
   let h0: number | null = null;
   for (let k = i - 1; k >= 0; k--) {
-    if (hasHeading(k)) { h0 = stepHeading(points, k, "end"); break; }
     if (steps[k]!.mode === "elevator") break;
+    if (hasHeading(k)) { h0 = stepHeading(points, k, "end"); break; }
   }
   const h1 = stepHeading(points, i, "start");
   return h0 === null || h1 === null ? null : ((h1 - h0 + 540) % 360) - 180;

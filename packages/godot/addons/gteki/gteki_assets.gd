@@ -2,8 +2,9 @@ extends RefCounted
 ## Runtime glTF loading; geometry roles are display/physics hints, never routing evidence.
 
 const Station = preload("res://addons/gteki/gteki_station.gd")
-const WALKABLE = ["floor", "stairs_ramps"]
-const COLLIDER = ["wall", "barriers", "transport"]
+# Same role vocabulary as @gteki/scene-api (WALKABLE_ROLES / COLLIDER_ROLES).
+const WALKABLE = ["floor", "stairs_ramps", "walkable", "ramp", "stairs"]
+const COLLIDER = ["wall", "walls", "barriers", "barrier", "transport", "collider"]
 
 var issues: Array[String] = []
 var counts: Dictionary = {"assets": 0, "walkable": 0, "collider": 0}
@@ -32,12 +33,12 @@ func load_assets(manifest: Dictionary, gteki_dir: String, station_root: Node3D) 
 		if not glb_is_self_contained(resolved):
 			issues.append("GLB references external buffers/images; only self-contained GLBs load: %s" % uri)
 			continue
-		load_glb(resolved, station_root, asset.get("id", "asset"), matrix)
+		load_glb(resolved, station_root, asset.get("id", "asset"), matrix, str(asset.get("role", "visual")))
 	print("GLB assets=%d walkable=%d collider=%d" % [counts.assets, counts.walkable, counts.collider])
 	return issues.is_empty()
 
 
-func load_glb(path: String, station_root: Node3D, asset_id: String = "asset", matrix: Variant = null) -> Node3D:
+func load_glb(path: String, station_root: Node3D, asset_id: String = "asset", matrix: Variant = null, asset_role: String = "visual") -> Node3D:
 	if matrix != null and not _valid_matrix(matrix):
 		issues.append("Invalid GLB transform: %s" % path)
 		return null
@@ -57,8 +58,26 @@ func load_glb(path: String, station_root: Node3D, asset_id: String = "asset", ma
 	asset_root.add_child(scene)
 	station_root.add_child(asset_root)
 	_tag_roles(scene)
+	if asset_role != "visual":
+		_apply_asset_role(scene, asset_role)
 	counts.assets += 1
 	return asset_root
+
+
+## The manifest role is asset-wide (as in the web explorer): in a collision asset every mesh without its
+## own walkable/collider role still collides, and a collision-only asset is not drawn.
+func _apply_asset_role(node: Node, asset_role: String) -> void:
+	if node is MeshInstance3D:
+		# Inherited roles are already tagged on the mesh itself by _tag_roles.
+		if not node.has_meta("gteki_walkable") and not node.has_meta("gteki_collider"):
+			node.set_meta("gteki_collider", true)
+			counts.collider += 1
+			if node.mesh != null:
+				node.create_trimesh_collision()
+		if asset_role == "collision":
+			node.visible = false
+	for child in node.get_children():
+		_apply_asset_role(child, asset_role)
 
 
 ## Resolve `uri` under `gteki_dir` to its canonical path and accept it only if that lies inside the
@@ -159,22 +178,43 @@ static func matrix_to_transform(matrix: Variant) -> Transform3D:
 	)
 
 
-func _tag_roles(node: Node) -> void:
-	var role := str(node.get_meta("gteki_role", "")).to_lower()
+## A node's own role, as the web's roleOf: gteki_role metadata/extras, else a name that is a role or
+## starts with "<role>_" / "<role>.".
+static func _own_role(node: Node) -> String:
+	var role := str(node.get_meta("gteki_role", "")).strip_edges().to_lower()
 	# Godot imports glTF extras as metadata, including nested extras from other exporters.
 	var extras: Variant = node.get_meta("extras", {})
 	if role.is_empty() and extras is Dictionary:
-		role = str(extras.get("gteki_role", "")).to_lower()
-	if role.is_empty():
-		role = str(node.name).to_lower()
+		role = str(extras.get("gteki_role", "")).strip_edges().to_lower()
+	# Trimmed and lowercased; an empty role counts as absent (same normalisation as the web's roleOf).
+	if not role.is_empty():
+		return role
+	var name := str(node.name).to_lower()
+	for candidate in WALKABLE + COLLIDER:
+		if name == candidate or name.begins_with(candidate + "_") or name.begins_with(candidate + "."):
+			return candidate
+	return ""
+
+
+## Tag meshes by role; children inherit their parent's role (as on the web), so a mesh under a "wall"
+## group collides and one under a "floor" group is walkable. Counts are meshes.
+func _tag_roles(node: Node, inherited: String = "") -> void:
+	var own := _own_role(node)
+	var role := own if not own.is_empty() else inherited
+	var is_mesh := node is MeshInstance3D
 	if role in WALKABLE:
 		node.set_meta("gteki_walkable", true)
-		counts.walkable += 1
+		if is_mesh:
+			counts.walkable += 1
 	elif role in COLLIDER:
 		node.set_meta("gteki_collider", true)
-		counts.collider += 1
-		if node is MeshInstance3D and node.mesh != null:
-			node.create_trimesh_collision()
-	# Collision creation adds children; inspect the resulting list once.
-	for child in node.get_children():
-		_tag_roles(child)
+		if is_mesh:
+			counts.collider += 1
+			if role == "collider":
+				node.visible = false
+	# Snapshot children first: collision creation adds a StaticBody3D child that needs no tagging.
+	var children := node.get_children()
+	if is_mesh and role in COLLIDER and node.mesh != null:
+		node.create_trimesh_collision()
+	for child in children:
+		_tag_roles(child, role)
