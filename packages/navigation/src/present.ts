@@ -173,7 +173,7 @@ const TEXT = {
     turnWalk: (turns: readonly Turn[], m: number) => `${TEXT.ja.turns(turns)}約${m}m`,
     turnPrefix: (turns: readonly Turn[], text: string) => `${TEXT.ja.turns(turns)}、${text}`,
     gate: () => "改札を通過",
-    moving_walkway: (m: number) => `動く歩道で約${m}m`,
+    moving_walkway: (m: number, _afterTurn: boolean) => `動く歩道で約${m}m`,
     /**
      * `floor` null = the chain starts and ends on the same floor: name no destination floor.
      * `continued` = the flight right after another of the same kind (only short legs between).
@@ -213,7 +213,8 @@ const TEXT = {
     turnWalk: (turns: readonly Turn[], m: number) => `${TEXT.en.turns(turns)}, ~${m} m`,
     turnPrefix: (turns: readonly Turn[], text: string) => `${TEXT.en.turns(turns)}, then ${lowerFirst(text)}`,
     gate: () => "Pass the ticket gate",
-    moving_walkway: (m: number) => `Moving walkway ~${m} m`,
+    /** After a turn the walkway needs a verb of its own: "Turn left, then take the moving walkway ~10 m". */
+    moving_walkway: (m: number, afterTurn: boolean) => `${afterTurn ? "Take the moving walkway" : "Moving walkway"} ~${m} m`,
     vertical: (kind: string, sense: string | null, floor: string | null, continued: boolean) =>
       `${continued ? `Continue ${sense ?? "on"} the ${kind}` : `Take the ${kind}${sense ? ` ${sense}` : ""}`}${floor === null ? "" : ` to ${floor}`}`,
     junction: (atM: number, action: JunctionHint["action"], name: string | null) =>
@@ -704,7 +705,7 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
       // is known to reverse it (down, then up).
       const before = all[k - 1]!;
       const continued = (ins.kind === "stairs" || ins.kind === "ramp") && before.kind === ins.kind && (ins.vertical === null || ins.vertical === before.vertical);
-      const base = ins.kind === "gate" ? t.gate() : ins.kind === "moving_walkway" ? t.moving_walkway(m) : t.vertical(ins.kind, ins.vertical, label, continued);
+      const base = ins.kind === "gate" ? t.gate() : ins.kind === "moving_walkway" ? t.moving_walkway(m, turns.length > 0) : t.vertical(ins.kind, ins.vertical, label, continued);
       main = turns.length > 0 ? t.turnPrefix(turns, base) : base;
     }
     const hints = (ins.junctions ?? []).map((j) => t.junction(j.atM, j.action, j.name));

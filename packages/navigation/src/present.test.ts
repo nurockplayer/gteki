@@ -559,6 +559,21 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     expect(texts(b, r, "ja")[1]).toBe("動く歩道で約10m");
   });
 
+  it("gives a moving walkway reached after a turn a verb of its own", () => {
+    // 20 m east, a 2 m step north (left), then a walkway straight on north.
+    const b = createSyntheticBundle([edge("s-a", "start", "a", { lengthM: 20 }), edge("step", "a", "b", { lengthM: 2 }), edge("walkway", "b", "goal", { mode: "moving_walkway", lengthM: 10 })]);
+    b.nodes.find((n) => n.id === "a")!.position = { x: 20, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "b")!.position = { x: 20, y: 2, z: 0 };
+    b.nodes.find((n) => n.id === "goal")!.position = { x: 20, y: 12, z: 0 };
+    const r = route(b, "start", "goal");
+    expect(describeRoute(b, r, "en")[2]).toMatchObject({ kind: "moving_walkway", stepIndexes: [1, 2], leadTurns: ["left"], text: "Turn left, then take the moving walkway ~10 m" });
+    expect(texts(b, r, "ja")[2]).toBe("左へ曲がり、動く歩道で約10m");
+    // Without a turn before it, the walkway line reads as before.
+    b.nodes.find((n) => n.id === "b")!.position = { x: 22, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "goal")!.position = { x: 32, y: 0, z: 0 };
+    expect(texts(b, route(b, "start", "goal"), "en")).toEqual(["Start", "Go straight ~22 m", "Moving walkway ~10 m", "Arrive at destination"]);
+  });
+
   it("keeps an opening leg that ends in a turn onto a flight or gate", () => {
     for (const mode of ["stairs", "gate"] as const) {
       const b = createSyntheticBundle([edge("s-a", "start", "a", { lengthM: 3 }), edge("onto", "a", "upper", { mode, ...(mode === "gate" ? { crossesFareBoundary: true, paid: null } : {}) })]);
