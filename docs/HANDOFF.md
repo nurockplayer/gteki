@@ -46,3 +46,15 @@ No production routing guarantee, phone indoor positioning, 100% station coverage
 - Need exact verified data download, rights and coverage, especially interiors.
 - Need initial technical implementation and tested station graph.
 - Need legal check before redistribution of source files or imagery in public demo.
+
+## Research intake — 2026-10-20
+
+The full public data study is now committed at [docs/research/GTEki_Public_Data_Research_2026-10-20.md](research/GTEki_Public_Data_Research_2026-10-20.md). Research and small metadata/CSV/PDF checks are finished. **No full underground CityGML import, geometry coverage validation, current-world indoor navigation, field verification, or real demo has been performed.**
+
+**First blocking gate (G0):** inspect rights and exact resource versions; download only the individual Ikebukuro PLATEAU underground GML (~35.4MB) with schema/codelists after verifying current API; record URL, hash, timestamps and metadata; enumerate gml:id, geometry footprint, floor semantics, CRS/axis/vertical datum and unverified connectivity. The Ikebukuro 2019 walking CSV is NOT an indoor graph (in_out=1, elevation empty). Use separate candidate layers for geometry, access graph and POI entrance. Unknown edges are unroutable.
+
+**Parallel Shinjuku (~30%):** validate Toei Oedo Shinjuku E27 partial indoor GeoJSON/PDL, preserve its own source floor labels; study Shinjuku PLATEAU underground file without extrapolating to all operators. No cross-operator connections without evidence.
+
+**Rights gate:** public GitHub means no unlicensed scanned station diagrams, copied map PNG/JPEG, unapproved photographs, scraped POIs or derived mesh uploads. Documentation can link to restricted references without embedding them as released assets.
+
+**Owner process:** Opus 5.5 is engineering lead, Codex implements bounded tasks; follow GitHub issues and independent evidence-based review. This intake is a documentation handoff only, not completion of M0 engineering.
