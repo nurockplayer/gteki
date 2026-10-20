@@ -154,12 +154,14 @@ export const buildScene: BuildScene = (ctx) => {
   const hemi = new T.HemisphereLight("#fff6ea", "#4a4642", 0.85);
   hemi.name = "station hemisphere";
   built.root.add(hemi);
-  let envMap: THREE.Texture | null = null;
+  let envTarget: THREE.WebGLRenderTarget | null = null;
   if (ctx.renderer) {
     const pmrem = new T.PMREMGenerator(ctx.renderer);
-    envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    const room = new RoomEnvironment();
+    envTarget = pmrem.fromScene(room, 0.04);
     pmrem.dispose();
-    const tex = envMap;
+    room.dispose(); // the capture scene's geometry/materials are throwaway
+    const tex = envTarget.texture;
     built.root.traverse((o) => {
       for (const m of [(o as THREE.Mesh).material].flat()) {
         if (m instanceof T.MeshStandardMaterial && !m.envMap) {
@@ -198,7 +200,7 @@ export const buildScene: BuildScene = (ctx) => {
       for (const m of [...walkable, ...colliders, probe]) m.geometry.dispose();
       proxyMat.dispose();
       probeMat.dispose();
-      envMap?.dispose();
+      envTarget?.dispose(); // render target owns the texture plus its framebuffer/depth
     },
   };
   return scene;

@@ -140,6 +140,8 @@ export interface GuidePoint {
 
 export const WALK_SPEED = 1.45;
 export const RUN_SPEED = 3.6;
+/** Longest single collision/ground step (m). */
+const MAX_SUBSTEP = 0.2;
 export const PLAYER_RADIUS = 0.3;
 const RADIUS = PLAYER_RADIUS;
 
@@ -253,7 +255,10 @@ export class Player {
     }
 
     this.climbing = 0;
-    this.tryMove(this.vx * dt, this.vy * dt);
+    // Sub-step fast travel (×4 guide + run is 14 m/s): one 0.7 m jump at a stair foot could land
+    // outside groundAt's step band and stall guidance there for good.
+    const steps = Math.max(1, Math.ceil((Math.hypot(this.vx, this.vy) * dt) / MAX_SUBSTEP));
+    for (let i = 0; i < steps; i++) this.tryMove((this.vx * dt) / steps, (this.vy * dt) / steps);
     // Match audio.ts's footstep cadence, including acceleration and running.
     const cadence = this.speed <= 1.4 ? 1.8 * this.speed / 1.4 : Math.min(3.4, 1.8 + (this.speed - 1.4) / 2.1);
     this.stridePhase = this.carriedByEscalator || this.speed < 0.12 ? 0 : (this.stridePhase + dt * cadence * Math.PI) % (Math.PI * 2);
@@ -310,7 +315,9 @@ export class Player {
     const dx = p.x - this.x;
     const dy = p.y - this.y;
     const d = Math.hypot(dx, dy);
-    const reach = (p.escalator ? 0.05 : 0.45) + this.speed * dt;
+    // Frame travel widens the reach so a point is not overshot, but only by about one sub-step: at
+    // ×4 + run a whole 20 fps frame (0.7 m) let the guide count a stair's top point while still on it.
+    const reach = (p.escalator ? 0.05 : 0.45) + Math.min(this.speed * dt, 2 * MAX_SUBSTEP);
     if (d < reach || (!p.escalator && d < 1.2 && Math.abs(p.z - this.z) > 0.8)) {
       this.guideIndex++;
       return this.guideStep(dt);

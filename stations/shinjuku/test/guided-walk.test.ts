@@ -18,7 +18,7 @@ const router = createRouter(bundle);
 const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
 const nodeZ = (id: string) => layout.nodeZ.get(id) ?? 0;
 
-function walk(fromPoi: string, toPoi: string, stepFree = false, speed = 1) {
+function walk(fromPoi: string, toPoi: string, stepFree = false, speed = 1, run = false, fps = 30) {
   const a = bundle.pois.find((p) => p.id === fromPoi)!;
   const b = bundle.pois.find((p) => p.id === toPoi)!;
   const r = router.route(a.connectorNodeIds[0]!, b.connectorNodeIds, { fare: "ticketed", stepFree });
@@ -39,7 +39,7 @@ function walk(fromPoi: string, toPoi: string, stepFree = false, speed = 1) {
   player.setGuideSpeed(speed);
   const limit = r.totalLengthM / 0.5 + 60; // allow the slowest guided connector, the escalator ride
   let t = 0;
-  for (; t < limit && !arrived; t += 1 / 30) player.update(1 / 30, { forward: 0, strafe: 0, run: false }, player.heading);
+  for (; t < limit && !arrived; t += 1 / fps) player.update(1 / fps, { forward: 0, strafe: 0, run }, player.heading);
   const end = pts[pts.length - 1]!;
   // arrival must be at the destination's height too (not on an overlapping floor)
   if (arrived && Math.abs(player.z - end.z) > 0.35) arrived = false;
@@ -73,6 +73,17 @@ describe("guided walk over the E27 walk world", () => {
       }
     }
   });
+
+  it.each([20, 30])("×4 guide while holding RUN completes every routable POI pair at %s fps", (fps) => {
+    const stuck: string[] = [];
+    for (const a of bundle.pois)
+      for (const b of bundle.pois) {
+        if (a === b) continue;
+        const res = walk(a.id, b.id, false, 4, true, fps);
+        if (res.ok && !res.arrived) stuck.push(`${a.id} → ${b.id} ${JSON.stringify(res.stuckAt)}`);
+      }
+    expect(stuck).toEqual([]);
+  }, 120_000);
 
   it("every routable POI pair arrives (ticketed and step-free profiles)", () => {
     const stuck: string[] = [];
