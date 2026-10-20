@@ -174,6 +174,8 @@ export class App {
   }
 
   private openGeneration = 0;
+  /** True only once the selected station's data and scene are both current; endpoint controls wait for it. */
+  private stationReady = false;
 
   private async openStation(entry: StationEntry, fromId?: string | null, toId?: string | null): Promise<void> {
     // A later selection supersedes this one: never let a slow station overwrite the one now selected.
@@ -182,12 +184,23 @@ export class App {
     this.explorer.cancelPendingLoad();
     this.s.entry = entry;
     this.ui.stationSelect.value = entry.key;
+    // Drop the previous station's services now, not after the await: nothing may search or route
+    // against the old bundle while the new one loads.
+    this.stationReady = false;
+    this.s.loaded = null;
+    this.s.router = null;
+    this.s.search = null;
     this.s.origin = null;
     this.s.destination = null;
     this.s.route = null;
+    this.s.polyline = [];
+    this.s.instructions = [];
     this.ui.fromInput.value = "";
     this.ui.toInput.value = "";
+    this.ui.fromResults.innerHTML = "";
+    this.ui.toResults.innerHTML = "";
     this.ui.sheet.innerHTML = "";
+    this.renderSpawnChips(undefined);
     this.toast(this.t.loading);
     try {
       const loaded = await entry.load();
@@ -205,6 +218,7 @@ export class App {
       this.showLoadError(err);
       return;
     }
+    this.stationReady = true;
     const pois = this.s.loaded.bundle.pois;
     const from = pois.find((p) => p.id === fromId);
     const to = pois.find((p) => p.id === toId);
@@ -261,7 +275,7 @@ export class App {
 
   private renderSpawnChips(b: StationBundle | undefined): void {
     this.ui.spawnChips.innerHTML = "";
-    if (!b) return;
+    if (!b || !this.stationReady) return;
     const ids = b.spawnNodeIds ?? [];
     for (const id of ids.slice(0, 6)) {
       const label = this.nodeLabel(b, id);
@@ -333,13 +347,22 @@ export class App {
     }
   }
 
+  /** Endpoints must come from the station that is loaded now (a stale result list may still be clickable). */
+  private ownsPoi(p: Poi): boolean {
+    return this.stationReady && (this.s.loaded?.bundle.pois.includes(p) ?? false);
+  }
+
   private setOrigin(o: Origin): void {
+    if (!this.stationReady) return;
+    if (o.kind === "poi" && !this.ownsPoi(o.poi)) return;
+    if (o.kind === "node" && !this.s.loaded?.bundle.nodes.some((n) => n.id === o.nodeId)) return;
     this.s.origin = o;
     this.refreshAll();
     this.updateUrl();
   }
 
   private setDestination(p: Poi): void {
+    if (!this.ownsPoi(p)) return;
     this.s.destination = p;
     this.refreshAll();
     this.updateUrl();
@@ -356,7 +379,8 @@ export class App {
 
   /** Nearest graph node to the avatar (on the avatar's level band). Virtual, never GPS. */
   private originFromAvatar(): void {
-    const b = this.s.loaded?.bundle;
+    // The avatar belongs to the scene: until the new station's scene is up it still stands in the old one.
+    const b = this.stationReady ? this.s.loaded?.bundle : undefined;
     if (!b) return;
     const a = this.explorer.avatarEnu;
     let best: { id: string; d: number } | null = null;

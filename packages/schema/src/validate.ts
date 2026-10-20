@@ -179,6 +179,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
 
   for (const a of b.coverage.areas) {
     if (a.floorId !== null && !floorIds.has(a.floorId)) err("coverage.floor", `unknown floor ${a.floorId}`, a.id);
+    for (const sid of a.sourceIds) if (!sourceIds.has(sid)) err("coverage.source", `unknown source ${sid}`, a.id);
   }
 
   return issues;

@@ -211,9 +211,9 @@ export function createRouter(bundle: StationBundle): Router {
       if (edge.wheelchair === null) unknown("wheelchair", edge.id);
       if (edge.steps === null) unknown("steps", edge.id);
       if (edge.accessEvidence === null) unknown("access_evidence", edge.id);
-      // Hours sources are dependencies too: an undated hours source keeps freshness UNKNOWN.
-      for (const sourceId of edge.hours?.evidence.sourceIds ?? []) sourceIds.add(sourceId);
-      for (const evidence of [edge.geometryEvidence, edge.accessEvidence]) {
+      // Hours evidence counts like geometry and access evidence: its sources are dependencies (an undated
+      // one keeps freshness UNKNOWN) and its checkedDate joins evidenceCheckedDate.
+      for (const evidence of [edge.geometryEvidence, edge.accessEvidence, edge.hours?.evidence ?? null]) {
         if (!evidence) continue;
         for (const sourceId of evidence.sourceIds) sourceIds.add(sourceId);
         if (evidenceCheckedDate === null || evidence.checkedDate > evidenceCheckedDate) {

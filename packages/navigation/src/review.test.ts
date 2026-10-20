@@ -202,3 +202,12 @@ describe("multi-origin routing (PR #15 Codex review)", () => {
     expect(router.route(["start"], "goal", base)).toEqual(router.route("start", "goal", base));
   });
 });
+
+describe("hours evidence in provenance (PR #15 Codex review)", () => {
+  it("counts the hours evidence checkedDate in evidenceCheckedDate", () => {
+    const hoursEvidence = { sourceIds: ["fixture-access"], method: "source-attribute:hours", checkedDate: "2030-01-01" };
+    const r = ok(createRouter(createSyntheticBundle([edge("x", "start", "goal", { hours: { kind: "always", evidence: hoursEvidence } })])).route("start", "goal", base));
+    expect(r.evidenceCheckedDate).toBe("2030-01-01");
+    expect(r.sourceIds).toContain("fixture-access");
+  });
+});

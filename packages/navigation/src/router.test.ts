@@ -275,12 +275,14 @@ describe("route facts and provenance", () => {
     ]);
     const route = success(router.route("start", "goal"));
     expect(route.sourceIds).toEqual(["fixture-access", "fixture-geometry"]);
-    expect(route.evidenceCheckedDate).toBe("2026-01-01");
+    // Hours evidence is route evidence too, so its later check date wins.
+    expect(route.evidenceCheckedDate).toBe("2026-10-20");
   });
 
   it("preserves old evidence dates rather than presenting them as current", () => {
     const route = success(routerFor([edge("old", "start", "goal", {
       geometryEvidence: syntheticEvidence("fixture-geometry", "2010-01-01"), accessEvidence: null,
+      hours: { kind: "always", evidence: syntheticEvidence("fixture-access", "2009-06-01") },
     })]).route("start", "goal"));
     expect(route.evidenceCheckedDate).toBe("2010-01-01");
   });
