@@ -285,3 +285,12 @@ describe("PR #15 Codex review: validator gaps", () => {
     expect(withTransform(w)).toContain("asset.transform");
   });
 });
+
+describe("coverage provenance (PR #15 Codex review)", () => {
+  it("rejects coverage areas that cite unknown sources", () => {
+    const b = createSyntheticBundle();
+    expect(errors(b)).not.toContain("coverage.source");
+    b.coverage.areas.push({ id: "area-x", floorId: null, status: "unverified", label: [{ lang: "en", text: "x" }], sourceIds: ["no-such-source"] });
+    expect(errors(b)).toContain("coverage.source");
+  });
+});

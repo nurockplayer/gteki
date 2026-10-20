@@ -68,7 +68,7 @@ export interface RouteResult {
   unknowns: { kind: RouteUnknown; edgeIds: string[] }[];
   /** Sources the route depends on (for provenance display). */
   sourceIds: string[];
-  /** Latest checkedDate across the route's evidence. */
+  /** Latest checkedDate across the route's evidence (geometry, access and hours). */
   evidenceCheckedDate: string | null;
   /** Oldest known source datasetDate the route depends on (the weakest dated link); null = no dated source. */
   oldestSourceDate: string | null;
