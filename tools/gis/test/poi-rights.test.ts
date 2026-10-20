@@ -3,7 +3,7 @@ import { decodeText, fieldStatistics, inventoryCsv, inventoryJson, bboxRelation 
 import { compareFeatureCollections, attachVerifiedOrigin } from '../src/related.js';
 import { evaluateRights, evaluateRightsRecords, snapshotText } from '../src/rights.js';
 import { projectRights, rightsScopeMarkdown } from '../src/rights-view.js';
-import { missingEvidenceHolds } from '../src/gaps.js';
+import { missingEvidenceHolds, projectPoiContent } from '../src/gaps.js';
 import { legacyFetchStatement, termsFetchStatement } from '../src/poi-research.js';
 
 // SYNTHETIC rights and content fixtures; no real station data or legal text.
@@ -170,5 +170,20 @@ describe('research fetch statements', () => {
     expect(legacyFetchStatement('新宿', { http_status: 404, sha256: 'a'.repeat(64) }, current)).toBe('新宿: legacy URL returned HTTP 404.');
     expect(legacyFetchStatement('新宿', undefined, current)).toMatch(/not captured; UNKNOWN/);
     expect(termsFetchStatement({ url: 'https://example.test/terms', http_status: 403 })).toBe('https://example.test/terms returned HTTP 403');
+  });
+});
+
+describe('opening times and gap POI projection', () => {
+  it('classifies CSV opening-hour headers as literal location/time fields', () => {
+    const csv = Buffer.from('店舗名,設置場所,営業時間・利用時間\nSynthetic,改札内,SYNTHETIC 7:00〜22:00\n', 'utf8');
+    const { summary } = inventoryCsv(csv);
+    expect(Object.keys(summary.literal_location_time_fields)).toEqual(['設置場所', '営業時間・利用時間']);
+    expect(summary.literal_location_time_fields['営業時間・利用時間'].literal_distribution[0].value).toBe('SYNTHETIC 7:00〜22:00');
+  });
+  it('projects only station-relevant POI reports', () => {
+    const report = { source_id: 'poi-a', source_sha256: 'a', coordinates: 'UNKNOWN', station_ids: ['shinjuku'], members: [], detail: {},
+      station_relevance: [{ station_id: 'ikebukuro', relation: 'DISJOINT' }] };
+    expect(projectPoiContent(report, 'shinjuku')).toMatchObject({ source_id: 'poi-a', routable: false, station_relevance: [] });
+    expect(projectPoiContent(report, 'ikebukuro')).toBeNull();
   });
 });

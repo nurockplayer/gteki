@@ -14,6 +14,17 @@ const STATIONS = [
 /** Every gap-packet run writes one packet per station; summarize requires all of them. */
 export const GAP_STATION_IDS: readonly string[] = STATIONS.map(station => station.id);
 
+/** The gap-packet view of one POI report, or null when the report is not relevant to the station. */
+export function projectPoiContent(report: any, stationId: string): any | null {
+  if (!report.station_ids?.includes(stationId) && !report.station_relevance?.some((item: any) => item.station_id === stationId && item.relation === 'INTERSECTS')) return null;
+  return {
+    source_id: report.source_id, source_sha256: report.source_sha256, routable: false, coordinates: report.coordinates,
+    members: report.members.map((member: any) => ({ file: member.file, populated_row_count: member.populated_row_count ?? null, feature_count: member.feature_count ?? null, crs: member.crs, bbox: member.bbox,
+      geometry_types: member.geometry_types, literal_location_time_fields: member.literal_location_time_fields ?? {}, route_structure: member.route_structure?.start_end_fields ?? [] })),
+    station_relevance: report.station_relevance.filter((item: any) => item.station_id === stationId), detail: report.detail,
+  };
+}
+
 /**
  * Each expected report that is absent is its own HOLD. A missing POI report leaves
  * its station relevance uncomputable, so it is held for every station; a missing
@@ -109,12 +120,7 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
     const overlap = await maybeReport(`overlap/${station.id}.json`) as StationOverlapReport | null;
     const poiReports = Object.values(poiById).filter(Boolean);
     const rightsReports = Object.values(rightsById).filter(report => report?.station_ids?.includes(station.id));
-    const poiContent = poiReports.filter(report => report.station_ids?.includes(station.id) || report.station_relevance?.some((item: any) => item.station_id === station.id && item.relation === 'INTERSECTS')).map(report => ({
-      source_id: report.source_id, source_sha256: report.source_sha256, routable: false, coordinates: report.coordinates,
-      members: report.members.map((member: any) => ({ file: member.file, populated_row_count: member.populated_row_count ?? null, feature_count: member.feature_count ?? null, crs: member.crs, bbox: member.bbox,
-        geometry_types: member.geometry_types, literal_location_time_fields: member.literal_location_time_fields ?? member.literal_location_fields ?? [], route_structure: member.route_structure?.start_end_fields ?? [] })),
-      station_relevance: report.station_relevance.filter((item: any) => item.station_id === station.id), detail: report.detail,
-    }));
+    const poiContent = poiReports.map(report => projectPoiContent(report, station.id)).filter(Boolean);
     const rightsContent = rightsReports.flatMap(report => report.records.map((row: any) => projectRights(report, row)));
     const semanticFacts = literalFacts(inventory);
     const relevant = {

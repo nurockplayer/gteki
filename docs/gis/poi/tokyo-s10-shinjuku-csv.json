@@ -1,7 +1,7 @@
 {
   "source_id": "tokyo-s10-shinjuku-csv",
   "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
-  "tool_input_sha256": "366c57bc79580c2ca7b5233f320ae5f8683985f9ae28d6125f70eebc0aa592a6",
+  "tool_input_sha256": "d4016a37d52926e3d2949a1b18065bb446be16d3601ba47645df6ca5b399575f",
   "input_sources": [
     {
       "source_id": "tokyo-s10-shinjuku-csv",
@@ -267,9 +267,54 @@
       "crs": "UNKNOWN",
       "bbox": null,
       "geometry_types": {},
-      "literal_location_fields": [
-        "設置場所"
-      ],
+      "literal_location_time_fields": {
+        "設置場所": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 4,
+          "literal_distribution": [
+            {
+              "value": "B1階改札外コンコース（4出口付近）",
+              "count": 2
+            },
+            {
+              "value": "B1階改札外コンコース（2出口付近）",
+              "count": 1
+            },
+            {
+              "value": "B2階改札内コンコース（A1出口方駅務室横）",
+              "count": 1
+            },
+            {
+              "value": "B2階改札外コンコース（A1出口方改札付近）",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "営業時間・利用時間": {
+          "blank_count": 2,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 3,
+          "literal_distribution": [
+            {
+              "value": "【大型】3口【中型】3口【標準】4口",
+              "count": 1
+            },
+            {
+              "value": "【平日】7時から22時30分まで【土曜・日曜・祝日】8時から21時まで",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 1
+        }
+      },
       "routable": false
     }
   ],

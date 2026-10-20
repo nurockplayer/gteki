@@ -4,7 +4,7 @@
   "station_ids": [
     "shinjuku"
   ],
-  "tool_input_sha256": "366c57bc79580c2ca7b5233f320ae5f8683985f9ae28d6125f70eebc0aa592a6",
+  "tool_input_sha256": "d4016a37d52926e3d2949a1b18065bb446be16d3601ba47645df6ca5b399575f",
   "input_sources": [
     {
       "source_id": "tokyo-s03-spec",
@@ -142,7 +142,7 @@
           "id": "tokyo-s03-catalog#site-reservation",
           "source_id": "tokyo-s03-catalog",
           "supporting_document": "tokyo-bureau-policy",
-          "sha256": "d639a82f73f3be6a9cc4c6ea5306b8d7f22b1a102e99b62cb1081ea1e6a52584",
+          "sha256": "03f4c64b35af69b47722e3bb72314ef2dd5506c1946947805dffd0db725d2e88",
           "url": "https://www.toshiseibi.metro.tokyo.lg.jp/policy",
           "section": "著作権について / general site only; does not override dataset grant",
           "quote": "無断で複製・転用することはできません。"
@@ -200,63 +200,63 @@
       "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html",
       "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html",
       "http_status": 200,
-      "sha256": "4db37eb09f5e2179c3b8cee7805a44e7719b99a86b5609972b793f1bbbd11918",
+      "sha256": "8c6d53efc9e52a0e208ac7ee253fc4392d8a64694b32412bf3c43134a2c88cce",
       "bytes": 91991,
-      "store_path": "raw/4db37eb09f5e2179c3b8cee7805a44e7719b99a86b5609972b793f1bbbd11918/KsjTmplt-P20.html"
+      "store_path": "raw/8c6d53efc9e52a0e208ac7ee253fc4392d8a64694b32412bf3c43134a2c88cce/KsjTmplt-P20.html"
     },
     {
       "id": "ksj-p13",
       "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html",
       "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html",
       "http_status": 200,
-      "sha256": "b6d7190d36841b612b1cc14f429fc90ad831f101ab21ee777c7eee65a8523b67",
+      "sha256": "405ad32110bbdcb4986e9a6a9847742f8574eac573b12a45da4e2b2099e0c3b5",
       "bytes": 91454,
-      "store_path": "raw/b6d7190d36841b612b1cc14f429fc90ad831f101ab21ee777c7eee65a8523b67/KsjTmplt-P13.html"
+      "store_path": "raw/405ad32110bbdcb4986e9a6a9847742f8574eac573b12a45da4e2b2099e0c3b5/KsjTmplt-P13.html"
     },
     {
       "id": "ksj-n02-2024",
       "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
       "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
       "http_status": 200,
-      "sha256": "60b93dcc9b1e82cd8fc2a49da9e2e50f544aa27897fc02c7133a4f88f18c22dc",
+      "sha256": "737a5af8e161134ab02e161e62d52f344118c07f3b9051e60fc89bf267cee22f",
       "bytes": 54007,
-      "store_path": "raw/60b93dcc9b1e82cd8fc2a49da9e2e50f544aa27897fc02c7133a4f88f18c22dc/KsjTmplt-N02-2024.html"
+      "store_path": "raw/737a5af8e161134ab02e161e62d52f344118c07f3b9051e60fc89bf267cee22f/KsjTmplt-N02-2024.html"
     },
     {
       "id": "ksj-n10-2024",
       "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html",
       "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html",
       "http_status": 200,
-      "sha256": "5dc46df508391823686e9e2ee1030293f1f80457c4b135f9ca34697def4a5b5d",
+      "sha256": "875c4860f63a12a05ef2c5e2d641d0cabcfc2424680996393894250be347b046",
       "bytes": 242194,
-      "store_path": "raw/5dc46df508391823686e9e2ee1030293f1f80457c4b135f9ca34697def4a5b5d/KsjTmplt-N10-2024.html"
+      "store_path": "raw/875c4860f63a12a05ef2c5e2d641d0cabcfc2424680996393894250be347b046/KsjTmplt-N10-2024.html"
     },
     {
       "id": "ksj-n03-2025",
       "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
       "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
       "http_status": 200,
-      "sha256": "a8f5035702b54d867969548d9f8898b1dfc6d0fa37bb4521ea5eecf210297d60",
+      "sha256": "40581c74cfa8f86b725a676e061e87cd32872f2ac90d5869d6d2ab9f7d8df42e",
       "bytes": 1832971,
-      "store_path": "raw/a8f5035702b54d867969548d9f8898b1dfc6d0fa37bb4521ea5eecf210297d60/KsjTmplt-N03-2025.html"
+      "store_path": "raw/40581c74cfa8f86b725a676e061e87cd32872f2ac90d5869d6d2ab9f7d8df42e/KsjTmplt-N03-2025.html"
     },
     {
       "id": "ksj-terms",
       "requested_url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
       "url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
       "http_status": 200,
-      "sha256": "437217c40fa85b43e8eb070b01f3d7bbeba37e0db2006b1a0c3514101c4f126f",
+      "sha256": "b2ef95104a5c825a645dd377f39381a57a47afb59fa408a81fef0590b357a18c",
       "bytes": 27978,
-      "store_path": "raw/437217c40fa85b43e8eb070b01f3d7bbeba37e0db2006b1a0c3514101c4f126f/agreement.html"
+      "store_path": "raw/b2ef95104a5c825a645dd377f39381a57a47afb59fa408a81fef0590b357a18c/agreement.html"
     },
     {
       "id": "ksj-old-terms",
       "requested_url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
       "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
       "http_status": 200,
-      "sha256": "84959d5ba6c471e8742ba7215f35ebc90d22a8b6d3204459b7f72cac4ec41f0c",
+      "sha256": "aff34017c9b77151e08f7fa2c4e8fdd48251e6ff4499063c6ae9e281527b5dfa",
       "bytes": 62499,
-      "store_path": "raw/84959d5ba6c471e8742ba7215f35ebc90d22a8b6d3204459b7f72cac4ec41f0c/agreement_02.html"
+      "store_path": "raw/aff34017c9b77151e08f7fa2c4e8fdd48251e6ff4499063c6ae9e281527b5dfa/agreement_02.html"
     },
     {
       "id": "gsi-origin",

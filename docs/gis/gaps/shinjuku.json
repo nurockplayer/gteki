@@ -1,6 +1,6 @@
 {
   "station_id": "shinjuku",
-  "tool_input_sha256": "366c57bc79580c2ca7b5233f320ae5f8683985f9ae28d6125f70eebc0aa592a6",
+  "tool_input_sha256": "d4016a37d52926e3d2949a1b18065bb446be16d3601ba47645df6ca5b399575f",
   "poi_content": [
     {
       "source_id": "tokyo-s10-shinjuku-csv",
@@ -15,9 +15,54 @@
           "crs": "UNKNOWN",
           "bbox": null,
           "geometry_types": {},
-          "literal_location_time_fields": [
-            "設置場所"
-          ],
+          "literal_location_time_fields": {
+            "設置場所": {
+              "blank_count": 0,
+              "missing_count": 0,
+              "types": [
+                "string"
+              ],
+              "distinct_count": 4,
+              "literal_distribution": [
+                {
+                  "value": "B1階改札外コンコース（4出口付近）",
+                  "count": 2
+                },
+                {
+                  "value": "B1階改札外コンコース（2出口付近）",
+                  "count": 1
+                },
+                {
+                  "value": "B2階改札内コンコース（A1出口方駅務室横）",
+                  "count": 1
+                },
+                {
+                  "value": "B2階改札外コンコース（A1出口方改札付近）",
+                  "count": 1
+                }
+              ],
+              "omitted_distinct": 0
+            },
+            "営業時間・利用時間": {
+              "blank_count": 2,
+              "missing_count": 0,
+              "types": [
+                "string"
+              ],
+              "distinct_count": 3,
+              "literal_distribution": [
+                {
+                  "value": "【大型】3口【中型】3口【標準】4口",
+                  "count": 1
+                },
+                {
+                  "value": "【平日】7時から22時30分まで【土曜・日曜・祝日】8時から21時まで",
+                  "count": 1
+                }
+              ],
+              "omitted_distinct": 1
+            }
+          },
           "route_structure": []
         }
       ],
@@ -231,9 +276,70 @@
           "crs": "UNKNOWN",
           "bbox": null,
           "geometry_types": {},
-          "literal_location_time_fields": [
-            "設置場所"
-          ],
+          "literal_location_time_fields": {
+            "設置場所": {
+              "blank_count": 7,
+              "missing_count": 0,
+              "types": [
+                "string"
+              ],
+              "distinct_count": 5,
+              "literal_distribution": [
+                {
+                  "value": "B1階改札外コンコース（D1出口付近）",
+                  "count": 4
+                },
+                {
+                  "value": "B3階改札外コンコース（駅務室横）",
+                  "count": 3
+                },
+                {
+                  "value": "B1階改札外コンコース（D2出口付近）",
+                  "count": 1
+                },
+                {
+                  "value": "B3階改札外コンコース（D5出口方）",
+                  "count": 1
+                },
+                {
+                  "value": "B3階改札外コンコース（JR新宿駅方面改札付近）",
+                  "count": 1
+                }
+              ],
+              "omitted_distinct": 0
+            },
+            "営業時間・利用時間": {
+              "blank_count": 9,
+              "missing_count": 0,
+              "types": [
+                "string"
+              ],
+              "distinct_count": 8,
+              "literal_distribution": [
+                {
+                  "value": "【全日】5時から24時まで",
+                  "count": 1
+                },
+                {
+                  "value": "【全日】7時から23時まで",
+                  "count": 1
+                },
+                {
+                  "value": "【全日】8時から21時まで",
+                  "count": 1
+                },
+                {
+                  "value": "※1【中型】3口【標準】11口",
+                  "count": 1
+                },
+                {
+                  "value": "※1【標準】20口",
+                  "count": 1
+                }
+              ],
+              "omitted_distinct": 3
+            }
+          },
           "route_structure": []
         }
       ],

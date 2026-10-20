@@ -47,7 +47,7 @@ export function inventoryCsv(bytes: Buffer) {
   const coordinateFields = headers.filter(key => /^(?:lat|lon|lng|latitude|longitude|緯度|経度|座標)$/iu.test(key));
   return { summary: { file: 'resource.csv', format: 'CSV', encoding: decoded.encoding, headers, row_count: all.length, populated_row_count: rows.length,
     blank_row_count: all.length - rows.length, fields: fieldStatistics(all, headers), coordinates: 'UNKNOWN', coordinate_fields: coordinateFields,
-    crs: 'UNKNOWN', bbox: null, geometry_types: {}, literal_location_fields: headers.filter(key => /場所|階|位置|location|floor/iu.test(key)), routable: false }, detail: all };
+    crs: 'UNKNOWN', bbox: null, geometry_types: {}, literal_location_time_fields: Object.fromEntries(headers.filter(key => OPENING_TIME_FIELD.test(key) || /場所|階|位置|location|floor|時間/iu.test(key)).map(key => [key, fieldStatistics(all, headers)[key]])), routable: false }, detail: all };
 }
 function coordinates(value: unknown, output: number[][]): void {
   if (!Array.isArray(value)) return;
