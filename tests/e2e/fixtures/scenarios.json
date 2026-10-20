@@ -1,0 +1,28 @@
+{
+  "$comment": "Lane F navigation scenarios. IDs are the stations' own POI ids. 'expect' is a safety expectation, not a product claim: ok = must route; fail = must refuse (fail closed); record = behaviour is captured in goldens for regression only. 'walk' = also attempt a collision-honest free walk along the route.",
+  "ikebukuro": [
+    { "id": "I1", "from": "jr-central-gate-2", "to": "exit-35", "expect": "ok", "walk": true, "note": "Central Passage east, PR #14 evidence route" },
+    { "id": "I2", "from": "west-exit-b1", "to": "exit-4", "expect": "ok", "walk": true, "note": "West Exit hall to Exit 4 stair foot (PR #14 recorded walk)" },
+    { "id": "I3", "from": "jr-central-gate-1", "to": "exit-22", "expect": "ok", "walk": true, "note": "JR east side to North Passage" },
+    { "id": "I4", "from": "jr-south-gate", "to": "exit-18", "expect": "ok", "walk": true, "note": "South Gate to West Exit hall U-stair" },
+    { "id": "I5", "from": "central-passage", "to": "exit-40", "expect": "ok", "walk": true, "note": "South-east corridor" },
+    { "id": "I6", "from": "exit-13", "to": "exit-43", "expect": "ok", "walk": true, "note": "West stair foot across the station to the east" },
+    { "id": "I7", "from": "exit-26", "to": "exit-10", "expect": "ok", "walk": false, "note": "North-east to north-west, longest cross-station" },
+    { "id": "IN1", "from": "jr-central-gate-2", "to": "exit-8", "expect": "fail", "note": "Search-only exit (no verified entrance) must not route" },
+    { "id": "IN2", "from": "jr-central-gate-2", "to": "exit-35", "profile": { "strictHours": true }, "expect": "fail", "note": "Hours unknown everywhere: require_known must refuse" },
+    { "id": "IN3", "from": "jr-central-gate-2", "to": "exit-35", "profile": { "stepFree": true }, "expect": "fail", "note": "Step-free unknown/stairs: must refuse" },
+    { "id": "IN4", "from": "exit-35", "to": "exit-35", "expect": "record", "note": "start = goal" },
+    { "id": "IN5", "from": "tobu-central-gate-1", "to": "exit-35", "expect": "fail", "note": "Search-only origin must not route" }
+  ],
+  "shinjuku": [
+    { "id": "S1", "from": "poi:exit:1", "to": "poi:platform:oedo", "expect": "ok", "walk": true, "note": "Street (north) down to the B6 platform; crosses the fare line" },
+    { "id": "S2", "from": "poi:platform:oedo", "to": "poi:exit:2", "expect": "ok", "walk": true, "note": "Platform to street (north-west) via the stacked switchback" },
+    { "id": "S3", "from": "poi:exit:5", "to": "poi:toilet:2", "expect": "ok", "walk": true, "note": "B1 exit to B3 toilets (inside paid area)" },
+    { "id": "S4", "from": "poi:exit:3", "to": "poi:exit:6", "expect": "ok", "walk": true, "note": "Street south to B1 south, unpaid only" },
+    { "id": "S5", "from": "poi:exit:1", "to": "poi:platform:oedo", "profile": { "stepFree": true }, "expect": "record", "note": "Step-free via elevators: must not use stairs if it routes" },
+    { "id": "SN1", "from": "poi:exit:1", "to": "poi:platform:oedo", "profile": { "unpaidOnly": true }, "expect": "fail", "note": "Platform is paid: outside-gates profile must refuse" },
+    { "id": "SN2", "from": "poi:exit:1", "to": "poi:toilet:1", "profile": { "unpaidOnly": true }, "expect": "fail", "note": "Toilets are inside the paid area" },
+    { "id": "SN3", "from": "poi:exit:1", "to": "poi:platform:oedo", "profile": { "strictHours": true }, "expect": "record", "note": "require_known hours" },
+    { "id": "SN4", "from": "poi:gate:2", "to": "poi:gate:2", "expect": "record", "note": "start = goal" }
+  ]
+}

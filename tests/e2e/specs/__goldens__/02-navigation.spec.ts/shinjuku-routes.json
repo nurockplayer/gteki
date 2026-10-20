@@ -1,0 +1,266 @@
+{
+  "S1": {
+    "id": "S1",
+    "from": "poi:exit:1",
+    "to": "poi:platform:oedo",
+    "expect": "ok",
+    "walk": true,
+    "note": "Street (north) down to the B6 platform; crosses the fare line",
+    "result": {
+      "ok": true,
+      "lengthM": 193.4,
+      "seconds": 211,
+      "floorChanges": 4,
+      "crossesFareBoundary": true,
+      "synthetic": false,
+      "unknowns": [
+        "hours×23"
+      ],
+      "stale": false,
+      "sources": 2,
+      "nodes": 24,
+      "modes": [
+        "stairs",
+        "walk",
+        "gate",
+        "escalator"
+      ],
+      "instructions": [
+        "Start",
+        "Take the stairs down to GL–B1 landing",
+        "Go straight ~2 m",
+        "Take the stairs",
+        "Go straight ~1 m",
+        "Take the stairs down to B1",
+        "Go straight ~5 m",
+        "Turn left, ~26 m",
+        "Turn right, ~10 m",
+        "Pass the ticket gate",
+        "Go straight ~8 m",
+        "Turn left, ~8 m",
+        "Turn right, ~7 m",
+        "Turn right, then take the escalator down to B3",
+        "Go straight ~9 m",
+        "Turn left, ~5 m",
+        "Turn left, ~21 m",
+        "Turn right, ~6 m",
+        "Take the escalator down to B6",
+        "Go straight ~3 m",
+        "Arrive at destination"
+      ]
+    }
+  },
+  "S2": {
+    "id": "S2",
+    "from": "poi:platform:oedo",
+    "to": "poi:exit:2",
+    "expect": "ok",
+    "walk": true,
+    "note": "Platform to street (north-west) via the stacked switchback",
+    "result": {
+      "ok": true,
+      "lengthM": 263.2,
+      "seconds": 298,
+      "floorChanges": 4,
+      "crossesFareBoundary": true,
+      "synthetic": false,
+      "unknowns": [
+        "hours×31"
+      ],
+      "stale": false,
+      "sources": 2,
+      "nodes": 32,
+      "modes": [
+        "walk",
+        "escalator",
+        "gate",
+        "stairs"
+      ],
+      "instructions": [
+        "Start",
+        "Go straight ~3 m",
+        "Take the escalator up to B3",
+        "Go straight ~6 m",
+        "Turn left, ~21 m",
+        "Turn right, ~5 m",
+        "Turn right, ~9 m",
+        "Take the escalator up to B1",
+        "Turn left, ~9 m",
+        "Turn left, ~8 m",
+        "Turn left, ~3 m",
+        "Turn right, ~13 m",
+        "Turn right, ~9 m",
+        "Pass the ticket gate",
+        "Turn left, ~20 m",
+        "Turn left, ~27 m",
+        "Turn right, ~7 m",
+        "Turn left, ~2 m",
+        "Turn left, ~3 m",
+        "Take the stairs up to GL–B1 landing",
+        "Turn left, ~4 m",
+        "Turn left, then take the stairs",
+        "Turn left, ~5 m",
+        "Turn left, then take the stairs",
+        "Turn left, ~5 m",
+        "Turn left, then take the stairs up to Street",
+        "Turn right, ~1 m",
+        "Arrive at destination"
+      ]
+    }
+  },
+  "S3": {
+    "id": "S3",
+    "from": "poi:exit:5",
+    "to": "poi:toilet:2",
+    "expect": "ok",
+    "walk": true,
+    "note": "B1 exit to B3 toilets (inside paid area)",
+    "result": {
+      "ok": true,
+      "lengthM": 172.6,
+      "seconds": 162,
+      "floorChanges": 1,
+      "crossesFareBoundary": true,
+      "synthetic": false,
+      "unknowns": [
+        "hours×22"
+      ],
+      "stale": false,
+      "sources": 2,
+      "nodes": 23,
+      "modes": [
+        "stairs",
+        "walk",
+        "gate",
+        "escalator"
+      ],
+      "instructions": [
+        "Start",
+        "Take the stairs",
+        "Go straight ~18 m",
+        "Turn left, ~10 m",
+        "Pass the ticket gate",
+        "Go straight ~8 m",
+        "Turn left, ~8 m",
+        "Turn right, ~7 m",
+        "Turn right, then take the escalator down to B3",
+        "Go straight ~9 m",
+        "Turn left, ~5 m",
+        "Turn left, ~17 m",
+        "Turn right, ~45 m",
+        "Turn left, ~4 m",
+        "Turn right, ~5 m",
+        "Turn left, ~2 m",
+        "Arrive at destination"
+      ]
+    }
+  },
+  "S4": {
+    "id": "S4",
+    "from": "poi:exit:3",
+    "to": "poi:exit:6",
+    "expect": "ok",
+    "walk": true,
+    "note": "Street south to B1 south, unpaid only",
+    "result": {
+      "ok": true,
+      "lengthM": 13.1,
+      "seconds": 143,
+      "floorChanges": 1,
+      "crossesFareBoundary": false,
+      "synthetic": false,
+      "unknowns": [
+        "hours×6"
+      ],
+      "stale": false,
+      "sources": 2,
+      "nodes": 7,
+      "modes": [
+        "elevator",
+        "walk"
+      ],
+      "instructions": [
+        "Start",
+        "Take the elevator",
+        "Take the elevator down to B1",
+        "Take the elevator",
+        "Go straight ~2 m",
+        "Turn right, ~4 m",
+        "Turn right, ~5 m",
+        "Arrive at destination"
+      ]
+    }
+  },
+  "S5": {
+    "id": "S5",
+    "from": "poi:exit:1",
+    "to": "poi:platform:oedo",
+    "profile": {
+      "stepFree": true
+    },
+    "expect": "record",
+    "note": "Step-free via elevators: must not use stairs if it routes",
+    "result": {
+      "ok": false,
+      "reason": "no_path",
+      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+    }
+  },
+  "SN1": {
+    "id": "SN1",
+    "from": "poi:exit:1",
+    "to": "poi:platform:oedo",
+    "profile": {
+      "unpaidOnly": true
+    },
+    "expect": "fail",
+    "note": "Platform is paid: outside-gates profile must refuse",
+    "result": {
+      "ok": false,
+      "reason": "no_path",
+      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+    }
+  },
+  "SN2": {
+    "id": "SN2",
+    "from": "poi:exit:1",
+    "to": "poi:toilet:1",
+    "profile": {
+      "unpaidOnly": true
+    },
+    "expect": "fail",
+    "note": "Toilets are inside the paid area",
+    "result": {
+      "ok": false,
+      "reason": "no_path",
+      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+    }
+  },
+  "SN3": {
+    "id": "SN3",
+    "from": "poi:exit:1",
+    "to": "poi:platform:oedo",
+    "profile": {
+      "strictHours": true
+    },
+    "expect": "record",
+    "note": "require_known hours",
+    "result": {
+      "ok": false,
+      "reason": "no_path",
+      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+    }
+  },
+  "SN4": {
+    "id": "SN4",
+    "from": "poi:gate:2",
+    "to": "poi:gate:2",
+    "expect": "record",
+    "note": "start = goal",
+    "result": {
+      "ok": false,
+      "reason": "start_equals_goal",
+      "uiCard": "No verified route to showStart and destination are the same."
+    }
+  }
+}
