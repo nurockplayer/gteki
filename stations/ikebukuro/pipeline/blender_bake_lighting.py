@@ -139,7 +139,7 @@ def fixtures(objects):
         raise RuntimeError("no fixture candidates passed the geometry checks")
     obj = mesh_object("light_fixtures", vertices, faces)
     obj["gteki_role"] = "light_fixtures"
-    obj.data.materials.append(emission("LED_4000K", (1.0, 0.62, 0.39), 20))
+    obj.data.materials.append(emission("LED_4000K", (1.0, 0.86, 0.72), 20))
     print(f"FIXTURES {len(records)}; yaw={math.degrees(yaw):.1f} deg about ENU +Z", flush=True)
     return records
 
@@ -216,7 +216,7 @@ def bake(objects, size, samples, device="CPU"):
     nodes = mat.node_tree.nodes
     nodes.clear()
     diffuse = nodes.new("ShaderNodeBsdfDiffuse")
-    diffuse.inputs["Color"].default_value = (0.7, 0.7, 0.7, 1)
+    diffuse.inputs["Color"].default_value = (0.75, 0.75, 0.75, 1)
     output = nodes.new("ShaderNodeOutputMaterial")
     mat.node_tree.links.new(diffuse.outputs[0], output.inputs["Surface"])
     target = nodes.new("ShaderNodeTexImage")
@@ -324,7 +324,7 @@ def save_lightmap(image, path, sigma):
              "covered_pixel_fraction_including_margin": float(covered.mean())}
     print("IMAGE " + json.dumps(stats), flush=True)
     return stats, {"decode": "value = (png_byte / 255)^2.2 * scale (top 0.2% clipped)", "scale": scale,
-                   "sampling": "raw DATA, no automatic sRGB decode", "denoise_sigma_texels": sigma, "exr": None}
+                   "sampling": "gamma 2.2 (an sRGB texture decode is a close fit)", "denoise_sigma_texels": sigma, "exr": None}
 
 
 def main():
@@ -382,7 +382,7 @@ def main():
             "bake_samples": args.samples, "encoding": encoding, "bake_time_seconds": bake_seconds,
             "total_time_seconds": time.monotonic() - start, "blender_version": bpy.app.version_string,
             "source_glb_sha256": source_hash, "daylight_portal_faces": daylight_faces, "image_stats": stats,
-            "bake": f"Cycles {args.device} DIFFUSE DIRECT+INDIRECT, no COLOR; neutral diffuse 0.7",
+            "bake": f"Cycles {args.device} DIFFUSE DIRECT+INDIRECT, no COLOR; neutral diffuse 0.75",
             "denoising": f"mask-aware Gaussian, sigma {args.denoise} texels (numpy)",
             "verification": "headless GLB re-import: 2 UV maps, fixture mesh and original extras"}
     files = [args.output, args.lightmap, fixture_path]

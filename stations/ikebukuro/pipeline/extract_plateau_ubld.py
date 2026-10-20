@@ -14,6 +14,7 @@ Nothing here infers topology. It only re-expresses source polygons.
 """
 import hashlib
 import json
+import os
 import math
 import sys
 import xml.etree.ElementTree as ET
@@ -158,6 +159,7 @@ def main(src, dst):
         for s in r["surfaces"]:
             s["polygons"] = [p for p in s["polygons"] if p["id"] not in op_ids]
 
+    os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)
     with open(dst, "w") as f:
         json.dump(out, f, separators=(",", ":"), ensure_ascii=False)
 

@@ -35,7 +35,7 @@ function speckle(g: CanvasRenderingContext2D, size: number, rnd: () => number, n
   g.globalAlpha = 1;
 }
 
-/** 600 mm porcelain tiles, warm light grey, slight per-tile tone shift, thin grout. */
+/** 600 mm porcelain tiles, light grey, slight per-tile tone shift, thin grout. Rough variant is greyscale (three reads roughnessMap.g). */
 function floorPaint(rough: boolean): Paint {
   return (g, size, rnd) => {
     const tiles = 4; // 2.4 m canvas
@@ -43,14 +43,14 @@ function floorPaint(rough: boolean): Paint {
     for (let i = 0; i < tiles; i++)
       for (let j = 0; j < tiles; j++) {
         const v = rnd() * 10 - 5;
-        g.fillStyle = rough ? `rgb(${88 + v * 2},0,0)` : `rgb(${196 + v},${191 + v},${182 + v})`;
+        g.fillStyle = rough ? `rgb(${88 + v * 2},${88 + v * 2},${88 + v * 2})` : `rgb(${204 + v},${203 + v},${198 + v})`;
         g.fillRect(i * t, j * t, t, t);
       }
-    if (!rough) speckle(g, size, rnd, 9000, 0.25, "#efe9df", "#8f877c");
-    g.fillStyle = rough ? "rgb(210,0,0)" : "#8e877d";
+    if (!rough) speckle(g, size, rnd, 9000, 0.18, "#f2f1ec", "#97948d");
+    g.fillStyle = rough ? "rgb(210,210,210)" : "#adaaa3";
     for (let i = 0; i <= tiles; i++) {
-      g.fillRect(i * t - 1.5, 0, 3, size);
-      g.fillRect(0, i * t - 1.5, size, 3);
+      g.fillRect(i * t - 1, 0, 2, size);
+      g.fillRect(0, i * t - 1, size, 2);
     }
   };
 }
@@ -67,17 +67,17 @@ const wallPaint: Paint = (g, size, rnd) => {
       g.fillStyle = `rgb(${226 + v},${224 + v},${218 + v})`;
       g.fillRect(i * w + 2, j * h + 2, w - 4, h - 4);
     }
-  g.fillStyle = "#a7a49d";
-  for (let i = 0; i <= 2; i++) g.fillRect(i * w - 2, 0, 4, size);
-  for (let j = 0; j <= 4; j++) g.fillRect(0, j * h - 1.5, size, 3);
+  g.fillStyle = "#c2bfb8";
+  for (let i = 0; i <= 2; i++) g.fillRect(i * w - 1.5, 0, 3, size);
+  for (let j = 0; j <= 4; j++) g.fillRect(0, j * h - 1, size, 2);
 };
 
 /** 600 mm ceiling panels with darker T-bar grid. */
 const ceilingPaint: Paint = (g, size, rnd) => {
-  g.fillStyle = "#d6d6d2";
+  g.fillStyle = "#e1e3e4";
   g.fillRect(0, 0, size, size);
-  speckle(g, size, rnd, 4000, 0.12, "#ffffff", "#9a9a96");
-  g.fillStyle = "#8d8d89";
+  speckle(g, size, rnd, 4000, 0.1, "#f4f5f6", "#b4b6b8");
+  g.fillStyle = "#b9bcbe";
   const t = size / 4;
   for (let i = 0; i <= 4; i++) {
     g.fillRect(i * t - 2, 0, 4, size);
@@ -95,9 +95,9 @@ const stairPaint: Paint = (g, size, rnd) => {
 /** Columns / partitions: satin off-white with a stainless kick band look. */
 const columnPaint: Paint = (g, size, rnd) => {
   const grd = g.createLinearGradient(0, 0, size, 0);
-  grd.addColorStop(0, "#d9dadc");
-  grd.addColorStop(0.5, "#eceef0");
-  grd.addColorStop(1, "#d3d5d8");
+  grd.addColorStop(0, "#c2c6ca");
+  grd.addColorStop(0.5, "#d3d7db");
+  grd.addColorStop(1, "#bdc1c5");
   g.fillStyle = grd;
   g.fillRect(0, 0, size, size);
   speckle(g, size, rnd, 2500, 0.08, "#ffffff", "#777777");
@@ -164,14 +164,14 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
   const byRole: Record<string, THREE_NS.Material> = {
     floor: std({ map: floorMap, roughnessMap: floorRough, roughness: 1, metalness: 0, envMapIntensity: 0.6 }),
     wall: std({ map: wallMap, roughness: 0.42, metalness: 0, side: THREE.DoubleSide }),
-    ceiling: std({ map: ceilMap, roughness: 0.85, side: THREE.DoubleSide }),
+    ceiling: std({ map: ceilMap, roughness: 0.95, side: THREE.DoubleSide }),
     stairs_ramps: std({ map: stairMap, roughness: 0.7 }),
-    barriers: std({ map: colMap, roughness: 0.35, metalness: 0.1, side: THREE.DoubleSide }),
+    barriers: std({ map: colMap, roughness: 0.32, metalness: 0.15, side: THREE.DoubleSide }),
     floor_elements: std({ color: 0x9b958c, roughness: 0.6 }),
-    transport: std({ color: 0x3b3f45, roughness: 0.3, metalness: 0.8 }),
+    transport: std({ color: 0x8c9198, roughness: 0.32, metalness: 0.75 }),
     windows: std({ map: shopMap, emissiveMap: shopMap, emissive: 0xffffff, emissiveIntensity: 1.15, roughness: 0.15, side: THREE.DoubleSide }, false),
     doors: std({ map: shopMap, emissiveMap: shopMap, emissive: 0xffffff, emissiveIntensity: 1.35, roughness: 0.2, side: THREE.DoubleSide }, false),
-    light_fixtures: new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.97, 0.92).multiplyScalar(4) }),
+    light_fixtures: new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.97, 0.92).multiplyScalar(2.2) }),
     // Openings to the street at the top of exit stairs: daylight.
     portal_sky: new THREE.MeshBasicMaterial({ color: new THREE.Color(0.86, 0.92, 1.0).multiplyScalar(2.4), side: THREE.DoubleSide }),
     // Openings into spaces the open data does not model (fare areas, shops): a lit haze that reads as

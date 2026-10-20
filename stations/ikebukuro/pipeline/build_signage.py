@@ -5,8 +5,9 @@
 For each junction (degree >= 2 that is not an exit) and each incident verified
 edge, list the routable POIs whose shortest path from that junction leaves
 along that edge. One sign per (junction, edge) is placed a few metres along
-the edge, facing back to the junction. Signs therefore only ever state
-destinations that the verified graph can actually route to.
+the edge, facing back to the junction; its back face lists what lies ahead
+through the junction. Signs therefore only ever state destinations that the
+verified graph can actually route to.
 Output: stations/ikebukuro/scene/signage.json (station-owned display data).
 """
 import heapq
@@ -23,6 +24,18 @@ from floorquery import Surfaces  # noqa: E402
 CLEAR_BELOW_SIGN = 2.25  # m above walking surface
 SIGN_H = 0.42
 CEIL_GAP = 0.08
+
+
+def name(p, lang):
+    return next((t["text"] for t in p["names"] if t["lang"] == lang), None)
+
+
+def exit_item(p):
+    return {"id": p["id"], "label": p["id"].split("-")[1], "ja": name(p, "ja"), "en": name(p, "en")}
+
+
+def gate_item(p):
+    return {"id": p["id"], "ja": name(p, "ja"), "en": name(p, "en")}
 
 
 def main():
@@ -87,6 +100,11 @@ def main():
             items.sort(key=lambda t: t[0])
             exits = [p for _, p in items if p["category"] == "exit"][:5]
             gates = [p for _, p in items if p["category"] == "ticket_gate"][:2]
+            # Back face, read by people walking toward the junction: everything reached through it.
+            back = sorted(((dist[t], p) for t, plist in dest.items() if t in dist and first.get(t) != key
+                           for p in plist), key=lambda t: t[0])
+            back_exits = [p for _, p in back if p["category"] == "exit"][:5]
+            back_gates = [p for _, p in back if p["category"] == "ticket_gate"][:2]
             geom = e["geometry"][::-1] if rev else e["geometry"]
             # point ~4 m along the polyline (or 45% for short edges)
             total = sum(math.dist((a["x"], a["y"]), (b["x"], b["y"])) for a, b in zip(geom, geom[1:]))
@@ -117,12 +135,9 @@ def main():
                 # unit vector the readable face points to (back toward the junction)
                 "facing": {"x": round(-dirx, 4), "y": round(-diry, 4)},
                 "ceilingZ": ceiling_z,
-                "exits": [{"id": p["id"], "label": p["id"].split("-")[1],
-                           "ja": next((t["text"] for t in p["names"] if t["lang"] == "ja"), None),
-                           "en": next((t["text"] for t in p["names"] if t["lang"] == "en"), None)} for p in exits],
-                "gates": [{"id": p["id"],
-                           "ja": next((t["text"] for t in p["names"] if t["lang"] == "ja"), None),
-                           "en": next((t["text"] for t in p["names"] if t["lang"] == "en"), None)} for p in gates],
+                "exits": [exit_item(p) for p in exits],
+                "gates": [gate_item(p) for p in gates],
+                "back": {"exits": [exit_item(p) for p in back_exits], "gates": [gate_item(p) for p in back_gates]},
             })
     out = os.path.join(ROOT, "scene", "signage.json")
     json.dump({"generatedFrom": "gteki/graph.json + gteki/pois.json (verified edges only)", "signs": signs},

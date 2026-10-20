@@ -199,7 +199,17 @@
    "elevationM": null,
    "elevationSource": "source-derived",
    "renderElevationM": 27.9,
-   "_note": "One continuous public B1 passage level whose surveyed walking height varies 25.9-29.1 m TP; per-node z carries the real height."
+   "_note": "One continuous public B1 passage level whose surveyed walking height varies 25.9-29.1 m TP; per-node z carries the real height.",
+   "displayNames": [
+    {
+     "lang": "ja",
+     "text": "地下1階 通路"
+    },
+    {
+     "lang": "en",
+     "text": "B1 passages"
+    }
+   ]
   },
   {
    "id": "street",
@@ -207,7 +217,7 @@
    "sourceLabels": [
     {
      "operatorId": "public",
-     "label": "地上 (stair top at PLATEAU closure)",
+     "label": "地上",
      "sourceId": "plateau-ubld-13116"
     }
    ],
@@ -215,7 +225,18 @@
    "intermediate": false,
    "elevationM": null,
    "elevationSource": "unknown",
-   "renderElevationM": 32.5
+   "renderElevationM": 32.5,
+   "displayNames": [
+    {
+     "lang": "ja",
+     "text": "地上"
+    },
+    {
+     "lang": "en",
+     "text": "street level"
+    }
+   ],
+   "_note": "No source names this level; it is the open ground where exit stairs end (PLATEAU closure surfaces at the stair tops)."
   }
  ],
  "accessFacts": [

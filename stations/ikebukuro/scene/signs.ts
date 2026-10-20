@@ -4,12 +4,17 @@
 // Japanese exit colour convention). No operator logos or typefaces.
 import type * as THREE_NS from "three";
 
-export interface SignSpec {
+interface SignContent {
+  exits: { id: string; label: string; ja: string | null; en: string | null }[];
+  gates: { id: string; ja: string | null; en: string | null }[];
+}
+
+export interface SignSpec extends SignContent {
   id: string;
   position: { x: number; y: number; z: number };
   facing: { x: number; y: number };
-  exits: { id: string; label: string; ja: string | null; en: string | null }[];
-  gates: { id: string; ja: string | null; en: string | null }[];
+  /** Read when walking toward the junction: destinations straight ahead through it. */
+  back?: SignContent;
 }
 
 const FONT = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans CJK JP","Yu Gothic",system-ui,sans-serif';
@@ -41,7 +46,7 @@ function drawArrow(g: CanvasRenderingContext2D, cx: number, cy: number, s: numbe
 }
 
 /** Draw one sign face; returns canvas and physical width in metres. */
-function paint(spec: SignSpec): { canvas: HTMLCanvasElement; widthM: number } {
+function paint(spec: SignContent): { canvas: HTMLCanvasElement; widthM: number } {
   const h = Math.round(H * PX_PER_M);
   const measure = document.createElement("canvas").getContext("2d")!;
   const pad = 22;
@@ -119,22 +124,34 @@ function paint(spec: SignSpec): { canvas: HTMLCanvasElement; widthM: number } {
 export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3, anisotropy: number) {
   const group = new THREE.Group();
   group.name = "ikebukuro_signs";
-  const housing = new THREE.MeshStandardMaterial({ color: 0x2a2f36, roughness: 0.5, metalness: 0.6 });
+  // Unlit: the station has no dynamic lights (baked lighting only).
+  const housing = new THREE.MeshBasicMaterial({ color: 0x4f565f });
   const textures: THREE_NS.Texture[] = [];
-  for (const s of specs) {
-    const { canvas, widthM } = paint(s);
+  const face = (content: SignContent) => {
+    const { canvas, widthM } = paint(content);
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = anisotropy;
     textures.push(tex);
-    const face = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false });
-    // Slightly emissive face: internally lit sign. Bloom picks up the yellow badges.
-    face.color.setScalar(1.25);
-    const box = new THREE.Mesh(new THREE.BoxGeometry(widthM + 0.06, H + 0.06, 0.08), housing);
-    const plate = new THREE.Mesh(new THREE.PlaneGeometry(widthM, H), face);
-    plate.position.z = 0.041;
+    // Internally lit sign face (unlit material, mild boost).
+    const mat = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false });
+    mat.color.setScalar(1.1);
+    return { mesh: new THREE.Mesh(new THREE.PlaneGeometry(widthM, H), mat), widthM };
+  };
+  for (const s of specs) {
+    const front = face(s);
+    const hasBack = !!s.back && (s.back.exits.length > 0 || s.back.gates.length > 0);
+    const back = hasBack ? face(s.back!) : null;
+    const width = Math.max(front.widthM, back?.widthM ?? 0);
+    const box = new THREE.Mesh(new THREE.BoxGeometry(width + 0.06, H + 0.06, 0.08), housing);
+    front.mesh.position.z = 0.041;
     const sign = new THREE.Group();
-    sign.add(box, plate);
+    sign.add(box, front.mesh);
+    if (back) {
+      back.mesh.position.z = -0.041;
+      back.mesh.rotation.y = Math.PI;
+      sign.add(back.mesh);
+    }
     const p = toRenderer(s.position.x, s.position.y, s.position.z);
     sign.position.copy(p);
     // Plane faces +Z in local space; rotate so it faces the ENU 'facing' vector.

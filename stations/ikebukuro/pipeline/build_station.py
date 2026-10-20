@@ -18,7 +18,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from floorquery import Surfaces  # noqa: E402
-from gridnav import Grid  # noqa: E402
+from gridnav import RES, Grid  # noqa: E402
 
 ROOT = os.path.dirname(HERE)
 SRC = os.path.join(ROOT, "data", "graph.src.json")
@@ -81,6 +81,46 @@ def _cross_t(ax, ay, bx, by, cx, cy, dx, dy):
     rx, ry, sx, sy = bx - ax, by - ay, dx - cx, dy - cy
     den = rx * sy - ry * sx
     return None if den == 0 else ((cx - ax) * sy - (cy - ay) * sx) / den
+
+
+def crowd_lanes(grid, edges):
+    """Presentation data for scene/crowd.ts: per verified edge, every 1 m, how far (m) a pedestrian
+    may stand left/right of the polyline and still be on a surveyed walkable cell (>= 0.35 m from
+    walls) without crossing a wall. Right = right of the edge's from->to direction."""
+    lanes = {}
+    for e in edges:
+        if e["verification"] != "verified":
+            continue
+        g = e["geometry"]
+        left, right = [], []
+        seg = [(g[i], g[i + 1]) for i in range(len(g) - 1)]
+        total = sum(math.dist((a["x"], a["y"]), (b["x"], b["y"])) for a, b in seg)
+        d = 0.0
+        while d <= total + 1e-6:
+            acc = 0.0
+            for a, b in seg:
+                L = math.dist((a["x"], a["y"]), (b["x"], b["y"]))
+                if acc + L >= d or (a, b) == seg[-1]:
+                    t = 0.0 if L == 0 else min(1.0, (d - acc) / L)
+                    x, y = a["x"] + (b["x"] - a["x"]) * t, a["y"] + (b["y"] - a["y"]) * t
+                    z = a["z"] + (b["z"] - a["z"]) * t
+                    ux, uy = ((b["x"] - a["x"]) / L, (b["y"] - a["y"]) / L) if L else (1.0, 0.0)
+                    break
+                acc += L
+            rx, ry = uy, -ux
+            for side, out in ((1, right), (-1, left)):
+                ok = 0.0
+                for k in range(1, 5):
+                    o = 0.25 * k
+                    px, py = x + side * o * rx, y + side * o * ry
+                    cell = grid.cells.get((round((px - grid.x0) / RES), round((py - grid.y0) / RES)), [])
+                    if not any(abs(cz - z) < 0.3 for cz, _ in cell) or grid._blocked(x, y, px, py, z):
+                        break
+                    ok = o
+                out.append(ok)
+            d += 1.0
+        lanes[e["id"]] = {"stepM": 1.0, "left": left, "right": right}
+    return lanes
 
 
 def main():
@@ -229,6 +269,8 @@ def main():
     for name, obj in (("station.json", station), ("graph.json", graph), ("pois.json", pois)):
         with open(os.path.join(OUT_DIR, name), "w") as f:
             json.dump(obj, f, ensure_ascii=False, indent=1)
+    with open(os.path.join(ROOT, "scene", "crowd_lanes.json"), "w") as f:
+        json.dump({"generatedFrom": "gteki/graph.json + PLATEAU walkable grid", "lanes": crowd_lanes(grid, edges_out)}, f)
     v = sum(1 for e in edges_out if e["verification"] == "verified")
     print(f"OK: {len(nodes)} nodes, {len(edges_out)} edges ({v} verified), "
           f"{sum(e['lengthM'] for e in edges_out if e['verification'] == 'verified'):.0f} m verified")

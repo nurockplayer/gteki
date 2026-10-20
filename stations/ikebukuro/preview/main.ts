@@ -25,7 +25,8 @@ renderer.toneMappingExposure = Number(params.get("exp") ?? 1.0);
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.05, 600);
+const fovFor = (aspect: number) => (aspect < 1 ? 78 : 62); // portrait phones need a taller FOV
+const camera = new THREE.PerspectiveCamera(fovFor(innerWidth / innerHeight), innerWidth / innerHeight, 0.05, 600);
 const loader = new GLTFLoader();
 const texLoader = new THREE.TextureLoader();
 const enu = (p: { x: number; y: number; z: number }) => new THREE.Vector3(p.x, p.z, -p.y);
@@ -148,7 +149,7 @@ if (!mobile && params.get("ao") !== "0") {
   ao.blendIntensity = 0.85;
   composer.addPass(ao);
 }
-const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), mobile ? 0.4 : 0.5, 0.5, 0.95);
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), mobile ? 0.3 : 0.32, 0.4, 0.98);
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
 
@@ -206,7 +207,7 @@ function step(dt: number, render = true) {
   camera.position.lerp(camPos, Math.min(1, dt * 12));
   camera.lookAt(head.x, head.y - 0.1, head.z);
 
-  if (render) composer.render(dt);
+  if (render) mobile ? renderer.render(scene, camera) : composer.render(dt);
   fpsAcc += dt; fpsN++;
   if (fpsAcc > 0.5) { fps = fpsN / fpsAcc; fpsAcc = 0; fpsN = 0; }
   const p = player.position;
@@ -215,6 +216,7 @@ function step(dt: number, render = true) {
 frame();
 addEventListener("resize", () => {
   camera.aspect = innerWidth / innerHeight;
+  camera.fov = fovFor(camera.aspect);
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
   composer.setSize(innerWidth, innerHeight);
@@ -230,6 +232,41 @@ addEventListener("resize", () => {
     const b64 = renderer.domElement.toDataURL("image/jpeg", 0.9).split(",")[1];
     const body = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
     return (await fetch(`/__capture?name=${encodeURIComponent(name)}`, { method: "POST", body })).ok;
+  },
+  /**
+   * Scripted walk along an ENU polyline at `speed` m/s: steps the simulation at 1/fps and
+   * captures every frame as <prefix>-NNNNN.jpg. Call repeatedly with `from` to resume (returns next index).
+   */
+  async walkCapture(poly: { x: number; y: number; z: number }[], prefix: string, from = 0, frames = 90, speed = 1.6, fps = 15) {
+    const pts = poly.map((p) => enu(p));
+    const cum = [0];
+    for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
+    const total = cum[cum.length - 1];
+    let k = from;
+    for (; k < from + frames; k++) {
+      const s = Math.min(total, (k * speed) / fps);
+      let i = 1;
+      while (i < cum.length - 1 && cum[i] < s) i++;
+      const t = (s - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]);
+      const p = pts[i - 1].clone().lerp(pts[i], t);
+      // look ~4 m ahead along the path for a smooth heading
+      let j = i;
+      while (j < cum.length - 1 && cum[j] < s + 4) j++;
+      const ahead = pts[j].clone().sub(p);
+      const target = Math.atan2(-ahead.x, -ahead.z);
+      if (ahead.lengthSq() > 1e-4) {
+        const dyaw = Math.atan2(Math.sin(target - yaw), Math.cos(target - yaw));
+        yaw += dyaw * Math.min(1, 6 / fps);
+        camYaw += Math.atan2(Math.sin(yaw - camYaw), Math.cos(yaw - camYaw)) * Math.min(1, 3 / fps);
+      }
+      player.position.set(p.x, groundAt(p, 0.6) ?? p.y, p.z);
+      bob += (speed / fps) * 5.5;
+      step(1 / fps, true);
+      const b64 = renderer.domElement.toDataURL("image/jpeg", 0.88).split(",")[1];
+      await fetch(`/__capture?name=${prefix}-${String(k).padStart(5, "0")}`, { method: "POST", body: Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)) });
+      if (s >= total) return -1;
+    }
+    return k;
   },
   /** Advance n fixed 1/30 s frames synchronously (works while the tab is hidden). */
   tick(n = 30, hold: string[] = []) { hold.forEach((k) => keys.add(k)); for (let i = 0; i < n; i++) step(1 / 30, i === n - 1); hold.forEach((k) => keys.delete(k)); },

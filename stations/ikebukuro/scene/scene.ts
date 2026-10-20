@@ -5,9 +5,11 @@ import type * as THREE_NS from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { createMaterials } from "./materials.ts";
 import { buildSigns, type SignSpec } from "./signs.ts";
-import { buildCrowd } from "./crowd.ts";
+import { buildCrowd, type Lane } from "./crowd.ts";
+import crowdLanes from "./crowd_lanes.json";
 import signage from "./signage.json";
 import graph from "../gteki/graph.json";
+import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
 
 type ThreeNS = typeof THREE_NS;
 
@@ -36,7 +38,6 @@ export interface StationScene {
 const GLB = "assets/ikebukuro_b1_lit.glb";
 const GLB_FALLBACK = "assets/ikebukuro_b1.glb";
 const LIGHTMAP = { high: "assets/ikebukuro_b1_lightmap.webp", low: "assets/ikebukuro_b1_lightmap_2k.webp" };
-const LIGHTMAP_META = "assets/ikebukuro_b1_lit.meta.json";
 
 /** Art-direction trim on top of the physically decoded bake (fixture emission is bright; ~0.12 matches a ~600 lx concourse look). */
 const LIGHTMAP_GAIN = 0.09;
@@ -94,13 +95,13 @@ function makeEnvironment(THREE: ThreeNS, renderer: THREE_NS.WebGLRenderer) {
   floor.position.y = -1.6;
   env.add(floor);
   const pmrem = new THREE.PMREMGenerator(renderer);
-  const tex = pmrem.fromScene(env, 0.02).texture;
+  const target = pmrem.fromScene(env, 0.02);
   strip.dispose();
   panel.dispose();
   floor.geometry.dispose();
   (floor.material as THREE_NS.Material).dispose();
   pmrem.dispose();
-  return tex;
+  return target; // caller disposes the render target (texture.dispose() alone leaks it)
 }
 
 export async function buildScene(ctx: SceneContext): Promise<StationScene> {
@@ -148,12 +149,11 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
 
   // Lightmap (baked by pipeline/blender_bake_lighting.py, TEXCOORD_1). Falls back to a hemisphere rig.
   let lightmap: THREE_NS.Texture | null = null;
-  const metaUrl = ctx.assetUrl(LIGHTMAP_META);
-  if (baked && metaUrl) {
+  if (baked) {
     try {
       // WebP (from the bake PNG) stores (L / scale)^(1/2.2); sRGB decode approximates the 2.2 gamma. Cycles bakes
       // "diffuse light" (outgoing = albedo * L) while three computes irradiance * albedo / PI.
-      const meta = (await (await fetch(metaUrl)).json()) as { encoding: { scale: number } };
+      const meta = litMeta as { encoding: { scale: number } };
       lightmap = await ctx.loadTexture(LIGHTMAP[ctx.quality], { colorSpace: "srgb", flipY: false });
       lightmap.channel = 1;
       mats.setLightmap(lightmap, meta.encoding.scale * Math.PI * LIGHTMAP_GAIN);
@@ -164,7 +164,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   root.add(new THREE.HemisphereLight(0xfff4e6, 0x5a544b, lightmap ? 0.06 : 1.35));
 
   // Reflections for the glossy floor and stainless details.
-  const env = makeEnvironment(THREE, ctx.renderer);
+  const envTarget = makeEnvironment(THREE, ctx.renderer);
+  const env = envTarget.texture;
   // Every baked material gets its own envMap so an explorer-level scene.environment never double-lights it.
   for (const role of ["floor", "barriers", "transport", "wall", "stairs_ramps", "ceiling", "floor_elements"]) {
     const m = mats.byRole[role] as THREE_NS.MeshStandardMaterial;
@@ -175,7 +176,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy());
   root.add(signs.group);
 
-  const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 40 : 100, env);
+  const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 40 : 100, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes);
   root.add(crowd.group);
 
   const nodes = new Map((graph as { nodes: { id: string; position: { x: number; y: number; z: number | null } }[] }).nodes.map((n) => [n.id, n]));
@@ -196,7 +197,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       crowd.dispose();
       mats.dispose();
       signs.dispose();
-      env.dispose();
+      envTarget.dispose();
       lightmap?.dispose();
       gltf.scene.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
       for (const e of extra) e.geometry.dispose();
