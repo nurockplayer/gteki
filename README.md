@@ -2,49 +2,39 @@
 
 **Explore real Japanese stations in 3D. Search, navigate, and walk.**
 
-GTEki is an open-to-access, browser-first 3D station exploration and indoor-navigation project. The first milestone targets a **verified, walkable Ikebukuro Station east-to-west route**; Shinjuku is researched in parallel.
+GTEki is a browser-first 3D exploration and indoor-navigation project for real Japanese stations. People should eventually be able to search for a station exit, shop, platform or facility, receive an evidence-backed route, and explore or preview it in a convincing virtual station.
 
-## Product goals
+## Product direction
 
-- Search for station exits, destinations, facilities, and POIs.
-- Preview a route and explore it in a browser-based 3D scene.
-- Share a renderer-independent station graph, route engine, and POI data.
-- Retain the option for a future high-fidelity Godot client.
-- Prioritize safe, verifiable directions over visually plausible but invented passages.
+- **Quality and completeness over speed:** no 72-hour deadline, no fixed Ikebukuro/Shinjuku percentage, no arbitrary feature-count finish line.
+- **Two equal-owner station efforts:** separate Opus 5.5 sessions develop Ikebukuro and Shinjuku concurrently, with independent station worktrees and evidence.
+- **One shared platform:** routing, search, POIs, coordinate frames and contracts stay renderer-neutral; both stations use a common Web explorer.
+- **Experience aspiration:** GTA-like freedom of movement and an immersive sense of place, *without imitating GTA's protected assets or gameplay*. A real place must be recognizable, navigable, responsive and visually convincing.
+- **Visual ladder:** L0 engineering blockout → L1 recognizable station → **L2 polished commercial-game-feel scene** (quality target for each accepted, evidence-backed slice) → **L3 faithful high-fidelity station digital twin** (long-term ambition, potentially in Godot).
+- **Long-term completeness:** expand each station systematically across publicly traversable routes, exits, accessible transfers and searchable POIs; publish coverage and freshness instead of pretending unverified areas are complete.
+- **Truth before polish:** no invented routes, assumed elevator connections, operator-area access, floor heights or unlicensed assets represented as authentic.
 
-## M0: 72-hour proof of concept
+## Delivery and verification
 
-- **Ikebukuro (70%):** one evidence-backed east-to-west route with browser controls, destination search, route display, and explicit uncertainty indicators.
-- **Shinjuku (30%):** dataset/license/coverage research and an isolated limited-scale scene-import feasibility result.
-- **Not a live station-navigation service yet.** Until pathways are verified, public demos must say they are experimental; never assert unknown routes or accessibility.
+The first meaningful milestone is an independently verified end-to-end experience for **each** station, with an identifiable area, destination search, trustworthy route, 3D walk-through, browser/mobile interaction, and visual review. Deliverable boundaries are chosen from evidence; milestones can be staged without declaring either complete station finished.
 
-## Initial technical direction
+The accepted plan deliberately has **no clock-based deadline**; progress is tracked through measurable playable/visual/navigation/rights gates. See [quality and acceptance](docs/acceptance.md) and [two-session coordination](docs/parallel-station-plan.md).
 
-- Web: TypeScript + Three.js; phone and desktop browser first.
-- Blender: reproducible asset conversion / procedural geometry.
-- Search + routing: shared, renderer-agnostic packages.
-- Godot: import compatibility spike, not a competing full client in M0.
-- Tools: **pnpm or Homebrew only; no npm / npx / yarn**.
-- Keep Ikebukuro and Shinjuku station data and test fixtures separate.
+## Technical direction (working defaults, not a creativity constraint)
 
-## Working agreements
+- Browser-first TypeScript + Three.js initial proposal; Opus may justify a better solution while preserving browser access and the shared contract.
+- Blender and reproducible asset pipelines; preserve an independent path to a high-quality Godot version.
+- Shared renderer-agnostic search/navigation/POI and station-coordinate metadata.
+- **pnpm or Homebrew only** for installs; no npm/npx/yarn.
+- Station-specific files and model inputs stay isolated; shared core has one accountable writer at a time.
 
-- Opus 5.5 is engineering lead; Codex is an implementation collaborator.
-- Public data first. Maintain provenance, coverage, licensing, update date and confidence for each source.
-- Offline/field capture fills **identified gaps**, subject to facility rules and privacy safeguards.
-- Every phase reports test evidence, decisions, open risks and next steps in GitHub.
-- Re-read merged `main` and the latest handoff after each merge.
+## Research and rights
 
-## Project documents
+- [Full public-source dossier](docs/research/GTEki_Public_Data_Research_2026-10-20.md)
+- [Source register & rights gates](docs/research/source-register.md)
+- [Engineering handoff](docs/HANDOFF.md)
+- [Notion Research & World Bible](https://app.notion.com/p/3ffd7d8b390781568122c2dae6005de2)
 
-- [Product vision](docs/product-vision.md)
-- [Architecture](docs/architecture.md)
-- [Source register & rights](docs/research/source-register.md)
-- [M0 acceptance](docs/acceptance.md)
-- [Handoff](docs/HANDOFF.md)
+The GitHub repository is public. Third-party maps, photos, logos, 3D models, POI datasets and derived downloadable assets need source-specific reuse and redistribution checks. A source being public or a map being viewable is not enough to distribute its content. Prototype-only inferred visuals must be explicitly labeled; unverified passages must not appear in production routing.
 
-Project reference: [GTEki Research & World Bible on Notion](https://app.notion.com/p/3ffd7d8b390781568122c2dae6005de2).
-
-## Data and licensing
-
-**A public code repository is not blanket permission to redistribute downloaded maps, proprietary station diagrams, commercial brands, photos, or unlicensed 3D assets.** Do not commit third-party source files until their exact license and attribution/redistribution conditions have been verified. No open-source license has yet been selected for this repository.
+No open-source license has yet been selected for this repository.
