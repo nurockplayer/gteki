@@ -7,8 +7,10 @@ import { inspectNetwork } from './network.js';
 import { gapPacket } from './gaps.js';
 import { parseBboxLocal } from './filters.js';
 import { generateOverlapReports } from './overlap.js';
+import { ensurePrivateStore } from './common.js';
 
 async function main() {
+  ensurePrivateStore();
   const argv=process.argv.slice(2);
   // A negative EN bbox is one explicit string value, rather than another CLI option.
   for(let i=0;i<argv.length-1;i++)if(argv[i]==='--bbox-local'&&argv[i+1].startsWith('-')&&!argv[i+1].startsWith('--'))argv.splice(i,2,`--bbox-local=${argv[i+1]}`);

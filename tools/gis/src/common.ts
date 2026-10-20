@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, realpath, rename, writeFile } from 'node:fs/promises';
-import { existsSync, realpathSync } from 'node:fs';
+import { chmodSync, existsSync, mkdirSync, realpathSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { execFile } from 'node:child_process';
@@ -55,6 +55,17 @@ export type AcquisitionRecord = {
   mode: 'online' | 'offline';
   last_offline_check?: { requested_at: string; completed_at: string; tool_version: string; sha256: string; bytes: number; status: 'PASS' };
 };
+
+/**
+ * Keep the external store private: new files 0600 / directories 0700 for this process and its children,
+ * and the store root itself forced to 0700. Call once at every entry point that may write to the store.
+ */
+export function ensurePrivateStore(storeRoot: string = getStoreRoot()): string {
+  process.umask(0o077);
+  mkdirSync(storeRoot, { recursive: true, mode: 0o700 });
+  chmodSync(storeRoot, 0o700);
+  return storeRoot;
+}
 
 export function getStoreRoot(): string {
   return resolveStoreRoot(process.env.GTEKI_GIS_STORE || join(homedir(), '.gteki', 'gis-store'));

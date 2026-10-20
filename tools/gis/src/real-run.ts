@@ -6,9 +6,11 @@ import type { CityInventory } from './citygml.js';
 import { loadInventoryDetail } from './citygml.js';
 import { smallestRoom } from './selection.js';
 import { toolFingerprint } from './provenance.js';
+import { ensurePrivateStore } from './common.js';
 import { archiveReceipt, archiveStaleConversions } from './history.js';
 
 /** Reproducible ordered CLI receipt. All downloaded and binary logs remain in the external store. */
+ensurePrivateStore();
 await archiveReceipt('real-run');
 const receipt:{started_at:string;completed_at:string|null;tool_input_sha256:string;commands:Array<{command:string;exit_code:number|null;elapsed_ms:number;log_store_path:string;tool_input_sha256:string;selection_evidence?:unknown}>}={started_at:new Date().toISOString(),completed_at:null,tool_input_sha256:await toolFingerprint(),commands:[]};
 const runTag=receipt.started_at.replace(/[:.]/g,'-');
@@ -43,7 +45,12 @@ receipt.tool_input_sha256=await toolFingerprint();await writeJson(join(docsRoot,
 await archiveStaleConversions(receipt.tool_input_sha256);
 for(const city of cities){const inventory=inventories.get(city.source);if(!inventory||!framed.has(city.source))continue;const room=smallestRoom(inventory);
   if(room)await run(['citygml-to-glb',city.source,'--frame',city.frame,'--ids',room.gml_id],room);
-  else {console.error(`No Room with source polygons in ${city.source}; bounded Room conversion unavailable`);}
+  else {
+    // The bounded Room conversion is a required step; its absence must fail the run rather than pass silently.
+    console.error(`No Room with source polygons in ${city.source}; bounded Room conversion unavailable`);
+    receipt.commands.push({command:`pnpm --dir tools/gis gis citygml-to-glb ${city.source} --frame ${city.frame} --ids <smallest Room>`,exit_code:1,elapsed_ms:0,log_store_path:'',tool_input_sha256:receipt.tool_input_sha256,selection_evidence:{status:'NO_ROOM_WITH_SOURCE_POLYGONS'}});
+    await writeJson(join(docsRoot,'gis','real-run.json'),receipt);
+  }
   await run(['citygml-to-glb',city.source,'--frame',city.frame]);
 }
 await run(['inspect-network','hokonavi-ikebukuro-walk-node-csv']);

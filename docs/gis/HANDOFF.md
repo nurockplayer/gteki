@@ -91,3 +91,7 @@ The real reports are unchanged.
 A fourth automated review found that `real-run` bound its receipt to the pre-frame fingerprint. The receipt is now rebound after frame generation, before conversions and stale-receipt archiving. The run, validation, summary and all 6 conversion receipts now share digest `8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5`.
 
 A fifth automated review asked that `summarize` refuse incomplete runs. It now exits without writing unless three conditions hold: `real-run.json` is completed with every command at exit 0, the receipt fingerprint equals the current tool fingerprint, and every inventory and network report's source hash matches the recorded acquisition. Current digest: `8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352`.
+
+A sixth automated review raised two more P2 findings, fixed with digest `989c2ae8622867722741daced5f06c253de4493fc88e9fe60e1ab21a6a96592e`:
+- A missing bounded-Room conversion is recorded as a failed command, so `real-run` and `summarize` fail.
+- Every store-writing entry point (`cli`, `real-run`, `validate`) calls `ensurePrivateStore()`, which sets umask 077 and forces the store root to 0700. New store files are created 0600 and new directories 0700. The existing local store was tightened to match, and no group- or world-readable entries remain.

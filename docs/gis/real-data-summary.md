@@ -2,7 +2,7 @@
 
 Generated from acquisition, inventory, conversion and network JSON; no counts are manually maintained. All results are UNVERIFIED and NOT_FOR_ROUTING.
 
-Tool-input SHA-256: `8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352` (src, source manifest, frames, synthetic tests/fixtures, package/lock/workspace/TypeScript configuration; sorted relative names plus exact bytes).
+Tool-input SHA-256: `989c2ae8622867722741daced5f06c253de4493fc88e9fe60e1ab21a6a96592e` (src, source manifest, frames, synthetic tests/fixtures, package/lock/workspace/TypeScript configuration; sorted relative names plus exact bytes).
 
 ## Acquisitions
 
@@ -33,12 +33,12 @@ Tool-input SHA-256: `8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370
 
 | Run | Polygons | Triangles | Nodes | Bbox error m | Time ms | Peak RSS bytes |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-b1796af5dcb16e3327c8 | 65013 | 148950 | 30358 | 0.0000054997890401864424 | 15186 | 1598750720 |
-| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-d7b7d50a603d4a267849 | 6 | 12 | 1 | 0.00000452290078101214 | 10509 | 377487360 |
-| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-fb25f8fe60a3f681715a | 6 | 12 | 1 | 0.00000452290078101214 | 10576 | 916291584 |
-| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-142fe852040a0a4080c0 | 50 | 50 | 6 | 0.0000046096065489109606 | 24599 | 299401216 |
-| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-1d1514d9588c6c21514c | 184 | 184 | 6 | 0.0000046096065489109606 | 24440 | 291291136 |
-| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-7608e4b79eb67e82d0fa | 58761 | 64811 | 32 | 0.000003925928467651829 | 26068 | 449445888 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-1a1bb9b37b915591f2eb | 65013 | 148950 | 30358 | 0.0000054997890401864424 | 15088 | 1732231168 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-662f1a4d7d3d7c086e37 | 6 | 12 | 1 | 0.00000452290078101214 | 10787 | 936361984 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-7fe464974315318057d9 | 6 | 12 | 1 | 0.00000452290078101214 | 10766 | 384876544 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-10153762ce69f17e7ab7 | 58761 | 64811 | 32 | 0.000003925928467651829 | 25996 | 455589888 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-296cac20613f3aeae8f7 | 184 | 184 | 6 | 0.0000046096065489109606 | 24471 | 283164672 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-f2519774ee77a49d0119 | 50 | 50 | 6 | 0.0000046096065489109606 | 24831 | 307511296 |
 
 ## Network observations
 
