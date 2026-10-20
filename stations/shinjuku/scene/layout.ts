@@ -182,9 +182,9 @@ export function cutStairwells(slabs: SlabPoly[], runs: Run[]): SlabPoly[] {
   for (const s of slabs) {
     const holes: ClipPolygon[] = [];
     for (const r of runs) {
-      if (Math.abs(r.a.z - s.z) >= 0.3 && Math.abs(r.b.z - s.z) >= 0.3) continue;
       const dz = r.b.z - r.a.z;
       if (Math.abs(dz) < 1e-6) continue;
+      // Any slab over a run, including street floors and unrelated intermediate levels.
       // t where run height = s.z − 0.25 and s.z − 2.4
       const t1 = (s.z - 0.25 - r.a.z) / dz;
       const t2 = (s.z - 2.4 - r.a.z) / dz;
@@ -212,7 +212,7 @@ export function cutStairwells(slabs: SlabPoly[], runs: Run[]): SlabPoly[] {
     }
     const subject: ClipPolygon = s.rings.map((ring) => ring.map((p) => [p.x, p.y] as [number, number]));
     const parts = polygonClipping.difference(subject, ...hit);
-    parts.forEach((poly, i) => out.push({ ...s, spaceId: parts.length > 1 ? `${s.spaceId}~${i}` : s.spaceId, rings: poly.map((ring) => ring.map(([x, y]) => ({ x: x!, y: y! }))) }));
+    parts.forEach((poly, i) => out.push({ ...s, spaceId: parts.length > 1 ? `${s.spaceId}~${i}` : s.spaceId, rings: xyRings(poly) }));
   }
   return out;
 }
@@ -248,6 +248,27 @@ export function widthFromClass(code: unknown, mode: string): number {
   }
 }
 
+/** Keep a class-4 stair within its published >=3 m range where the generic 3.4 m
+ * estimate would overlap a parallel, same-level walkway beside the foot. */
+export function runWidth(code: unknown, mode: string, a: XYZ, b: XYZ, walks: { a: XYZ; b: XYZ }[]): number {
+  const width = widthFromClass(code, mode);
+  if (code !== 4 || mode !== "stairs") return width;
+  const foot = a.z < b.z ? a : b;
+  const dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy;
+  if (!l2) return width;
+  for (const walk of walks) {
+    if (Math.abs(walk.a.z - foot.z) > 0.05 || Math.abs(walk.b.z - foot.z) > 0.05) continue;
+    const wx = walk.b.x - walk.a.x, wy = walk.b.y - walk.a.y, wl = Math.hypot(wx, wy);
+    if (wl < 0.5 || Math.abs(dx * wx + dy * wy) / Math.sqrt(l2) / wl < 0.98) continue;
+    for (const t of [0, 0.5, 1]) {
+      const p = lerp(walk.a, walk.b, t), u = ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2;
+      const off = Math.abs((p.x - a.x) * dy - (p.y - a.y) * dx) / Math.sqrt(l2);
+      if (u >= 0 && u <= 1 && off >= 1.5 && off < width / 2) return 3;
+    }
+  }
+  return width;
+}
+
 // ---------------------------------------------------------------- main
 const SUBSEG = 0.5;
 export const STREET_PAD = 8;
@@ -258,6 +279,10 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
   const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
   const zOf = (id: string) => nodeZ.get(id) ?? 0;
 
+  const flatWalks = bundle.edges.filter((e) => ["walk", "gate", "ramp"].includes(e.mode) && Math.abs(zOf(e.from) - zOf(e.to)) < 0.05).flatMap((e) => {
+    const pts = e.geometry?.length ? e.geometry : [nodeById.get(e.from)!.position, nodeById.get(e.to)!.position];
+    return pts.slice(1).map((p, i) => ({ a: { ...pts[i]!, z: zOf(e.from) }, b: { ...p, z: zOf(e.to) } }));
+  });
   // Runs: one per stair/escalator edge.
   const runs: Run[] = [];
   for (const e of bundle.edges) {
@@ -272,7 +297,7 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
       mode: e.mode,
       a: { x: A.position.x, y: A.position.y, z: zOf(e.from) },
       b: { x: B.position.x, y: B.position.y, z: zOf(e.to) },
-      width: widthFromClass(e.attributes?.width, e.mode),
+      width: runWidth(e.attributes?.width, e.mode, { ...A.position, z: zOf(e.from) }, { ...B.position, z: zOf(e.to) }, flatWalks),
       travel: e.mode === "escalator" ? (e.direction === "forward" ? 1 : 0) : 0,
     });
   }
@@ -584,21 +609,27 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
       return { spaceId: `street:${n.id}`, rings: [[{ x: x - h, y: y - h }, { x: x + h, y: y - h }, { x: x + h, y: y + h }, { x: x - h, y: y + h }, { x: x - h, y: y - h }]], z: zOf(n.id), fare: null, category: "street" };
     });
 
-  for (const lv of levels) lv.slabs = cutStairwells(lv.slabs, runs);
-  const cutPads = cutStairwells(pads, runs);
-  const cutStreet = cutStairwells(streetPads, runs);
-  const layout: Layout = { levels, runs, tactile, gates, pads: cutPads, streetPads: cutStreet, linkStrips, runWalls, soffits: [], nodeZ, bounds: { min, max } };
   const elevatorPassages = bundle.edges.filter((e) => e.mode === "elevator").map((e) => ({ a: { ...nodeById.get(e.from)!.position, z: zOf(e.from) }, b: { ...nodeById.get(e.to)!.position, z: zOf(e.to) } }));
+  const liftCuts = elevatorPassages.filter((p) => Math.abs(p.a.z - p.b.z) > 0.05).map((p) => ({ ...p, halfWidth: 0.6, extend: 0.05 }));
+  // Landing links can sit under another level too: cut their full passage band, even
+  // when neither adjoining run ends at the slab elevation (e.g. a street switchback).
+  const cutWalkingSlabs = (slabs: SlabPoly[]) => cutStairwells(slabs, runs).flatMap((s) => clearSoffit(s, [...segs.filter((s) => Math.abs(s.a.z - s.b.z) < 0.05), ...liftCuts], 0.25));
+  for (const lv of levels) lv.slabs = cutWalkingSlabs(lv.slabs);
+  const cutPads = cutWalkingSlabs(pads);
+  const cutStreet = cutWalkingSlabs(streetPads);
+  const layout: Layout = { levels, runs, tactile, gates, pads: cutPads, streetPads: cutStreet, linkStrips: cutWalkingSlabs(linkStrips), runWalls, soffits: [], nodeZ, bounds: { min, max } };
   const elevatorLandings = bundle.nodes.filter((n) => n.kind === "elevator" && zOf(n.id) < -0.5).map((n) => ({ ...n.position, z: zOf(n.id) }));
-  finishUnderground(layout, plan, [...segs, ...elevatorPassages], elevatorLandings);
+  finishUnderground(layout, plan, [...segs, ...elevatorPassages], elevatorLandings, elevatorPassages);
   return layout;
 }
 
-type Passage = { a: XYZ; b: XYZ; halfWidth?: number };
+type Passage = { a: XYZ; b: XYZ; halfWidth?: number; extend?: number };
 // Micrometre snapping prevents nearly coincident generated boundaries from defeating the
 // polygon sweep, while retaining far more precision than either source data or walker needs.
 const clipPoly = (rings: XY[][]): ClipPolygon => rings.map((ring) => ring.map((p) => [Math.round(p.x * 1e6) / 1e6, Math.round(p.y * 1e6) / 1e6]));
-const xyRings = (p: ClipPolygon): XY[][] => p.map((ring) => ring.map(([x, y]) => ({ x: x!, y: y! })));
+// Construction output uses millimetres (source XY is centimetres). This removes nearly
+// coincident boolean slivers before downstream street buffers and mesh triangulation.
+const xyRings = (p: ClipPolygon): XY[][] => p.map((ring) => ring.map(([x, y]) => ({ x: Math.round(x! * 1e3) / 1e3, y: Math.round(y! * 1e3) / 1e3 })));
 
 function passageRing(a: XY, b: XY, half: number, extend = 0): XY[] {
   const d = sub(b, a);
@@ -623,19 +654,19 @@ function parameterBand(a: number, b: number, lo: number, hi: number): [number, n
  * The affine height difference gives exact cut extents even on very long/steep shafts.
  * 2.4 m reserves room for the 2.1 m head band plus recessed light housings.
  */
-export function clearSoffit<T extends SlabPoly & { origin?: XY; slope?: XY }>(s: T, passages: Passage[]): T[] {
+export function clearSoffit<T extends SlabPoly & { origin?: XY; slope?: XY }>(s: T, passages: Passage[], minClearance = 0.025, maxClearance = 2.4): T[] {
   const cuts: ClipPolygon[] = [];
   const points = s.rings.flat();
   const minX = Math.min(...points.map((p) => p.x)), maxX = Math.max(...points.map((p) => p.x));
   const minY = Math.min(...points.map((p) => p.y)), maxY = Math.max(...points.map((p) => p.y));
-  for (const { a, b, halfWidth = 0.6 } of passages) {
+  for (const { a, b, halfWidth = 0.6, extend = 0.6 } of passages) {
     const reach = halfWidth + 0.6;
     if (Math.max(a.x, b.x) + reach < minX || Math.min(a.x, b.x) - reach > maxX || Math.max(a.y, b.y) + reach < minY || Math.min(a.y, b.y) - reach > maxY) continue;
     // Account for transverse roof pitch across the walker's radius as well.
     const pitch = Math.hypot(s.slope?.x ?? 0, s.slope?.y ?? 0);
-    const safeBand = parameterBand(soffitHeight(s, a) - a.z, soffitHeight(s, b) - b.z, 0.025 - pitch * 0.35, 2.4 + pitch * 0.35);
+    const safeBand = parameterBand(soffitHeight(s, a) - a.z, soffitHeight(s, b) - b.z, minClearance - pitch * 0.35, maxClearance + pitch * 0.35);
     if (!safeBand) continue;
-    cuts.push(clipPoly([passageRing(lerp(a, b, safeBand[0]), lerp(a, b, safeBand[1]), halfWidth, 0.6)]));
+    cuts.push(clipPoly([passageRing(lerp(a, b, safeBand[0]), lerp(a, b, safeBand[1]), halfWidth, extend)]));
   }
   if (!cuts.length) return [s];
   return polygonClipping.difference(clipPoly(s.rings), ...cuts).map((poly, i) => ({ ...s, spaceId: `${s.spaceId}:clear${i}`, rings: xyRings(poly) }));
@@ -646,7 +677,7 @@ export function clearSoffit<T extends SlabPoly & { origin?: XY; slope?: XY }>(s:
  * Flat roofs cover the complete source outline and graph sleeves; pitched roofs cover runs.
  * New vertical panels are in lv.walls so both consumers use the same physical enclosure.
  */
-function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elevatorLandings: XYZ[]) {
+function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elevatorLandings: XYZ[], elevatorPassages: Passage[]) {
   const underground = layout.levels.filter((lv) => lv.z < -0.5);
   const levelAt = (z: number) => underground.reduce((a, b) => Math.abs(a.z - z) < Math.abs(b.z - z) ? a : b);
   const union = (polys: XY[][][]) => polys.length ? polygonClipping.union(clipPoly(polys[0]!), ...polys.slice(1).map(clipPoly)).map(xyRings) : [];
@@ -661,7 +692,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     const envelopes = union(elevatorLandings.filter((p) => p.z === z).map((p) => [passageRing(p, p, 3)]));
     for (const [i, rings] of envelopes.entries()) {
       const pad: SlabPoly = { spaceId: `elevator-envelope:${z}:${i}`, rings, z, fare: null, category: "pad" };
-      layout.pads.push(...cutStairwells([pad], layout.runs));
+      layout.pads.push(...cutStairwells([pad], layout.runs).flatMap((s) => clearSoffit(s, elevatorPassages.filter((p) => Math.abs(p.a.z - p.b.z) > 0.05).map((p) => ({ ...p, halfWidth: 0.6, extend: 0.05 })), 0.25)));
     }
   }
 
@@ -815,6 +846,12 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       // Surface exits stay open to the street worker's scene. Crop the pitched roof at -0.51 m.
       const roof: Soffit = { spaceId: `shaft-roof:${si}:${i}`, floorId: lv.floorId, kind: "shaft", clearance: rise, rings, origin: lo, slope, z: lo.z + rise, fare: null, category: "ceiling" };
       const cropped = cropUndergroundRoof(roof);
+      // A tall shaft cover reaches street before the walking head band does. Continue
+      // it as a flat soffit at the surface handoff height, without exposing a roof gap.
+      const transitions = affineMask(rings, (p) => base(p) + rise + 0.51)
+        .flatMap((panel) => affineMask(panel, (p) => -0.51 - base(p) - 2.4));
+      for (const [j, panel] of transitions.entries()) addRoof({ spaceId: `street-transition:${si}:${i}:${j}`, rings: panel,
+        z: -0.51, floorId: lv.floorId, kind: "landing", fare: null, category: "ceiling" });
       for (const s of cropped) {
         addRoof(s);
         shaftVoids.push({ rings: s.rings, bottom, top: (p) => base(p) + rise, ceilingTop: (p) => base(p) + rise });
@@ -882,15 +919,60 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   }
   trimInteriorRoofs(layout);
 
+  // The routing lift path is a vertical clearance opening, not an unbounded black void.
+  // Line each connected lift shaft and cap it 2.6 m above its highest landing. The cap
+  // above a street landing is a concealed generic hood; it never becomes walkable ground.
+  const lifts = new Set(elevatorPassages);
+  let liftIndex = 0;
+  while (lifts.size) {
+    const first = lifts.values().next().value!;
+    lifts.delete(first);
+    const group = [first];
+    for (let i = 0; i < group.length; i++) for (const candidate of [...lifts]) {
+      if (group.some((s) => [s.a, s.b].some((a) => [candidate.a, candidate.b].some((b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z) < 0.02)))) {
+        group.push(candidate); lifts.delete(candidate);
+      }
+    }
+    const low = Math.min(...group.flatMap((s) => [s.a.z, s.b.z]));
+    if (low >= -0.5) continue;
+    const top = Math.max(...group.flatMap((s) => [s.a.z, s.b.z])) + 2.6;
+    const lv = levelAt(low);
+    const panels = union(group.map((s) => [passageRing(s.a, s.b, 0.9, 0.25)]));
+    for (const [i, rings] of panels.entries()) {
+      layout.soffits.push({ spaceId: `elevator-cap:${liftIndex}:${i}`, floorId: lv.floorId, kind: "shaft", clearance: top - low, rings, z: top, fare: null, category: "ceiling" });
+      const wallStart = lv.walls.length;
+      enclose(lv, rings, () => low - 0.18, () => top, "shaft");
+      // The generic lift landing sleeve is an occupied hall, including its following
+      // camera volume. Line only the shaft between halls; retain the source portal walls.
+      const shaftWalls = lv.walls.splice(wallStart);
+      lv.walls.push(...cutWallsByVoids(shaftWalls, elevatorLandings.map((p) => ({ rings: [passageRing(p, p, 3.2)],
+        bottom: () => p.z - 0.2, top: () => p.z + 3.2 }))));
+    }
+    liftIndex++;
+  }
+
   // Use the actual cut slabs, including hole rings: all exposed edges get a 180 mm fascia,
   // and the underside has its own finish rather than showing a reversed floor material.
   for (const lv of underground) {
     const slabs = [...lv.slabs, ...layout.pads.filter((p) => p.z < -0.5 && levelAt(p.z) === lv), ...layout.linkStrips.filter((p) => p.z < -0.5 && levelAt(p.z) === lv)];
     for (const s of slabs) {
-      addRoof({ ...s, spaceId: `underside:${s.spaceId}`, z: s.z - 0.18, floorId: lv.floorId, kind: "slab" });
+      layout.soffits.push(...clearSoffit({ ...s, spaceId: `underside:${s.spaceId}`, z: s.z - 0.18, floorId: lv.floorId, kind: "slab" as const }, passages, 0.025, 2.1));
       enclose(lv, s.rings, () => s.z - 0.18, () => s.z - 0.008, "fascia");
     }
   }
+  // A lower path can pass beneath an upper flight or the street floor. Both need a
+  // finished underside too; these surfaces retain the actual 180 mm slab thickness.
+  for (const r of layout.runs) {
+    const d = sub(r.b, r.a), l2 = d.x * d.x + d.y * d.y;
+    if (l2 < 1e-8) continue;
+    const roof: Soffit = { spaceId: `run-underside:${r.edgeId}`, rings: [passageRing(r.a, r.b, r.width / 2)], z: r.a.z - 0.18,
+      origin: r.a, slope: { x: d.x * (r.b.z - r.a.z) / l2, y: d.y * (r.b.z - r.a.z) / l2 },
+      floorId: levelAt(Math.min(r.a.z, r.b.z)).floorId, kind: "slab", fare: null, category: "ceiling" };
+    layout.soffits.push(...clearSoffit(roof, passages, 0.025, 2.1));
+  }
+  const streetSlabs = [...layout.levels.filter((lv) => Math.abs(lv.z) < 0.1).flatMap((lv) => lv.slabs), ...layout.pads, ...layout.linkStrips, ...layout.streetPads].filter((s) => Math.abs(s.z) < 0.1);
+  for (const s of streetSlabs) layout.soffits.push(...clearSoffit({ ...s, spaceId: `street-underside:${s.spaceId}`, z: s.z - 0.18,
+    floorId: underground[0]!.floorId, kind: "slab" as const }, passages, 0.025, 2.1));
 }
 
 /** Roofs at a shared landing are the outside of the union of the rooms' air volumes.

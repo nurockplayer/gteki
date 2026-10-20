@@ -217,8 +217,10 @@ export function ceilingTexture() {
 export type SignIcon = "exit" | "train" | "gate" | "elevator" | "toilet" | "none" | "nomap";
 
 /** Original wayfinding sign graphic (GTEki design; not a reproduction of operator signage). */
+export const SIGN_ROW_HEIGHT = 128;
+
 export function signTexture(lines: { arrow?: "left" | "right" | "up" | "down" | "upLeft" | "upRight" | null; icon: SignIcon; ja: string; en: string; tone: "exit" | "dark" | "line" | "warn" }[], widthPx = 1024) {
-  const rowH = 128;
+  const rowH = SIGN_ROW_HEIGHT;
   const H = rowH * lines.length;
   const [c, g] = canvas(widthPx, H);
   lines.forEach((l, i) => {

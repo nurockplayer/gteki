@@ -51,6 +51,8 @@ describe("wayfinding sign batches", () => {
       const image = material.map!.image as HTMLCanvasElement;
       expect(image.width).toBeLessThanOrEqual(4096);
       expect(image.height).toBeLessThanOrEqual(4096);
+      // Shelves cannot exceed the old fixed-cell budget; source pixel resolution is retained.
+      expect(image.height).toBeLessThanOrEqual(Math.ceil(Number(mesh.userData.faceCount) / 3) * 400);
       const rects = mesh.userData.atlasRects as { u0: number; v0: number; u1: number; v1: number }[];
       const uv = mesh.geometry.getAttribute("uv");
       expect(rects.length).toBe(Number(mesh.userData.faceCount));

@@ -8,7 +8,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import type { StationBundle } from "@gteki/schema";
 import { createRouter } from "@gteki/navigation";
 import { buildLayout, centroid, pointInRings, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
-import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture, type SignIcon } from "./textures.ts";
+import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture, SIGN_ROW_HEIGHT, type SignIcon } from "./textures.ts";
 import surfaceJson from "../data/surface.json";
 import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "./surface.ts";
 
@@ -361,8 +361,21 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       mesh.name = "walkable";
       g.add(mesh);
     }
-    const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...layout.soffits.filter((s) => s.floorId === lv.floorId).map(soffitGeometry)]);
+    const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...layout.soffits.filter((s) => s.floorId === lv.floorId && !(s.spaceId.startsWith("elevator-cap:") && s.z > -0.5)).map(soffitGeometry)]);
     if (ceil) g.add(new THREE.Mesh(track(ceil), mat.ceiling));
+    const hood = merged(layout.soffits.filter((s) => s.floorId === lv.floorId && s.spaceId.startsWith("elevator-cap:") && s.z > -0.5).map(soffitGeometry));
+    if (hood) {
+      const mesh = new THREE.InstancedMesh(track(hood), mat.ceiling, 1);
+      mesh.name = "elevator-interior-hood";
+      mesh.setMatrixAt(0, new THREE.Matrix4());
+      mesh.computeBoundingSphere();
+      const cameraPosition = new THREE.Vector3();
+      mesh.onBeforeRender = (_renderer, _scene, camera) => {
+        root.worldToLocal(camera.getWorldPosition(cameraPosition));
+        mesh.count = cameraPosition.y < -0.5 ? 1 : 0;
+      };
+      g.add(mesh);
+    }
 
     // walls (u continuous along each segment)
     for (const w of lv.walls.filter((w) => w.finish === "fascia")) fasciaGeos.push(enclosureWallGeometry(w));
@@ -1417,7 +1430,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
   // are only two triangles each, so their shared bounds cost less than extra level draws.
   const atlasPages = new Map<string, { texture: THREE.CanvasTexture; material: THREE.MeshStandardMaterial; rects: { u0: number; v0: number; u1: number; v1: number }[] }[]>();
   const faceBuckets = new Map<string, THREE.BufferGeometry[]>();
-  const cols = 3, cellW = 1040, cellH = 400, margin = 8, pageCapacity = 30;
+  const cols = 3, cellW = 1040, margin = 8, pageCapacity = 30;
   const pageW = cols * cellW;
   const byLevel = new Map<string, FaceDraft[]>();
   byLevel.set("station", faceDrafts);
@@ -1426,7 +1439,11 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
     for (let pageStart = 0; pageStart < faces.length; pageStart += pageCapacity) {
       const pageFaces = faces.slice(pageStart, pageStart + pageCapacity);
       const pageRows = Math.ceil(pageFaces.length / cols);
-      const pageH = pageRows * cellH;
+      // Preserve full-resolution sign pixels, packing each shelf to its tallest face.
+      // Most signs have fewer than three rows; fixed 400 px cells retained large empty canvases.
+      const rowHeights = Array.from({ length: pageRows }, (_, row) => Math.max(...pageFaces.slice(row * cols, (row + 1) * cols).map((face) => face.lines.length * SIGN_ROW_HEIGHT + margin * 2)));
+      const rowStarts = rowHeights.map((_, row) => rowHeights.slice(0, row).reduce((sum, h) => sum + h, 0));
+      const pageH = rowHeights.reduce((sum, h) => sum + h, 0);
       const canvas = document.createElement("canvas");
       canvas.width = pageW;
       canvas.height = pageH;
@@ -1438,7 +1455,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
         const sourceCanvas = source.texture.image as HTMLCanvasElement;
         const sw = sourceCanvas.width, sh = sourceCanvas.height;
         const x = (slot % cols) * cellW + margin;
-        const y = Math.floor(slot / cols) * cellH + margin;
+        const y = rowStarts[Math.floor(slot / cols)]! + margin;
         ctx.drawImage(sourceCanvas, x, y);
         // Extend edge texels into the gutter to keep linear filtering and mipmaps
         // from sampling the neighboring sign when a face is viewed at an angle.
