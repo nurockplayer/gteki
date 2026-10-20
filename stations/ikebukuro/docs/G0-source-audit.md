@@ -36,14 +36,21 @@ No names on rooms or passages, no ticket gates, no paid/unpaid boundary, no oper
 
 - Modeled: the free B1 passage network around the station — Central Passage (中央通路), North Passage area, South Passage, the passages alongside the JR concourse on the west and east sides, the Tobu Hope Center and West Exit network, the Cherry Road/ISP side and the long south-east corridor to the Metro exits 39–43.
 - **Not modeled:** fare-paid concourses of JR East, Tobu, Seibu and Tokyo Metro, and their platforms; Echika (Fukutoshin side, C exits); shops' interiors; street level. These appear as `ClosureSurface` boundaries or simply as gaps.
-- Stair tops: of 218 clustered closure-surface groups, the horizontal ones at 31–33 m sit at the tops of stairs and match exits listed in the official cross-operator map and OSM within 1–7 m (e.g. 26, 28, 32, 33, 34, 35, 39, 40, 41, 42, 43, 9, 10, 11, 15, 17). These are geometry-evidenced exit candidates; the exit **numbers** come from official facts.
+- Stair tops: of 218 clustered closure-surface groups, the horizontal ones at 31–33 m sit at the tops of stairs and match exits listed in the Toshima underground guide (the official cross-operator map) and OSM within 1–7 m (e.g. 26, 28, 32, 33, 34, 35, 39, 40, 41, 42, 43, 9, 10, 11, 15, 17). These are geometry-evidenced exit candidates; the exit **numbers** come from official facts.
 
 ## Rights
 
 - PLATEAU 3D city model: **CC BY 4.0** (metadata). GTEki may redistribute derived geometry (GLB) with attribution and modification notice: *"Contains PLATEAU data (MLIT), CC BY 4.0. Modified: reprojected to a local ENU frame, triangulated and re-encoded as glTF by GTEki."*
 - MLIT ほこナビ R1: PDL 1.0, 2019 data, all nodes `in_out=1` (outside), no elevation. **Not used for the indoor graph.**
-- Official operator and Toshima maps (JR East, Tokyo Metro, Toshima 2022 guide): **REFERENCE_ONLY.** Read only to establish facts (which openings are which gate or exit, which passages are public). No image, tracing, layout, pictogram or logo is copied into the repository or the build. They are kept in the git-ignored `reference_only/` folder.
+- Toshima 2022 underground guide and Tokyo Metro Ikebukuro yard map: **REFERENCE_ONLY**, `usage: facts-only`. Read only to establish facts (which openings are which gate or exit, which passages are public). No image, tracing, layout, pictogram or logo is copied into the repository or the build. The Toshima PDF is kept in the git-ignored `data-cache/ikebukuro/reference_only/` folder. The Tokyo Metro map images returned *Access Denied*, so its facts were read from the official page.
+- JR East station maps: **not used.** The research dossier listed them (I-01), but the official map images returned HTTP 403 and were never obtained, read or cached, and JR East's site terms forbid reuse. No fact in `data/graph.src.json` cites JR East. The JR gate names and positions (JR 中央1改札, JR 中央2改札, JR 南改札) come from the Toshima guide (`af-jr-central-gates`, `af-jr-south-gate`). Traced 2026-10-21 across the cache, the pipeline, the graph source and the session record; `jreast` appears only as an operator id for gate POIs.
 - OpenStreetMap (ODbL): used only as a **cross-check** of exit positions. No OSM coordinates or tags are copied into GTEki data, so no derived database is created.
+
+## Owner decision (2026-10-21): facts vs. works, public release
+
+- **Facts and works are separated.** Exit numbers, gate names and access facts (which passage is public, which opening is which exit or gate) that can be checked independently may be used and published. The protected works themselves (map images, drawings, layout, pictograms, logos, typefaces, tracings) are not reproduced. This is how the two REFERENCE_ONLY sources above are used.
+- **JR East:** traced as above. It was not used, so no source entry is added.
+- **Public release:** cleared ("ship directly"). Field verification stays a stated gap. The UI says the data is desk-verified, not field-verified, and that hours are unknown.
 
 ## Verification standard used by this lane
 
@@ -63,4 +70,6 @@ Hours stay `null` (unknown) unless an official source states them. This is **des
 | CRS, axis order and vertical datum | PASS (EPSG:6697 lat/lon/H; ENU frame documented in extractor) |
 | Geometry coverage enumerated | PASS (B1 free passages; paid areas absent) |
 | Topology / access / hours in open data | **GAP**: hand-authored graph with per-edge evidence, hours unknown |
-| Field verification | **HOLD**: none performed; survey brief in `coverage-gaps.md` |
+| Field verification | **HOLD**: none performed; survey brief in `coverage-gaps.md` (not a release blocker per the Owner, 2026-10-21) |
+| Facts from REFERENCE_ONLY sources in a public, commercial product | PASS (Owner decision 2026-10-21: facts/works separation) |
+| JR East sources | PASS (traced: not used) |
