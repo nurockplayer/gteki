@@ -307,7 +307,7 @@ function departureHeading(edge: Edge, node: Node, other: Node): number | null {
  */
 function junctionAction(
   points: PolylinePoint[], steps: RouteResult["steps"], i: number, branches: readonly Edge[],
-  nodes: ReadonlyMap<string, Node>, edges: ReadonlyMap<string, Edge>,
+  nodes: ReadonlyMap<string, Node>, edges: ReadonlyMap<string, Edge>, openDuringRoute: (e: Edge) => boolean,
 ): JunctionHint["action"] | null {
   const node = nodes.get(steps[i]!.fromNodeId)!;
   const otherEnd = (e: Edge) => nodes.get(e.from === node.id ? e.to : e.from)!;
@@ -318,7 +318,8 @@ function junctionAction(
   // one-way pair, a duplicated corridor) is that passage again; a parallel corridor drawn elsewhere is a choice.
   const samePassage = (e: Edge, h: number | null) => ownHeadings.some((o) =>
     o.end === otherEnd(e).id && o.h !== null && h !== null && Math.abs(signedDelta(o.h, h)) < SAME_BRANCH_DEG);
-  const others = branches.filter((e) => !own.includes(e) && !samePassage(e, departureHeading(e, node, otherEnd(e))));
+  // Hours are the costly check, so they are scanned last and only for real alternatives.
+  const others = branches.filter((e) => !own.includes(e) && !samePassage(e, departureHeading(e, node, otherEnd(e))) && openDuringRoute(e));
   if (others.length === 0) return null;
   const chosen = turnDelta(points, steps, i);
   const h0 = arrivalHeading(points, steps, i);
@@ -554,8 +555,7 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     }
     if (current && turn === "walk") {
       // Passing a choice point without turning: say which branch to keep to, since no turn marks it.
-      const branches = (departures.get(step.fromNodeId) ?? []).filter(openDuringRoute);
-      const action = junctionAction(points, route.steps, i, branches, nodes, edges);
+      const action = junctionAction(points, route.steps, i, departures.get(step.fromNodeId) ?? [], nodes, edges, openDuringRoute);
       if (action) {
         (current.junctions ??= []).push({
           nodeId: step.fromNodeId, stepIndex: i, atM: Math.max(1, Math.round(current.distanceM)), action, name: names.get(step.fromNodeId) ?? null,
