@@ -29,6 +29,9 @@ export function tileTextures(opts: { base: string; grout: string; n: number; see
   const S = 1024;
   const [c, g] = canvas(S, S);
   const [rc, rg] = canvas(S, S);
+  const [bc, bg] = canvas(S, S);
+  bg.fillStyle = "#b8b8b8";
+  bg.fillRect(0, 0, S, S);
   const r = rng(opts.seed);
   const cell = S / opts.n;
   const base = new THREE.Color(opts.base);
@@ -38,26 +41,36 @@ export function tileTextures(opts: { base: string; grout: string; n: number; see
       const col = base.clone().multiplyScalar(k);
       g.fillStyle = `#${col.getHexString()}`;
       g.fillRect(i * cell, j * cell, cell, cell);
-      const rough = 140 + r() * 40;
+      const rough = 172 + r() * 26;
       rg.fillStyle = `rgb(${rough},${rough},${rough})`;
       rg.fillRect(i * cell, j * cell, cell, cell);
     }
   // speckle
   const sp = opts.speckle ?? 0.05;
-  for (let i = 0; i < S * S * 0.012; i++) {
+  // Fine mineral grain: many small, low-contrast flecks read as granite at floor scale.
+  for (let i = 0; i < S * S * 0.026; i++) {
     const x = r() * S;
     const y = r() * S;
     const v = r();
-    g.fillStyle = v > 0.5 ? `rgba(255,255,255,${sp})` : `rgba(0,0,0,${sp * 1.4})`;
-    g.fillRect(x, y, 1 + r() * 2, 1 + r() * 2);
+    const size = r() > 0.94 ? 2 : 1;
+    g.fillStyle = v > 0.56
+      ? `rgba(244,239,229,${sp * 0.8})`
+      : v > 0.34
+        ? `rgba(132,126,115,${sp * 0.65})`
+        : `rgba(25,25,25,${sp * 0.9})`;
+    g.fillRect(x, y, size, size);
+    bg.fillStyle = v > 0.5 ? "rgba(235,235,235,0.18)" : "rgba(40,40,40,0.18)";
+    bg.fillRect(x, y, size, size);
   }
   // grout lines
   g.strokeStyle = opts.grout;
-  g.lineWidth = 3;
-  rg.strokeStyle = "rgb(235,235,235)";
-  rg.lineWidth = 3;
+  g.lineWidth = 1.5;
+  rg.strokeStyle = "rgb(205,205,205)";
+  rg.lineWidth = 1;
+  bg.strokeStyle = "#383838";
+  bg.lineWidth = 1.5;
   for (let i = 0; i <= opts.n; i++) {
-    for (const ctx of [g, rg]) {
+    for (const ctx of [g, rg, bg]) {
       ctx.beginPath();
       ctx.moveTo(i * cell, 0);
       ctx.lineTo(i * cell, S);
@@ -66,7 +79,7 @@ export function tileTextures(opts: { base: string; grout: string; n: number; see
       ctx.stroke();
     }
   }
-  return { map: finish(c, 1), roughnessMap: finish(rc, 1, 8, false) };
+  return { map: finish(c, 1), roughnessMap: finish(rc, 1, 8, false), bumpMap: finish(bc, 1, 8, false) };
 }
 
 /** Yellow tactile paving: linear (guidance) bars. */
@@ -100,11 +113,17 @@ export function wallTexture(accent: string) {
   const W = 512;
   const H = 512;
   const [c, g] = canvas(W, H);
+  const [bc, bg] = canvas(W, H);
+  const [rc, rg] = canvas(W, H);
+  bg.fillStyle = "#a9a9a9";
+  bg.fillRect(0, 0, W, H);
+  rg.fillStyle = "#bebebe";
+  rg.fillRect(0, 0, W, H);
   // lower kick zone (dark), upper panels (light)
-  g.fillStyle = "#ebe8e1";
+  g.fillStyle = "#e8e3d9";
   g.fillRect(0, 0, W, H);
   const lowerTop = H * (1 - 1.05 / 3.2);
-  g.fillStyle = "#5c5f63";
+  g.fillStyle = "#63645e";
   g.fillRect(0, lowerTop, W, H - lowerTop);
   // accent stripe ~2.35 m
   const stripeY = H * (1 - 2.35 / 3.2);
@@ -113,7 +132,7 @@ export function wallTexture(accent: string) {
   g.fillStyle = "rgba(255,255,255,0.35)";
   g.fillRect(0, stripeY, W, 2);
   // panel joints every 1.2 m (texture spans 2.4 m)
-  g.strokeStyle = "rgba(0,0,0,0.18)";
+  g.strokeStyle = "rgba(69,64,57,0.2)";
   g.lineWidth = 2;
   for (const x of [0, W / 2]) {
     g.beginPath();
@@ -125,17 +144,39 @@ export function wallTexture(accent: string) {
   g.moveTo(0, lowerTop);
   g.lineTo(W, lowerTop);
   g.stroke();
+  for (const x of [0, W / 2]) {
+    bg.fillStyle = "#303030";
+    bg.fillRect(x, 0, 2, H);
+    rg.fillStyle = "#f2f2f2";
+    rg.fillRect(x, 0, 3, H);
+    g.fillStyle = "rgba(255,255,255,0.3)";
+    g.fillRect(x + 2, 0, 1, H);
+  }
+  bg.fillStyle = "#444444";
+  bg.fillRect(0, lowerTop, W, 2);
+  const noise = rng(53);
+  for (let i = 0; i < 2200; i++) {
+    const v = 175 + Math.floor(noise() * 35);
+    rg.fillStyle = `rgb(${v},${v},${v})`;
+    rg.fillRect(noise() * W, noise() * H, 2, 2);
+  }
   const t = finish(c, 1);
   t.repeat.set(1, 1);
-  return t;
+  return { map: t, bumpMap: finish(bc, 1, 8, false), roughnessMap: finish(rc, 1, 8, false) };
 }
 
 export function ceilingTexture() {
   const S = 512;
   const [c, g] = canvas(S, S);
-  g.fillStyle = "#d9dbdc";
+  const [bc, bg] = canvas(S, S);
+  const [rc, rg] = canvas(S, S);
+  g.fillStyle = "#b9bab8";
   g.fillRect(0, 0, S, S);
-  g.strokeStyle = "rgba(0,0,0,0.12)";
+  bg.fillStyle = "#a5a5a5";
+  bg.fillRect(0, 0, S, S);
+  rg.fillStyle = "#c9c9c9";
+  rg.fillRect(0, 0, S, S);
+  g.strokeStyle = "rgba(38,38,36,0.2)";
   g.lineWidth = 2;
   for (let i = 0; i <= 4; i++) {
     g.beginPath();
@@ -144,13 +185,33 @@ export function ceilingTexture() {
     g.moveTo(0, (i * S) / 4);
     g.lineTo(S, (i * S) / 4);
     g.stroke();
+    bg.fillStyle = "#555654";
+    bg.fillRect((i * S) / 4 - 1, 0, 2, S);
+    bg.fillRect(0, (i * S) / 4 - 1, S, 2);
   }
+  // Subtle longitudinal service slot, repeated every two ceiling panels.
+  g.fillStyle = "#5b5d5a";
+  g.fillRect(0, 0, 3, S);
+  g.fillRect(S / 2 - 1, 0, 3, S);
+  g.fillRect(S - 3, 0, 3, S);
+  // Recessed access hatch and small latch: generic maintenance detail, not a facility claim.
+  g.strokeStyle = "#a4aaac";
+  g.lineWidth = 3;
+  g.strokeRect(265, 265, 108, 108);
+  bg.strokeStyle = "#555555";
+  bg.lineWidth = 3;
+  bg.strokeRect(265, 265, 108, 108);
+  g.fillStyle = "#80888a";
+  g.fillRect(355, 316, 6, 12);
   const r = rng(7);
   for (let i = 0; i < 2500; i++) {
     g.fillStyle = `rgba(0,0,0,${0.03 + r() * 0.03})`;
     g.fillRect(r() * S, r() * S, 1, 1);
+    const v = 205 + Math.floor(r() * 32);
+    rg.fillStyle = `rgb(${v},${v},${v})`;
+    rg.fillRect(r() * S, r() * S, 2, 2);
   }
-  return finish(c, 1);
+  return { map: finish(c, 1), bumpMap: finish(bc, 1, 8, false), roughnessMap: finish(rc, 1, 8, false) };
 }
 
 export type SignIcon = "exit" | "train" | "gate" | "elevator" | "toilet" | "none" | "nomap";
