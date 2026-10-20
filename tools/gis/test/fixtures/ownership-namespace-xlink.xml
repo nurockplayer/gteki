@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SYNTHETIC hand-written regression fixture. All IDs, values, and geometry are invented. -->
+<core:CityModel xmlns:core="http://www.opengis.net/citygml/2.0"
+  xmlns="http://www.opengis.net/citygml/building/2.0"
+  xmlns:gml="http://www.opengis.net/gml"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  xmlns:uro="https://www.geospatial.jp/iur/uro/3.2"
+  xmlns:bad="https://evil.invalid/citygml/building/2.0"
+  xmlns:badmodule="http://www.opengis.net/citygml/vegetation/2.0">
+  <gml:boundedBy><gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/6697" srsDimension="3">
+    <gml:lowerCorner>35.72 139.70 2</gml:lowerCorner><gml:upperCorner>35.73 139.71 5</gml:upperCorner>
+  </gml:Envelope></gml:boundedBy>
+  <core:cityObjectMember>
+    <Room gml:id="ownership-room">
+      <gml:name>literal room name</gml:name>
+      <lod4Solid><gml:Solid><gml:exterior><gml:CompositeSurface>
+        <gml:surfaceMember><gml:OrientableSurface orientation="-"><gml:baseSurface xlink:href="#shared-polygon"/></gml:OrientableSurface></gml:surfaceMember>
+        <gml:surfaceMember xlink:href="#missing-polygon"/>
+      </gml:CompositeSurface></gml:exterior></gml:Solid></lod4Solid>
+      <lod4Solid xlink:href="#missing-solid"/>
+      <boundedBy><FloorSurface gml:id="ownership-floor">
+        <lod4MultiSurface><gml:MultiSurface><gml:surfaceMember xlink:href="#shared-polygon"/></gml:MultiSurface></lod4MultiSurface>
+      </FloorSurface></boundedBy>
+      <interiorBuildingInstallation>
+        <IntBuildingInstallation>
+          <function codeSpace="IntBuildingInstallation_function.xml">EF_ELEVATOR_SYNTHETIC</function>
+          <uro:dataQuality><uro:srcDescription>synthetic nested survey note</uro:srcDescription></uro:dataQuality>
+          <lod4Geometry><gml:Polygon gml:id="shared-polygon">
+            <gml:name>polygon name must stay on geometry</gml:name>
+            <gml:exterior><gml:LinearRing><gml:posList srsDimension="3">35.720 139.700 2 35.720 139.702 2 35.722 139.702 2 35.722 139.700 2 35.720 139.700 2</gml:posList></gml:LinearRing></gml:exterior>
+          </gml:Polygon></lod4Geometry>
+        </IntBuildingInstallation>
+      </interiorBuildingInstallation>
+    </Room>
+  </core:cityObjectMember>
+  <core:cityObjectMember><bad:Room gml:id="evil-room"><bad:function>EF_ELEVATOR_SYNTHETIC</bad:function></bad:Room></core:cityObjectMember>
+  <core:cityObjectMember><badmodule:Room gml:id="wrong-module-room"/></core:cityObjectMember>
+</core:CityModel>
