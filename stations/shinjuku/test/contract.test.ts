@@ -30,6 +30,19 @@ describe("Shinjuku gteki/ contract files", () => {
     expect(strict.ok).toBe(false);
   });
 
+  it("flags routes stale once the limited publication (validUntil 2027-03-12) has ended", () => {
+    const r = createRouter(bundle);
+    const [a, b] = bundle.spawnNodeIds!;
+    const before = r.route(a!, b!, { fare: "ticketed", stepFree: false, today: "2027-03-12" });
+    const after = r.route(a!, b!, { fare: "ticketed", stepFree: false, today: "2027-03-13" });
+    expect(before.ok && after.ok).toBe(true);
+    if (before.ok) expect(before.expiredSourceIds).toEqual([]);
+    if (after.ok) {
+      expect(after.expiredSourceIds.length).toBeGreaterThan(0);
+      expect(after.stale).toBe(true);
+    }
+  });
+
   it("offers gate, platform and exit spawn points that exist", () => {
     const ids = new Set(bundle.nodes.map((n) => n.id));
     expect(bundle.spawnNodeIds?.length).toBe(3);

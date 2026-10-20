@@ -378,8 +378,14 @@ const chevronTex = (() => {
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 })();
+/** Today's calendar day at the station (Asia/Tokyo), "YYYY-MM-DD", for source staleness/expiry. */
+function stationToday(): string {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
+  const v = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
+  return `${v("year")}-${v("month")}-${v("day")}`;
+}
 function profile(): RouteProfile {
-  return { fare: $<HTMLInputElement>("ticketed").checked ? "ticketed" : "unpaid_only", stepFree: $<HTMLInputElement>("stepfree").checked };
+  return { fare: $<HTMLInputElement>("ticketed").checked ? "ticketed" : "unpaid_only", stepFree: $<HTMLInputElement>("stepfree").checked, today: stationToday() };
 }
 /** Start node(s): every connector of a picked POI (the router picks the cheapest), or the attached node. */
 function startNodeIds(): string[] {
@@ -503,6 +509,13 @@ function renderRoutePanel() {
     const s = document.createElement("span");
     s.textContent = `${UNKNOWN_LABELS[u.kind]?.ja ?? u.kind} · ${UNKNOWN_LABELS[u.kind]?.en ?? ""}`;
     s.title = `${u.edgeIds.length} edges`;
+    un.appendChild(s);
+  }
+  if (route.expiredSourceIds.length || route.stale === true) {
+    const s = document.createElement("span");
+    s.className = "warn";
+    s.textContent = route.expiredSourceIds.length ? "出典の公開期限切れ · Source publication period ended" : "データが古い可能性 · Data may be outdated";
+    s.title = [...route.expiredSourceIds].join(", ");
     un.appendChild(s);
   }
   const src = bundle.sources.filter((s) => route!.sourceIds.includes(s.id));
