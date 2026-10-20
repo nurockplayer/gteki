@@ -88,6 +88,8 @@ export interface WallSeg {
 export interface Soffit extends SlabPoly {
   floorId: string;
   kind: "shaft" | "landing" | "slab";
+  /** Generic enclosure height, used to remove internal roof sheets at shared halls. */
+  clearance?: number;
   origin?: XY;
   slope?: XY;
 }
@@ -649,6 +651,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
   const levelAt = (z: number) => underground.reduce((a, b) => Math.abs(a.z - z) < Math.abs(b.z - z) ? a : b);
   const union = (polys: XY[][][]) => polys.length ? polygonClipping.union(clipPoly(polys[0]!), ...polys.slice(1).map(clipPoly)).map(xyRings) : [];
   const addRoof = (s: Soffit) => layout.soffits.push(...clearSoffit(s, passages));
+  const shaftVoids: { rings: XY[][]; bottom: (p: XY) => number; top: (p: XY) => number; ceilingTop: (p: XY) => number }[] = [];
 
   // Generic landing/back-of-house envelope around the very small source elevator footprints.
   // The CAD outline stops at the lift wall; a following camera otherwise sees the entire
@@ -670,13 +673,22 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       const p = lerp(a, b, i / count), q = lerp(a, b, (i + 1) / count), mid = lerp(p, q, 0.5);
       const minZ = Math.min(bottom(p), bottom(q)), maxZ = Math.min(-0.51, Math.max(top(p), top(q)));
       if (maxZ <= minZ + 0.015) continue;
-      if (skipExisting && lv.walls.some((w) => {
-        if (w.finish) return false;
+      let bands: [number, number][] = [[minZ, maxZ]];
+      if (skipExisting) for (const w of lv.walls) {
+        if (w.finish === "fascia") continue;
         const d = sub(w.b, w.a), l2 = d.x * d.x + d.y * d.y || 1;
         const t = Math.max(0, Math.min(1, ((mid.x - w.a.x) * d.x + (mid.y - w.a.y) * d.y) / l2));
-        return len(sub(mid, lerp(w.a, w.b, t))) < 0.12 && (w.kind === "trackside" || (w.zMin <= minZ + 0.25 && w.zMax >= maxZ - 0.1));
-      })) continue;
-      let bands: [number, number][] = [[minZ, maxZ]];
+        if (len(sub(mid, lerp(w.a, w.b, t))) >= 0.12) continue;
+        if (w.kind === "trackside") {
+          bands = [];
+          break;
+        }
+        bands = bands.flatMap(([lo, hi]): [number, number][] => hi <= w.zMin || lo >= w.zMax
+          ? [[lo, hi]]
+          : [[lo, Math.min(hi, w.zMin)], [Math.max(lo, w.zMax), hi]].filter(([x, y]) => y! - x! > 0.015) as [number, number][]);
+        if (!bands.length) break;
+      }
+      if (!bands.length) continue;
       for (const s of passages) {
         const d = sub(s.b, s.a), l2 = d.x * d.x + d.y * d.y || 1;
         const zs: number[] = [];
@@ -736,51 +748,139 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     }
   }
 
-  // Adjacent parallel escalators share a single shaft, rather than opaque dividers between lanes.
+  // Parallel lanes and near-collinear serial flights form one continuous shaft. In particular,
+  // enclosing every stair flight separately creates crossing walls at the shared landing.
   const shafts: Run[][] = [];
+  const shaftRoofCuts: { prefix: string; rings: XY[][] }[] = [];
   const ends = (r: Run) => r.a.z < r.b.z ? [r.a, r.b] as const : [r.b, r.a] as const;
-  for (const r of layout.runs) {
-    if (Math.min(r.a.z, r.b.z) >= -0.5) continue;
-    const [lo, hi] = ends(r), d = sub(hi, lo), length = len(d);
-    const group = shafts.find(([ref]) => {
-      const [a, b] = ends(ref!), rd = sub(b, a);
-      return Math.abs(a.z - lo.z) < 0.35 && Math.abs(b.z - hi.z) < 0.35 && len(sub(a, lo)) < 3.6 && len(sub(b, hi)) < 3.6 && (d.x * rd.x + d.y * rd.y) / (length * len(rd)) > 0.995;
-    });
-    if (group) group.push(r); else shafts.push([r]);
+  const undergroundRuns = layout.runs.filter((r) => Math.min(r.a.z, r.b.z) < -0.5);
+  const similarAxis = (a: Run, b: Run) => {
+    if (a.mode !== b.mode) return false;
+    const [al, ah] = ends(a), [bl, bh] = ends(b);
+    const ad = sub(ah, al), bd = sub(bh, bl), an = len(ad), bn = len(bd);
+    if (an < 1e-6 || bn < 1e-6 || (ad.x * bd.x + ad.y * bd.y) / (an * bn) < 0.995) return false;
+    const as = { x: ad.x * (ah.z - al.z) / (an * an), y: ad.y * (ah.z - al.z) / (an * an) };
+    const bs = { x: bd.x * (bh.z - bl.z) / (bn * bn), y: bd.y * (bh.z - bl.z) / (bn * bn) };
+    return Math.hypot(as.x - bs.x, as.y - bs.y) < 0.025;
+  };
+  const joined = (a: Run, b: Run) => {
+    if (!similarAxis(a, b)) return false;
+    const [al, ah] = ends(a), [bl, bh] = ends(b);
+    // Same-level opposing mouths indicate serial flights; corresponding nearby endpoints
+    // preserve the existing shared-envelope behavior for parallel lanes.
+    const serial = (Math.abs(ah.z - bl.z) < 0.3 && len(sub(ah, bl)) < 1.65) || (Math.abs(bh.z - al.z) < 0.3 && len(sub(bh, al)) < 1.65);
+    const lanes = Math.abs(al.z - bl.z) < 0.35 && Math.abs(ah.z - bh.z) < 0.35 && len(sub(al, bl)) < 3.6 && len(sub(ah, bh)) < 3.6;
+    return serial || lanes;
+  };
+  const remaining = new Set(undergroundRuns);
+  while (remaining.size) {
+    const seed = remaining.values().next().value as Run;
+    remaining.delete(seed);
+    const group = [seed];
+    for (let i = 0; i < group.length; i++) for (const candidate of [...remaining]) {
+      if (group.some((member) => joined(member, candidate))) {
+        group.push(candidate);
+        remaining.delete(candidate);
+      }
+    }
+    shafts.push(group);
   }
   for (const [si, group] of shafts.entries()) {
     const [lo, hi] = ends(group[0]!);
     const d = sub(hi, lo), l2 = d.x * d.x + d.y * d.y;
     const slope = { x: d.x * (hi.z - lo.z) / l2, y: d.y * (hi.z - lo.z) / l2 };
     const base = (p: XY) => lo.z + slope.x * (p.x - lo.x) + slope.y * (p.y - lo.y);
-    const rise = Math.max(...group.flatMap((r) => [r.a.z - base(r.a), r.b.z - base(r.b)])) + 3.0;
+    // Follow cameras can sit above the nominal 3 m stair cover near level-change mouths.
+    // Give stairs a slightly taller shared hall envelope; escalator clearances stay at 3 m.
+    const roofClearance = group[0]!.mode === "stairs" ? 4.5 : 3.0;
+    const wallMargin = group[0]!.mode === "stairs" ? 1.8 : 0.35;
+    const collarClearance = roofClearance + 0.4;
+    const offsets = group.flatMap((r) => [r.a.z - base(r.a), r.b.z - base(r.b)]);
+    const rise = Math.max(...offsets) + roofClearance;
+    // Flat intermediate landings lower a later flight relative to the continued pitch.
+    // Carry the common side plane below every flight instead of exposing a diagonal slit.
+    const bottom = (p: XY) => base(p) + Math.min(...offsets) - 0.3;
     const lv = levelAt(lo.z);
-    const envelope = union(group.map((r) => [passageRing(r.a, r.b, r.width / 2 + 0.35, 0.25)]));
+    const u = { x: d.x / Math.sqrt(l2), y: d.y / Math.sqrt(l2) }, n = { x: -u.y, y: u.x };
+    const along = (p: XY) => (p.x - lo.x) * u.x + (p.y - lo.y) * u.y;
+    const across = (p: XY) => (p.x - lo.x) * n.x + (p.y - lo.y) * n.y;
+    const corners = group.flatMap((r) => [r.a, r.b].flatMap((p) => [across(p) - r.width / 2 - wallMargin, across(p) + r.width / 2 + wallMargin]));
+    const stations = group.flatMap((r) => [r.a, r.b].map(along));
+    const minS = Math.min(...stations) - 0.25, maxS = Math.max(...stations) + 0.25;
+    const minN = Math.min(...corners), maxN = Math.max(...corners);
+    const at = (s: number, c: number): XY => ({ x: lo.x + u.x * s + n.x * c, y: lo.y + u.y * s + n.y * c });
+    // One rectangular hull spans intermediate landings and parallel lanes without interior walls.
+    const envelope = [ [ [at(minS, minN), at(maxS, minN), at(maxS, maxN), at(minS, maxN), at(minS, minN)] ] ];
     for (const [i, rings] of envelope.entries()) {
       // Surface exits stay open to the street worker's scene. Crop the pitched roof at -0.51 m.
-      const roof: Soffit = { spaceId: `shaft-roof:${si}:${i}`, floorId: lv.floorId, kind: "shaft", rings, origin: lo, slope, z: lo.z + rise, fare: null, category: "ceiling" };
+      const roof: Soffit = { spaceId: `shaft-roof:${si}:${i}`, floorId: lv.floorId, kind: "shaft", clearance: rise, rings, origin: lo, slope, z: lo.z + rise, fare: null, category: "ceiling" };
       const cropped = cropUndergroundRoof(roof);
-      for (const s of cropped) addRoof(s);
-      enclose(lv, rings, (p) => base(p) - 0.3, (p) => base(p) + rise, "shaft");
+      for (const s of cropped) {
+        addRoof(s);
+        shaftVoids.push({ rings: s.rings, bottom, top: (p) => base(p) + rise, ceilingTop: (p) => base(p) + rise });
+      }
+      enclose(lv, rings, bottom, (p) => base(p) + rise, "shaft");
     }
     // Raised short collars bridge the clearance cut at the tangent change between an
     // inclined shaft and a flat hall. Without this step, two individually safe cut roofs
     // can leave a thin open slit immediately above the first/last tread.
     for (const end of [0, 1]) {
-      const mouths = group.map((r) => ends(r)[end]!);
-      const z = mouths[0]!.z;
-      if (z + 3.4 >= -0.5) continue;
+      // Keep sleeves only at exposed outer mouths, never at a serial landing inside the hull.
+      const mouths = group.flatMap((r) => {
+        const p = ends(r)[end]!;
+        const paired = group.some((other) => other !== r && (end === 0
+          ? Math.abs(ends(other)[1]!.z - p.z) < 0.3 && len(sub(ends(other)[1]!, p)) < 1.65
+          : Math.abs(ends(other)[0]!.z - p.z) < 0.3 && len(sub(ends(other)[0]!, p)) < 1.65));
+        return paired ? [] : [{ p, width: r.width }];
+      });
+      if (!mouths.length) continue;
+      const z = mouths[0]!.p.z;
+      if (z + collarClearance >= -0.5) continue;
       const L = Math.sqrt(l2), u = { x: d.x / L, y: d.y / L };
-      const collars = union(group.map((r, i) => {
-        const p = mouths[i]!;
-        return [passageRing({ x: p.x - u.x * 0.85, y: p.y - u.y * 0.85 }, { x: p.x + u.x * 0.85, y: p.y + u.y * 0.85 }, r.width / 2 + 0.35)];
+      const collars = union(mouths.map(({ p, width }) => {
+        return [passageRing({ x: p.x - u.x * 0.85, y: p.y - u.y * 0.85 }, { x: p.x + u.x * 0.85, y: p.y + u.y * 0.85 }, width / 2 + wallMargin)];
       }));
       for (const [i, rings] of collars.entries()) {
-        addRoof({ spaceId: `shaft-collar:${si}:${end}:${i}`, floorId: lv.floorId, kind: "landing", rings, z: z + 3.4, fare: null, category: "ceiling" });
-        enclose(lv, rings, (p) => Math.min(z + 3.4, base(p) + rise), (p) => Math.max(z + 3.4, base(p) + rise), "shaft");
+        // The collar is the higher of the two roof surfaces. Keep its raised panel only
+        // where it actually rises above the pitched shaft roof, then remove the hidden
+        // pitched patch beneath it to avoid a coplanar/interior overlap.
+        const raised = affineMask(rings, (p) => z + collarClearance - (base(p) + rise) - 0.025);
+        for (const [j, panel] of raised.entries()) {
+          addRoof({ spaceId: `shaft-collar:${si}:${end}:${i}:${j}`, floorId: lv.floorId, kind: "landing", clearance: collarClearance, rings: panel, z: z + collarClearance, fare: null, category: "ceiling" });
+          shaftRoofCuts.push({ prefix: `shaft-roof:${si}:`, rings: panel });
+          shaftVoids.push({ rings: panel, bottom: () => z - 0.18, top: () => z + collarClearance, ceilingTop: () => z + collarClearance });
+          enclose(lv, panel, () => z - 0.18, () => z + collarClearance, "shaft");
+        }
       }
     }
   }
+
+  // Pitched and raised collar roofs form one stepped underside. Remove hidden pitched
+  // patches while preserving any prior passage-clearance holes in those surfaces.
+  for (const cut of shaftRoofCuts) {
+    layout.soffits = layout.soffits.flatMap((s) => {
+      if (!s.spaceId.startsWith(cut.prefix)) return [s];
+      return polygonClipping.difference(clipPoly(s.rings), clipPoly(cut.rings)).map((poly, i) => ({ ...s, spaceId: `${s.spaceId}:collar${i}`, rings: xyRings(poly) }));
+    });
+  }
+
+  // A shaft is a continuous open volume. Remove overhead source surfaces only where the
+  // shaft volume crosses them; retain existing passage cuts elsewhere. A surface below the
+  // shaft bottom belongs to a lower floor and must not be removed by an upper shaft roof.
+  for (const lv of underground) {
+    let ceilings = lv.ceilings;
+    for (const [vi, v] of shaftVoids.entries()) {
+      const aboveBottom = affineMask(v.rings, (p) => lv.ceilingZ - v.bottom(p) - 0.025);
+      const belowTop = affineMask(v.rings, (p) => v.ceilingTop(p) - lv.ceilingZ - 0.025);
+      const mask = aboveBottom.flatMap((a) => belowTop.flatMap((b) => polygonClipping.intersection([clipPoly(a)], [clipPoly(b)]).map(xyRings)));
+      if (!mask.length) continue;
+      ceilings = ceilings.flatMap((s) => polygonClipping.difference(clipPoly(s.rings), ...mask.map((rings) => clipPoly(rings)))
+        .map((poly, i) => ({ ...s, spaceId: `${s.spaceId}:shaft${vi}-${i}`, rings: xyRings(poly) })));
+    }
+    lv.ceilings = ceilings;
+    lv.walls = cutWallsByVoids(lv.walls, shaftVoids);
+  }
+  trimInteriorRoofs(layout);
 
   // Use the actual cut slabs, including hole rings: all exposed edges get a 180 mm fascia,
   // and the underside has its own finish rather than showing a reversed floor material.
@@ -791,6 +891,188 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
       enclose(lv, s.rings, () => s.z - 0.18, () => s.z - 0.008, "fascia");
     }
   }
+}
+
+/** Roofs at a shared landing are the outside of the union of the rooms' air volumes.
+ * Remove sheets inside a taller adjoining room, while retaining roofs beneath another floor.
+ */
+function trimInteriorRoofs(layout: Layout) {
+  const roofs: Soffit[] = [
+    ...layout.levels.filter((lv) => lv.z < -0.5).flatMap((lv) => lv.ceilings.map((s): Soffit => ({ ...s, floorId: lv.floorId, kind: "landing", clearance: s.z - lv.z }))),
+    ...layout.soffits.filter((s) => s.kind !== "slab").map((s) => ({ ...s, clearance: s.clearance ?? 3.2 })),
+  ];
+  const bounds = roofs.map((s) => {
+    const p = s.rings.flat();
+    return { minX: Math.min(...p.map((p) => p.x)), maxX: Math.max(...p.map((p) => p.x)), minY: Math.min(...p.map((p) => p.y)), maxY: Math.max(...p.map((p) => p.y)) };
+  });
+  const clean = new Map<string, Soffit[]>();
+  for (const [i, s] of roofs.entries()) {
+    let pieces: Soffit[] = [s];
+    const a = bounds[i]!;
+    for (const [j, v] of roofs.entries()) {
+      if (i === j || !pieces.length) continue;
+      const b = bounds[j]!;
+      if (a.maxX < b.minX || a.minX > b.maxX || a.maxY < b.minY || a.minY > b.maxY) continue;
+      const corners = [
+        { x: Math.max(a.minX, b.minX), y: Math.max(a.minY, b.minY) },
+        { x: Math.min(a.maxX, b.maxX), y: Math.max(a.minY, b.minY) },
+        { x: Math.min(a.maxX, b.maxX), y: Math.min(a.maxY, b.maxY) },
+        { x: Math.max(a.minX, b.minX), y: Math.min(a.maxY, b.maxY) },
+      ];
+      const top = (p: XY) => soffitHeight(v, p) - soffitHeight(s, p);
+      const bottom = (p: XY) => soffitHeight(s, p) - (soffitHeight(v, p) - v.clearance!) - 0.1;
+      const samePlane = corners.every((p) => Math.abs(top(p)) < 1e-5);
+      if (samePlane && j > i) continue;
+      if (!samePlane && corners.every((p) => top(p) < 0.01)) continue;
+      if (corners.every((p) => bottom(p) <= 0)) continue;
+      const high = samePlane ? [v.rings] : affineMask(v.rings, (p) => top(p) - 0.01);
+      const masks = high.flatMap((r) => affineMask(r, bottom));
+      if (!masks.length) continue;
+      pieces = pieces.flatMap((s) => polygonClipping.difference(clipPoly(s.rings), ...masks.map(clipPoly)).map((r) => ({ ...s, rings: xyRings(r) })));
+    }
+    clean.set(s.spaceId, pieces);
+  }
+  for (const lv of layout.levels) lv.ceilings = lv.ceilings.flatMap((s) => clean.get(s.spaceId) ?? [s]);
+  layout.soffits = layout.soffits.flatMap((s) => clean.get(s.spaceId) ?? [s]);
+}
+
+/** Intersection of rings with the part of the plane where value(p) >= 0. */
+function affineMask(rings: XY[][], value: (p: XY) => number): XY[][][] {
+  const pts = rings.flat();
+  if (!pts.length) return [];
+  const minX = Math.min(...pts.map((p) => p.x)), maxX = Math.max(...pts.map((p) => p.x));
+  const minY = Math.min(...pts.map((p) => p.y)), maxY = Math.max(...pts.map((p) => p.y));
+  const rect = [
+    { x: minX - 1, y: minY - 1 }, { x: maxX + 1, y: minY - 1 },
+    { x: maxX + 1, y: maxY + 1 }, { x: minX - 1, y: maxY + 1 },
+  ];
+  let halfPlane: XY[] = [];
+  for (let i = 0; i < rect.length; i++) {
+    const a = rect[i]!, b = rect[(i + 1) % rect.length]!, va = value(a), vb = value(b);
+    if (va >= 0) halfPlane.push(a);
+    if ((va < 0 && vb > 0) || (va > 0 && vb < 0)) {
+      const t = va / (va - vb);
+      halfPlane.push(lerp(a, b, t));
+    }
+  }
+  if (halfPlane.length < 3) return [];
+  const result = polygonClipping.intersection([clipPoly(rings)], [clipPoly([halfPlane])]);
+  return result.map(xyRings);
+}
+
+/**
+ * Clip rendered and collidable wall bands out of shaft interiors. Side planes remain on
+ * the shaft boundary; crossing source/envelope walls are split at that boundary and only
+ * their portions inside the swept head/body volume are removed.
+ */
+export function cutWallsByVoids(walls: WallSeg[], voids: { rings: XY[][]; bottom: (p: XY) => number; top: (p: XY) => number }[]): WallSeg[] {
+  const cross = (a: XY, b: XY) => a.x * b.y - a.y * b.x;
+  const distanceToSegment = (p: XY, a: XY, b: XY) => {
+    const d = sub(b, a), l2 = d.x * d.x + d.y * d.y || 1;
+    const t = Math.max(0, Math.min(1, ((p.x - a.x) * d.x + (p.y - a.y) * d.y) / l2));
+    return len(sub(p, lerp(a, b, t)));
+  };
+  const inside = (p: XY, rings: XY[][]) => pointInRings(p, rings) && rings.every((ring) =>
+    ring.every((a, i) => distanceToSegment(p, a, ring[(i + 1) % ring.length]!) > 1e-5));
+  const boundedVoids = voids.map((v) => {
+    const pts = v.rings.flat();
+    return { ...v, minX: Math.min(...pts.map((p) => p.x)), maxX: Math.max(...pts.map((p) => p.x)), minY: Math.min(...pts.map((p) => p.y)), maxY: Math.max(...pts.map((p) => p.y)) };
+  });
+  const result: WallSeg[] = [];
+  const profileAt = (w: WallSeg, t: number) => ({
+    bottom: w.profile ? w.profile.bottomA + (w.profile.bottomB - w.profile.bottomA) * t : w.zMin,
+    top: w.profile ? w.profile.topA + (w.profile.topB - w.profile.topA) * t : w.zMax,
+  });
+  const surfaceAt = (w: WallSeg, t: number) => w.surfaceBase ? w.surfaceBase.a + (w.surfaceBase.b - w.surfaceBase.a) * t : undefined;
+  const positiveInterval = (a: number, b: number, threshold = 0.015): [number, number] | null => {
+    const da = a - threshold, db = b - threshold;
+    if (da > 0 && db > 0) return [0, 1];
+    if (da <= 0 && db <= 0) return null;
+    const t = da / (da - db);
+    return da > 0 ? [0, t] : [t, 1];
+  };
+  for (const w of walls) {
+    const direction = sub(w.b, w.a), cuts = [0, 1];
+    const minX = Math.min(w.a.x, w.b.x), maxX = Math.max(w.a.x, w.b.x), minY = Math.min(w.a.y, w.b.y), maxY = Math.max(w.a.y, w.b.y);
+    const candidates = boundedVoids.filter((v) => v.maxX >= minX && v.minX <= maxX && v.maxY >= minY && v.minY <= maxY);
+    if (!candidates.length) {
+      result.push(w);
+      continue;
+    }
+    for (const v of candidates) for (const ring of v.rings) for (let i = 0; i < ring.length; i++) {
+      const c = ring[i]!, edge = sub(ring[(i + 1) % ring.length]!, c), denominator = cross(direction, edge);
+      if (Math.abs(denominator) < 1e-10) continue;
+      const offset = sub(c, w.a), t = cross(offset, edge) / denominator, u = cross(offset, direction) / denominator;
+      if (t > 1e-8 && t < 1 - 1e-8 && u >= -1e-8 && u <= 1 + 1e-8) cuts.push(t);
+    }
+    cuts.sort((a, b) => a - b);
+    const unique = cuts.filter((t, i) => !i || t - cuts[i - 1]! > 1e-7);
+    const intervals = unique.slice(0, -1).map((from, i) => {
+      const to = unique[i + 1]!, mid = lerp(w.a, w.b, (from + to) / 2);
+      const p = lerp(w.a, w.b, from), q = lerp(w.a, w.b, to), ba = profileAt(w, from), bb = profileAt(w, to);
+      const active = candidates.filter((v) => {
+        if (!inside(mid, v.rings)) return false;
+        const aboveBottom = positiveInterval(ba.top - v.bottom(p), bb.top - v.bottom(q));
+        const belowTop = positiveInterval(v.top(p) - ba.bottom, v.top(q) - bb.bottom);
+        return !!aboveBottom && !!belowTop && Math.min(aboveBottom[1], belowTop[1]) - Math.max(aboveBottom[0], belowTop[0]) > 1e-8;
+      });
+      return { from, to, active };
+    });
+    // Preserve untouched source walls exactly: no subdivision, profile conversion, or UV drift.
+    if (!intervals.some((part) => part.active.length)) {
+      result.push(w);
+      continue;
+    }
+    const appendUncut = (from: number, to: number) => {
+      const a = profileAt(w, from), b = profileAt(w, to), u0 = surfaceAt(w, from), u1 = surfaceAt(w, to);
+      const slice: WallSeg = { ...w, a: lerp(w.a, w.b, from), b: lerp(w.a, w.b, to), zMin: w.zMin, zMax: w.zMax };
+      if (w.profile) slice.profile = { bottomA: a.bottom, bottomB: b.bottom, topA: a.top, topB: b.top };
+      if (u0 !== undefined && u1 !== undefined) slice.surfaceBase = { a: u0, b: u1 };
+      result.push(slice);
+    };
+    for (let ci = 0; ci + 1 < unique.length; ci++) {
+      const part = intervals[ci]!, from = part.from, to = part.to;
+      if (!part.active.length) {
+        appendUncut(from, to);
+        continue;
+      }
+      {
+        const t0 = from, t1 = to;
+        const p = lerp(w.a, w.b, t0), q = lerp(w.a, w.b, t1), mid = lerp(p, q, 0.5);
+        type Band = { u0: number; u1: number; bottomA: number; bottomB: number; topA: number; topB: number };
+        let pieces: Band[] = [{ u0: 0, u1: 1, bottomA: profileAt(w, t0).bottom, bottomB: profileAt(w, t1).bottom, topA: profileAt(w, t0).top, topB: profileAt(w, t1).top }];
+        const valid = (band: Band): Band[] => {
+          const ha = band.topA - band.bottomA - 0.015, hb = band.topB - band.bottomB - 0.015;
+          if (ha > 0 && hb > 0) return [band];
+          if (ha <= 0 && hb <= 0) return [];
+          const crossAt = ha / (ha - hb), lo = ha > 0 ? 0 : crossAt, hi = ha > 0 ? crossAt : 1;
+          const lerpBand = (a: number, b: number, t: number) => a + (b - a) * t;
+          return [{
+            u0: lerpBand(band.u0, band.u1, lo), u1: lerpBand(band.u0, band.u1, hi),
+            bottomA: lerpBand(band.bottomA, band.bottomB, lo), bottomB: lerpBand(band.bottomA, band.bottomB, hi),
+            topA: lerpBand(band.topA, band.topB, lo), topB: lerpBand(band.topA, band.topB, hi),
+          }];
+        };
+        for (const v of part.active) {
+          if (!inside(mid, v.rings)) continue;
+          pieces = pieces.flatMap((piece) => {
+            const pa = lerp(p, q, piece.u0), pb = lerp(p, q, piece.u1);
+            const vbA = v.bottom(pa), vbB = v.bottom(pb), vtA = v.top(pa), vtB = v.top(pb);
+            const lower = { ...piece, topA: Math.min(piece.topA, vbA), topB: Math.min(piece.topB, vbB) };
+            const upper = { ...piece, bottomA: Math.max(piece.bottomA, vtA), bottomB: Math.max(piece.bottomB, vtB) };
+            return [...valid(lower), ...valid(upper)];
+          });
+        }
+        for (const piece of pieces) {
+          const s0 = t0 + (t1 - t0) * piece.u0, s1 = t0 + (t1 - t0) * piece.u1;
+          const a = lerp(w.a, w.b, s0), b = lerp(w.a, w.b, s1);
+          const surfaceA = surfaceAt(w, s0) ?? piece.bottomA, surfaceB = surfaceAt(w, s1) ?? piece.bottomB;
+          result.push({ ...w, a, b, zMin: Math.min(piece.bottomA, piece.bottomB), zMax: Math.max(piece.topA, piece.topB), finish: w.finish ?? "shaft", profile: { bottomA: piece.bottomA, bottomB: piece.bottomB, topA: piece.topA, topB: piece.topB }, surfaceBase: { a: surfaceA, b: surfaceB } });
+        }
+      }
+    }
+  }
+  return result;
 }
 
 /** Clip an affine roof to z < -0.5 without changing its pitch. */

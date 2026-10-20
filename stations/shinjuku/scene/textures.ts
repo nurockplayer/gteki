@@ -30,7 +30,7 @@ export function tileTextures(opts: { base: string; grout: string; n: number; see
   const [c, g] = canvas(S, S);
   const [rc, rg] = canvas(S, S);
   const [bc, bg] = canvas(S, S);
-  bg.fillStyle = "#cccccc";
+  bg.fillStyle = "#b8b8b8";
   bg.fillRect(0, 0, S, S);
   const r = rng(opts.seed);
   const cell = S / opts.n;
@@ -41,26 +41,34 @@ export function tileTextures(opts: { base: string; grout: string; n: number; see
       const col = base.clone().multiplyScalar(k);
       g.fillStyle = `#${col.getHexString()}`;
       g.fillRect(i * cell, j * cell, cell, cell);
-      const rough = 140 + r() * 40;
+      const rough = 172 + r() * 26;
       rg.fillStyle = `rgb(${rough},${rough},${rough})`;
       rg.fillRect(i * cell, j * cell, cell, cell);
     }
   // speckle
   const sp = opts.speckle ?? 0.05;
-  for (let i = 0; i < S * S * 0.012; i++) {
+  // Fine mineral grain: many small, low-contrast flecks read as granite at floor scale.
+  for (let i = 0; i < S * S * 0.026; i++) {
     const x = r() * S;
     const y = r() * S;
     const v = r();
-    g.fillStyle = v > 0.5 ? `rgba(255,255,255,${sp})` : `rgba(0,0,0,${sp * 1.4})`;
-    g.fillRect(x, y, 1 + r() * 2, 1 + r() * 2);
+    const size = r() > 0.94 ? 2 : 1;
+    g.fillStyle = v > 0.56
+      ? `rgba(244,239,229,${sp * 0.8})`
+      : v > 0.34
+        ? `rgba(132,126,115,${sp * 0.65})`
+        : `rgba(25,25,25,${sp * 0.9})`;
+    g.fillRect(x, y, size, size);
+    bg.fillStyle = v > 0.5 ? "rgba(235,235,235,0.18)" : "rgba(40,40,40,0.18)";
+    bg.fillRect(x, y, size, size);
   }
   // grout lines
   g.strokeStyle = opts.grout;
-  g.lineWidth = 3;
-  rg.strokeStyle = "rgb(235,235,235)";
-  rg.lineWidth = 3;
-  bg.strokeStyle = "#3d3d3d";
-  bg.lineWidth = 4;
+  g.lineWidth = 1.5;
+  rg.strokeStyle = "rgb(205,205,205)";
+  rg.lineWidth = 1;
+  bg.strokeStyle = "#383838";
+  bg.lineWidth = 1.5;
   for (let i = 0; i <= opts.n; i++) {
     for (const ctx of [g, rg, bg]) {
       ctx.beginPath();
@@ -107,15 +115,15 @@ export function wallTexture(accent: string) {
   const [c, g] = canvas(W, H);
   const [bc, bg] = canvas(W, H);
   const [rc, rg] = canvas(W, H);
-  bg.fillStyle = "#bfbfbf";
+  bg.fillStyle = "#a9a9a9";
   bg.fillRect(0, 0, W, H);
   rg.fillStyle = "#bebebe";
   rg.fillRect(0, 0, W, H);
   // lower kick zone (dark), upper panels (light)
-  g.fillStyle = "#ebe8e1";
+  g.fillStyle = "#e8e3d9";
   g.fillRect(0, 0, W, H);
   const lowerTop = H * (1 - 1.05 / 3.2);
-  g.fillStyle = "#5c5f63";
+  g.fillStyle = "#63645e";
   g.fillRect(0, lowerTop, W, H - lowerTop);
   // accent stripe ~2.35 m
   const stripeY = H * (1 - 2.35 / 3.2);
@@ -124,7 +132,7 @@ export function wallTexture(accent: string) {
   g.fillStyle = "rgba(255,255,255,0.35)";
   g.fillRect(0, stripeY, W, 2);
   // panel joints every 1.2 m (texture spans 2.4 m)
-  g.strokeStyle = "rgba(0,0,0,0.18)";
+  g.strokeStyle = "rgba(69,64,57,0.2)";
   g.lineWidth = 2;
   for (const x of [0, W / 2]) {
     g.beginPath();
@@ -162,13 +170,13 @@ export function ceilingTexture() {
   const [c, g] = canvas(S, S);
   const [bc, bg] = canvas(S, S);
   const [rc, rg] = canvas(S, S);
-  g.fillStyle = "#d9dbdc";
+  g.fillStyle = "#b9bab8";
   g.fillRect(0, 0, S, S);
-  bg.fillStyle = "#bfbfbf";
+  bg.fillStyle = "#a5a5a5";
   bg.fillRect(0, 0, S, S);
-  rg.fillStyle = "#dedede";
+  rg.fillStyle = "#c9c9c9";
   rg.fillRect(0, 0, S, S);
-  g.strokeStyle = "rgba(0,0,0,0.12)";
+  g.strokeStyle = "rgba(38,38,36,0.2)";
   g.lineWidth = 2;
   for (let i = 0; i <= 4; i++) {
     g.beginPath();
@@ -177,10 +185,15 @@ export function ceilingTexture() {
     g.moveTo(0, (i * S) / 4);
     g.lineTo(S, (i * S) / 4);
     g.stroke();
-    bg.fillStyle = "#444444";
-    bg.fillRect((i * S) / 4, 0, 2, S);
-    bg.fillRect(0, (i * S) / 4, S, 2);
+    bg.fillStyle = "#555654";
+    bg.fillRect((i * S) / 4 - 1, 0, 2, S);
+    bg.fillRect(0, (i * S) / 4 - 1, S, 2);
   }
+  // Subtle longitudinal service slot, repeated every two ceiling panels.
+  g.fillStyle = "#5b5d5a";
+  g.fillRect(0, 0, 3, S);
+  g.fillRect(S / 2 - 1, 0, 3, S);
+  g.fillRect(S - 3, 0, 3, S);
   // Recessed access hatch and small latch: generic maintenance detail, not a facility claim.
   g.strokeStyle = "#a4aaac";
   g.lineWidth = 3;

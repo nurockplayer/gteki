@@ -2,8 +2,8 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
-import { buildLayout, clearSoffit, pointInRings, soffitHeight, type Plan, type SlabPoly, type Soffit, type XYZ } from "../scene/layout.ts";
-import { buildStation, soffitGeometry, type BuiltStation } from "../scene/build.ts";
+import { buildLayout, clearSoffit, cutWallsByVoids, pointInRings, soffitHeight, type Plan, type SlabPoly, type Soffit, type WallSeg, type XYZ } from "../scene/layout.ts";
+import { buildStation, cladWallGeometry, coalesceWallPanels, soffitGeometry, type BuiltStation } from "../scene/build.ts";
 
 const { bundle } = loadShinjukuBundle();
 const layout = buildLayout(bundle, planJson as unknown as Plan);
@@ -154,6 +154,63 @@ describe("underground enclosure", () => {
     geo.dispose();
     (mesh.material as THREE.Material).dispose();
   });
+
+  it("preserves the pitched wall's UV datum when a crossing shaft splits its panels", () => {
+    const wall: WallSeg = { a: { x: 0, y: 0 }, b: { x: 10, y: 0 }, zMin: 0, zMax: 8, side: 1, kind: "wall",
+      profile: { bottomA: 0, bottomB: 5, topA: 3, topB: 8 }, surfaceBase: { a: 0, b: 5 } };
+    const cut = cutWallsByVoids([wall], [{ rings: [[{ x: 3, y: -1 }, { x: 7, y: -1 }, { x: 7, y: 1 }, { x: 3, y: 1 }]], bottom: () => -1, top: () => 10 }]);
+    expect(cut).toHaveLength(2);
+    expect(cut.map((w) => [w.a.x, w.b.x, w.surfaceBase!.a, w.surfaceBase!.b])).toEqual([[0, 3, 0, 1.5], [7, 10, 3.5, 5]]);
+    const untouched = cutWallsByVoids([wall], [{ rings: [[{ x: 3, y: 2 }, { x: 7, y: 2 }, { x: 7, y: 3 }, { x: 3, y: 3 }]], bottom: () => -1, top: () => 10 }]);
+    expect(untouched).toEqual([wall]);
+  });
+
+  it("never leaves an inverted wedge when a shaft roof crosses a flat wall's top", () => {
+    const wall: WallSeg = { a: { x: 0, y: 0 }, b: { x: 10, y: 0 }, zMin: 0, zMax: 3, side: 1, kind: "wall" };
+    const cut = cutWallsByVoids([wall], [{ rings: [[{ x: -1, y: -1 }, { x: 11, y: -1 }, { x: 11, y: 1 }, { x: -1, y: 1 }]], bottom: () => -1, top: (p) => p.x * 0.5 }]);
+    expect(cut.length).toBeGreaterThan(0);
+    for (const w of cut) {
+      expect(w.profile!.topA).toBeGreaterThan(w.profile!.bottomA);
+      expect(w.profile!.topB).toBeGreaterThan(w.profile!.bottomB);
+    }
+    expect(Math.max(...cut.map((w) => w.b.x))).toBeLessThan(6.01);
+  });
+
+  it("joins render panels without changing collision bands or bridging wall openings", () => {
+    const walls: WallSeg[] = Array.from({ length: 4 }, (_, i) => ({
+      a: { x: i, y: 0 }, b: { x: i + 1, y: 0 }, zMin: i / 2, zMax: (i + 1) / 2 + 3,
+      side: 1, kind: "wall", finish: "shaft",
+      profile: { bottomA: i / 2, bottomB: (i + 1) / 2, topA: i / 2 + 3, topB: (i + 1) / 2 + 3 },
+      surfaceBase: { a: i / 2, b: (i + 1) / 2 },
+    }));
+    const original = structuredClone(walls);
+    const joined = coalesceWallPanels(walls);
+    expect(joined).toHaveLength(1);
+    expect(joined[0]!.profile).toEqual({ bottomA: 0, bottomB: 2, topA: 3, topB: 5 });
+    expect(walls).toEqual(original);
+    expect(coalesceWallPanels([walls[0]!, walls[2]!, walls[3]!])).toHaveLength(2);
+    const stepped = { ...walls[1]!, profile: { ...walls[1]!.profile!, topB: 5 } };
+    expect(coalesceWallPanels([walls[0]!, stepped])).toHaveLength(2);
+  });
+
+  it("renders overlapping room and shaft panels only once, without deleting either collision wall", () => {
+    const walls: WallSeg[] = [
+      { a: { x: 0, y: 0 }, b: { x: 2, y: 0 }, zMin: 0, zMax: 3, side: 1, kind: "room" },
+      { a: { x: 1, y: 0 }, b: { x: 3, y: 0 }, zMin: 0, zMax: 3, side: 1, kind: "wall", finish: "shaft" },
+    ];
+    const original = structuredClone(walls);
+    const geometry = cladWallGeometry(walls)!, p = geometry.attributes.position!, idx = geometry.index!;
+    let area = 0;
+    for (let i = 0; i < idx.count; i += 3) {
+      const a = new THREE.Vector3().fromBufferAttribute(p, idx.getX(i));
+      const b = new THREE.Vector3().fromBufferAttribute(p, idx.getX(i + 1));
+      const c = new THREE.Vector3().fromBufferAttribute(p, idx.getX(i + 2));
+      area += b.sub(a).cross(c.sub(a)).length() / 2;
+    }
+    expect(area).toBeCloseTo(9);
+    expect(walls).toEqual(original);
+    geometry.dispose();
+  });
 });
 
 describe("enclosure scene assembly (geometry only, no WebGL or raster validation)", () => {
@@ -161,7 +218,7 @@ describe("enclosure scene assembly (geometry only, no WebGL or raster validation
   beforeAll(() => {
     // Texture painting is irrelevant to these collision/mesh checks. Keep the real Three.js
     // geometry, materials, instancing, placement and collision; stub only canvas drawing.
-    const context = new Proxy({}, { get: (_target, key) => key === "createLinearGradient" ? () => ({ addColorStop() {} }) : () => undefined });
+    const context = new Proxy({}, { get: (_target, key) => (key === "createLinearGradient" || key === "createRadialGradient") ? () => ({ addColorStop() {} }) : () => undefined });
     vi.stubGlobal("document", { createElement: () => ({ width: 1, height: 1, getContext: () => context }) });
     station = buildStation(bundle, planJson as unknown as Plan, { quality: "high" });
   }, 60_000);
@@ -190,6 +247,95 @@ describe("enclosure scene assembly (geometry only, no WebGL or raster validation
     for (const m of glass) expect(m).not.toBeInstanceOf(THREE.MeshPhysicalMaterial);
   });
 
+  it("keeps both sides of every wall present in the front-sided GTAO normal pass", () => {
+    const material = new THREE.MeshNormalMaterial();
+    let walls = 0;
+    station.root.traverse((o) => {
+      if (!(o instanceof THREE.Mesh) || !o.userData.twoSidedWall) return;
+      walls++;
+      expect((o.material as THREE.Material).side).toBe(THREE.FrontSide);
+      const pos = o.geometry.attributes.position!, idx = o.geometry.index!;
+      const a = new THREE.Vector3().fromBufferAttribute(pos, idx.getX(0));
+      const b = new THREE.Vector3().fromBufferAttribute(pos, idx.getX(1));
+      const c = new THREE.Vector3().fromBufferAttribute(pos, idx.getX(2));
+      const normal = b.clone().sub(a).cross(c.clone().sub(a)).normalize();
+      const center = a.add(b).add(c).divideScalar(3);
+      const mesh = new THREE.Mesh(o.geometry, material);
+      for (const sign of [-1, 1]) {
+        const ray = new THREE.Raycaster(center.clone().addScaledVector(normal, sign * 0.1), normal.clone().multiplyScalar(-sign), 0, 0.2);
+        expect(ray.intersectObject(mesh).length).toBeGreaterThan(0);
+      }
+    });
+    expect(walls).toBeGreaterThan(5);
+    material.dispose();
+  });
+
+  it("keeps every batched train finish in the same position and visibility across its cycle", () => {
+    const trains: THREE.InstancedMesh[] = [];
+    station.root.traverse((o) => { if (o instanceof THREE.InstancedMesh && o.name === "train-cars:instanced-finish") trains.push(o); });
+    expect(trains.length).toBeGreaterThan(0);
+    const matrix = new THREE.Matrix4(), reference = new THREE.Matrix4();
+    for (const t of [0, 20, 40, 60, 95]) {
+      station.update(0, t);
+      const statuses = station.trainStatus();
+      for (let track = 0; track < statuses.length; track++) {
+        const finishes = trains.slice(track * 5, track * 5 + 5);
+        for (const mesh of finishes) {
+          expect(mesh.visible).toBe(statuses[track]!.present);
+          expect(mesh.count).toBe(8);
+          if (!mesh.visible) continue;
+          for (let i = 0; i < mesh.count; i++) {
+            mesh.getMatrixAt(i, matrix); finishes[0]!.getMatrixAt(i, reference);
+            expect(matrix.elements).toEqual(reference.elements);
+            expect(matrix.elements.every(Number.isFinite)).toBe(true);
+          }
+        }
+      }
+    }
+    station.update(0, 0);
+  });
+
+  it("skips empty train batches for an upstairs camera and restores them when a car enters view", () => {
+    station.update(0, 20);
+    station.root.updateMatrixWorld(true);
+    const trains: THREE.InstancedMesh[] = [];
+    station.root.traverse((o) => { if (o instanceof THREE.InstancedMesh && o.name === "train-cars:instanced-finish" && o.visible) trains.push(o); });
+    expect(trains.length).toBeGreaterThan(0);
+    const camera = new THREE.PerspectiveCamera(62, 16 / 9, 0.05, 400);
+    const render = (mesh: THREE.InstancedMesh) => mesh.onBeforeRender({} as THREE.WebGLRenderer, new THREE.Scene(), camera, mesh.geometry, mesh.material as THREE.Material, null!);
+    camera.position.set(0, 2, 0);
+    camera.lookAt(0, 100, -10);
+    camera.updateMatrixWorld(true);
+    for (const mesh of trains) { render(mesh); expect(mesh.count).toBe(0); }
+    const matrix = new THREE.Matrix4(), center = new THREE.Vector3();
+    trains[0]!.getMatrixAt(0, matrix);
+    center.setFromMatrixPosition(matrix);
+    camera.position.copy(center).add(new THREE.Vector3(20, 3, 0));
+    camera.lookAt(center);
+    camera.updateMatrixWorld(true);
+    for (const mesh of trains.slice(0, 5)) { render(mesh); expect(mesh.count).toBe(8); }
+    station.update(0, 0);
+  });
+
+  it("culls an offscreen static batch and restores it when viewed again", () => {
+    let batch: THREE.InstancedMesh | undefined;
+    station.root.traverse((o) => { if (!batch && o instanceof THREE.InstancedMesh && o.userData.tightCulling) batch = o; });
+    expect(batch).toBeDefined();
+    const mesh = batch!, center = mesh.geometry.boundingBox!.getCenter(new THREE.Vector3());
+    const camera = new THREE.PerspectiveCamera(62, 16 / 9, 0.05, 400);
+    const render = () => mesh.onBeforeRender({} as THREE.WebGLRenderer, new THREE.Scene(), camera, mesh.geometry, mesh.material as THREE.Material, null!);
+    camera.position.copy(center).add(new THREE.Vector3(0, 1000, 0));
+    camera.lookAt(center.clone().add(new THREE.Vector3(0, 1100, 10)));
+    camera.updateMatrixWorld(true);
+    render();
+    expect(mesh.count).toBe(0);
+    camera.position.copy(center).add(new THREE.Vector3(0, 5, 10));
+    camera.lookAt(center);
+    camera.updateMatrixWorld(true);
+    render();
+    expect(mesh.count).toBe(1);
+  });
+
   it("keeps actual fixture and housing boxes above every graph edge's 2.1 m head band", () => {
     const boxes: { matrix: THREE.Matrix4; inverse: THREE.Matrix4; bounds: THREE.Box3; unit: THREE.Box3 }[] = [];
     station.root.updateMatrixWorld(true);
@@ -212,5 +358,53 @@ describe("enclosure scene assembly (geometry only, no WebGL or raster validation
       if (ray.intersectBox(b.unit, hit) && hit.applyMatrix4(b.matrix).y < p.z + 2.1) bad.push(edge);
     }
     expect(bad.slice(0, 20)).toEqual([]);
+  });
+
+  it("gives every underground elevator node a portal mounted on a full-height WalkWorld wall", () => {
+    const portals: { nodeIds: string[]; center: XYZ; a: XYZ; b: XYZ }[] = [];
+    station.root.traverse((o) => {
+      if (o.name === "elevator-portal:finish" && !portals.length) portals.push(...o.userData.portals);
+    });
+    const covered = new Set(portals.flatMap((p) => p.nodeIds));
+    const expected = bundle.nodes.filter((n) => n.kind === "elevator" && layout.nodeZ.get(n.id)! < -0.5).map((n) => n.id);
+    expect([...covered].sort()).toEqual(expected.sort());
+    for (const p of portals) {
+      expect(station.layout.levels.flatMap((lv) => lv.walls).some((w) => Math.hypot(w.a.x - p.a.x, w.a.y - p.a.y) < 1e-6 &&
+        Math.hypot(w.b.x - p.b.x, w.b.y - p.b.y) < 1e-6 && w.zMin <= p.center.z + 0.02 && w.zMax >= p.center.z + 2.5)).toBe(true);
+      const length = Math.hypot(p.b.x - p.a.x, p.b.y - p.a.y);
+      const nx = (p.b.y - p.a.y) / length, ny = -(p.b.x - p.a.x) / length;
+      const x = (p.a.x + p.b.x) / 2, y = (p.a.y + p.b.y) / 2;
+      expect(station.world.firstWallHit({ x: x + nx * 0.1, y: y + ny * 0.1 }, { x: x - nx * 0.1, y: y - ny * 0.1 }, p.center.z + 1.2)).toBeLessThan(1);
+    }
+  });
+
+  it("keeps elevator portal walls outside every swept graph edge", () => {
+    const walls = station.layout.levels.flatMap((lv) => lv.walls.filter((w) => w.kind === "elevator"));
+    const bad: string[] = [];
+    for (const { edge, p } of edgeSamples()) for (const w of walls) {
+      if (p.z + 1.7 < w.zMin || p.z + 0.3 > w.zMax) continue;
+      const dx = w.b.x - w.a.x, dy = w.b.y - w.a.y;
+      const t = Math.max(0, Math.min(1, ((p.x - w.a.x) * dx + (p.y - w.a.y) * dy) / (dx * dx + dy * dy)));
+      if (Math.hypot(p.x - w.a.x - dx * t, p.y - w.a.y - dy * t) < 0.31) bad.push(edge);
+    }
+    expect(bad.slice(0, 20)).toEqual([]);
+  });
+
+  it("uses one baked floor atlas with valid UVs on every receiving surface", () => {
+    const atlases = new Set<THREE.Texture>();
+    station.root.traverse((o) => {
+      if (!(o instanceof THREE.Mesh) || !(o.material instanceof THREE.MeshStandardMaterial) || !o.material.aoMap) return;
+      atlases.add(o.material.aoMap);
+      const uv = o.geometry.attributes.uv1!;
+      expect(uv.count).toBe(o.geometry.attributes.position!.count);
+      for (let i = 0; i < uv.count; i++) {
+        expect(uv.getX(i)).toBeGreaterThanOrEqual(0);
+        expect(uv.getX(i)).toBeLessThanOrEqual(1);
+        expect(uv.getY(i)).toBeGreaterThanOrEqual(0);
+        expect(uv.getY(i)).toBeLessThanOrEqual(1);
+      }
+    });
+    expect(atlases.size).toBe(1);
+    expect([...atlases][0]!.channel).toBe(1);
   });
 });
