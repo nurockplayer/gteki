@@ -1,0 +1,1326 @@
+{
+  "source_id": "hokonavi-ikebukuro-walk-node-geojson+hokonavi-ikebukuro-walk-link-geojson",
+  "source_sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33+f6b84c9c6d05559f04b4a4796b9286f6bfd1bdb4aea0b112666b3d7585b3eab6",
+  "file": "R1 node+link GeoJSON pair",
+  "mode": "network",
+  "feature_count": 4083,
+  "geometry_type_counts": {
+    "LineString": 2196,
+    "Point": 1887
+  },
+  "crs": {
+    "value": "EPSG:6668",
+    "status": "INFERRED_FROM_SPEC",
+    "evidence": [
+      {
+        "source_id": "mlit-walk-network-spec-2018-03",
+        "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+        "section": "2.2",
+        "printed_page": 5,
+        "observation": "Specification requires geographic JGD2011; applicability to this historical dataset is unresolved."
+      },
+      {
+        "source_id": "mlit-walk-network-spec-2024-07",
+        "sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+        "section": "2.2",
+        "printed_page": 4,
+        "observation": "Specification requires geographic JGD2011; applicability to this historical dataset is unresolved."
+      },
+      {
+        "source_ids": [
+          "hokonavi-ikebukuro-walk-node-geojson",
+          "hokonavi-ikebukuro-walk-link-geojson"
+        ],
+        "observation": "crs member presence",
+        "node_has_crs": false,
+        "link_has_crs": false
+      },
+      {
+        "source": "RFC 7946 §4",
+        "status": "ASSUMPTION_ONLY",
+        "observation": "Absent crs member suggests default longitude/latitude WGS84 degrees under RFC 7946, only if conformant. This does not identify JGD2011."
+      },
+      {
+        "source_ids": [
+          "hokonavi-ikebukuro-walk-link-geojson"
+        ],
+        "observation": "GRS80 polyline vs literal distance",
+        "result": "NO_VERDICT",
+        "statistics": {
+          "ellipsoid": "GRS80",
+          "method": "Vincenty inverse; sum of supplied polyline segments",
+          "assumed_axis_order": "longitude,latitude degrees",
+          "rounding_threshold_m": 0.05,
+          "float_tolerance_m": 0.000001,
+          "total_links": 2196,
+          "comparable_links": 2196,
+          "skipped_links": 0,
+          "within_threshold": 2166,
+          "above_threshold": 30,
+          "absolute_delta_m": {
+            "median": 0.02574802525526909,
+            "p95": 0.047573583817347664,
+            "p99": 0.05044424382009076,
+            "max": 0.0545957414443663
+          },
+          "result": "NO_VERDICT",
+          "note": "Distance consistency tests axis order and metre consistency under an assumption; it cannot distinguish JGD2011, WGS84 or Tokyo Datum."
+        }
+      }
+    ],
+    "note": "Spec-based inference only, not file-declared or geodetically verified. Distance consistency cannot identify a datum. All metrics relying on this CRS are conditional."
+  },
+  "bbox": [
+    139.69533618,
+    35.724141027,
+    139.722924068,
+    35.733731143
+  ],
+  "headers": [
+    "brail_tile",
+    "direction",
+    "distance",
+    "elevator",
+    "end_id",
+    "floor",
+    "in_out",
+    "lat",
+    "lev_diff",
+    "link1_id",
+    "link2_id",
+    "link3_id",
+    "link4_id",
+    "link5_id",
+    "link6_id",
+    "link_id",
+    "lon",
+    "node_id",
+    "rank",
+    "roof",
+    "route_type",
+    "rt_struct",
+    "start_id",
+    "tfc_s_type",
+    "tfc_signal",
+    "vtcl_slope",
+    "width"
+  ],
+  "mapped_fields": {
+    "route_type": "route_type",
+    "route_structure": "rt_struct",
+    "direction": "direction",
+    "in_out": "in_out",
+    "gate": null,
+    "ticket": null,
+    "elevator": "elevator",
+    "stairs": null,
+    "escalator": null,
+    "ramp": null,
+    "width_class": "width",
+    "slope_class": "vtcl_slope",
+    "step_class": "lev_diff"
+  },
+  "blank_counts": {
+    "brail_tile": 1887,
+    "direction": 1887,
+    "distance": 1887,
+    "elevator": 1887,
+    "end_id": 1887,
+    "floor": 2196,
+    "in_out": 2196,
+    "lat": 2196,
+    "lev_diff": 1887,
+    "link1_id": 2196,
+    "link2_id": 2283,
+    "link3_id": 3431,
+    "link4_id": 4040,
+    "link5_id": 4076,
+    "link6_id": 4080,
+    "link_id": 1887,
+    "lon": 2196,
+    "node_id": 2196,
+    "rank": 1887,
+    "roof": 1887,
+    "route_type": 1887,
+    "rt_struct": 1887,
+    "start_id": 1887,
+    "tfc_s_type": 1887,
+    "tfc_signal": 1887,
+    "vtcl_slope": 1887,
+    "width": 1887
+  },
+  "categorical_values": {
+    "direction": {
+      "1": 2196,
+      "(blank)": 1887
+    },
+    "elevator": {
+      "1": 2195,
+      "99": 1,
+      "(blank)": 1887
+    },
+    "floor": {
+      "0": 1852,
+      "1": 7,
+      "-0.5": 8,
+      "-1": 12,
+      "(blank)": 2196,
+      "0.5": 8
+    },
+    "in_out": {
+      "1": 1887,
+      "(blank)": 2196
+    },
+    "lev_diff": {
+      "2": 2112,
+      "3": 59,
+      "5": 24,
+      "99": 1,
+      "(blank)": 1887
+    },
+    "route_type": {
+      "1": 2169,
+      "3": 2,
+      "6": 24,
+      "99": 1,
+      "(blank)": 1887
+    },
+    "rt_struct": {
+      "1": 1241,
+      "2": 121,
+      "3": 584,
+      "4": 142,
+      "5": 8,
+      "6": 16,
+      "7": 83,
+      "99": 1,
+      "(blank)": 1887
+    },
+    "vtcl_slope": {
+      "2": 1839,
+      "3": 172,
+      "4": 160,
+      "7": 8,
+      "8": 16,
+      "99": 1,
+      "(blank)": 1887
+    },
+    "width": {
+      "1": 37,
+      "2": 239,
+      "3": 322,
+      "4": 1597,
+      "99": 1,
+      "(blank)": 1887
+    }
+  },
+  "floor_labels_present_literally": [
+    "-0.5",
+    "-1",
+    "0",
+    "0.5",
+    "1"
+  ],
+  "topology": {
+    "duplicate_ids": [],
+    "duplicate_node_ids": [],
+    "duplicate_link_ids": [],
+    "dangling_links": [],
+    "self_loops": [],
+    "unreferenced_node_ids": [],
+    "weak_component_count": 1,
+    "weak_components": [
+      {
+        "node_count": 1887
+      }
+    ],
+    "completeness": {
+      "classification_complete": true,
+      "unknown_feature_count": 0,
+      "node_ids_complete": true,
+      "link_ids_complete": true,
+      "endpoint_ids_complete": true,
+      "graph_complete": true,
+      "unknown_node_identifier_count": 0,
+      "unknown_link_identifier_count": 0,
+      "unknown_endpoint_count": 0
+    },
+    "geometry_endpoint_mismatches_over_0_5m": [],
+    "geometry_endpoint_check_status": "CONDITIONAL_ON_INFERRED_CRS",
+    "geometry_endpoint_distance_method": "GEOGRAPHIC_DEGREES_APPROX_METRES",
+    "geometry_endpoint_coverage": {
+      "checked_links": 2196,
+      "skipped_links": 0,
+      "total_links": 2196,
+      "complete": true
+    },
+    "metric_status": "CONDITIONAL_ON_INFERRED_CRS"
+  },
+  "attribute_decoding": {
+    "status": "LITERAL_LABEL_LOOKUP_ONLY",
+    "fields": {
+      "node": {
+        "floor": {
+          "literal_value_distribution": {
+            "0": 1852,
+            "1": 7,
+            "-0.5": 8,
+            "-1": 12,
+            "0.5": 8
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "階層数": 1887
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2018-03",
+                "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+                "table": "3.6",
+                "printed_page": 30
+              },
+              "status": "DECODED_UNDER_SPEC_2018-03"
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "階層数": 1887
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.8",
+                "printed_page": 33
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        },
+        "in_out": {
+          "literal_value_distribution": {
+            "1": 1887
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "施設外": 1887
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2018-03",
+                "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+                "table": "3.6",
+                "printed_page": 30
+              },
+              "status": "DECODED_UNDER_SPEC_2018-03"
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "施設外": 1887
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.8",
+                "printed_page": 33
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        }
+      },
+      "link": {
+        "brail_tile": {
+          "literal_value_distribution": {
+            "1": 1599,
+            "2": 596,
+            "99": 1
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "不明": 1,
+                "視覚障害者誘導用ブロック等あり": 596,
+                "視覚障害者誘導用ブロック等なし": 1599
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2018-03",
+                "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+                "table": "3.2",
+                "printed_page": 14
+              },
+              "status": "DECODED_UNDER_SPEC_2018-03"
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "不明": 1,
+                "視覚障害者誘導用ブロック等あり": 596,
+                "視覚障害者誘導用ブロック等なし": 1599
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.2",
+                "printed_page": 13
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        },
+        "direction": {
+          "literal_value_distribution": {
+            "1": 2196
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "両方向": 2196
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2018-03",
+                "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+                "table": "3.2",
+                "printed_page": 14
+              },
+              "status": "DECODED_UNDER_SPEC_2018-03"
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "両方向": 2196
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.2",
+                "printed_page": 13
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        },
+        "elevator": {
+          "literal_value_distribution": {
+            "1": 2195,
+            "99": 1
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "エレベーターなし": 2195,
+                "不明": 1
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2018-03",
+                "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+                "table": "3.2",
+                "printed_page": 14
+              },
+              "status": "DECODED_UNDER_SPEC_2018-03"
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "エレベーターなし": 2195,
+                "不明": 1
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.2",
+                "printed_page": 14
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        },
+        "lev_diff": {
+          "literal_value_distribution": {
+            "2": 2112,
+            "3": 59,
+            "5": 24,
+            "99": 1
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": false,
+              "defined_in_spec": true,
+              "undefined_codes": [
+                "3",
+                "5"
+              ],
+              "decoded_label_counts": {
+                "2 ㎝より大きい": 2112,
+                "不明": 1
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2018-03",
+                "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+                "table": "3.2",
+                "printed_page": 14
+              },
+              "status": "DECODED_UNDER_SPEC_2018-03"
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "0cm より大きい～2 ㎝以下": 2112,
+                "10cm より大きい": 24,
+                "2cm より大きい～5cm 以下": 59,
+                "不明": 1
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.2",
+                "printed_page": 13
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        },
+        "rank": {
+          "literal_value_distribution": {
+            "AAA": 189,
+            "AAB": 6,
+            "ABA": 28,
+            "ABB": 3,
+            "AZZ": 13,
+            "SAA": 1570,
+            "SAB": 40,
+            "SBA": 288,
+            "SBB": 10,
+            "SZZ": 11,
+            "XXX": 1,
+            "ZAA": 34,
+            "ZBA": 3
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": false,
+              "defined_in_spec": false,
+              "undefined_codes": [
+                "AAA",
+                "AAB",
+                "ABA",
+                "ABB",
+                "AZZ",
+                "SAA",
+                "SAB",
+                "SBA",
+                "SBB",
+                "SZZ",
+                "XXX",
+                "ZAA",
+                "ZBA"
+              ],
+              "decoded_label_counts": {},
+              "defined_codes_without_label_count": 0
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "A / A / A": 189,
+                "A / A / B": 6,
+                "A / B / A": 28,
+                "A / B / B": 3,
+                "A / Z / Z": 13,
+                "S / A / A": 1570,
+                "S / A / B": 40,
+                "S / B / A": 288,
+                "S / B / B": 10,
+                "S / Z / Z": 11,
+                "X / X / X": 1,
+                "Z / A / A": 34,
+                "Z / B / A": 3
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.2",
+                "printed_page": 13
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        },
+        "roof": {
+          "literal_value_distribution": {
+            "1": 2192,
+            "2": 3,
+            "99": 1
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "あり": 3,
+                "なし": 2192,
+                "不明": 1
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2018-03",
+                "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+                "table": "3.2",
+                "printed_page": 14
+              },
+              "status": "DECODED_UNDER_SPEC_2018-03"
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "あり": 3,
+                "なし": 2192,
+                "不明": 1
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.2",
+                "printed_page": 14
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        },
+        "route_type": {
+          "literal_value_distribution": {
+            "1": 2169,
+            "3": 2,
+            "6": 24,
+            "99": 1
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "不明": 1,
+                "対応する属性情報なし": 2169,
+                "踏切": 2,
+                "階段": 24
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2018-03",
+                "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+                "table": "3.2",
+                "printed_page": 14
+              },
+              "status": "DECODED_UNDER_SPEC_2018-03"
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "不明": 1,
+                "対応する属性情報なし": 2169,
+                "踏切": 2,
+                "階段": 24
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.2",
+                "printed_page": 13
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        },
+        "rt_struct": {
+          "literal_value_distribution": {
+            "1": 1241,
+            "2": 121,
+            "3": 584,
+            "4": 142,
+            "5": 8,
+            "6": 16,
+            "7": 83,
+            "99": 1
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "不明": 1,
+                "地下通路": 8,
+                "施設内通路": 83,
+                "横断歩道": 584,
+                "横断歩道の路面標示の無い道路の横断部": 142,
+                "歩道橋": 16,
+                "車道と歩道の物理的な分離あり": 1241,
+                "車道と歩道の物理的な分離なし": 121
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2018-03",
+                "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+                "table": "3.2",
+                "printed_page": 14
+              },
+              "status": "DECODED_UNDER_SPEC_2018-03"
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "不明": 1,
+                "地下通路": 8,
+                "施設内通路": 83,
+                "横断歩道": 584,
+                "横断歩道の路面標示の無い道路の横断部": 142,
+                "歩道橋": 16,
+                "車道と歩道の物理的な分離あり": 1241,
+                "車道と歩道の物理的な分離なし": 121
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.2",
+                "printed_page": 13
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        },
+        "tfc_s_type": {
+          "literal_value_distribution": {
+            "1": 2095,
+            "2": 50,
+            "3": 50,
+            "99": 1
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "不明": 1,
+                "音響設備あり（音響用押しボタンあり）": 50,
+                "音響設備あり（音響用押しボタンなし）": 50,
+                "音響設備なし": 2095
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2018-03",
+                "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+                "table": "3.2",
+                "printed_page": 14
+              },
+              "status": "DECODED_UNDER_SPEC_2018-03"
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "不明": 1,
+                "音響設備あり（音響用押しボタンあり）": 50,
+                "音響設備あり（音響用押しボタンなし）": 50,
+                "音響設備なし": 2095
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.2",
+                "printed_page": 13
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        },
+        "tfc_signal": {
+          "literal_value_distribution": {
+            "1": 1935,
+            "2": 8,
+            "3": 30,
+            "4": 222,
+            "99": 1
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "これら以外の信号機": 222,
+                "不明": 1,
+                "押しボタン式信号機あり": 30,
+                "歩行者用信号機なし": 1935,
+                "歩車分離式信号機あり": 8
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2018-03",
+                "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+                "table": "3.2",
+                "printed_page": 14
+              },
+              "status": "DECODED_UNDER_SPEC_2018-03"
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "これら以外の信号機": 222,
+                "不明": 1,
+                "押しボタン式信号機あり": 30,
+                "歩行者用信号機なし": 1935,
+                "歩車分離式信号機あり": 8
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.2",
+                "printed_page": 13
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        },
+        "vtcl_slope": {
+          "literal_value_distribution": {
+            "2": 1839,
+            "3": 172,
+            "4": 160,
+            "7": 8,
+            "8": 16,
+            "99": 1
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": false,
+              "defined_in_spec": true,
+              "undefined_codes": [
+                "4",
+                "7",
+                "8"
+              ],
+              "decoded_label_counts": {
+                "5％より大きい（起点より終点が低い）": 172,
+                "5％より大きい（起点より終点が高い）": 1839,
+                "不明": 1
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2018-03",
+                "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+                "table": "3.2",
+                "printed_page": 14
+              },
+              "status": "DECODED_UNDER_SPEC_2018-03"
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "0％より大きい～5％以下": 1839,
+                "18％より大きい（起点より終点が低い）": 16,
+                "18％より大きい（起点より終点が高い）": 8,
+                "5％より大きい～8％以下（起点より終点が低い）": 160,
+                "5％より大きい～8％以下（起点より終点が高い）": 172,
+                "不明": 1
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.2",
+                "printed_page": 13
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        },
+        "width": {
+          "literal_value_distribution": {
+            "1": 37,
+            "2": 239,
+            "3": 322,
+            "4": 1597,
+            "99": 1
+          },
+          "present": true,
+          "versions": {
+            "2018-03": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "1.0m 以上～2.0m 未満": 239,
+                "1.0m 未満": 37,
+                "2.0m 以上～3.0m 未満": 322,
+                "3.0m 以上": 1597,
+                "不明": 1
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2018-03",
+                "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+                "table": "3.2",
+                "printed_page": 14
+              },
+              "status": "DECODED_UNDER_SPEC_2018-03"
+            },
+            "2024-07": {
+              "compatible": true,
+              "defined_in_spec": true,
+              "undefined_codes": [],
+              "decoded_label_counts": {
+                "1.0m 以上～2.0m 未満": 239,
+                "1.0m 未満": 37,
+                "2.0m 以上～3.0m 未満": 322,
+                "3.0m 以上": 1597,
+                "不明": 1
+              },
+              "defined_codes_without_label_count": 0,
+              "evidence": {
+                "spec_source_id": "mlit-walk-network-spec-2024-07",
+                "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+                "table": "3.2",
+                "printed_page": 13
+              },
+              "status": "DECODED_UNDER_SPEC_2024-07"
+            }
+          }
+        }
+      }
+    },
+    "spec_version_compatibility": {
+      "2018-03": {
+        "compatible": false,
+        "incompatible_fields": [
+          "link.lev_diff",
+          "link.rank",
+          "link.vtcl_slope"
+        ]
+      },
+      "2024-07": {
+        "compatible": true,
+        "incompatible_fields": []
+      }
+    },
+    "applicable_spec_version": {
+      "value": null,
+      "status": "UNKNOWN",
+      "candidates": [
+        "2024-07"
+      ],
+      "note": "Compatibility checks observed non-blank coded values only, not schema completeness, provenance, currency or truth on the ground. CKAN date and specification citation do not establish an applicable version."
+    },
+    "rank_cross_check_2024": {
+      "spec_version": "2024-07",
+      "consistent": 0,
+      "inconsistent": 0,
+      "not_checkable": 0,
+      "method_unknown": 2196,
+      "inconsistent_link_ids": [],
+      "inconsistent_link_ids_truncated": 0,
+      "inconsistent_link_ids_unavailable": 0,
+      "not_checkable_link_ids": [],
+      "not_checkable_link_ids_truncated": 0,
+      "not_checkable_link_ids_unavailable": 0,
+      "component_counts": {
+        "width": {
+          "consistent": 0,
+          "inconsistent": 0,
+          "not_checkable": 0,
+          "method_unknown": 2196,
+          "inconsistent_link_ids": [],
+          "inconsistent_link_ids_truncated": 0,
+          "inconsistent_link_ids_unavailable": 0,
+          "not_checkable_link_ids": [],
+          "not_checkable_link_ids_truncated": 0,
+          "not_checkable_link_ids_unavailable": 0
+        },
+        "vtcl_slope": {
+          "consistent": 0,
+          "inconsistent": 0,
+          "not_checkable": 0,
+          "method_unknown": 2196,
+          "inconsistent_link_ids": [],
+          "inconsistent_link_ids_truncated": 0,
+          "inconsistent_link_ids_unavailable": 0,
+          "not_checkable_link_ids": [],
+          "not_checkable_link_ids_truncated": 0,
+          "not_checkable_link_ids_unavailable": 0
+        },
+        "lev_diff": {
+          "consistent": 0,
+          "inconsistent": 0,
+          "not_checkable": 0,
+          "method_unknown": 2196,
+          "inconsistent_link_ids": [],
+          "inconsistent_link_ids_truncated": 0,
+          "inconsistent_link_ids_unavailable": 0,
+          "not_checkable_link_ids": [],
+          "not_checkable_link_ids_truncated": 0,
+          "not_checkable_link_ids_unavailable": 0
+        }
+      },
+      "link_state_precedence": [
+        "not_checkable",
+        "inconsistent",
+        "method_unknown",
+        "consistent"
+      ],
+      "link_id_limit": 100,
+      "note": "Report only, never correct. Read r_method digits independently in width/slope/step order (p22). Survey uses full table 3.3 intervals; trace uses only red-underlined readings (p20-21; figure 3.3 p22). Only observed width code 1 -> C is supported for trace; all other trace width codes and S/A/Z/X width readings are not_checkable because only width C is red-underlined on p21. Slope/step A/B/C use upper thresholds including zero; their Z bounds remain supported. Slope/step S (0 percent / 0cm) is black, not red-underlined on p21, so S and X are not_checkable for trace. Survey S stays supported. Missing/blank/other method digits use the union of supported readings only: width codes 2/3/4/99 retain only their survey reading; slope/step code 1 retains S from survey plus A/B/C from trace. Accepted membership is method_unknown, never plain consistent. Link precedence: not_checkable, inconsistent, method_unknown, consistent. Source link_id lists retain input order, capped at 100 per state/component with truncation and unavailable-ID counts. No source values, applicable-version UNKNOWN, verification or routability are changed."
+    },
+    "literal_cooccurrences": {
+      "nonzero_floor_nodes": 35,
+      "nonzero_floor_nodes_by_in_out": {
+        "1": 35
+      },
+      "unknown_floor_nodes": 0,
+      "rt_struct_5_7_by_endpoint_floors": [
+        {
+          "rt_struct": "5",
+          "start_floor": "-0.5",
+          "end_floor": "-0.5",
+          "count": 1
+        },
+        {
+          "rt_struct": "5",
+          "start_floor": "-1",
+          "end_floor": "-1",
+          "count": 3
+        },
+        {
+          "rt_struct": "5",
+          "start_floor": "-1",
+          "end_floor": "0",
+          "count": 1
+        },
+        {
+          "rt_struct": "5",
+          "start_floor": "0",
+          "end_floor": "-1",
+          "count": 1
+        },
+        {
+          "rt_struct": "5",
+          "start_floor": "0",
+          "end_floor": "0",
+          "count": 2
+        },
+        {
+          "rt_struct": "7",
+          "start_floor": "0",
+          "end_floor": "0",
+          "count": 81
+        },
+        {
+          "rt_struct": "7",
+          "start_floor": "0",
+          "end_floor": "0.5",
+          "count": 2
+        }
+      ],
+      "note": "Literal co-occurrence counts only; missing or duplicate endpoint identifiers have unknown floor. No floor equivalence or connectivity is inferred."
+    }
+  },
+  "counts": {
+    "nodes": 1887,
+    "links": 2196
+  },
+  "distance_consistency": {
+    "ellipsoid": "GRS80",
+    "method": "Vincenty inverse; sum of supplied polyline segments",
+    "assumed_axis_order": "longitude,latitude degrees",
+    "rounding_threshold_m": 0.05,
+    "float_tolerance_m": 0.000001,
+    "total_links": 2196,
+    "comparable_links": 2196,
+    "skipped_links": 0,
+    "within_threshold": 2166,
+    "above_threshold": 30,
+    "absolute_delta_m": {
+      "median": 0.02574802525526909,
+      "p95": 0.047573583817347664,
+      "p99": 0.05044424382009076,
+      "max": 0.0545957414443663
+    },
+    "result": "NO_VERDICT",
+    "note": "Distance consistency tests axis order and metre consistency under an assumption; it cannot distinguish JGD2011, WGS84 or Tokyo Datum."
+  },
+  "csv_comparison": {
+    "nodes": {
+      "csv_rows": 1887,
+      "geojson_features": 1887,
+      "shared_fields": [
+        "floor",
+        "in_out",
+        "lat",
+        "link1_id",
+        "link2_id",
+        "link3_id",
+        "link4_id",
+        "link5_id",
+        "link6_id",
+        "lon",
+        "node_id"
+      ],
+      "csv_only_fields": [
+        "elevation"
+      ],
+      "geojson_only_fields": [],
+      "matched_unique_ids": 1887,
+      "unavailable_ids": {
+        "csv": 0,
+        "geojson": 0
+      },
+      "csv_only_ids": 0,
+      "geojson_only_ids": 0,
+      "duplicate_csv_ids": [],
+      "duplicate_geojson_ids": [],
+      "equal_shared_attribute_rows": 1887,
+      "different_shared_attribute_rows": 0,
+      "non_comparable_shared_attribute_rows": 0,
+      "differences_by_shared_field": {
+        "floor": 0,
+        "in_out": 0,
+        "lat": 0,
+        "link1_id": 0,
+        "link2_id": 0,
+        "link3_id": 0,
+        "link4_id": 0,
+        "link5_id": 0,
+        "link6_id": 0,
+        "lon": 0,
+        "node_id": 0
+      },
+      "non_comparable_by_shared_field": {
+        "floor": 0,
+        "in_out": 0,
+        "lat": 0,
+        "link1_id": 0,
+        "link2_id": 0,
+        "link3_id": 0,
+        "link4_id": 0,
+        "link5_id": 0,
+        "link6_id": 0,
+        "lon": 0,
+        "node_id": 0
+      },
+      "difference_samples": [],
+      "equal_coordinates": 1887,
+      "different_or_unavailable_coordinates": 0
+    },
+    "links": {
+      "csv_rows": 2196,
+      "geojson_features": 2196,
+      "shared_fields": [
+        "brail_tile",
+        "direction",
+        "distance",
+        "elevator",
+        "end_id",
+        "lev_diff",
+        "link_id",
+        "rank",
+        "roof",
+        "route_type",
+        "rt_struct",
+        "start_id",
+        "tfc_s_type",
+        "tfc_signal",
+        "vtcl_slope",
+        "width"
+      ],
+      "csv_only_fields": [
+        "bus_s_lat",
+        "bus_s_lon",
+        "bus_stop",
+        "condition",
+        "day_trfc",
+        "door_type",
+        "elev_lat",
+        "elev_lon",
+        "end_date",
+        "end_time",
+        "facil_lat",
+        "facil_lon",
+        "facility",
+        "hSlope_lat",
+        "hSlope_lon",
+        "hSlope_max",
+        "handrail",
+        "levDif_lat",
+        "levDif_lon",
+        "levDif_max",
+        "main_user",
+        "maint_date",
+        "no_serv_d",
+        "r_method",
+        "st_name",
+        "stair",
+        "start_date",
+        "start_time",
+        "tfc_restr",
+        "tfc_s_lat",
+        "tfc_s_lon",
+        "vSlope_lat",
+        "vSlope_lon",
+        "vSlope_max",
+        "w_min",
+        "w_min_lat",
+        "w_min_lon",
+        "waterway"
+      ],
+      "geojson_only_fields": [],
+      "matched_unique_ids": 2196,
+      "unavailable_ids": {
+        "csv": 0,
+        "geojson": 0
+      },
+      "csv_only_ids": 0,
+      "geojson_only_ids": 0,
+      "duplicate_csv_ids": [],
+      "duplicate_geojson_ids": [],
+      "equal_shared_attribute_rows": 2196,
+      "different_shared_attribute_rows": 0,
+      "non_comparable_shared_attribute_rows": 0,
+      "differences_by_shared_field": {
+        "brail_tile": 0,
+        "direction": 0,
+        "distance": 0,
+        "elevator": 0,
+        "end_id": 0,
+        "lev_diff": 0,
+        "link_id": 0,
+        "rank": 0,
+        "roof": 0,
+        "route_type": 0,
+        "rt_struct": 0,
+        "start_id": 0,
+        "tfc_s_type": 0,
+        "tfc_signal": 0,
+        "vtcl_slope": 0,
+        "width": 0
+      },
+      "non_comparable_by_shared_field": {
+        "brail_tile": 0,
+        "direction": 0,
+        "distance": 0,
+        "elevator": 0,
+        "end_id": 0,
+        "lev_diff": 0,
+        "link_id": 0,
+        "rank": 0,
+        "roof": 0,
+        "route_type": 0,
+        "rt_struct": 0,
+        "start_id": 0,
+        "tfc_s_type": 0,
+        "tfc_signal": 0,
+        "vtcl_slope": 0,
+        "width": 0
+      },
+      "difference_samples": []
+    },
+    "method": "Join unique literal IDs; unavailable IDs are excluded and counted per side. Shared numeric fields accept only finite numbers or decimal numeric strings; invalid values are non-comparable. Other scalar fields use exact text; blank/null both absent. Raw attributes are retained unchanged. Node CSV lon/lat compared exactly with GeoJSON Point coordinates. No CSV link geometry is available for a polyline equality check."
+  },
+  "tool_input_sha256": "3a59c536b3d0efee1964f814e9144dc501e4262488e750c1889831759354f6e5",
+  "input_sources": [
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-geojson",
+      "sha256": "f6b84c9c6d05559f04b4a4796b9286f6bfd1bdb4aea0b112666b3d7585b3eab6"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-csv",
+      "sha256": "2477e6f27d8be30b3e57ee6849a36b5d8c9f56e1d2ff34956fe5934b71f4920a"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-csv",
+      "sha256": "a0f8376556bc7c920be10c27181d8a4219745b55ec2bea6938d28dfeadde80d2"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2018-03",
+      "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2024-07",
+      "sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4"
+    }
+  ]
+}

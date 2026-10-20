@@ -33,6 +33,7 @@ export type SourceManifest = {
   availability_deadline: string | null;
   notes: string;
   publish_gate: string;
+  supporting_documents?: Array<{ id: string; url: string }>;
 };
 
 export type ResolutionEvidence = null | { source_id: string; sha256: string; json_pointer: string };
@@ -53,6 +54,7 @@ export type AcquisitionRecord = {
   expected_url_match: boolean | null;
   size_check: 'MATCH' | 'MISMATCH' | 'NOT_SPECIFIED';
   mode: 'online' | 'offline';
+  supporting_documents?: Array<{ id: string; url: string; sha256: string; bytes: number; store_path: string }>;
   last_offline_check?: { requested_at: string; completed_at: string; tool_version: string; sha256: string; bytes: number; status: 'PASS' };
 };
 
@@ -148,6 +150,11 @@ export async function getStoredSource(sourceId: string, options: { ignoreRecorde
   await assertPathWithinStore(getStoreRoot(), dirname(path));
   await assertPathWithinStore(getStoreRoot(), path);
   await verifyStoredFile(path, record.sha256, record.bytes);
+  for (const document of record.supporting_documents ?? []) {
+    const documentPath = safeStorePath(getStoreRoot(), document.store_path);
+    await assertPathWithinStore(getStoreRoot(), documentPath);
+    await verifyStoredFile(documentPath, document.sha256, document.bytes);
+  }
   return { record, source, path };
 }
 

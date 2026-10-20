@@ -1,6 +1,6 @@
 # Lane D — GIS data factory handoff
 
-Updated: 2026-10-20 · Issue: [#10](https://github.com/nurockplayer/gteki/issues/10) · Lead: Opus 5.5 (architecture, integration, review, delivery) · Implementation and tests: Codex GPT-6.1 Sol (xhigh, fast tier) · Independent review: separate read-only Codex GPT-6 Astra (high) sessions.
+Updated: 2026-10-21 · Issue: [#10](https://github.com/nurockplayer/gteki/issues/10) · Lead: Opus 5.5 (architecture, integration, review, delivery) · Implementation and tests: Codex GPT-6.1 Sol (xhigh, fast tier) · Independent review: separate read-only Codex GPT-6 Astra (high) sessions.
 
 **Status:** this is a reproducible, tested ingestion and inspection run on real public sources. **Nothing here is accepted station topology, a verified route, current-world geometry or a publication approval.** Every normalized record is `UNVERIFIED`, every GLB is `NOT_FOR_ROUTING` and every candidate graph has `routable: false`.
 
@@ -56,17 +56,46 @@ Reproduce the full run with `pnpm --dir tools/gis install --frozen-lockfile`, th
 
 ## Handoff to station leads (A/B), shared core (C) and assets (E)
 
-1. **Ikebukuro (A):** the PLATEAU B1 passage is the only open 3D geometry acquired. Use it as a geometry candidate for a B1 slice after verifying it against permitted references or a field survey. It has no route graph, no gates and no other levels. R1 is an outdoor/peripheral 2019 network with an undeclared CRS, not an indoor graph.
-2. **Shinjuku (B):** E27 is the only open indoor graph, and it does not overlap the PLATEAU ubld file. Choose between (a) an E27-first slice whose geometry is derived from the E27 station-map polygons (PDL 1.0) with **no invented heights** (only literal floor values) and (b) a PLATEAU-area slice with no open graph. Both are HOLD for verified routing.
+1. **Ikebukuro (A):** the PLATEAU B1 passage is the only open 3D geometry acquired. Use it as a geometry candidate for a B1 slice after verifying it against permitted references or a field survey. It has no route graph, no gates and no other levels. R1 is an outdoor/peripheral network, not an indoor graph. Neither R1 file declares a CRS; JGD2011 lon/lat is only inferred from the MLIT spec (see Gap research). Under that inference, the 176 R1 nodes inside the B1 passage bbox are all floor 0 or 0.5 and no `rt_struct=5` (地下通路) link crosses it, so R1 does not appear to model this B1 passage.
+2. **Shinjuku (B):** E27 is the only open indoor graph, and it does not overlap the PLATEAU ubld file. No 2025 PLATEAU ubld file is catalogued for E27's mesh `53394525`. One E27 underground-passage link (`b80b3f4aef474ac2aa25c6680b26177a`) contradicts itself: `rank` SBS (slope 5–8 %) but `vtcl_slope=1` (0 %), both field-surveyed. Treat its slope as UNKNOWN. Choose between (a) an E27-first slice whose geometry is derived from the E27 station-map polygons (PDL 1.0) with **no invented heights** (only literal floor values) and (b) a PLATEAU-area slice with no open graph. Both are HOLD for verified routing.
 3. **Shared core (C):** the frames `ikebukuro-plateau-ubld-v0` / `shinjuku-plateau-ubld-v0` are arbitrary processing origins, not station reference points. They are a proposal for the #2 coordinate contract and are not imposed. Field names follow the source-register schema.
 4. **Assets (E):** GLB nodes carry `gml_id` extras for traceability. Merging for runtime should keep a sidecar mapping back to the IDs.
 
 ## Known gaps / next steps
 
-- Decode MLIT network code tables (`rt_struct`, `lev_diff`, `direction` …) from the official spec PDF, with the spec version recorded, rather than guessing.
-- Acquire the R1 GeoJSON variant, which may declare a CRS, to make the R1↔PLATEAU relation computable.
+- Done in the gap research (below): MLIT code tables decoded per spec version; R1 GeoJSON acquired (it has no CRS either); E27↔PLATEAU coverage checked against the catalog.
+- Still open: which spec version R1 actually follows; R1's verified datum; earlier PLATEAU vintages; operator-floor equivalence and floor-to-height mapping; paid/unpaid boundaries.
 - Next targeted acquisitions: S10 Toei shop CSV (CC BY, version to verify), S03 Tokyo 2023 Shinjuku facility ZIP (resource-level licence still to verify), and the Shinjuku `related` POI ZIP (rights unknown).
 - Use the operator-permission/field-survey template: [gaps/operator-survey-questions.md](gaps/operator-survey-questions.md).
+
+## Gap research (2026-10-21, stacked on PR #18)
+
+Full evidence: [research/network-codes-and-coverage.md](research/network-codes-and-coverage.md). Fix trail: [research/lane-d-review-fixes.md](research/lane-d-review-fixes.md).
+
+**Added sources:** six, for 19 in total, all hashed. These are the R1 node/link GeoJSON, the MLIT 歩行空間ネットワークデータ specs (2018-03, 2024-07 and the 新旧比較表; PDL 1.0 under the MLIT site terms, with no separate notice in the PDFs), and a PLATEAU `m:533945` ubld catalog snapshot.
+
+**Codebooks:** `tools/gis/codebooks/` holds the 2018-03 and 2024-07 code tables. Each records the table and printed page. A real-data test checks all 235 labels against the acquired PDF text. One 2018 code (`waterway=2`) has no printed label and stays null. Decoding is a literal label lookup. It never sets routability.
+
+**R1 Ikebukuro:**
+- CSV and GeoJSON agree on all 1,887 nodes, all 2,196 links and every node coordinate.
+- The observed codes fit the 2024-07 spec but not 2018-03, while the CKAN notes say "last updated 2019-01-28". The applicable version is therefore UNKNOWN, with 2024-07 the only candidate.
+- Both specs (§2.2) prescribe JGD2011 lon/lat, so R1's CRS is recorded as `EPSG:6668` with status `INFERRED_FROM_SPEC`. Every metric that depends on it is `CONDITIONAL_ON_INFERRED_CRS`.
+- Distance check: reading coordinates as lon/lat on GRS80 gives median |Δ| 0.026 m against the recorded `distance` and max 0.055 m. 30 links exceed 0.05 m, so the result is `NO_VERDICT`. Lengths cannot distinguish datums in any case.
+- All 2,196 rank checks are `method_unknown` because `r_method` is blank.
+
+**E27 Shinjuku:**
+- The codes fit 2024-07.
+- Rank check under the survey rules: 262 consistent, 1 inconsistent (link above).
+- Every E27 layer lies in 3rd mesh `53394525`. The 2025 catalog lists ubld only for `53394536` (Shinjuku) and `53394576` (Toshima) across the whole 2nd mesh `533945`, so there is no catalogued underground model for E27.
+- PLATEAU file bboxes extend outside their nominal meshes, so a mesh name is not coverage. Older vintages are UNKNOWN.
+
+**Rank-check method rules:** these follow the spec's red underlines (表3.3, p21). Under mobility-trace data, only the underlined readings are checked: width C, slope/step A–C upper bounds and slope/step Z. Every other trace case is `not_checkable`, and the check never corrects a rank.
+
+**Verification (Opus lead's independent online rerun):** `typecheck` 0 · `test` **201/201** · `test:real` **6/6** · real run **17/17** · digest `9605494ca38c261d1e49019529eba707bf3feafe0e96adc4bf831a85fda0ae15`. The GLB outputs are byte-identical to PR #18. After the PR-bot fix that resolves `pdftotext` through `PATH` (override with `GTEKI_GIS_PDFTOTEXT`), the digest is `3a59c536b3d0efee1964f814e9144dc501e4262488e750c1889831759354f6e5`, with the same test counts and GLBs.
+
+**Review:** five fresh read-only Codex GPT-6 Astra (high) reviews.
+- Rounds 1–4: REQUEST_CHANGES on P2 items only, all fixed. They covered prototype-name codes, invalid join IDs, non-numeric coercion, trace-rank rules (three refinements), offline receipt links and candidate provenance.
+- Round 5: **APPROVE**.
 
 ## Review trail
 
