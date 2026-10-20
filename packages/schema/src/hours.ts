@@ -28,8 +28,12 @@ export function isOpenAt(hours: HoursSpec | null, at: LocalTime): boolean | null
   if (hours.kind === "always") return true;
   const open = parseHm(hours.open);
   let close = parseHm(hours.close);
-  if (open === null || close === null || open === close) return null;
-  if (close < open) close += 1440; // e.g. 22:00–02:00 runs past midnight
+  if (open === null || close === null) return null;
+  // A close before the open runs past midnight (22:00–02:00), as often as needed (25:00–00:30).
+  while (close < open) close += 1440;
+  // Ends that land on the same instant (09:00–09:00, 24:00–00:00) give no length: UNKNOWN. An explicit
+  // 24-hour span such as 05:00–29:00 is a real window and stays.
+  if (close === open) return null;
   const days = new Set(hours.days ?? WEEK);
   const today = WEEK.indexOf(at.weekday);
   if (today < 0 || !(at.minutes >= 0 && at.minutes < 1440)) return null;

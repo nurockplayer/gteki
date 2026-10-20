@@ -130,7 +130,10 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       warn("edge.escalator.direction", "bidirectional escalator; running direction must be evidenced", e.id);
     if (e.geometryZ !== undefined && !GEOMETRY_Z.has(e.geometryZ)) err("edge.geometryZ", `unknown geometryZ ${e.geometryZ}`, e.id);
     if (e.hours?.kind === "window") {
-      if (parseHm(e.hours.open) === null || parseHm(e.hours.close) === null || e.hours.open === e.hours.close)
+      const open = parseHm(e.hours.open);
+      let close = parseHm(e.hours.close);
+      if (open !== null && close !== null) while (close < open) close += 1440;
+      if (open === null || close === null || close === open)
         err("edge.hours", `malformed hours window ${e.hours.open}–${e.hours.close}`, e.id);
       for (const d of e.hours.days ?? []) if (!WEEKDAYS.has(d)) err("edge.hours", `unknown weekday ${d}`, e.id);
     }

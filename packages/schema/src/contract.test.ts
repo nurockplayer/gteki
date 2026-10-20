@@ -329,3 +329,25 @@ describe("fifth GitHub review round (PR #15): canonical asset paths and ISO date
     for (const bad of ["2022-1", "2022-13", "2026-02-29", "Sept 2025", "2026-09-17T00:00Z"]) expect(withDate(bad), bad).toContain("source.date");
   });
 });
+
+describe("late-opening windows (PR #15 Codex review 6)", () => {
+  const w = (open: string, close: string): HoursSpec => ({ kind: "window", open, close, evidence: ev });
+  it("wraps a close before an after-midnight open as often as needed", () => {
+    // 25:00–00:30 on Monday's service day: Tuesday 01:00 through Wednesday 00:30.
+    expect(isOpenAt(w("25:00", "00:30"), { weekday: "tue", minutes: 60 })).toBe(true);
+    expect(isOpenAt(w("25:00", "00:30"), { weekday: "tue", minutes: 23 * 60 })).toBe(true);
+    expect(isOpenAt(w("25:00", "00:30"), { weekday: "wed", minutes: 15 })).toBe(true);
+    expect(isOpenAt(w("25:00", "00:30"), { weekday: "tue", minutes: 15 })).toBe(true); // Sunday's window
+    expect(isOpenAt(w("25:00", "00:30"), { weekday: "tue", minutes: 45 })).toBe(false); // between windows (exclusive close)
+  });
+  it("keeps an explicit 24-hour span such as 05:00–29:00", () => {
+    expect(isOpenAt(w("05:00", "29:00"), { weekday: "tue", minutes: 60 })).toBe(true);
+    expect(errors(createSyntheticBundle([edge("h", "start", "goal", { hours: w("05:00", "29:00") })]))).not.toContain("edge.hours");
+  });
+
+  it("treats clock-equal ends as UNKNOWN and rejects them in validation", () => {
+    expect(isOpenAt(w("24:00", "00:00"), { weekday: "mon", minutes: 60 })).toBeNull();
+    const b = createSyntheticBundle([edge("h", "start", "goal", { hours: w("24:00", "00:00") })]);
+    expect(errors(b)).toContain("edge.hours");
+  });
+});

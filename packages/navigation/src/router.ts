@@ -142,6 +142,7 @@ export function createRouter(bundle: StationBundle): Router {
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const sourceDates = new Map(bundle.sources.map((source) => [source.id, source.datasetDate]));
+  const sourceValidUntil = new Map(bundle.sources.map((source) => [source.id, source.validUntil ?? null]));
   const adjacency = new Map<string, Traversal[]>();
   for (const nodeId of nodes.keys()) adjacency.set(nodeId, []);
   for (const edge of bundle.edges) {
@@ -251,6 +252,8 @@ export function createRouter(bundle: StationBundle): Router {
       const edgeIds = unknownEdges.get(kind);
       return edgeIds ? [{ kind, edgeIds }] : [];
     });
+    // Node coordinates are drawn and measured too, so their sources are dependencies like edge evidence.
+    for (const nodeId of nodeIds) for (const ref of nodes.get(nodeId)!.sourceRefs) sourceIds.add(ref.sourceId);
     let oldestSourceDate: string | null = null;
     const undatedSourceIds: string[] = [];
     for (const sourceId of [...sourceIds].sort()) {
@@ -258,29 +261,37 @@ export function createRouter(bundle: StationBundle): Router {
       if (date === null) undatedSourceIds.push(sourceId);
       else if (oldestSourceDate === null || date < oldestSourceDate) oldestSourceDate = date;
     }
-    // Stale when some source is old even at the latest moment its stated date allows; fresh only when every
-    // source is recent even at its earliest. A year/month-only date straddling the cutoff, or an undated
-    // dependency, leaves freshness UNKNOWN.
+    // Stale when some source is old even at the latest moment its stated date allows, or its declared
+    // validity (validUntil) has ended; fresh only when every source is recent even at its earliest and still
+    // valid. A year/month-only date straddling the cutoff, or an undated dependency, leaves freshness UNKNOWN.
     let stale: boolean | null = null;
+    const expiredSourceIds: string[] = [];
     // `today` must be one real calendar day; a partial or invalid one leaves freshness UNKNOWN.
     const todayInterval = profile.today ? dateInterval(profile.today) : null;
     const today = todayInterval && todayInterval.first === todayInterval.last ? todayInterval : null;
     if (today) {
       const maxAgeDays = profile.staleAfterDays ?? DEFAULT_STALE_AFTER_DAYS;
       let allFresh = undatedSourceIds.length === 0;
-      for (const sourceId of sourceIds) {
+      for (const sourceId of [...sourceIds].sort()) {
+        const validUntil = sourceValidUntil.get(sourceId);
+        if (validUntil) {
+          const until = dateInterval(validUntil);
+          if (!until) allFresh = false;
+          else if (today.first > until.last) { expiredSourceIds.push(sourceId); stale = true; }
+          else if (today.first > until.first) allFresh = false; // "2026-10" may have ended before the 20th; it covers the 1st
+        }
         const date = sourceDates.get(sourceId);
         if (!date) continue;
         const interval = dateInterval(date);
         if (!interval) { allFresh = false; continue; }
-        if ((today.first - interval.last) / DAY_MS > maxAgeDays) { stale = true; break; }
+        if ((today.first - interval.last) / DAY_MS > maxAgeDays) stale = true;
         if ((today.first - interval.first) / DAY_MS > maxAgeDays) allFresh = false;
       }
       if (stale === null && allFresh && sourceIds.size > 0) stale = false;
     }
     return {
       ok: true, nodeIds, steps, totalLengthM, estimatedSeconds, floorChanges, crossesFareBoundary, unknowns,
-      sourceIds: [...sourceIds].sort(), evidenceCheckedDate, oldestSourceDate, undatedSourceIds, stale, synthetic, timeRestricted, operatorIds,
+      sourceIds: [...sourceIds].sort(), evidenceCheckedDate, oldestSourceDate, undatedSourceIds, expiredSourceIds, stale, synthetic, timeRestricted, operatorIds,
     };
   }
 

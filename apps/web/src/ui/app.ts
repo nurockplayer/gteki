@@ -471,7 +471,7 @@ export class App {
     for (const u of r.unknowns) badge(`${unknownText[u.kind] ?? u.kind} ×${u.edgeIds.length}`, "unknown");
     if (r.timeRestricted.length) badge(`${t.timeWindow}: ${r.timeRestricted.map((w) => `${w.open}–${w.close}`).join(", ")}`, "unknown");
     if (r.crossesFareBoundary === true) badge(t.paidCrossing, "info");
-    if (r.stale === true) badge(t.stale, "warn");
+    if (r.stale === true) badge(t.stale, "warn", r.expiredSourceIds.length > 0 ? `${t.expired}: ${r.expiredSourceIds.join(", ")}` : (r.oldestSourceDate ?? undefined));
     // UNKNOWN freshness is shown whatever its cause: undated sources, or a year/month date straddling the cutoff.
     else if (r.stale === null) badge(t.freshnessUnknown, "unknown", r.undatedSourceIds.length > 0 ? r.undatedSourceIds.join(", ") : (r.oldestSourceDate ?? undefined));
     if (this.s.polyline.some((p) => !p.zKnown)) badge(t.symbolicHeight, "muted");
