@@ -6,7 +6,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import type { Floor, Poi, StationBundle } from "@gteki/schema";
-import { createRouter, type RouteProfile, type RouteResult } from "@gteki/navigation";
+import { createRouter, routeBetween, type RouteEndpoint, type RouteProfile, type RouteResult } from "@gteki/navigation";
 import { createSearchIndex } from "@gteki/search";
 import { loadShinjukuBundle } from "../../data/bundle.ts";
 import planJson from "../../data/plan.json";
@@ -387,24 +387,25 @@ function stationToday(): string {
 function profile(): RouteProfile {
   return { fare: $<HTMLInputElement>("ticketed").checked ? "ticketed" : "unpaid_only", stepFree: $<HTMLInputElement>("stepfree").checked, today: stationToday() };
 }
-/** Start node(s): every connector of a picked POI (the router picks the cheapest), or the attached node. */
-function startNodeIds(): string[] {
-  if (fromPick.kind === "poi") return fromPick.poi.connectorNodeIds;
-  const n = nearestNode(player);
-  return n ? [n.id] : [];
-}
 function computeRoute() {
   $("route-error").classList.add("hidden");
   if (!toPick || toPick.kind !== "poi") return;
   const goal = toPick.poi;
   if (!goal.connectorNodeIds.length) return showRouteError("この目的地は位置情報のみで、検証済みの入口がありません。This destination has no verified entrance node (search-only).");
-  const from = startNodeIds();
-  if (!from.length) return showRouteError("現在地から経路に接続できません。出発地を選んでください / Can't connect your position to the network — choose a start point");
-  // POI evidence ties origin/destination to their nodes; it joins the route's sources and freshness
-  const r = router.route(from, goal.connectorNodeIds, profile(), [...(fromPick.kind === "poi" ? [fromPick.poi.evidence] : []), goal.evidence]);
+  let origin: RouteEndpoint;
+  if (fromPick.kind === "poi") origin = { kind: "poi", poi: fromPick.poi };
+  else {
+    const here = nearestNode(player);
+    if (!here) return showRouteError("現在地から経路に接続できません。出発地を選んでください / Can't connect your position to the network — choose a start point");
+    origin = { kind: "node", nodeId: here.id };
+  }
+  // shared helper: POI fare check under unpaid-only (fails closed) + both POIs' evidence
+  const r = routeBetween(router, origin, goal, profile());
   if (!r.ok) {
     const why: Record<string, string> = {
-      no_path: "条件を満たす検証済み経路がありません（例: 段差なし・改札外のみ）。No verified route satisfies the profile.",
+      no_path: /paid area/.test(r.message)
+        ? "改札内（または改札内外が未確認）の施設のため、「きっぷ・IC あり」なしでは案内できません。This place is inside, or not known to be outside, the paid area."
+        : "条件を満たす検証済み経路がありません（例: 段差なし・改札外のみ）。No verified route satisfies the profile.",
       start_equals_goal: "すでに目的地にいます。You are already there.",
       unknown_start: "出発地が不明です。",
       unknown_goal: "目的地が不明です。",
