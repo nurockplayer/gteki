@@ -1,0 +1,15 @@
+# Disposition of the first independent review
+
+The first review returned CHANGES_REQUIRED with five P2 findings. Its complete response is retained in `first-review.txt`; that response applies to the earlier candidate, not the final implementation.
+
+1. Removed `tfc_signal` and `tfc_s_type` from fare gate/ticket aliases. The source codes remain verbatim in raw attributes and inventories; absent fare fields are null/UNKNOWN. Synthetic regression asserts both properties.
+2. The CSV and GeoJSON adapters now share the same supported literal aliases and canonical normalized fields. S01 `rt_struct`, `vtcl_slope` and `lev_diff` populate route_structure, slope_class and step_class without interpreting their category codes. Synthetic regression exercises these exact headers. The GeoJSON inspection helper builds a source-field mapping table, but the archive wrapper does not persist that table in its inventory; the final reviewer retained this presentation omission as a nonblocking P3 note.
+3. Endpoint comparison reports checked, skipped and total links plus completeness. Missing geometry or unresolved/duplicate endpoint identity suppresses a complete mismatch claim. Separate regressions cover missing link geometry, missing node geometry and duplicate IDs with different coordinates. The regenerated S01 report has complete coverage of all 263 source links; R1 retains UNKNOWN with all 2,196 comparisons skipped.
+4. The streaming CityGML scanner rejects duplicate gml:id values before merging or emitting a second identity. The regression creates a duplicate within hand-written synthetic geometry and requires rejection. Both real GMLs were re-inspected and converted after this change.
+5. Conversion identity includes the frame ID and a deterministic digest of the complete frame parameters and filters. A synthetic integration test performs three real GLB/sidecar writes while changing the origin under the same frame ID and then changing the ID; all three artifacts remain separate, with original bytes/provenance retained. Both real stations' bounded and full outputs were regenerated with the new naming.
+
+Additional audit repairs preserve nonblank source IDs and floor-label whitespace, map blank/invalid identifiers to null/UNKNOWN, avoid complete topology claims when identifiers are unavailable, and accept a negative bbox supplied as a separate CLI argument. The real bbox smoke receipt is under `../runs/negative-bbox-smoke.json`.
+
+The final run and validation receipts bind their invocations to a tool-input digest. That digest includes source code, source manifest, frame files, synthetic tests/fixtures and package/lock/workspace/TypeScript configuration. The updated review bundle includes the complete lockfile so the review can audit the digest inputs. Raw datasets, full feature detail, GLBs and full execution logs remain outside Git.
+
+The final reviewer must assess the updated candidate and issue its own disposition. These author statements do not constitute the final review verdict.

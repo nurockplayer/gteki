@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-10-20T12:26:26.549Z",
+  "status": "PASS",
+  "tool_input_sha256": "b879ca0ffd4f7ca550dcef970fae32148f45c98ca58539a745afab187b23e48e",
+  "tool_input_files": 43,
+  "required_run_commands": 16,
+  "validation_commands": 5,
+  "default_tests_passed": 62,
+  "real_tests_passed": 3,
+  "acquisitions": 13,
+  "changed_acquisition_hashes_vs_phase1": 0,
+  "referenced_rooms_with_bounds": 3,
+  "referenced_rooms": 3,
+  "normalized_records_checked": 4579,
+  "retained_current_conversions": 6,
+  "review_state": "AWAITING_LEAD_REVIEW",
+  "historical_review": "SUPERSEDED",
+  "external_phase2_review_requests": 0,
+  "oracle_bundles_remaining": 0,
+  "worktree_status": [
+    "?? .serena/",
+    "?? docs/gis/",
+    "?? tools/"
+  ],
+  "temporary_scope_deviation": "Intermediate direct Vitest checks created only root node_modules/.vitest-cache and .vite caches. Removed those self-generated caches; no root node_modules remains. Required validation used pnpm --dir tools/gis commands.",
+  "summary_command": {
+    "command": "pnpm --dir tools/gis exec tsx src/summarize.ts",
+    "exit_code": 0
+  }
+}

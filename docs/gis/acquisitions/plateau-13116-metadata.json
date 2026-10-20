@@ -1,0 +1,36 @@
+{
+  "source_id": "plateau-13116-metadata",
+  "resolved_url": "https://assets.cms.plateau.reearth.io/assets/23/b8d8c3-dbe0-4bf1-b74a-3c18b6a087c1/13116_toshima-ku_pref_2025_citygml_1_op_metadata.zip",
+  "resolution_evidence": {
+    "source_id": "plateau-catalog-ubld-13116-13104",
+    "sha256": "7e5abc031afa5ab9f4e0da1df9b7e3413d642c7cbdeb6de6f909b4a23a9737ad",
+    "json_pointer": "/cities/0/metadataZipUrls/2"
+  },
+  "requested_at": "2026-10-20T14:40:10.735Z",
+  "completed_at": "2026-10-20T14:40:10.764Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/zip",
+    "content-length": "21755",
+    "etag": "\"fb3eb7d8fd06f341c619b76e97ccb96b\"",
+    "last-modified": "Thu, 12 Mar 2026 06:15:03 GMT",
+    "date": "Tue, 20 Oct 2026 14:30:52 GMT"
+  },
+  "bytes": 21755,
+  "sha256": "9c75c7135d5b1693db5474c0756eeb5632496d9d1fbcfd8ca7882c4cbea7d624",
+  "store_path": "raw/9c75c7135d5b1693db5474c0756eeb5632496d9d1fbcfd8ca7882c4cbea7d624/13116_toshima-ku_pref_2025_citygml_1_op_metadata.zip",
+  "tool_version": "0.1.0",
+  "git_commit": "18e759ed22a6f394914fd2612777f407e3a8b059",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-20T14:43:39.042Z",
+    "completed_at": "2026-10-20T14:43:39.042Z",
+    "tool_version": "0.1.0",
+    "sha256": "9c75c7135d5b1693db5474c0756eeb5632496d9d1fbcfd8ca7882c4cbea7d624",
+    "bytes": 21755,
+    "status": "PASS"
+  }
+}

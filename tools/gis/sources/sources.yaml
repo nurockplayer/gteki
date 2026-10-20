@@ -1,0 +1,235 @@
+# Bounded source manifest for the GIS data factory. Rights remain source-specific.
+- source_id: plateau-catalog-ubld-13116-13104
+  title: PLATEAU citygml data-catalog response for Toshima and Shinjuku ubld
+  station_ids: [ikebukuro, shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=ubld
+  resolution: { kind: direct }
+  expected_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=ubld
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G2 }
+  modification_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G2 }
+  redistribution_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G2 }
+  content_year: null
+  availability_deadline: null
+  notes: Live catalog snapshot; authoritative resource URLs are resolved from its response at acquisition time.
+  publish_gate: HOLD
+- source_id: plateau-13116-ubld-53394576
+  title: Ikebukuro underground CityGML 53394576
+  station_ids: [ikebukuro]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=ubld
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-ubld-13116-13104, match: 53394576_ubld_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/ubld/53394576_ubld_6697_op.gml
+  expected_bytes: 35427963
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: 2023
+  availability_deadline: null
+  notes: 2025 package metadata says underground geometry is based on 2023 survey; preserve this distinction.
+  publish_gate: CONDITIONAL
+- source_id: plateau-13116-metadata
+  title: Toshima CityGML metadata archive
+  station_ids: [ikebukuro]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=ubld
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-ubld-13116-13104, match: _metadata.zip }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/23/b8d8c3-dbe0-4bf1-b74a-3c18b6a087c1/13116_toshima-ku_pref_2025_citygml_1_op_metadata.zip
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: 2025
+  availability_deadline: null
+  notes: Resource-level rights are unverified; CityGML rights do not automatically apply.
+  publish_gate: HOLD
+- source_id: plateau-13116-codelists
+  title: Toshima CityGML codelists archive
+  station_ids: [ikebukuro]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=ubld
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-ubld-13116-13104, match: _codelists.zip }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/82/77b46c-5983-448a-9d89-c0663ddc0652/13116_toshima-ku_pref_2025_citygml_1_op_codelists.zip
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: 2025
+  availability_deadline: null
+  notes: Resource-level rights are unverified.
+  publish_gate: HOLD
+- source_id: plateau-13116-schemas
+  title: Toshima CityGML schemas archive
+  station_ids: [ikebukuro]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=ubld
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-ubld-13116-13104, match: _schemas.zip }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/af/f02a4e-5049-4bbd-919a-b375ac570286/13116_toshima-ku_pref_2025_citygml_1_op_schemas.zip
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: 2025
+  availability_deadline: null
+  notes: Resource-level rights are unverified.
+  publish_gate: HOLD
+- source_id: plateau-13104-ubld-53394536
+  title: Shinjuku underground CityGML 53394536
+  station_ids: [shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=ubld
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-ubld-13116-13104, match: 53394536_ubld_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/ubld/53394536_ubld_6697_op.gml
+  expected_bytes: 43830765
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: 2023
+  availability_deadline: null
+  notes: 2025 package metadata says underground geometry is based on 2023 survey; preserve this distinction.
+  publish_gate: CONDITIONAL
+- source_id: plateau-13104-metadata
+  title: Shinjuku CityGML metadata archive
+  station_ids: [shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=ubld
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-ubld-13116-13104, match: _metadata.zip }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/e3/7cb09d-c77c-4a58-835a-5f65842426fb/13104_shinjuku-ku_pref_2025_citygml_1_op_metadata.zip
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: 2025
+  availability_deadline: null
+  notes: Resource-level rights are unverified.
+  publish_gate: HOLD
+- source_id: plateau-13104-codelists
+  title: Shinjuku CityGML codelists archive
+  station_ids: [shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=ubld
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-ubld-13116-13104, match: _codelists.zip }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/e9/b1d234-9c89-448a-9d89-c0663ddc965c/13104_shinjuku-ku_pref_2025_citygml_1_op_codelists.zip
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: 2025
+  availability_deadline: null
+  notes: Resource-level rights are unverified.
+  publish_gate: HOLD
+- source_id: plateau-13104-schemas
+  title: Shinjuku CityGML schemas archive
+  station_ids: [shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=ubld
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-ubld-13116-13104, match: _schemas.zip }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/10/d3bda5-575e-43f8-a134-3fc3ef6b56ab/13104_shinjuku-ku_pref_2025_citygml_1_op_schemas.zip
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: 2025
+  availability_deadline: null
+  notes: Resource-level rights are unverified.
+  publish_gate: HOLD
+- source_id: hokonavi-oedo-shinjuku-network-geojson
+  title: Toei Oedo Shinjuku station indoor network GeoJSON ZIP
+  station_ids: [shinjuku]
+  publisher: MLIT Hokonavi DP
+  official_url: https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjuku
+  resolution: { kind: direct }
+  expected_url: https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/d4519a9a-917a-4de8-9104-83e21246c04c/download/nwd_oedo_shinjuku_geojson.zip
+  expected_bytes: null
+  license_name: PDL 1.0
+  license_url: https://www.digital.go.jp/resources/open_data/public_data_license_v1.0
+  attribution_text: 出典：国土交通省「ほこナビDP」／加工して作成
+  commercial_use: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#S01 }
+  modification_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#S01 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#S01 }
+  content_year: null
+  availability_deadline: 2027-03-12
+  notes: Preserve Toei Oedo E27 operator scope and source floor labels.
+  publish_gate: CONDITIONAL
+- source_id: hokonavi-oedo-shinjuku-stationmap-geojson
+  title: Toei Oedo Shinjuku station floor-map GeoJSON ZIP
+  station_ids: [shinjuku]
+  publisher: MLIT Hokonavi DP
+  official_url: https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjuku
+  resolution: { kind: direct }
+  expected_url: https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/9c5ecc7b-a6e4-4d92-978c-9b66ca642172/download/stationmap_oedo_shinjuku_geojson.zip
+  expected_bytes: null
+  license_name: PDL 1.0
+  license_url: https://www.digital.go.jp/resources/open_data/public_data_license_v1.0
+  attribution_text: 出典：国土交通省「ほこナビDP」／加工して作成
+  commercial_use: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#S01 }
+  modification_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#S01 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#S01 }
+  content_year: null
+  availability_deadline: 2027-03-12
+  notes: Inventory-only floor-map source; do not reproduce source graphics as released assets.
+  publish_gate: CONDITIONAL
+- source_id: hokonavi-ikebukuro-walk-node-csv
+  title: Hokonavi Ikebukuro walking network nodes CSV
+  station_ids: [ikebukuro]
+  publisher: MLIT Hokonavi DP
+  official_url: https://ckan.hokonavi.go.jp/dataset/nwd_ikebukuro
+  resolution: { kind: direct }
+  expected_url: https://ckan.hokonavi.go.jp/dataset/324ba112-3bc0-4b9c-8a36-7d30edf4cf92/resource/03792620-1a26-4d7f-85ea-b4e46043e5b9/download/node.csv
+  expected_bytes: 279843
+  license_name: PDL 1.0
+  license_url: https://www.digital.go.jp/resources/open_data/public_data_license_v1.0
+  attribution_text: 出典：国土交通省「ほこナビDP」／加工して作成
+  commercial_use: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#R1 }
+  modification_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#R1 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#R1 }
+  content_year: 2019
+  availability_deadline: null
+  notes: Historical surrounding-network candidate; not a verified indoor station graph.
+  publish_gate: CONDITIONAL
+- source_id: hokonavi-ikebukuro-walk-link-csv
+  title: Hokonavi Ikebukuro walking network links CSV
+  station_ids: [ikebukuro]
+  publisher: MLIT Hokonavi DP
+  official_url: https://ckan.hokonavi.go.jp/dataset/nwd_ikebukuro
+  resolution: { kind: direct }
+  expected_url: https://ckan.hokonavi.go.jp/dataset/324ba112-3bc0-4b9c-8a36-7d30edf4cf92/resource/015aaf66-9c33-412e-873d-40dc0481ec6c/download/link.csv
+  expected_bytes: 370498
+  license_name: PDL 1.0
+  license_url: https://www.digital.go.jp/resources/open_data/public_data_license_v1.0
+  attribution_text: 出典：国土交通省「ほこナビDP」／加工して作成
+  commercial_use: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#R1 }
+  modification_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#R1 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#R1 }
+  content_year: 2019
+  availability_deadline: null
+  notes: Historical surrounding-network candidate; blank elevation must remain unknown.
+  publish_gate: CONDITIONAL

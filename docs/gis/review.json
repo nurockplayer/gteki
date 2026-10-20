@@ -1,0 +1,67 @@
+{
+  "status": "SUPERSEDED",
+  "method": "Oracle CLI rendered bundle; independent ChatGPT review through Ego-lite",
+  "candidate_tool_input_sha256": "3b6f085efcc168fac3ad688e5108393625cc94176fe963ce278a0d7ea3594745",
+  "bundle_sha256": "2c7cd51c2362559c135569c6e3c778b9343961e29b4444924c9ed0f928115d6f",
+  "bundle_bytes": 496321,
+  "observed_model_selection": "GPT-6",
+  "observed_reasoning_label": "Pro",
+  "limitations": "Static code and supplied evidence review; reviewer cannot execute local tests or inspect external raw/GLB data.",
+  "first_review": {
+    "candidate_tool_input_sha256": "4a0969bb9a94a1bdb62e3ef65d09bfeefc2ec0b72013b7906ae76e5410ece651",
+    "verdict": "CHANGES_REQUIRED",
+    "finding_count": 5,
+    "severity": "P2",
+    "response_path": "history/reviews/first-review.txt",
+    "bundle_sha256": "24097ab0f217fa892169ae112892507c9b96272255d2b2848811e32d636942ca",
+    "bundle_bytes": 401844
+  },
+  "corrections": {
+    "fare_aliases": "implemented",
+    "geojson_literal_aliases": "implemented",
+    "endpoint_coverage_and_duplicate_identity": "implemented",
+    "duplicate_gml_ids": "implemented",
+    "frame_content_identity_and_retained_artifacts": "implemented"
+  },
+  "revalidation_status": "PASS",
+  "requested_at": "2026-10-20T11:43:24.148Z",
+  "final_review": {
+    "candidate_tool_input_sha256": "3b6f085efcc168fac3ad688e5108393625cc94176fe963ce278a0d7ea3594745",
+    "verdict": "PASS",
+    "required_findings_closed": 5,
+    "response_path": "history/reviews/final-review.txt",
+    "response_sha256": "5bec13c46bd86d6405f1c8623d5d700ffa066c63cea1ab0295fdd9a2820f679b",
+    "response_bytes": 11960,
+    "reviewer_reconstructed_tool_digest": true,
+    "nonblocking_findings": [
+      {
+        "severity": "P3",
+        "path": "tools/gis/src/citygml.ts",
+        "finding": "Qualified gate element names do not match the anchored semantic classifier; current two source inventories contain no matching gate objects and remain UNKNOWN.",
+        "disposition": "Retained as bounded follow-up; no current source observation is lost."
+      },
+      {
+        "severity": "P3",
+        "path": "tools/gis/src/network.ts",
+        "finding": "GeoJSON archive inventory omits the mapping table produced by the inspection helper; candidate normalized attributes use the corrected literal aliases.",
+        "disposition": "Documentation statement narrowed after review in reviews/corrections.md; source unchanged."
+      }
+    ],
+    "completed_at": "2026-10-20T11:52:05.534Z",
+    "post_review_edits": "Documentation only: saved review receipt/response, linked the final response, and narrowed the mapping-table statement. Fingerprinted tool inputs unchanged."
+  },
+  "historical_verdict": "PASS",
+  "superseded_by": {
+    "review": "Lead fresh independent read-only Codex review",
+    "model": "gpt-6-astra",
+    "reasoning_effort": "high",
+    "verdict": "REQUEST_CHANGES",
+    "findings": {
+      "P1": 1,
+      "P2": 6,
+      "P3": 2
+    },
+    "authority": "Phase 2 user brief; lead owns all subsequent review"
+  },
+  "historical_notice": "Historical external review receipt only. Superseded by the lead Codex review; not current acceptance or review evidence. No Phase 2 code or data is submitted externally."
+}

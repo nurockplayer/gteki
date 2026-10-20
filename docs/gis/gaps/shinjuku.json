@@ -1,0 +1,136 @@
+{
+  "station_id": "shinjuku",
+  "source_ids": {
+    "citygml": "plateau-13104-ubld-53394536",
+    "network": "hokonavi-oedo-shinjuku-network-geojson"
+  },
+  "input_status": {
+    "citygml_inventory": "AVAILABLE",
+    "network_report": "AVAILABLE"
+  },
+  "semantic_presence": {
+    "floors": {
+      "status": "PRESENT",
+      "count": 1911,
+      "gml_id_count": 1911,
+      "sample_gml_ids": [
+        "bdry_d7c5c46c-bdec-4e4d-a08e-f919a6683b02",
+        "bdry_a43a8c2f-f699-43d4-beea-48f6631b79ec",
+        "bdry_185dd85a-f91e-49e8-85a9-5ccbf7c9bcce"
+      ]
+    },
+    "floor_labels": {
+      "status": "UNKNOWN",
+      "count": null,
+      "gml_id_count": 0,
+      "sample_gml_ids": []
+    },
+    "doors": {
+      "status": "PRESENT",
+      "count": 1364,
+      "gml_id_count": 1364,
+      "sample_gml_ids": [
+        "door_f87caf7a-2b2a-4d37-88dc-5caf0cb475f7",
+        "door_2ec9106b-1988-46eb-aefc-ae0cfbf31c7d",
+        "door_1e1d3134-c015-4aae-aa81-136704c5b86a"
+      ]
+    },
+    "vertical_circulation": {
+      "stairs": {
+        "status": "UNKNOWN",
+        "count": null,
+        "gml_id_count": 0,
+        "sample_gml_ids": []
+      },
+      "escalators": {
+        "status": "UNKNOWN",
+        "count": null,
+        "gml_id_count": 0,
+        "sample_gml_ids": []
+      },
+      "elevators": {
+        "status": "UNKNOWN",
+        "count": null,
+        "gml_id_count": 0,
+        "sample_gml_ids": []
+      },
+      "ramps": {
+        "status": "UNKNOWN",
+        "count": null,
+        "gml_id_count": 0,
+        "sample_gml_ids": []
+      }
+    },
+    "paid_boundary": {
+      "status": "UNKNOWN",
+      "count": null,
+      "gml_id_count": 0,
+      "sample_gml_ids": []
+    },
+    "explicit_connectivity": {
+      "status": "ABSENT_IN_FILE",
+      "count": 0,
+      "gml_id_count": 0,
+      "sample_gml_ids": []
+    },
+    "mathematical_topology": {
+      "status": "ABSENT_IN_FILE",
+      "count": 0,
+      "gml_id_count": 0,
+      "sample_gml_ids": []
+    },
+    "navigable_connectivity": {
+      "status": "UNKNOWN",
+      "count": null,
+      "gml_id_count": 0,
+      "sample_gml_ids": []
+    }
+  },
+  "semantic_presence_rows": [
+    "- floors: PRESENT. Count in file: 1911. Example gml:id values: bdry_d7c5c46c-bdec-4e4d-a08e-f919a6683b02, bdry_a43a8c2f-f699-43d4-beea-48f6631b79ec, bdry_185dd85a-f91e-49e8-85a9-5ccbf7c9bcce (1911 IDs in the full external inventory; this report shows a sample).",
+    "- doors: PRESENT. Count in file: 1364. Example gml:id values: door_f87caf7a-2b2a-4d37-88dc-5caf0cb475f7, door_2ec9106b-1988-46eb-aefc-ae0cfbf31c7d, door_1e1d3134-c015-4aae-aa81-136704c5b86a (1364 IDs in the full external inventory; this report shows a sample).",
+    "- windows: PRESENT. Count in file: 62. Example gml:id values: window_0086ea03-dc85-4422-ad6f-bd21bf6cb766, window_be43c409-b9c4-4411-8d22-95af374d109e, window_c96839f8-8f0d-4bf2-bc42-b4cf466be883 (62 IDs in the full external inventory; this report shows a sample).",
+    "- door_representation: UNKNOWN. Count in file: null. Example gml:id values: door_f87caf7a-2b2a-4d37-88dc-5caf0cb475f7, door_2ec9106b-1988-46eb-aefc-ae0cfbf31c7d, door_1e1d3134-c015-4aae-aa81-136704c5b86a (1364 IDs in the full external inventory; this report shows a sample).",
+    "- stairs: UNKNOWN. Count in file: null.",
+    "- escalators: UNKNOWN. Count in file: null.",
+    "- elevators: UNKNOWN. Count in file: null.",
+    "- ramps: UNKNOWN. Count in file: null.",
+    "- stairs_or_ramps_category: ABSENT_IN_FILE. Count in file: 0.",
+    "- ticket_gates_paid_area_boundary: UNKNOWN. Count in file: null.",
+    "- connectivity_topology: ABSENT_IN_FILE. Count in file: 0. Evidence: No namespace-qualified GML mathematical topology elements were observed in this file.",
+    "- mathematical_topology: ABSENT_IN_FILE. Count in file: 0. Evidence: No namespace-qualified GML mathematical topology elements were observed.",
+    "- navigable_connectivity: UNKNOWN. Count in file: null. Evidence: Mathematical topology element presence alone does not establish navigable edges or route connectivity; no route edges are inferred.",
+    "- floor_labels: UNKNOWN. Count in file: null. Evidence: No explicit floor form or dedicated floor-label source field was observed; generic words such as 階段室 or 地下通路 do not establish a floor label.",
+    "- installations: PRESENT. Count in file: 1. Example gml:id values: inst_2ea32648-adeb-445b-aea8-ec77a8ea3527."
+  ],
+  "literal_floor_label_evidence": [],
+  "network_summary": {
+    "files": 2,
+    "features": 496
+  },
+  "spatial_overlap": {
+    "report": "overlap/shinjuku.json",
+    "layer_count": 21,
+    "pair_count": 210,
+    "pair_relations": {
+      "INTERSECTS": 167,
+      "DISJOINT": 43,
+      "UNKNOWN": 0
+    },
+    "interpretation_limit": "BBox overlap only. It does not establish that features coincide, share a floor, or connect; it is not routing evidence."
+  },
+  "holds": [
+    "Paid/unpaid boundary is not evidenced as present in the available PLATEAU underground-building file; HOLD for routing across fare boundaries.",
+    "Explicit connectivity is not established by the available CityGML inventory; HOLD for route generation.",
+    "Floor-to-elevation mapping remains UNKNOWN even when literal floor labels are present; do not derive elevation from labels.",
+    "The only acquired PLATEAU underground file does not spatially cover the acquired Hokonavi indoor network: every compared source-layer bbox is disjoint. HOLD for any geometry/graph pairing. Bbox evidence does not establish feature connectivity."
+  ],
+  "unknowns": [
+    "vertical datum interpretation",
+    "floor-to-elevation mapping",
+    "operator boundaries",
+    "paid/unpaid status",
+    "currency with current station configuration",
+    "survey accuracy and date"
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "station_id": "ikebukuro",
+  "source_ids": {
+    "citygml": "plateau-13116-ubld-53394576",
+    "network": "hokonavi-ikebukuro-walk-node-csv"
+  },
+  "input_status": {
+    "citygml_inventory": "AVAILABLE",
+    "network_report": "AVAILABLE"
+  },
+  "semantic_presence": {
+    "floors": {
+      "status": "PRESENT",
+      "count": 3,
+      "gml_id_count": 3,
+      "sample_gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_FloorSurface",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_FloorSurface",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_FloorSurface"
+      ]
+    },
+    "floor_labels": {
+      "status": "PRESENT",
+      "count": 1,
+      "gml_id_count": 1,
+      "sample_gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a"
+      ]
+    },
+    "doors": {
+      "status": "PRESENT",
+      "count": 3,
+      "gml_id_count": 3,
+      "sample_gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Door",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_Door",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_Door"
+      ]
+    },
+    "vertical_circulation": {
+      "stairs": {
+        "status": "UNKNOWN",
+        "count": null,
+        "gml_id_count": 0,
+        "sample_gml_ids": []
+      },
+      "escalators": {
+        "status": "UNKNOWN",
+        "count": null,
+        "gml_id_count": 0,
+        "sample_gml_ids": []
+      },
+      "elevators": {
+        "status": "UNKNOWN",
+        "count": null,
+        "gml_id_count": 0,
+        "sample_gml_ids": []
+      },
+      "ramps": {
+        "status": "UNKNOWN",
+        "count": null,
+        "gml_id_count": 0,
+        "sample_gml_ids": []
+      }
+    },
+    "paid_boundary": {
+      "status": "UNKNOWN",
+      "count": null,
+      "gml_id_count": 0,
+      "sample_gml_ids": []
+    },
+    "explicit_connectivity": {
+      "status": "ABSENT_IN_FILE",
+      "count": 0,
+      "gml_id_count": 0,
+      "sample_gml_ids": []
+    },
+    "mathematical_topology": {
+      "status": "ABSENT_IN_FILE",
+      "count": 0,
+      "gml_id_count": 0,
+      "sample_gml_ids": []
+    },
+    "navigable_connectivity": {
+      "status": "UNKNOWN",
+      "count": null,
+      "gml_id_count": 0,
+      "sample_gml_ids": []
+    }
+  },
+  "semantic_presence_rows": [
+    "- floors: PRESENT. Count in file: 3. Example gml:id values: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_FloorSurface, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_FloorSurface, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_FloorSurface.",
+    "- doors: PRESENT. Count in file: 3. Example gml:id values: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Door, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_Door, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_Door.",
+    "- windows: PRESENT. Count in file: 1. Example gml:id values: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Window.",
+    "- door_representation: UNKNOWN. Count in file: null. Example gml:id values: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Door, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_Door, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_Door.",
+    "- stairs: UNKNOWN. Count in file: null.",
+    "- escalators: UNKNOWN. Count in file: null.",
+    "- elevators: UNKNOWN. Count in file: null.",
+    "- ramps: UNKNOWN. Count in file: null.",
+    "- stairs_or_ramps_category: PRESENT. Count in file: 2. Example gml:id values: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_IntInstallation_EF_35.",
+    "- ticket_gates_paid_area_boundary: UNKNOWN. Count in file: null.",
+    "- connectivity_topology: ABSENT_IN_FILE. Count in file: 0. Evidence: No namespace-qualified GML mathematical topology elements were observed in this file.",
+    "- mathematical_topology: ABSENT_IN_FILE. Count in file: 0. Evidence: No namespace-qualified GML mathematical topology elements were observed.",
+    "- navigable_connectivity: UNKNOWN. Count in file: null. Evidence: Mathematical topology element presence alone does not establish navigable edges or route connectivity; no route edges are inferred.",
+    "- floor_labels: PRESENT. Count in file: 1. Example gml:id values: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a. Evidence: Literal floor-label evidence (1 semantic objects): gml:id=ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a object_key=ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a gml:name=\"池袋駅_B1地下通路\".",
+    "- installations: PRESENT. Count in file: 7. Example gml:id values: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_25, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_80, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25 (7 IDs in the full external inventory; this report shows a sample)."
+  ],
+  "literal_floor_label_evidence": [
+    {
+      "object_key": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+      "field": "gml:name",
+      "value": "池袋駅_B1地下通路",
+      "source": "gml:name"
+    }
+  ],
+  "network_summary": {
+    "nodes": 1887,
+    "links": 2196
+  },
+  "spatial_overlap": {
+    "report": "overlap/ikebukuro.json",
+    "layer_count": 2,
+    "pair_count": 1,
+    "pair_relations": {
+      "INTERSECTS": 0,
+      "DISJOINT": 0,
+      "UNKNOWN": 1
+    },
+    "interpretation_limit": "BBox overlap only. It does not establish that features coincide, share a floor, or connect; it is not routing evidence."
+  },
+  "holds": [
+    "Paid/unpaid boundary is not evidenced as present in the available PLATEAU underground-building file; HOLD for routing across fare boundaries.",
+    "Explicit connectivity is not established by the available CityGML inventory; HOLD for route generation.",
+    "Floor-to-elevation mapping remains UNKNOWN even when literal floor labels are present; do not derive elevation from labels.",
+    "The PLATEAU/network bbox relationship is UNKNOWN because source CRS or bbox evidence is incomplete; HOLD for any geometry/graph pairing."
+  ],
+  "unknowns": [
+    "vertical datum interpretation",
+    "floor-to-elevation mapping",
+    "operator boundaries",
+    "paid/unpaid status",
+    "currency with current station configuration",
+    "survey accuracy and date"
+  ]
+}

@@ -1,0 +1,125 @@
+Independent implementation review
+
+Five P2 findings require correction. Findings 1–2 affect normalization of fields present in the supplied real-data inventories. Findings 3–5 are deterministic defects in the implementation; I am not claiming those conditions occurred in the attached real acquisitions.
+
+Candidate: 4a0969bb9a94a1bdb62e3ef65d09bfeefc2ec0b72013b7906ae76e5410ece651
+
+I read the complete supplied implementation, synthetic tests, manifest, configuration, frames, and reports. This was a read-only source review: no browsing, candidate execution, or test execution. References below use the original file names and line numbers printed in the bundle. 
+oracle-review-bundle(5)
+
+Required findings
+1. P2 — CSV normalization incorrectly turns tfc_signal and tfc_s_type into known gate/ticket attributes
+
+Implementation: tools/gis/src/network.ts:26–31, 44–49, 177–181
+Real-data evidence: docs/gis/networks/hokonavi-ikebukuro-walk-node-csv.json:8–10, 175–182, 468–475
+
+The alias table maps:
+
+Literal source field	Normalized destination
+tfc_signal	gate, grouped with ticket_gate and 改札
+tfc_s_type	ticket, grouped with 切符
+
+These substitutions assign fare-related meaning to unrelated source fields. The supplied material contains no dictionary establishing that equivalence.
+
+This affects the supplied real input: the inventory explicitly records both mappings, and both columns have zero blank values across 2,196 link rows. Given those recorded inputs, namedRawFields() emits their codes as KNOWN gate/ticket values on every normalized edge. The overall UNVERIFIED flag does not correct the false field-level mapping.
+
+Required correction: Remove these two fare aliases. Preserve the literal fields and codes under their own names, and leave gate/ticket information null/UNKNOWN unless a supported source field or evidenced mapping establishes it. Add a synthetic regression using these headers that checks both raw-value preservation and unknown fare attributes.
+
+2. P2 — GeoJSON normalization marks available S01 route-structure, slope, and step codes as unknown
+
+Implementation: tools/gis/src/network.ts:271–278, particularly line 277
+Real-data evidence: docs/gis/networks/hokonavi-oedo-shinjuku-network-geojson.json:7–10, 24–66, 81–108
+
+The GeoJSON normalizer looks up each normalized attribute using only its exact output name: firstDefined(properties, [key]). It therefore misses the literal fields actually present in S01:
+
+Available source field	Destination currently left null/UNKNOWN
+rt_struct	route_structure
+vtcl_slope	slope
+lev_diff	step
+
+The attached inventory shows all three source fields populated on all 263 links, with their category distributions recorded. The CSV adapter already recognizes these literal aliases at network.ts:27,31, while the GeoJSON adapter does not.
+
+The original properties remain in raw_attributes; the defect is that the normalized output incorrectly states that these values are unavailable. The existing GeoJSON test checks topology and CRS behavior, but does not assert these normalized attributes (tools/gis/test/network.test.ts:30–45).
+
+Required correction: Apply the supported literal aliases consistently in the GeoJSON adapter, preserving the source codes without inventing interpretations. Keep the source-field mapping auditable, and add synthetic assertions for these three actual field names. Do not carry over the erroneous fare aliases from finding 1.
+
+3. P2 — Endpoint comparison can report CHECKED_IN_METRES when links were not comparable
+
+Implementation: tools/gis/src/network.ts:241–245, 255–269, 289; tools/gis/src/summarize.ts:13–17
+Declared behavior: tools/gis/README.md:75
+
+For a recognized CRS, the endpoint loop silently returns no mismatch entry whenever either endpoint coordinate is unavailable or the link has insufficient geometry:
+
+TypeScript
+if (!a || !b || points.length < 2) return [];
+
+The final status nevertheless becomes CHECKED_IN_METRES solely because the CRS was recognized. There is no checked-link count, skipped-link count, or incomplete-comparison status.
+
+Consequently, a network with a recognized CRS and zero comparable links can produce the same empty mismatch list and status as a fully compared network with no mismatches. Duplicate node IDs create a related problem: coordinateByNodeId.set() silently chooses the last coordinate, so an ambiguous endpoint can be compared as though its identity were unique.
+
+The supplied synthetic fixture already contains an unresolvable endpoint (tools/gis/test/fixtures/network.geojson:8), but its test only checks the dangling-reference entry and mismatch list, not comparison completeness (tools/gis/test/network.test.ts:35–44).
+
+Required correction: Track comparison coverage and reasons for uncheckable links. Report complete, partial, or unknown comparison status as appropriate, and propagate that distinction into the summary. Duplicate endpoint identities must remain ambiguous rather than selecting the last occurrence. Add cases for missing link geometry, missing node geometry, and duplicate IDs with different coordinates.
+
+Scope qualification: The final S01 inventory reports no duplicate or dangling IDs. This finding does not establish that its particular reported zero-mismatch result is wrong; it establishes that the implementation cannot reliably distinguish a complete check from an incomplete one.
+
+4. P2 — Duplicate CityGML IDs silently merge distinct objects and can still pass GLB readback
+
+Implementation: tools/gis/src/citygml.ts:129, 148–155; tools/gis/src/convert.ts:33, 40–55, 90–95
+
+The scanner creates an ids set but never checks whether an ID was already seen before accepting another feature. Conversion subsequently builds a Map keyed by gml_id, retaining only the last feature’s metadata. During the second scan, polygons from every occurrence of that ID accumulate into that one retained object.
+
+A concrete trigger is two sibling Room elements sharing an ID, each containing a different polygon. The resulting path is:
+
+The inventory records two features.
+The converter’s feature map contains one object, carrying the second room’s metadata.
+Both polygons are appended to that object.
+objects_in_source reports one, while the retained object’s original source_polygons can report one and its converted count two.
+Readback can still report PASS, because its expected counts come from the already-collapsed maps.
+
+That silently conflates source identity, metadata, geometry ownership, and counts. It is material to this factory’s stated treatment of untrusted input, independently of passenger routing.
+
+Required correction: Reject duplicate semantic gml:id values before successful inventory/conversion output, or explicitly quarantine collisions without merging them. Add a synthetic duplicate-ID case with distinct metadata and geometry that cannot produce a successful merged GLB.
+
+The attached real summaries do not demonstrate such a collision; this is an implementation defect exposed by a specific malformed-input case.
+
+5. P2 — Conversion artifact identity omits the frame, causing distinct conversions to overwrite one another
+
+Implementation: tools/gis/src/convert.ts:29, 70–71, 101–113; tools/gis/src/crs.ts:48–55
+
+The public conversion command accepts --frame, and different valid frames may refer to the same source ID and source hash. The frame controls local coordinates and is embedded in the output metadata.
+
+However, runId is derived only from:
+
+Source ID.
+A source-hash prefix.
+The filters digest.
+
+It omits the frame ID and frame contents. Two conversions of the same source with identical filters but different valid frames therefore write the same GLB, provenance-sidecar, and documentation-receipt paths. The second conversion replaces the first conversion’s distinct output and provenance. Even changing only the frame ID changes node extras while reusing the same artifact identity.
+
+This differs from intentionally replacing a repeat conversion with identical inputs: the coordinate frame is a material conversion input.
+
+Required correction: Include a deterministic digest of the frame contents in the conversion identity, or give distinct conversions immutable artifact paths with corresponding receipts. A frame ID alone is insufficient if that frame’s origins can later change. Add a two-frame regression proving that distinct frame conversions retain separate outputs and provenance.
+
+Assessment of the supplied tests and real-data receipts
+
+The attached receipts report the following; these are supplied results, not results I independently executed:
+
+Evidence	Reported result	What it establishes
+docs/gis/real-run.json:4–104	All 15 recorded CLI invocations exited 0	The ordered acquisition, inspection, frame, conversion, network, and gap-packet commands reportedly completed.
+docs/gis/validation.json:5–38	Frozen installation, typecheck, 27 synthetic tests, 3 real tests, and offline acquisition exited 0	The listed validation commands reportedly succeeded.
+tools/gis/test/real.test.ts:12–21	Real-suite assertions cover acquisition integrity and repeated inventories/bounded conversion	These assertions do not check the real network field mappings implicated in findings 1–2.
+docs/gis/real-data-summary.json:387–411, 475–499	Full conversions report 65,013 → 148,950 polygons/triangles for Shinjuku and 58,761 → 64,811 for Ikebukuro	The conversion counts are internally consistent with the reported ring/vertex totals, including holes; the receipts report successful serialization readback.
+
+I found no additional material defect in the reviewed fresh-catalog acquisition, stored-byte hashing, offline lookup, ZIP path/expanded-size guards, explicit CityGML axis handling, TP-height preservation, or ordinary hole/winding conversion paths. Relevant implementations are acquire.ts:120–153,201–238, common.ts:127–149, zip.ts:48–72, crs.ts:25–47, and triangulate.ts:9–34.
+
+The explicit CRS-reference limitation, external placement of full inventories, and continued UNVERIFIED/non-routable status are appropriate boundaries for this review. They are not additional required fixes.
+
+Review limitations
+The requested candidate hash matches docs/gis/real-data-summary.json:2. I could not independently recompute that exact digest: tools/gis/src/summarize.ts:9–10 includes pnpm-lock.yaml, which is not rendered in the attachment.
+The run and validation receipts contain timestamps, exit codes, and external log pointers, but do not themselves include the tool-input digest. Their exact association with the candidate cannot be independently established from the attachment alone.
+Raw datasets, raw catalog bytes, external detail files, complete logs, and GLBs are absent. I assessed the supplied source and receipts without claiming to verify those absent artifacts, physical station conditions, public-product rights, or passenger navigation.
+Verdict
+
+CHANGES_REQUIRED — resolve findings 1–5 and regenerate the affected outputs and receipts.
+
