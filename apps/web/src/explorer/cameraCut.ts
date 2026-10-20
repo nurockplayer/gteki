@@ -52,9 +52,12 @@ export class CameraCut {
     else this.uniforms.gtekiCutRadii.value.set(0, 0, 0, 0);
   }
 
-  /** Give every patched material its own hooks back. */
+  /**
+   * Give every patched material its own hooks back. dispose() only releases the renderer's programs for it (the
+   * material stays usable and recompiles), so a scene that keeps its materials across loads never piles up cut programs.
+   */
   clear(): void {
-    for (const [mat, hooks] of this.patched) { Object.assign(mat, hooks); mat.needsUpdate = true; }
+    for (const [mat, hooks] of this.patched) { Object.assign(mat, hooks); mat.dispose(); mat.needsUpdate = true; }
     this.patched.clear();
   }
 

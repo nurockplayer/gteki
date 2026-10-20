@@ -72,7 +72,11 @@ describe("camera see-through cut", () => {
     a.add(signA);
     cut.apply(a, [signA]);
     const firstKey = mat.customProgramCacheKey();
+    let released = 0;
+    mat.addEventListener("dispose", () => { released++; });
     cut.clear();
+    // The renderer drops this material's cut programs.
+    expect(released).toBe(1);
     expect(mat.onBeforeCompile).toBe(sceneHook);
     expect(mat.customProgramCacheKey()).toBe(sceneKey);
     // Next station: the same material on a wall and a sign stays solid.
