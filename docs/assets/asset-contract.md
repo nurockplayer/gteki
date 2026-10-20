@@ -98,3 +98,16 @@ python3 tools/blender/bundle_kit.py info --bundle kit.glb
 - Output is deterministic. `bundle` refuses a library whose GLBs no longer match `manifest.json`, and `extract` rebuilds a standalone GLB that validates exactly like the source.
 - **Use it by cloning.** Load the bundle once, then clone an asset root per placement: three.js `Object3D.clone()`, Godot `Node.duplicate()`. Clones share geometry, materials and textures, so they add draw calls but no GPU memory.
 - **Repeated names.** Both importers make node names unique across the *whole file*. A second asset's `SOCKET_end` or `VIS_flap_0_L` loads as `SOCKET_end_1` / `VIS_flap_0_L_1` in three.js `GLTFLoader`, and as `SOCKET_end2` / `VIS_flap_0_L2` in Godot 4.7. So the bundle writes the original name to `extras.gteki_name` on every node whose name occurs more than once in the bundle; `extract` removes it again. To get a node's contract name in a bundle, read `extras.gteki_name` and fall back to the node name: `object.userData.gteki_name ?? object.name` in three.js, `node.get_meta("extras", {}).get("gteki_name", node.name)` in Godot. Look nodes up inside their asset root, never by name across the whole bundle. Godot also strips the `-colonly` suffix when it turns those nodes into `StaticBody3D`, exactly as it does for a single GLB.
+
+## 8. Build profiles: `full` and `mobile`
+
+`--profile` (`PROFILE=` in `build.sh`) selects how the same catalog is exported. Both profiles produce the same asset ids, params, root `extras.gteki`, sockets, `COL_*-colonly` collision, `LIGHTHINT_*` empties and flap hinge nodes, so a scene can switch tier by switching library directory. Measurements and station guidance are in [mobile-profile.md](mobile-profile.md).
+
+- **`full`** (default) is everything in §1–§7: `assets/library/`.
+- **`mobile`** writes to `assets/library/mobile/` by default. The manifest has a top-level `"profile": "mobile"`; a manifest without it is `full`. Root extras carry `profile: "mobile"`.
+  - Visual nodes: static `VIS_*` groups are merged into one `VIS_body`. Groups that have a pivot (gate flaps `VIS_flap_<aisle>_<L|R>`) stay separate nodes with the same names, origins and `flap_close_yaw_deg`.
+  - Materials: every material without an image of its own is folded into the kit palette, `gteki_palette` (opaque) or `gteki_palette_blend` (alpha-blended glass). That is a 64×64 PNG with 4×4-texel swatches for albedo + alpha, ORM and emissive (`KHR_materials_emissive_strength` 4), sampled at the swatch centre with nearest filtering. The palette is identical in every mobile GLB, so a bundle stores it once. Materials with content images (sign faces, screens, posters) keep their `gteki_*` names and embed JPEG maps. `manifest.json` `materials` lists the exported names, and `textures` includes the palette plan.
+  - UVs: `TEXCOORD_0` for textures; `TEXCOORD_1` (`UVLightmap`) is a non-overlapping lightmap layout on every visual mesh. Every texture names its `texCoord` explicitly.
+  - Geometry: visual parts use about half the segments and no bevels. Collision geometry is the same as `full`.
+- Byte limits are per profile: `tools/blender/catalog/budget.json` for `full`, `budget_mobile.json` for `mobile`, each with `applies_to.profile`. The per-image rules and the texCoord check apply to every library.
+

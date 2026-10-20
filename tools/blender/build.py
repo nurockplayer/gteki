@@ -10,6 +10,7 @@ Options:
   --tex-res N        texture resolution (default 1024; 2048/4096 for Godot HQ)
   --save-blend DIR   also save an editable .blend per asset (keep outside Git)
   --manifest PATH    manifest path (default <out>/manifest.json)
+  --profile NAME     full (default, canonical library) or mobile (contract §8)
 """
 
 import argparse
@@ -25,6 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 from gteki_assets import contract  # noqa: E402
+from gteki_assets.asset import Asset  # noqa: E402
 from gteki_assets.families import PLACEMENT, REGISTRY  # noqa: E402
 
 
@@ -36,7 +38,9 @@ def main(argv):
     ap.add_argument("--tex-res", type=int, default=contract.DEFAULT_TEX_RES)
     ap.add_argument("--save-blend", default="")
     ap.add_argument("--manifest", default="")
+    ap.add_argument("--profile", default="full", choices=contract.PROFILES)
     args = ap.parse_args(argv)
+    Asset.profile = args.profile
 
     with open(args.catalog) as f:
         catalog = json.load(f)
@@ -59,6 +63,9 @@ def main(argv):
     if only and os.path.exists(manifest_path):
         with open(manifest_path) as f:
             old = json.load(f)
+        if old.get("profile", "full") != args.profile:
+            sys.exit(f"[gteki] --only with --profile {args.profile} but {manifest_path} is "
+                     f"{old.get('profile', 'full')}; use another --out")
         if old.get("texture_resolution") != args.tex_res:
             # one manifest describes one texture resolution; mixing would mislabel kept GLBs
             sys.exit(f"[gteki] --only with --tex-res {args.tex_res} but {manifest_path} is "
@@ -127,6 +134,8 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
         "license": contract.LICENSE,
         "assets": entries,
     }
+    if args.profile != "full":  # the canonical manifest keeps its exact bytes
+        manifest = {**{k: v for k, v in manifest.items() if k != "assets"}, "profile": args.profile, "assets": entries}
     # Write the manifest next to its destination before touching glb/, so an
     # unwritable --manifest fails while the live library is still unchanged.
     manifest_dir = os.path.dirname(os.path.abspath(manifest_path))

@@ -150,11 +150,12 @@ def layout_costs(glbs, layout_path):
 
 
 def budget_applies(budget, manifest_meta):
-    """Byte limits only hold for the library they were measured on (catalog + resolution);
-    the per-image rules hold for every library."""
-    want = budget.get("applies_to", {})
-    return all(Path(str(manifest_meta.get(k, ""))).name == Path(str(v)).name if k == "catalog"
-               else manifest_meta.get(k) == v for k, v in want.items())
+    """Byte limits only hold for the library they were measured on (catalog, resolution,
+    profile); the per-image rules hold for every library. A missing profile means "full"."""
+    want = {"profile": "full", **budget.get("applies_to", {})}
+    meta = {"profile": "full", **manifest_meta}
+    return all(Path(str(meta.get(k, ""))).name == Path(str(v)).name if k == "catalog"
+               else meta.get(k) == v for k, v in want.items())
 
 
 def check(glbs, manifest, budget, manifest_meta=None):
@@ -246,8 +247,12 @@ def self_test():
         glbs = {path.stem: scan_glb(path)}
         tight = dict(budget, limits={"library_mib": 1e-9})
         assert any("budget library_mib" in p for p in check(glbs, {path.stem: {"textures": plan}}, tight, meta))
-        for other in ({"catalog": "station.json", "texture_resolution": 1024}, {"catalog": "kit.json", "texture_resolution": 2048}):
+        for other in ({"catalog": "station.json", "texture_resolution": 1024}, {"catalog": "kit.json", "texture_resolution": 2048},
+                      dict(meta, profile="mobile")):
             assert not any("budget" in p for p in check(glbs, {path.stem: {"textures": plan}}, tight, other))
+        mobile = dict(tight, applies_to=dict(budget["applies_to"], profile="mobile"))
+        assert any("budget" in p for p in check(glbs, {path.stem: {"textures": plan}}, mobile, dict(meta, profile="mobile")))
+        assert not any("budget" in p for p in check(glbs, {path.stem: {"textures": plan}}, mobile, meta))
         assert check(glbs, {}, budget, meta) == [f"{path.stem}: GLB is not in manifest.json"]
         # a plan above the library's texture_resolution (e.g. an uncapped supplied image)
         path.write_bytes(_fake_glb([_png_header(2048, 1024, b"p")], [0]))

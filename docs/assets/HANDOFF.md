@@ -31,6 +31,17 @@ python3 tools/blender/bundle_kit.py bundle --library assets/library --ids gteki_
 
 Clones share geometry, materials and textures. Inside a bundle, a node name that repeats in another asset gets a suffix on import (`VIS_flap_0_L_1` in three.js, `VIS_flap_0_L2` in Godot). Read the original from `extras.gteki_name`: `userData.gteki_name` in three.js, `get_meta("extras").gteki_name` in Godot. Details are in [contract §7](asset-contract.md#7-kit-bundles--gteki-kit-bundle01-derived-optional), and measurements in [texture-budget.md](texture-budget.md).
 
+## Phones: the mobile tier
+
+`assets/library/mobile/` holds the same 48 assets built with `PROFILE=mobile`, with the same ids, params, sockets, collision and flap nodes. Compared with the full library it downloads 6.66 MiB instead of 21.03 MiB, draws 105 instead of 515 calls for one of each asset, and needs 51 MiB instead of 1153 MiB of estimated GPU texture memory. Colour-only materials share one kit palette (`gteki_palette`). Sign faces and posters keep their own textures. Every visual mesh has a lightmap UV (`TEXCOORD_1`) for baking. Pick the directory by quality tier, for example mobile for `quality: "low"`. Details are in [contract §8](asset-contract.md#8-build-profiles-full-and-mobile).
+
+Measured in your own scenes, on scratch copies of the station branches with probe placements only ([mobile-profile.md](mobile-profile.md#gate-cost-in-the-real-station-scenes)):
+
+- **Ikebukuro** uses 23–28 draw calls on its low tier at the three JR gates. Three naive mobile gate arrays add 13 draws each, which is over your 28-draw budget. One `THREE.BatchedMesh` per material adds **+1** for all three, and the flaps stay animatable. The scene is lit only by its lightmap, so kit props render dark until they are baked (use `TEXCOORD_1`) or given local light.
+- **Shinjuku:** the mobile gate array, as a BatchedMesh, replaces the procedural box gates for **2–3 fewer** draw calls, at about 3k triangles per gate in view.
+
+Which gates, how many aisles, and where they stand is the station lead's decision.
+
 ## Placing pieces
 
 Units are metres, glTF +Y is up, and the root carries `extras.gteki` (contract, params, `placement`, bounds, licence). The **placement class** tells you where the origin sits:
@@ -96,6 +107,7 @@ sh tools/blender/build.sh            # build + validate
 sh tools/blender/build.sh all        # build + validate + Godot import + Web load test
 sh tools/blender/build.sh repro      # two clean builds must match each other and the repo
 sh tools/blender/build.sh selftest   # validator, texture budget and bundle self-tests
+PROFILE=mobile sh tools/blender/build.sh all   # mobile tier: build + validate + Godot + Web
 ONLY=gteki_gate_array_4w1 sh tools/blender/build.sh build
 python3 tools/blender/bundle_kit.py bundle --library assets/library --layout <layout.json> --out kit.glb
 pnpm --dir tools/blender/web_preview install && pnpm --dir tools/blender/web_preview dev   # viewer: /?mode=gallery, bench: /bench.html

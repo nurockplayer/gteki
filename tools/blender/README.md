@@ -18,6 +18,7 @@ tools/blender/build.sh repro      # two clean builds must be byte-identical to e
 tools/blender/build.sh selftest   # validator, texture budget and bundle tool self-tests (stdlib only)
 ONLY=gteki_gate_array_4w1 tools/blender/build.sh build   # rebuild a subset
 TEX_RES=2048 OUT=/tmp/kit_hq tools/blender/build.sh build # high-res textures (Godot HQ)
+PROFILE=mobile tools/blender/build.sh all                 # mobile tier into assets/library/mobile (palette, merged VIS_body, UV1)
 ```
 
 Viewer: `pnpm --dir tools/blender/web_preview install && pnpm --dir tools/blender/web_preview dev`, then open `/?asset=<id>` or `/?mode=gallery`.

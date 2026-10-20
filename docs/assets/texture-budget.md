@@ -120,7 +120,7 @@ The lowest close-up scores belong to the bench (perforated steel at 512) and the
   - a GLB and the manifest disagree (missing on either side, or a different `sha256` or byte size);
   - the committed library exceeds the byte or GPU limits.
 
-  The limits only apply to the library they were measured on (`kit_v0_1.json` at 1024), so station catalogs and HQ builds are checked by the rules alone. Raise a limit deliberately, in the PR that needs it, with numbers.
+  The limits only apply to the library they were measured on (`kit_v0_1.json` at 1024, profile `full`), so station catalogs and HQ builds are checked by the rules alone. The mobile tier has its own limits in `budget_mobile.json` ([mobile-profile.md](mobile-profile.md)). Raise a limit deliberately, in the PR that needs it, with numbers.
 - **`tools/blender/build.sh selftest`** runs the stdlib self-tests: the validator, the budget checker (each rule plus the scoping), and the bundle tool. The bundle tool's test covers dedupe, the material-name conflict, repeated-name tags, determinism, extraction fidelity, alternate image sources and image headers.
 - **`tools/blender/build.sh repro`**: two clean builds (fresh texture caches) are byte-identical to each other and to the committed library.
 - **Bundle round trip:** `bundle --all`, then `extract` for each of the 48 assets. Every extract validates exactly like its source (`validate_glb.py` reports identical apart from file size), with identical node names, extras and TRS.

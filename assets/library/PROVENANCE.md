@@ -28,3 +28,5 @@ What the record supports, and what it does not:
 ## Regeneration
 
 `tools/blender/build.sh` rebuilds all GLBs and `manifest.json` from the catalog; `tools/blender/build.sh repro` checks two clean builds are byte-identical.
+
+`assets/library/mobile/` is the same catalog built with `PROFILE=mobile tools/blender/build.sh` (`PROFILE=mobile … repro` checks it). It comes from the same inputs as the full library and adds none. Its palette texture holds averages of the same procedural textures; its sign faces and posters are re-encoded copies of the same images. The rights above apply unchanged.

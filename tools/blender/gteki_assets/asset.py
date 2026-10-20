@@ -41,6 +41,10 @@ def _idprop_safe(v):
 class Asset:
     """Collects parts, collision, sockets and light hints for one GLB."""
 
+    # build profile (contract.PROFILES); build.py sets it before running generators,
+    # because parts read it when they are created
+    profile = "full"
+
     def __init__(self, asset_id, family, variant, params, generator, dimension_basis, tex_res=contract.DEFAULT_TEX_RES, notes=None):
         self.id = asset_id
         self.family = family
@@ -104,7 +108,8 @@ class Asset:
     def build(self):
         reset_scene()
         coll = bpy.context.scene.collection
-        mats = [materials.get(m, self.tex_res) for m in self.materials]
+        # mobile: content textures (sign faces) as JPEG; the palette stays PNG
+        mats = [materials.get(m, self.tex_res, jpeg=self.profile == "mobile") for m in self.materials]
 
         root = bpy.data.objects.new(self.id, None)
         coll.objects.link(root)
@@ -115,13 +120,15 @@ class Asset:
             self.sockets = [(n, l + self.shift, y, e) for n, l, y, e in self.sockets]
             self.light_hints = [(n, l + self.shift, e) for n, l, e in self.light_hints]
 
+        mobile = self.profile == "mobile"
         groups = {}
         for group, part in self.parts:
             if not part.bm.faces:  # optional pieces that produced no geometry
                 part.bm.free()
                 continue
             obj = _part_object(part, mats, coll)
-            groups.setdefault(group, []).append(obj)
+            # mobile: every static group joins one VIS_body; animated (pivoted) groups stay
+            groups.setdefault("body" if mobile and group not in self.pivots else group, []).append(obj)
         vis_objs = []
         for group, objs in groups.items():
             o = _join(objs, f"{contract.VIS}{group}")
@@ -131,6 +138,12 @@ class Asset:
                 o.location = pv
             o.parent = root
             vis_objs.append(o)
+        if mobile:
+            self.export_materials = _fold_to_palette(vis_objs)
+            for o in vis_objs:
+                _lightmap_uvs(o)
+        else:
+            self.export_materials = list(self.materials)
         bpy.context.view_layer.update()
 
         for name, part in self.collision:
@@ -184,6 +197,8 @@ class Asset:
         }
         if self.notes:
             meta["notes"] = self.notes
+        if mobile:
+            meta["profile"] = "mobile"
         root["gteki"] = _idprop_safe(meta)
         self.meta = meta
         self.root = root
@@ -205,7 +220,9 @@ class Asset:
             export_normals=True,
             export_tangents=False,
             export_materials="EXPORT",
-            export_image_format="JPEG",
+            # mobile keeps source formats: the palette PNG must stay lossless (JPEG
+            # chroma subsampling would bleed neighbouring swatches into each other)
+            export_image_format="JPEG" if self.profile == "full" else "AUTO",
             export_jpeg_quality=jpeg_quality,
             export_cameras=False,
             export_lights=False,
@@ -230,12 +247,12 @@ class Asset:
             "sha256": hashlib.sha256(data).hexdigest(),
             "bytes": len(data),
             "triangles": self.meta["triangles"],
-            "materials": list(self.materials),
+            "materials": list(self.export_materials),
             # exported texture size and which maps stayed textures (the rest became factors)
             "textures": {
                 m: {"res": plan["res"], "maps": sorted(plan["maps"])}
-                for m in self.materials
-                if (plan := materials.texture_plan(m, self.tex_res))
+                for m in self.export_materials
+                if (plan := _plan(m, self.tex_res))
             },
             "bounds_m": self.meta["bounds_m"],
             "dimension_basis": self.dimension_basis,
@@ -278,6 +295,82 @@ def _to_gltf(v):
     return [round(v.x, 4), round(v.z, 4), round(-v.y, 4)]
 
 
+def _plan(name, tex_res):
+    if name in (contract.PALETTE, contract.PALETTE_BLEND):
+        return materials.palette_plan()
+    return materials.texture_plan(name, tex_res)
+
+
+def _fold_to_palette(objs):
+    """Mobile: map every eligible material onto the palette (UV0 = swatch centre).
+    Returns the exported material names in first-use order."""
+    import numpy as np
+
+    used = []
+    for o in objs:
+        me = o.data
+        names = [m.name for m in me.materials]
+        targets = [materials.palette_target(n) if materials.palette_eligible(n) else n for n in names]
+        slots = list(dict.fromkeys(targets))
+        uv = me.uv_layers[0]
+        buf = np.empty(len(uv.data) * 2, dtype=np.float32)
+        uv.data.foreach_get("uv", buf)
+        buf = buf.reshape(-1, 2)
+        idx = []
+        for poly in me.polygons:
+            src = names[poly.material_index]
+            if materials.palette_eligible(src):
+                buf[poly.loop_start:poly.loop_start + poly.loop_total] = materials.palette_uv(src)
+            idx.append(slots.index(targets[poly.material_index]))
+        uv.data.foreach_set("uv", buf.reshape(-1))
+        me.materials.clear()
+        for s in slots:
+            mat = (materials.palette_material(s) if s in (contract.PALETTE, contract.PALETTE_BLEND)
+                   else bpy.data.materials[s])
+            _bind_uv(mat, uv.name)
+            me.materials.append(mat)
+        for poly, i in zip(me.polygons, idx):
+            poly.material_index = i
+        used += [s for s in slots if s not in used]
+    return used
+
+
+def _bind_uv(mat, uv_name):
+    """Mobile meshes carry two UV layers; without an explicit UV Map node the
+    exporter guesses each texture's texCoord (it wrote -1 or 1). Bind every
+    image to the base layer so all textures sample TEXCOORD_0."""
+    nt = mat.node_tree
+    for node in list(nt.nodes):
+        if node.type == "TEX_IMAGE" and not node.inputs["Vector"].is_linked:
+            uvn = nt.nodes.new("ShaderNodeUVMap")
+            uvn.uv_map = uv_name
+            uvn.location = (node.location.x - 250, node.location.y)
+            nt.links.new(uvn.outputs["UV"], node.inputs["Vector"])
+
+
+def _lightmap_uvs(obj):
+    """Mobile: non-overlapping lightmap UVs in a second layer (exported as TEXCOORD_1).
+    Smart UV Project keeps connected charts, so vertices stay shared and
+    lightmaps get few seams."""
+    me = obj.data
+    base = me.uv_layers[0]
+    lm = me.uv_layers.new(name="UVLightmap")
+    me.uv_layers.active = lm
+    view_layer = bpy.context.view_layer
+    for o in view_layer.objects:
+        o.select_set(o is obj)
+    view_layer.objects.active = obj
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=0.01, area_weight=0.0,
+                             correct_aspect=True, scale_to_bounds=True)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    obj.select_set(False)
+    me.uv_layers.active = base
+    base.active_render = True
+    _quantize_uvs(me)
+
+
 def _part_object(part, mats, coll):
     me = bpy.data.meshes.new(part.name)
     # faces are emitted with their own vertices; weld them so bevels, smoothing
@@ -290,7 +383,7 @@ def _part_object(part, mats, coll):
         me.materials.append(m)
     obj = bpy.data.objects.new(part.name, me)
     coll.objects.link(obj)
-    if part.bevel > 0:
+    if part.bevel > 0 and not part.low_detail:  # mobile: no bevels
         b = obj.modifiers.new("bevel", "BEVEL")
         b.width = part.bevel
         b.segments = part.bevel_segments
@@ -299,7 +392,7 @@ def _part_object(part, mats, coll):
         b.harden_normals = False
         b.miter_outer = "MITER_ARC" if part.bevel_segments > 1 else "MITER_SHARP"
         b.use_clamp_overlap = True
-    if part.weighted and part.bevel > 0:
+    if part.weighted and part.bevel > 0 and not part.low_detail:
         # chamfer + weighted normals: flat faces stay flat, bevels catch light
         for poly in me.polygons:
             poly.use_smooth = True

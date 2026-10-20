@@ -28,6 +28,8 @@ Everything below was measured on the committed library (`assets/library/glb`) wi
 | Web: browser viewer, whole kit | `pnpm --dir tools/blender/web_preview dev` → `/?mode=gallery` | renders; 198,623 tris · 578 draw calls · 414 textures (before the texture budget) |
 | Web: load-strategy bench, concourse demo | `/bench.html?strategy=per_instance\|per_asset\|bundle` | see [texture-budget.md](texture-budget.md) (three.js section) |
 | Reproducibility | `tools/blender/build.sh repro` | **PASS** · 48/48 GLBs byte-identical across two clean builds (fresh texture caches) and the committed library |
+| Mobile tier (`PROFILE=mobile`): contract validator, budget (`budget_mobile.json`), Godot parity, Web parse, reproducibility | `PROFILE=mobile tools/blender/build.sh validate\|godot\|web\|repro` | **42 PASS · 6 WARN · 0 FAIL** · budget PASS (6.66 MiB) · Godot **48/48** · Web **48/48** · repro **PASS**; bundle round trip 48/48 ([mobile-profile.md](mobile-profile.md)) |
+| texCoord negative test: a texture whose `texCoord` is −1, or names a `TEXCOORD_n` the primitive lacks, must FAIL | `validate_glb.py --self-test` | **PASS** (4 cases); the first mobile build hit exactly this (`texCoord: -1`) and failed 48/48 before the fix |
 | Round-trip render (GLB → empty Blender scene) | `render_preview.py` with `tools/blender/showcase/*.json` | images below |
 
 The six validator WARNs are intentional and documented: the four `sign_hanging_*` assets have no collider because they hang above head height, and the two `tactile_strip_*` assets have no collider because they are 4 mm floor overlays.
@@ -56,6 +58,8 @@ Synthetic layouts in `tools/blender/showcase/` are explicitly marked *"SYNTHETIC
 | Flaps posed **closed** from the GLB's own params (`close_flaps`) | Paid side: columns, bench, lift portal, blade sign |
 | ![Vertical](img/vertical_hero.jpg) | ![Godot contact sheet](img/godot_contact_sheet.jpg) |
 | Stairs with landing and escalators | Same GLBs imported by Godot 4.7 with default import settings |
+| ![Godot full vs mobile](img/godot_full_vs_mobile.jpg) | |
+| Godot 4.7: full (left of each pair) and mobile tier | |
 | ![Web gallery](img/web_gallery.jpg) | ![Web viewer](img/web_viewer_escalator.jpg) |
 | three.js gallery of all 48 assets | three.js single-asset viewer (sockets on) |
 
@@ -107,6 +111,6 @@ The texture-dedupe follow-up had two fresh read-only Codex reviews. Every findin
 1. **Texture dedupe for Web: done** ([texture-budget.md](texture-budget.md)). Open follow-ups: a KTX2 variant (it needs `KTX2Loader` in the shared core and a per-map quality gate), geometry compression (meshopt; needs a Godot test), and runtime mipmaps for JPEG in Godot `GLTFDocument` (a Lane C note).
 2. **Wall openings.** Passages have solid walls; the lift portal and shop fronts are wall-mounted decorations, not cut openings. Station leads who need a doorway should use a passage node or request a `passage_straight` `openings` parameter.
 3. **Glass sorting** is described in Import notes; no fix in the kit.
-4. **Vending machine** has 24 material slots (product-face colours), which is fine on desktop. If draw calls matter on phones, the next step is an atlas.
-5. **Not measured:** phone GPU frame times. The kit ships no scene; frame-time evidence belongs with each station's L2 walkthrough.
+4. **Vending machine** has 24 material slots (product-face colours) on the full tier. On phones, use the mobile tier: 2 draws ([mobile-profile.md](mobile-profile.md)).
+5. **Not measured:** phone GPU frame times (gate cost in both station scenes is measured as draw calls, triangles and memory; see [mobile-profile.md](mobile-profile.md)). The kit ships no scene; frame-time evidence belongs with each station's L2 walkthrough.
 6. **Licence:** the repository licence is undecided. Every GLB says so in `extras.gteki.license`.

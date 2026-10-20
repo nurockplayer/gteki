@@ -1,0 +1,4049 @@
+{
+  "contract": "gteki-asset/0.1",
+  "kit_version": "0.1.0",
+  "catalog": "../../../tools/blender/catalog/kit_v0_1.json",
+  "texture_resolution": 1024,
+  "license": "UNDECIDED — original GTEki work; repository licence pending Owner decision",
+  "profile": "mobile",
+  "assets": [
+    {
+      "id": "gteki_passage_straight_w4_l6",
+      "family": "passage",
+      "variant": "straight_w4_l6",
+      "file": "glb/gteki_passage_straight_w4_l6.glb",
+      "sha256": "69aaff25687d289c27846733586c40cb4fa90d3f68a59656e5043bc663d2f933",
+      "bytes": 48736,
+      "triangles": 432,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -2.15,
+          -0.25,
+          -6.0
+        ],
+        "max": [
+          2.15,
+          3.05,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "length": 6.0,
+        "width": 4.0,
+        "height": 2.8,
+        "wall_left": "panel",
+        "wall_right": "panel",
+        "floor": "terrazzo",
+        "border": 0.3,
+        "ceiling": "spandrel",
+        "light_rows": 2,
+        "light_module": 1.2,
+        "wall_t": 0.15,
+        "slab_t": 0.25,
+        "plenum": 0.25,
+        "panel_module": 1.2,
+        "skirting": 0.12,
+        "wainscot": "none",
+        "wainscot_h": 1.1,
+        "allow_below_floor": true
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 4.0,
+          "height": 2.8
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -6.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 4.0,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 10,
+      "collision_nodes": [
+        "COL_floor-colonly",
+        "COL_wall_left-colonly",
+        "COL_wall_right-colonly",
+        "COL_ceiling-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/passage.py",
+      "tags": [
+        "passage"
+      ]
+    },
+    {
+      "id": "gteki_passage_straight_w4_l2p4",
+      "family": "passage",
+      "variant": "straight_w4_l2p4",
+      "file": "glb/gteki_passage_straight_w4_l2p4.glb",
+      "sha256": "3a6193702b7769763df9b040da736b25dce5b58f4e920d4eff5cd164c1a03bd2",
+      "bytes": 31056,
+      "triangles": 240,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -2.15,
+          -0.25,
+          -2.4
+        ],
+        "max": [
+          2.15,
+          3.05,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "length": 2.4,
+        "width": 4.0,
+        "height": 2.8,
+        "wall_left": "panel",
+        "wall_right": "panel",
+        "floor": "terrazzo",
+        "border": 0.3,
+        "ceiling": "spandrel",
+        "light_rows": 2,
+        "light_module": 1.2,
+        "wall_t": 0.15,
+        "slab_t": 0.25,
+        "plenum": 0.25,
+        "panel_module": 1.2,
+        "skirting": 0.12,
+        "wainscot": "none",
+        "wainscot_h": 1.1,
+        "allow_below_floor": true
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 4.0,
+          "height": 2.8
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -2.4
+          ],
+          "yaw_deg": 0.0,
+          "width": 4.0,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 4,
+      "collision_nodes": [
+        "COL_floor-colonly",
+        "COL_wall_left-colonly",
+        "COL_wall_right-colonly",
+        "COL_ceiling-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/passage.py",
+      "tags": [
+        "passage",
+        "filler"
+      ]
+    },
+    {
+      "id": "gteki_passage_straight_w4_l6_tile",
+      "family": "passage",
+      "variant": "straight_w4_l6_tile",
+      "file": "glb/gteki_passage_straight_w4_l6_tile.glb",
+      "sha256": "c52741172b0826988d34513694ded91b4832441e9a4e5769c5a57be9c990126f",
+      "bytes": 40496,
+      "triangles": 336,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -2.15,
+          -0.25,
+          -6.0
+        ],
+        "max": [
+          2.15,
+          3.05,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "length": 6.0,
+        "width": 4.0,
+        "height": 2.8,
+        "wall_left": "tile",
+        "wall_right": "tile_accent",
+        "floor": "tile600",
+        "border": 0.3,
+        "ceiling": "plaster",
+        "light_rows": 2,
+        "light_module": 1.2,
+        "wall_t": 0.15,
+        "slab_t": 0.25,
+        "plenum": 0.25,
+        "panel_module": 1.2,
+        "skirting": 0.12,
+        "wainscot": "none",
+        "wainscot_h": 1.1,
+        "allow_below_floor": true
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 4.0,
+          "height": 2.8
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -6.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 4.0,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 10,
+      "collision_nodes": [
+        "COL_floor-colonly",
+        "COL_wall_left-colonly",
+        "COL_wall_right-colonly",
+        "COL_ceiling-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/passage.py",
+      "tags": [
+        "passage"
+      ]
+    },
+    {
+      "id": "gteki_passage_straight_w8_l6",
+      "family": "passage",
+      "variant": "straight_w8_l6",
+      "file": "glb/gteki_passage_straight_w8_l6.glb",
+      "sha256": "b08979ca79a6b6c59f9515e6c60e8a2a2384bc9beca687c51edd109ff51d0cb6",
+      "bytes": 70700,
+      "triangles": 676,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -4.15,
+          -0.25,
+          -6.0
+        ],
+        "max": [
+          4.15,
+          3.45,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "length": 6.0,
+        "width": 8.0,
+        "height": 3.2,
+        "wall_left": "panel",
+        "wall_right": "panel",
+        "floor": "terrazzo",
+        "border": 0.3,
+        "ceiling": "spandrel",
+        "light_rows": 3,
+        "light_module": 1.2,
+        "wall_t": 0.15,
+        "slab_t": 0.25,
+        "plenum": 0.25,
+        "panel_module": 1.2,
+        "skirting": 0.12,
+        "wainscot": "panel_accent",
+        "wainscot_h": 1.1,
+        "allow_below_floor": true
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 8.0,
+          "height": 3.2
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -6.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 8.0,
+          "height": 3.2
+        }
+      ],
+      "light_hints": 15,
+      "collision_nodes": [
+        "COL_floor-colonly",
+        "COL_wall_left-colonly",
+        "COL_wall_right-colonly",
+        "COL_ceiling-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/passage.py",
+      "tags": [
+        "passage",
+        "concourse"
+      ]
+    },
+    {
+      "id": "gteki_passage_straight_w8_l6_open",
+      "family": "passage",
+      "variant": "straight_w8_l6_open",
+      "file": "glb/gteki_passage_straight_w8_l6_open.glb",
+      "sha256": "e4eed86bbc63be971d511b9b43883bd6038607bc1d23ec78675dd8f3b3c024e5",
+      "bytes": 50304,
+      "triangles": 452,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -4.15,
+          -0.25,
+          -6.0
+        ],
+        "max": [
+          4.15,
+          3.45,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "length": 6.0,
+        "width": 8.0,
+        "height": 3.2,
+        "wall_left": "none",
+        "wall_right": "panel",
+        "floor": "terrazzo",
+        "border": 0.3,
+        "ceiling": "spandrel",
+        "light_rows": 3,
+        "light_module": 1.2,
+        "wall_t": 0.15,
+        "slab_t": 0.25,
+        "plenum": 0.25,
+        "panel_module": 1.2,
+        "skirting": 0.12,
+        "wainscot": "tile_accent",
+        "wainscot_h": 1.1,
+        "allow_below_floor": true
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 8.0,
+          "height": 3.2
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -6.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 8.0,
+          "height": 3.2
+        }
+      ],
+      "light_hints": 15,
+      "collision_nodes": [
+        "COL_floor-colonly",
+        "COL_wall_right-colonly",
+        "COL_ceiling-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/passage.py",
+      "tags": [
+        "passage",
+        "concourse"
+      ]
+    },
+    {
+      "id": "gteki_passage_end_w4",
+      "family": "passage",
+      "variant": "end_w4",
+      "file": "glb/gteki_passage_end_w4.glb",
+      "sha256": "fc4fbc9be05cb5b48c32fbf8021ae27cdc8af9e85a9211ed3172660d03601930",
+      "bytes": 50184,
+      "triangles": 412,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -2.15,
+          -0.25,
+          -4.15
+        ],
+        "max": [
+          2.15,
+          3.05,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "length": 6.0,
+        "width": 4.0,
+        "height": 2.8,
+        "wall_left": "panel",
+        "wall_right": "panel",
+        "floor": "terrazzo",
+        "border": 0.3,
+        "ceiling": "spandrel",
+        "light_rows": 2,
+        "light_module": 1.2,
+        "wall_t": 0.15,
+        "slab_t": 0.25,
+        "plenum": 0.25,
+        "panel_module": 1.2,
+        "skirting": 0.12,
+        "wainscot": "none",
+        "wainscot_h": 1.1,
+        "kind": "end",
+        "allow_below_floor": true
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 4.0,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 6,
+      "collision_nodes": [
+        "COL_floor-colonly",
+        "COL_wall_W-colonly",
+        "COL_wall_E-colonly",
+        "COL_wall_N-colonly",
+        "COL_corner_NW-colonly",
+        "COL_corner_NE-colonly",
+        "COL_ceiling-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/passage.py",
+      "tags": [
+        "passage",
+        "node"
+      ]
+    },
+    {
+      "id": "gteki_passage_corner_w4",
+      "family": "passage",
+      "variant": "corner_w4",
+      "file": "glb/gteki_passage_corner_w4.glb",
+      "sha256": "53a7b0a1d6a6493018832e684c5e3946c5dc43935d1e7e4f4aa93e0b30316dc7",
+      "bytes": 39668,
+      "triangles": 318,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -2.15,
+          -0.25,
+          -4.15
+        ],
+        "max": [
+          2.15,
+          3.05,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "length": 6.0,
+        "width": 4.0,
+        "height": 2.8,
+        "wall_left": "panel",
+        "wall_right": "panel",
+        "floor": "terrazzo",
+        "border": 0.3,
+        "ceiling": "spandrel",
+        "light_rows": 2,
+        "light_module": 1.2,
+        "wall_t": 0.15,
+        "slab_t": 0.25,
+        "plenum": 0.25,
+        "panel_module": 1.2,
+        "skirting": 0.12,
+        "wainscot": "none",
+        "wainscot_h": 1.1,
+        "kind": "corner",
+        "allow_below_floor": true
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 4.0,
+          "height": 2.8
+        },
+        {
+          "name": "east",
+          "position_gltf": [
+            2.0,
+            0.0,
+            -2.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 4.0,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 6,
+      "collision_nodes": [
+        "COL_floor-colonly",
+        "COL_wall_W-colonly",
+        "COL_wall_N-colonly",
+        "COL_corner_NW-colonly",
+        "COL_ceiling-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/passage.py",
+      "tags": [
+        "passage",
+        "node"
+      ]
+    },
+    {
+      "id": "gteki_passage_tee_w4",
+      "family": "passage",
+      "variant": "tee_w4",
+      "file": "glb/gteki_passage_tee_w4.glb",
+      "sha256": "1ddec59bce14cd05aa4f89e67b67f5ef4b50d232f12806775c4fea72a008a85e",
+      "bytes": 29124,
+      "triangles": 224,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -2.15,
+          -0.25,
+          -4.15
+        ],
+        "max": [
+          2.15,
+          3.05,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "length": 6.0,
+        "width": 4.0,
+        "height": 2.8,
+        "wall_left": "panel",
+        "wall_right": "panel",
+        "floor": "terrazzo",
+        "border": 0.3,
+        "ceiling": "spandrel",
+        "light_rows": 2,
+        "light_module": 1.2,
+        "wall_t": 0.15,
+        "slab_t": 0.25,
+        "plenum": 0.25,
+        "panel_module": 1.2,
+        "skirting": 0.12,
+        "wainscot": "none",
+        "wainscot_h": 1.1,
+        "kind": "tee",
+        "allow_below_floor": true
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 4.0,
+          "height": 2.8
+        },
+        {
+          "name": "east",
+          "position_gltf": [
+            2.0,
+            0.0,
+            -2.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 4.0,
+          "height": 2.8
+        },
+        {
+          "name": "west",
+          "position_gltf": [
+            -2.0,
+            0.0,
+            -2.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 4.0,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 6,
+      "collision_nodes": [
+        "COL_floor-colonly",
+        "COL_wall_N-colonly",
+        "COL_ceiling-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/passage.py",
+      "tags": [
+        "passage",
+        "node"
+      ]
+    },
+    {
+      "id": "gteki_passage_end_w8",
+      "family": "passage",
+      "variant": "end_w8",
+      "file": "glb/gteki_passage_end_w8.glb",
+      "sha256": "78c20bc83e29a0775dc92d1080745a0001f5e13009688d54b29ef32d8f0005eb",
+      "bytes": 116288,
+      "triangles": 1144,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -4.15,
+          -0.25,
+          -8.15
+        ],
+        "max": [
+          4.15,
+          3.45,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "length": 6.0,
+        "width": 8.0,
+        "height": 3.2,
+        "wall_left": "panel",
+        "wall_right": "panel",
+        "floor": "terrazzo",
+        "border": 0.3,
+        "ceiling": "spandrel",
+        "light_rows": 3,
+        "light_module": 1.2,
+        "wall_t": 0.15,
+        "slab_t": 0.25,
+        "plenum": 0.25,
+        "panel_module": 1.2,
+        "skirting": 0.12,
+        "wainscot": "panel_accent",
+        "wainscot_h": 1.1,
+        "kind": "end",
+        "allow_below_floor": true
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 8.0,
+          "height": 3.2
+        }
+      ],
+      "light_hints": 21,
+      "collision_nodes": [
+        "COL_floor-colonly",
+        "COL_wall_W-colonly",
+        "COL_wall_E-colonly",
+        "COL_wall_N-colonly",
+        "COL_corner_NW-colonly",
+        "COL_corner_NE-colonly",
+        "COL_ceiling-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/passage.py",
+      "tags": [
+        "passage",
+        "node",
+        "concourse"
+      ]
+    },
+    {
+      "id": "gteki_passage_cross_w4",
+      "family": "passage",
+      "variant": "cross_w4",
+      "file": "glb/gteki_passage_cross_w4.glb",
+      "sha256": "0d6ad56511e4b188ffe3c3674490f5cde04861416a690a83ca3c5bff4ad1808e",
+      "bytes": 21140,
+      "triangles": 144,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -2.15,
+          -0.25,
+          -4.0
+        ],
+        "max": [
+          2.15,
+          3.05,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "length": 6.0,
+        "width": 4.0,
+        "height": 2.8,
+        "wall_left": "panel",
+        "wall_right": "panel",
+        "floor": "terrazzo",
+        "border": 0.3,
+        "ceiling": "spandrel",
+        "light_rows": 2,
+        "light_module": 1.2,
+        "wall_t": 0.15,
+        "slab_t": 0.25,
+        "plenum": 0.25,
+        "panel_module": 1.2,
+        "skirting": 0.12,
+        "wainscot": "none",
+        "wainscot_h": 1.1,
+        "kind": "cross",
+        "allow_below_floor": true
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 4.0,
+          "height": 2.8
+        },
+        {
+          "name": "north",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -4.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 4.0,
+          "height": 2.8
+        },
+        {
+          "name": "east",
+          "position_gltf": [
+            2.0,
+            0.0,
+            -2.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 4.0,
+          "height": 2.8
+        },
+        {
+          "name": "west",
+          "position_gltf": [
+            -2.0,
+            0.0,
+            -2.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 4.0,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 6,
+      "collision_nodes": [
+        "COL_floor-colonly",
+        "COL_ceiling-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/passage.py",
+      "tags": [
+        "passage",
+        "node"
+      ]
+    },
+    {
+      "id": "gteki_gate_array_4w1",
+      "family": "gate",
+      "variant": "array_4w1",
+      "file": "glb/gteki_gate_array_4w1.glb",
+      "sha256": "6a43feee6ea884687fb2c8625a4f6cd2b6cb199cbe406c2a707fbd11b1907302",
+      "bytes": 193676,
+      "triangles": 2270,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.95,
+          0.0,
+          -1.9
+        ],
+        "max": [
+          1.95,
+          0.985,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "aisles": 4,
+        "wide_aisles": [
+          3
+        ],
+        "aisle_w": 0.6,
+        "wide_w": 0.9,
+        "cab_w": 0.22,
+        "cab_len": 1.3,
+        "cab_h": 0.92,
+        "bidirectional": true,
+        "floor_plate": true,
+        "aisle_centers_x_m": [
+          -1.38,
+          -0.56,
+          0.26,
+          1.23
+        ],
+        "aisle_widths_m": [
+          0.6,
+          0.6,
+          0.6,
+          0.9
+        ],
+        "flap_close_yaw_deg": {
+          "L": -90.0,
+          "R": 90.0
+        },
+        "flap_reach_m": [
+          0.306,
+          0.306,
+          0.306,
+          0.456
+        ],
+        "total_width_m": 3.8,
+        "cabinet_span_z_m": [
+          -0.3,
+          -1.6
+        ]
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 3.8,
+          "height": 0.92
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -1.9
+          ],
+          "yaw_deg": 0.0,
+          "width": 3.8,
+          "height": 0.92
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_cabinet_0-colonly",
+        "COL_cabinet_1-colonly",
+        "COL_cabinet_2-colonly",
+        "COL_cabinet_3-colonly",
+        "COL_cabinet_4-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/gates.py",
+      "tags": [
+        "gate"
+      ]
+    },
+    {
+      "id": "gteki_gate_array_6w1",
+      "family": "gate",
+      "variant": "array_6w1",
+      "file": "glb/gteki_gate_array_6w1.glb",
+      "sha256": "b39f58074e0596f4bb9cf3bfa9bee962b007a03297eb47288011299217372d7b",
+      "bytes": 272404,
+      "triangles": 3214,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -2.77,
+          0.0,
+          -1.9
+        ],
+        "max": [
+          2.77,
+          0.985,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "aisles": 6,
+        "wide_aisles": [
+          0
+        ],
+        "aisle_w": 0.6,
+        "wide_w": 0.9,
+        "cab_w": 0.22,
+        "cab_len": 1.3,
+        "cab_h": 0.92,
+        "bidirectional": true,
+        "floor_plate": true,
+        "aisle_centers_x_m": [
+          -2.05,
+          -1.08,
+          -0.26,
+          0.56,
+          1.38,
+          2.2
+        ],
+        "aisle_widths_m": [
+          0.9,
+          0.6,
+          0.6,
+          0.6,
+          0.6,
+          0.6
+        ],
+        "flap_close_yaw_deg": {
+          "L": -90.0,
+          "R": 90.0
+        },
+        "flap_reach_m": [
+          0.456,
+          0.306,
+          0.306,
+          0.306,
+          0.306,
+          0.306
+        ],
+        "total_width_m": 5.44,
+        "cabinet_span_z_m": [
+          -0.3,
+          -1.6
+        ]
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 5.44,
+          "height": 0.92
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -1.9
+          ],
+          "yaw_deg": 0.0,
+          "width": 5.44,
+          "height": 0.92
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_cabinet_0-colonly",
+        "COL_cabinet_1-colonly",
+        "COL_cabinet_2-colonly",
+        "COL_cabinet_3-colonly",
+        "COL_cabinet_4-colonly",
+        "COL_cabinet_5-colonly",
+        "COL_cabinet_6-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/gates.py",
+      "tags": [
+        "gate"
+      ]
+    },
+    {
+      "id": "gteki_gate_array_2",
+      "family": "gate",
+      "variant": "array_2",
+      "file": "glb/gteki_gate_array_2.glb",
+      "sha256": "8567f8293b61b7a1091d1725ed2d797a5d3b33c29e8cc64b06e99c018079e0b7",
+      "bytes": 114924,
+      "triangles": 1326,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.98,
+          0.0,
+          -1.9
+        ],
+        "max": [
+          0.98,
+          0.985,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "aisles": 2,
+        "wide_aisles": [],
+        "aisle_w": 0.6,
+        "wide_w": 0.9,
+        "cab_w": 0.22,
+        "cab_len": 1.3,
+        "cab_h": 0.92,
+        "bidirectional": true,
+        "floor_plate": true,
+        "aisle_centers_x_m": [
+          -0.41,
+          0.41
+        ],
+        "aisle_widths_m": [
+          0.6,
+          0.6
+        ],
+        "flap_close_yaw_deg": {
+          "L": -90.0,
+          "R": 90.0
+        },
+        "flap_reach_m": [
+          0.306,
+          0.306
+        ],
+        "total_width_m": 1.86,
+        "cabinet_span_z_m": [
+          -0.3,
+          -1.6
+        ]
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.86,
+          "height": 0.92
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -1.9
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.86,
+          "height": 0.92
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_cabinet_0-colonly",
+        "COL_cabinet_1-colonly",
+        "COL_cabinet_2-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/gates.py",
+      "tags": [
+        "gate"
+      ]
+    },
+    {
+      "id": "gteki_gate_array_3w1_oneway",
+      "family": "gate",
+      "variant": "array_3w1_oneway",
+      "file": "glb/gteki_gate_array_3w1_oneway.glb",
+      "sha256": "087c7b0eabb049b32c83ee52cd95cb00d35ab3c61dfb1b2ef3bf301de592ebce",
+      "bytes": 134380,
+      "triangles": 1566,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.54,
+          0.0,
+          -1.9
+        ],
+        "max": [
+          1.54,
+          0.985,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "aisles": 3,
+        "wide_aisles": [
+          2
+        ],
+        "aisle_w": 0.6,
+        "wide_w": 0.9,
+        "cab_w": 0.22,
+        "cab_len": 1.3,
+        "cab_h": 0.92,
+        "bidirectional": false,
+        "floor_plate": true,
+        "aisle_centers_x_m": [
+          -0.97,
+          -0.15,
+          0.82
+        ],
+        "aisle_widths_m": [
+          0.6,
+          0.6,
+          0.9
+        ],
+        "flap_close_yaw_deg": {
+          "L": -90.0,
+          "R": 90.0
+        },
+        "flap_reach_m": [
+          0.306,
+          0.306,
+          0.456
+        ],
+        "total_width_m": 2.98,
+        "cabinet_span_z_m": [
+          -0.3,
+          -1.6
+        ]
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 2.98,
+          "height": 0.92
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -1.9
+          ],
+          "yaw_deg": 0.0,
+          "width": 2.98,
+          "height": 0.92
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_cabinet_0-colonly",
+        "COL_cabinet_1-colonly",
+        "COL_cabinet_2-colonly",
+        "COL_cabinet_3-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/gates.py",
+      "tags": [
+        "gate"
+      ]
+    },
+    {
+      "id": "gteki_stairs_straight_w2400_r3000",
+      "family": "vertical",
+      "variant": "stairs_straight",
+      "file": "glb/gteki_stairs_straight_w2400_r3000.glb",
+      "sha256": "36d05bcbb6736003974081387100d0a570f2e805e2215fb1324f539e93953baa",
+      "bytes": 309240,
+      "triangles": 4676,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.42,
+          -0.2,
+          -7.1
+        ],
+        "max": [
+          1.42,
+          4.1,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "rise": 3.0,
+        "width": 2.4,
+        "riser_max": 0.16,
+        "tread": 0.3,
+        "nosing": "rubber",
+        "side_left": "balustrade_glass",
+        "side_right": "balustrade_glass",
+        "handrails": true,
+        "rail_upper": 0.85,
+        "rail_lower": 0.65,
+        "rail_radius": 0.018,
+        "rail_extension": 0.45,
+        "rail_return": 0.12,
+        "center_rail": "auto",
+        "center_threshold": 3.0,
+        "post_spacing": 1.2,
+        "guard_height": 1.1,
+        "wall_height": 2.6,
+        "side_t": 0.12,
+        "slab_t": 0.2,
+        "stringer_height": 0.1,
+        "bottom_approach": 0.8,
+        "top_landing": 0.6,
+        "landing_depth": 1.5,
+        "tactile_depth": 0.3,
+        "tread_finish": "terrazzo",
+        "riser_finish": "gteki_wall_panel_enamel",
+        "soffit_finish": "gteki_ceiling_plaster",
+        "step_lights": true,
+        "socket_height": 2.4,
+        "allow_below_floor": true,
+        "n_risers": 19,
+        "riser": 0.15789473684210525,
+        "flights": 1,
+        "length": 7.1
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 2.4,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            3.0,
+            -7.1
+          ],
+          "yaw_deg": 0.0,
+          "width": 2.4,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 6,
+      "collision_nodes": [
+        "COL_bottom-colonly",
+        "COL_flight_0-colonly",
+        "COL_top-colonly",
+        "COL_side_side_left_0-colonly",
+        "COL_side_side_left_1-colonly",
+        "COL_side_side_left_2-colonly",
+        "COL_side_side_right_0-colonly",
+        "COL_side_side_right_1-colonly",
+        "COL_side_side_right_2-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/vertical.py",
+      "tags": [
+        "vertical"
+      ]
+    },
+    {
+      "id": "gteki_stairs_landing_w2400_r4000",
+      "family": "vertical",
+      "variant": "stairs_landing",
+      "file": "glb/gteki_stairs_landing_w2400_r4000.glb",
+      "sha256": "096b4d01cb1a9ffceaccad41ab1189d472d04dce1f8a0d02347257fddd4a44ce",
+      "bytes": 433484,
+      "triangles": 6552,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.42,
+          -0.2,
+          -10.4
+        ],
+        "max": [
+          1.42,
+          5.1,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "rise": 4.0,
+        "width": 2.4,
+        "riser_max": 0.16,
+        "tread": 0.3,
+        "nosing": "yellow",
+        "side_left": "balustrade_glass",
+        "side_right": "balustrade_solid",
+        "handrails": true,
+        "rail_upper": 0.85,
+        "rail_lower": 0.65,
+        "rail_radius": 0.018,
+        "rail_extension": 0.45,
+        "rail_return": 0.12,
+        "center_rail": "auto",
+        "center_threshold": 3.0,
+        "post_spacing": 1.2,
+        "guard_height": 1.1,
+        "wall_height": 2.6,
+        "side_t": 0.12,
+        "slab_t": 0.2,
+        "stringer_height": 0.1,
+        "bottom_approach": 0.8,
+        "top_landing": 0.6,
+        "landing_depth": 1.5,
+        "tactile_depth": 0.3,
+        "tread_finish": "terrazzo",
+        "riser_finish": "gteki_wall_panel_enamel",
+        "soffit_finish": "gteki_ceiling_plaster",
+        "step_lights": true,
+        "socket_height": 2.4,
+        "allow_below_floor": true,
+        "n_risers": 25,
+        "riser": 0.16,
+        "flights": 2,
+        "length": 10.399999999999999
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 2.4,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            4.0,
+            -10.4
+          ],
+          "yaw_deg": 0.0,
+          "width": 2.4,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 10,
+      "collision_nodes": [
+        "COL_bottom-colonly",
+        "COL_flight_0-colonly",
+        "COL_intermediate-colonly",
+        "COL_flight_1-colonly",
+        "COL_top-colonly",
+        "COL_side_side_left_0-colonly",
+        "COL_side_side_left_1-colonly",
+        "COL_side_side_left_2-colonly",
+        "COL_side_side_left_3-colonly",
+        "COL_side_side_left_4-colonly",
+        "COL_side_side_right_0-colonly",
+        "COL_side_side_right_1-colonly",
+        "COL_side_side_right_2-colonly",
+        "COL_side_side_right_3-colonly",
+        "COL_side_side_right_4-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/vertical.py",
+      "tags": [
+        "vertical"
+      ]
+    },
+    {
+      "id": "gteki_escalator_s1000_r5000_up",
+      "family": "vertical",
+      "variant": "escalator",
+      "file": "glb/gteki_escalator_s1000_r5000_up.glb",
+      "sha256": "2361e2223e18557a7b75084883e703466e2358dadf1f822883f0e61e3da0bf11",
+      "bytes": 601564,
+      "triangles": 7390,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.803,
+          -0.65,
+          -12.6603
+        ],
+        "max": [
+          0.803,
+          5.9811,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "rise": 5.0,
+        "step_width": 1.0,
+        "incline": 30.0,
+        "flat_steps": 2,
+        "direction": "up",
+        "balustrade": "glass",
+        "step_depth": 0.4,
+        "transition_run": 0.8,
+        "landing": 0.8,
+        "handrail_height": 0.95,
+        "handrail_radius": 0.036,
+        "newel_radius": 0.4,
+        "deck_width": 0.3,
+        "skirt_height": 0.18,
+        "truss_depth": 0.65,
+        "panel_module": 1.2,
+        "glass_t": 0.014,
+        "socket_height": 2.4,
+        "allow_below_floor": true,
+        "length": 12.660254037844393,
+        "inclined_run": 7.860254037844389,
+        "flat_run_each": 0.8,
+        "transition_run_each": 0.8,
+        "transition_allowance": 0.8,
+        "nominal_incline_run": 8.660254037844389,
+        "landing_run_total": 3.2,
+        "n_steps": 28
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.0,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            5.0,
+            -12.6603
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.0,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 4,
+      "collision_nodes": [
+        "COL_balustrade_-1_0-colonly",
+        "COL_balustrade_-1_1-colonly",
+        "COL_balustrade_-1_2-colonly",
+        "COL_balustrade_-1_3-colonly",
+        "COL_balustrade_-1_4-colonly",
+        "COL_balustrade_-1_5-colonly",
+        "COL_balustrade_-1_6-colonly",
+        "COL_balustrade_-1_7-colonly",
+        "COL_balustrade_-1_8-colonly",
+        "COL_balustrade_-1_9-colonly",
+        "COL_balustrade_-1_10-colonly",
+        "COL_balustrade_-1_11-colonly",
+        "COL_balustrade_-1_12-colonly",
+        "COL_balustrade_-1_13-colonly",
+        "COL_balustrade_-1_14-colonly",
+        "COL_balustrade_-1_15-colonly",
+        "COL_balustrade_-1_16-colonly",
+        "COL_balustrade_-1_17-colonly",
+        "COL_balustrade_-1_18-colonly",
+        "COL_balustrade_-1_19-colonly",
+        "COL_balustrade_-1_20-colonly",
+        "COL_balustrade_1_0-colonly",
+        "COL_balustrade_1_1-colonly",
+        "COL_balustrade_1_2-colonly",
+        "COL_balustrade_1_3-colonly",
+        "COL_balustrade_1_4-colonly",
+        "COL_balustrade_1_5-colonly",
+        "COL_balustrade_1_6-colonly",
+        "COL_balustrade_1_7-colonly",
+        "COL_balustrade_1_8-colonly",
+        "COL_balustrade_1_9-colonly",
+        "COL_balustrade_1_10-colonly",
+        "COL_balustrade_1_11-colonly",
+        "COL_balustrade_1_12-colonly",
+        "COL_balustrade_1_13-colonly",
+        "COL_balustrade_1_14-colonly",
+        "COL_balustrade_1_15-colonly",
+        "COL_balustrade_1_16-colonly",
+        "COL_balustrade_1_17-colonly",
+        "COL_balustrade_1_18-colonly",
+        "COL_balustrade_1_19-colonly",
+        "COL_balustrade_1_20-colonly",
+        "COL_walking_0-colonly",
+        "COL_walking_1-colonly",
+        "COL_walking_2-colonly",
+        "COL_walking_3-colonly",
+        "COL_walking_4-colonly",
+        "COL_walking_5-colonly",
+        "COL_walking_6-colonly",
+        "COL_walking_7-colonly",
+        "COL_walking_8-colonly",
+        "COL_walking_9-colonly",
+        "COL_walking_10-colonly",
+        "COL_walking_11-colonly",
+        "COL_walking_12-colonly",
+        "COL_walking_13-colonly",
+        "COL_walking_14-colonly",
+        "COL_walking_15-colonly",
+        "COL_walking_16-colonly",
+        "COL_walking_17-colonly",
+        "COL_walking_18-colonly",
+        "COL_walking_19-colonly",
+        "COL_walking_20-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/vertical.py",
+      "tags": [
+        "vertical"
+      ]
+    },
+    {
+      "id": "gteki_escalator_s600_r3500_down",
+      "family": "vertical",
+      "variant": "escalator",
+      "file": "glb/gteki_escalator_s600_r3500_down.glb",
+      "sha256": "2df1d379cb07f188bbe3aad198665f0579ddc7dfda95e85a72f52a3e58a3bc0d",
+      "bytes": 553420,
+      "triangles": 6870,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.603,
+          -0.65,
+          -10.8622
+        ],
+        "max": [
+          0.603,
+          4.4811,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "rise": 3.5,
+        "step_width": 0.6,
+        "incline": 30.0,
+        "flat_steps": 3,
+        "direction": "down",
+        "balustrade": "panel",
+        "step_depth": 0.4,
+        "transition_run": 0.8,
+        "landing": 0.8,
+        "handrail_height": 0.95,
+        "handrail_radius": 0.036,
+        "newel_radius": 0.4,
+        "deck_width": 0.3,
+        "skirt_height": 0.18,
+        "truss_depth": 0.65,
+        "panel_module": 1.2,
+        "glass_t": 0.014,
+        "socket_height": 2.4,
+        "allow_below_floor": true,
+        "length": 10.862177826491074,
+        "inclined_run": 5.262177826491072,
+        "flat_run_each": 1.2000000000000002,
+        "transition_run_each": 0.8,
+        "transition_allowance": 0.8,
+        "nominal_incline_run": 6.062177826491072,
+        "landing_run_total": 4.0,
+        "n_steps": 24
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 0.6,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            3.5,
+            -10.8622
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.6,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 4,
+      "collision_nodes": [
+        "COL_balustrade_-1_0-colonly",
+        "COL_balustrade_-1_1-colonly",
+        "COL_balustrade_-1_2-colonly",
+        "COL_balustrade_-1_3-colonly",
+        "COL_balustrade_-1_4-colonly",
+        "COL_balustrade_-1_5-colonly",
+        "COL_balustrade_-1_6-colonly",
+        "COL_balustrade_-1_7-colonly",
+        "COL_balustrade_-1_8-colonly",
+        "COL_balustrade_-1_9-colonly",
+        "COL_balustrade_-1_10-colonly",
+        "COL_balustrade_-1_11-colonly",
+        "COL_balustrade_-1_12-colonly",
+        "COL_balustrade_-1_13-colonly",
+        "COL_balustrade_-1_14-colonly",
+        "COL_balustrade_-1_15-colonly",
+        "COL_balustrade_-1_16-colonly",
+        "COL_balustrade_-1_17-colonly",
+        "COL_balustrade_-1_18-colonly",
+        "COL_balustrade_-1_19-colonly",
+        "COL_balustrade_-1_20-colonly",
+        "COL_balustrade_1_0-colonly",
+        "COL_balustrade_1_1-colonly",
+        "COL_balustrade_1_2-colonly",
+        "COL_balustrade_1_3-colonly",
+        "COL_balustrade_1_4-colonly",
+        "COL_balustrade_1_5-colonly",
+        "COL_balustrade_1_6-colonly",
+        "COL_balustrade_1_7-colonly",
+        "COL_balustrade_1_8-colonly",
+        "COL_balustrade_1_9-colonly",
+        "COL_balustrade_1_10-colonly",
+        "COL_balustrade_1_11-colonly",
+        "COL_balustrade_1_12-colonly",
+        "COL_balustrade_1_13-colonly",
+        "COL_balustrade_1_14-colonly",
+        "COL_balustrade_1_15-colonly",
+        "COL_balustrade_1_16-colonly",
+        "COL_balustrade_1_17-colonly",
+        "COL_balustrade_1_18-colonly",
+        "COL_balustrade_1_19-colonly",
+        "COL_balustrade_1_20-colonly",
+        "COL_walking_0-colonly",
+        "COL_walking_1-colonly",
+        "COL_walking_2-colonly",
+        "COL_walking_3-colonly",
+        "COL_walking_4-colonly",
+        "COL_walking_5-colonly",
+        "COL_walking_6-colonly",
+        "COL_walking_7-colonly",
+        "COL_walking_8-colonly",
+        "COL_walking_9-colonly",
+        "COL_walking_10-colonly",
+        "COL_walking_11-colonly",
+        "COL_walking_12-colonly",
+        "COL_walking_13-colonly",
+        "COL_walking_14-colonly",
+        "COL_walking_15-colonly",
+        "COL_walking_16-colonly",
+        "COL_walking_17-colonly",
+        "COL_walking_18-colonly",
+        "COL_walking_19-colonly",
+        "COL_walking_20-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/vertical.py",
+      "tags": [
+        "vertical"
+      ]
+    },
+    {
+      "id": "gteki_lift_portal_w1000",
+      "family": "vertical",
+      "variant": "lift_portal",
+      "file": "glb/gteki_lift_portal_w1000.glb",
+      "sha256": "aa23503a84c5fe651551d34f751b5ae70e829f115157a36a45e4144dad09ce96",
+      "bytes": 81144,
+      "triangles": 1090,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.92,
+          -0.16,
+          -0.26
+        ],
+        "max": [
+          0.92,
+          2.7,
+          0.9
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "wall",
+      "params": {
+        "door_width": 1.0,
+        "door_height": 2.1,
+        "depth": 0.26,
+        "frame_width": 0.14,
+        "header_height": 0.25,
+        "surround_width": 0.42,
+        "surround_height": 2.7,
+        "approach": 0.9,
+        "tactile_depth": 0.3,
+        "tactile_setback": 0.3,
+        "button_height": 1.05,
+        "mirror": false,
+        "allow_below_floor": true,
+        "length": 0.26
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.0,
+          "height": 2.1
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.26
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.0,
+          "height": 2.1,
+          "closed_portal": true
+        }
+      ],
+      "light_hints": 4,
+      "collision_nodes": [
+        "COL_closed_portal-colonly",
+        "COL_approach-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/vertical.py",
+      "tags": [
+        "vertical"
+      ]
+    },
+    {
+      "id": "gteki_sign_hanging_navy_left",
+      "family": "signage",
+      "variant": "hanging_navy_left",
+      "file": "glb/gteki_sign_hanging_navy_left.glb",
+      "sha256": "050e94e5e3252b1b1259c094313648d71785a07cab02d864525fb1f7b9760e8a",
+      "bytes": 91164,
+      "triangles": 839,
+      "materials": [
+        "gteki_palette",
+        "gteki_sign_face_navy_left",
+        "gteki_sign_face_navy_right"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_sign_face_navy_left": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_sign_face_navy_right": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.9,
+          2.3,
+          -0.06
+        ],
+        "max": [
+          0.9,
+          3.2,
+          0.06
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "ceiling",
+      "params": {
+        "width": 1.8,
+        "height": 0.45,
+        "depth": 0.12,
+        "drop": 0.45,
+        "theme": "navy",
+        "arrow": "left",
+        "back_arrow": "auto",
+        "mount_height": 2.3,
+        "bar": 0.032,
+        "recess": 0.012
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/signage.py",
+      "tags": [
+        "signage"
+      ]
+    },
+    {
+      "id": "gteki_sign_hanging_exit_yellow_up",
+      "family": "signage",
+      "variant": "hanging_exit_yellow_up",
+      "file": "glb/gteki_sign_hanging_exit_yellow_up.glb",
+      "sha256": "01596a6fa930a8ee0b993bd5334617d0a6caa81bea96438fa9b2b27943a245be",
+      "bytes": 79152,
+      "triangles": 839,
+      "materials": [
+        "gteki_palette",
+        "gteki_sign_face_exit_yellow_up"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_sign_face_exit_yellow_up": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.9,
+          2.3,
+          -0.06
+        ],
+        "max": [
+          0.9,
+          3.2,
+          0.06
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "ceiling",
+      "params": {
+        "width": 1.8,
+        "height": 0.45,
+        "depth": 0.12,
+        "drop": 0.45,
+        "theme": "exit_yellow",
+        "arrow": "up",
+        "back_arrow": "auto",
+        "mount_height": 2.3,
+        "bar": 0.032,
+        "recess": 0.012
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/signage.py",
+      "tags": [
+        "signage"
+      ]
+    },
+    {
+      "id": "gteki_sign_hanging_black_right",
+      "family": "signage",
+      "variant": "hanging_black_right",
+      "file": "glb/gteki_sign_hanging_black_right.glb",
+      "sha256": "46eb9f12a3fcbb06c12364416e94b8fd28dcdaa9a6ce4de311c472e4d4ebc861",
+      "bytes": 88272,
+      "triangles": 839,
+      "materials": [
+        "gteki_palette",
+        "gteki_sign_face_black_right",
+        "gteki_sign_face_black_left"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_sign_face_black_right": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_sign_face_black_left": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.9,
+          2.3,
+          -0.06
+        ],
+        "max": [
+          0.9,
+          3.2,
+          0.06
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "ceiling",
+      "params": {
+        "width": 1.8,
+        "height": 0.45,
+        "depth": 0.12,
+        "drop": 0.45,
+        "theme": "black",
+        "arrow": "right",
+        "back_arrow": "auto",
+        "mount_height": 2.3,
+        "bar": 0.032,
+        "recess": 0.012
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/signage.py",
+      "tags": [
+        "signage"
+      ]
+    },
+    {
+      "id": "gteki_sign_hanging_white_none",
+      "family": "signage",
+      "variant": "hanging_white_none",
+      "file": "glb/gteki_sign_hanging_white_none.glb",
+      "sha256": "886f40c4d41db4338456da730ccb9f60e43aea409f292f5a749ab9de7b027e26",
+      "bytes": 76128,
+      "triangles": 839,
+      "materials": [
+        "gteki_palette",
+        "gteki_sign_face_white_none"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_sign_face_white_none": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.9,
+          2.3,
+          -0.06
+        ],
+        "max": [
+          0.9,
+          3.2,
+          0.06
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "ceiling",
+      "params": {
+        "width": 1.8,
+        "height": 0.45,
+        "depth": 0.12,
+        "drop": 0.45,
+        "theme": "white",
+        "arrow": "none",
+        "back_arrow": "auto",
+        "mount_height": 2.3,
+        "bar": 0.032,
+        "recess": 0.012
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/signage.py",
+      "tags": [
+        "signage"
+      ]
+    },
+    {
+      "id": "gteki_sign_wall_black",
+      "family": "signage",
+      "variant": "wall_black",
+      "file": "glb/gteki_sign_wall_black.glb",
+      "sha256": "b6b469c8eb3f4edf467ee49a78c0e724010e2154281b70c86595cb79ed56e66e",
+      "bytes": 37096,
+      "triangles": 244,
+      "materials": [
+        "gteki_palette",
+        "gteki_sign_face_black_right"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_sign_face_black_right": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.8,
+          1.9,
+          -0.0
+        ],
+        "max": [
+          0.8,
+          2.3,
+          0.07
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "width": 1.6,
+        "height": 0.4,
+        "depth": 0.07,
+        "theme": "black",
+        "arrow": "right",
+        "mount_height": 1.9,
+        "bar": 0.028,
+        "recess": 0.01
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [
+        "COL_sign-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/signage.py",
+      "tags": [
+        "signage"
+      ]
+    },
+    {
+      "id": "gteki_sign_wall_navy_long",
+      "family": "signage",
+      "variant": "wall_navy_long",
+      "file": "glb/gteki_sign_wall_navy_long.glb",
+      "sha256": "0783faa038567f0eda563d777fa681014f631057a74ec9bfa4116b9a2a53d6bf",
+      "bytes": 40688,
+      "triangles": 244,
+      "materials": [
+        "gteki_palette",
+        "gteki_sign_face_navy_left_a540"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_sign_face_navy_left_a540": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.2,
+          1.9,
+          -0.0
+        ],
+        "max": [
+          1.2,
+          2.4,
+          0.07
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "width": 2.4,
+        "height": 0.5,
+        "depth": 0.07,
+        "theme": "navy",
+        "arrow": "left",
+        "mount_height": 1.9,
+        "bar": 0.028,
+        "recess": 0.01
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [
+        "COL_sign-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/signage.py",
+      "tags": [
+        "signage"
+      ]
+    },
+    {
+      "id": "gteki_sign_totem",
+      "family": "signage",
+      "variant": "totem",
+      "file": "glb/gteki_sign_totem.glb",
+      "sha256": "3a1796de24a977a8abdb64eeec0be67fde5a1e39c8f09d75f6375be3599a746e",
+      "bytes": 97316,
+      "triangles": 584,
+      "materials": [
+        "gteki_palette",
+        "gteki_sign_face_totem_light_navy"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_sign_face_totem_light_navy": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.34,
+          0.0,
+          -0.19
+        ],
+        "max": [
+          0.34,
+          2.2,
+          0.19
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "width": 0.6,
+        "depth": 0.3,
+        "height": 2.2,
+        "theme": "navy",
+        "tone": "light",
+        "bar": 0.035,
+        "plinth": 0.1,
+        "cap": 0.08,
+        "recess": 0.014
+      },
+      "sockets": [],
+      "light_hints": 2,
+      "collision_nodes": [
+        "COL_body-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/signage.py",
+      "tags": [
+        "signage"
+      ]
+    },
+    {
+      "id": "gteki_sign_totem_dark",
+      "family": "signage",
+      "variant": "totem_dark",
+      "file": "glb/gteki_sign_totem_dark.glb",
+      "sha256": "c3c391bb388c7ad5315b1a3d25155999f5ccfd938ec40691e973d97aa310cb2e",
+      "bytes": 97948,
+      "triangles": 584,
+      "materials": [
+        "gteki_palette",
+        "gteki_sign_face_totem_dark_black"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_sign_face_totem_dark_black": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.34,
+          0.0,
+          -0.19
+        ],
+        "max": [
+          0.34,
+          2.2,
+          0.19
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "width": 0.6,
+        "depth": 0.3,
+        "height": 2.2,
+        "theme": "black",
+        "tone": "dark",
+        "bar": 0.035,
+        "plinth": 0.1,
+        "cap": 0.08,
+        "recess": 0.014
+      },
+      "sockets": [],
+      "light_hints": 2,
+      "collision_nodes": [
+        "COL_body-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/signage.py",
+      "tags": [
+        "signage"
+      ]
+    },
+    {
+      "id": "gteki_sign_blade_navy",
+      "family": "signage",
+      "variant": "blade_navy",
+      "file": "glb/gteki_sign_blade_navy.glb",
+      "sha256": "b528d01d9424578a8f17b78b7e7cf5184bf43058dc4e9832466588eaea22b224",
+      "bytes": 129116,
+      "triangles": 509,
+      "materials": [
+        "gteki_palette",
+        "gteki_sign_face_blade_navy_left",
+        "gteki_sign_face_blade_navy_right"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_sign_face_blade_navy_left": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_sign_face_blade_navy_right": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.05,
+          2.0,
+          -0.0
+        ],
+        "max": [
+          0.05,
+          2.8,
+          0.74
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "width": 0.6,
+        "height": 0.8,
+        "thickness": 0.08,
+        "standoff": 0.14,
+        "theme": "navy",
+        "arrow": "left",
+        "back_arrow": "auto",
+        "mount_height": 2.0,
+        "bar": 0.03,
+        "recess": 0.01
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [
+        "COL_sign-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/signage.py",
+      "tags": [
+        "signage"
+      ]
+    },
+    {
+      "id": "gteki_sign_blade_yellow_up",
+      "family": "signage",
+      "variant": "blade_yellow_up",
+      "file": "glb/gteki_sign_blade_yellow_up.glb",
+      "sha256": "79aa349c060cbee4a852aac4e21d4e5d132aef7f64ada1b76af1aaf5af17d05a",
+      "bytes": 95608,
+      "triangles": 509,
+      "materials": [
+        "gteki_palette",
+        "gteki_sign_face_blade_exit_yellow_up"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_sign_face_blade_exit_yellow_up": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.05,
+          2.0,
+          -0.0
+        ],
+        "max": [
+          0.05,
+          2.8,
+          0.74
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "width": 0.6,
+        "height": 0.8,
+        "thickness": 0.08,
+        "standoff": 0.14,
+        "theme": "exit_yellow",
+        "arrow": "up",
+        "back_arrow": "auto",
+        "mount_height": 2.0,
+        "bar": 0.03,
+        "recess": 0.01
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [
+        "COL_sign-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/signage.py",
+      "tags": [
+        "signage"
+      ]
+    },
+    {
+      "id": "gteki_bench_4seat",
+      "family": "props",
+      "variant": "bench_4seat",
+      "file": "glb/gteki_bench_4seat.glb",
+      "sha256": "fda632e92fcd761353278362a430045521c966589b9da946882addc98aaba445",
+      "bytes": 132488,
+      "triangles": 1597,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.17,
+          -0.0,
+          -0.2274
+        ],
+        "max": [
+          1.17,
+          0.8116,
+          0.215
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "length": 2.4,
+        "seats": 4,
+        "depth": 0.42,
+        "seat_height": 0.45,
+        "style": "perforated",
+        "frame": "stainless",
+        "backrest": true,
+        "tube_r": 0.0125
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_bench-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_bench_3seat_slat",
+      "family": "props",
+      "variant": "bench_3seat_slat",
+      "file": "glb/gteki_bench_3seat_slat.glb",
+      "sha256": "24e59e3533a1e8f30bb587137995e19460f9534e250716ed624d1e01c8534297",
+      "bytes": 125856,
+      "triangles": 1444,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.87,
+          -0.0,
+          -0.2073
+        ],
+        "max": [
+          0.87,
+          0.6618,
+          0.215
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "length": 1.8,
+        "seats": 3,
+        "depth": 0.42,
+        "seat_height": 0.45,
+        "style": "slat",
+        "frame": "painted",
+        "backrest": false,
+        "tube_r": 0.0125
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_bench-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_bin_trio",
+      "family": "props",
+      "variant": "bin_trio",
+      "file": "glb/gteki_bin_trio.glb",
+      "sha256": "6a9bde67f90e567b582b1dcbe22a84a00c40b2c3a38dbfecdf6afb77daf50910",
+      "bytes": 100500,
+      "triangles": 1162,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.64,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          0.64,
+          1.05,
+          0.476
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "width": 1.26,
+        "depth": 0.45,
+        "height": 1.05,
+        "colours": [
+          "blue",
+          "green",
+          "orange"
+        ],
+        "openings": [
+          "round",
+          "slot",
+          "square"
+        ]
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_bins-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_poster_lightbox_01",
+      "family": "props",
+      "variant": "poster_lightbox_01",
+      "file": "glb/gteki_poster_lightbox_01.glb",
+      "sha256": "adf7fbc30fae9466041f22e9b575aabd9b092557ea009d712ded8571e4fe0a2d",
+      "bytes": 127664,
+      "triangles": 246,
+      "materials": [
+        "gteki_palette",
+        "gteki_poster_01",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_poster_01": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.4,
+          0.9,
+          -0.0
+        ],
+        "max": [
+          0.4,
+          2.0,
+          0.07
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "wall",
+      "params": {
+        "poster": 1,
+        "width": 0.8,
+        "height": 1.1,
+        "depth": 0.07,
+        "bar": 0.035,
+        "mount_height": 0.9,
+        "poster_image": null
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [
+        "COL_box-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_poster_lightbox_04",
+      "family": "props",
+      "variant": "poster_lightbox_04",
+      "file": "glb/gteki_poster_lightbox_04.glb",
+      "sha256": "a81fd04be0d19c1a1025ba015da23aff64bd0c37cd3278b2380c73b7a85a9172",
+      "bytes": 155100,
+      "triangles": 246,
+      "materials": [
+        "gteki_palette",
+        "gteki_poster_04",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_poster_04": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.4,
+          0.9,
+          -0.0
+        ],
+        "max": [
+          0.4,
+          2.0,
+          0.07
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "wall",
+      "params": {
+        "poster": 4,
+        "width": 0.8,
+        "height": 1.1,
+        "depth": 0.07,
+        "bar": 0.035,
+        "mount_height": 0.9,
+        "poster_image": null
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [
+        "COL_box-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_poster_lightbox_08",
+      "family": "props",
+      "variant": "poster_lightbox_08",
+      "file": "glb/gteki_poster_lightbox_08.glb",
+      "sha256": "d3c47bb380b6851704604824a3e61893191a7593e221cd523ba879aadce2bec0",
+      "bytes": 279076,
+      "triangles": 246,
+      "materials": [
+        "gteki_palette",
+        "gteki_poster_08",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_poster_08": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.4,
+          0.9,
+          -0.0
+        ],
+        "max": [
+          0.4,
+          2.0,
+          0.07
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "wall",
+      "params": {
+        "poster": 8,
+        "width": 0.8,
+        "height": 1.1,
+        "depth": 0.07,
+        "bar": 0.035,
+        "mount_height": 0.9,
+        "poster_image": null
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [
+        "COL_box-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_vending_machine",
+      "family": "props",
+      "variant": "vending_machine",
+      "file": "glb/gteki_vending_machine.glb",
+      "sha256": "55031442ced08fbde24bbfc72b3d0d7849c6cc6367c840e98d6a69cce1ab6dfa",
+      "bytes": 450744,
+      "triangles": 5896,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.5,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          0.5,
+          1.83,
+          0.772
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "width": 1.0,
+        "depth": 0.75,
+        "height": 1.83,
+        "body": "slate",
+        "rows": 4,
+        "seed": 7
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [
+        "COL_body-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_vending_machine_sand",
+      "family": "props",
+      "variant": "vending_machine_sand",
+      "file": "glb/gteki_vending_machine_sand.glb",
+      "sha256": "f8d86b6bc333afb29cd1136d880137e767cdff020bc899a1db9b99ba8bfe5fb3",
+      "bytes": 450356,
+      "triangles": 5896,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.5,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          0.5,
+          1.83,
+          0.772
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "width": 1.0,
+        "depth": 0.75,
+        "height": 1.83,
+        "body": "sand",
+        "rows": 4,
+        "seed": 3
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [
+        "COL_body-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_column_round_d600",
+      "family": "props",
+      "variant": "column_round_d600",
+      "file": "glb/gteki_column_round_d600.glb",
+      "sha256": "0ab60c8facc589c2b901e0eedce7386652309a0058c883ecdb9aa494c0adbd6d",
+      "bytes": 31292,
+      "triangles": 432,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.305,
+          0.0,
+          -0.305
+        ],
+        "max": [
+          0.305,
+          2.8,
+          0.305
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "shape": "round",
+        "size": 0.6,
+        "height": 2.8,
+        "overrun": 0.0,
+        "kick": 0.18,
+        "body": "enamel",
+        "guards": true,
+        "band": true,
+        "seams": 4,
+        "segments": 40,
+        "corner_radius": 0.03
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_column-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_column_square_600",
+      "family": "props",
+      "variant": "column_square_600",
+      "file": "glb/gteki_column_square_600.glb",
+      "sha256": "f3e9915f0d39f3f7a4a7ecebc5eabadb6927a510dca837c34e793706eef37e0e",
+      "bytes": 49692,
+      "triangles": 698,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.305,
+          0.0,
+          -0.305
+        ],
+        "max": [
+          0.305,
+          2.8,
+          0.305
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "shape": "square",
+        "size": 0.6,
+        "height": 2.8,
+        "overrun": 0.0,
+        "kick": 0.18,
+        "body": "tile",
+        "guards": true,
+        "band": true,
+        "seams": 4,
+        "segments": 40,
+        "corner_radius": 0.03
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_column-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_column_round_d600_h3200",
+      "family": "props",
+      "variant": "column_round_d600_h3200",
+      "file": "glb/gteki_column_round_d600_h3200.glb",
+      "sha256": "309f4b8ca49ea7828778fbf8831a75b8c4ea4463e78bbddb4b0ddd097195e878",
+      "bytes": 31312,
+      "triangles": 432,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.305,
+          0.0,
+          -0.305
+        ],
+        "max": [
+          0.305,
+          3.2,
+          0.305
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "shape": "round",
+        "size": 0.6,
+        "height": 3.2,
+        "overrun": 0.0,
+        "kick": 0.18,
+        "body": "enamel",
+        "guards": true,
+        "band": true,
+        "seams": 4,
+        "segments": 40,
+        "corner_radius": 0.03
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_column-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_column_square_800_accent",
+      "family": "props",
+      "variant": "column_square_800_accent",
+      "file": "glb/gteki_column_square_800_accent.glb",
+      "sha256": "b6c8e365b40bf08f571d778058863306ba352d54e62800b113c641463c2fa599",
+      "bytes": 20568,
+      "triangles": 266,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.405,
+          0.0,
+          -0.405
+        ],
+        "max": [
+          0.405,
+          3.1,
+          0.405
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "shape": "square",
+        "size": 0.8,
+        "height": 2.8,
+        "overrun": 0.3,
+        "kick": 0.18,
+        "body": "enamel_accent",
+        "guards": false,
+        "band": true,
+        "seams": 4,
+        "segments": 40,
+        "corner_radius": 0.03
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_column-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_tactile_strip_dots_3m",
+      "family": "props",
+      "variant": "tactile_strip_dots_3m",
+      "file": "glb/gteki_tactile_strip_dots_3m.glb",
+      "sha256": "6e0ac96ff39c97686334fefa5edb3c1442205307870be4fb750f5074d9fa1b85",
+      "bytes": 6796,
+      "triangles": 30,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.15,
+          0.0,
+          -3.0
+        ],
+        "max": [
+          0.15,
+          0.004,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "length": 3.0,
+        "width": 0.3,
+        "kind": "dots",
+        "height": 0.004
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 0.3,
+          "height": 0.004
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -3.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.3,
+          "height": 0.004
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "floor"
+      ]
+    },
+    {
+      "id": "gteki_tactile_strip_bars_3m",
+      "family": "props",
+      "variant": "tactile_strip_bars_3m",
+      "file": "glb/gteki_tactile_strip_bars_3m.glb",
+      "sha256": "dc3ab0a8f20a5ad6666a67aeba21b9353dda00ba1438ed926cce2e298e000174",
+      "bytes": 6796,
+      "triangles": 30,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.15,
+          0.0,
+          -3.0
+        ],
+        "max": [
+          0.15,
+          0.004,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "length": 3.0,
+        "width": 0.3,
+        "kind": "bars",
+        "height": 0.004
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 0.3,
+          "height": 0.004
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -3.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.3,
+          "height": 0.004
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "floor"
+      ]
+    },
+    {
+      "id": "gteki_barrier_rail_3600_glass",
+      "family": "props",
+      "variant": "barrier_rail_3600_glass",
+      "file": "glb/gteki_barrier_rail_3600_glass.glb",
+      "sha256": "88ffa8a55a847379c1f57717b837d2c6a1f440d497efc37c4f22314bac8a94a9",
+      "bytes": 130104,
+      "triangles": 1880,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.87,
+          0.0,
+          -0.0666
+        ],
+        "max": [
+          1.87,
+          1.1,
+          0.0666
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "length": 3.6,
+        "height": 1.1,
+        "post_spacing": 1.2,
+        "infill": "glass",
+        "end_posts": "both",
+        "post_r": 0.028,
+        "rail_r": 0.02,
+        "panel_colour": "gteki_wall_panel_enamel"
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            -1.8,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.1,
+          "height": 1.1
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            1.8,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.1,
+          "height": 1.1
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_rail-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_barrier_rail_2400_solid",
+      "family": "props",
+      "variant": "barrier_rail_2400_solid",
+      "file": "glb/gteki_barrier_rail_2400_solid.glb",
+      "sha256": "7301449ea70a623f711c9523ad61a07e49ea144cae3a220c7a339a2d7bbc322d",
+      "bytes": 53992,
+      "triangles": 804,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.27,
+          0.0,
+          -0.0666
+        ],
+        "max": [
+          1.2,
+          1.1,
+          0.0666
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "length": 2.4,
+        "height": 1.1,
+        "post_spacing": 1.2,
+        "infill": "solid",
+        "end_posts": "start",
+        "post_r": 0.028,
+        "rail_r": 0.02,
+        "panel_colour": "gteki_wall_panel_enamel"
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            -1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.1,
+          "height": 1.1
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.1,
+          "height": 1.1
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_rail-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_barrier_rail_2400_rails",
+      "family": "props",
+      "variant": "barrier_rail_2400_rails",
+      "file": "glb/gteki_barrier_rail_2400_rails.glb",
+      "sha256": "5ae377e516e0ced4c8c8fcacdf604ad3e42fffad3336bd1feb4cf0ccf06e601e",
+      "bytes": 63928,
+      "triangles": 1126,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.27,
+          0.0,
+          -0.0666
+        ],
+        "max": [
+          1.27,
+          1.1,
+          0.0666
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "length": 2.4,
+        "height": 1.1,
+        "post_spacing": 1.2,
+        "infill": "rails",
+        "end_posts": "both",
+        "post_r": 0.028,
+        "rail_r": 0.02,
+        "panel_colour": "gteki_wall_panel_enamel"
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            -1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.1,
+          "height": 1.1
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.1,
+          "height": 1.1
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_rail-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_ticket_kiosk",
+      "family": "props",
+      "variant": "ticket_kiosk",
+      "file": "glb/gteki_ticket_kiosk.glb",
+      "sha256": "88a4f76e40d48b7613f70f7a50d9fe8924ba5c6bddd3443fc5734d821472ef64",
+      "bytes": 137716,
+      "triangles": 752,
+      "materials": [
+        "gteki_palette",
+        "gteki_screen_ui"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_screen_ui": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.35,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          0.35,
+          1.75,
+          0.6533
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "width": 0.7,
+        "depth": 0.6,
+        "height": 1.75,
+        "accent": true
+      },
+      "sockets": [],
+      "light_hints": 1,
+      "collision_nodes": [
+        "COL_body-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
+      "id": "gteki_escalator_s1000_r5000_down",
+      "family": "vertical",
+      "variant": "escalator",
+      "file": "glb/gteki_escalator_s1000_r5000_down.glb",
+      "sha256": "5e5a6810a518629a99e7804515477c21fd7583e32a2b1ef3eb68a995420cc9f3",
+      "bytes": 601568,
+      "triangles": 7390,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "orm"
+          ]
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.803,
+          -0.65,
+          -12.6603
+        ],
+        "max": [
+          0.803,
+          5.9811,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "rise": 5.0,
+        "step_width": 1.0,
+        "incline": 30.0,
+        "flat_steps": 2,
+        "direction": "down",
+        "balustrade": "glass",
+        "step_depth": 0.4,
+        "transition_run": 0.8,
+        "landing": 0.8,
+        "handrail_height": 0.95,
+        "handrail_radius": 0.036,
+        "newel_radius": 0.4,
+        "deck_width": 0.3,
+        "skirt_height": 0.18,
+        "truss_depth": 0.65,
+        "panel_module": 1.2,
+        "glass_t": 0.014,
+        "socket_height": 2.4,
+        "allow_below_floor": true,
+        "length": 12.660254037844393,
+        "inclined_run": 7.860254037844389,
+        "flat_run_each": 0.8,
+        "transition_run_each": 0.8,
+        "transition_allowance": 0.8,
+        "nominal_incline_run": 8.660254037844389,
+        "landing_run_total": 3.2,
+        "n_steps": 28
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 1.0,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            5.0,
+            -12.6603
+          ],
+          "yaw_deg": 0.0,
+          "width": 1.0,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 4,
+      "collision_nodes": [
+        "COL_balustrade_-1_0-colonly",
+        "COL_balustrade_-1_1-colonly",
+        "COL_balustrade_-1_2-colonly",
+        "COL_balustrade_-1_3-colonly",
+        "COL_balustrade_-1_4-colonly",
+        "COL_balustrade_-1_5-colonly",
+        "COL_balustrade_-1_6-colonly",
+        "COL_balustrade_-1_7-colonly",
+        "COL_balustrade_-1_8-colonly",
+        "COL_balustrade_-1_9-colonly",
+        "COL_balustrade_-1_10-colonly",
+        "COL_balustrade_-1_11-colonly",
+        "COL_balustrade_-1_12-colonly",
+        "COL_balustrade_-1_13-colonly",
+        "COL_balustrade_-1_14-colonly",
+        "COL_balustrade_-1_15-colonly",
+        "COL_balustrade_-1_16-colonly",
+        "COL_balustrade_-1_17-colonly",
+        "COL_balustrade_-1_18-colonly",
+        "COL_balustrade_-1_19-colonly",
+        "COL_balustrade_-1_20-colonly",
+        "COL_balustrade_1_0-colonly",
+        "COL_balustrade_1_1-colonly",
+        "COL_balustrade_1_2-colonly",
+        "COL_balustrade_1_3-colonly",
+        "COL_balustrade_1_4-colonly",
+        "COL_balustrade_1_5-colonly",
+        "COL_balustrade_1_6-colonly",
+        "COL_balustrade_1_7-colonly",
+        "COL_balustrade_1_8-colonly",
+        "COL_balustrade_1_9-colonly",
+        "COL_balustrade_1_10-colonly",
+        "COL_balustrade_1_11-colonly",
+        "COL_balustrade_1_12-colonly",
+        "COL_balustrade_1_13-colonly",
+        "COL_balustrade_1_14-colonly",
+        "COL_balustrade_1_15-colonly",
+        "COL_balustrade_1_16-colonly",
+        "COL_balustrade_1_17-colonly",
+        "COL_balustrade_1_18-colonly",
+        "COL_balustrade_1_19-colonly",
+        "COL_balustrade_1_20-colonly",
+        "COL_walking_0-colonly",
+        "COL_walking_1-colonly",
+        "COL_walking_2-colonly",
+        "COL_walking_3-colonly",
+        "COL_walking_4-colonly",
+        "COL_walking_5-colonly",
+        "COL_walking_6-colonly",
+        "COL_walking_7-colonly",
+        "COL_walking_8-colonly",
+        "COL_walking_9-colonly",
+        "COL_walking_10-colonly",
+        "COL_walking_11-colonly",
+        "COL_walking_12-colonly",
+        "COL_walking_13-colonly",
+        "COL_walking_14-colonly",
+        "COL_walking_15-colonly",
+        "COL_walking_16-colonly",
+        "COL_walking_17-colonly",
+        "COL_walking_18-colonly",
+        "COL_walking_19-colonly",
+        "COL_walking_20-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/vertical.py",
+      "tags": [
+        "vertical"
+      ]
+    }
+  ]
+}

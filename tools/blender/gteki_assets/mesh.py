@@ -29,6 +29,8 @@ class Part:
         self.smooth = smooth
         self.weighted = weighted
         self.uv_rotate = uv_rotate
+        # mobile profile: fewer segments for visual parts; collision keeps full detail
+        self.low_detail = not collision and getattr(asset, "profile", "full") == "mobile"
 
     # ------------------------------------------------------------- primitives
 
@@ -130,6 +132,8 @@ class Part:
     def cylinder(self, base, radius, height, mat, segments=24, cap_mat=None, axis="z", caps=(True, True)):
         """Cylinder from `base` along +axis."""
         cap_mat = cap_mat or mat
+        if self.low_detail:
+            segments = max(8, segments // 2)
         ring0, ring1 = [], []
         for i in range(segments):
             a = 2 * math.pi * i / segments
@@ -165,6 +169,10 @@ class Part:
     def tube(self, points, radius, mat, segments=12, caps=True, corner_radius=0.0, corner_steps=4):
         """Sweep a circle along a polyline (handrails). Optional rounded corners."""
         pts = [Vector(p) for p in points]
+        if self.low_detail:
+            segments = max(6, segments // 2)
+            corner_steps = max(1, corner_steps // 2)
+            pts = _simplify_polyline(pts, radius * 0.5)
         if corner_radius > 0 and len(pts) > 2:
             pts = _round_polyline(pts, corner_radius, corner_steps)
         # parallel-transport frames
@@ -222,6 +230,32 @@ class Part:
 
     def merge_doubles(self, dist=1e-5):
         bmesh.ops.remove_doubles(self.bm, verts=self.bm.verts, dist=dist)
+
+
+def _simplify_polyline(pts, tol):
+    """Douglas-Peucker: drop points within `tol` of the chord; endpoints are kept."""
+    if len(pts) < 3:
+        return pts
+    keep = [False] * len(pts)
+    keep[0] = keep[-1] = True
+    stack = [(0, len(pts) - 1)]
+    while stack:
+        i, j = stack.pop()
+        a, b = pts[i], pts[j]
+        ab = b - a
+        best, worst = -1.0, None
+        for k in range(i + 1, j):
+            ap = pts[k] - a
+            if ab.length_squared > 1e-12:
+                d = (ap - ab * (ap.dot(ab) / ab.length_squared)).length
+            else:
+                d = ap.length
+            if d > best:
+                best, worst = d, k
+        if worst is not None and best > tol:
+            keep[worst] = True
+            stack += [(i, worst), (worst, j)]
+    return [p for p, k in zip(pts, keep) if k]
 
 
 def _round_polyline(pts, r, steps):

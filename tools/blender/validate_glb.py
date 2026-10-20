@@ -321,7 +321,16 @@ class Validator:
                         elif mode not in (0, 1, 2, 3):
                             raise ValueError(f"invalid primitive mode {mode}")
                     if "material" in primitive:
-                        self.index(materials, primitive["material"])
+                        material = self.index(materials, primitive["material"])
+                        pbr = material.get("pbrMetallicRoughness", {})
+                        infos = [pbr.get("baseColorTexture"), pbr.get("metallicRoughnessTexture")]
+                        infos += [material.get(k) for k in ("normalTexture", "occlusionTexture", "emissiveTexture")]
+                        for info in filter(None, infos):
+                            coord = info.get("texCoord", 0)
+                            if (not isinstance(coord, int) or isinstance(coord, bool) or coord < 0
+                                    or f"TEXCOORD_{coord}" not in primitive.get("attributes", {})):
+                                self.message("FAIL", f"material {material.get('name')!r} samples texCoord {coord!r}, "
+                                             "which its primitive does not have")
             for child in node.get("children", []):
                 visit(child, world, collision)
 
@@ -404,7 +413,15 @@ def self_test():
     assert result["status"] == "WARN" and result["aabb"] == dict(min=[1., 0., 0.], max=[3., 3., 1.])
     moved["meshes"][0]["primitives"][0]["mode"] = 6
     assert Validator("tiny.glb", encode_glb(moved, binary)).check()["triangles"] == 1
-    print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs")
+    # a texture must sample a UV set the primitive has (texCoord -1 / 1 without TEXCOORD_1 fail)
+    for coord, attrs, status in ((0, ("TEXCOORD_0",), "PASS"), (-1, ("TEXCOORD_0",), "FAIL"),
+                                 (1, ("TEXCOORD_0",), "FAIL"), (1, ("TEXCOORD_0", "TEXCOORD_1"), "PASS")):
+        textured = copy.deepcopy(doc)
+        textured["materials"][0]["pbrMetallicRoughness"] = dict(baseColorTexture=dict(index=0, texCoord=coord))
+        for attr in attrs:
+            textured["meshes"][0]["primitives"][0]["attributes"][attr] = 0
+        assert Validator("tiny.glb", encode_glb(textured, binary)).check()["status"] == status, (coord, attrs)
+    print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs, texCoord")
 
 
 def main():

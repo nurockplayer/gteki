@@ -470,9 +470,10 @@ def self_test():
                 + chunk(b"IDAT", zlib.compress(bytes([0, red, 0, 0, 255]))) + chunk(b"IEND", b""))
 
     def tiny(asset_id, red):
-        binary = bytearray(struct.pack("<9f3H", -1, 0, -1, 1, 0, -1, 0, 1, 0, 0, 1, 2))
+        binary = bytearray(struct.pack("<9f3Hxx6f", -1, 0, -1, 1, 0, -1, 0, 1, 0, 0, 1, 2, 0, 0, 1, 0, 0, 1))
         views = [dict(buffer=0, byteOffset=0, byteLength=36, byteStride=12, target=34962),
-                 dict(buffer=0, byteOffset=36, byteLength=6, target=34963)]
+                 dict(buffer=0, byteOffset=36, byteLength=6, target=34963),
+                 dict(buffer=0, byteOffset=44, byteLength=24, target=34962)]
         for payload in (png(0), png(red)):
             binary.extend(b"\0" * (-len(binary) % 4))
             views.append(dict(buffer=0, byteOffset=len(binary), byteLength=len(payload)))
@@ -485,13 +486,14 @@ def self_test():
                    dict(name="VIS_triangle", mesh=0, translation=[0, 0, 0], extras=dict(keep=asset_id)),
                    dict(name="COL_triangle-colonly", mesh=0),
                    dict(name="SOCKET_start", extras=dict(socket="start", width=2))],
-            meshes=[dict(primitives=[dict(attributes=dict(POSITION=0), indices=1, material=0)])],
+            meshes=[dict(primitives=[dict(attributes=dict(POSITION=0, TEXCOORD_0=2), indices=1, material=0)])],
             accessors=[dict(bufferView=0, componentType=5126, count=3, type="VEC3", min=[-1, 0, -1], max=[1, 1, 0]),
-                       dict(bufferView=1, componentType=5123, count=3, type="SCALAR")],
+                       dict(bufferView=1, componentType=5123, count=3, type="SCALAR"),
+                       dict(bufferView=2, componentType=5126, count=3, type="VEC2")],
             materials=[dict(name="gteki_shared", pbrMetallicRoughness=dict(baseColorTexture=dict(index=0)))],
             samplers=[dict(magFilter=9729)], textures=[dict(source=0, sampler=0), dict(source=1, sampler=0)],
-            images=[dict(name="first_shared_" + asset_id, mimeType="image/png", bufferView=2),
-                    dict(name=asset_id, mimeType="image/png", bufferView=3)],
+            images=[dict(name="first_shared_" + asset_id, mimeType="image/png", bufferView=3),
+                    dict(name=asset_id, mimeType="image/png", bufferView=4)],
             bufferViews=views, buffers=[dict(byteLength=len(binary))])
         # Each unique image is used by a second material on the collision mesh.
         doc["materials"].append(dict(name="gteki_" + asset_id, normalTexture=dict(index=1)))

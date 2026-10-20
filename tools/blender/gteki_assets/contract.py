@@ -37,3 +37,10 @@ def is_asset_id(value):
     import re
 
     return isinstance(value, str) and re.fullmatch(ASSET_ID_PATTERN, value) is not None
+
+# Build profiles (contract §8). "full" is the canonical library. "mobile" is a
+# derived low-cost tier: static parts merged into one node, materials folded
+# into a kit-wide palette, fewer segments, no bevels, lightmap UVs in TEXCOORD_1.
+PROFILES = ("full", "mobile")
+PALETTE = "gteki_palette"  # opaque palette (also carries emission)
+PALETTE_BLEND = "gteki_palette_blend"  # alpha-blended palette (glass)

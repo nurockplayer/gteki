@@ -5,7 +5,8 @@
 #   tools/blender/build.sh all        build + validate + godot + web
 #   tools/blender/build.sh validate|selftest|godot|web|repro
 #
-# Env: BLENDER (default blender), GODOT_BIN, CATALOG, OUT, TEX_RES, ONLY (comma ids).
+# Env: BLENDER (default blender), GODOT_BIN, CATALOG, OUT, TEX_RES, ONLY (comma ids),
+#      PROFILE (full | mobile; mobile defaults OUT to assets/library/mobile).
 # Installs only via Homebrew/pnpm (README); never npm/npx/yarn.
 set -eu
 
@@ -13,13 +14,14 @@ HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT=$(CDPATH= cd -- "$HERE/../.." && pwd)
 BLENDER=${BLENDER:-blender}
 CATALOG=${CATALOG:-$HERE/catalog/kit_v0_1.json}
-OUT=${OUT:-$ROOT/assets/library}
+PROFILE=${PROFILE:-full}
+if [ "$PROFILE" = mobile ]; then OUT=${OUT:-$ROOT/assets/library/mobile}; else OUT=${OUT:-$ROOT/assets/library}; fi
 TEX_RES=${TEX_RES:-1024}
 REPORTS=$HERE/out
 mkdir -p "$REPORTS"
 
 build() {
-    set -- --catalog "$CATALOG" --out "$OUT" --tex-res "$TEX_RES"
+    set -- --catalog "$CATALOG" --out "$OUT" --tex-res "$TEX_RES" --profile "$PROFILE"
     if [ -n "${ONLY:-}" ]; then set -- "$@" --only "$ONLY"; fi
     "$BLENDER" -b --factory-startup --python-exit-code 1 -P "$HERE/build.py" -- "$@"
 }
@@ -28,7 +30,9 @@ validate() {
     # explicit returns: errexit is off inside a function called from an && list (`all`)
     python3 -I "$HERE/validate_glb.py" "$OUT"/glb/*.glb --report "$REPORTS/validate_report.json" || return $?
     # texture plan rules for any library; byte limits only for the library they describe
-    if python3 -I "$HERE/texture_budget.py" "$OUT" --check "$HERE/catalog/budget.json" \
+    budget=$HERE/catalog/budget.json
+    if [ "$PROFILE" != full ]; then budget=$HERE/catalog/budget_$PROFILE.json; fi
+    if python3 -I "$HERE/texture_budget.py" "$OUT" --check "$budget" \
         --json "$REPORTS/texture_budget.json" >"$REPORTS/texture_budget.txt"; then
         tail -n 3 "$REPORTS/texture_budget.txt"
     else
@@ -48,7 +52,7 @@ godot() {
 }
 
 web() {
-    (cd "$HERE/web_preview" && pnpm install --frozen-lockfile && pnpm run load-test)
+    (cd "$HERE/web_preview" && pnpm install --frozen-lockfile && GTEKI_LIBRARY_DIR="$OUT" pnpm run load-test)
 }
 
 # The committed library is built with this Blender; GLBs embed the exporter

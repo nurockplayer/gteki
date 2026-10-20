@@ -210,14 +210,33 @@ def _repo_root():
     return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 
-def _load_image(path, non_color):
+def _jpeg_copy(path, quality=88):
+    """Deterministic cached JPEG of a PNG map (Blender's encoder)."""
+    out = os.path.splitext(path)[0] + f".q{quality}.jpg"
+    if not os.path.exists(out):
+        img = bpy.data.images.load(path)
+        img.scale(*img.size)  # loads the pixels; save() refuses an image without data
+        tmp = f"{out}.{os.getpid()}.tmp.jpg"
+        img.filepath_raw = tmp
+        img.file_format = "JPEG"
+        img.save(quality=quality)
+        bpy.data.images.remove(img)
+        os.replace(tmp, out)
+    return out
+
+
+def _load_image(path, non_color, jpeg=False):
+    if jpeg and path.endswith(".png"):
+        path = _jpeg_copy(path)
     img = bpy.data.images.load(path, check_existing=True)
     img.colorspace_settings.name = "Non-Color" if non_color else "sRGB"
     return img
 
 
-def get(name, tex_res):
-    """Return (creating once per Blender session) the bpy material for `name`."""
+def get(name, tex_res, jpeg=False):
+    """Return (creating once per Blender session) the bpy material for `name`.
+    `jpeg`: load generated PNG maps as cached JPEG copies (for exports that keep
+    source formats, i.e. the mobile profile)."""
     mat = bpy.data.materials.get(name)
     if mat is not None:
         return mat
@@ -251,14 +270,14 @@ def get(name, tex_res):
         alb = None
         if "albedo" in maps:
             alb = nt.nodes.new("ShaderNodeTexImage")
-            alb.image = _load_image(maps["albedo"], False)
+            alb.image = _load_image(maps["albedo"], False, jpeg)
             alb.location = (-500, 250)
             nt.links.new(alb.outputs["Color"], bsdf.inputs["Base Color"])
         else:
             bsdf.inputs["Base Color"].default_value = (*_srgb_to_linear(fac["color"]), 1.0)
         if "orm" in maps:
             orm = nt.nodes.new("ShaderNodeTexImage")
-            orm.image = _load_image(maps["orm"], True)
+            orm.image = _load_image(maps["orm"], True, jpeg)
             orm.location = (-500, 0)
             sep = nt.nodes.new("ShaderNodeSeparateColor")
             sep.location = (-200, 0)
@@ -270,7 +289,7 @@ def get(name, tex_res):
             bsdf.inputs["Metallic"].default_value = fac["metal"]
         if "normal" in maps:
             nrm = nt.nodes.new("ShaderNodeTexImage")
-            nrm.image = _load_image(maps["normal"], True)
+            nrm.image = _load_image(maps["normal"], True, jpeg)
             nrm.location = (-500, -250)
             nmap = nt.nodes.new("ShaderNodeNormalMap")
             nmap.location = (-200, -250)
@@ -307,3 +326,162 @@ def _srgb_to_linear(c):
         return x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4
 
     return tuple(f(x) for x in c)
+
+
+# ---------------------------------------------------------------- palette
+# The mobile profile folds every eligible material into one kit-wide palette:
+# a 64x64 texture of 4x4-texel swatches (albedo+alpha, ORM, emission), one per
+# material in sorted-name order. Every face of a folded material samples its
+# swatch centre, so the UV is constant per face: no filtering bleed at any mip
+# level, and all palette geometry (across assets) can share one draw call.
+PALETTE_GRID = 16
+PALETTE_SWATCH = 4
+PALETTE_EMIT_STRENGTH = 4.0  # palette emission strength; swatches store emit * strength / this
+
+
+def palette_eligible(name):
+    """Runtime-swapped content (sign faces, supplied images) keeps its own material."""
+    spec = SPECS[name]
+    return not ("image" in spec or spec.get("emit_from_albedo"))
+
+
+def palette_names():
+    names = sorted(n for n in SPECS if palette_eligible(n))
+    if len(names) > PALETTE_GRID * PALETTE_GRID:
+        raise ValueError(f"palette holds {PALETTE_GRID ** 2} materials, kit has {len(names)}")
+    return names
+
+
+def palette_target(name):
+    """Palette material a folded material maps to (glass keeps alpha blending)."""
+    return contract.PALETTE_BLEND if "alpha" in SPECS[name] else contract.PALETTE
+
+
+def palette_uv(name):
+    """UV (glTF convention handled by Blender export) of a material's swatch centre."""
+    i = palette_names().index(name)
+    size = PALETTE_GRID * PALETTE_SWATCH
+    col, row = i % PALETTE_GRID, i // PALETTE_GRID
+    u = (col * PALETTE_SWATCH + PALETTE_SWATCH / 2) / size
+    v = 1.0 - (row * PALETTE_SWATCH + PALETTE_SWATCH / 2) / size  # image row 0 is the top
+    return u, v
+
+
+def _linear(x):
+    import numpy as np
+
+    x = np.asarray(x, dtype=np.float64)
+    return np.where(x <= 0.04045, x / 12.92, ((x + 0.055) / 1.055) ** 2.4)
+
+
+def _srgb(x):
+    import numpy as np
+
+    x = np.clip(np.asarray(x, dtype=np.float64), 0.0, 1.0)
+    return np.where(x <= 0.0031308, x * 12.92, 1.055 * x ** (1 / 2.4) - 0.055)
+
+
+def swatch(name):
+    """(albedo sRGB rgb, alpha, roughness, metallic, emission sRGB rgb pre-scaled by
+    1/PALETTE_EMIT_STRENGTH): the material's appearance averaged over its texture,
+    computed in linear light at the canonical resolution."""
+    import numpy as np
+
+    spec = SPECS[name]
+    color, rough, metal = spec.get("color", (0.8, 0.8, 0.8)), spec.get("rough", 0.5), spec.get("metal", 0.0)
+    plan = texture_plan(name, contract.DEFAULT_TEX_RES) if "gen" in spec else None
+    if plan:
+        fac = plan["factors"]
+        if "albedo" in plan["maps"]:
+            color = tuple(_srgb(_linear(texsynth.read_png(plan["maps"]["albedo"])[..., :3] / 255.0)
+                                .reshape(-1, 3).mean(axis=0)))
+        else:
+            color = fac["color"]
+        if "orm" in plan["maps"]:
+            orm = texsynth.read_png(plan["maps"]["orm"])[..., :3].reshape(-1, 3) / 255.0
+            rough, metal = float(orm[:, 1].mean()), float(orm[:, 2].mean())
+        else:
+            rough, metal = fac["rough"], fac["metal"]
+    emit = (0.0, 0.0, 0.0)
+    if "emit" in spec:
+        strength = spec.get("emit_strength", 1.0)
+        if strength > PALETTE_EMIT_STRENGTH:
+            raise ValueError(f"{name}: emit_strength {strength} exceeds palette {PALETTE_EMIT_STRENGTH}")
+        # scale in linear light, then store sRGB
+        emit = tuple(_srgb(_linear(spec["emit"]) * strength / PALETTE_EMIT_STRENGTH))
+    return tuple(float(c) for c in color), float(spec.get("alpha", 1.0)), float(rough), float(metal), tuple(float(c) for c in emit)
+
+
+def palette_paths():
+    """Write (cached) the palette PNGs; returns {albedo, orm, emissive: path}."""
+    import numpy as np
+
+    names = palette_names()
+    size = PALETTE_GRID * PALETTE_SWATCH
+    albedo = np.zeros((size, size, 4))
+    orm = np.zeros((size, size, 3))
+    orm[..., 0] = 1.0
+    emis = np.zeros((size, size, 3))
+    for i, name in enumerate(names):
+        c, a, r, m, e = swatch(name)
+        y, x = (i // PALETTE_GRID) * PALETTE_SWATCH, (i % PALETTE_GRID) * PALETTE_SWATCH
+        sl = (slice(y, y + PALETTE_SWATCH), slice(x, x + PALETTE_SWATCH))
+        albedo[sl] = (*c, a)
+        orm[sl] = (1.0, r, m)
+        emis[sl] = e
+    blob = json.dumps({"names": names, "albedo": texsynth.quantize8(albedo).tolist(),
+                       "orm": texsynth.quantize8(orm).tolist(), "emis": texsynth.quantize8(emis).tolist()})
+    d = os.path.join(_cache_dir(), "palette_" + hashlib.sha256(blob.encode()).hexdigest()[:12])
+    paths = {k: os.path.join(d, f"{contract.PALETTE}_{k}.png") for k in ("albedo", "orm", "emissive")}
+    if not all(os.path.exists(p) for p in paths.values()):
+        os.makedirs(d, exist_ok=True)
+        for k, img in (("albedo", albedo), ("orm", orm), ("emissive", emis)):
+            tmp = f"{paths[k]}.{os.getpid()}.tmp"
+            texsynth.write_png(tmp, img)
+            os.replace(tmp, paths[k])
+    return paths
+
+
+def palette_plan():
+    return {"res": PALETTE_GRID * PALETTE_SWATCH, "maps": palette_paths(), "factors": {}}
+
+
+def palette_material(name):
+    """The opaque or blended palette material (created once per Blender session)."""
+    mat = bpy.data.materials.get(name)
+    if mat is not None:
+        return mat
+    paths = palette_paths()
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    nt = mat.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    nt.links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
+
+    def image(key, non_color, y):
+        node = nt.nodes.new("ShaderNodeTexImage")
+        node.image = _load_image(paths[key], non_color)
+        node.interpolation = "Closest"
+        node.location = (-500, y)
+        return node
+
+    alb = image("albedo", False, 250)
+    nt.links.new(alb.outputs["Color"], bsdf.inputs["Base Color"])
+    orm = image("orm", True, 0)
+    sep = nt.nodes.new("ShaderNodeSeparateColor")
+    nt.links.new(orm.outputs["Color"], sep.inputs["Color"])
+    nt.links.new(sep.outputs["Green"], bsdf.inputs["Roughness"])
+    nt.links.new(sep.outputs["Blue"], bsdf.inputs["Metallic"])
+    emi = image("emissive", False, -250)
+    nt.links.new(emi.outputs["Color"], bsdf.inputs["Emission Color"])
+    bsdf.inputs["Emission Strength"].default_value = PALETTE_EMIT_STRENGTH
+    if name == contract.PALETTE_BLEND:
+        nt.links.new(alb.outputs["Alpha"], bsdf.inputs["Alpha"])
+        if hasattr(mat, "surface_render_method"):
+            mat.surface_render_method = "BLENDED"
+        if hasattr(mat, "blend_method"):
+            mat.blend_method = "BLEND"
+    return mat

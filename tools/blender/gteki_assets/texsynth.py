@@ -145,6 +145,33 @@ def write_png(path, img):
         f.write(chunk(b"IEND", b""))
 
 
+def read_png(path):
+    """Read a PNG written by `write_png` (8-bit RGB/RGBA, filter 0) as uint8 HxWxC."""
+    import struct
+    import zlib
+
+    with open(path, "rb") as f:
+        data = f.read()
+    if data[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError(f"{path}: not a PNG")
+    pos, idat, w = 8, b"", None
+    while pos < len(data):
+        n, tag = struct.unpack(">I4s", data[pos:pos + 8])
+        body = data[pos + 8:pos + 8 + n]
+        if tag == b"IHDR":
+            w, h, depth, ctype, _, _, interlace = struct.unpack(">IIBBBBB", body)
+            if depth != 8 or ctype not in (2, 6) or interlace:
+                raise ValueError(f"{path}: only 8-bit RGB/RGBA non-interlaced PNGs are supported")
+            c = 3 if ctype == 2 else 4
+        elif tag == b"IDAT":
+            idat += body
+        pos += 12 + n
+    rows = np.frombuffer(zlib.decompress(idat), dtype=np.uint8).reshape(h, 1 + w * c)
+    if rows[:, 0].any():
+        raise ValueError(f"{path}: filtered rows are not supported (write_png uses filter 0)")
+    return rows[:, 1:].reshape(h, w, c)
+
+
 def _out(albedo, normal, rough, metal):
     orm = np.stack([np.ones_like(rough), rough, metal], axis=-1)
     return {"albedo": np.clip(albedo, 0, 1), "normal": np.clip(normal, 0, 1), "orm": np.clip(orm, 0, 1)}
