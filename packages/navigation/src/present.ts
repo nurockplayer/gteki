@@ -461,8 +461,9 @@ type Draft = Instruction & { label: string | null; ownM?: number; ownSteps?: num
  * - other short legs lead into the next instruction ("Turn left, then right, ~16 m");
  * - short legs right before arrival end the instruction before them ("…, then turn right"; after a
  *   junction hint "After ~90 m, turn right.", so the turn cannot read as the hint's);
- * - the opening leg sets the heading every later turn is measured from, so it is only folded into a
- *   flight, lift, gate or walkway it leads straight onto, without a turn of its own.
+ * - the opening leg (after the start or a wait) sets the heading every later turn is measured from, so it
+ *   is only folded into a flight, lift, gate or walkway it leads straight onto, without a turn of its own;
+ * - nothing is folded into or across a wait: legs before it end the instruction before them.
  * `distanceM` and `stepIndexes` grow to cover folded legs; spoken distances and "straight" stay those of
  * the instruction's own walk (`ownM`, `ownSteps`), so "~20 m, then turn back" still turns back after 20 m.
  */
@@ -482,16 +483,30 @@ function foldShortLegs(drafts: Draft[]): Draft[] {
     d.ownM = d.distanceM;
     d.ownSteps = [...d.stepIndexes];
   }
+  // Nothing is folded into or across the start or a wait: it covers no step, and the walk resumes from it.
+  const barrier = (d: Draft) => d.kind === "start" || d.kind === "wait";
   const out: Draft[] = [drafts[0]!];
   let pending: Draft[] = [];
+  /** Short legs with nothing after them to lead into: they end the instruction before them. */
+  const settle = () => {
+    // After the start or a wait the first leg stays a line of its own; the rest end it.
+    if (pending.length > 0 && barrier(out[out.length - 1]!)) out.push(pending.shift()!);
+    if (pending.length > 0) appendTo(out[out.length - 1]!, pending);
+    pending = [];
+  };
   for (const d of drafts.slice(1, -1)) {
     const last = out[out.length - 1]!;
     if (isShort(d)) {
-      if (pending.length === 0 && d.kind === "walk" && !isWalk(last) && last.kind !== "start") appendTo(last, [d]);
+      if (pending.length === 0 && d.kind === "walk" && !isWalk(last) && !barrier(last)) appendTo(last, [d]);
       else pending.push(d);
       continue;
     }
-    if (out.length === 1 && pending[0]?.kind === "walk" && (pending.length > 1 || isWalk(d) || d.turn)) out.push(pending.shift()!);
+    if (d.kind === "wait") {
+      settle();
+      out.push(d);
+      continue;
+    }
+    if (barrier(last) && pending[0]?.kind === "walk" && (pending.length > 1 || isWalk(d) || d.turn)) out.push(pending.shift()!);
     if (pending.length > 0) {
       const turns = turnsOf(pending);
       d.stepIndexes = [...pending.flatMap((p) => p.stepIndexes), ...d.stepIndexes];
@@ -501,11 +516,7 @@ function foldShortLegs(drafts: Draft[]): Draft[] {
     }
     out.push(d);
   }
-  if (pending.length > 0) {
-    // A route of short walks only: the opening leg stays, the rest end it.
-    if (out.length === 1) out.push(pending.shift()!);
-    if (pending.length > 0) appendTo(out[out.length - 1]!, pending);
-  }
+  settle();
   out.push(drafts[drafts.length - 1]!);
   return out;
 }
@@ -595,7 +606,7 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
       flush();
       const { minutes, dayOffset, weekday } = step.waitUntil;
       const hhmm = `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(Math.floor(minutes % 60)).padStart(2, "0")}`;
-      out.push({ kind: "wait", stepIndexes: [], beforeStepIndex: i, distanceM: 0, vertical: null, toFloorId: step.fromFloorId, text: t.wait(hhmm, dayOffset, weekday) });
+      out.push({ kind: "wait", stepIndexes: [], beforeStepIndex: i, distanceM: 0, vertical: null, toFloorId: step.fromFloorId, text: t.wait(hhmm, dayOffset, weekday), label: null });
     }
     const vertical = VERTICAL[step.mode];
     if (vertical || step.mode === "gate") {
@@ -683,7 +694,7 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
   out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: lastFloor, text: t.arrive(), label: null });
 
   return foldShortLegs(out).map(({ label, ownM, ownSteps, ...ins }, k, all) => {
-    if (ins.kind === "start" || ins.kind === "arrive") return ins;
+    if (ins.kind === "start" || ins.kind === "arrive" || ins.kind === "wait") return ins;
     const m = Math.max(1, Math.round(ownM ?? ins.distanceM));
     const turns = [...(ins.leadTurns ?? []), ...(WALK_TURN[ins.kind] ? [WALK_TURN[ins.kind]!] : []), ...(ins.turn ? [ins.turn] : [])];
     let main: string;

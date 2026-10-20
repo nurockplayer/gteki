@@ -847,3 +847,39 @@ describe("continued flights never invent or flip a direction (Shinjuku E27 narra
     expect(ja[1]!.text).toBe("左へ曲がり、引き続き階段を進む");
   });
 });
+
+describe("short legs never fold into or across a wait (rebased onto waits for opening windows)", () => {
+  it("ends the walk before the wait and starts afresh after it", () => {
+    const window = { kind: "window" as const, open: "12:01", close: "23:00", evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } };
+    const b = createSyntheticBundle([
+      edge("e1", "start", "a", { lengthM: 20 }),
+      edge("e2", "a", "b", { lengthM: 3 }),
+      edge("e3", "b", "c", { lengthM: 2, hours: window }),
+      edge("e4", "c", "d", { lengthM: 20 }),
+    ]);
+    const node = (id: string, x: number, y: number) => ({ id, floorId: "concourse", position: { x, y, z: 0 }, kind: "junction" as const, inOut: null, sourceRefs: [] });
+    // East 20 m, a 3 m step north (left), then — once e3 opens — 2 m on north and 20 m east (right).
+    b.nodes = b.nodes.filter((n) => n.id !== "a" && n.id !== "b");
+    b.nodes.push(node("a", 20, 0), node("b", 20, 3), node("c", 20, 5), node("d", 40, 5));
+    const r = ok(createRouter(b).route("start", "d", { ...base, at: { weekday: "mon", minutes: 12 * 60 } }));
+    expect(r.steps[2]!.waitUntil).toEqual({ weekday: "mon", minutes: 12 * 60 + 1, dayOffset: 0 });
+    const en = describeRoute(b, r, "en");
+    expect(en.map((i) => i.text)).toEqual(["Start", "Go straight ~20 m, then turn left", "Wait until 12:01", "Go straight ~2 m", "Turn right, ~20 m", "Arrive at destination"]);
+    expect(en.map((i) => i.stepIndexes)).toEqual([[], [0, 1], [], [2], [3], []]);
+    expect(en[2]).toMatchObject({ kind: "wait", beforeStepIndex: 2 });
+    expect(describeRoute(b, r, "ja").map((i) => i.text)).toEqual(["出発", "約20m 直進、その先で左へ", "12:01まで待つ", "約2m 直進", "右へ曲がり約20m", "目的地に到着"]);
+  });
+
+  it("does not ride one lift across a wait", () => {
+    const window = { kind: "window" as const, open: "12:01", close: "23:00", evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } };
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("lift-1", "a", "upper", { mode: "elevator", lengthM: 1 }),
+      edge("lift-2", "upper", "upper-2", { mode: "elevator", lengthM: 1, hours: window }),
+    ]);
+    const r = ok(createRouter(b).route("start", "upper-2", { ...base, at: { weekday: "mon", minutes: 12 * 60 } }));
+    const en = describeRoute(b, r, "en");
+    expect(en.map((i) => i.kind)).toEqual(["start", "walk", "elevator", "wait", "elevator", "arrive"]);
+    expect(en.map((i) => i.stepIndexes)).toEqual([[], [0], [1], [], [2], []]);
+  });
+});
