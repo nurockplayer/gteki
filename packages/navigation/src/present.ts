@@ -187,12 +187,17 @@ const TEXT = {
     },
     junction: (atM: number, action: JunctionHint["action"], name: string | null) =>
       `約${atM}m先${name === null ? "" : `、${name}`}の分岐は${{ straight: "そのまま直進", keep_left: "左寄りに進む", keep_right: "右寄りに進む" }[action]}`,
-    /** Main text, then junction hints, then the turns of short legs folded into its end. */
-    compose: (text: string, hints: string[], trail: readonly Turn[]) =>
-      `${[text, ...hints].join("。")}${trail.length === 0 ? "" : `、${turnRun(trail,
-        { left: "その先で左へ", right: "その先で右へ", back: "その先で引き返す" },
-        { left: "すぐ左へ", right: "すぐ右へ", back: "すぐ引き返す" },
-        { left: "さらに左へ", right: "さらに右へ", back: "再び引き返す" }, "、")}`}`,
+    /**
+     * Main text, then junction hints, then the turns of short legs folded into its end. After a hint the
+     * trailing turns get their own distance (`m`, the main text's), so they cannot read as part of the hint.
+     */
+    compose: (text: string, hints: string[], trail: readonly Turn[], m: number) => {
+      if (trail.length === 0) return [text, ...hints].join("。");
+      const at = hints.length === 0 ? "その先で" : `約${m}m先で`;
+      const turns = turnRun(trail, { left: `${at}左へ`, right: `${at}右へ`, back: `${at}引き返す` },
+        { left: "すぐ左へ", right: "すぐ右へ", back: "すぐ引き返す" }, { left: "さらに左へ", right: "さらに右へ", back: "再び引き返す" }, "、");
+      return hints.length === 0 ? `${text}、${turns}` : [text, ...hints, turns].join("。");
+    },
     arrive: () => "目的地に到着",
     wait: (time: string, dayOffset: number, weekday: string) =>
       `${dayOffset === 0 ? "" : dayOffset === 1 ? "翌日" : `${dayOffset < 7 ? "" : `${dayOffset}日後の`}${{ mon: "月", tue: "火", wed: "水", thu: "木", fri: "金", sat: "土", sun: "日" }[weekday]}曜日`}${time}まで待つ`,
@@ -215,8 +220,10 @@ const TEXT = {
       `After ~${atM} m, ${action === "straight"
         ? name === null ? "continue straight through the junction" : `continue straight past ${name}`
         : `keep ${action === "keep_left" ? "left" : "right"} at ${name ?? "the junction"}`}`,
-    compose: (text: string, hints: string[], trail: readonly Turn[]) =>
-      `${[text, ...hints].join(". ")}${trail.length === 0 ? "" : `, then ${lowerFirst(TEXT.en.turns(trail))}`}${hints.length > 0 ? "." : ""}`,
+    compose: (text: string, hints: string[], trail: readonly Turn[], m: number) => {
+      if (hints.length === 0) return trail.length === 0 ? text : `${text}, then ${lowerFirst(TEXT.en.turns(trail))}`;
+      return `${[text, ...hints, ...(trail.length === 0 ? [] : [`After ~${m} m, ${lowerFirst(TEXT.en.turns(trail))}`])].join(". ")}.`;
+    },
     arrive: () => "Arrive at destination",
     wait: (time: string, dayOffset: number, weekday: string) =>
       `Wait until ${time}${dayOffset === 0 ? "" : dayOffset === 1 ? " tomorrow" : ` on ${{ mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" }[weekday]}${dayOffset < 7 ? "" : `, ${dayOffset} days later`}`}`,
@@ -452,7 +459,8 @@ type Draft = Instruction & { label: string | null; ownM?: number };
  * in order, on the instruction that starts (or, before arrival, ends) at that junction:
  * - a straight leg off a flight, lift, gate or walkway is just the way out of it: added to that instruction;
  * - other short legs lead into the next instruction ("Turn left, then right, ~16 m");
- * - short legs right before arrival end the instruction before them ("…, then turn right");
+ * - short legs right before arrival end the instruction before them ("…, then turn right"; after a
+ *   junction hint "After ~90 m, turn right.", so the turn cannot read as the hint's);
  * - the opening leg sets the heading every later turn is measured from, so it is only folded into a
  *   flight, lift, gate or walkway it leads straight onto, without a turn of its own.
  * `distanceM` and `stepIndexes` grow to cover folded legs; spoken distances stay those of the
@@ -491,9 +499,9 @@ function foldShortLegs(drafts: Draft[]): Draft[] {
     out.push(d);
   }
   if (pending.length > 0) {
-    const last = out[out.length - 1]!;
-    if (last.kind === "start") out.push(...pending);
-    else appendTo(last, pending);
+    // A route of short walks only: the opening leg stays, the rest end it.
+    if (out.length === 1) out.push(pending.shift()!);
+    if (pending.length > 0) appendTo(out[out.length - 1]!, pending);
   }
   out.push(drafts[drafts.length - 1]!);
   return out;
@@ -686,6 +694,6 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
       main = turns.length > 0 ? t.turnPrefix(turns, base) : base;
     }
     const hints = (ins.junctions ?? []).map((j) => t.junction(j.atM, j.action, j.name));
-    return { ...ins, text: t.compose(main, hints, ins.trailTurns ?? []) };
+    return { ...ins, text: t.compose(main, hints, ins.trailTurns ?? [], m) };
   });
 }

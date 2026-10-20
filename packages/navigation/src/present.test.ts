@@ -513,6 +513,29 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     expect(texts(b, r, "ja")[1]).toBe("約20m 直進、その先で引き返す");
   });
 
+  it("anchors trailing turns to the end of the walk when junction hints come before them", () => {
+    // The Restroom junction at `a` is passed after 10 m; the 2 m left turn comes after the whole 20 m.
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("a-goal", "a", "goal"), edge("a-n", "a", "b"), edge("goal-up", "goal", "isolated", { lengthM: 2 })]);
+    b.nodes.find((n) => n.id === "b")!.position = { x: 10, y: 10, z: 0 };
+    b.nodes.find((n) => n.id === "isolated")!.position = { x: 20, y: 2, z: 0 };
+    const r = route(b, "start", "isolated");
+    expect(describeRoute(b, r, "en")[1]).toMatchObject({
+      stepIndexes: [0, 1, 2], trailTurns: ["left"],
+      text: "Go straight ~20 m. After ~10 m, continue straight past Restroom. After ~20 m, turn left.",
+    });
+    expect(texts(b, r, "ja")[1]).toBe("約20m 直進。約10m先、トイレの分岐はそのまま直進。約20m先で左へ");
+  });
+
+  it("folds a route of short walks only into its opening leg", () => {
+    const b = createSyntheticBundle([edge("e1", "start", "a", { lengthM: 3 }), edge("n1", "a", "b", { lengthM: 2 }), edge("e2", "b", "goal", { lengthM: 3 })]);
+    b.nodes.find((n) => n.id === "a")!.position = { x: 3, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "b")!.position = { x: 3, y: 2, z: 0 };
+    b.nodes.find((n) => n.id === "goal")!.position = { x: 6, y: 2, z: 0 };
+    const r = route(b, "start", "goal");
+    expect(describeRoute(b, r, "en")[1]).toMatchObject({ kind: "walk", stepIndexes: [0, 1, 2], trailTurns: ["left", "right"], text: "Go straight ~3 m, then turn left, then right" });
+    expect(texts(b, r, "ja")).toEqual(["出発", "約3m 直進、その先で左へ、すぐ右へ", "目的地に到着"]);
+  });
+
   it("gives a moving walkway its own length, not the steps folded onto it", () => {
     const b = createSyntheticBundle([edge("s-a", "start", "a", { lengthM: 3 }), edge("walkway", "a", "goal", { mode: "moving_walkway", lengthM: 10 }), edge("off", "goal", "isolated", { lengthM: 2 })]);
     b.nodes.find((n) => n.id === "a")!.position = { x: 3, y: 0, z: 0 };
