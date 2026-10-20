@@ -241,7 +241,8 @@ export function buildCrowd(
       // surveyed walkable lane so nobody stands in a wall or off the floor.
       let off = -0.3 + a.offset * 0.4;
       if (p.lane) {
-        const k = Math.min(p.lane.left.length - 1, Math.max(0, Math.round(a.s / p.lane.stepM)));
+        // The two samples that bracket the walker: either may report no room.
+        const k = Math.min(p.lane.left.length - 1, Math.max(0, Math.floor(a.s / p.lane.stepM)));
         const k2 = Math.min(p.lane.left.length - 1, k + 1);
         // lanes are measured to walkable-cell centres; keep shoulders (~0.3 m) off the walls
         const left = Math.max(0, Math.min(p.lane.left[k], p.lane.left[k2]) - 0.2);
