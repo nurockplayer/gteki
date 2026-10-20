@@ -36,17 +36,31 @@ web() {
     (cd "$HERE/web_preview" && pnpm install --frozen-lockfile && pnpm run load-test)
 }
 
+# The committed library is built with this Blender; GLBs embed the exporter
+# version, so other versions are deterministic but produce different bytes.
+CANONICAL_BLENDER=5.2
+blender_version() {
+    "$BLENDER" --version 2>/dev/null | sed -n '1s/^Blender \([0-9]*\.[0-9]*\).*/\1/p'
+}
+
 repro() {
-    # two clean builds into temp dirs must produce byte-identical GLBs,
-    # identical to the checked-in library as well
+    # two clean builds into temp dirs must produce byte-identical GLBs; with the
+    # canonical Blender they must also match the checked-in library
     tmp=$(mktemp -d)
+    version=$(blender_version)
     for run in a b; do
         GTEKI_TEX_CACHE="$tmp/tex_$run" OUT="$tmp/$run" build >/dev/null
         (cd "$tmp/$run/glb" && shasum -a 256 *.glb) >"$tmp/$run.sha"
     done
-    (cd "$OUT/glb" && shasum -a 256 *.glb) >"$tmp/library.sha"
+    if [ "$version" = "$CANONICAL_BLENDER" ]; then
+        (cd "$OUT/glb" && shasum -a 256 *.glb) >"$tmp/library.sha"
+        against="two clean builds and $OUT/glb"
+    else
+        cp "$tmp/a.sha" "$tmp/library.sha"
+        against="two clean builds (Blender $version; library comparison needs $CANONICAL_BLENDER)"
+    fi
     if diff "$tmp/a.sha" "$tmp/b.sha" && diff "$tmp/a.sha" "$tmp/library.sha"; then
-        echo "repro: PASS ($(wc -l <"$tmp/a.sha" | tr -d ' ') GLBs identical across two clean builds and $OUT/glb)"
+        echo "repro: PASS ($(wc -l <"$tmp/a.sha" | tr -d ' ') GLBs identical across $against)"
         rm -rf "$tmp"
     else
         echo "repro: FAIL (outputs kept in $tmp)" >&2

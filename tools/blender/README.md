@@ -4,7 +4,7 @@ Reproducible, parametric generators for a **generic, reusable station kit** (pas
 
 ## Requirements
 
-- Blender ≥ 4.2 (tested 5.2.2 LTS, `brew install --cask blender`)
+- Blender 5.2 LTS (`brew install --cask blender`). The committed library is built with 5.2.2, and `build.sh repro` compares against it only on 5.2, because each GLB embeds the exporter version. Blender 4.2–5.1 are untested: the generators may run, but their output bytes will differ.
 - Godot 4.x for the import test (tested 4.7.2, `brew install --cask godot`)
 - pnpm for the Three.js viewer / load test (`brew install pnpm`) — never npm/npx/yarn
 - No pip packages: generators use Blender's bundled numpy; `validate_glb.py` is stdlib only.

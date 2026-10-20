@@ -30,7 +30,16 @@ from mathutils import Vector
 def setup_scene(args, layout):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     sc = bpy.context.scene
-    sc.render.engine = "BLENDER_EEVEE" if args.engine == "eevee" else "CYCLES"
+    if args.engine == "eevee":
+        # Blender 4.2-4.x call it BLENDER_EEVEE_NEXT; 5.x is back to BLENDER_EEVEE
+        for ident in ("BLENDER_EEVEE", "BLENDER_EEVEE_NEXT"):
+            try:
+                sc.render.engine = ident
+                break
+            except TypeError:
+                continue
+    else:
+        sc.render.engine = "CYCLES"
     if sc.render.engine == "CYCLES":
         sc.cycles.samples = args.samples
         sc.cycles.use_denoising = True
