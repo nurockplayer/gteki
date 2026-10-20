@@ -28,6 +28,8 @@ export interface SignSpec extends SignContent {
 const FONT = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans CJK JP","Yu Gothic",system-ui,sans-serif';
 const PX_PER_M = 300;
 const H = 0.42;
+const ATLAS_W = 4096;
+const GUTTER = 8; // px between faces; the gutter is panel colour so mip filtering never bleeds a foreign colour
 
 function roundRect(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   g.beginPath();
@@ -72,7 +74,7 @@ function paint(blocks: SignContent[]): { canvas: HTMLCanvasElement; widthM: numb
   });
   const width = Math.ceil(parts.reduce((s, p) => s + p.w, 0) + pad * 2);
   const c = document.createElement("canvas");
-  c.width = Math.min(4096, width);
+  c.width = Math.min(ATLAS_W - 2 * GUTTER, width);
   c.height = h;
   const g = c.getContext("2d")!;
   g.fillStyle = "#1c222b";
@@ -161,26 +163,78 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
   return parts;
 }
 
-/** Build all signs as one group, positioned in the renderer frame via toRenderer. */
+/** Shelf-pack face canvases (all the same height) into as few atlas pages as fit. */
+function packAtlas(faces: HTMLCanvasElement[]) {
+  const rowH = faces[0] ? faces[0].height + GUTTER : 0;
+  const rowsPerPage = Math.max(1, Math.floor(ATLAS_W / Math.max(1, rowH)));
+  const slots: { page: number; x: number; y: number }[] = [];
+  let page = 0, row = 0, x = GUTTER;
+  const pageRows: number[] = [0];
+  for (const c of faces) {
+    if (x + c.width + GUTTER > ATLAS_W) {
+      row++;
+      x = GUTTER;
+      if (row >= rowsPerPage) {
+        page++;
+        row = 0;
+        pageRows.push(0);
+      }
+    }
+    slots.push({ page, x, y: GUTTER + row * rowH });
+    pageRows[page] = row + 1;
+    x += c.width + GUTTER;
+  }
+  const pages = pageRows.map((rows) => {
+    const c = document.createElement("canvas");
+    c.width = ATLAS_W;
+    // Power-of-two height keeps mipmapping cheap on every GPU.
+    c.height = Math.min(ATLAS_W, 2 ** Math.ceil(Math.log2(GUTTER + rows * rowH)));
+    const g = c.getContext("2d")!;
+    g.fillStyle = "#1c222b";
+    g.fillRect(0, 0, c.width, c.height);
+    return c;
+  });
+  faces.forEach((c, i) => pages[slots[i].page].getContext("2d")!.drawImage(c, slots[i].x, slots[i].y));
+  return { pages, slots };
+}
+
+/** Concatenate indexed geometries (position, normal, optional uv) into one, after each one's matrix.
+ *  Normals matter even with unlit materials: the GTAO post pass reads them. */
+function merge(THREE: typeof THREE_NS, parts: { geo: THREE_NS.BufferGeometry; matrix: THREE_NS.Matrix4 }[], withUv: boolean) {
+  const pos: number[] = [], normal: number[] = [], uv: number[] = [], index: number[] = [];
+  for (const { geo, matrix } of parts) {
+    geo.applyMatrix4(matrix);
+    const base = pos.length / 3;
+    pos.push(...(geo.getAttribute("position").array as Float32Array));
+    normal.push(...(geo.getAttribute("normal").array as Float32Array));
+    if (withUv) uv.push(...(geo.getAttribute("uv").array as Float32Array));
+    const idx = geo.getIndex()!;
+    for (let i = 0; i < idx.count; i++) index.push(base + idx.getX(i));
+    geo.dispose();
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  out.setAttribute("normal", new THREE.Float32BufferAttribute(normal, 3));
+  if (withUv) out.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+  out.setIndex(index);
+  out.computeBoundingSphere();
+  return out;
+}
+
+/**
+ * Build all signs as one group, positioned in the renderer frame via toRenderer.
+ * Faces share atlas textures and all geometry is merged, so ~100 signs cost about three draw calls.
+ */
 export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3, anisotropy: number) {
   const group = new THREE.Group();
   group.name = "ikebukuro_signs";
-  // Unlit: the station has no dynamic lights (baked lighting only).
-  const housing = new THREE.MeshBasicMaterial({ color: 0x4f565f });
-  const textures: THREE_NS.Texture[] = [];
+  type Face = { canvas: HTMLCanvasElement; widthM: number; h: number; local: THREE_NS.Matrix4; sign: THREE_NS.Matrix4 };
+  const faces: Face[] = [];
+  const boxes: { geo: THREE_NS.BufferGeometry; matrix: THREE_NS.Matrix4 }[] = [];
   const face = (content: SignContent[], maxW: number) => {
     const fit = paintFitted(content, maxW);
-    const { canvas } = fit;
     const widthM = Math.min(fit.widthM, maxW);
-    const h = H * (widthM / fit.widthM); // last resort: scale a single item down
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = anisotropy;
-    textures.push(tex);
-    // Internally lit sign face (unlit material, mild boost).
-    const mat = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false });
-    mat.color.setScalar(1.1);
-    return { mesh: new THREE.Mesh(new THREE.PlaneGeometry(widthM, h), mat), widthM };
+    return { canvas: fit.canvas, widthM, h: H * (widthM / fit.widthM) }; // last resort: scale a single item down
   };
   for (const s of specs) {
     const scale = s.scale ?? 1;
@@ -189,24 +243,46 @@ export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer
     const backBlocks = (s.back ?? []).filter((b) => b.exits.length > 0 || b.gates.length > 0);
     const back = backBlocks.length ? face(backBlocks, maxW) : null;
     const width = Math.max(front.widthM, back?.widthM ?? 0);
-    const box = new THREE.Mesh(new THREE.BoxGeometry(width + 0.06, H + 0.06, 0.08), housing);
-    front.mesh.position.z = 0.041;
-    const sign = new THREE.Group();
-    sign.add(box, front.mesh);
-    if (back) {
-      back.mesh.position.z = -0.041;
-      back.mesh.rotation.y = Math.PI;
-      sign.add(back.mesh);
-    }
-    const p = toRenderer(s.position.x, s.position.y, s.position.z);
-    sign.position.copy(p);
-    sign.scale.setScalar(scale);
     // Plane faces +Z in local space; rotate so it faces the ENU 'facing' vector.
     const f = toRenderer(s.facing.x, s.facing.y, 0).sub(toRenderer(0, 0, 0));
-    sign.rotation.y = Math.atan2(f.x, f.z);
-    sign.userData = { gteki_role: "sign", signId: s.id };
-    group.add(sign);
+    const signM = new THREE.Matrix4().compose(
+      toRenderer(s.position.x, s.position.y, s.position.z),
+      new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(f.x, f.z)),
+      new THREE.Vector3(scale, scale, scale),
+    );
+    boxes.push({ geo: new THREE.BoxGeometry(width + 0.06, H + 0.06, 0.08), matrix: signM });
+    faces.push({ ...front, local: new THREE.Matrix4().makeTranslation(0, 0, 0.041), sign: signM });
+    if (back) faces.push({ ...back, local: new THREE.Matrix4().makeRotationY(Math.PI).setPosition(0, 0, -0.041), sign: signM });
   }
+
+  // Unlit: the station has no dynamic lights (baked lighting only).
+  const housing = new THREE.MeshBasicMaterial({ color: 0x4f565f });
+  group.add(new THREE.Mesh(merge(THREE, boxes, false), housing));
+
+  const { pages, slots } = packAtlas(faces.map((x) => x.canvas));
+  const textures: THREE_NS.Texture[] = [];
+  pages.forEach((page, pi) => {
+    const tex = new THREE.CanvasTexture(page);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = anisotropy;
+    textures.push(tex);
+    const parts = faces.flatMap((fc, i) => {
+      if (slots[i].page !== pi) return [];
+      const geo = new THREE.PlaneGeometry(fc.widthM, fc.h);
+      // Remap the plane's 0..1 UVs onto this face's atlas rectangle (CanvasTexture flips Y).
+      const u0 = slots[i].x / page.width, u1 = (slots[i].x + fc.canvas.width) / page.width;
+      const vTop = 1 - slots[i].y / page.height, vBot = 1 - (slots[i].y + fc.canvas.height) / page.height;
+      const uv = geo.getAttribute("uv") as THREE_NS.BufferAttribute;
+      for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) * (u1 - u0), vBot + uv.getY(k) * (vTop - vBot));
+      return [{ geo, matrix: fc.sign.clone().multiply(fc.local) }];
+    });
+    // Internally lit sign face (unlit material, mild boost).
+    const mat = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false });
+    mat.color.setScalar(1.1);
+    group.add(new THREE.Mesh(merge(THREE, parts, true), mat));
+  });
+  group.userData = { gteki_role: "sign" };
+
   return {
     group,
     dispose() {
