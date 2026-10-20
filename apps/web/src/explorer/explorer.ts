@@ -240,6 +240,7 @@ export class Explorer {
     const manager = new THREE.LoadingManager();
     manager.setURLModifier(fencedUrlResolver(station.assetUrls, refused));
     const fenceError = (err: unknown) => refused.length ? new Error(`blocked asset request outside station folder: ${refused.join(", ")}`) : err;
+    const audioBus = this.ensureAudio() ? this.newStationAudioBus() : null;
     const ctx: SceneContext = {
       THREE,
       bundle,
@@ -262,7 +263,7 @@ export class Explorer {
       },
       quality: this.quality,
       renderer: this.renderer,
-      ...(this.ensureAudio() ? { audio: { context: this.audio!.context, destination: this.newStationAudioBus() } } : {}),
+      ...(audioBus ? { audio: { context: this.audio!.context, destination: audioBus } } : {}),
     };
 
     this.sceneError = null;
@@ -275,6 +276,8 @@ export class Explorer {
       // A broken visual scene never hides valid routing data: fall back to the L0 graph view.
       console.warn("[gteki] station scene failed; using L0 graph view", err);
       sceneError = err instanceof Error ? err.message : String(err);
+      // A failed build returns no disposer, so silence anything it already connected.
+      if (audioBus) { audioBus.disconnect(); if (this.stationAudio === audioBus) this.stationAudio = null; }
     }
     if (generation !== this.loadGeneration || this.disposed) {
       built?.dispose();

@@ -216,7 +216,7 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     if (!current) return;
     const m = Math.max(1, Math.round(current.distanceM));
     if (current.kind === "walk" || current.kind === "turn_left" || current.kind === "turn_right" || current.kind === "u_turn") current.text = t[current.kind](m);
-    else if (current.kind === "moving_walkway") current.text = t.moving_walkway(m);
+    else if (current.kind === "moving_walkway") current.text = current.turn ? t.turnPrefix(current.turn, t.moving_walkway(m)) : t.moving_walkway(m);
     out.push(current);
     current = null;
   };
@@ -262,7 +262,11 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     }
     if (step.mode === "moving_walkway") {
       flush();
-      current = { kind: "moving_walkway", stepIndexes: [i], distanceM: step.lengthM, vertical: null, toFloorId: step.toFloorId, text: "" };
+      // Like a flight or gate, the turn onto the walkway is named on the walkway instruction itself.
+      const delta = i > 0 ? turnDelta(points, route.steps, i) : null;
+      const turn: "left" | "right" | "back" | null =
+        delta === null ? null : Math.abs(delta) > 150 ? "back" : delta > TURN_DEG ? "right" : delta < -TURN_DEG ? "left" : null;
+      current = { kind: "moving_walkway", stepIndexes: [i], distanceM: step.lengthM, vertical: null, toFloorId: step.toFloorId, text: "", ...(turn ? { turn } : {}) };
       flush();
       return;
     }

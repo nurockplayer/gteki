@@ -373,3 +373,15 @@ describe("provenance completeness (PR #15 Codex review 6)", () => {
     expect(r.stale).toBe(true);
   });
 });
+
+describe("moving walkway entry turns (PR #15 Codex review 7)", () => {
+  it("names the turn onto a moving walkway", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("mw", "a", "b2", { mode: "moving_walkway" })]);
+    const template = b.nodes.find((n) => n.id === "a")!;
+    b.nodes.push({ ...template, id: "b2", position: { x: 10, y: 20, z: 0 } });
+    const texts = describeRoute(b, ok(createRouter(b).route("start", "b2", base)), "en").map((i) => i.text);
+    expect(texts).toEqual(["Start", "Go straight ~10 m", "Turn left, then moving walkway ~10 m", "Arrive at destination"]);
+    const ja = describeRoute(b, ok(createRouter(b).route("start", "b2", base)), "ja").map((i) => i.text);
+    expect(ja).toContain("左へ曲がり、動く歩道で約10m");
+  });
+});
