@@ -144,7 +144,9 @@ def uv_overlaps(tris, eps=1e-10):
         a = _area(t)
         if abs(a) > 1e-14:
             ccw[i] = tuple(t) if a > 0 else tuple(t[::-1])
-    cell = 1 / 64
+    # cells no smaller than the largest triangle, so a huge one cannot enumerate millions of cells
+    extent = max((max(p[k] for p in t) - min(p[k] for p in t) for t in ccw.values() for k in (0, 1)), default=0)
+    cell = max(1 / 64, extent)
     grid = {}
     for i, t in ccw.items():
         xs, ys = [p[0] for p in t], [p[1] for p in t]
@@ -398,6 +400,7 @@ class Validator:
                     continue
                 if any(c < -1e-6 or c > 1 + 1e-6 for p in uv for c in p):
                     self.message("FAIL", f"mesh {node['mesh']} lightmap UV (TEXCOORD_1) leaves the unit square")
+                    continue
                 order = ([v for (v,) in read(self.index(accessors, primitive["indices"]))]
                          if "indices" in primitive else list(range(len(uv))))
                 if any(v >= len(uv) for v in order):
@@ -579,14 +582,15 @@ def self_test():
     textured["materials"][0]["extras"] = dict(sourceTexture=dict(index=123, texCoord=99))
     assert Validator("tiny.glb", encode_glb(textured, binary)).check()["status"] == "PASS"
 
-    def lightmapped(uvs, mode=4, profile=None, attrs=("POSITION", "TEXCOORD_1")):
-        """Two-triangle mesh (six corners) with the given lightmap UVs."""
+    def lightmapped(uvs, mode=4, profile=None, attrs=("POSITION", "TEXCOORD_1"), uv_bytes=None, **uv_accessor):
+        """Two-triangle mesh (six corners) with the given lightmap UVs (FLOAT VEC2 unless overridden)."""
         lm = copy.deepcopy(doc)
-        data = struct.pack("<18f", *([-1, 0, 0, 1, 0, 0, 0, 1, -1] * 2)) + struct.pack("<12f", *uvs)
+        uv_bytes = struct.pack("<12f", *uvs) if uv_bytes is None else uv_bytes
+        data = struct.pack("<18f", *([-1, 0, 0, 1, 0, 0, 0, 1, -1] * 2)) + uv_bytes
         lm["buffers"][0]["byteLength"] = len(data)
-        lm["bufferViews"] = [dict(buffer=0, byteLength=72), dict(buffer=0, byteOffset=72, byteLength=48)]
+        lm["bufferViews"] = [dict(buffer=0, byteLength=72), dict(buffer=0, byteOffset=72, byteLength=len(uv_bytes))]
         lm["accessors"] = [dict(bufferView=0, componentType=5126, count=6, type="VEC3", min=[-1, 0, -1], max=[1, 1, 0]),
-                           dict(bufferView=1, componentType=5126, count=6, type="VEC2")]
+                           dict(dict(bufferView=1, componentType=5126, count=6, type="VEC2"), **uv_accessor)]
         lm["meshes"].append(dict(primitives=[dict(attributes={a: i for i, a in enumerate(attrs)}, material=0, mode=mode)]))
         lm["nodes"][1]["mesh"] = 1
         lm["nodes"][0]["extras"]["gteki"]["triangles"] = 2 if mode == 4 else 4
@@ -604,6 +608,13 @@ def self_test():
     assert lightmapped(apart, profile="mobile", attrs=("POSITION",)) == "FAIL"  # mobile requires UV1
     assert lightmapped(apart, attrs=("POSITION",)) == "PASS"  # full builds carry no UV1
     assert lightmapped((math.nan,) + apart[1:]) == "FAIL"
+    assert lightmapped((1e6,) + apart[1:]) == "FAIL"  # rejected before the overlap grid
+    assert uv_overlaps([((0, 0), (1e6, 0), (0, 1)), ((0, 0), (1, 0), (0, 1))]) == [(0, 1)]  # coarse grid, same answer
+    unorm = struct.pack("<12H", *(round(c * 65535) for c in apart))  # normalized UNORM16 is valid glTF
+    assert lightmapped(None, profile="mobile", uv_bytes=unorm, componentType=5123, normalized=True) == "PASS"
+    assert lightmapped(None, uv_bytes=unorm, componentType=5123) == "FAIL"  # integer UVs must be normalized
+    assert lightmapped(apart, type="VEC3", count=4) == "FAIL"
+    assert lightmapped(apart, count=5) == "FAIL"  # one UV per vertex
     assert lightmapped(tuple(c + 2 * (k % 2 == 0) for k, c in enumerate(apart))) == "FAIL"  # outside the unit square
     print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs, "
           "texCoord (core, extension, transform, extras), lightmap (overlap, strips, fans, range, NaN, mobile UV1)")

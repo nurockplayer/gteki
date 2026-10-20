@@ -153,6 +153,8 @@ A second fresh read-only Codex review, of `9c3c34a`, confirmed all eight fixes w
 | P2 | A texture-like object under material `extras` was taken as a texture slot | `extras` are skipped at every level |
 | P3 | The last repack was never checked | Each repack is checked, and the layout is checked again after quantization |
 
+A third review, of `a5fa9a9`, confirmed these and found one more P2: an out-of-range UV1 was reported but still entered the overlap grid, so a coordinate of 10⁶ could enumerate billions of grid cells. Out-of-range UV1 now stops at the FAIL, and the grid cell is never smaller than the largest triangle. Self-tests cover it, along with normalized UNORM16, VEC3 and count-mismatch UV1.
+
 ## Commands
 
 ```sh
