@@ -362,6 +362,12 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     b.edges = [];
     expect(errors(b)).not.toContain("source.attribution");
     expect(errors(b)).not.toContain("source.license");
+    expect(errors(b)).not.toContain("source.url");
+    for (const url of ["", "not a url", "ftp://example.org/data", "javascript:alert(1)"]) {
+      b.sources[0]!.url = url;
+      expect(errors(b)).toContain("source.url");
+    }
+    b.sources[0]!.url = "https://example.org/dataset";
     b.sources[0]!.attribution = "  ";
     b.sources[1]!.license = null;
     expect(errors(b)).toContain("source.attribution");
@@ -372,6 +378,9 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     b.sources[1]!.usage = "facts-only";
     b.sources[1]!.license = null;
     expect(errors(b).filter((c) => c === "source.license")).toEqual([]);
+    // ...but it is still cited, so it still needs a landing URL.
+    b.sources[1]!.url = "";
+    expect(errors(b)).toContain("source.url");
   });
 
   it("rejects origin coordinates outside the geodetic range", () => {

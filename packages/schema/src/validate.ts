@@ -104,6 +104,8 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     // from it may ship) names its licence with a link (CC BY / PDL 1.0 require indicating the licence).
     if (!b.station.synthetic && !(typeof s.attribution === "string" && s.attribution.trim()))
       err("source.attribution", "source without an attribution (credit line)", s.id);
+    // The credited title links to the source itself, so a real source needs a reachable http(s) landing page.
+    if (!b.station.synthetic && !isHttpUrl(s.url)) err("source.url", "source without an http(s) landing URL", s.id);
     if (!b.station.synthetic && s.usage !== "facts-only" && !(s.license && s.license.name.trim() && isHttpUrl(s.license.url)))
       err("source.license", "data source without a licence name and http(s) licence link", s.id);
     if (!b.station.synthetic && s.rights !== "REUSABLE_WITH_CONDITIONS" && s.usage !== "facts-only")
