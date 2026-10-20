@@ -8,6 +8,8 @@ import type { StationBundle } from "@gteki/schema";
 import { createRouter } from "@gteki/navigation";
 import { buildLayout, centroid, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type WallSeg, type XY, type XYZ } from "./layout.ts";
 import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture, type SignIcon } from "./textures.ts";
+import surfaceJson from "../data/surface.json";
+import { buildSurface, surfaceWalls, type SurfaceData } from "./surface.ts";
 
 export const OEDO_MAGENTA = "#b6007a"; // public line colour of the Oedo Line
 
@@ -767,6 +769,16 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
   }
   update(0, 0);
+
+  // W2 surface hook: context adds obstacles only; existing pads remain the walk limit.
+  const surface = buildSurface(surfaceJson as SurfaceData, layout, { ...opts, bundle });
+  root.add(surface.root);
+  const surfaceBarriers = surfaceWalls(layout, bundle, surfaceJson as SurfaceData);
+  propWalls.push(...surfaceBarriers);
+  world.addWalls(surfaceBarriers);
+  for (const child of root.children) if (child instanceof THREE.Mesh && child.material === mat.sidewalk) child.visible = false; // replace uncut legacy pad boxes
+  for (const lv of layout.levels.filter((l) => Math.abs(l.z) < 0.1)) for (const child of levelGroups.get(lv.floorId)?.children ?? []) if (child instanceof THREE.Mesh && (child.name === "walkable" || child.material === mat.ceiling)) child.visible = false; // cut street ground and original canopies replace generic top-level caps
+  track(surface);
 
   return {
     root,
