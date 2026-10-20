@@ -18,12 +18,19 @@ export interface DiscoveredStation {
 
 const ASSET_EXT = /\.(glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|ogg|mp3|m4a)$/i;
 
-function walk(dir: string, base = dir): string[] {
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) return walk(full, base);
-    return ASSET_EXT.test(entry.name) ? [path.relative(base, full).split(path.sep).join("/")] : [];
+/**
+ * Asset files under `dir`, following symlinks only when they resolve inside `fence`
+ * (the station's own folder), so a station can't pull in files from elsewhere.
+ */
+function walk(dir: string, fence: string, base = dir, depth = 0): string[] {
+  if (depth > 8 || !fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir).sort().flatMap((name) => {
+    const full = path.join(dir, name);
+    const real = fs.realpathSync(full);
+    if (real !== fence && !real.startsWith(fence + path.sep)) return [];
+    const stat = fs.statSync(full);
+    if (stat.isDirectory()) return walk(full, fence, base, depth + 1);
+    return ASSET_EXT.test(name) ? [path.relative(base, full).split(path.sep).join("/")] : [];
   });
 }
 
@@ -37,7 +44,7 @@ export function discoverStations(roots: string[]): DiscoveredStation[] {
       if (seen.has(dir) || !fs.existsSync(path.join(gtekiDir, "station.json"))) continue;
       seen.add(dir);
       const scene = ["scene.ts", "scene.js"].map((f) => path.join(gtekiDir, f)).find((f) => fs.existsSync(f)) ?? null;
-      found.push({ dir, gtekiDir, scene, assets: walk(gtekiDir).filter((a) => !a.endsWith(".json")) });
+      found.push({ dir, gtekiDir, scene, assets: walk(gtekiDir, fs.realpathSync(path.join(root, dir))) });
     }
   }
   return found;

@@ -79,13 +79,13 @@ export class App {
         if (poi) this.setDestination(poi);
       },
     });
+    this.exposeTestHooks();
     this.s.entries = await listStations();
     this.renderStationSelect();
     const params = new URLSearchParams(location.search);
     const wanted = params.get("station");
     const entry = this.s.entries.find((e) => e.key === wanted) ?? this.s.entries.find((e) => !e.synthetic) ?? this.s.entries[0]!;
     await this.openStation(entry, params.get("from"), params.get("to"));
-    this.exposeTestHooks();
   }
 
   // ---- Layout ----------------------------------------------------------------------
@@ -189,7 +189,7 @@ export class App {
       this.s.router = createRouter(loaded.bundle);
       this.s.search = createSearchIndex(loaded.bundle);
       await this.explorer.loadStation(loaded, this.s.router);
-      this.toast("");
+      this.toast(this.explorer.sceneError ? `${this.t.sceneFallback}: ${this.explorer.sceneError}` : "", this.explorer.sceneError ? 6000 : 0);
     } catch (err) {
       this.s.loaded = null;
       this.s.router = null;
@@ -596,6 +596,8 @@ export class App {
       startGuide: () => this.explorer.startGuide(this.s.polyline),
       quality: () => this.explorer.qualityLevel,
       avatar: () => this.explorer.avatarEnu,
+      sceneInfo: () => this.explorer.sceneInfo(),
+      phase: () => this.explorer.phase,
       walkFromNode: (nodeId: string) => (this.s.loaded ? this.explorer.walkFromNode(this.s.loaded.bundle, nodeId) : false),
       simulate: (seconds: number, keys: string[] = []) => this.explorer.simulate(seconds, keys),
     };

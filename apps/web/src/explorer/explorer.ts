@@ -41,7 +41,7 @@ export class Explorer {
   private readonly labels = new CSS2DRenderer();
   private readonly orbit: OrbitControls;
   private composer: EffectComposer | null = null;
-  private readonly clock = new THREE.Clock();
+  private readonly timer = new THREE.Timer();
   private readonly input: Input;
   private readonly gltf = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   private readonly ray = new THREE.Raycaster();
@@ -67,6 +67,8 @@ export class Explorer {
   private mode: ExplorerMode = "overview";
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; speed: number } | null = null;
   private quality: "low" | "high";
+  /** Why the station's own scene could not be shown (L0 fallback is in use), if any. */
+  sceneError: string | null = null;
   private disposed = false;
 
   constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}) {
@@ -77,7 +79,7 @@ export class Explorer {
     this.renderer.toneMappingExposure = 1.0;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.shadowMap.enabled = this.quality === "high";
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     host.appendChild(this.renderer.domElement);
     this.renderer.domElement.classList.add("gteki-canvas");
     this.labels.domElement.classList.add("gteki-labels");
@@ -105,6 +107,16 @@ export class Explorer {
 
   get qualityLevel(): "low" | "high" {
     return this.quality;
+  }
+
+  /** Bounding boxes (renderer frame) for automated visual sanity checks. */
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; camera: number[]; mode: ExplorerMode } {
+    const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
+    return {
+      world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
+      walkable: this.walkable.length, colliders: this.colliders.length,
+      camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
+    };
   }
 
   /** Avatar position in station ENU (a virtual position, never the user's real location). */
@@ -151,7 +163,11 @@ export class Explorer {
     this.avatar.visible = false;
   }
 
+  /** Loading phase, exposed for diagnosing stalled station scenes. */
+  phase = "idle";
+
   async loadStation(station: LoadedStation, router: Router): Promise<void> {
+    this.phase = "graph";
     this.clearStation();
     this.station = station;
     const bundle = station.bundle;
@@ -179,22 +195,15 @@ export class Explorer {
       renderer: this.renderer,
     };
 
-    if (station.scene) {
-      this.stationScene = await station.scene.buildScene(ctx);
-    } else if (bundle.assets?.length) {
-      // No scene module: load manifest GLBs and classify by gteki_role.
-      const root = new THREE.Group();
-      const walkable: THREE.Object3D[] = [];
-      const colliders: THREE.Object3D[] = [];
-      for (const asset of bundle.assets) {
-        const gltf = await ctx.loadGlb(asset.uri);
-        if (asset.transform) gltf.scene.applyMatrix4(new THREE.Matrix4().fromArray(asset.transform));
-        const roles = sceneFromGlbRoles(gltf.scene);
-        walkable.push(...roles.walkable);
-        colliders.push(...roles.colliders);
-        root.add(gltf.scene);
-      }
-      this.stationScene = { root, walkable, colliders, dispose: () => root.traverse((o) => (o as THREE.Mesh).geometry?.dispose()) };
+    this.sceneError = null;
+    this.phase = "scene";
+    try {
+      this.stationScene = await this.buildStationScene(station, ctx);
+    } catch (err) {
+      // A broken visual scene never hides valid routing data: fall back to the L0 graph view.
+      console.warn("[gteki] station scene failed; using L0 graph view", err);
+      this.sceneError = err instanceof Error ? err.message : String(err);
+      this.stationScene = null;
     }
 
     if (this.stationScene) {
@@ -214,8 +223,29 @@ export class Explorer {
       this.walkable = this.graph.walkable;
     }
     this.world.updateMatrixWorld(true);
+    this.phase = "composer";
     this.setupComposer();
     this.frameAll();
+    this.phase = "ready";
+  }
+
+  private async buildStationScene(station: LoadedStation, ctx: SceneContext): Promise<StationScene | null> {
+    if (station.scene) return await station.scene.buildScene(ctx);
+    const assets = station.bundle.assets ?? [];
+    if (assets.length === 0) return null;
+    // No scene module: load manifest GLBs and classify by gteki_role.
+    const root = new THREE.Group();
+    const walkable: THREE.Object3D[] = [];
+    const colliders: THREE.Object3D[] = [];
+    for (const asset of assets) {
+      const gltf = await ctx.loadGlb(asset.uri);
+      if (asset.transform) gltf.scene.applyMatrix4(new THREE.Matrix4().fromArray(asset.transform));
+      const roles = sceneFromGlbRoles(gltf.scene);
+      walkable.push(...roles.walkable);
+      colliders.push(...roles.colliders);
+      root.add(gltf.scene);
+    }
+    return { root, walkable, colliders, dispose: () => root.traverse((o) => (o as THREE.Mesh).geometry?.dispose()) };
   }
 
   private clearStation(): void {
@@ -258,6 +288,8 @@ export class Explorer {
     this.avatar.visible = mode !== "overview" && !this.firstPerson;
     this.input.enabled = mode !== "overview";
     if (mode === "overview") this.orbit.target.copy(this.pos);
+    const xray = this.routeGroup.getObjectByName("route-xray");
+    if (xray) xray.visible = mode === "overview";
     this.events.onMode?.(mode);
   }
 
@@ -324,7 +356,13 @@ export class Explorer {
     glow.renderOrder = 6;
     // Symbolic (unknown) heights are drawn dashed above the ribbon so they read as approximate.
     const symbolic = polyline.some((p) => !p.zKnown);
-    this.routeGroup.add(ribbon, glow);
+    // X-ray copy so the route stays readable through ceilings/slabs in overview.
+    const xrayMat = new THREE.MeshBasicMaterial({ map: this.routeTexture, color: 0xb8f8ff, transparent: true, opacity: 0.6, depthTest: false, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
+    const xray = new THREE.Mesh(ribbon.geometry, xrayMat);
+    xray.renderOrder = 20;
+    xray.name = "route-xray";
+    xray.visible = this.mode === "overview";
+    this.routeGroup.add(ribbon, glow, xray);
     this.routeGroup.add(this.beacon(pts[0]!, 0x7dffa0, 2.2), this.beacon(pts[pts.length - 1]!, 0xffc857, 5));
     this.routeGroup.userData = { symbolicHeights: symbolic };
   }
@@ -429,7 +467,8 @@ export class Explorer {
     this.input.virtualKeys.clear();
     for (const k of keys) this.input.virtualKeys.add(k);
     const steps = Math.round(seconds * 60);
-    for (let i = 0; i < steps; i++) this.step(1 / 60, this.clock.elapsedTime + i / 60);
+    const t0 = this.timer.getElapsed();
+    for (let i = 0; i < steps; i++) this.step(1 / 60, t0 + i / 60);
     this.input.virtualKeys.clear();
     this.render(1 / 60);
     return this.avatarEnu;
@@ -437,8 +476,9 @@ export class Explorer {
 
   private frame(): void {
     if (this.disposed) return;
-    const dt = Math.min(0.05, this.clock.getDelta());
-    this.step(dt, this.clock.elapsedTime);
+    this.timer.update();
+    const dt = Math.min(0.05, this.timer.getDelta());
+    this.step(dt, this.timer.getElapsed());
     this.render(dt);
   }
 
