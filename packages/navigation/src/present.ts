@@ -282,12 +282,13 @@ function signedDelta(h0: number, h1: number): number {
 
 /** A branch competes with the chosen one unless it bends at least this much more sharply. */
 const STRAIGHT_MARGIN_DEG = 30;
+/** Branches bending more than this lie behind the traveller: they do not make "keep left/right" ambiguous. */
+const AHEAD_DEG = 90;
 /** Branches leaving within this angle of each other cannot be told apart by "left/right/straight". */
 const SAME_BRANCH_DEG = 1;
 
 /** Plan heading of an edge leaving `node` (its first ~5 m, endpoints snapped as drawn); null = none. */
 function departureHeading(edge: Edge, node: Node, other: Node): number | null {
-  if (edge.mode === "elevator") return null;
   const drawn = edge.geometry && edge.geometry.length >= 2 ? [...edge.geometry] : [node.position, other.position];
   if (edge.from !== node.id) drawn.reverse();
   const path = [node.position, ...drawn.slice(1, -1), other.position];
@@ -298,9 +299,10 @@ function departureHeading(edge: Edge, node: Node, other: Node): number | null {
 
 /**
  * Which way to go at the pass-through node before step i, given the other traversable branches that
- * leave it; null when there is no other branch or the choice cannot be stated without guessing
- * (no heading in or out, two branches leaving on the same line, or a fork where the chosen branch is
- * neither the straightest nor to one side of every competitor).
+ * leave it; null when there is no other branch or the choice cannot be stated without guessing: no
+ * heading in or out, a branch (other than a lift door) too short to have a heading, two branches on the
+ * same line, or a fork where the route is neither clearly the straightest, nor the straightest of its
+ * competitors, nor to one side of every branch ahead.
  */
 function junctionAction(
   points: PolylinePoint[], steps: RouteResult["steps"], i: number, branches: readonly Edge[], nodes: ReadonlyMap<string, Node>,
@@ -312,18 +314,23 @@ function junctionAction(
   const chosen = turnDelta(points, steps, i);
   const h0 = arrivalHeading(points, steps, i);
   if (chosen === null || h0 === null) return null;
-  const rivals: number[] = [];
+  const ahead: number[] = [];
   for (const e of others) {
+    // A lift's doors may face anywhere: it is a choice, but never a competing direction.
+    if (e.mode === "elevator") continue;
     const h = departureHeading(e, node, nodes.get(e.from === node.id ? e.to : e.from)!);
-    if (h === null) continue;
+    // A walkable branch with no heading of its own (a sub-metre connector) may lead anywhere: no guess.
+    if (h === null) return null;
     const d = signedDelta(h0, h);
     if (Math.abs(d - chosen) < SAME_BRANCH_DEG) return null;
-    if (Math.abs(d) < Math.abs(chosen) + STRAIGHT_MARGIN_DEG) rivals.push(d);
+    if (Math.abs(d) < AHEAD_DEG) ahead.push(d);
   }
-  const leftOf = rivals.some((d) => d < chosen);
-  const rightOf = rivals.some((d) => d > chosen);
-  if (leftOf && rightOf) return rivals.every((d) => Math.abs(d) > Math.abs(chosen)) ? "straight" : null;
-  return leftOf ? "keep_right" : rightOf ? "keep_left" : "straight";
+  const rivals = ahead.filter((d) => Math.abs(d) < Math.abs(chosen) + STRAIGHT_MARGIN_DEG);
+  if (rivals.length === 0) return "straight";
+  // Keeping to a side is only unambiguous when every branch ahead lies on the other side.
+  if (ahead.every((d) => d > chosen)) return "keep_left";
+  if (ahead.every((d) => d < chosen)) return "keep_right";
+  return rivals.every((d) => Math.abs(d) > Math.abs(chosen)) ? "straight" : null;
 }
 
 /** Branches that may be walked away from each node: the station's traversable graph, independent of any traveller profile. */

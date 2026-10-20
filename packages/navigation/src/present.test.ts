@@ -250,6 +250,12 @@ describe("describeRoute junction hints", () => {
     twin.edges = twin.edges.filter((e) => e.id !== "p-fork" && e.id !== "q-east");
     twin.edges.push(edge("p-twin", "p", "lift-top", { lengthM: 31 }));
     expect(describeRoute(twin, route(twin, "start", "g"), "en")[2]!.junctions).toBeUndefined();
+    // A sub-metre walk connector has no heading and may lead into a straighter corridor: no hint, not "straight".
+    const stub = columnHall();
+    stub.edges = stub.edges.filter((e) => e.id !== "p-fork" && e.id !== "q-east");
+    stub.nodes.push(at("stub", 10, -30.5));
+    stub.edges.push(edge("p-stub", "p", "stub", { lengthM: 0.5 }));
+    expect(describeRoute(stub, route(stub, "start", "g"), "en")[2]!.junctions).toBeUndefined();
   });
 
   it("calls the middle of a three-way fork straight only when it is the straightest", () => {
@@ -266,6 +272,14 @@ describe("describeRoute junction hints", () => {
     expect(fork(25, 9).junctions).toEqual([{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }]);
     // A branch dead ahead is straighter than the route, with another on its far side: no side or "straight" is safe.
     expect(fork(10, -5).junctions).toBeUndefined();
+    // Same when the far-side branch bends too sharply to compete on straightness (45°): "keep right" could take it.
+    expect(fork(10, -15).junctions).toBeUndefined();
+    // A branch behind the traveller (here ~117° right of arrival) does not make "keep right" ambiguous.
+    const behind = columnHall();
+    behind.edges = behind.edges.filter((e) => e.id !== "q-east");
+    behind.nodes.push(at("back", -10, -20));
+    behind.edges.push(edge("p-back", "p", "back", { lengthM: 20 }));
+    expect(describeRoute(behind, route(behind, "start", "g"), "en")[2]!.junctions).toEqual([{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }]);
   });
 
   it("measures headings over the first ~5 m, so a snapping hook on a branch does not move it", () => {
