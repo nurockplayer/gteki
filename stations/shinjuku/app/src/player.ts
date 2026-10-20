@@ -5,7 +5,22 @@
 import { pointInRings, type WalkWorld, type XY } from "../../scene/layout.ts";
 
 export interface CameraPoint extends XY { z: number }
-export interface CameraSurface { z: number; rings: XY[][] }
+/** A horizontal or pitched (soffit) plane clipped to rings: height z + slope·(p − origin). */
+export interface CameraSurface { z: number; rings: XY[][]; origin?: XY; slope?: XY }
+
+const heightAt = (s: CameraSurface, p: XY) => s.z + (s.slope?.x ?? 0) * (p.x - (s.origin?.x ?? 0)) + (s.slope?.y ?? 0) * (p.y - (s.origin?.y ?? 0));
+const surfaceSpan = new WeakMap<CameraSurface, [number, number]>();
+/** Height range of a surface over its outer ring (pitched soffits span more than z). */
+function span(s: CameraSurface): [number, number] {
+  if (!s.slope) return [s.z, s.z];
+  let r = surfaceSpan.get(s);
+  if (!r) {
+    const zs = s.rings[0]!.map((p) => heightAt(s, p));
+    r = [Math.min(...zs), Math.max(...zs)];
+    surfaceSpan.set(s, r);
+  }
+  return r;
+}
 
 /** A small camera volume, swept in ENU. Uses the caller's camera collision walls,
  * plus the actual cut floor/ceiling polygons. Sampling
@@ -21,11 +36,15 @@ export function sweepCamera(
   const length = Math.hypot(desired.x - anchor.x, desired.y - anchor.y, desired.z - anchor.z);
   if (length < 1e-6) return { ...anchor };
   const n = Math.max(1, Math.ceil(length / (radius * 0.5)));
-  const nearby = surfaces.filter((s) => s.z >= Math.min(anchor.z, desired.z) - radius && s.z <= Math.max(anchor.z, desired.z) + radius);
+  const nearby = surfaces.filter((s) => {
+    const [lo, hi] = span(s);
+    return hi >= Math.min(anchor.z, desired.z) - radius && lo <= Math.max(anchor.z, desired.z) + radius;
+  });
   const blocked = (p: CameraPoint) => {
     for (const s of nearby) {
-      if (Math.abs(s.z - p.z) >= radius) continue;
-      const r = Math.sqrt(radius * radius - (s.z - p.z) ** 2);
+      const sz = heightAt(s, p);
+      if (Math.abs(sz - p.z) >= radius) continue;
+      const r = Math.sqrt(radius * radius - (sz - p.z) ** 2);
       if ([{ x: 0, y: 0 }, { x: r, y: 0 }, { x: -r, y: 0 }, { x: 0, y: r }, { x: 0, y: -r }].some((o) => pointInRings({ x: p.x + o.x, y: p.y + o.y }, s.rings))) return true;
     }
     for (const dz of [0, -radius * 0.75, radius * 0.75]) {

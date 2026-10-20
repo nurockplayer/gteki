@@ -208,7 +208,9 @@ const cameraWorld = new WalkWorld({ ...layout, runWalls: [], levels: layout.leve
   ...level, railings: [], walls: level.walls.filter((wall) => wall.zMax - wall.zMin > 1.9),
 })) });
 cameraWorld.addWalls(station.propWalls.filter((wall) => wall.zMax - wall.zMin > 1.9));
-const cameraSurfaces = [...layout.levels.flatMap((l) => [...l.slabs, ...l.ceilings]), ...layout.pads, ...layout.streetPads];
+// Soffits (landing/shaft roofs, run undersides) too: without them the boom rose through a landing roof
+// and looked down on the station from above it.
+const cameraSurfaces = [...layout.levels.flatMap((l) => [...l.slabs, ...l.ceilings]), ...layout.pads, ...layout.streetPads, ...layout.soffits];
 // Submit core geometry from the same safe spawn view and composer used in play.
 // This avoids compiling extra materials for a separate preview camera or pipeline.
 const previewHead = { x: player.x, y: player.y, z: player.z + 1.1 };

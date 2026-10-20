@@ -16,6 +16,7 @@ interface Edge { from: string; to: string; geometry?: XY[] | null }
 const here = dirname(fileURLToPath(import.meta.url));
 const graph = JSON.parse(readFileSync(join(here, "../gteki/graph.json"), "utf8")) as { nodes: Node[]; edges: Edge[] };
 const nodes = new Map(graph.nodes.map((n) => [n.id, n]));
+// Ids label the heading in whole degrees; `heading` is radians, atan2(dx, dy), as the lane teleport hook takes it.
 const vantages: { id: string; node: string; heading: number }[] = [];
 for (const n of graph.nodes) {
   if (n.kind === "elevator") continue;
@@ -29,6 +30,6 @@ for (const n of graph.nodes) {
     const h = ((Math.round((Math.atan2(b.x - a.x, b.y - a.y) * 180) / Math.PI) % 360) + 360) % 360;
     if (headings.every((x) => Math.min(Math.abs(h - x), 360 - Math.abs(h - x)) > 40)) headings.push(h);
   }
-  for (const h of headings.slice(0, 3)) vantages.push({ id: `${n.id.slice(2, 10)}-${String(h).padStart(3, "0")}`, node: n.id, heading: h });
+  for (const h of headings.slice(0, 3)) vantages.push({ id: `${n.id.slice(2, 10)}-${String(h).padStart(3, "0")}`, node: n.id, heading: +((h * Math.PI) / 180).toFixed(4) });
 }
 process.stdout.write(JSON.stringify({ vantages }) + "\n");
