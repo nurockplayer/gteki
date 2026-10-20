@@ -19,7 +19,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-from floorquery import Surfaces  # noqa: E402
+from floorquery import CELL, Surfaces, _inside  # noqa: E402
 from build_station import wall_segments, write_json  # noqa: E402
 
 CLEAR_BELOW_SIGN = 2.25  # m above walking surface
@@ -88,6 +88,47 @@ def wall_hit(segs, sgrid, px, py, dx, dy, zlo, zhi, maxd=12.0):
             if 0 < t < best and 0 <= u <= 1:
                 best = t
     return best
+
+
+def lowest_ceiling(ceil, ax, ay, bx, by, above):
+    """Lowest ceiling height over segment a-b (exact, not sampled), counting only heights > above."""
+    best = None
+    dx, dy = bx - ax, by - ay
+    seen = set()
+    for gx in range(int(math.floor(min(ax, bx) / CELL)), int(math.floor(max(ax, bx) / CELL)) + 1):
+        for gy in range(int(math.floor(min(ay, by) / CELL)), int(math.floor(max(ay, by) / CELL)) + 1):
+            for idx in ceil.grid.get((gx, gy), []):
+                if idx in seen:
+                    continue
+                seen.add(idx)
+                _, outer, holes, (nx, ny, nz, d), bb = ceil.polys[idx]
+                if max(ax, bx) < bb[0] or min(ax, bx) > bb[1] or max(ay, by) < bb[2] or min(ay, by) > bb[3]:
+                    continue
+                # Split the segment where it crosses any ring edge; each piece is wholly in or out.
+                ts = {0.0, 1.0}
+                for ring in [outer] + list(holes):
+                    for i in range(len(ring)):
+                        (x1, y1), (x2, y2) = ring[i - 1][:2], ring[i][:2]
+                        ex, ey = x2 - x1, y2 - y1
+                        den = dx * ey - dy * ex
+                        if abs(den) < 1e-12:
+                            continue
+                        t = ((x1 - ax) * ey - (y1 - ay) * ex) / den
+                        u = ((x1 - ax) * dy - (y1 - ay) * dx) / den
+                        if 0 <= t <= 1 and 0 <= u <= 1:
+                            ts.add(t)
+                ts = sorted(ts)
+                pieces = list(zip(ts, ts[1:])) or [(0.0, 0.0)]
+                for t0, t1 in pieces:
+                    tm = (t0 + t1) / 2
+                    mx, my = ax + dx * tm, ay + dy * tm
+                    if not _inside(mx, my, outer) or any(_inside(mx, my, h) for h in holes):
+                        continue
+                    for t in (t0, t1):  # a plane is linear along the segment: its minimum is at an end
+                        z = (d - nx * (ax + dx * t) - ny * (ay + dy * t)) / nz
+                        if z > above and (best is None or z < best):
+                            best = z
+    return None if best is None else round(best, 3)
 
 
 def main():
@@ -197,12 +238,7 @@ def main():
                 def ceiling_over(cx, cy, half):
                     """Lowest ceiling over the panel span. Any ceiling above the floor counts, low ones and
                     beams included: one at or under 2 m must shrink, move or omit the sign."""
-                    zs = []
-                    n = max(1, int(half / 0.25))
-                    for k in range(-n, n + 1):
-                        off = half * k / n
-                        zs += [z for z, _ in ceil.heights(cx + rx * off, cy + ry * off) if z > pz + 0.3]
-                    return min(zs) if zs else None
+                    return lowest_ceiling(ceil, cx - rx * half, cy - ry * half, cx + rx * half, cy + ry * half, pz + 0.3)
 
                 def fit(ceiling_z):
                     bottom, sign_h = pz + CLEAR_BELOW_SIGN, SIGN_H
@@ -214,39 +250,43 @@ def main():
                     return bottom, sign_h
 
                 rx, ry = diry, -dirx  # right of the walking direction
-                ceiling_z = ceiling_over(px, py, 0.0)
-                fitted = fit(ceiling_z)
+                x0, y0 = px, py
+                fitted = fit(ceiling_over(x0, y0, 0.0))
                 if fitted is None:
                     return None
-                bottom, sign_h = fitted
-                zlo, zhi = bottom, bottom + sign_h
-                dr = wall_hit(segs, sgrid, px, py, rx, ry, zlo, zhi)
-                dl = wall_hit(segs, sgrid, px, py, -rx, -ry, zlo, zhi)
-                if dl + dr < 2 * MAX_SIGN_W:  # bounded passage: centre between its walls
-                    shift = (dr - dl) / 2
-                    px, py = px + rx * shift, py + ry * shift
-                    half = (dl + dr) / 2
-                else:  # open on one side: ease away from the near wall (<= 1.5 m), stay symmetric
-                    want = MAX_SIGN_W / 2 + SIDE_MARGIN
-                    if dl < dr:
-                        shift = min(1.5, max(0.0, want - dl))
+                # Walls are found within the panel's height band, and the band depends on the ceiling over
+                # the panel's final span: settle both together. Centring always starts from the edge point.
+                for _ in range(4):
+                    bottom, sign_h = fitted
+                    zlo, zhi = bottom, bottom + sign_h
+                    dr = wall_hit(segs, sgrid, x0, y0, rx, ry, zlo, zhi)
+                    dl = wall_hit(segs, sgrid, x0, y0, -rx, -ry, zlo, zhi)
+                    if dl + dr < 2 * MAX_SIGN_W:  # bounded passage: centre between its walls
+                        shift = (dr - dl) / 2
+                        half = (dl + dr) / 2
+                    else:  # open on one side: ease away from the near wall (<= 1.5 m), stay symmetric
+                        want = MAX_SIGN_W / 2 + SIDE_MARGIN
+                        if dl < dr:
+                            shift = min(1.5, max(0.0, want - dl))
+                        else:
+                            shift = -min(1.5, max(0.0, want - dr))
+                        half = min(dl + shift, dr - shift)
+                    px, py = x0 + rx * shift, y0 + ry * shift
+                    room_w = round(max(0.6, min(MAX_SIGN_W, 2 * half - 2 * SIDE_MARGIN)), 2)
+                    # The ceiling across the whole panel at its final position bounds it (beams beside the
+                    # centre); where a beam leaves no room, a narrower panel (content trimmed) beats no sign.
+                    for max_w in [room_w] + [w for w in (4.5, 3.0, 2.0, 1.2) if w < room_w]:
+                        ceiling_z = ceiling_over(px, py, max_w / 2)
+                        refit = fit(ceiling_z)
+                        if refit is not None:
+                            break
                     else:
-                        shift = -min(1.5, max(0.0, want - dr))
-                    px, py = px + rx * shift, py + ry * shift
-                    half = min(dl + shift, dr - shift)
-                room_w = round(max(0.6, min(MAX_SIGN_W, 2 * half - 2 * SIDE_MARGIN)), 2)
-                # Re-check the ceiling across the whole panel at its final position (beams beside the centre);
-                # where a beam leaves no room, a narrower panel (content trimmed to fit) beats no sign.
-                centre_z = ceiling_z
-                for max_w in [room_w] + [w for w in (4.5, 3.0, 2.0, 1.2) if w < room_w]:
-                    span_z = ceiling_over(px, py, max_w / 2)
-                    ceiling_z = span_z if span_z is not None and (centre_z is None or span_z < centre_z) else centre_z
-                    fitted = fit(ceiling_z)
-                    if fitted is not None:
+                        return None
+                    if refit == fitted:
                         break
+                    fitted = refit
                 else:
                     return None
-                bottom, sign_h = fitted
                 return px, py, bottom, dirx, diry, ceiling_z, max_w, round(sign_h / SIGN_H, 3)
 
             # ~4 m from the junction (45% of short edges); slide along the edge if a low ceiling, a

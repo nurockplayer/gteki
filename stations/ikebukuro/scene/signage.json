@@ -3001,7 +3001,7 @@
     "x": -0.0,
     "y": -1.0
    },
-   "ceilingZ": 30.352,
+   "ceilingZ": 30.351,
    "exits": [],
    "gates": [
     {
@@ -4016,17 +4016,17 @@
    "id": "sign-c_s-c_s__sp_j",
    "atNode": "c_s",
    "position": {
-    "x": 22.726,
-    "y": 29.256,
-    "z": 30.345
+    "x": 23.466,
+    "y": 28.838,
+    "z": 30.3
    },
-   "maxWidthM": 4.22,
+   "maxWidthM": 6.0,
    "scale": 1.0,
    "facing": {
     "x": 0.4921,
     "y": 0.8706
    },
-   "ceilingZ": 30.635,
+   "ceilingZ": 30.59,
    "exits": [
     {
      "id": "exit-38",
