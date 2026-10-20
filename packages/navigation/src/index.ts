@@ -30,7 +30,7 @@ export interface RouteProfile {
   hours?: "warn_unknown" | "require_known";
   /** Station-local departure time. When given, edges whose known hours are closed are excluded. */
   at?: LocalTime;
-  /** ISO date "today" used to flag stale sources; omit for no staleness verdict. */
+  /** Station-local calendar day "YYYY-MM-DD" used to flag stale sources; omit (or pass a partial/invalid date) for no staleness verdict. */
   today?: string;
   /** Source datasetDate older than this (days before `today`) marks the route stale. Default 730. */
   staleAfterDays?: number;
@@ -75,8 +75,9 @@ export interface RouteResult {
   /** Sources the route depends on that have no datasetDate. */
   undatedSourceIds: string[];
   /**
-   * true when oldestSourceDate is older than staleAfterDays before profile.today; null when not evaluable
-   * (no `today`, or an undated dependency and no dated one already proves staleness).
+   * true when some source is older than staleAfterDays before profile.today even at the latest day its
+   * date allows ("2024" may mean 31 Dec 2024); false only when every source is recent even at its earliest
+   * day; null when not evaluable (no `today`, an undated dependency, or a year/month date straddling the cutoff).
    */
   stale: boolean | null;
   /** True when the route uses synthetic data: never present it as real directions. */

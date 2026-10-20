@@ -294,3 +294,38 @@ describe("coverage provenance (PR #15 Codex review)", () => {
     expect(errors(b)).toContain("coverage.source");
   });
 });
+
+describe("fifth GitHub review round (PR #15): canonical asset paths and ISO dates", () => {
+  const assetErrors = (uri: string) => {
+    const b = createSyntheticBundle();
+    b.assets = [{ id: "glb", uri, format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-geometry"] }];
+    return errors(b);
+  };
+
+  it("accepts only canonical slash-separated relative .glb paths", () => {
+    expect(assetErrors("assets/station.glb")).not.toContain("asset.uri");
+    for (const bad of ["./assets/station.glb", "assets/./station.glb", "assets//station.glb", "assets\\station.glb", "a:b.glb", "/abs.glb", "../x.glb", "assets/station.gltf"])
+      expect(assetErrors(bad), bad).toContain("asset.uri");
+  });
+
+  it("requires zero-padded YYYY-MM-DD evidence check dates", () => {
+    const b = createSyntheticBundle([edge("e", "start", "goal", { geometryEvidence: { ...ev, checkedDate: "2026-9-30" } })]);
+    expect(errors(b)).toContain("edge.evidence.date");
+    const hours = createSyntheticBundle([edge("e", "start", "goal", { hours: { kind: "always", evidence: { ...ev, checkedDate: "2026-02-30" } } })]);
+    expect(errors(hours)).toContain("edge.evidence.date");
+    const poi = createSyntheticBundle();
+    poi.pois[0]!.evidence = { ...poi.pois[0]!.evidence, checkedDate: "20261020" };
+    expect(errors(poi)).toContain("poi.evidence.date");
+    expect(errors(createSyntheticBundle())).toEqual([]);
+  });
+
+  it("allows a source to state only its year or month, but never a malformed date", () => {
+    const withDate = (datasetDate: string | null) => {
+      const b = createSyntheticBundle();
+      b.sources[0]!.datasetDate = datasetDate;
+      return errors(b);
+    };
+    for (const good of [null, "2023", "2022-01", "2026-09-17"]) expect(withDate(good), String(good)).not.toContain("source.date");
+    for (const bad of ["2022-1", "2022-13", "2026-02-29", "Sept 2025", "2026-09-17T00:00Z"]) expect(withDate(bad), bad).toContain("source.date");
+  });
+});

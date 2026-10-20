@@ -108,8 +108,9 @@ describe("third review round", () => {
       edge("st", "a", "upper", { mode: "stairs", lengthM: null, geometry: [{ x: 10, y: 0, z: null }, { x: 10, y: 0, z: null }] }),
     ]);
     expect(createRouter(b).route("start", "upper", base).ok).toBe(false);
-    b.edges[1]!.geometry = [{ x: 10, y: 0, z: 0 }, { x: 13, y: 0, z: 4 }];
-    expect(ok(createRouter(b).route("start", "upper", base)).steps[1]!.lengthM).toBeCloseTo(5);
+    // Endpoints on their nodes (a at x=10 z=0, upper at x=10 z=4): a 3-4-5 flight, then 3 m back along the landing.
+    b.edges[1]!.geometry = [{ x: 10, y: 0, z: 0 }, { x: 13, y: 0, z: 4 }, { x: 10, y: 0, z: 4 }];
+    expect(ok(createRouter(b).route("start", "upper", base)).steps[1]!.lengthM).toBeCloseTo(8);
   });
 
   it("counts a lift ride as time, not walking length", () => {
@@ -209,5 +210,134 @@ describe("hours evidence in provenance (PR #15 Codex review)", () => {
     const r = ok(createRouter(createSyntheticBundle([edge("x", "start", "goal", { hours: { kind: "always", evidence: hoursEvidence } })])).route("start", "goal", base));
     expect(r.evidenceCheckedDate).toBe("2030-01-01");
     expect(r.sourceIds).toContain("fixture-access");
+  });
+});
+
+describe("fifth GitHub review round (PR #15)", () => {
+  it("names the turn when leaving stairs into a corridor", () => {
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("st", "a", "upper", { mode: "stairs", lengthM: null, geometry: [{ x: 10, y: 0, z: 0 }, { x: 13, y: 0, z: 2 }, { x: 16, y: 0, z: 4 }, { x: 10, y: 0, z: 4 }] }),
+      edge("u-u2", "upper", "upper-2", { geometry: [{ x: 10, y: 0, z: 4 }, { x: 10, y: -10, z: 4 }, { x: 20, y: 0, z: 4 }] }),
+    ]);
+    // The flight climbs east and its landing walks back west; the corridor then leaves heading south: a left turn.
+    const route = ok(createRouter(b).route("start", "upper-2", base));
+    const kinds = describeRoute(b, route, "en").map((i) => i.kind);
+    expect(kinds).toContain("stairs");
+    expect(kinds[kinds.indexOf("stairs") + 1]).toBe("turn_left");
+  });
+
+  it("measures polylines from their nodes, as drawn, even when endpoints are displaced", () => {
+    const b = createSyntheticBundle([edge("p", "start", "goal", { lengthM: null, geometry: [{ x: 100, y: 0, z: 0 }, { x: 20, y: 0, z: 0 }] })]);
+    const r = ok(createRouter(b).route("start", "goal", base));
+    expect(r.totalLengthM).toBeCloseTo(20);
+  });
+});
+
+describe("headings across short connectors (PR #15 re-review)", () => {
+  const withNodes = (edges: Parameters<typeof createSyntheticBundle>[0], extra: { id: string; x: number; y: number }[]) => {
+    const b = createSyntheticBundle(edges);
+    const template = b.nodes.find((n) => n.id === "start")!;
+    for (const n of extra) b.nodes.push({ ...template, id: n.id, position: { x: n.x, y: n.y, z: 0 } });
+    return b;
+  };
+  const kinds = (b: ReturnType<typeof createSyntheticBundle>, to: string) => describeRoute(b, ok(createRouter(b).route("start", to, base)), "en").map((i) => i.kind);
+
+  it("a zero-length gate does not hide the turn after it", () => {
+    const b = withNodes([
+      edge("s-a", "start", "a"),
+      edge("g", "a", "a2", { mode: "gate" }),
+      edge("a2-n", "a2", "north"),
+    ], [{ id: "a2", x: 10, y: 0 }, { id: "north", x: 10, y: 10 }]);
+    expect(kinds(b, "north")).toEqual(["start", "walk", "gate", "turn_left", "arrive"]);
+  });
+
+  it("a few centimetres of gate offset never invents a turn", () => {
+    const b = withNodes([
+      edge("s-a", "start", "a"),
+      edge("g", "a", "a2", { mode: "gate" }),
+      edge("a2-e", "a2", "east"),
+    ], [{ id: "a2", x: 10, y: 0.05 }, { id: "east", x: 20, y: 0.05 }]);
+    expect(kinds(b, "east")).toEqual(["start", "walk", "gate", "walk", "arrive"]);
+  });
+
+  it("never looks through a lift ride to claim a turn", () => {
+    const b = withNodes([
+      edge("s-a", "start", "a"),
+      edge("lift", "a", "upper", { mode: "elevator", lengthM: null, geometry: [{ x: 10, y: 0, z: 0 }, { x: 10, y: 0, z: 4 }] }),
+      edge("u-n", "upper", "upper-n"),
+    ], []);
+    const un = b.nodes.find((n) => n.id === "upper")!;
+    b.nodes.push({ ...un, id: "upper-n", position: { x: 10, y: 10, z: 4 } });
+    const k = kinds(b, "upper-n");
+    expect(k[k.indexOf("elevator") + 1]).toBe("walk");
+  });
+});
+
+describe("staleness with year/month source dates (PR #15 re-review)", () => {
+  const staleWith = (dates: (string | null)[], today: string, staleAfterDays?: number) => {
+    const b = createSyntheticBundle();
+    b.sources.forEach((s, i) => { s.datasetDate = dates[i] ?? null; });
+    return ok(createRouter(b).route("start", "goal", { ...base, today, ...(staleAfterDays === undefined ? {} : { staleAfterDays }) })).stale;
+  };
+
+  it("keeps a year-only date UNKNOWN when the year straddles the cutoff", () => {
+    expect(staleWith(["2024", "2024"], "2026-01-02")).toBeNull();
+    expect(staleWith(["2023", "2024"], "2026-01-02")).toBe(true);
+    expect(staleWith(["2025", "2025"], "2026-01-02")).toBe(false);
+  });
+
+  it("treats a month-only date as that whole month", () => {
+    expect(staleWith(["2024-01", "2024-01"], "2026-01-15")).toBeNull();
+    expect(staleWith(["2023-12", "2026-01-01"], "2026-01-15")).toBe(true);
+    expect(staleWith(["2024-02", "2026-01-01"], "2026-01-15")).toBe(false);
+  });
+});
+
+describe("short connectors name a turn exactly once (PR #15 re-review 2)", () => {
+  const withNodes = (edges: Parameters<typeof createSyntheticBundle>[0], extra: { id: string; x: number; y: number; z?: number; floorId?: string }[]) => {
+    const b = createSyntheticBundle(edges);
+    const template = b.nodes.find((n) => n.id === "start")!;
+    for (const n of extra) b.nodes.push({ ...template, id: n.id, floorId: n.floorId ?? template.floorId, position: { x: n.x, y: n.y, z: n.z ?? 0 } });
+    return b;
+  };
+  const texts = (b: ReturnType<typeof createSyntheticBundle>, from: string, to: string) =>
+    describeRoute(b, ok(createRouter(b).route(from, to, base)), "en").map((i) => i.text);
+  const turns = (t: string[]) => t.filter((s) => /Turn (left|right)/.test(s)).length;
+
+  it("a zero-length gate carries no turn of its own; the turn is named once after it, in both directions", () => {
+    const b = withNodes([edge("s-a", "start", "a"), edge("g", "a", "a2", { mode: "gate" }), edge("a2-n", "a2", "north")],
+      [{ id: "a2", x: 10, y: 0 }, { id: "north", x: 10, y: 10 }]);
+    const fwd = texts(b, "start", "north");
+    expect(fwd).toEqual(["Start", "Go straight ~10 m", "Pass the ticket gate", "Turn left, ~10 m", "Arrive at destination"]);
+    expect(turns(texts(b, "north", "start"))).toBe(1);
+  });
+
+  it("two short steps in a row still give one turn", () => {
+    const b = withNodes([edge("s-a", "start", "a"), edge("t1", "a", "a2"), edge("t2", "a2", "a3"), edge("a3-n", "a3", "north")],
+      [{ id: "a2", x: 10.3, y: 0 }, { id: "a3", x: 10.3, y: 0.3 }, { id: "north", x: 10.3, y: 10 }]);
+    expect(turns(texts(b, "start", "north"))).toBe(1);
+  });
+
+  it("a lift offset by centimetres claims no turn into or out of it", () => {
+    const b = withNodes([
+      edge("s-a", "start", "a"),
+      edge("lift", "a", "up1", { mode: "elevator", lengthM: null, geometry: [{ x: 10, y: 0, z: 0 }, { x: 10, y: 0.05, z: 4 }] }),
+      edge("u-e", "up1", "up-e"),
+    ], [{ id: "up1", x: 10, y: 0.05, z: 4, floorId: "upper" }, { id: "up-e", x: 20, y: 0.05, z: 4, floorId: "upper" }]);
+    expect(turns(texts(b, "start", "up-e"))).toBe(0);
+  });
+});
+
+describe("staleness needs one real `today` (PR #15 re-review 2)", () => {
+  const staleOn = (today: string) => {
+    const b = createSyntheticBundle();
+    for (const s of b.sources) s.datasetDate = "2024-01-02";
+    return ok(createRouter(b).route("start", "goal", { ...base, today })).stale;
+  };
+  it("returns UNKNOWN for a partial or impossible today", () => {
+    for (const today of ["2026", "2026-01", "2026-13-01", "2026-00-01", "2026-02-30", "soon"]) expect(staleOn(today), today).toBeNull();
+    expect(staleOn("2026-01-01")).toBe(false);
+    expect(staleOn("2026-01-03")).toBe(true);
   });
 });

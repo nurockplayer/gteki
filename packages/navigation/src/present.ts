@@ -171,8 +171,31 @@ function stepHeading(points: PolylinePoint[], stepIndex: number, end: "start" | 
 }
 
 /** Signed heading change (degrees, + = right) from the end of step i-1 to the start of step i. */
-function turnDelta(points: PolylinePoint[], i: number): number | null {
-  const h0 = stepHeading(points, i - 1, "end");
+/** Steps shorter than this in plan (a co-located or offset gate line) carry no heading of their own. */
+const MIN_HEADING_STEP_M = 1;
+
+function stepPlanLength(points: PolylinePoint[], stepIndex: number): number {
+  let length = 0;
+  for (let k = 1; k < points.length; k++) {
+    if (points[k]!.stepIndex === stepIndex) length += Math.hypot(points[k]!.x - points[k - 1]!.x, points[k]!.y - points[k - 1]!.y);
+  }
+  return length;
+}
+
+/**
+ * Heading change at the junction before step i. A step too short to have a heading (a gate line, a
+ * sub-metre offset) gets no turn of its own; the turn is named once, at the junction after it, measured
+ * from the heading before it. So a short step neither hides a turn, invents one from centimetres of
+ * offset, nor repeats one. A lift ride is never looked through: its doors may face anywhere.
+ */
+function turnDelta(points: PolylinePoint[], steps: RouteResult["steps"], i: number): number | null {
+  const hasHeading = (k: number) => stepPlanLength(points, k) >= MIN_HEADING_STEP_M;
+  if (!hasHeading(i)) return null;
+  let h0: number | null = null;
+  for (let k = i - 1; k >= 0; k--) {
+    if (hasHeading(k)) { h0 = stepHeading(points, k, "end"); break; }
+    if (steps[k]!.mode === "elevator") break;
+  }
   const h1 = stepHeading(points, i, "start");
   return h0 === null || h1 === null ? null : ((h1 - h0 + 540) % 360) - 180;
 }
@@ -208,7 +231,7 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
       const sense3 = verticalSense(floors.get(step.fromFloorId), floors.get(step.toFloorId), from.position.z, to.position.z);
       const prev = out[out.length - 1]!;
       // A real turn between two flights is a decision point: never hide it inside one instruction.
-      const delta = i > 0 ? turnDelta(points, i) : null;
+      const delta = i > 0 ? turnDelta(points, route.steps, i) : null;
       const turnHere: "left" | "right" | "back" | null =
         delta === null ? null : Math.abs(delta) > 150 ? "back" : delta > VERTICAL_TURN_DEG ? "right" : delta < -VERTICAL_TURN_DEG ? "left" : null;
       const merging = prev.kind === kind && kind !== "gate" && turnHere === null && (lastSense === sense3 || lastSense === "level" || sense3 === "level");
@@ -246,8 +269,10 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     // Walking: start a new instruction when the heading turns at the junction.
     const prevStep = route.steps[i - 1];
     let turn: InstructionKind = "walk";
-    if (prevStep && !VERTICAL[prevStep.mode] && prevStep.mode !== "gate") {
-      const delta = turnDelta(points, i);
+    // Leaving a flight, lift or gate still needs its turn named: the connector's instruction only
+    // covers using it. A headingless lift ride yields no delta, so no turn is invented there.
+    if (prevStep) {
+      const delta = turnDelta(points, route.steps, i);
       if (delta !== null) {
         if (Math.abs(delta) > 150) turn = "u_turn";
         else if (delta > TURN_DEG) turn = "turn_right";

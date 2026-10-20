@@ -20,6 +20,20 @@ const POI_CATEGORIES = new Set(["exit", "ticket_gate", "platform", "elevator", "
 const WEEKDAYS = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
 /** Polyline endpoints further than this from their node are reported. */
 const ENDPOINT_TOLERANCE_M = 1;
+
+/** Zero-padded calendar date `YYYY-MM-DD`; dates are compared as strings, so the format is load-bearing. */
+export function isIsoDate(s: string): boolean {
+  return isIsoDatePrefix(s) && s.length === 10;
+}
+
+/** `YYYY`, `YYYY-MM` or `YYYY-MM-DD` (a source may only state its year or month); each part must be real. */
+export function isIsoDatePrefix(s: string): boolean {
+  const m = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/.exec(s);
+  if (!m) return false;
+  const [year, month, day] = [Number(m[1]), m[2] === undefined ? 1 : Number(m[2]), m[3] === undefined ? 1 : Number(m[3])];
+  const d = new Date(Date.UTC(year, month - 1, day));
+  return d.getUTCFullYear() === year && d.getUTCMonth() === month - 1 && d.getUTCDate() === day;
+}
 /** Known polyline endpoint heights must match known node heights; routing measures the polyline's climb. */
 const ENDPOINT_Z_TOLERANCE_M = 0.1;
 
@@ -51,6 +65,8 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (sourceIds.has(s.id)) err("source.dup", `duplicate source id`, s.id);
     sourceIds.add(s.id);
     if (s.usage !== undefined && s.usage !== "data" && s.usage !== "facts-only") err("source.usage", `unknown usage ${String(s.usage)}`, s.id);
+    if (s.datasetDate !== null && !isIsoDatePrefix(s.datasetDate)) err("source.date", `datasetDate ${s.datasetDate} is not YYYY, YYYY-MM or YYYY-MM-DD`, s.id);
+    if (typeof s.validUntil === "string" && !isIsoDatePrefix(s.validUntil)) err("source.date", `validUntil ${s.validUntil} is not YYYY, YYYY-MM or YYYY-MM-DD`, s.id);
     if (!b.station.synthetic && s.rights !== "REUSABLE_WITH_CONDITIONS" && s.usage !== "facts-only")
       warn("source.rights", `source rights ${s.rights}; must not feed published geometry/data (mark usage:"facts-only" if only cited as evidence)`, s.id);
   }
@@ -85,6 +101,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
   const checkEvidence = (e: Edge, ev: Edge["geometryEvidence"] | null, label: string) => {
     if (!ev) return;
     for (const s of ev.sourceIds) if (!sourceIds.has(s)) err("edge.evidence", `${label}: unknown source ${s}`, e.id);
+    if (!isIsoDate(ev.checkedDate)) err("edge.evidence.date", `${label}: checkedDate ${ev.checkedDate} is not YYYY-MM-DD`, e.id);
   };
   for (const e of b.edges) {
     if (edgeIds.has(e.id)) err("edge.dup", "duplicate edge id", e.id);
@@ -148,8 +165,10 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     assetIds.add(a.id);
     if (a.format !== "glb") err("asset.format", `unsupported asset format ${a.format}`, a.id);
     if (!ASSET_ROLES.has(a.role)) err("asset.role", `unknown asset role ${a.role}`, a.id);
-    if (/^[a-z][a-z0-9+.-]*:/i.test(a.uri) || a.uri.startsWith("/") || a.uri.split("/").includes(".."))
-      err("asset.uri", "asset uri must be a relative path inside the station folder", a.id);
+    // Canonical form only: the Web loader keys assets by their exact relative path and Godot refuses ":" and "\\".
+    if (a.uri.includes(":") || a.uri.includes("\\") || a.uri.startsWith("/") || a.uri.split("/").some((seg) => seg === "" || seg === "." || seg === ".."))
+      err("asset.uri", "asset uri must be a canonical slash-separated relative path inside the station folder (no ., .. or empty segments; no colon or backslash)", a.id);
+    else if (!a.uri.toLowerCase().endsWith(".glb")) err("asset.uri", "glb asset uri must end in .glb", a.id);
     if (a.transform !== undefined && (a.transform.length !== 16 || !a.transform.every(Number.isFinite)))
       err("asset.transform", "transform must be 16 finite numbers (column-major 4x4)", a.id);
     else if (a.transform !== undefined && (a.transform[3] !== 0 || a.transform[7] !== 0 || a.transform[11] !== 0 || a.transform[15] !== 1))
@@ -174,6 +193,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (p.names.length === 0) err("poi.name", "POI without a name", p.id);
     for (const c of p.connectorNodeIds) if (!nodeIds.has(c)) err("poi.connector", `unknown node ${c}`, p.id);
     for (const s of p.evidence.sourceIds) if (!sourceIds.has(s)) err("poi.evidence", `unknown source ${s}`, p.id);
+    if (!isIsoDate(p.evidence.checkedDate)) err("poi.evidence.date", `checkedDate ${p.evidence.checkedDate} is not YYYY-MM-DD`, p.id);
     if (p.connectorNodeIds.length === 0) warn("poi.unroutable", "POI has no verified connector; search-only", p.id);
   }
 
