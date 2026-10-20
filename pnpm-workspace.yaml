@@ -1,0 +1,5 @@
+packages:
+  - "packages/*"
+  - "stations/*"
+allowBuilds:
+  esbuild: true
