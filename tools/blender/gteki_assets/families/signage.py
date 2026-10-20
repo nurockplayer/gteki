@@ -322,7 +322,7 @@ def finish(asset, sharp_deg=35.0, collision=None):
             bmesh.ops.recalc_face_normals(bm, faces=isl)
         bm.normal_update()
         _fix_box_uvs(asset, part)
-        if part.bevel > 0:
+        if part.bevel > 0 and not part.low_detail:  # mobile: no bevels
             _bevel_part(part)
         for e in bm.edges:
             if len(e.link_faces) == 2:

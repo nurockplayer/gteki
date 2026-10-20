@@ -70,6 +70,89 @@ def local_matrix(node):
     return matrix, s, any(component < 0 for component in s)
 
 
+def texture_infos(material):
+    """Every textureInfo in a material, extension slots included: (path, info)."""
+    found = []
+
+    def walk(value, path):
+        if isinstance(value, dict):
+            if "index" in value and path and path[-1].endswith("Texture"):
+                found.append((".".join(path), value))
+            for key, child in value.items():
+                walk(child, path + [key])
+        elif isinstance(value, list):
+            for i, child in enumerate(value):
+                walk(child, path + [str(i)])
+
+    walk(material, [])
+    return found
+
+
+def effective_texcoord(info):
+    """KHR_texture_transform may override the UV set a texture samples."""
+    transform_ext = info.get("extensions", {}).get("KHR_texture_transform", {})
+    return transform_ext.get("texCoord", info.get("texCoord", 0))
+
+
+def _cross(o, a, b):
+    return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+
+def _area(poly):
+    """Signed (shoelace) area; positive when counter-clockwise."""
+    return 0.5 * sum(poly[i - 1][0] * poly[i][1] - poly[i][0] * poly[i - 1][1] for i in range(len(poly)))
+
+
+def _clip(subject, clipper):
+    """Sutherland-Hodgman intersection of two counter-clockwise convex polygons."""
+    out = subject
+    for i in range(len(clipper)):
+        a, b = clipper[i], clipper[(i + 1) % len(clipper)]
+        inp, out = out, []
+        for j in range(len(inp)):
+            p, q = inp[j], inp[(j + 1) % len(inp)]
+            dp, dq = _cross(a, b, p), _cross(a, b, q)
+            if dp > 0:
+                out.append(p)
+            if (dp > 0) != (dq > 0) and dp != dq:
+                t = dp / (dp - dq)
+                out.append((p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t))
+        if not out:
+            break
+    return out
+
+
+def uv_overlaps(tris, eps=1e-10):
+    """Index pairs of UV triangles that overlap by more than `eps` of the unit square.
+
+    Lightmap charts must not overlap; triangles that only share an edge or a vertex do not count."""
+    ccw = {}
+    for i, t in enumerate(tris):
+        a = _area(t)
+        if abs(a) > 1e-14:
+            ccw[i] = tuple(t) if a > 0 else tuple(t[::-1])
+    cell = 1 / 64
+    grid = {}
+    for i, t in ccw.items():
+        xs, ys = [p[0] for p in t], [p[1] for p in t]
+        for gx in range(math.floor(min(xs) / cell), math.floor(max(xs) / cell) + 1):
+            for gy in range(math.floor(min(ys) / cell), math.floor(max(ys) / cell) + 1):
+                grid.setdefault((gx, gy), []).append(i)
+    pairs = set()
+    tested = set()
+    for ids in grid.values():
+        for x in range(len(ids)):
+            for y in range(x + 1, len(ids)):
+                pair = (ids[x], ids[y])
+                if pair in tested:
+                    continue
+                tested.add(pair)
+                poly = _clip(ccw[pair[0]], ccw[pair[1]])
+                if len(poly) >= 3 and _area(poly) > eps:
+                    pairs.add(pair)
+    return sorted(pairs)
+
+
 def parse_glb(data):
     if len(data) < 20:
         raise ValueError("truncated GLB header/chunks")
@@ -265,6 +348,34 @@ class Validator:
         visited = set()
         collision_count = 0
 
+        checked_meshes = set()
+
+        def lightmap_overlap(node):
+            """TEXCOORD_1 is a lightmap: one UV space per mesh, shared by its primitives, without overlap."""
+            if node["mesh"] in checked_meshes:
+                return
+            checked_meshes.add(node["mesh"])
+            tris = []
+            for primitive in meshes[node["mesh"]].get("primitives", []):
+                if "TEXCOORD_1" not in primitive.get("attributes", {}) or primitive.get("mode", 4) != 4:
+                    continue
+                accessor = self.index(accessors, primitive["attributes"]["TEXCOORD_1"])
+                uv = read(accessor) if accessor.get("type") == "VEC2" else None
+                if uv is None:
+                    continue
+                if accessor["componentType"] != 5126:
+                    scale = {5121: 255, 5123: 65535}.get(accessor["componentType"], 1)
+                    uv = [(u / scale, v / scale) for u, v in uv]
+                order = ([v for (v,) in read(self.index(accessors, primitive["indices"]))]
+                         if "indices" in primitive else list(range(len(uv))))
+                if any(v >= len(uv) for v in order):
+                    continue  # reported by the index range check
+                tris += [tuple(uv[order[k + j]] for j in range(3)) for k in range(0, len(order) - 2, 3)]
+            overlapping = uv_overlaps(tris)
+            if overlapping:
+                self.message("FAIL", f"node {node.get('name')!r} lightmap UV (TEXCOORD_1) has "
+                             f"{len(overlapping)} overlapping triangle pairs")
+
         def visit(index, parent, inherited_collision=False):
             nonlocal collision_count
             node = self.index(nodes, index)
@@ -322,15 +433,15 @@ class Validator:
                             raise ValueError(f"invalid primitive mode {mode}")
                     if "material" in primitive:
                         material = self.index(materials, primitive["material"])
-                        pbr = material.get("pbrMetallicRoughness", {})
-                        infos = [pbr.get("baseColorTexture"), pbr.get("metallicRoughnessTexture")]
-                        infos += [material.get(k) for k in ("normalTexture", "occlusionTexture", "emissiveTexture")]
-                        for info in filter(None, infos):
-                            coord = info.get("texCoord", 0)
+                        # core slots and extension slots alike, with KHR_texture_transform overrides
+                        for slot, info in texture_infos(material):
+                            coord = effective_texcoord(info)
                             if (not isinstance(coord, int) or isinstance(coord, bool) or coord < 0
                                     or f"TEXCOORD_{coord}" not in primitive.get("attributes", {})):
-                                self.message("FAIL", f"material {material.get('name')!r} samples texCoord {coord!r}, "
+                                self.message("FAIL", f"material {material.get('name')!r} {slot} samples texCoord {coord!r}, "
                                              "which its primitive does not have")
+                if not collision:
+                    lightmap_overlap(node)
             for child in node.get("children", []):
                 visit(child, world, collision)
 
@@ -421,7 +532,31 @@ def self_test():
         for attr in attrs:
             textured["meshes"][0]["primitives"][0]["attributes"][attr] = 0
         assert Validator("tiny.glb", encode_glb(textured, binary)).check()["status"] == status, (coord, attrs)
-    print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs, texCoord")
+    # extension slots and KHR_texture_transform overrides are checked too
+    for info, status in ((dict(index=0, extensions=dict(KHR_texture_transform=dict(texCoord=2))), "FAIL"),
+                         (dict(index=0, texCoord=2, extensions=dict(KHR_texture_transform=dict(texCoord=0))), "PASS")):
+        textured = copy.deepcopy(doc)
+        textured["materials"][0]["pbrMetallicRoughness"] = dict(baseColorTexture=info)
+        textured["meshes"][0]["primitives"][0]["attributes"]["TEXCOORD_0"] = 0
+        assert Validator("tiny.glb", encode_glb(textured, binary)).check()["status"] == status, info
+    textured["materials"][0]["extensions"] = dict(KHR_materials_clearcoat=dict(clearcoatTexture=dict(index=0, texCoord=-1)))
+    assert Validator("tiny.glb", encode_glb(textured, binary)).check()["status"] == "FAIL"
+    # lightmap UVs (TEXCOORD_1) of one mesh must not overlap; touching charts are fine
+    for shift, status in ((0.5, "FAIL"), (1.0, "PASS")):
+        lm = copy.deepcopy(doc)
+        uv = struct.pack("<12f", 0, 0, 1, 0, 0, 1, shift, 0, shift + 1, 0, shift, 1)
+        data = struct.pack("<18f", *([-1, 0, 0, 1, 0, 0, 0, 1, -1] * 2)) + uv
+        lm["buffers"][0]["byteLength"] = len(data)
+        lm["bufferViews"] = [dict(buffer=0, byteLength=72), dict(buffer=0, byteOffset=72, byteLength=48)]
+        lm["accessors"] = [dict(bufferView=0, componentType=5126, count=6, type="VEC3", min=[-1, 0, -1], max=[1, 1, 0]),
+                           dict(bufferView=1, componentType=5126, count=6, type="VEC2")]
+        lm["meshes"].append(dict(primitives=[dict(attributes=dict(POSITION=0, TEXCOORD_1=1), material=0)]))
+        lm["meshes"][0]["primitives"][0]["attributes"]["POSITION"] = 0
+        lm["nodes"][1]["mesh"] = 1
+        lm["nodes"][0]["extras"]["gteki"]["triangles"] = 2
+        assert Validator("tiny.glb", encode_glb(lm, data)).check()["status"] == status, shift
+    print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs, "
+          "texCoord (core, extension, transform), lightmap overlap")
 
 
 def main():

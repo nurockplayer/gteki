@@ -33,7 +33,7 @@ Clones share geometry, materials and textures. Inside a bundle, a node name that
 
 ## Phones: the mobile tier
 
-`assets/library/mobile/` holds the same 48 assets built with `PROFILE=mobile`, with the same ids, params, sockets, collision and flap nodes. Compared with the full library it downloads 6.66 MiB instead of 21.03 MiB, draws 105 instead of 515 calls for one of each asset, and needs 51 MiB instead of 1153 MiB of estimated GPU texture memory. Colour-only materials share one kit palette (`gteki_palette`). Sign faces and posters keep their own textures. Every visual mesh has a lightmap UV (`TEXCOORD_1`) for baking. Pick the directory by quality tier, for example mobile for `quality: "low"`. Details are in [contract §8](asset-contract.md#8-build-profiles-full-and-mobile).
+`assets/library/mobile/` holds the same 48 assets built with `PROFILE=mobile`, with the same ids, params, sockets, collision and flap nodes. Compared with the full library it downloads 5.86 MiB instead of 21.03 MiB, draws 105 instead of 515 calls for one of each asset, and needs 51 MiB instead of 1153 MiB of estimated GPU texture memory. Colour-only materials share one kit palette (`gteki_palette`). Sign faces and posters keep their own textures. Every visual mesh has a lightmap UV (`TEXCOORD_1`) for baking. Pick the directory by quality tier, for example mobile for `quality: "low"`. Details are in [contract §8](asset-contract.md#8-build-profiles-full-and-mobile).
 
 Measured in your own scenes, on scratch copies of the station branches with probe placements only ([mobile-profile.md](mobile-profile.md#gate-cost-in-the-real-station-scenes)):
 

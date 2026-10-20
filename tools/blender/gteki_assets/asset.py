@@ -63,6 +63,16 @@ class Asset:
         self.shift = Vector((0.0, 0.0, 0.0))  # applied to everything at build time
         self.pivots = {}  # VIS group -> node origin (for runtime-animated parts)
 
+    def use_full_twin(self, twin):
+        """Mobile: take collision from the same asset generated at full detail, so colliders are
+        identical in both profiles. `twin` must come from the same generator and params; only its
+        collision bmesh is used (nothing is built)."""
+        for _, part in self.collision:
+            part.bm.free()
+        self.collision = twin.collision
+        for _, part in twin.parts:
+            part.bm.free()
+
     def mat_index(self, name):
         if name not in materials.SPECS:
             raise KeyError(f"unknown material {name}")
@@ -146,6 +156,7 @@ class Asset:
             self.export_materials = list(self.materials)
         bpy.context.view_layer.update()
 
+        col_objs = []
         for name, part in self.collision:
             me = bpy.data.meshes.new(f"{contract.COL}{name}{contract.COL_SUFFIX}")
             part.bm.to_mesh(me)
@@ -154,6 +165,7 @@ class Asset:
             coll.objects.link(o)
             o.parent = root
             o.display_type = "WIRE"
+            col_objs.append(o)
 
         for name, loc, yaw, extras in self.sockets:
             e = bpy.data.objects.new(f"{contract.SOCKET}{name}", None)
@@ -176,7 +188,9 @@ class Asset:
             coll.objects.link(e)
             e.parent = root
 
-        bounds = _gltf_bounds(vis_objs)
+        # mobile colliders come from the full-detail twin and may reach past the simplified
+        # visuals, so bounds_m covers them too (the full profile keeps its exact bytes)
+        bounds = _gltf_bounds(vis_objs + (col_objs if mobile else []))
         tris = sum(_tri_count(o) for o in vis_objs)
         meta = {
             "contract": contract.CONTRACT,
@@ -364,11 +378,40 @@ def _lightmap_uvs(obj):
     bpy.ops.mesh.select_all(action="SELECT")
     bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=0.01, area_weight=0.0,
                              correct_aspect=True, scale_to_bounds=True)
+    _separate_overlaps(me, "UVLightmap")  # lm is invalid once in edit mode
     bpy.ops.object.mode_set(mode="OBJECT")
     obj.select_set(False)
     me.uv_layers.active = base
     base.active_render = True
     _quantize_uvs(me)
+
+
+def _separate_overlaps(me, layer, attempts=4):
+    """Smart UV Project can fold a chart over itself. Detach every face that overlaps another
+    into its own chart and repack, until nothing overlaps (validate_glb checks the export)."""
+    from validate_glb import uv_overlaps  # stdlib; build.py puts tools/blender on sys.path
+
+    for _ in range(attempts):
+        bm = bmesh.from_edit_mesh(me)
+        uv = bm.loops.layers.uv[layer]
+        bm.faces.ensure_lookup_table()
+        tris, owner = [], []
+        for f in bm.faces:
+            loops = f.loops
+            for k in range(1, len(loops) - 1):
+                tris.append((tuple(loops[0][uv].uv), tuple(loops[k][uv].uv), tuple(loops[k + 1][uv].uv)))
+                owner.append(f.index)
+        bad = sorted({owner[i] for pair in uv_overlaps(tris) if owner[pair[0]] != owner[pair[1]] for i in pair})
+        if not bad:
+            return
+        for n, index in enumerate(bad):  # its own chart, outside the unit square until repacked
+            for loop in bm.faces[index].loops:
+                loop[uv].uv += Vector((2.0 + 2.0 * n, 0.0))
+        bmesh.update_edit_mesh(me)
+        bpy.ops.mesh.select_all(action="SELECT")
+        bpy.ops.uv.select_all(action="SELECT")
+        bpy.ops.uv.pack_islands(rotate=False, margin=0.01)
+    raise RuntimeError(f"{me.name}: lightmap UVs still overlap after {attempts} repacks")
 
 
 def _part_object(part, mats, coll):

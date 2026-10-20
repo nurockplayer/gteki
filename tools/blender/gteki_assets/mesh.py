@@ -233,7 +233,7 @@ class Part:
 
 
 def _simplify_polyline(pts, tol):
-    """Douglas-Peucker: drop points within `tol` of the chord; endpoints are kept."""
+    """Douglas-Peucker: drop points within `tol` of the chord segment; endpoints are kept."""
     if len(pts) < 3:
         return pts
     keep = [False] * len(pts)
@@ -247,7 +247,9 @@ def _simplify_polyline(pts, tol):
         for k in range(i + 1, j):
             ap = pts[k] - a
             if ab.length_squared > 1e-12:
-                d = (ap - ab * (ap.dot(ab) / ab.length_squared)).length
+                # distance to the segment, not the infinite line (an overshoot past b must stay)
+                t = min(1.0, max(0.0, ap.dot(ab) / ab.length_squared))
+                d = (ap - ab * t).length
             else:
                 d = ap.length
             if d > best:

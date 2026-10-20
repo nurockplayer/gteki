@@ -16,6 +16,7 @@ BLENDER=${BLENDER:-blender}
 CATALOG=${CATALOG:-$HERE/catalog/kit_v0_1.json}
 PROFILE=${PROFILE:-full}
 if [ "$PROFILE" = mobile ]; then OUT=${OUT:-$ROOT/assets/library/mobile}; else OUT=${OUT:-$ROOT/assets/library}; fi
+case "$OUT" in /*) ;; *) OUT=$PWD/$OUT ;; esac  # steps below change directory (web)
 TEX_RES=${TEX_RES:-1024}
 REPORTS=$HERE/out
 mkdir -p "$REPORTS"

@@ -101,13 +101,13 @@ python3 tools/blender/bundle_kit.py info --bundle kit.glb
 
 ## 8. Build profiles: `full` and `mobile`
 
-`--profile` (`PROFILE=` in `build.sh`) selects how the same catalog is exported. Both profiles produce the same asset ids, params, root `extras.gteki`, sockets, `COL_*-colonly` collision, `LIGHTHINT_*` empties and flap hinge nodes, so a scene can switch tier by switching library directory. Measurements and station guidance are in [mobile-profile.md](mobile-profile.md).
+`--profile` (`PROFILE=` in `build.sh`) selects how the same catalog is exported. Both profiles produce the same asset ids, params, sockets, `COL_*-colonly` collision, `LIGHTHINT_*` empties and flap hinge nodes, so a scene can switch tier by switching library directory. Root `extras.gteki` differs only in `profile`, `triangles` and `bounds_m`, which describes each tier's own visuals and colliders (mobile is within a few millimetres of full). Measurements and station guidance are in [mobile-profile.md](mobile-profile.md).
 
 - **`full`** (default) is everything in §1–§7: `assets/library/`.
 - **`mobile`** writes to `assets/library/mobile/` by default. The manifest has a top-level `"profile": "mobile"`; a manifest without it is `full`. Root extras carry `profile: "mobile"`.
   - Visual nodes: static `VIS_*` groups are merged into one `VIS_body`. Groups that have a pivot (gate flaps `VIS_flap_<aisle>_<L|R>`) stay separate nodes with the same names, origins and `flap_close_yaw_deg`.
   - Materials: every material without an image of its own is folded into the kit palette, `gteki_palette` (opaque) or `gteki_palette_blend` (alpha-blended glass). That is a 64×64 PNG with 4×4-texel swatches for albedo + alpha, ORM and emissive (`KHR_materials_emissive_strength` 4), sampled at the swatch centre with nearest filtering. The palette is identical in every mobile GLB, so a bundle stores it once. Materials with content images (sign faces, screens, posters) keep their `gteki_*` names and embed JPEG maps. `manifest.json` `materials` lists the exported names, and `textures` includes the palette plan.
-  - UVs: `TEXCOORD_0` for textures; `TEXCOORD_1` (`UVLightmap`) is a non-overlapping lightmap layout on every visual mesh. Every texture names its `texCoord` explicitly.
-  - Geometry: visual parts use about half the segments and no bevels. Collision geometry is the same as `full`.
-- Byte limits are per profile: `tools/blender/catalog/budget.json` for `full`, `budget_mobile.json` for `mobile`, each with `applies_to.profile`. The per-image rules and the texCoord check apply to every library.
+  - UVs: every texture samples `TEXCOORD_0` (`texCoord` omitted, glTF's default). `TEXCOORD_1` (`UVLightmap`) is a lightmap layout on every visual mesh, one UV space per mesh shared by its primitives, with no overlapping triangles; `validate_glb.py` fails an overlap.
+  - Geometry: visual parts use about half the segments and no bevels. Collision is byte-identical to `full`: the build generates a full-detail twin of each asset and keeps its colliders.
+- Byte limits are per profile: `tools/blender/catalog/budget.json` for `full`, `budget_mobile.json` for `mobile`, each with `applies_to.profile`. The per-image rules, the texCoord check (core and extension slots, `KHR_texture_transform` overrides) and the lightmap-overlap check apply to every library.
 

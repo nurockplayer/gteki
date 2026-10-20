@@ -98,6 +98,14 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
         t0 = time.time()
         try:
             asset = gen(aid, item.get("params", {}), args.tex_res)
+            if args.profile != "full":
+                # same generator at full detail (bmesh only): byte-identical colliders in every profile
+                Asset.profile = "full"
+                try:
+                    twin = gen(aid, item.get("params", {}), args.tex_res)
+                finally:
+                    Asset.profile = args.profile
+                asset.use_full_twin(twin)
             if item.get("dimension_basis"):
                 asset.dimension_basis = item["dimension_basis"]
             if item.get("notes"):

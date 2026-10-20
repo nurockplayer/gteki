@@ -2,7 +2,7 @@
 
 Updated 2026-10-21 · contract `gteki-asset/0.1` ([§8](asset-contract.md#8-build-profiles-full-and-mobile)) · lane: Issue #11.
 
-**Result:** `PROFILE=mobile` builds the same 48 assets, with the same ids, params, sockets, collision and flap hinges, into `assets/library/mobile/`. Compared with the full library, it downloads **6.66 MiB instead of 21.03 MiB**. It draws **105 instead of 515** calls for one of each asset and needs **51 MiB instead of 1153 MiB** of estimated GPU texture memory. Both tiers pass the same validator, texture-budget, Godot 48/48, Web 48/48 and reproducibility checks.
+**Result:** `PROFILE=mobile` builds the same 48 assets, with the same ids, params, sockets, collision and flap hinges, into `assets/library/mobile/`. Compared with the full library, it downloads **5.86 MiB instead of 21.03 MiB**. It draws **105 instead of 515** calls for one of each asset and needs **51 MiB instead of 1153 MiB** of estimated GPU texture memory. Both tiers pass the same validator, texture-budget, Godot 48/48, Web 48/48 and reproducibility checks.
 
 In the two station scenes, measured on scratch copies of their branches:
 
@@ -17,9 +17,9 @@ Where gates go, how many aisles they have, and how they look stay with each stat
 | --- | --- | --- |
 | Draws per asset | one per material per group | Static `VIS_*` groups merge into `VIS_body`. Pivoted groups (gate flaps) stay separate nodes, so they can still be animated |
 | Materials | `gteki_*` PBR, 1–3 JPEG maps each | Every colour-only material folds into one kit-wide palette. `gteki_palette` is opaque and `gteki_palette_blend` is glass: a 64×64 PNG with 4×4-texel swatches for albedo + alpha, ORM and emissive (strength 4). Each face's UV is the centre of its swatch, so mip levels never bleed. Content materials keep their own textures, as JPEG: sign faces (`gteki_sign_face_*`), screens and posters |
-| Geometry | full bevels and segments | Visual parts use half the segments (cylinders ≥ 8, tubes ≥ 6) and no bevels, and tube paths are Douglas–Peucker simplified. **Collision is unchanged** |
-| Lightmap UV | — | `UVLightmap` (glTF `TEXCOORD_1`) from Smart UV Project on every visual mesh, for stations that bake lighting (Ikebukuro does) |
-| Texture binding | implicit UV0 | Every texture is bound to UV0 by an explicit UV Map node. Without that node the exporter wrote `texCoord: -1` (invalid) or a nondeterministic `1`. `validate_glb.py` now fails any texture whose `texCoord` is not an int ≥ 0 naming an existing `TEXCOORD_n` |
+| Geometry | full bevels and segments | Visual parts use half the segments (cylinders ≥ 8, tubes ≥ 6) and no bevels, and tube paths are Douglas–Peucker simplified (distance to the chord segment, at half the tube radius). **Collision is byte-identical to full**: `build.py` generates each asset a second time at full detail (bmesh only) and keeps that twin's colliders. `bounds_m` covers the tier's own visuals and colliders, within 3.1 mm of full |
+| Lightmap UV | — | `UVLightmap` (glTF `TEXCOORD_1`) on every visual mesh, for stations that bake lighting (Ikebukuro does). Smart UV Project can fold a chart over itself (square columns, escalators), so every face that overlaps another is detached into its own chart and the layout is repacked. `validate_glb.py` fails any mesh whose UV1 triangles overlap |
+| Texture binding | implicit UV0 | Every texture is bound to UV0 by an explicit UV Map node in Blender, and exports with `texCoord` omitted (glTF's default, 0). Without that node the exporter wrote `texCoord: -1` (invalid) or a nondeterministic `1`. `validate_glb.py` now fails any texture, in a core or an extension slot, whose effective `texCoord` (including a `KHR_texture_transform` override) is not an int ≥ 0 naming an existing `TEXCOORD_n` |
 | Manifest | — | Top-level `"profile": "mobile"`; `materials` and `textures` list what was exported (palette plan included). The full manifest is byte-identical to before |
 
 Kept on purpose: sign-face text and posters. Mobile cannot read colour from vertex colours, because Godot 4.7 imports `COLOR_0` but never enables `vertex_color_use_as_albedo`; that is why the profile uses a palette texture instead. Lost on purpose: fine surface detail. Terrazzo, tile grout and brushed metal become flat colours.
@@ -30,35 +30,35 @@ Kept on purpose: sign-face text and posters. Mobile cannot read colour from vert
 
 | | Full | Mobile |
 | --- | ---: | ---: |
-| Download, 48 GLBs | 21.03 MiB | 6.66 MiB |
+| Download, 48 GLBs | 21.03 MiB | 5.86 MiB |
 | Draws, one of each asset | 515 | 105 |
-| Visual triangles | 198,623 | 75,935 |
+| Visual triangles | 198,623 | 64,736 |
 | GPU est., all 48 GLBs loaded once | 1153 MiB | 51 MiB |
 | Unique images | 60 | 19 |
-| Whole kit as one bundle (`--all`) | 10.37 MiB | 6.59 MiB |
+| Whole kit as one bundle (`--all`) | 10.37 MiB | 5.79 MiB |
 
 | Asset | KiB | Draws | Triangles |
 | --- | --- | --- | --- |
 | `gate_array_6w1` | 532 → 266 | 34 → 13 (12 flaps + body) | 9,562 → 3,214 |
-| `escalator_s600_r3500_down` | 1094 → 540 | 21 → 1 | 26,946 → 6,870 |
+| `escalator_s600_r3500_down` | 1094 → 541 | 21 → 1 | 26,946 → 6,870 |
 | `stairs_straight_w2400_r3000` | 1202 → 302 | 16 → 2 | 17,176 → 4,676 |
 | `passage_straight_w4_l6` | 933 → 48 | 10 → 1 | 1,216 → 432 |
 | `lift_portal_w1000` | 834 → 79 | 18 → 1 | 2,394 → 1,090 |
-| `bench_4seat` | 355 → 129 | 5 → 1 | 2,325 → 1,597 |
-| `sign_hanging_navy_left` | 82 → 89 | 5 → 3 | 1,054 → 839 |
-| `vending_machine` | 394 → 440 | 37 → 2 | 5,896 → 5,896 |
+| `bench_4seat` | 355 → 78 | 5 → 1 | 2,325 → 992 |
+| `sign_hanging_navy_left` | 82 → 60 | 5 → 3 | 1,054 → 324 |
+| `vending_machine` | 394 → 333 | 37 → 2 | 5,896 → 4,716 |
 
-Signs and the vending machine grow slightly. Their face textures are re-encoded as JPEG q88 (full uses the exporter's own JPEG setting), and each GLB also embeds the small PNG palette. Their draws still fall.
+Sign and screen faces keep their own textures (re-encoded as JPEG q88), so signs and the vending machine shrink least.
 
 Concourse demo (29 items), from `texture_budget.py --layout`:
 
 | Strategy | Full, download / GPU est. | Mobile, download / GPU est. |
 | --- | ---: | ---: |
-| per_instance | 10.78 / 666 MiB | 3.62 / 50 MiB |
-| per_asset | 6.19 / 319 MiB | 2.87 / 37 MiB |
-| bundle | 4.28 / 145 MiB | 2.86 / 36 MiB |
+| per_instance | 10.78 / 666 MiB | 3.02 / 50 MiB |
+| per_asset | 6.19 / 319 MiB | 2.34 / 37 MiB |
+| bundle | 4.28 / 145 MiB | 2.33 / 36 MiB |
 
-In three.js (`bench.html`, per_asset), the concourse draws **63 calls and 26.1k triangles on mobile, against 244 calls and 43.7k triangles on full**.
+The 29 placements hold 55.0k triangles on full and 24.2k on mobile. In three.js (`bench.html`, per_asset), the default view draws **63 calls on mobile against 244 on full**.
 
 ## Godot full ↔ mobile
 
@@ -122,10 +122,26 @@ for (const [mat, meshes] of byMat) {
     const id = bm.addInstance(gid.get(m.geometry));
     bm.setMatrixAt(id, m.matrixWorld);
     m.userData.batch = { bm, id };   // animate a flap: rotate its node, updateMatrixWorld(), setMatrixAt(id, …)
+    m.visible = false;               // the batch draws it now; keep the node for transforms
   }
   scene.add(bm);
 }
 ```
+
+## Independent review
+
+A fresh read-only Codex review of `f87559e` found one P1, six P2 and one P3. All are fixed in this branch:
+
+| # | Finding | Fix |
+| --- | --- | --- |
+| P1 | Mobile simplification shrank colliders derived from visual bounds (barrier rails ±0.070 → ±0.0666 m; the review found 3 assets, the follow-up check found the slat bench and, once bevels were skipped, the ticket kiosk) | Mobile builds take their colliders from a full-detail twin of the same asset. All 48 mobile GLBs now carry byte-identical collision positions, indices and transforms |
+| P2 | Props and signs bevel in bmesh, so "no bevels" missed them | The bmesh bevel is skipped on low-detail parts too (vending machine 5,896 → 4,716 triangles) |
+| P2 | UV1 charts overlapped in square columns and escalators | Overlapping faces get their own charts and the layout is repacked; the validator fails any UV1 overlap |
+| P2 | Douglas–Peucker measured distance to the infinite line | Distance to the chord segment |
+| P2 | Extension texture slots and `KHR_texture_transform.texCoord` escaped the texCoord rule | Every textureInfo in a material is checked at its effective `texCoord`; self-tests cover both |
+| P2 | A relative `OUT` broke `build.sh web` | `OUT` is made absolute |
+| P2 | The BatchedMesh recipe left the source meshes drawing | The recipe hides each source mesh |
+| P3 | §8 said `texCoord` is explicit; the export omits the default 0 | §8 states the effective binding |
 
 ## Commands
 
