@@ -16,7 +16,9 @@ export interface DiscoveredStation {
   assets: string[];
 }
 
-const ASSET_EXT = /\.(glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|ogg|mp3|m4a)$/i;
+const ASSET_EXT = /\.(glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|ogg|mp3|m4a|json)$/i;
+/** The contract files are loaded as data, not served as assets. */
+const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json"]);
 
 /**
  * Asset files under `dir`, following symlinks only when they resolve inside `fence`
@@ -30,7 +32,8 @@ function walk(dir: string, fence: string, base = dir, depth = 0): string[] {
     if (real !== fence && !real.startsWith(fence + path.sep)) return [];
     const stat = fs.statSync(full);
     if (stat.isDirectory()) return walk(full, fence, base, depth + 1);
-    return ASSET_EXT.test(name) ? [path.relative(base, full).split(path.sep).join("/")] : [];
+    const rel = path.relative(base, full).split(path.sep).join("/");
+    return ASSET_EXT.test(name) && !CONTRACT_FILES.has(rel) ? [rel] : [];
   });
 }
 
@@ -55,8 +58,21 @@ const RESOLVED = "\0" + VIRTUAL;
 
 export function gtekiStations(roots: string[]): Plugin {
   const fsPath = (p: string) => JSON.stringify(p.split(path.sep).join("/"));
+  let serve = false;
+  /**
+   * Dev: a direct /@fs URL of the file's current real path, recomputed on every load, so assets that
+   * move (e.g. symlink → real folder) never resolve through a stale cached `?url` module.
+   * Build: `?url` so Vite fingerprints and emits the file.
+   */
+  const assetLoader = (file: string) =>
+    serve
+      ? `() => Promise.resolve(${JSON.stringify("/@fs" + fs.realpathSync(file).split(path.sep).join("/"))})`
+      : `() => import(${fsPath(file)} + "?url").then((m) => m.default)`;
   return {
     name: "gteki-stations",
+    configResolved(config) {
+      serve = config.command === "serve";
+    },
     resolveId(id) {
       return id === VIRTUAL ? RESOLVED : null;
     },
@@ -66,7 +82,7 @@ export function gtekiStations(roots: string[]): Plugin {
       const lines = ["export const stations = ["];
       for (const s of stations) {
         const f = (name: string) => fsPath(path.join(s.gtekiDir, name));
-        const assets = s.assets.map((a) => `${JSON.stringify(a)}: () => import(${fsPath(path.join(s.gtekiDir, a))} + "?url").then((m) => m.default)`);
+        const assets = s.assets.map((a) => `${JSON.stringify(a)}: ${assetLoader(path.join(s.gtekiDir, a))}`);
         lines.push(`  {
     dir: ${JSON.stringify(s.dir)},
     manifest: () => import(${f("station.json")}).then((m) => m.default),

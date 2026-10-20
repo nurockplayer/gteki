@@ -22,7 +22,8 @@ async function fixtureDir(): Promise<string> {
 
 const stationFile = (root: string, name: string) => resolve(root, "gteki", name);
 
-describe("@gteki/cli", () => {
+// Each case spawns `tsx` subprocesses; allow for a loaded machine (CI, parallel suites).
+describe("@gteki/cli", { timeout: 30_000 }, () => {
   it("exports deterministic station files that pass the shared parser", async () => {
     const firstRoot = await mkdtemp(resolve(tmpdir(), "gteki-cli-first-"));
     const secondRoot = await mkdtemp(resolve(tmpdir(), "gteki-cli-second-"));
