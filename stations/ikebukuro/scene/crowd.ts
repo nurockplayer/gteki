@@ -143,16 +143,20 @@ export function buildCrowd(
   // Camera position as last rendered (onBeforeRender gives the camera without any API change);
   // pedestrians that would fill the lens are hidden instead of blocking the view.
   const cam = new THREE.Vector3(1e9, 0, 0);
-  const camFwd = new THREE.Vector3(0, 0, -1);
+  const frustum = new THREE.Frustum(), viewProj = new THREE.Matrix4();
   parts[0].mesh.onBeforeRender = (_r, _s, camera) => {
     cam.setFromMatrixPosition(camera.matrixWorld);
-    camFwd.set(0, 0, -1).transformDirection(camera.matrixWorld);
+    frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
   };
   // A fixed head-count spread over every verified passage is ~1 person per 30 m on phones. Instead,
   // people far from the camera and out of its view step back in on a passage 12-40 m away, still
   // out of view, so the crowd stays around the player without drawing more of them.
   const FAR_M = 50, SPAWN_MIN_M = 12, SPAWN_MAX_M = 40, MAX_MOVES_PER_FRAME = 2;
-  const inView = (dx: number, dy: number, dz: number, d: number) => (dx * camFwd.x + dy * camFwd.y + dz * camFwd.z) / d > 0.3;
+  // The camera's actual view volume, padded by a body-sized sphere (any aspect ratio or FOV).
+  const body = new THREE.Sphere(new THREE.Vector3(), 1.2);
+  // The pad grows ~7° with distance: the view used is the last rendered one, a frame behind a fast turn.
+  const inView = (p: THREE_NS.Vector3) =>
+    frustum.intersectsSphere(body.set(body.center.set(p.x, p.y + 0.9, p.z), 1.2 + 0.12 * p.distanceTo(cam)));
   function relocate(a: Agent): boolean {
     for (let attempt = 0; attempt < 8; attempt++) {
       let r = rand() * total, k = 0;
@@ -160,7 +164,7 @@ export function buildCrowd(
       sample(paths[k], r);
       const dx = pos.x - cam.x, dy = pos.y + 1.1 - cam.y, dz = pos.z - cam.z;
       const d = Math.hypot(dx, dy, dz);
-      if (d < SPAWN_MIN_M || d > SPAWN_MAX_M || Math.abs(dy) > 6 || inView(dx, dy, dz, d)) continue;
+      if (d < SPAWN_MIN_M || d > SPAWN_MAX_M || Math.abs(dy) > 6 || inView(pos)) continue;
       a.path = k;
       a.s = Math.min(paths[k].length, r);
       a.forward = rand() < 0.5;
@@ -188,7 +192,7 @@ export function buildCrowd(
         sample(paths[a.path], a.s);
         const dx = pos.x - cam.x, dy = pos.y + 1.1 - cam.y, dz = pos.z - cam.z;
         const d = Math.hypot(dx, dy, dz);
-        if (d > FAR_M && !inView(dx, dy, dz, d) && relocate(a)) moves++;
+        if (d > FAR_M && !inView(pos) && relocate(a)) moves++;
       }
       let p = paths[a.path];
       a.s += (a.forward ? 1 : -1) * a.speed * dt;
@@ -201,12 +205,24 @@ export function buildCrowd(
           a.forward = !a.forward;
           a.s = Math.min(p.length, Math.max(0, a.s));
         } else if (next === a.path) {
-          // Dead end = an exit stair top: this person leaves; someone else enters at another exit.
-          const enter = deadEnds[Math.floor(rand() * deadEnds.length)];
-          a.path = enter.path;
-          p = paths[enter.path];
-          a.forward = enter.forward;
-          a.s = a.forward ? 0 : p.length;
+          // Dead end = an exit stair top: this person leaves; someone else enters at another exit,
+          // one out of view. With every exit in view, they turn back instead.
+          let enter: (typeof deadEnds)[number] | null = null;
+          for (let attempt = 0; attempt < 6 && !enter; attempt++) {
+            const e = deadEnds[Math.floor(rand() * deadEnds.length)];
+            const q = paths[e.path];
+            sample(q, e.forward ? 0 : q.length);
+            if (cam.x > 1e8 || !inView(pos)) enter = e;
+          }
+          if (enter) {
+            a.path = enter.path;
+            p = paths[enter.path];
+            a.forward = enter.forward;
+            a.s = a.forward ? 0 : p.length;
+          } else {
+            a.forward = !a.forward;
+            a.s = Math.min(p.length, Math.max(0, a.s));
+          }
         } else {
           a.path = next;
           p = paths[next];
