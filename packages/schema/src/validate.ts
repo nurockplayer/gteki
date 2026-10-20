@@ -18,6 +18,7 @@ const GEOMETRY_Z = new Set(["measured", "source", "symbolic"]);
 const ASSET_ROLES = new Set(["visual", "collision", "visual+collision"]);
 const POI_CATEGORIES = new Set(["exit", "ticket_gate", "platform", "elevator", "escalator", "stairs", "toilet", "shop", "locker", "atm", "service", "transfer", "other"]);
 const WEEKDAYS = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
+const RIGHTS = new Set(["REUSABLE_WITH_CONDITIONS", "REFERENCE_ONLY", "RESTRICTED", "UNVERIFIED"]);
 /** Polyline endpoints further than this from their node are reported. */
 const ENDPOINT_TOLERANCE_M = 1;
 
@@ -65,6 +66,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (sourceIds.has(s.id)) err("source.dup", `duplicate source id`, s.id);
     sourceIds.add(s.id);
     if (s.usage !== undefined && s.usage !== "data" && s.usage !== "facts-only") err("source.usage", `unknown usage ${String(s.usage)}`, s.id);
+    if (!RIGHTS.has(s.rights)) err("source.rights.value", `unknown rights ${String(s.rights)}`, s.id);
     if (s.datasetDate !== null && !isIsoDatePrefix(s.datasetDate)) err("source.date", `datasetDate ${s.datasetDate} is not YYYY, YYYY-MM or YYYY-MM-DD`, s.id);
     if (typeof s.validUntil === "string" && !isIsoDatePrefix(s.validUntil)) err("source.date", `validUntil ${s.validUntil} is not YYYY, YYYY-MM or YYYY-MM-DD`, s.id);
     if (!b.station.synthetic && s.rights !== "REUSABLE_WITH_CONDITIONS" && s.usage !== "facts-only")
@@ -116,8 +118,13 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (e.verification === "verified" && !e.accessEvidence)
       warn("edge.access", "verified edge without access evidence; access facts are UNKNOWN", e.id);
     checkEvidence(e, e.geometryEvidence, "geometryEvidence");
-    for (const s of e.geometryEvidence.sourceIds)
+    // Geometry is a derivative of its sources: like assets, it ships publicly only from reusable ones.
+    for (const s of e.geometryEvidence.sourceIds) {
+      const rights = sourceRights.get(s);
       if (factsOnly.has(s)) err("edge.geometry.rights", `polyline geometry cites facts-only source ${s}; geometry would be a derivative`, e.id);
+      else if (rights !== undefined && rights !== "REUSABLE_WITH_CONDITIONS" && !b.station.synthetic)
+        err("edge.geometry.rights", `edge geometry derives from source ${s} with rights ${rights}; it cannot ship in the public bundle`, e.id);
+    }
     checkEvidence(e, e.accessEvidence, "accessEvidence");
     if (e.hours) checkEvidence(e, e.hours.evidence, "hours.evidence");
     if (e.crossesFareBoundary === true && e.paid === false)
@@ -181,7 +188,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       if (!sourceIds.has(s)) err("asset.source", `unknown source ${s}`, a.id);
       if (factsOnly.has(s)) err("asset.rights", `asset derives from facts-only source ${s}`, a.id);
       const rights = sourceRights.get(s);
-      if (rights && rights !== "REUSABLE_WITH_CONDITIONS" && !b.station.synthetic)
+      if (rights !== undefined && rights !== "REUSABLE_WITH_CONDITIONS" && !b.station.synthetic)
         err("asset.rights", `asset derives from source ${s} with rights ${rights}; it cannot ship in the public bundle`, a.id);
     }
     if (a.sourceIds.length === 0 && !b.station.synthetic) err("asset.source", "asset without source provenance", a.id);

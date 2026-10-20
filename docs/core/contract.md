@@ -39,12 +39,13 @@ stations/<id>/gteki/
 | `closed: true` / query closures never route | router |
 | Step-free requires `wheelchair === true` and `steps !== true` (unknown excluded) | router |
 | `unpaid_only` excludes edges whose paid/crossing state isn't `false` | router |
+| `unpaid_only` also rejects origin/destination POIs whose `paid` isn't `false` (`routeBetween`) | navigation |
 | Unknown hours: default `warn_unknown` (routes, reported as `unknowns: hours`, UI shows “hours unverified”); `require_known` excludes. Known windows are evaluated at `profile.at` (station-local) | router |
 | Floor change on a walk/gate edge: ERROR for same-operator non-adjacent/unordered floors; WARNING at landings (intermediate), adjacent ordinals or inter-operator transfers | validate |
 | Fare crossing outside a `gate` edge, bidirectional escalators → warnings | validate |
 | Operator floors are never equated by label (`B1` ≠ `B1`); optional `Floor.displayNames` (ja/en, station-authored) are display-only and `sourceLabels` stay exact | schema, tests |
 | `Source.usage: "facts-only"`: may evidence facts; may not feed edge geometry or assets | validate |
-| Assets derived from non-`REUSABLE_WITH_CONDITIONS` sources are rejected for public bundles | validate |
+| Assets and edge geometry derived from non-`REUSABLE_WITH_CONDITIONS` sources are rejected for public bundles | validate |
 | Asset `uri` must be relative, inside the station folder; symlinks are followed only inside it; a GLB's external buffers/images must resolve through the station's asset map (web) or are refused (Godot) | validate, plugin, explorer, godot |
 | Symbolic polyline z (`geometryZ: "symbolic"`) never affects length or cost | router |
 | `Source.validUntil` is the end of the source's declared *data* validity: once passed, dependent routes are stale and list it in `expiredSourceIds`. A provider's publication/availability period or licence term is not `validUntil`; it goes in source `notes` and coverage gaps | router |
