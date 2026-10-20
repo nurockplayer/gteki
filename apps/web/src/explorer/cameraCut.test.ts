@@ -5,12 +5,16 @@ import { CameraCut, injectCut } from "./cameraCut.ts";
 const builtIn = (name: "basic" | "standard") => ({ vertexShader: THREE.ShaderLib[name].vertexShader, fragmentShader: THREE.ShaderLib[name].fragmentShader, uniforms: {} as Record<string, THREE.IUniform> });
 
 describe("camera see-through cut", () => {
-  it("splices a view-space capsule discard into built-in materials", () => {
-    for (const name of ["basic", "standard"] as const) {
-      const shader = builtIn(name);
-      expect(injectCut(shader, new CameraCut().uniforms)).toBe(true);
+  it("splices a view-space capsule discard into every built-in mesh material", () => {
+    for (const name of ["basic", "lambert", "phong", "standard", "physical", "toon", "matcap", "normal", "depth", "distance", "shadow", "points"] as const) {
+      const lib = THREE.ShaderLib[name]!;
+      const shader = { vertexShader: lib.vertexShader, fragmentShader: lib.fragmentShader, uniforms: {} as Record<string, THREE.IUniform> };
+      expect(injectCut(shader, new CameraCut().uniforms), name).toBe(true);
       expect(shader.vertexShader).toContain("gtekiViewPos = mvPosition.xyz;");
-      expect(shader.fragmentShader).toContain("discard;");
+      // Declared once, before main, and the discard opens main.
+      expect(shader.fragmentShader.split("uniform vec4 gtekiCutRadii;").length, name).toBe(2);
+      expect(shader.fragmentShader.indexOf("uniform vec4 gtekiCutRadii;")).toBeLessThan(shader.fragmentShader.indexOf("void main"));
+      expect(shader.fragmentShader).toMatch(/void main\(\) \{\s*if \(gtekiCutRadii\.y > 0\.0\)/);
       expect(Object.keys(shader.uniforms)).toEqual(["gtekiCutEnd", "gtekiCutRadii"]);
     }
   });
@@ -71,6 +75,45 @@ describe("camera see-through cut", () => {
     clone.onBeforeCompile(shader as unknown as THREE.WebGLProgramParametersWithUniforms, {} as THREE.WebGLRenderer);
     expect(calls).toEqual(["shared"]);
     expect(shader.fragmentShader).toContain("gtekiCutRadii");
+  });
+
+  it("carries the scene's per-render hook onto a copy", () => {
+    const shared = new THREE.MeshBasicMaterial();
+    const seen: THREE.Material[] = [];
+    shared.onBeforeRender = function (this: THREE.Material) { seen.push(this); };
+    const root = new THREE.Group();
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(), shared), sign = new THREE.Mesh(new THREE.BoxGeometry(), shared);
+    root.add(wall, sign);
+    new CameraCut().apply(root, [sign]);
+    const copy = sign.material as THREE.Material;
+    copy.onBeforeRender({} as THREE.WebGLRenderer, new THREE.Scene(), new THREE.Camera(), new THREE.BufferGeometry(), sign, new THREE.Group());
+    expect(seen).toEqual([copy]);
+  });
+
+  it("clear restores scene materials, so a reused material is never cut twice or left cut", () => {
+    const mat = new THREE.MeshBasicMaterial();
+    const sceneHook = mat.onBeforeCompile, sceneKey = mat.customProgramCacheKey();
+    const cut = new CameraCut();
+    // Station A: the material is sign-only and patched in place.
+    const a = new THREE.Group(), signA = new THREE.Mesh(new THREE.BoxGeometry(), mat);
+    a.add(signA);
+    cut.apply(a, [signA]);
+    expect(mat.customProgramCacheKey()).toContain("gteki-camera-cut");
+    cut.clear();
+    expect(mat.onBeforeCompile).toBe(sceneHook);
+    expect(mat.customProgramCacheKey()).toBe(sceneKey);
+    // Station B reuses it for a wall and a sign: the wall stays solid, the sign's copy is cut exactly once.
+    const b = new THREE.Group(), wall = new THREE.Mesh(new THREE.BoxGeometry(), mat), signB = new THREE.Mesh(new THREE.BoxGeometry(), mat);
+    b.add(wall, signB);
+    cut.apply(b, [signB]);
+    expect(mat.customProgramCacheKey()).toBe(sceneKey);
+    const copy = signB.material as THREE.Material;
+    const shader = builtIn("basic");
+    copy.onBeforeCompile(shader as unknown as THREE.WebGLProgramParametersWithUniforms, {} as THREE.WebGLRenderer);
+    expect(shader.fragmentShader.split("uniform vec4 gtekiCutRadii;").length).toBe(2);
+    // Clearing puts the scene's own material back on the sign.
+    cut.clear();
+    expect(signB.material).toBe(mat);
   });
 
   it("puts the capsule end at the head in view space and disables it in overview", () => {

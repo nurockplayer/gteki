@@ -20,9 +20,12 @@ export class CameraCut {
     /** (inner, outer) metres at the camera end, then at the head end: fully cut inside inner, untouched beyond outer. All 0 disables the cut. */
     gtekiCutRadii: { value: new THREE.Vector4(0, 0, 0, 0) },
   };
-  private readonly patched = new WeakSet<THREE.Material>();
+  /** Patched materials and the hooks they had before, restored on clear (a scene may reuse its materials). */
+  private readonly patched = new Map<THREE.Material, Hooks>();
   /** Copies made where a material is shared with meshes that must stay solid; owned (and disposed) here. */
   private clones: THREE.Material[] = [];
+  /** Meshes whose material was swapped for a copy, with what they drew before. */
+  private swaps: [THREE.Mesh, THREE.Material | THREE.Material[]][] = [];
 
   /**
    * Patch the materials of `meshes`. A material also drawn by a mesh outside `meshes` (anywhere under `root`)
@@ -40,17 +43,18 @@ export class CameraCut {
         if (!solid.has(mat)) return this.patch(mat);
         let copy = copies.get(mat);
         if (!copy) {
-          // Material.clone() drops shader hooks; the scene's own customisation must survive on the copy.
+          // Material.clone() drops hooks; the scene's own (never an earlier cut's) must survive on the copy.
           const fresh = mat.clone();
-          fresh.onBeforeCompile = mat.onBeforeCompile;
-          fresh.customProgramCacheKey = mat.customProgramCacheKey;
+          Object.assign(fresh, this.patched.get(mat) ?? hooksOf(mat));
           copy = this.patch(fresh);
           copies.set(mat, copy);
           this.clones.push(copy);
         }
         return copy;
       };
-      (mesh as THREE.Mesh).material = Array.isArray(m) ? m.map(own) : own(m);
+      const next = Array.isArray(m) ? m.map(own) : own(m);
+      if (Array.isArray(m) ? m.some((x, i) => x !== (next as THREE.Material[])[i]) : next !== m) this.swaps.push([mesh as THREE.Mesh, m]);
+      (mesh as THREE.Mesh).material = next;
     }
   }
 
@@ -61,17 +65,22 @@ export class CameraCut {
     else this.uniforms.gtekiCutRadii.value.set(0, 0, 0, 0);
   }
 
-  /** Drop clones; patched scene materials go with the scene that owns them. */
+  /** Undo everything apply did: scene meshes and materials get their own state back, copies are disposed. */
   clear(): void {
+    for (const [mesh, material] of this.swaps) mesh.material = material;
+    for (const [mat, hooks] of this.patched) { Object.assign(mat, hooks); mat.needsUpdate = true; }
     for (const m of this.clones) m.dispose();
+    this.swaps = [];
+    this.patched.clear();
     this.clones = [];
   }
 
   private patch(mat: THREE.Material): THREE.Material {
     if (this.patched.has(mat)) return mat;
-    this.patched.add(mat);
-    const prev = mat.onBeforeCompile;
-    const prevKey = mat.customProgramCacheKey;
+    const hooks = hooksOf(mat);
+    this.patched.set(mat, hooks);
+    const prev = hooks.onBeforeCompile;
+    const prevKey = hooks.customProgramCacheKey;
     mat.onBeforeCompile = (shader, renderer) => {
       prev.call(mat, shader, renderer);
       injectCut(shader, this.uniforms);
@@ -92,25 +101,33 @@ export class CameraCut {
 const CUT_AT_CAMERA = [0.6, 1.0] as const;
 const CUT_AT_HEAD = [0.35, 0.6] as const;
 
+type Hooks = Pick<THREE.Material, "onBeforeCompile" | "customProgramCacheKey" | "onBeforeRender">;
+
+/** Own or inherited hook functions, captured so they can be restored or carried onto a copy. */
+function hooksOf(mat: THREE.Material): Hooks {
+  return { onBeforeCompile: mat.onBeforeCompile, customProgramCacheKey: mat.customProgramCacheKey, onBeforeRender: mat.onBeforeRender };
+}
+
 function materialsOf(o: THREE.Object3D): THREE.Material[] {
   const m = (o as THREE.Mesh).material;
   return Array.isArray(m) ? m : m ? [m] : [];
 }
 
 /**
- * Splice the cut into a built-in material's shaders. Custom shaders without three's standard chunks are left
- * untouched (they stay solid rather than half-patched).
+ * Splice the cut into a material's shaders: every built-in mesh material (three's vertex `<project_vertex>` chunk
+ * gives the view-space position). Shaders without that chunk are left untouched (solid rather than half-patched).
  */
 export function injectCut(shader: { vertexShader: string; fragmentShader: string; uniforms: Record<string, THREE.IUniform> }, uniforms: CameraCut["uniforms"]): boolean {
   const vs = shader.vertexShader, fs = shader.fragmentShader;
-  if (!vs.includes("#include <common>") || !vs.includes("#include <project_vertex>") || !fs.includes("#include <common>") || !fs.includes("#include <clipping_planes_fragment>")) return false;
+  if (!vs.includes("#include <project_vertex>") || !MAIN.test(vs) || !MAIN.test(fs)) return false;
   Object.assign(shader.uniforms, uniforms);
   shader.vertexShader = vs
-    .replace("#include <common>", "#include <common>\nvarying vec3 gtekiViewPos;")
+    .replace(MAIN, "varying vec3 gtekiViewPos;\n$&")
     .replace("#include <project_vertex>", "#include <project_vertex>\ngtekiViewPos = mvPosition.xyz;");
-  shader.fragmentShader = fs
-    .replace("#include <common>", "#include <common>\nvarying vec3 gtekiViewPos;\nuniform vec3 gtekiCutEnd;\nuniform vec4 gtekiCutRadii;")
-    .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>
+  shader.fragmentShader = fs.replace(MAIN, `varying vec3 gtekiViewPos;
+uniform vec3 gtekiCutEnd;
+uniform vec4 gtekiCutRadii;
+$&
 if (gtekiCutRadii.y > 0.0) {
   // Distance to the segment camera (view origin) → head; dithered between the inner and outer radius there.
   float gtekiT = clamp(dot(gtekiViewPos, gtekiCutEnd) / max(dot(gtekiCutEnd, gtekiCutEnd), 1e-6), 0.0, 1.0);
@@ -121,3 +138,5 @@ if (gtekiCutRadii.y > 0.0) {
 }`);
   return true;
 }
+
+const MAIN = /void\s+main\s*\(\s*(void)?\s*\)\s*\{/;
