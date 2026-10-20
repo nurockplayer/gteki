@@ -16,7 +16,8 @@ Owner-approved: product name GTEki; browser-first searchable 3D station explorat
 4. `docs/research/source-register.md`
 5. `docs/acceptance.md`
 6. `docs/parallel-station-plan.md`
-7. [Notion Research & World Bible](https://app.notion.com/p/3ffd7d8b390781568122c2dae6005de2)
+7. `docs/six-lane-handoff.md` — cross-lane ownership and evidence contract
+8. [Notion Research & World Bible](https://app.notion.com/p/3ffd7d8b390781568122c2dae6005de2)
 
 ## Open work items
 
@@ -26,6 +27,13 @@ Owner-approved: product name GTEki; browser-first searchable 3D station explorat
 - [#4 Search to 3D guided route](https://github.com/nurockplayer/gteki/issues/4)
 - [#5 Shinjuku partial import and coverage](https://github.com/nurockplayer/gteki/issues/5)
 - [#6 Final acceptance, Godot and public-data review](https://github.com/nurockplayer/gteki/issues/6)
+- [#10 GIS data ingestion factory](https://github.com/nurockplayer/gteki/issues/10)
+- [#11 Reusable Blender asset factory](https://github.com/nurockplayer/gteki/issues/11)
+- [#12 Automated playability and visual review](https://github.com/nurockplayer/gteki/issues/12)
+
+## Six parallel delivery lanes — Owner decision, 2026-10-20
+
+The Owner adopts **two station Opus 5.5 leads + four independent support lanes**: shared core (Sol xHigh preferred; one writer), GIS (Codex), Blender assets (Codex), and automated gameplay/visual QA (Codex; Astra High when verifiably available). The stations remain autonomous in their art and implementation choices. File ownership, integration contract, workload isolation, and evidence handoff are specified in [six-lane-handoff.md](six-lane-handoff.md). This does **not** imply the six sessions are started or that any quality gate is passed. Keep the quality-first, no-deadline, L2-then-expand / eventual L3 intent.
 
 ## Next actions
 
