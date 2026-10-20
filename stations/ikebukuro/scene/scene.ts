@@ -84,6 +84,66 @@ function splitPortals(THREE: ThreeNS, mesh: THREE_NS.Mesh) {
   return { sky: make(sky, false), beyond: make(beyond, true) };
 }
 
+/** Door triangles in world space, minus every door panel (connected by shared vertices) a route segment
+ * crosses at walking height. */
+function solidDoors(THREE: ThreeNS, mesh: THREE_NS.Mesh, routes: THREE_NS.Vector3[][]): THREE_NS.BufferGeometry {
+  mesh.updateWorldMatrix(true, false);
+  const g = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry;
+  const src = g.attributes.position;
+  const v = new THREE.Vector3();
+  const arr: number[] = [];
+  for (let i = 0; i < src.count; i++) {
+    v.fromBufferAttribute(src, i).applyMatrix4(mesh.matrixWorld);
+    arr.push(v.x, v.y, v.z);
+  }
+  if (g !== mesh.geometry) g.dispose();
+  const tris = arr.length / 9;
+  const parent = Array.from({ length: tris }, (_, i) => i);
+  const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+  const owner = new Map<string, number>();
+  for (let t = 0; t < tris; t++) {
+    for (let k = 0; k < 3; k++) {
+      const o = t * 9 + k * 3;
+      const key = `${arr[o].toFixed(2)},${arr[o + 1].toFixed(2)},${arr[o + 2].toFixed(2)}`;
+      const prev = owner.get(key);
+      if (prev === undefined) owner.set(key, t);
+      else parent[find(t)] = find(prev);
+    }
+  }
+  // 2D (x, z) segment intersection, inclusive.
+  const cross = (ax: number, az: number, bx: number, bz: number, cx: number, cz: number, dx: number, dz: number) => {
+    const den = (bx - ax) * (dz - cz) - (bz - az) * (dx - cx);
+    if (Math.abs(den) < 1e-9) return false;
+    const t = ((cx - ax) * (dz - cz) - (cz - az) * (dx - cx)) / den;
+    const u = ((cx - ax) * (bz - az) - (cz - az) * (bx - ax)) / den;
+    return t >= 0 && t <= 1 && u >= 0 && u <= 1;
+  };
+  const open = new Set<number>();
+  for (let t = 0; t < tris; t++) {
+    const r = find(t);
+    if (open.has(r)) continue;
+    const o = t * 9;
+    const ylo = Math.min(arr[o + 1], arr[o + 4], arr[o + 7]);
+    const yhi = Math.max(arr[o + 1], arr[o + 4], arr[o + 7]);
+    for (const [a, b] of routes) {
+      const y = (a.y + b.y) / 2;
+      if (y + 1.8 < ylo || y + 0.1 > yhi) continue; // the triangle spans no body height on this segment
+      if ([0, 1, 2].some((k) => {
+        const p = o + k * 3, q = o + ((k + 1) % 3) * 3;
+        return cross(a.x, a.z, b.x, b.z, arr[p], arr[p + 2], arr[q], arr[q + 2]);
+      })) {
+        open.add(r);
+        break;
+      }
+    }
+  }
+  const out: number[] = [];
+  for (let t = 0; t < tris; t++) if (!open.has(find(t))) out.push(...arr.slice(t * 9, t * 9 + 9));
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(out, 3));
+  return geo;
+}
+
 /** Per-vertex (bottom, top) height of the opening each triangle belongs to (connected by shared vertices). */
 function openingBands(arr: number[]): number[] {
   const tris = arr.length / 9;
@@ -161,6 +221,9 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const walkable: THREE_NS.Object3D[] = [];
   const colliders: THREE_NS.Object3D[] = [];
   const extra: THREE_NS.Mesh[] = [];
+  const routeSegments = (graph as { edges: { verification: string; geometry: { x: number; y: number; z: number }[] }[] }).edges
+    .filter((e) => e.verification === "verified")
+    .flatMap((e) => e.geometry.slice(1).map((b, i) => [toRenderer(e.geometry[i].x, e.geometry[i].y, e.geometry[i].z), toRenderer(b.x, b.y, b.z)]));
   gltf.scene.traverse((o) => {
     const m = o as THREE_NS.Mesh;
     if (!m.isMesh) return;
@@ -180,6 +243,15 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     if (role === "floor" || role === "stairs_ramps") walkable.push(m);
     // Ceilings too: walker side-rays (0.45/1.25 m) never reach them, but they keep the follow camera inside.
     if (role === "wall" || role === "barriers" || role === "transport" || role === "ceiling") colliders.push(m);
+    if (role === "doors") {
+      // Most doors are shopfronts onto unmodelled rooms and must be solid. A door a verified route
+      // passes through, such as an exit's doors, stays open.
+      const solid = new THREE.Mesh(solidDoors(THREE, m, routeSegments), mats.byRole.portal_beyond);
+      solid.visible = false;
+      solid.userData.gteki_role = "doors_solid";
+      colliders.push(solid);
+      extra.push(solid);
+    }
     m.matrixAutoUpdate = false;
   });
   root.add(gltf.scene, ...extra);
