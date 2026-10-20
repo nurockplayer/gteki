@@ -44,10 +44,11 @@ describe("station geometry lifetime", () => {
     const result = JSON.parse(stdout);
     expect(result.retired).toBeGreaterThan(30_000); // exercise the real PLATEAU and station merges
     expect(result.retained).toBe(0);
-    expect(result.live).toBe(133);
-    expect(result.bytes).toBe(10_903_570);
-    // 5d43dc3, with both ownership fixes disabled: the same 133 geometries,
-    // attribute/index bytes, transforms, visibility and instance matrices.
-    expect(result.geometryHash).toBe("dc9b451096abd3957b4bf1b54a38da58001fc08eb83fcef8dd87562ca64add8d");
+    expect(result.live).toBe(135);
+    expect(result.bytes).toBe(11_570_910);
+    // df6fb7e (adds the fare/access fences), with both ownership fixes disabled: the same 135
+    // geometries, attribute/index bytes, transforms, visibility and instance matrices
+    // (17,340 retired sources were still retained there). Update together with any geometry change.
+    expect(result.geometryHash).toBe("bd0f0f068c3f5152d5fc05a38d2692d2e2cf120cc14265c8dd63ff5659abf82c");
   }, 60_000);
 });
