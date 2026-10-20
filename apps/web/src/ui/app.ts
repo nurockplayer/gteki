@@ -538,7 +538,15 @@ export class App {
     const net = el("button", "ghost", t.graphOverlay);
     let netOn = false;
     net.addEventListener("click", () => { netOn = !netOn; this.explorer.setGraphOverlay(netOn); net.classList.toggle("on", netOn); });
-    row.append(fp, net, ov);
+    const snd = el("button", "ghost", this.explorer.audioMuted ? t.soundOff : t.soundOn);
+    snd.setAttribute("aria-pressed", String(!this.explorer.audioMuted));
+    snd.addEventListener("click", () => {
+      const muted = !this.explorer.audioMuted;
+      this.explorer.setMuted(muted);
+      snd.textContent = muted ? t.soundOff : t.soundOn;
+      snd.setAttribute("aria-pressed", String(!muted));
+    });
+    row.append(fp, net, ov, snd);
     hud.append(row);
   }
 
@@ -607,6 +615,7 @@ export class App {
       avatar: () => this.explorer.avatarEnu,
       sceneInfo: () => this.explorer.sceneInfo(),
       phase: () => this.explorer.phase,
+      audio: () => this.explorer.audioInfo(),
       walkFromNode: (nodeId: string) => (this.s.loaded ? this.explorer.walkFromNode(this.s.loaded.bundle, nodeId) : false),
       simulate: (seconds: number, keys: string[] = []) => this.explorer.simulate(seconds, keys),
     };

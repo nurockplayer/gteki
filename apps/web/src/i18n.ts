@@ -31,6 +31,8 @@ const STRINGS = {
     speed: "速度",
     firstPerson: "一人称",
     graphOverlay: "経路網",
+    soundOn: "音声オン",
+    soundOff: "音声オフ",
     arrived: "目的地に到着しました",
     noRoute: "表示できる確認済みルートがありません",
     noRouteWhy: {
@@ -94,6 +96,8 @@ const STRINGS = {
     speed: "Speed",
     firstPerson: "First person",
     graphOverlay: "Network",
+    soundOn: "Sound on",
+    soundOff: "Sound off",
     arrived: "You have arrived",
     noRoute: "No verified route to show",
     noRouteWhy: {

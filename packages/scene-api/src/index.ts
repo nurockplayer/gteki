@@ -65,7 +65,10 @@ export interface SceneContext {
   enuToRenderer(p: { x: number; y: number; z: number }): [number, number, number];
   /** Resolve a path relative to stations/<id>/gteki/ to a loadable URL (bundled by the explorer). */
   assetUrl(uri: string): string | null;
-  /** Load a GLB from the station folder via the explorer's GLTFLoader (Draco/Meshopt/KTX2 ready). */
+  /**
+   * Load a GLB from the station folder via the explorer's GLTFLoader (Meshopt supported; Draco/KTX2
+   * not configured yet). External buffers/images must resolve inside the station folder.
+   */
   loadGlb(uri: string): Promise<GLTF>;
   /**
    * Load a texture from the station folder (e.g. a baked lightmap). Color textures get sRGB;
@@ -75,6 +78,12 @@ export interface SceneContext {
   loadTexture(uri: string, opts?: { colorSpace?: "srgb" | "linear"; flipY?: boolean }): Promise<THREE.Texture>;
   quality: "low" | "high";
   renderer: THREE.WebGLRenderer;
+  /**
+   * Optional host-owned audio. The explorer creates the context (resumed on the first user gesture)
+   * and a master gain with a mute toggle; connect station sound to `destination`, never to
+   * `context.destination`. Absent (e.g. no WebAudio) = stay silent.
+   */
+  audio?: { context: AudioContext; destination: AudioNode };
 }
 
 export type BuildScene = (ctx: SceneContext) => StationScene | Promise<StationScene>;
