@@ -4016,17 +4016,17 @@
    "id": "sign-c_s-c_s__sp_j",
    "atNode": "c_s",
    "position": {
-    "x": 23.466,
-    "y": 28.838,
-    "z": 30.3
+    "x": 22.726,
+    "y": 29.256,
+    "z": 30.345
    },
-   "maxWidthM": 6.0,
+   "maxWidthM": 4.22,
    "scale": 1.0,
    "facing": {
     "x": 0.4921,
     "y": 0.8706
    },
-   "ceilingZ": 30.59,
+   "ceilingZ": 30.635,
    "exits": [
     {
      "id": "exit-38",

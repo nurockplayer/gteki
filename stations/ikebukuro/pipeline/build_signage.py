@@ -124,10 +124,15 @@ def lowest_ceiling(ceil, ax, ay, bx, by, above):
                     mx, my = ax + dx * tm, ay + dy * tm
                     if not _inside(mx, my, outer) or any(_inside(mx, my, h) for h in holes):
                         continue
-                    for t in (t0, t1):  # a plane is linear along the segment: its minimum is at an end
-                        z = (d - nx * (ax + dx * t) - ny * (ay + dy * t)) / nz
-                        if z > above and (best is None or z < best):
-                            best = z
+                    # A plane is linear along the segment, so its minimum is at an end. A slope that
+                    # crosses `above` reaches down to it inside the piece.
+                    z0, z1 = ((d - nx * (ax + dx * t) - ny * (ay + dy * t)) / nz for t in (t0, t1))
+                    lo, hi = min(z0, z1), max(z0, z1)
+                    if hi <= above:
+                        continue
+                    z = lo if lo > above else above
+                    if best is None or z < best:
+                        best = z
     return None if best is None else round(best, 3)
 
 
@@ -255,10 +260,10 @@ def main():
                 if fitted is None:
                     return None
                 # Walls are found within the panel's height band, and the band depends on the ceiling over
-                # the panel's final span: settle both together. Centring always starts from the edge point.
-                for _ in range(4):
-                    bottom, sign_h = fitted
-                    zlo, zhi = bottom, bottom + sign_h
+                # the panel's final span. Walls are checked over every band tried so far, which only grows,
+                # so the loop settles once the fitted band lies inside it. Centring starts from the edge point.
+                zlo, zhi = fitted[0], fitted[0] + fitted[1]
+                for _ in range(6):
                     dr = wall_hit(segs, sgrid, x0, y0, rx, ry, zlo, zhi)
                     dl = wall_hit(segs, sgrid, x0, y0, -rx, -ry, zlo, zhi)
                     if dl + dr < 2 * MAX_SIGN_W:  # bounded passage: centre between its walls
@@ -282,9 +287,10 @@ def main():
                             break
                     else:
                         return None
-                    if refit == fitted:
+                    bottom, sign_h = refit
+                    if zlo <= bottom and bottom + sign_h <= zhi:
                         break
-                    fitted = refit
+                    zlo, zhi = min(zlo, bottom), max(zhi, bottom + sign_h)
                 else:
                     return None
                 return px, py, bottom, dirx, diry, ceiling_z, max_w, round(sign_h / SIGN_H, 3)
