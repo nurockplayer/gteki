@@ -459,7 +459,7 @@ function renderRoutePanel() {
   if (!route) return;
   $("route").classList.remove("hidden");
   $("route-dist").textContent = `${Math.round(route.totalLengthM)} m`;
-  $("route-eta").textContent = `約 ${Math.max(1, Math.round(route.estimatedSeconds / 60))} 分 · ${route.floorChanges} 回の階移動${route.crossesFareBoundary ? " · 改札通過" : ""}`;
+  $("route-eta").textContent = `約 ${Math.max(1, Math.round(route.estimatedSeconds / 60))} 分 · ${route.floorChanges} 回の階移動${route.crossesFareBoundary === true ? " · 改札通過" : route.crossesFareBoundary === null ? " · 改札通過 不明" : ""}`;
   const ol = $("steps");
   ol.innerHTML = "";
   maneuvers.forEach((m, i) => {

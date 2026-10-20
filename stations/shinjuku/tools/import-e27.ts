@@ -36,6 +36,7 @@ import {
   type StationBundle,
   type Tri,
 } from "@gteki/schema";
+import { floorLabel } from "../app/src/narrate.ts";
 import { loadRawE27, normId, pointInPolygon, RAW_DIR, type GeoFeature, type PolyG, type RawSpaceP } from "./e27-raw.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -307,6 +308,11 @@ const floors: Floor[] = floorOrdinals.map((o) => {
     renderElevationM: round(H.get(o)!, 2),
   };
 });
+// Display names (UI wording only; the same rule as the lane app's floor labels).
+for (const f of floors) {
+  const l = floorLabel(f);
+  if (f.ordinal !== null) f.displayNames = [{ lang: "ja", text: l.ja }, { lang: "en", text: l.en }];
+}
 const floorById = new Map(floors.map((f) => [f.id, f]));
 
 // ---------------------------------------------------------------- node render heights (chains interpolate)

@@ -221,7 +221,6 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     for (const r of lv.railings) {
       glassGeos.push(wallQuad(r.a, r.b, r.z + 0.08, r.z + 1.05));
       railGeos.push(boxAlong(v3({ ...r.a, z: r.z + 1.08 }), v3({ ...r.b, z: r.z + 1.08 }), 0.06, 0.05));
-      propWalls.push({ a: r.a, b: r.b, zMin: r.z - 0.1, zMax: r.z + 1.1, side: 1, kind: "wall" });
     }
     const gg = merged(glassGeos);
     if (gg) g.add(new THREE.Mesh(track(gg), mat.glass));
@@ -464,7 +463,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
           ic.translate(c.x + gl.dir.x * 0.55 * end, gl.center.z + 0.995, -(c.y + gl.dir.y * 0.55 * end));
           (end > 0 ? icGeos : okGeos).push(ic);
         }
-        propWalls.push({ a: { x: c.x - gl.dir.x * 0.75, y: c.y - gl.dir.y * 0.75 }, b: { x: c.x + gl.dir.x * 0.75, y: c.y + gl.dir.y * 0.75 }, zMin: gl.center.z - 0.1, zMax: gl.center.z + 1.0, side: 1, kind: "wall" });
+        propWalls.push({ a: { x: c.x - gl.dir.x * 0.75, y: c.y - gl.dir.y * 0.75 }, b: { x: c.x + gl.dir.x * 0.75, y: c.y + gl.dir.y * 0.75 }, zMin: gl.center.z - 0.1, zMax: gl.center.z + 1.0, side: 1, kind: "wall", bodyMin: gl.center.z - 0.5 });
       }
     }
     for (const [geos, m] of [
@@ -504,7 +503,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       sign.position.copy(v3({ ...c, z: z + 2.0 }));
       sign.lookAt(v3({ x: c.x - u.x, y: c.y - u.y, z: z + 2.0 }));
       root.add(sign);
-      propWalls.push({ a: { x: c.x + -u.y * 1.6, y: c.y + u.x * 1.6 }, b: { x: c.x - -u.y * 1.6, y: c.y - u.x * 1.6 }, zMin: z - 0.2, zMax: z + 2.6, side: 1, kind: "wall" });
+      propWalls.push({ a: { x: c.x + -u.y * 1.6, y: c.y + u.x * 1.6 }, b: { x: c.x - -u.y * 1.6, y: c.y - u.x * 1.6 }, zMin: z - 0.2, zMax: z + 2.6, side: 1, kind: "wall", bodyMin: z - 0.5 });
     }
   }
 
@@ -650,7 +649,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
           panels.push(boxAlong(P(at(s, 0.06), z + 0.65), P(at(p1, 0.06), z + 0.65), 0.16, 1.3));
           caps.push(boxAlong(P(at(s, 0.06), z + 1.31), P(at(p1, 0.06), z + 1.31), 0.2, 0.04));
           leaves.push({ s: p1 + doorW * 0.25, dir: -1 }, { s: p1 + doorW * 0.75, dir: 1 });
-          propWalls.push({ a: at(s, 0.02), b: at(s + module, 0.02), zMin: z - 0.1, zMax: z + 1.35, side: 1, kind: "wall" });
+          propWalls.push({ a: at(s, 0.02), b: at(s + module, 0.02), zMin: z - 0.1, zMax: z + 1.35, side: 1, kind: "wall", bodyMin: z - 0.5 });
         }
         add(merged(panels), mat.psd);
         add(merged(caps), mat.accent);

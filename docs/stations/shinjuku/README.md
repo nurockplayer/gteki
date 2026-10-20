@@ -41,18 +41,31 @@ To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downlo
 - **Verified against the data itself** (documented in the importer header):
   - `route_type` 5/6 are swapped relative to the 2024 spec text. Mode is therefore taken from the containing GSI space category (B021 stairs / B023 escalator).
   - Fare area comes from the GSI `toll` attribute (spatial join, then propagation). It is validated so that the only paid↔free transitions are links next to published ticket-gate points (F106). Result: 0 anomalies.
-- **Importer output:** 233 nodes, 263 edges, 16 POIs and 9 floors. There are 5 gate links in 3 gate clusters, and 6 exits matched to F108 points within 6 m. Shared validator result: 0 errors and 2 warnings, both walk edges across landing levels that come straight from the source.
+- **Importer output:** 233 nodes, 263 edges, 16 POIs and 9 floors (with ja/en display names). There are 5 gate links in 3 gate clusters. Each of the 6 exits is matched to a GSI F108 point **on an equivalent floor** (an in/out node within 6 m preferred); an exit with no same-floor match would stay unroutable. Shared validator result: 0 errors and 2 warnings, both walk edges across landing levels that come straight from the source.
+- **Facility labels follow the GSI code list.** F003 is 「トイレ（男女共用）」 (unisex). No multipurpose/accessible capability is claimed for it.
 
 ## G1 — geometry and collision: **PASS (bounded)** · GAP (heights)
 
-- **Geometry.** Floors, walls, rooms, voids and railings come from GSI CAD space polygons. Stairs and escalators are placed along their source links. Collision is analytic (slab polygons, run ramps, wall segments with height bands, 0.45 m step-up). Tests check that every graph node has ground under it and that walk edges are walkable.
+- **Geometry.** Floors, walls, rooms, voids and railings come from GSI CAD space polygons. Stairs and escalators are placed along their source links. Collision is analytic (slab polygons, run ramps, wall segments with height bands, 0.45 m step-up).
+- **Headless play test (main G1 evidence).** Tests require:
+  - ground under every non-elevator node (0 misses);
+  - all 263 edges walkable, ending at the destination's height (0 failures);
+  - a guided walker that arrives on **every routable POI pair**, under both the ticketed and step-free profiles, at the destination height (±0.35 m).
+- **Checked in-browser** in the lane app, with railings, gates and platform doors in collision: B1 gate area → exit 2 over the stacked switchback, and platform → exit 1.
 - **Heights are symbolic.** The source publishes no z. Level heights come from a least-squares fit of run lengths (30° escalators, stair rise ratio 0.5). Every floor has `elevationM: null`, and every node has `position.z: null` plus a display-only `renderZ`. The HUD says 「推定 … m · est.」.
+- **Stacked switchbacks.** The source puts every landing of a multi-flight stair on one floor. For display only, the importer spreads the rise over the flight chain by flight length (`plan.heightModel.landingSpread`), so flights do not render flat or overlap each other. Floor ids and routing are unchanged. Narration still says 「階段を進む」 without a direction for these flights, because the source gives none.
 - **Platform.** The B6 edges follow the real curved platform outline (a polyline per edge, smoothed from the trackside walls).
 
 ## G2 — routing: **PASS (E27 graph)** · GAP (facts not in the source)
 
 - **Routing engine.** One shared router (Lane C core) serves both the lane app and the shared explorer. Fare profiles (`ticketed` / unpaid-only) and step-free are supported. Hours default to `warn_unknown`, and every route shows 「営業時間 未確認 · Hours unverified」. The strict `require_known` profile fails closed (tested).
-- **Checked in-browser:** platform → exit 1 is 194 m with 4 floor changes in the shared explorer, using guided auto-walk and free walk.
+- **Shared explorer (Lane C, core 3d867a4):** platform → exit 1 is ok, 194 m, 4 floor changes, `crossesFareBoundary: true`, unknowns = [hours]. This was verified by Lane C read-only on Shinjuku's contract files.
+- **"Here" routing in the lane app** attaches the player only to a node that is:
+  - in line of sight,
+  - within 15 m,
+  - at the same height (±0.6 m),
+  - on the same fare side.
+  Otherwise the app asks the user to pick a start point.
 - **Unknown, never asserted:**
   - opening hours;
   - which platform side serves which direction;
@@ -82,7 +95,7 @@ Still needed for L2 (not claimed): an independent visual/interaction review (Lan
 
 ## G4 — delivery: **HOLD**
 
-Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --check`, which reproduces byte-identical files from hashed inputs. A fresh read-only Codex review was run, and its findings are tracked in the PR. Still open: an exact-SHA QA pass by Lane F, the Owner decision on PDL expiry, and Owner merge approval.
+Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --check`, which reproduces byte-identical files from hashed inputs. A fresh read-only Codex review raised 15 findings (14 confirmed, 1 plausible). All are fixed; the PR lists each one. Still open: an exact-SHA QA pass by Lane F, the Owner decision on PDL expiry, and Owner merge approval.
 
 ## Coverage gaps (field work needed)
 
@@ -105,6 +118,7 @@ Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --ch
 - **Signs.** GTEki's own design and pictograms. No operator sign graphics are copied.
 - **Commuters.** Invented ambient agents walking real graph routes. They are not crowd or occupancy data.
 - **Heights.** Symbolic (see G1). Visual stair and escalator pitch follows the symbolic level heights.
+- **Flat stair links.** Stairs/escalator links whose two ends render at the same height are shown as flat walkways.
 
 ## Godot path
 

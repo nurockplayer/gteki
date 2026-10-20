@@ -72,6 +72,8 @@ export interface WallSeg {
   kind: "wall" | "room" | "toilet" | "office" | "elevator" | "trackside";
   /** Bodies whose feet are above this height pass (level walls don't block people on landings/runs above). */
   bodyMax?: number;
+  /** Bodies whose feet are below this height pass (a stair running under the floor a prop stands on). */
+  bodyMin?: number;
 }
 
 export interface Railing {
@@ -141,6 +143,11 @@ export function pointInRing(p: XY, ring: XY[]): boolean {
   }
   return inside;
 }
+/** Collision for void-edge railings: block people on that level only. */
+export function railingWalls(layout: Layout): WallSeg[] {
+  return layout.levels.flatMap((lv) => lv.railings.map((r): WallSeg => ({ a: r.a, b: r.b, zMin: r.z - 0.1, zMax: r.z + 1.1, side: 1, kind: "wall", bodyMin: r.z - 0.5, bodyMax: r.z + 1.0 })));
+}
+
 export function pointInRings(p: XY, rings: XY[][]): boolean {
   if (!rings[0] || !pointInRing(p, rings[0])) return false;
   for (let i = 1; i < rings.length; i++) if (pointInRing(p, rings[i]!)) return false;
@@ -551,6 +558,7 @@ export class WalkWorld {
     }
     for (const lv of layout.levels) for (const w of lv.walls) this.addWall(w);
     for (const w of layout.runWalls) this.addWall(w);
+    for (const w of railingWalls(layout)) this.addWall(w);
     for (const st of layout.linkStrips) this.addSlab(st);
     for (const st of layout.streetPads) this.addSlab(st);
   }
@@ -656,7 +664,7 @@ export class WalkWorld {
             if (seen.has(i)) continue;
             seen.add(i);
             const w = this.walls[i]!;
-            if (z + 1.7 < w.zMin || z + 0.3 > w.zMax || (w.bodyMax !== undefined && z > w.bodyMax)) continue;
+            if (z + 1.7 < w.zMin || z + 0.3 > w.zMax || (w.bodyMax !== undefined && z > w.bodyMax) || (w.bodyMin !== undefined && z < w.bodyMin)) continue;
             const ab = sub(w.b, w.a);
             const L2 = ab.x * ab.x + ab.y * ab.y || 1;
             const t = Math.max(0, Math.min(1, ((q.x - w.a.x) * ab.x + (q.y - w.a.y) * ab.y) / L2));
