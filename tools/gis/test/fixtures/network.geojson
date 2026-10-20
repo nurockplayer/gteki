@@ -1,0 +1,11 @@
+{
+  "type": "FeatureCollection",
+  "name": "SYNTHETIC hand-authored fixture; contains no real station data",
+  "features": [
+    {"type":"Feature","properties":{"node_id":"n1","floor":"B2"},"geometry":{"type":"Point","coordinates":[139.7,35.68]}},
+    {"type":"Feature","properties":{"node_id":"n2","floor":"B2"},"geometry":{"type":"Point","coordinates":[139.7001,35.68]}},
+    {"type":"Feature","properties":{"link_id":"e1","start_node_id":"n1","end_node_id":"n2","route_type":"walk"},"geometry":{"type":"LineString","coordinates":[[139.7,35.68],[139.7001,35.68]]}},
+    {"type":"Feature","properties":{"link_id":"e2","start_node_id":"n2","end_node_id":"missing","route_type":"stairs"},"geometry":{"type":"LineString","coordinates":[[139.7001,35.68],[139.7002,35.68]]}},
+    {"type":"Feature","properties":{"link_id":"e3","start_node_id":"n1","end_node_id":"n2","route_type":"walk"},"geometry":{"type":"LineString","coordinates":[[139.7001,35.68],[139.7001,35.68]]}}
+  ]
+}

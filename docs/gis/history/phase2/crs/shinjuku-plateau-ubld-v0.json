@@ -1,0 +1,257 @@
+{
+  "frame": {
+    "frame_id": "shinjuku-plateau-ubld-v0",
+    "source_id": "plateau-13104-ubld-53394536",
+    "source_sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
+    "verification": "UNVERIFIED",
+    "origin_E": -11992,
+    "origin_N": -34068,
+    "origin_H": 30,
+    "source_envelope": {
+      "lower": [
+        35.69069941674934,
+        139.69803124047718,
+        15.321
+      ],
+      "upper": [
+        35.69501377379006,
+        139.7036188035924,
+        45.493
+      ],
+      "raw_lower": "35.69069941674934 139.69803124047718 15.321",
+      "raw_upper": "35.69501377379006 139.7036188035924 45.493",
+      "srsName": "http://www.opengis.net/def/crs/EPSG/0/6697",
+      "axis_order": "latitude,longitude,height"
+    },
+    "horizontal_crs": "EPSG:6677",
+    "projection": "+proj=tmerc +lat_0=36 +lon_0=139.833333333333333 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs",
+    "vertical_datum": "JGD2011 orthometric height, Tokyo Peil (TP); unchanged; no geoid or ellipsoid conversion",
+    "axis_order": "source latitude,longitude,height; local East,North,Up; glTF East,Up,-North",
+    "purpose": "Arbitrary processing origin: projected envelope centre rounded to 1 m; NOT a station reference point"
+  },
+  "points": [
+    {
+      "source": [
+        35.69069941674934,
+        139.69803124047718,
+        15.321
+      ],
+      "local": [
+        -253.57315935383122,
+        -238.9307147724321,
+        -14.679
+      ],
+      "gltf": [
+        -253.57315935383122,
+        -14.679,
+        238.9307147724321
+      ],
+      "inverse": [
+        35.69069941674935,
+        139.69803124047718,
+        15.321
+      ],
+      "horizontal_error_m": 0,
+      "angular_error_deg": 7.105427357601002e-15
+    },
+    {
+      "source": [
+        35.69069941674934,
+        139.69803124047718,
+        45.493
+      ],
+      "local": [
+        -253.57315935383122,
+        -238.9307147724321,
+        15.493000000000002
+      ],
+      "gltf": [
+        -253.57315935383122,
+        15.493000000000002,
+        238.9307147724321
+      ],
+      "inverse": [
+        35.69069941674935,
+        139.69803124047718,
+        45.493
+      ],
+      "horizontal_error_m": 0,
+      "angular_error_deg": 7.105427357601002e-15
+    },
+    {
+      "source": [
+        35.69069941674934,
+        139.7036188035924,
+        15.321
+      ],
+      "local": [
+        252.13188882136637,
+        -239.61304084399308,
+        -14.679
+      ],
+      "gltf": [
+        252.13188882136637,
+        -14.679,
+        239.61304084399308
+      ],
+      "inverse": [
+        35.69069941674934,
+        139.7036188035924,
+        15.321
+      ],
+      "horizontal_error_m": 0,
+      "angular_error_deg": 0
+    },
+    {
+      "source": [
+        35.69069941674934,
+        139.7036188035924,
+        45.493
+      ],
+      "local": [
+        252.13188882136637,
+        -239.61304084399308,
+        15.493000000000002
+      ],
+      "gltf": [
+        252.13188882136637,
+        15.493000000000002,
+        239.61304084399308
+      ],
+      "inverse": [
+        35.69069941674934,
+        139.7036188035924,
+        45.493
+      ],
+      "horizontal_error_m": 0,
+      "angular_error_deg": 0
+    },
+    {
+      "source": [
+        35.69501377379006,
+        139.69803124047718,
+        15.321
+      ],
+      "local": [
+        -252.91369367336483,
+        239.71407134064793,
+        -14.679
+      ],
+      "gltf": [
+        -252.91369367336483,
+        -14.679,
+        -239.71407134064793
+      ],
+      "inverse": [
+        35.695013773790066,
+        139.69803124047718,
+        15.321
+      ],
+      "horizontal_error_m": 3.637978807091713e-12,
+      "angular_error_deg": 7.105427357601002e-15
+    },
+    {
+      "source": [
+        35.69501377379006,
+        139.69803124047718,
+        45.493
+      ],
+      "local": [
+        -252.91369367336483,
+        239.71407134064793,
+        15.493000000000002
+      ],
+      "gltf": [
+        -252.91369367336483,
+        15.493000000000002,
+        -239.71407134064793
+      ],
+      "inverse": [
+        35.695013773790066,
+        139.69803124047718,
+        45.493
+      ],
+      "horizontal_error_m": 3.637978807091713e-12,
+      "angular_error_deg": 7.105427357601002e-15
+    },
+    {
+      "source": [
+        35.69501377379006,
+        139.7036188035924,
+        15.321
+      ],
+      "local": [
+        252.76412044192875,
+        239.03171049424418,
+        -14.679
+      ],
+      "gltf": [
+        252.76412044192875,
+        -14.679,
+        -239.03171049424418
+      ],
+      "inverse": [
+        35.69501377379006,
+        139.7036188035924,
+        15.321
+      ],
+      "horizontal_error_m": 0,
+      "angular_error_deg": 0
+    },
+    {
+      "source": [
+        35.69501377379006,
+        139.7036188035924,
+        45.493
+      ],
+      "local": [
+        252.76412044192875,
+        239.03171049424418,
+        15.493000000000002
+      ],
+      "gltf": [
+        252.76412044192875,
+        15.493000000000002,
+        -239.03171049424418
+      ],
+      "inverse": [
+        35.69501377379006,
+        139.7036188035924,
+        45.493
+      ],
+      "horizontal_error_m": 0,
+      "angular_error_deg": 0
+    }
+  ],
+  "max_horizontal_error_m": 3.637978807091713e-12,
+  "max_angular_error_deg": 7.105427357601002e-15,
+  "independent_reference": "Geospatial Information Authority of Japan Survey Calculation Site bl2xy; values supplied by the lead for this pass, not retrieved from the network by this tool; JGD2011 zone IX controls dated 2026-10-20. GSI publicY is easting and publicX is northing.",
+  "independent_controls": [
+    {
+      "url": "https://vldb.gsi.go.jp/sokuchi/surveycalc/surveycalc/bl2xy.pl?outputType=json&refFrame=2&zone=9&latitude=35.729710&longitude=139.711376",
+      "latitude": 35.72971,
+      "longitude": 139.711376,
+      "expected_E_m": -11032.4224,
+      "expected_N_m": -29980.5762,
+      "computed_E_m": -11032.422359324282,
+      "computed_N_m": -29980.576175451257,
+      "delta_E_m": 0.00004067571717314422,
+      "delta_N_m": 0.00002454874265822582,
+      "max_abs_error_m": 0.00004067571717314422
+    },
+    {
+      "url": "https://vldb.gsi.go.jp/sokuchi/surveycalc/surveycalc/bl2xy.pl?outputType=json&refFrame=2&zone=9&latitude=35.692857&longitude=139.700825",
+      "latitude": 35.692857,
+      "longitude": 139.700825,
+      "expected_E_m": -11992.3996,
+      "expected_N_m": -34067.9082,
+      "computed_E_m": -11992.399648494906,
+      "computed_N_m": -34067.90822860763,
+      "delta_E_m": -0.000048494905058760196,
+      "delta_N_m": -0.000028607631975319237,
+      "max_abs_error_m": 0.000048494905058760196
+    }
+  ],
+  "max_independent_control_error_m": 0.000048494905058760196,
+  "verification": "UNVERIFIED"
+}

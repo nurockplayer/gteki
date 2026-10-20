@@ -63,6 +63,16 @@ function floorChangeSeverity(a: Floor, b: Floor): "warning" | "error" {
 }
 
 /** Structural + truth-rule validation. Errors must block publishing a bundle. */
+const isHttpUrl = (url: unknown): boolean => {
+  if (typeof url !== "string") return false;
+  try {
+    const protocol = new URL(url).protocol;
+    return protocol === "https:" || protocol === "http:";
+  } catch {
+    return false;
+  }
+};
+
 export function validateBundle(b: StationBundle): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   const err = (code: string, message: string, ref?: string) => issues.push({ level: "error", code, message, ref });
@@ -72,6 +82,11 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
   if (b.station.frame !== "ENU") err("station.frame", "station frame must be ENU");
   // Coordinate conversion interprets the origin as JGD2011; any other datum would be silently misread.
   if (b.station.origin.datum !== "JGD2011") err("station.origin.datum", `origin datum must be JGD2011, got ${String(b.station.origin.datum)}`);
+  // The origin anchors every station-local coordinate: an impossible latitude/longitude would misplace the station.
+  const o = b.station.origin;
+  if (!(Number.isFinite(o.lat) && o.lat >= -90 && o.lat <= 90)) err("station.origin.range", `origin latitude ${String(o.lat)} is outside -90…90`);
+  if (!(Number.isFinite(o.lon) && o.lon >= -180 && o.lon <= 180)) err("station.origin.range", `origin longitude ${String(o.lon)} is outside -180…180`);
+  if (o.hM !== null && !Number.isFinite(o.hM)) err("station.origin.range", `origin height ${String(o.hM)} is not finite`);
 
   const sourceIds = new Set<string>();
   const sourceRights = new Map(b.sources.map((s) => [s.id, s.rights]));
@@ -85,6 +100,14 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (!RIGHTS.has(s.rights)) err("source.rights.value", `unknown rights ${String(s.rights)}`, s.id);
     if (s.datasetDate !== null && !isIsoDatePrefix(s.datasetDate)) err("source.date", `datasetDate ${s.datasetDate} is not YYYY, YYYY-MM or YYYY-MM-DD`, s.id);
     if (typeof s.validUntil === "string" && !isIsoDatePrefix(s.validUntil)) err("source.date", `validUntil ${s.validUntil} is not YYYY, YYYY-MM or YYYY-MM-DD`, s.id);
+    // Credits must be showable: every source names its credit line, and a data source (anything derived
+    // from it may ship) names its licence with a link (CC BY / PDL 1.0 require indicating the licence).
+    if (!b.station.synthetic && !(typeof s.attribution === "string" && s.attribution.trim()))
+      err("source.attribution", "source without an attribution (credit line)", s.id);
+    // The credited title links to the source itself, so a real source needs a reachable http(s) landing page.
+    if (!b.station.synthetic && !isHttpUrl(s.url)) err("source.url", "source without an http(s) landing URL", s.id);
+    if (!b.station.synthetic && s.usage !== "facts-only" && !(s.license && s.license.name.trim() && isHttpUrl(s.license.url)))
+      err("source.license", "data source without a licence name and http(s) licence link", s.id);
     if (!b.station.synthetic && s.rights !== "REUSABLE_WITH_CONDITIONS" && s.usage !== "facts-only")
       warn("source.rights", `source rights ${s.rights}; must not feed published geometry/data (mark usage:"facts-only" if only cited as evidence)`, s.id);
   }
@@ -103,6 +126,12 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (!ELEVATION_SOURCES.has(f.elevationSource)) err("floor.elevation", `unknown elevationSource ${String(f.elevationSource)}`, f.id);
     if (f.elevationM !== null && (f.elevationSource === "symbolic" || f.elevationSource === "unknown"))
       err("floor.elevation", `${f.elevationSource} elevation must keep elevationM null`, f.id);
+    // A known height is published and drives up/down in the directions: same rights gate as node positions,
+    // and it is what the floor is drawn at (a symbolic render offset only stands in for an unknown height).
+    if (f.elevationM !== null && !b.station.synthetic && !f.sourceLabels.some((l) => reusableData(l.sourceId)))
+      err("floor.elevation.rights", "known elevation without a reusable data source among the floor's sources", f.id);
+    if (f.elevationM !== null && f.renderElevationM !== f.elevationM)
+      err("floor.renderElevation", `renderElevationM ${f.renderElevationM} differs from the known elevationM ${f.elevationM}`, f.id);
   }
 
   const floors = new Map(b.floors.map((f) => [f.id, f]));
@@ -156,6 +185,9 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     }
     checkEvidence(e, e.accessEvidence, "accessEvidence");
     if (e.hours) checkEvidence(e, e.hours.evidence, "hours.evidence");
+    // Flags that contradict the mode are data errors (the router never treats these modes as step-free anyway).
+    if (e.mode === "stairs" && e.steps === false) err("edge.access.mode", "stairs edge marked steps:false", e.id);
+    if ((e.mode === "stairs" || e.mode === "escalator") && e.wheelchair === true) err("edge.access.mode", `${e.mode} edge marked wheelchair:true`, e.id);
     if (e.crossesFareBoundary === true && e.paid === false)
       err("edge.fare", "fare-boundary edge cannot be marked fully unpaid", e.id);
     if (!VERIFICATIONS.has(e.verification)) err("edge.verification", `unknown verification ${e.verification}`, e.id);

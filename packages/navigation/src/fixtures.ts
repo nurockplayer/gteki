@@ -7,9 +7,12 @@ export function syntheticEvidence(sourceId = "fixture-geometry", checkedDate = "
 }
 
 export function syntheticEdge(id: string, from: string, to: string, overrides: Partial<Edge> = {}): Edge {
+  // Access defaults follow the mode, so stairs/escalators never claim to be step-free.
+  const mode = overrides.mode ?? "walk";
   return {
     id, from, to, direction: "both", mode: "walk", lengthM: 10,
-    paid: false, crossesFareBoundary: false, wheelchair: true, steps: false,
+    paid: false, crossesFareBoundary: false,
+    wheelchair: mode !== "stairs" && mode !== "escalator", steps: mode === "stairs",
     hours: { kind: "always", evidence: syntheticEvidence("fixture-access", "2026-10-20") },
     closed: false, verification: "synthetic",
     geometryEvidence: syntheticEvidence(),
@@ -40,7 +43,7 @@ export function createSyntheticBundle(edges?: Edge[]): StationBundle {
     },
     sources: ["fixture-geometry", "fixture-access"].map((id) => ({
       id, title: "Invented synthetic fixture", publisher: "GTEki tests", url: "https://example.invalid/synthetic",
-      license: null, rights: "REUSABLE_WITH_CONDITIONS", attribution: "GTEki synthetic test fixture",
+      license: { name: "GTEki synthetic data (invented; no third-party content)", url: "https://github.com/nurockplayer/gteki" }, rights: "REUSABLE_WITH_CONDITIONS", attribution: "GTEki synthetic test fixture",
       modified: false, retrievedAt: null, datasetDate: null,
     })),
     floors: [

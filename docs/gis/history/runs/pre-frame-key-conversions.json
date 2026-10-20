@@ -1,0 +1,395 @@
+{
+  "reason": "Historical receipts before output names included frame identity and parameters; exact records retained here. Generated GLBs/sidecars remain in the external store.",
+  "receipts": [
+    {
+      "file": "plateau-13104-ubld-53394536-013e81b5-231da6fa.json",
+      "record": {
+        "run_id": "plateau-13104-ubld-53394536-013e81b5-231da6fa",
+        "source_id": "plateau-13104-ubld-53394536",
+        "source_sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
+        "verification": "UNVERIFIED",
+        "frame_id": "shinjuku-plateau-ubld-v0",
+        "filters": {
+          "ids": [
+            "room_d4dc60ab-50c3-4480-9957-069e31c641ad"
+          ]
+        },
+        "store_path": "out/plateau-13104-ubld-53394536-013e81b5-231da6fa.glb",
+        "sidecar_path": "out/plateau-13104-ubld-53394536-013e81b5-231da6fa.provenance.json",
+        "totals": {
+          "objects_in_source": 30358,
+          "objects_converted": 1,
+          "nodes": 1,
+          "polygons_in_source": 65013,
+          "polygons_converted": 6,
+          "skipped_degenerate": 0,
+          "triangles": 12
+        },
+        "bbox_source_lat_lon_height": {
+          "min": [
+            35.69174164105228,
+            139.69818176441947,
+            32.584
+          ],
+          "max": [
+            35.69177087321918,
+            139.69825915505635,
+            35.539
+          ]
+        },
+        "bbox_local_ENU": {
+          "min": [
+            -239.7870000062194,
+            -123.32300017565285,
+            2.584000000000003
+          ],
+          "max": [
+            -232.78600000629922,
+            -120.08900017543783,
+            5.5390000000000015
+          ]
+        },
+        "validation": {
+          "status": "PASS",
+          "node_count": 1,
+          "expected_node_count": 1,
+          "triangle_count": 12,
+          "expected_triangle_count": 12,
+          "bbox_max_error_m": 0.00000452290078101214,
+          "tolerance_m": 0.001,
+          "all_nodes_have_gml_id": true
+        },
+        "output_sha256": "141ce31f0701ab20a7087db1f0cbf36695b00018115a349135a1a9741348983b",
+        "output_bytes": 2924,
+        "navigation_use": "NOT_FOR_ROUTING",
+        "geometry_status": "UNVERIFIED_RAW_CONVERSION",
+        "elapsed_ms": 17914,
+        "peak_rss_bytes": 299696128
+      }
+    },
+    {
+      "file": "plateau-13104-ubld-53394536-013e81b5-44136fa3.json",
+      "record": {
+        "run_id": "plateau-13104-ubld-53394536-013e81b5-44136fa3",
+        "source_id": "plateau-13104-ubld-53394536",
+        "source_sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
+        "verification": "UNVERIFIED",
+        "frame_id": "shinjuku-plateau-ubld-v0",
+        "filters": {},
+        "store_path": "out/plateau-13104-ubld-53394536-013e81b5-44136fa3.glb",
+        "sidecar_path": "out/plateau-13104-ubld-53394536-013e81b5-44136fa3.provenance.json",
+        "totals": {
+          "objects_in_source": 30358,
+          "objects_converted": 30357,
+          "nodes": 30358,
+          "polygons_in_source": 65013,
+          "polygons_converted": 65013,
+          "skipped_degenerate": 0,
+          "triangles": 148950
+        },
+        "bbox_source_lat_lon_height": {
+          "min": [
+            35.69069941674934,
+            139.69803124047718,
+            15.321
+          ],
+          "max": [
+            35.69501377379006,
+            139.7036188035924,
+            45.493
+          ]
+        },
+        "bbox_local_ENU": {
+          "min": [
+            -253.3920000068374,
+            -239.29800017461093,
+            -14.679
+          ],
+          "max": [
+            252.48999999337502,
+            239.445999824944,
+            15.493000000000002
+          ]
+        },
+        "validation": {
+          "status": "PASS",
+          "node_count": 30358,
+          "expected_node_count": 30358,
+          "triangle_count": 148950,
+          "expected_triangle_count": 148950,
+          "bbox_max_error_m": 0.0000054997890401864424,
+          "tolerance_m": 0.001,
+          "all_nodes_have_gml_id": true
+        },
+        "output_sha256": "0475ead39b34e3d2a30972fcd1e01958aee3972fc0842057941e3d977a92a4f3",
+        "output_bytes": 46304060,
+        "navigation_use": "NOT_FOR_ROUTING",
+        "geometry_status": "UNVERIFIED_RAW_CONVERSION",
+        "elapsed_ms": 12547,
+        "peak_rss_bytes": 1382268928
+      }
+    },
+    {
+      "file": "plateau-13104-ubld-53394536-013e81b5-a55d514b.json",
+      "record": {
+        "run_id": "plateau-13104-ubld-53394536-013e81b5-a55d514b",
+        "source_id": "plateau-13104-ubld-53394536",
+        "source_sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
+        "verification": "UNVERIFIED",
+        "frame_id": "shinjuku-plateau-ubld-v0",
+        "filters": {
+          "ids": [
+            "room_d4dc60ab-50c3-4480-9957-069e31c641ad"
+          ],
+          "maxPolygons": 50
+        },
+        "store_path": "out/plateau-13104-ubld-53394536-013e81b5-a55d514b.glb",
+        "sidecar_path": "out/plateau-13104-ubld-53394536-013e81b5-a55d514b.provenance.json",
+        "totals": {
+          "objects_in_source": 30358,
+          "objects_converted": 1,
+          "nodes": 1,
+          "polygons_in_source": 65013,
+          "polygons_converted": 6,
+          "skipped_degenerate": 0,
+          "triangles": 12
+        },
+        "bbox_source_lat_lon_height": {
+          "min": [
+            35.69174164105228,
+            139.69818176441947,
+            32.584
+          ],
+          "max": [
+            35.69177087321918,
+            139.69825915505635,
+            35.539
+          ]
+        },
+        "bbox_local_ENU": {
+          "min": [
+            -239.7870000062194,
+            -123.32300017565285,
+            2.584000000000003
+          ],
+          "max": [
+            -232.78600000629922,
+            -120.08900017543783,
+            5.5390000000000015
+          ]
+        },
+        "validation": {
+          "status": "PASS",
+          "node_count": 1,
+          "expected_node_count": 1,
+          "triangle_count": 12,
+          "expected_triangle_count": 12,
+          "bbox_max_error_m": 0.00000452290078101214,
+          "tolerance_m": 0.001,
+          "all_nodes_have_gml_id": true
+        },
+        "output_sha256": "141ce31f0701ab20a7087db1f0cbf36695b00018115a349135a1a9741348983b",
+        "output_bytes": 2924,
+        "navigation_use": "NOT_FOR_ROUTING",
+        "geometry_status": "UNVERIFIED_RAW_CONVERSION",
+        "elapsed_ms": 5859,
+        "peak_rss_bytes": 688881664
+      }
+    },
+    {
+      "file": "plateau-13116-ubld-53394576-38f17964-131226af.json",
+      "record": {
+        "run_id": "plateau-13116-ubld-53394576-38f17964-131226af",
+        "source_id": "plateau-13116-ubld-53394576",
+        "source_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+        "verification": "UNVERIFIED",
+        "frame_id": "ikebukuro-plateau-ubld-v0",
+        "filters": {
+          "ids": [
+            "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2"
+          ],
+          "maxPolygons": 50
+        },
+        "store_path": "out/plateau-13116-ubld-53394576-38f17964-131226af.glb",
+        "sidecar_path": "out/plateau-13116-ubld-53394576-38f17964-131226af.provenance.json",
+        "totals": {
+          "objects_in_source": 32,
+          "objects_converted": 1,
+          "nodes": 6,
+          "polygons_in_source": 58761,
+          "polygons_converted": 50,
+          "skipped_degenerate": 0,
+          "triangles": 50
+        },
+        "bbox_source_lat_lon_height": {
+          "min": [
+            35.73095350980933,
+            139.71027781460776,
+            30.653115
+          ],
+          "max": [
+            35.73108282557796,
+            139.71052577159858,
+            31
+          ]
+        },
+        "bbox_local_ENU": {
+          "min": [
+            -99.5794720074864,
+            138.4812118210575,
+            1.6531149999999997
+          ],
+          "max": [
+            -77.15707800371092,
+            152.85119482061054,
+            2
+          ]
+        },
+        "validation": {
+          "status": "PASS",
+          "node_count": 6,
+          "expected_node_count": 6,
+          "triangle_count": 50,
+          "expected_triangle_count": 50,
+          "bbox_max_error_m": 0.0000046096065489109606,
+          "tolerance_m": 0.001,
+          "all_nodes_have_gml_id": true
+        },
+        "output_sha256": "28d922beb7b9148061c2dda897288620169bc9f2de0457c53ab0c3c1fbeca7b4",
+        "output_bytes": 9812,
+        "navigation_use": "NOT_FOR_ROUTING",
+        "geometry_status": "UNVERIFIED_RAW_CONVERSION",
+        "elapsed_ms": 4469,
+        "peak_rss_bytes": 230424576
+      }
+    },
+    {
+      "file": "plateau-13116-ubld-53394576-38f17964-44136fa3.json",
+      "record": {
+        "run_id": "plateau-13116-ubld-53394576-38f17964-44136fa3",
+        "source_id": "plateau-13116-ubld-53394576",
+        "source_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+        "verification": "UNVERIFIED",
+        "frame_id": "ikebukuro-plateau-ubld-v0",
+        "filters": {},
+        "store_path": "out/plateau-13116-ubld-53394576-38f17964-44136fa3.glb",
+        "sidecar_path": "out/plateau-13116-ubld-53394576-38f17964-44136fa3.provenance.json",
+        "totals": {
+          "objects_in_source": 32,
+          "objects_converted": 28,
+          "nodes": 32,
+          "polygons_in_source": 58761,
+          "polygons_converted": 58761,
+          "skipped_degenerate": 0,
+          "triangles": 64811
+        },
+        "bbox_source_lat_lon_height": {
+          "min": [
+            35.728049254734366,
+            139.70938689983566,
+            25.498283
+          ],
+          "max": [
+            35.731371787356984,
+            139.7133659340391,
+            33.16767
+          ]
+        },
+        "bbox_local_ENU": {
+          "min": [
+            -180.20170200668872,
+            -184.0400121791863,
+            -3.5017169999999993
+          ],
+          "max": [
+            179.38389699327854,
+            184.82351882128205,
+            4.167670000000001
+          ]
+        },
+        "validation": {
+          "status": "PASS",
+          "node_count": 32,
+          "expected_node_count": 32,
+          "triangle_count": 64811,
+          "expected_triangle_count": 64811,
+          "bbox_max_error_m": 0.000003925928467651829,
+          "tolerance_m": 0.001,
+          "all_nodes_have_gml_id": true
+        },
+        "output_sha256": "7caa80c827fffa7419b1941df2bee09e66b03a9c660a50b7ca8fca2fa8ef1304",
+        "output_bytes": 5192156,
+        "navigation_use": "NOT_FOR_ROUTING",
+        "geometry_status": "UNVERIFIED_RAW_CONVERSION",
+        "elapsed_ms": 30856,
+        "peak_rss_bytes": 235503616
+      }
+    },
+    {
+      "file": "plateau-13116-ubld-53394576-38f17964-5c436cc9.json",
+      "record": {
+        "run_id": "plateau-13116-ubld-53394576-38f17964-5c436cc9",
+        "source_id": "plateau-13116-ubld-53394576",
+        "source_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+        "verification": "UNVERIFIED",
+        "frame_id": "ikebukuro-plateau-ubld-v0",
+        "filters": {
+          "ids": [
+            "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2"
+          ]
+        },
+        "store_path": "out/plateau-13116-ubld-53394576-38f17964-5c436cc9.glb",
+        "sidecar_path": "out/plateau-13116-ubld-53394576-38f17964-5c436cc9.provenance.json",
+        "totals": {
+          "objects_in_source": 32,
+          "objects_converted": 5,
+          "nodes": 6,
+          "polygons_in_source": 58761,
+          "polygons_converted": 184,
+          "skipped_degenerate": 0,
+          "triangles": 184
+        },
+        "bbox_source_lat_lon_height": {
+          "min": [
+            35.73095350980933,
+            139.71027781460776,
+            27.91
+          ],
+          "max": [
+            35.73108282557796,
+            139.71052577159858,
+            31
+          ]
+        },
+        "bbox_local_ENU": {
+          "min": [
+            -99.5794720074864,
+            138.4812118210575,
+            -1.0899999999999999
+          ],
+          "max": [
+            -77.15707800371092,
+            152.85119482061054,
+            2
+          ]
+        },
+        "validation": {
+          "status": "PASS",
+          "node_count": 6,
+          "expected_node_count": 6,
+          "triangle_count": 184,
+          "expected_triangle_count": 184,
+          "bbox_max_error_m": 0.0000046096065489109606,
+          "tolerance_m": 0.001,
+          "all_nodes_have_gml_id": true
+        },
+        "output_sha256": "80cee307b3e7d34a878a82552d0f224d73ebd7ad5a1ed79b33e465bda389ab72",
+        "output_bytes": 23584,
+        "navigation_use": "NOT_FOR_ROUTING",
+        "geometry_status": "UNVERIFIED_RAW_CONVERSION",
+        "elapsed_ms": 12037,
+        "peak_rss_bytes": 215957504
+      }
+    }
+  ]
+}

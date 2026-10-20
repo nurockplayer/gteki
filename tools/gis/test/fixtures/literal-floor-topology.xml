@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SYNTHETIC hand-written regression fixture. Names, IDs, and topology are invented. -->
+<core:CityModel xmlns:core="http://www.opengis.net/citygml/2.0"
+  xmlns:bldg="http://www.opengis.net/citygml/building/2.0"
+  xmlns:gml="http://www.opengis.net/gml"
+  xmlns:uro="https://www.geospatial.jp/iur/uro/3.2"
+  xmlns:spoof="https://example.invalid/gml">
+  <core:cityObjectMember>
+    <bldg:Room gml:id="generic-label-room">
+      <gml:name>階段室</gml:name>
+      <gml:name>地下通路</gml:name>
+    </bldg:Room>
+  </core:cityObjectMember>
+  <core:cityObjectMember>
+    <bldg:Room gml:id="literal-name-room">
+      <gml:name>架空駅_B1地下通路</gml:name>
+    </bldg:Room>
+  </core:cityObjectMember>
+  <core:cityObjectMember>
+    <bldg:Room gml:id="literal-field-room">
+      <uro:floorName>B2</uro:floorName>
+    </bldg:Room>
+  </core:cityObjectMember>
+  <gml:TopoComplex gml:id="topo-complex-synthetic">
+    <gml:topoPrimitive><gml:Node gml:id="topo-node-synthetic"/></gml:topoPrimitive>
+  </gml:TopoComplex>
+  <spoof:Node gml:id="not-gml-topology"/>
+</core:CityModel>

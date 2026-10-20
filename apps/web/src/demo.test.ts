@@ -33,8 +33,10 @@ describe("synthetic demo station", () => {
     expect(up).toMatchObject({ ok: false, reason: "no_path" });
     // Closed shortcut is never used.
     expect(toPlatform.ok && toPlatform.steps.some((s) => s.edgeId === "closed-cut")).toBe(false);
-    // Transfer at 03:00 is outside its window.
-    expect(r.route("b1-e", "x-gate", { fare: "ticketed", stepFree: false, at: { weekday: "tue", minutes: 180 } })).toMatchObject({ ok: false });
+    // Transfer at 03:00 is outside its window: the route waits for 05:00 instead of crossing it.
+    const night = r.route("b1-e", "x-gate", { fare: "ticketed", stepFree: false, at: { weekday: "tue", minutes: 180 } });
+    expect(night.ok && night.steps.find((s) => s.edgeId === "transfer")?.waitUntil).toEqual({ weekday: "tue", minutes: 300, dayOffset: 0 });
+    if (night.ok) expect(describeRoute(b, night, "ja").map((i) => i.text)).toContain("05:00まで待つ");
     const transfer = r.route("b1-e", "x-gate");
     expect(transfer.ok && transfer.operatorIds).toEqual(["demo-rail", "demo-metro"]);
     expect(transfer.ok && transfer.unknowns.map((u) => u.kind)).toEqual(expect.arrayContaining(["hours", "wheelchair"]));

@@ -21,7 +21,7 @@ function project(scene: string, extraFiles: string[] = []) {
   fs.writeFileSync(path.join(app, "main.js"), `import { stations } from "virtual:gteki-stations";
 for (const s of stations) { s.scene?.(); for (const load of Object.values(s.assets)) load(); }`);
   const [m, g, p] = createDemoFiles();
-  m.assets = [{ id: "b1", uri: "assets/b1.glb", format: "glb", floorIds: [], role: "visual", sourceIds: [], files: extraFiles }];
+  m.assets = [{ id: "b1", uri: "assets/b1.glb", format: "glb", floorIds: [], role: "visual", sourceIds: ["demo-synthetic"], files: extraFiles }];
   fs.writeFileSync(path.join(station, "gteki", "station.json"), JSON.stringify(m));
   fs.writeFileSync(path.join(station, "gteki", "graph.json"), JSON.stringify(g));
   fs.writeFileSync(path.join(station, "gteki", "pois.json"), JSON.stringify(p));
@@ -81,5 +81,46 @@ describe("production build publication allowlist", () => {
     fs.writeFileSync(path.join(p.station, "private", "traced.svg"), `<svg xmlns="http://www.w3.org/2000/svg">${"<g/>".repeat(4000)}</svg>`);
     await expect(build({ root: p.app, configFile: false, logLevel: "silent", plugins: [gtekiStations([path.join(p.root, "stations")])], build: { write: false } }))
       .rejects.toThrow(/refusing to publish undeclared files.*traced\.svg/);
+  }, 30_000);
+
+  it("applies the publication rights rules to synthetic stations too", async () => {
+    const p = project(`export const buildScene = () => null;`);
+    const manifest = path.join(p.station, "gteki", "station.json");
+    const m = JSON.parse(fs.readFileSync(manifest, "utf8"));
+    expect(m.station.synthetic).toBe(true);
+    m.sources[0].rights = "RESTRICTED";
+    fs.writeFileSync(manifest, JSON.stringify(m));
+    await expect(run(p)).rejects.toThrow(/asset\.rights \(b1\): asset derives from source demo-synthetic with rights RESTRICTED/);
+    m.sources[0].rights = "REUSABLE_WITH_CONDITIONS";
+    m.assets[0].sourceIds = [];
+    fs.writeFileSync(manifest, JSON.stringify(m));
+    await expect(run(p)).rejects.toThrow(/asset\.source \(b1\): asset without source provenance/);
+  }, 30_000);
+
+  it("refuses to publish sources without credit metadata, synthetic or not", async () => {
+    const p = project(`export const buildScene = () => null;`);
+    const manifest = path.join(p.station, "gteki", "station.json");
+    const m = JSON.parse(fs.readFileSync(manifest, "utf8"));
+    m.sources[0].license = null;
+    m.sources[0].attribution = "";
+    m.sources[0].url = "not a url";
+    fs.writeFileSync(manifest, JSON.stringify(m));
+    await expect(run(p)).rejects.toThrow(/source\.url \(demo-synthetic\).*source\.attribution \(demo-synthetic\)|source\.attribution \(demo-synthetic\).*source\.url \(demo-synthetic\)/);
+    await expect(run(p)).rejects.toThrow(/source\.license \(demo-synthetic\)/);
+  }, 30_000);
+
+  it("refuses a synthetic station whose graph derives from a restricted source, even with no assets", async () => {
+    const p = project(`export const buildScene = () => null;`);
+    const dir = path.join(p.station, "gteki");
+    const m = JSON.parse(fs.readFileSync(path.join(dir, "station.json"), "utf8"));
+    const g = JSON.parse(fs.readFileSync(path.join(dir, "graph.json"), "utf8"));
+    m.assets = [];
+    fs.rmSync(path.join(dir, "assets", "b1.glb"));
+    m.sources.push({ ...m.sources[0], id: "traced-plan", rights: "RESTRICTED" });
+    fs.writeFileSync(path.join(dir, "station.json"), JSON.stringify(m));
+    await run(p);
+    g.nodes[0].sourceRefs = [{ sourceId: "traced-plan", featureId: "plan-1" }];
+    fs.writeFileSync(path.join(dir, "graph.json"), JSON.stringify(g));
+    await expect(run(p)).rejects.toThrow(new RegExp(`node\\.source\\.rights \\(${g.nodes[0].id}\\)`));
   }, 30_000);
 });

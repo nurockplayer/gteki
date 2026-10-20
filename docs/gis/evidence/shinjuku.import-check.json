@@ -1,0 +1,34 @@
+{
+  "glb": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-4bdf223d5ebc9ceeca18.glb",
+  "record": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-4bdf223d5ebc9ceeca18.json",
+  "blender_version": "5.2.2 LTS",
+  "mesh_objects": 30357,
+  "imported_bbox_ENU": {
+    "min": [
+      -253.39199829101562,
+      -239.29800415039062,
+      -14.678999900817871
+    ],
+    "max": [
+      252.49000549316406,
+      239.4459991455078,
+      15.493000030517578
+    ]
+  },
+  "expected_bbox_ENU": {
+    "min": [
+      -253.3920000068374,
+      -239.29800017461093,
+      -14.679
+    ],
+    "max": [
+      252.48999999337502,
+      239.445999824944,
+      15.493000000000002
+    ]
+  },
+  "max_abs_error_m": 5.4997890401864424e-06,
+  "tolerance_m": 0.001,
+  "status": "PASS",
+  "navigation_use": "NOT_FOR_ROUTING"
+}

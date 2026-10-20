@@ -41,9 +41,19 @@ describe("opening hours", () => {
     expect(r.timeRestricted).toEqual([{ edgeId: "night-gate", open: "05:00", close: "24:30" }]);
   });
 
-  it("fails safely when the only link is closed at that time", () => {
-    const r = createRouter(createSyntheticBundle([night])).route("start", "goal", { ...base, at: { weekday: "sun", minutes: 200 } });
-    expect(r).toMatchObject({ ok: false, reason: "no_path" });
+  it("waits for the only link to open instead of using it while closed", () => {
+    const r = ok(createRouter(createSyntheticBundle([night])).route("start", "goal", { ...base, at: { weekday: "sun", minutes: 200 } }));
+    expect(r.steps[0]).toMatchObject({ edgeId: "night-gate", waitSeconds: 100 * 60, waitUntil: { weekday: "sun", minutes: 300, dayOffset: 0 } });
+    expect(r.waitSeconds).toBe(100 * 60);
+  });
+
+  it("fails safely when the only link is never open long enough to cross", () => {
+    // A 600 m passage (500 s) whose daily window lasts one minute.
+    const brief = edge("brief", "start", "goal", { lengthM: 600, hours: { kind: "window", open: "05:00", close: "05:01", evidence: ev } });
+    const router = createRouter(createSyntheticBundle([brief]));
+    expect(router.route("start", "goal", { ...base, at: { weekday: "sun", minutes: 200 } })).toMatchObject({ ok: false, reason: "no_path" });
+    // Without a departure time the window is only listed.
+    expect(ok(router.route("start", "goal", base)).timeRestricted).toEqual([{ edgeId: "brief", open: "05:00", close: "05:01" }]);
   });
 });
 

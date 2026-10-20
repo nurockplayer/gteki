@@ -51,6 +51,17 @@ stations/<id>/gteki/
 | Real-station floors cite at least one source label; routes count the traversed floors' sources in provenance and freshness | validate + router |
 | Polyline endpoints take their node's height for measurement, as drawn (unknown node height = no climb measured) | router |
 | Coverage area `status` is routable / visual_only / unverified / excluded | validate |
+| Step-free never uses stairs or escalators; stairs with `steps:false`, or stairs/escalators with `wheelchair:true`, are errors | router + validate |
+| With `at`, known hours are checked for the whole time the route spends on each edge (entering, leaving and every whole clock minute in between, rolling over midnight and weekdays), not only at departure; an edge left more than a year after the departure day fails closed | router |
+| Production builds apply every publication rights rule (node positions, edge geometry, floor elevations, POI display positions, coverage polygons, assets) to every station, synthetic or not | web build |
+| `station.origin` latitude is within −90…90, longitude within −180…180, and a known height is finite | validate |
+| A known floor `elevationM` needs a REUSABLE_WITH_CONDITIONS data source among its `sourceLabels` (real stations) and equals `renderElevationM` | validate |
+| Credits and route provenance disclose `Source.modified` (加工して作成 / modified) and list asset `derivation` notices | web |
+| Every source of a real (and every published) station has a non-empty attribution and an http(s) landing URL; every data source a licence name and an http(s) licence link | validate + web build |
+| Every source (including ones cited only by assets or coverage) is credited with its link, licence name and licence link; only http(s) URLs become links | web |
+| With clock-dependent hours (`at` given, some window edge) a closed edge is waited for: the route waits at its start until the first whole minute it stays open for the whole traversal (within a week, else unusable). The wait is a step fact (`waitSeconds`, `waitUntil` weekday/minute/dayOffset), counted in `estimatedSeconds` and `waitSeconds`, and narrated (「翌日05:00まで待つ」 / "Wait until 05:00 tomorrow"). The search is a complete FIFO Pareto search over cost and arrival: waiting costs 0.75/s, no more than any mode, so an earlier label that is no dearer than waiting would make it dominates and loops end. Its work is budgeted (comparisons plus hour samples); past it the answer is `search_limit` (route UNKNOWN), never `no_path`. Without `at` it is plain Dijkstra | router, UI |
+| The station clock keeps seconds (fractional minutes) when checking hours | web |
+| "Go straight" / 直進 only when every heading along the walked plan polyline lies within one 35° range; otherwise "Continue" / 進む | navigation |
 | Real-station nodes cite position sources; POI `displayPosition` and coverage polygons need ≥1 reusable data source | validate |
 | `elevationSource` is one of measured / source-derived / symbolic / unknown; symbolic and unknown keep `elevationM` null | validate |
 | Without `accessEvidence`, an edge's paid / fare-boundary / wheelchair / steps flags are UNKNOWN to the router | router |

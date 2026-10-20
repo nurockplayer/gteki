@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SYNTHETIC test fixture; invented geometry and identifiers, not copied from a real station. -->
+<core:CityModel xmlns:core="http://www.opengis.net/citygml/2.0" xmlns:gml="http://www.opengis.net/gml" xmlns:bldg="http://www.opengis.net/citygml/building/2.0" xmlns:grp="http://www.opengis.net/citygml/cityobjectgroup/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:uro="https://www.geospatial.jp/iur/uro/3.2" xsi:schemaLocation="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <gml:boundedBy><gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/6697" srsDimension="3">
+    <gml:lowerCorner>35.72 139.70 2</gml:lowerCorner><gml:upperCorner>35.73 139.71 5</gml:upperCorner>
+  </gml:Envelope></gml:boundedBy>
+  <core:cityObjectMember>
+    <bldg:Room gml:id="room-synthetic">
+      <gml:name>synthetic room</gml:name><uro:lodType>synthetic-value</uro:lodType>
+      <bldg:function codeSpace="IntBuildingInstallation_function.xml">EF_25</bldg:function>
+      <bldg:lod4MultiSurface>
+        <gml:MultiSurface>
+          <gml:surfaceMember><gml:Polygon>
+            <gml:exterior><gml:LinearRing><gml:posList srsDimension="3">35.720 139.700 2 35.720 139.702 2 35.722 139.702 2 35.722 139.700 2 35.720 139.700 2</gml:posList></gml:LinearRing></gml:exterior>
+            <gml:interior><gml:LinearRing><gml:posList srsDimension="3">35.7205 139.7005 2 35.7205 139.701 2 35.721 139.701 2 35.721 139.7005 2 35.7205 139.7005 2</gml:posList></gml:LinearRing></gml:interior>
+          </gml:Polygon></gml:surfaceMember>
+          <gml:surfaceMember><gml:Polygon><gml:exterior><gml:LinearRing><gml:posList srsDimension="3">35.720 139.700 2 35.720 139.700 2 35.720 139.700 2</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon></gml:surfaceMember>
+        </gml:MultiSurface>
+      </bldg:lod4MultiSurface>
+      <bldg:boundedBy><bldg:FloorSurface gml:id="floor-synthetic"><bldg:lod4MultiSurface><gml:MultiSurface><gml:surfaceMember><gml:Polygon><gml:exterior><gml:LinearRing><gml:posList srsDimension="3">35.720 139.700 2 35.720 139.702 2 35.722 139.702 2 35.722 139.700 2 35.720 139.700 2</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon></gml:surfaceMember></gml:MultiSurface></bldg:lod4MultiSurface></bldg:FloorSurface></bldg:boundedBy>
+      <bldg:opening><bldg:Door gml:id="door-synthetic"><gml:name>synthetic door</gml:name></bldg:Door></bldg:opening>
+      <bldg:interiorBuildingInstallation><bldg:IntBuildingInstallation gml:id="installation-synthetic"><bldg:function codeSpace="IntBuildingInstallation_function.xml">EF_25</bldg:function><bldg:lod4Geometry><gml:MultiSurface><gml:surfaceMember><gml:Polygon><gml:exterior><gml:LinearRing><gml:posList srsDimension="3">35.721 139.703 3 35.721 139.704 3 35.722 139.704 3 35.722 139.703 3 35.721 139.703 3</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon></gml:surfaceMember></gml:MultiSurface></bldg:lod4Geometry></bldg:IntBuildingInstallation></bldg:interiorBuildingInstallation>
+    </bldg:Room>
+  </core:cityObjectMember>
+  <grp:CityObjectGroup gml:id="group-synthetic"><grp:groupMember xlink:href="#room-synthetic"/><grp:parent xlink:href="#missing-target"/></grp:CityObjectGroup>
+  <gml:description>synthetic creationDate should not be treated as date</gml:description>
+</core:CityModel>

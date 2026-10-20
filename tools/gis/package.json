@@ -1,0 +1,30 @@
+{
+  "name": "@gteki/gis-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.11.2",
+  "engines": { "node": ">=26 <27" },
+  "scripts": {
+    "gis": "tsx src/cli.ts",
+    "test": "vitest run --exclude test/real.test.ts",
+    "test:real": "vitest run test/real.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@gltf-transform/core": "4.5.1",
+    "csv-parse": "7.0.3",
+    "earcut": "3.2.4",
+    "proj4": "2.22.0",
+    "saxes": "6.0.0",
+    "yaml": "2.9.1",
+    "yauzl": "3.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "@types/yauzl": "3.4.0",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}
