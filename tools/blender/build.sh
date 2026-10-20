@@ -3,7 +3,7 @@
 #
 #   tools/blender/build.sh            build + validate (writes assets/library)
 #   tools/blender/build.sh all        build + validate + godot + web
-#   tools/blender/build.sh validate|godot|web|repro
+#   tools/blender/build.sh validate|selftest|godot|web|repro
 #
 # Env: BLENDER (default blender), GODOT_BIN, CATALOG, OUT, TEX_RES, ONLY (comma ids).
 # Installs only via Homebrew/pnpm (README); never npm/npx/yarn.
@@ -25,7 +25,22 @@ build() {
 }
 
 validate() {
-    python3 -I "$HERE/validate_glb.py" "$OUT"/glb/*.glb --report "$REPORTS/validate_report.json"
+    # explicit returns: errexit is off inside a function called from an && list (`all`)
+    python3 -I "$HERE/validate_glb.py" "$OUT"/glb/*.glb --report "$REPORTS/validate_report.json" || return $?
+    # texture plan rules for any library; byte limits only for the library they describe
+    if python3 -I "$HERE/texture_budget.py" "$OUT" --check "$HERE/catalog/budget.json" \
+        --json "$REPORTS/texture_budget.json" >"$REPORTS/texture_budget.txt"; then
+        tail -n 3 "$REPORTS/texture_budget.txt"
+    else
+        cat "$REPORTS/texture_budget.txt" >&2
+        return 1
+    fi
+}
+
+selftest() {
+    python3 -I "$HERE/validate_glb.py" --self-test || return $?
+    python3 -I "$HERE/texture_budget.py" --self-test || return $?
+    python3 -I "$HERE/bundle_kit.py" --self-test || return $?
 }
 
 godot() {
@@ -73,8 +88,9 @@ case "${1:-default}" in
     all) build && validate && godot && web ;;
     build) build ;;
     validate) validate ;;
+    selftest) selftest ;;
     godot) godot ;;
     web) web ;;
     repro) repro ;;
-    *) echo "usage: $0 [all|build|validate|godot|web|repro]" >&2; exit 2 ;;
+    *) echo "usage: $0 [all|build|validate|selftest|godot|web|repro]" >&2; exit 2 ;;
 esac

@@ -15,11 +15,20 @@ Reproducible, parametric generators for a **generic, reusable station kit** (pas
 tools/blender/build.sh            # generate assets/library from the catalog + validate
 tools/blender/build.sh all        # + Godot headless import + Three.js load test
 tools/blender/build.sh repro      # two clean builds must be byte-identical to each other and to assets/library
+tools/blender/build.sh selftest   # validator, texture budget and bundle tool self-tests (stdlib only)
 ONLY=gteki_gate_array_4w1 tools/blender/build.sh build   # rebuild a subset
 TEX_RES=2048 OUT=/tmp/kit_hq tools/blender/build.sh build # high-res textures (Godot HQ)
 ```
 
 Viewer: `pnpm --dir tools/blender/web_preview install && pnpm --dir tools/blender/web_preview dev`, then open `/?asset=<id>` or `/?mode=gallery`.
+
+Texture budget (`docs/assets/texture-budget.md`): `build.sh validate` also runs
+`texture_budget.py assets/library --check tools/blender/catalog/budget.json`. For a before/after report, run
+`python3 tools/blender/texture_budget.py assets/library --compare <old_library> --layout tools/blender/showcase/concourse_demo.json`.
+
+Kit bundles (one GLB per scene; textures and materials stored once; clone per placement):
+`python3 tools/blender/bundle_kit.py bundle --library assets/library --layout <layout.json> --out kit.glb` (also `--ids`, `--all`, `extract`, `info`).
+Load benchmark: run the viewer and open `/bench.html?strategy=per_instance|per_asset|bundle`. Bundles are served from `tools/blender/out/bundles/`, and setting `GTEKI_COMPARE_LIBRARY_DIR` serves a second library as `&lib=compare`.
 
 Godot screenshots: `sh tools/blender/godot_import/run_import_test.sh --screenshot assets/library/glb <out>`.
 
@@ -42,8 +51,10 @@ Editable sources: add `--save-blend <dir>` to `build.py` to save a `.blend` per 
 | `gteki_assets/families/*.py` | Generators by family |
 | `render_preview.py` | GLB round-trip renders |
 | `validate_glb.py` | Stdlib contract validator (`--self-test` included) |
+| `texture_budget.py` | Download / GPU texture report, before-after compare, layout costing, budget check (`catalog/budget.json`) |
+| `bundle_kit.py` | `gteki-kit-bundle/0.1`: pack assets into one GLB with shared images/materials; extract; info |
 | `godot_import/` | Godot 4 project: headless import report + screenshot mode |
-| `web_preview/` | Three.js viewer + Node GLTFLoader load test |
+| `web_preview/` | Three.js viewer, load-strategy bench (`bench.html`), Node GLTFLoader load test |
 
 ## Writing a generator
 
@@ -54,5 +65,6 @@ A generator is `fn(asset_id, params, tex_res) -> Asset` registered in its module
 - `a.socket(name, loc, yaw, width=…, height=…)` for snap points (local +Y Blender = outward).
 - `a.light_hint(name, loc, kind=…, …)` where a fixture emits light.
 - Materials by stable name; add new ones with `materials.register()`. Keep everything original: no brand marks, no copied pictograms, no text in textures.
+- Set `repeat_m` to the material's real repeat. Texture size follows from it (`materials.texture_res`), and maps that come out flat are exported as factors (`materials.texture_plan`), so do not pad a generator with invisible noise to "fill" a map. A face with a single 0–1 UV island that is not square (signs) should draw at its physical aspect (see `signage._face_shape`).
 
 Determinism: all randomness is seeded, textures are cached by content hash, UVs are quantized after modifiers; `build.sh repro` guards it.

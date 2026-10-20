@@ -65,13 +65,15 @@ Root node `extras.gteki` (object):
 - glTF 2.0 core PBR metallic-roughness. Allowed extensions: `KHR_materials_emissive_strength` (signs, light diffusers, gate indicators), `KHR_texture_transform` *not* used. No Draco/meshopt in the canonical GLB (derivatives may be optimized by the Web build).
 - Material names are stable and prefixed `gteki_` (e.g. `gteki_floor_terrazzo`). Runtime may **swap materials by name** to apply station-specific palettes or deduplicate textures across GLBs.
 - Determinism: the same catalog, code and `--tex-res` produce byte-identical GLBs (`tools/blender/build.sh repro`).
-- Textures embedded as JPEG (base colour, normal, ORM roughness/metal) at **1024 px** for the canonical Web GLB. The generator can re-export at 2048/4096 for a high-quality Godot build from the same parameters (`--tex-res`).
-- Textures are tileable, generated procedurally from seeded code. Texel density targets ~1024 px/m for floors and walls.
+- Textures embedded as JPEG (base colour, normal, ORM roughness/metal), **at most 1024 px** in the canonical Web GLB. The generator can re-export at 2048/4096 for a high-quality Godot build from the same parameters (`--tex-res`).
+- Textures are tileable, generated procedurally from seeded code. **Texture budget** ([texture-budget.md](texture-budget.md)): `--tex-res` is both the cap and the target density in texels per metre, so a material that repeats every 0.25 m ships a 256 px texture rather than 1024. A map that is flat (per-channel std below 1 level for albedo, 2 for roughness/metal, 1.5 for normal) is exported as the material's factor instead of a texture. So a `gteki_*` material may have any subset of the three maps; `manifest.json` lists each textured material's `res` and kept `maps` under `textures`.
 - Sign faces use material `gteki_sign_face*` with a dedicated 0–1 UV island per face so runtime can apply canvas/text textures. Kit sign art contains only generic arrows/colour bands — **no operator brand marks, typefaces copied from operators, or station names.**
 
 ## 5. Budgets (LOD0, observed per asset in the manifest)
 
-No hard FPS numbers are asserted here (see acceptance.md). The manifest records triangles, materials, texture bytes and GLB bytes for every asset so station leads can budget. Godot generates mesh LODs automatically on import; the Web build may use meshopt simplification on derivatives.
+No hard FPS numbers are asserted here (see acceptance.md). The manifest records triangles, materials, texture plans and GLB bytes for every asset so station leads can budget. Godot generates mesh LODs automatically on import; the Web build may use meshopt simplification on derivatives.
+
+`tools/blender/catalog/budget.json` caps the committed library (download, unique image bytes, estimated GPU texture memory). `tools/blender/build.sh validate` fails when the cap is exceeded, when an image is larger than its material's plan, when a material samples more images than its plan keeps, or when one GLB embeds the same image twice.
 
 ## 6. Delivery files
 
@@ -79,3 +81,20 @@ No hard FPS numbers are asserted here (see acceptance.md). The manifest records 
 - `assets/library/manifest.json` — id → file, sha256, bytes, triangles, materials, bounds, params, sockets.
 - `assets/library/PROVENANCE.md` — inputs and rights for every asset and texture.
 - Regenerate with `tools/blender/build.sh` (see `tools/blender/README.md`).
+
+## 7. Kit bundles — `gteki-kit-bundle/0.1` (derived, optional)
+
+A bundle is one self-contained GLB holding several kit assets, so textures and materials shared between assets are stored and uploaded once. It is a **derived build output** (never committed to `assets/library`); make it from the assets a scene actually places:
+
+```sh
+python3 tools/blender/bundle_kit.py bundle --library assets/library --layout my_layout.json --out kit.glb   # or --ids a,b / --all
+python3 tools/blender/bundle_kit.py extract --bundle kit.glb --id gteki_bench_4seat --out bench.glb
+python3 tools/blender/bundle_kit.py info --bundle kit.glb
+```
+
+- Scene 0 has one root node, the bundle root, whose `extras.gteki_bundle` is `{contract, kit_version, texture_resolution, assets: [{id, node, source_sha256, source_bytes}]}`. Its children are the asset roots, in that order.
+- Each asset root and its subtree are copied from the source GLB unchanged: node names, transforms, `extras.gteki`, sockets, `COL_*-colonly`, `LIGHTHINT_*` and flap hinges are all kept, and the asset root stays at identity. The one addition is `extras.gteki_name`, described below.
+- Images are deduplicated by MIME type and content hash, samplers and textures by content, and materials by `gteki_*` name. Two materials with the same name but different content are an error. Geometry is not shared between assets.
+- Output is deterministic. `bundle` refuses a library whose GLBs no longer match `manifest.json`, and `extract` rebuilds a standalone GLB that validates exactly like the source.
+- **Use it by cloning.** Load the bundle once, then clone an asset root per placement: three.js `Object3D.clone()`, Godot `Node.duplicate()`. Clones share geometry, materials and textures, so they add draw calls but no GPU memory.
+- **Repeated names.** Both importers make node names unique across the *whole file*. A second asset's `SOCKET_end` or `VIS_flap_0_L` loads as `SOCKET_end_1` / `VIS_flap_0_L_1` in three.js `GLTFLoader`, and as `SOCKET_end2` / `VIS_flap_0_L2` in Godot 4.7. So the bundle writes the original name to `extras.gteki_name` on every node whose name occurs more than once in the bundle; `extract` removes it again. To get a node's contract name in a bundle, read `extras.gteki_name` and fall back to the node name: `object.userData.gteki_name ?? object.name` in three.js, `node.get_meta("extras", {}).get("gteki_name", node.name)` in Godot. Look nodes up inside their asset root, never by name across the whole bundle. Godot also strips the `-colonly` suffix when it turns those nodes into `StaticBody3D`, exactly as it does for a single GLB.

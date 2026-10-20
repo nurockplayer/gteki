@@ -10,8 +10,8 @@
       "family": "passage",
       "variant": "straight_w4_l6",
       "file": "glb/gteki_passage_straight_w4_l6.glb",
-      "sha256": "1d2f62ad98b019ed7b36aff6d8d7e09eacd2eca158f6fc9b20ee6bb9d3239a15",
-      "bytes": 1069856,
+      "sha256": "4e487d669a900fe2df58a91d532aad23a2dc8a48acc01af3f4946bc192abab36",
+      "bytes": 955048,
       "triangles": 1216,
       "materials": [
         "gteki_concrete",
@@ -24,6 +24,54 @@
         "gteki_aluminium_anodised",
         "gteki_light_diffuser"
       ],
+      "textures": {
+        "gteki_concrete": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_terrazzo": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "orm"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        },
+        "gteki_ceiling_spandrel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -2.15,
@@ -99,8 +147,8 @@
       "family": "passage",
       "variant": "straight_w4_l2p4",
       "file": "glb/gteki_passage_straight_w4_l2p4.glb",
-      "sha256": "cba71489b2e71038d7af13d74adde4e24357c797998782be64a279f65ee196e9",
-      "bytes": 1040400,
+      "sha256": "96c198a7d5e05e1c51ab4ba2b434348069ca20b529c727e8fe8a25ccd29da10f",
+      "bytes": 925592,
       "triangles": 592,
       "materials": [
         "gteki_concrete",
@@ -113,6 +161,54 @@
         "gteki_aluminium_anodised",
         "gteki_light_diffuser"
       ],
+      "textures": {
+        "gteki_concrete": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_terrazzo": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "orm"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        },
+        "gteki_ceiling_spandrel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -2.15,
@@ -189,8 +285,8 @@
       "family": "passage",
       "variant": "straight_w4_l6_tile",
       "file": "glb/gteki_passage_straight_w4_l6_tile.glb",
-      "sha256": "bedd3debe5dc42a9a8374ca2b7ad28ed5bab11cdb484f230dfaa3c4a2fae09e7",
-      "bytes": 898316,
+      "sha256": "0e3f7e801677304b19c1cdadfcd7662644960737fca41239a7e5cc2ed1159cd8",
+      "bytes": 819700,
       "triangles": 800,
       "materials": [
         "gteki_concrete",
@@ -204,6 +300,56 @@
         "gteki_aluminium_anodised",
         "gteki_light_diffuser"
       ],
+      "textures": {
+        "gteki_concrete": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_tile600": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_tile_white": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_tile_accent": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -2.15,
@@ -279,8 +425,8 @@
       "family": "passage",
       "variant": "straight_w8_l6",
       "file": "glb/gteki_passage_straight_w8_l6.glb",
-      "sha256": "40bfce4880549ff97a5cd5286d2f9819bc4d0218725da7c5159a48fe85c0eb34",
-      "bytes": 1190932,
+      "sha256": "4c48f15de31d90efcdb577f9b7d92f965ee476c1243b64dedbefa5162a5919db",
+      "bytes": 1039488,
       "triangles": 2044,
       "materials": [
         "gteki_concrete",
@@ -294,6 +440,60 @@
         "gteki_aluminium_anodised",
         "gteki_light_diffuser"
       ],
+      "textures": {
+        "gteki_concrete": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_terrazzo": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "orm"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_accent": {
+          "res": 1024,
+          "maps": [
+            "normal"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        },
+        "gteki_ceiling_spandrel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -4.15,
@@ -370,8 +570,8 @@
       "family": "passage",
       "variant": "straight_w8_l6_open",
       "file": "glb/gteki_passage_straight_w8_l6_open.glb",
-      "sha256": "fe7cfd1d5fb8bbea454a309bb0946ed9715068db4a446172e470e9432f09b3be",
-      "bytes": 1240624,
+      "sha256": "4af74d503b2a0037bbad223a56b4d85284d5c96c112e1b6ed1542b9584d370cb",
+      "bytes": 1125816,
       "triangles": 1276,
       "materials": [
         "gteki_concrete",
@@ -385,6 +585,62 @@
         "gteki_aluminium_anodised",
         "gteki_light_diffuser"
       ],
+      "textures": {
+        "gteki_concrete": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_terrazzo": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "orm"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_tile_accent": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        },
+        "gteki_ceiling_spandrel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -4.15,
@@ -460,8 +716,8 @@
       "family": "passage",
       "variant": "end_w4",
       "file": "glb/gteki_passage_end_w4.glb",
-      "sha256": "687a606d2b39c2d25f70e8c306c426a1d1b1965a2800346a552cd4f5574a721d",
-      "bytes": 1065864,
+      "sha256": "c8ab089cdb837f44f50d673d0b746f6e7262a37963cadd2d4c0aefda03431cd4",
+      "bytes": 951056,
       "triangles": 1036,
       "materials": [
         "gteki_concrete",
@@ -474,6 +730,54 @@
         "gteki_aluminium_anodised",
         "gteki_light_diffuser"
       ],
+      "textures": {
+        "gteki_concrete": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_terrazzo": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "orm"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        },
+        "gteki_ceiling_spandrel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -2.15,
@@ -543,8 +847,8 @@
       "family": "passage",
       "variant": "corner_w4",
       "file": "glb/gteki_passage_corner_w4.glb",
-      "sha256": "a81234f39ca92764f44460c85db693d97d5c395993a5a442aa4d0a424b9e1228",
-      "bytes": 1052640,
+      "sha256": "228eebbe550b4d0b4ab087a9973e5b03760c375d53ac0c7a1f4b9c04adc10572",
+      "bytes": 937832,
       "triangles": 814,
       "materials": [
         "gteki_concrete",
@@ -557,6 +861,54 @@
         "gteki_aluminium_anodised",
         "gteki_light_diffuser"
       ],
+      "textures": {
+        "gteki_concrete": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_terrazzo": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "orm"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        },
+        "gteki_ceiling_spandrel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -2.15,
@@ -635,8 +987,8 @@
       "family": "passage",
       "variant": "tee_w4",
       "file": "glb/gteki_passage_tee_w4.glb",
-      "sha256": "3b90ce48bab8ebbd6a11ac5b80ed393901312183b32f14e08c2f2cc400e247d1",
-      "bytes": 1039424,
+      "sha256": "3c4c78d4217160b8456424d121991319dfc3cd280d130377f4d1253cbeba5fae",
+      "bytes": 924616,
       "triangles": 592,
       "materials": [
         "gteki_concrete",
@@ -649,6 +1001,54 @@
         "gteki_aluminium_anodised",
         "gteki_light_diffuser"
       ],
+      "textures": {
+        "gteki_concrete": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_terrazzo": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "orm"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        },
+        "gteki_ceiling_spandrel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -2.15,
@@ -736,8 +1136,8 @@
       "family": "passage",
       "variant": "end_w8",
       "file": "glb/gteki_passage_end_w8.glb",
-      "sha256": "3367907656fb95155b029230787791fc5a4f917efff0f2548be6bd2ece22df68",
-      "bytes": 1264076,
+      "sha256": "072106e5a1bfb30ee22de256de148b22719222780dab5c4761ae94f9aac9cbca",
+      "bytes": 1112628,
       "triangles": 3520,
       "materials": [
         "gteki_concrete",
@@ -751,6 +1151,60 @@
         "gteki_aluminium_anodised",
         "gteki_light_diffuser"
       ],
+      "textures": {
+        "gteki_concrete": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_terrazzo": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "orm"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_accent": {
+          "res": 1024,
+          "maps": [
+            "normal"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        },
+        "gteki_ceiling_spandrel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -4.15,
@@ -821,8 +1275,8 @@
       "family": "passage",
       "variant": "cross_w4",
       "file": "glb/gteki_passage_cross_w4.glb",
-      "sha256": "629cc774a8bc5fe3a9249b35ea334f372508ef14601ec6af757410d99d5ebff8",
-      "bytes": 671960,
+      "sha256": "762712bf75dbce0d1f0d2ae1c3cb801e0bd1d8de76087ded191411a653d099d8",
+      "bytes": 654652,
       "triangles": 384,
       "materials": [
         "gteki_concrete",
@@ -831,6 +1285,31 @@
         "gteki_aluminium_anodised",
         "gteki_light_diffuser"
       ],
+      "textures": {
+        "gteki_concrete": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_terrazzo": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "orm"
+          ]
+        },
+        "gteki_ceiling_spandrel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -2.15,
@@ -928,8 +1407,8 @@
       "family": "gate",
       "variant": "array_4w1",
       "file": "glb/gteki_gate_array_4w1.glb",
-      "sha256": "696182a8114b8d505dd30f6e0d94b193469d909c4003efcf3e5b02fda797a701",
-      "bytes": 563404,
+      "sha256": "f74fb289229b473a869753679b4877164ea9d76cff6a86f153eb623d819a693d",
+      "bytes": 440768,
       "triangles": 6682,
       "materials": [
         "gteki_steel_painted_dark",
@@ -944,6 +1423,28 @@
         "gteki_rubber_black",
         "gteki_floor_granite_dark"
       ],
+      "textures": {
+        "gteki_steel_painted_dark": {
+          "res": 512,
+          "maps": [
+            "normal"
+          ]
+        },
+        "gteki_gate_body": {
+          "res": 512,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -1.95,
@@ -1040,8 +1541,8 @@
       "family": "gate",
       "variant": "array_6w1",
       "file": "glb/gteki_gate_array_6w1.glb",
-      "sha256": "3a98eb948ec9aea2067141b44c255cf6bce0d290a225cfc6bdb140e8ffa2ce2a",
-      "bytes": 667756,
+      "sha256": "03b055416d8bceb9b652e56adc76d74bddd45c5b71d283661974add1537a0676",
+      "bytes": 545124,
       "triangles": 9562,
       "materials": [
         "gteki_steel_painted_dark",
@@ -1056,6 +1557,28 @@
         "gteki_rubber_black",
         "gteki_floor_granite_dark"
       ],
+      "textures": {
+        "gteki_steel_painted_dark": {
+          "res": 512,
+          "maps": [
+            "normal"
+          ]
+        },
+        "gteki_gate_body": {
+          "res": 512,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -2.77,
@@ -1160,8 +1683,8 @@
       "family": "gate",
       "variant": "array_2",
       "file": "glb/gteki_gate_array_2.glb",
-      "sha256": "bc1b953eb22101d1b05192a6ecda0d67f4a0ddf71ad6ff2db27f548f0f3a803e",
-      "bytes": 454304,
+      "sha256": "f65539453b69724cc9761dd99293705f5813a58b96029ddce0600fb9e5ae42e3",
+      "bytes": 331668,
       "triangles": 3802,
       "materials": [
         "gteki_steel_painted_dark",
@@ -1176,6 +1699,28 @@
         "gteki_rubber_black",
         "gteki_floor_granite_dark"
       ],
+      "textures": {
+        "gteki_steel_painted_dark": {
+          "res": 512,
+          "maps": [
+            "normal"
+          ]
+        },
+        "gteki_gate_body": {
+          "res": 512,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.98,
@@ -1262,8 +1807,8 @@
       "family": "gate",
       "variant": "array_3w1_oneway",
       "file": "glb/gteki_gate_array_3w1_oneway.glb",
-      "sha256": "58b643f9c84d347945754491c9e486af64c6e59fa292c9ccdc43e7c9bbb79db7",
-      "bytes": 480948,
+      "sha256": "ad0121e7d9066d27ee1f9db933f137997374648914c58cd3527728b0a906777b",
+      "bytes": 358312,
       "triangles": 4674,
       "materials": [
         "gteki_steel_painted_dark",
@@ -1278,6 +1823,28 @@
         "gteki_rubber_black",
         "gteki_floor_granite_dark"
       ],
+      "textures": {
+        "gteki_steel_painted_dark": {
+          "res": 512,
+          "maps": [
+            "normal"
+          ]
+        },
+        "gteki_gate_body": {
+          "res": 512,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -1.54,
@@ -1370,8 +1937,8 @@
       "family": "vertical",
       "variant": "stairs_straight",
       "file": "glb/gteki_stairs_straight_w2400_r3000.glb",
-      "sha256": "c4accd497eea080262d57b748492e94e97cf5126ca5e909f418bd1572f9737cc",
-      "bytes": 1498200,
+      "sha256": "6baefd183aaa19c364a09df0c7e54ba98a094ef4cc4813ac7f7859797f02d64f",
+      "bytes": 1231044,
       "triangles": 17176,
       "materials": [
         "gteki_ceiling_plaster",
@@ -1385,6 +1952,53 @@
         "gteki_reveal_dark",
         "gteki_light_diffuser"
       ],
+      "textures": {
+        "gteki_floor_terrazzo": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        },
+        "gteki_rubber_nosing": {
+          "res": 256,
+          "maps": [
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_tactile_dots": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -1.42,
@@ -1482,8 +2096,8 @@
       "family": "vertical",
       "variant": "stairs_landing",
       "file": "glb/gteki_stairs_landing_w2400_r4000.glb",
-      "sha256": "6579ec22cbe5c7cbebd43748f4fe599076c363903c8b8f2c7be4dd9a495d07c6",
-      "bytes": 1620864,
+      "sha256": "2cd087c0fe825175206fe1aabd035e99f2ad145614f12e40f5b3e93767f9961d",
+      "bytes": 1444008,
       "triangles": 24048,
       "materials": [
         "gteki_ceiling_plaster",
@@ -1497,6 +2111,46 @@
         "gteki_reveal_dark",
         "gteki_light_diffuser"
       ],
+      "textures": {
+        "gteki_floor_terrazzo": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_tactile_dots": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_granite_dark": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -1.42,
@@ -1600,8 +2254,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s1000_r5000_up.glb",
-      "sha256": "7f7684a76277e7de0fd141a09f1babb041dd4972d7430e8004b4ddb8fb196a8a",
-      "bytes": 1473824,
+      "sha256": "264d4f9301f42e573cc24be6ad6d8c5a4d1fa82dd450030360b99b6f8453247a",
+      "bytes": 1150580,
       "triangles": 29030,
       "materials": [
         "gteki_escalator_tread",
@@ -1615,6 +2269,31 @@
         "gteki_emissive_red",
         "gteki_vertical_nosing_light"
       ],
+      "textures": {
+        "gteki_escalator_tread": {
+          "res": 256,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_painted_light": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.803,
@@ -1758,8 +2437,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s600_r3500_down.glb",
-      "sha256": "bd5eddcafb70b14d2973d59c540c4d60f0b2d8aaee6f184a65f118a087a5a938",
-      "bytes": 1462188,
+      "sha256": "f6d22d4ec9e88a5dbcb676ead27c2802bf5f00d53c4f395ba0a71be512c0a6c3",
+      "bytes": 1120060,
       "triangles": 26946,
       "materials": [
         "gteki_escalator_tread",
@@ -1773,6 +2452,38 @@
         "gteki_vertical_nosing_light",
         "gteki_emissive_green"
       ],
+      "textures": {
+        "gteki_escalator_tread": {
+          "res": 256,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_painted_light": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.603,
@@ -1916,8 +2627,8 @@
       "family": "vertical",
       "variant": "lift_portal",
       "file": "glb/gteki_lift_portal_w1000.glb",
-      "sha256": "513f8d99cb7b3c2a7acefee1b8cae625e27c138ca4eb80e66d77d0a762aa56b6",
-      "bytes": 1012232,
+      "sha256": "21285d9ab8df2ec409dc0a12b4b73ab2a79cd3508d97cad3fa74081ef45454d4",
+      "bytes": 854256,
       "triangles": 2394,
       "materials": [
         "gteki_wall_tile_white",
@@ -1932,6 +2643,47 @@
         "gteki_emissive_red",
         "gteki_light_diffuser"
       ],
+      "textures": {
+        "gteki_wall_tile_white": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_concrete": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_floor_terrazzo": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "orm"
+          ]
+        },
+        "gteki_tactile_dots": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.92,
@@ -2002,8 +2754,8 @@
       "family": "signage",
       "variant": "hanging_navy_left",
       "file": "glb/gteki_sign_hanging_navy_left.glb",
-      "sha256": "c9cdfe30ef1adf4e74a9149ecc5ff8b018efeb166cce9534682c765c4ea2fe39",
-      "bytes": 201132,
+      "sha256": "50a91f24995c188c774b24815b289dc174e04c93e7ab49b7c3a75ce38760e03e",
+      "bytes": 84008,
       "triangles": 1054,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2011,6 +2763,20 @@
         "gteki_sign_face_navy_left",
         "gteki_sign_face_navy_right"
       ],
+      "textures": {
+        "gteki_sign_face_navy_left": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_sign_face_navy_right": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.9,
@@ -2050,14 +2816,22 @@
       "family": "signage",
       "variant": "hanging_exit_yellow_up",
       "file": "glb/gteki_sign_hanging_exit_yellow_up.glb",
-      "sha256": "eed15f44a5bc669eaca805cd0d9f825401d09749d387ffb100d013c19bd95752",
-      "bytes": 130328,
+      "sha256": "6c928158c99ae8defeeff41d921ed22f281b4e9289444a1a36e96fb81faea757",
+      "bytes": 71564,
       "triangles": 1054,
       "materials": [
         "gteki_aluminium_anodised",
         "gteki_plastic_dark",
         "gteki_sign_face_exit_yellow_up"
       ],
+      "textures": {
+        "gteki_sign_face_exit_yellow_up": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.9,
@@ -2097,8 +2871,8 @@
       "family": "signage",
       "variant": "hanging_black_right",
       "file": "glb/gteki_sign_hanging_black_right.glb",
-      "sha256": "7f962489877a518b306eedbfc859209f33b547f71449ca5f3ea90feca7163196",
-      "bytes": 195572,
+      "sha256": "b448bc40de4733f5516cbcce48cad10f27fd3e0f363c18d64d6ef0bd799903f9",
+      "bytes": 81460,
       "triangles": 1054,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2106,6 +2880,20 @@
         "gteki_sign_face_black_right",
         "gteki_sign_face_black_left"
       ],
+      "textures": {
+        "gteki_sign_face_black_right": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_sign_face_black_left": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.9,
@@ -2145,14 +2933,22 @@
       "family": "signage",
       "variant": "hanging_white_none",
       "file": "glb/gteki_sign_hanging_white_none.glb",
-      "sha256": "97a0968fb246921a6765f1ab4d3da65905673955c34e050bc235960516dccbab",
-      "bytes": 126388,
+      "sha256": "f28e9829d39b90b74f1a565dcca2cac73bc9e8e794e6e152d7870014bd4da1bb",
+      "bytes": 69028,
       "triangles": 1054,
       "materials": [
         "gteki_aluminium_anodised",
         "gteki_plastic_dark",
         "gteki_sign_face_white_none"
       ],
+      "textures": {
+        "gteki_sign_face_white_none": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.9,
@@ -2192,14 +2988,22 @@
       "family": "signage",
       "variant": "wall_black",
       "file": "glb/gteki_sign_wall_black.glb",
-      "sha256": "64b582bf177f5efd3f48cc4eb631552199ac674ec329535902f6a1cbdc27b374",
-      "bytes": 88976,
+      "sha256": "50f71851b583fddaff30eeab2e0ffbde4b82f23eae3ea12a01324f7af92c5747",
+      "bytes": 31328,
       "triangles": 244,
       "materials": [
         "gteki_aluminium_anodised",
         "gteki_plastic_dark",
         "gteki_sign_face_black_right"
       ],
+      "textures": {
+        "gteki_sign_face_black_right": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.8,
@@ -2239,14 +3043,22 @@
       "family": "signage",
       "variant": "wall_navy_long",
       "file": "glb/gteki_sign_wall_navy_long.glb",
-      "sha256": "309f47eb5dd995a346eb19261c42d629ee1f15ba921c481d3d94f42c0fab0ab4",
-      "bytes": 90960,
+      "sha256": "c99a21d177aa47c7d6b52adf88a4ce2c268e47c5a9d1eb1e1eb731b4483703ce",
+      "bytes": 33780,
       "triangles": 244,
       "materials": [
         "gteki_aluminium_anodised",
         "gteki_plastic_dark",
         "gteki_sign_face_navy_left_a540"
       ],
+      "textures": {
+        "gteki_sign_face_navy_left_a540": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -1.2,
@@ -2286,8 +3098,8 @@
       "family": "signage",
       "variant": "totem",
       "file": "glb/gteki_sign_totem.glb",
-      "sha256": "64a9f37d4dad8c8e72317c6335a60fe68ad7eda26f53cf57f09a51a53d47d072",
-      "bytes": 220512,
+      "sha256": "57b7b39e67f3599928a2b5bf657de046219f20414ab84409ea02a4c9aba0d7fd",
+      "bytes": 88780,
       "triangles": 584,
       "materials": [
         "gteki_steel_painted_dark",
@@ -2295,6 +3107,20 @@
         "gteki_plastic_dark",
         "gteki_sign_face_totem_light_navy"
       ],
+      "textures": {
+        "gteki_steel_painted_dark": {
+          "res": 512,
+          "maps": [
+            "normal"
+          ]
+        },
+        "gteki_sign_face_totem_light_navy": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.34,
@@ -2335,8 +3161,8 @@
       "family": "signage",
       "variant": "totem_dark",
       "file": "glb/gteki_sign_totem_dark.glb",
-      "sha256": "55c11e0472fc03ac13a21adf5b82b29f9e0b882e77da99be3a07e921953a1cef",
-      "bytes": 222292,
+      "sha256": "3bcba67c1df1ffaf183b57047ed1125d86111309d9e1a2b27f8582cc9867d7d0",
+      "bytes": 91512,
       "triangles": 584,
       "materials": [
         "gteki_steel_painted_dark",
@@ -2344,6 +3170,20 @@
         "gteki_plastic_dark",
         "gteki_sign_face_totem_dark_black"
       ],
+      "textures": {
+        "gteki_steel_painted_dark": {
+          "res": 512,
+          "maps": [
+            "normal"
+          ]
+        },
+        "gteki_sign_face_totem_dark_black": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.34,
@@ -2384,8 +3224,8 @@
       "family": "signage",
       "variant": "blade_navy",
       "file": "glb/gteki_sign_blade_navy.glb",
-      "sha256": "9cdecbd75a5334d828435c6373497f00c83a77a4bc030978760a338cd170a5b1",
-      "bytes": 184196,
+      "sha256": "ae1523dc355109973f4420ec10f71cea867a24634a31f636667e04521c4005da",
+      "bytes": 112060,
       "triangles": 592,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2393,6 +3233,20 @@
         "gteki_sign_face_blade_navy_left",
         "gteki_sign_face_blade_navy_right"
       ],
+      "textures": {
+        "gteki_sign_face_blade_navy_left": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_sign_face_blade_navy_right": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.05,
@@ -2434,14 +3288,22 @@
       "family": "signage",
       "variant": "blade_yellow_up",
       "file": "glb/gteki_sign_blade_yellow_up.glb",
-      "sha256": "5a1eac1dac4716dca6f3ac086bc6aef76605cfbeb85d9a1ae7d85063dcc938ce",
-      "bytes": 114376,
+      "sha256": "9b985f25989385aa90f78fbea5ecb425e304d8ff23dcdd6bc847f8fd2bb75cdc",
+      "bytes": 78612,
       "triangles": 592,
       "materials": [
         "gteki_aluminium_anodised",
         "gteki_plastic_dark",
         "gteki_sign_face_blade_exit_yellow_up"
       ],
+      "textures": {
+        "gteki_sign_face_blade_exit_yellow_up": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.05,
@@ -2483,8 +3345,8 @@
       "family": "props",
       "variant": "bench_4seat",
       "file": "glb/gteki_bench_4seat.glb",
-      "sha256": "a73c0ca6994ba39ef9324a2c1bcd39ee50ee56dbd9095c88c5594b4837d3471c",
-      "bytes": 801588,
+      "sha256": "b83191c2213f662fb6f1fada5eabd17d57686b9643ee281c104ded506567b880",
+      "bytes": 363024,
       "triangles": 2325,
       "materials": [
         "gteki_stainless_polished",
@@ -2492,6 +3354,24 @@
         "gteki_perforated_steel",
         "gteki_steel_brushed"
       ],
+      "textures": {
+        "gteki_perforated_steel": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -1.17,
@@ -2531,14 +3411,30 @@
       "family": "props",
       "variant": "bench_3seat_slat",
       "file": "glb/gteki_bench_3seat_slat.glb",
-      "sha256": "360fdc58527efb7b7c3a08f218ecb9fea55165bf04d6b12ac2049154916f9eb0",
-      "bytes": 319412,
+      "sha256": "197a2e77ce8821f682a23da31bf5844317e33f766a142c7cd29b506d96e71625",
+      "bytes": 170200,
       "triangles": 2156,
       "materials": [
         "gteki_steel_painted_dark",
         "gteki_rubber_black",
         "gteki_steel_brushed"
       ],
+      "textures": {
+        "gteki_steel_painted_dark": {
+          "res": 512,
+          "maps": [
+            "normal"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.87,
@@ -2578,8 +3474,8 @@
       "family": "props",
       "variant": "bin_trio",
       "file": "glb/gteki_bin_trio.glb",
-      "sha256": "dc6cffcc31eee142cfbdebe529d560af8a1037532066aa695754cd4ff7c83155",
-      "bytes": 288024,
+      "sha256": "f7f288dc4aa371445b0992c27d4ea55e8a47d7a69d2cbe6ffed7a662dcd5bccc",
+      "bytes": 138796,
       "triangles": 1162,
       "materials": [
         "gteki_steel_painted_dark",
@@ -2590,6 +3486,22 @@
         "gteki_bin_green",
         "gteki_bin_orange"
       ],
+      "textures": {
+        "gteki_steel_painted_dark": {
+          "res": 512,
+          "maps": [
+            "normal"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.64,
@@ -2643,6 +3555,7 @@
         "gteki_poster_01",
         "gteki_glass_clear"
       ],
+      "textures": {},
       "bounds_m": {
         "min": [
           -0.4,
@@ -2690,6 +3603,7 @@
         "gteki_poster_04",
         "gteki_glass_clear"
       ],
+      "textures": {},
       "bounds_m": {
         "min": [
           -0.4,
@@ -2737,6 +3651,7 @@
         "gteki_poster_08",
         "gteki_glass_clear"
       ],
+      "textures": {},
       "bounds_m": {
         "min": [
           -0.4,
@@ -2775,8 +3690,8 @@
       "family": "props",
       "variant": "vending_machine",
       "file": "glb/gteki_vending_machine.glb",
-      "sha256": "7df77972109d9fd78055cc246e99d3965c8dd29a7dc4666c4e046682ba2d6d27",
-      "bytes": 474460,
+      "sha256": "90cab174415107ba5af667219a392e11e02ff3834fbbe6586df6bd6606a05ff0",
+      "bytes": 403832,
       "triangles": 5896,
       "materials": [
         "gteki_vending_body_slate",
@@ -2803,6 +3718,14 @@
         "gteki_emissive_red",
         "gteki_emissive_ic_blue"
       ],
+      "textures": {
+        "gteki_steel_painted_dark": {
+          "res": 512,
+          "maps": [
+            "normal"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.5,
@@ -2840,8 +3763,8 @@
       "family": "props",
       "variant": "vending_machine_sand",
       "file": "glb/gteki_vending_machine_sand.glb",
-      "sha256": "a3e5741ae93900a341f7bc67d090e2a4e3d7c7f1ce96833408aa3a6fa276bb39",
-      "bytes": 474196,
+      "sha256": "2f976acf2c555f6d07fc7149c87e3bef9c38cdfba51d52bccfc1eee57327e2a7",
+      "bytes": 403568,
       "triangles": 5896,
       "materials": [
         "gteki_vending_body_sand",
@@ -2868,6 +3791,14 @@
         "gteki_emissive_red",
         "gteki_emissive_ic_blue"
       ],
+      "textures": {
+        "gteki_steel_painted_dark": {
+          "res": 512,
+          "maps": [
+            "normal"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.5,
@@ -2905,14 +3836,31 @@
       "family": "props",
       "variant": "column_round_d600",
       "file": "glb/gteki_column_round_d600.glb",
-      "sha256": "6198dc82ccb6593c570400fcef5f0da66a311894e3f5e2225e2c0c45c000321f",
-      "bytes": 237820,
+      "sha256": "b1472e33bb0ff8e43e6a890ffb997cb9f49b74e2366e1a588a1570610652a233",
+      "bytes": 140320,
       "triangles": 832,
       "materials": [
         "gteki_steel_brushed",
         "gteki_wall_panel_enamel",
         "gteki_reveal_dark"
       ],
+      "textures": {
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.305,
@@ -2955,8 +3903,8 @@
       "family": "props",
       "variant": "column_square_600",
       "file": "glb/gteki_column_square_600.glb",
-      "sha256": "28d0bbaca9c9ed16e903203072e747b8d5ca3d85d62f717d7162c6c0b75c093b",
-      "bytes": 319120,
+      "sha256": "c8222d1b2b7f847596b45925dee9cfc6fd02d1d17cc5ce7ca81e30fb022a1f40",
+      "bytes": 240496,
       "triangles": 698,
       "materials": [
         "gteki_steel_brushed",
@@ -2964,6 +3912,24 @@
         "gteki_reveal_dark",
         "gteki_stainless_polished"
       ],
+      "textures": {
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_tile_white": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.305,
@@ -3006,14 +3972,31 @@
       "family": "props",
       "variant": "column_round_d600_h3200",
       "file": "glb/gteki_column_round_d600_h3200.glb",
-      "sha256": "d643747a09eadc36771de0834a8d64516ac4a8f95d88e76c6f0f3c70854deaae",
-      "bytes": 237836,
+      "sha256": "bd49d77484b691d51970d110a1d6df6958c5bc1e8f600f842716e47267912645",
+      "bytes": 140340,
       "triangles": 832,
       "materials": [
         "gteki_steel_brushed",
         "gteki_wall_panel_enamel",
         "gteki_reveal_dark"
       ],
+      "textures": {
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.305,
@@ -3056,13 +4039,29 @@
       "family": "props",
       "variant": "column_square_800_accent",
       "file": "glb/gteki_column_square_800_accent.glb",
-      "sha256": "4493906acf2fdf41dc885a7e57a0a5643c80ecc52a8fc9185df1653e5178dc0d",
-      "bytes": 212356,
+      "sha256": "3848c408e2c5af1678e06fa2f76e79b4187cc942dcc9a7bcc9997ab29d513dbc",
+      "bytes": 97104,
       "triangles": 266,
       "materials": [
         "gteki_steel_brushed",
         "gteki_wall_panel_accent"
       ],
+      "textures": {
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_accent": {
+          "res": 1024,
+          "maps": [
+            "normal"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.405,
@@ -3105,12 +4104,22 @@
       "family": "props",
       "variant": "tactile_strip_dots_3m",
       "file": "glb/gteki_tactile_strip_dots_3m.glb",
-      "sha256": "1e9c7d26793a9789f0226eea10a67cd1b2c1cf74d866517fda721f2794d15f54",
-      "bytes": 103512,
+      "sha256": "d71d5ed4473428c713e6617f143ea45525bbb5db7c89df55d877f0628ca41b7d",
+      "bytes": 41464,
       "triangles": 30,
       "materials": [
         "gteki_tactile_dots"
       ],
+      "textures": {
+        "gteki_tactile_dots": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.15,
@@ -3167,12 +4176,22 @@
       "family": "props",
       "variant": "tactile_strip_bars_3m",
       "file": "glb/gteki_tactile_strip_bars_3m.glb",
-      "sha256": "4cacd746586bbc5cb777b3898537a5babf64eacd0301881ba9c23ca11b2f4290",
-      "bytes": 100460,
+      "sha256": "0f8dadd11b1aafbe6e5ffb368b28f2a3dab74db98e853b4aa838a58df134174f",
+      "bytes": 40512,
       "triangles": 30,
       "materials": [
         "gteki_tactile_bars"
       ],
+      "textures": {
+        "gteki_tactile_bars": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.15,
@@ -3229,14 +4248,24 @@
       "family": "props",
       "variant": "barrier_rail_3600_glass",
       "file": "glb/gteki_barrier_rail_3600_glass.glb",
-      "sha256": "616c00aba845677576e49b0e51dff2e1048aa3dd2f716021c4a4e92c07d7536f",
-      "bytes": 221484,
+      "sha256": "7680e6f8554e3c1353844c7289126efe6ac18b085590671a8e17d82793a3cf6c",
+      "bytes": 142860,
       "triangles": 2090,
       "materials": [
         "gteki_steel_brushed",
         "gteki_stainless_polished",
         "gteki_glass_clear"
       ],
+      "textures": {
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -1.87,
@@ -3299,14 +4328,31 @@
       "family": "props",
       "variant": "barrier_rail_2400_solid",
       "file": "glb/gteki_barrier_rail_2400_solid.glb",
-      "sha256": "0acec9d58fc8482acadbe617f65c37fecbbe1ca2189c19d84116da04b50c5bfc",
-      "bytes": 245532,
+      "sha256": "39aeede21a45fcc3d711dc650f48070eedad952be6ee8d80b08b8418d95b46b2",
+      "bytes": 148032,
       "triangles": 922,
       "materials": [
         "gteki_steel_brushed",
         "gteki_stainless_polished",
         "gteki_wall_panel_enamel"
       ],
+      "textures": {
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_wall_panel_enamel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -1.27,
@@ -3369,13 +4415,23 @@
       "family": "props",
       "variant": "barrier_rail_2400_rails",
       "file": "glb/gteki_barrier_rail_2400_rails.glb",
-      "sha256": "3c7e6de3dd34e037b6993457ee686724849c17499a84cd9927f90cf6c8e7b540",
-      "bytes": 170212,
+      "sha256": "ce3a24d47be9223862c081f79b3a5b0ff92ab354f0bcc817ef73f5ab35288f41",
+      "bytes": 91580,
       "triangles": 1324,
       "materials": [
         "gteki_steel_brushed",
         "gteki_stainless_polished"
       ],
+      "textures": {
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -1.27,
@@ -3438,8 +4494,8 @@
       "family": "props",
       "variant": "ticket_kiosk",
       "file": "glb/gteki_ticket_kiosk.glb",
-      "sha256": "1f3d1c7ab9a7ee79842b99a79cd717440d315cd5c67455c69f51d645b4fbfd26",
-      "bytes": 212460,
+      "sha256": "e6c9ecb266c7a128150b4ae566dea4ca06de41d545ec93b5cd141d1777210384",
+      "bytes": 125844,
       "triangles": 752,
       "materials": [
         "gteki_gate_body",
@@ -3451,6 +4507,20 @@
         "gteki_emissive_amber",
         "gteki_kiosk_accent"
       ],
+      "textures": {
+        "gteki_gate_body": {
+          "res": 512,
+          "maps": [
+            "albedo"
+          ]
+        },
+        "gteki_screen_ui": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.35,
@@ -3486,8 +4556,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s1000_r5000_down.glb",
-      "sha256": "42ddacea7e5fdc59770a61af423cdb91026ccce0bb900ba9ccc704aae328caea",
-      "bytes": 1473836,
+      "sha256": "c8ed62bcc660f4e1d26fc439a6e14ceb270172f18c547d87c98b6c2eab21fc5c",
+      "bytes": 1150588,
       "triangles": 29030,
       "materials": [
         "gteki_escalator_tread",
@@ -3501,6 +4571,31 @@
         "gteki_vertical_nosing_light",
         "gteki_emissive_green"
       ],
+      "textures": {
+        "gteki_escalator_tread": {
+          "res": 256,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        },
+        "gteki_steel_painted_light": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal"
+          ]
+        },
+        "gteki_steel_brushed": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "orm"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.803,

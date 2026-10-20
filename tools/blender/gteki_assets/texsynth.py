@@ -112,12 +112,17 @@ def _stamp_disc(field, cx, cy, r, value, mode="max"):
     return cover, iy, ix
 
 
+def quantize8(img):
+    """The 8-bit values write_png stores for a [0,1] float image."""
+    return np.clip(np.asarray(img) * 255.0 + 0.5, 0, 255).astype(np.uint8)
+
+
 def write_png(path, img):
     """Minimal deterministic 8-bit RGB/RGBA PNG writer (stdlib only)."""
     import struct
     import zlib
 
-    a = np.clip(np.asarray(img) * 255.0 + 0.5, 0, 255).astype(np.uint8)
+    a = quantize8(img)
     if a.ndim == 2:
         a = a[..., None].repeat(3, axis=2)
     h, w, c = a.shape

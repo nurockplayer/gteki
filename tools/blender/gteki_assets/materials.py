@@ -6,6 +6,14 @@ texsynth. `repeat_m` is the real-world size of one texture repeat; the mesh
 builder bakes it into UVs (the contract forbids KHR_texture_transform).
 
 Families can add materials with `register()`; keep names generic.
+
+Texture budget (see docs/assets/texture-budget.md):
+- `tex_res` is both the per-texture cap and the target density in texels per
+  metre, so a material repeating every 0.25 m gets a 256 px texture at the
+  default 1024 instead of being stored at 4096 px/m (`texture_res`).
+- A map flatter than `FLAT_LEVELS` (per-channel standard deviation, in 8-bit
+  levels) is exported as a material factor instead of a texture: it looks the
+  same and costs no download or GPU memory (`texture_plan`).
 """
 
 import hashlib
@@ -71,6 +79,27 @@ def repeat_m(name):
     return SPECS[name].get("repeat_m", 1.0)
 
 
+# Per-channel standard deviation (8-bit levels) below which a map is a constant.
+# Albedo: under one level is invisible (below the JPEG noise floor); roughness /
+# metallic: 2 levels = 0.008; normal: 1.5 levels = 0.7 degrees of tilt, far below
+# the GGX lobe width of the glossiest kit material.
+FLAT_LEVELS = {"albedo": 1.0, "orm": 2.0, "normal": 1.5}
+MIN_RES = 128
+
+
+def texture_res(name, tex_res):
+    """Power-of-two size giving at least `tex_res` texels per metre, capped at `tex_res`.
+
+    Generators draw features in physical units (normalised UV x repeat), so the
+    look stays the same; only oversampled small repeats shrink."""
+    spec = SPECS[name]
+    want = spec.get("repeat_m", 1.0) * tex_res
+    res = MIN_RES
+    while res < want and res < tex_res:
+        res *= 2
+    return min(res, tex_res)
+
+
 def _cache_dir():
     d = os.environ.get("GTEKI_TEX_CACHE") or os.path.join(os.path.dirname(os.path.dirname(__file__)), ".cache", "textures")
     os.makedirs(d, exist_ok=True)
@@ -83,20 +112,61 @@ def _spec_hash(name, spec, res):
 
 
 def texture_paths(name, res):
-    """Generate (or reuse cached) PNGs for a textured material. Returns dict or None."""
+    """Generate (or reuse cached) PNGs for a textured material. Returns dict or None.
+
+    Also caches per-channel mean/std (0..1, as stored) in `<base>_stats.v2.json`."""
     spec = SPECS[name]
     if "gen" not in spec:
         return None
     h = _spec_hash(name, spec, res)
     base = os.path.join(_cache_dir(), f"{name}_{res}_{h}")
     paths = {k: f"{base}_{k}.png" for k in ("albedo", "normal", "orm")}
-    if not all(os.path.exists(p) for p in paths.values()):
+    stats_path = f"{base}_stats.v2.json"  # v2: exact quantisation, float64
+    if not all(os.path.exists(p) for p in [*paths.values(), stats_path]):
+        import numpy as np
+
         maps = texsynth.GENERATORS[spec["gen"]](res, spec["seed"], **spec.get("kw", {}))
+        stats = {}
         for k, p in paths.items():
             tmp = p + ".tmp"
             texsynth.write_png(tmp, maps[k])
             os.replace(tmp, p)
-    return paths
+            # statistics of the exact 8-bit values in the PNG, accumulated in float64
+            # (float32 sums over a megapixel drift by more than the flatness threshold)
+            q = texsynth.quantize8(maps[k]).reshape(-1, 3).astype(np.float64) / 255.0
+            stats[k] = {"mean": [round(float(x), 6) for x in q.mean(0)],
+                        "std": [round(float(x), 6) for x in q.std(0)]}
+        with open(stats_path + ".tmp", "w") as f:
+            json.dump(stats, f, sort_keys=True)
+        os.replace(stats_path + ".tmp", stats_path)
+    with open(stats_path) as f:
+        return dict(paths, stats=json.load(f))
+
+
+def _flat(stats, key, channels):
+    return all(stats[key]["std"][c] * 255.0 < FLAT_LEVELS[key] for c in channels)
+
+
+def texture_plan(name, tex_res):
+    """What a textured material exports: {res, maps: {albedo|orm|normal: path},
+    factors: {color (sRGB), rough, metal}}; None for factor-only materials."""
+    tex = texture_paths(name, texture_res(name, tex_res))
+    if tex is None:
+        return None
+    st = tex["stats"]
+    plan = {"res": texture_res(name, tex_res), "maps": {}, "factors": {}}
+    if _flat(st, "albedo", (0, 1, 2)):
+        plan["factors"]["color"] = tuple(st["albedo"]["mean"])
+    else:
+        plan["maps"]["albedo"] = tex["albedo"]
+    if _flat(st, "orm", (1, 2)):
+        plan["factors"]["rough"] = st["orm"]["mean"][1]
+        plan["factors"]["metal"] = st["orm"]["mean"][2]
+    else:
+        plan["maps"]["orm"] = tex["orm"]
+    if not _flat(st, "normal", (0, 1)):
+        plan["maps"]["normal"] = tex["normal"]
+    return plan
 
 
 def _repo_root():
@@ -126,7 +196,7 @@ def get(name, tex_res):
     bsdf.location = (100, 0)
     nt.links.new(bsdf.outputs["BSDF"], out.inputs["Surface"])
 
-    paths = texture_paths(name, tex_res)
+    plan = texture_plan(name, tex_res)
     if "image" in spec:
         # externally supplied image (e.g. generated poster art), path relative to repo root
         img = _load_image(os.path.join(_repo_root(), spec["image"]), False)
@@ -139,29 +209,42 @@ def get(name, tex_res):
         if spec.get("emit_image"):
             nt.links.new(tex.outputs["Color"], bsdf.inputs["Emission Color"])
             bsdf.inputs["Emission Strength"].default_value = spec.get("emit_strength", 1.0)
-    elif paths:
-        alb = nt.nodes.new("ShaderNodeTexImage")
-        alb.image = _load_image(paths["albedo"], False)
-        alb.location = (-500, 250)
-        nt.links.new(alb.outputs["Color"], bsdf.inputs["Base Color"])
-        orm = nt.nodes.new("ShaderNodeTexImage")
-        orm.image = _load_image(paths["orm"], True)
-        orm.location = (-500, 0)
-        sep = nt.nodes.new("ShaderNodeSeparateColor")
-        sep.location = (-200, 0)
-        nt.links.new(orm.outputs["Color"], sep.inputs["Color"])
-        nt.links.new(sep.outputs["Green"], bsdf.inputs["Roughness"])
-        nt.links.new(sep.outputs["Blue"], bsdf.inputs["Metallic"])
-        nrm = nt.nodes.new("ShaderNodeTexImage")
-        nrm.image = _load_image(paths["normal"], True)
-        nrm.location = (-500, -250)
-        nmap = nt.nodes.new("ShaderNodeNormalMap")
-        nmap.location = (-200, -250)
-        nt.links.new(nrm.outputs["Color"], nmap.inputs["Color"])
-        nt.links.new(nmap.outputs["Normal"], bsdf.inputs["Normal"])
+    elif plan:
+        maps, fac = plan["maps"], plan["factors"]
+        alb = None
+        if "albedo" in maps:
+            alb = nt.nodes.new("ShaderNodeTexImage")
+            alb.image = _load_image(maps["albedo"], False)
+            alb.location = (-500, 250)
+            nt.links.new(alb.outputs["Color"], bsdf.inputs["Base Color"])
+        else:
+            bsdf.inputs["Base Color"].default_value = (*_srgb_to_linear(fac["color"]), 1.0)
+        if "orm" in maps:
+            orm = nt.nodes.new("ShaderNodeTexImage")
+            orm.image = _load_image(maps["orm"], True)
+            orm.location = (-500, 0)
+            sep = nt.nodes.new("ShaderNodeSeparateColor")
+            sep.location = (-200, 0)
+            nt.links.new(orm.outputs["Color"], sep.inputs["Color"])
+            nt.links.new(sep.outputs["Green"], bsdf.inputs["Roughness"])
+            nt.links.new(sep.outputs["Blue"], bsdf.inputs["Metallic"])
+        else:
+            bsdf.inputs["Roughness"].default_value = fac["rough"]
+            bsdf.inputs["Metallic"].default_value = fac["metal"]
+        if "normal" in maps:
+            nrm = nt.nodes.new("ShaderNodeTexImage")
+            nrm.image = _load_image(maps["normal"], True)
+            nrm.location = (-500, -250)
+            nmap = nt.nodes.new("ShaderNodeNormalMap")
+            nmap.location = (-200, -250)
+            nt.links.new(nrm.outputs["Color"], nmap.inputs["Color"])
+            nt.links.new(nmap.outputs["Normal"], bsdf.inputs["Normal"])
         if spec.get("emit_from_albedo"):
             # self-lit faces (sign boxes, screens): emission = albedo * strength
-            nt.links.new(alb.outputs["Color"], bsdf.inputs["Emission Color"])
+            if alb is not None:
+                nt.links.new(alb.outputs["Color"], bsdf.inputs["Emission Color"])
+            else:
+                bsdf.inputs["Emission Color"].default_value = (*_srgb_to_linear(fac["color"]), 1.0)
             bsdf.inputs["Emission Strength"].default_value = spec.get("emit_strength", 1.0)
     else:
         c = spec.get("color", (0.8, 0.8, 0.8))

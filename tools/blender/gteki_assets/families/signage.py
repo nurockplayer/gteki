@@ -39,7 +39,7 @@ from .. import contract, materials, texsynth
 from ..asset import Asset
 
 GEN = "tools/blender/gteki_assets/families/signage.py"
-TEX_V = 2  # bump when the generators below change output (part of the material spec hash)
+TEX_V = 3  # bump when the generators below change output (part of the material spec hash)
 
 # ---------------------------------------------------------------------------
 # geometry helpers (shared with props.py)
@@ -403,8 +403,26 @@ def _mix(base, col, cov):
     return base * (1 - cov[..., None]) + np.asarray(col, np.float32) * cov[..., None]
 
 
+def _face_shape(res, wd, ht):
+    """(rows, cols) for a face of physical size wd x ht: `res` texels along the long
+    side, the short side the smallest power of two keeping at least that density
+    (a 4.6:1 bar sign gets 1024x256 instead of a square 1024)."""
+    short = 128
+    while short < res * min(wd, ht) / max(wd, ht) and short < res:
+        short *= 2
+    short = min(short, res)
+    return (res, short) if ht >= wd else (short, res)
+
+
+def _face_grid(res, wd, ht):
+    rows, cols = _face_shape(res, wd, ht)
+    yy, xx = np.mgrid[0:rows, 0:cols].astype(np.float32)
+    return (xx + 0.5) / cols, 1.0 - (yy + 0.5) / rows
+
+
 def _finish_maps(albedo, res, seed, grain=0.012):
-    n = texsynth.spectral_noise(res, seed + 7, beta=0.9)
+    rows, cols = albedo.shape[:2]
+    n = texsynth.spectral_noise(res, seed + 7, beta=0.9)[:rows, :cols]
     albedo = albedo * (1.0 - grain + 2 * grain * n)[..., None]
     normal = texsynth.normal_from_height(n * 0.05, strength=0.6)
     rough = (0.34 + 0.05 * n).astype(np.float32)
@@ -420,15 +438,14 @@ def sign_face(res, seed, theme="navy", arrow="none", aspect=4.0, layout="bar", t
     if layout == "map":
         return _map_board(res, seed, theme, aspect, tone)
     T = TONES[theme]
-    yy, xx = np.mgrid[0:res, 0:res].astype(np.float32)
-    u, vv = (xx + 0.5) / res, 1.0 - (yy + 0.5) / res
     if layout == "bar":
         Wd, Ht = aspect, 1.0
     else:
         Wd, Ht = 1.0, 1.0 / aspect
+    u, vv = _face_grid(res, Wd, Ht)
     X, Y = u * Wd, vv * Ht
     aa = max(Wd, Ht) / res * 1.1
-    img = np.empty((res, res, 3), np.float32)
+    img = np.empty(u.shape + (3,), np.float32)
     img[:] = np.asarray(T["field"], np.float32)
     # gentle light-box falloff toward the edges
     edge = np.minimum(np.minimum(u, 1 - u), np.minimum(vv, 1 - vv))
@@ -477,15 +494,14 @@ def _map_board(res, seed, theme, aspect, tone):
     Pure colour blocks and lines (no text, no real map data). Width normalised to 1."""
     rng = np.random.default_rng(seed)
     T = TONES[theme]
-    yy, xx = np.mgrid[0:res, 0:res].astype(np.float32)
-    u, vv = (xx + 0.5) / res, 1.0 - (yy + 0.5) / res
     Ht = 1.0 / aspect
+    u, vv = _face_grid(res, 1.0, Ht)
     X, Y = u, vv * Ht
     aa = max(1.0, Ht) / res * 1.1
     light = tone == "light"
     bg = (0.93, 0.935, 0.92) if light else (0.05, 0.08, 0.14)
     gridc = (0.80, 0.82, 0.82) if light else (0.12, 0.17, 0.26)
-    img = np.empty((res, res, 3), np.float32)
+    img = np.empty(u.shape + (3,), np.float32)
     img[:] = np.asarray(bg, np.float32)
     hb = 0.5  # header band height
     mp0, mp1 = 0.62, Ht - hb - 0.06  # map area y range

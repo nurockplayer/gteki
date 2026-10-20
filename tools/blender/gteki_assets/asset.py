@@ -229,6 +229,12 @@ class Asset:
             "bytes": len(data),
             "triangles": self.meta["triangles"],
             "materials": list(self.materials),
+            # exported texture size and which maps stayed textures (the rest became factors)
+            "textures": {
+                m: {"res": plan["res"], "maps": sorted(plan["maps"])}
+                for m in self.materials
+                if (plan := materials.texture_plan(m, self.tex_res))
+            },
             "bounds_m": self.meta["bounds_m"],
             "dimension_basis": self.dimension_basis,
             "placement": self.placement,

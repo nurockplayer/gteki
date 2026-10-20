@@ -1,6 +1,6 @@
 # GTEki kit 0.1.0 — import and quality report
 
-Contract `gteki-asset/0.1` · 48 GLBs · 26.5 MiB · 198,623 visual triangles · generated 2026-10-20.
+Contract `gteki-asset/0.1` · 48 GLBs · 21.0 MiB (was 26.5 MiB before the texture budget) · 198,623 visual triangles · generated 2026-10-20, texture budget 2026-10-21.
 
 Everything below was measured on the committed library (`assets/library/glb`) with the commands shown. Nothing in this kit is a measurement of Ikebukuro, Shinjuku or any other real station; all assets are `generic-typical` or `synthetic` (see [`PROVENANCE.md`](../../assets/library/PROVENANCE.md)).
 
@@ -19,10 +19,14 @@ Everything below was measured on the committed library (`assets/library/glb`) wi
 | --- | --- | --- |
 | Batch build, 48 assets, cold texture cache | `tools/blender/build.sh build` | PASS · ~240 s of generator time on M2 Pro (slowest asset 30 s, most of it cold texture synthesis; cached rebuilds take seconds) |
 | Contract validator (structure, accessor bounds, index range, NaN, transforms, naming, extras, AABB vs `bounds_m`) | `tools/blender/build.sh validate` | **42 PASS · 6 WARN · 0 FAIL** |
+| Texture budget: images vs plan, extra maps, duplicates, manifest coverage, byte/GPU limits | `tools/blender/build.sh validate` (`texture_budget.py --check`) | **PASS** · 21.03 MiB, 2.42 MiB unique images, 192 MiB unique GPU est. ([texture-budget.md](texture-budget.md)) |
+| Stdlib self-tests (validator, budget checker, bundle tool) | `tools/blender/build.sh selftest` | **PASS** |
+| Kit bundle round trip: `bundle --all`, then `extract` each asset | `bundle_kit.py` + `validate_glb.py` | **48/48** extracts validate exactly like their sources |
 | Godot 4.7 headless import, with parity against `manifest.json` (StaticBody3D + CollisionShape3D per `-colonly` node, socket position and outward direction, flap nodes per aisle, placement-class origin checks) | `tools/blender/build.sh godot` | **48/48 PASS** · 299 StaticBody3D / 299 CollisionShape3D · 51 sockets |
 | Godot negative test (corrupted manifest: socket yaw, collision count, aisle count) | `GTEKI_MANIFEST=bad.json run_import_test.sh` | 3/3 faults reported, exit 1 |
 | Web: GLTFLoader parse in Node | `tools/blender/build.sh web` | **48/48 parsed** |
-| Web: browser viewer, whole kit | `pnpm --dir tools/blender/web_preview dev` → `/?mode=gallery` | renders; 198,623 tris · 578 draw calls · 414 textures |
+| Web: browser viewer, whole kit | `pnpm --dir tools/blender/web_preview dev` → `/?mode=gallery` | renders; 198,623 tris · 578 draw calls · 414 textures (before the texture budget) |
+| Web: load-strategy bench, concourse demo | `/bench.html?strategy=per_instance\|per_asset\|bundle` | see [texture-budget.md](texture-budget.md) (three.js section) |
 | Reproducibility | `tools/blender/build.sh repro` | **PASS** · 48/48 GLBs byte-identical across two clean builds (fresh texture caches) and the committed library |
 | Round-trip render (GLB → empty Blender scene) | `render_preview.py` with `tools/blender/showcase/*.json` | images below |
 
@@ -38,7 +42,7 @@ The six validator WARNs are intentional and documented: the four `sign_hanging_*
 | signage | 10 | 244–1,054 | 86–217 | 4 |
 | props | 18 | 30–5,896 | 98–782 | 23 |
 
-About 70 % of the bytes are embedded 1024² JPEG textures; geometry is small. Each GLB is self-contained (it embeds its own copy of shared materials), so a scene that loads 40 GLBs downloads repeated terrazzo and metal textures. This is the main web-performance follow-up; see Known gaps.
+Since the texture budget, about 62 % of the bytes are embedded JPEG textures (it was 70 %). Textures are sized by texel density (≤ 1024 px), and flat maps are material factors. Each GLB is still self-contained, so a scene that places many GLBs should load a **kit bundle** and clone it: on the concourse demo that is 4.25 MiB instead of 10.8 MiB. See [texture-budget.md](texture-budget.md).
 
 ## Visual evidence
 
@@ -86,9 +90,21 @@ A fresh read-only GPT-6 Astra (high) review of WIP commit `9d48ca4` found 4 P1 a
 | P2 | `--only` typos succeeded silently and relabelled the texture resolution | Unknown ids and resolution mismatches abort before anything is written |
 | P2 | Provenance overstated poster rights | Wording now limited to the recorded evidence; the Owner confirms provider terms before licensing |
 
+The texture-dedupe follow-up had two fresh read-only Codex reviews. Every finding is fixed in this branch:
+
+| # | Finding | Fix |
+| --- | --- | --- |
+| P1 | `validate` piped the budget report through `tail`, which hid its exit status | The report goes to a file, which is printed on failure, and `validate` returns 1 |
+| P1 | Inside `build.sh all` (an `&&` chain) errexit is off, so a contract-validator failure could pass | Each step in `validate` and `selftest` returns its own failure explicitly |
+| P2 | Flat-map statistics used float32 before 8-bit rounding, so one flat map was kept | Statistics come from the exact 8-bit PNG values (`texsynth.quantize8`) in float64 |
+| P2 | A manifest entry whose GLB is missing was not reported | `texture_budget.py --check` reports both directions |
+| P2 | My docs said Godot keeps node names in a bundle; it uniquifies them across the whole file, as three.js does | Repeated names carry `extras.gteki_name`; `extract` removes the tag; contract §7 documents the lookup |
+| P2 | A `--name` equal to a bundled asset id left that asset renamed on load and untagged | `bundle` rejects a wrapper name that collides with any bundled node |
+| P3 | The bench kept the PMREM generator and room scene alive, which inflated the resource counters | Both are disposed after the environment map is baked |
+
 ## Known gaps / blockers
 
-1. **Texture dedupe for Web.** Shared materials are embedded per GLB. Proposed fix: a `.gltf` + shared texture directory and KTX2/Basis variant, or runtime material swap by `gteki_*` name. Do this before a scene loads dozens of kit pieces over mobile networks.
+1. **Texture dedupe for Web: done** ([texture-budget.md](texture-budget.md)). Open follow-ups: a KTX2 variant (it needs `KTX2Loader` in the shared core and a per-map quality gate), geometry compression (meshopt; needs a Godot test), and runtime mipmaps for JPEG in Godot `GLTFDocument` (a Lane C note).
 2. **Wall openings.** Passages have solid walls; the lift portal and shop fronts are wall-mounted decorations, not cut openings. Station leads who need a doorway should use a passage node or request a `passage_straight` `openings` parameter.
 3. **Glass sorting** is described in Import notes; no fix in the kit.
 4. **Vending machine** has 24 material slots (product-face colours), which is fine on desktop. If draw calls matter on phones, the next step is an atlas.

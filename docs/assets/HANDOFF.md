@@ -1,6 +1,6 @@
 # GTEki station kit — Handoff to station leads
 
-Updated 2026-10-20 · kit `0.1.0` · contract [`gteki-asset/0.1`](asset-contract.md) · lane: Issue #11 (`tools/blender/**`, `assets/library/**`, `docs/assets/**`).
+Updated 2026-10-21 · kit `0.1.0` · contract [`gteki-asset/0.1`](asset-contract.md) · lane: Issue #11 (`tools/blender/**`, `assets/library/**`, `docs/assets/**`).
 
 **Status:** a reusable, reproducible kit of 48 station components, built only from repository code plus AI-generated posters whose provenance is recorded (rights clearance for release is pending the Owner; see PROVENANCE). It imports into Web (three.js) and Godot 4.7 with tested parity; evidence is in the [import report](import-report.md). The kit is **generic**: no asset is a measurement of Ikebukuro, Shinjuku or any real station. **Layout, station identity, measured dimensions and routing belong to each station lead.** Merging needs Owner approval; the repository licence is still undecided.
 
@@ -16,7 +16,20 @@ Updated 2026-10-20 · kit `0.1.0` · contract [`gteki-asset/0.1`](asset-contract
 | Signage | `sign_hanging_*` (4), `sign_wall_*` (2), `sign_totem*` (2), `sign_blade_*` (2) | ceiling / wall / free |
 | Props | benches, bin trio, poster lightboxes, vending machines, ticket kiosk, columns, tactile strips, barrier rails | wall / free / linear |
 
-`assets/library/manifest.json` lists every GLB with its sha256, byte size, triangle count, materials, bounds, placement, params, sockets (with glTF positions) and collision node names. Read it rather than hard-coding sizes.
+`assets/library/manifest.json` lists every GLB with its sha256, byte size, triangle count, materials and texture plans, bounds, placement, params, sockets (with glTF positions) and collision node names. Read it rather than hard-coding sizes.
+
+## Loading many pieces: use a kit bundle
+
+Each kit GLB is self-contained, so placing 29 items GLB by GLB re-downloads and re-uploads shared textures. On the concourse demo that costs 10.8 MiB and 502 MiB of Godot texture memory, versus **4.25 MiB and 111.5 MiB** with a bundle. Make one bundle of the assets your scene places, load it once, and clone per placement:
+
+```sh
+python3 tools/blender/bundle_kit.py bundle --library assets/library --ids gteki_gate_array_6w1,gteki_bench_4seat --out stations/<id>/gteki/assets/kit.glb
+```
+
+- three.js: `kit = gltf.scene.children[0]`; `kit.getObjectByName(id).clone()`.
+- Godot: `kit.get_node(id).duplicate()`.
+
+Clones share geometry, materials and textures. Inside a bundle, a node name that repeats in another asset gets a suffix on import (`VIS_flap_0_L_1` in three.js, `VIS_flap_0_L2` in Godot). Read the original from `extras.gteki_name`: `userData.gteki_name` in three.js, `get_meta("extras").gteki_name` in Godot. Details are in [contract §7](asset-contract.md#7-kit-bundles--gteki-kit-bundle01-derived-optional), and measurements in [texture-budget.md](texture-budget.md).
 
 ## Placing pieces
 
@@ -74,7 +87,7 @@ The physical position of the flaps never gates passage. Whether a passenger may 
 
 - `TEX_RES=2048 OUT=/path/to/hq sh tools/blender/build.sh build` (or 4096) regenerates every texture at higher resolution. It keeps the same physical relief and tiling, with the same geometry and node names. Swap the HQ library in for Godot builds, and keep the 1024 library for Web.
 - `--save-blend DIR` writes an editable `.blend` per asset, for hand polish or baking. Keep these out of Git, and redo any hand work as generator changes so it stays reproducible.
-- Materials are plain metallic-roughness PBR (albedo, ORM, normal, emissive). They map 1:1 to Godot `StandardMaterial3D` and three.js `MeshStandardMaterial`.
+- Materials are plain metallic-roughness PBR (albedo, ORM, normal, emissive). They map 1:1 to Godot `StandardMaterial3D` and three.js `MeshStandardMaterial`. A map that carries no visible variation is exported as the material factor, and textures are sized by texel density, so a material may have one to three maps; `manifest.json` lists them per material.
 
 ## Commands
 
@@ -82,8 +95,10 @@ The physical position of the flaps never gates passage. Whether a passenger may 
 sh tools/blender/build.sh            # build + validate
 sh tools/blender/build.sh all        # build + validate + Godot import + Web load test
 sh tools/blender/build.sh repro      # two clean builds must match each other and the repo
+sh tools/blender/build.sh selftest   # validator, texture budget and bundle self-tests
 ONLY=gteki_gate_array_4w1 sh tools/blender/build.sh build
-pnpm --dir tools/blender/web_preview install && pnpm --dir tools/blender/web_preview dev   # viewer: /?mode=gallery
+python3 tools/blender/bundle_kit.py bundle --library assets/library --layout <layout.json> --out kit.glb
+pnpm --dir tools/blender/web_preview install && pnpm --dir tools/blender/web_preview dev   # viewer: /?mode=gallery, bench: /bench.html
 ```
 
 ## Gate status for this lane
@@ -91,14 +106,14 @@ pnpm --dir tools/blender/web_preview install && pnpm --dir tools/blender/web_pre
 | Gate | Status | Evidence / note |
 | --- | --- | --- |
 | G0 rights | **PASS (kit) / HOLD (release)** | Geometry and textures are original code output; posters are AI-generated with a recorded provenance. Owner still decides the repository licence and confirms the image provider's terms ([PROVENANCE](../../assets/library/PROVENANCE.md)). |
-| G1 geometry | **PASS (kit level)** | Validator 0 FAIL; Godot 48/48 parity; scale, axes, collision and sockets checked. Station fit is per lead. |
+| G1 geometry | **PASS (kit level)** | Validator 0 FAIL; Godot 48/48 parity; scale, axes, collision and sockets checked; texture budget check PASS. Station fit is per lead. |
 | G2 routing | n/a | The kit carries no navigation; routes come from the station graph. |
 | G3 quality | **GAP (station level)** | The kit reads at L2 quality in synthetic demos. L2 itself must be judged on each station's real walkthrough. |
 | G4 delivery | **PASS pending Owner** | Reproducible build, tests, PR, Handoff and import report. |
 
 ## Known gaps / next steps (kit lane)
 
-1. Texture dedupe for Web (shared textures, KTX2, or material swap by name) before large scenes go to phones.
+1. Texture dedupe is **done**: texel-density sizing, flat-map factors, aspect-matched sign faces and kit bundles ([texture-budget.md](texture-budget.md)). Still open: a KTX2 variant (needs `KTX2Loader` in the shared core and a per-map quality gate), and geometry compression (meshopt, needs a Godot test).
 2. `passage_straight` wall openings (doorways and shop fronts) for when station leads need cut-outs.
 3. More families on demand: platform edge with screen doors, ticket office counter, shop units, ramps, a floor-level transition piece.
 4. Vending machine material atlas; glass sorting guidance per engine.
