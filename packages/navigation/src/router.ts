@@ -77,7 +77,17 @@ interface Measurement {
   cost: number;
 }
 
-function measureEdge(edge: Edge): Measurement | null {
+/** Polyline endpoints sit on their nodes in plan, exactly as routePolyline draws them. */
+function snapEndpoints(geometry: Vec3N[] | undefined, from: Vec3N, to: Vec3N): Vec3N[] | undefined {
+  if (!geometry || geometry.length < 2) return geometry;
+  const out = [...geometry];
+  out[0] = { x: from.x, y: from.y, z: geometry[0]!.z };
+  out[out.length - 1] = { x: to.x, y: to.y, z: geometry[geometry.length - 1]!.z };
+  return out;
+}
+
+function measureEdge(rawEdge: Edge, from: Vec3N, to: Vec3N): Measurement | null {
+  const edge = { ...rawEdge, geometry: snapEndpoints(rawEdge.geometry, from, to) };
   if (edge.lengthM !== null && (!Number.isFinite(edge.lengthM) || edge.lengthM < 0)) return null;
   const symbolicZ = edge.geometryZ === "symbolic";
   if (edge.mode === "elevator") {
@@ -110,10 +120,22 @@ interface Previous {
 
 const DAY_MS = 86_400_000;
 
-function daysBetween(older: string, newer: string): number | null {
-  const a = Date.parse(older);
-  const b = Date.parse(newer);
-  return Number.isFinite(a) && Number.isFinite(b) ? (b - a) / DAY_MS : null;
+/**
+ * The interval a reduced-precision ISO date stands for, in UTC ms: "2024" is all of 2024 and "2024-03"
+ * all of March. A full date is one day. null when unparseable.
+ */
+function dateInterval(date: string): { first: number; last: number } | null {
+  const m = /^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/.exec(date);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = m[2] === undefined ? 0 : Number(m[2]) - 1;
+  const day = m[3] === undefined ? 1 : Number(m[3]);
+  const first = new Date(Date.UTC(y, mo, day));
+  // Calendar round-trip: "2026-13-01" or "2026-02-30" is not a date, never a normalised one.
+  if (first.getUTCFullYear() !== y || first.getUTCMonth() !== mo || first.getUTCDate() !== day) return null;
+  if (m[2] === undefined) return { first: first.getTime(), last: Date.UTC(y, 11, 31) };
+  if (m[3] === undefined) return { first: first.getTime(), last: Date.UTC(y, mo + 1, 0) };
+  return { first: first.getTime(), last: first.getTime() };
 }
 
 export function createRouter(bundle: StationBundle): Router {
@@ -123,8 +145,10 @@ export function createRouter(bundle: StationBundle): Router {
   const adjacency = new Map<string, Traversal[]>();
   for (const nodeId of nodes.keys()) adjacency.set(nodeId, []);
   for (const edge of bundle.edges) {
-    const measurement = measureEdge(edge);
-    if (!measurement || !nodes.has(edge.from) || !nodes.has(edge.to)) continue;
+    const fromNode = nodes.get(edge.from);
+    const toNode = nodes.get(edge.to);
+    const measurement = fromNode && toNode ? measureEdge(edge, fromNode.position, toNode.position) : null;
+    if (!measurement) continue;
     adjacency.get(edge.from)!.push({ edge, toNodeId: edge.to, reversed: false, measurement });
     if (edge.direction === "both") {
       adjacency.get(edge.to)!.push({ edge, toNodeId: edge.from, reversed: true, measurement });
@@ -234,13 +258,26 @@ export function createRouter(bundle: StationBundle): Router {
       if (date === null) undatedSourceIds.push(sourceId);
       else if (oldestSourceDate === null || date < oldestSourceDate) oldestSourceDate = date;
     }
-    // Known-old evidence proves staleness; otherwise an undated dependency leaves freshness UNKNOWN.
+    // Stale when some source is old even at the latest moment its stated date allows; fresh only when every
+    // source is recent even at its earliest. A year/month-only date straddling the cutoff, or an undated
+    // dependency, leaves freshness UNKNOWN.
     let stale: boolean | null = null;
-    if (profile.today && oldestSourceDate) {
-      const age = daysBetween(oldestSourceDate, profile.today);
-      if (age !== null) stale = age > (profile.staleAfterDays ?? DEFAULT_STALE_AFTER_DAYS);
+    // `today` must be one real calendar day; a partial or invalid one leaves freshness UNKNOWN.
+    const todayInterval = profile.today ? dateInterval(profile.today) : null;
+    const today = todayInterval && todayInterval.first === todayInterval.last ? todayInterval : null;
+    if (today) {
+      const maxAgeDays = profile.staleAfterDays ?? DEFAULT_STALE_AFTER_DAYS;
+      let allFresh = undatedSourceIds.length === 0;
+      for (const sourceId of sourceIds) {
+        const date = sourceDates.get(sourceId);
+        if (!date) continue;
+        const interval = dateInterval(date);
+        if (!interval) { allFresh = false; continue; }
+        if ((today.first - interval.last) / DAY_MS > maxAgeDays) { stale = true; break; }
+        if ((today.first - interval.first) / DAY_MS > maxAgeDays) allFresh = false;
+      }
+      if (stale === null && allFresh && sourceIds.size > 0) stale = false;
     }
-    if (stale === false && undatedSourceIds.length > 0) stale = null;
     return {
       ok: true, nodeIds, steps, totalLengthM, estimatedSeconds, floorChanges, crossesFareBoundary, unknowns,
       sourceIds: [...sourceIds].sort(), evidenceCheckedDate, oldestSourceDate, undatedSourceIds, stale, synthetic, timeRestricted, operatorIds,
@@ -249,7 +286,9 @@ export function createRouter(bundle: StationBundle): Router {
 
   return {
     isTraversable(edge, profile) {
-      return nodes.has(edge.from) && nodes.has(edge.to) && measureEdge(edge) !== null &&
+      const fromNode = nodes.get(edge.from);
+      const toNode = nodes.get(edge.to);
+      return fromNode !== undefined && toNode !== undefined && measureEdge(edge, fromNode.position, toNode.position) !== null &&
         permits(edge, profile, new Set(profile.avoidModes), new Set(profile.extraClosedEdgeIds));
     },
     route(fromNodeIds, toNodeIds, profile = DEFAULT_PROFILE) {
