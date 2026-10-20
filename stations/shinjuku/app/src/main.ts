@@ -70,8 +70,9 @@ const search = createSearchIndex(bundle);
 const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
 const floorById = new Map(bundle.floors.map((f) => [f.id, f]));
 const nodeZ = (id: string) => layout.nodeZ.get(id) ?? 0;
+// Fare side of a node from its non-gate links (gate links straddle the boundary); null = no evidence.
 const nodeFare = new Map(bundle.nodes.map((n) => {
-  const edges = bundle.edges.filter((e) => e.from === n.id || e.to === n.id);
+  const edges = bundle.edges.filter((e) => (e.from === n.id || e.to === n.id) && e.crossesFareBoundary !== true);
   return [n.id, !edges.length ? null : edges.every((e) => e.paid === true) ? "paid" : edges.every((e) => e.paid === false) ? "free" : null] as const;
 }));
 const levelFloors = bundle.floors.filter((f) => !f.intermediate).sort((a, b) => b.renderElevationM - a.renderElevationM);
@@ -81,19 +82,39 @@ function floorAtZ(z: number): Floor {
   // between levels on stairs: report the nearer
   return best;
 }
+/** Walkable straight attachment p → node: continuous ground ending at the node's height, body-width clear. */
+function attachable(p: { x: number; y: number; z: number }, id: string): boolean {
+  const n = nodeById.get(id)!;
+  const d = Math.hypot(n.position.x - p.x, n.position.y - p.y);
+  const u = d > 1e-6 ? { x: (n.position.x - p.x) / d, y: (n.position.y - p.y) / d } : { x: 1, y: 0 };
+  for (const off of [-0.25, 0, 0.25]) {
+    const a = { x: p.x - u.y * off, y: p.y + u.x * off };
+    const b = { x: n.position.x - u.y * off, y: n.position.y + u.x * off };
+    if (world.firstWallHit(a, b, p.z + 1.0) < 0.999) return false;
+  }
+  let z: number | null = p.z;
+  const steps = Math.max(1, Math.ceil(d / 0.1)); // fine enough to catch slab seams
+  for (let i = 1; i <= steps && z !== null; i++) z = world.groundAt({ x: p.x + (n.position.x - p.x) * (i / steps), y: p.y + (n.position.y - p.y) * (i / steps) }, z);
+  return z !== null && Math.abs(z - nodeZ(id)) <= 0.35;
+}
 function nearestNode(p: { x: number; y: number; z: number }) {
   const slab = layout.levels.flatMap((l) => l.slabs)
     .filter((s) => Math.abs(s.z - p.z) <= 0.6 && pointInRings(p, s.rings))
     .sort((a, b) => Math.abs(a.z - p.z) - Math.abs(b.z - p.z))[0];
   const fare = slab?.fare ?? null;
-  let best: { id: string; d: number } | null = null;
+  const cands: { id: string; d: number }[] = [];
   for (const n of bundle.nodes) {
     if (Math.abs(nodeZ(n.id) - p.z) > 0.6) continue;
-    const nf = nodeFare.get(n.id) ?? null;
-    if (fare !== null && nf !== null && fare !== nf) continue;
+    // a known fare side requires affirmative same-side evidence on the node
+    if (fare !== null && nodeFare.get(n.id) !== fare) continue;
     const d = Math.hypot(n.position.x - p.x, n.position.y - p.y);
-    if (d > 15 || !(world.firstWallHit({ x: p.x, y: p.y }, n.position, p.z + 1.0) >= 0.999)) continue;
-    if (!best || d < best.d) best = { id: n.id, d };
+    if (d <= 15) cands.push({ id: n.id, d });
+  }
+  cands.sort((a, b) => a.d - b.d);
+  let best: { id: string; d: number } | null = null;
+  for (const c of cands) if (attachable(p, c.id)) {
+    best = c;
+    break;
   }
   return best;
 }

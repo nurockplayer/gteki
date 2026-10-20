@@ -5,11 +5,12 @@
   "type": "module",
   "dependencies": {
     "@gteki/geo": "workspace:*",
-    "@gteki/schema": "workspace:*",
     "@gteki/navigation": "workspace:*",
+    "@gteki/scene-api": "workspace:*",
+    "@gteki/schema": "workspace:*",
     "@gteki/search": "workspace:*",
-    "three": "^0.186.1",
-    "@gteki/scene-api": "workspace:*"
+    "polygon-clipping": "0.15.7",
+    "three": "^0.186.1"
   },
   "exports": {
     "./gteki/station.json": "./gteki/station.json",

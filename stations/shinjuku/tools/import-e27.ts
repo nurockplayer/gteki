@@ -42,14 +42,11 @@ import { loadRawE27, normId, pointInPolygon, RAW_DIR, type GeoFeature, type Poly
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, "../data");
 const OUT_GTEKI = join(HERE, "../gteki");
-/** Acquisition time recorded by tools/fetch-sources.sh (falls back to the source manifest). */
-const ACQUIRED_AT = (() => {
-  try {
-    return readFileSync(join(RAW_DIR, "acquired_at.txt"), "utf8").trim();
-  } catch {
-    return (JSON.parse(readFileSync(join(HERE, "../sources/manifest.json"), "utf8")) as { acquiredAt: string }).acquiredAt;
-  }
-})();
+/**
+ * Pinned acquisition time of the hashed inputs (sources/manifest.json). Output provenance uses this,
+ * never a local fetch timestamp, so identical input hashes always reproduce identical files.
+ */
+const ACQUIRED_AT = (JSON.parse(readFileSync(join(HERE, "../sources/manifest.json"), "utf8")) as { acquiredAt: string }).acquiredAt;
 const CHECKED = "2026-10-20";
 const SRC_NWD = "mlit-hokonavi-e27-nwd";
 const SRC_MAP = "mlit-hokonavi-e27-stationmap";

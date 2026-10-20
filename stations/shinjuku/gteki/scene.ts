@@ -52,7 +52,14 @@ export const buildScene: BuildScene = (ctx) => {
 
   // Level walls only block bodies near their own level (bodyMax); approximate that for the
   // explorer's height-band walker by capping the wall band at bodyMax + 1.7 m body height.
-  const walls: WallSegment[] = [...layout.levels.flatMap((lv) => lv.walls), ...layout.runWalls, ...railingWalls(layout), ...built.propWalls].map((w) => ({ a: w.a, b: w.b, zMin: w.zMin, zMax: w.bodyMax !== undefined ? Math.min(w.zMax, w.bodyMax + 0.3) : w.zMax }));
+  const walls: WallSegment[] = [...layout.levels.flatMap((lv) => lv.walls), ...layout.runWalls, ...railingWalls(layout), ...built.propWalls].map((w) => ({
+    a: w.a,
+    b: w.b,
+    // The shared walker blocks feet f when zMin ≤ f + 1.7 and zMax ≥ f + 0.2, so WalkWorld's body limits
+    // fold into the band: bodyMin → raise zMin, bodyMax → lower zMax.
+    zMin: w.bodyMin !== undefined ? Math.max(w.zMin, w.bodyMin + 1.7) : w.zMin,
+    zMax: w.bodyMax !== undefined ? Math.min(w.zMax, w.bodyMax + 0.2) : w.zMax,
+  }));
   const nodes = new Map(ctx.bundle.nodes.map((n) => [n.id, n]));
   const spawnPoints: SpawnPoint[] = (ctx.bundle.spawnNodeIds ?? []).flatMap((id) => {
     const n = nodes.get(id);

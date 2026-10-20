@@ -9,6 +9,7 @@
  * Visual-only: nothing here feeds routing. Heights are symbolic (see plan.heightModel).
  */
 import type { Edge, StationBundle } from "@gteki/schema";
+import polygonClipping, { type Polygon as ClipPolygon } from "polygon-clipping";
 
 export interface XY {
   x: number;
@@ -146,6 +147,46 @@ export function pointInRing(p: XY, ring: XY[]): boolean {
 /** Collision for void-edge railings: block people on that level only. */
 export function railingWalls(layout: Layout): WallSeg[] {
   return layout.levels.flatMap((lv) => lv.railings.map((r): WallSeg => ({ a: r.a, b: r.b, zMin: r.z - 0.1, zMax: r.z + 1.1, side: 1, kind: "wall", bodyMin: r.z - 0.5, bodyMax: r.z + 1.0 })));
+}
+
+/**
+ * Stairwells: a run descending from a slab's level is open where it is 0.25–2.4 m below the slab
+ * (otherwise the floor overhangs the stair as a cliff); deeper runs pass under the floor. The cut is
+ * real geometry, shared by rendering, the explorer's walk proxies and WalkWorld.
+ */
+export function cutStairwells(slabs: SlabPoly[], runs: Run[]): SlabPoly[] {
+  const out: SlabPoly[] = [];
+  for (const s of slabs) {
+    const holes: ClipPolygon[] = [];
+    for (const r of runs) {
+      if (Math.abs(r.a.z - s.z) >= 0.3 && Math.abs(r.b.z - s.z) >= 0.3) continue;
+      const dz = r.b.z - r.a.z;
+      if (Math.abs(dz) < 1e-6) continue;
+      // t where run height = s.z − 0.25 and s.z − 2.4
+      const t1 = (s.z - 0.25 - r.a.z) / dz;
+      const t2 = (s.z - 2.4 - r.a.z) / dz;
+      const lo = Math.max(0, Math.min(t1, t2));
+      const hi = Math.min(1, Math.max(t1, t2));
+      if (hi <= lo) continue;
+      const d = sub(r.b, r.a);
+      const L = len(d) || 1;
+      const n = { x: (-d.y / L) * (r.width / 2), y: (d.x / L) * (r.width / 2) };
+      const p0 = lerp(r.a, r.b, lo);
+      const p1 = lerp(r.a, r.b, hi);
+      holes.push([[[p0.x + n.x, p0.y + n.y], [p1.x + n.x, p1.y + n.y], [p1.x - n.x, p1.y - n.y], [p0.x - n.x, p0.y - n.y], [p0.x + n.x, p0.y + n.y]]]);
+    }
+    const ring0 = s.rings[0]!;
+    const bbox = { minX: Math.min(...ring0.map((p) => p.x)), maxX: Math.max(...ring0.map((p) => p.x)), minY: Math.min(...ring0.map((p) => p.y)), maxY: Math.max(...ring0.map((p) => p.y)) };
+    const hit = holes.filter((h) => h[0]!.some(([x, y]) => x! >= bbox.minX - 2 && x! <= bbox.maxX + 2 && y! >= bbox.minY - 2 && y! <= bbox.maxY + 2));
+    if (!hit.length) {
+      out.push(s);
+      continue;
+    }
+    const subject: ClipPolygon = s.rings.map((ring) => ring.map((p) => [p.x, p.y] as [number, number]));
+    const parts = polygonClipping.difference(subject, ...hit);
+    parts.forEach((poly, i) => out.push({ ...s, spaceId: parts.length > 1 ? `${s.spaceId}~${i}` : s.spaceId, rings: poly.map((ring) => ring.map(([x, y]) => ({ x: x!, y: y! }))) }));
+  }
+  return out;
 }
 
 export function pointInRings(p: XY, rings: XY[][]): boolean {
@@ -291,7 +332,7 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
           const flush = (end: XY) => {
             if (runStart && runKind) {
               if (runKind === "rail") railings.push({ a: runStart, b: end, z });
-              else walls.push({ a: runStart, b: end, zMin: z, zMax: ceilingZ, side: ccw ? 1 : -1, kind: runKind, bodyMax: z + 1.0 });
+              else walls.push({ a: runStart, b: end, zMin: z, zMax: ceilingZ, side: ccw ? 1 : -1, kind: runKind });
             }
             runStart = null;
             runKind = null;
@@ -439,9 +480,10 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
       const n = Math.max(1, Math.ceil(L / 0.1));
       let start: number | null = null;
       for (let k = 0; k <= n; k++) {
-        // the band in which resolveWalls lets this wall block a walker (z ∈ [zMin − 1.7, bodyMax]), plus
-        // 0.3 m for the body radius on a steep flight
-        const closed = k < n && !clearAt(lerp(w.a, w.b, (k + 0.5) / n), lv.z - 2.0, lv.z + 1.2);
+        // open locally wherever a verified link's walker would touch this wall: the band in which
+        // resolveWalls blocks (feet ∈ [zMin − 1.7, zMax − 0.3]) plus 0.3 m for the body radius on a steep
+        // flight. Rendering uses the same cut walls, so what you see is what blocks you.
+        const closed = k < n && !clearAt(lerp(w.a, w.b, (k + 0.5) / n), lv.z - 2.0, w.zMax);
         if (closed && start === null) start = k;
         if (!closed && start !== null) {
           out.push({ ...w, a: lerp(w.a, w.b, start / n), b: lerp(w.a, w.b, k / n) });
@@ -511,7 +553,10 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
       return { spaceId: `street:${n.id}`, rings: [[{ x: x - h, y: y - h }, { x: x + h, y: y - h }, { x: x + h, y: y + h }, { x: x - h, y: y + h }, { x: x - h, y: y - h }]], z: zOf(n.id), fare: null, category: "street" };
     });
 
-  return { levels, runs, tactile, gates, pads, streetPads, linkStrips, runWalls, nodeZ, bounds: { min, max } };
+  for (const lv of levels) lv.slabs = cutStairwells(lv.slabs, runs);
+  const cutPads = cutStairwells(pads, runs);
+  const cutStreet = cutStairwells(streetPads, runs);
+  return { levels, runs, tactile, gates, pads: cutPads, streetPads: cutStreet, linkStrips, runWalls, nodeZ, bounds: { min, max } };
 }
 
 export function centroid(r: XY[]): XY {
@@ -532,8 +577,6 @@ export interface WalkSurface {
   /** for slabs */
   rings?: XY[][];
   z?: number;
-  /** graph-truth ground (link strips): never cut by stairwell openings */
-  keep?: boolean;
   /** for runs */
   run?: Run;
   minX: number;
@@ -569,7 +612,7 @@ export class WalkWorld {
 
   addSlab(s: SlabPoly) {
     const ring = s.rings[0]!;
-    this.add({ kind: "slab", rings: s.rings, z: s.z, keep: s.category === "link", minX: Math.min(...ring.map((p) => p.x)), minY: Math.min(...ring.map((p) => p.y)), maxX: Math.max(...ring.map((p) => p.x)), maxY: Math.max(...ring.map((p) => p.y)) });
+    this.add({ kind: "slab", rings: s.rings, z: s.z, minX: Math.min(...ring.map((p) => p.x)), minY: Math.min(...ring.map((p) => p.y)), maxX: Math.max(...ring.map((p) => p.x)), maxY: Math.max(...ring.map((p) => p.y)) });
   }
   private add(s: WalkSurface) {
     const i = this.surfaces.push(s) - 1;
@@ -594,13 +637,13 @@ export class WalkWorld {
 
   /** All ground heights under p. */
   heightsAt(p: XY): number[] {
-    const slabs: { z: number; keep: boolean }[] = [];
-    const runs: { z: number; ends: [number, number] }[] = [];
+    const slabs: number[] = [];
+    const runs: number[] = [];
     for (const i of this.grid.get(`${Math.floor(p.x / this.cell)},${Math.floor(p.y / this.cell)}`) ?? []) {
       const s = this.surfaces[i]!;
       if (p.x < s.minX || p.x > s.maxX || p.y < s.minY || p.y > s.maxY) continue;
       if (s.kind === "slab") {
-        if (pointInRings(p, s.rings!)) slabs.push({ z: s.z!, keep: !!s.keep });
+        if (pointInRings(p, s.rings!)) slabs.push(s.z!);
       } else {
         const r = s.run!;
         const ab = sub(r.b, r.a);
@@ -608,16 +651,11 @@ export class WalkWorld {
         const t = ((p.x - r.a.x) * ab.x + (p.y - r.a.y) * ab.y) / L2;
         if (t < 0 || t > 1) continue;
         const q = lerp(r.a, r.b, t);
-        if (len(sub(p, q)) <= r.width / 2) runs.push({ z: r.a.z + (r.b.z - r.a.z) * t, ends: [r.a.z, r.b.z] });
+        if (len(sub(p, q)) <= r.width / 2) runs.push(r.a.z + (r.b.z - r.a.z) * t);
       }
     }
-    // A run descending from a slab's level opens a stairwell in the slab where the run is 0.25–2.4 m
-    // below it (otherwise the floor overhangs the stair as a cliff). Deeper runs pass under the floor,
-    // which stays. Link strips (graph-truth walkways) always stay.
-    const kept = slabs
-      .filter(({ z, keep }) => keep || !runs.some((r) => r.z < z - 0.25 && r.z > z - 2.4 && (Math.abs(r.ends[0] - z) < 0.3 || Math.abs(r.ends[1] - z) < 0.3)))
-      .map((s) => s.z);
-    return [...kept, ...runs.map((r) => r.z)];
+    // stairwells are cut into the slab geometry itself (cutStairwells)
+    return [...slabs, ...runs];
   }
   groundAt(p: XY, z: number, up = 0.45, down = 0.7): number | null {
     let best: number | null = null;

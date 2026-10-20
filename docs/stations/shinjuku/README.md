@@ -47,6 +47,7 @@ To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downlo
 ## G1 — geometry and collision: **PASS (bounded)** · GAP (heights)
 
 - **Geometry.** Floors, walls, rooms, voids and railings come from GSI CAD space polygons. Stairs and escalators are placed along their source links. Collision is analytic (slab polygons, run ramps, wall segments with height bands, 0.45 m step-up).
+- **One cut geometry everywhere.** Stairwells are cut out of the floor polygons where a stair runs 0.25–2.4 m below. Walls are opened only locally, where a verified link passes. Rendering, the lane's collision and the shared explorer's walk proxies all use the same cut floors and walls, so a visible wall always blocks.
 - **Headless play test (main G1 evidence).** Tests require:
   - ground under every non-elevator node (0 misses);
   - all 263 edges walkable, ending at the destination's height (0 failures);
@@ -65,7 +66,9 @@ To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downlo
   - within 15 m,
   - at the same height (±0.6 m),
   - on the same fare side.
-  Otherwise the app asks the user to pick a start point.
+  - with continuous walkable ground (sampled every 0.1 m), body-width clear, ending at the node's height.
+
+  Otherwise the app asks the user to pick a start point. A known fare side requires affirmative same-side evidence on the node (gate links excluded).
 - **Unknown, never asserted:**
   - opening hours;
   - which platform side serves which direction;
@@ -95,7 +98,7 @@ Still needed for L2 (not claimed): an independent visual/interaction review (Lan
 
 ## G4 — delivery: **HOLD**
 
-Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --check`, which reproduces byte-identical files from hashed inputs. A fresh read-only Codex review raised 15 findings (14 confirmed, 1 plausible). All are fixed; the PR lists each one. Still open: an exact-SHA QA pass by Lane F, the Owner decision on PDL expiry, and Owner merge approval.
+Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --check`, which reproduces byte-identical files from hashed inputs (provenance uses the pinned `acquiredAt` in `sources/manifest.json`, not the local download time). Two fresh read-only Codex reviews ran: the first raised 15 findings, the second raised 6 on the fixes. All are fixed; the PR lists each one. Still open: an exact-SHA QA pass by Lane F, the Owner decision on PDL expiry, and Owner merge approval.
 
 ## Coverage gaps (field work needed)
 
