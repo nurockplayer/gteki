@@ -252,6 +252,12 @@ describe("describeRoute junction hints", () => {
     expect(kept({ fare: "ticketed", stepFree: false, extraClosedEdgeIds: ["p-twin"] })).toEqual(keepRight);
     expect(kept({ fare: "ticketed", stepFree: false, at: { weekday: "mon", minutes: 12 * 60 } })).toEqual(keepRight);
     expect(kept({ fare: "ticketed", stepFree: false, at: { weekday: "mon", minutes: 8 * 60 } })).toBeUndefined();
+    // Shut at a 06:59 departure but open from 07:00, before the ~83 s walk reaches p: it still counts.
+    expect(kept({ fare: "ticketed", stepFree: false, at: { weekday: "mon", minutes: 6 * 60 + 59 } })).toBeUndefined();
+    // Open during the route's first minute (08:59) though shut from 09:00: it counts.
+    expect(kept({ fare: "ticketed", stepFree: false, at: { weekday: "mon", minutes: 8 * 60 + 59.5 } })).toBeUndefined();
+    // Shut for the whole walk, across midnight into Monday: dropped.
+    expect(kept({ fare: "ticketed", stepFree: false, at: { weekday: "sun", minutes: 23 * 60 + 59.5 } })).toEqual(keepRight);
     b.edges.find((e) => e.id === "p-twin")!.hours = null;
     expect(kept({ fare: "ticketed", stepFree: false, hours: "require_known" })).toEqual(keepRight);
     expect(kept({ fare: "ticketed", stepFree: false })).toBeUndefined();

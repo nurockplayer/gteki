@@ -1,4 +1,5 @@
-import type { Edge, EdgeMode, Floor, Node, StationBundle } from "@gteki/schema";
+import { isOpenAt } from "@gteki/schema";
+import type { Edge, EdgeMode, Floor, LocalTime, Node, StationBundle, Weekday } from "@gteki/schema";
 import { DEFAULT_PROFILE } from "./index.ts";
 import { createRouter } from "./router.ts";
 import type { RouteProfile, RouteResult } from "./index.ts";
@@ -341,22 +342,43 @@ function junctionAction(
   return rivals.every((d) => Math.abs(d) > Math.abs(chosen)) ? "straight" : null;
 }
 
+const WEEK: Weekday[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+/**
+ * True when a branch's known hours keep it shut at every whole minute the route spans (departure to arrival,
+ * waits included), or, under `require_known`, never show it open. Openness is not judged at the departure
+ * minute alone: the traveller reaches a junction later, and dropping a branch that is open by then could
+ * turn "keep right" into a wrong instruction, while counting a shut one can only withhold a hint.
+ */
+function shutForWholeRoute(edge: Edge, at: LocalTime, spanSeconds: number, strict: boolean): boolean {
+  if (edge.hours === null || edge.hours.kind === "always") return false;
+  const from = Math.floor(at.minutes);
+  const to = Math.min(Math.ceil(at.minutes + spanSeconds / 60), from + 7 * 1440);
+  for (let c = from; c <= to; c++) {
+    const days = Math.floor(c / 1440);
+    const open = isOpenAt(edge.hours, { weekday: WEEK[(((WEEK.indexOf(at.weekday) + days) % 7) + 7) % 7]!, minutes: c - days * 1440 });
+    if (open === true || (open === null && !strict)) return false;
+  }
+  return true;
+}
+
 /**
  * Branches that may be walked away from each node: the station's traversable graph under the query's
- * operational restrictions (closures, opening hours at the departure time, strict hours), but not the
- * traveller's own preferences — a stair or a ticket gate the traveller avoids is still a visible branch.
+ * operational restrictions (closures, strict hours, and known hours over the route's time span), but not
+ * the traveller's own preferences — a stair or a ticket gate the traveller avoids is still a visible branch.
  */
-function departuresByNode(bundle: StationBundle, profile: RouteProfile): Map<string, Edge[]> {
+function departuresByNode(bundle: StationBundle, route: RouteResult): Map<string, Edge[]> {
   const router = createRouter(bundle);
+  const { profile } = route;
   const operational: RouteProfile = {
     ...DEFAULT_PROFILE,
     ...(profile.extraClosedEdgeIds ? { extraClosedEdgeIds: profile.extraClosedEdgeIds } : {}),
     ...(profile.hours ? { hours: profile.hours } : {}),
-    ...(profile.at ? { at: profile.at } : {}),
   };
   const out = new Map<string, Edge[]>();
   for (const edge of bundle.edges) {
     if (edge.from === edge.to || !router.isTraversable(edge, operational)) continue;
+    if (profile.at && shutForWholeRoute(edge, profile.at, route.estimatedSeconds, profile.hours === "require_known")) continue;
     for (const nodeId of edge.direction === "both" ? [edge.from, edge.to] : [edge.from]) {
       const list = out.get(nodeId);
       if (list) list.push(edge);
@@ -430,7 +452,7 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const points = routePolyline(bundle, route);
   const edges = new Map(bundle.edges.map((e) => [e.id, e]));
-  const departures = departuresByNode(bundle, route.profile);
+  const departures = departuresByNode(bundle, route);
   const names = junctionNames(bundle, lang);
   const firstFloor = nodes.get(route.nodeIds[0]!)!.floorId;
   const out: Instruction[] = [{ kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, text: t.start() }];
