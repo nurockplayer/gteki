@@ -13,9 +13,12 @@ Options:
 """
 
 import argparse
+import glob
 import json
 import os
+import shutil
 import sys
+import tempfile
 import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -54,6 +57,17 @@ def main(argv):
                      f"{old.get('texture_resolution')}; rebuild everything or use another --out")
         previous = {a["id"]: a for a in old.get("assets", [])}
 
+    # Export into a staging directory and publish only if every asset succeeds,
+    # so a failed build never leaves a manifest that disagrees with glb/.
+    os.makedirs(glb_dir, exist_ok=True)
+    staging = tempfile.mkdtemp(prefix=".build-", dir=args.out)
+    try:
+        _build(args, catalog, only, previous, glb_dir, staging, manifest_path)
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
+
+
+def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
     entries = []
     failures = []
     for item in catalog["assets"]:
@@ -75,7 +89,7 @@ def main(argv):
                 asset.notes = item["notes"]
             asset.placement = item.get("placement") or PLACEMENT.get(item["generator"], "free")
             asset.build()
-            entry = asset.export(glb_dir, save_blend_dir=args.save_blend or None)
+            entry = asset.export(staging, save_blend_dir=args.save_blend or None)
         except Exception as e:  # keep building the rest, fail at the end
             import traceback
 
@@ -86,6 +100,22 @@ def main(argv):
         entry["build_seconds"] = round(time.time() - t0, 2)
         entries.append(entry)
         print(f"[gteki] {aid}: {entry['triangles']} tris, {entry['bytes'] / 1024:.0f} KiB, {entry['build_seconds']} s", flush=True)
+
+    if failures:
+        for aid, err in failures:
+            print(f"[gteki] FAILED {aid}: {err}", file=sys.stderr)
+        print(f"[gteki] nothing published; {glb_dir} and {manifest_path} are unchanged", file=sys.stderr)
+        sys.exit(1)
+
+    for path in glob.glob(os.path.join(staging, "*.glb")):
+        os.replace(path, os.path.join(glb_dir, os.path.basename(path)))
+    if not only:
+        # a full build defines the library: drop GLBs no longer in the catalog
+        keep = {f"{e['id']}.glb" for e in entries}
+        for path in glob.glob(os.path.join(glb_dir, "*.glb")):
+            if os.path.basename(path) not in keep:
+                os.remove(path)
+                print(f"[gteki] removed stale {os.path.basename(path)}", flush=True)
 
     order = {a["id"]: i for i, a in enumerate(catalog["assets"])}
     entries.sort(key=lambda e: order.get(e["id"], 1e9))
@@ -102,10 +132,6 @@ def main(argv):
     with open(manifest_path, "w") as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)
         f.write("\n")
-    if failures:
-        for aid, err in failures:
-            print(f"[gteki] FAILED {aid}: {err}", file=sys.stderr)
-        sys.exit(1)
 
 
 if __name__ == "__main__":
