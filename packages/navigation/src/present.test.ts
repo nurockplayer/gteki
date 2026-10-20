@@ -536,6 +536,19 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     expect(texts(b, r, "ja")).toEqual(["出発", "約3m 直進、その先で左へ、すぐ右へ", "目的地に到着"]);
   });
 
+  it("judges straight wording on the instruction's own walk, not on the legs folded into it", () => {
+    // Own walk: 30 m north, 20 m east, 30 m south (bent inside one edge), then a 3 m step east.
+    const b = createSyntheticBundle([
+      edge("u", "start", "goal", { lengthM: null, geometry: [{ x: 0, y: 0, z: 0 }, { x: 0, y: 30, z: 0 }, { x: 20, y: 30, z: 0 }, { x: 20, y: 0, z: 0 }] }),
+      edge("step", "goal", "a", { lengthM: 3 }),
+    ]);
+    b.nodes.find((n) => n.id === "goal")!.position = { x: 20, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "a")!.position = { x: 23, y: 0, z: 0 };
+    const r = route(b, "start", "a");
+    expect(describeRoute(b, r, "en")[1]).toMatchObject({ stepIndexes: [0, 1], trailTurns: ["left"], text: "Continue ~80 m, then turn left" });
+    expect(texts(b, r, "ja")[1]).toBe("約80m 進む、その先で左へ");
+  });
+
   it("gives a moving walkway its own length, not the steps folded onto it", () => {
     const b = createSyntheticBundle([edge("s-a", "start", "a", { lengthM: 3 }), edge("walkway", "a", "goal", { mode: "moving_walkway", lengthM: 10 }), edge("off", "goal", "isolated", { lengthM: 2 })]);
     b.nodes.find((n) => n.id === "a")!.position = { x: 3, y: 0, z: 0 };

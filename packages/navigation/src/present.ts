@@ -449,9 +449,9 @@ const SHORT_LEG_M = 5;
 
 /**
  * An instruction before its text is written; `label` is the floor a flight leads to (null = none to name),
- * `ownM` the distance of its own walk or walkway, without the short legs folded into it.
+ * `ownM` / `ownSteps` the distance and steps of its own walk or walkway, without the short legs folded into it.
  */
-type Draft = Instruction & { label: string | null; ownM?: number };
+type Draft = Instruction & { label: string | null; ownM?: number; ownSteps?: number[] };
 
 /**
  * Folds walking legs under SHORT_LEG_M (without junction hints) into their neighbours, so a few metres
@@ -463,8 +463,8 @@ type Draft = Instruction & { label: string | null; ownM?: number };
  *   junction hint "After ~90 m, turn right.", so the turn cannot read as the hint's);
  * - the opening leg sets the heading every later turn is measured from, so it is only folded into a
  *   flight, lift, gate or walkway it leads straight onto, without a turn of its own.
- * `distanceM` and `stepIndexes` grow to cover folded legs; spoken distances stay those of the
- * instruction's own walk (`ownM`), so "~20 m, then turn back" still turns back after 20 m.
+ * `distanceM` and `stepIndexes` grow to cover folded legs; spoken distances and "straight" stay those of
+ * the instruction's own walk (`ownM`, `ownSteps`), so "~20 m, then turn back" still turns back after 20 m.
  */
 function foldShortLegs(drafts: Draft[]): Draft[] {
   const isWalk = (d: Draft) => WALK_KINDS.has(d.kind);
@@ -478,7 +478,10 @@ function foldShortLegs(drafts: Draft[]): Draft[] {
     const trail = turnsOf(legs);
     if (trail.length > 0) into.trailTurns = [...(into.trailTurns ?? []), ...trail];
   };
-  for (const d of drafts) d.ownM = d.distanceM;
+  for (const d of drafts) {
+    d.ownM = d.distanceM;
+    d.ownSteps = [...d.stepIndexes];
+  }
   const out: Draft[] = [drafts[0]!];
   let pending: Draft[] = [];
   for (const d of drafts.slice(1, -1)) {
@@ -679,12 +682,12 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
   const lastFloor = nodes.get(route.nodeIds[route.nodeIds.length - 1]!)!.floorId;
   out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: lastFloor, text: t.arrive(), label: null });
 
-  return foldShortLegs(out).map(({ label, ownM, ...ins }, k, all) => {
+  return foldShortLegs(out).map(({ label, ownM, ownSteps, ...ins }, k, all) => {
     if (ins.kind === "start" || ins.kind === "arrive") return ins;
     const m = Math.max(1, Math.round(ownM ?? ins.distanceM));
     const turns = [...(ins.leadTurns ?? []), ...(WALK_TURN[ins.kind] ? [WALK_TURN[ins.kind]!] : []), ...(ins.turn ? [ins.turn] : [])];
     let main: string;
-    if (WALK_KINDS.has(ins.kind)) main = turns.length > 0 ? t.turnWalk(turns, m) : straightInPlan(points, ins.stepIndexes) ? t.walk(m) : t.continue(m);
+    if (WALK_KINDS.has(ins.kind)) main = turns.length > 0 ? t.turnWalk(turns, m) : straightInPlan(points, ownSteps ?? ins.stepIndexes) ? t.walk(m) : t.continue(m);
     else {
       // A flight right after another of the same kind (only short legs between) continues it, unless it
       // is known to reverse it (down, then up).
