@@ -107,16 +107,6 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
         print(f"[gteki] nothing published; {glb_dir} and {manifest_path} are unchanged", file=sys.stderr)
         sys.exit(1)
 
-    for path in glob.glob(os.path.join(staging, "*.glb")):
-        os.replace(path, os.path.join(glb_dir, os.path.basename(path)))
-    if not only:
-        # a full build defines the library: drop GLBs no longer in the catalog
-        keep = {f"{e['id']}.glb" for e in entries}
-        for path in glob.glob(os.path.join(glb_dir, "*.glb")):
-            if os.path.basename(path) not in keep:
-                os.remove(path)
-                print(f"[gteki] removed stale {os.path.basename(path)}", flush=True)
-
     order = {a["id"]: i for i, a in enumerate(catalog["assets"])}
     entries.sort(key=lambda e: order.get(e["id"], 1e9))
     for e in entries:
@@ -129,9 +119,33 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
         "license": contract.LICENSE,
         "assets": entries,
     }
-    with open(manifest_path, "w") as f:
-        json.dump(manifest, f, indent=2, ensure_ascii=False)
-        f.write("\n")
+    # Write the manifest next to its destination before touching glb/, so an
+    # unwritable --manifest fails while the live library is still unchanged.
+    manifest_dir = os.path.dirname(os.path.abspath(manifest_path))
+    try:
+        fd, manifest_tmp = tempfile.mkstemp(prefix=".manifest-", suffix=".json", dir=manifest_dir)
+    except OSError as e:
+        print(f"[gteki] cannot write manifest {manifest_path}: {e}", file=sys.stderr)
+        print(f"[gteki] nothing published; {glb_dir} and {manifest_path} are unchanged", file=sys.stderr)
+        sys.exit(1)
+    try:
+        with os.fdopen(fd, "w") as f:
+            json.dump(manifest, f, indent=2, ensure_ascii=False)
+            f.write("\n")
+        os.chmod(manifest_tmp, 0o644)
+        for path in glob.glob(os.path.join(staging, "*.glb")):
+            os.replace(path, os.path.join(glb_dir, os.path.basename(path)))
+        if not only:
+            # a full build defines the library: drop GLBs no longer in the catalog
+            keep = {f"{e['id']}.glb" for e in entries}
+            for path in glob.glob(os.path.join(glb_dir, "*.glb")):
+                if os.path.basename(path) not in keep:
+                    os.remove(path)
+                    print(f"[gteki] removed stale {os.path.basename(path)}", flush=True)
+        os.replace(manifest_tmp, manifest_path)
+    finally:
+        if os.path.exists(manifest_tmp):
+            os.remove(manifest_tmp)
 
 
 if __name__ == "__main__":

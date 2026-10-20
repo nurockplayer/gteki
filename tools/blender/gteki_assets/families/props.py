@@ -27,6 +27,7 @@ No logos, brand names, packaging, text, digits or pictograms: drinks are abstrac
 colour shapes, the bins carry colour only, screens are generic colour-block UIs.
 """
 
+import hashlib
 import math
 import os
 import zlib
@@ -267,7 +268,8 @@ def poster_lightbox(asset_id, params, tex_res):
     mname = f"gteki_poster_0{n}"
     rel = p["poster_image"] or f"{POSTER_DIR}/poster_0{n}.jpg"
     if p["poster_image"]:
-        mname += "_custom"
+        # one material per image, so posters sharing a number but not an image can coexist
+        mname = "gteki_poster_custom_" + hashlib.sha256(os.path.normpath(rel).encode()).hexdigest()[:8]
     repo = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
     if not os.path.exists(rel if os.path.isabs(rel) else os.path.join(repo, rel)):
         raise FileNotFoundError(f"poster image {rel} not found (pass params.poster_image to override)")
