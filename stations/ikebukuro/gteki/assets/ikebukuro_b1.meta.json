@@ -339,6 +339,5 @@
   },
   "blender_version": "5.2.2 LTS",
   "attribution": "Contains PLATEAU data (MLIT), CC BY 4.0. Modified: reprojected to a local ENU frame, triangulated and re-encoded as glTF by GTEki.",
-  "triangulation_failures": 0,
-  "build_timestamp_utc": "2026-10-20T10:57:33.107716+00:00"
+  "triangulation_failures": 0
 }

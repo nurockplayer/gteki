@@ -5,6 +5,7 @@ ENU metres stay unchanged in Blender. Only the glTF exporter changes axes.
 """
 import json
 import math
+import os
 import sys
 from collections import Counter
 from datetime import datetime, timezone
@@ -270,7 +271,9 @@ def main(src, dst):
     if result != {"FINISHED"}:
         raise RuntimeError(f"glTF export failed: {result}")
     meta["triangulation_failures"] = sum(s["triangulation_failures"] for s in meta["categories"].values())
-    meta["build_timestamp_utc"] = datetime.now(timezone.utc).isoformat()
+    # No wall clock: unchanged inputs must rewrite a byte-identical sidecar (the source is pinned by sha256).
+    if os.environ.get("SOURCE_DATE_EPOCH"):
+        meta["build_timestamp_utc"] = datetime.fromtimestamp(int(os.environ["SOURCE_DATE_EPOCH"]), timezone.utc).isoformat()
     output.with_suffix(".meta.json").write_text(json.dumps(meta, indent=2) + "\n")
     print(f"{'category':16} {'triangles':>10} {'vertices':>10} {'failed':>8} {'degen':>8}")
     for role, stats in meta["categories"].items():
