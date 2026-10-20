@@ -117,9 +117,9 @@
    "crs": "EPSG:6697"
   },
   "frame": "ENU",
-  "datasetVersion": "ikebukuro-b1-slice1",
+  "datasetVersion": "ikebukuro-b1-slice2",
   "synthetic": false,
-  "generatedAt": "2026-10-20T12:30:49+00:00"
+  "generatedAt": "2026-10-20T12:40:07+00:00"
  },
  "sources": [
   {

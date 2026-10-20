@@ -123,7 +123,7 @@
    "crs": "EPSG:6697"
   },
   "frame": "ENU",
-  "datasetVersion": "ikebukuro-b1-slice1",
+  "datasetVersion": "ikebukuro-b1-slice2",
   "synthetic": false
  },
  "sources": [

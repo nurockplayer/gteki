@@ -168,7 +168,7 @@ def main():
             p, q = pts[i], pts[i + 1]
             seg_len = math.dist(p[:2], q[:2])
             length3d += math.dist(p, q)
-            nstep = max(1, int(seg_len / STEP))
+            nstep = max(1, math.ceil(seg_len / STEP))  # spacing never exceeds STEP
             for k in range(nstep + 1):
                 t = k / nstep
                 x, y, z = (p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t, p[2] + (q[2] - p[2]) * t)

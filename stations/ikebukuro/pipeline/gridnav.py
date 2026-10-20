@@ -174,7 +174,7 @@ class Grid:
 
     def _line_ok(self, p, q, max_z_err):
         d = math.hypot(q[0] - p[0], q[1] - p[1])
-        n = max(1, int(d / 0.25))
+        n = max(1, math.ceil(d / 0.25))  # spacing never exceeds 0.25 m
         for s in range(n + 1):
             t = s / n
             x, y, z = p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t, p[2] + (q[2] - p[2]) * t
