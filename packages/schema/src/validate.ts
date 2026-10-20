@@ -28,6 +28,7 @@ export function isCanonicalAssetPath(p: string): boolean {
   return !/[:\\?#]/.test(p) && !p.startsWith("/") && !p.split("/").some((seg) => seg === "" || seg === "." || seg === "..");
 }
 
+const COVERAGE_STATUSES = new Set(["routable", "visual_only", "unverified", "excluded"]);
 const ELEVATION_SOURCES = new Set(["measured", "source-derived", "symbolic", "unknown"]);
 const RIGHTS = new Set(["REUSABLE_WITH_CONDITIONS", "REFERENCE_ONLY", "RESTRICTED", "UNVERIFIED"]);
 /** Polyline endpoints further than this from their node are reported. */
@@ -94,6 +95,8 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (floorIds.has(f.id)) err("floor.dup", "duplicate floor id", f.id);
     floorIds.add(f.id);
     if (!operatorIds.has(f.operatorId)) err("floor.operator", `unknown operator ${f.operatorId}`, f.id);
+    // Floor labels, ordinals and heights drive names and up/down in the directions: a real floor needs a source.
+    if (f.sourceLabels.length === 0 && !b.station.synthetic) err("floor.source", "floor without source labels", f.id);
     for (const l of f.sourceLabels) if (!sourceIds.has(l.sourceId)) err("floor.source", `unknown source ${l.sourceId}`, f.id);
     if (f.elevationM === null && f.elevationSource === "measured")
       err("floor.elevation", "measured elevation cannot be null", f.id);
@@ -245,6 +248,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
 
   for (const a of b.coverage.areas) {
     if (a.floorId !== null && !floorIds.has(a.floorId)) err("coverage.floor", `unknown floor ${a.floorId}`, a.id);
+    if (!COVERAGE_STATUSES.has(a.status)) err("coverage.status", `unknown coverage status ${String(a.status)}`, a.id);
     if (a.sourceIds.length === 0) err("coverage.source", "coverage area without sources", a.id);
     for (const sid of a.sourceIds) if (!sourceIds.has(sid)) err("coverage.source", `unknown source ${sid}`, a.id);
     if (a.polygon && !b.station.synthetic && !a.sourceIds.some(reusableData))
