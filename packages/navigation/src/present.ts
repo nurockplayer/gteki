@@ -462,8 +462,10 @@ type Draft = Instruction & { label: string | null; ownM?: number; ownSteps?: num
  * - other short legs lead into the next instruction ("Turn left, then right, ~16 m");
  * - short legs right before arrival end the instruction before them ("…, then turn right"; after a
  *   junction hint "After ~90 m, turn right.", so the turn cannot read as the hint's);
- * - the opening leg (after the start or a wait) sets the heading every later turn is measured from, so it
- *   is only folded into a flight, lift, gate or walkway it leads straight onto, without a turn of its own;
+ * - the opening leg sets the heading every later turn is measured from, so it is only folded into a
+ *   flight, lift, gate or walkway it leads straight onto, without a turn of its own. The same holds for a
+ *   straight first leg after a wait (its metres must not slip in front of the next turn); a first leg that
+ *   turns there still has the heading the traveller waited in, so its turn leads into the next line;
  * - nothing is folded into or across a wait: legs before it end the instruction before them.
  * `distanceM` and `stepIndexes` grow to cover folded legs; spoken distances and "straight" stay those of
  * the instruction's own walk (`ownM`, `ownSteps`), so "~20 m, then turn back" still turns back after 20 m.

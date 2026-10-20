@@ -870,6 +870,26 @@ describe("short legs never fold into or across a wait (rebased onto waits for op
     expect(describeRoute(b, r, "ja").map((i) => i.text)).toEqual(["出発", "約20m 直進、その先で左へ", "12:01まで待つ", "約2m 直進", "右へ曲がり約20m", "目的地に到着"]);
   });
 
+  it("names a turn on the first leg after a wait, folded into the next line at the wait point", () => {
+    const window = { kind: "window" as const, open: "12:01", close: "23:00", evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } };
+    const b = createSyntheticBundle([
+      edge("e1", "start", "a", { lengthM: 20 }),
+      edge("e2", "a", "b", { lengthM: 3, hours: window }),
+      edge("e3", "b", "c", { lengthM: 20 }),
+    ]);
+    const node = (id: string, x: number, y: number) => ({ id, floorId: "concourse", position: { x, y, z: 0 }, kind: "junction" as const, inOut: null, sourceRefs: [] });
+    // East 20 m, wait at a until e2 opens, then 3 m north (left, measured from the heading waited in) and 20 m east.
+    b.nodes = b.nodes.filter((n) => n.id !== "a" && n.id !== "b");
+    b.nodes.push(node("a", 20, 0), node("b", 20, 3), node("c", 40, 3));
+    const r = ok(createRouter(b).route("start", "c", { ...base, at: { weekday: "mon", minutes: 12 * 60 } }));
+    expect(r.steps[1]!.waitUntil).toEqual({ weekday: "mon", minutes: 12 * 60 + 1, dayOffset: 0 });
+    const en = describeRoute(b, r, "en");
+    expect(en.map((i) => i.text)).toEqual(["Start", "Go straight ~20 m", "Wait until 12:01", "Turn left, then right, ~20 m", "Arrive at destination"]);
+    expect(en[3]).toMatchObject({ stepIndexes: [1, 2], leadTurns: ["left"] });
+    expect(en[2]).toMatchObject({ kind: "wait", stepIndexes: [], beforeStepIndex: 1 });
+    expect(describeRoute(b, r, "ja")[3]!.text).toBe("左へ曲がり、すぐ右へ曲がり約20m");
+  });
+
   it("does not ride one lift across a wait", () => {
     const window = { kind: "window" as const, open: "12:01", close: "23:00", evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } };
     const b = createSyntheticBundle([
