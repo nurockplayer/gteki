@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { discoverStations, gtekiStations } from "../stations-plugin.ts";
+import { discoverStations, fsUrl, gtekiStations } from "../stations-plugin.ts";
 import { threeAliases } from "../three-alias.ts";
 
 function tree(): string {
@@ -88,5 +88,14 @@ describe("virtual station module asset URLs", () => {
 
   it("uses fingerprinted ?url imports for production builds", () => {
     expect(load([tree()], "build")).toMatch(/b1\.glb" \+ "\?url"/);
+  });
+});
+
+describe("dev asset URL encoding", () => {
+  it("percent-encodes path segments so literal %2e%2e directories cannot normalise into ..", () => {
+    const url = fsUrl("/repo/stations/alpha/gteki/assets/%2e%2e/%2e%2e/%2e%2e/beta/gteki/assets/outside.glb");
+    expect(url).toBe("/@fs/repo/stations/alpha/gteki/assets/%252e%252e/%252e%252e/%252e%252e/beta/gteki/assets/outside.glb");
+    expect(new URL(url, "http://localhost:5173").pathname).toBe(url);
+    expect(fsUrl("/a b/c?d#e.glb")).toBe("/@fs/a%20b/c%3Fd%23e.glb");
   });
 });

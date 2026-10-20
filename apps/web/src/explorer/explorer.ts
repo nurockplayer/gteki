@@ -169,14 +169,18 @@ export class Explorer {
   /** EffectComposer.dispose() frees only its own targets; each pass owns targets/materials too. */
   private disposeComposer(): void {
     if (!this.composer) return;
-    for (const pass of this.composer.passes) pass.dispose();
+    for (const pass of this.composer.passes) {
+      pass.dispose();
+      // three's GTAOPass.dispose() leaves these two shader materials allocated.
+      if (pass instanceof GTAOPass) { pass.gtaoMaterial.dispose(); pass.blendMaterial.dispose(); }
+    }
     this.composer.dispose();
     this.composer = null;
   }
 
+  /** Built once: the composer only references this explorer's scene and camera, so stations reuse it. */
   private setupComposer(): void {
-    this.disposeComposer();
-    if (this.quality !== "high") return;
+    if (this.composer || this.quality !== "high") return;
     const size = this.renderer.getSize(new THREE.Vector2());
     const composer = new EffectComposer(this.renderer);
     composer.addPass(new RenderPass(this.scene, this.camera));
@@ -204,6 +208,17 @@ export class Explorer {
   phase = "idle";
 
   private loadGeneration = 0;
+
+  /**
+   * Abandon any in-flight load and show nothing: called as soon as another station is selected, so a
+   * slow previous station can never appear under the new selection (even if the new one fails to load).
+   */
+  cancelPendingLoad(): void {
+    this.loadGeneration++;
+    this.clearStation();
+    this.station = null;
+    this.phase = "idle";
+  }
 
   /** Resolves false when a later loadStation call superseded this one (its scene is disposed, nothing shown). */
   async loadStation(station: LoadedStation, router: Router): Promise<boolean> {

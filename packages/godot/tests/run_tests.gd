@@ -155,7 +155,11 @@ func _check_symlink_fence(glb: String) -> void:
 	DirAccess.copy_absolute(source, root.path_join("station/assets/inside.glb"))
 	DirAccess.copy_absolute(source, root.path_join("other/outside.glb"))
 	var dir := DirAccess.open(gteki)
-	var linked := dir.create_link("../assets/inside.glb", "inside.glb") == OK and dir.create_link("../../other/outside.glb", "outside.glb") == OK
+	DirAccess.make_dir_recursive_absolute(root.path_join("station/links"))
+	# Chained escape: the first hop stays inside the station, the second leaves it.
+	var linked := dir.create_link("../assets/inside.glb", "inside.glb") == OK and dir.create_link("../../other/outside.glb", "outside.glb") == OK \
+		and DirAccess.open(root.path_join("station/links")).create_link("../../other/outside.glb", "next.glb") == OK \
+		and dir.create_link("../links/next.glb", "chained.glb") == OK
 	check(linked, "create test symlinks")
 	if linked:
 		var station_root := Node3D.new()
@@ -164,8 +168,11 @@ func _check_symlink_fence(glb: String) -> void:
 		var escape := Assets.new()
 		check(not escape.load_assets({"assets": [{"id": "out", "uri": "outside.glb", "format": "glb"}]}, gteki, station_root), "symlink escaping the station folder is refused")
 		check(escape.counts.assets == 0, "refused symlink is never read")
+		var chained := Assets.new()
+		check(not chained.load_assets({"assets": [{"id": "chain", "uri": "chained.glb", "format": "glb"}]}, gteki, station_root), "chained symlink escaping on its second hop is refused")
+		check(chained.counts.assets == 0, "refused chained symlink is never read")
 		station_root.free()
-	for f in ["station/gteki/inside.glb", "station/gteki/outside.glb", "station/assets/inside.glb", "other/outside.glb", "station/gteki", "station/assets", "station", "other", ""]:
+	for f in ["station/gteki/inside.glb", "station/gteki/outside.glb", "station/gteki/chained.glb", "station/links/next.glb", "station/assets/inside.glb", "other/outside.glb", "station/gteki", "station/assets", "station/links", "station", "other", ""]:
 		DirAccess.remove_absolute(root.path_join(f))
 
 
