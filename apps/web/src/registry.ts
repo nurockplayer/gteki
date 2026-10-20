@@ -16,6 +16,8 @@ export interface LoadedStation {
   bundle: StationBundle;
   issues: ValidationIssue[];
   scene: StationSceneModule | null;
+  /** Why the optional scene module could not be imported; routing data is still usable (L0 view). */
+  sceneImportError: string | null;
   assetUrls: Map<string, string>;
 }
 
@@ -46,12 +48,18 @@ export async function listStations(): Promise<StationEntry[]> {
       label,
       synthetic,
       async load() {
-        const [graph, pois, sceneModule] = await Promise.all([s.graph(), s.pois(), s.scene ? s.scene() : Promise.resolve(null)]);
+        // The scene module is optional presentation: its failure must never block valid routing data.
+        let sceneImportError: string | null = null;
+        const scenePromise = s.scene
+          ? s.scene().catch((err: unknown) => { sceneImportError = err instanceof Error ? err.message : String(err); return null; })
+          : Promise.resolve(null);
+        const [graph, pois, sceneModule] = await Promise.all([s.graph(), s.pois(), scenePromise]);
         const parsed = parseStationFiles(manifest, graph, pois);
         if (!parsed.ok) throw new StationLoadError(s.dir, parsed.issues);
+        if (sceneModule !== null && !isSceneModule(sceneModule)) sceneImportError = "scene module does not export buildScene(ctx)";
         const assetUrls = new Map<string, string>();
         await Promise.all(Object.entries(s.assets).map(async ([uri, url]) => assetUrls.set(uri, await url())));
-        return { key: s.dir, bundle: parsed.bundle, issues: parsed.issues, scene: isSceneModule(sceneModule) ? sceneModule : null, assetUrls };
+        return { key: s.dir, bundle: parsed.bundle, issues: parsed.issues, scene: isSceneModule(sceneModule) ? sceneModule : null, sceneImportError, assetUrls };
       },
     });
   }
@@ -64,7 +72,7 @@ export async function listStations(): Promise<StationEntry[]> {
       const [m, g, p] = createDemoFiles();
       const parsed = parseStationFiles(m, g, p);
       if (!parsed.ok) throw new StationLoadError("_synthetic-demo", parsed.issues);
-      return { key: "_synthetic-demo", bundle: parsed.bundle, issues: parsed.issues, scene: null, assetUrls: new Map() };
+      return { key: "_synthetic-demo", bundle: parsed.bundle, issues: parsed.issues, scene: null, sceneImportError: null, assetUrls: new Map() };
     },
   });
   return entries;

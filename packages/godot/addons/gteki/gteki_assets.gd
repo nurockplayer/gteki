@@ -3,7 +3,7 @@ extends RefCounted
 
 const Station = preload("res://addons/gteki/gteki_station.gd")
 const WALKABLE = ["floor", "stairs_ramps"]
-const COLLIDER = ["wall", "barriers"]
+const COLLIDER = ["wall", "barriers", "transport"]
 
 var issues: Array[String] = []
 var counts: Dictionary = {"assets": 0, "walkable": 0, "collider": 0}
@@ -25,7 +25,14 @@ func load_assets(manifest: Dictionary, gteki_dir: String, station_root: Node3D) 
 		if matrix != null and not _valid_matrix(matrix):
 			issues.append("Asset transform must be a finite affine column-major 4x4: %s" % uri)
 			continue
-		load_glb(gteki_dir.path_join(uri), station_root, asset.get("id", "asset"), matrix)
+		var resolved := resolve_in_station(gteki_dir, uri)
+		if resolved.is_empty():
+			issues.append("Asset resolves outside the station folder (symlink): %s" % uri)
+			continue
+		if not glb_is_self_contained(resolved):
+			issues.append("GLB references external buffers/images; only self-contained GLBs load: %s" % uri)
+			continue
+		load_glb(resolved, station_root, asset.get("id", "asset"), matrix)
 	print("GLB assets=%d walkable=%d collider=%d" % [counts.assets, counts.walkable, counts.collider])
 	return issues.is_empty()
 
@@ -52,6 +59,49 @@ func load_glb(path: String, station_root: Node3D, asset_id: String = "asset", ma
 	_tag_roles(scene)
 	counts.assets += 1
 	return asset_root
+
+
+## Resolve `uri` under `gteki_dir`, following symlinks only while they stay inside the station
+## folder (the parent of gteki/), like the web explorer's fence. Returns "" when a hop escapes.
+static func resolve_in_station(gteki_dir: String, uri: String) -> String:
+	var base := ProjectSettings.globalize_path(gteki_dir).simplify_path()
+	var fence := base.get_base_dir()
+	var current := base
+	for part in uri.split("/", false):
+		var parent := current
+		current = parent.path_join(part)
+		var dir := DirAccess.open(parent)
+		if dir == null:
+			return ""
+		if dir.is_link(part):
+			var target := dir.read_link(part)
+			current = (target if target.is_absolute_path() else parent.path_join(target)).simplify_path()
+		if current != fence and not current.begins_with(fence + "/"):
+			return ""
+	return current
+
+
+## True when the GLB's JSON chunk declares no external (non-data:) buffer or image URIs, so loading
+## it cannot read files outside the fenced asset path.
+static func glb_is_self_contained(path: String) -> bool:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null or file.get_length() < 20:
+		return false
+	if file.get_32() != 0x46546C67:  # "glTF"
+		return false
+	file.get_32()  # version
+	file.get_32()  # total length
+	var json_length := file.get_32()
+	if file.get_32() != 0x4E4F534A:  # "JSON"
+		return false
+	var doc: Variant = JSON.parse_string(file.get_buffer(json_length).get_string_from_utf8())
+	if not doc is Dictionary:
+		return false
+	for key in ["buffers", "images"]:
+		for entry in doc.get(key, []):
+			if entry is Dictionary and entry.has("uri") and not str(entry.uri).begins_with("data:"):
+				return false
+	return true
 
 
 static func _valid_matrix(matrix: Variant) -> bool:

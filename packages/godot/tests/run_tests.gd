@@ -140,7 +140,33 @@ func test_generated_glb(station_root: Node3D) -> void:
 	var rejected := Assets.new()
 	check(not rejected.load_assets({"assets": [{"uri": "../escape.glb", "format": "glb"}]}, "user://", station_root), "reject asset traversal")
 	check(not rejected.load_assets({"assets": [{"uri": filename, "format": "glb", "transform": [1]}]}, "user://", station_root), "reject malformed asset transform")
+	_check_symlink_fence(output)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(output))
+
+
+## In-station symlinks load; links that resolve into another folder are refused before any read.
+func _check_symlink_fence(glb: String) -> void:
+	var root := ProjectSettings.globalize_path("user://").path_join("fence-%d" % OS.get_process_id())
+	var gteki := root.path_join("station/gteki")
+	DirAccess.make_dir_recursive_absolute(gteki)
+	DirAccess.make_dir_recursive_absolute(root.path_join("station/assets"))
+	DirAccess.make_dir_recursive_absolute(root.path_join("other"))
+	var source := ProjectSettings.globalize_path(glb)
+	DirAccess.copy_absolute(source, root.path_join("station/assets/inside.glb"))
+	DirAccess.copy_absolute(source, root.path_join("other/outside.glb"))
+	var dir := DirAccess.open(gteki)
+	var linked := dir.create_link("../assets/inside.glb", "inside.glb") == OK and dir.create_link("../../other/outside.glb", "outside.glb") == OK
+	check(linked, "create test symlinks")
+	if linked:
+		var station_root := Node3D.new()
+		var ok := Assets.new()
+		check(ok.load_assets({"assets": [{"id": "in", "uri": "inside.glb", "format": "glb"}]}, gteki, station_root), "in-station symlinked GLB loads: %s" % str(ok.issues))
+		var escape := Assets.new()
+		check(not escape.load_assets({"assets": [{"id": "out", "uri": "outside.glb", "format": "glb"}]}, gteki, station_root), "symlink escaping the station folder is refused")
+		check(escape.counts.assets == 0, "refused symlink is never read")
+		station_root.free()
+	for f in ["station/gteki/inside.glb", "station/gteki/outside.glb", "station/assets/inside.glb", "other/outside.glb", "station/gteki", "station/assets", "station", "other", ""]:
+		DirAccess.remove_absolute(root.path_join(f))
 
 
 func finish() -> void:

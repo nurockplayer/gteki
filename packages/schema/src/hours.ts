@@ -33,10 +33,12 @@ export function isOpenAt(hours: HoursSpec | null, at: LocalTime): boolean | null
   const days = new Set(hours.days ?? WEEK);
   const today = WEEK.indexOf(at.weekday);
   if (today < 0 || !(at.minutes >= 0 && at.minutes < 1440)) return null;
-  const yesterday = WEEK[(today + 6) % 7]!;
-  if (days.has(at.weekday) && at.minutes >= open && at.minutes < close) return true;
-  // Spill-over from the previous service day.
-  const spill = at.minutes + 1440;
-  if (days.has(yesterday) && spill >= open && spill < close) return true;
+  // A service day's window can reach several calendar days later (open ≤ 47:59, close < open wraps +24h),
+  // so check every service day whose window could still cover `at`.
+  for (let back = 0; back * 1440 < close; back++) {
+    const serviceDay = WEEK[(today - back + 7 * 4) % 7]!;
+    const t = at.minutes + back * 1440;
+    if (days.has(serviceDay) && t >= open && t < close) return true;
+  }
   return false;
 }

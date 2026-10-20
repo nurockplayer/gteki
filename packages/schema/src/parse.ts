@@ -24,6 +24,16 @@ const SPECS = {
   evidence: { sourceIds: "array", method: "string", checkedDate: "string" },
   poi: { id: "string", category: "string", names: "array", aliases: "array", floorId: "string|null", displayPosition: "object|null", connectorNodeIds: "array", paid: "tri", evidence: "object" },
   text: { lang: "string", text: "string" },
+  operator: { id: "string", names: "array" },
+  code: { operatorId: "string", code: "string" },
+  license: { name: "string", url: "string" },
+  sourceLabel: { operatorId: "string", label: "string", sourceId: "string" },
+  featureRef: { sourceId: "string", featureId: "string" },
+  hoursAlways: { kind: "string", evidence: "object" },
+  hoursWindow: { kind: "string", open: "string", close: "string", days: "array?", evidence: "object" },
+  area: { id: "string", floorId: "string|null", status: "string", label: "array", polygon: "array?", sourceIds: "array" },
+  gap: { id: "string", floorId: "string|null", zone: "string", missingFact: "string", fieldWorkNeeded: "string" },
+  point2: { x: "number", y: "number" },
   coverage: { summary: "array", areas: "array", gaps: "array", freshness: "string|null" },
   asset: { id: "string", uri: "string", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?" },
 } satisfies Record<string, Spec>;
@@ -74,6 +84,39 @@ class ShapeChecker {
     return ok;
   }
 
+  /** Every member of an (already type-checked) array must be a string. */
+  strings(list: unknown, where: string): void {
+    if (!Array.isArray(list)) return;
+    list.forEach((v, i) => {
+      if (typeof v !== "string") this.issues.push({ level: "error", code: "shape.type", message: `${where}[${i}]: expected string, got ${kindOf(v)}`, ref: where });
+    });
+  }
+
+  texts(list: unknown, where: string): void {
+    this.each(list, SPECS.text, where);
+  }
+
+  evidence(value: unknown, where: string): void {
+    if (this.check(value, SPECS.evidence, where)) this.strings((value as Record<string, unknown>).sourceIds, `${where}.sourceIds`);
+  }
+
+  /** `hours` is a discriminated union: an unrecognised or incomplete object is an error, never "open". */
+  hours(value: unknown, where: string): void {
+    if (value === null) return;
+    const kind = kindOf(value) === "object" ? (value as Record<string, unknown>).kind : undefined;
+    if (kind === "always") {
+      if (this.check(value, SPECS.hoursAlways, where)) this.evidence((value as Record<string, unknown>).evidence, `${where}.evidence`);
+    } else if (kind === "window") {
+      if (this.check(value, SPECS.hoursWindow, where)) {
+        const h = value as Record<string, unknown>;
+        this.strings(h.days, `${where}.days`);
+        this.evidence(h.evidence, `${where}.evidence`);
+      }
+    } else {
+      this.issues.push({ level: "error", code: "shape.type", message: `${where}: hours must be null, {kind:"always"} or {kind:"window"}; got kind ${JSON.stringify(kind)}`, ref: where });
+    }
+  }
+
   each(list: unknown, spec: Spec, label: string, nested?: (item: Record<string, unknown>, where: string) => void): void {
     if (!Array.isArray(list)) return;
     list.forEach((item, i) => {
@@ -92,26 +135,60 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
   const c = new ShapeChecker();
   if (c.check(manifest, { schema: "string", station: "object", sources: "array", floors: "array", coverage: "object", spawnNodeIds: "array?", assets: "array?" }, "station.json")) {
     const m = manifest as Record<string, unknown>;
-    if (c.check(m.station, SPECS.station, "station.json.station")) c.check((m.station as Record<string, unknown>).origin, SPECS.origin, "station.json.station.origin");
-    c.each(m.sources, SPECS.source, "sources");
-    c.each(m.floors, SPECS.floor, "floors", (floor, where) => {
-      if (Array.isArray(floor.displayNames)) floor.displayNames.forEach((t, i) => c.check(t, SPECS.text, `${where}.displayNames[${i}]`));
+    if (c.check(m.station, SPECS.station, "station.json.station")) {
+      const st = m.station as Record<string, unknown>;
+      c.check(st.origin, SPECS.origin, "station.json.station.origin");
+      c.texts(st.names, "station.names");
+      c.each(st.operators, SPECS.operator, "station.operators", (op, where) => c.texts(op.names, `${where}.names`));
+      if (st.codes !== undefined) {
+        if (Array.isArray(st.codes)) c.each(st.codes, SPECS.code, "station.codes");
+        else c.issues.push({ level: "error", code: "shape.type", message: `station.codes: expected array, got ${kindOf(st.codes)}`, ref: "station.codes" });
+      }
+    }
+    c.each(m.sources, SPECS.source, "sources", (src, where) => {
+      if (src.license !== null) c.check(src.license, SPECS.license, `${where}.license`);
     });
-    c.check(m.coverage, SPECS.coverage, "coverage");
-    c.each(m.assets, SPECS.asset, "assets");
+    c.each(m.floors, SPECS.floor, "floors", (floor, where) => {
+      c.each(floor.sourceLabels, SPECS.sourceLabel, `${where}.sourceLabels`);
+      c.texts(floor.displayNames, `${where}.displayNames`);
+    });
+    if (c.check(m.coverage, SPECS.coverage, "coverage")) {
+      const cov = m.coverage as Record<string, unknown>;
+      c.texts(cov.summary, "coverage.summary");
+      c.each(cov.areas, SPECS.area, "coverage.areas", (area, where) => {
+        c.texts(area.label, `${where}.label`);
+        c.strings(area.sourceIds, `${where}.sourceIds`);
+        c.each(area.polygon, SPECS.point2, `${where}.polygon`);
+      });
+      c.each(cov.gaps, SPECS.gap, "coverage.gaps");
+    }
+    c.strings(m.spawnNodeIds, "spawnNodeIds");
+    c.each(m.assets, SPECS.asset, "assets", (asset, where) => {
+      c.strings(asset.floorIds, `${where}.floorIds`);
+      c.strings(asset.sourceIds, `${where}.sourceIds`);
+      if (Array.isArray(asset.transform) && (asset.transform.length !== 16 || !asset.transform.every((v) => typeof v === "number" && Number.isFinite(v))))
+        c.issues.push({ level: "error", code: "shape.type", message: `${where}.transform: expected 16 finite numbers`, ref: where });
+    });
   }
   if (c.check(graph, { schema: "string", stationId: "string", nodes: "array", edges: "array" }, "graph.json")) {
     const g = graph as Record<string, unknown>;
-    c.each(g.nodes, SPECS.node, "nodes", (node, where) => c.check(node.position, SPECS.position, `${where}.position`));
+    c.each(g.nodes, SPECS.node, "nodes", (node, where) => {
+      c.check(node.position, SPECS.position, `${where}.position`);
+      c.each(node.sourceRefs, SPECS.featureRef, `${where}.sourceRefs`);
+    });
     c.each(g.edges, SPECS.edge, "edges", (edge, where) => {
-      c.check(edge.geometryEvidence, SPECS.evidence, `${where}.geometryEvidence`);
-      if (edge.accessEvidence !== null) c.check(edge.accessEvidence, SPECS.evidence, `${where}.accessEvidence`);
+      c.evidence(edge.geometryEvidence, `${where}.geometryEvidence`);
+      if (edge.accessEvidence !== null) c.evidence(edge.accessEvidence, `${where}.accessEvidence`);
+      c.hours(edge.hours, `${where}.hours`);
       if (Array.isArray(edge.geometry)) edge.geometry.forEach((p, i) => c.check(p, SPECS.position, `${where}.geometry[${i}]`));
     });
   }
   if (c.check(pois, { schema: "string", stationId: "string", pois: "array" }, "pois.json")) {
     c.each((pois as Record<string, unknown>).pois, SPECS.poi, "pois", (poi, where) => {
-      c.check(poi.evidence, SPECS.evidence, `${where}.evidence`);
+      c.evidence(poi.evidence, `${where}.evidence`);
+      c.texts(poi.names, `${where}.names`);
+      c.texts(poi.aliases, `${where}.aliases`);
+      c.strings(poi.connectorNodeIds, `${where}.connectorNodeIds`);
       if (poi.displayPosition !== null) c.check(poi.displayPosition, SPECS.position, `${where}.displayPosition`);
     });
   }

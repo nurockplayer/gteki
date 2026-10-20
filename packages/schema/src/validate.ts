@@ -97,7 +97,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       warn("edge.access", "verified edge without access evidence; access facts are UNKNOWN", e.id);
     checkEvidence(e, e.geometryEvidence, "geometryEvidence");
     for (const s of e.geometryEvidence.sourceIds)
-      if (factsOnly.has(s) && !b.station.synthetic) err("edge.geometry.rights", `polyline geometry cites facts-only source ${s}; geometry would be a derivative`, e.id);
+      if (factsOnly.has(s)) err("edge.geometry.rights", `polyline geometry cites facts-only source ${s}; geometry would be a derivative`, e.id);
     checkEvidence(e, e.accessEvidence, "accessEvidence");
     if (e.crossesFareBoundary === true && e.paid === false)
       err("edge.fare", "fare-boundary edge cannot be marked fully unpaid", e.id);

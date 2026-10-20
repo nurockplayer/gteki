@@ -79,8 +79,9 @@ export interface Instruction {
 const VERTICAL: Partial<Record<EdgeMode, InstructionKind>> = { stairs: "stairs", escalator: "escalator", elevator: "elevator", ramp: "ramp" };
 const TURN_DEG = 35;
 
-function verticalSense(a: Floor | undefined, b: Floor | undefined, za: number | null, zb: number | null): "up" | "down" | null {
-  if (za !== null && zb !== null && Math.abs(zb - za) > 0.3) return zb > za ? "up" : "down";
+/** "level" = heights known and equal (a flat continuation); null = direction UNKNOWN. */
+function verticalSense(a: Floor | undefined, b: Floor | undefined, za: number | null, zb: number | null): "up" | "down" | "level" | null {
+  if (za !== null && zb !== null) return Math.abs(zb - za) > 0.3 ? (zb > za ? "up" : "down") : "level";
   if (a && b && a.elevationM !== null && b.elevationM !== null && a.elevationM !== b.elevationM) return b.elevationM > a.elevationM ? "up" : "down";
   if (a && b && a.operatorId === b.operatorId && a.ordinal !== null && b.ordinal !== null && a.ordinal !== b.ordinal) return b.ordinal > a.ordinal ? "up" : "down";
   return null;
@@ -141,6 +142,8 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
   const firstFloor = nodes.get(route.nodeIds[0]!)!.floorId;
   const out: Instruction[] = [{ kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, text: t.start() }];
   let current: Instruction | null = null;
+  /** Evidenced sense of the last vertical instruction, including "level". */
+  let lastSense: "up" | "down" | "level" | null = null;
   const flush = () => {
     if (!current) return;
     const m = Math.max(1, Math.round(current.distanceM));
@@ -157,18 +160,23 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
       const kind: InstructionKind = vertical ?? "gate";
       const from = nodes.get(step.fromNodeId)!;
       const to = nodes.get(step.toNodeId)!;
-      const sense = verticalSense(floors.get(step.fromFloorId), floors.get(step.toFloorId), from.position.z, to.position.z);
+      const sense3 = verticalSense(floors.get(step.fromFloorId), floors.get(step.toFloorId), from.position.z, to.position.z);
       const label = floorDisplayName(floors.get(step.toFloorId), lang);
       const prev = out[out.length - 1]!;
-      // Consecutive segments of one stair/escalator/lift chain read as one instruction.
-      if (prev.kind === kind && kind !== "gate" && (prev.vertical === sense || prev.vertical === null || sense === null)) {
+      // Consecutive segments of one stair/escalator/lift chain read as one instruction — only when they
+      // share the same evidenced sense; a known "up" never absorbs a segment whose direction is UNKNOWN.
+      // A known-level segment continues either sense.
+      if (prev.kind === kind && kind !== "gate" && (lastSense === sense3 || lastSense === "level" || sense3 === "level")) {
+        lastSense = lastSense === "level" ? sense3 : lastSense;
         prev.stepIndexes.push(i);
         prev.distanceM += step.lengthM;
         prev.toFloorId = step.toFloorId;
-        prev.vertical = prev.vertical ?? sense;
+        prev.vertical = lastSense === "up" || lastSense === "down" ? lastSense : null;
         prev.text = t.vertical(kind, prev.vertical, label);
         return;
       }
+      lastSense = sense3;
+      const sense = sense3 === "up" || sense3 === "down" ? sense3 : null;
       out.push({
         kind, stepIndexes: [i], distanceM: step.lengthM, vertical: sense, toFloorId: step.toFloorId,
         text: kind === "gate" ? t.gate() : t.vertical(kind, sense, label),

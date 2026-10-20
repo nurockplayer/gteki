@@ -174,3 +174,44 @@ describe("parseStationFiles (fail-closed JSON loading)", () => {
     expect(parsed.bundle).toBeNull();
   });
 });
+
+describe("review regressions: nested fail-closed shape and rights", () => {
+  it("refuses hours objects that are not a complete always/window union", () => {
+    for (const hours of [{}, { kind: "window", open: "05:00" }, { kind: "sometimes", evidence: ev }, { kind: "always" }]) {
+      const [m, g, p] = split(createSyntheticBundle());
+      (g.edges[0] as { hours: unknown }).hours = hours;
+      const parsed = parseStationFiles(m, g, p);
+      expect(parsed.ok, JSON.stringify(hours)).toBe(false);
+    }
+  });
+
+  it("refuses incomplete operator names, POI text, floor source labels and evidence source lists", () => {
+    const cases: ((m: StationManifestFile, g: GraphFile, p: PoiFile) => void)[] = [
+      (m) => { (m.station.operators[0] as { names: unknown }).names = [{ lang: "ja" }]; },
+      (_m, _g, p) => { (p.pois[0]!.names as unknown[]) = [{ text: "x" }]; },
+      (m) => { (m.floors[0]!.sourceLabels as unknown[]) = [{ operatorId: "operator-a" }]; },
+      (_m, g) => { (g.edges[0]!.geometryEvidence.sourceIds as unknown[]) = [7]; },
+      (_m, _g, p) => { (p.pois[0]!.connectorNodeIds as unknown[]) = [null]; },
+    ];
+    for (const mutate of cases) {
+      const [m, g, p] = split(createSyntheticBundle());
+      mutate(m, g, p);
+      expect(parseStationFiles(m, g, p).ok).toBe(false);
+    }
+  });
+
+  it("forbids facts-only geometry even in synthetic bundles", () => {
+    const b = createSyntheticBundle();
+    expect(b.station.synthetic).toBe(true);
+    b.sources.find((s) => s.id === "fixture-geometry")!.usage = "facts-only";
+    expect(errors(b)).toContain("edge.geometry.rights");
+  });
+
+  it("evaluates windows that spill two calendar days past their service day", () => {
+    const w: HoursSpec = { kind: "window", open: "26:00", close: "25:00", days: ["mon"], evidence: ev };
+    expect(isOpenAt(w, { weekday: "tue", minutes: 150 })).toBe(true);
+    expect(isOpenAt(w, { weekday: "wed", minutes: 30 })).toBe(true);
+    expect(isOpenAt(w, { weekday: "wed", minutes: 90 })).toBe(false);
+    expect(isOpenAt(w, { weekday: "mon", minutes: 30 })).toBe(false);
+  });
+});
