@@ -84,6 +84,13 @@ export function publishableAssets(stations: DiscoveredStation[]): Map<string, Se
       failures.push(`${s.dir}: ${errors.slice(0, 5).map((i) => `${i.code}${i.ref ? ` (${i.ref})` : ""}`).join(", ")}${errors.length > 5 ? ` and ${errors.length - 5} more` : ""}`);
       continue;
     }
+    // Publication applies the asset rights rules even to synthetic stations (validation exempts fixtures).
+    const sources = new Map(parsed.bundle.sources.map((src) => [src.id, src]));
+    for (const a of parsed.bundle.assets ?? []) {
+      const bad = a.sourceIds.filter((id) => sources.get(id)?.rights !== "REUSABLE_WITH_CONDITIONS" || sources.get(id)?.usage === "facts-only");
+      if (a.sourceIds.length === 0) failures.push(`${s.dir}: asset ${a.id} has no source provenance`);
+      else if (bad.length) failures.push(`${s.dir}: asset ${a.id} derives from non-reusable sources: ${bad.join(", ")}`);
+    }
     const declared = new Set((parsed.bundle.assets ?? []).flatMap((a) => [a.uri, ...(a.files ?? [])]));
     const found = new Set(s.assets);
     const missing = [...declared].filter((f) => !found.has(f));

@@ -335,6 +335,28 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     for (const bad of ["assets/roof#west.glb", "assets/roof?west.glb"]) expect(withFiles(bad, [])).toContain("asset.uri");
   });
 
+  it("gates known floor heights on reusable sources and drawing them as known", () => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    expect(errors(b)).not.toContain("floor.elevation.rights");
+    b.sources.push({ ...b.sources[0]!, id: "facts", usage: "facts-only" }, { ...b.sources[0]!, id: "ref", rights: "REFERENCE_ONLY" });
+    for (const sourceId of ["facts", "ref"]) {
+      b.floors[1]!.sourceLabels = [{ ...b.floors[1]!.sourceLabels[0]!, sourceId }];
+      expect(errors(b)).toContain("floor.elevation.rights");
+    }
+    b.floors[1]!.elevationM = null;
+    b.floors[1]!.elevationSource = "unknown";
+    expect(errors(b)).not.toContain("floor.elevation.rights");
+
+    const drawn = createSyntheticBundle();
+    expect(errors(drawn)).not.toContain("floor.renderElevation");
+    drawn.floors[1]!.renderElevationM = drawn.floors[1]!.elevationM! + 2;
+    expect(errors(drawn)).toContain("floor.renderElevation");
+    drawn.floors[1]!.elevationM = null;
+    drawn.floors[1]!.elevationSource = "symbolic";
+    expect(errors(drawn)).not.toContain("floor.renderElevation");
+  });
+
   it("requires a source for every floor of a real station", () => {
     const b = asRealStation(createSyntheticBundle());
     b.edges = [];
@@ -344,6 +366,13 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     const synthetic = createSyntheticBundle();
     synthetic.floors[1]!.sourceLabels = [];
     expect(errors(synthetic)).not.toContain("floor.source");
+  });
+
+  it("rejects access flags that contradict the edge mode", () => {
+    expect(errors(createSyntheticBundle([edge("s", "start", "a", { mode: "stairs", steps: false, wheelchair: false })]))).toContain("edge.access.mode");
+    expect(errors(createSyntheticBundle([edge("s", "start", "a", { mode: "stairs", steps: true, wheelchair: true })]))).toContain("edge.access.mode");
+    expect(errors(createSyntheticBundle([edge("e", "start", "a", { mode: "escalator", wheelchair: true })]))).toContain("edge.access.mode");
+    expect(errors(createSyntheticBundle([edge("s", "start", "a", { mode: "stairs" }), edge("e", "a", "goal", { mode: "escalator", steps: null })]))).not.toContain("edge.access.mode");
   });
 
   it("rejects unknown coverage status values", () => {

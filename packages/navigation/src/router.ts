@@ -1,4 +1,4 @@
-import type { Edge, EvidenceRef, StationBundle, Vec3N } from "@gteki/schema";
+import type { Edge, EvidenceRef, LocalTime, StationBundle, Vec3N, Weekday } from "@gteki/schema";
 import { isOpenAt } from "@gteki/schema";
 import { DEFAULT_PROFILE, DEFAULT_STALE_AFTER_DAYS } from "./index.ts";
 import type { Router, RouteProfile, RouteResult, RouteStep, RouteUnknown } from "./index.ts";
@@ -6,6 +6,28 @@ import type { Router, RouteProfile, RouteResult, RouteStep, RouteUnknown } from 
 const WALK_SPEED = 1.2;
 const ELEVATOR_SECONDS = 45;
 const SLOPED_MODES = new Set(["stairs", "escalator", "ramp"]);
+/** Never step-free, whatever an edge's access flags say. */
+const NOT_STEP_FREE_MODES = new Set(["stairs", "escalator"]);
+/** Minutes of slack around a traversal when sampling hours (well under the router's timing precision). */
+const CLOCK_EPSILON = 1e-6;
+/** Latest arrival (clock minutes from the departure day) whose hours are checked. */
+const MAX_CLOCK_MINUTES = 366 * 1440;
+const WEEK: Weekday[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+/** Travel time of one edge: lifts are a fixed ride, everything else length over the mode's speed. */
+function edgeSeconds(mode: Edge["mode"], lengthM: number): number {
+  return mode === "elevator" ? ELEVATOR_SECONDS : lengthM / (mode === "stairs" ? 0.5 : mode === "escalator" ? 0.75 : WALK_SPEED);
+}
+
+/**
+ * The station-local time `clock` minutes after midnight of `at`'s day, rolling over into later weekdays
+ * (whole `clock` minutes stay exact). An invalid `at` stays as is (UNKNOWN).
+ */
+function clockTime(at: LocalTime, clock: number): LocalTime {
+  if (!WEEK.includes(at.weekday) || !(at.minutes >= 0 && at.minutes < 1440)) return at;
+  const days = Math.floor(clock / 1440);
+  return { weekday: WEEK[(((WEEK.indexOf(at.weekday) + days) % 7) + 7) % 7]!, minutes: clock - days * 1440 };
+}
 
 const compareIds = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
@@ -149,6 +171,12 @@ export function createRouter(bundle: StationBundle): Router {
   const sourceValidUntil = new Map(bundle.sources.map((source) => [source.id, source.validUntil ?? null]));
   const adjacency = new Map<string, Traversal[]>();
   for (const nodeId of nodes.keys()) adjacency.set(nodeId, []);
+  /**
+   * Relative rounding bound on any route's elapsed time: a path's duration sums at most one term per edge
+   * and per polyline segment in the bundle, each a few roundings off (subtract, hypot, divide), and the
+   * running sums add one rounding per term. 4·N·ε (= 8·N·u) covers that with margin.
+   */
+  const timeDrift = 4 * (bundle.edges.length + bundle.edges.reduce((n, e) => n + (e.geometry?.length ?? 0), 0) + 8) * Number.EPSILON;
   for (const edge of bundle.edges) {
     const fromNode = nodes.get(edge.from);
     const toNode = nodes.get(edge.to);
@@ -167,20 +195,42 @@ export function createRouter(bundle: StationBundle): Router {
   const accessOf = (edge: Edge): Pick<Edge, "paid" | "crossesFareBoundary" | "wheelchair" | "steps"> =>
     edge.accessEvidence ? edge : { paid: null, crossesFareBoundary: null, wheelchair: null, steps: null };
 
-  function permits(edge: Edge, profile: RouteProfile, avoided: Set<string>, closed: Set<string>): boolean {
+  /**
+   * `elapsedSeconds` is when the route reaches the edge (seconds after `profile.at`) and `edgeSec`
+   * how long it takes: known hours must stay open the whole time.
+   */
+  function permits(edge: Edge, profile: RouteProfile, avoided: Set<string>, closed: Set<string>, elapsedSeconds = 0, edgeSec = 0): boolean {
     if (
       edge.verification !== "verified" &&
       !(edge.verification === "synthetic" && bundle.station.synthetic === true)
     ) return false;
     if (edge.closed || closed.has(edge.id) || avoided.has(edge.mode)) return false;
     const access = accessOf(edge);
-    if (profile.stepFree && (access.wheelchair !== true || access.steps === true)) return false;
+    if (profile.stepFree && (NOT_STEP_FREE_MODES.has(edge.mode) || access.wheelchair !== true || access.steps === true)) return false;
     if (profile.fare === "unpaid_only" && (access.paid !== false || access.crossesFareBoundary !== false)) return false;
     if (edge.hours === null) return profile.hours !== "require_known";
     if (profile.at) {
-      const open = isOpenAt(edge.hours, profile.at);
-      if (open === false) return false;
-      if (open === null && profile.hours === "require_known") return false;
+      // Windows open and close on whole minutes (close exclusive), so entry, exit and every whole minute
+      // in between catch any closure during the traversal.
+      // Samples are clock minutes since midnight of the departure day; the in-between ones are exact integers.
+      // Both ends are widened by the rounding the elapsed time can carry (`timeDrift`), so floating-point
+      // drift can't round a boundary minute away: an exact-minute arrival may then fail closed, never the
+      // other way round. The departure itself is exact.
+      // Hours repeat weekly, so one week of clock minutes covers every minute of a longer traversal.
+      const enter = profile.at.minutes + elapsedSeconds / 60;
+      const leave = profile.at.minutes + (elapsedSeconds + edgeSec) / 60;
+      // Past a year the hours can't be meaningfully checked: fail closed.
+      if (!(leave <= MAX_CLOCK_MINUTES)) return false;
+      const drift = timeDrift * leave;
+      const samples = [enter, leave];
+      const first = Math.floor(elapsedSeconds === 0 ? enter : enter - drift);
+      // A week from the entry minute (plus the minute the widening may add before it) covers every weekly minute.
+      for (let c = first, n = 0; c <= leave + drift + CLOCK_EPSILON && n < 7 * 1440 + 2; c++, n++) samples.push(c);
+      for (const clock of samples) {
+        const open = isOpenAt(edge.hours, clockTime(profile.at, clock));
+        if (open === false) return false;
+        if (open === null && profile.hours === "require_known") return false;
+      }
     }
     return true;
   }
@@ -226,8 +276,7 @@ export function createRouter(bundle: StationBundle): Router {
       steps.push({ edgeId: edge.id, fromNodeId: from, toNodeId: to, reversed, mode: edge.mode, lengthM, fromFloorId, toFloorId });
       nodeIds.push(to);
       totalLengthM += lengthM;
-      estimatedSeconds += edge.mode === "elevator" ? ELEVATOR_SECONDS
-        : lengthM / (edge.mode === "stairs" ? 0.5 : edge.mode === "escalator" ? 0.75 : WALK_SPEED);
+      estimatedSeconds += edgeSeconds(edge.mode, lengthM);
       if (fromFloorId !== toFloorId) floorChanges++;
       const access = accessOf(edge);
       if (access.crossesFareBoundary === true) crossesFareBoundary = true;
@@ -317,8 +366,9 @@ export function createRouter(bundle: StationBundle): Router {
     isTraversable(edge, profile) {
       const fromNode = nodes.get(edge.from);
       const toNode = nodes.get(edge.to);
-      return fromNode !== undefined && toNode !== undefined && measureEdge(edge, fromNode.position, toNode.position) !== null &&
-        permits(edge, profile, new Set(profile.avoidModes), new Set(profile.extraClosedEdgeIds));
+      const measured = fromNode && toNode ? measureEdge(edge, fromNode.position, toNode.position) : null;
+      return measured !== null &&
+        permits(edge, profile, new Set(profile.avoidModes), new Set(profile.extraClosedEdgeIds), 0, edgeSeconds(edge.mode, measured.lengthM));
     },
     route(fromNodeIds, toNodeIds, profile = DEFAULT_PROFILE, endpointEvidence = []) {
       const requestedStarts = typeof fromNodeIds === "string" ? [fromNodeIds] : fromNodeIds;
@@ -334,6 +384,8 @@ export function createRouter(bundle: StationBundle): Router {
       const closed = new Set(profile.extraClosedEdgeIds);
       // Multi-source Dijkstra: every start begins at cost 0, so the cheapest start wins on the router's own cost.
       const distances = new Map<string, number>(starts.map((id) => [id, 0]));
+      // Seconds from departure along each node's best path: opening hours are checked when the route gets there.
+      const elapsed = new Map<string, number>(starts.map((id) => [id, 0]));
       const previous = new Map<string, Previous>();
       const settled = new Set<string>();
       const queue = new MinHeap();
@@ -343,10 +395,13 @@ export function createRouter(bundle: StationBundle): Router {
         settled.add(current.nodeId);
         if (goals.has(current.nodeId)) return result(current.nodeId, previous, profile, endpointEvidence);
         for (const traversal of adjacency.get(current.nodeId)!) {
-          if (settled.has(traversal.toNodeId) || !permits(traversal.edge, profile, avoided, closed)) continue;
+          const at = elapsed.get(current.nodeId)!;
+          const seconds = edgeSeconds(traversal.edge.mode, traversal.measurement.lengthM);
+          if (settled.has(traversal.toNodeId) || !permits(traversal.edge, profile, avoided, closed, at, seconds)) continue;
           const cost = current.cost + traversal.measurement.cost;
           if (!Number.isFinite(cost) || cost >= (distances.get(traversal.toNodeId) ?? Infinity)) continue;
           distances.set(traversal.toNodeId, cost);
+          elapsed.set(traversal.toNodeId, at + seconds);
           previous.set(traversal.toNodeId, { fromNodeId: current.nodeId, traversal });
           queue.push({ nodeId: traversal.toNodeId, cost });
         }

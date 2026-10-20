@@ -103,6 +103,12 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (!ELEVATION_SOURCES.has(f.elevationSource)) err("floor.elevation", `unknown elevationSource ${String(f.elevationSource)}`, f.id);
     if (f.elevationM !== null && (f.elevationSource === "symbolic" || f.elevationSource === "unknown"))
       err("floor.elevation", `${f.elevationSource} elevation must keep elevationM null`, f.id);
+    // A known height is published and drives up/down in the directions: same rights gate as node positions,
+    // and it is what the floor is drawn at (a symbolic render offset only stands in for an unknown height).
+    if (f.elevationM !== null && !b.station.synthetic && !f.sourceLabels.some((l) => reusableData(l.sourceId)))
+      err("floor.elevation.rights", "known elevation without a reusable data source among the floor's sources", f.id);
+    if (f.elevationM !== null && f.renderElevationM !== f.elevationM)
+      err("floor.renderElevation", `renderElevationM ${f.renderElevationM} differs from the known elevationM ${f.elevationM}`, f.id);
   }
 
   const floors = new Map(b.floors.map((f) => [f.id, f]));
@@ -156,6 +162,9 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     }
     checkEvidence(e, e.accessEvidence, "accessEvidence");
     if (e.hours) checkEvidence(e, e.hours.evidence, "hours.evidence");
+    // Flags that contradict the mode are data errors (the router never treats these modes as step-free anyway).
+    if (e.mode === "stairs" && e.steps === false) err("edge.access.mode", "stairs edge marked steps:false", e.id);
+    if ((e.mode === "stairs" || e.mode === "escalator") && e.wheelchair === true) err("edge.access.mode", `${e.mode} edge marked wheelchair:true`, e.id);
     if (e.crossesFareBoundary === true && e.paid === false)
       err("edge.fare", "fare-boundary edge cannot be marked fully unpaid", e.id);
     if (!VERIFICATIONS.has(e.verification)) err("edge.verification", `unknown verification ${e.verification}`, e.id);

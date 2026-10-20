@@ -463,3 +463,169 @@ describe("endpoint heights, floor provenance and coverage status", () => {
     expect(r.stale).toBe(true);
   });
 });
+
+describe("step-free never uses stairs or escalators", () => {
+  it("excludes them even when (contradictory) access flags claim wheelchair access", () => {
+    for (const mode of ["stairs", "escalator"] as const) {
+      const b = createSyntheticBundle([edge("x", "start", "a"), edge("v", "a", "upper", { mode, lengthM: 6, wheelchair: true, steps: false })]);
+      const router = createRouter(b);
+      expect(router.route("start", "upper", base).ok).toBe(true);
+      expect(router.route("start", "upper", { ...base, stepFree: true })).toMatchObject({ ok: false, reason: "no_path" });
+    }
+  });
+});
+
+describe("opening hours are checked when the route reaches each edge", () => {
+  const hours = (open: string, close: string, days?: ("mon" | "wed" | "sun")[]) =>
+    ({ kind: "window" as const, open, close, ...(days ? { days } : {}), evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } });
+  // 720 m at walking pace (600 s = 10 min), then a gate with known hours.
+  const mk = (gate: ReturnType<typeof hours>) => createRouter(createSyntheticBundle([
+    edge("long", "start", "a", { lengthM: 720 }),
+    edge("gate", "a", "goal", { mode: "gate", lengthM: 0, hours: gate }),
+  ]));
+
+  it("refuses a gate that closes before the walker gets there, under both hours policies", () => {
+    const router = mk(hours("05:00", "23:00"));
+    for (const policy of ["warn_unknown", "require_known"] as const) {
+      expect(router.route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 22 * 60 + 55 } }).ok).toBe(false);
+      expect(router.route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 22 * 60 + 40 } }).ok).toBe(true);
+    }
+  });
+
+  it("rolls the arrival time over midnight into the next weekday", () => {
+    // Open only on Monday 00:00–01:00: leaving Sunday 23:55 arrives Monday 00:05.
+    const router = mk(hours("00:00", "01:00", ["mon"]));
+    expect(router.route("start", "goal", { ...base, at: { weekday: "sun", minutes: 23 * 60 + 55 } }).ok).toBe(true);
+    expect(router.route("start", "goal", { ...base, at: { weekday: "sun", minutes: 23 * 60 } }).ok).toBe(false);
+  });
+
+  it("catches a closure that falls strictly between entering and leaving an edge", () => {
+    // 1,080 m = 15 min from 04:50: daily 05:00–04:55 is open at both ends but closed 04:55–05:00.
+    const router = createRouter(createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 1080, hours: hours("05:00", "04:55") })]));
+    for (const policy of ["warn_unknown", "require_known"] as const)
+      expect(router.route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 4 * 60 + 50 } }).ok).toBe(false);
+    expect(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 5 * 60 } }).ok).toBe(true);
+    // A departure between whole minutes still samples on clock minutes.
+    expect(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 4 * 60 + 45.5 } }).ok).toBe(false);
+  });
+
+  it("keeps an invalid departure time UNKNOWN instead of rolling it into a known one", () => {
+    const router = mk(hours("00:00", "01:00", ["sun"]));
+    // minutes 1440 is not a valid time: strict hours fail closed, the default only warns.
+    const at = { weekday: "sat" as const, minutes: 1440 };
+    expect(router.route("start", "goal", { ...base, hours: "require_known", at }).ok).toBe(false);
+  });
+
+  it("checks every minute of a traversal longer than a day", () => {
+    // 207,360 m at walking speed takes 48 h; Monday and Wednesday windows of 00:00–47:59 leave
+    // Tuesday 23:59–Wednesday 00:00 closed, beyond the first day of samples.
+    const b = createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 207_360, hours: hours("00:00", "47:59", ["mon", "wed"]) })]);
+    const router = createRouter(b);
+    const at = { weekday: "mon" as const, minutes: 0 };
+    for (const policy of ["warn_unknown", "require_known"] as const) {
+      expect(router.route("start", "goal", { ...base, hours: policy, at }).ok).toBe(false);
+      expect(router.isTraversable(b.edges[0]!, { ...base, hours: policy, at })).toBe(false);
+    }
+  });
+
+  it("samples whole clock minutes exactly after a long elapsed time", () => {
+    // From Mon 00:00.17, 147,371.76 m of open walk reaches Tue 10:07; the gate (open daily 10:09–10:08,
+    // closed 10:08–10:09) takes 3 minutes more. Floating-point drift must not skip the 10:08 sample.
+    const b = createSyntheticBundle([
+      edge("passage", "start", "a", { lengthM: 147_371.76 }),
+      edge("passage", "a", "goal", { lengthM: 216, hours: hours("10:09", "10:08") }),
+    ]);
+    for (const policy of ["warn_unknown", "require_known"] as const)
+      expect(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 0.17 } }).ok).toBe(false);
+  });
+
+  it("keeps boundary minutes that floating-point arithmetic rounds just below", () => {
+    // 56.16 m from 00:00.22 ends exactly at 00:01, when the 00:00–00:01 window has closed.
+    const short = createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 56.16, hours: hours("00:00", "00:01") })]);
+    // 103,675.68 m from Mon 00:00.06 ends exactly at Tue 00:00, after Monday's 00:00–24:00 window.
+    const midnight = createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 103_675.68, hours: hours("00:00", "24:00", ["mon"]) })]);
+    for (const [b, minutes] of [[short, 0.22], [midnight, 0.06]] as const)
+      for (const policy of ["warn_unknown", "require_known"] as const) {
+        const profile = { ...base, hours: policy, at: { weekday: "mon" as const, minutes } };
+        expect(createRouter(b).route("start", "goal", profile).ok).toBe(false);
+        expect(createRouter(b).isTraversable(b.edges[0]!, profile)).toBe(false);
+      }
+  });
+
+  it("bounds the rounding accumulated over many edges", () => {
+    // 37,324,800 m + 60,000 × 1.08 m from Mon 00:00 reach the gate exactly at Thu 15:00 (360 days 15 h),
+    // when its daily 00:00–15:00 window has closed; the float sum lands just short of 15:00.
+    const always = { kind: "always" as const, evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } };
+    const b = createSyntheticBundle([edge("passage", "start", "a", { lengthM: 37_324_800, hours: always })]);
+    const n = 60_000;
+    for (let i = 0; i < n; i++) {
+      b.nodes.push({ ...b.nodes.find((x) => x.id === "a")!, id: `chain-${i}` });
+      b.edges.push({ ...b.edges[0]!, id: `chain-edge-${i}`, from: i === 0 ? "a" : `chain-${i - 1}`, to: `chain-${i}`, lengthM: 1.08 });
+    }
+    b.edges.push({ ...b.edges[0]!, id: "gate", mode: "gate", from: `chain-${n - 1}`, to: "goal", lengthM: 0, hours: hours("00:00", "15:00") });
+    for (const policy of ["warn_unknown", "require_known"] as const)
+      expect(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 0 } }).ok).toBe(false);
+    b.edges.at(-1)!.hours = hours("00:00", "15:02");
+    expect(createRouter(b).route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } }).ok).toBe(true);
+  });
+
+  it("bounds the rounding accumulated inside one long polyline", () => {
+    // One polyline of 37,324,800 m then 60,000 alternating 1.08 m segments reaches the gate exactly at
+    // Thu 15:00, after its daily 00:00–15:00 window; the float length lands just short.
+    const always = { kind: "always" as const, evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } };
+    const points = [{ x: 0, y: 0, z: 0 }, { x: 37_324_800, y: 0, z: 0 }];
+    for (let i = 1; i <= 60_000; i++) points.push({ x: 37_324_800, y: i % 2 ? 1.08 : 0, z: 0 });
+    const b = createSyntheticBundle([edge("passage", "start", "a", { lengthM: null, hours: always, geometry: points })]);
+    b.nodes.find((n) => n.id === "a")!.position = { ...points.at(-1)! };
+    b.edges.push({ ...b.edges[0]!, id: "gate", mode: "gate", from: "a", to: "goal", lengthM: 0, geometry: undefined, hours: hours("00:00", "15:00") });
+    b.nodes.find((n) => n.id === "goal")!.position = { ...points.at(-1)! };
+    for (const policy of ["warn_unknown", "require_known"] as const)
+      expect(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 0 } }).ok).toBe(false);
+    b.edges.at(-1)!.hours = hours("00:00", "15:02");
+    expect(createRouter(b).route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } }).ok).toBe(true);
+  });
+
+  it("wraps samples before the departure day and covers a full week after a near-instant entry", () => {
+    // A 1e-12 m step (so the widened entry samples the minute before departure), then 725,760 m (7 days)
+    // open 00:00–47:59 Monday–Saturday: Sunday 23:59 is closed.
+    const always = { kind: "always" as const, evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } };
+    const week = { ...hours("00:00", "47:59"), days: ["mon", "tue", "wed", "thu", "fri", "sat"] as const };
+    const b = createSyntheticBundle([
+      edge("passage", "start", "a", { lengthM: 1e-12, hours: always }),
+      edge("passage", "a", "goal", { lengthM: 725_760, hours: { ...week, days: [...week.days] } }),
+    ]);
+    for (const policy of ["warn_unknown", "require_known"] as const)
+      expect(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 0 } }).ok).toBe(false);
+  });
+
+  it("fails closed when the arrival time is more than a year out", () => {
+    const always = { kind: "always" as const, evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } };
+    // 2**53 minutes, where clock minutes no longer step; and ~2**35, where a 1e-6 epsilon vanishes
+    // (that walk would end exactly at a 10:08 close).
+    for (const [lengthM, minutes, gate] of [[72 * 2 ** 53, 0, always], [2_473_901_162_424, 0.01, hours("00:00", "10:08")]] as const) {
+      const b = createSyntheticBundle([
+        edge("passage", "start", "a", { lengthM, hours: always }),
+        edge("passage", "a", "goal", { lengthM: 71.28, hours: gate }),
+      ]);
+      for (const policy of ["warn_unknown", "require_known"] as const)
+        expect(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes } }).ok).toBe(false);
+    }
+    // Without a departure time nothing is clock-checked.
+    const b = createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 72 * 2 ** 53, hours: always })]);
+    expect(createRouter(b).route("start", "goal", base).ok).toBe(true);
+  });
+
+  it("gives isTraversable the edge's own duration", () => {
+    const b = createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 144, hours: hours("05:00", "23:00") })]);
+    const router = createRouter(b);
+    expect(router.isTraversable(b.edges[0]!, { ...base, at: { weekday: "mon", minutes: 22 * 60 + 59 } })).toBe(false);
+    expect(router.isTraversable(b.edges[0]!, { ...base, at: { weekday: "mon", minutes: 22 * 60 + 57 } })).toBe(true);
+  });
+
+  it("requires a window to stay open while the edge is being traversed", () => {
+    // A 120 s passage that closes 1 minute after the walker enters it.
+    const router = createRouter(createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 144, hours: hours("05:00", "23:00") })]));
+    expect(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 22 * 60 + 59 } }).ok).toBe(false);
+    expect(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 22 * 60 + 57 } }).ok).toBe(true);
+  });
+});

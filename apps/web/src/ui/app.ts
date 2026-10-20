@@ -510,7 +510,7 @@ export class App {
       a.href = s.url;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
-      li.append(a, el("span", "muted", ` — ${s.attribution}${s.license ? ` (${s.license.name})` : ""}${s.datasetDate ? ` · ${s.datasetDate}` : ""}`));
+      li.append(a, el("span", "muted", ` — ${s.attribution}${s.license ? ` (${s.license.name})` : ""}${s.modified ? ` · ${this.t.modified}` : ""}${s.datasetDate ? ` · ${s.datasetDate}` : ""}`));
       srcList.append(li);
     }
     prov.append(srcList);
@@ -598,8 +598,15 @@ export class App {
       if (!b.coverage.gaps.length) gaps.append(el("li", "muted", "—"));
       d.append(gaps, el("h3", undefined, this.t.sources));
       const src = el("ul");
-      for (const s of b.sources) src.append(el("li", undefined, `${s.title} — ${s.attribution} [${s.rights}${s.usage === "facts-only" ? ", facts-only" : ""}]`));
+      for (const s of b.sources) src.append(el("li", undefined, `${s.title} — ${s.attribution}${s.modified ? ` (${this.t.modified})` : ""} [${s.rights}${s.usage === "facts-only" ? ", facts-only" : ""}]`));
       d.append(src);
+      // Asset modification notices (e.g. "Blender build from PLATEAU …") disclose how sources were processed.
+      const derived = (b.assets ?? []).filter((a) => a.derivation);
+      if (derived.length) {
+        const ul = el("ul");
+        for (const a of derived) ul.append(el("li", undefined, `${a.id}: ${a.derivation} — ${a.sourceIds.map((id) => b.sources.find((s) => s.id === id)?.title ?? id).join(", ")}`));
+        d.append(el("h3", undefined, this.t.assetDerivations), ul);
+      }
     }
     d.showModal();
   }

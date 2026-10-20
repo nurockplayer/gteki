@@ -57,6 +57,9 @@ const STRINGS = {
     realCandidate: "公開データ由来・現地未確認を含む",
     freshness: "データ時点",
     sources: "出典",
+    /** Modification disclosure required by PDL / CC BY when a source was processed. */
+    modified: "加工して作成",
+    assetDerivations: "3D素材の加工内容",
     symbolicHeight: "高さは表示用の推定です",
     coverage: "カバー範囲",
     gaps: "未整備・要調査",
@@ -123,6 +126,8 @@ const STRINGS = {
     realCandidate: "From open data; parts not field-verified",
     freshness: "Data as of",
     sources: "Sources",
+    modified: "modified",
+    assetDerivations: "3D asset derivations",
     symbolicHeight: "Heights are display estimates",
     coverage: "Coverage",
     gaps: "Gaps & survey needs",

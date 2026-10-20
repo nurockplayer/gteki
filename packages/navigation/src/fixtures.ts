@@ -7,9 +7,12 @@ export function syntheticEvidence(sourceId = "fixture-geometry", checkedDate = "
 }
 
 export function syntheticEdge(id: string, from: string, to: string, overrides: Partial<Edge> = {}): Edge {
+  // Access defaults follow the mode, so stairs/escalators never claim to be step-free.
+  const mode = overrides.mode ?? "walk";
   return {
     id, from, to, direction: "both", mode: "walk", lengthM: 10,
-    paid: false, crossesFareBoundary: false, wheelchair: true, steps: false,
+    paid: false, crossesFareBoundary: false,
+    wheelchair: mode !== "stairs" && mode !== "escalator", steps: mode === "stairs",
     hours: { kind: "always", evidence: syntheticEvidence("fixture-access", "2026-10-20") },
     closed: false, verification: "synthetic",
     geometryEvidence: syntheticEvidence(),
