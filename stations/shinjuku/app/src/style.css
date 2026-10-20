@@ -471,29 +471,41 @@ dialog li {
   .touch {
     display: block;
   }
+  /* Phone: compact search bar under the header; expands only while being used. */
   #panel {
-    top: auto;
-    bottom: calc(232px + var(--safe-b));
-    max-height: 42vh;
+    top: calc(80px + var(--safe-t));
+    bottom: auto;
+    max-height: 46vh;
     width: calc(100vw - 24px);
   }
-  #panel.collapsed .toggles,
-  #panel.collapsed .field:first-child {
+  #panel:not(:focus-within) .search .field:first-child,
+  #panel:not(:focus-within) .toggles {
     display: none;
   }
+  /* the next-maneuver banner carries the current step; tap the panel for the full list */
+  #panel:not(:focus-within) .steps,
+  #panel:not(:focus-within) .prov {
+    display: none;
+  }
+  #panel:focus {
+    outline: none;
+  }
   #minimap {
-    width: 128px;
-    height: 128px;
-    top: calc(78px + var(--safe-t));
-    bottom: auto;
+    width: 112px;
+    height: 112px;
+    top: auto;
+    bottom: calc(150px + var(--safe-b));
+    right: 18px;
   }
   footer .attr {
     display: none;
   }
   .next {
     top: auto;
-    bottom: calc(176px + var(--safe-b));
-    max-width: calc(100vw - 24px);
+    bottom: calc(196px + var(--safe-b));
+    max-width: calc(100vw - 150px);
+    left: 12px;
+    transform: none;
   }
 }
 .stick {
