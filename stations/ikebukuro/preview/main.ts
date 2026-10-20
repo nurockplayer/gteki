@@ -55,19 +55,18 @@ const station = await buildScene({
 scene.add(station.root);
 const envCfg = station.environment ?? {};
 scene.background = new THREE.Color(envCfg.background ?? 0x101010);
-// Avatar lighting: image-based only, so the station's baked surfaces (own envMap + lightMap) are not double-lit.
-scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
-scene.environmentIntensity = 0.55;
+// Avatar lighting as in the shared explorer: a per-material env map, so baked station surfaces are untouched.
+const avatarEnv = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
 if (envCfg.fog) scene.fog = new THREE.Fog(envCfg.fog.color, envCfg.fog.near, envCfg.fog.far);
 const colliders = station.colliders ?? [];
-for (const o of [...station.walkable, ...colliders]) (o as THREE.Mesh).geometry.computeBoundsTree?.();
+for (const o of [...station.walkable, ...colliders]) ((o as THREE.Mesh).geometry as any).computeBoundsTree?.();
 
 // --- player -------------------------------------------------------------
 const player = new THREE.Group();
 {
-  const jacket = new THREE.MeshStandardMaterial({ color: 0x2f4a6b, roughness: 0.7 });
-  const skin = new THREE.MeshStandardMaterial({ color: 0xd9b59a, roughness: 0.6 });
-  const dark = new THREE.MeshStandardMaterial({ color: 0x1d1f24, roughness: 0.8 });
+  const jacket = new THREE.MeshStandardMaterial({ envMap: avatarEnv, envMapIntensity: 0.6, color: 0x2f4a6b, roughness: 0.7 });
+  const skin = new THREE.MeshStandardMaterial({ envMap: avatarEnv, envMapIntensity: 0.6, color: 0xd9b59a, roughness: 0.6 });
+  const dark = new THREE.MeshStandardMaterial({ envMap: avatarEnv, envMapIntensity: 0.6, color: 0x1d1f24, roughness: 0.8 });
   const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.55, 6, 12), jacket);
   body.position.y = 1.12;
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.115, 16, 12), skin);
@@ -149,7 +148,7 @@ if (!mobile && params.get("ao") !== "0") {
   ao.blendIntensity = 0.85;
   composer.addPass(ao);
 }
-const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), mobile ? 0.45 : 0.6, 0.55, 0.92);
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), mobile ? 0.4 : 0.5, 0.5, 0.95);
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
 
@@ -163,7 +162,10 @@ function frame() {
   step(Math.min(clock.getDelta(), 0.05));
   requestAnimationFrame(frame);
 }
-function step(dt: number) {
+let elapsed = 0;
+function step(dt: number, render = true) {
+  elapsed += dt;
+  station.update?.(dt, elapsed);
   // move intent in camera space
   let f = 0, s = 0;
   if (keys.has("KeyW") || keys.has("ArrowUp")) f += 1;
@@ -204,7 +206,7 @@ function step(dt: number) {
   camera.position.lerp(camPos, Math.min(1, dt * 12));
   camera.lookAt(head.x, head.y - 0.1, head.z);
 
-  composer.render(dt);
+  if (render) composer.render(dt);
   fpsAcc += dt; fpsN++;
   if (fpsAcc > 0.5) { fps = fpsN / fpsAcc; fpsAcc = 0; fpsN = 0; }
   const p = player.position;
@@ -218,10 +220,17 @@ addEventListener("resize", () => {
   composer.setSize(innerWidth, innerHeight);
 });
 (window as any).gt = {
-  camera, player, scene, station, renderer,
+  THREE, camera, player, scene, station, renderer,
   setView(y: number, p: number, dist: number) { camYaw = y; camPitch = p; camDist = dist; },
   /** Teleport to station ENU and face a compass heading (for scripted captures). */
   go(x: number, y: number, z: number, headingDeg: number) { spawnAt({ x, y, z }); yaw = camYaw = -(headingDeg * Math.PI) / 180; },
+  /** Save the current frame to build/captures/<name>.jpg (dev server only). */
+  async capture(name: string) {
+    // toDataURL is synchronous (toBlob never resolves in a hidden tab).
+    const b64 = renderer.domElement.toDataURL("image/jpeg", 0.9).split(",")[1];
+    const body = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    return (await fetch(`/__capture?name=${encodeURIComponent(name)}`, { method: "POST", body })).ok;
+  },
   /** Advance n fixed 1/30 s frames synchronously (works while the tab is hidden). */
-  tick(n = 30, hold: string[] = []) { hold.forEach((k) => keys.add(k)); for (let i = 0; i < n; i++) step(1 / 30); hold.forEach((k) => keys.delete(k)); },
+  tick(n = 30, hold: string[] = []) { hold.forEach((k) => keys.add(k)); for (let i = 0; i < n; i++) step(1 / 30, i === n - 1); hold.forEach((k) => keys.delete(k)); },
 };

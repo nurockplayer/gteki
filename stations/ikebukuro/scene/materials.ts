@@ -119,6 +119,25 @@ const shopPaint: Paint = (g, size, rnd) => {
   for (let i = 0; i <= 2; i++) g.fillRect(i * (size / 2) - 3, 0, 6, size);
 };
 
+/** Vertical haze gradient in world height (UV0 is metric box projection, so v ~ height). */
+function hazeTexture(THREE: ThreeNS) {
+  const c = document.createElement("canvas");
+  c.width = 4;
+  c.height = 256;
+  const g = c.getContext("2d")!;
+  const grd = g.createLinearGradient(0, 256, 0, 0);
+  grd.addColorStop(0, "#6f685e");
+  grd.addColorStop(0.45, "#a39b8f");
+  grd.addColorStop(1, "#d8d2c6");
+  g.fillStyle = grd;
+  g.fillRect(0, 0, 4, 256);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = THREE.RepeatWrapping;
+  t.wrapT = THREE.ClampToEdgeWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
 export interface StationMaterials {
   byRole: Record<string, THREE_NS.Material>;
   setLightmap(tex: THREE_NS.Texture | null, intensity: number): void;
@@ -134,6 +153,7 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
   const stairMap = canvasTexture(THREE, size / 2, 1.2, stairPaint, 41);
   const colMap = canvasTexture(THREE, 256, 1.2, columnPaint, 53);
   const shopMap = canvasTexture(THREE, 256, 2.4, shopPaint, 61);
+  const hazeMap = hazeTexture(THREE);
 
   const lit: THREE_NS.MeshStandardMaterial[] = [];
   const std = (p: THREE_NS.MeshStandardMaterialParameters, baked = true) => {
@@ -153,9 +173,10 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     doors: std({ map: shopMap, emissiveMap: shopMap, emissive: 0xffffff, emissiveIntensity: 1.35, roughness: 0.2, side: THREE.DoubleSide }, false),
     light_fixtures: new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.97, 0.92).multiplyScalar(4) }),
     // Openings to the street at the top of exit stairs: daylight.
-    portal_sky: new THREE.MeshBasicMaterial({ color: new THREE.Color(0.86, 0.92, 1.0).multiplyScalar(3.2), side: THREE.DoubleSide }),
-    // Openings into spaces the open data does not model (fare areas, shops): soft dim glow, never a solid wall.
-    portal_beyond: new THREE.MeshBasicMaterial({ color: 0x4a4740, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false }),
+    portal_sky: new THREE.MeshBasicMaterial({ color: new THREE.Color(0.86, 0.92, 1.0).multiplyScalar(2.4), side: THREE.DoubleSide }),
+    // Openings into spaces the open data does not model (fare areas, shops): a lit haze that reads as
+    // "the station continues" without inventing geometry; brighter towards the ceiling.
+    portal_beyond: new THREE.MeshBasicMaterial({ map: hazeMap, color: 0xffffff, side: THREE.DoubleSide }),
   };
 
   return {
@@ -169,7 +190,7 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     },
     dispose() {
       for (const m of Object.values(byRole)) m.dispose();
-      for (const t of [floorMap, floorRough, wallMap, ceilMap, stairMap, colMap, shopMap]) t.dispose();
+      for (const t of [floorMap, floorRough, wallMap, ceilMap, stairMap, colMap, shopMap, hazeMap]) t.dispose();
     },
   };
 }

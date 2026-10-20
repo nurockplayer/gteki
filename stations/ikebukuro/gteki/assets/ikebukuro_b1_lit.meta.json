@@ -1,0 +1,55 @@
+{
+  "fixture_count": 2616,
+  "lightmap_size": 4096,
+  "texel_density": {
+    "metres_per_texel": 0.09689710910370933,
+    "surface_area_m2": 65879.5907036002,
+    "uv_occupancy": 0.4182243896114567,
+    "margin_texels": 3
+  },
+  "bake_samples": 64,
+  "encoding": {
+    "decode": "value = (png_byte / 255)^2.2 * scale (top 0.2% clipped)",
+    "scale": 15.005226945877077,
+    "sampling": "raw DATA, no automatic sRGB decode",
+    "denoise_sigma_texels": 1.5,
+    "exr": null
+  },
+  "bake_time_seconds": 327.0017979590002,
+  "total_time_seconds": 343.430916542,
+  "blender_version": "5.2.2 LTS",
+  "source_glb_sha256": "e0188c5009365d075b1f3828ab12cdc77a900c16de21b8cea271979a1d5b33bd",
+  "daylight_portal_faces": 52,
+  "image_stats": {
+    "covered_linear_rgb": {
+      "min": 0.0,
+      "mean": 0.5884674191474915,
+      "max": 56.45886993408203
+    },
+    "covered_png_rgb_0_255": {
+      "min": 0,
+      "mean": 50.22263967493117,
+      "max": 255
+    },
+    "covered_pixel_fraction_including_margin": 0.5563095808029175
+  },
+  "bake": "Cycles GPU DIFFUSE DIRECT+INDIRECT, no COLOR; neutral diffuse 0.7",
+  "denoising": "mask-aware Gaussian, sigma 1.5 texels (numpy)",
+  "verification": "headless GLB re-import: 2 UV maps, fixture mesh and original extras",
+  "file_sizes_bytes": {
+    "ikebukuro_b1_lit.glb": 5302764,
+    "ikebukuro_b1_lightmap.png (build/, not shipped)": 12365977,
+    "ikebukuro_b1_fixtures.json (build/, not shipped)": 444687
+  },
+  "shipped_lightmaps": {
+    "ikebukuro_b1_lightmap.webp": {
+      "size": 4096,
+      "cwebp_quality": 90,
+      "psnr_vs_png_db": 44.3
+    },
+    "ikebukuro_b1_lightmap_2k.webp": {
+      "size": 2048,
+      "quality": 90
+    }
+  }
+}

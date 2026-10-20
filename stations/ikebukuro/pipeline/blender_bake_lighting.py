@@ -1,12 +1,14 @@
 """Bake station lighting; stdlib + Blender only. Run from the repository root:
 
 blender -b --factory-startup --python stations/ikebukuro/pipeline/blender_bake_lighting.py -- \
-  stations/ikebukuro/assets/ikebukuro_b1.glb stations/ikebukuro/assets/ikebukuro_b1_lit.glb \
-  stations/ikebukuro/assets/ikebukuro_b1_lightmap.png --size 4096 --samples 64
+  stations/ikebukuro/gteki/assets/ikebukuro_b1.glb stations/ikebukuro/gteki/assets/ikebukuro_b1_lit.glb \
+  stations/ikebukuro/build/ikebukuro_b1_lightmap.png --size 4096 --samples 64 --device GPU
+
+(stations/ikebukuro/pipeline/bake_lighting.sh wraps this and writes the shipped WebP files.)
 
 Start with --size 1024 --samples 16. CPU avoids headless Metal device discovery
 inside Cycles (Blender itself may still crash during Metal startup in a sandbox).
-PNG stores pow(linear / scale, 1/2.2); sample as DATA, without sRGB decoding.
+PNG stores pow(linear / scale, 1/2.2) (top 0.2% clipped); decode as gamma 2.2 (sRGB decode is a close fit).
 """
 import argparse
 from array import array
@@ -346,7 +348,7 @@ def main():
     objects = [o for o in bpy.context.scene.objects if o.type == "MESH"]
     expected = {o.name: dict(o.items()) for o in objects}
     records = fixtures(objects)
-    fixture_path = args.output.parent / (args.source.stem + "_fixtures.json")
+    fixture_path = args.lightmap.parent / (args.source.stem + "_fixtures.json")  # pipeline record, not shipped
     fixture_path.write_text(json.dumps({"frame": "ENU metres, z=TP height", "yaw": "radians CCW from east about +Z",
                                        "bearing_degrees": 110, "fixtures": records}, indent=2) + "\n")
     baked = [o for o in objects if o.get("gteki_role") in BAKED]

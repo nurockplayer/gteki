@@ -1561,6 +1561,20 @@
    ],
    "role": "visual+collision",
    "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform"
+  },
+  {
+   "id": "b1-lit",
+   "uri": "assets/ikebukuro_b1_lit.glb",
+   "format": "glb",
+   "floorIds": [
+    "b1",
+    "street"
+   ],
+   "sourceIds": [
+    "plateau-ubld-13116"
+   ],
+   "role": "visual",
+   "derivation": "assets/ikebukuro_b1.glb + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap shipped as assets/ikebukuro_b1_lightmap.webp / _2k.webp (gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json)"
   }
  ]
 }

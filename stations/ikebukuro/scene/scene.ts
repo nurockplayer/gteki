@@ -5,6 +5,7 @@ import type * as THREE_NS from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { createMaterials } from "./materials.ts";
 import { buildSigns, type SignSpec } from "./signs.ts";
+import { buildCrowd } from "./crowd.ts";
 import signage from "./signage.json";
 import graph from "../gteki/graph.json";
 
@@ -27,18 +28,18 @@ export interface StationScene {
   walkable: THREE_NS.Object3D[];
   colliders?: THREE_NS.Object3D[];
   spawnPoints?: SpawnPoint[];
-  environment?: { background?: number; fog?: { color: number; near: number; far: number }; exposure?: number };
+  environment?: { lighting?: "default" | "scene"; background?: number; fog?: { color: number; near: number; far: number }; exposure?: number };
   update?(dtSeconds: number, elapsedSeconds: number): void;
   dispose(): void;
 }
 
 const GLB = "assets/ikebukuro_b1_lit.glb";
 const GLB_FALLBACK = "assets/ikebukuro_b1.glb";
-const LIGHTMAP = "assets/ikebukuro_b1_lightmap.png";
+const LIGHTMAP = { high: "assets/ikebukuro_b1_lightmap.webp", low: "assets/ikebukuro_b1_lightmap_2k.webp" };
 const LIGHTMAP_META = "assets/ikebukuro_b1_lit.meta.json";
 
-/** Art-direction trim on top of the physically decoded bake. */
-const LIGHTMAP_GAIN = 1.0;
+/** Art-direction trim on top of the physically decoded bake (fixture emission is bright; ~0.12 matches a ~600 lx concourse look). */
+const LIGHTMAP_GAIN = 0.09;
 
 /** Spawn suggestions: graph node + heading along the passage (compass degrees). */
 const SPAWNS: { nodeId: string; headingDeg: number; label: string }[] = [
@@ -67,6 +68,10 @@ function splitPortals(THREE: ThreeNS, mesh: THREE_NS.Mesh) {
   const make = (arr: number[]) => {
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.Float32BufferAttribute(arr, 3));
+    // v follows TP height (B1 floor ~26 m to ceiling ~31 m) for the haze gradient.
+    const uv: number[] = [];
+    for (let i = 1; i < arr.length; i += 3) uv.push(0.5, Math.min(1, Math.max(0, (arr[i] - 26.5) / 4.5)));
+    g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
     g.computeVertexNormals();
     return g;
   };
@@ -124,14 +129,19 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     const role = (m.userData.gteki_role as string) ?? m.name;
     if (role === "portals") {
       const { sky, beyond } = splitPortals(THREE, m);
-      extra.push(new THREE.Mesh(sky, mats.byRole.portal_sky), new THREE.Mesh(beyond, mats.byRole.portal_beyond));
+      const beyondMesh = new THREE.Mesh(beyond, mats.byRole.portal_beyond);
+      beyondMesh.userData.gteki_role = "portal_beyond";
+      // Nothing past these openings is modelled: block walker and camera there.
+      colliders.push(beyondMesh);
+      extra.push(new THREE.Mesh(sky, mats.byRole.portal_sky), beyondMesh);
       m.visible = false;
       return;
     }
     const mat = mats.byRole[role];
     if (mat) m.material = mat;
     if (role === "floor" || role === "stairs_ramps") walkable.push(m);
-    if (role === "wall" || role === "barriers" || role === "transport") colliders.push(m);
+    // Ceilings too: walker side-rays (0.45/1.25 m) never reach them, but they keep the follow camera inside.
+    if (role === "wall" || role === "barriers" || role === "transport" || role === "ceiling") colliders.push(m);
     m.matrixAutoUpdate = false;
   });
   root.add(gltf.scene, ...extra);
@@ -141,10 +151,10 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const metaUrl = ctx.assetUrl(LIGHTMAP_META);
   if (baked && metaUrl) {
     try {
-      // PNG stores (L / scale)^(1/2.2); sRGB decode approximates the 2.2 gamma. Cycles bakes
+      // WebP (from the bake PNG) stores (L / scale)^(1/2.2); sRGB decode approximates the 2.2 gamma. Cycles bakes
       // "diffuse light" (outgoing = albedo * L) while three computes irradiance * albedo / PI.
       const meta = (await (await fetch(metaUrl)).json()) as { encoding: { scale: number } };
-      lightmap = await ctx.loadTexture(LIGHTMAP, { colorSpace: "srgb", flipY: false });
+      lightmap = await ctx.loadTexture(LIGHTMAP[ctx.quality], { colorSpace: "srgb", flipY: false });
       lightmap.channel = 1;
       mats.setLightmap(lightmap, meta.encoding.scale * Math.PI * LIGHTMAP_GAIN);
     } catch {
@@ -165,6 +175,9 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy());
   root.add(signs.group);
 
+  const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 40 : 100, env);
+  root.add(crowd.group);
+
   const nodes = new Map((graph as { nodes: { id: string; position: { x: number; y: number; z: number | null } }[] }).nodes.map((n) => [n.id, n]));
   const spawnPoints: SpawnPoint[] = [];
   for (const s of SPAWNS) {
@@ -177,8 +190,10 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     walkable,
     colliders,
     spawnPoints,
-    environment: { background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
+    environment: { lighting: lightmap ? "scene" : "default", background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
+    update: (dt, elapsed) => crowd.update(dt, elapsed),
     dispose() {
+      crowd.dispose();
       mats.dispose();
       signs.dispose();
       env.dispose();
