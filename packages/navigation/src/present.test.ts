@@ -289,6 +289,18 @@ describe("describeRoute junction hints", () => {
     expect(route(b, "start", "g", profile).profile).toEqual(profile);
   });
 
+  it("keeps the departure conditions the route was computed under when the caller's profile changes later", () => {
+    const b = columnHall();
+    b.edges = b.edges.filter((e) => e.id !== "q-east");
+    b.edges.push(edge("p-twin", "p", "lift-top", { lengthM: 31, hours: { kind: "window", open: "07:00", close: "09:00", evidence: b.edges[0]!.hours!.evidence } }));
+    const profile: RouteProfile = { fare: "ticketed", stepFree: false, at: { weekday: "mon", minutes: 8 * 60 }, extraClosedEdgeIds: [] };
+    const r = route(b, "start", "g", profile);
+    profile.at!.minutes = 12 * 60;
+    profile.extraClosedEdgeIds!.push("p-twin");
+    // At 08:00 the twin corridor on the route's line is open, so no side can be named.
+    expect(describeRoute(b, r, "en")[2]!.junctions).toBeUndefined();
+  });
+
   it("says straight past a lift whose doors give no heading, and stays silent when branches cannot be told apart", () => {
     const lift = columnHall();
     lift.edges = lift.edges.filter((e) => e.id !== "p-fork" && e.id !== "q-east");

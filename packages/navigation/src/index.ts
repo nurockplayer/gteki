@@ -59,7 +59,7 @@ export type RouteUnknown = "hours" | "paid" | "fare_boundary" | "wheelchair" | "
 
 export interface RouteResult {
   ok: true;
-  /** The profile this route was computed under, so presentation applies the same closures and hours. */
+  /** A copy of the profile this route was computed under, so presentation applies the same closures and hours. */
   profile: RouteProfile;
   nodeIds: string[];
   steps: RouteStep[];
