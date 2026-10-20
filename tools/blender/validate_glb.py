@@ -284,6 +284,9 @@ class Validator:
                     mins, maxs = vector(accessor["min"], 3), vector(accessor["max"], 3)
                     if any(a > b for a, b in zip(mins, maxs)):
                         raise ValueError("POSITION min exceeds max")
+                    if "sparse" in accessor or "bufferView" not in accessor:
+                        # the kit never emits these; reject rather than leave the data unchecked
+                        self.message("FAIL", f"mesh {node['mesh']} POSITION must be a dense accessor (no sparse/zero storage)")
                     positions = read(accessor)
                     if positions is not None:
                         if not all(math.isfinite(c) for p in positions for c in p):
@@ -299,6 +302,8 @@ class Validator:
                         indices = self.index(accessors, primitive["indices"])
                         if indices.get("type") != "SCALAR" or indices.get("componentType") not in (5121, 5123, 5125):
                             raise ValueError("mesh indices must be unsigned SCALAR accessors")
+                        if "sparse" in indices or "bufferView" not in indices:
+                            self.message("FAIL", f"mesh {node['mesh']} indices must be a dense accessor (no sparse/zero storage)")
                         values = read(indices)
                         if values is not None and any(v >= accessor["count"] for (v,) in values):
                             self.message("FAIL", f"mesh {node['mesh']} index exceeds vertex count {accessor['count']}")
@@ -385,6 +390,9 @@ def self_test():
         data = binary + struct.pack("<3H", *tri)
         indexed["buffers"][0]["byteLength"] = len(data)
         assert Validator("tiny.glb", encode_glb(indexed, data)).check()["status"] == status, tri
+    sparse = copy.deepcopy(indexed)
+    sparse["accessors"][0]["sparse"] = dict(count=1, indices=dict(bufferView=1, componentType=5123), values=dict(bufferView=0))
+    assert Validator("tiny.glb", encode_glb(sparse, data)).check()["status"] == "FAIL"
     # Exercise nested quaternion/TRS and matrix composition, strips/fans, warnings.
     moved = copy.deepcopy(doc)
     moved["nodes"][0]["translation"] = [2, 0, 0]
@@ -396,7 +404,7 @@ def self_test():
     assert result["status"] == "WARN" and result["aabb"] == dict(min=[1., 0., 0.], max=[3., 3., 1.])
     moved["meshes"][0]["primitives"][0]["mode"] = 6
     assert Validator("tiny.glb", encode_glb(moved, binary)).check()["triangles"] == 1
-    print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, transformed, strip and fan GLBs")
+    print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs")
 
 
 def main():

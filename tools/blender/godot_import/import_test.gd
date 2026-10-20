@@ -12,11 +12,14 @@ var manifest := {}  # asset id -> manifest entry (expected collision/sockets)
 func _initialize() -> void:
 	output_dir = OS.get_environment("GTEKI_GODOT_OUT")
 	var manifest_path := OS.get_environment("GTEKI_MANIFEST")
-	if not manifest_path.is_empty() and FileAccess.file_exists(manifest_path):
-		var parsed = JSON.parse_string(FileAccess.get_file_as_string(manifest_path))
-		if parsed is Dictionary:
-			for entry in parsed.get("assets", []):
-				manifest[str(entry.id)] = entry
+	if not manifest_path.is_empty():
+		# a manifest that was asked for but cannot be read must not silently disable parity
+		var parsed = JSON.parse_string(FileAccess.get_file_as_string(manifest_path)) if FileAccess.file_exists(manifest_path) else null
+		if not (parsed is Dictionary) or not (parsed.get("assets") is Array) or parsed.assets.is_empty():
+			_fail("GTEKI_MANIFEST is not a readable kit manifest: " + manifest_path)
+			return
+		for entry in parsed.assets:
+			manifest[str(entry.id)] = entry
 	call_deferred("_run")
 
 func _run() -> void:

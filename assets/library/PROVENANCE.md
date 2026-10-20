@@ -23,7 +23,7 @@ The repository licence is still undecided by the Owner (see README). Until then 
 What the record supports, and what it does not:
 
 - **Geometry and procedural textures** are produced entirely by the code in this repository from catalog parameters; no external file is read. Choosing a licence for them is the Owner's decision alone.
-- **Poster images** are AI-generated. The record is limited to the prompts, generation date, SHA-256 hashes (`source/posters/provenance.json`) and our visual screening (no text, logos, marks or identifiable places were seen). That screening is not a legal clearance: before choosing a licence, or before any commercial release, the Owner should confirm the image provider's current terms, and should decide whether AI-generated art is acceptable for that release. Swapping the posters is cheap: `poster_lightbox` takes any `image` path, and the GLBs rebuild with `build.sh`.
+- **Poster images** are AI-generated. The record is limited to the prompts, generation date, SHA-256 hashes (`source/posters/provenance.json`) and our visual screening (no text, logos, marks or identifiable places were seen). That screening is not a legal clearance: before choosing a licence, or before any commercial release, the Owner should confirm the image provider's current terms, and should decide whether AI-generated art is acceptable for that release. Swapping the posters is cheap: `poster_lightbox` takes any repo-relative `poster_image` path, and the GLBs rebuild with `build.sh`.
 
 ## Regeneration
 

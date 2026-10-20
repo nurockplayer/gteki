@@ -2,7 +2,7 @@
 
 Updated 2026-10-20 · kit `0.1.0` · contract [`gteki-asset/0.1`](asset-contract.md) · lane: Issue #11 (`tools/blender/**`, `assets/library/**`, `docs/assets/**`).
 
-**Status:** a reusable, reproducible, legally clean kit of 48 station components. It imports into Web (three.js) and Godot 4.7 with tested parity; evidence is in the [import report](import-report.md). The kit is **generic**: no asset is a measurement of Ikebukuro, Shinjuku or any real station. **Layout, station identity, measured dimensions and routing belong to each station lead.** Merging needs Owner approval; the repository licence is still undecided.
+**Status:** a reusable, reproducible kit of 48 station components, built only from repository code plus AI-generated posters whose provenance is recorded (rights clearance for release is pending the Owner; see PROVENANCE). It imports into Web (three.js) and Godot 4.7 with tested parity; evidence is in the [import report](import-report.md). The kit is **generic**: no asset is a measurement of Ikebukuro, Shinjuku or any real station. **Layout, station identity, measured dimensions and routing belong to each station lead.** Merging needs Owner approval; the repository licence is still undecided.
 
 ![Synthetic kit demo](img/concourse_approach.jpg)
 
