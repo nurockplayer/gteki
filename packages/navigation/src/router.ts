@@ -77,12 +77,16 @@ interface Measurement {
   cost: number;
 }
 
-/** Polyline endpoints sit on their nodes in plan, exactly as routePolyline draws them. */
+/**
+ * Polyline endpoints sit on their nodes, exactly as routePolyline draws them: in plan and in height.
+ * A node of unknown height makes its endpoint height unknown too, so no climb is measured that the
+ * drawn path (which shows the node's display height there) doesn't have.
+ */
 function snapEndpoints(geometry: Vec3N[] | undefined, from: Vec3N, to: Vec3N): Vec3N[] | undefined {
   if (!geometry || geometry.length < 2) return geometry;
   const out = [...geometry];
-  out[0] = { x: from.x, y: from.y, z: geometry[0]!.z };
-  out[out.length - 1] = { x: to.x, y: to.y, z: geometry[geometry.length - 1]!.z };
+  out[0] = { x: from.x, y: from.y, z: from.z };
+  out[out.length - 1] = { x: to.x, y: to.y, z: to.z };
   return out;
 }
 
@@ -258,8 +262,11 @@ export function createRouter(bundle: StationBundle): Router {
       const edgeIds = unknownEdges.get(kind);
       return edgeIds ? [{ kind, edgeIds }] : [];
     });
-    // Node coordinates are drawn and measured too, so their sources are dependencies like edge evidence.
+    // Node coordinates are drawn and measured too, so their sources are dependencies like edge evidence;
+    // so are the traversed floors' sources, which back floor names and up/down in the directions.
     for (const nodeId of nodeIds) for (const ref of nodes.get(nodeId)!.sourceRefs) sourceIds.add(ref.sourceId);
+    for (const floorId of new Set(nodeIds.map((id) => nodes.get(id)!.floorId)))
+      for (const label of floors.get(floorId)?.sourceLabels ?? []) sourceIds.add(label.sourceId);
     // So is whatever ties the chosen origin/destination (e.g. a POI) to these connector nodes.
     for (const evidence of endpointEvidence) {
       for (const sourceId of evidence.sourceIds) sourceIds.add(sourceId);

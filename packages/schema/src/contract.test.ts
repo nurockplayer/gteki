@@ -335,6 +335,25 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     for (const bad of ["assets/roof#west.glb", "assets/roof?west.glb"]) expect(withFiles(bad, [])).toContain("asset.uri");
   });
 
+  it("requires a source for every floor of a real station", () => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    expect(errors(b)).not.toContain("floor.source");
+    b.floors[1]!.sourceLabels = [];
+    expect(errors(b)).toContain("floor.source");
+    const synthetic = createSyntheticBundle();
+    synthetic.floors[1]!.sourceLabels = [];
+    expect(errors(synthetic)).not.toContain("floor.source");
+  });
+
+  it("rejects unknown coverage status values", () => {
+    const b = createSyntheticBundle();
+    b.coverage.areas = [{ id: "a", floorId: null, status: "routeable" as "routable", label: [], sourceIds: ["fixture-geometry"] }];
+    expect(errors(b)).toContain("coverage.status");
+    b.coverage.areas[0]!.status = "visual_only";
+    expect(errors(b)).not.toContain("coverage.status");
+  });
+
   it("forbids facts-only geometry even in synthetic bundles", () => {
     const b = createSyntheticBundle();
     expect(b.station.synthetic).toBe(true);

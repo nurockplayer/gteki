@@ -105,9 +105,13 @@ describe("third review round", () => {
   it("refuses a sloped edge whose stated-length fallback geometry has unknown heights (never 0 m)", () => {
     const b = createSyntheticBundle([
       edge("s-a", "start", "a"),
-      edge("st", "a", "upper", { mode: "stairs", lengthM: null, geometry: [{ x: 10, y: 0, z: null }, { x: 10, y: 0, z: null }] }),
+      edge("st", "a", "upper", { mode: "stairs", lengthM: null, geometry: [{ x: 10, y: 0, z: null }, { x: 12, y: 0, z: null }, { x: 10, y: 0, z: null }] }),
     ]);
+    // An interior height is unknown: the climb along the flight can't be measured.
     expect(createRouter(b).route("start", "upper", base).ok).toBe(false);
+    // Endpoints take their nodes' known heights (as drawn), so a straight flight is measured node to node.
+    b.edges[1]!.geometry = [{ x: 10, y: 0, z: null }, { x: 10, y: 0, z: null }];
+    expect(ok(createRouter(b).route("start", "upper", base)).steps[1]!.lengthM).toBeCloseTo(4);
     // Endpoints on their nodes (a at x=10 z=0, upper at x=10 z=4): a 3-4-5 flight, then 3 m back along the landing.
     b.edges[1]!.geometry = [{ x: 10, y: 0, z: 0 }, { x: 13, y: 0, z: 4 }, { x: 10, y: 0, z: 4 }];
     expect(ok(createRouter(b).route("start", "upper", base)).steps[1]!.lengthM).toBeCloseTo(8);
@@ -439,5 +443,23 @@ describe("vertical narration from floor heights", () => {
     };
     expect(mk("source-derived").vertical).toBe("up");
     expect(mk("unknown").vertical).toBeNull();
+  });
+});
+
+describe("endpoint heights, floor provenance and coverage status", () => {
+  it("measures endpoint heights as drawn: a node of unknown height adds no climb", () => {
+    const b = createSyntheticBundle([edge("ramp", "start", "goal", { mode: "walk", lengthM: null, geometry: [{ x: 0, y: 0, z: 3 }, { x: 20, y: 0, z: 0 }] })]);
+    b.nodes.find((n) => n.id === "start")!.position.z = null;
+    // The polyline claims a 3 m drop at the start, but the drawn path starts at the node's display height.
+    expect(ok(createRouter(b).route("start", "goal", base)).totalLengthM).toBeCloseTo(20);
+  });
+
+  it("counts the traversed floors' sources in provenance and freshness", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("up", "a", "upper", { mode: "ramp", lengthM: 6 })]);
+    b.sources.push({ ...b.sources[0]!, id: "floor-labels", datasetDate: "2010-01-01" });
+    b.floors.find((f) => f.id === "upper")!.sourceLabels = [{ operatorId: "operator-a", label: "1F", sourceId: "floor-labels" }];
+    const r = ok(createRouter(b).route("start", "upper", { ...base, today: "2026-10-21" }));
+    expect(r.sourceIds).toContain("floor-labels");
+    expect(r.stale).toBe(true);
   });
 });
