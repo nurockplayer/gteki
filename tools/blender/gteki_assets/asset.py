@@ -1,0 +1,332 @@
+"""Asset assembly and contract-compliant GLB export."""
+
+import hashlib
+import json
+import math
+import os
+
+import bmesh
+import bpy
+from mathutils import Vector
+
+from . import contract, materials
+from .mesh import Part
+
+
+def reset_scene():
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    scene = bpy.context.scene
+    scene.unit_settings.system = "METRIC"
+    scene.unit_settings.scale_length = 1.0
+
+
+def _idprop_safe(v):
+    """IDProperties cannot hold lists of dicts / mixed lists; JSON-encode those."""
+    if isinstance(v, dict):
+        return {str(k): _idprop_safe(x) for k, x in v.items()}
+    if isinstance(v, (list, tuple)):
+        if all(isinstance(x, (int, float)) and not isinstance(x, bool) for x in v) and v:
+            return [float(x) if any(isinstance(y, float) for y in v) else int(x) for x in v]
+        if all(isinstance(x, str) for x in v) and v:
+            return json.dumps(list(v))
+        return json.dumps(v)
+    if isinstance(v, bool):
+        return int(v)
+    return v
+
+
+class Asset:
+    """Collects parts, collision, sockets and light hints for one GLB."""
+
+    def __init__(self, asset_id, family, variant, params, generator, dimension_basis, tex_res=contract.DEFAULT_TEX_RES, notes=None):
+        self.id = asset_id
+        self.family = family
+        self.variant = variant
+        self.params = params
+        self.generator = generator
+        self.dimension_basis = dimension_basis
+        self.tex_res = tex_res
+        self.notes = notes
+        self.placement = "free"
+        self.materials = []
+        self.parts = []  # (group, Part)
+        self.collision = []  # (name, Part)
+        self.sockets = []
+        self.light_hints = []
+        self.shift = Vector((0.0, 0.0, 0.0))  # applied to everything at build time
+
+    def mat_index(self, name):
+        if name not in materials.SPECS:
+            raise KeyError(f"unknown material {name}")
+        if name not in self.materials:
+            self.materials.append(name)
+        return self.materials.index(name)
+
+    def part(self, group="main", **kw):
+        p = Part(self, f"{group}_{len(self.parts)}", **kw)
+        self.parts.append((group, p))
+        return p
+
+    def col_part(self, name):
+        p = Part(self, name, weighted=False, collision=True)
+        self.collision.append((name, p))
+        return p
+
+    def col_box(self, name, mn, mx):
+        p = self.col_part(name)
+        p.box(mn, mx, "gteki_concrete")
+        return p
+
+    def col_ramp(self, name, x0, x1, y0, z0, y1, z1, thickness=0.05):
+        """Sloped collision slab (stairs/escalators) from (y0,z0) up to (y1,z1)."""
+        p = self.col_part(name)
+        prof = [(y0, z0 - thickness), (y1, z1 - thickness), (y1, z1), (y0, z0)]
+        p.extrude_x(prof, x0, x1, "gteki_concrete")
+        return p
+
+    def socket(self, name, loc, yaw_deg=0.0, **extras):
+        """Snap point. Local +Y (Blender) == glTF -Z points out of the module."""
+        self.sockets.append((name, Vector(loc), yaw_deg, extras))
+
+    def light_hint(self, name, loc, **extras):
+        self.light_hints.append((name, Vector(loc), extras))
+
+    # ---------------------------------------------------------------- build
+
+    def build(self):
+        reset_scene()
+        coll = bpy.context.scene.collection
+        mats = [materials.get(m, self.tex_res) for m in self.materials]
+
+        root = bpy.data.objects.new(self.id, None)
+        coll.objects.link(root)
+
+        if self.shift.length > 0:
+            for _, part in self.parts + self.collision:
+                bmesh.ops.translate(part.bm, vec=self.shift, verts=part.bm.verts)
+            self.sockets = [(n, l + self.shift, y, e) for n, l, y, e in self.sockets]
+            self.light_hints = [(n, l + self.shift, e) for n, l, e in self.light_hints]
+
+        groups = {}
+        for group, part in self.parts:
+            if not part.bm.faces:  # optional pieces that produced no geometry
+                part.bm.free()
+                continue
+            obj = _part_object(part, mats, coll)
+            groups.setdefault(group, []).append(obj)
+        vis_objs = []
+        for group, objs in groups.items():
+            o = _join(objs, f"{contract.VIS}{group}")
+            o.parent = root
+            vis_objs.append(o)
+
+        for name, part in self.collision:
+            me = bpy.data.meshes.new(f"{contract.COL}{name}{contract.COL_SUFFIX}")
+            part.bm.to_mesh(me)
+            me.materials.clear()
+            o = bpy.data.objects.new(f"{contract.COL}{name}{contract.COL_SUFFIX}", me)
+            coll.objects.link(o)
+            o.parent = root
+            o.display_type = "WIRE"
+
+        for name, loc, yaw, extras in self.sockets:
+            e = bpy.data.objects.new(f"{contract.SOCKET}{name}", None)
+            e.empty_display_type = "SINGLE_ARROW"
+            e.location = loc
+            e.rotation_euler = (0.0, 0.0, math.radians(yaw))
+            e["socket"] = name
+            for k, v in extras.items():
+                e[k] = _idprop_safe(v)
+            coll.objects.link(e)
+            e.parent = root
+
+        for name, loc, extras in self.light_hints:
+            e = bpy.data.objects.new(f"{contract.LIGHTHINT}{name}", None)
+            e.empty_display_type = "PLAIN_AXES"
+            e.location = loc
+            e["light_hint"] = name
+            for k, v in extras.items():
+                e[k] = _idprop_safe(v)
+            coll.objects.link(e)
+            e.parent = root
+
+        bounds = _gltf_bounds(vis_objs)
+        tris = sum(_tri_count(o) for o in vis_objs)
+        meta = {
+            "contract": contract.CONTRACT,
+            "id": self.id,
+            "family": self.family,
+            "variant": self.variant,
+            "version": contract.KIT_VERSION,
+            "generator": self.generator,
+            "params": self.params,
+            "bounds_m": {"min": [round(v, 4) for v in bounds[0]], "max": [round(v, 4) for v in bounds[1]]},
+            "triangles": tris,
+            "dimension_basis": self.dimension_basis,
+            "placement": self.placement,
+            "fidelity": contract.FIDELITY,
+            "navigation": contract.NAVIGATION,
+            "provenance": contract.PROVENANCE,
+            "license": contract.LICENSE,
+        }
+        if self.notes:
+            meta["notes"] = self.notes
+        root["gteki"] = _idprop_safe(meta)
+        self.meta = meta
+        self.root = root
+        return root
+
+    def export(self, out_dir, save_blend_dir=None, jpeg_quality=88):
+        os.makedirs(out_dir, exist_ok=True)
+        path = os.path.join(out_dir, f"{self.id}.glb")
+        bpy.ops.object.select_all(action="DESELECT")
+        bpy.ops.export_scene.gltf(
+            filepath=path,
+            export_format="GLB",
+            export_yup=True,
+            export_apply=True,
+            export_extras=True,
+            export_texcoords=True,
+            export_normals=True,
+            export_tangents=False,
+            export_materials="EXPORT",
+            export_image_format="JPEG",
+            export_jpeg_quality=jpeg_quality,
+            export_cameras=False,
+            export_lights=False,
+            export_animations=False,
+            export_skins=False,
+            export_morph=False,
+            export_copyright="GTEki (original work; licence pending Owner decision)",
+            use_selection=False,
+            export_draco_mesh_compression_enable=False,
+        )
+        if save_blend_dir:
+            os.makedirs(save_blend_dir, exist_ok=True)
+            bpy.ops.wm.save_as_mainfile(filepath=os.path.join(save_blend_dir, f"{self.id}.blend"), compress=True)
+        with open(path, "rb") as f:
+            data = f.read()
+        return {
+            "id": self.id,
+            "family": self.family,
+            "variant": self.variant,
+            "file": f"glb/{self.id}.glb",
+            "sha256": hashlib.sha256(data).hexdigest(),
+            "bytes": len(data),
+            "triangles": self.meta["triangles"],
+            "materials": list(self.materials),
+            "bounds_m": self.meta["bounds_m"],
+            "dimension_basis": self.dimension_basis,
+            "placement": self.placement,
+            "params": self.params,
+            "sockets": [
+                {"name": n, "position_gltf": _to_gltf(l), "yaw_deg": y, **{k: v for k, v in e.items()}}
+                for n, l, y, e in self.sockets
+            ],
+            "light_hints": len(self.light_hints),
+            "collision_nodes": [f"{contract.COL}{n}{contract.COL_SUFFIX}" for n, _ in self.collision],
+            "generator": self.generator,
+        }
+
+
+def _to_gltf(v):
+    return [round(v.x, 4), round(v.z, 4), round(-v.y, 4)]
+
+
+def _part_object(part, mats, coll):
+    me = bpy.data.meshes.new(part.name)
+    # faces are emitted with their own vertices; weld them so bevels, smoothing
+    # and weighted normals see connected topology (UVs stay per-loop)
+    bmesh.ops.remove_doubles(part.bm, verts=part.bm.verts, dist=1e-5)
+    part.bm.normal_update()
+    part.bm.to_mesh(me)
+    part.bm.free()
+    for m in mats:
+        me.materials.append(m)
+    obj = bpy.data.objects.new(part.name, me)
+    coll.objects.link(obj)
+    if part.bevel > 0:
+        b = obj.modifiers.new("bevel", "BEVEL")
+        b.width = part.bevel
+        b.segments = part.bevel_segments
+        b.limit_method = "ANGLE"
+        b.angle_limit = math.radians(40)
+        b.harden_normals = False
+        b.miter_outer = "MITER_ARC" if part.bevel_segments > 1 else "MITER_SHARP"
+        b.use_clamp_overlap = True
+    if part.weighted and part.bevel > 0:
+        # chamfer + weighted normals: flat faces stay flat, bevels catch light
+        for poly in me.polygons:
+            poly.use_smooth = True
+        w = obj.modifiers.new("wnormal", "WEIGHTED_NORMAL")
+        w.keep_sharp = True
+        w.weight = 50
+        w.mode = "FACE_AREA"
+    _apply_modifiers(obj)
+    return obj
+
+
+def _apply_modifiers(obj):
+    if not obj.modifiers:
+        return
+    dg = bpy.context.evaluated_depsgraph_get()
+    ev = obj.evaluated_get(dg)
+    me = bpy.data.meshes.new_from_object(ev, preserve_all_data_layers=True, depsgraph=dg)
+    old = obj.data
+    obj.modifiers.clear()
+    obj.data = me
+    bpy.data.meshes.remove(old)
+
+
+def _join(objs, name):
+    target = objs[0]
+    if len(objs) > 1:
+        with bpy.context.temp_override(active_object=target, selected_editable_objects=objs, object=target):
+            bpy.ops.object.join()
+    target.name = name
+    target.data.name = name
+    me = target.data
+    _quantize_uvs(me)
+    # drop material slots that ended up unused and keep the remaining order stable
+    used = {p.material_index for p in me.polygons}
+    if len(used) < len(me.materials):
+        keep = [i for i in range(len(me.materials)) if i in used]
+        remap = {old: new for new, old in enumerate(keep)}
+        idx = [remap[p.material_index] for p in me.polygons]
+        mats = [me.materials[i] for i in keep]
+        me.materials.clear()
+        for m in mats:
+            me.materials.append(m)
+        for p, i in zip(me.polygons, idx):
+            p.material_index = i
+    return target
+
+
+def _quantize_uvs(me, step=1.0 / 65536.0):
+    """Bevel UV interpolation can differ by 1 ULP between runs (threading);
+    snapping to a fine grid makes exports byte-reproducible."""
+    import numpy as np
+
+    for layer in me.uv_layers:
+        buf = np.empty(len(layer.data) * 2, dtype=np.float32)
+        layer.data.foreach_get("uv", buf)
+        layer.data.foreach_set("uv", (np.round(buf / step) * step).astype(np.float32))
+
+
+def _tri_count(obj):
+    me = obj.data
+    me.calc_loop_triangles()
+    return len(me.loop_triangles)
+
+
+def _gltf_bounds(objs):
+    mn = [math.inf] * 3
+    mx = [-math.inf] * 3
+    for o in objs:
+        for v in o.data.vertices:
+            w = o.matrix_world @ v.co
+            g = (w.x, w.z, -w.y)
+            for i in range(3):
+                mn[i] = min(mn[i], g[i])
+                mx[i] = max(mx[i], g[i])
+    return mn, mx
