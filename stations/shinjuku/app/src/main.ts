@@ -381,17 +381,19 @@ const chevronTex = (() => {
 function profile(): RouteProfile {
   return { fare: $<HTMLInputElement>("ticketed").checked ? "ticketed" : "unpaid_only", stepFree: $<HTMLInputElement>("stepfree").checked };
 }
-function startNodeId(): string | null {
-  if (fromPick.kind === "poi") return fromPick.poi.connectorNodeIds[0] ?? null;
-  return nearestNode(player)?.id ?? null;
+/** Start node(s): every connector of a picked POI (the router picks the cheapest), or the attached node. */
+function startNodeIds(): string[] {
+  if (fromPick.kind === "poi") return fromPick.poi.connectorNodeIds;
+  const n = nearestNode(player);
+  return n ? [n.id] : [];
 }
 function computeRoute() {
   $("route-error").classList.add("hidden");
   if (!toPick || toPick.kind !== "poi") return;
   const goal = toPick.poi;
   if (!goal.connectorNodeIds.length) return showRouteError("この目的地は位置情報のみで、検証済みの入口がありません。This destination has no verified entrance node (search-only).");
-  const from = startNodeId();
-  if (!from) return showRouteError("現在地から経路に接続できません。出発地を選んでください / Can't connect your position to the network — choose a start point");
+  const from = startNodeIds();
+  if (!from.length) return showRouteError("現在地から経路に接続できません。出発地を選んでください / Can't connect your position to the network — choose a start point");
   const r = router.route(from, goal.connectorNodeIds, profile());
   if (!r.ok) {
     const why: Record<string, string> = {
