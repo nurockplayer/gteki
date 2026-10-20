@@ -146,13 +146,24 @@ function stepHeading(points: PolylinePoint[], stepIndex: number, end: "start" | 
   const lastIdx = own[own.length - 1]!.i;
   const anchor = end === "start" ? firstIdx : lastIdx;
   const dir = end === "start" ? 1 : -1;
-  let k = anchor;
+  const at = points[anchor]!;
+  // Walk along the step from the junction and stop exactly HEADING_SPAN_M away (interpolating inside
+  // the last segment), so a long sparse segment cannot stretch the chord and invent a turn.
+  let far = { x: at.x, y: at.y };
   let walked = 0;
-  while (k + dir >= firstIdx && k + dir <= lastIdx && walked < HEADING_SPAN_M) {
-    walked += Math.hypot(points[k + dir]!.x - points[k]!.x, points[k + dir]!.y - points[k]!.y);
-    k += dir;
+  for (let k = anchor; k + dir >= firstIdx && k + dir <= lastIdx; k += dir) {
+    const p = points[k]!;
+    const q = points[k + dir]!;
+    const seg = Math.hypot(q.x - p.x, q.y - p.y);
+    if (walked + seg >= HEADING_SPAN_M) {
+      const f = seg === 0 ? 0 : (HEADING_SPAN_M - walked) / seg;
+      far = { x: p.x + (q.x - p.x) * f, y: p.y + (q.y - p.y) * f };
+      break;
+    }
+    walked += seg;
+    far = { x: q.x, y: q.y };
   }
-  const [a, b] = end === "start" ? [points[anchor]!, points[k]!] : [points[k]!, points[anchor]!];
+  const [a, b] = end === "start" ? [at, far] : [far, at];
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   if (Math.hypot(dx, dy) < 1e-6) return null;

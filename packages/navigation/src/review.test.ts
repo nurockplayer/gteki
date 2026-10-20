@@ -153,3 +153,22 @@ describe("turn narration robustness (Ikebukuro lane observations)", () => {
     expect(describeRoute(b, ok(createRouter(b).route("start", "upper-2", base)), "ja").filter((i) => i.kind === "stairs")[1]!.text).toMatch(/^左へ曲がり、階段/);
   });
 });
+
+describe("fourth review round", () => {
+  it("interpolates the 5 m heading chord, so a long sparse segment cannot invent a turn", () => {
+    const mk = (incoming: { x: number; y: number; z: number }[]) => {
+      const b = createSyntheticBundle([
+        edge("in", "start", "a", { lengthM: null, geometry: incoming }),
+        edge("st", "a", "goal", { mode: "stairs", lengthM: null, geometry: [{ x: 4, y: 0, z: 0 }, { x: 14, y: 0, z: -2 }] }),
+      ]);
+      b.nodes.find((n) => n.id === "start")!.position = { x: 0, y: -100, z: 0 };
+      b.nodes.find((n) => n.id === "a")!.position = { x: 4, y: 0, z: 0 };
+      b.nodes.find((n) => n.id === "goal")!.position = { x: 14, y: 0, z: -2 };
+      return describeRoute(b, ok(createRouter(b).route("start", "goal", base)), "en").map((i) => i.text);
+    };
+    const sparse = mk([{ x: 0, y: -100, z: 0 }, { x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 0 }]);
+    const dense = mk([{ x: 0, y: -100, z: 0 }, { x: 0, y: -1, z: 0 }, { x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 0 }]);
+    expect(sparse).toEqual(dense);
+    expect(sparse.join(" / ")).not.toMatch(/Turn right, then/);
+  });
+});
