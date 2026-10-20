@@ -155,13 +155,21 @@ addEventListener("wheel", (e) => { camDist = Math.max(1.6, Math.min(8, camDist +
 // --- post ---------------------------------------------------------------
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
+// ?post=explorer mirrors the shared explorer's high-quality chain (default GTAO at 0.8; bloom 0.35 / 0.6 / 0.85),
+// so exposure and glare can be compared here against what the product shows.
+const asExplorer = params.get("post") === "explorer";
 if (!mobile && params.get("ao") !== "0") {
   const ao = new GTAOPass(scene, camera, innerWidth, innerHeight);
-  ao.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.4, thickness: 1.2, scale: 1.0, samples: 12 });
-  ao.blendIntensity = 0.85;
+  if (asExplorer) ao.blendIntensity = 0.8;
+  else {
+    ao.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.4, thickness: 1.2, scale: 1.0, samples: 12 });
+    ao.blendIntensity = 0.85;
+  }
   composer.addPass(ao);
 }
-const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), mobile ? 0.3 : 0.32, 0.4, 0.98);
+const bloom = asExplorer
+  ? new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.35, 0.6, 0.85)
+  : new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), mobile ? 0.3 : 0.32, 0.4, 0.98);
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
 

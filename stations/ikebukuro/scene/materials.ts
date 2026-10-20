@@ -119,6 +119,40 @@ const shopPaint: Paint = (g, size, rnd) => {
   for (let i = 0; i <= 2; i++) g.fillRect(i * (size / 2) - 3, 0, 6, size);
 };
 
+/**
+ * Daylight gain for street openings (linear, before ACES). The explorer's bloom keys on linear values above
+ * 0.85, so the old 2.4 put the whole opening far over threshold and flooded every exit stair top.
+ */
+const SKY_GAIN = 1.0;
+
+/**
+ * Street opening at the top of an exit stair. Seen from below it is daylight, bright enough to read as
+ * the way out, with only a soft halo under the explorer's bloom. Seen from above, once you stand at street
+ * level, it is the pavement around the stairwell: neutral and below the bloom threshold, so the
+ * destination stair stays readable on arrival.
+ */
+function skyMaterial(THREE: ThreeNS) {
+  const m = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+  const uniforms = { uSky: { value: new THREE.Color(0.86, 0.92, 1.0).multiplyScalar(SKY_GAIN) }, uStreet: { value: new THREE.Color(0.26, 0.255, 0.245) } };
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, uniforms);
+    sh.vertexShader = sh.vertexShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vWorldP;")
+      .replace("#include <project_vertex>", "#include <project_vertex>\nvWorldP = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+    sh.fragmentShader = sh.fragmentShader
+      .replace("#include <common>", "#include <common>\nvarying vec3 vWorldP;\nuniform vec3 uSky;\nuniform vec3 uStreet;")
+      .replace(
+        "vec4 diffuseColor = vec4( diffuse, opacity );",
+        // cameraPosition is not uploaded for MeshBasicMaterial: recover the eye from the view matrix.
+        `vec3 eye = -transpose(mat3(viewMatrix)) * viewMatrix[3].xyz;
+        float above = smoothstep(-0.05, 0.05, eye.y - vWorldP.y);
+        vec4 diffuseColor = vec4( mix(uSky, uStreet, above), opacity );`,
+      );
+  };
+  m.customProgramCacheKey = () => "gteki-ikebukuro-sky-1";
+  return m;
+}
+
 function beyondMaterial(THREE: ThreeNS) {
   const m = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
   m.onBeforeCompile = (sh) => {
@@ -195,7 +229,7 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     doors: std({ map: shopMap, emissiveMap: shopMap, emissive: 0xffffff, emissiveIntensity: 1.35, roughness: 0.2, side: THREE.DoubleSide }, false),
     light_fixtures: new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.97, 0.92).multiplyScalar(2.2) }),
     // Openings to the street at the top of exit stairs: daylight.
-    portal_sky: new THREE.MeshBasicMaterial({ color: new THREE.Color(0.86, 0.92, 1.0).multiplyScalar(2.4), side: THREE.DoubleSide }),
+    portal_sky: skyMaterial(THREE),
     // Openings into spaces the open data does not model (fare areas, shops): a fogged continuation of the
     // opening's own floor and ceiling heights, ray-traced per pixel behind the opening (no geometry, no
     // layout claims), so it reads as "the station continues" with parallax instead of a flat bright wall.
