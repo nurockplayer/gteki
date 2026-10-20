@@ -72,7 +72,7 @@ describe("vertical instructions never invent direction", () => {
 describe("vertical instructions on one floor", () => {
   it("names no destination floor when the stair chain starts and ends on the same floor", () => {
     const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("st", "a", "b", { mode: "stairs" })]);
-    b.nodes.find((n) => n.id === "b")!.position.z = -2;
+    b.nodes.find((n) => n.id === "b")!.position = { x: 20, y: 0, z: -2 }; // straight on: no turn to name
     const r = ok(createRouter(b).route("start", "b", base));
     expect(describeRoute(b, r, "en").find((i) => i.kind === "stairs")!.text).toBe("Take the stairs down");
     expect(describeRoute(b, r, "ja").find((i) => i.kind === "stairs")!.text).toBe("階段で下へ");
@@ -120,5 +120,36 @@ describe("third review round", () => {
     const r = ok(createRouter(b).route("start", "upper", base));
     expect(r.steps[1]!.lengthM).toBe(0);
     expect(r.estimatedSeconds).toBeGreaterThanOrEqual(45);
+  });
+});
+
+describe("turn narration robustness (Ikebukuro lane observations)", () => {
+  it("measures headings over ~5 m, so a short snapping hook does not turn a right turn into 'Turn back'", () => {
+    // Walk east 20 m to node a, but the polyline ends in a 1.5 m hook pointing west; then go south.
+    const b = createSyntheticBundle([
+      edge("in", "start", "a", { lengthM: null, geometry: [{ x: 0, y: 0, z: 0 }, { x: 11.5, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }] }),
+      edge("out", "a", "b", { lengthM: null, geometry: [{ x: 10, y: 0, z: 0 }, { x: 10, y: -10, z: 0 }] }),
+    ]);
+    b.nodes.find((n) => n.id === "b")!.position = { x: 10, y: -10, z: 0 };
+    const kinds = describeRoute(b, ok(createRouter(b).route("start", "b", base)), "en").map((i) => i.kind);
+    expect(kinds).toContain("turn_right");
+    expect(kinds).not.toContain("u_turn");
+  });
+
+  it("does not merge two flights across a real turn and names the turn", () => {
+    // Flight 1 heads east (a → upper); flight 2 turns left (north) to upper-2' on the same floor.
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("f1", "a", "upper", { mode: "stairs" }),
+      edge("f2", "upper", "upper-2", { mode: "stairs", lengthM: null, geometry: [{ x: 10, y: 0, z: 4 }, { x: 10, y: 8, z: 4 }] }),
+    ]);
+    b.nodes.find((n) => n.id === "a")!.position = { x: 0, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "upper-2")!.position = { x: 10, y: 8, z: 4 };
+    b.edges[0] = edge("s-a", "start", "a", { lengthM: 1, geometry: [{ x: -1, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }] });
+    b.nodes.find((n) => n.id === "start")!.position = { x: -1, y: 0, z: 0 };
+    const stairs = describeRoute(b, ok(createRouter(b).route("start", "upper-2", base)), "en").filter((i) => i.kind === "stairs");
+    expect(stairs).toHaveLength(2);
+    expect(stairs[1]!.text).toMatch(/^Turn left, then take the stairs/);
+    expect(describeRoute(b, ok(createRouter(b).route("start", "upper-2", base)), "ja").filter((i) => i.kind === "stairs")[1]!.text).toMatch(/^左へ曲がり、階段/);
   });
 });
