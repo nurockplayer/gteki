@@ -20,6 +20,8 @@ const POI_CATEGORIES = new Set(["exit", "ticket_gate", "platform", "elevator", "
 const WEEKDAYS = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
 /** Polyline endpoints further than this from their node are reported. */
 const ENDPOINT_TOLERANCE_M = 1;
+/** Known polyline endpoint heights must match known node heights; routing measures the polyline's climb. */
+const ENDPOINT_Z_TOLERANCE_M = 0.1;
 
 /**
  * A walk/gate edge that changes floor is only plausible at landings (one end on an
@@ -100,6 +102,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     for (const s of e.geometryEvidence.sourceIds)
       if (factsOnly.has(s)) err("edge.geometry.rights", `polyline geometry cites facts-only source ${s}; geometry would be a derivative`, e.id);
     checkEvidence(e, e.accessEvidence, "accessEvidence");
+    if (e.hours) checkEvidence(e, e.hours.evidence, "hours.evidence");
     if (e.crossesFareBoundary === true && e.paid === false)
       err("edge.fare", "fare-boundary edge cannot be marked fully unpaid", e.id);
     if (!VERIFICATIONS.has(e.verification)) err("edge.verification", `unknown verification ${e.verification}`, e.id);
@@ -129,6 +132,11 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       if (Math.hypot(first.x - fromNode.position.x, first.y - fromNode.position.y) > ENDPOINT_TOLERANCE_M ||
           Math.hypot(last.x - toNode.position.x, last.y - toNode.position.y) > ENDPOINT_TOLERANCE_M)
         warn("edge.geometry.endpoints", `polyline endpoints are > ${ENDPOINT_TOLERANCE_M} m from from/to nodes`, e.id);
+      if (e.geometryZ !== "symbolic") {
+        const zMismatch = (pz: number | null, nz: number | null) => pz !== null && nz !== null && Math.abs(pz - nz) > ENDPOINT_Z_TOLERANCE_M + 1e-9;
+        if (zMismatch(first.z, fromNode.position.z) || zMismatch(last.z, toNode.position.z))
+          err("edge.geometry.endpoints.z", `polyline endpoint height differs from its node by > ${ENDPOINT_Z_TOLERANCE_M} m; routing would measure a climb the drawn path does not have`, e.id);
+      }
     }
   }
 
@@ -144,6 +152,8 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       err("asset.uri", "asset uri must be a relative path inside the station folder", a.id);
     if (a.transform !== undefined && (a.transform.length !== 16 || !a.transform.every(Number.isFinite)))
       err("asset.transform", "transform must be 16 finite numbers (column-major 4x4)", a.id);
+    else if (a.transform !== undefined && (a.transform[3] !== 0 || a.transform[7] !== 0 || a.transform[11] !== 0 || a.transform[15] !== 1))
+      err("asset.transform", "transform must be affine (m[3], m[7], m[11] = 0 and m[15] = 1), as Godot requires", a.id);
     for (const f of a.floorIds) if (!floorIds.has(f)) err("asset.floor", `unknown floor ${f}`, a.id);
     for (const s of a.sourceIds) {
       if (!sourceIds.has(s)) err("asset.source", `unknown source ${s}`, a.id);
