@@ -6,7 +6,8 @@ import type * as THREE_NS from "three";
 interface P3 { x: number; y: number; z: number | null }
 interface Edge { id: string; from: string; to: string; verification: string; geometry: P3[] }
 
-interface Path { pts: THREE_NS.Vector3[]; cum: number[]; length: number; from: string; to: string; lane?: Lane }
+/** cum: 3D arc length (walking speed); hcum: horizontal distance, the axis crowd_lanes.json is sampled on. */
+interface Path { pts: THREE_NS.Vector3[]; cum: number[]; hcum: number[]; length: number; from: string; to: string; lane?: Lane }
 /** Safe lateral extent (m) every stepM along an edge, from pipeline/build_station.py. */
 export interface Lane { stepM: number; left: number[]; right: number[] }
 interface Agent { path: number; forward: boolean; s: number; speed: number; offset: number; phase: number; hiddenUntil: number }
@@ -32,9 +33,13 @@ export function buildCrowd(
   for (const e of edges) {
     if (e.verification !== "verified" || e.geometry.some((p) => p.z === null)) continue;
     const pts = e.geometry.map((p) => toRenderer(p.x, p.y, p.z as number));
-    const cum = [0];
-    for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1]! + pts[i]!.distanceTo(pts[i - 1]!));
-    if (cum[cum.length - 1]! > 1) paths.push({ pts, cum, length: cum[cum.length - 1]!, from: e.from, to: e.to, lane: lanes[e.id] });
+    const cum = [0], hcum = [0];
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1]!, b = pts[i]!;
+      cum.push(cum[i - 1]! + b.distanceTo(a));
+      hcum.push(hcum[i - 1]! + Math.hypot(b.x - a.x, b.z - a.z));
+    }
+    if (cum[cum.length - 1]! > 1) paths.push({ pts, cum, hcum, length: cum[cum.length - 1]!, from: e.from, to: e.to, lane: lanes[e.id] });
   }
   const byNode = new Map<string, number[]>();
   paths.forEach((p, i) => {
@@ -137,6 +142,7 @@ export function buildCrowd(
   }
 
   const pos = new THREE.Vector3(), dir = new THREE.Vector3(), side = new THREE.Vector3();
+  let along = 0; // horizontal distance from the edge start at the last sample()
   const q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1), base = new THREE.Matrix4();
   const local = new THREE.Matrix4(), rot = new THREE.Matrix4(), out = new THREE.Matrix4();
   const hidden = new THREE.Matrix4().makeScale(0, 0, 0);
@@ -181,8 +187,9 @@ export function buildCrowd(
   function sample(p: Path, s: number) {
     let i = 1;
     while (i < p.cum.length - 1 && p.cum[i]! < s) i++;
-    const t = (s - p.cum[i - 1]!) / Math.max(1e-6, p.cum[i]! - p.cum[i - 1]!);
-    pos.lerpVectors(p.pts[i - 1]!, p.pts[i]!, Math.min(1, Math.max(0, t)));
+    const t = Math.min(1, Math.max(0, (s - p.cum[i - 1]!) / Math.max(1e-6, p.cum[i]! - p.cum[i - 1]!)));
+    pos.lerpVectors(p.pts[i - 1]!, p.pts[i]!, t);
+    along = p.hcum[i - 1]! + t * (p.hcum[i]! - p.hcum[i - 1]!);
     dir.subVectors(p.pts[i]!, p.pts[i - 1]!).setY(0).normalize();
   }
 
@@ -241,8 +248,9 @@ export function buildCrowd(
       // surveyed walkable lane so nobody stands in a wall or off the floor.
       let off = -0.3 + a.offset * 0.4;
       if (p.lane) {
-        // The two samples that bracket the walker: either may report no room.
-        const k = Math.min(p.lane.left.length - 1, Math.max(0, Math.floor(a.s / p.lane.stepM)));
+        // The two samples that bracket the walker: either may report no room. Lanes are sampled by
+        // horizontal distance, so on stairs the 3D arc length a.s would run ahead of them.
+        const k = Math.min(p.lane.left.length - 1, Math.max(0, Math.floor(along / p.lane.stepM)));
         const k2 = Math.min(p.lane.left.length - 1, k + 1);
         // lanes are measured to walkable-cell centres; keep shoulders (~0.3 m) off the walls
         const left = Math.max(0, Math.min(p.lane.left[k]!, p.lane.left[k2]!) - 0.2);
