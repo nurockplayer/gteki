@@ -8,6 +8,7 @@ import { gapPacket } from './gaps.js';
 import { parseBboxLocal } from './filters.js';
 import { generateOverlapReports } from './overlap.js';
 import { ensurePrivateStore } from './common.js';
+import { invalidateRealRunReceipt } from './history.js';
 
 async function main() {
   ensurePrivateStore();
@@ -18,6 +19,8 @@ async function main() {
   const [command,...args]=positionals;
   if(values.help || !command){console.log('sources | acquire <source_id...> [--all] [--offline] | inspect-citygml <source_id> | frame-from-envelope <source_id> <frame_id> | crs-roundtrip <frame_id> | citygml-to-glb <source_id> --frame <frame_id> [--bbox-local minE,minN,maxE,maxN] [--ids id1,id2] [--max-polygons N] | inspect-network <source_id> | overlap | gap-packet');return;}
   const requireArg=(index:number):string=>{if(!args[index])throw new Error(`Missing argument ${index+1} for ${command}`);return args[index];};
+  const writesReports=['inspect-citygml','frame-from-envelope','crs-roundtrip','citygml-to-glb','inspect-network','overlap','gap-packet'].includes(command)||(command==='acquire'&&!values.offline);
+  if(writesReports&&process.env.GTEKI_GIS_REAL_RUN!=='1')await invalidateRealRunReceipt(`gis ${positionals.join(' ')}`);
   let result:unknown;
   switch(command){
     case 'sources': result=loadSources();break;

@@ -277,6 +277,8 @@ export function inspectGeoJsonFeatures(features: any[], source: { source_id: str
   const classification = (feature: any): 'node' | 'link' | 'unknown' => {
     const geometryType = feature.geometry?.type ?? '';
     const properties = feature.properties ?? {};
+    // Area or other unsupported geometry never takes a graph role, whatever role-like properties it carries.
+    if (feature.geometry != null && !/^(Multi)?(Point|LineString)$/i.test(geometryType)) return 'unknown';
     const nodeEvidence = /^(Multi)?Point$/i.test(geometryType) || resolveIdentifier(properties, EXPLICIT_NODE_ID_FIELDS) !== null;
     const linkEvidence = /^(Multi)?LineString$/i.test(geometryType)
       || resolveIdentifier(properties, EXPLICIT_LINK_ID_FIELDS) !== null

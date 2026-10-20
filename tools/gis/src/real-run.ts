@@ -17,9 +17,9 @@ const runTag=receipt.started_at.replace(/[:.]/g,'-');
 const logDirectory=join(getStoreRoot(),'out','run-logs',runTag);await mkdir(logDirectory,{recursive:true});
 async function run(args:string[],selectionEvidence?:unknown){
   const started=performance.now(),relative=`out/run-logs/${runTag}/${String(receipt.commands.length+1).padStart(2,'0')}-${args[0]}-${args[1]??'all'}.log`,fingerprint=await toolFingerprint();
-  const process=spawn('pnpm',['--dir',packageRoot,'gis',...args],{cwd:repoRoot,stdio:['ignore','pipe','pipe']});
-  let output='';process.stdout.on('data',data=>{output+=String(data);});process.stderr.on('data',data=>{output+=String(data);});
-  const exitCode=await new Promise<number|null>((resolve,reject)=>{process.on('error',reject);process.on('close',resolve);});
+  const child=spawn('pnpm',['--dir',packageRoot,'gis',...args],{cwd:repoRoot,stdio:['ignore','pipe','pipe'],env:{...process.env,GTEKI_GIS_REAL_RUN:'1'}});
+  let output='';child.stdout.on('data',data=>{output+=String(data);});child.stderr.on('data',data=>{output+=String(data);});
+  const exitCode=await new Promise<number|null>((resolve,reject)=>{child.on('error',reject);child.on('close',resolve);});
   await writeFile(join(getStoreRoot(),relative),output);
   receipt.commands.push({command:`pnpm --dir tools/gis gis ${args.join(' ')}`,exit_code:exitCode,elapsed_ms:Math.round(performance.now()-started),log_store_path:relative,tool_input_sha256:fingerprint,...(selectionEvidence?{selection_evidence:selectionEvidence}:{})});
   await writeJson(join(docsRoot,'gis','real-run.json'),receipt);

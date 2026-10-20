@@ -32,3 +32,17 @@ export async function archiveStaleConversions(currentFingerprint: string, gisRoo
   }
   return moved;
 }
+
+/**
+ * A report-writing command run outside `real-run` makes the current real-run receipt stale: mark it invalidated so
+ * `summarize` refuses to mix out-of-band artifacts with the receipt's run.
+ */
+export async function invalidateRealRunReceipt(command: string, gisRoot = join(docsRoot, 'gis')): Promise<boolean> {
+  const path = join(gisRoot, 'real-run.json');
+  let receipt: Record<string, unknown>;
+  try { receipt = JSON.parse(await readFile(path, 'utf8')) as Record<string, unknown>; }
+  catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return false; throw error; }
+  receipt.invalidated = { at: new Date().toISOString(), by_command: command, reason: 'Report-writing command run outside real-run; rerun real-run before summarizing' };
+  await writeFile(path, `${JSON.stringify(receipt, null, 2)}\n`);
+  return true;
+}

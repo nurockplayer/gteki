@@ -30,6 +30,9 @@ if(runReceipt.tool_input_sha256!==snapshot)summaryProblems.push(`real-run.json f
 const acquiredSha=new Map(acquisitions.map((a:any)=>[a.source_id,a.sha256]));
 for(const inventory of inventories)if(acquiredSha.get(inventory.source_id)!==inventory.source_sha256)summaryProblems.push(`inventory ${inventory.source_id} does not match the recorded acquisition`);
 for(const network of networks)for(const [sourceId,sha] of networkSourceHashes(network))if(acquiredSha.get(sourceId)!==sha)summaryProblems.push(`network report ${network.source_id} input ${sourceId} does not match the recorded acquisition`);
+if(runReceipt.invalidated)summaryProblems.push(`real-run.json was invalidated by an out-of-band command: ${runReceipt.invalidated.by_command}`);
+for(const conversion of conversions)if(acquiredSha.get(conversion.source_id)!==conversion.source_sha256)summaryProblems.push(`conversion ${conversion.run_id} does not match the recorded acquisition`);
+for(const report of crsReports)if(acquiredSha.get(report.frame?.source_id)!==report.frame?.source_sha256)summaryProblems.push(`CRS report ${report.frame?.frame_id} does not match the recorded acquisition`);
 if(summaryProblems.length){console.error(`Summary not written:\n- ${summaryProblems.join('\n- ')}`);process.exit(1);}
 const previous=await readJson<any>(join(root,'history','phase1','real-data-summary.json'));
 const fullConversion=(rows:any[],source:string)=>rows.find(row=>row.source_id===source&&!row.filters?.ids?.length&&!row.filters?.bboxLocal&&row.filters?.maxPolygons===undefined);

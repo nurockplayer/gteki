@@ -148,6 +148,18 @@ describe('network source inspection', () => {
     expect(report.topology.geometry_endpoint_coverage).toEqual({ checked_links: 0, skipped_links: 1, total_links: 1, complete: false });
   });
 
+  it('keeps a Polygon with link and endpoint IDs out of graph roles', () => {
+    const features = [
+      { type: 'Feature', properties: { node_id: 'n1' }, geometry: { type: 'Point', coordinates: [139.7, 35.6] } },
+      { type: 'Feature', properties: { node_id: 'n2' }, geometry: { type: 'Point', coordinates: [139.71, 35.6] } },
+      { type: 'Feature', properties: { link_id: 'area', start_node_id: 'n1', end_node_id: 'n2' }, geometry: { type: 'Polygon', coordinates: [[[139.7, 35.6], [139.71, 35.6], [139.71, 35.61], [139.7, 35.6]]] } },
+    ];
+    const report = inspectGeoJsonFeatures(features, { source_id: 'synthetic-polygon-link', sha256: 'synthetic-hash' }, { type: 'name', properties: { name: 'EPSG:6668' } }, 'synthetic.geojson', 'network');
+    const graph = candidateGraphFromGeoJsonInventory(report);
+    expect(graph.edges).toHaveLength(0);
+    expect(graph.other_features).toHaveLength(1);
+  });
+
   it('reports partial endpoint coverage when a referenced node has no geometry coordinates', () => {
     const features = [
       { type: 'Feature', properties: { node_id: 'n1' }, geometry: null },

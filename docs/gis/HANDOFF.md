@@ -95,3 +95,8 @@ A fifth automated review asked that `summarize` refuse incomplete runs. It now e
 A sixth automated review raised two more P2 findings, fixed with digest `989c2ae8622867722741daced5f06c253de4493fc88e9fe60e1ab21a6a96592e`:
 - A missing bounded-Room conversion is recorded as a failed command, so `real-run` and `summarize` fail.
 - Every store-writing entry point (`cli`, `real-run`, `validate`) calls `ensurePrivateStore()`, which sets umask 077 and forces the store root to 0700. New store files are created 0600 and new directories 0700. The existing local store was tightened to match, and no group- or world-readable entries remain.
+
+A seventh automated review raised three more P2 findings, fixed with digest `6d4c26c7ea75dc3b8838a31190d5419ba5584e2bb27a430e620073ccc244df8d`:
+- Any report-writing CLI command run outside `real-run` marks `real-run.json` as `invalidated`, and `summarize` refuses invalidated receipts. `summarize` also checks the conversion and CRS-report source hashes against the acquisitions.
+- `acquire --offline` compares the stored size against the current manifest's `expected_bytes`.
+- Polygon and other unsupported geometries never take node or edge roles.

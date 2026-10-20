@@ -207,8 +207,10 @@ export async function acquireSources(ids: string[], options: { offline?: boolean
     for (const id of ids) {
       try {
         const { record, path } = await import('./common.js').then((m) => m.getStoredSource(id));
-        const sizeCheck = record.expected_bytes == null ? 'NOT_SPECIFIED' : record.bytes === record.expected_bytes ? 'MATCH' : 'MISMATCH';
-        const fresh: AcquisitionRecord = { ...record, size_check: sizeCheck, last_offline_check: { requested_at: new Date().toISOString(), completed_at: new Date().toISOString(), tool_version: TOOL_VERSION, sha256: record.sha256, bytes: record.bytes, status: 'PASS' } };
+        // Compare against the current (fingerprinted) manifest, not the expectation stored in the old record.
+        const expectedBytes = byId.get(id)!.expected_bytes ?? null;
+        const sizeCheck = expectedBytes == null ? 'NOT_SPECIFIED' : record.bytes === expectedBytes ? 'MATCH' : 'MISMATCH';
+        const fresh: AcquisitionRecord = { ...record, expected_bytes: expectedBytes, size_check: sizeCheck, last_offline_check: { requested_at: new Date().toISOString(), completed_at: new Date().toISOString(), tool_version: TOOL_VERSION, sha256: record.sha256, bytes: record.bytes, status: 'PASS' } };
         await writeJson(join(docsRoot, 'gis', 'acquisitions', `${id}.json`), fresh);
         output.push({ source_id: id, ok: sizeCheck !== 'MISMATCH', record: fresh, path, ...(sizeCheck === 'MISMATCH' ? { error: 'Stored byte count does not match expected_bytes' } : {}) });
       } catch (error) { output.push({ source_id: id, ok: false, error: error instanceof Error ? error.message : String(error) }); }
