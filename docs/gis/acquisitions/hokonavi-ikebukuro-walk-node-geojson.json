@@ -2,21 +2,21 @@
   "source_id": "hokonavi-ikebukuro-walk-node-geojson",
   "resolved_url": "https://ckan.hokonavi.go.jp/dataset/324ba112-3bc0-4b9c-8a36-7d30edf4cf92/resource/f5d9a6e5-fd54-4b77-acd3-6f73e77676ff/download/node.geojson",
   "resolution_evidence": null,
-  "requested_at": "2026-10-20T23:10:54.684Z",
-  "completed_at": "2026-10-20T23:10:54.758Z",
+  "requested_at": "2026-10-20T23:18:33.682Z",
+  "completed_at": "2026-10-20T23:18:33.762Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/geo+json",
     "content-length": "926326",
     "etag": "\"1757298652.8895652-926326-2284524345\"",
     "last-modified": "Mon, 08 Sep 2025 02:30:52 GMT",
-    "date": "Tue, 20 Oct 2026 23:10:54 GMT"
+    "date": "Tue, 20 Oct 2026 23:18:33 GMT"
   },
   "bytes": 926326,
   "sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33",
   "store_path": "raw/4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33/node.geojson",
   "tool_version": "0.1.0",
-  "git_commit": "5fc01c2eb716f128a2acab65cc18ec8719c7bfa6",
+  "git_commit": "6e6691069edf915eeed2a2baf95e4e72b52a77a5",
   "expected_bytes": 926326,
   "expected_url_match": true,
   "size_check": "MATCH",
@@ -33,8 +33,8 @@
     }
   ],
   "last_offline_check": {
-    "requested_at": "2026-10-20T23:14:27.821Z",
-    "completed_at": "2026-10-20T23:14:27.821Z",
+    "requested_at": "2026-10-20T23:22:25.325Z",
+    "completed_at": "2026-10-20T23:22:25.325Z",
     "tool_version": "0.1.0",
     "sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33",
     "bytes": 926326,

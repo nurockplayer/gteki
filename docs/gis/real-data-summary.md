@@ -2,7 +2,7 @@
 
 Generated from acquisition, inventory, conversion and network JSON; no counts are manually maintained. All results are UNVERIFIED and NOT_FOR_ROUTING.
 
-Tool-input SHA-256: `e8291e43745bc2c28b4502c4c011763957859e1b49157c160913403e0be10bcf` (src, source manifest, codebooks, frames, synthetic tests/fixtures, package/lock/workspace/TypeScript configuration; sorted relative names plus exact bytes).
+Tool-input SHA-256: `2056fdef58537e09f18a84e47e3a5cf102f34ea4c8bbe93b6aad5ea85fcb0f52` (src, source manifest, codebooks, frames, synthetic tests/fixtures, package/lock/workspace/TypeScript configuration; sorted relative names plus exact bytes).
 
 ## Acquisitions
 
@@ -65,10 +65,10 @@ Tool-input SHA-256: `e8291e43745bc2c28b4502c4c011763957859e1b49157c160913403e0be
 
 | Run | Polygons | Triangles | Nodes | Bbox error m | Time ms | Peak RSS bytes |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-786b920ecbb6203d54f7 | 6 | 12 | 1 | 0.00000452290078101214 | 10967 | 451002368 |
-| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-8325eb30a1194fda9bdf | 65013 | 148950 | 30358 | 0.0000054997890401864424 | 15226 | 1736146944 |
-| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-3f5a8554b5c09474a7cd | 184 | 184 | 6 | 0.0000046096065489109606 | 24508 | 262045696 |
-| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-d38a59c9cf3da039845e | 58761 | 64811 | 32 | 0.000003925928467651829 | 27262 | 453656576 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-78f804600c032c72a30c | 65013 | 148950 | 30358 | 0.0000054997890401864424 | 18225 | 1407762432 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-f3dae4fd148ef38fa01f | 6 | 12 | 1 | 0.00000452290078101214 | 12243 | 384778240 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-52fc6bb02ba684e29bda | 58761 | 64811 | 32 | 0.000003925928467651829 | 30870 | 431980544 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-9b6f6540c87622778269 | 184 | 184 | 6 | 0.0000046096065489109606 | 26620 | 216662016 |
 
 ## Network observations
 

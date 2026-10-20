@@ -4,12 +4,25 @@ import { toolFingerprint } from './provenance.js';
 import path from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import { docsRoot, readJson, writeJson } from './common.js';
+import { loadSources } from './acquire.js';
 import type { StationOverlapReport } from './overlap.js';
 
 const STATIONS = [
   { id: 'ikebukuro', city: '13116', gml: 'plateau-13116-ubld-53394576', network: 'hokonavi-ikebukuro-walk-node-csv' },
   { id: 'shinjuku', city: '13104', gml: 'plateau-13104-ubld-53394536', network: 'hokonavi-oedo-shinjuku-network-geojson' },
 ] as const;
+
+/**
+ * Each expected report that is absent is its own HOLD. A missing POI report leaves
+ * its station relevance uncomputable, so it is held for every station; a missing
+ * rights report is held for the stations its manifest entry names (all, if unnamed).
+ */
+export function missingEvidenceHolds(stationId: string, poi: Record<string, unknown>, rights: Record<string, unknown>, manifestStations: Record<string, readonly string[] | undefined>): string[] {
+  return [
+    ...Object.entries(poi).filter(([, report]) => !report).map(([id]) => `${id}: POI content evidence UNKNOWN; report missing, so station relevance cannot be computed.`),
+    ...Object.entries(rights).filter(([id, report]) => !report && (manifestStations[id]?.includes(stationId) ?? true)).map(([id]) => `${id}: rights evidence UNKNOWN; report missing.`),
+  ];
+}
 
 async function maybeReport(relative: string): Promise<any | null> {
   try { return await readJson(path.join(docsRoot, 'gis', relative)); } catch { return null; }
@@ -85,12 +98,15 @@ function describeOverlap(report: StationOverlapReport | null): string[] {
 
 export async function gapPacket(): Promise<Record<string, unknown>> {
   const results: Record<string, unknown> = {};
+  const manifestStations = Object.fromEntries(loadSources().map(source => [source.source_id, source.station_ids]));
+  const poiById = Object.fromEntries(await Promise.all(POI_SOURCES.map(async id => [id, await maybeReport(`poi/${id}.json`)] as const)));
+  const rightsById = Object.fromEntries(await Promise.all(RIGHTS_SOURCES.map(async id => [id, await maybeReport(`rights/${id}.json`)] as const)));
   for (const station of STATIONS) {
     const inventory = await maybeReport(`inventory/${station.gml}.inventory.json`);
     const network = await maybeReport(`networks/${station.network}.json`);
     const overlap = await maybeReport(`overlap/${station.id}.json`) as StationOverlapReport | null;
-    const poiReports = (await Promise.all(POI_SOURCES.map(id => maybeReport(`poi/${id}.json`)))).filter(Boolean);
-    const rightsReports = (await Promise.all(RIGHTS_SOURCES.map(id => maybeReport(`rights/${id}.json`)))).filter(report => report?.station_ids?.includes(station.id));
+    const poiReports = Object.values(poiById).filter(Boolean);
+    const rightsReports = Object.values(rightsById).filter(report => report?.station_ids?.includes(station.id));
     const poiContent = poiReports.filter(report => report.station_ids?.includes(station.id) || report.station_relevance?.some((item: any) => item.station_id === station.id && item.relation === 'INTERSECTS')).map(report => ({
       source_id: report.source_id, source_sha256: report.source_sha256, routable: false, coordinates: report.coordinates,
       members: report.members.map((member: any) => ({ file: member.file, populated_row_count: member.populated_row_count ?? null, feature_count: member.feature_count ?? null, crs: member.crs, bbox: member.bbox,
@@ -123,7 +139,7 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
     if(station.id==='ikebukuro')holds.push('R1 CRS is INFERRED_FROM_SPEC; all endpoint and overlap metrics relying on it are CONDITIONAL_ON_INFERRED_CRS. Distance evidence cannot identify the datum.');
     holds.push('POI, S03 and related-layer publish gates remain HOLD. Rights clearance never establishes navigability.');
     for (const row of rightsContent) if(row.verdict !== 'CLEARED_WITH_CONDITIONS') holds.push(`${row.source_id}${row.layer ? ` / ${row.layer}` : ''}: ${row.verdict}; ${row.reason}; ${rightsScopeMarkdown(row)}`);
-    if (!poiReports.length || !rightsReports.length) holds.push('POI content/rights evidence UNKNOWN; required reports missing.');
+    holds.push(...missingEvidenceHolds(station.id, poiById, rightsById, manifestStations));
     const markdown = [
       `# ${station.id[0]!.toUpperCase()}${station.id.slice(1)} evidence-gap packet`,
       '',

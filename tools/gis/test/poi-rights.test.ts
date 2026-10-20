@@ -3,6 +3,7 @@ import { decodeText, fieldStatistics, inventoryCsv, inventoryJson, bboxRelation 
 import { compareFeatureCollections, attachVerifiedOrigin } from '../src/related.js';
 import { evaluateRights, evaluateRightsRecords, snapshotText } from '../src/rights.js';
 import { projectRights, rightsScopeMarkdown } from '../src/rights-view.js';
+import { missingEvidenceHolds } from '../src/gaps.js';
 
 // SYNTHETIC rights and content fixtures; no real station data or legal text.
 const fixture = () => ({
@@ -146,5 +147,16 @@ describe('bounded content inventories', () => {
     expect(bboxRelation([0, 0, 1, 1], [1, 1, 2, 2])).toBe('INTERSECTS');
     expect(bboxRelation([0, 0, 1, 1], [2, 2, 3, 3])).toBe('DISJOINT');
     expect(bboxRelation([NaN, 0, 1, 1], [0, 0, 1, 1])).toBe('UNKNOWN'); expect(bboxRelation(null, [0, 0, 1, 1])).toBe('UNKNOWN');
+  });
+});
+
+describe('gap-packet missing evidence', () => {
+  it('holds each absent report even when others loaded', () => {
+    const manifest = { 'rights-a': ['shinjuku'], 'rights-b': ['ikebukuro'] };
+    const holds = missingEvidenceHolds('shinjuku', { 'poi-a': { ok: 1 }, 'poi-b': null }, { 'rights-a': null, 'rights-b': null, 'rights-c': null, 'rights-d': { ok: 1 } }, manifest);
+    expect(holds).toHaveLength(3);
+    expect(holds[0]).toMatch(/^poi-b: POI content evidence UNKNOWN/);
+    expect(holds.slice(1).map(hold => hold.split(':')[0])).toEqual(['rights-a', 'rights-c']);
+    expect(missingEvidenceHolds('shinjuku', { 'poi-a': { ok: 1 } }, { 'rights-d': { ok: 1 } }, manifest)).toEqual([]);
   });
 });

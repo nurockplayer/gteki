@@ -23,7 +23,7 @@ Reproduce the full run with `pnpm --dir tools/gis install --frozen-lockfile`, th
 
 ## Verified checks (this candidate)
 
-- Current candidate (rights research, on top of main `4d5c412`): `typecheck` 0 · `test` **282/282** · `test:real` **10/10** · `acquire --all` **45/45** online · real run **23/23** CLI invocations exit 0 · digest `e8291e43745bc2c28b4502c4c011763957859e1b49157c160913403e0be10bcf` (run, validation and summary agree). The 4 GLB outputs are byte-identical to the merged main. The Opus lead re-ran these independently.
+- Current candidate (rights research, on top of main `4d5c412`): `typecheck` 0 · `test` **283/283** · `test:real` **10/10** · `acquire --all` **45/45** online · real run **23/23** CLI invocations exit 0 · digest `2056fdef58537e09f18a84e47e3a5cf102f34ea4c8bbe93b6aad5ea85fcb0f52` (run, validation and summary agree). The 4 GLB outputs are byte-identical to the merged main. The Opus lead re-ran these independently.
 - At PR #18 merge time: `typecheck` 0 · `test` **82/82** · `test:real` **3/3** · `acquire --all --offline` **13/13** hashes · real run **16/16**.
 - CRS: two independent controls from the official GSI 測量計算サイト `bl2xy` (JGD2011, zone IX, retrieved 2026-10-20) match within **0.05 mm**. Envelope-corner roundtrips are below 1e-6 m.
 - GLB readback: bbox error ≤ **0.006 mm**. Independent Blender 5.2.2 import of both full-file GLBs reproduces the recorded local bbox to within float32 precision (see [evidence/](evidence/)).
@@ -183,6 +183,6 @@ Full evidence: [research/poi-rights-s10-s03-related.md](research/poi-rights-s10-
 - Round 1 returned REQUEST_CHANGES with two P1s, both fixed: the S03 scope was lost in the summary and gap projections, and curl redirects could reach private hosts.
 - Round 2: **APPROVE**. It verified all 45 acquisitions, 74 stored files, 101 quoted clauses and 14 identities.
 
-**Verification (Opus lead's independent online rerun):** `typecheck` 0 · `test` **282/282** · `test:real` **10/10** · `acquire --all` 45/45 · real run **23/23** · digest `e8291e43745bc2c28b4502c4c011763957859e1b49157c160913403e0be10bcf`. The GLBs are unchanged.
+**Verification (Opus lead's independent online rerun):** `typecheck` 0 · `test` **283/283** · `test:real` **10/10** · `acquire --all` 45/45 · real run **23/23** · digest `2056fdef58537e09f18a84e47e3a5cf102f34ea4c8bbe93b6aad5ea85fcb0f52`. The GLBs are unchanged.
 
-**PR #34 automated Codex review:** one P2 finding: S03 entity opening times are in a field named `hours`, which the opening-time classifier missed. Fixed with a shared `OPENING_TIME_FIELD` pattern and a regression test. The 236 populated `hours` values are now reported as literals. Digest `e8291e43745bc2c28b4502c4c011763957859e1b49157c160913403e0be10bcf`; the GLBs are unchanged.
+**PR #34 automated Codex review:** two rounds, one P2 each, both fixed with regression tests. (1) S03 entity opening times are in a field named `hours`, which the opening-time classifier missed. Fixed with a shared `OPENING_TIME_FIELD` pattern and a regression test. The 236 populated `hours` values are now reported as literals. (2) `gap-packet` now adds a HOLD for each expected POI or rights report that is missing, instead of dropping the source silently when other reports loaded. Digest `2056fdef58537e09f18a84e47e3a5cf102f34ea4c8bbe93b6aad5ea85fcb0f52`; the GLBs are unchanged.
