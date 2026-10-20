@@ -58,25 +58,57 @@ export function buildCrowd(
   }
 
   // Articulated low-poly pedestrian: parts pivot at hip/shoulder; local +Z is forward.
-  const geo = {
-    torso: new THREE.CapsuleGeometry(0.185, 0.4, 4, 10).scale(1, 1, 0.7).translate(0, 1.2, 0),
-    head: new THREE.SphereGeometry(0.105, 12, 8).translate(0, 1.66, 0.01),
-    hair: new THREE.SphereGeometry(0.112, 12, 6, 0, Math.PI * 2, 0, Math.PI * 0.55).translate(0, 1.675, -0.012),
-    leg: new THREE.CapsuleGeometry(0.082, 0.7, 3, 8).translate(0, -0.43, 0),
-    arm: new THREE.CapsuleGeometry(0.056, 0.54, 3, 8).translate(0, -0.33, 0),
-    backpack: new THREE.BoxGeometry(0.3, 0.38, 0.14).translate(0, 1.22, -0.2),
-    shoulderBag: new THREE.BoxGeometry(0.08, 0.26, 0.3).translate(0.27, 0.98, 0.02),
+  // Tapered torso with shoulders, neck, oval head, tapered limbs, hands and shoes (shoes are a darker
+  // vertex colour on the leg, so they cost no extra draw call).
+  const shade = (g: THREE_NS.BufferGeometry, v: number) => {
+    const n = g.getAttribute("position").count;
+    g.setAttribute("color", new THREE.Float32BufferAttribute(new Array(n * 3).fill(v), 3));
+    return g;
   };
-  const mat = (rough: number) => new THREE.MeshStandardMaterial({ roughness: rough, envMap, envMapIntensity: 1.1 });
-  const materials = [mat(0.85), mat(0.55), mat(0.7)];
+  const merge = (...gs: THREE_NS.BufferGeometry[]) => {
+    const parts = gs.map((g) => (g.index ? g.toNonIndexed() : g));
+    const out = new THREE.BufferGeometry();
+    for (const name of ["position", "normal", "color"]) {
+      if (!parts.every((g) => g.getAttribute(name))) continue;
+      const arrs = parts.map((g) => g.getAttribute(name).array as Float32Array);
+      const all = new Float32Array(arrs.reduce((n, a) => n + a.length, 0));
+      let o = 0;
+      for (const a of arrs) { all.set(a, o); o += a.length; }
+      out.setAttribute(name, new THREE.BufferAttribute(all, 3));
+    }
+    return out;
+  };
+  const torsoProfile = [
+    [0.0, 0.86], [0.15, 0.88], [0.165, 0.98], [0.15, 1.1], [0.165, 1.28], [0.2, 1.4], [0.19, 1.47], [0.08, 1.52], [0.0, 1.53],
+  ].map(([r, y]) => new THREE.Vector2(r, y));
+  const geo = {
+    torso: new THREE.LatheGeometry(torsoProfile, 12).scale(1, 1, 0.62),
+    head: merge(
+      new THREE.SphereGeometry(0.1, 12, 9).scale(0.9, 1.12, 1).translate(0, 1.65, 0.01),
+      new THREE.CylinderGeometry(0.045, 0.05, 0.12, 8, 1, true).translate(0, 1.53, 0),
+    ),
+    hair: new THREE.SphereGeometry(0.106, 12, 6, 0, Math.PI * 2, 0, Math.PI * 0.55).scale(0.9, 1.12, 1).translate(0, 1.665, -0.008),
+    leg: merge(
+      shade(new THREE.CylinderGeometry(0.078, 0.056, 0.8, 8).translate(0, -0.4, 0), 1),
+      shade(new THREE.BoxGeometry(0.085, 0.06, 0.2).translate(0, -0.835, 0.035), 0.32),
+    ),
+    arm: new THREE.CylinderGeometry(0.052, 0.04, 0.58, 8).translate(0, -0.31, 0),
+    hand: new THREE.SphereGeometry(0.042, 8, 6).scale(0.75, 1.3, 0.9).translate(0, -0.64, 0.01),
+    backpack: new THREE.BoxGeometry(0.3, 0.38, 0.14).translate(0, 1.2, -0.17),
+    shoulderBag: new THREE.BoxGeometry(0.08, 0.26, 0.3).translate(0.24, 0.98, 0.02),
+  };
+  const mat = (rough: number, vertexColors = false) => new THREE.MeshStandardMaterial({ roughness: rough, envMap, envMapIntensity: 1.1, vertexColors });
+  const materials = [mat(0.85), mat(0.55), mat(0.7), mat(0.85, true)];
   const parts = [
     { key: "torso", g: geo.torso, m: materials[0], pivot: [0, 0, 0], swing: 0 },
     { key: "head", g: geo.head, m: materials[1], pivot: [0, 0, 0], swing: 0 },
     { key: "hair", g: geo.hair, m: materials[2], pivot: [0, 0, 0], swing: 0 },
-    { key: "legL", g: geo.leg, m: materials[0], pivot: [0.095, 0.9, 0], swing: 0.42 },
-    { key: "legR", g: geo.leg, m: materials[0], pivot: [-0.095, 0.9, 0], swing: -0.42 },
-    { key: "armL", g: geo.arm, m: materials[0], pivot: [0.235, 1.44, 0], swing: -0.32 },
-    { key: "armR", g: geo.arm, m: materials[0], pivot: [-0.235, 1.44, 0], swing: 0.32 },
+    { key: "legL", g: geo.leg, m: materials[3], pivot: [0.09, 0.9, 0], swing: 0.42 },
+    { key: "legR", g: geo.leg, m: materials[3], pivot: [-0.09, 0.9, 0], swing: -0.42 },
+    { key: "armL", g: geo.arm, m: materials[0], pivot: [0.22, 1.43, 0], swing: -0.32 },
+    { key: "armR", g: geo.arm, m: materials[0], pivot: [-0.22, 1.43, 0], swing: 0.32 },
+    { key: "handL", g: geo.hand, m: materials[1], pivot: [0.22, 1.43, 0], swing: -0.32 },
+    { key: "handR", g: geo.hand, m: materials[1], pivot: [-0.22, 1.43, 0], swing: 0.32 },
     { key: "backpack", g: geo.backpack, m: materials[2], pivot: [0, 0, 0], swing: 0 },
     { key: "shoulderBag", g: geo.shoulderBag, m: materials[2], pivot: [0, 0, 0], swing: 0 },
   ].map((p) => ({ ...p, mesh: new THREE.InstancedMesh(p.g, p.m, count) }));
@@ -93,7 +125,7 @@ export function buildCrowd(
     const hair = HAIR[Math.floor(rand() * HAIR.length)];
     for (const p of parts) {
       const bag = rand() < 0.5 ? 0x15171a : 0x3d2f25;
-      const hex = p.key === "head" ? skin : p.key === "hair" ? hair : p.key.startsWith("leg") ? trousers : p.key.endsWith("ack") || p.key.endsWith("Bag") ? bag : coat;
+      const hex = p.key === "head" || p.key.startsWith("hand") ? skin : p.key === "hair" ? hair : p.key.startsWith("leg") ? trousers : p.key.endsWith("ack") || p.key.endsWith("Bag") ? bag : coat;
       p.mesh.setColorAt(i, c.setHex(hex));
     }
   }
