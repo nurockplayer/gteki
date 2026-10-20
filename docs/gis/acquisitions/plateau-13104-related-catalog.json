@@ -2,21 +2,21 @@
   "source_id": "plateau-13104-related-catalog",
   "resolved_url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
   "resolution_evidence": null,
-  "requested_at": "2026-10-20T23:18:36.970Z",
-  "completed_at": "2026-10-20T23:18:37.069Z",
+  "requested_at": "2026-10-20T23:29:19.823Z",
+  "completed_at": "2026-10-20T23:29:19.921Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/json;charset=utf-8",
     "content-length": null,
     "etag": null,
     "last-modified": null,
-    "date": "Tue, 20 Oct 2026 23:18:37 GMT"
+    "date": "Tue, 20 Oct 2026 23:29:19 GMT"
   },
   "bytes": 187935,
   "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
   "store_path": "raw/6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942/package_show",
   "tool_version": "0.1.0",
-  "git_commit": "6e6691069edf915eeed2a2baf95e4e72b52a77a5",
+  "git_commit": "a9064baab100628687606fc182e3762dadc73a99",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
@@ -45,32 +45,32 @@
       "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_1.html",
       "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_1.html",
       "http_status": 200,
-      "sha256": "283fbccaf8156f6d43cff3691cb8f18b263ab349a7f94a607ddc83218efc1651",
+      "sha256": "ed1f2033758cb335a63cec39418c7081f35afd06bc77f46b991cb42ded8d2567",
       "bytes": 45476,
-      "store_path": "raw/283fbccaf8156f6d43cff3691cb8f18b263ab349a7f94a607ddc83218efc1651/KsjTmplt-N02-v3_1.html"
+      "store_path": "raw/ed1f2033758cb335a63cec39418c7081f35afd06bc77f46b991cb42ded8d2567/KsjTmplt-N02-v3_1.html"
     },
     {
       "id": "ksj-terms",
       "requested_url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
       "url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
       "http_status": 200,
-      "sha256": "0c365e8f4a1393633604b8b2dbcfec19a185f825b32cad57eb550958fe19f048",
+      "sha256": "b5d8c9fe0a8e93a2caf3299a7b15470c43dfce8761d0370438920ceaf0916000",
       "bytes": 27978,
-      "store_path": "raw/0c365e8f4a1393633604b8b2dbcfec19a185f825b32cad57eb550958fe19f048/agreement.html"
+      "store_path": "raw/b5d8c9fe0a8e93a2caf3299a7b15470c43dfce8761d0370438920ceaf0916000/agreement.html"
     },
     {
       "id": "ksj-important",
       "requested_url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
       "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
       "http_status": 200,
-      "sha256": "cfa92b06e5276998923c884c3fd6e866467d2e2ee043eed4a01e91f63fc1879d",
+      "sha256": "8bd6f9e5d1de73a2892608c3ef6401910ed359c13ef567a00c7e95a52e1abfda",
       "bytes": 62499,
-      "store_path": "raw/cfa92b06e5276998923c884c3fd6e866467d2e2ee043eed4a01e91f63fc1879d/agreement_02.html"
+      "store_path": "raw/8bd6f9e5d1de73a2892608c3ef6401910ed359c13ef567a00c7e95a52e1abfda/agreement_02.html"
     }
   ],
   "last_offline_check": {
-    "requested_at": "2026-10-20T23:22:25.502Z",
-    "completed_at": "2026-10-20T23:22:25.502Z",
+    "requested_at": "2026-10-20T23:32:49.378Z",
+    "completed_at": "2026-10-20T23:32:49.378Z",
     "tool_version": "0.1.0",
     "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
     "bytes": 187935,

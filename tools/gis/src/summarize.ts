@@ -8,6 +8,7 @@ import { readdir,writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { docsRoot,readJson,writeJson } from './common.js';
 import { toolFingerprint } from './provenance.js';
+import { GAP_STATION_IDS } from './gaps.js';
 const root=join(docsRoot,'gis');
 function networkSourceHashes(report:any):Array<[string,string]>{
   const pairs:Array<[string,string]>=[];
@@ -72,6 +73,9 @@ for(const report of rights)for(const row of report.records){
   if(evaluateRights(row).verdict!==row.verdict)summaryProblems.push(`Rights verdict changed: ${report.source_id}/${row.layer}`);
   for(const item of row.evidence)try{await verifyEvidence(item);}catch(error){summaryProblems.push(String(error));}
 }
+const gapStations=gaps.map(gap=>gap.station_id);
+for(const id of GAP_STATION_IDS)if(gapStations.filter(station=>station===id).length!==1)summaryProblems.push(`Gap packet for ${id} is missing or duplicated`);
+for(const id of gapStations)if(!GAP_STATION_IDS.includes(id))summaryProblems.push(`Unexpected gap packet: ${String(id)}`);
 for(const gap of gaps){
   if(gap.tool_input_sha256!==snapshot)summaryProblems.push(`Gap ${gap.station_id} has stale fingerprint`);
   // Match gap-packet's manifest order, independent of the filesystem's sorted report names.

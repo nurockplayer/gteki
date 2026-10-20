@@ -4,6 +4,7 @@ import { compareFeatureCollections, attachVerifiedOrigin } from '../src/related.
 import { evaluateRights, evaluateRightsRecords, snapshotText } from '../src/rights.js';
 import { projectRights, rightsScopeMarkdown } from '../src/rights-view.js';
 import { missingEvidenceHolds } from '../src/gaps.js';
+import { legacyFetchStatement, termsFetchStatement } from '../src/poi-research.js';
 
 // SYNTHETIC rights and content fixtures; no real station data or legal text.
 const fixture = () => ({
@@ -158,5 +159,16 @@ describe('gap-packet missing evidence', () => {
     expect(holds[0]).toMatch(/^poi-b: POI content evidence UNKNOWN/);
     expect(holds.slice(1).map(hold => hold.split(':')[0])).toEqual(['rights-a', 'rights-c']);
     expect(missingEvidenceHolds('shinjuku', { 'poi-a': { ok: 1 } }, { 'rights-d': { ok: 1 } }, manifest)).toEqual([]);
+  });
+});
+
+describe('research fetch statements', () => {
+  it('reports the observed legacy CSV result instead of a fixed claim', () => {
+    const current = { sha256: 'a'.repeat(64) };
+    expect(legacyFetchStatement('新宿', { http_status: 200, sha256: 'a'.repeat(64) }, current)).toMatch(/identical/);
+    expect(legacyFetchStatement('新宿', { http_status: 200, sha256: 'b'.repeat(64) }, current)).toMatch(/different SHA-256/);
+    expect(legacyFetchStatement('新宿', { http_status: 404, sha256: 'a'.repeat(64) }, current)).toBe('新宿: legacy URL returned HTTP 404.');
+    expect(legacyFetchStatement('新宿', undefined, current)).toMatch(/not captured; UNKNOWN/);
+    expect(termsFetchStatement({ url: 'https://example.test/terms', http_status: 403 })).toBe('https://example.test/terms returned HTTP 403');
   });
 });

@@ -11,6 +11,8 @@ const STATIONS = [
   { id: 'ikebukuro', city: '13116', gml: 'plateau-13116-ubld-53394576', network: 'hokonavi-ikebukuro-walk-node-csv' },
   { id: 'shinjuku', city: '13104', gml: 'plateau-13104-ubld-53394536', network: 'hokonavi-oedo-shinjuku-network-geojson' },
 ] as const;
+/** Every gap-packet run writes one packet per station; summarize requires all of them. */
+export const GAP_STATION_IDS: readonly string[] = STATIONS.map(station => station.id);
 
 /**
  * Each expected report that is absent is its own HOLD. A missing POI report leaves
