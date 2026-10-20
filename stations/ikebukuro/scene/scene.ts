@@ -9,6 +9,7 @@ import { buildCrowd, type Lane } from "./crowd.ts";
 import { createAmbience } from "./ambience.ts";
 import crowdLanes from "./crowd_lanes.json";
 import signage from "./signage.json";
+import walkBridges from "./walk_bridges.json";
 import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
 
@@ -154,6 +155,31 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   });
   root.add(gltf.scene, ...extra);
 
+  // Invisible strips over hairline cracks between PLATEAU floor polygons (pipeline/build_walkfix.py):
+  // without them a ground ray landing in a sliver finds nothing and the walker stalls mid-floor.
+  let bridges: THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial> | null = null;
+  const quads = (walkBridges as { quads: number[][][] }).quads;
+  if (quads.length) {
+    const pos = new Float32Array(quads.length * 12);
+    const idx: number[] = [];
+    quads.forEach((q, i) => {
+      q.forEach(([x, y, z], k) => pos.set(ctx.enuToRenderer({ x, y, z }), i * 12 + k * 3));
+      idx.push(i * 4, i * 4 + 1, i * 4 + 2, i * 4, i * 4 + 2, i * 4 + 3);
+    });
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setIndex(idx);
+    g.computeBoundingSphere();
+    bridges = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })); // winding varies per crack
+    bridges.name = "walk_bridges";
+    bridges.userData.gteki_role = "walk_bridges";
+    bridges.visible = false;
+    bridges.updateMatrixWorld(true);
+    bridges.matrixAutoUpdate = false;
+    root.add(bridges);
+    walkable.push(bridges);
+  }
+
   // Lightmap (baked by pipeline/blender_bake_lighting.py, TEXCOORD_1). Falls back to a hemisphere rig.
   let lightmap: THREE_NS.Texture | null = null;
   if (baked) {
@@ -216,6 +242,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       lightmap?.dispose();
       gltf.scene.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
       for (const e of extra) e.geometry.dispose();
+      bridges?.geometry.dispose();
+      bridges?.material.dispose();
     },
   };
 }
