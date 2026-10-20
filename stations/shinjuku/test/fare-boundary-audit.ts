@@ -1,5 +1,6 @@
 /** Independent, swept-body audit of the two published walking representations. */
 import * as THREE from "three";
+import clipping, { type Polygon, type MultiPolygon } from "polygon-clipping";
 import { WALKER_BODY, type WallSegment } from "@gteki/scene-api";
 import type { StationBundle } from "@gteki/schema";
 import {
@@ -488,6 +489,82 @@ export function graphObstructions(
   }
   return bad;
 }
+/** Continuous configuration-space supplement for level fare/access boundaries.
+ * Inscribed (not circumscribed) radius capsules deliberately UNDER-block walls: every
+ * genuinely clear path survives subtraction, including an arbitrarily narrow >2r gap.
+ * This can conservatively flag a sub-millimetre near miss; it cannot seal a real gap.
+ * The swept 3D flood below still verifies stairs, step limits and floor transitions.
+ */
+export function continuousBoundaries(walker: WalkerAudit, layout: Layout, plan: Plan) {
+  const polygon = (rs: XY[][]): Polygon => rs.map(r => r.map(p => [p.x, p.y]));
+  const union = (ps: Polygon[]): MultiPolygon => ps.length ? clipping.union(ps[0]!, ...ps.slice(1)) : [];
+  const area = (ps: MultiPolygon) => ps.reduce((sum, p) => sum + p.reduce((a, r, i) => {
+    const signed = Math.abs(r.reduce((n, v, j) => { const w = r[(j + 1) % r.length]!; return n + v[0] * w[1] - v[1] * w[0]; }, 0)) / 2;
+    return a + (i ? -signed : signed);
+  }, 0), 0);
+  const capsule = (w: Band): Polygon => {
+    const angle = Math.atan2(w.b.y - w.a.y, w.b.x - w.a.x), r: number[][] = [];
+    for (const [c, offset] of [[w.b, -Math.PI / 2], [w.a, Math.PI / 2]] as const)
+      for (let i = 0; i <= 32; i++) {
+        const t = angle + offset + i * Math.PI / 32;
+        // Snap only blockers, with an inward guard larger than rounding error.
+        // Near-coincident CAD walls otherwise destabilize polygon-clipping's sweep.
+        r.push([c.x + (R - EPS - 1e-7) * Math.cos(t), c.y + (R - EPS - 1e-7) * Math.sin(t)]
+          .map(v => Math.round(v * 1e7) / 1e7));
+      }
+    r.push(r[0]!);
+    return [r];
+  };
+  const leaks: Leak[] = [], unmapped: XYZ[] = [];
+  for (const lv of layout.levels) {
+    const support = walker.patches.filter(p => p.rings.flat().every(v => Math.abs(p.height(v) - lv.z) < 1e-4)).map(p => polygon(p.rings));
+    if (!support.length) continue;
+    const floor = union(support), source = plan.levels.find(l => Math.abs(l.renderElevationM - lv.z) < .02);
+    const active = walker.bands.filter(w => w.min <= lv.z + EPS && w.max >= lv.z - EPS);
+    const blocks = active.map(capsule);
+    // Closing the authorized corridor in the audit separates legitimate paid/free
+    // components. No physical machines => no exemption. Adjacent aisles stay audited.
+    for (const g of layout.gates) {
+      if (Math.abs(g.center.z - lv.z) > .02 || !gateCrossing(g.center, g.center, layout, plan, walker)) continue;
+      const normal = { x: -g.dir.y, y: g.dir.x }, width = g.width / 2;
+      const corners = [[-1, -width], [1, -width], [1, width], [-1, width], [-1, -width]];
+      blocks.push([corners.map(([u, v]) => [g.center.x + u! * g.dir.x + v! * normal.x, g.center.y + u! * g.dir.y + v! * normal.y])]);
+    }
+    const open = blocks.length ? clipping.difference(floor, union(blocks)) : floor;
+    const paid = source?.spaces.filter(s => !s.restricted && s.toll === "paid") ?? [];
+    const free = source?.spaces.filter(s => !s.restricted && s.toll === "free") ?? [];
+    const mapped = union([
+      ...(source?.spaces.filter(s => !s.restricted).map(s => polygon(s.rings)) ?? []),
+      ...[...layout.linkStrips, ...layout.pads.filter(p => p.spaceId.startsWith("pad:")), ...layout.streetPads]
+        .filter(p => Math.abs(p.z - lv.z) < .02).map(p => polygon(p.rings)),
+    ]);
+    for (const component of open) {
+      const hits = (spaces: typeof paid) => spaces.filter(s => area(clipping.intersection(component, polygon(s.rings))) > 1e-8);
+      const a = hits(paid), b = hits(free);
+      for (const p of a) for (const f of b) {
+        const witness = clipping.intersection(component, polygon(f.rings))[0]![0]![0]!;
+        leaks.push({ level: lv.label, position: { x: witness[0], y: witness[1], z: lv.z }, paidSpace: p.id, freeSpace: f.id });
+      }
+      // Proxy Float32 vertices can overshoot their ENU source boundary by microns.
+      // Tolerate only a thin boundary sliver, never an arbitrary small-area region.
+      const outside = mapped.length ? clipping.difference(component, mapped) : [component];
+      const boundary = mapped.flatMap(p => p.flatMap(r => r.slice(1).map((v, i) => ({
+        a: { x: r[i]![0], y: r[i]![1] }, b: { x: v[0], y: v[1] },
+      }))));
+      for (const piece of outside) {
+        const size = area([piece]);
+        const perimeter = piece.reduce((sum, r) => sum + r.slice(1).reduce((n, v, i) => n + Math.hypot(v[0] - r[i]![0], v[1] - r[i]![1]), 0), 0);
+        const floatSliver = size / perimeter < 1e-5 && piece.flat().every(v =>
+          boundary.some(w => d2({ x: v[0], y: v[1] }, w.a, w.b) < 1e-10));
+        if (size <= 1e-10 || floatSliver) continue;
+        const v = piece[0]![0]!;
+        unmapped.push({ x: v[0], y: v[1], z: lv.z });
+      }
+    }
+  }
+  return { leaks, unmapped };
+}
+
 export function audit(
   walker: WalkerAudit,
   layout: Layout,
@@ -577,6 +654,9 @@ export function audit(
       queue.push(qid);
     }
   }
+  const continuous = continuousBoundaries(walker, layout, plan);
+  leaks.push(...continuous.leaks);
+  unmapped.push(...continuous.unmapped);
   return {
     walker: walker.name,
     samples: out.length,
