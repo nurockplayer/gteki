@@ -120,7 +120,7 @@ Evidence stills:
   [Exit 39 stairs](docs/evidence/12-exit39-stairs.jpg)
 
 **Measured** (harness, Apple Silicon, Chromium):
-- quality "low": 56 draw calls and 111k triangles per frame;
+- quality "low": at most 68 draw calls and 124k triangles per frame (56 crowd agents, 48 signs);
 - shipped assets: 9.5 MB at "high", with lightmap WebP 1.1 MB (4k) or 0.5 MB (2k).
 
 ## Deliberate simplifications

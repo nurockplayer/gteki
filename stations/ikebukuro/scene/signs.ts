@@ -21,6 +21,8 @@ export interface SignSpec extends SignContent {
   back?: SignContent[];
   /** Clear passage width at the sign (m); content is trimmed to fit. */
   maxWidthM?: number;
+  /** Panel scale (< 1 only where a low ceiling leaves less than the full panel height). */
+  scale?: number;
 }
 
 const FONT = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans CJK JP","Yu Gothic",system-ui,sans-serif';
@@ -181,7 +183,8 @@ export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer
     return { mesh: new THREE.Mesh(new THREE.PlaneGeometry(widthM, h), mat), widthM };
   };
   for (const s of specs) {
-    const maxW = s.maxWidthM ?? Infinity;
+    const scale = s.scale ?? 1;
+    const maxW = (s.maxWidthM ?? Infinity) / scale;
     const front = face([s], maxW);
     const backBlocks = (s.back ?? []).filter((b) => b.exits.length > 0 || b.gates.length > 0);
     const back = backBlocks.length ? face(backBlocks, maxW) : null;
@@ -197,6 +200,7 @@ export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer
     }
     const p = toRenderer(s.position.x, s.position.y, s.position.z);
     sign.position.copy(p);
+    sign.scale.setScalar(scale);
     // Plane faces +Z in local space; rotate so it faces the ENU 'facing' vector.
     const f = toRenderer(s.facing.x, s.facing.y, 0).sub(toRenderer(0, 0, 0));
     sign.rotation.y = Math.atan2(f.x, f.z);

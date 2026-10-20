@@ -139,11 +139,17 @@ addEventListener("pointermove", (e) => {
   else if (dragging) { camYaw -= (e.clientX - lx) * 0.005; camPitch += (e.clientY - ly) * 0.004; lx = e.clientX; ly = e.clientY; }
   camPitch = Math.max(-0.35, Math.min(0.75, camPitch));
 });
-addEventListener("pointerup", (e) => {
+const release = (e: PointerEvent) => {
   if (e.pointerId === joy.id) { joy.id = -1; joy.dx = joy.dy = 0; }
   if (e.pointerId === look.id) look.id = -1;
   dragging = false;
-});
+};
+addEventListener("pointerup", release);
+addEventListener("pointercancel", release);
+// A key or touch released while the page is in the background never reports its release.
+const releaseAll = () => { keys.clear(); joy.id = look.id = -1; joy.dx = joy.dy = 0; dragging = false; };
+addEventListener("blur", releaseAll);
+document.addEventListener("visibilitychange", () => { if (document.hidden) releaseAll(); });
 addEventListener("wheel", (e) => { camDist = Math.max(1.6, Math.min(8, camDist + e.deltaY * 0.004)); });
 
 // --- post ---------------------------------------------------------------

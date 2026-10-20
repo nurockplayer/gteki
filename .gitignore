@@ -5,4 +5,3 @@ stations/*/build/
 .DS_Store
 __pycache__/
 .serena/
-stations/*/pnpm-lock.yaml

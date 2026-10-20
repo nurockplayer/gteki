@@ -23,7 +23,10 @@ from floorquery import Surfaces  # noqa: E402
 from build_station import wall_segments  # noqa: E402
 
 CLEAR_BELOW_SIGN = 2.25  # m above walking surface
+MIN_CLEAR = 2.0          # never lower than this; a low ceiling shrinks the panel instead
 SIGN_H = 0.42
+MIN_SIGN_H = 0.2         # below this a sign is unreadable: try elsewhere or omit it
+FLUSH_GAP = 0.02         # under a low ceiling the panel is mounted flush
 CEIL_GAP = 0.08
 
 
@@ -193,21 +196,24 @@ def main():
                     return None
                 ch = [z for z, _ in ceil.heights(px, py) if z > pz + 2.0]
                 ceiling_z = min(ch) if ch else None
-                bottom = pz + CLEAR_BELOW_SIGN
+                bottom, sign_h = pz + CLEAR_BELOW_SIGN, SIGN_H
                 if ceiling_z is not None and bottom + SIGN_H > ceiling_z - CEIL_GAP:
-                    bottom = max(pz + 2.05, ceiling_z - CEIL_GAP - SIGN_H)
+                    bottom = max(pz + MIN_CLEAR, ceiling_z - CEIL_GAP - SIGN_H)
+                    sign_h = min(SIGN_H, ceiling_z - FLUSH_GAP - bottom)
+                    if sign_h < MIN_SIGN_H:
+                        return None
                 rx, ry = diry, -dirx  # right of the walking direction
-                zlo, zhi = bottom, bottom + SIGN_H
+                zlo, zhi = bottom, bottom + sign_h
                 dr = wall_hit(segs, sgrid, px, py, rx, ry, zlo, zhi)
                 dl = wall_hit(segs, sgrid, px, py, -rx, -ry, zlo, zhi)
                 if dl + dr < 2 * MAX_SIGN_W:  # bounded passage: centre between its walls
                     shift = (dr - dl) / 2
                     px, py = px + rx * shift, py + ry * shift
                 max_w = round(max(0.6, min(MAX_SIGN_W, dl + dr - 2 * SIDE_MARGIN)), 2)
-                return px, py, bottom, dirx, diry, ceiling_z, max_w
+                return px, py, bottom, dirx, diry, ceiling_z, max_w, round(sign_h / SIGN_H, 3)
 
-            # ~4 m from the junction (45% of short edges); slide along the edge if a column or a
-            # narrowing leaves too little room there, preferring positions close to 4 m.
+            # ~4 m from the junction (45% of short edges); slide along the edge if a low ceiling, a
+            # column or a narrowing leaves too little room there, preferring positions close to 4 m.
             base = min(4.0, total * 0.45)
             cands = [base] + [base + k for k in (1, -1, 2, -1.5, 3, 4, 5) if 1.5 <= base + k <= total * 0.6]
             best = None
@@ -215,18 +221,19 @@ def main():
                 r = place(d)
                 if r is None:
                     continue
-                if best is None or r[6] > best[6] + 0.5:
+                if best is None or r[7] > best[7] + 0.05 or (r[7] >= best[7] - 0.05 and r[6] > best[6] + 0.5):
                     best = r
-                if best[6] >= 4.2:
+                if best[6] >= 4.2 and best[7] == 1:
                     break
             if best is None:
                 continue
-            px, py, bottom, dirx, diry, ceiling_z, max_w = best
+            px, py, bottom, dirx, diry, ceiling_z, max_w, scale = best
             signs.append({
                 "id": f"sign-{nid}-{e['id']}{'-r' if rev else ''}",
                 "atNode": nid,
-                "position": {"x": round(px, 3), "y": round(py, 3), "z": round(bottom + SIGN_H / 2, 3)},
+                "position": {"x": round(px, 3), "y": round(py, 3), "z": round(bottom + SIGN_H * scale / 2, 3)},
                 "maxWidthM": max_w,
+                "scale": scale,
                 # unit vector the readable face points to (back toward the junction)
                 "facing": {"x": round(-dirx, 4), "y": round(-diry, 4)},
                 "ceilingZ": ceiling_z,
