@@ -34,6 +34,8 @@ function walk(fromPoi: string, toPoi: string, stepFree = false) {
   let t = 0;
   for (; t < limit && !arrived; t += 1 / 30) player.update(1 / 30, { forward: 0, strafe: 0, run: false }, player.heading);
   const end = pts[pts.length - 1]!;
+  // arrival must be at the destination's height too (not on an overlapping floor)
+  if (arrived && Math.abs(player.z - end.z) > 0.35) arrived = false;
   return { ok: true as const, arrived, seconds: Math.round(t), stuckAt: arrived ? null : { x: +player.x.toFixed(1), y: +player.y.toFixed(1), z: +player.z.toFixed(1), next: pts[player.guideIndex]?.nodeId }, distToEnd: Math.hypot(player.x - end.x, player.y - end.y) };
 }
 

@@ -11,12 +11,12 @@ import { createSearchIndex } from "@gteki/search";
 import { loadShinjukuBundle } from "../../data/bundle.ts";
 import planJson from "../../data/plan.json";
 import { buildStation } from "../../scene/build.ts";
-import type { Plan } from "../../scene/layout.ts";
+import { pointInRings, type Plan } from "../../scene/layout.ts";
 import { Player, type GuidePoint, type MoveInput } from "./player.ts";
 import { floorLabel, narrate, UNKNOWN_LABELS, type Maneuver } from "./narrate.ts";
 import { createAvatar } from "./avatar.ts";
 import { createStationAudio } from "./audio.ts";
-import { createCrowd } from "./crowd.ts";
+import { CROWD_LIMIT, createCrowd } from "./crowd.ts";
 
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
@@ -70,6 +70,10 @@ const search = createSearchIndex(bundle);
 const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
 const floorById = new Map(bundle.floors.map((f) => [f.id, f]));
 const nodeZ = (id: string) => layout.nodeZ.get(id) ?? 0;
+const nodeFare = new Map(bundle.nodes.map((n) => {
+  const edges = bundle.edges.filter((e) => e.from === n.id || e.to === n.id);
+  return [n.id, !edges.length ? null : edges.every((e) => e.paid === true) ? "paid" : edges.every((e) => e.paid === false) ? "free" : null] as const;
+}));
 const levelFloors = bundle.floors.filter((f) => !f.intermediate).sort((a, b) => b.renderElevationM - a.renderElevationM);
 function floorAtZ(z: number): Floor {
   let best = levelFloors[0]!;
@@ -77,12 +81,18 @@ function floorAtZ(z: number): Floor {
   // between levels on stairs: report the nearer
   return best;
 }
-function nearestNode(p: { x: number; y: number; z: number }, maxDz = 1.2) {
+function nearestNode(p: { x: number; y: number; z: number }) {
+  const slab = layout.levels.flatMap((l) => l.slabs)
+    .filter((s) => Math.abs(s.z - p.z) <= 0.6 && pointInRings(p, s.rings))
+    .sort((a, b) => Math.abs(a.z - p.z) - Math.abs(b.z - p.z))[0];
+  const fare = slab?.fare ?? null;
   let best: { id: string; d: number } | null = null;
   for (const n of bundle.nodes) {
-    const dz = Math.abs(nodeZ(n.id) - p.z);
-    if (dz > maxDz) continue;
-    const d = Math.hypot(n.position.x - p.x, n.position.y - p.y) + dz * 3;
+    if (Math.abs(nodeZ(n.id) - p.z) > 0.6) continue;
+    const nf = nodeFare.get(n.id) ?? null;
+    if (fare !== null && nf !== null && fare !== nf) continue;
+    const d = Math.hypot(n.position.x - p.x, n.position.y - p.y);
+    if (d > 15 || !(world.firstWallHit({ x: p.x, y: p.y }, n.position, p.z + 1.0) >= 0.999)) continue;
     if (!best || d < best.d) best = { id: n.id, d };
   }
   return best;
@@ -106,7 +116,9 @@ if (gatePoi?.displayPosition) player.heading = Math.atan2(gatePoi.displayPositio
 
 const avatar = createAvatar(THREE, 0);
 // Decorative ambient commuters (invented, not crowd data). ?crowd=0 disables.
-const crowdMax = Number(params.get("crowd") ?? (quality === "high" ? 36 : 16));
+const crowdDefault = quality === "high" ? 36 : 16;
+const crowdParam = Number(params.get("crowd") ?? crowdDefault);
+const crowdMax = Number.isNaN(crowdParam) ? crowdDefault : Math.max(0, Math.min(CROWD_LIMIT, Math.floor(crowdParam)));
 const crowd = createCrowd(THREE, bundle, router, nodeZ, { max: crowdMax, seed: 27 });
 scene.add(crowd.group);
 scene.add(avatar.object);
@@ -341,9 +353,6 @@ const chevronTex = (() => {
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 })();
-const ribbonMat = new THREE.MeshBasicMaterial({ map: chevronTex, transparent: true, depthWrite: false, color: "#ff5cc0", polygonOffset: true, polygonOffsetFactor: -4 });
-const beaconMat = new THREE.MeshBasicMaterial({ color: "#ff3fae", transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
-
 function profile(): RouteProfile {
   return { fare: $<HTMLInputElement>("ticketed").checked ? "ticketed" : "unpaid_only", stepFree: $<HTMLInputElement>("stepfree").checked };
 }
@@ -357,7 +366,7 @@ function computeRoute() {
   const goal = toPick.poi;
   if (!goal.connectorNodeIds.length) return showRouteError("この目的地は位置情報のみで、検証済みの入口がありません。This destination has no verified entrance node (search-only).");
   const from = startNodeId();
-  if (!from) return showRouteError("現在地付近に経路網がありません。No network node near your position.");
+  if (!from) return showRouteError("現在地から経路に接続できません。出発地を選んでください / Can't connect your position to the network — choose a start point");
   const r = router.route(from, goal.connectorNodeIds, profile());
   if (!r.ok) {
     const why: Record<string, string> = {
@@ -368,6 +377,7 @@ function computeRoute() {
     };
     return showRouteError(why[r.reason] ?? r.message);
   }
+  clearRoute();
   route = r;
   maneuvers = narrate(bundle, r);
   routePts = r.nodeIds.map((id, i) => ({ ...nodeById.get(id)!.position, z: nodeZ(id), nodeId: id, elevator: i > 0 && r.steps[i - 1]!.mode === "elevator" }));
@@ -386,14 +396,26 @@ function clearRoute() {
   maneuvers = [];
   routePts = [];
   player.stopGuide();
-  ribbon.clear();
+  routeOffSince = -1;
+  disposeRibbon();
   $("route").classList.add("hidden");
   $("next").classList.add("hidden");
   $("guide").textContent = "▶ 案内歩行 Guide";
 }
-function drawRibbon() {
-  ribbon.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
+function disposeRibbon() {
+  const materials = new Set<THREE.Material>();
+  ribbon.traverse((o) => {
+    if (!(o instanceof THREE.Mesh)) return;
+    o.geometry.dispose();
+    for (const m of Array.isArray(o.material) ? o.material : [o.material]) materials.add(m);
+  });
+  for (const m of materials) m.dispose();
   ribbon.clear();
+}
+function drawRibbon() {
+  disposeRibbon();
+  const ribbonMat = new THREE.MeshBasicMaterial({ map: chevronTex, transparent: true, depthWrite: false, color: "#ff5cc0", polygonOffset: true, polygonOffsetFactor: -4 });
+  const beaconMat = new THREE.MeshBasicMaterial({ color: "#ff3fae", transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
   const pos: number[] = [];
   const uv: number[] = [];
   const idx: number[] = [];
@@ -468,6 +490,7 @@ function toggleGuide() {
   }
   // restart from current location on resume
   if (fromPick.kind === "here") computeRoute();
+  if (!route) return;
   player.startGuide(routePts);
   $("guide").textContent = "⏸ 停止 Pause";
   audio.uiClick();
@@ -514,7 +537,12 @@ function updateNext() {
   if (bestD <= 9) routeOffSince = -1;
   if (routeOffSince > 0 && performance.now() - routeOffSince > 2500 && fromPick.kind === "here") {
     routeOffSince = -1;
+    const guiding = !!player.guide;
     computeRoute(); // re-route from current position
+    if (guiding && route) {
+      player.startGuide(routePts);
+      $("guide").textContent = "⏸ 停止 Pause";
+    }
   }
 }
 let routeOffSince = -1;
@@ -651,7 +679,7 @@ $("btn-cov").addEventListener("click", () => {
   const c = bundle.coverage;
   const rows = c.gaps.map((g) => `<tr><td>${esc(g.zone)}</td><td>${esc(g.missingFact)}</td><td>${esc(g.fieldWorkNeeded)}</td></tr>`).join("");
   const srcs = bundle.sources.map((s) => `<li>${esc(s.title)} — ${esc(s.publisher)} · ${esc(s.license?.name ?? "")} · dataset ${esc(s.datasetDate ?? "?")} · 公開期限 ${esc(s.validUntil ?? "-")}</li>`).join("");
-  $("cov-body").innerHTML = `<h3>データ範囲と未確認事項 Coverage &amp; gaps</h3><p>${esc(c.summary[0]!.text)}<br><small>${esc(c.summary[1]?.text ?? "")}</small></p><table><tr><th>範囲 Zone</th><th>欠落 Missing</th><th>必要な調査 Needed</th></tr>${rows}</table><h4>出典 Sources</h4><ul>${srcs}</ul><p><small>表示用の階高さ・改札機の台数・ホーム柵・案内サインの意匠は GTEki による簡略表現で、実物の再現ではありません。Visual details (heights, gate machine count, platform doors, sign design) are GTEki simplifications, not reproductions.</small></p>`;
+  $("cov-body").innerHTML = `<h3>データ範囲と未確認事項 Coverage &amp; gaps</h3><p>${esc(c.summary[0]!.text)}<br><small>${esc(c.summary[1]?.text ?? "")}</small></p><table><tr><th>範囲 Zone</th><th>欠落 Missing</th><th>必要な調査 Needed</th></tr>${rows}</table><h4>出典 Sources</h4><ul>${srcs}</ul><p><small>表示用の階高さ・改札機の台数・ホーム柵・案内サインの意匠は GTEki による簡略表現で、実物の再現ではありません。Visual details (heights, gate machine count, platform doors, sign design) are GTEki simplifications, not reproductions.</small></p><p>通勤客の動き・列車の発着とドアの開閉は演出であり、実際の混雑や時刻表ではありません。<br><small>Commuters, train arrivals and door cycles are simulated ambience — not real crowd data or timetables.</small></p>`;
   $<HTMLDialogElement>("dlg-cov").showModal();
 });
 function esc(s: string) {

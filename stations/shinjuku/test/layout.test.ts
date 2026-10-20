@@ -23,13 +23,13 @@ describe("E27 scene layout", () => {
   it("puts walkable ground under every non-elevator graph node at its render height", () => {
     const misses: string[] = [];
     for (const n of bundle.nodes) {
-      if (n.kind === "elevator" || n.inOut === "outside") continue;
+      if (n.kind === "elevator") continue;
       const z = layout.nodeZ.get(n.id)!;
       if (world.groundAt(n.position, z, 0.3, 0.3) === null) misses.push(`${n.id} ${n.floorId} ${n.kind}`);
     }
     // report, then require near-total coverage
     if (misses.length) console.warn("nodes without ground:", misses.length, misses.slice(0, 12));
-    expect(misses.length / bundle.nodes.length).toBeLessThan(0.03);
+    expect(misses).toEqual([]);
   });
 
   it("lets a walker follow every walk/stairs/escalator/gate edge without leaving the ground", () => {
@@ -39,7 +39,6 @@ describe("E27 scene layout", () => {
       if (e.mode === "elevator") continue;
       const A = nodeById.get(e.from)!;
       const B = nodeById.get(e.to)!;
-      if (A.inOut === "outside" || B.inOut === "outside") continue;
       let z = layout.nodeZ.get(e.from)!;
       const steps = Math.max(2, Math.ceil((e.lengthM ?? 1) / 0.25));
       for (let i = 1; i <= steps; i++) {
@@ -52,8 +51,10 @@ describe("E27 scene layout", () => {
         }
         z = g;
       }
+      // must also end at the destination's height (no staying on an overlapping surface)
+      if (!bad.at(-1)?.startsWith(e.id) && Math.abs(z - layout.nodeZ.get(e.to)!) > 0.35) bad.push(`${e.id} ${e.mode} ends at ${z.toFixed(2)} ≠ ${layout.nodeZ.get(e.to)!.toFixed(2)}`);
     }
     if (bad.length) console.warn("edges not walkable:", bad.length, bad.slice(0, 15));
-    expect(bad.length / bundle.edges.length).toBeLessThan(0.05);
+    expect(bad).toEqual([]);
   });
 });

@@ -28,6 +28,7 @@ export const buildScene: BuildScene = (ctx) => {
   for (const lv of layout.levels) for (const s of lv.slabs) addProxy(slabGeometry(s.rings, s.z, 1));
   for (const p of layout.pads) addProxy(slabGeometry(p.rings, p.z, 1));
   for (const p of layout.linkStrips) addProxy(slabGeometry(p.rings, p.z, 1));
+  for (const p of layout.streetPads) addProxy(slabGeometry(p.rings, p.z, 1));
   for (const r of layout.runs) {
     // Ramp quad along the stair/escalator run (renderer frame: x, z, -y).
     const dx = r.b.x - r.a.x;

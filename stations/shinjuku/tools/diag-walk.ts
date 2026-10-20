@@ -39,10 +39,10 @@ for (const a of pois)
     const dir = { x: next.x - p.x, y: next.y - p.y };
     const L = Math.hypot(dir.x, dir.y) || 1;
     const ahead = { x: p.x + (dir.x / L) * 0.3, y: p.y + (dir.y / L) * 0.3 };
-    const ws = (world as unknown as { walls: { a: { x: number; y: number }; b: { x: number; y: number }; zMin: number; zMax: number; kind: string }[] }).walls;
+    const ws = (world as unknown as { walls: { a: { x: number; y: number }; b: { x: number; y: number }; zMin: number; zMax: number; bodyMax?: number; kind: string }[] }).walls;
     const zb = p.z + 0.5;
     const blocking = ws
-      .filter((w) => zb >= w.zMin && zb <= w.zMax)
+      .filter((w) => !(p.z + 1.7 < w.zMin || p.z + 0.3 > w.zMax || (w.bodyMax !== undefined && p.z > w.bodyMax)))
       .filter((w) => {
         const rx = next.x - p.x, ry = next.y - p.y, sx = w.b.x - w.a.x, sy = w.b.y - w.a.y;
         const den = rx * sy - ry * sx;

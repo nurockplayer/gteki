@@ -3,6 +3,8 @@ import type { StationBundle } from "@gteki/schema";
 import type { Router } from "@gteki/navigation";
 import { createAvatar, type Avatar } from "./avatar.ts";
 
+/** Upper bound on ambient agents (each is a full avatar). */
+export const CROWD_LIMIT = 80;
 export interface CrowdOptions { max: number; seed?: number }
 export interface Crowd {
   group: THREE.Group;
@@ -285,7 +287,7 @@ export function createCrowd(
   }
   function setMax(n: number): void {
     if (disposed) return;
-    const max = Number.isFinite(n) ? Math.max(0, Math.floor(n)) : 0;
+    const max = Number.isFinite(n) ? Math.max(0, Math.min(CROWD_LIMIT, Math.floor(n))) : 0;
     while (agents.length > max) {
       const a = agents.pop()!;
       deactivate(a);

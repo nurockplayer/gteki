@@ -41,6 +41,14 @@ import { loadRawE27, normId, pointInPolygon, RAW_DIR, type GeoFeature, type Poly
 const HERE = dirname(fileURLToPath(import.meta.url));
 const OUT = join(HERE, "../data");
 const OUT_GTEKI = join(HERE, "../gteki");
+/** Acquisition time recorded by tools/fetch-sources.sh (falls back to the source manifest). */
+const ACQUIRED_AT = (() => {
+  try {
+    return readFileSync(join(RAW_DIR, "acquired_at.txt"), "utf8").trim();
+  } catch {
+    return (JSON.parse(readFileSync(join(HERE, "../sources/manifest.json"), "utf8")) as { acquiredAt: string }).acquiredAt;
+  }
+})();
 const CHECKED = "2026-10-20";
 const SRC_NWD = "mlit-hokonavi-e27-nwd";
 const SRC_MAP = "mlit-hokonavi-e27-stationmap";
@@ -338,6 +346,60 @@ for (const l of links) {
   displayHeightAdjusted.push(`n:${stairEnd}`);
 }
 
+// Stacked switchbacks: the source puts every landing of a multi-flight stair on one floor, so the
+// middle flights would render flat (and overlap the flights above/below them in plan, or leave the
+// last flight absurdly steep). For each stair/escalator link with both ends on one floor, take the
+// maximal chain of same-floor links through 2-link nodes. Each chain end is anchored either by the
+// link leaving the floor (anchor = far node, the link's rise counts) or, at a branch/dead end, by
+// its own height. The rise between the anchors is spread over the chain by flight length (walks
+// stay flat). Display only: floor ids and routing are untouched.
+const landingSpread: string[] = [];
+const other = (l: (typeof links)[0], id: string) => (l.properties.start_id === id ? l.properties.end_id : l.properties.start_id);
+const rise = (l: (typeof links)[0]) => (isVertical(l.properties.link_id) ? l.properties.distance : 0);
+const spreadDone = new Set<string>();
+for (const f0 of links) {
+  const fl = floorOfNode(f0.properties.start_id);
+  if (!isVertical(f0.properties.link_id) || floorOfNode(f0.properties.end_id) !== fl || spreadDone.has(f0.properties.link_id)) continue;
+  const deg = (id: string) => (incident.get(id) ?? []).length;
+  // extend from f0 in one direction: returns links (outward order) and the end node
+  const extend = (from: string, via: (typeof links)[0]) => {
+    const chain: (typeof links)[0][] = [];
+    let cur = from;
+    let prev = via;
+    while (deg(cur) === 2) {
+      const l = incident.get(cur)!.find((x) => x !== prev)!;
+      if (floorOfNode(other(l, cur)) !== fl) return { chain, end: cur, leave: l };
+      chain.push(l);
+      spreadDone.add(l.properties.link_id);
+      prev = l;
+      cur = other(l, cur);
+      if (cur === from) return null; // loop
+    }
+    return { chain, end: cur, leave: null as (typeof links)[0] | null };
+  };
+  spreadDone.add(f0.properties.link_id);
+  const A = extend(f0.properties.start_id, f0);
+  const B = extend(f0.properties.end_id, f0);
+  if (!A || !B) continue;
+  // ordered node list A.end … B.end and the links between them
+  const seq = [...A.chain.reverse(), f0, ...B.chain];
+  const nodesSeq = [A.end];
+  for (const l of seq) nodesSeq.push(other(l, nodesSeq.at(-1)!));
+  const za = A.leave ? nodeZ.get(other(A.leave, A.end))! : nodeZ.get(A.end)!;
+  const zb = B.leave ? nodeZ.get(other(B.leave, B.end))! : nodeZ.get(B.end)!;
+  if (Math.abs(za - zb) < 0.05) continue;
+  const total = (A.leave ? rise(A.leave) : 0) + seq.reduce((t, l) => t + rise(l), 0) + (B.leave ? rise(B.leave) : 0);
+  if (!total) continue;
+  let acc = A.leave ? rise(A.leave) : 0;
+  for (let i = 0; i < nodesSeq.length; i++) {
+    if (i > 0) acc += rise(seq[i - 1]!);
+    const id = nodesSeq[i]!;
+    if ((i === 0 && !A.leave) || (i === nodesSeq.length - 1 && !B.leave)) continue; // anchors stay
+    nodeZ.set(id, za + (zb - za) * (acc / total));
+    landingSpread.push(`n:${id}`);
+  }
+}
+
 // ---------------------------------------------------------------- facilities → nodes
 const allFacilities = raw.levels.flatMap((lv) => lv.facilities.map((f) => ({ level: mapLevels.find((m) => m.label === lv.label)!, f, p: enu(...f.geometry.coordinates) })));
 function nearestNode(p: { x: number; y: number }, filter: (n: (typeof raw.nodes)[number]) => boolean) {
@@ -373,13 +435,20 @@ interface ExitInfo {
   d: number;
 }
 const exits: ExitInfo[] = [];
+// Floor equivalence GSI map level → NWD floors (map "1" covers NWD 1F and the GL street nodes 0).
+// No equivalence across intermediate landings is assumed; unmatched exits stay out of routing.
+const exitFloors = (mapOrdinal: number) => (mapOrdinal === 1 ? [1, 0] : [mapOrdinal]);
 for (const { level, f, p } of allFacilities) {
   if (f.properties.category !== "F108") continue;
-  const best = nearestNode(p, () => true);
+  const floors = exitFloors(level.ordinal);
+  const onFloor = (n: (typeof raw.nodes)[number]) => floors.includes(n.properties.floor);
+  // Prefer a street-side node (in_out = outside) when one is close; otherwise the nearest same-floor node.
+  const outside = nearestNode(p, (n) => onFloor(n) && n.properties.in_out === 1);
+  const best = outside && outside.d <= 6 ? outside : nearestNode(p, onFloor);
   if (best && best.d <= 6) {
     exits.push({ nodeId: best.id, p, level: level.label, d: best.d });
     nodeKind.set(best.id, "exit");
-  } else anomalies.push(`exit point on ${level.label} has no node within 6 m`);
+  } else anomalies.push(`exit point on ${level.label} has no same-floor node within 6 m (left unroutable)`);
 }
 // Outdoor dead-ends (in_out=1, street side) are exit approaches too.
 for (const n of raw.nodes) if (n.properties.in_out === 1) nodeKind.set(n.properties.node_id, "exit");
@@ -500,7 +569,7 @@ exits.forEach((x, i) => {
     displayPosition: { ...x.p, z: null },
     connectorNodeIds: [`n:${x.nodeId}`],
     paid: nodeToll.get(x.nodeId) === "paid" ? true : nodeToll.get(x.nodeId) === "free" ? false : null,
-    evidence: vEv(`GSI facility F108 → nearest NWD node (${x.d.toFixed(1)} m)`, "Exit number not in source; see exit-labels.osm.json for community cross-check"),
+    evidence: vEv(`GSI facility F108 on map level ${x.level} → nearest NWD node on an equivalent floor (${x.d.toFixed(1)} m)`, "Exit number/name not in source (coverage gap)"),
   });
 });
 // Ticket gates: cluster gate links by GSI gate points.
@@ -596,7 +665,7 @@ shafts.forEach((s, i) => {
   });
 });
 // Toilets (GSI F001–F003) — connector = nearest node on same map level & same fare side as most nearby space.
-const TOILET: Record<string, [string, string]> = { F001: ["トイレ（男性）", "Toilet (men)"], F002: ["トイレ（女性）", "Toilet (women)"], F003: ["多機能トイレ／男女共用", "Toilet (all-gender)"] };
+const TOILET: Record<string, [string, string]> = { F001: ["トイレ（男性）", "Toilet (men)"], F002: ["トイレ（女性）", "Toilet (women)"], F003: ["トイレ（男女共用）", "Toilet (unisex)"] };
 let ti = 0;
 for (const { level, f, p } of allFacilities) {
   const t = TOILET[f.properties.category];
@@ -642,7 +711,7 @@ const sources: Source[] = [
     rights: "REUSABLE_WITH_CONDITIONS",
     attribution: "「歩行空間ネットワークデータ（都営地下鉄大江戸線 新宿駅）」（国土交通省）を加工して作成",
     modified: true,
-    retrievedAt: readFileSync(join(RAW_DIR, "acquired_at.txt"), "utf8").trim(),
+    retrievedAt: ACQUIRED_AT,
     sha256: { "nwd_oedo_shinjuku_geojson.zip": sha["nwd_oedo_shinjuku_geojson.zip"]! },
     datasetDate: "2026-09-17",
     validUntil: "2027-03-12",
@@ -658,7 +727,7 @@ const sources: Source[] = [
     rights: "REUSABLE_WITH_CONDITIONS",
     attribution: "「構内地図データ（都営地下鉄大江戸線 新宿駅）」（国土交通省）を加工して作成",
     modified: true,
-    retrievedAt: readFileSync(join(RAW_DIR, "acquired_at.txt"), "utf8").trim(),
+    retrievedAt: ACQUIRED_AT,
     sha256: { "stationmap_oedo_shinjuku_geojson.zip": sha["stationmap_oedo_shinjuku_geojson.zip"]! },
     datasetDate: "2026-09-17",
     validUntil: "2027-03-12",
@@ -758,7 +827,7 @@ const plan = {
   }),
   // Render heights for every node (chain-interpolated on stairs/escalators), keyed by bundle node id.
   nodeRenderZ: Object.fromEntries(raw.nodes.map((n) => [`n:${n.properties.node_id}`, round(nodeZ.get(n.properties.node_id)!, 2)])),
-  heightModel: { escalatorDegrees: 30, escalatorFlatM: ESC_FLAT, stairRiseRatio: STAIR_RATIO, constraints: constraints.length, displayHeightAdjusted },
+  heightModel: { escalatorDegrees: 30, escalatorFlatM: ESC_FLAT, stairRiseRatio: STAIR_RATIO, constraints: constraints.length, displayHeightAdjusted, landingSpread },
 };
 
 // ---------------------------------------------------------------- report & write

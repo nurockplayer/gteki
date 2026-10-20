@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import { createRouter } from "@gteki/navigation";
-import { buildLayout, centroid, WalkWorld, type Layout, type Plan, type Run, type WallSeg, type XY, type XYZ } from "./layout.ts";
+import { buildLayout, centroid, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type WallSeg, type XY, type XYZ } from "./layout.ts";
 import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture, type SignIcon } from "./textures.ts";
 
 export const OEDO_MAGENTA = "#b6007a"; // public line colour of the Oedo Line
@@ -317,7 +317,8 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const u = { x: dx / L, y: dy / L };
       const n = { x: -u.y, y: u.x };
       const hw = r.width / 2;
-      const yaw = Math.atan2(-u.y, u.x); // rotation about Three Y so local +X aligns with run
+      // rotation about Three Y so local +X maps to the run direction: (x, z, -y) ⇒ θ = atan2(u.y, u.x)
+      const yaw = Math.atan2(u.y, u.x);
       if (r.mode === "stairs") {
         if (dz < 0.05) {
           // flat stair link (landing) — draw as floor strip
@@ -445,7 +446,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const right = reach(-1);
       const span = left + right;
       const n = Math.max(2, Math.min(10, Math.round(span / 0.92) + 1));
-      const yaw = Math.atan2(-gl.dir.y, gl.dir.x);
+      const yaw = Math.atan2(gl.dir.y, gl.dir.x);
       for (let i = 0; i < n; i++) {
         const o = -right + (span * i) / (n - 1);
         const c = { x: gl.center.x + perp.x * o, y: gl.center.y + perp.y * o };
@@ -497,7 +498,6 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const c = { x: node.position.x + u.x * 1.2, y: node.position.y + u.y * 1.2 };
       const plane = new THREE.Mesh(track(new THREE.PlaneGeometry(3.2, 2.6)), mat.portal);
       plane.position.copy(v3({ ...c, z: z + 1.3 }));
-      plane.rotation.y = Math.atan2(-u.y, u.x) - Math.PI / 2 + Math.PI / 2;
       plane.lookAt(v3({ x: c.x - u.x, y: c.y - u.y, z: z + 1.3 }));
       root.add(plane);
       const sign = new THREE.Mesh(track(new THREE.PlaneGeometry(1.6, 1.6 / portalTex.aspect)), signMat);
@@ -510,11 +510,11 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
 
   // ---- street level around surface exits (minimal, non-authoritative)
   {
-    const surface = bundle.nodes.filter((n) => n.inOut !== "inside" && (layout.nodeZ.get(n.id) ?? -1) > -0.5);
     const geos: THREE.BufferGeometry[] = [];
-    for (const n of surface) {
-      const pad = new THREE.BoxGeometry(14, 0.2, 14);
-      pad.translate(n.position.x, -0.1 - 0.01, -n.position.y);
+    for (const sp of layout.streetPads) {
+      const c = sp.rings[0]!;
+      const pad = new THREE.BoxGeometry(STREET_PAD, 0.2, STREET_PAD);
+      pad.translate((c[0]!.x + c[2]!.x) / 2, sp.z - 0.1 - 0.01, -(c[0]!.y + c[2]!.y) / 2);
       geos.push(pad);
     }
     const geo = merged(geos);
@@ -531,8 +531,6 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // ---- collision world
   const world = new WalkWorld(layout);
   world.addWalls(propWalls);
-  const street = bundle.nodes.filter((n) => n.inOut !== "inside" && (layout.nodeZ.get(n.id) ?? -1) > -0.5);
-  for (const n of street) world.addSlab({ spaceId: `street:${n.id}`, rings: [[{ x: n.position.x - 7, y: n.position.y - 7 }, { x: n.position.x + 7, y: n.position.y - 7 }, { x: n.position.x + 7, y: n.position.y + 7 }, { x: n.position.x - 7, y: n.position.y + 7 }]], z: 0, fare: null, category: "street" });
 
   // ---- platform edge helper
   function buildPlatformEdge(walls: WallSeg[], z: number, g: THREE.Group) {
@@ -784,6 +782,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     dispose() {
       for (const d of disposables) d.dispose();
       root.traverse((o) => {
+        if (o instanceof THREE.InstancedMesh) o.dispose(); // frees instance buffers
         if (o instanceof THREE.Mesh) o.geometry.dispose();
       });
     },
@@ -845,14 +844,17 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
     const dirs = rows.map((r) => {
       const res = router.route(n.id, r.target, { fare: "ticketed", stepFree: false });
       if (!res.ok) return null;
-      // direction ~8 m along the route
+      // initial direction of the route: towards the first route node ≥ 2 m along it (a chord across
+      // later turns would point the wrong way at the sign)
       let acc = 0;
       let p = n.position;
+      let prev = n.position;
       for (const id of res.nodeIds.slice(1)) {
         const q = nodeById.get(id)!.position;
-        acc += Math.hypot(q.x - p.x, q.y - p.y);
+        acc += Math.hypot(q.x - prev.x, q.y - prev.y);
+        prev = q;
         p = q;
-        if (acc > 8) break;
+        if (acc >= 2) break;
       }
       const d = { x: p.x - n.position.x, y: p.y - n.position.y };
       const L = Math.hypot(d.x, d.y);
@@ -882,7 +884,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
     }
     const box = new THREE.Mesh(track(new THREE.BoxGeometry(1.96, (1.9 / 8) * valid.length + 0.06, 0.07)), track(new THREE.MeshStandardMaterial({ color: "#2b2d30", roughness: 0.5, metalness: 0.4 })));
     box.position.copy(v3(center));
-    box.rotation.y = Math.atan2(-axis.y, axis.x) + Math.PI / 2;
+    box.rotation.y = Math.atan2(axis.y, axis.x) + Math.PI / 2;
     group.add(box);
     for (const s of [-0.7, 0.7]) {
       const rod = new THREE.Mesh(track(new THREE.CylinderGeometry(0.012, 0.012, 0.55, 6)), track(new THREE.MeshStandardMaterial({ color: "#888", metalness: 0.8, roughness: 0.3 })));

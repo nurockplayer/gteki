@@ -121,6 +121,8 @@ export interface Layout {
   gates: GateLine[];
   /** Flat landing pads at both ends of runs, so floors and ramps meet. */
   pads: SlabPoly[];
+  /** Minimal street-level pavement squares around outdoor exit nodes (non-authoritative, 8 m). */
+  streetPads: SlabPoly[];
   /** Walk-only ground strips along flat verified links (not rendered): the graph guarantees passage. */
   linkStrips: SlabPoly[];
   /** Stair/escalator balustrades as ~1 m wall pieces with local height bands (open where a link crosses). */
@@ -172,6 +174,7 @@ export function widthFromClass(code: unknown, mode: string): number {
 
 // ---------------------------------------------------------------- main
 const SUBSEG = 0.5;
+export const STREET_PAD = 8;
 const PROBE = 0.18;
 
 export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
@@ -429,7 +432,9 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
       const n = Math.max(1, Math.ceil(L / 0.1));
       let start: number | null = null;
       for (let k = 0; k <= n; k++) {
-        const closed = k < n && !clearAt(lerp(w.a, w.b, (k + 0.5) / n), lv.z - 0.3, lv.z + 1.2);
+        // the band in which resolveWalls lets this wall block a walker (z ∈ [zMin − 1.7, bodyMax]), plus
+        // 0.3 m for the body radius on a steep flight
+        const closed = k < n && !clearAt(lerp(w.a, w.b, (k + 0.5) / n), lv.z - 2.0, lv.z + 1.2);
         if (closed && start === null) start = k;
         if (!closed && start !== null) {
           out.push({ ...w, a: lerp(w.a, w.b, start / n), b: lerp(w.a, w.b, k / n) });
@@ -459,12 +464,15 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
         const zMin = Math.min(za, zb) - 0.3;
         const zMax = Math.max(za, zb) + 1.1;
         // open where another verified link's walker body (feet .. +1.7 m) would intersect this piece
-        if (clearAt(lerp(a, b, 0.5), zMin - 1.7, zMax, r.edgeId)) continue;
+        if ([0.1, 0.5, 0.9].some((f) => clearAt(lerp(a, b, f), zMin - 1.7, zMax, r.edgeId))) continue;
         runWalls.push({ a, b, zMin, zMax, side: 1, kind: "wall" });
       }
     }
   }
 
+  // Strips extend 0.5 m past their ends to fill corners, except into a run mouth (the extension
+  // would float over a steep stair and leave a cliff at its tip).
+  const runEnds = new Set(bundle.edges.filter((e) => (e.mode === "stairs" || e.mode === "escalator") && Math.abs(zOf(e.to) - zOf(e.from)) >= 0.2).flatMap((e) => [e.from, e.to]));
   const linkStrips: SlabPoly[] = [];
   for (const e of bundle.edges) {
     if (e.mode === "elevator") continue;
@@ -480,13 +488,23 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
       const u = { x: dd.x / l, y: dd.y / l };
       const h = 0.5;
       const n = { x: -u.y * h, y: u.x * h };
-      const a2 = { x: a.x - u.x * h, y: a.y - u.y * h };
-      const b2 = { x: b.x + u.x * h, y: b.y + u.y * h };
+      const ha = i === 1 && runEnds.has(e.from) ? 0 : h;
+      const hb = i === pts.length - 1 && runEnds.has(e.to) ? 0 : h;
+      const a2 = { x: a.x - u.x * ha, y: a.y - u.y * ha };
+      const b2 = { x: b.x + u.x * hb, y: b.y + u.y * hb };
       linkStrips.push({ spaceId: `link:${e.id}:${i}`, rings: [[{ x: a2.x + n.x, y: a2.y + n.y }, { x: b2.x + n.x, y: b2.y + n.y }, { x: b2.x - n.x, y: b2.y - n.y }, { x: a2.x - n.x, y: a2.y - n.y }, { x: a2.x + n.x, y: a2.y + n.y }]], z: za, fare: null, category: "link" });
     }
   }
 
-  return { levels, runs, tactile, gates, pads, linkStrips, runWalls, nodeZ, bounds: { min, max } };
+  const streetPads: SlabPoly[] = bundle.nodes
+    .filter((n) => n.inOut === "outside" && zOf(n.id) > -0.5)
+    .map((n) => {
+      const { x, y } = n.position;
+      const h = STREET_PAD / 2;
+      return { spaceId: `street:${n.id}`, rings: [[{ x: x - h, y: y - h }, { x: x + h, y: y - h }, { x: x + h, y: y + h }, { x: x - h, y: y + h }, { x: x - h, y: y - h }]], z: zOf(n.id), fare: null, category: "street" };
+    });
+
+  return { levels, runs, tactile, gates, pads, streetPads, linkStrips, runWalls, nodeZ, bounds: { min, max } };
 }
 
 export function centroid(r: XY[]): XY {
@@ -507,6 +525,8 @@ export interface WalkSurface {
   /** for slabs */
   rings?: XY[][];
   z?: number;
+  /** graph-truth ground (link strips): never cut by stairwell openings */
+  keep?: boolean;
   /** for runs */
   run?: Run;
   minX: number;
@@ -532,6 +552,7 @@ export class WalkWorld {
     for (const lv of layout.levels) for (const w of lv.walls) this.addWall(w);
     for (const w of layout.runWalls) this.addWall(w);
     for (const st of layout.linkStrips) this.addSlab(st);
+    for (const st of layout.streetPads) this.addSlab(st);
   }
 
   addWalls(ws: WallSeg[]) {
@@ -540,7 +561,7 @@ export class WalkWorld {
 
   addSlab(s: SlabPoly) {
     const ring = s.rings[0]!;
-    this.add({ kind: "slab", rings: s.rings, z: s.z, minX: Math.min(...ring.map((p) => p.x)), minY: Math.min(...ring.map((p) => p.y)), maxX: Math.max(...ring.map((p) => p.x)), maxY: Math.max(...ring.map((p) => p.y)) });
+    this.add({ kind: "slab", rings: s.rings, z: s.z, keep: s.category === "link", minX: Math.min(...ring.map((p) => p.x)), minY: Math.min(...ring.map((p) => p.y)), maxX: Math.max(...ring.map((p) => p.x)), maxY: Math.max(...ring.map((p) => p.y)) });
   }
   private add(s: WalkSurface) {
     const i = this.surfaces.push(s) - 1;
@@ -565,13 +586,13 @@ export class WalkWorld {
 
   /** All ground heights under p. */
   heightsAt(p: XY): number[] {
-    const slabs: number[] = [];
+    const slabs: { z: number; keep: boolean }[] = [];
     const runs: { z: number; ends: [number, number] }[] = [];
     for (const i of this.grid.get(`${Math.floor(p.x / this.cell)},${Math.floor(p.y / this.cell)}`) ?? []) {
       const s = this.surfaces[i]!;
       if (p.x < s.minX || p.x > s.maxX || p.y < s.minY || p.y > s.maxY) continue;
       if (s.kind === "slab") {
-        if (pointInRings(p, s.rings!)) slabs.push(s.z!);
+        if (pointInRings(p, s.rings!)) slabs.push({ z: s.z!, keep: !!s.keep });
       } else {
         const r = s.run!;
         const ab = sub(r.b, r.a);
@@ -582,10 +603,12 @@ export class WalkWorld {
         if (len(sub(p, q)) <= r.width / 2) runs.push({ z: r.a.z + (r.b.z - r.a.z) * t, ends: [r.a.z, r.b.z] });
       }
     }
-    // A run descending from a slab's level cuts a stairwell in that slab: where the run is already
-    // below the slab (within head clearance), the slab is a hole — otherwise the floor overhangs the
-    // stair and makes a cliff. Deeper runs pass under the floor, which stays.
-    const kept = slabs.filter((z) => !runs.some((r) => r.z < z - 0.25 && r.z > z - 2.4 && (Math.abs(r.ends[0] - z) < 0.3 || Math.abs(r.ends[1] - z) < 0.3)));
+    // A run descending from a slab's level opens a stairwell in the slab where the run is 0.25–2.4 m
+    // below it (otherwise the floor overhangs the stair as a cliff). Deeper runs pass under the floor,
+    // which stays. Link strips (graph-truth walkways) always stay.
+    const kept = slabs
+      .filter(({ z, keep }) => keep || !runs.some((r) => r.z < z - 0.25 && r.z > z - 2.4 && (Math.abs(r.ends[0] - z) < 0.3 || Math.abs(r.ends[1] - z) < 0.3)))
+      .map((s) => s.z);
     return [...kept, ...runs.map((r) => r.z)];
   }
   groundAt(p: XY, z: number, up = 0.45, down = 0.7): number | null {
