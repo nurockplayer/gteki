@@ -1,7 +1,7 @@
 /**
  * QA screenshot harness for the E27 lane app.
  *
- *   pnpm --filter @gteki/station-shinjuku shoot [--url http://localhost:5274] [--out dir] [--only id,id] [--w 1280 --h 720] [--q high|low] [--crowd N]
+ *   pnpm --filter @gteki/station-shinjuku shoot [--url http://localhost:5274] [--out dir] [--only id,id] [--w 1280 --h 720] [--q high|low] [--crowd N] [--route fromPoiId,toPoiId]
  *
  * Needs a running dev server (`pnpm --filter @gteki/station-shinjuku dev`) and Google Chrome.
  * Writes <out>/<vantage>.png plus <out>/report.json (fps is not meaningful headless; calls/tris/void are).
@@ -26,6 +26,8 @@ const w = Number(arg("w", "1280")), h = Number(arg("h", "720"));
 const q = arg("q", "high")!;
 const crowd = arg("crowd", "24")!;
 const hud = arg("hud", "1")!;
+const routePair = arg("route")?.split(",");
+if (routePair && (routePair.length !== 2 || routePair.some((id) => !id))) throw new Error("--route requires fromPoiId,toPoiId");
 const { vantages } = JSON.parse(readFileSync(join(here, "vantages.json"), "utf8")) as { vantages: Vantage[] };
 
 mkdirSync(out, { recursive: true });
@@ -41,23 +43,53 @@ page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
 await page.goto(`${url}/?q=${q}&crowd=${crowd}${hud === "0" ? "&hud=0" : ""}`);
 await page.waitForFunction(() => !!(window as unknown as { __gteki?: unknown }).__gteki, null, { timeout: 60_000 });
 const report: Record<string, unknown>[] = [];
-for (const v of vantages) {
-  if (only && !only.includes(v.id)) continue;
-  const r = await page.evaluate((v) => {
-    const g = (window as any).__gteki;
-    if (v.eye && v.look) g.view({ eye: v.eye, look: v.look });
-    else {
+try {
+  for (const v of vantages) {
+    if (only && !only.includes(v.id)) continue;
+    const r = await page.evaluate((v) => {
+      const g = (window as any).__gteki;
+      if (v.eye && v.look) g.view({ eye: v.eye, look: v.look });
+      else {
+        g.view(null);
+        if (!g.teleportNode(v.node, v.heading)) return { error: `no node ${v.node}` };
+      }
+      g.advance(v.t ?? 1.5, 45);
+      const voidFraction = g.voidFraction();
+      return { ...g.state(), voidFraction };
+    }, v);
+    await page.screenshot({ path: join(out, `${v.id}.png`) });
+    report.push({ id: v.id, ...r });
+    console.log(v.id, JSON.stringify(r));
+  }
+  if (routePair) {
+    const [from, to] = routePair;
+    const result = await page.evaluate(({ from, to }) => {
+      const g = (window as any).__gteki;
       g.view(null);
-      if (!g.teleportNode(v.node, v.heading)) return { error: `no node ${v.node}` };
+      return g.routeTo(to, from);
+    }, { from, to });
+    if (typeof result === "string") throw new Error(`Route failed: ${result}`);
+    for (const stage of ["preview", "stairs", "arrival"] as const) {
+      const r = await page.evaluate((stage) => {
+        const g = (window as any).__gteki;
+        let capture: unknown = { ok: true };
+        if (stage === "stairs") { g.guide(); capture = g.walkUntil("stairs"); }
+        if (stage === "arrival") capture = g.walkUntil("arrival");
+        g.advance(0, 1);
+        return { ...g.state(), capture, voidFraction: g.voidFraction() };
+      }, stage);
+      await page.screenshot({ path: join(out, `route-${stage}.png`) });
+      report.push({ id: `route-${stage}`, ...r });
+      if (!r.capture?.ok) errors.push(`route-${stage}: ${JSON.stringify(r.capture)}`);
+      console.log(`route-${stage}`, JSON.stringify(r));
     }
-    g.advance(v.t ?? 1.5, 45);
-    const voidFraction = g.voidFraction();
-    return { ...g.state(), voidFraction };
-  }, v);
-  await page.screenshot({ path: join(out, `${v.id}.png`) });
-  report.push({ id: v.id, ...r });
-  console.log(v.id, JSON.stringify(r));
+  }
+} catch (error) {
+  errors.push(String(error));
+  throw error;
+} finally {
+  writeFileSync(join(out, "report.json"), JSON.stringify({ url, w, h, q, crowd, errors, shots: report }, null, 2));
+  if (errors.length) console.error("page errors:", errors);
+  await browser.close();
 }
-writeFileSync(join(out, "report.json"), JSON.stringify({ url, w, h, q, crowd, errors, shots: report }, null, 2));
-if (errors.length) console.error("page errors:", errors);
-await browser.close();
+if (errors.length) process.exitCode = 1;

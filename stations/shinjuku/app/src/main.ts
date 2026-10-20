@@ -12,8 +12,8 @@ import { loadShinjukuBundle } from "../../data/bundle.ts";
 import planJson from "../../data/plan.json";
 import { buildStation } from "../../scene/build.ts";
 import { pointInRings, type Plan } from "../../scene/layout.ts";
-import { Player, PLAYER_RADIUS, type GuidePoint, type MoveInput } from "./player.ts";
-import { floorLabel, narrate, UNKNOWN_LABELS, type Maneuver } from "./narrate.ts";
+import { Player, PLAYER_RADIUS, sweepCamera, type GuidePoint, type MoveInput } from "./player.ts";
+import { floorLabel, narrate, summarizeRoute, routeMapFrame, nearbyExits, UNKNOWN_LABELS, type Maneuver } from "./narrate.ts";
 import { createAvatar } from "./avatar.ts";
 import { createStationAudio } from "./audio.ts";
 import { CROWD_LIMIT, createCrowd } from "./crowd.ts";
@@ -24,6 +24,47 @@ const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getEleme
 const params = new URLSearchParams(location.search);
 const isTouch = matchMedia("(pointer: coarse)").matches;
 const quality: "low" | "high" = (params.get("q") as "low" | "high") ?? (isTouch ? "low" : "high");
+const motionPreference = matchMedia("(prefers-reduced-motion: reduce)");
+let reducedMotion = motionPreference.matches;
+let bobEnabled = !reducedMotion;
+let journey: "idle" | "preview" | "walking" | "guiding" | "arrived" = "idle";
+function setJourney(value: typeof journey) {
+  journey = value;
+  document.body.dataset.journey = value;
+  document.body.classList.toggle("has-route", value !== "idle");
+}
+function setPanel(expanded: boolean, focus = false) {
+  $("panel").classList.toggle("collapsed", !expanded);
+  $("panel-content").hidden = !expanded;
+  $("search-pill").setAttribute("aria-expanded", String(expanded));
+  $("sheet-handle").setAttribute("aria-expanded", String(expanded));
+  $("search-chevron").textContent = expanded ? "⌃" : "⌄";
+  document.body.classList.toggle("sheet-open", expanded);
+  if (!expanded && $("panel-content").contains(document.activeElement)) $("search-pill").focus();
+  if (focus) { document.body.classList.add("editing-route"); $("to").focus(); }
+}
+$("search-pill").onclick = () => setPanel(!!$("panel-content").hidden);
+$("sheet-handle").onclick = () => setPanel(!!$("panel-content").hidden);
+let sheetStartY = 0;
+$("sheet-handle").addEventListener("pointerdown", (e) => { sheetStartY = e.clientY; $("sheet-handle").setPointerCapture(e.pointerId); });
+$("sheet-handle").addEventListener("pointerup", (e) => {
+  if (Math.abs(e.clientY - sheetStartY) > 24) {
+    setPanel(e.clientY < sheetStartY);
+    // Suppress the click following a completed drag.
+    $("sheet-handle").onclick = null;
+    setTimeout(() => { $("sheet-handle").onclick = () => setPanel(!!$("panel-content").hidden); }, 0);
+  }
+});
+$("btn-bob").setAttribute("aria-pressed", String(bobEnabled));
+$("btn-bob").onclick = () => {
+  bobEnabled = !bobEnabled && !reducedMotion;
+  $("btn-bob").setAttribute("aria-pressed", String(bobEnabled));
+};
+motionPreference.addEventListener("change", (e) => {
+  reducedMotion = e.matches;
+  if (reducedMotion) bobEnabled = false;
+  $("btn-bob").setAttribute("aria-pressed", String(bobEnabled));
+});
 
 // ------------------------------------------------------------ renderer
 const canvas = $<HTMLCanvasElement>("view");
@@ -155,6 +196,10 @@ avatar.object.traverse((o) => ((o as THREE.Mesh).castShadow = false));
 const cam = { yaw: player.heading, pitch: -0.18, dist: 3.6, firstPerson: false, userTurnedAt: -10 };
 const camPos = new THREE.Vector3();
 const camTarget = new THREE.Vector3();
+const cameraSurfaces = [...layout.levels.flatMap((l) => [...l.slabs, ...l.ceilings]), ...layout.pads, ...layout.streetPads];
+let cameraDistance = cam.dist;
+let stairPitch = 0;
+let transitionFocus = 0;
 let camInit = false;
 /** QA: fixed free camera in ENU metres (eye → look), used by the screenshot/recording harness. */
 let viewOverride: { eye: { x: number; y: number; z: number }; look: { x: number; y: number; z: number } } | null = null;
@@ -172,18 +217,19 @@ function updateCamera(dt: number, t: number) {
     d = Math.atan2(Math.sin(d), Math.cos(d));
     cam.yaw += d * (1 - Math.exp(-1.6 * dt));
   }
-  const head = { x: player.x, y: player.y, z: player.z + (cam.firstPerson ? 1.62 : 1.45) };
-  const lv = floorAtZ(player.z);
-  const level = layout.levels.find((l) => l.floorId === lv.id);
-  const ceiling = level && Math.abs(player.z - level.z) < 0.4 ? level.ceilingZ - 0.25 : player.z + 2.5;
-  const fwd = { x: Math.sin(cam.yaw) * Math.cos(cam.pitch), y: Math.cos(cam.yaw) * Math.cos(cam.pitch), z: Math.sin(cam.pitch) };
-  let dist = cam.firstPerson ? 0 : cam.dist;
-  if (dist > 0) {
-    const back = { x: head.x - fwd.x * dist, y: head.y - fwd.y * dist };
-    const hit = world.firstWallHit(head, back, head.z - 0.2);
-    dist = Math.max(0.35, dist * hit - 0.25);
-  }
-  const want = new THREE.Vector3(head.x - fwd.x * dist, Math.min(head.z - fwd.z * dist, ceiling), -(head.y - fwd.y * dist));
+  stairPitch += ((reducedMotion ? 0 : Math.min(0, player.climbing) * 0.13) - stairPitch) * (1 - Math.exp(-5 * dt));
+  const bob = bobEnabled && !reducedMotion ? -Math.cos(player.stridePhase * 2) * 0.012 * Math.min(1, player.speed / 1.45) : 0;
+  const head = { x: player.x, y: player.y, z: player.z + (cam.firstPerson ? 1.62 : 1.45) + bob };
+  const pitch = cam.pitch + stairPitch;
+  const fwd = { x: Math.sin(cam.yaw) * Math.cos(pitch), y: Math.cos(cam.yaw) * Math.cos(pitch), z: Math.sin(pitch) };
+  transitionFocus *= Math.exp(-3 * dt);
+  const followDistance = cam.dist - (reducedMotion ? 0 : transitionFocus * 0.45);
+  const desired = { x: head.x - fwd.x * followDistance, y: head.y - fwd.y * followDistance, z: head.z - fwd.z * followDistance };
+  const safe = sweepCamera(head, cam.firstPerson ? head : desired, world, cameraSurfaces);
+  const available = Math.hypot(safe.x - head.x, safe.y - head.y, safe.z - head.z);
+  // Pull in immediately; recover slowly. Never impose a minimum boom through a wall.
+  cameraDistance = !camInit || available < cameraDistance ? available : cameraDistance + (available - cameraDistance) * (1 - Math.exp(-3 * dt));
+  const want = new THREE.Vector3(head.x - fwd.x * cameraDistance, head.z - fwd.z * cameraDistance, -(head.y - fwd.y * cameraDistance));
   const look = new THREE.Vector3(head.x + fwd.x * 4, head.z + fwd.z * 4, -(head.y + fwd.y * 4));
   if (!camInit) {
     camPos.copy(want);
@@ -193,6 +239,8 @@ function updateCamera(dt: number, t: number) {
   const k = 1 - Math.exp(-14 * dt);
   camPos.lerp(want, k);
   camTarget.lerp(look, 1 - Math.exp(-20 * dt));
+  const final = sweepCamera(head, { x: camPos.x, y: -camPos.z, z: camPos.y }, world, cameraSurfaces);
+  camPos.set(final.x, final.z, -final.y);
   camera.position.copy(camPos);
   camera.lookAt(camTarget);
   avatar.object.visible = !cam.firstPerson && camPos.distanceTo(new THREE.Vector3(player.x, player.z + 1.2, -player.y)) > 0.9;
@@ -201,15 +249,15 @@ function updateCamera(dt: number, t: number) {
 // ------------------------------------------------------------ input
 const keys = new Set<string>();
 addEventListener("keydown", (e) => {
-  if ((e.target as HTMLElement).tagName === "INPUT") {
-    if (e.key === "Escape") (e.target as HTMLInputElement).blur();
+  if (e.key === "Escape") { setPanel(false); canvas.focus(); }
+  if ((e.target as HTMLElement).matches("input, button, summary, [contenteditable=true]") || document.querySelector("dialog[open]")) {
     return;
   }
   keys.add(e.code);
-  if (e.code === "Slash") (e.preventDefault(), $("to").focus());
+  if (e.code === "Slash") (e.preventDefault(), setPanel(true, true));
   if (e.code === "KeyV") cam.firstPerson = !cam.firstPerson;
   if (e.code === "KeyG") toggleGuide();
-  if (e.code === "KeyM") $("minimap").classList.toggle("big");
+  if (e.code === "KeyM") toggleMap();
   if (e.code === "KeyE") interact();
 });
 addEventListener("keyup", (e) => keys.delete(e.code));
@@ -219,6 +267,8 @@ let dragging: { id: number; x: number; y: number } | null = null;
 canvas.addEventListener("pointerdown", (e) => {
   if (e.pointerType === "touch" && e.clientX < innerWidth * 0.45) return;
   dragging = { id: e.pointerId, x: e.clientX, y: e.clientY };
+  canvas.focus();
+  if (journey !== "preview" && journey !== "arrived") setPanel(false);
   canvas.setPointerCapture(e.pointerId);
   audio.start().catch(() => {});
 });
@@ -273,11 +323,13 @@ const stick = { x: 0, y: 0, id: -1 as number, run: false };
   $("btn-run").addEventListener("click", () => {
     stick.run = !stick.run;
     $("btn-run").classList.toggle("on", stick.run);
+    $("btn-run").setAttribute("aria-pressed", String(stick.run));
   });
   $("btn-act").addEventListener("click", () => interact());
 }
 
 function readInput(): MoveInput {
+  if (document.querySelector("dialog[open]") || (document.activeElement as HTMLElement)?.matches("input, [contenteditable=true]")) return { forward: 0, strafe: 0, run: false };
   const f = (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0) + stick.y;
   const s = (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0) + stick.x;
   return { forward: Math.max(-1, Math.min(1, f)), strafe: Math.max(-1, Math.min(1, s)), run: keys.has("ShiftLeft") || keys.has("ShiftRight") || stick.run || Math.hypot(stick.x, stick.y) > 0.95 };
@@ -289,14 +341,16 @@ for (const e of station.escalators) audio.addEscalator(e.run.edgeId, e.run.a, e.
 $("btn-sound").addEventListener("click", async () => {
   await audio.start();
   audio.setMuted(!audio.muted);
-  $("btn-sound").textContent = audio.muted ? "🔇 音" : "🔊 音";
+  player.stridePhase = 0;
+  $("btn-sound").textContent = audio.muted ? "消音 Muted" : "音 Sound on";
 });
 canvas.addEventListener("pointerdown", async () => {
   if (audioPrimed) return;
   audioPrimed = true;
   await audio.start();
   audio.setMuted(false);
-  $("btn-sound").textContent = "🔊 音";
+  player.stridePhase = 0;
+  $("btn-sound").textContent = "音 Sound on";
 }, { once: false });
 let audioPrimed = false;
 
@@ -306,6 +360,7 @@ let fromPick: Pick = { kind: "here" };
 let toPick: Pick | null = null;
 let activeField: "from" | "to" = "to";
 const ICON: Record<string, [string, string]> = { exit: ["出", "exit"], ticket_gate: ["改", ""], platform: ["E", "platform"], elevator: ["EV", ""], toilet: ["WC", ""], escalator: ["⇅", ""], stairs: ["⇵", ""] };
+const CATEGORY: Record<string, string> = { exit: "出口 · Exit", ticket_gate: "改札 · Ticket gates", platform: "ホーム · Platform", elevator: "エレベーター · Elevator", toilet: "トイレ · Toilet", escalator: "エスカレーター · Escalator", stairs: "階段 · Stairs" };
 function poiName(p: Poi) {
   return { ja: p.names.find((n) => n.lang === "ja")?.text ?? p.names[0]!.text, en: p.names.find((n) => n.lang === "en")?.text ?? "" };
 }
@@ -317,6 +372,9 @@ function renderResults(q: string) {
     const li = document.createElement("li");
     li.innerHTML = `<span class="ico">◎</span><span class="meta"><b>現在地</b><small>Current location</small></span>`;
     li.onclick = () => choose({ kind: "here" });
+    li.tabIndex = 0;
+    li.setAttribute("role", "button");
+    li.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); li.click(); } };
     ul.appendChild(li);
   }
   for (const h of hits) {
@@ -328,6 +386,9 @@ function renderResults(q: string) {
     li.querySelector("b")!.textContent = nm.ja;
     li.querySelector("small")!.textContent = `${nm.en}${fl ? " · " + fl : ""}`;
     li.onclick = () => choose({ kind: "poi", poi: h.poi });
+    li.tabIndex = 0;
+    li.setAttribute("role", "button");
+    li.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); li.click(); } };
     ul.appendChild(li);
   }
 }
@@ -347,23 +408,45 @@ for (const id of ["from", "to"] as const) {
   const el = $<HTMLInputElement>(id);
   el.addEventListener("focus", () => {
     activeField = id;
+    document.body.classList.add("editing-route");
     renderResults(el.value);
-    $("panel").classList.remove("collapsed");
+    setPanel(true);
   });
   el.addEventListener("input", () => renderResults(el.value));
   el.addEventListener("keydown", (e) => {
     if (e.key === "Enter") ($("results").querySelector("li") as HTMLElement | null)?.click();
+    if (e.key === "ArrowDown") { e.preventDefault(); ($("results").querySelector("li") as HTMLElement | null)?.focus(); }
   });
 }
+$("results").addEventListener("keydown", (e) => {
+  if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+  e.preventDefault();
+  const choices = [...$("results").querySelectorAll<HTMLElement>("li")];
+  const i = choices.indexOf(document.activeElement as HTMLElement);
+  choices[(i + (e.key === "ArrowDown" ? 1 : -1) + choices.length) % choices.length]?.focus();
+});
 $("ticketed").addEventListener("change", () => computeRoute());
 $("stepfree").addEventListener("change", () => computeRoute());
 $("clear").addEventListener("click", () => clearRoute());
 $("guide").addEventListener("click", () => toggleGuide());
+$("guide-pause").addEventListener("click", () => toggleGuide());
+$("edit-route").onclick = () => {
+  if (player.guide) { resumeIndex = player.guideIndex; player.stopGuide(); setJourney("walking"); }
+  setPanel(true, true);
+};
+$("prompt").onclick = interact;
+$("new-destination").onclick = () => { clearRoute(); toPick = null; $<HTMLInputElement>("to").value = ""; fromPick = { kind: "here" }; $<HTMLInputElement>("from").value = ""; setPanel(true, true); };
+$("route-again").onclick = () => { clearRoute(); fromPick = { kind: "here" }; $<HTMLInputElement>("from").value = ""; setPanel(true, true); };
 
 // ------------------------------------------------------------ route
 let route: RouteResult | null = null;
 let maneuvers: Maneuver[] = [];
 let routePts: GuidePoint[] = [];
+let resumeIndex = 1;
+let lastVertical = -1;
+let toastUntil = 0;
+let cuePoint: GuidePoint | null = null;
+const ribbonPlayer = { value: new THREE.Vector3() };
 const ribbon = new THREE.Group();
 scene.add(ribbon);
 const chevronTex = (() => {
@@ -389,6 +472,9 @@ const chevronTex = (() => {
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 })();
+addEventListener("pagehide", (e) => {
+  if (!e.persisted) { disposeRibbon(); chevronTex.dispose(); }
+});
 /** Today's calendar day at the station (Asia/Tokyo), "YYYY-MM-DD", for source staleness/expiry. */
 function stationToday(): string {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
@@ -418,8 +504,8 @@ function computeRoute() {
         ? "改札内（または改札内外が未確認）の施設のため、「きっぷ・IC あり」なしでは案内できません。This place is inside, or not known to be outside, the paid area."
         : "条件を満たす検証済み経路がありません（例: 段差なし・改札外のみ）。No verified route satisfies the profile.",
       start_equals_goal: "すでに目的地にいます。You are already there.",
-      unknown_start: "出発地が不明です。",
-      unknown_goal: "目的地が不明です。",
+      unknown_start: "出発地が不明です。Unknown origin.",
+      unknown_goal: "目的地が不明です。Unknown destination.",
     };
     return showRouteError(why[r.reason] ?? r.message);
   }
@@ -431,11 +517,17 @@ function computeRoute() {
   if (fromPick.kind === "here") routePts.unshift({ x: player.x, y: player.y, z: player.z, nodeId: "here" });
   drawRibbon();
   renderRoutePanel();
+  document.body.classList.remove("editing-route");
+  setJourney("preview");
+  setPanel(true);
+  $("search-label").textContent = `${poiName(goal).ja} · ${poiName(goal).en}`;
+  $("guide").focus();
 }
 function showRouteError(msg: string) {
   clearRoute();
   $("route-error").textContent = msg;
   $("route-error").classList.remove("hidden");
+  setPanel(true);
 }
 function clearRoute() {
   route = null;
@@ -443,10 +535,16 @@ function clearRoute() {
   routePts = [];
   player.stopGuide();
   routeOffSince = -1;
+  resumeIndex = 1;
+  lastVertical = -1;
+  cuePoint = null;
+  setJourney("idle");
   disposeRibbon();
   $("route").classList.add("hidden");
   $("next").classList.add("hidden");
-  $("guide").textContent = "▶ 案内歩行 Guide";
+  for (const id of ["arrival", "journey-evidence", "maneuver-anchor", "destination-label", "floor-toast"]) $(id).classList.add("hidden");
+  $("guide").textContent = "▶ 出発 Start";
+  $("search-label").innerHTML = "どこへ行きますか？ <small>Find a destination</small>";
 }
 function disposeRibbon() {
   const materials = new Set<THREE.Material>();
@@ -460,8 +558,14 @@ function disposeRibbon() {
 }
 function drawRibbon() {
   disposeRibbon();
-  const ribbonMat = new THREE.MeshBasicMaterial({ map: chevronTex, transparent: true, depthWrite: false, color: "#ff5cc0", polygonOffset: true, polygonOffsetFactor: -4 });
-  const beaconMat = new THREE.MeshBasicMaterial({ color: "#ff3fae", transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+  const ribbonMat = new THREE.MeshBasicMaterial({ map: chevronTex, transparent: true, depthWrite: false, color: "#f0d8b2", side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -4 });
+  ribbonMat.onBeforeCompile = (shader) => {
+    shader.uniforms.guidancePlayer = ribbonPlayer;
+    shader.vertexShader = "varying vec3 guidancePosition;\n" + shader.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\nguidancePosition = (modelMatrix * vec4(position, 1.0)).xyz;");
+    shader.fragmentShader = "varying vec3 guidancePosition;\nuniform vec3 guidancePlayer;\n" + shader.fragmentShader.replace("#include <color_fragment>", "#include <color_fragment>\ndiffuseColor.a *= smoothstep(0.65, 2.2, distance(guidancePosition, guidancePlayer)) * (1.0 - smoothstep(5.0, 10.0, abs(guidancePosition.y - guidancePlayer.y))); ");
+  };
+  // Original navigation marker, not station equipment. Visible through floors.
+  const beaconMat = new THREE.MeshBasicMaterial({ color: "#e8d7b2", transparent: true, opacity: 0.3, depthTest: false, depthWrite: false, side: THREE.DoubleSide });
   const pos: number[] = [];
   const uv: number[] = [];
   const idx: number[] = [];
@@ -476,8 +580,10 @@ function drawRibbon() {
     const nx = (-(b.y - a.y) / L) * W;
     const ny = ((b.x - a.x) / L) * W;
     const base = pos.length / 3;
-    const za = a.z + 0.05;
-    const zb = b.z + 0.05;
+    // Above the symbolic stair treads / moving escalator steps, without changing ground.
+    const lift = Math.abs(b.z - a.z) > 0.05 ? 0.22 : 0.055;
+    const za = a.z + lift;
+    const zb = b.z + lift;
     pos.push(a.x + nx, za, -(a.y + ny), a.x - nx, za, -(a.y - ny), b.x + nx, zb, -(b.y + ny), b.x - nx, zb, -(b.y - ny));
     const L3 = Math.hypot(L, b.z - a.z);
     uv.push(0, -acc / 0.8, 1, -acc / 0.8, 0, -(acc + L3) / 0.8, 1, -(acc + L3) / 0.8);
@@ -492,20 +598,22 @@ function drawRibbon() {
   m.renderOrder = 5;
   ribbon.add(m);
   const end = routePts[routePts.length - 1]!;
-  const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 3.2, 32, 1, true), beaconMat);
-  beacon.position.set(end.x, end.z + 1.6, -end.y);
-  ribbon.add(beacon);
-  const ring = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.75, 40), beaconMat);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.62, 32), beaconMat);
   ring.rotation.x = -Math.PI / 2;
   ring.position.set(end.x, end.z + 0.06, -end.y);
+  ring.renderOrder = 6;
   ribbon.add(ring);
 }
-const MI: Record<string, string> = { walk: "↑", turn: "↱", stairs: "⇵", escalator: "⇅", elevator: "⇕", gate: "⛩", ramp: "◢", arrive: "◎" };
+const MI: Record<string, string> = { walk: "↑", turn: "↱", stairs: "⇵", escalator: "⇅", elevator: "⇕", gate: "▥", ramp: "◢", arrive: "◎" };
 function renderRoutePanel() {
   if (!route) return;
   $("route").classList.remove("hidden");
-  $("route-dist").textContent = `${Math.round(route.totalLengthM)} m`;
-  $("route-eta").textContent = `約 ${Math.max(1, Math.round(route.estimatedSeconds / 60))} 分 · ${route.floorChanges} 回の階移動${route.crossesFareBoundary === true ? " · 改札通過" : route.crossesFareBoundary === null ? " · 改札通過 不明" : ""}`;
+  const summary = summarizeRoute(bundle, route);
+  $("route-origin").textContent = fromPick.kind === "poi" ? `出発 From: ${poiName(fromPick.poi).ja} / ${poiName(fromPick.poi).en} · 選択した位置から開始 / Start places you at this origin` : "現在のアバター位置から開始 · Start from the avatar’s current location";
+  $("route-dist").textContent = `${summary.distanceM} m`;
+  $("route-eta").textContent = `約 ${summary.minutes} 分 · ~${summary.minutes} min`;
+  $("route-floors").textContent = `${summary.floorLabels.join(" → ")} · ${summary.floorChanges} 回の階移動 / floor changes`;
+  $("route-fare").textContent = `${summary.fare.ja} · ${summary.fare.en}`;
   const ol = $("steps");
   ol.innerHTML = "";
   maneuvers.forEach((m, i) => {
@@ -532,71 +640,154 @@ function renderRoutePanel() {
     un.appendChild(s);
   }
   const src = bundle.sources.filter((s) => route!.sourceIds.includes(s.id));
-  $("prov").textContent = `根拠 Evidence: ${src.map((s) => s.publisher).filter((v, i, a) => a.indexOf(v) === i).join(", ")} · データ ${bundle.coverage.freshness} · 確認 ${route.evidenceCheckedDate} · 高さは推定 heights estimated · 実際の通行可否は現地表示に従ってください`;
+  $("prov").textContent = `根拠 Evidence: ${src.map((s) => s.publisher).filter((v, i, a) => a.indexOf(v) === i).join(", ")} · データ Data ${route.oldestSourceDate ?? "未確認 / unverified"} · 確認 Checked ${route.evidenceCheckedDate ?? "未確認 / unverified"} · 高さは推定 Heights estimated · 現地表示を確認 Check local signs`;
+  const trust = route.synthetic ? "仮想データ Synthetic" : "公開データ由来 · Public-data route";
+  const freshness = route.stale === true ? "古い可能性 · May be outdated" : route.stale === null ? "時効未確認 · Freshness unverified" : "";
+  $("journey-evidence").textContent = `${trust} · ${route.oldestSourceDate ?? "date unknown"}${freshness ? " · " + freshness : ""} · ${summary.fare.ja} / ${summary.fare.en} · ${$("unknowns").textContent} · 高さは推定 Heights estimated`;
+  $("journey-evidence").classList.remove("hidden");
 }
 function toggleGuide() {
   if (!route) return;
+  if (journey === "arrived") { setPanel(true, true); return; }
   if (player.guide) {
+    resumeIndex = player.guideIndex;
     player.stopGuide();
-    $("guide").textContent = "▶ 案内歩行 Guide";
+    setJourney("walking");
+    $("guide").textContent = "▶ 再開 Resume";
+    $("guide-pause").textContent = "▶";
     return;
   }
-  // restart from current location on resume
-  if (fromPick.kind === "here") computeRoute();
+  // Resume from the actual body-swept attachment. A manual detour must never
+  // create a straight shortcut back to an old route node through a wall.
+  if (journey !== "preview") {
+    fromPick = { kind: "here" };
+    $<HTMLInputElement>("from").value = "";
+    computeRoute();
+  }
   if (!route) return;
+  if (fromPick.kind === "poi" && journey === "preview") { player.teleport(routePts[0]!); camInit = false; }
   player.startGuide(routePts);
+  player.guideIndex = resumeIndex;
+  setJourney("guiding");
+  setPanel(false);
+  canvas.focus();
   $("guide").textContent = "⏸ 停止 Pause";
+  $("guide-pause").textContent = "Ⅱ";
   audio.uiClick();
 }
 player.onGuideEvent = (e) => {
   if (e.type === "elevator") {
     fadeFlash();
+    camInit = false;
+    const index = routePts.findIndex((p) => p.nodeId === e.point.nodeId) - 1 - (routePts[0]?.nodeId === "here" ? 1 : 0);
+    const m = [...maneuvers].reverse().find((m) => m.kind === "elevator" && m.startIndex <= index);
+    if (m) showFloorToast(m);
   } else if (e.type === "arrived") {
-    $("guide").textContent = "▶ 案内歩行 Guide";
-    audio.arrivalChime();
+    showArrival();
   }
 };
 function fadeFlash() {
+  if (reducedMotion) { camInit = false; return; }
   $("fade").classList.add("on");
   setTimeout(() => $("fade").classList.remove("on"), 380);
 }
 
+function showArrival() {
+  if (journey === "arrived" || !toPick || toPick.kind !== "poi") return;
+  player.stopGuide();
+  setJourney("arrived");
+  setPanel(false);
+  $("next").classList.add("hidden");
+  $("maneuver-anchor").classList.add("hidden");
+  $("destination-label").classList.add("hidden");
+  $("floor-toast").classList.add("hidden");
+  const p = toPick.poi, name = poiName(p);
+  const end = routePts[routePts.length - 1]!;
+  const floorId = nodeById.get(end.nodeId)?.floorId ?? p.floorId;
+  $("arrival-name").textContent = `${name.ja} · ${name.en}`;
+  $("arrival-place").textContent = `${floorLabel(floorById.get(floorId ?? "")).short} · ${CATEGORY[p.category] ?? "施設 · Facility"} · 高さは推定 / Estimated height`;
+  // Graph-routed distances on the destination floor; no invented exit numbers or compass directions.
+  const exits = nearbyExits(bundle, router, end.nodeId, profile());
+  $("arrival-exits").textContent = exits.length ? `近くの出口 Nearby exits: ${exits.map((x) => `${poiName(x.poi).ja} / ${poiName(x.poi).en} · ${x.distanceM} m`).join(" · ")}` : "近くの出口: 同じ階の検証済み経路（80 m以内）なし · No verified same-floor exit route within 80 m";
+  $("arrival").classList.remove("hidden");
+  $("guide").textContent = "▶ 出発 Start";
+  audio.arrivalChime();
+  $("new-destination").focus({ preventScroll: true });
+}
+
+function showFloorToast(m: Maneuver) {
+  if (!m.fromFloorLabel || !m.toFloorLabel || m.startIndex === lastVertical) return;
+  lastVertical = m.startIndex;
+  const mode = { stairs: "階段 · Stairs", escalator: "エスカレーター · Escalator", elevator: "エレベーター · Elevator", ramp: "スロープ · Ramp" }[m.kind as "stairs" | "escalator" | "elevator" | "ramp"] ?? "";
+  $("floor-toast").textContent = `${m.fromFloorLabel} → ${m.toFloorLabel} · ${mode}`;
+  $("floor-toast").classList.remove("hidden");
+  toastUntil = performance.now() + 3800;
+  transitionFocus = reducedMotion ? 0 : 1;
+}
+
 // progress along route → next maneuver
 function updateNext() {
-  if (!route || !routePts.length) return;
-  // nearest route point index ahead of player
-  let bestI = 0;
-  let bestD = Infinity;
-  for (let i = 0; i < routePts.length; i++) {
-    const p = routePts[i]!;
-    const d = Math.hypot(p.x - player.x, p.y - player.y) + Math.abs(p.z - player.z) * 4;
-    if (d < bestD) (bestD = d), (bestI = i);
+  if (!route || !routePts.length || journey === "arrived" || journey === "preview") return;
+  let bestI = 0, bestD = Infinity, along = 0;
+  // Project onto segments, rather than nearest nodes (long corridors have few nodes).
+  for (let i = 0; i < routePts.length - 1; i++) {
+    const a = routePts[i]!, b = routePts[i + 1]!;
+    const dx = b.x - a.x, dy = b.y - a.y, dz = (b.z - a.z) * 3;
+    const t = Math.max(0, Math.min(1, ((player.x - a.x) * dx + (player.y - a.y) * dy + (player.z - a.z) * 3 * dz) / (dx * dx + dy * dy + dz * dz || 1)));
+    const d = Math.hypot(player.x - a.x - dx * t, player.y - a.y - dy * t, (player.z - a.z) * 3 - dz * t);
+    if (d < bestD) { bestD = d; bestI = i; along = t; }
   }
-  const offset = fromPick.kind === "here" ? 1 : 0;
+  if (player.guide) { bestI = Math.max(0, player.guideIndex - 1); resumeIndex = player.guideIndex; }
+  const end = routePts[routePts.length - 1]!;
+  if (!player.guide && Math.hypot(player.x - end.x, player.y - end.y) < 0.8 && Math.abs(player.z - end.z) < 0.35) { showArrival(); return; }
+  const offset = routePts[0]?.nodeId === "here" ? 1 : 0;
   const nodeIndex = Math.max(0, bestI - offset);
-  let cur = maneuvers.findIndex((m, i) => m.startIndex > nodeIndex && i > 0) - 1;
-  if (cur < 0) cur = maneuvers.length - 1;
-  const nextM = maneuvers[Math.min(maneuvers.length - 1, cur + 1)] ?? maneuvers[cur]!;
-  const show = bestD < 12 ? nextM : maneuvers[cur]!;
+  let cur = 0;
+  for (let i = 0; i < maneuvers.length; i++) if (maneuvers[i]!.startIndex <= nodeIndex) cur = i;
+  const current = maneuvers[cur]!;
+  const upcoming = maneuvers.slice(cur + 1).find((m) => m.kind !== "walk") ?? current;
+  let rem = 0;
+  for (let i = bestI; i < Math.min(routePts.length - 1, upcoming.startIndex + offset); i++) {
+    const a = routePts[i]!, b = routePts[i + 1]!;
+    rem += Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) * (i === bestI ? 1 - along : 1);
+  }
+  const show = current.kind === "walk" && rem < 14 ? upcoming : current;
   $("next").classList.remove("hidden");
   $("next-icon").textContent = show.kind === "turn" ? (show.en.includes("left") ? "↰" : "↱") : MI[show.kind]!;
-  // remaining distance to that maneuver
-  let rem = 0;
-  for (let i = bestI; i < Math.min(routePts.length - 1, show.startIndex + offset); i++) rem += Math.hypot(routePts[i + 1]!.x - routePts[i]!.x, routePts[i + 1]!.y - routePts[i]!.y);
-  $("next-ja").textContent = `${show.ja}${rem > 3 && show.kind !== "walk" ? `（あと ${Math.round(rem)} m）` : ""}`;
-  $("next-en").textContent = `${show.en}${rem > 3 && show.kind !== "walk" ? ` · in ${Math.round(rem)} m` : ""}`;
+  $("next-ja").textContent = `${show.ja}${show === upcoming && rem > 3 ? ` · あと ${Math.round(rem)} m` : ""}`;
+  $("next-en").textContent = `${show.en}${show === upcoming && rem > 3 ? ` · in ${Math.round(rem)} m` : ""}`;
+  cuePoint = routePts[Math.min(routePts.length - 1, show.startIndex + offset)]!;
+  $("maneuver-anchor").textContent = `${$("next-icon").textContent} ${show.kind === "turn" ? (show.en.includes("left") ? "左 Left" : "右 Right") : show.toFloorLabel ?? `${Math.round(rem)} m`}`;
   document.querySelectorAll("#steps li").forEach((li) => li.classList.toggle("cur", Number((li as HTMLElement).dataset.i) === maneuvers.indexOf(show)));
+  showFloorToast(current);
   if (bestD > 9 && !player.guide && routeOffSince < 0) routeOffSince = performance.now();
   if (bestD <= 9) routeOffSince = -1;
   if (routeOffSince > 0 && performance.now() - routeOffSince > 2500 && fromPick.kind === "here") {
-    routeOffSince = -1;
-    const guiding = !!player.guide;
-    computeRoute(); // re-route from current position
-    if (guiding && route) {
-      player.startGuide(routePts);
-      $("guide").textContent = "⏸ 停止 Pause";
-    }
+    computeRoute(); // Uses the same body-swept current-location attachment as initial routing.
   }
+}
+function projectLabel(id: string, point: GuidePoint, height: number, clamp: boolean) {
+  const el = $(id);
+  const p = new THREE.Vector3(point.x, point.z + height, -point.y).project(camera);
+  const inFront = p.z > -1 && p.z < 1;
+  const visible = inFront && (clamp || (Math.abs(p.x) < 0.85 && Math.abs(p.y) < 0.7 && Math.abs(point.z - player.z) < 4));
+  el.classList.toggle("hidden", !visible);
+  if (!visible) return;
+  // Keep labels clear of header, footer and the phone sheet.
+  const bottom = innerWidth <= 600 ? (journey === "preview" ? innerHeight * 0.42 : innerHeight - 250) : innerHeight - 110;
+  const x = Math.max(90, Math.min(innerWidth - 90, (p.x + 1) * innerWidth / 2));
+  const y = Math.max(180, Math.min(bottom, (1 - p.y) * innerHeight / 2));
+  el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
+}
+function updateWorldLabels() {
+  if (!route || journey === "arrived") return;
+  const end = routePts[routePts.length - 1]!;
+  if (toPick?.kind === "poi") {
+    const f = nodeById.get(end.nodeId)?.floorId ?? toPick.poi.floorId;
+    $("destination-label").textContent = `◎ ${poiName(toPick.poi).ja} / ${poiName(toPick.poi).en} · ${floorLabel(floorById.get(f ?? "")).short}`;
+    projectLabel("destination-label", end, 1.4, true);
+  }
+  if (cuePoint && journey !== "preview") projectLabel("maneuver-anchor", cuePoint, 0.9, false);
 }
 let routeOffSince = -1;
 
@@ -650,24 +841,29 @@ function interact() {
 // ------------------------------------------------------------ minimap
 const mm = $<HTMLCanvasElement>("minimap");
 const mmc = mm.getContext("2d")!;
+function toggleMap() { mm.classList.toggle("big"); mm.setAttribute("aria-pressed", String(mm.classList.contains("big"))); }
+mm.onclick = toggleMap;
+mm.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleMap(); } };
 function drawMinimap() {
   const W = mm.width;
   const big = mm.classList.contains("big");
-  const scale = big ? 2.2 : 3.2; // px per metre
+  const overview = journey === "preview" ? routeMapFrame(routePts, W) : null;
+  const scale = overview?.scale ?? (big ? 2.2 : 3.2);
+  const center = overview ?? player;
   mmc.setTransform(1, 0, 0, 1, 0, 0);
   mmc.clearRect(0, 0, W, W);
   mmc.fillStyle = "rgba(14,16,20,0.92)";
   mmc.fillRect(0, 0, W, W);
   mmc.save();
   mmc.translate(W / 2, W / 2);
-  if (!big) mmc.rotate(-cam.yaw);
+  if (!big && !overview) mmc.rotate(-cam.yaw);
   mmc.scale(scale, -scale);
-  mmc.translate(-player.x, -player.y);
+  mmc.translate(-center.x, -center.y);
   const lvFloor = floorAtZ(player.z);
   for (const lv of layout.levels) {
     const isCur = lv.floorId === lvFloor.id;
-    if (!isCur && Math.abs(lv.z - player.z) > 9) continue;
-    mmc.globalAlpha = isCur ? 1 : 0.18;
+    if (!overview && !isCur && Math.abs(lv.z - player.z) > 9) continue;
+    mmc.globalAlpha = isCur ? 1 : overview ? 0.28 : 0.18;
     for (const s of lv.slabs) {
       mmc.beginPath();
       for (const ring of s.rings) {
@@ -681,7 +877,7 @@ function drawMinimap() {
   mmc.globalAlpha = 1;
   // route
   if (routePts.length > 1) {
-    mmc.lineWidth = 1.4;
+    mmc.lineWidth = overview ? 3 / scale : 1.4;
     mmc.lineCap = "round";
     mmc.lineJoin = "round";
     for (let i = 1; i < routePts.length; i++) {
@@ -689,7 +885,7 @@ function drawMinimap() {
       const b = routePts[i]!;
       if (b.elevator) continue;
       const near = Math.abs((a.z + b.z) / 2 - player.z) < 2.5;
-      mmc.strokeStyle = near ? "#ff3fae" : "rgba(255,63,174,0.3)";
+      mmc.strokeStyle = overview ? "#eedcb8" : near ? "#eedcb8" : "rgba(238,220,184,0.3)";
       mmc.beginPath();
       mmc.moveTo(a.x, a.y);
       mmc.lineTo(b.x, b.y);
@@ -698,7 +894,7 @@ function drawMinimap() {
     const e = routePts[routePts.length - 1]!;
     mmc.fillStyle = "#ffd84a";
     mmc.beginPath();
-    mmc.arc(e.x, e.y, 2.2, 0, Math.PI * 2);
+    mmc.arc(e.x, e.y, overview ? 6 / scale : 2.2, 0, Math.PI * 2);
     mmc.fill();
   }
   // POIs on this level
@@ -710,8 +906,8 @@ function drawMinimap() {
   mmc.restore();
   // player arrow
   mmc.save();
-  mmc.translate(W / 2, W / 2);
-  mmc.rotate(big ? player.heading : player.heading - cam.yaw);
+  mmc.translate(W / 2 + (player.x - center.x) * scale, W / 2 - (player.y - center.y) * scale);
+  mmc.rotate(big || overview ? player.heading : player.heading - cam.yaw);
   mmc.fillStyle = "#ffffff";
   mmc.beginPath();
   mmc.moveTo(0, -14);
@@ -723,7 +919,7 @@ function drawMinimap() {
   mmc.restore();
   mmc.fillStyle = "rgba(255,255,255,0.75)";
   mmc.font = "700 22px sans-serif";
-  mmc.fillText(floorLabel(lvFloor).short, 16, 34);
+  mmc.fillText(overview ? "経路全体 · Route overview" : floorLabel(lvFloor).short, 16, 34);
 }
 
 // ------------------------------------------------------------ coverage / help dialogs
@@ -750,9 +946,20 @@ function frame() {
   step(Math.min(clock.getDelta(), 0.05));
   requestAnimationFrame(frame);
 }
-function step(dt: number) {
+function step(dt: number, render = true) {
   const t = clock.elapsedTime + simOffset;
-  player.update(dt, readInput(), cam.yaw);
+  const input = readInput();
+  const manual = Math.abs(input.forward) > 0.05 || Math.abs(input.strafe) > 0.05;
+  if (manual) {
+    if (journey === "guiding") resumeIndex = player.guideIndex;
+    if (route && journey !== "arrived") setJourney("walking");
+    if (!$("panel-content").hidden) setPanel(false);
+    $("guide-pause").textContent = "▶";
+    $("guide").textContent = "▶ 案内歩行 Guide";
+  }
+  if (!document.querySelector("dialog[open]")) player.update(dt, input, cam.yaw);
+  else { player.speed = player.vx = player.vy = player.stridePhase = 0; }
+  if (!render) return;
   station.update(dt, t);
   crowd.update(dt, { x: player.x, y: player.y, z: player.z });
   updateCamera(dt, performance.now() / 1000);
@@ -761,13 +968,16 @@ function step(dt: number) {
   avatar.object.rotation.y = -player.heading;
   avatar.update(dt, player.speed, { onStairs: Math.abs(player.climbing) > 0.2, climbing: player.climbing });
   fill.position.set(player.x, player.z + 2.4, -player.y);
-  chevronTex.offset.y = (chevronTex.offset.y - dt * 1.1) % 1;
+  if (!reducedMotion) chevronTex.offset.y = (chevronTex.offset.y - dt * 0.65) % 1;
+  ribbonPlayer.value.set(player.x, player.z, -player.y);
   const lv = floorAtZ(player.z);
   const fl = floorLabel(lv);
   $("floor-label").textContent = fl.short;
   $("floor-sub").textContent = `推定 ${lv.renderElevationM.toFixed(0)} m · est.`;
   audio.update(dt, { x: player.x, y: player.y, z: player.z, heading: cam.yaw }, { speed: player.speed, onStairs: Math.abs(player.climbing) > 0.2, onEscalator: false, levelLabel: fl.short, ceilingHeight: 3.2 });
   if (route) updateNext();
+  updateWorldLabels();
+  if (performance.now() > toastUntil) $("floor-toast").classList.add("hidden");
   updatePrompt();
   drawMinimap();
   renderer.info.reset();
@@ -802,12 +1012,31 @@ window.__gteki = {
   routeTo(poiId: string, fromPoiId?: string) {
     const p = bundle.pois.find((x) => x.id === poiId);
     if (!p) return "no poi";
-    fromPick = fromPoiId ? { kind: "poi", poi: bundle.pois.find((x) => x.id === fromPoiId)! } : { kind: "here" };
+    const fromPoi = fromPoiId ? bundle.pois.find((x) => x.id === fromPoiId) : null;
+    if (fromPoiId && !fromPoi) return "no origin poi";
+    fromPick = fromPoi ? { kind: "poi", poi: fromPoi } : { kind: "here" };
+    $<HTMLInputElement>("from").value = fromPoi ? poiName(fromPoi).ja : "";
+    $<HTMLInputElement>("to").value = poiName(p).ja;
     toPick = { kind: "poi", poi: p };
     computeRoute();
     return route ? { m: Math.round(route.totalLengthM), steps: maneuvers.map((m) => m.ja) } : $("route-error").textContent;
   },
   guide: toggleGuide,
+  /** Capture real guide progress, never manufacture an arrival event. */
+  walkUntil(stage: "stairs" | "arrival", maxSeconds = 600) {
+    if (!route) return { ok: false, reason: "no route" };
+    let elapsed = 0;
+    for (; elapsed < maxSeconds; elapsed += 1 / 30) {
+      step(1 / 30, false);
+      const stepIndex = Math.max(0, player.guideIndex - 1 - (routePts[0]?.nodeId === "here" ? 1 : 0));
+      const mode = route.steps[stepIndex]?.mode;
+      if (stage === "stairs" && player.guide && (mode === "stairs" || mode === "escalator") && Math.abs(player.climbing) > 0.2) { camInit = false; step(0); return { ok: true, elapsed, mode }; }
+      if (stage === "arrival" && journey === "arrived") { camInit = false; step(0); return { ok: true, elapsed }; }
+      if (!player.guide) return { ok: false, reason: "guide stopped", elapsed };
+    }
+    return { ok: false, reason: "timeout", elapsed };
+  },
+  panel: setPanel,
   teleportNode(id: string, heading?: number) {
     const n = nodeById.get(id);
     if (!n) return false;
@@ -844,5 +1073,5 @@ window.__gteki = {
   },
   crowd,
   station,
-  state: () => ({ crowd: crowd.count, x: player.x, y: player.y, z: player.z, heading: player.heading, floor: floorLabel(floorAtZ(player.z)).short, fps: Math.round(fps), guiding: !!player.guide, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
+  state: () => ({ crowd: crowd.count, x: player.x, y: player.y, z: player.z, heading: player.heading, floor: floorLabel(floorAtZ(player.z)).short, fps: Math.round(fps), guiding: !!player.guide, journey, cameraDistance: +cameraDistance.toFixed(2), reducedMotion, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
 };

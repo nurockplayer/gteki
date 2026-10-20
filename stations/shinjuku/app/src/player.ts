@@ -2,7 +2,49 @@
  * Third-person walker over the analytic WalkWorld (station ENU frame).
  * Free roam (keyboard / touch joystick) and guided autopilot along a route polyline.
  */
-import type { WalkWorld, XY } from "../../scene/layout.ts";
+import { pointInRings, type WalkWorld, type XY } from "../../scene/layout.ts";
+
+export interface CameraPoint extends XY { z: number }
+export interface CameraSurface { z: number; rings: XY[][] }
+
+/** A small camera volume, swept in ENU. Uses the same walls (including props and
+ * railings) as the walker, plus the actual cut floor/ceiling polygons. Sampling
+ * at half-radius prevents the boom from skipping thin walls at stair heads.
+ * Re-sweep AFTER smoothing too: interpolation can otherwise cut a corner. */
+export function sweepCamera(
+  anchor: CameraPoint,
+  desired: CameraPoint,
+  world: Pick<WalkWorld, "firstWallHit">,
+  surfaces: readonly CameraSurface[],
+  radius = 0.24,
+): CameraPoint {
+  const length = Math.hypot(desired.x - anchor.x, desired.y - anchor.y, desired.z - anchor.z);
+  if (length < 1e-6) return { ...anchor };
+  const n = Math.max(1, Math.ceil(length / (radius * 0.5)));
+  const nearby = surfaces.filter((s) => s.z >= Math.min(anchor.z, desired.z) - radius && s.z <= Math.max(anchor.z, desired.z) + radius);
+  const blocked = (p: CameraPoint) => {
+    for (const s of nearby) {
+      if (Math.abs(s.z - p.z) >= radius) continue;
+      const r = Math.sqrt(radius * radius - (s.z - p.z) ** 2);
+      if ([{ x: 0, y: 0 }, { x: r, y: 0 }, { x: -r, y: 0 }, { x: 0, y: r }, { x: 0, y: -r }].some((o) => pointInRings({ x: p.x + o.x, y: p.y + o.y }, s.rings))) return true;
+    }
+    for (const dz of [0, -radius * 0.75, radius * 0.75]) {
+      const r = Math.sqrt(radius * radius - dz * dz);
+      for (const a of [0, Math.PI / 4, Math.PI / 2, Math.PI * 3 / 4]) {
+        const x = Math.cos(a) * r, y = Math.sin(a) * r;
+        if (world.firstWallHit({ x: p.x - x, y: p.y - y }, { x: p.x + x, y: p.y + y }, p.z + dz) < 1) return true;
+      }
+    }
+    return false;
+  };
+  let safe = { ...anchor };
+  for (let i = 1; i <= n; i++) {
+    const p = { x: anchor.x + (desired.x - anchor.x) * i / n, y: anchor.y + (desired.y - anchor.y) * i / n, z: anchor.z + (desired.z - anchor.z) * i / n };
+    if (blocked(p)) return safe;
+    safe = p;
+  }
+  return safe;
+}
 
 export interface MoveInput {
   /** -1..1 forward/back, relative to camera yaw */
@@ -37,6 +79,8 @@ export class Player {
   vy = 0;
   climbing = 0;
   onRun = false;
+  /** Half-turn per footstep, using the existing synthesized audio cadence. */
+  stridePhase = 0;
   guide: GuidePoint[] | null = null;
   guideIndex = 0;
   onGuideEvent: ((e: { type: "elevator" | "arrived"; point: GuidePoint }) => void) | null = null;
@@ -57,6 +101,8 @@ export class Player {
     this.y = p.y;
     this.z = p.z;
     this.vx = this.vy = 0;
+    this.speed = this.climbing = 0;
+    this.stridePhase = 0;
     if (heading !== undefined) this.heading = heading;
   }
 
@@ -112,7 +158,11 @@ export class Player {
       this.heading += d * (1 - Math.exp(-12 * dt));
     }
 
+    this.climbing = 0;
     this.tryMove(this.vx * dt, this.vy * dt);
+    // Match audio.ts's footstep cadence, including acceleration and running.
+    const cadence = this.speed <= 1.4 ? 1.8 * this.speed / 1.4 : Math.min(3.4, 1.8 + (this.speed - 1.4) / 2.1);
+    this.stridePhase = this.speed < 0.12 ? 0 : (this.stridePhase + dt * cadence * Math.PI) % (Math.PI * 2);
   }
 
   private tryMove(dx: number, dy: number) {

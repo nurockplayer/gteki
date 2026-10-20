@@ -1,5 +1,5 @@
 /** Turn a RouteResult into human instructions (ja/en) without inventing facts. */
-import type { RouteResult } from "@gteki/navigation";
+import { routeBetween, type RouteResult, type RouteProfile, type Router } from "@gteki/navigation";
 import type { Floor, Node, StationBundle } from "@gteki/schema";
 
 export interface Maneuver {
@@ -10,6 +10,7 @@ export interface Maneuver {
   /** index into route.nodeIds where this maneuver starts */
   startIndex: number;
   toFloorLabel?: string;
+  fromFloorLabel?: string;
   up?: boolean;
 }
 
@@ -55,9 +56,9 @@ export function narrate(bundle: StationBundle, route: RouteResult): Maneuver[] {
       const L = floorLabel(toF);
       const verbJa = up ? "上る" : "下りる";
       const what = { stairs: ["階段", "stairs"], escalator: ["エスカレーター", "escalator"], elevator: ["エレベーター", "elevator"], ramp: ["スロープ", "ramp"] }[s.mode]!;
-      if (s.mode === "elevator") out.push({ kind: "elevator", ja: `エレベーターで ${L.ja} へ`, en: `Take the elevator to ${L.en}`, lengthM: 0, startIndex: i, toFloorLabel: L.short, up });
+      if (s.mode === "elevator") out.push({ kind: "elevator", ja: `エレベーターで ${L.ja} へ`, en: `Take the elevator to ${L.en}`, lengthM: 0, startIndex: i, fromFloorLabel: floorLabel(fromF).short, toFloorLabel: L.short, up });
       else if (fromF?.id === toF?.id) out.push({ kind: s.mode, ja: `${what[0]}を進む（${Math.round(len)} m）`, en: `Continue via ${what[1]} (${Math.round(len)} m)`, lengthM: len, startIndex: i });
-      else out.push({ kind: s.mode, ja: `${what[0]}で ${L.ja} へ${verbJa}`, en: `Take the ${what[1]} ${up ? "up" : "down"} to ${L.en}`, lengthM: len, startIndex: i, toFloorLabel: L.short, up });
+      else out.push({ kind: s.mode, ja: `${what[0]}で ${L.ja} へ${verbJa}`, en: `Take the ${what[1]} ${up ? "up" : "down"} to ${L.en}`, lengthM: len, startIndex: i, fromFloorLabel: floorLabel(fromF).short, toFloorLabel: L.short, up });
       i = j;
       continue;
     }
@@ -103,3 +104,39 @@ export const UNKNOWN_LABELS: Record<string, { ja: string; en: string }> = {
   length: { ja: "距離 不明区間あり", en: "Length unknown on part" },
   access_evidence: { ja: "通行根拠 不足区間あり", en: "Access evidence missing on part" },
 };
+
+/** Presentation only. Distances/timing/fare state remain the router's truth. */
+export function summarizeRoute(bundle: StationBundle, route: RouteResult) {
+  const floors = new Map(bundle.floors.map((f) => [f.id, f]));
+  const visited = route.steps.length ? [route.steps[0]!.fromFloorId, ...route.steps.map((s) => s.toFloorId)] : [];
+  const floorLabels = visited.filter((id, i) => i === 0 || id !== visited[i - 1]).map((id) => floorLabel(floors.get(id)).short);
+  return {
+    distanceM: Math.round(route.totalLengthM),
+    minutes: Math.max(1, Math.ceil(route.estimatedSeconds / 60)),
+    floorChanges: route.floorChanges,
+    floorLabels,
+    fare: route.crossesFareBoundary === true
+      ? { ja: "改札を通過 · きっぷ・IC が必要", en: "Crosses ticket gates · ticket / IC required" }
+      : route.crossesFareBoundary === null
+        ? { ja: "改札通過の有無は未確認", en: "Fare boundary unverified" }
+        : { ja: "改札内外の移動なし", en: "No fare boundary crossing" },
+  };
+}
+
+/** Fit the whole route in the existing map without a camera flight through floors. */
+export function routeMapFrame(points: readonly { x: number; y: number }[], size: number) {
+  if (!points.length) return null;
+  const xs = points.map((p) => p.x), ys = points.map((p) => p.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+  return { x: (minX + maxX) / 2, y: (minY + maxY) / 2, scale: (size - 88) / Math.max(12, maxX - minX, maxY - minY) };
+}
+
+/** Nearby means a verified route on this floor, never a straight-line guess. */
+export function nearbyExits(bundle: StationBundle, router: Router, originNodeId: string, profile: RouteProfile, limitM = 80) {
+  const origin = bundle.nodes.find((n) => n.id === originNodeId);
+  if (!origin) return [];
+  return bundle.pois.filter((p) => p.category === "exit" && p.floorId === origin.floorId && !p.connectorNodeIds.includes(originNodeId)).flatMap((poi) => {
+    const r = routeBetween(router, { kind: "node", nodeId: originNodeId }, poi, profile);
+    return r.ok && r.floorChanges === 0 && r.totalLengthM <= limitM ? [{ poi, distanceM: Math.round(r.totalLengthM) }] : [];
+  }).sort((a, b) => a.distanceM - b.distanceM).slice(0, 2);
+}
