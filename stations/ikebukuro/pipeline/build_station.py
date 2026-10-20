@@ -160,45 +160,58 @@ def outside_coverage(edges, areas):
 
 
 def crowd_lanes(grid, edges):
-    """Presentation data for scene/crowd.ts: per verified edge, every 1 m of horizontal distance and at
-    the end node, how far (m) a pedestrian may stand left/right of the polyline and still be on a
-    surveyed walkable cell (>= 0.35 m from walls) without crossing a wall. Right = right of the edge's
-    from->to direction."""
+    """Presentation data for scene/crowd.ts: per verified edge and per 1 m interval of horizontal
+    distance (the last one ends at the end node), how far (m, up to 1) a pedestrian may stand
+    left/right of the polyline anywhere in that interval: every point between the polyline and that
+    offset is on a surveyed walkable cell (>= 0.35 m from walls) without crossing a wall. Right =
+    right of the edge's from->to direction.
+
+    Each value is the minimum over probes every FINE of distance (so both interval ends are probed)
+    and at every polyline vertex with both adjacent segment directions (the crowd's sideways vector
+    turns there), and each probe tests the whole lateral span in FINE steps, so no narrowing or turn
+    longer than FINE falls between probes."""
+    FINE = 0.05
+    STEPS = round(1.0 / FINE)
+
+    def on_floor(px, py, z):
+        cell = grid.cells.get((round((px - grid.x0) / RES), round((py - grid.y0) / RES)), [])
+        return any(abs(cz - z) < 0.3 for cz, _ in cell)
+
+    def clearance(x, y, z, ux, uy, side):
+        rx, ry = side * uy, -side * ux
+        n = 0
+        while n < STEPS and on_floor(x + (n + 1) * FINE * rx, y + (n + 1) * FINE * ry, z):
+            n += 1
+        # one wall test covers the whole span from the polyline out to the offset
+        while n and grid._blocked(x, y, x + n * FINE * rx, y + n * FINE * ry, z):
+            n -= 1
+        return round(n * FINE, 2)
+
     lanes = {}
     for e in edges:
         if e["verification"] != "verified":
             continue
         g = e["geometry"]
+        # probes (d, x, y, z, ux, uy): every FINE of distance from the edge start (so every interval
+        # end is probed exactly) plus each segment's two vertices with that segment's direction
+        probes, acc = [], 0.0
+        for a, b in zip(g, g[1:]):
+            L = math.dist((a["x"], a["y"]), (b["x"], b["y"]))
+            if L < 1e-9:
+                continue
+            ux, uy = (b["x"] - a["x"]) / L, (b["y"] - a["y"]) / L
+            ts = [0.0, 1.0] + [(m * FINE - acc) / L for m in range(math.ceil(acc / FINE), math.floor((acc + L) / FINE) + 1)]
+            for t in ts:
+                t = min(1.0, max(0.0, t))
+                probes.append((acc + t * L, a["x"] + (b["x"] - a["x"]) * t, a["y"] + (b["y"] - a["y"]) * t,
+                               a["z"] + (b["z"] - a["z"]) * t, ux, uy))
+            acc += L
         left, right = [], []
-        seg = [(g[i], g[i + 1]) for i in range(len(g) - 1)]
-        total = sum(math.dist((a["x"], a["y"]), (b["x"], b["y"])) for a, b in seg)
-        # every whole metre, plus the exact endpoint when the length isn't whole, so the tail
-        # between the last metre and the node is bracketed by its own clearance
-        ds = [float(i) for i in range(int(total + 1e-6) + 1)]
-        if total - ds[-1] > 1e-6:
-            ds.append(total)
-        for d in ds:
-            acc = 0.0
-            for a, b in seg:
-                L = math.dist((a["x"], a["y"]), (b["x"], b["y"]))
-                if acc + L >= d or (a, b) == seg[-1]:
-                    t = 0.0 if L == 0 else min(1.0, (d - acc) / L)
-                    x, y = a["x"] + (b["x"] - a["x"]) * t, a["y"] + (b["y"] - a["y"]) * t
-                    z = a["z"] + (b["z"] - a["z"]) * t
-                    ux, uy = ((b["x"] - a["x"]) / L, (b["y"] - a["y"]) / L) if L else (1.0, 0.0)
-                    break
-                acc += L
-            rx, ry = uy, -ux
-            for side, out in ((1, right), (-1, left)):
-                ok = 0.0
-                for k in range(1, 5):
-                    o = 0.25 * k
-                    px, py = x + side * o * rx, y + side * o * ry
-                    cell = grid.cells.get((round((px - grid.x0) / RES), round((py - grid.y0) / RES)), [])
-                    if not any(abs(cz - z) < 0.3 for cz, _ in cell) or grid._blocked(x, y, px, py, z):
-                        break
-                    ok = o
-                out.append(ok)
+        for k in range(math.ceil(acc - 1e-6)):
+            lo, hi = float(k), min(k + 1.0, acc)
+            inside = [q for q in probes if lo - 1e-6 <= q[0] <= hi + 1e-6]
+            right.append(min(clearance(*q[1:], 1) for q in inside))
+            left.append(min(clearance(*q[1:], -1) for q in inside))
         lanes[e["id"]] = {"stepM": 1.0, "left": left, "right": right}
     return lanes
 

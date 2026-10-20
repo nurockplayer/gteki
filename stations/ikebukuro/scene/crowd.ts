@@ -8,7 +8,7 @@ interface Edge { id: string; from: string; to: string; verification: string; geo
 
 /** cum: 3D arc length (walking speed); hcum: horizontal distance, the axis crowd_lanes.json is sampled on. */
 interface Path { pts: THREE_NS.Vector3[]; cum: number[]; hcum: number[]; length: number; from: string; to: string; lane?: Lane }
-/** Safe lateral extent (m) every stepM of horizontal distance along an edge, plus one at the end node, from pipeline/build_station.py. */
+/** Safe lateral extent (m) over each stepM interval of horizontal distance along an edge (the last ends at the end node), from pipeline/build_station.py. */
 export interface Lane { stepM: number; left: number[]; right: number[] }
 interface Agent { path: number; forward: boolean; s: number; speed: number; offset: number; phase: number; hiddenUntil: number }
 
@@ -247,14 +247,13 @@ export function buildCrowd(
       // keep to the left like Tokyo pedestrians tend to, plus personal offset, clamped to the
       // surveyed walkable lane so nobody stands in a wall or off the floor.
       let off = -0.3 + a.offset * 0.4;
-      if (p.lane) {
-        // The two samples that bracket the walker: either may report no room. Lanes are sampled by
-        // horizontal distance, so on stairs the 3D arc length a.s would run ahead of them.
+      if (p.lane?.left.length) {
+        // The interval the walker is in; each value already holds over the whole interval. Lanes are
+        // indexed by horizontal distance, so on stairs the 3D arc length a.s would run ahead of them.
         const k = Math.min(p.lane.left.length - 1, Math.max(0, Math.floor(along / p.lane.stepM)));
-        const k2 = Math.min(p.lane.left.length - 1, k + 1);
         // lanes are measured to walkable-cell centres; keep shoulders (~0.3 m) off the walls
-        const left = Math.max(0, Math.min(p.lane.left[k]!, p.lane.left[k2]!) - 0.2);
-        const right = Math.max(0, Math.min(p.lane.right[k]!, p.lane.right[k2]!) - 0.2);
+        const left = Math.max(0, p.lane.left[k]! - 0.2);
+        const right = Math.max(0, p.lane.right[k]! - 0.2);
         const edgeOff = a.forward ? off : -off; // edge frame: + = right of from->to
         off = (a.forward ? 1 : -1) * Math.min(right, Math.max(-left, edgeOff));
       } else {
