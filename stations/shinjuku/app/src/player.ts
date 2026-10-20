@@ -2,7 +2,103 @@
  * Third-person walker over the analytic WalkWorld (station ENU frame).
  * Free roam (keyboard / touch joystick) and guided autopilot along a route polyline.
  */
-import type { WalkWorld, XY } from "../../scene/layout.ts";
+import { pointInRings, type WalkWorld, type XY } from "../../scene/layout.ts";
+
+export interface CameraPoint extends XY { z: number }
+export interface CameraSurface { z: number; rings: XY[][] }
+
+/** A small camera volume, swept in ENU. Uses the caller's camera collision walls,
+ * plus the actual cut floor/ceiling polygons. Sampling
+ * at half-radius prevents the boom from skipping thin walls at stair heads.
+ * Re-sweep AFTER smoothing too: interpolation can otherwise cut a corner. */
+export function sweepCamera(
+  anchor: CameraPoint,
+  desired: CameraPoint,
+  world: Pick<WalkWorld, "firstWallHit">,
+  surfaces: readonly CameraSurface[],
+  radius = 0.24,
+): CameraPoint {
+  const length = Math.hypot(desired.x - anchor.x, desired.y - anchor.y, desired.z - anchor.z);
+  if (length < 1e-6) return { ...anchor };
+  const n = Math.max(1, Math.ceil(length / (radius * 0.5)));
+  const nearby = surfaces.filter((s) => s.z >= Math.min(anchor.z, desired.z) - radius && s.z <= Math.max(anchor.z, desired.z) + radius);
+  const blocked = (p: CameraPoint) => {
+    for (const s of nearby) {
+      if (Math.abs(s.z - p.z) >= radius) continue;
+      const r = Math.sqrt(radius * radius - (s.z - p.z) ** 2);
+      if ([{ x: 0, y: 0 }, { x: r, y: 0 }, { x: -r, y: 0 }, { x: 0, y: r }, { x: 0, y: -r }].some((o) => pointInRings({ x: p.x + o.x, y: p.y + o.y }, s.rings))) return true;
+    }
+    for (const dz of [0, -radius * 0.75, radius * 0.75]) {
+      const r = Math.sqrt(radius * radius - dz * dz);
+      for (const a of [0, Math.PI / 4, Math.PI / 2, Math.PI * 3 / 4]) {
+        const x = Math.cos(a) * r, y = Math.sin(a) * r;
+        if (world.firstWallHit({ x: p.x - x, y: p.y - y }, { x: p.x + x, y: p.y + y }, p.z + dz) < 1) return true;
+      }
+    }
+    return false;
+  };
+  let safe = { ...anchor };
+  for (let i = 1; i <= n; i++) {
+    const p = { x: anchor.x + (desired.x - anchor.x) * i / n, y: anchor.y + (desired.y - anchor.y) * i / n, z: anchor.z + (desired.z - anchor.z) * i / n };
+    if (blocked(p)) return safe;
+    safe = p;
+  }
+  return safe;
+}
+
+/** Try raised/tilted positions behind the player before accepting a short boom. */
+export function chooseFollowCamera(
+  anchor: CameraPoint,
+  yaw: number,
+  pitch: number,
+  distance: number,
+  world: Pick<WalkWorld, "firstWallHit">,
+  surfaces: readonly CameraSurface[],
+  radius = 0.24,
+): CameraPoint {
+  const yaws = [0.35, -0.35, 0.7, -0.7, 1.25, -1.25, Math.PI / 2, -Math.PI / 2, Math.PI];
+  const pitches = [...new Set([pitch, -0.5, -0.75, -1.0])];
+  const candidates: { point: CameraPoint; length: number; yawOffset: number; pitchOffset: number; pitchIndex: number }[] = [];
+  const attempt = (yawOffset: number, pi: number) => {
+    const candidatePitch = pitches[pi]!;
+    const candidateYaw = yaw + yawOffset;
+    const cp = Math.cos(candidatePitch);
+    const forward = { x: Math.sin(candidateYaw) * cp, y: Math.cos(candidateYaw) * cp, z: Math.sin(candidatePitch) };
+    const desired = {
+      x: anchor.x - forward.x * distance,
+      y: anchor.y - forward.y * distance,
+      z: anchor.z - forward.z * distance,
+    };
+    const point = sweepCamera(anchor, desired, world, surfaces, radius);
+    const candidate = {
+      point,
+      length: Math.hypot(point.x - anchor.x, point.y - anchor.y, point.z - anchor.z),
+      yawOffset,
+      pitchOffset: candidatePitch - pitch,
+      pitchIndex: pi,
+    };
+    candidates.push(candidate);
+    return candidate;
+  };
+  // Most frames are clear: only one sweep is needed. If the boom is blocked,
+  // raise and tilt on the same bearing before searching around the sides.
+  const fullDistance = distance * 0.95;
+  for (let pi = 0; pi < pitches.length; pi++) {
+    const candidate = attempt(0, pi);
+    if (candidate.length >= fullDistance) return candidate.point;
+  }
+  for (const yawOffset of yaws) {
+    for (let pi = 0; pi < pitches.length; pi++) {
+      const candidate = attempt(yawOffset, pi);
+      if (candidate.length >= fullDistance) return candidate.point;
+    }
+  }
+  candidates.sort((a, b) => {
+    const score = (c: typeof a) => c.length - Math.abs(c.yawOffset) * 0.28 - Math.abs(c.pitchOffset) * 0.08;
+    return score(b) - score(a) || a.pitchIndex - b.pitchIndex;
+  });
+  return candidates[0]?.point ?? anchor;
+}
 
 export interface MoveInput {
   /** -1..1 forward/back, relative to camera yaw */
@@ -18,6 +114,8 @@ export interface GuidePoint {
   z: number;
   /** true when the segment ending at this point is an elevator ride (teleport). */
   elevator?: boolean;
+  /** true when the segment ending at this point is an escalator ride. */
+  escalator?: boolean;
   nodeId: string;
 }
 
@@ -37,8 +135,14 @@ export class Player {
   vy = 0;
   climbing = 0;
   onRun = false;
+  /** Half-turn per footstep, using the existing synthesized audio cadence. */
+  stridePhase = 0;
   guide: GuidePoint[] | null = null;
   guideIndex = 0;
+  /** Guided travel multiplier. Free walking is deliberately unaffected. */
+  guideSpeedMultiplier: 1 | 2 | 4 = 1;
+  /** True while the guide is carrying the player on an escalator. */
+  carriedByEscalator = false;
   onGuideEvent: ((e: { type: "elevator" | "arrived"; point: GuidePoint }) => void) | null = null;
   /** seconds of input-free time (camera auto-follow) */
   idle = 0;
@@ -57,16 +161,24 @@ export class Player {
     this.y = p.y;
     this.z = p.z;
     this.vx = this.vy = 0;
+    this.speed = this.climbing = 0;
+    this.stridePhase = 0;
     if (heading !== undefined) this.heading = heading;
   }
 
   startGuide(points: GuidePoint[]) {
     this.guide = points;
     this.guideIndex = 1;
+    this.carriedByEscalator = false;
+  }
+
+  setGuideSpeed(multiplier: number) {
+    this.guideSpeedMultiplier = multiplier === 4 ? 4 : multiplier === 2 ? 2 : 1;
   }
 
   stopGuide() {
     this.guide = null;
+    this.carriedByEscalator = false;
   }
 
   update(dt: number, input: MoveInput, cameraYaw: number) {
@@ -88,7 +200,9 @@ export class Player {
       if (this.guide) this.stopGuide();
     } else if (this.guide) {
       wish = this.guideStep(dt);
-      target = input.run ? RUN_SPEED : WALK_SPEED;
+      target = this.carriedByEscalator
+        ? this.escalatorHorizontalSpeed(wish)
+        : (input.run ? RUN_SPEED : WALK_SPEED) * this.guideSpeedMultiplier;
       this.idle += dt;
     } else {
       this.idle += dt;
@@ -100,10 +214,17 @@ export class Player {
     const tvx = wish.x * target;
     const tvy = wish.y * target;
     const k = 1 - Math.exp(-accel * dt);
-    this.vx += (tvx - this.vx) * k;
-    this.vy += (tvy - this.vy) * k;
+    if (this.carriedByEscalator) {
+      // Boarding changes to a ride immediately; do not carry walking momentum
+      // onto the moving run or make the avatar look as though it is walking.
+      this.vx = tvx;
+      this.vy = tvy;
+    } else {
+      this.vx += (tvx - this.vx) * k;
+      this.vy += (tvy - this.vy) * k;
+    }
     this.speed = Math.hypot(this.vx, this.vy);
-    this.onRun = this.speed > 2.2;
+    this.onRun = !this.carriedByEscalator && this.speed > 2.2;
 
     if (this.speed > 0.02) {
       const want = Math.atan2(this.vx, this.vy);
@@ -112,7 +233,23 @@ export class Player {
       this.heading += d * (1 - Math.exp(-12 * dt));
     }
 
+    this.climbing = 0;
     this.tryMove(this.vx * dt, this.vy * dt);
+    // Match audio.ts's footstep cadence, including acceleration and running.
+    const cadence = this.speed <= 1.4 ? 1.8 * this.speed / 1.4 : Math.min(3.4, 1.8 + (this.speed - 1.4) / 2.1);
+    this.stridePhase = this.carriedByEscalator || this.speed < 0.12 ? 0 : (this.stridePhase + dt * cadence * Math.PI) % (Math.PI * 2);
+  }
+
+  private escalatorHorizontalSpeed(wish: XY) {
+    if (!this.guide || this.guideIndex >= this.guide.length) return 0;
+    const p = this.guide[this.guideIndex]!;
+    const horizontal = Math.hypot(p.x - this.x, p.y - this.y);
+    const vertical = Math.abs(p.z - this.z);
+    const runLength = Math.hypot(horizontal, vertical);
+    if (runLength < 1e-6) return 0;
+    // WalkWorld advances height along the same projected run, so scale horizontal
+    // velocity to keep the 3D travel speed at 0.5 m/s.
+    return 0.5 * this.guideSpeedMultiplier * Math.hypot(wish.x, wish.y) * horizontal / runLength;
   }
 
   private tryMove(dx: number, dy: number) {
@@ -138,21 +275,24 @@ export class Player {
     if (this.guideIndex >= g.length) {
       const last = g[g.length - 1]!;
       this.guide = null;
+      this.carriedByEscalator = false;
       this.onGuideEvent?.({ type: "arrived", point: last });
       return { x: 0, y: 0 };
     }
     const p = g[this.guideIndex]!;
     if (p.elevator) {
+      this.carriedByEscalator = false;
       this.teleport(p);
       this.guideIndex++;
       this.onGuideEvent?.({ type: "elevator", point: p });
       return { x: 0, y: 0 };
     }
+    this.carriedByEscalator = !!p.escalator;
     const dx = p.x - this.x;
     const dy = p.y - this.y;
     const d = Math.hypot(dx, dy);
-    const reach = 0.45 + this.speed * dt;
-    if (d < reach || (d < 1.2 && Math.abs(p.z - this.z) > 0.8)) {
+    const reach = (p.escalator ? 0.05 : 0.45) + this.speed * dt;
+    if (d < reach || (!p.escalator && d < 1.2 && Math.abs(p.z - this.z) > 0.8)) {
       this.guideIndex++;
       return this.guideStep(dt);
     }
