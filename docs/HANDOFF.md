@@ -4,7 +4,9 @@ Updated: 2026-10-20. **Status: PRE-KICKOFF.** GitHub repository, initial documen
 
 ## Authority
 
-Owner-approved: product name GTEki; public browser-first search/3D navigation; Ikebukuro 70% + Shinjuku 30% parallel; renderer-independent route/search; high-fidelity Godot option. Opus 5.5 leads engineering, Codex assists. Only pnpm/Homebrew for installations.
+Owner-approved: product name GTEki; public browser-first search/3D navigation; Ikebukuro 70% + Shinjuku 30% parallel; renderer-independent route/search; high-fidelity Godot option. Opus 5.5 leads engineering with final technical authority inside approved scope; Codex assists. Only pnpm/Homebrew for installations.
+
+**Preferred collaboration (Owner instruction, 2026-10-20):** Opus 5.5 may direct GPT-6.1 Sol (xHigh) and GPT-6 Astra (High) as available. They are collaborators/advisers, not mandatory decision or review gates. Check the actual model/effort configuration before crediting their work; if unavailable, record that accurately and use practical alternatives. Opus retains freedom to choose division of work and technical approach.
 
 ## Read first
 
