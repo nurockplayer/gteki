@@ -144,6 +144,52 @@ function solidDoors(THREE: ThreeNS, mesh: THREE_NS.Mesh, routes: THREE_NS.Vector
   return geo;
 }
 
+/** Raycast-only copies of `meshes` in world space, bucketed into TILE m squares (by triangle centroid)
+ * per face side, so a ray only scans the tiles its bounding spheres say it can reach. */
+const TILE = 8;
+function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[]): THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial>[] {
+  const sides = new Map<number, THREE_NS.MeshBasicMaterial>();
+  const buckets = new Map<string, { side: number; pos: number[] }>();
+  const v = new THREE.Vector3();
+  for (const o of meshes) {
+    const m = o as THREE_NS.Mesh;
+    if (!m.isMesh) continue;
+    m.updateWorldMatrix(true, false);
+    const mat = m.material as THREE_NS.Material | THREE_NS.Material[];
+    const side = Array.isArray(mat) ? THREE.DoubleSide : mat.side;
+    const g = m.geometry;
+    const src = g.attributes.position;
+    const idx = g.index;
+    const n = idx ? idx.count : src.count;
+    const tri: number[] = new Array(9);
+    for (let i = 0; i + 2 < n; i += 3) {
+      for (let k = 0; k < 3; k++) {
+        v.fromBufferAttribute(src, idx ? idx.getX(i + k) : i + k).applyMatrix4(m.matrixWorld);
+        tri[k * 3] = v.x; tri[k * 3 + 1] = v.y; tri[k * 3 + 2] = v.z;
+      }
+      const key = `${side}:${Math.floor((tri[0] + tri[3] + tri[6]) / 3 / TILE)}:${Math.floor((tri[2] + tri[5] + tri[8]) / 3 / TILE)}`;
+      let b = buckets.get(key);
+      if (!b) buckets.set(key, (b = { side, pos: [] }));
+      b.pos.push(...tri);
+    }
+  }
+  const out: THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial>[] = [];
+  for (const [, b] of [...buckets].sort(([a], [c]) => (a < c ? -1 : a > c ? 1 : 0))) {
+    let mat = sides.get(b.side);
+    if (!mat) sides.set(b.side, (mat = new THREE.MeshBasicMaterial({ side: b.side as THREE_NS.Side })));
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(b.pos, 3));
+    geo.computeBoundingSphere();
+    geo.computeBoundingBox();
+    const t = new THREE.Mesh(geo, mat);
+    t.visible = false;
+    t.matrixAutoUpdate = false;
+    t.updateMatrixWorld(true);
+    out.push(t);
+  }
+  return out;
+}
+
 /** Per-vertex (bottom, top) height of the opening each triangle belongs to (connected by shared vertices). */
 function openingBands(arr: number[]): number[] {
   const tris = arr.length / 9;
@@ -324,10 +370,14 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     if (p && p.z !== null) spawnPoints.push({ x: p.x, y: p.y, z: p.z, headingDeg: s.headingDeg, nodeId: s.nodeId, label: s.label });
   }
 
+  // The explorer raycasts walkable and colliders several times a frame. Whole-station meshes cost a
+  // full triangle scan per ray; ~8 m tiles let three.js skip every tile out of a short ray's reach.
+  const walkTiles = raycastTiles(THREE, walkable), colliderTiles = raycastTiles(THREE, colliders);
+  const rayTiles = [...walkTiles, ...colliderTiles];
   return {
     root,
-    walkable,
-    colliders,
+    walkable: walkTiles,
+    colliders: colliderTiles,
     spawnPoints,
     environment: { lighting: lightmap ? "scene" : "default", background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
     update: (dt, elapsed) => {
@@ -345,6 +395,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       for (const e of extra) e.geometry.dispose();
       bridges?.geometry.dispose();
       bridges?.material.dispose();
+      for (const t of rayTiles) t.geometry.dispose();
+      for (const m of new Set(rayTiles.map((t) => t.material))) m.dispose();
     },
   };
 }
