@@ -65,6 +65,9 @@ export class Explorer {
   /** Image-based light applied only to core-owned materials (avatar) when the scene owns lighting. */
   private coreEnvMap: THREE.Texture | null = null;
   private lighting: "default" | "scene" = "default";
+  /** Host-owned WebAudio for station scenes; created lazily, resumed on the first user gesture. */
+  private audio: { context: AudioContext; master: GainNode } | null = null;
+  private muted = readMuted();
   private readonly pos = new THREE.Vector3();
   private yaw = 0; // radians; 0 = facing north (-Z)
   private pitch = -0.12;
@@ -238,6 +241,7 @@ export class Explorer {
       },
       quality: this.quality,
       renderer: this.renderer,
+      ...(this.ensureAudio() ? { audio: { context: this.audio!.context, destination: this.audio!.master } } : {}),
     };
 
     this.sceneError = null;
@@ -632,8 +636,43 @@ export class Explorer {
     this.camera.lookAt(head.clone().add(dir.multiplyScalar(2)));
   }
 
+  private ensureAudio(): boolean {
+    if (this.audio) return true;
+    const Ctor = (globalThis as { AudioContext?: typeof AudioContext }).AudioContext;
+    if (!Ctor) return false;
+    try {
+      const context = new Ctor();
+      const master = context.createGain();
+      master.gain.value = this.muted ? 0 : 1;
+      master.connect(context.destination);
+      this.audio = { context, master };
+    } catch {
+      return false;
+    }
+    // Browsers keep audio suspended until a user gesture.
+    const unlock = () => { void this.audio?.context.resume(); };
+    for (const type of ["pointerdown", "keydown", "touchend"]) window.addEventListener(type, unlock, { once: true, capture: true });
+    return true;
+  }
+
+  get audioMuted(): boolean {
+    return this.muted;
+  }
+
+  setMuted(muted: boolean): void {
+    this.muted = muted;
+    try { localStorage.setItem("gteki.muted", muted ? "1" : "0"); } catch { /* storage unavailable */ }
+    if (this.audio) this.audio.master.gain.setTargetAtTime(muted ? 0 : 1, this.audio.context.currentTime, 0.05);
+  }
+
+  audioInfo(): { available: boolean; state: string | null; muted: boolean } {
+    return { available: this.audio !== null, state: this.audio?.context.state ?? null, muted: this.muted };
+  }
+
   dispose(): void {
     this.disposed = true;
+    void this.audio?.context.close();
+    this.audio = null;
     this.renderer.setAnimationLoop(null);
     this.clearStation();
     this.input.dispose();
@@ -658,4 +697,8 @@ function disposeObject(root: THREE.Object3D): void {
     mat.dispose();
   }
   for (const t of textures) t.dispose();
+}
+
+function readMuted(): boolean {
+  try { return localStorage.getItem("gteki.muted") === "1"; } catch { return false; }
 }

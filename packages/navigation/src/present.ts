@@ -103,8 +103,13 @@ const TEXT = {
     u_turn: (m: number) => `引き返して約${m}m`,
     gate: () => "改札を通過",
     moving_walkway: (m: number) => `動く歩道で約${m}m`,
-    vertical: (kind: string, sense: string | null, floor: string) =>
-      `${{ stairs: "階段", escalator: "エスカレーター", elevator: "エレベーター", ramp: "スロープ" }[kind]}で${sense === "up" ? "上へ・" : sense === "down" ? "下へ・" : ""}${floor}へ`,
+    /** `floor` null = the chain starts and ends on the same floor: name no destination floor. */
+    vertical: (kind: string, sense: string | null, floor: string | null) => {
+      const via = { stairs: "階段", escalator: "エスカレーター", elevator: "エレベーター", ramp: "スロープ" }[kind];
+      const dir = sense === "up" ? "上へ" : sense === "down" ? "下へ" : "";
+      if (floor === null) return dir ? `${via}で${dir}` : `${via}を利用`;
+      return `${via}で${dir ? `${dir}・` : ""}${floor}へ`;
+    },
     arrive: () => "目的地に到着",
   },
   en: {
@@ -115,8 +120,8 @@ const TEXT = {
     u_turn: (m: number) => `Turn back, ~${m} m`,
     gate: () => "Pass the ticket gate",
     moving_walkway: (m: number) => `Moving walkway ~${m} m`,
-    vertical: (kind: string, sense: string | null, floor: string) =>
-      `Take the ${kind === "elevator" ? "elevator" : kind}${sense ? ` ${sense}` : ""} to ${floor}`,
+    vertical: (kind: string, sense: string | null, floor: string | null) =>
+      `Take the ${kind}${sense ? ` ${sense}` : ""}${floor === null ? "" : ` to ${floor}`}`,
     arrive: () => "Arrive at destination",
   },
 };
@@ -144,6 +149,8 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
   let current: Instruction | null = null;
   /** Evidenced sense of the last vertical instruction, including "level". */
   let lastSense: "up" | "down" | "level" | null = null;
+  /** Floor where the current vertical chain started. */
+  let chainFromFloorId: string | null = null;
   const flush = () => {
     if (!current) return;
     const m = Math.max(1, Math.round(current.distanceM));
@@ -161,12 +168,14 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
       const from = nodes.get(step.fromNodeId)!;
       const to = nodes.get(step.toNodeId)!;
       const sense3 = verticalSense(floors.get(step.fromFloorId), floors.get(step.toFloorId), from.position.z, to.position.z);
-      const label = floorDisplayName(floors.get(step.toFloorId), lang);
       const prev = out[out.length - 1]!;
+      const merging = prev.kind === kind && kind !== "gate" && (lastSense === sense3 || lastSense === "level" || sense3 === "level");
+      if (!merging) chainFromFloorId = step.fromFloorId;
+      const label = chainFromFloorId === step.toFloorId ? null : floorDisplayName(floors.get(step.toFloorId), lang);
       // Consecutive segments of one stair/escalator/lift chain read as one instruction — only when they
       // share the same evidenced sense; a known "up" never absorbs a segment whose direction is UNKNOWN.
       // A known-level segment continues either sense.
-      if (prev.kind === kind && kind !== "gate" && (lastSense === sense3 || lastSense === "level" || sense3 === "level")) {
+      if (merging) {
         lastSense = lastSense === "level" ? sense3 : lastSense;
         prev.stepIndexes.push(i);
         prev.distanceM += step.lengthM;

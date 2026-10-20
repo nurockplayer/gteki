@@ -68,3 +68,13 @@ describe("vertical instructions never invent direction", () => {
     expect(ins[1]!.text).not.toMatch(/\bup\b|\bdown\b/);
   });
 });
+
+describe("vertical instructions on one floor", () => {
+  it("names no destination floor when the stair chain starts and ends on the same floor", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("st", "a", "b", { mode: "stairs" })]);
+    b.nodes.find((n) => n.id === "b")!.position.z = -2;
+    const r = ok(createRouter(b).route("start", "b", base));
+    expect(describeRoute(b, r, "en").find((i) => i.kind === "stairs")!.text).toBe("Take the stairs down");
+    expect(describeRoute(b, r, "ja").find((i) => i.kind === "stairs")!.text).toBe("階段で下へ");
+  });
+});
