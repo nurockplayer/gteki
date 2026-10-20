@@ -53,9 +53,13 @@ stations/<id>/gteki/
 | Coverage area `status` is routable / visual_only / unverified / excluded | validate |
 | Step-free never uses stairs or escalators; stairs with `steps:false`, or stairs/escalators with `wheelchair:true`, are errors | router + validate |
 | With `at`, known hours are checked for the whole time the route spends on each edge (entering, leaving and every whole clock minute in between, rolling over midnight and weekdays), not only at departure; an edge left more than a year after the departure day fails closed | router |
-| Production builds apply the asset rights rules (≥1 source, all REUSABLE_WITH_CONDITIONS data sources) even to synthetic stations | web build |
+| Production builds apply every publication rights rule (node positions, edge geometry, floor elevations, POI display positions, coverage polygons, assets) to every station, synthetic or not | web build |
 | A known floor `elevationM` needs a REUSABLE_WITH_CONDITIONS data source among its `sourceLabels` (real stations) and equals `renderElevationM` | validate |
 | Credits and route provenance disclose `Source.modified` (加工して作成 / modified) and list asset `derivation` notices | web |
+| Every source (including ones cited only by assets or coverage) is credited with its link, licence name and licence link; only http(s) URLs become links | web |
+| With clock-dependent hours the search keeps up to 16 distinct arrival times per node, so a cheaper but slower path never shuts out a faster valid one; beyond that a route may be missed (no_path), never accepted wrongly | router |
+| The station clock keeps seconds (fractional minutes) when checking hours | web |
+| "Go straight" / 直進 only when the walked plan polyline stays within 35° of its first heading; otherwise "Continue" / 進む | navigation |
 | Real-station nodes cite position sources; POI `displayPosition` and coverage polygons need ≥1 reusable data source | validate |
 | `elevationSource` is one of measured / source-derived / symbolic / unknown; symbolic and unknown keep `elevationM` null | validate |
 | Without `accessEvidence`, an edge's paid / fare-boundary / wheelchair / steps flags are UNKNOWN to the router | router |

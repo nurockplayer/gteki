@@ -34,10 +34,13 @@ const compareIds = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0
 interface QueueEntry {
   nodeId: string;
   cost: number;
+  /** Push order: the last tie-breaker, so equal labels are settled deterministically. */
+  seq: number;
+  label: Label;
 }
 
 const compareEntries = (a: QueueEntry, b: QueueEntry): number =>
-  a.cost - b.cost || compareIds(a.nodeId, b.nodeId);
+  a.cost - b.cost || compareIds(a.nodeId, b.nodeId) || a.seq - b.seq;
 
 /** A binary min-heap; equal costs are visited in node-id order. */
 class MinHeap {
@@ -144,6 +147,21 @@ interface Previous {
   traversal: Traversal;
 }
 
+/** A partial route: where it is, at what cost and how many seconds after departure, and how it got there. */
+interface Label {
+  nodeId: string;
+  cost: number;
+  elapsed: number;
+  parent: Label | null;
+  via: Previous | null;
+}
+
+/**
+ * Distinct arrival times kept per node when hours depend on the clock. Beyond this a valid but
+ * unusual route can be missed: it is then reported as no_path (fail closed), never accepted wrongly.
+ */
+const MAX_LABELS_PER_NODE = 16;
+
 const DAY_MS = 86_400_000;
 
 /**
@@ -235,13 +253,13 @@ export function createRouter(bundle: StationBundle): Router {
     return true;
   }
 
-  function result(goal: string, previous: Map<string, Previous>, profile: RouteProfile, endpointEvidence: readonly EvidenceRef[]): RouteResult {
+  function result(goal: Label, profile: RouteProfile, endpointEvidence: readonly EvidenceRef[]): RouteResult {
     // Starts have no predecessor, so the walk back ends at whichever start the path came from.
     const path: Previous[] = [];
-    let fromNodeId = goal;
-    for (let step = previous.get(fromNodeId); step; step = previous.get(fromNodeId)) {
-      path.push(step);
-      fromNodeId = step.fromNodeId;
+    let fromNodeId = goal.nodeId;
+    for (let label: Label | null = goal; label?.via; label = label.parent) {
+      path.push(label.via);
+      fromNodeId = label.via.fromNodeId;
     }
     path.reverse();
 
@@ -382,28 +400,47 @@ export function createRouter(bundle: StationBundle): Router {
 
       const avoided = new Set(profile.avoidModes);
       const closed = new Set(profile.extraClosedEdgeIds);
-      // Multi-source Dijkstra: every start begins at cost 0, so the cheapest start wins on the router's own cost.
-      const distances = new Map<string, number>(starts.map((id) => [id, 0]));
-      // Seconds from departure along each node's best path: opening hours are checked when the route gets there.
-      const elapsed = new Map<string, number>(starts.map((id) => [id, 0]));
-      const previous = new Map<string, Previous>();
-      const settled = new Set<string>();
+      // Multi-source label-setting search: every start begins at cost 0, so the cheapest start wins on the
+      // router's own cost. Without clock-dependent hours this is plain Dijkstra (one label per node). With
+      // them, whether an edge is open depends on when the route gets there, so a cheaper but slower path
+      // must not shut out a faster one: each node keeps settled labels with distinct arrival times, and a
+      // label is only dropped for an equally timed cheaper one (or past MAX_LABELS_PER_NODE).
+      const timed = profile.at !== undefined && bundle.edges.some((e) => e.hours?.kind === "window");
+      const perNode = timed ? MAX_LABELS_PER_NODE : 1;
+      const settled = new Map<string, Label[]>();
+      const best = new Map<string, number>();
       const queue = new MinHeap();
-      for (const id of starts) queue.push({ nodeId: id, cost: 0 });
-      for (let current = queue.pop(); current; current = queue.pop()) {
-        if (settled.has(current.nodeId) || current.cost !== distances.get(current.nodeId)) continue;
-        settled.add(current.nodeId);
-        if (goals.has(current.nodeId)) return result(current.nodeId, previous, profile, endpointEvidence);
+      let seq = 0;
+      const push = (label: Label) => queue.push({ nodeId: label.nodeId, cost: label.cost, seq: seq++, label });
+      for (const id of starts) push({ nodeId: id, cost: 0, elapsed: 0, parent: null, via: null });
+      const visits = (label: Label, nodeId: string) => {
+        for (let l: Label | null = label; l; l = l.parent) if (l.nodeId === nodeId) return true;
+        return false;
+      };
+      for (let entry = queue.pop(); entry; entry = queue.pop()) {
+        const current = entry.label;
+        const done = settled.get(current.nodeId) ?? [];
+        // Popped in cost order, so a settled label is never dearer: it covers this one when time doesn't
+        // matter, or when it got there at the same moment.
+        if (done.length >= perNode || done.some((l) => !timed || l.elapsed === current.elapsed)) continue;
+        done.push(current);
+        settled.set(current.nodeId, done);
+        if (goals.has(current.nodeId)) return result(current, profile, endpointEvidence);
         for (const traversal of adjacency.get(current.nodeId)!) {
-          const at = elapsed.get(current.nodeId)!;
+          const to = traversal.toNodeId;
+          // Every ancestor is settled, so only a node with settled labels can close a loop.
+          const there = settled.get(to)?.length ?? 0;
+          if (there >= perNode || (timed && there > 0 && visits(current, to))) continue;
           const seconds = edgeSeconds(traversal.edge.mode, traversal.measurement.lengthM);
-          if (settled.has(traversal.toNodeId) || !permits(traversal.edge, profile, avoided, closed, at, seconds)) continue;
+          if (!permits(traversal.edge, profile, avoided, closed, current.elapsed, seconds)) continue;
           const cost = current.cost + traversal.measurement.cost;
-          if (!Number.isFinite(cost) || cost >= (distances.get(traversal.toNodeId) ?? Infinity)) continue;
-          distances.set(traversal.toNodeId, cost);
-          elapsed.set(traversal.toNodeId, at + seconds);
-          previous.set(traversal.toNodeId, { fromNodeId: current.nodeId, traversal });
-          queue.push({ nodeId: traversal.toNodeId, cost });
+          if (!Number.isFinite(cost)) continue;
+          // Untimed, only a strictly cheaper path to a node is worth queueing (as before).
+          if (!timed) {
+            if (cost >= (best.get(to) ?? Infinity)) continue;
+            best.set(to, cost);
+          }
+          push({ nodeId: to, cost, elapsed: current.elapsed + seconds, parent: current, via: { fromNodeId: current.nodeId, traversal } });
         }
       }
       return { ok: false, reason: "no_path", message: "No traversable path connects the start to a goal." };

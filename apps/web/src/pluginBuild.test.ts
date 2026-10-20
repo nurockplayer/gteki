@@ -83,17 +83,32 @@ describe("production build publication allowlist", () => {
       .rejects.toThrow(/refusing to publish undeclared files.*traced\.svg/);
   }, 30_000);
 
-  it("applies the asset rights rules to synthetic stations too", async () => {
+  it("applies the publication rights rules to synthetic stations too", async () => {
     const p = project(`export const buildScene = () => null;`);
     const manifest = path.join(p.station, "gteki", "station.json");
     const m = JSON.parse(fs.readFileSync(manifest, "utf8"));
     expect(m.station.synthetic).toBe(true);
     m.sources[0].rights = "RESTRICTED";
     fs.writeFileSync(manifest, JSON.stringify(m));
-    await expect(run(p)).rejects.toThrow(/asset b1 derives from non-reusable sources: demo-synthetic/);
+    await expect(run(p)).rejects.toThrow(/asset\.rights \(b1\): asset derives from source demo-synthetic with rights RESTRICTED/);
     m.sources[0].rights = "REUSABLE_WITH_CONDITIONS";
     m.assets[0].sourceIds = [];
     fs.writeFileSync(manifest, JSON.stringify(m));
-    await expect(run(p)).rejects.toThrow(/asset b1 has no source provenance/);
+    await expect(run(p)).rejects.toThrow(/asset\.source \(b1\): asset without source provenance/);
+  }, 30_000);
+
+  it("refuses a synthetic station whose graph derives from a restricted source, even with no assets", async () => {
+    const p = project(`export const buildScene = () => null;`);
+    const dir = path.join(p.station, "gteki");
+    const m = JSON.parse(fs.readFileSync(path.join(dir, "station.json"), "utf8"));
+    const g = JSON.parse(fs.readFileSync(path.join(dir, "graph.json"), "utf8"));
+    m.assets = [];
+    fs.rmSync(path.join(dir, "assets", "b1.glb"));
+    m.sources.push({ ...m.sources[0], id: "traced-plan", rights: "RESTRICTED" });
+    fs.writeFileSync(path.join(dir, "station.json"), JSON.stringify(m));
+    await run(p);
+    g.nodes[0].sourceRefs = [{ sourceId: "traced-plan", featureId: "plan-1" }];
+    fs.writeFileSync(path.join(dir, "graph.json"), JSON.stringify(g));
+    await expect(run(p)).rejects.toThrow(new RegExp(`node\\.source\\.rights \\(${g.nodes[0].id}\\)`));
   }, 30_000);
 });
