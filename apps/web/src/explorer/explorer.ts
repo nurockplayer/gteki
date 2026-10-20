@@ -67,6 +67,12 @@ export class Explorer {
   private lighting: "default" | "scene" = "default";
   /** Host-owned WebAudio for station scenes; created lazily, resumed on the first user gesture. */
   private audio: { context: AudioContext; master: GainNode } | null = null;
+  /**
+   * Per-load bus between a station scene and the master gain. Cancelling or clearing a station
+   * disconnects its bus at once, so a superseded (even still-building) scene can never stay audible.
+   */
+  private stationAudio: GainNode | null = null;
+  private audioUnlock: (() => void) | null = null;
   private muted = readMuted();
   private readonly pos = new THREE.Vector3();
   private yaw = 0; // radians; 0 = facing north (-Z)
@@ -256,7 +262,7 @@ export class Explorer {
       },
       quality: this.quality,
       renderer: this.renderer,
-      ...(this.ensureAudio() ? { audio: { context: this.audio!.context, destination: this.audio!.master } } : {}),
+      ...(this.ensureAudio() ? { audio: { context: this.audio!.context, destination: this.newStationAudioBus() } } : {}),
     };
 
     this.sceneError = null;
@@ -323,6 +329,7 @@ export class Explorer {
   }
 
   private clearStation(): void {
+    this.disconnectStationAudio();
     this.stopGuide();
     this.clearRoute();
     this.clearPois();
@@ -665,9 +672,32 @@ export class Explorer {
       return false;
     }
     // Browsers keep audio suspended until a user gesture.
-    const unlock = () => { void this.audio?.context.resume(); };
-    for (const type of ["pointerdown", "keydown", "touchend"]) window.addEventListener(type, unlock, { once: true, capture: true });
+    const unlock = () => {
+      void this.audio?.context.resume();
+      this.removeAudioUnlock();
+    };
+    this.audioUnlock = unlock;
+    for (const type of AUDIO_UNLOCK_EVENTS) window.addEventListener(type, unlock, { capture: true });
     return true;
+  }
+
+  private removeAudioUnlock(): void {
+    if (!this.audioUnlock) return;
+    for (const type of AUDIO_UNLOCK_EVENTS) window.removeEventListener(type, this.audioUnlock, { capture: true });
+    this.audioUnlock = null;
+  }
+
+  private newStationAudioBus(): GainNode {
+    this.disconnectStationAudio();
+    const bus = this.audio!.context.createGain();
+    bus.connect(this.audio!.master);
+    this.stationAudio = bus;
+    return bus;
+  }
+
+  private disconnectStationAudio(): void {
+    this.stationAudio?.disconnect();
+    this.stationAudio = null;
   }
 
   get audioMuted(): boolean {
@@ -680,12 +710,14 @@ export class Explorer {
     if (this.audio) this.audio.master.gain.setTargetAtTime(muted ? 0 : 1, this.audio.context.currentTime, 0.05);
   }
 
-  audioInfo(): { available: boolean; state: string | null; muted: boolean } {
-    return { available: this.audio !== null, state: this.audio?.context.state ?? null, muted: this.muted };
+  audioInfo(): { available: boolean; state: string | null; muted: boolean; stationBus: boolean } {
+    return { available: this.audio !== null, state: this.audio?.context.state ?? null, muted: this.muted, stationBus: this.stationAudio !== null };
   }
 
   dispose(): void {
     this.disposed = true;
+    this.removeAudioUnlock();
+    this.disconnectStationAudio();
     void this.audio?.context.close();
     this.audio = null;
     this.renderer.setAnimationLoop(null);
@@ -713,6 +745,8 @@ function disposeObject(root: THREE.Object3D): void {
   }
   for (const t of textures) t.dispose();
 }
+
+const AUDIO_UNLOCK_EVENTS = ["pointerdown", "keydown", "touchend"] as const;
 
 function readMuted(): boolean {
   try { return localStorage.getItem("gteki.muted") === "1"; } catch { return false; }

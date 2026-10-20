@@ -100,3 +100,25 @@ describe("second review round", () => {
     expect(r.stale).toBeNull();
   });
 });
+
+describe("third review round", () => {
+  it("refuses a sloped edge whose stated-length fallback geometry has unknown heights (never 0 m)", () => {
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("st", "a", "upper", { mode: "stairs", lengthM: null, geometry: [{ x: 10, y: 0, z: null }, { x: 10, y: 0, z: null }] }),
+    ]);
+    expect(createRouter(b).route("start", "upper", base).ok).toBe(false);
+    b.edges[1]!.geometry = [{ x: 10, y: 0, z: 0 }, { x: 13, y: 0, z: 4 }];
+    expect(ok(createRouter(b).route("start", "upper", base)).steps[1]!.lengthM).toBeCloseTo(5);
+  });
+
+  it("counts a lift ride as time, not walking length", () => {
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("lift", "a", "upper", { mode: "elevator", lengthM: null, geometry: [{ x: 10, y: 0, z: 0 }, { x: 10, y: 0, z: 4 }] }),
+    ]);
+    const r = ok(createRouter(b).route("start", "upper", base));
+    expect(r.steps[1]!.lengthM).toBe(0);
+    expect(r.estimatedSeconds).toBeGreaterThanOrEqual(45);
+  });
+});

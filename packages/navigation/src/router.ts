@@ -80,13 +80,18 @@ interface Measurement {
 function measureEdge(edge: Edge): Measurement | null {
   if (edge.lengthM !== null && (!Number.isFinite(edge.lengthM) || edge.lengthM < 0)) return null;
   const symbolicZ = edge.geometryZ === "symbolic";
-  // A plan (x, y) length is a real length only for level travel. Stairs/escalators/ramps with
-  // display-only heights and no stated length are unmeasurable, hence unroutable — never "0 m".
-  if (edge.lengthM === null && symbolicZ && SLOPED_MODES.has(edge.mode)) return null;
+  if (edge.mode === "elevator") {
+    // A lift ride adds time, not walking distance: its length is the plan (x, y) walk in/out only.
+    const walk = edge.lengthM ?? geometryLength(edge.geometry, true);
+    return walk === null ? null : { lengthM: walk, cost: ELEVATOR_SECONDS * WALK_SPEED };
+  }
+  if (edge.lengthM === null && SLOPED_MODES.has(edge.mode)) {
+    // Stairs/escalators/ramps without a stated length need every geometry height known and
+    // non-symbolic; a plan length would silently drop the climb (a stair could read "0 m").
+    if (symbolicZ || !edge.geometry || edge.geometry.some((p) => p.z === null)) return null;
+  }
   const lengthM = edge.lengthM ?? geometryLength(edge.geometry, symbolicZ);
   if (lengthM === null) return null;
-  // Every mode needs measurable geometry or length; lift cost is fixed per ride.
-  if (edge.mode === "elevator") return { lengthM, cost: ELEVATOR_SECONDS * WALK_SPEED };
   const cost = lengthM * (edge.mode === "stairs" ? 1.6 : 1);
   return Number.isFinite(cost) ? { lengthM, cost } : null;
 }
