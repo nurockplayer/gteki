@@ -18,6 +18,17 @@ const GEOMETRY_Z = new Set(["measured", "source", "symbolic"]);
 const ASSET_ROLES = new Set(["visual", "collision", "visual+collision"]);
 const POI_CATEGORIES = new Set(["exit", "ticket_gate", "platform", "elevator", "escalator", "stairs", "toilet", "shop", "locker", "atm", "service", "transfer", "other"]);
 const WEEKDAYS = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
+/** File types a station may publish next to its GLBs (same list the web build discovers). */
+export const ASSET_FILE_EXT = /\.(glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|ogg|mp3|m4a|json)$/i;
+const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json"]);
+const CANONICAL_MESSAGE = "asset paths must be canonical slash-separated relative paths inside the station folder (no ., .. or empty segments; no colon, backslash, ? or #)";
+
+/** Relative, canonical and URL-safe: `?` and `#` would be read as a query or fragment once served. */
+export function isCanonicalAssetPath(p: string): boolean {
+  return !/[:\\?#]/.test(p) && !p.startsWith("/") && !p.split("/").some((seg) => seg === "" || seg === "." || seg === "..");
+}
+
+const ELEVATION_SOURCES = new Set(["measured", "source-derived", "symbolic", "unknown"]);
 const RIGHTS = new Set(["REUSABLE_WITH_CONDITIONS", "REFERENCE_ONLY", "RESTRICTED", "UNVERIFIED"]);
 /** Polyline endpoints further than this from their node are reported. */
 const ENDPOINT_TOLERANCE_M = 1;
@@ -58,10 +69,14 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
 
   if (b.schema !== SCHEMA_VERSION) err("schema.version", `expected ${SCHEMA_VERSION}, got ${String(b.schema)}`);
   if (b.station.frame !== "ENU") err("station.frame", "station frame must be ENU");
+  // Coordinate conversion interprets the origin as JGD2011; any other datum would be silently misread.
+  if (b.station.origin.datum !== "JGD2011") err("station.origin.datum", `origin datum must be JGD2011, got ${String(b.station.origin.datum)}`);
 
   const sourceIds = new Set<string>();
   const sourceRights = new Map(b.sources.map((s) => [s.id, s.rights]));
   const factsOnly = new Set(b.sources.filter((s) => s.usage === "facts-only").map((s) => s.id));
+  /** A source that may feed published geometry: reusable and not restricted to citing facts. */
+  const reusableData = (id: string) => sourceRights.get(id) === "REUSABLE_WITH_CONDITIONS" && !factsOnly.has(id);
   for (const s of b.sources) {
     if (sourceIds.has(s.id)) err("source.dup", `duplicate source id`, s.id);
     sourceIds.add(s.id);
@@ -82,8 +97,9 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     for (const l of f.sourceLabels) if (!sourceIds.has(l.sourceId)) err("floor.source", `unknown source ${l.sourceId}`, f.id);
     if (f.elevationM === null && f.elevationSource === "measured")
       err("floor.elevation", "measured elevation cannot be null", f.id);
-    if (f.elevationM !== null && f.elevationSource === "symbolic")
-      err("floor.elevation", "symbolic elevation must keep elevationM null", f.id);
+    if (!ELEVATION_SOURCES.has(f.elevationSource)) err("floor.elevation", `unknown elevationSource ${String(f.elevationSource)}`, f.id);
+    if (f.elevationM !== null && (f.elevationSource === "symbolic" || f.elevationSource === "unknown"))
+      err("floor.elevation", `${f.elevationSource} elevation must keep elevationM null`, f.id);
   }
 
   const floors = new Map(b.floors.map((f) => [f.id, f]));
@@ -96,6 +112,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     nodeIds.add(n.id);
     if (!floorIds.has(n.floorId)) err("node.floor", `unknown floor ${n.floorId}`, n.id);
     if (!Number.isFinite(n.position.x) || !Number.isFinite(n.position.y)) err("node.position", "non-finite xy", n.id);
+    if (n.sourceRefs.length === 0 && !b.station.synthetic) err("node.source", "node position without source provenance", n.id);
     for (const r of n.sourceRefs) {
       if (!sourceIds.has(r.sourceId)) err("node.source", `unknown source ${r.sourceId}`, n.id);
       // Node coordinates are drawn and measured (straight edges have no other geometry): same gate as edge geometry.
@@ -125,7 +142,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (e.verification === "synthetic" && !b.station.synthetic)
       err("edge.synthetic", "synthetic edge in a non-synthetic bundle", e.id);
     if (e.verification === "verified" && !e.accessEvidence)
-      warn("edge.access", "verified edge without access evidence; access facts are UNKNOWN", e.id);
+      warn("edge.access", "verified edge without access evidence; the router treats its paid/fare/wheelchair/steps flags as UNKNOWN", e.id);
     checkEvidence(e, e.geometryEvidence, "geometryEvidence");
     // Geometry is a derivative of its sources: like assets, it ships publicly only from reusable ones.
     for (const s of e.geometryEvidence.sourceIds) {
@@ -188,9 +205,12 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (a.format !== "glb") err("asset.format", `unsupported asset format ${a.format}`, a.id);
     if (!ASSET_ROLES.has(a.role)) err("asset.role", `unknown asset role ${a.role}`, a.id);
     // Canonical form only: the Web loader keys assets by their exact relative path and Godot refuses ":" and "\\".
-    if (a.uri.includes(":") || a.uri.includes("\\") || a.uri.startsWith("/") || a.uri.split("/").some((seg) => seg === "" || seg === "." || seg === ".."))
-      err("asset.uri", "asset uri must be a canonical slash-separated relative path inside the station folder (no ., .. or empty segments; no colon or backslash)", a.id);
+    if (!isCanonicalAssetPath(a.uri)) err("asset.uri", CANONICAL_MESSAGE, a.id);
     else if (!a.uri.toLowerCase().endsWith(".glb")) err("asset.uri", "glb asset uri must end in .glb", a.id);
+    for (const f of a.files ?? []) {
+      if (!isCanonicalAssetPath(f)) err("asset.files", `${f}: ${CANONICAL_MESSAGE}`, a.id);
+      else if (!ASSET_FILE_EXT.test(f) || CONTRACT_FILES.has(f)) err("asset.files", `${f}: not a publishable asset file type`, a.id);
+    }
     if (a.transform !== undefined && (a.transform.length !== 16 || !a.transform.every(Number.isFinite)))
       err("asset.transform", "transform must be 16 finite numbers (column-major 4x4)", a.id);
     else if (a.transform !== undefined && (a.transform[3] !== 0 || a.transform[7] !== 0 || a.transform[11] !== 0 || a.transform[15] !== 1))
@@ -217,12 +237,18 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (p.evidence.sourceIds.length === 0) err("poi.evidence", "no source ids", p.id);
     for (const s of p.evidence.sourceIds) if (!sourceIds.has(s)) err("poi.evidence", `unknown source ${s}`, p.id);
     if (!isIsoDate(p.evidence.checkedDate)) err("poi.evidence.date", `checkedDate ${p.evidence.checkedDate} is not YYYY-MM-DD`, p.id);
+    // A drawn position needs a reusable geometric basis among its sources (others may still evidence facts).
+    if (p.displayPosition !== null && !b.station.synthetic && !p.evidence.sourceIds.some(reusableData))
+      err("poi.position.rights", "displayPosition needs at least one REUSABLE_WITH_CONDITIONS data source in its evidence", p.id);
     if (p.connectorNodeIds.length === 0) warn("poi.unroutable", "POI has no verified connector; search-only", p.id);
   }
 
   for (const a of b.coverage.areas) {
     if (a.floorId !== null && !floorIds.has(a.floorId)) err("coverage.floor", `unknown floor ${a.floorId}`, a.id);
+    if (a.sourceIds.length === 0) err("coverage.source", "coverage area without sources", a.id);
     for (const sid of a.sourceIds) if (!sourceIds.has(sid)) err("coverage.source", `unknown source ${sid}`, a.id);
+    if (a.polygon && !b.station.synthetic && !a.sourceIds.some(reusableData))
+      err("coverage.polygon.rights", "coverage polygon needs at least one REUSABLE_WITH_CONDITIONS data source", a.id);
   }
 
   return issues;

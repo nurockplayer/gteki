@@ -159,14 +159,19 @@ export function createRouter(bundle: StationBundle): Router {
     traversals.sort((a, b) => compareIds(a.toNodeId, b.toNodeId) || compareIds(a.edge.id, b.edge.id));
   }
 
+  /** Access facts only count when evidenced: without accessEvidence every flag is UNKNOWN. */
+  const accessOf = (edge: Edge): Pick<Edge, "paid" | "crossesFareBoundary" | "wheelchair" | "steps"> =>
+    edge.accessEvidence ? edge : { paid: null, crossesFareBoundary: null, wheelchair: null, steps: null };
+
   function permits(edge: Edge, profile: RouteProfile, avoided: Set<string>, closed: Set<string>): boolean {
     if (
       edge.verification !== "verified" &&
       !(edge.verification === "synthetic" && bundle.station.synthetic === true)
     ) return false;
     if (edge.closed || closed.has(edge.id) || avoided.has(edge.mode)) return false;
-    if (profile.stepFree && (edge.wheelchair !== true || edge.steps === true)) return false;
-    if (profile.fare === "unpaid_only" && (edge.paid !== false || edge.crossesFareBoundary !== false)) return false;
+    const access = accessOf(edge);
+    if (profile.stepFree && (access.wheelchair !== true || access.steps === true)) return false;
+    if (profile.fare === "unpaid_only" && (access.paid !== false || access.crossesFareBoundary !== false)) return false;
     if (edge.hours === null) return profile.hours !== "require_known";
     if (profile.at) {
       const open = isOpenAt(edge.hours, profile.at);
@@ -220,8 +225,9 @@ export function createRouter(bundle: StationBundle): Router {
       estimatedSeconds += edge.mode === "elevator" ? ELEVATOR_SECONDS
         : lengthM / (edge.mode === "stairs" ? 0.5 : edge.mode === "escalator" ? 0.75 : WALK_SPEED);
       if (fromFloorId !== toFloorId) floorChanges++;
-      if (edge.crossesFareBoundary === true) crossesFareBoundary = true;
-      else if (edge.crossesFareBoundary === null) {
+      const access = accessOf(edge);
+      if (access.crossesFareBoundary === true) crossesFareBoundary = true;
+      else if (access.crossesFareBoundary === null) {
         unknown("fare_boundary", edge.id);
         if (crossesFareBoundary === false) crossesFareBoundary = null;
       }
@@ -232,9 +238,9 @@ export function createRouter(bundle: StationBundle): Router {
         const { open, close, days } = edge.hours;
         timeRestricted.push(days ? { edgeId: edge.id, open, close, days } : { edgeId: edge.id, open, close });
       }
-      if (edge.paid === null) unknown("paid", edge.id);
-      if (edge.wheelchair === null) unknown("wheelchair", edge.id);
-      if (edge.steps === null) unknown("steps", edge.id);
+      if (access.paid === null) unknown("paid", edge.id);
+      if (access.wheelchair === null) unknown("wheelchair", edge.id);
+      if (access.steps === null) unknown("steps", edge.id);
       if (edge.accessEvidence === null) unknown("access_evidence", edge.id);
       // Hours evidence counts like geometry and access evidence: its sources are dependencies (an undated
       // one keeps freshness UNKNOWN) and its checkedDate joins evidenceCheckedDate.

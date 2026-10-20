@@ -3,7 +3,7 @@ import { validateBundle } from "@gteki/schema";
 import type { Edge, EdgeMode, StationBundle } from "@gteki/schema";
 import { createRouter, DEFAULT_PROFILE } from "./index.ts";
 import type { RouteProfile, RouteResult, Router } from "./index.ts";
-import { createSyntheticBundle, syntheticEdge as edge, syntheticEvidence } from "./fixtures.ts";
+import { asRealStation, createSyntheticBundle, syntheticEdge as edge, syntheticEvidence } from "./fixtures.ts";
 
 const unpaid: RouteProfile = { fare: "unpaid_only", stepFree: false };
 const stepFree: RouteProfile = { fare: "ticketed", stepFree: true };
@@ -214,7 +214,7 @@ describe("access and verification rules", () => {
 
   it("rejects synthetic edges when the station is not synthetic", () => {
     const bundle = checked(createSyntheticBundle([edge("link", "start", "goal")]));
-    bundle.station.synthetic = false; // Deliberately invalid input exercises the runtime safety boundary.
+    asRealStation(bundle); // Deliberately invalid input exercises the runtime safety boundary.
     expect(validateBundle(bundle).filter((issue) => issue.level === "error").map((issue) => issue.code)).toEqual(["edge.synthetic"]);
     const router = createRouter(bundle);
     expect(router.isTraversable(bundle.edges[0]!, DEFAULT_PROFILE)).toBe(false);
@@ -222,8 +222,7 @@ describe("access and verification rules", () => {
   });
 
   it("accepts verified edges in a non-synthetic bundle", () => {
-    const bundle = createSyntheticBundle([edge("link", "start", "goal", { verification: "verified" })]);
-    bundle.station.synthetic = false;
+    const bundle = asRealStation(createSyntheticBundle([edge("link", "start", "goal", { verification: "verified" })]));
     expect(success(createRouter(checked(bundle)).route("start", "goal")).ok).toBe(true);
   });
 });
@@ -255,6 +254,8 @@ describe("route facts and provenance", () => {
     expect(success(router.route("start", "goal")).unknowns).toEqual([
       { kind: "hours", edgeIds: ["unknown-1", "unknown-2"] },
       { kind: "paid", edgeIds: ["unknown-1", "unknown-2"] },
+      // Without access evidence the fare-boundary flag is UNKNOWN too.
+      { kind: "fare_boundary", edgeIds: ["unknown-1"] },
       { kind: "wheelchair", edgeIds: ["unknown-1"] },
       { kind: "steps", edgeIds: ["unknown-1"] },
       { kind: "access_evidence", edgeIds: ["unknown-1"] },
