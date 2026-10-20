@@ -114,6 +114,10 @@ export interface Router {
   isTraversable(edge: Edge, profile: RouteProfile): boolean;
 }
 
+/**
+ * `createRouter(bundle)` expects a bundle that passed `parseStationFiles` (as the web app and CLI do):
+ * the router keeps its own fail-closed edge rules but does not re-run contract validation.
+ */
 export { createRouter } from "./router.ts";
 export { routeBetween, type RouteEndpoint } from "./poi.ts";
 export { describeRoute, floorDisplayName, instructionPoints, nodeDisplayZ, routePolyline, type Instruction, type InstructionKind, type PolylinePoint } from "./present.ts";

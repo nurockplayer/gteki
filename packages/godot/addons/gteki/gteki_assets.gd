@@ -19,7 +19,7 @@ func load_assets(manifest: Dictionary, gteki_dir: String, station_root: Node3D) 
 			continue
 		var uri: String = asset.uri
 		# Contract URIs stay inside the station's gteki directory.
-		if uri.is_empty() or uri.is_absolute_path() or ":" in uri or "\\" in uri or ".." in uri.split("/") or not uri.to_lower().ends_with(".glb"):
+		if uri.is_empty() or uri.is_absolute_path() or ":" in uri or "\\" in uri or "?" in uri or "#" in uri or ".." in uri.split("/") or not uri.to_lower().ends_with(".glb"):
 			issues.append("Invalid asset URI: %s" % uri)
 			continue
 		var matrix: Variant = asset.get("transform")

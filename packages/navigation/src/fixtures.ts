@@ -18,6 +18,13 @@ export function syntheticEdge(id: string, from: string, to: string, overrides: P
   };
 }
 
+/** Marks a fixture as a real (non-synthetic) station, giving every node the position provenance that requires. */
+export function asRealStation(bundle: StationBundle): StationBundle {
+  bundle.station.synthetic = false;
+  for (const n of bundle.nodes) if (n.sourceRefs.length === 0) n.sourceRefs = [{ sourceId: "fixture-geometry", featureId: n.id }];
+  return bundle;
+}
+
 /** A fresh, explicitly synthetic bundle; optional edges let tests isolate each truth rule. */
 export function createSyntheticBundle(edges?: Edge[]): StationBundle {
   return {

@@ -35,7 +35,7 @@ const SPECS = {
   gap: { id: "string", floorId: "string|null", zone: "string", missingFact: "string", fieldWorkNeeded: "string", approximateExtent: "string?", sourceDate: "string|null?" },
   point2: { x: "number", y: "number" },
   coverage: { summary: "array", areas: "array", gaps: "array", freshness: "string|null" },
-  asset: { id: "string", uri: "string", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?" },
+  asset: { id: "string", uri: "string", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?", files: "array?" },
 } satisfies Record<string, Spec>;
 
 function kindOf(v: unknown): string {
@@ -165,6 +165,7 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
     c.each(m.assets, SPECS.asset, "assets", (asset, where) => {
       c.strings(asset.floorIds, `${where}.floorIds`);
       c.strings(asset.sourceIds, `${where}.sourceIds`);
+      c.strings(asset.files, `${where}.files`);
       if (Array.isArray(asset.transform) && (asset.transform.length !== 16 || !asset.transform.every((v) => typeof v === "number" && Number.isFinite(v))))
         c.issues.push({ level: "error", code: "shape.type", message: `${where}.transform: expected 16 finite numbers`, ref: where });
     });
