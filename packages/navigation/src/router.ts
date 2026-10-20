@@ -466,7 +466,7 @@ export function createRouter(bundle: StationBundle): Router {
       if (stale === null && allFresh && sourceIds.size > 0) stale = false;
     }
     return {
-      ok: true, nodeIds, steps, totalLengthM, estimatedSeconds, waitSeconds, floorChanges, crossesFareBoundary, unknowns,
+      ok: true, profile: { ...profile }, nodeIds, steps, totalLengthM, estimatedSeconds, waitSeconds, floorChanges, crossesFareBoundary, unknowns,
       sourceIds: [...sourceIds].sort(), evidenceCheckedDate, oldestSourceDate, undatedSourceIds, expiredSourceIds, stale, synthetic, timeRestricted, operatorIds,
     };
   }

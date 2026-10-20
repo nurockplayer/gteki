@@ -111,7 +111,7 @@ export async function runRoute(args: string[]): Promise<number> {
   const polyline = result.ok
     ? routePolyline(bundle, result).map((p) => ({ ...p, renderer: enuToRenderer({ x: p.x, y: p.y, z: p.z }) }))
     : [];
-  const instructions = result.ok ? { ja: describeRoute(bundle, result, "ja", options.profile), en: describeRoute(bundle, result, "en", options.profile) } : { ja: [], en: [] };
+  const instructions = result.ok ? { ja: describeRoute(bundle, result, "ja"), en: describeRoute(bundle, result, "en") } : { ja: [], en: [] };
   process.stdout.write(`${JSON.stringify({ contract: "gteki.route/0.1", stationId: bundle.station.id, result, path, polyline, instructions }, null, 2)}\n`);
   return result.ok ? 0 : 1;
 }

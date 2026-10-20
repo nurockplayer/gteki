@@ -238,7 +238,7 @@ describe("describeRoute junction hints", () => {
     b.edges.push(edge("p-stairs", "p", "r", { mode: "stairs", lengthM: 30, wheelchair: false, steps: true }));
     const stepFree: RouteProfile = { fare: "ticketed", stepFree: true, avoidModes: ["stairs"] };
     const r = route(b, "start", "g", stepFree);
-    expect(describeRoute(b, r, "en", stepFree)[2]!.junctions).toEqual([{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }]);
+    expect(describeRoute(b, r, "en")[2]!.junctions).toEqual([{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }]);
   });
 
   it("drops branches the query closes (closures, known hours at departure, strict UNKNOWN hours)", () => {
@@ -246,7 +246,7 @@ describe("describeRoute junction hints", () => {
     const b = columnHall();
     b.edges = b.edges.filter((e) => e.id !== "q-east");
     b.edges.push(edge("p-twin", "p", "lift-top", { lengthM: 31, hours: { kind: "window", open: "07:00", close: "09:00", evidence: b.edges[0]!.hours!.evidence } }));
-    const kept = (profile?: RouteProfile) => describeRoute(b, route(b, "start", "g", profile), "en", profile)[2]!.junctions;
+    const kept = (profile?: RouteProfile) => describeRoute(b, route(b, "start", "g", profile), "en")[2]!.junctions;
     expect(kept()).toBeUndefined();
     const keepRight = [{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }];
     expect(kept({ fare: "ticketed", stepFree: false, extraClosedEdgeIds: ["p-twin"] })).toEqual(keepRight);
@@ -257,11 +257,36 @@ describe("describeRoute junction hints", () => {
     expect(kept({ fare: "ticketed", stepFree: false })).toBeUndefined();
   });
 
-  it("does not count a one-way return edge or a parallel edge to the next node as a branch", () => {
+  it("does not count a reciprocal or duplicated edge as a branch, but does count a parallel corridor drawn elsewhere", () => {
     const b = columnHall();
     b.edges = b.edges.filter((e) => e.id !== "p-fork" && e.id !== "q-east");
-    b.edges.push(edge("p-a-back", "p", "a", { direction: "forward" }), edge("q-p-twin", "p", "q", { lengthM: 31, geometry: [{ x: 10, y: -30, z: 0 }, { x: 12, y: -45, z: 0 }, { x: 7, y: -60, z: 0 }] }));
+    b.edges.push(edge("p-a-back", "p", "a", { direction: "forward" }), edge("p-q-dup", "p", "q", { lengthM: 31 }));
     expect(describeRoute(b, route(b, "start", "g"), "en")[2]!.junctions).toBeUndefined();
+    // A second corridor to q that leaves p ~8° left of arrival (the route bends 6° right): keep right at p.
+    // It rejoins at q from behind, so q is a junction too, where the route clearly goes straight on.
+    b.edges = b.edges.filter((e) => e.id !== "p-q-dup");
+    b.edges.push(edge("p-q-west", "p", "q", { lengthM: 40, geometry: [{ x: 10, y: -30, z: 0 }, { x: 12, y: -45, z: 0 }, { x: 7, y: -60, z: 0 }] }));
+    expect(describeRoute(b, route(b, "start", "g"), "en")[2]!.junctions).toEqual([
+      { nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null },
+      { nodeId: "q", stepIndex: 3, atM: 60, action: "straight", name: "Exit B" },
+    ]);
+  });
+
+  it("treats a branch at exactly 90° as ahead when deciding whether a side is unambiguous", () => {
+    const b = columnHall();
+    b.edges = b.edges.filter((e) => e.id !== "q-east" && e.id !== "p-fork");
+    b.nodes.push(at("ahead", 10, -55), at("west", -10, -30));
+    b.edges.push(edge("p-ahead", "p", "ahead", { lengthM: 25 }), edge("p-west", "p", "west", { lengthM: 20 }));
+    // Branches dead ahead (straighter than the route's 6° right) and at exactly 90° right flank it: "keep right" could take either.
+    expect(describeRoute(b, route(b, "start", "g"), "en")[2]!.junctions).toBeUndefined();
+    b.edges = b.edges.filter((e) => e.id !== "p-west");
+    expect(describeRoute(b, route(b, "start", "g"), "en")[2]!.junctions).toEqual([{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }]);
+  });
+
+  it("records the routing profile on the result, so callers need not pass it again", () => {
+    const b = columnHall();
+    const profile: RouteProfile = { fare: "unpaid_only", stepFree: true, extraClosedEdgeIds: ["q-east"] };
+    expect(route(b, "start", "g", profile).profile).toEqual(profile);
   });
 
   it("says straight past a lift whose doors give no heading, and stays silent when branches cannot be told apart", () => {

@@ -305,13 +305,19 @@ function departureHeading(edge: Edge, node: Node, other: Node): number | null {
  * competitors, nor to one side of every branch ahead.
  */
 function junctionAction(
-  points: PolylinePoint[], steps: RouteResult["steps"], i: number, branches: readonly Edge[], nodes: ReadonlyMap<string, Node>,
+  points: PolylinePoint[], steps: RouteResult["steps"], i: number, branches: readonly Edge[],
+  nodes: ReadonlyMap<string, Node>, edges: ReadonlyMap<string, Edge>,
 ): JunctionHint["action"] | null {
   const node = nodes.get(steps[i]!.fromNodeId)!;
-  // Edges back to where the walk came from (a reciprocal one-way pair) or on to where it goes next (a
-  // parallel corridor) are the route's own passage, not another choice.
-  const ownNodes = new Set([steps[i - 1]!.fromNodeId, steps[i]!.toNodeId]);
-  const others = branches.filter((e) => !ownNodes.has(e.from === node.id ? e.to : e.from));
+  const otherEnd = (e: Edge) => nodes.get(e.from === node.id ? e.to : e.from)!;
+  // The route's own passages leaving this node: back the way the walk came, and on the way it goes.
+  const own = [steps[i - 1]!, steps[i]!].map((s) => edges.get(s.edgeId)!);
+  const ownHeadings = own.map((e) => ({ end: otherEnd(e).id, h: departureHeading(e, node, otherEnd(e)) }));
+  // A separately stored edge between the same nodes that leaves along the same line (a reciprocal
+  // one-way pair, a duplicated corridor) is that passage again; a parallel corridor drawn elsewhere is a choice.
+  const samePassage = (e: Edge, h: number | null) => ownHeadings.some((o) =>
+    o.end === otherEnd(e).id && o.h !== null && h !== null && Math.abs(signedDelta(o.h, h)) < SAME_BRANCH_DEG);
+  const others = branches.filter((e) => !own.includes(e) && !samePassage(e, departureHeading(e, node, otherEnd(e))));
   if (others.length === 0) return null;
   const chosen = turnDelta(points, steps, i);
   const h0 = arrivalHeading(points, steps, i);
@@ -320,12 +326,12 @@ function junctionAction(
   for (const e of others) {
     // A lift's doors may face anywhere: it is a choice, but never a competing direction.
     if (e.mode === "elevator") continue;
-    const h = departureHeading(e, node, nodes.get(e.from === node.id ? e.to : e.from)!);
+    const h = departureHeading(e, node, otherEnd(e));
     // A walkable branch with no heading of its own (a sub-metre connector) may lead anywhere: no guess.
     if (h === null) return null;
     const d = signedDelta(h0, h);
     if (Math.abs(d - chosen) < SAME_BRANCH_DEG) return null;
-    if (Math.abs(d) < AHEAD_DEG) ahead.push(d);
+    if (Math.abs(d) <= AHEAD_DEG) ahead.push(d);
   }
   const rivals = ahead.filter((d) => Math.abs(d) < Math.abs(chosen) + STRAIGHT_MARGIN_DEG);
   if (rivals.length === 0) return "straight";
@@ -340,13 +346,13 @@ function junctionAction(
  * operational restrictions (closures, opening hours at the departure time, strict hours), but not the
  * traveller's own preferences — a stair or a ticket gate the traveller avoids is still a visible branch.
  */
-function departuresByNode(bundle: StationBundle, profile: RouteProfile | undefined): Map<string, Edge[]> {
+function departuresByNode(bundle: StationBundle, profile: RouteProfile): Map<string, Edge[]> {
   const router = createRouter(bundle);
   const operational: RouteProfile = {
     ...DEFAULT_PROFILE,
-    ...(profile?.extraClosedEdgeIds ? { extraClosedEdgeIds: profile.extraClosedEdgeIds } : {}),
-    ...(profile?.hours ? { hours: profile.hours } : {}),
-    ...(profile?.at ? { at: profile.at } : {}),
+    ...(profile.extraClosedEdgeIds ? { extraClosedEdgeIds: profile.extraClosedEdgeIds } : {}),
+    ...(profile.hours ? { hours: profile.hours } : {}),
+    ...(profile.at ? { at: profile.at } : {}),
   };
   const out = new Map<string, Edge[]>();
   for (const edge of bundle.edges) {
@@ -415,16 +421,16 @@ function straightInPlan(points: PolylinePoint[], stepIndexes: number[]): boolean
 }
 
 /**
- * Grouped instructions for a route. Pass the route's query `profile` so junction hints count only
- * branches open under the same closures and hours; without it, every station-traversable branch counts
- * (which can only withhold a hint, never point the wrong way).
+ * Grouped instructions for a route. Junction hints count only branches open under the route's own
+ * closures and hours (`route.profile`), never hiding one for the traveller's preferences.
  */
-export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja", profile?: RouteProfile): Instruction[] {
+export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja"): Instruction[] {
   const t = TEXT[lang];
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const points = routePolyline(bundle, route);
-  const departures = departuresByNode(bundle, profile);
+  const edges = new Map(bundle.edges.map((e) => [e.id, e]));
+  const departures = departuresByNode(bundle, route.profile);
   const names = junctionNames(bundle, lang);
   const firstFloor = nodes.get(route.nodeIds[0]!)!.floorId;
   const out: Instruction[] = [{ kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, text: t.start() }];
@@ -517,7 +523,7 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     }
     if (current && turn === "walk") {
       // Passing a choice point without turning: say which branch to keep to, since no turn marks it.
-      const action = junctionAction(points, route.steps, i, departures.get(step.fromNodeId) ?? [], nodes);
+      const action = junctionAction(points, route.steps, i, departures.get(step.fromNodeId) ?? [], nodes, edges);
       if (action) {
         (current.junctions ??= []).push({
           nodeId: step.fromNodeId, stepIndex: i, atM: Math.max(1, Math.round(current.distanceM)), action, name: names.get(step.fromNodeId) ?? null,
