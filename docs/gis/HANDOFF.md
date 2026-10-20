@@ -87,3 +87,5 @@ A third automated review raised two more P2 findings, fixed with digest `1298349
 - A multi-position `MultiPoint` node no longer supplies an arbitrary endpoint coordinate; that endpoint check stays PARTIAL.
 
 The real reports are unchanged.
+
+A fourth automated review found that `real-run` bound its receipt to the pre-frame fingerprint. The receipt is now rebound after frame generation, before conversions and stale-receipt archiving. The run, validation, summary and all 6 conversion receipts now share digest `8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5`.

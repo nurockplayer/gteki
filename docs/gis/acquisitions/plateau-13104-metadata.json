@@ -6,8 +6,8 @@
     "sha256": "7e5abc031afa5ab9f4e0da1df9b7e3413d642c7cbdeb6de6f909b4a23a9737ad",
     "json_pointer": "/cities/1/metadataZipUrls/2"
   },
-  "requested_at": "2026-10-20T13:34:23.300Z",
-  "completed_at": "2026-10-20T13:34:23.326Z",
+  "requested_at": "2026-10-20T13:44:12.645Z",
+  "completed_at": "2026-10-20T13:44:12.678Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/zip",
@@ -20,14 +20,14 @@
   "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
   "store_path": "raw/ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da/13104_shinjuku-ku_pref_2025_citygml_1_op_metadata.zip",
   "tool_version": "0.1.0",
-  "git_commit": "d7811daa44cdde238794e03473aea0abc7ed0f62",
+  "git_commit": "5a76fe13f8f15271120d93c1ffe59bf7f9b53528",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
   "mode": "online",
   "last_offline_check": {
-    "requested_at": "2026-10-20T13:37:38.706Z",
-    "completed_at": "2026-10-20T13:37:38.706Z",
+    "requested_at": "2026-10-20T13:47:14.226Z",
+    "completed_at": "2026-10-20T13:47:14.226Z",
     "tool_version": "0.1.0",
     "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
     "bytes": 26786,

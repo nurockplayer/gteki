@@ -26,7 +26,6 @@ async function run(args:string[],selectionEvidence?:unknown){
   return exitCode===0;
 }
 
-await archiveStaleConversions(receipt.tool_input_sha256);
 if(!await run(['acquire','--all'])){
   // Every later step reads the acquisition records; never mix a failed refresh with older stored records.
   console.error('Acquisition failed; dependent inspections, conversions and reports were not run.');
@@ -38,6 +37,10 @@ const inventories=new Map<string,CityInventory>();
 for(const city of cities)if(await run(['inspect-citygml',city.source]))inventories.set(city.source,await loadInventoryDetail(city.source));
 const framed=new Set<string>();
 for(const city of cities)if(inventories.has(city.source)&&await run(['frame-from-envelope',city.source,city.frame])&&await run(['crs-roundtrip',city.frame]))framed.add(city.source);
+// Frame files are fingerprint inputs and may have just been rewritten: rebind the receipt to the post-frame
+// fingerprint that conversions will record, and archive receipts from any other fingerprint.
+receipt.tool_input_sha256=await toolFingerprint();await writeJson(join(docsRoot,'gis','real-run.json'),receipt);
+await archiveStaleConversions(receipt.tool_input_sha256);
 for(const city of cities){const inventory=inventories.get(city.source);if(!inventory||!framed.has(city.source))continue;const room=smallestRoom(inventory);
   if(room)await run(['citygml-to-glb',city.source,'--frame',city.frame,'--ids',room.gml_id],room);
   else {console.error(`No Room with source polygons in ${city.source}; bounded Room conversion unavailable`);}
