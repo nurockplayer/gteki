@@ -41,10 +41,18 @@ def main(argv):
     glb_dir = os.path.join(args.out, "glb")
     manifest_path = args.manifest or os.path.join(args.out, "manifest.json")
 
+    unknown = sorted(only - {item["id"] for item in catalog["assets"]})
+    if unknown:
+        sys.exit(f"[gteki] --only names ids not in {args.catalog}: {', '.join(unknown)}")
     previous = {}
     if only and os.path.exists(manifest_path):
         with open(manifest_path) as f:
-            previous = {a["id"]: a for a in json.load(f).get("assets", [])}
+            old = json.load(f)
+        if old.get("texture_resolution") != args.tex_res:
+            # one manifest describes one texture resolution; mixing would mislabel kept GLBs
+            sys.exit(f"[gteki] --only with --tex-res {args.tex_res} but {manifest_path} is "
+                     f"{old.get('texture_resolution')}; rebuild everything or use another --out")
+        previous = {a["id"]: a for a in old.get("assets", [])}
 
     entries = []
     failures = []

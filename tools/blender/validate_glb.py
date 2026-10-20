@@ -158,6 +158,20 @@ class Validator:
             if end > view["byteLength"]:
                 raise ValueError("accessor exceeds bufferView")
 
+        formats = {5120: "b", 5121: "B", 5122: "h", 5123: "H", 5125: "I", 5126: "f"}
+
+        def read(accessor):
+            """Element tuples of a dense accessor (sparse/zero accessors are not read)."""
+            if "bufferView" not in accessor or "sparse" in accessor:
+                return None
+            view = self.index(views, accessor["bufferView"])
+            width = components[accessor["type"]]
+            size = sizes[accessor["componentType"]] * width
+            stride = view.get("byteStride", size)
+            start = view.get("byteOffset", 0) + accessor.get("byteOffset", 0)
+            fmt = "<" + formats[accessor["componentType"]] * width
+            return [struct.unpack_from(fmt, binary, start + i*stride) for i in range(accessor["count"])]
+
         for accessor in accessors:
             count = accessor["count"]
             if not isinstance(count, int) or isinstance(count, bool) or count < 1:
@@ -270,6 +284,12 @@ class Validator:
                     mins, maxs = vector(accessor["min"], 3), vector(accessor["max"], 3)
                     if any(a > b for a, b in zip(mins, maxs)):
                         raise ValueError("POSITION min exceeds max")
+                    positions = read(accessor)
+                    if positions is not None:
+                        if not all(math.isfinite(c) for p in positions for c in p):
+                            self.message("FAIL", f"mesh {node['mesh']} POSITION contains NaN/Inf")
+                        elif any(c < lo - 1e-5 or c > hi + 1e-5 for p in positions for c, lo, hi in zip(p, mins, maxs)):
+                            self.message("FAIL", f"mesh {node['mesh']} POSITION data outside accessor min/max")
                     for point in itertools.product(*zip(mins, maxs)):
                         point = transform(world, point)
                         for axis in range(3):
@@ -279,6 +299,9 @@ class Validator:
                         indices = self.index(accessors, primitive["indices"])
                         if indices.get("type") != "SCALAR" or indices.get("componentType") not in (5121, 5123, 5125):
                             raise ValueError("mesh indices must be unsigned SCALAR accessors")
+                        values = read(indices)
+                        if values is not None and any(v >= accessor["count"] for (v,) in values):
+                            self.message("FAIL", f"mesh {node['mesh']} index exceeds vertex count {accessor['count']}")
                     if not collision:
                         count = indices["count"] if "indices" in primitive else accessor["count"]
                         mode = primitive.get("mode", 4)
@@ -352,6 +375,16 @@ def self_test():
     broken["materials"][0]["name"] = "wrong"
     assert Validator("tiny.glb", encode_glb(broken, binary)).check()["status"] == "FAIL"
     assert Validator("tiny.glb", b"bad").check()["status"] == "FAIL"
+    nan = struct.pack("<9f", -1, 0, 0, math.nan, 0, 0, 0, 1, -1)
+    assert Validator("tiny.glb", encode_glb(doc, nan)).check()["status"] == "FAIL"
+    indexed = copy.deepcopy(doc)
+    indexed["bufferViews"].append(dict(buffer=0, byteOffset=len(binary), byteLength=6))
+    indexed["accessors"].append(dict(bufferView=1, componentType=5123, count=3, type="SCALAR"))
+    indexed["meshes"][0]["primitives"][0]["indices"] = 1
+    for tri, status in (((0, 1, 2), "PASS"), ((0, 1, 7), "FAIL")):
+        data = binary + struct.pack("<3H", *tri)
+        indexed["buffers"][0]["byteLength"] = len(data)
+        assert Validator("tiny.glb", encode_glb(indexed, data)).check()["status"] == status, tri
     # Exercise nested quaternion/TRS and matrix composition, strips/fans, warnings.
     moved = copy.deepcopy(doc)
     moved["nodes"][0]["translation"] = [2, 0, 0]
@@ -363,7 +396,7 @@ def self_test():
     assert result["status"] == "WARN" and result["aabb"] == dict(min=[1., 0., 0.], max=[3., 3., 1.])
     moved["meshes"][0]["primitives"][0]["mode"] = 6
     assert Validator("tiny.glb", encode_glb(moved, binary)).check()["triangles"] == 1
-    print("PASS self-test: valid, broken, truncated, transformed, strip and fan GLBs")
+    print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, transformed, strip and fan GLBs")
 
 
 def main():

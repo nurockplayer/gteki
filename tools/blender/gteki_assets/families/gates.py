@@ -10,8 +10,10 @@ accessible aisle about 0.90 m, cabinet height about 1.0 m, cabinet length
 about 1.2-1.5 m). They are not measurements of any particular station.
 
 Flap doors are exported per aisle side as separate nodes `VIS_flap_<i>_<L|R>`
-in the retracted (open) state; runtime may slide them along local X by
-`flap_close_dx_m` to show a closed gate. Flaps never collide: whether a
+in the stored (open) state, hidden inside the cabinet parallel to its face.
+Each node's origin is its hinge; runtime closes a gate by yawing the node by
+`flap_close_yaw_deg[L|R]` (glTF +Y axis), which swings the flap across the
+aisle to stop `FLAP_GAP` short of the centre. Flaps never collide: whether a
 passenger may pass is runtime logic, not geometry.
 """
 
@@ -140,10 +142,6 @@ def _cabinet(a, idx, cx, p, sides):
         sg = -1 if s == "-x" else 1
         xf = cx + sg * (w / 2 + 0.002)
         y0, y1 = r + 0.05, L - r - 0.05
-        # slim dark sensor windows either side of the flap slot
-        for ya, yb in ((y0, L / 2 - 0.09), (L / 2 + 0.09, y1)):
-            q = [(xf, ya, 0.535), (xf, yb, 0.535), (xf, yb, 0.555), (xf, ya, 0.555)]
-            deco.poly(q if sg > 0 else q[::-1], "gteki_plastic_dark")
         # flap slot (dark recess outline)
         ym = L / 2
         if sg > 0:
@@ -154,27 +152,34 @@ def _cabinet(a, idx, cx, p, sides):
     a.col_box(f"cabinet_{idx}", [cx - w / 2 - 0.008, 0.0, 0.0], [cx + w / 2 + 0.008, L, H])
 
 
-def _flap(a, name, x_face, sg, y_mid, protrude):
-    """Fan-shaped flap door retracted into the cabinet; `sg` = direction toward the aisle."""
-    f = a.part(f"flap_{name}", bevel=0.004, bevel_segments=2)
-    reach, R = 0.30, 0.14
-    z0, z1 = 0.42, 0.84
-    # local profile: u = distance from the hidden inner end toward the aisle
-    u_out = reach
-    local = [(0.0, z0), (u_out, z0), (u_out, z1 - R)]
+FLAP_INSET = 0.016  # flap plane distance inside the cabinet face
+FLAP_GAP = 0.010  # closed leading edge stops this far short of the aisle centre
+
+
+def _flap(a, name, x_face, sg, y_pivot, half_aisle):
+    """Fan-shaped flap door, stored inside the cabinet parallel to its face.
+
+    The node origin is the hinge (vertical axis at the face, y_pivot); runtime
+    closes the gate by yawing the node so the flap swings out across the aisle.
+    `sg` = direction from the cabinet face toward the aisle centre.
+    """
+    group = f"flap_{name}"
+    f = a.part(group, bevel=0.004, bevel_segments=2)
+    reach = half_aisle - FLAP_GAP + FLAP_INSET
+    R = min(0.14, reach * 0.45)
+    z0, z1, t = 0.42, 0.84, 0.011
+    xp = x_face - sg * FLAP_INSET
+    # profile in the (y, z) plane, CCW viewed from +X; stored pointing +Y
+    prof = [(y_pivot, z0), (y_pivot + reach, z0), (y_pivot + reach, z1 - R)]
     for k in range(1, 7):
         ang = math.radians(90 * k / 6)
-        local.append((u_out - R + math.cos(ang) * R, z1 - R + math.sin(ang) * R))
-    local.append((0.0, z1))
-    x_in = x_face - sg * (reach - protrude)
-    prof = [(x_in + sg * u, z) for u, z in local]
-    if sg < 0:  # mirroring flips the winding; restore CCW (viewed from -Y)
-        prof.reverse()
-    f.extrude_y(prof, y_mid - 0.011, y_mid + 0.011, "gteki_plastic_dark")
+        prof.append((y_pivot + reach - R + math.cos(ang) * R, z1 - R + math.sin(ang) * R))
+    prof.append((y_pivot, z1))
+    f.extrude_x(prof, xp - t, xp + t, "gteki_plastic_dark")
     # rubber leading edge
-    xe = x_face + sg * protrude
-    xa, xb = sorted((xe, xe - sg * 0.012))
-    f.box([xa, y_mid - 0.013, z0], [xb, y_mid + 0.013, z1 - R], "gteki_rubber_black")
+    f.box([xp - t - 0.002, y_pivot + reach - 0.012, z0], [xp + t + 0.002, y_pivot + reach, z1 - R], "gteki_rubber_black")
+    a.pivot(group, (xp, y_pivot, 0.0))
+    return reach
 
 
 def gate_array(asset_id, params, tex_res):
@@ -206,9 +211,11 @@ def gate_array(asset_id, params, tex_res):
     L = p["cab_len"]
     for i, ac in enumerate(aisle_c):
         hw = widths[i] / 2
-        # left flap lives in the cabinet on the aisle's -x side and opens toward +x
-        _flap(a, f"{i}_L", ac - hw, 1, L / 2, 0.010)
-        _flap(a, f"{i}_R", ac + hw, -1, L / 2, 0.010)
+        if L / 2 + hw + FLAP_INSET > L - w / 2:
+            raise ValueError(f"aisle {i} ({widths[i]} m) too wide for a {L} m cabinet's flap pocket")
+        # left flap lives in the cabinet on the aisle's -x side and swings toward +x
+        _flap(a, f"{i}_L", ac - hw, 1, L / 2, hw)
+        _flap(a, f"{i}_R", ac + hw, -1, L / 2, hw)
 
     if p["floor_plate"]:
         fp = a.part("floor", bevel=0.002, bevel_segments=1)
@@ -220,7 +227,9 @@ def gate_array(asset_id, params, tex_res):
     a.shift.y = m
     p["aisle_centers_x_m"] = [round(c, 4) for c in aisle_c]
     p["aisle_widths_m"] = widths
-    p["flap_close_dx_m"] = [round(wd / 2 - 0.010 - 0.01, 4) for wd in widths]
+    # glTF yaw (about +Y, right-handed) that swings each stored flap across its aisle
+    p["flap_close_yaw_deg"] = {"L": -90.0, "R": 90.0}
+    p["flap_reach_m"] = [round(wd / 2 - FLAP_GAP + FLAP_INSET, 4) for wd in widths]
     p["total_width_m"] = round(total, 4)
     p["cabinet_span_z_m"] = [round(-m, 4), round(-(m + L), 4)]  # glTF z of cabinet entry / exit faces
     a.socket("start", (0, -m, 0), 180.0, width=round(total, 4), height=p["cab_h"])

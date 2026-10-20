@@ -13,7 +13,7 @@ Conventions:
 
 import numpy as np
 
-TEXSYNTH_VERSION = 3  # bump when output pixels change, invalidates caches
+TEXSYNTH_VERSION = 4  # bump when output pixels change, invalidates caches
 
 
 # --------------------------------------------------------------------------- noise
@@ -55,7 +55,9 @@ def band_noise(res, seed, freq, width=0.5):
 def normal_from_height(height, strength):
     """Wrap-aware tangent-space normal map (OpenGL +Y) from a height field.
 
-    `strength` is roughly "height units per texel"; larger = bumpier.
+    `strength` is roughly "height units per texel"; larger = bumpier. For features
+    drawn at a physical size (scaled with resolution) pass strength * (res / 1024)
+    so the slope per metre, and the visible relief, stays the same at HQ.
     """
     dx = (np.roll(height, -1, axis=1) - np.roll(height, 1, axis=1)) * 0.5 * strength
     dy = (np.roll(height, -1, axis=0) - np.roll(height, 1, axis=0)) * 0.5 * strength
@@ -64,6 +66,13 @@ def normal_from_height(height, strength):
     inv = 1.0 / np.sqrt(nx * nx + ny * ny + nz * nz)
     n = np.stack([nx * inv, ny * inv, nz * inv], axis=-1)
     return (n * 0.5 + 0.5).astype(np.float32)
+
+
+def wrap_pitch(res, pitch_px_1024):
+    """Pitch (texels) nearest the 1024-texel design value that tiles `res` an integer
+    number of times, so periodic features stay seamless at every resolution."""
+    cycles = max(1, round(1024.0 / pitch_px_1024))
+    return res / cycles
 
 
 def blur_wrap(img, radius):
@@ -191,7 +200,7 @@ def tile_grid(res, seed, tiles=(2, 2), grout_px=6, base=(0.74, 0.74, 0.72), vari
     albedo = lerp(grout_col, tile_col, in_tile)
     lean = (tilt[tile_id][..., 0] * (lx / tw - 0.5) + tilt[tile_id][..., 1] * (ly / th - 0.5)) * 0.02
     height = shoulder * (1.0 + lean) + 0.01 * cloud
-    normal = normal_from_height(height, strength=2.5 / scale)
+    normal = normal_from_height(height, strength=2.5 * scale)
     rough = np.where(in_tile > 0.5, rough_base + 0.08 * cloud, 0.85).astype(np.float32)
     return _out(albedo, normal, rough, np.zeros_like(rough))
 
@@ -236,7 +245,7 @@ def concrete(res, seed, base=(0.56, 0.56, 0.55), rough=0.82):
 def linear_spandrel(res, seed, pitch_px=102, base=(0.86, 0.86, 0.85), rough=0.42):
     """Aluminium linear ceiling strips (pitch 100 mm per 1 m repeat), grooves along U."""
     scale = res / 1024.0
-    p = pitch_px * scale
+    p = wrap_pitch(res, pitch_px)
     yy = np.mgrid[0:res, 0:res][0].astype(np.float32)
     ph = np.mod(yy, p) / p
     groove = np.clip(1.0 - np.abs(ph - 0.5) * 2.0 / 0.08, 0, 1)  # thin slot in the middle
@@ -245,7 +254,7 @@ def linear_spandrel(res, seed, pitch_px=102, base=(0.86, 0.86, 0.85), rough=0.42
     streak = spectral_noise(res, seed + 1, beta=1.4, aniso=(30.0, 1.0), lowcut=2.0)
     albedo = srgb(base)[None, None, :] * (1.0 - 0.75 * groove + 0.03 * cloud)[..., None] * (0.97 + 0.04 * streak)[..., None]
     height = 0.3 * crown - 1.0 * groove
-    normal = normal_from_height(height, strength=3.0 / scale)
+    normal = normal_from_height(height, strength=3.0 * scale)
     r = rough + 0.1 * groove + 0.05 * (streak - 0.5)
     return _out(albedo, normal, r.astype(np.float32), np.full_like(r, 0.85))
 
@@ -283,7 +292,7 @@ def tactile(res, seed, kind="dots", base=(0.93, 0.74, 0.06), rough=0.55):
     cloud = spectral_noise(res, seed + 1, beta=2.4)
     albedo = srgb(base)[None, None, :] * (0.92 + 0.06 * cloud + 0.03 * fine + 0.05 * h - 0.45 * joint)[..., None]
     height = h * 1.0 - 0.4 * joint + 0.02 * fine
-    normal = normal_from_height(height, strength=5.0 / scale)
+    normal = normal_from_height(height, strength=5.0 * scale)
     r = rough - 0.12 * h + 0.06 * (fine - 0.5) + 0.3 * joint
     return _out(albedo, normal, r.astype(np.float32), np.zeros_like(r))
 
@@ -291,13 +300,13 @@ def tactile(res, seed, kind="dots", base=(0.93, 0.74, 0.06), rough=0.55):
 def rubber_grip(res, seed, base=(0.09, 0.09, 0.09), pitch_px=64):
     """Ribbed rubber / anti-slip stair nosing, ribs along U."""
     scale = res / 1024.0
-    p = pitch_px * scale
+    p = wrap_pitch(res, pitch_px)
     yy = np.mgrid[0:res, 0:res][0].astype(np.float32)
     ph = np.mod(yy, p) / p
     rib = 0.5 + 0.5 * np.cos(ph * 2 * np.pi)
     fine = spectral_noise(res, seed, beta=0.6)
     albedo = srgb(base)[None, None, :] * (0.9 + 0.2 * fine)[..., None]
-    normal = normal_from_height(rib * 1.0 + 0.05 * fine, strength=4.0 / scale)
+    normal = normal_from_height(rib * 1.0 + 0.05 * fine, strength=4.0 * scale)
     r = 0.7 + 0.1 * fine
     return _out(albedo, normal, r.astype(np.float32), np.zeros_like(r))
 
@@ -305,14 +314,14 @@ def rubber_grip(res, seed, base=(0.09, 0.09, 0.09), pitch_px=64):
 def escalator_tread(res, seed, base=(0.22, 0.22, 0.23), pitch_px=40):
     """Cleated aluminium escalator step tread, cleats along V (direction of travel)."""
     scale = res / 1024.0
-    p = pitch_px * scale
+    p = wrap_pitch(res, pitch_px)
     xx = np.mgrid[0:res, 0:res][1].astype(np.float32)
     ph = np.mod(xx, p) / p
     cleat = np.clip(1.0 - np.abs(ph - 0.5) * 2 / 0.55, 0, 1)
     cleat = cleat * cleat * (3 - 2 * cleat)
     cloud = spectral_noise(res, seed, beta=2.2)
     albedo = srgb(base)[None, None, :] * (0.55 + 0.6 * cleat + 0.05 * cloud)[..., None]
-    normal = normal_from_height(cleat, strength=5.0 / scale)
+    normal = normal_from_height(cleat, strength=5.0 * scale)
     r = 0.55 - 0.25 * cleat + 0.05 * cloud
     return _out(albedo, normal, r.astype(np.float32), np.full_like(r, 0.9))
 

@@ -30,7 +30,7 @@ Every GLB has exactly one root node named after the asset id, e.g. `gteki_gate_a
 | `SOCKET_*` | Empty: snap point for modular joining | read transform + extras | `Node3D` marker |
 | `LIGHTHINT_*` | Empty: suggested light placement (emissive fixtures) | optional | optional |
 
-Animatable sub-parts are separate `VIS_*` nodes with their motion recorded in params (gate flaps: `VIS_flap_<aisle>_<L|R>`, slide along local X by `flap_close_dx_m`). Collision meshes are deliberately simpler than visuals: stairs and escalators collide as a **smooth ramp** (character-controller friendly); gate cabinets collide as boxes; gate flaps do **not** collide (aisles stay open — gating behaviour is runtime logic, not geometry).
+Animatable sub-parts are separate `VIS_*` nodes with their motion recorded in params (gate flaps: `VIS_flap_<aisle>_<L|R>`; each node's origin is its hinge, and yawing it about +Y by `flap_close_yaw_deg.L`/`.R` swings the stored flap across the aisle — reach per aisle in `flap_reach_m`). Collision meshes are deliberately simpler than visuals: stairs and escalators collide as a **smooth ramp** (character-controller friendly); gate cabinets collide as boxes; gate flaps do **not** collide (aisles stay open — gating behaviour is runtime logic, not geometry).
 
 ## 3. Metadata (`extras`)
 

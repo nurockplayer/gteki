@@ -7,9 +7,16 @@ var output_dir := ""
 var kit_paths: Array[String] = []
 var loaded: Array[Dictionary] = []
 var failed := false
+var manifest := {}  # asset id -> manifest entry (expected collision/sockets)
 
 func _initialize() -> void:
 	output_dir = OS.get_environment("GTEKI_GODOT_OUT")
+	var manifest_path := OS.get_environment("GTEKI_MANIFEST")
+	if not manifest_path.is_empty() and FileAccess.file_exists(manifest_path):
+		var parsed = JSON.parse_string(FileAccess.get_file_as_string(manifest_path))
+		if parsed is Dictionary:
+			for entry in parsed.get("assets", []):
+				manifest[str(entry.id)] = entry
 	call_deferred("_run")
 
 func _run() -> void:
@@ -57,6 +64,7 @@ func _inspect(scene_root: Node) -> Dictionary:
 		"sockets": [],
 		"aabb": null,
 		"checks": {},
+		"flap_nodes": 0,
 		"__has_box": false,
 		"__box": AABB(),
 	}
@@ -136,7 +144,10 @@ func _collect(node: Node, result: Dictionary) -> void:
 		result.collision_shape_3d_count += 1
 	if node is Node3D and str(node.name).begins_with("SOCKET_"):
 		var marker := node as Node3D
-		result.sockets.append({"name": str(node.name), "global_position": _vec(marker.global_position)})
+		result.sockets.append({"name": str(node.name), "global_position": _vec(marker.global_position),
+			"outward": _vec(-marker.global_basis.z)})
+	if str(node.name).begins_with("VIS_flap_"):
+		result.flap_nodes += 1
 	for child in node.get_children():
 		_collect(child, result)
 
@@ -158,6 +169,7 @@ func _write_report() -> void:
 			"checks": report.checks,
 			"placement": report.get("placement", "unknown"),
 		})
+		_check_against_manifest(rows[-1], item.report)
 	var report_doc := {"godot_version": Engine.get_version_info().string, "assets": rows}
 	var file := FileAccess.open(output_dir.path_join("godot_import_report.json"), FileAccess.WRITE)
 	if file == null:
@@ -166,13 +178,59 @@ func _write_report() -> void:
 	file.store_string(JSON.stringify(report_doc, "\t"))
 	file.close()
 	print("Godot import report: %s" % output_dir.path_join("godot_import_report.json"))
+	var counts := {"PASS": 0, "FAIL": 0}
 	for row in rows:
-		print("PASS %s nodes=%d meshes=%d materials=%d static_bodies=%d collision_shapes=%d sockets=%d AABB=%s" % [
-			row.id, row.node_count, row.mesh_instance_3d_count, row.materials.size(),
-			row.static_body_3d_count, row.collision_shape_3d_count, row.sockets.size(), str(row.aabb)])
+		var bad: Array[String] = []
 		for check in row.checks:
 			if not row.checks[check]:
-				print("WARN %s placement=%s check failed: %s" % [row.id, row.get("placement", "?"), check])
+				bad.append(check)
+		var status := "FAIL" if not bad.is_empty() else "PASS"
+		counts[status] += 1
+		print("%s %s nodes=%d meshes=%d materials=%d static_bodies=%d collision_shapes=%d sockets=%d AABB=%s" % [
+			status, row.id, row.node_count, row.mesh_instance_3d_count, row.materials.size(),
+			row.static_body_3d_count, row.collision_shape_3d_count, row.sockets.size(), str(row.aabb)])
+		for check in bad:
+			print("FAIL %s placement=%s check failed: %s" % [row.id, row.get("placement", "?"), check])
+	if manifest.is_empty():
+		print("WARN no GTEKI_MANIFEST: collision/socket parity was not checked")
+	print("Godot summary: %d assets; %d PASS, %d FAIL" % [rows.size(), counts.PASS, counts.FAIL])
+	if counts.FAIL > 0:
+		failed = true
+
+## Required contract parity with the manifest: every `-colonly` node became a
+## StaticBody3D + CollisionShape3D, and every socket kept position and outward
+## direction (Blender local +Y == glTF -Z).
+func _check_against_manifest(row: Dictionary, report: Dictionary) -> void:
+	if not manifest.has(row.id):
+		if not manifest.is_empty():
+			row.checks.listed_in_manifest = false
+		return
+	var entry: Dictionary = manifest[row.id]
+	var expected_col: int = entry.get("collision_nodes", []).size()
+	row.checks.static_bodies_match_collision_nodes = row.static_body_3d_count == expected_col
+	row.checks.collision_shapes_match_collision_nodes = row.collision_shape_3d_count == expected_col
+	var found := {}
+	for s in report.sockets:
+		found[s.name] = s
+	var sockets_ok: bool = found.size() == entry.get("sockets", []).size()
+	for s in entry.get("sockets", []):
+		var key := "SOCKET_" + str(s.name)
+		if not found.has(key):
+			sockets_ok = false
+			continue
+		var got: Dictionary = found[key]
+		var p: Array = s.position_gltf
+		var want_pos := Vector3(p[0], p[1], p[2])
+		var yaw := deg_to_rad(float(s.yaw_deg))
+		var want_dir := Vector3(-sin(yaw), 0.0, -cos(yaw))
+		var got_pos := Vector3(got.global_position[0], got.global_position[1], got.global_position[2])
+		var got_dir := Vector3(got.outward[0], got.outward[1], got.outward[2])
+		if got_pos.distance_to(want_pos) > 0.002 or got_dir.distance_to(want_dir) > 0.01:
+			sockets_ok = false
+	row.checks.sockets_match_manifest = sockets_ok
+	var params: Dictionary = entry.get("params", {})
+	if params.has("flap_close_yaw_deg"):
+		row.checks.flap_nodes_per_aisle = report.flap_nodes == 2 * int(params.get("aisles", 0))
 
 func _render_screenshots() -> void:
 	var world := Node3D.new()

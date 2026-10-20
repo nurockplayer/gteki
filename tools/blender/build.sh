@@ -37,14 +37,16 @@ web() {
 }
 
 repro() {
-    # two clean builds into temp dirs must produce byte-identical GLBs
+    # two clean builds into temp dirs must produce byte-identical GLBs,
+    # identical to the checked-in library as well
     tmp=$(mktemp -d)
     for run in a b; do
         GTEKI_TEX_CACHE="$tmp/tex_$run" OUT="$tmp/$run" build >/dev/null
         (cd "$tmp/$run/glb" && shasum -a 256 *.glb) >"$tmp/$run.sha"
     done
-    if diff "$tmp/a.sha" "$tmp/b.sha"; then
-        echo "repro: PASS ($(wc -l <"$tmp/a.sha" | tr -d ' ') GLBs identical)"
+    (cd "$OUT/glb" && shasum -a 256 *.glb) >"$tmp/library.sha"
+    if diff "$tmp/a.sha" "$tmp/b.sha" && diff "$tmp/a.sha" "$tmp/library.sha"; then
+        echo "repro: PASS ($(wc -l <"$tmp/a.sha" | tr -d ' ') GLBs identical across two clean builds and $OUT/glb)"
         rm -rf "$tmp"
     else
         echo "repro: FAIL (outputs kept in $tmp)" >&2

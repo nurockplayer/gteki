@@ -7,8 +7,10 @@ authoring scene. Interior lighting is placed from the GLB's LIGHTHINT_* empties.
       --layout layout.json --out shot.png [--res 1600x900] [--samples 64]
 
 layout.json:
-  {"items": [{"glb": "assets/library/glb/x.glb", "pos": [x, y, z], "yaw": 0}],
+  {"items": [{"glb": "assets/library/glb/x.glb", "pos": [x, y, z], "yaw": 0,
+              "close_flaps": false}],
    "camera": {"pos": [x, y, z], "look_at": [x, y, z], "lens": 24},
+   (or "cameras": {"name": {...}} with --camera name)
    "mode": "interior" | "studio", "exposure": 0.0}
 
 Positions are Blender world coordinates (Z up). A consumer layout in glTF
@@ -89,6 +91,8 @@ def import_items(layout):
             r.location = Vector(it.get("pos", (0, 0, 0)))
             r.rotation_mode = "XYZ"
             r.rotation_euler = (0, 0, math.radians(it.get("yaw", 0)))
+        if it.get("close_flaps"):
+            _close_flaps(roots, new)
         bpy.context.view_layer.update()
         for o in new:
             if o.name.endswith("-colonly") or "-colonly" in o.name:
@@ -97,6 +101,23 @@ def import_items(layout):
             if o.name.startswith("LIGHTHINT_"):
                 hints.append(o)
     return hints
+
+
+def _close_flaps(roots, objs):
+    """Pose gate flaps closed using the asset's own params (contract: yaw about the hinge)."""
+    params = {}
+    for r in roots:
+        g = r.get("gteki")
+        if g is not None and "params" in g:
+            params = g["params"]
+    yaw = params.get("flap_close_yaw_deg") if params else None
+    if not yaw:
+        return
+    for o in objs:
+        if o.name.startswith("VIS_flap_"):
+            side = o.name.split(".")[0].rsplit("_", 1)[-1]
+            o.rotation_mode = "XYZ"
+            o.rotation_euler.z += math.radians(float(yaw[side]))
 
 
 def add_hint_lights(hints, layout):
@@ -165,9 +186,14 @@ def main(argv):
     ap.add_argument("--res", default="1600x900")
     ap.add_argument("--samples", type=int, default=64)
     ap.add_argument("--engine", default="eevee", choices=["eevee", "cycles"])
+    ap.add_argument("--camera", default="", help="key into layout['cameras']")
     args = ap.parse_args(argv)
     with open(args.layout) as f:
         layout = json.load(f)
+    if args.camera:
+        layout["camera"] = layout["cameras"][args.camera]
+    elif "camera" not in layout and layout.get("cameras"):
+        layout["camera"] = next(iter(layout["cameras"].values()))
     setup_scene(args, layout)
     hints = import_items(layout)
     if layout.get("mode") == "studio":

@@ -53,10 +53,21 @@ for source in "$GLB_DIR"/*.glb; do
 done
 
 export GTEKI_GODOT_OUT="$OUT_DIR"
+# Expected collision/socket data; the manifest normally sits next to glb/.
+if [ -z "${GTEKI_MANIFEST:-}" ] && [ -f "$GLB_DIR/../manifest.json" ]; then
+    GTEKI_MANIFEST=$(CDPATH= cd -- "$GLB_DIR/.." && pwd -P)/manifest.json
+fi
+export GTEKI_MANIFEST="${GTEKI_MANIFEST:-}"
 export GTEKI_GODOT_MODE="$MODE"
 "$GODOT_BIN" --headless --path "$SCRIPT_DIR" --log-file "$OUT_DIR/godot_editor.log" --import
 if [ "$MODE" = screenshot ]; then
     "$GODOT_BIN" --path "$SCRIPT_DIR" --log-file "$OUT_DIR/godot_screenshot.log" --script res://import_test.gd
 else
+    rm -f "$OUT_DIR/godot_import_report.json"
     "$GODOT_BIN" --headless --path "$SCRIPT_DIR" --log-file "$OUT_DIR/godot_report.log" --script res://import_test.gd
+    # Godot exits 0 when the test script itself fails to parse; require its report.
+    if [ ! -f "$OUT_DIR/godot_import_report.json" ]; then
+        echo "Godot import test produced no report (script error?)" >&2
+        exit 1
+    fi
 fi

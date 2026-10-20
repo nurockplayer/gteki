@@ -14,7 +14,7 @@ Reproducible, parametric generators for a **generic, reusable station kit** (pas
 ```bash
 tools/blender/build.sh            # generate assets/library from the catalog + validate
 tools/blender/build.sh all        # + Godot headless import + Three.js load test
-tools/blender/build.sh repro      # two clean builds must be byte-identical
+tools/blender/build.sh repro      # two clean builds must be byte-identical to each other and to assets/library
 ONLY=gteki_gate_array_4w1 tools/blender/build.sh build   # rebuild a subset
 TEX_RES=2048 OUT=/tmp/kit_hq tools/blender/build.sh build # high-res textures (Godot HQ)
 ```

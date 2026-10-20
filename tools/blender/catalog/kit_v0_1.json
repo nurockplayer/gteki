@@ -42,6 +42,7 @@
     {"id": "gteki_vending_machine_sand", "generator": "vending_machine", "params": {"body": "sand", "seed": 3}, "tags": ["prop"]},
     {"id": "gteki_column_round_d600", "generator": "column_clad", "params": {"shape": "round", "size": 0.6}, "tags": ["prop"]},
     {"id": "gteki_column_square_600", "generator": "column_clad", "params": {"shape": "square", "size": 0.6, "body": "tile"}, "tags": ["prop"]},
+    {"id": "gteki_column_round_d600_h3200", "generator": "column_clad", "params": {"shape": "round", "size": 0.6, "height": 3.2}, "tags": ["prop"]},
     {"id": "gteki_column_square_800_accent", "generator": "column_clad", "params": {"shape": "square", "size": 0.8, "body": "enamel_accent", "guards": false, "overrun": 0.3}, "tags": ["prop"]},
     {"id": "gteki_tactile_strip_dots_3m", "generator": "tactile_strip", "params": {"length": 3.0, "kind": "dots"}, "tags": ["floor"]},
     {"id": "gteki_tactile_strip_bars_3m", "generator": "tactile_strip", "params": {"length": 3.0, "kind": "bars"}, "tags": ["floor"]},

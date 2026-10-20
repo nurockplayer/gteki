@@ -10,8 +10,8 @@
       "family": "passage",
       "variant": "straight_w4_l6",
       "file": "glb/gteki_passage_straight_w4_l6.glb",
-      "sha256": "2b43dfd405ce9dcf86c32b94db3ccb11b34c25c64084e1f85b96e66b1c198e1d",
-      "bytes": 1071788,
+      "sha256": "1d2f62ad98b019ed7b36aff6d8d7e09eacd2eca158f6fc9b20ee6bb9d3239a15",
+      "bytes": 1069856,
       "triangles": 1216,
       "materials": [
         "gteki_concrete",
@@ -99,8 +99,8 @@
       "family": "passage",
       "variant": "straight_w4_l2p4",
       "file": "glb/gteki_passage_straight_w4_l2p4.glb",
-      "sha256": "702cea4a1029dfdb2464082e6c9fa8e766d049929d84be27c3ac92aae67ca765",
-      "bytes": 1042332,
+      "sha256": "cba71489b2e71038d7af13d74adde4e24357c797998782be64a279f65ee196e9",
+      "bytes": 1040400,
       "triangles": 592,
       "materials": [
         "gteki_concrete",
@@ -189,8 +189,8 @@
       "family": "passage",
       "variant": "straight_w4_l6_tile",
       "file": "glb/gteki_passage_straight_w4_l6_tile.glb",
-      "sha256": "54bde7feeddd377f6837d770b0a9b28bf345111b6ce2d153f9a78a9ccec78849",
-      "bytes": 898320,
+      "sha256": "bedd3debe5dc42a9a8374ca2b7ad28ed5bab11cdb484f230dfaa3c4a2fae09e7",
+      "bytes": 898316,
       "triangles": 800,
       "materials": [
         "gteki_concrete",
@@ -279,8 +279,8 @@
       "family": "passage",
       "variant": "straight_w8_l6",
       "file": "glb/gteki_passage_straight_w8_l6.glb",
-      "sha256": "e7dccea0cce0ce3fe84f9787429a2e000932aa7d2149df40d16ab3aaab1a3b07",
-      "bytes": 1192864,
+      "sha256": "40bfce4880549ff97a5cd5286d2f9819bc4d0218725da7c5159a48fe85c0eb34",
+      "bytes": 1190932,
       "triangles": 2044,
       "materials": [
         "gteki_concrete",
@@ -370,8 +370,8 @@
       "family": "passage",
       "variant": "straight_w8_l6_open",
       "file": "glb/gteki_passage_straight_w8_l6_open.glb",
-      "sha256": "a63feb7246cb6f7dba8f6fda47f4ec4cae832f4641ed8224e736edfc8aab04a0",
-      "bytes": 1242556,
+      "sha256": "fe7cfd1d5fb8bbea454a309bb0946ed9715068db4a446172e470e9432f09b3be",
+      "bytes": 1240624,
       "triangles": 1276,
       "materials": [
         "gteki_concrete",
@@ -460,8 +460,8 @@
       "family": "passage",
       "variant": "end_w4",
       "file": "glb/gteki_passage_end_w4.glb",
-      "sha256": "b4840b4851b9c862f52f77c81fe0f5b62ba38ace5569e149ba833cfd64c11f3b",
-      "bytes": 1067796,
+      "sha256": "687a606d2b39c2d25f70e8c306c426a1d1b1965a2800346a552cd4f5574a721d",
+      "bytes": 1065864,
       "triangles": 1036,
       "materials": [
         "gteki_concrete",
@@ -543,8 +543,8 @@
       "family": "passage",
       "variant": "corner_w4",
       "file": "glb/gteki_passage_corner_w4.glb",
-      "sha256": "160462286adda5e032555ccdea36250fcc4875c02251ad578efb5fdf56610294",
-      "bytes": 1054568,
+      "sha256": "a81234f39ca92764f44460c85db693d97d5c395993a5a442aa4d0a424b9e1228",
+      "bytes": 1052640,
       "triangles": 814,
       "materials": [
         "gteki_concrete",
@@ -635,8 +635,8 @@
       "family": "passage",
       "variant": "tee_w4",
       "file": "glb/gteki_passage_tee_w4.glb",
-      "sha256": "08bf1a84d169c5c38ef58004e6419330c3160bba156f4ec4078405344ee4c787",
-      "bytes": 1041352,
+      "sha256": "3b90ce48bab8ebbd6a11ac5b80ed393901312183b32f14e08c2f2cc400e247d1",
+      "bytes": 1039424,
       "triangles": 592,
       "materials": [
         "gteki_concrete",
@@ -736,8 +736,8 @@
       "family": "passage",
       "variant": "end_w8",
       "file": "glb/gteki_passage_end_w8.glb",
-      "sha256": "ffdab1df20ce99929cc6ec644af2c3e48eada109879e7bc7fe5a03bd1fb89a3d",
-      "bytes": 1266004,
+      "sha256": "3367907656fb95155b029230787791fc5a4f917efff0f2548be6bd2ece22df68",
+      "bytes": 1264076,
       "triangles": 3520,
       "materials": [
         "gteki_concrete",
@@ -821,8 +821,8 @@
       "family": "passage",
       "variant": "cross_w4",
       "file": "glb/gteki_passage_cross_w4.glb",
-      "sha256": "e0f676a4ae0f8264886a5018cae02ce6800db6151f76bf65d774dff792f02add",
-      "bytes": 673892,
+      "sha256": "629cc774a8bc5fe3a9249b35ea334f372508ef14601ec6af757410d99d5ebff8",
+      "bytes": 671960,
       "triangles": 384,
       "materials": [
         "gteki_concrete",
@@ -928,9 +928,9 @@
       "family": "gate",
       "variant": "array_4w1",
       "file": "glb/gteki_gate_array_4w1.glb",
-      "sha256": "077b845f0e72509cf13938bb31812d00b415fb0a3917ee06aa8cce6f15f4a56c",
-      "bytes": 565564,
-      "triangles": 6714,
+      "sha256": "696182a8114b8d505dd30f6e0d94b193469d909c4003efcf3e5b02fda797a701",
+      "bytes": 563404,
+      "triangles": 6682,
       "materials": [
         "gteki_steel_painted_dark",
         "gteki_gate_body",
@@ -946,12 +946,12 @@
       ],
       "bounds_m": {
         "min": [
-          -1.97,
+          -1.95,
           0.0,
           -1.9
         ],
         "max": [
-          1.97,
+          1.95,
           0.9846,
           -0.0
         ]
@@ -982,11 +982,15 @@
           0.6,
           0.9
         ],
-        "flap_close_dx_m": [
-          0.28,
-          0.28,
-          0.28,
-          0.43
+        "flap_close_yaw_deg": {
+          "L": -90.0,
+          "R": 90.0
+        },
+        "flap_reach_m": [
+          0.306,
+          0.306,
+          0.306,
+          0.456
         ],
         "total_width_m": 3.8,
         "cabinet_span_z_m": [
@@ -1036,9 +1040,9 @@
       "family": "gate",
       "variant": "array_6w1",
       "file": "glb/gteki_gate_array_6w1.glb",
-      "sha256": "d6cd389ef0b8929aff5d5019702a2ecab419dda953e1736f5ee041c19a8b182f",
-      "bytes": 671940,
-      "triangles": 9610,
+      "sha256": "3a98eb948ec9aea2067141b44c255cf6bce0d290a225cfc6bdb140e8ffa2ce2a",
+      "bytes": 667756,
+      "triangles": 9562,
       "materials": [
         "gteki_steel_painted_dark",
         "gteki_gate_body",
@@ -1054,12 +1058,12 @@
       ],
       "bounds_m": {
         "min": [
-          -2.79,
+          -2.77,
           0.0,
           -1.9
         ],
         "max": [
-          2.79,
+          2.77,
           0.9846,
           -0.0
         ]
@@ -1094,13 +1098,17 @@
           0.6,
           0.6
         ],
-        "flap_close_dx_m": [
-          0.43,
-          0.28,
-          0.28,
-          0.28,
-          0.28,
-          0.28
+        "flap_close_yaw_deg": {
+          "L": -90.0,
+          "R": 90.0
+        },
+        "flap_reach_m": [
+          0.456,
+          0.306,
+          0.306,
+          0.306,
+          0.306,
+          0.306
         ],
         "total_width_m": 5.44,
         "cabinet_span_z_m": [
@@ -1152,9 +1160,9 @@
       "family": "gate",
       "variant": "array_2",
       "file": "glb/gteki_gate_array_2.glb",
-      "sha256": "c01ebf202a135b20bac862565c542236934ac72839f961d25ccc5393f584b6af",
-      "bytes": 456716,
-      "triangles": 3818,
+      "sha256": "bc1b953eb22101d1b05192a6ecda0d67f4a0ddf71ad6ff2db27f548f0f3a803e",
+      "bytes": 454304,
+      "triangles": 3802,
       "materials": [
         "gteki_steel_painted_dark",
         "gteki_gate_body",
@@ -1170,12 +1178,12 @@
       ],
       "bounds_m": {
         "min": [
-          -1.0,
+          -0.98,
           0.0,
           -1.9
         ],
         "max": [
-          1.0,
+          0.98,
           0.9846,
           -0.0
         ]
@@ -1200,9 +1208,13 @@
           0.6,
           0.6
         ],
-        "flap_close_dx_m": [
-          0.28,
-          0.28
+        "flap_close_yaw_deg": {
+          "L": -90.0,
+          "R": 90.0
+        },
+        "flap_reach_m": [
+          0.306,
+          0.306
         ],
         "total_width_m": 1.86,
         "cabinet_span_z_m": [
@@ -1250,9 +1262,9 @@
       "family": "gate",
       "variant": "array_3w1_oneway",
       "file": "glb/gteki_gate_array_3w1_oneway.glb",
-      "sha256": "52c7e87da6f8784d72951f5982e665f7726c48d6d4d531a136fc95ebf64cf7b0",
-      "bytes": 483752,
-      "triangles": 4698,
+      "sha256": "58b643f9c84d347945754491c9e486af64c6e59fa292c9ccdc43e7c9bbb79db7",
+      "bytes": 480948,
+      "triangles": 4674,
       "materials": [
         "gteki_steel_painted_dark",
         "gteki_gate_body",
@@ -1268,12 +1280,12 @@
       ],
       "bounds_m": {
         "min": [
-          -1.56,
+          -1.54,
           0.0,
           -1.9
         ],
         "max": [
-          1.56,
+          1.54,
           0.9846,
           -0.0
         ]
@@ -1302,10 +1314,14 @@
           0.6,
           0.9
         ],
-        "flap_close_dx_m": [
-          0.28,
-          0.28,
-          0.43
+        "flap_close_yaw_deg": {
+          "L": -90.0,
+          "R": 90.0
+        },
+        "flap_reach_m": [
+          0.306,
+          0.306,
+          0.456
         ],
         "total_width_m": 2.98,
         "cabinet_span_z_m": [
@@ -1354,7 +1370,7 @@
       "family": "vertical",
       "variant": "stairs_straight",
       "file": "glb/gteki_stairs_straight_w2400_r3000.glb",
-      "sha256": "aa891f92fd167106e2d72fbfffbb9b4740e9963ba50a75204c69bcf65794f93f",
+      "sha256": "c4accd497eea080262d57b748492e94e97cf5126ca5e909f418bd1572f9737cc",
       "bytes": 1498200,
       "triangles": 17176,
       "materials": [
@@ -1466,8 +1482,8 @@
       "family": "vertical",
       "variant": "stairs_landing",
       "file": "glb/gteki_stairs_landing_w2400_r4000.glb",
-      "sha256": "c71db2ab76495daad6a7721dc9364660419ae062434e6593a755070b6c7e2c57",
-      "bytes": 1620860,
+      "sha256": "6579ec22cbe5c7cbebd43748f4fe599076c363903c8b8f2c7be4dd9a495d07c6",
+      "bytes": 1620864,
       "triangles": 24048,
       "materials": [
         "gteki_ceiling_plaster",
@@ -1584,8 +1600,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s1000_r5000_up.glb",
-      "sha256": "47cb041f5b5918772ab7acd4a55bede548d7bfc05668e2be84492abc1d94fc9d",
-      "bytes": 1461852,
+      "sha256": "7f7684a76277e7de0fd141a09f1babb041dd4972d7430e8004b4ddb8fb196a8a",
+      "bytes": 1473824,
       "triangles": 29030,
       "materials": [
         "gteki_escalator_tread",
@@ -1742,8 +1758,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s600_r3500_down.glb",
-      "sha256": "6de530fd70a9da78d7d7760e8fd9a6146feacfb4714b8a2cc4842ee59a1270c0",
-      "bytes": 1450216,
+      "sha256": "bd5eddcafb70b14d2973d59c540c4d60f0b2d8aaee6f184a65f118a087a5a938",
+      "bytes": 1462188,
       "triangles": 26946,
       "materials": [
         "gteki_escalator_tread",
@@ -1900,7 +1916,7 @@
       "family": "vertical",
       "variant": "lift_portal",
       "file": "glb/gteki_lift_portal_w1000.glb",
-      "sha256": "aa7d76987f3e332b8af64e1939f9be5ad696da629925d96541111f6f1f18206e",
+      "sha256": "513f8d99cb7b3c2a7acefee1b8cae625e27c138ca4eb80e66d77d0a762aa56b6",
       "bytes": 1012232,
       "triangles": 2394,
       "materials": [
@@ -1986,8 +2002,8 @@
       "family": "signage",
       "variant": "hanging_navy_left",
       "file": "glb/gteki_sign_hanging_navy_left.glb",
-      "sha256": "c0b48a21a22b8c912da96092ecd48e4aa18cb89289b8986451ab381903fcd59b",
-      "bytes": 201136,
+      "sha256": "c9cdfe30ef1adf4e74a9149ecc5ff8b018efeb166cce9534682c765c4ea2fe39",
+      "bytes": 201132,
       "triangles": 1054,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2034,8 +2050,8 @@
       "family": "signage",
       "variant": "hanging_exit_yellow_up",
       "file": "glb/gteki_sign_hanging_exit_yellow_up.glb",
-      "sha256": "30592f84bb949a0dd2cfe44fe7a7f1ebb3cc48c987bdb616d867bdcda0058723",
-      "bytes": 130464,
+      "sha256": "eed15f44a5bc669eaca805cd0d9f825401d09749d387ffb100d013c19bd95752",
+      "bytes": 130328,
       "triangles": 1054,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2081,8 +2097,8 @@
       "family": "signage",
       "variant": "hanging_black_right",
       "file": "glb/gteki_sign_hanging_black_right.glb",
-      "sha256": "4969c7650f30b4a0a73bffcbeb139841d38564d7817aae5bd4f89e3fbb15eae0",
-      "bytes": 195576,
+      "sha256": "7f962489877a518b306eedbfc859209f33b547f71449ca5f3ea90feca7163196",
+      "bytes": 195572,
       "triangles": 1054,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2129,8 +2145,8 @@
       "family": "signage",
       "variant": "hanging_white_none",
       "file": "glb/gteki_sign_hanging_white_none.glb",
-      "sha256": "42221b43e08b5f9feb1f75f35749544a766c2651bdb776f52ce78eadb718a8ab",
-      "bytes": 126380,
+      "sha256": "97a0968fb246921a6765f1ab4d3da65905673955c34e050bc235960516dccbab",
+      "bytes": 126388,
       "triangles": 1054,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2176,8 +2192,8 @@
       "family": "signage",
       "variant": "wall_black",
       "file": "glb/gteki_sign_wall_black.glb",
-      "sha256": "25ed5cfc5c680627c51ebd30fe4647386e90815aa8c626f3f2fff29bd388f308",
-      "bytes": 88980,
+      "sha256": "64b582bf177f5efd3f48cc4eb631552199ac674ec329535902f6a1cbdc27b374",
+      "bytes": 88976,
       "triangles": 244,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2223,8 +2239,8 @@
       "family": "signage",
       "variant": "wall_navy_long",
       "file": "glb/gteki_sign_wall_navy_long.glb",
-      "sha256": "0b8d54d0563b7da4d88fa5732db64fc6fac2678a67a3ec089a380852ddf4653e",
-      "bytes": 90964,
+      "sha256": "309f47eb5dd995a346eb19261c42d629ee1f15ba921c481d3d94f42c0fab0ab4",
+      "bytes": 90960,
       "triangles": 244,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2270,8 +2286,8 @@
       "family": "signage",
       "variant": "totem",
       "file": "glb/gteki_sign_totem.glb",
-      "sha256": "6de82d71c7ae64c3dcf78509f2b28ca2fcf791a0cee4a8094873b11738aa0b8e",
-      "bytes": 220516,
+      "sha256": "64a9f37d4dad8c8e72317c6335a60fe68ad7eda26f53cf57f09a51a53d47d072",
+      "bytes": 220512,
       "triangles": 584,
       "materials": [
         "gteki_steel_painted_dark",
@@ -2319,8 +2335,8 @@
       "family": "signage",
       "variant": "totem_dark",
       "file": "glb/gteki_sign_totem_dark.glb",
-      "sha256": "69008ec3b5f7dafb69325e1ba5380b8f4911e42c425d60456c007c28d3f4774b",
-      "bytes": 222296,
+      "sha256": "55c11e0472fc03ac13a21adf5b82b29f9e0b882e77da99be3a07e921953a1cef",
+      "bytes": 222292,
       "triangles": 584,
       "materials": [
         "gteki_steel_painted_dark",
@@ -2368,8 +2384,8 @@
       "family": "signage",
       "variant": "blade_navy",
       "file": "glb/gteki_sign_blade_navy.glb",
-      "sha256": "82ff871acb0c9846b54259352740df04772294b06141f01f7ea121bf33750dce",
-      "bytes": 184204,
+      "sha256": "9cdecbd75a5334d828435c6373497f00c83a77a4bc030978760a338cd170a5b1",
+      "bytes": 184196,
       "triangles": 592,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2418,8 +2434,8 @@
       "family": "signage",
       "variant": "blade_yellow_up",
       "file": "glb/gteki_sign_blade_yellow_up.glb",
-      "sha256": "86a38c65ab124da654fe46f1db8d452e440279d4db5821833fa4a3a41c2bd30b",
-      "bytes": 114516,
+      "sha256": "5a1eac1dac4716dca6f3ac086bc6aef76605cfbeb85d9a1ae7d85063dcc938ce",
+      "bytes": 114376,
       "triangles": 592,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2467,8 +2483,8 @@
       "family": "props",
       "variant": "bench_4seat",
       "file": "glb/gteki_bench_4seat.glb",
-      "sha256": "5bb0f54080331ca80629300a09c4fcaff993f1f0ed60c6dafe40a8065c6b5dc7",
-      "bytes": 801592,
+      "sha256": "a73c0ca6994ba39ef9324a2c1bcd39ee50ee56dbd9095c88c5594b4837d3471c",
+      "bytes": 801588,
       "triangles": 2325,
       "materials": [
         "gteki_stainless_polished",
@@ -2515,7 +2531,7 @@
       "family": "props",
       "variant": "bench_3seat_slat",
       "file": "glb/gteki_bench_3seat_slat.glb",
-      "sha256": "c31a19eafe63a8fe3ea8ab71d5f502e99010914b374f016c06bc0e9457e835dd",
+      "sha256": "360fdc58527efb7b7c3a08f218ecb9fea55165bf04d6b12ac2049154916f9eb0",
       "bytes": 319412,
       "triangles": 2156,
       "materials": [
@@ -2562,8 +2578,8 @@
       "family": "props",
       "variant": "bin_trio",
       "file": "glb/gteki_bin_trio.glb",
-      "sha256": "3fc54b2ee58616bde211ad2d68264359aaae127e32e2289d00460a1f8a3a6e70",
-      "bytes": 288048,
+      "sha256": "dc6cffcc31eee142cfbdebe529d560af8a1037532066aa695754cd4ff7c83155",
+      "bytes": 288024,
       "triangles": 1162,
       "materials": [
         "gteki_steel_painted_dark",
@@ -2618,8 +2634,8 @@
       "family": "props",
       "variant": "poster_lightbox_01",
       "file": "glb/gteki_poster_lightbox_01.glb",
-      "sha256": "8b256212b162b6c032d5ff5858c10eb07eb3dbacf8d1d49b4e28bfc64fdf4c0f",
-      "bytes": 123836,
+      "sha256": "1a8d2adf1e121993f3702e55b369cc3b4c4729780f689461bfeca98a6b26ea4a",
+      "bytes": 123832,
       "triangles": 246,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2665,8 +2681,8 @@
       "family": "props",
       "variant": "poster_lightbox_04",
       "file": "glb/gteki_poster_lightbox_04.glb",
-      "sha256": "749ae6e802934b8da502934be4552d9d7d09fad62c58cb790eb035850a608745",
-      "bytes": 151272,
+      "sha256": "f245f47bce84099162b06ad99620c85b21613978b9d8086f5556fcdd8327de67",
+      "bytes": 151268,
       "triangles": 246,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2712,8 +2728,8 @@
       "family": "props",
       "variant": "poster_lightbox_08",
       "file": "glb/gteki_poster_lightbox_08.glb",
-      "sha256": "dfde62de197d40f05ea882d1255d3d6dc94d73929f81017923bff27ae7f03f9b",
-      "bytes": 275248,
+      "sha256": "f5b9af844688ebbe4e7120cca72d37b043521e08665ed1ca86d8410b8fc83509",
+      "bytes": 275244,
       "triangles": 246,
       "materials": [
         "gteki_aluminium_anodised",
@@ -2759,8 +2775,8 @@
       "family": "props",
       "variant": "vending_machine",
       "file": "glb/gteki_vending_machine.glb",
-      "sha256": "e2b28b380f1d17e06461b4bd49dac0b6020eed13333f7a97373258e9ab092be2",
-      "bytes": 474464,
+      "sha256": "7df77972109d9fd78055cc246e99d3965c8dd29a7dc4666c4e046682ba2d6d27",
+      "bytes": 474460,
       "triangles": 5896,
       "materials": [
         "gteki_vending_body_slate",
@@ -2824,8 +2840,8 @@
       "family": "props",
       "variant": "vending_machine_sand",
       "file": "glb/gteki_vending_machine_sand.glb",
-      "sha256": "2e4359ed0da60bd75a1d8949cb9dd8b0e8b003cd40b475cea8ea27cd44c99c70",
-      "bytes": 474200,
+      "sha256": "a3e5741ae93900a341f7bc67d090e2a4e3d7c7f1ce96833408aa3a6fa276bb39",
+      "bytes": 474196,
       "triangles": 5896,
       "materials": [
         "gteki_vending_body_sand",
@@ -2889,7 +2905,7 @@
       "family": "props",
       "variant": "column_round_d600",
       "file": "glb/gteki_column_round_d600.glb",
-      "sha256": "6c27bff57b7e89e98056699100679835ce96c0d10589492f05bd373a05f3d914",
+      "sha256": "6198dc82ccb6593c570400fcef5f0da66a311894e3f5e2225e2c0c45c000321f",
       "bytes": 237820,
       "triangles": 832,
       "materials": [
@@ -2939,7 +2955,7 @@
       "family": "props",
       "variant": "column_square_600",
       "file": "glb/gteki_column_square_600.glb",
-      "sha256": "a1b20e608d404f556d290e0523c41206ec41ef409753f2a95988e7f410a760d0",
+      "sha256": "28d0bbaca9c9ed16e903203072e747b8d5ca3d85d62f717d7162c6c0b75c093b",
       "bytes": 319120,
       "triangles": 698,
       "materials": [
@@ -2986,11 +3002,61 @@
       ]
     },
     {
+      "id": "gteki_column_round_d600_h3200",
+      "family": "props",
+      "variant": "column_round_d600_h3200",
+      "file": "glb/gteki_column_round_d600_h3200.glb",
+      "sha256": "d643747a09eadc36771de0834a8d64516ac4a8f95d88e76c6f0f3c70854deaae",
+      "bytes": 237836,
+      "triangles": 832,
+      "materials": [
+        "gteki_steel_brushed",
+        "gteki_wall_panel_enamel",
+        "gteki_reveal_dark"
+      ],
+      "bounds_m": {
+        "min": [
+          -0.305,
+          0.0,
+          -0.305
+        ],
+        "max": [
+          0.305,
+          3.2,
+          0.305
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "shape": "round",
+        "size": 0.6,
+        "height": 3.2,
+        "overrun": 0.0,
+        "kick": 0.18,
+        "body": "enamel",
+        "guards": true,
+        "band": true,
+        "seams": 4,
+        "segments": 40,
+        "corner_radius": 0.03
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [
+        "COL_column-colonly"
+      ],
+      "generator": "tools/blender/gteki_assets/families/props.py",
+      "tags": [
+        "prop"
+      ]
+    },
+    {
       "id": "gteki_column_square_800_accent",
       "family": "props",
       "variant": "column_square_800_accent",
       "file": "glb/gteki_column_square_800_accent.glb",
-      "sha256": "27720def7017b28fd05bb0908609e0430558bd610f4253050e58f87d5ee99286",
+      "sha256": "4493906acf2fdf41dc885a7e57a0a5643c80ecc52a8fc9185df1653e5178dc0d",
       "bytes": 212356,
       "triangles": 266,
       "materials": [
@@ -3039,8 +3105,8 @@
       "family": "props",
       "variant": "tactile_strip_dots_3m",
       "file": "glb/gteki_tactile_strip_dots_3m.glb",
-      "sha256": "6b7b48abf53c531301bf0df0e36a652e083e93f4852c5feb5d4166e643d320c5",
-      "bytes": 103516,
+      "sha256": "1e9c7d26793a9789f0226eea10a67cd1b2c1cf74d866517fda721f2794d15f54",
+      "bytes": 103512,
       "triangles": 30,
       "materials": [
         "gteki_tactile_dots"
@@ -3101,8 +3167,8 @@
       "family": "props",
       "variant": "tactile_strip_bars_3m",
       "file": "glb/gteki_tactile_strip_bars_3m.glb",
-      "sha256": "403b1aaa5df8744773d44832a049bcb8657a37c24874349673c1f831a9105c40",
-      "bytes": 100468,
+      "sha256": "4cacd746586bbc5cb777b3898537a5babf64eacd0301881ba9c23ca11b2f4290",
+      "bytes": 100460,
       "triangles": 30,
       "materials": [
         "gteki_tactile_bars"
@@ -3163,8 +3229,8 @@
       "family": "props",
       "variant": "barrier_rail_3600_glass",
       "file": "glb/gteki_barrier_rail_3600_glass.glb",
-      "sha256": "fe997529c2a9a9f375773ad308603062fa47f41e0d1a9bbb7f14556ea854615f",
-      "bytes": 221488,
+      "sha256": "616c00aba845677576e49b0e51dff2e1048aa3dd2f716021c4a4e92c07d7536f",
+      "bytes": 221484,
       "triangles": 2090,
       "materials": [
         "gteki_steel_brushed",
@@ -3233,8 +3299,8 @@
       "family": "props",
       "variant": "barrier_rail_2400_solid",
       "file": "glb/gteki_barrier_rail_2400_solid.glb",
-      "sha256": "ebf10f57383513590f8400e71e2838d61582c1d70a0b1adafb8b410af11cbcf0",
-      "bytes": 245536,
+      "sha256": "0acec9d58fc8482acadbe617f65c37fecbbe1ca2189c19d84116da04b50c5bfc",
+      "bytes": 245532,
       "triangles": 922,
       "materials": [
         "gteki_steel_brushed",
@@ -3303,8 +3369,8 @@
       "family": "props",
       "variant": "barrier_rail_2400_rails",
       "file": "glb/gteki_barrier_rail_2400_rails.glb",
-      "sha256": "1dc75ec7315b0b033b7838b336b520e2abb7c2890e854c3250809e6c9e6270d4",
-      "bytes": 170216,
+      "sha256": "3c7e6de3dd34e037b6993457ee686724849c17499a84cd9927f90cf6c8e7b540",
+      "bytes": 170212,
       "triangles": 1324,
       "materials": [
         "gteki_steel_brushed",
@@ -3372,8 +3438,8 @@
       "family": "props",
       "variant": "ticket_kiosk",
       "file": "glb/gteki_ticket_kiosk.glb",
-      "sha256": "ef151c2f05d490b29760f0435476949e1d30785925980165b641f427c0c16f3a",
-      "bytes": 212464,
+      "sha256": "1f3d1c7ab9a7ee79842b99a79cd717440d315cd5c67455c69f51d645b4fbfd26",
+      "bytes": 212460,
       "triangles": 752,
       "materials": [
         "gteki_gate_body",
@@ -3420,8 +3486,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s1000_r5000_down.glb",
-      "sha256": "e341274bacfe8e79b14cc5d1546f4fa2aa6b3cb2ff3a0973141897e487b77dbc",
-      "bytes": 1461860,
+      "sha256": "42ddacea7e5fdc59770a61af423cdb91026ccce0bb900ba9ccc704aae328caea",
+      "bytes": 1473836,
       "triangles": 29030,
       "materials": [
         "gteki_escalator_tread",

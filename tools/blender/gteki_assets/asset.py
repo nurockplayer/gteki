@@ -4,10 +4,11 @@ import hashlib
 import json
 import math
 import os
+import struct
 
 import bmesh
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 from . import contract, materials
 from .mesh import Part
@@ -21,7 +22,9 @@ def reset_scene():
 
 
 def _idprop_safe(v):
-    """IDProperties cannot hold lists of dicts / mixed lists; JSON-encode those."""
+    """IDProperties cannot hold lists of dicts / mixed lists; JSON-encode those.
+    The root `extras.gteki` is rewritten with exact JSON types after export
+    (see `_patch_root_extras`); this only keeps the .blend copy readable."""
     if isinstance(v, dict):
         return {str(k): _idprop_safe(x) for k, x in v.items()}
     if isinstance(v, (list, tuple)):
@@ -54,6 +57,7 @@ class Asset:
         self.sockets = []
         self.light_hints = []
         self.shift = Vector((0.0, 0.0, 0.0))  # applied to everything at build time
+        self.pivots = {}  # VIS group -> node origin (for runtime-animated parts)
 
     def mat_index(self, name):
         if name not in materials.SPECS:
@@ -91,6 +95,10 @@ class Asset:
     def light_hint(self, name, loc, **extras):
         self.light_hints.append((name, Vector(loc), extras))
 
+    def pivot(self, group, loc):
+        """Give VIS_<group> its own node origin at `loc` so runtime can rotate it in place."""
+        self.pivots[group] = Vector(loc)
+
     # ---------------------------------------------------------------- build
 
     def build(self):
@@ -117,8 +125,13 @@ class Asset:
         vis_objs = []
         for group, objs in groups.items():
             o = _join(objs, f"{contract.VIS}{group}")
+            if group in self.pivots:
+                pv = self.pivots[group] + self.shift
+                o.data.transform(Matrix.Translation(-pv))
+                o.location = pv
             o.parent = root
             vis_objs.append(o)
+        bpy.context.view_layer.update()
 
         for name, part in self.collision:
             me = bpy.data.meshes.new(f"{contract.COL}{name}{contract.COL_SUFFIX}")
@@ -201,6 +214,7 @@ class Asset:
             use_selection=False,
             export_draco_mesh_compression_enable=False,
         )
+        _patch_root_extras(path, self.id, self.meta)
         if save_blend_dir:
             os.makedirs(save_blend_dir, exist_ok=True)
             bpy.ops.wm.save_as_mainfile(filepath=os.path.join(save_blend_dir, f"{self.id}.blend"), compress=True)
@@ -227,6 +241,29 @@ class Asset:
             "collision_nodes": [f"{contract.COL}{n}{contract.COL_SUFFIX}" for n, _ in self.collision],
             "generator": self.generator,
         }
+
+
+def _patch_root_extras(path, root_name, meta):
+    """Replace the exporter's IDProperty-flattened root extras with exact JSON
+    (lists of strings, empty lists and booleans keep their types)."""
+    with open(path, "rb") as f:
+        data = f.read()
+    magic, version, _ = struct.unpack_from("<4sII", data, 0)
+    jlen, jtype = struct.unpack_from("<II", data, 12)
+    if magic != b"glTF" or version != 2 or jtype != 0x4E4F534A:
+        raise ValueError(f"{path}: unexpected GLB layout")
+    doc = json.loads(data[20 : 20 + jlen])
+    rest = data[20 + jlen :]
+    roots = doc["scenes"][doc.get("scene", 0)]["nodes"]
+    node = doc["nodes"][roots[0]]
+    if len(roots) != 1 or node.get("name") != root_name:
+        raise ValueError(f"{path}: expected single root {root_name!r}")
+    node.setdefault("extras", {})["gteki"] = json.loads(json.dumps(meta))
+    js = json.dumps(doc, separators=(",", ":"), ensure_ascii=False).encode()
+    js += b" " * (-len(js) % 4)
+    body = struct.pack("<II", len(js), 0x4E4F534A) + js + rest
+    with open(path, "wb") as f:
+        f.write(struct.pack("<4sII", b"glTF", 2, 12 + len(body)) + body)
 
 
 def _to_gltf(v):

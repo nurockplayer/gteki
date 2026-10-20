@@ -611,7 +611,7 @@ def face_material(layout, theme, arrow, aspect, tone="light"):
         seed=zlib.crc32(name.encode()) % 90000 + 1000,
         kw=dict(theme=theme, arrow=arrow, aspect=round(aspect, 3), layout=layout, tone=tone, v=TEX_V),
         emit_from_albedo=True,
-        emit_strength={"exit_yellow": 1.3, "white": 1.5}.get(theme, 1.5 if (layout == "map" and tone == "light") else 2.0),
+        emit_strength={"exit_yellow": 0.75, "white": 1.2}.get(theme, 1.5 if (layout == "map" and tone == "light") else 2.0),
     )
     return name
 
