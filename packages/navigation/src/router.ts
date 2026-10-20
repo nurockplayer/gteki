@@ -52,7 +52,8 @@ class MinHeap {
   }
 }
 
-function geometryLength(geometry: Vec3N[] | undefined): number | null {
+/** Polyline length. Symbolic (display-only) z never counts: such polylines are measured in plan (x, y) only. */
+function geometryLength(geometry: Vec3N[] | undefined, symbolicZ = false): number | null {
   if (!geometry || geometry.length < 2) return null;
   let length = 0;
   for (const point of geometry) {
@@ -64,7 +65,7 @@ function geometryLength(geometry: Vec3N[] | undefined): number | null {
   for (let i = 1; i < geometry.length; i++) {
     const from = geometry[i - 1]!;
     const to = geometry[i]!;
-    const dz = from.z !== null && to.z !== null ? to.z - from.z : 0;
+    const dz = !symbolicZ && from.z !== null && to.z !== null ? to.z - from.z : 0;
     length += Math.hypot(to.x - from.x, to.y - from.y, dz);
   }
   return Number.isFinite(length) ? length : null;
@@ -77,7 +78,7 @@ interface Measurement {
 
 function measureEdge(edge: Edge): Measurement | null {
   if (edge.lengthM !== null && (!Number.isFinite(edge.lengthM) || edge.lengthM < 0)) return null;
-  const lengthM = edge.lengthM ?? geometryLength(edge.geometry);
+  const lengthM = edge.lengthM ?? geometryLength(edge.geometry, edge.geometryZ === "symbolic");
   if (lengthM === null) return null;
   // Every mode needs measurable geometry or length; lift cost is fixed per ride.
   if (edge.mode === "elevator") return { lengthM, cost: ELEVATOR_SECONDS * WALK_SPEED };
@@ -156,7 +157,7 @@ export function createRouter(bundle: StationBundle): Router {
     let totalLengthM = 0;
     let estimatedSeconds = 0;
     let floorChanges = 0;
-    let crossesFareBoundary = false;
+    let crossesFareBoundary: boolean | null = false;
     let evidenceCheckedDate: string | null = null;
     let synthetic = bundle.station.synthetic;
     const timeRestricted: RouteResult["timeRestricted"] = [];
@@ -184,6 +185,10 @@ export function createRouter(bundle: StationBundle): Router {
         : lengthM / (edge.mode === "stairs" ? 0.5 : edge.mode === "escalator" ? 0.75 : WALK_SPEED);
       if (fromFloorId !== toFloorId) floorChanges++;
       if (edge.crossesFareBoundary === true) crossesFareBoundary = true;
+      else if (edge.crossesFareBoundary === null) {
+        unknown("fare_boundary", edge.id);
+        if (crossesFareBoundary === false) crossesFareBoundary = null;
+      }
       touchOperator(toFloorId);
       if (edge.verification === "synthetic") synthetic = true;
       if (edge.hours === null) unknown("hours", edge.id);
@@ -204,24 +209,28 @@ export function createRouter(bundle: StationBundle): Router {
       }
     }
 
-    const kinds: RouteUnknown[] = ["hours", "paid", "wheelchair", "steps", "access_evidence"];
+    const kinds: RouteUnknown[] = ["hours", "paid", "fare_boundary", "wheelchair", "steps", "access_evidence"];
     const unknowns = kinds.flatMap((kind) => {
       const edgeIds = unknownEdges.get(kind);
       return edgeIds ? [{ kind, edgeIds }] : [];
     });
     let oldestSourceDate: string | null = null;
-    for (const sourceId of sourceIds) {
+    const undatedSourceIds: string[] = [];
+    for (const sourceId of [...sourceIds].sort()) {
       const date = sourceDates.get(sourceId) ?? null;
-      if (date !== null && (oldestSourceDate === null || date < oldestSourceDate)) oldestSourceDate = date;
+      if (date === null) undatedSourceIds.push(sourceId);
+      else if (oldestSourceDate === null || date < oldestSourceDate) oldestSourceDate = date;
     }
+    // Known-old evidence proves staleness; otherwise an undated dependency leaves freshness UNKNOWN.
     let stale: boolean | null = null;
     if (profile.today && oldestSourceDate) {
       const age = daysBetween(oldestSourceDate, profile.today);
       if (age !== null) stale = age > (profile.staleAfterDays ?? DEFAULT_STALE_AFTER_DAYS);
     }
+    if (stale === false && undatedSourceIds.length > 0) stale = null;
     return {
       ok: true, nodeIds, steps, totalLengthM, estimatedSeconds, floorChanges, crossesFareBoundary, unknowns,
-      sourceIds: [...sourceIds].sort(), evidenceCheckedDate, oldestSourceDate, stale, synthetic, timeRestricted, operatorIds,
+      sourceIds: [...sourceIds].sort(), evidenceCheckedDate, oldestSourceDate, undatedSourceIds, stale, synthetic, timeRestricted, operatorIds,
     };
   }
 

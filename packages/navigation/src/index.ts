@@ -51,7 +51,7 @@ export interface RouteStep {
   toFloorId: string;
 }
 
-export type RouteUnknown = "hours" | "paid" | "wheelchair" | "steps" | "length" | "access_evidence";
+export type RouteUnknown = "hours" | "paid" | "fare_boundary" | "wheelchair" | "steps" | "length" | "access_evidence";
 
 export interface RouteResult {
   ok: true;
@@ -61,16 +61,22 @@ export interface RouteResult {
   /** Estimated walking time (s): walk 1.2 m/s, stairs 0.5 m/s along length, escalator 0.75 m/s, lift 45 s per ride. */
   estimatedSeconds: number;
   floorChanges: number;
-  crossesFareBoundary: boolean;
+  /** true if any edge crosses the fare boundary; null when none is known to but some crossing state is UNKNOWN. */
+  crossesFareBoundary: boolean | null;
   /** Facts along the route that are UNKNOWN; UI must show them. */
   unknowns: { kind: RouteUnknown; edgeIds: string[] }[];
   /** Sources the route depends on (for provenance display). */
   sourceIds: string[];
   /** Latest checkedDate across the route's evidence. */
   evidenceCheckedDate: string | null;
-  /** Oldest source datasetDate the route depends on (the weakest freshness link); null = undated. */
+  /** Oldest known source datasetDate the route depends on (the weakest dated link); null = no dated source. */
   oldestSourceDate: string | null;
-  /** true when oldestSourceDate is older than staleAfterDays before profile.today; null when not evaluable. */
+  /** Sources the route depends on that have no datasetDate. */
+  undatedSourceIds: string[];
+  /**
+   * true when oldestSourceDate is older than staleAfterDays before profile.today; null when not evaluable
+   * (no `today`, or an undated dependency and no dated one already proves staleness).
+   */
   stale: boolean | null;
   /** True when the route uses synthetic data: never present it as real directions. */
   synthetic: boolean;
@@ -99,4 +105,4 @@ export interface Router {
 }
 
 export { createRouter } from "./router.ts";
-export { describeRoute, nodeDisplayZ, routePolyline, type Instruction, type InstructionKind, type PolylinePoint } from "./present.ts";
+export { describeRoute, floorDisplayName, nodeDisplayZ, routePolyline, type Instruction, type InstructionKind, type PolylinePoint } from "./present.ts";

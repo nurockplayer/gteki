@@ -43,7 +43,17 @@ export interface StationScene {
   walls?: WallSegment[];
   spawnPoints?: SpawnPoint[];
   /** Fog/background/lighting preferences; the explorer applies sane defaults otherwise. */
-  environment?: { background?: number; fog?: { color: number; near: number; far: number }; exposure?: number };
+  environment?: {
+    background?: number;
+    fog?: { color: number; near: number; far: number };
+    exposure?: number;
+    /**
+     * "default" (or omitted): the explorer adds its hemisphere + sun. "scene": the explorer adds no scene
+     * lights (use for baked lightmaps / underground stations); the scene owns lighting and the explorer
+     * lights only its own avatar with a per-material environment map.
+     */
+    lighting?: "default" | "scene";
+  };
   /** Per-frame hook (animated signage, ambient props). */
   update?(dtSeconds: number, elapsedSeconds: number): void;
   dispose(): void;

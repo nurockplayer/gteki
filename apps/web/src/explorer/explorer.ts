@@ -8,6 +8,8 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { ASSET_SCHEME, fencedUrlResolver, stationDir } from "./assetFence.ts";
 import { enuToRenderer } from "@gteki/geo";
 import type { Router, PolylinePoint } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
@@ -43,7 +45,6 @@ export class Explorer {
   private composer: EffectComposer | null = null;
   private readonly timer = new THREE.Timer();
   private readonly input: Input;
-  private readonly gltf = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   private readonly ray = new THREE.Raycaster();
 
   private station: LoadedStation | null = null;
@@ -59,6 +60,11 @@ export class Explorer {
   private routeTexture: THREE.CanvasTexture | null = null;
 
   private readonly avatar = new THREE.Group();
+  /** Core hemisphere + sun; hidden when a scene declares `environment.lighting: "scene"`. */
+  private readonly coreLights: THREE.Light[] = [];
+  /** Image-based light applied only to core-owned materials (avatar) when the scene owns lighting. */
+  private coreEnvMap: THREE.Texture | null = null;
+  private lighting: "default" | "scene" = "default";
   private readonly pos = new THREE.Vector3();
   private yaw = 0; // radians; 0 = facing north (-Z)
   private pitch = -0.12;
@@ -110,12 +116,13 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; camera: number[]; mode: ExplorerMode } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length,
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
+      lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
     };
   }
 
@@ -134,11 +141,38 @@ export class Explorer {
     sun.shadow.mapSize.set(2048, 2048);
     Object.assign(sun.shadow.camera, { left: -150, right: 150, top: 150, bottom: -150, far: 400 });
     this.scene.add(hemi, sun);
+    this.coreLights.push(hemi, sun);
+  }
+
+  /**
+   * "scene": the station's baked/own lights are the only scene lights (no double lighting of lightmaps).
+   * Three.js lights cannot be masked per object, so the avatar keeps a per-material environment map
+   * instead (scene.environment stays unset, so station materials are unaffected).
+   */
+  private applyLighting(mode: "default" | "scene"): void {
+    this.lighting = mode;
+    for (const l of this.coreLights) l.visible = mode === "default";
+    if (mode === "scene" && !this.coreEnvMap) {
+      const pmrem = new THREE.PMREMGenerator(this.renderer);
+      this.coreEnvMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      pmrem.dispose();
+    }
+    this.avatar.traverse((o) => {
+      const m = (o as THREE.Mesh).material;
+      if (m instanceof THREE.MeshStandardMaterial) { m.envMap = mode === "scene" ? this.coreEnvMap : null; m.needsUpdate = true; }
+    });
+  }
+
+  /** EffectComposer.dispose() frees only its own targets; each pass owns targets/materials too. */
+  private disposeComposer(): void {
+    if (!this.composer) return;
+    for (const pass of this.composer.passes) pass.dispose();
+    this.composer.dispose();
+    this.composer = null;
   }
 
   private setupComposer(): void {
-    this.composer?.dispose();
-    this.composer = null;
+    this.disposeComposer();
     if (this.quality !== "high") return;
     const size = this.renderer.getSize(new THREE.Vector2());
     const composer = new EffectComposer(this.renderer);
@@ -166,12 +200,22 @@ export class Explorer {
   /** Loading phase, exposed for diagnosing stalled station scenes. */
   phase = "idle";
 
-  async loadStation(station: LoadedStation, router: Router): Promise<void> {
+  private loadGeneration = 0;
+
+  /** Resolves false when a later loadStation call superseded this one (its scene is disposed, nothing shown). */
+  async loadStation(station: LoadedStation, router: Router): Promise<boolean> {
+    const generation = ++this.loadGeneration;
     this.phase = "graph";
     this.clearStation();
     this.station = station;
     const bundle = station.bundle;
     this.graph = buildGraphView(bundle, router);
+    // One loading manager per station: every request (GLB, its external buffers/images, textures)
+    // must resolve through this station's fenced asset map.
+    const refused: string[] = [];
+    const manager = new THREE.LoadingManager();
+    manager.setURLModifier(fencedUrlResolver(station.assetUrls, refused));
+    const fenceError = (err: unknown) => refused.length ? new Error(`blocked asset request outside station folder: ${refused.join(", ")}`) : err;
     const ctx: SceneContext = {
       THREE,
       bundle,
@@ -180,12 +224,13 @@ export class Explorer {
       loadGlb: (uri) => {
         const url = station.assetUrls.get(uri);
         if (!url) return Promise.reject(new Error(`asset not found in station folder: ${uri}`));
-        return this.gltf.loadAsync(url);
+        const loader = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder).setResourcePath(`${ASSET_SCHEME}${stationDir(uri)}/`);
+        return loader.loadAsync(url).catch((err: unknown) => { throw fenceError(err); });
       },
       loadTexture: async (uri, opts = {}) => {
         const url = station.assetUrls.get(uri);
         if (!url) throw new Error(`asset not found in station folder: ${uri}`);
-        const tex = await new THREE.TextureLoader().loadAsync(url);
+        const tex = await new THREE.TextureLoader(manager).loadAsync(url);
         tex.colorSpace = opts.colorSpace === "linear" ? THREE.LinearSRGBColorSpace : THREE.SRGBColorSpace;
         tex.flipY = opts.flipY ?? true;
         tex.needsUpdate = true;
@@ -197,14 +242,21 @@ export class Explorer {
 
     this.sceneError = null;
     this.phase = "scene";
+    let built: StationScene | null = null;
+    let sceneError: string | null = null;
     try {
-      this.stationScene = await this.buildStationScene(station, ctx);
+      built = await this.buildStationScene(station, ctx);
     } catch (err) {
       // A broken visual scene never hides valid routing data: fall back to the L0 graph view.
       console.warn("[gteki] station scene failed; using L0 graph view", err);
-      this.sceneError = err instanceof Error ? err.message : String(err);
-      this.stationScene = null;
+      sceneError = err instanceof Error ? err.message : String(err);
     }
+    if (generation !== this.loadGeneration || this.disposed) {
+      built?.dispose();
+      return false;
+    }
+    this.stationScene = built;
+    this.sceneError = sceneError;
 
     if (this.stationScene) {
       this.world.add(this.stationScene.root);
@@ -217,6 +269,7 @@ export class Explorer {
       if (env?.background !== undefined) this.scene.background = new THREE.Color(env.background);
       if (env?.fog) this.scene.fog = new THREE.Fog(env.fog.color, env.fog.near, env.fog.far);
       if (env?.exposure !== undefined) this.renderer.toneMappingExposure = env.exposure;
+      this.applyLighting(env?.lighting === "scene" ? "scene" : "default");
       this.stationScene.root.updateMatrixWorld(true);
     } else {
       this.world.add(this.graph.root);
@@ -227,9 +280,11 @@ export class Explorer {
     this.setupComposer();
     this.frameAll();
     this.phase = "ready";
+    return true;
   }
 
   private async buildStationScene(station: LoadedStation, ctx: SceneContext): Promise<StationScene | null> {
+    if (station.sceneImportError) throw new Error(`scene module failed to load: ${station.sceneImportError}`);
     if (station.scene) return await station.scene.buildScene(ctx);
     const assets = station.bundle.assets ?? [];
     if (assets.length === 0) return null;
@@ -245,7 +300,7 @@ export class Explorer {
       colliders.push(...roles.colliders);
       root.add(gltf.scene);
     }
-    return { root, walkable, colliders, dispose: () => root.traverse((o) => (o as THREE.Mesh).geometry?.dispose()) };
+    return { root, walkable, colliders, dispose: () => disposeObject(root) };
   }
 
   private clearStation(): void {
@@ -260,6 +315,7 @@ export class Explorer {
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
     this.renderer.toneMappingExposure = 1;
+    this.applyLighting("default");
   }
 
   setGraphOverlay(visible: boolean): void {
@@ -379,7 +435,9 @@ export class Explorer {
     return g;
   }
 
+  /** Removing the route also ends any guidance along it: a recomputed or failed route never keeps the old guide. */
   clearRoute(): void {
+    this.stopGuide();
     for (const child of [...this.routeGroup.children]) {
       this.routeGroup.remove(child);
       child.traverse((o) => { (o as THREE.Mesh).geometry?.dispose(); const m = (o as THREE.Mesh).material; if (m && !Array.isArray(m)) m.dispose(); });
@@ -579,7 +637,25 @@ export class Explorer {
     this.renderer.setAnimationLoop(null);
     this.clearStation();
     this.input.dispose();
-    this.composer?.dispose();
+    this.disposeComposer();
+    this.coreEnvMap?.dispose();
     this.renderer.dispose();
   }
+}
+
+/** Release geometries, materials and their textures owned by a loaded subtree. */
+function disposeObject(root: THREE.Object3D): void {
+  const textures = new Set<THREE.Texture>();
+  const materials = new Set<THREE.Material>();
+  root.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    mesh.geometry?.dispose();
+    const m = mesh.material;
+    for (const mat of Array.isArray(m) ? m : m ? [m] : []) materials.add(mat);
+  });
+  for (const mat of materials) {
+    for (const value of Object.values(mat)) if (value instanceof THREE.Texture) textures.add(value);
+    mat.dispose();
+  }
+  for (const t of textures) t.dispose();
 }

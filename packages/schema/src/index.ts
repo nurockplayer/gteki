@@ -114,6 +114,11 @@ export interface Floor {
   elevationSource: ElevationSource;
   /** Height used purely for rendering. Equals elevationM when known; otherwise a marked symbolic offset. */
   renderElevationM: number;
+  /**
+   * Station-authored human-facing names (e.g. ja "地下3階", en "B3", ja "B2–B3 中間").
+   * Display only: never used to equate floors across operators; `sourceLabels` stay exact.
+   */
+  displayNames?: LocalizedText[];
 }
 
 export interface Vec3N {

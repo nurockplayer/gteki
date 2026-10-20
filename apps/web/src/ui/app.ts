@@ -1,4 +1,4 @@
-import { createRouter, describeRoute, routePolyline } from "@gteki/navigation";
+import { createRouter, describeRoute, floorDisplayName, routePolyline } from "@gteki/navigation";
 import type { Instruction, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
 import type { Poi, StationBundle, Weekday } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
@@ -173,7 +173,13 @@ export class App {
     }
   }
 
+  private openGeneration = 0;
+
   private async openStation(entry: StationEntry, fromId?: string | null, toId?: string | null): Promise<void> {
+    // A later selection supersedes this one: never let a slow station overwrite the one now selected.
+    const generation = ++this.openGeneration;
+    const current = () => generation === this.openGeneration;
+    this.explorer.stopGuide();
     this.s.entry = entry;
     this.ui.stationSelect.value = entry.key;
     this.s.origin = null;
@@ -185,12 +191,14 @@ export class App {
     this.toast(this.t.loading);
     try {
       const loaded = await entry.load();
+      if (!current()) return;
       this.s.loaded = loaded;
       this.s.router = createRouter(loaded.bundle);
       this.s.search = createSearchIndex(loaded.bundle);
-      await this.explorer.loadStation(loaded, this.s.router);
+      if (!(await this.explorer.loadStation(loaded, this.s.router)) || !current()) return;
       this.toast(this.explorer.sceneError ? `${this.t.sceneFallback}: ${this.explorer.sceneError}` : "", this.explorer.sceneError ? 6000 : 0);
     } catch (err) {
+      if (!current()) return;
       this.s.loaded = null;
       this.s.router = null;
       this.s.search = null;
@@ -311,7 +319,7 @@ export class App {
       const b = el("button", `result cat-${h.poi.category}${h.routable ? "" : " disabled"}`);
       const name = el("span", "result-name", this.poiName(h.poi));
       const meta = el("span", "result-meta");
-      const floor = h.poi.floorId ? floors.get(h.poi.floorId)?.sourceLabels[0]?.label : null;
+      const floor = h.poi.floorId ? floorDisplayName(floors.get(h.poi.floorId), this.s.lang) : null;
       meta.textContent = [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null, h.routable ? null : this.t.searchOnly].filter(Boolean).join(" · ");
       b.append(el("span", "dot"), name, meta);
       b.addEventListener("mousedown", (e) => e.preventDefault());
@@ -441,11 +449,12 @@ export class App {
     const badges = el("div", "badges");
     const badge = (text: string, cls: string, title?: string) => { const x = el("span", `badge ${cls}`, text); if (title) x.title = title; badges.append(x); };
     if (r.synthetic) badge(t.syntheticShort, "warn", t.synthetic);
-    const unknownText: Record<string, string> = { hours: t.unknownHours, wheelchair: t.unknownWheelchair, steps: t.unknownSteps, paid: t.unknownPaid, access_evidence: t.unknownAccess };
+    const unknownText: Record<string, string> = { hours: t.unknownHours, wheelchair: t.unknownWheelchair, steps: t.unknownSteps, paid: t.unknownPaid, fare_boundary: t.unknownFare, access_evidence: t.unknownAccess };
     for (const u of r.unknowns) badge(`${unknownText[u.kind] ?? u.kind} ×${u.edgeIds.length}`, "unknown");
     if (r.timeRestricted.length) badge(`${t.timeWindow}: ${r.timeRestricted.map((w) => `${w.open}–${w.close}`).join(", ")}`, "unknown");
-    if (r.crossesFareBoundary) badge(t.paidCrossing, "info");
-    if (r.stale) badge(t.stale, "warn");
+    if (r.crossesFareBoundary === true) badge(t.paidCrossing, "info");
+    if (r.stale === true) badge(t.stale, "warn");
+    else if (r.stale === null && r.undatedSourceIds.length > 0) badge(t.freshnessUnknown, "unknown", r.undatedSourceIds.join(", "));
     if (this.s.polyline.some((p) => !p.zKnown)) badge(t.symbolicHeight, "muted");
     if (r.operatorIds.length > 1) badge(`${t.operators}: ${r.operatorIds.join(" → ")}`, "info");
     card.append(badges);
