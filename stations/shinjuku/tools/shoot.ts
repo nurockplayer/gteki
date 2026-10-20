@@ -1,7 +1,7 @@
 /**
  * QA screenshot harness for the E27 lane app.
  *
- *   pnpm --filter @gteki/station-shinjuku shoot [--url http://localhost:5274] [--out dir] [--only id,id] [--w 1280 --h 720] [--q high|low] [--crowd N] [--route fromPoiId,toPoiId] [--ride-distance 4] [--check-ui 1]
+ *   pnpm --filter @gteki/station-shinjuku shoot [--url http://localhost:5274] [--out dir] [--only id,id] [--w 1280 --h 720] [--q high|low] [--crowd N] [--route fromPoiId,toPoiId] [--ride-distance 4] [--check-ui 1] [--vantages file.json]
  *
  * Needs a running dev server (`pnpm --filter @gteki/station-shinjuku dev`) and Google Chrome.
  * Writes <out>/<vantage>.png plus <out>/report.json (fps is not meaningful headless; calls/tris/void are).
@@ -31,7 +31,7 @@ const checkUI = arg("check-ui", "0") === "1";
 const uiChecks: string[] = [];
 const routePair = arg("route")?.split(",");
 if (routePair && (routePair.length !== 2 || routePair.some((id) => !id))) throw new Error("--route requires fromPoiId,toPoiId");
-const { vantages } = JSON.parse(readFileSync(join(here, "vantages.json"), "utf8")) as { vantages: Vantage[] };
+const { vantages } = JSON.parse(readFileSync(resolve(arg("vantages", join(here, "vantages.json"))!), "utf8")) as { vantages: Vantage[] };
 
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({

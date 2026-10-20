@@ -5,7 +5,8 @@
  */
 import { WALKER_BODY, type BuildScene, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
 import type * as THREE from "three";
-import { buildStation, slabGeometry } from "../scene/build.ts";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
 import plan from "../data/plan.json" with { type: "json" };
 
@@ -85,6 +86,33 @@ export const buildScene: BuildScene = (ctx) => {
     m.userData.gteki_role = "collider";
     proxies.add(m);
     colliders.push(m);
+  }
+  // Underground ceilings and shaft soffits: the explorer's follow camera rays rise behind the head and
+  // otherwise left through the ceiling (only street pads are walkable above B1), viewing the station from
+  // above its own roof. Horizontal walk rays never hit these horizontal/inclined caps along an edge: the
+  // enclosure test keeps every edge ≥ 2.1 m below them, above the 1.2 m ray.
+  const underground = new Set(layout.levels.filter((lv) => lv.z < -0.5).map((lv) => lv.floorId));
+  const caps = [
+    ...layout.levels.filter((lv) => underground.has(lv.floorId)).flatMap((lv) => lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 1, true))),
+    ...layout.soffits.filter((s) => underground.has(s.floorId)).map(soffitGeometry),
+  ];
+  if (caps.length) {
+    // Position-only, non-indexed copies so every cap merges into one raycast mesh.
+    const flat = caps.map((c) => {
+      const f = c.index ? c.toNonIndexed() : c.clone();
+      for (const k of Object.keys(f.attributes)) if (k !== "position") f.deleteAttribute(k);
+      return f;
+    });
+    const g = mergeGeometries(flat, false);
+    for (const c of [...caps, ...flat]) c.dispose();
+    if (g) {
+      g.computeBoundingSphere();
+      const m = new T.Mesh(g, proxyMat);
+      m.name = "ceiling collider (invisible)";
+      m.userData.gteki_role = "collider";
+      proxies.add(m);
+      colliders.push(m);
+    }
   }
   const nodes = new Map(ctx.bundle.nodes.map((n) => [n.id, n]));
   const spawnPoints: SpawnPoint[] = (ctx.bundle.spawnNodeIds ?? []).flatMap((id) => {

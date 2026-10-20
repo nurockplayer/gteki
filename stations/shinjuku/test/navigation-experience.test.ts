@@ -8,7 +8,7 @@ import { floorLabel, narrate, routeMapFrame, nearbyExits, summarizeRoute } from 
 
 const ring = (lo: number, hi: number) => [{ x: lo, y: lo }, { x: hi, y: lo }, { x: hi, y: hi }, { x: lo, y: hi }];
 function worldWith(walls: WallSeg[] = []) {
-  const layout: Layout = { levels: [], runs: [], tactile: [], gates: [], pads: [], streetPads: [], linkStrips: [], runWalls: [], nodeZ: new Map(), bounds: { min: { x: -10, y: -10 }, max: { x: 10, y: 10 } } };
+  const layout: Layout = { levels: [], runs: [], tactile: [], gates: [], pads: [], streetPads: [], linkStrips: [], runWalls: [], soffits: [], nodeZ: new Map(), bounds: { min: { x: -10, y: -10 }, max: { x: 10, y: 10 } } };
   const world = new WalkWorld(layout);
   world.addWalls(walls);
   world.addSlab({ spaceId: "test", rings: [ring(-10, 10)], z: 0, fare: null, category: "test" });
