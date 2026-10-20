@@ -23,7 +23,8 @@ export interface GuidePoint {
 
 export const WALK_SPEED = 1.45;
 export const RUN_SPEED = 3.6;
-const RADIUS = 0.3;
+export const PLAYER_RADIUS = 0.3;
+const RADIUS = PLAYER_RADIUS;
 
 export class Player {
   x: number;

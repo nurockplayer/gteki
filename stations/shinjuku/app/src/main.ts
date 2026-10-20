@@ -12,7 +12,7 @@ import { loadShinjukuBundle } from "../../data/bundle.ts";
 import planJson from "../../data/plan.json";
 import { buildStation } from "../../scene/build.ts";
 import { pointInRings, type Plan } from "../../scene/layout.ts";
-import { Player, type GuidePoint, type MoveInput } from "./player.ts";
+import { Player, PLAYER_RADIUS, type GuidePoint, type MoveInput } from "./player.ts";
 import { floorLabel, narrate, UNKNOWN_LABELS, type Maneuver } from "./narrate.ts";
 import { createAvatar } from "./avatar.ts";
 import { createStationAudio } from "./audio.ts";
@@ -82,19 +82,23 @@ function floorAtZ(z: number): Floor {
   // between levels on stairs: report the nearer
   return best;
 }
-/** Walkable straight attachment p → node: continuous ground ending at the node's height, body-width clear. */
+/**
+ * Walkable straight attachment p → node: the walker's body (WalkWorld collision, incl. props) swept
+ * every 0.1 m over continuous ground, never pushed by a wall, arriving at the node's height.
+ */
 function attachable(p: { x: number; y: number; z: number }, id: string): boolean {
   const n = nodeById.get(id)!;
+  if (world.firstWallHit(p, n.position, p.z + 1.0) < 0.999) return false;
   const d = Math.hypot(n.position.x - p.x, n.position.y - p.y);
-  const u = d > 1e-6 ? { x: (n.position.x - p.x) / d, y: (n.position.y - p.y) / d } : { x: 1, y: 0 };
-  for (const off of [-0.25, 0, 0.25]) {
-    const a = { x: p.x - u.y * off, y: p.y + u.x * off };
-    const b = { x: n.position.x - u.y * off, y: n.position.y + u.x * off };
-    if (world.firstWallHit(a, b, p.z + 1.0) < 0.999) return false;
-  }
+  const steps = Math.max(1, Math.ceil(d / 0.1));
   let z: number | null = p.z;
-  const steps = Math.max(1, Math.ceil(d / 0.1)); // fine enough to catch slab seams
-  for (let i = 1; i <= steps && z !== null; i++) z = world.groundAt({ x: p.x + (n.position.x - p.x) * (i / steps), y: p.y + (n.position.y - p.y) * (i / steps) }, z);
+  for (let i = 1; i <= steps; i++) {
+    const q = { x: p.x + (n.position.x - p.x) * (i / steps), y: p.y + (n.position.y - p.y) * (i / steps) };
+    z = world.groundAt(q, z);
+    if (z === null) return false;
+    const r = world.resolveWalls(q, z, PLAYER_RADIUS);
+    if (Math.hypot(r.x - q.x, r.y - q.y) > 0.02) return false;
+  }
   return z !== null && Math.abs(z - nodeZ(id)) <= 0.35;
 }
 function nearestNode(p: { x: number; y: number; z: number }) {

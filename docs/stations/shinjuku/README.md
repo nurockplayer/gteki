@@ -66,7 +66,7 @@ To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downlo
   - within 15 m,
   - at the same height (±0.6 m),
   - on the same fare side.
-  - with continuous walkable ground (sampled every 0.1 m), body-width clear, ending at the node's height.
+  - reachable by sweeping the walker's 0.3 m body through the real collision (props included) every 0.1 m over continuous ground, ending at the node's height.
 
   Otherwise the app asks the user to pick a start point. A known fare side requires affirmative same-side evidence on the node (gate links excluded).
 - **Unknown, never asserted:**
@@ -98,7 +98,7 @@ Still needed for L2 (not claimed): an independent visual/interaction review (Lan
 
 ## G4 — delivery: **HOLD**
 
-Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --check`, which reproduces byte-identical files from hashed inputs (provenance uses the pinned `acquiredAt` in `sources/manifest.json`, not the local download time). Two fresh read-only Codex reviews ran: the first raised 15 findings, the second raised 6 on the fixes. All are fixed; the PR lists each one. Still open: an exact-SHA QA pass by Lane F, the Owner decision on PDL expiry, and Owner merge approval.
+Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --check`, which reproduces byte-identical files from hashed inputs (provenance uses the pinned `acquiredAt` in `sources/manifest.json`, not the local download time). Three fresh read-only Codex reviews ran: 15 findings, then 6 on the fixes, then 2 partials on those. All are fixed; the PR lists each one. Still open: an exact-SHA QA pass by Lane F, the Owner decision on PDL expiry, and Owner merge approval.
 
 ## Coverage gaps (field work needed)
 

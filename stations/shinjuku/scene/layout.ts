@@ -177,7 +177,12 @@ export function cutStairwells(slabs: SlabPoly[], runs: Run[]): SlabPoly[] {
     }
     const ring0 = s.rings[0]!;
     const bbox = { minX: Math.min(...ring0.map((p) => p.x)), maxX: Math.max(...ring0.map((p) => p.x)), minY: Math.min(...ring0.map((p) => p.y)), maxY: Math.max(...ring0.map((p) => p.y)) };
-    const hit = holes.filter((h) => h[0]!.some(([x, y]) => x! >= bbox.minX - 2 && x! <= bbox.maxX + 2 && y! >= bbox.minY - 2 && y! <= bbox.maxY + 2));
+    // bounding-box overlap (a long cut can cross the slab with every corner outside it)
+    const hit = holes.filter((h) => {
+      const xs = h[0]!.map(([x]) => x!);
+      const ys = h[0]!.map(([, y]) => y!);
+      return Math.max(...xs) >= bbox.minX && Math.min(...xs) <= bbox.maxX && Math.max(...ys) >= bbox.minY && Math.min(...ys) <= bbox.maxY;
+    });
     if (!hit.length) {
       out.push(s);
       continue;
