@@ -27,10 +27,17 @@ export class StationLoadError extends Error {
   }
 }
 
-function nameOf(manifest: unknown, fallback: string): { label: string; synthetic: boolean } {
-  const station = (manifest as { station?: { names?: { lang: string; text: string }[]; synthetic?: boolean } })?.station;
-  const ja = station?.names?.find((n) => n.lang === "ja")?.text;
-  const en = station?.names?.find((n) => n.lang === "en")?.text;
+/** Label a manifest before it is validated: any shape is tolerated here, since parsing comes later. */
+export function nameOf(manifest: unknown, fallback: string): { label: string; synthetic: boolean } {
+  const station = (manifest as { station?: unknown } | null)?.station as { names?: unknown; synthetic?: unknown } | undefined;
+  const names = Array.isArray(station?.names) ? (station.names as unknown[]) : [];
+  const text = (lang: string) => {
+    const hit = names.find((n): n is { lang: string; text: string } =>
+      typeof n === "object" && n !== null && (n as { lang?: unknown }).lang === lang && typeof (n as { text?: unknown }).text === "string");
+    return hit?.text;
+  };
+  const ja = text("ja");
+  const en = text("en");
   return { label: ja && en ? `${ja} · ${en}` : ja ?? en ?? fallback, synthetic: station?.synthetic === true };
 }
 
@@ -41,7 +48,15 @@ function isSceneModule(m: unknown): m is StationSceneModule {
 export async function listStations(): Promise<StationEntry[]> {
   const entries: StationEntry[] = [];
   for (const s of discovered) {
-    const manifest = await s.manifest();
+    // One unreadable station is listed but refused on load; it never takes the explorer down.
+    let manifest: unknown;
+    try {
+      manifest = await s.manifest();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      entries.push({ key: s.dir, label: `⚠ ${s.dir}`, synthetic: false, load: () => Promise.reject(new Error(`station.json could not be read: ${message}`)) });
+      continue;
+    }
     const { label, synthetic } = nameOf(manifest, s.dir);
     entries.push({
       key: s.dir,
