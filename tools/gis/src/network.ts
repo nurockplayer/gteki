@@ -306,7 +306,8 @@ export function inspectGeoJsonFeatures(features: any[], source: { source_id: str
   for (const feature of nodeFeatures) {
     const id = getNodeId(feature);
     const coords = geometryCoords(feature.geometry);
-    if (id !== null && coords[0]?.length >= 2) coordinateByNodeId.set(String(id), [coords[0]![0]!, coords[0]![1]!]);
+    // Only a single position is a usable node location; a multi-position MultiPoint leaves the endpoint check partial.
+    if (id !== null && coords.length === 1 && coords[0]!.length >= 2) coordinateByNodeId.set(String(id), [coords[0]![0]!, coords[0]![1]!]);
   }
   const edgeReferences = linkFeatures.map((f) => ({
     start: nativeIdentifier(firstDefined(f.properties ?? {}, ['start_node_id', 'start_id', 'from_node_id', '起点ノードID'])),

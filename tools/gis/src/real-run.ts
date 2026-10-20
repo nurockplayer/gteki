@@ -36,8 +36,9 @@ if(!await run(['acquire','--all'])){
 const cities=[{source:'plateau-13116-ubld-53394576',frame:'ikebukuro-plateau-ubld-v0'},{source:'plateau-13104-ubld-53394536',frame:'shinjuku-plateau-ubld-v0'}];
 const inventories=new Map<string,CityInventory>();
 for(const city of cities)if(await run(['inspect-citygml',city.source]))inventories.set(city.source,await loadInventoryDetail(city.source));
-for(const city of cities)if(inventories.has(city.source)){await run(['frame-from-envelope',city.source,city.frame]);await run(['crs-roundtrip',city.frame]);}
-for(const city of cities){const inventory=inventories.get(city.source);if(!inventory)continue;const room=smallestRoom(inventory);
+const framed=new Set<string>();
+for(const city of cities)if(inventories.has(city.source)&&await run(['frame-from-envelope',city.source,city.frame])&&await run(['crs-roundtrip',city.frame]))framed.add(city.source);
+for(const city of cities){const inventory=inventories.get(city.source);if(!inventory||!framed.has(city.source))continue;const room=smallestRoom(inventory);
   if(room)await run(['citygml-to-glb',city.source,'--frame',city.frame,'--ids',room.gml_id],room);
   else {console.error(`No Room with source polygons in ${city.source}; bounded Room conversion unavailable`);}
   await run(['citygml-to-glb',city.source,'--frame',city.frame]);
@@ -45,7 +46,8 @@ for(const city of cities){const inventory=inventories.get(city.source);if(!inven
 await run(['inspect-network','hokonavi-ikebukuro-walk-node-csv']);
 await run(['inspect-network','hokonavi-oedo-shinjuku-network-geojson']);
 await run(['inspect-network','hokonavi-oedo-shinjuku-stationmap-geojson']);
-await run(['overlap']);
-await run(['gap-packet']);
+// Derived reports read every inventory/network report on disk; regenerate them only when all inputs were refreshed now.
+if(receipt.commands.every(command=>command.exit_code===0)){if(await run(['overlap']))await run(['gap-packet']);}
+else console.error('A prerequisite command failed; overlap and gap-packet were not regenerated to avoid mixed-vintage reports.');
 receipt.completed_at=new Date().toISOString();await writeJson(join(docsRoot,'gis','real-run.json'),receipt);
 if(receipt.commands.some(command=>command.exit_code!==0))process.exitCode=1;
