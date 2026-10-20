@@ -71,6 +71,23 @@
    ]
   },
   {
+   "id": "c_g2",
+   "floorId": "b1",
+   "position": {
+    "x": -14.0,
+    "y": 71.5,
+    "z": 27.91
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
    "id": "c_c",
    "floorId": "b1",
    "position": {
@@ -591,31 +608,21 @@
    "attributes": {}
   },
   {
-   "id": "c_mid__g_jr_c2",
-   "from": "c_mid",
-   "to": "g_jr_c2",
+   "id": "g_jr_c2__c_g2",
+   "from": "g_jr_c2",
+   "to": "c_g2",
    "direction": "both",
    "mode": "walk",
-   "lengthM": 14.0,
+   "lengthM": 7.0,
    "geometry": [
     {
-     "x": -25.0,
-     "y": 70.0,
-     "z": 27.91
-    },
-    {
-     "x": -20.0,
-     "y": 73.0,
-     "z": 27.91
-    },
-    {
-     "x": -19.5,
-     "y": 73.5,
+     "x": -14.0,
+     "y": 78.5,
      "z": 27.91
     },
     {
      "x": -14.0,
-     "y": 78.5,
+     "y": 71.5,
      "z": 27.91
     }
    ],
@@ -640,6 +647,55 @@
     "method": "official-map-reading matched to PLATEAU passage openings (Central Gate 2: 13 m north opening, ~1 m from projected map position; Central Gate 1: south openings, ~6 m)",
     "checkedDate": "2026-10-20",
     "note": "JR 中央2改札 opens north and JR 中央1改札 opens south from the Central Passage."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "c_mid__c_g2",
+   "from": "c_mid",
+   "to": "c_g2",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 11.4,
+   "geometry": [
+    {
+     "x": -25.0,
+     "y": 70.0,
+     "z": 27.91
+    },
+    {
+     "x": -15.0,
+     "y": 70.5,
+     "z": 27.91
+    },
+    {
+     "x": -14.0,
+     "y": 71.5,
+     "z": 27.91
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only)",
+    "checkedDate": "2026-10-20",
+    "note": "中央通路 (Central Passage) is a public east-west passage outside fare gates, linking the west and east exits."
    },
    "attributes": {}
   },
@@ -687,70 +743,26 @@
    "attributes": {}
   },
   {
-   "id": "c_mid__c_c",
-   "from": "c_mid",
+   "id": "c_g2__c_c",
+   "from": "c_g2",
    "to": "c_c",
    "direction": "both",
    "mode": "walk",
-   "lengthM": 30.3,
-   "geometry": [
-    {
-     "x": -25.0,
-     "y": 70.0,
-     "z": 27.91
-    },
-    {
-     "x": 4.5,
-     "y": 63.0,
-     "z": 27.91
-    }
-   ],
-   "paid": false,
-   "crossesFareBoundary": false,
-   "wheelchair": null,
-   "steps": false,
-   "hours": null,
-   "closed": false,
-   "verification": "verified",
-   "geometryEvidence": {
-    "sourceIds": [
-     "plateau-ubld-13116"
-    ],
-    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
-    "checkedDate": "2026-10-20"
-   },
-   "accessEvidence": {
-    "sourceIds": [
-     "toshima-underground-guide-2022",
-     "tokyometro-ikebukuro-yardmap-2026-03"
-    ],
-    "method": "official-map-reading (facts only)",
-    "checkedDate": "2026-10-20",
-    "note": "中央通路 (Central Passage) is a public east-west passage outside fare gates, linking the west and east exits."
-   },
-   "attributes": {}
-  },
-  {
-   "id": "g_jr_c2__c_c",
-   "from": "g_jr_c2",
-   "to": "c_c",
-   "direction": "both",
-   "mode": "walk",
-   "lengthM": 24.6,
+   "lengthM": 21.3,
    "geometry": [
     {
      "x": -14.0,
-     "y": 78.5,
+     "y": 71.5,
      "z": 27.91
     },
     {
-     "x": -12.5,
-     "y": 78.5,
+     "x": -10.5,
+     "y": 68.5,
      "z": 27.91
     },
     {
-     "x": 0.5,
-     "y": 66.0,
+     "x": -4.5,
+     "y": 68.5,
      "z": 27.91
     },
     {

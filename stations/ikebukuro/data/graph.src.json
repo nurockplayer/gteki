@@ -337,6 +337,15 @@
    ]
   },
   {
+   "id": "c_g2",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -14,
+    71.5
+   ]
+  },
+  {
    "id": "c_c",
    "kind": "junction",
    "floor": "b1",
@@ -610,9 +619,15 @@
    "mode": "walk"
   },
   {
-   "from": "c_mid",
-   "to": "g_jr_c2",
+   "from": "g_jr_c2",
+   "to": "c_g2",
    "access": "af-jr-central-gates",
+   "mode": "walk"
+  },
+  {
+   "from": "c_mid",
+   "to": "c_g2",
+   "access": "af-central-passage",
    "mode": "walk"
   },
   {
@@ -622,13 +637,7 @@
    "mode": "walk"
   },
   {
-   "from": "c_mid",
-   "to": "c_c",
-   "access": "af-central-passage",
-   "mode": "walk"
-  },
-  {
-   "from": "g_jr_c2",
+   "from": "c_g2",
    "to": "c_c",
    "access": "af-central-passage",
    "mode": "walk"
