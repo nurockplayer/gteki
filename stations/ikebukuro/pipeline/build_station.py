@@ -27,6 +27,7 @@ OUT_DIR = os.path.join(ROOT, "gteki")
 STEP = 0.5
 WALK_TOL = 0.35   # m between interpolated and surveyed height on walk edges
 STAIR_TOL = 0.9   # stairs/escalators: treads are discrete
+STATION_TZ = datetime.timezone(datetime.timedelta(hours=9), "JST")  # Japan: no DST
 
 
 WALL_PIECE = 0.5  # m
@@ -208,9 +209,10 @@ def build_instant(src):
     epoch = os.environ.get("SOURCE_DATE_EPOCH")
     if epoch:
         return datetime.datetime.fromtimestamp(int(epoch), datetime.timezone.utc)
-    stamps = [s["retrievedAt"] for s in src["sources"] if s.get("retrievedAt")]
-    stamps += [f["checkedDate"] + "T00:00:00Z" for f in src["accessFacts"] if f.get("checkedDate")]
-    return max(datetime.datetime.fromisoformat(t.replace("Z", "+00:00")) for t in stamps)
+    stamps = [datetime.datetime.fromisoformat(s["retrievedAt"].replace("Z", "+00:00")) for s in src["sources"] if s.get("retrievedAt")]
+    # Date-only checks were made in Japan: they start at local midnight, never at a later UTC midnight.
+    stamps += [datetime.datetime.fromisoformat(f["checkedDate"]).replace(tzinfo=STATION_TZ) for f in src["accessFacts"] if f.get("checkedDate")]
+    return max(stamps).astimezone(datetime.timezone.utc)
 
 
 def main():
@@ -218,7 +220,7 @@ def main():
     surf = Surfaces(ENU)
     segs, sgrid = wall_segments(ENU)
     built = build_instant(src)
-    today = built.date().isoformat()
+    today = built.astimezone(STATION_TZ).date().isoformat()  # station-local date, like the access facts
     problems = []
 
     grid = Grid(surf, segs, sgrid, tuple(src["gridBBox"]))
