@@ -83,15 +83,15 @@ Done so far:
 - Procedural materials.
 - Data-driven double-sided signage.
 - Ambient crowd.
+- Procedural ambience (`scene/ambience.ts`), playing in the shared explorer through the host
+  `ctx.audio` hook (verified against core `b0d14ac`: `__gteki.audio()` available and running,
+  HUD mute works).
 - Exit daylight.
 - A recorded 121 s walk, landmark (JR Central Gate 2) → Exit 35 ([video](docs/evidence/walk-jr-central-gate2-to-exit35.mp4)).
 - An independent Astra High critique, addressed in `ca399cb`.
 
 Remaining before claiming L2:
 
-- Ambient sound in the explorer: procedural WebAudio ambience is in the scene (`scene/ambience.ts`)
-  and plays in the preview, but needs the proposed host `ctx.audio` hook before the explorer
-  plays it.
 - A real phone test (only emulated so far).
 - A side-by-side reference review on site.
 - An avatar pass in the explorer (core lane).
@@ -128,9 +128,8 @@ Evidence stills:
 ## Next
 
 1. Field visit with the [survey checklist](docs/coverage-gaps.md).
-2. Explorer audio hook (`ctx.audio`, core lane).
-3. Slice 2: South Passage (exits 38–41).
-4. North-east (exits 26–33).
-5. West (Tobu side).
-6. Street level.
-7. Step-free routes, once lift evidence exists.
+2. Slice 2: South Passage (exits 38–41).
+3. North-east (exits 26–33).
+4. West (Tobu side).
+5. Street level.
+6. Step-free routes, once lift evidence exists.
