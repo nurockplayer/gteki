@@ -172,7 +172,7 @@ Evidence stills:
 
 ## Next
 
-1. Field visit with the [survey checklist](docs/coverage-gaps.md).
+1. Field visit with the [on-site checklist](docs/field-checklist.md).
 2. Yurakucho Line South Passage East/West Gates (`gap-south-west`).
 3. North-east, north part: exits 23–25 and 29–31 (`gap-ne-north`).
 4. West, rest: Exits 5, 6a, 6b and 7 (`gap-west-corridor-exits`); Exits 8, 9, 14, 16 and 19

@@ -30,12 +30,8 @@ for facts only and never published).
 4. **Street level**: exit stair tops are modelled as daylight portals. A street-level GLB (PLATEAU
    bldg/tran LOD1–2 around the station) is needed before exits can be walked out of.
 
-## Survey checklist (one visit covers all five gaps for slice 1)
+## Survey checklist
 
-- Walk JR Central Gate 2 → Exit 35, Exit 43 and Exit 39 (via the South Passage); at each exit stair foot, photograph the posted
-  hours (facts only) and note any lift or escalator.
-- At the Marunouchi and Tobu gate lines, count columns from the nearest exit stair to each gate
-  line and note which side each gate faces.
-- Note any shop, wall or opening that differs from the GLB (screenshots from the preview at
-  `?spawn=<node>` make side-by-side comparison easy).
-- Record date and time on every note; the date goes into `retrievedAt` / `datasetDate`.
+The walking-order checklist for one visit is [field-checklist.md](field-checklist.md) (stops A–G,
+21 checks, about 60–90 minutes). Record date and time on every note; the date goes into
+`retrievedAt` / `datasetDate`.
