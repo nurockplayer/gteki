@@ -246,6 +246,25 @@ function installTightCulling(root: THREE.Group) {
   }
 }
 
+/** Preserve bump detail, but avoid normalizing a zero derivative/perturbed normal.
+ * Edge-on MSAA fragments can have a collapsed derivative frame. A NaN there
+ * contaminates the bloom pyramid and turns the complete high-quality frame black.
+ */
+export function guardBumpNormals(material: THREE.MeshStandardMaterial) {
+  const chunk = THREE.ShaderChunk.bumpmap_pars_fragment
+    .replace("vec3 vSigmaX = normalize( dFdx( surf_pos.xyz ) );", `vec3 sigmaX = dFdx( surf_pos.xyz );
+      vec3 sigmaY = dFdy( surf_pos.xyz );
+      if ( !( dot( sigmaX, sigmaX ) > 1e-20 ) || !( dot( sigmaY, sigmaY ) > 1e-20 ) ) return surf_norm;
+      vec3 vSigmaX = normalize( sigmaX );`)
+    .replace("vec3 vSigmaY = normalize( dFdy( surf_pos.xyz ) );", "vec3 vSigmaY = normalize( sigmaY );")
+    .replace("return normalize( abs( fDet ) * surf_norm - vGrad );", `vec3 perturbed = abs( fDet ) * surf_norm - vGrad;
+      return dot( perturbed, perturbed ) > 1e-20 ? normalize( perturbed ) : surf_norm;`);
+  material.onBeforeCompile = (shader) => {
+    shader.fragmentShader = shader.fragmentShader.replace("#include <bumpmap_pars_fragment>", chunk);
+  };
+  material.customProgramCacheKey = () => "shinjuku-finite-bump-v1";
+}
+
 function boxAlong(a: THREE.Vector3, b: THREE.Vector3, w: number, h: number): THREE.BufferGeometry {
   const d = new THREE.Vector3().subVectors(b, a);
   const L = d.length();
@@ -317,6 +336,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     trainWindow: track(new THREE.MeshStandardMaterial({ color: "#1c232a", roughness: 0.08, metalness: 0.2, emissive: "#fff2d6", emissiveIntensity: 0.35 })),
     trainDoor: track(new THREE.MeshStandardMaterial({ color: "#b8bdc1", roughness: 0.25, metalness: 0.8 })),
   };
+  for (const m of [mat.floor, mat.floorPaid, mat.floorPlatform, mat.wall, mat.ceiling]) guardBumpNormals(m);
   for (const m of [mat.floor, mat.floorPaid, mat.floorPlatform]) {
     m.map!.repeat.set(1, 1);
   }
