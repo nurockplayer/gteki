@@ -1,11 +1,12 @@
 import { createRouter, describeRoute, floorDisplayName, routePolyline } from "@gteki/navigation";
 import type { Instruction, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
-import type { Poi, StationBundle, Weekday } from "@gteki/schema";
+import type { Poi, StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
+import { stationClock } from "../stationClock.ts";
 
 /** Where a route starts: a POI (via its verified entrances) or a graph node (spawn / avatar). */
 type Origin = { kind: "poi"; poi: Poi } | { kind: "node"; nodeId: string; label: string };
@@ -33,7 +34,6 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: 
   return e;
 };
 
-const WEEKDAYS: Weekday[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 export class App {
   private readonly s: State = {
@@ -380,15 +380,14 @@ export class App {
   // ---- Routing ---------------------------------------------------------------------
 
   private profile(): RouteProfile {
-    const now = new Date();
     // Station-local time: both supported stations are in Asia/Tokyo.
-    const tokyo = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+    const tokyo = stationClock(new Date(), "Asia/Tokyo");
     return {
       fare: this.s.profile.unpaidOnly ? "unpaid_only" : "ticketed",
       stepFree: this.s.profile.stepFree,
       hours: this.s.profile.strictHours ? "require_known" : "warn_unknown",
-      at: { weekday: WEEKDAYS[tokyo.getDay()]!, minutes: tokyo.getHours() * 60 + tokyo.getMinutes() },
-      today: tokyo.toISOString().slice(0, 10),
+      at: { weekday: tokyo.weekday, minutes: tokyo.minutes },
+      today: tokyo.date,
     };
   }
 
@@ -402,16 +401,11 @@ export class App {
     const starts = origin.kind === "poi" ? origin.poi.connectorNodeIds : [origin.nodeId];
     const goals = destination.connectorNodeIds;
     const profile = this.profile();
-    let best: RouteResult | RouteFailure = starts.length === 0
+    // One multi-source query: the router ranks entrances by its own cost and keeps "already there".
+    const best: RouteResult | RouteFailure = starts.length === 0
       ? { ok: false, reason: "unknown_start", message: "origin has no verified entrance" }
-      : goals.length === 0 ? { ok: false, reason: "unknown_goal", message: "destination has no verified entrance" } : { ok: false, reason: "no_path", message: "" };
-    if (starts.length && goals.length) {
-      for (const s of starts) {
-        const r = router.route(s, goals, profile);
-        if (r.ok && (!best.ok || r.totalLengthM < best.totalLengthM)) best = r;
-        else if (!r.ok && !best.ok && r.reason === "start_equals_goal") best = r;
-      }
-    }
+      : goals.length === 0 ? { ok: false, reason: "unknown_goal", message: "destination has no verified entrance" }
+      : router.route(starts, goals, profile);
     this.s.route = best;
     if (best.ok) {
       this.s.polyline = routePolyline(loaded.bundle, best);

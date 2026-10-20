@@ -172,3 +172,33 @@ describe("fourth review round", () => {
     expect(sparse.join(" / ")).not.toMatch(/Turn right, then/);
   });
 });
+
+describe("multi-origin routing (PR #15 Codex review)", () => {
+  it("ranks alternate starts by the router's cost, not walking length", () => {
+    const router = createRouter(createSyntheticBundle([
+      edge("stair", "start", "goal", { mode: "stairs", lengthM: 6 }),
+      edge("walk", "b", "goal", { lengthM: 8 }),
+    ]));
+    const r = ok(router.route(["start", "b"], "goal", base));
+    expect(r.nodeIds).toEqual(["b", "goal"]);
+    expect(r.steps.map((s) => s.edgeId)).toEqual(["walk"]);
+  });
+
+  it("keeps 'already at the destination' when one start is a goal and another has a path", () => {
+    const router = createRouter(createSyntheticBundle([edge("walk", "start", "goal", { lengthM: 8 })]));
+    expect(router.route(["start", "goal"], "goal", base)).toMatchObject({ ok: false, reason: "start_equals_goal" });
+    expect(router.route(["goal", "start"], "goal", base)).toMatchObject({ ok: false, reason: "start_equals_goal" });
+  });
+
+  it("ignores unknown starts and fails only when none is known", () => {
+    const router = createRouter(createSyntheticBundle());
+    expect(ok(router.route(["missing", "start"], "goal", base)).nodeIds[0]).toBe("start");
+    expect(router.route(["missing", "gone"], "goal", base)).toMatchObject({ ok: false, reason: "unknown_start" });
+    expect(router.route([], "goal", base)).toMatchObject({ ok: false, reason: "unknown_start" });
+  });
+
+  it("matches the single-start result when given one start", () => {
+    const router = createRouter(createSyntheticBundle());
+    expect(router.route(["start"], "goal", base)).toEqual(router.route("start", "goal", base));
+  });
+});
