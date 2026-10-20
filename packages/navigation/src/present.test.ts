@@ -117,3 +117,37 @@ describe("routePolyline with a malformed one-point geometry", () => {
     expect(pts.map((p) => p.zKnown)).toEqual([false, true]);
   });
 });
+
+describe("walk wording follows the walked geometry", () => {
+  const say = (geometry: { x: number; y: number; z: number }[] | undefined) => {
+    const b = createSyntheticBundle([edge("w", "start", "goal", geometry ? { lengthM: null, geometry } : { lengthM: 20 })]);
+    // The goal node sits on the polyline's end, so endpoint snapping keeps the drawn shape.
+    if (geometry) b.nodes.find((n) => n.id === "goal")!.position = { ...geometry.at(-1)! };
+    const r = createRouter(b).route("start", "goal");
+    if (!r.ok) throw new Error(r.message);
+    return [describeRoute(b, r, "ja")[1]!.text, describeRoute(b, r, "en")[1]!.text];
+  };
+
+  it("never says straight for one edge whose own polyline bends", () => {
+    // 30 m north, 20 m east, 30 m south: two interior right angles inside a single walk edge.
+    const [ja, en] = say([{ x: 0, y: 0, z: 0 }, { x: 0, y: 30, z: 0 }, { x: 20, y: 30, z: 0 }, { x: 20, y: 0, z: 0 }]);
+    expect(ja).toBe("約80m 進む");
+    expect(en).toBe("Continue ~80 m");
+    // A short first leg must not merge into the next and hide the ~70° turn onto the long final run.
+    expect(say([{ x: 0, y: 0, z: 0 }, { x: 0.9, y: 0, z: 0 }, { x: 0.9, y: 1.1, z: 0 }, { x: 19.69, y: 7.94, z: 0 }])[1]).toMatch(/^Continue/);
+    // A gradual curve of ~0.5 m segments (a half circle from start to goal) still counts.
+    const arc = Array.from({ length: 61 }, (_, i) => ({ x: 10 - 10 * Math.cos((i / 60) * Math.PI), y: 10 * Math.sin((i / 60) * Math.PI), z: 0 }));
+    expect(say(arc)[1]).toMatch(/^Continue/);
+    // 10 m at 0°, 30 m at +30°, 30 m at −30°: each heading is within 35° of the first, but the walk turns 60°.
+    const r = Math.PI / 180;
+    const zig = [{ x: 0, y: 0, z: 0 }, { x: 0, y: 10, z: 0 }];
+    zig.push({ x: zig[1]!.x + 30 * Math.sin(30 * r), y: zig[1]!.y + 30 * Math.cos(30 * r), z: 0 });
+    zig.push({ x: zig[2]!.x + 30 * Math.sin(-30 * r), y: zig[2]!.y + 30 * Math.cos(-30 * r), z: 0 });
+    expect(say(zig)[1]).toMatch(/^Continue/);
+  });
+
+  it("still says straight for a straight edge, and ignores sub-metre jitter", () => {
+    expect(say(undefined)).toEqual(["約20m 直進", "Go straight ~20 m"]);
+    expect(say([{ x: 0, y: 0, z: 0 }, { x: 10, y: 0.3, z: 0 }, { x: 10.2, y: 0, z: 0 }, { x: 20, y: 0, z: 0 }])[0]).toBe("約20m 直進");
+  });
+});

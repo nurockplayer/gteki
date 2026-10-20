@@ -4,7 +4,7 @@ const WEEKDAY_BY_SHORT: Record<string, Weekday> = { Sun: "sun", Mon: "mon", Tue:
 
 export interface StationClock {
   weekday: Weekday;
-  /** Minutes since station-local midnight. */
+  /** Minutes since station-local midnight, with seconds as a fraction (hours close on the minute). */
   minutes: number;
   /** Station-local calendar date, YYYY-MM-DD. */
   date: string;
@@ -16,7 +16,7 @@ export interface StationClock {
  */
 export function stationClock(now: Date, timeZone: string): StationClock {
   const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone, weekday: "short", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+    timeZone, weekday: "short", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
   }).formatToParts(now);
   const part = (type: Intl.DateTimeFormatPartTypes): string => {
     const value = parts.find((p) => p.type === type)?.value;
@@ -27,7 +27,8 @@ export function stationClock(now: Date, timeZone: string): StationClock {
   if (!weekday) throw new Error(`stationClock: unexpected weekday ${part("weekday")}`);
   return {
     weekday,
-    minutes: (Number(part("hour")) % 24) * 60 + Number(part("minute")),
+    // Zone offsets are whole seconds, so the milliseconds are the same as in UTC.
+    minutes: (Number(part("hour")) % 24) * 60 + Number(part("minute")) + (Number(part("second")) + now.getUTCMilliseconds() / 1000) / 60,
     date: `${part("year")}-${part("month")}-${part("day")}`,
   };
 }

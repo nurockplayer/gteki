@@ -335,6 +335,64 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     for (const bad of ["assets/roof#west.glb", "assets/roof?west.glb"]) expect(withFiles(bad, [])).toContain("asset.uri");
   });
 
+  it("gates known floor heights on reusable sources and drawing them as known", () => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    expect(errors(b)).not.toContain("floor.elevation.rights");
+    b.sources.push({ ...b.sources[0]!, id: "facts", usage: "facts-only" }, { ...b.sources[0]!, id: "ref", rights: "REFERENCE_ONLY" });
+    for (const sourceId of ["facts", "ref"]) {
+      b.floors[1]!.sourceLabels = [{ ...b.floors[1]!.sourceLabels[0]!, sourceId }];
+      expect(errors(b)).toContain("floor.elevation.rights");
+    }
+    b.floors[1]!.elevationM = null;
+    b.floors[1]!.elevationSource = "unknown";
+    expect(errors(b)).not.toContain("floor.elevation.rights");
+
+    const drawn = createSyntheticBundle();
+    expect(errors(drawn)).not.toContain("floor.renderElevation");
+    drawn.floors[1]!.renderElevationM = drawn.floors[1]!.elevationM! + 2;
+    expect(errors(drawn)).toContain("floor.renderElevation");
+    drawn.floors[1]!.elevationM = null;
+    drawn.floors[1]!.elevationSource = "symbolic";
+    expect(errors(drawn)).not.toContain("floor.renderElevation");
+  });
+
+  it("requires credit metadata on the sources of a real station", () => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    expect(errors(b)).not.toContain("source.attribution");
+    expect(errors(b)).not.toContain("source.license");
+    expect(errors(b)).not.toContain("source.url");
+    for (const url of ["", "not a url", "ftp://example.org/data", "javascript:alert(1)"]) {
+      b.sources[0]!.url = url;
+      expect(errors(b)).toContain("source.url");
+    }
+    b.sources[0]!.url = "https://example.org/dataset";
+    b.sources[0]!.attribution = "  ";
+    b.sources[1]!.license = null;
+    expect(errors(b)).toContain("source.attribution");
+    expect(errors(b)).toContain("source.license");
+    b.sources[1]!.license = { name: "CC BY 4.0", url: "javascript:alert(1)" };
+    expect(errors(b)).toContain("source.license");
+    // A facts-only source is cited as evidence, never redistributed: it needs a credit line, not a licence.
+    b.sources[1]!.usage = "facts-only";
+    b.sources[1]!.license = null;
+    expect(errors(b).filter((c) => c === "source.license")).toEqual([]);
+    // ...but it is still cited, so it still needs a landing URL.
+    b.sources[1]!.url = "";
+    expect(errors(b)).toContain("source.url");
+  });
+
+  it("rejects origin coordinates outside the geodetic range", () => {
+    const b = createSyntheticBundle();
+    expect(errors(b)).not.toContain("station.origin.range");
+    for (const [lat, lon] of [[139, 35], [35, 200], [-91, 0], [Number.NaN, 139]] as const) {
+      const bad = createSyntheticBundle();
+      bad.station.origin = { ...bad.station.origin, lat, lon };
+      expect(errors(bad)).toContain("station.origin.range");
+    }
+  });
+
   it("requires a source for every floor of a real station", () => {
     const b = asRealStation(createSyntheticBundle());
     b.edges = [];
@@ -344,6 +402,13 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     const synthetic = createSyntheticBundle();
     synthetic.floors[1]!.sourceLabels = [];
     expect(errors(synthetic)).not.toContain("floor.source");
+  });
+
+  it("rejects access flags that contradict the edge mode", () => {
+    expect(errors(createSyntheticBundle([edge("s", "start", "a", { mode: "stairs", steps: false, wheelchair: false })]))).toContain("edge.access.mode");
+    expect(errors(createSyntheticBundle([edge("s", "start", "a", { mode: "stairs", steps: true, wheelchair: true })]))).toContain("edge.access.mode");
+    expect(errors(createSyntheticBundle([edge("e", "start", "a", { mode: "escalator", wheelchair: true })]))).toContain("edge.access.mode");
+    expect(errors(createSyntheticBundle([edge("s", "start", "a", { mode: "stairs" }), edge("e", "a", "goal", { mode: "escalator", steps: null })]))).not.toContain("edge.access.mode");
   });
 
   it("rejects unknown coverage status values", () => {

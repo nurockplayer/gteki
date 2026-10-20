@@ -1,0 +1,736 @@
+{
+  "source_id": "plateau-13116-ubld-53394576",
+  "source_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+  "verification": "UNVERIFIED",
+  "namespaces": {
+    "brid": "http://www.opengis.net/citygml/bridge/2.0",
+    "tran": "http://www.opengis.net/citygml/transportation/2.0",
+    "frn": "http://www.opengis.net/citygml/cityfurniture/2.0",
+    "wtr": "http://www.opengis.net/citygml/waterbody/2.0",
+    "sch": "http://www.ascc.net/xml/schematron",
+    "veg": "http://www.opengis.net/citygml/vegetation/2.0",
+    "xlink": "http://www.w3.org/1999/xlink",
+    "tun": "http://www.opengis.net/citygml/tunnel/2.0",
+    "tex": "http://www.opengis.net/citygml/texturedsurface/2.0",
+    "gml": "http://www.opengis.net/gml",
+    "app": "http://www.opengis.net/citygml/appearance/2.0",
+    "gen": "http://www.opengis.net/citygml/generics/2.0",
+    "dem": "http://www.opengis.net/citygml/relief/2.0",
+    "luse": "http://www.opengis.net/citygml/landuse/2.0",
+    "uro": "https://www.geospatial.jp/iur/uro/3.2",
+    "xAL": "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0",
+    "bldg": "http://www.opengis.net/citygml/building/2.0",
+    "smil20": "http://www.w3.org/2001/SMIL20/",
+    "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    "smil20lang": "http://www.w3.org/2001/SMIL20/Language",
+    "pbase": "http://www.opengis.net/citygml/profiles/base/2.0",
+    "core": "http://www.opengis.net/citygml/2.0",
+    "grp": "http://www.opengis.net/citygml/cityobjectgroup/2.0"
+  },
+  "crs_inheritance": "Geometry without srsName inherits the CRS from the sole CityModel boundedBy gml:Envelope.",
+  "schema_location": "https://www.geospatial.jp/iur/uro/3.2 ../../schemas/iur/uro/3.2/urbanObject.xsd http://www.opengis.net/citygml/2.0 http://schemas.opengis.net/citygml/2.0/cityGMLBase.xsd http://www.opengis.net/citygml/landuse/2.0 http://schemas.opengis.net/citygml/landuse/2.0/landUse.xsd http://www.opengis.net/citygml/building/2.0 http://schemas.opengis.net/citygml/building/2.0/building.xsd http://www.opengis.net/citygml/transportation/2.0 http://schemas.opengis.net/citygml/transportation/2.0/transportation.xsd http://www.opengis.net/citygml/generics/2.0 http://schemas.opengis.net/citygml/generics/2.0/generics.xsd http://www.opengis.net/citygml/relief/2.0 http://schemas.opengis.net/citygml/relief/2.0/relief.xsd http://www.opengis.net/citygml/cityobjectgroup/2.0 http://schemas.opengis.net/citygml/cityobjectgroup/2.0/cityObjectGroup.xsd http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/base/gml.xsd http://www.opengis.net/citygml/appearance/2.0 http://schemas.opengis.net/citygml/appearance/2.0/appearance.xsd ",
+  "srs_names": [
+    "http://www.opengis.net/def/crs/EPSG/0/6697"
+  ],
+  "srs_dimensions": [
+    "3"
+  ],
+  "envelope": {
+    "lower": [
+      35.728049254734366,
+      139.70938689983566,
+      25.498283
+    ],
+    "upper": [
+      35.731371787356984,
+      139.7133659340391,
+      33.16767
+    ],
+    "raw_lower": "35.728049254734366 139.70938689983566 25.498283",
+    "raw_upper": "35.731371787356984 139.7133659340391 33.16767",
+    "srsName": "http://www.opengis.net/def/crs/EPSG/0/6697",
+    "axis_order": "latitude,longitude,height"
+  },
+  "creation_dates": [
+    "2024-03-15"
+  ],
+  "group_memberships": [
+    {
+      "relation": "groupMember",
+      "from_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+      "target": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
+      "resolves": true
+    },
+    {
+      "relation": "groupMember",
+      "from_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+      "target": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2",
+      "resolves": true
+    },
+    {
+      "relation": "groupMember",
+      "from_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+      "target": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3",
+      "resolves": true
+    },
+    {
+      "relation": "parent",
+      "from_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+      "target": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e",
+      "resolves": true
+    }
+  ],
+  "codelist_resolution": [
+    {
+      "code": "EF_25",
+      "code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "label": "壁およびバリア（バリケード）エレメント",
+      "status": "RESOLVED"
+    },
+    {
+      "code": "EF_30",
+      "code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "label": "屋根、床、舗装エレメント",
+      "status": "RESOLVED"
+    },
+    {
+      "code": "EF_35",
+      "code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "label": "階段および傾斜路（スロープ）エレメント",
+      "status": "RESOLVED"
+    },
+    {
+      "code": "EF_80",
+      "code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "label": "輸送機能",
+      "status": "RESOLVED"
+    }
+  ],
+  "codelist_inputs": [
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/AuxiliaryTrafficArea_function.xml",
+      "member_sha256": "c8cf2bf1df65840dddad9e609d832e7d1800848dc570d2e31d1aa2f314cd4122"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/Boundary_function.xml",
+      "member_sha256": "79070d5527970370043b3989787285fda540c6280fd2a3adb9ebb2db7844d4b8"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/Bridge_function.xml",
+      "member_sha256": "20ce7ec4ee4513207eacbfbb7768cfbfc25f62f475baf5f38981e9c0379a27b4"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/BridgeConstructionElement_function.xml",
+      "member_sha256": "b46342599f739cb93110e19b8a0d68122d7d82108b9f3b9c0877ee6b41196ee1"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/BridgeFunctionalAttribute_userType.xml",
+      "member_sha256": "3cd005ab2580a3fac901805293655ff511ac102d8bb3f0aa3437e246157af931"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/BridgeInstallation_function.xml",
+      "member_sha256": "25537fdf5cf31bb80f69ff7f538bcdb25ec29362fec46f7afe67046b164be9b5"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/BuildingFurniture_function.xml",
+      "member_sha256": "5574735ffdb531a0af5bf7cc9dac723bfe100324710132342d4922c4ad5258e0"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/BuildingInstallation_function.xml",
+      "member_sha256": "f253587ac727f67aa39811194de03925ea1520ecbc2559337434e84729af8eb1"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/C0901_function.xml",
+      "member_sha256": "cd5cc9ecdbe40702f57ca40b778963583729cd2ead0450cc52af1784dfcd7f21"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/C0902_function.xml",
+      "member_sha256": "9a9057c1d851331b679126a1e51286d0e6c9282205894036eee7b584b17cf20d"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/C1003_function.xml",
+      "member_sha256": "cc80d5f963bf883686c7d541a3b9be95b0eac6c4dd55dc9e74cfc3ab150bb5e6"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/C1004_function.xml",
+      "member_sha256": "2d81f2dcd091c17466323d29c1856880a18238c88d73e6e81c2b3d7a7e3a079e"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/CityFurniture_function.xml",
+      "member_sha256": "f51e27a079aced5fe89b87c9b3a54d3cfb466ef1ca1601ac07079d2ca57a00ca"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/CityObjectGroup_function.xml",
+      "member_sha256": "11951a3f018db1adada53ba1e612d6895799f201022e53322fd7e96709517b29"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/ConstructionFunctionalAttribute_directionType.xml",
+      "member_sha256": "c4fe3fde876ee1db80f0e33d1d9dd26ba410e2ab665d064195b5fab17f72d9b6"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/ConstructionInstallation_function.xml",
+      "member_sha256": "503726fa51c1359a546dae67814a36b5595c25caa0576bae2379126e0f95db83"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/ControlPoint_function.xml",
+      "member_sha256": "4cce0d9f0dd3f738829303657f6a26179ddf4a443b68eef086a689bdded48de4"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/DevelopmentProject_function.xml",
+      "member_sha256": "f5ea8717fd44114d98273eb47afed0ddf48d68da334f7aa362ec28f78063634b"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/DisasterDamage_function.xml",
+      "member_sha256": "281136fb94009537616cb7b25ad179353d8c89a2ef2aa1386bcb0c5373e1db56"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/District_function.xml",
+      "member_sha256": "fb82f2b086c2c8c160a097ddbe8804284c493aff75257e048ac6351da1cc2d75"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/DistrictDevelopmentPlan_function.xml",
+      "member_sha256": "8323840a00941ba674951b77540b47afcf3e84e3422248c44eefda5bf738ac9e"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/DistrictPlan_function.xml",
+      "member_sha256": "de061f7c19cc4d26bb32cf019410a0b7e464c7303a7cfafbaa559e3b5735dfd3"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/FacilityTypeAttribute_function.xml",
+      "member_sha256": "201251db0fba92ae03f625bba32bca3d254cf8a48d51dedde69d3d357a95bd9f"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/GreenSpace_function.xml",
+      "member_sha256": "9188b380ea4ced1a654e489008c9f0490ed4b32a6ffcff2f3d522181d6bb295a"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/IntBuildingInstallation_function.xml",
+      "member_sha256": "d484146838e2b411d75c8f3d07d4f0d27da5aee639ada8c2caf26992864f3bd6"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/OtherConstruction_function.xml",
+      "member_sha256": "c4c85ec0b2cdcb2475dc4fece28887fc1af778d102e24ef36ab17c70826a4cbb"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/PointCloudSpecAttribute_function.xml",
+      "member_sha256": "022282e535b86aadc19cb49748802c2dede490c0ed97668f7e7ad79cb9dbf8c8"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/ProjectPromotionArea_function.xml",
+      "member_sha256": "4ccc64cae575e71c0b97e9f231f5438314fcfe0a4b052e32abd2aad494c80425"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/PromotionArea_function.xml",
+      "member_sha256": "e8ae08c2f64878fb3c8e59c41740152bb8d9f455ab2ab6153c47d20a9b525185"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/Railway_function.xml",
+      "member_sha256": "8dad350428e6c5574aed1dcb8259915436353081d500a43abe0e1f8e3b3ebb89"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/Road_function.xml",
+      "member_sha256": "01720a0a651d2f9cd94bc67d12c7051cd9f950c8529830f47fe2d67d375b3109"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/Room_function.xml",
+      "member_sha256": "9231464e7ef211909cb019eff09a5c02b4d6fa6b8367ed518d5fc5cb96fed16a"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/ScenicResource_function.xml",
+      "member_sha256": "6d5254189944f4d0a0fd3b2aa83b62f29cd19249bdbea79d93286d0a8617515e"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/ScheduledAreaForUrbanDevelopment_function.xml",
+      "member_sha256": "a1e6ada2394c6a47de04b8a84200401b52d2a484e8bfa5abe4f06c1595f6c61f"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/SolitaryVegetationObject_function.xml",
+      "member_sha256": "850617a205fad0ea15cc6063943e76478a3593bf1d39233e7932ad4b60f5dd53"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/Square_function.xml",
+      "member_sha256": "d499cb8dc7444fa5ce73028254883c33e925083092d73aad759ed9fd8fd0833c"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/Track_function.xml",
+      "member_sha256": "a2c5f4c509c749983263109fdfc46cc948d5c36bf2f510d22cd44b8b511d9c2c"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/TrafficArea_function.xml",
+      "member_sha256": "696b55f34bfdf15bc3d35135f76db324a51516df17f6c59b6f61ea9f282e009b"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/Tunnel_function.xml",
+      "member_sha256": "502a8528be2df7cc40661021e37f48982a73581de3d3e8e18e7a56a869f3e0dd"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/TunnelFunctionalAttribute_userType.xml",
+      "member_sha256": "d712511d60f222a4a0ec3eaf243c19560044c682ffc80b82649518f79e75ad36"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/TunnelInstallation_function.xml",
+      "member_sha256": "292bfa7e677d9f3e8de0caa1a625c3a6d9ec76212db6717d2f2db33318c2c779"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/UrbanDevelopmentProject_function.xml",
+      "member_sha256": "c41dcc782108c5e173918dee58aac5be068d894f8f844896062471b9f9eb231a"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/UrbanFacility_function.xml",
+      "member_sha256": "3fea400fb4e2c65590f2ebc9c6e3eeefaa934f6df5357dfea61f25bda28d1c66"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/WaterBody_function.xml",
+      "member_sha256": "19f6670c57e3c79e6f54136583e61a573bb68356ad41ac322c75ab31c4f04687"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/Waterway_function.xml",
+      "member_sha256": "39704a32b93879a25ef096691c017d3a78e1ff9632dff5d569ceedca2897866c"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "member": "13116_toshima-ku_pref_2025_citygml_1_op_codelists/codelists/Zone_function.xml",
+      "member_sha256": "4c1981bbfd558b2f1955e974fa40606ac657170847485c65e95fbbe0409893d7"
+    }
+  ],
+  "codelist_status": "LOADED",
+  "unsupported_geometry_references": {
+    "count": 0,
+    "sample": [],
+    "truncated": false
+  },
+  "geometry_reference_summary": {
+    "total": 39412,
+    "resolved": 39412,
+    "unresolved": 0,
+    "unsupported_external": 0,
+    "signed_reverse": 23954,
+    "by_context": {
+      "solid": 39412
+    }
+  },
+  "geometry_totals": {
+    "polygon_definitions": 58761,
+    "resolved_uses": 39412,
+    "boundary_uses": 39083,
+    "solid_uses": 41410,
+    "other_uses": 17680,
+    "polygon_records_counted": 98173
+  },
+  "semantic_presence": {
+    "floors": {
+      "status": "PRESENT",
+      "count": 3,
+      "observed_count": 3,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_FloorSurface",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_FloorSurface",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_FloorSurface"
+      ],
+      "evidence": "FloorSurface feature count 3; IDs sample: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_FloorSurface, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_FloorSurface, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_FloorSurface",
+      "gml_ids_total": 3,
+      "gml_ids_truncated": false,
+      "unidentified_object_count": 0
+    },
+    "doors": {
+      "status": "PRESENT",
+      "count": 3,
+      "observed_count": 3,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Door",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_Door",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_Door"
+      ],
+      "evidence": "Door element count 3; IDs sample: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Door, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_Door, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_Door",
+      "gml_ids_total": 3,
+      "gml_ids_truncated": false,
+      "unidentified_object_count": 0
+    },
+    "windows": {
+      "status": "PRESENT",
+      "count": 1,
+      "observed_count": 1,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Window"
+      ],
+      "evidence": "Window element count 1; IDs sample: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Window",
+      "gml_ids_total": 1,
+      "gml_ids_truncated": false,
+      "unidentified_object_count": 0
+    },
+    "door_representation": {
+      "status": "UNKNOWN",
+      "count": null,
+      "observed_count": 3,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Door",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_Door",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_Door"
+      ],
+      "evidence": "3 bldg:Door semantic objects observed (93 owned geometry uses). Source text does not establish one Door object per physical opening versus a per-room aggregate.",
+      "gml_ids_total": 3,
+      "gml_ids_truncated": false,
+      "unidentified_object_count": 0
+    },
+    "stairs": {
+      "status": "UNKNOWN",
+      "count": null,
+      "observed_count": 0,
+      "gml_ids": [],
+      "evidence": "Unambiguous explicit element type or resolved label only; combined stair/ramp categories do not establish an individual facility type.",
+      "gml_ids_total": 0,
+      "gml_ids_truncated": false,
+      "unidentified_object_count": 0
+    },
+    "escalators": {
+      "status": "UNKNOWN",
+      "count": null,
+      "observed_count": 0,
+      "gml_ids": [],
+      "evidence": "Explicit element type or resolved function label only.",
+      "gml_ids_total": 0,
+      "gml_ids_truncated": false,
+      "unidentified_object_count": 0
+    },
+    "elevators": {
+      "status": "UNKNOWN",
+      "count": null,
+      "observed_count": 0,
+      "gml_ids": [],
+      "evidence": "Explicit element type or resolved function label only.",
+      "gml_ids_total": 0,
+      "gml_ids_truncated": false,
+      "unidentified_object_count": 0
+    },
+    "ramps": {
+      "status": "UNKNOWN",
+      "count": null,
+      "observed_count": 0,
+      "gml_ids": [],
+      "evidence": "Unambiguous explicit element type or resolved label only; combined stair/ramp categories do not establish an individual facility type.",
+      "gml_ids_total": 0,
+      "gml_ids_truncated": false,
+      "unidentified_object_count": 0
+    },
+    "stairs_or_ramps_category": {
+      "status": "PRESENT",
+      "count": 2,
+      "observed_count": 2,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_IntInstallation_EF_35"
+      ],
+      "evidence": "Resolved codelist category combines stairs and ramps; these are source semantic groups, not a count of individual stairs or ramps.",
+      "gml_ids_total": 2,
+      "gml_ids_truncated": false,
+      "unidentified_object_count": 0
+    },
+    "ticket_gates_paid_area_boundary": {
+      "status": "UNKNOWN",
+      "count": null,
+      "observed_count": 0,
+      "gml_ids": [],
+      "evidence": "Explicit CityGML namespace element types only; no inference from geometry.",
+      "gml_ids_total": 0,
+      "gml_ids_truncated": false,
+      "unidentified_object_count": 0
+    },
+    "connectivity_topology": {
+      "status": "ABSENT_IN_FILE",
+      "count": 0,
+      "observed_count": 0,
+      "gml_ids": [],
+      "evidence": "Count of explicitly named connectivity or topology feature elements.",
+      "gml_ids_total": 0,
+      "gml_ids_truncated": false,
+      "unidentified_object_count": 0
+    },
+    "floor_labels": {
+      "status": "PRESENT",
+      "count": 1,
+      "observed_count": 1,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a"
+      ],
+      "evidence": "Literal floor-like text in names or uro attributes; 1 matching features.",
+      "gml_ids_total": 1,
+      "gml_ids_truncated": false,
+      "unidentified_object_count": 0
+    },
+    "installations": {
+      "status": "PRESENT",
+      "count": 7,
+      "observed_count": 7,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_25",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_80",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_80",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_30",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_IntInstallation_EF_35"
+      ],
+      "evidence": "IntBuildingInstallation feature count 7; IDs sample: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_25, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_80, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_80, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_30, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_IntInstallation_EF_35",
+      "gml_ids_total": 7,
+      "gml_ids_truncated": false,
+      "unidentified_object_count": 0
+    }
+  },
+  "unknowns": [
+    "Vertical datum interpretation beyond declared EPSG:6697",
+    "Floor-to-elevation mapping",
+    "Operator and management boundaries",
+    "Paid/unpaid area boundaries unless explicit source elements exist",
+    "Currency versus the documented 2023 survey date",
+    "Current real-world condition and route connectivity"
+  ],
+  "totals": {
+    "feature_count": 32,
+    "polygon_count": 98173,
+    "polygon_definition_count": 58761,
+    "geometry_use_count": 98173,
+    "ring_count": 98207,
+    "interior_ring_count": 34,
+    "vertex_count": 398708,
+    "degenerate_polygon_count": 0,
+    "degenerate_polygon_reasons": {
+      "fewer_than_3_distinct_vertices": 0,
+      "projected_zero_area": 0
+    },
+    "unclosed_ring_count": 0,
+    "bbox_lat_lon_height": {
+      "min": [
+        35.728049254734366,
+        139.70938689983566,
+        25.498283
+      ],
+      "max": [
+        35.731371787356984,
+        139.7133659340391,
+        33.16767
+      ]
+    },
+    "height_range": [
+      25.498283,
+      33.16767
+    ]
+  },
+  "feature_tree": {
+    "store_path": "out/plateau-13116-ubld-53394576-28d62cb9ab083a1920b227e77bc580612fbcb49c9adcd7ce24f3064ecbb0a6ba.inventory-detail.json",
+    "sha256": "28d62cb9ab083a1920b227e77bc580612fbcb49c9adcd7ce24f3064ecbb0a6ba",
+    "bytes": 8201334,
+    "feature_count": 32
+  },
+  "feature_type_counts": {
+    "grp:CityObjectGroup": 1,
+    "uro:UndergroundBuilding": 1,
+    "bldg:IntBuildingInstallation": 7,
+    "bldg:ClosureSurface": 4,
+    "bldg:RoofSurface": 1,
+    "bldg:WallSurface": 1,
+    "bldg:GroundSurface": 1,
+    "bldg:Room": 3,
+    "bldg:CeilingSurface": 3,
+    "bldg:FloorSurface": 3,
+    "bldg:InteriorWallSurface": 3,
+    "bldg:Window": 1,
+    "bldg:Door": 3
+  },
+  "compact_features": [
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+      "type": "grp:CityObjectGroup",
+      "parent_gml_id": null,
+      "names": [
+        "池袋駅_B1地下通路"
+      ],
+      "function_code": null,
+      "function_code_space": null,
+      "function_label": null
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_25",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e",
+      "names": null,
+      "function_code": "EF_25",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "壁およびバリア（バリケード）エレメント"
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_80",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e",
+      "names": null,
+      "function_code": "EF_80",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "輸送機能"
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
+      "type": "bldg:Room",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e",
+      "names": null,
+      "function_code": null,
+      "function_code_space": null,
+      "function_label": null
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
+      "names": null,
+      "function_code": "EF_25",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "壁およびバリア（バリケード）エレメント"
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
+      "names": null,
+      "function_code": "EF_35",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "階段および傾斜路（スロープ）エレメント"
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_80",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
+      "names": null,
+      "function_code": "EF_80",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "輸送機能"
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_30",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
+      "names": null,
+      "function_code": "EF_30",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "屋根、床、舗装エレメント"
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2",
+      "type": "bldg:Room",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e",
+      "names": null,
+      "function_code": null,
+      "function_code_space": null,
+      "function_label": null
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3",
+      "type": "bldg:Room",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e",
+      "names": null,
+      "function_code": null,
+      "function_code_space": null,
+      "function_label": null
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_IntInstallation_EF_35",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3",
+      "names": null,
+      "function_code": "EF_35",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "階段および傾斜路（スロープ）エレメント"
+    }
+  ],
+  "compact_features_total": 11,
+  "group_membership_count": 4,
+  "group_memberships_truncated": false
+}

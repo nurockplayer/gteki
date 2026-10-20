@@ -1,4 +1,4 @@
-import type { Edge, EdgeMode, EvidenceRef, LocalTime, StationBundle } from "@gteki/schema";
+import type { Edge, EdgeMode, EvidenceRef, LocalTime, StationBundle, Weekday } from "@gteki/schema";
 
 /**
  * Renderer-neutral router over the verified directed station graph.
@@ -49,6 +49,10 @@ export interface RouteStep {
   lengthM: number;
   fromFloorId: string;
   toFloorId: string;
+  /** Seconds to wait at `fromNodeId` before this step, for a known opening window (only with `profile.at`). */
+  waitSeconds?: number;
+  /** When that wait ends: station-local weekday and minute, `dayOffset` days after the departure day. */
+  waitUntil?: { weekday: Weekday; minutes: number; dayOffset: number };
 }
 
 export type RouteUnknown = "hours" | "paid" | "fare_boundary" | "wheelchair" | "steps" | "length" | "access_evidence";
@@ -59,8 +63,10 @@ export interface RouteResult {
   steps: RouteStep[];
   /** Walking distance in metres (stairs/ramps include the climb; lift rides add time, not length). */
   totalLengthM: number;
-  /** Estimated walking time (s): walk 1.2 m/s, stairs 0.5 m/s along length, escalator 0.75 m/s, lift 45 s per ride. */
+  /** Estimated time (s): walk 1.2 m/s, stairs 0.5 m/s along length, escalator 0.75 m/s, lift 45 s per ride, plus any waits. */
   estimatedSeconds: number;
+  /** Seconds of that spent waiting for opening windows (see RouteStep.waitSeconds); 0 when none. */
+  waitSeconds: number;
   floorChanges: number;
   /** true if any edge crosses the fare boundary; null when none is known to but some crossing state is UNKNOWN. */
   crossesFareBoundary: boolean | null;
@@ -94,7 +100,9 @@ export type RouteFailureReason =
   | "unknown_start"
   | "unknown_goal"
   | "no_path"
-  | "start_equals_goal";
+  | "start_equals_goal"
+  /** The search ran out of budget: a route may or may not exist (UNKNOWN), never a claimed no_path. */
+  | "search_limit";
 
 export interface RouteFailure {
   ok: false;

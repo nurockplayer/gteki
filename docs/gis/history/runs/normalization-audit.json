@@ -1,0 +1,12 @@
+{
+  "tool_input_sha256": "3b6f085efcc168fac3ad688e5108393625cc94176fe963ce278a0d7ea3594745",
+  "status": "PASS",
+  "candidate_records_checked": 4579,
+  "csv_fare_unknown_edges": 2196,
+  "s01_source_codes_known_edges": 263,
+  "candidate_sha256": {
+    "r1": "c59cde4c4cd34af586900705423f681bc6d14a4cd1a60d08065275bf87badcb2",
+    "s01": "fbe117022d2dafbee317822351fb86e5a1df6e0036d13f9decc33587f83b24ca"
+  },
+  "checked_at": "2026-10-20T11:45:10.329Z"
+}

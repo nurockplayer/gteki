@@ -90,7 +90,7 @@ describe("virtual station module asset URLs", () => {
   /** Real (synthetic demo) contract files, so a production build accepts the fixture station. */
   const valid = (root: string, files: string[] = ["assets/b1.meta.json"]) => {
     const [m, g, p] = createDemoFiles();
-    m.assets = [{ id: "b1", uri: "assets/b1.glb", format: "glb", floorIds: [], role: "visual", sourceIds: [], files }];
+    m.assets = [{ id: "b1", uri: "assets/b1.glb", format: "glb", floorIds: [], role: "visual", sourceIds: ["demo-synthetic"], files }];
     const dir = path.join(root, "alpha", "gteki");
     fs.writeFileSync(path.join(dir, "station.json"), JSON.stringify(m));
     fs.writeFileSync(path.join(dir, "graph.json"), JSON.stringify(g));

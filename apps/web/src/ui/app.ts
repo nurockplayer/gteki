@@ -1,12 +1,14 @@
 import { createRouter, describeRoute, floorDisplayName, instructionPoints, routeBetween, routePolyline } from "@gteki/navigation";
 import type { Instruction, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
-import type { Poi, StationBundle } from "@gteki/schema";
+import type { Poi, Source, StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
+import { guideStops } from "../explorer/guideStops.ts";
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
+import { sourceCredit } from "../credits.ts";
 
 /** Where a route starts: a POI (via its verified entrances) or a graph node (spawn / avatar). */
 type Origin = { kind: "poi"; poi: Poi } | { kind: "node"; nodeId: string; label: string };
@@ -74,6 +76,7 @@ export class App {
     this.explorer = new Explorer(this.root.querySelector(".viewport") as HTMLElement, {
       onMode: (mode) => this.onMode(mode),
       onGuideProgress: (p) => this.onGuideProgress(p),
+      onGuideStop: (index) => this.onGuideStop(index),
       onPoiClick: (id) => {
         const poi = this.s.loaded?.bundle.pois.find((p) => p.id === id);
         if (poi) this.setDestination(poi);
@@ -464,6 +467,8 @@ export class App {
     if (r.synthetic) badge(t.syntheticShort, "warn", t.synthetic);
     const unknownText: Record<string, string> = { hours: t.unknownHours, wheelchair: t.unknownWheelchair, steps: t.unknownSteps, paid: t.unknownPaid, fare_boundary: t.unknownFare, access_evidence: t.unknownAccess };
     for (const u of r.unknowns) badge(`${unknownText[u.kind] ?? u.kind} ×${u.edgeIds.length}`, "unknown");
+    // Waiting for an opening window is part of the time, and is said so.
+    if (r.waitSeconds > 0) badge(t.waiting(Math.max(1, Math.round(r.waitSeconds / 60))), "info");
     if (r.timeRestricted.length) badge(`${t.timeWindow}: ${r.timeRestricted.map((w) => `${w.open}–${w.close}`).join(", ")}`, "unknown");
     if (r.crossesFareBoundary === true) badge(t.paidCrossing, "info");
     if (r.stale === true) badge(t.stale, "warn", r.expiredSourceIds.length > 0 ? `${t.expired}: ${r.expiredSourceIds.join(", ")}` : (r.oldestSourceDate ?? undefined));
@@ -475,7 +480,7 @@ export class App {
 
     const actions = el("div", "actions");
     const guide = el("button", "primary", t.guide);
-    guide.addEventListener("click", () => this.explorer.startGuide(this.s.polyline));
+    guide.addEventListener("click", () => this.startGuide());
     const walk = el("button", undefined, t.walk);
     walk.addEventListener("click", () => {
       const first = this.s.polyline[0];
@@ -505,12 +510,8 @@ export class App {
     for (const id of r.sourceIds) {
       const s = b.sources.find((x) => x.id === id);
       if (!s) continue;
-      const li = el("li");
-      const a = el("a", undefined, s.title);
-      a.href = s.url;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      li.append(a, el("span", "muted", ` — ${s.attribution}${s.license ? ` (${s.license.name})` : ""}${s.datasetDate ? ` · ${s.datasetDate}` : ""}`));
+      const li = this.creditItem(s);
+      if (s.datasetDate) li.append(el("span", "muted", ` · ${s.datasetDate}`));
       srcList.append(li);
     }
     prov.append(srcList);
@@ -536,8 +537,8 @@ export class App {
     if (mode === "guide" && ins) hud.append(el("div", "hud-instruction", ins.text));
     const row = el("div", "hud-row");
     if (mode === "guide") {
-      let paused = false;
-      const pause = el("button", undefined, t.pause);
+      let paused = this.explorer.guidePaused;
+      const pause = el("button", undefined, paused ? t.resume : t.pause);
       pause.addEventListener("click", () => { paused = !paused; this.explorer.setGuidePaused(paused); pause.textContent = paused ? t.resume : t.pause; });
       const speed = el("button", "ghost", `${t.speed} ×1`);
       let mult = 1;
@@ -565,7 +566,26 @@ export class App {
     hud.append(row);
   }
 
+  /** Guide along the route, stopping where each wait for an opening happens. */
+  private startGuide(): void {
+    const stops = guideStops(this.s.polyline, this.s.instructions);
+    this.guideWaits = stops.map((x) => x.instruction);
+    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point));
+  }
+
+  /** The guide reached a wait: it is paused there, and the wait stays the active instruction until resumed. */
+  private onGuideStop(index: number): void {
+    const wait = this.guideWaits[index];
+    if (wait === undefined) return;
+    this.s.activeInstruction = wait;
+    this.renderHud();
+    this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === wait));
+    this.toast(this.s.instructions[wait]!.text, 4000);
+  }
+
   private onGuideProgress(p: { stepIndex: number; done: boolean }): void {
+    // Stopped at a wait (onGuideStop): it stays the active instruction until the guide is resumed.
+    if (this.s.instructions[this.s.activeInstruction]?.kind === "wait" && this.explorer.guidePaused) return;
     const idx = this.s.instructions.findIndex((ins) => ins.stepIndexes.includes(p.stepIndex));
     const next = p.done ? this.s.instructions.length - 1 : idx;
     if (next >= 0 && next !== this.s.activeInstruction) {
@@ -574,6 +594,24 @@ export class App {
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === next));
       if (p.done) this.toast(this.t.arrived, 2500);
     }
+  }
+
+  /** A source's credit line: title (linked), attribution, licence (linked) and the modification notice. */
+  private creditItem(s: Source): HTMLLIElement {
+    const c = sourceCredit(s);
+    const link = (text: string, href: string | null): HTMLElement => {
+      if (!href) return el("span", undefined, text);
+      const a = el("a", undefined, text);
+      a.href = href;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      return a;
+    };
+    const li = el("li");
+    li.append(link(c.title, c.href), el("span", "muted", ` — ${c.attribution}`));
+    if (c.license) li.append(el("span", "muted", " ("), link(c.license.name, c.license.href), el("span", "muted", ")"));
+    if (c.modified) li.append(el("span", "muted", ` · ${this.t.modified}`));
+    return li;
   }
 
   // ---- Coverage --------------------------------------------------------------------
@@ -598,12 +636,26 @@ export class App {
       if (!b.coverage.gaps.length) gaps.append(el("li", "muted", "—"));
       d.append(gaps, el("h3", undefined, this.t.sources));
       const src = el("ul");
-      for (const s of b.sources) src.append(el("li", undefined, `${s.title} — ${s.attribution} [${s.rights}${s.usage === "facts-only" ? ", facts-only" : ""}]`));
+      // Every source, including those cited only by assets or coverage: link, licence and modification notice.
+      for (const s of b.sources) {
+        const li = this.creditItem(s);
+        li.append(el("span", "muted", ` [${s.rights}${s.usage === "facts-only" ? ", facts-only" : ""}]`));
+        src.append(li);
+      }
       d.append(src);
+      // Asset modification notices (e.g. "Blender build from PLATEAU …") disclose how sources were processed.
+      const derived = (b.assets ?? []).filter((a) => a.derivation);
+      if (derived.length) {
+        const ul = el("ul");
+        for (const a of derived) ul.append(el("li", undefined, `${a.id}: ${a.derivation} — ${a.sourceIds.map((id) => b.sources.find((s) => s.id === id)?.title ?? id).join(", ")}`));
+        d.append(el("h3", undefined, this.t.assetDerivations), ul);
+      }
     }
     d.showModal();
   }
 
+  /** Instruction indexes of the current guide run's stops, in the order given to the explorer. */
+  private guideWaits: number[] = [];
   private toastTimer = 0;
 
   private toast(text: string, ms = 0): void {
@@ -625,7 +677,7 @@ export class App {
       route: () => this.s.route,
       instructions: () => this.s.instructions.map((i) => i.text),
       mode: () => this.explorer.currentMode,
-      startGuide: () => this.explorer.startGuide(this.s.polyline),
+      startGuide: () => this.startGuide(),
       quality: () => this.explorer.qualityLevel,
       avatar: () => this.explorer.avatarEnu,
       sceneInfo: () => this.explorer.sceneInfo(),

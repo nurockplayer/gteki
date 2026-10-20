@@ -66,19 +66,29 @@ export function routePolyline(bundle: StationBundle, route: RouteResult): Polyli
  * The polyline points an instruction covers, including the junction it starts from (each point is
  * tagged with the step that *ends* at it, so the step's start carries the previous step's index).
  */
-export function instructionPoints(points: readonly PolylinePoint[], instruction: Pick<Instruction, "stepIndexes">): PolylinePoint[] {
+export function instructionPoints(points: readonly PolylinePoint[], instruction: Pick<Instruction, "stepIndexes" | "beforeStepIndex">): PolylinePoint[] {
+  // A wait covers no step: it is where the step it precedes starts.
+  if (instruction.beforeStepIndex !== undefined) {
+    const k = instruction.beforeStepIndex;
+    const i = points.findIndex((p, j) => j + 1 < points.length && points[j + 1]!.stepIndex === k && p.stepIndex !== k);
+    return i >= 0 ? [points[i]!] : [];
+  }
   const covered = new Set(instruction.stepIndexes);
   return points.filter((p, i) => covered.has(p.stepIndex) || (i + 1 < points.length && covered.has(points[i + 1]!.stepIndex)));
 }
 
 export type InstructionKind =
   | "start" | "walk" | "turn_left" | "turn_right" | "u_turn"
-  | "stairs" | "escalator" | "elevator" | "ramp" | "moving_walkway" | "gate" | "arrive";
+  | "stairs" | "escalator" | "elevator" | "ramp" | "moving_walkway" | "gate" | "arrive"
+  /** Wait where you are until a known opening window starts (the time is in the text). */
+  | "wait";
 
 export interface Instruction {
   kind: InstructionKind;
   /** Steps covered by this instruction (indices into route.steps). */
   stepIndexes: number[];
+  /** For a "wait": the step it waits before (the wait happens where that step starts). */
+  beforeStepIndex?: number;
   distanceM: number;
   /** Vertical sense when evidenced by known elevations or same-operator ordinals; otherwise null. */
   vertical: "up" | "down" | null;
@@ -114,6 +124,8 @@ const TEXT = {
   ja: {
     start: () => "出発",
     walk: (m: number) => `約${m}m 直進`,
+    /** A walk whose own path bends: no "straight" claim (turns inside one edge aren't named). */
+    continue: (m: number) => `約${m}m 進む`,
     turn_left: (m: number) => `左へ曲がり約${m}m`,
     turnPrefix: (turn: "left" | "right" | "back", text: string) => `${{ left: "左へ曲がり、", right: "右へ曲がり、", back: "引き返して、" }[turn]}${text}`,
     turn_right: (m: number) => `右へ曲がり約${m}m`,
@@ -128,10 +140,13 @@ const TEXT = {
       return `${via}で${dir ? `${dir}・` : ""}${floor}へ`;
     },
     arrive: () => "目的地に到着",
+    wait: (time: string, dayOffset: number, weekday: string) =>
+      `${dayOffset === 0 ? "" : dayOffset === 1 ? "翌日" : `${dayOffset < 7 ? "" : `${dayOffset}日後の`}${{ mon: "月", tue: "火", wed: "水", thu: "木", fri: "金", sat: "土", sun: "日" }[weekday]}曜日`}${time}まで待つ`,
   },
   en: {
     start: () => "Start",
     walk: (m: number) => `Go straight ~${m} m`,
+    continue: (m: number) => `Continue ~${m} m`,
     turn_left: (m: number) => `Turn left, ~${m} m`,
     turnPrefix: (turn: "left" | "right" | "back", text: string) => `${{ left: "Turn left", right: "Turn right", back: "Turn back" }[turn]}, then ${text.charAt(0).toLowerCase()}${text.slice(1)}`,
     turn_right: (m: number) => `Turn right, ~${m} m`,
@@ -141,6 +156,8 @@ const TEXT = {
     vertical: (kind: string, sense: string | null, floor: string | null) =>
       `Take the ${kind}${sense ? ` ${sense}` : ""}${floor === null ? "" : ` to ${floor}`}`,
     arrive: () => "Arrive at destination",
+    wait: (time: string, dayOffset: number, weekday: string) =>
+      `Wait until ${time}${dayOffset === 0 ? "" : dayOffset === 1 ? " tomorrow" : ` on ${{ mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" }[weekday]}${dayOffset < 7 ? "" : `, ${dayOffset} days later`}`}`,
   },
 };
 
@@ -213,6 +230,49 @@ function turnDelta(points: PolylinePoint[], steps: RouteResult["steps"], i: numb
   return h0 === null || h1 === null ? null : ((h1 - h0 + 540) % 360) - 180;
 }
 
+/**
+ * True when every heading along the walk over these steps lies within one TURN_DEG-wide range (so neither
+ * one turn nor a zig-zag, e.g. +30° then −30°, exceeds TURN_DEG). Every segment of at
+ * least MIN_HEADING_STEP_M in plan has a heading of its own; only consecutive shorter ones are joined into
+ * runs (so centimetre jitter doesn't count, but a gradual curve does, and no short leg hides a bend).
+ */
+function straightInPlan(points: PolylinePoint[], stepIndexes: number[]): boolean {
+  const steps = new Set(stepIndexes);
+  let first: number | null = null;
+  // Range of headings relative to the first one (signed, so -30° and +30° are 60° apart).
+  let lo = 0;
+  let hi = 0;
+  let bent = false;
+  const check = (a: PolylinePoint, b: PolylinePoint) => {
+    const h = (Math.atan2(b.x - a.x, b.y - a.y) * 180) / Math.PI;
+    if (first === null) { first = h; return; }
+    const rel = ((h - first + 540) % 360) - 180;
+    lo = Math.min(lo, rel);
+    hi = Math.max(hi, rel);
+    if (hi - lo > TURN_DEG) bent = true;
+  };
+  const plan = (a: PolylinePoint, b: PolylinePoint) => Math.hypot(b.x - a.x, b.y - a.y);
+  /** Start of the current run of short segments, if any. */
+  let runFrom: PolylinePoint | null = null;
+  for (let k = 1; k < points.length && !bent; k++) {
+    if (!steps.has(points[k]!.stepIndex)) continue;
+    const a = points[k - 1]!;
+    const b = points[k]!;
+    if (plan(a, b) >= MIN_HEADING_STEP_M) {
+      if (runFrom && plan(runFrom, a) >= MIN_HEADING_STEP_M) check(runFrom, a);
+      runFrom = null;
+      check(a, b);
+      continue;
+    }
+    runFrom ??= a;
+    if (plan(runFrom, b) >= MIN_HEADING_STEP_M) {
+      check(runFrom, b);
+      runFrom = null;
+    }
+  }
+  return !bent;
+}
+
 export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja"): Instruction[] {
   const t = TEXT[lang];
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
@@ -228,13 +288,21 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
   const flush = () => {
     if (!current) return;
     const m = Math.max(1, Math.round(current.distanceM));
-    if (current.kind === "walk" || current.kind === "turn_left" || current.kind === "turn_right" || current.kind === "u_turn") current.text = t[current.kind](m);
+    if (current.kind === "walk") current.text = straightInPlan(points, current.stepIndexes) ? t.walk(m) : t.continue(m);
+    else if (current.kind === "turn_left" || current.kind === "turn_right" || current.kind === "u_turn") current.text = t[current.kind](m);
     else if (current.kind === "moving_walkway") current.text = current.turn ? t.turnPrefix(current.turn, t.moving_walkway(m)) : t.moving_walkway(m);
     out.push(current);
     current = null;
   };
 
   route.steps.forEach((step, i) => {
+    // A wait for an opening window is its own instruction, before the step it waits for.
+    if (step.waitSeconds && step.waitUntil) {
+      flush();
+      const { minutes, dayOffset, weekday } = step.waitUntil;
+      const hhmm = `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(Math.floor(minutes % 60)).padStart(2, "0")}`;
+      out.push({ kind: "wait", stepIndexes: [], beforeStepIndex: i, distanceM: 0, vertical: null, toFloorId: step.fromFloorId, text: t.wait(hhmm, dayOffset, weekday) });
+    }
     const vertical = VERTICAL[step.mode];
     if (vertical || step.mode === "gate") {
       flush();
