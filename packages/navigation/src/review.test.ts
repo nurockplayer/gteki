@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createRouter, describeRoute } from "./index.ts";
+import { isOpenAt } from "@gteki/schema";
+import { createRouter, describeRoute, instructionPoints, routePolyline } from "./index.ts";
 import type { RouteProfile, RouteResult } from "./index.ts";
 import { createSyntheticBundle, syntheticEdge as edge } from "./fixtures.ts";
 
@@ -484,29 +485,43 @@ describe("opening hours are checked when the route reaches each edge", () => {
     edge("gate", "a", "goal", { mode: "gate", lengthM: 0, hours: gate }),
   ]));
 
-  it("refuses a gate that closes before the walker gets there, under both hours policies", () => {
+  // The route waits at the edge's start until it opens, never crossing it while closed.
+  const waitsFor = (r: ReturnType<ReturnType<typeof createRouter>["route"]>, edgeId: string, until: { weekday: string; minutes: number; dayOffset: number }) => {
+    const route = ok(r);
+    const step = route.steps.find((st) => st.edgeId === edgeId)!;
+    expect(step.waitUntil).toEqual(until);
+    expect(step.waitSeconds).toBeGreaterThan(0);
+    expect(route.waitSeconds).toBe(route.steps.reduce((sum, st) => sum + (st.waitSeconds ?? 0), 0));
+  };
+  const noWait = (r: ReturnType<ReturnType<typeof createRouter>["route"]>) => expect(ok(r).waitSeconds).toBe(0);
+
+  it("waits for a gate that closes before the walker gets there, under both hours policies", () => {
     const router = mk(hours("05:00", "23:00"));
     for (const policy of ["warn_unknown", "require_known"] as const) {
-      expect(router.route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 22 * 60 + 55 } }).ok).toBe(false);
-      expect(router.route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 22 * 60 + 40 } }).ok).toBe(true);
+      const late = router.route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 22 * 60 + 55 } });
+      waitsFor(late, "gate", { weekday: "tue", minutes: 5 * 60, dayOffset: 1 });
+      // Arrives 23:05, waits until 05:00: 5 h 55 min of waiting on top of the 10 min walk.
+      expect(ok(late).waitSeconds).toBeCloseTo(355 * 60, 6);
+      expect(ok(late).estimatedSeconds).toBeCloseTo(600 + 355 * 60, 6);
+      noWait(router.route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 22 * 60 + 40 } }));
     }
   });
 
   it("rolls the arrival time over midnight into the next weekday", () => {
     // Open only on Monday 00:00–01:00: leaving Sunday 23:55 arrives Monday 00:05.
     const router = mk(hours("00:00", "01:00", ["mon"]));
-    expect(router.route("start", "goal", { ...base, at: { weekday: "sun", minutes: 23 * 60 + 55 } }).ok).toBe(true);
-    expect(router.route("start", "goal", { ...base, at: { weekday: "sun", minutes: 23 * 60 } }).ok).toBe(false);
+    noWait(router.route("start", "goal", { ...base, at: { weekday: "sun", minutes: 23 * 60 + 55 } }));
+    waitsFor(router.route("start", "goal", { ...base, at: { weekday: "sun", minutes: 23 * 60 } }), "gate", { weekday: "mon", minutes: 0, dayOffset: 1 });
   });
 
   it("catches a closure that falls strictly between entering and leaving an edge", () => {
     // 1,080 m = 15 min from 04:50: daily 05:00–04:55 is open at both ends but closed 04:55–05:00.
     const router = createRouter(createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 1080, hours: hours("05:00", "04:55") })]));
     for (const policy of ["warn_unknown", "require_known"] as const)
-      expect(router.route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 4 * 60 + 50 } }).ok).toBe(false);
-    expect(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 5 * 60 } }).ok).toBe(true);
+      waitsFor(router.route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 4 * 60 + 50 } }), "passage", { weekday: "mon", minutes: 5 * 60, dayOffset: 0 });
+    noWait(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 5 * 60 } }));
     // A departure between whole minutes still samples on clock minutes.
-    expect(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 4 * 60 + 45.5 } }).ok).toBe(false);
+    waitsFor(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 4 * 60 + 45.5 } }), "passage", { weekday: "mon", minutes: 5 * 60, dayOffset: 0 });
   });
 
   it("keeps an invalid departure time UNKNOWN instead of rolling it into a known one", () => {
@@ -535,8 +550,10 @@ describe("opening hours are checked when the route reaches each edge", () => {
       edge("passage", "start", "a", { lengthM: 147_371.76 }),
       edge("passage", "a", "goal", { lengthM: 216, hours: hours("10:09", "10:08") }),
     ]);
-    for (const policy of ["warn_unknown", "require_known"] as const)
-      expect(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 0.17 } }).ok).toBe(false);
+    for (const policy of ["warn_unknown", "require_known"] as const) {
+      const r = ok(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 0.17 } }));
+      expect(r.steps[1]!.waitUntil).toEqual({ weekday: "tue", minutes: 10 * 60 + 9, dayOffset: 1 });
+    }
   });
 
   it("keeps boundary minutes that floating-point arithmetic rounds just below", () => {
@@ -547,7 +564,8 @@ describe("opening hours are checked when the route reaches each edge", () => {
     for (const [b, minutes] of [[short, 0.22], [midnight, 0.06]] as const)
       for (const policy of ["warn_unknown", "require_known"] as const) {
         const profile = { ...base, hours: policy, at: { weekday: "mon" as const, minutes } };
-        expect(createRouter(b).route("start", "goal", profile).ok).toBe(false);
+        // The next opening that fits the whole walk: Tuesday 00:00, or next Monday 00:00.
+        waitsFor(createRouter(b).route("start", "goal", profile), "passage", b === short ? { weekday: "tue", minutes: 0, dayOffset: 1 } : { weekday: "mon", minutes: 0, dayOffset: 7 });
         expect(createRouter(b).isTraversable(b.edges[0]!, profile)).toBe(false);
       }
   });
@@ -564,9 +582,9 @@ describe("opening hours are checked when the route reaches each edge", () => {
     }
     b.edges.push({ ...b.edges[0]!, id: "gate", mode: "gate", from: `chain-${n - 1}`, to: "goal", lengthM: 0, hours: hours("00:00", "15:00") });
     for (const policy of ["warn_unknown", "require_known"] as const)
-      expect(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 0 } }).ok).toBe(false);
+      waitsFor(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 0 } }), "gate", { weekday: "fri", minutes: 0, dayOffset: 361 });
     b.edges.at(-1)!.hours = hours("00:00", "15:02");
-    expect(createRouter(b).route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } }).ok).toBe(true);
+    noWait(createRouter(b).route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } }));
   });
 
   it("bounds the rounding accumulated inside one long polyline", () => {
@@ -580,9 +598,9 @@ describe("opening hours are checked when the route reaches each edge", () => {
     b.edges.push({ ...b.edges[0]!, id: "gate", mode: "gate", from: "a", to: "goal", lengthM: 0, geometry: undefined, hours: hours("00:00", "15:00") });
     b.nodes.find((n) => n.id === "goal")!.position = { ...points.at(-1)! };
     for (const policy of ["warn_unknown", "require_known"] as const)
-      expect(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 0 } }).ok).toBe(false);
+      waitsFor(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 0 } }), "gate", { weekday: "fri", minutes: 0, dayOffset: 361 });
     b.edges.at(-1)!.hours = hours("00:00", "15:02");
-    expect(createRouter(b).route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } }).ok).toBe(true);
+    noWait(createRouter(b).route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } }));
   });
 
   it("wraps samples before the departure day and covers a full week after a near-instant entry", () => {
@@ -630,6 +648,155 @@ describe("opening hours are checked when the route reaches each edge", () => {
     }
   });
 
+  it("finds the one in-time path behind many cheaper late ones (Shinjuku gate A)", () => {
+    // 16 parallel stairs (30–31.5 m, 60–63 s, cheaper) all reach the gate at or after its 23:00 close;
+    // only the 51 m walk (42.5 s) is in time. No label cap may drop it.
+    const b = createSyntheticBundle([
+      ...Array.from({ length: 16 }, (_, i) => edge(`stairs-${i}`, "start", "a", { mode: "stairs", lengthM: 30 + i * 0.1 })),
+      edge("walk-way", "start", "a", { lengthM: 51 }),
+      edge("gate", "a", "goal", { mode: "gate", lengthM: 0, hours: hours("05:00", "23:00") }),
+    ]);
+    for (const policy of ["warn_unknown", "require_known"] as const) {
+      const r = ok(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 22 * 60 + 59 } }));
+      expect(r.steps.map((st) => st.edgeId)).toEqual(["walk-way", "gate"]);
+      expect(r.waitSeconds).toBe(0);
+    }
+  });
+
+  it("waits for an opening instead of crossing an edge before it opens (Shinjuku gate B)", () => {
+    // From 12:00 the stairs reach a at 12:00:20, the walk round via b at 12:01:10; a→goal opens at 12:01.
+    const b = createSyntheticBundle([
+      edge("stairs", "start", "a", { mode: "stairs", lengthM: 10 }),
+      edge("a-b", "a", "b", { lengthM: 48 }),
+      edge("start-b", "start", "b", { lengthM: 72 }),
+      edge("b-a", "b", "a", { lengthM: 12 }),
+      edge("gate", "a", "goal", { mode: "gate", lengthM: 0, hours: hours("12:01", "23:00") }),
+    ]);
+    for (const policy of ["warn_unknown", "require_known"] as const) {
+      const r = ok(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 12 * 60 } }));
+      // Waiting 40 s at a (cost 30) beats the 82 m walk round (cost 84) and is said as a wait, never invented.
+      expect(r.steps.map((st) => st.edgeId)).toEqual(["stairs", "gate"]);
+      expect(r.steps[1]!.waitUntil).toEqual({ weekday: "mon", minutes: 12 * 60 + 1, dayOffset: 0 });
+      expect(r.steps[1]!.waitSeconds).toBeCloseTo(40, 6);
+      expect(r.waitSeconds).toBeCloseTo(40, 6);
+      expect(r.estimatedSeconds).toBeCloseTo(60, 6);
+      expect(describeRoute(b, r, "ja").map((i) => [i.kind, i.text])).toContainEqual(["wait", "12:01まで待つ"]);
+      expect(describeRoute(b, r, "en").map((i) => [i.kind, i.text])).toContainEqual(["wait", "Wait until 12:01"]);
+      // The wait is anchored where the waited-for step starts, so the guide can stop there.
+      const wait = describeRoute(b, r, "en").find((i) => i.kind === "wait")!;
+      expect(wait.beforeStepIndex).toBe(1);
+      expect(instructionPoints(routePolyline(b, r), wait).map((p) => [p.x, p.y])).toEqual([[10, 0]]);
+    }
+  });
+
+  it("says which day a wait ends on", () => {
+    const at = (weekday: "mon" | "sun", minutes: number) => ({ ...base, at: { weekday, minutes } });
+    const say = (router: ReturnType<typeof createRouter>, b: ReturnType<typeof createSyntheticBundle>, profile: RouteProfile) => {
+      const r = ok(router.route("start", "goal", profile));
+      return (["ja", "en"] as const).map((lang) => describeRoute(b, r, lang).find((i) => i.kind === "wait")?.text);
+    };
+    const daily = createSyntheticBundle([edge("gate", "start", "goal", { mode: "gate", lengthM: 0, hours: hours("05:00", "23:00") })]);
+    expect(say(createRouter(daily), daily, at("mon", 23 * 60 + 30))).toEqual(["翌日05:00まで待つ", "Wait until 05:00 tomorrow"]);
+    const weekly = createSyntheticBundle([edge("gate", "start", "goal", { mode: "gate", lengthM: 0, hours: hours("05:00", "23:00", ["wed"]) })]);
+    expect(say(createRouter(weekly), weekly, at("mon", 23 * 60 + 30))).toEqual(["水曜日05:00まで待つ", "Wait until 05:00 on Wednesday"]);
+    // A week out, the same weekday name alone would read as today.
+    const monday = createSyntheticBundle([edge("gate", "start", "goal", { mode: "gate", lengthM: 0, hours: hours("05:00", "23:00", ["mon"]) })]);
+    expect(say(createRouter(monday), monday, at("mon", 23 * 60 + 30))).toEqual(["7日後の月曜日05:00まで待つ", "Wait until 05:00 on Monday, 7 days later"]);
+  });
+
+  it("waits exactly until the first minute a brute-force scan finds the edge open throughout", () => {
+    // Random windows (overnight, over 24 h, some weekdays, empty spans) against an independent minute scan.
+    let seed = 11;
+    const rnd = (n: number) => (seed = (seed * 16807) % 2147483647) % n;
+    const hm = (m: number) => `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+    const week = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+    for (let i = 0; i < 300; i++) {
+      const open = rnd(48 * 60), close = rnd(48 * 60);
+      const days = rnd(3) === 0 ? undefined : week.filter(() => rnd(2) === 0);
+      if (days?.length === 0) continue;
+      const gate = { ...hours(hm(open), hm(close)), ...(days ? { days: [...days] } : {}) } as ReturnType<typeof hours>;
+      const minutesLong = rnd(4) === 0 ? 0 : 1 + rnd(90);
+      const b = createSyntheticBundle([edge("passage", "start", "goal", { lengthM: minutesLong * 72, hours: gate })]);
+      const at = { weekday: week[rnd(7)]!, minutes: rnd(1440) };
+      // Brute force: the first whole minute from departure at which every minute of the walk is open.
+      const openAt = (m: number) => isOpenAt(gate, { weekday: week[(week.indexOf(at.weekday) + Math.floor(m / 1440)) % 7]!, minutes: m % 1440 }) === true;
+      let expected: number | null = null;
+      for (let m = at.minutes; m <= at.minutes + 7 * 1440 && expected === null; m++) {
+        let all = true;
+        for (let c = m; c <= m + minutesLong && all; c++) all = openAt(c);
+        if (all) expected = m;
+      }
+      const r = createRouter(b).route("start", "goal", { ...base, at });
+      if (expected === null) expect(r, JSON.stringify({ gate, at, minutesLong })).toMatchObject({ ok: false, reason: "no_path" });
+      else {
+        const step = ok(r).steps[0]!;
+        const start = step.waitUntil ? step.waitUntil.dayOffset * 1440 + step.waitUntil.minutes : at.minutes;
+        expect(start, JSON.stringify({ gate, at, minutesLong })).toBe(expected);
+      }
+    }
+  });
+
+  it("enters a window at an arrival computed as exactly its opening minute", () => {
+    // 72 m at 1.2 m/s from 04:59 reaches the gate at 05:00 exactly; it must not wait a day for the next 05:00,
+    // and a parallel 72.01 m path must not lose to that wrongly delayed one.
+    for (const parallel of [false, true]) {
+      const b = createSyntheticBundle([
+        edge("walk", "start", "a", { lengthM: 72 }),
+        ...(parallel ? [edge("walk-2", "start", "a", { lengthM: 72.01 })] : []),
+        edge("gate", "a", "goal", { mode: "gate", lengthM: 0, hours: hours("05:00", "23:00") }),
+      ]);
+      const r = ok(createRouter(b).route("start", "goal", { ...base, at: { weekday: "mon", minutes: 4 * 60 + 59 } }));
+      expect(r.waitSeconds).toBeLessThan(1);
+      expect(r.steps.at(-1)!.waitUntil?.dayOffset ?? 0).toBe(0);
+    }
+  });
+
+  it("does not let escalator loops, which cost exactly what waiting does, exhaust the search", () => {
+    const b = createSyntheticBundle([
+      edge("up", "start", "a", { mode: "escalator", direction: "forward", lengthM: 9 }),
+      edge("down", "a", "start", { mode: "escalator", direction: "forward", lengthM: 9 }),
+      edge("gate", "a", "goal", { mode: "gate", lengthM: 0, hours: hours("12:00", "13:00", ["mon"]) }),
+    ]);
+    const r = ok(createRouter(b).route("start", "goal", { ...base, at: { weekday: "tue", minutes: 10 * 60 } }));
+    expect(r.steps.map((st) => st.edgeId)).toEqual(["up", "gate"]);
+    expect(r.steps[1]!.waitUntil).toEqual({ weekday: "mon", minutes: 12 * 60, dayOffset: 6 });
+  });
+
+  it("checks the work budget while expanding one very wide node", () => {
+    // 2,000 parallel week-long passages: trying them all would sample 20 million minutes.
+    const always = { ...hours("00:00", "24:00") };
+    const b = createSyntheticBundle(Array.from({ length: 2000 }, (_, i) => edge(`p${i}`, "start", "goal", { lengthM: 725_760 + i, hours: always })));
+    const t0 = performance.now();
+    expect(createRouter(b).route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } })).toMatchObject({ ok: false, reason: "search_limit" });
+    expect(performance.now() - t0).toBeLessThan(3000);
+  });
+
+  it("reports an exhausted search as UNKNOWN, never as no path", () => {
+    // 18 diamonds, each a short escalator (slower, cheaper) or a 1.4× longer walk (faster, dearer), scaled
+    // by powers of two: 2^18 arrival/cost trade-offs, none dominating another.
+    const n = 18;
+    const b = createSyntheticBundle([]);
+    const node = b.nodes.find((x) => x.id === "a")!;
+    for (let i = 0; i <= n; i++) b.nodes.push({ ...node, id: `d${i}` });
+    for (let i = 0; i < n; i++) {
+      const scale = 2 ** i;
+      b.nodes.push({ ...node, id: `m${i}` });
+      b.edges.push(
+        edge(`esc-${i}`, `d${i}`, `d${i + 1}`, { mode: "escalator", direction: "forward", lengthM: 10 * scale }),
+        edge(`walk-${i}-1`, `d${i}`, `m${i}`, { lengthM: 7 * scale }),
+        edge(`walk-${i}-2`, `m${i}`, `d${i + 1}`, { lengthM: 7 * scale }),
+      );
+    }
+    b.edges.push(edge("start-d0", "start", "d0", { lengthM: 1 }), edge("gate", `d${n}`, "goal", { mode: "gate", lengthM: 0, hours: hours("00:00", "24:00") }));
+    const router = createRouter(b);
+    const t0 = performance.now();
+    expect(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } })).toMatchObject({ ok: false, reason: "search_limit" });
+    // The budget bounds the time spent, not just the labels kept.
+    expect(performance.now() - t0).toBeLessThan(5000);
+    // Without clock-dependent hours the same graph is plain Dijkstra.
+    expect(ok(router.route("start", "goal", base)).steps.at(-1)!.edgeId).toBe("gate");
+  });
+
   it("gives isTraversable the edge's own duration", () => {
     const b = createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 144, hours: hours("05:00", "23:00") })]);
     const router = createRouter(b);
@@ -640,7 +807,7 @@ describe("opening hours are checked when the route reaches each edge", () => {
   it("requires a window to stay open while the edge is being traversed", () => {
     // A 120 s passage that closes 1 minute after the walker enters it.
     const router = createRouter(createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 144, hours: hours("05:00", "23:00") })]));
-    expect(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 22 * 60 + 59 } }).ok).toBe(false);
-    expect(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 22 * 60 + 57 } }).ok).toBe(true);
+    waitsFor(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 22 * 60 + 59 } }), "passage", { weekday: "tue", minutes: 5 * 60, dayOffset: 1 });
+    noWait(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 22 * 60 + 57 } }));
   });
 });

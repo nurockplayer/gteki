@@ -1,5 +1,5 @@
 import type { Edge, EvidenceRef, LocalTime, StationBundle, Vec3N, Weekday } from "@gteki/schema";
-import { isOpenAt } from "@gteki/schema";
+import { isOpenAt, parseHm } from "@gteki/schema";
 import { DEFAULT_PROFILE, DEFAULT_STALE_AFTER_DAYS } from "./index.ts";
 import type { Router, RouteProfile, RouteResult, RouteStep, RouteUnknown } from "./index.ts";
 
@@ -12,6 +12,7 @@ const NOT_STEP_FREE_MODES = new Set(["stairs", "escalator"]);
 const CLOCK_EPSILON = 1e-6;
 /** Latest arrival (clock minutes from the departure day) whose hours are checked. */
 const MAX_CLOCK_MINUTES = 366 * 1440;
+const WEEK_MINUTES = 7 * 1440;
 const WEEK: Weekday[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
 /** Travel time of one edge: lifts are a fixed ride, everything else length over the mode's speed. */
@@ -145,22 +146,41 @@ interface Traversal {
 interface Previous {
   fromNodeId: string;
   traversal: Traversal;
+  /** Clock minute (from midnight of the departure day) the edge is entered; only with `profile.at`. */
+  startClock?: number;
+  /** Seconds spent waiting at `fromNodeId` for the edge to open. */
+  waitSeconds?: number;
 }
 
-/** A partial route: where it is, at what cost and how many seconds after departure, and how it got there. */
+/**
+ * A partial route: where it is, at what cost, at which clock minute (from midnight of the departure day;
+ * 0 without `profile.at`), whether that clock is exact (the departure, or the whole minute a wait ended)
+ * rather than a sum of durations, and how it got there.
+ */
 interface Label {
   nodeId: string;
   cost: number;
-  elapsed: number;
+  clock: number;
+  exact: boolean;
   parent: Label | null;
   via: Previous | null;
 }
 
 /**
- * Distinct arrival times kept per node when hours depend on the clock. Beyond this a valid but
- * unusual route can be missed: it is then reported as no_path (fail closed), never accepted wrongly.
+ * Router cost of waiting one second for an edge to open: no more than any way of moving costs per second
+ * (escalator 0.75 m/s at 1/m; stairs 0.8; walking, ramps, walkways and lifts 1.2). So walking a loop is
+ * never cheaper than waiting it out, which makes "earlier and not dearer than waiting would make it"
+ * a sound dominance, and a detour that exists is preferred over a long wait.
  */
-const MAX_LABELS_PER_NODE = 16;
+const WAIT_COST_PER_SECOND = 0.75;
+/**
+ * Work budget of a clock-dependent search, in edges tried, dominance comparisons and opening-hours samples
+ * (well under a second on a laptop; real stations use a few percent of it); past it the result is
+ * `search_limit`, never `no_path`.
+ */
+const WORK_BUDGET = 2_000_000;
+/** Relative cost slack in label dominance (far below any real cost difference). */
+const COST_TOLERANCE = 1e-9;
 
 const DAY_MS = 86_400_000;
 
@@ -213,11 +233,8 @@ export function createRouter(bundle: StationBundle): Router {
   const accessOf = (edge: Edge): Pick<Edge, "paid" | "crossesFareBoundary" | "wheelchair" | "steps"> =>
     edge.accessEvidence ? edge : { paid: null, crossesFareBoundary: null, wheelchair: null, steps: null };
 
-  /**
-   * `elapsedSeconds` is when the route reaches the edge (seconds after `profile.at`) and `edgeSec`
-   * how long it takes: known hours must stay open the whole time.
-   */
-  function permits(edge: Edge, profile: RouteProfile, avoided: Set<string>, closed: Set<string>, elapsedSeconds = 0, edgeSec = 0): boolean {
+  /** Everything about an edge but the clock: verification, closures, profile filters, unknown hours. */
+  function allowed(edge: Edge, profile: RouteProfile, avoided: Set<string>, closed: Set<string>): boolean {
     if (
       edge.verification !== "verified" &&
       !(edge.verification === "synthetic" && bundle.station.synthetic === true)
@@ -227,30 +244,94 @@ export function createRouter(bundle: StationBundle): Router {
     if (profile.stepFree && (NOT_STEP_FREE_MODES.has(edge.mode) || access.wheelchair !== true || access.steps === true)) return false;
     if (profile.fare === "unpaid_only" && (access.paid !== false || access.crossesFareBoundary !== false)) return false;
     if (edge.hours === null) return profile.hours !== "require_known";
-    if (profile.at) {
-      // Windows open and close on whole minutes (close exclusive), so entry, exit and every whole minute
-      // in between catch any closure during the traversal.
-      // Samples are clock minutes since midnight of the departure day; the in-between ones are exact integers.
-      // Both ends are widened by the rounding the elapsed time can carry (`timeDrift`), so floating-point
-      // drift can't round a boundary minute away: an exact-minute arrival may then fail closed, never the
-      // other way round. The departure itself is exact.
-      // Hours repeat weekly, so one week of clock minutes covers every minute of a longer traversal.
-      const enter = profile.at.minutes + elapsedSeconds / 60;
-      const leave = profile.at.minutes + (elapsedSeconds + edgeSec) / 60;
-      // Past a year the hours can't be meaningfully checked: fail closed.
-      if (!(leave <= MAX_CLOCK_MINUTES)) return false;
-      const drift = timeDrift * leave;
-      const samples = [enter, leave];
-      const first = Math.floor(elapsedSeconds === 0 ? enter : enter - drift);
-      // A week from the entry minute (plus the minute the widening may add before it) covers every weekly minute.
-      for (let c = first, n = 0; c <= leave + drift + CLOCK_EPSILON && n < 7 * 1440 + 2; c++, n++) samples.push(c);
-      for (const clock of samples) {
-        const open = isOpenAt(edge.hours, clockTime(profile.at, clock));
-        if (open === false) return false;
-        if (open === null && profile.hours === "require_known") return false;
-      }
+    return true;
+  }
+
+  /**
+   * Known hours stay open for the whole traversal entered at clock minute `enter` (from midnight of the
+   * departure day) and lasting `edgeSec`. Windows open and close on whole minutes (close exclusive), so
+   * entry, exit and every whole clock minute in between catch any closure; the in-between samples are exact
+   * integers. Both ends are widened by the rounding a summed clock can carry (`timeDrift`), so floating-point
+   * drift can't round a boundary minute away: an exact-minute arrival may then fail closed, never the other
+   * way round. An `exact` entry (the departure, or the end of a wait) is not widened. Hours repeat weekly, so
+   * one week of clock minutes covers every minute of a longer traversal.
+   */
+  // Per-query search state: work spent (see WORK_BUDGET) and each window edge's weekly openings.
+  let work = 0;
+  let openingCache = new Map<Edge, number[]>();
+
+  function openThroughout(edge: Edge, profile: RouteProfile, enter: number, edgeSec: number, exact: boolean): boolean {
+    if (!profile.at || edge.hours === null) return true;
+    const leave = enter + edgeSec / 60;
+    // Past a year the hours can't be meaningfully checked: fail closed.
+    if (!(leave <= MAX_CLOCK_MINUTES)) return false;
+    const drift = timeDrift * leave;
+    const samples = [enter, leave];
+    work += 2 + Math.min(Math.max(0, leave - enter), WEEK_MINUTES);
+    const first = Math.floor(exact ? enter : enter - drift);
+    // A week from the entry minute (plus the minute the widening may add before it) covers every weekly minute.
+    for (let c = first, n = 0; c <= leave + drift + CLOCK_EPSILON && n < 7 * 1440 + 2; c++, n++) samples.push(c);
+    for (const clock of samples) {
+      const open = isOpenAt(edge.hours, clockTime(profile.at, clock));
+      if (open === false) return false;
+      if (open === null && profile.hours === "require_known") return false;
     }
     return true;
+  }
+
+  /**
+   * The earliest clock minute ≥ `enter` at which the edge can be entered and stay open throughout, waiting
+   * at its start if need be; null when it doesn't open within a week (hours repeat weekly) or the year cap.
+   * Windows open on whole minutes, and in an open stretch the earliest feasible start is its first minute,
+   * so besides `enter` itself only window openings are candidates.
+   */
+  function earliestStart(edge: Edge, profile: RouteProfile, enter: number, edgeSec: number, exact: boolean): number | null {
+    if (openThroughout(edge, profile, enter, edgeSec, exact)) return enter;
+    const at = profile.at;
+    if (!at || edge.hours?.kind !== "window") return null;
+    const weekly = openings(edge, at);
+    // A summed clock may carry rounding (see openThroughout): an opening minute within that bound below
+    // `enter` (an arrival computed as exactly 05:00) is a candidate too, checked from the opening itself.
+    const slack = exact ? 0 : timeDrift * (enter + edgeSec / 60);
+    const from = Math.floor(enter - slack) + 1;
+    const week = Math.floor(from / WEEK_MINUTES) * WEEK_MINUTES;
+    // Openings from `from` up to one week later, in order: this week's, then next week's.
+    for (const base of [week, week + WEEK_MINUTES])
+      for (const o of weekly) {
+        const m = base + o;
+        if (m < from) continue;
+        if (m >= from + WEEK_MINUTES || m > MAX_CLOCK_MINUTES) return null;
+        // Entering at max(m, enter) stays inside [m, m + the edge's time + how far enter is past m].
+        if (openThroughout(edge, profile, m, edgeSec + Math.max(0, enter - m) * 60, true)) return Math.max(m, enter);
+      }
+    return null;
+  }
+
+  /**
+   * Clock minutes (mod one week from the departure day's midnight) at which a window of the edge begins, a
+   * superset of the minutes it turns open. A start inside a stretch that is already open is harmless:
+   * that stretch's own start comes first, or the entry itself was feasible. Empty when hours are UNKNOWN.
+   */
+  function openings(edge: Edge, at: LocalTime): number[] {
+    let out = openingCache.get(edge);
+    if (out) return out;
+    out = [];
+    work += 7;
+    const hours = edge.hours;
+    const today = WEEK.indexOf(at.weekday);
+    if (hours?.kind === "window" && today >= 0 && at.minutes >= 0 && at.minutes < 1440) {
+      const open = parseHm(hours.open);
+      let close = parseHm(hours.close);
+      // As isOpenAt: a close before the open runs past midnight; equal ends are UNKNOWN (never open).
+      if (close !== null && open !== null) while (close < open) close += 1440;
+      if (open !== null && close !== null && open !== close) {
+        const days = new Set(hours.days ?? WEEK);
+        for (let k = 0; k < 7; k++) if (days.has(WEEK[(today + k) % 7]!)) out.push((k * 1440 + open) % WEEK_MINUTES);
+        out.sort((a, b) => a - b);
+      }
+    }
+    openingCache.set(edge, out);
+    return out;
   }
 
   function result(goal: Label, profile: RouteProfile, endpointEvidence: readonly EvidenceRef[]): RouteResult {
@@ -286,12 +367,22 @@ export function createRouter(bundle: StationBundle): Router {
       unknownEdges.set(kind, ids);
     };
 
-    for (const { fromNodeId: from, traversal } of path) {
+    let waitSeconds = 0;
+    for (const { fromNodeId: from, traversal, startClock, waitSeconds: wait } of path) {
       const { edge, toNodeId: to, reversed, measurement } = traversal;
       const fromFloorId = nodes.get(from)!.floorId;
       const toFloorId = nodes.get(to)!.floorId;
       const lengthM = measurement.lengthM;
-      steps.push({ edgeId: edge.id, fromNodeId: from, toNodeId: to, reversed, mode: edge.mode, lengthM, fromFloorId, toFloorId });
+      const step: RouteStep = { edgeId: edge.id, fromNodeId: from, toNodeId: to, reversed, mode: edge.mode, lengthM, fromFloorId, toFloorId };
+      if (wait && wait > 0 && profile.at && startClock !== undefined) {
+        // A wait always ends on a whole minute (a window opening), so the stated time is exact.
+        const dayOffset = Math.floor(startClock / 1440);
+        step.waitSeconds = wait;
+        step.waitUntil = { weekday: clockTime(profile.at, startClock).weekday, minutes: startClock - dayOffset * 1440, dayOffset };
+        waitSeconds += wait;
+        estimatedSeconds += wait;
+      }
+      steps.push(step);
       nodeIds.push(to);
       totalLengthM += lengthM;
       estimatedSeconds += edgeSeconds(edge.mode, lengthM);
@@ -375,7 +466,7 @@ export function createRouter(bundle: StationBundle): Router {
       if (stale === null && allFresh && sourceIds.size > 0) stale = false;
     }
     return {
-      ok: true, nodeIds, steps, totalLengthM, estimatedSeconds, floorChanges, crossesFareBoundary, unknowns,
+      ok: true, nodeIds, steps, totalLengthM, estimatedSeconds, waitSeconds, floorChanges, crossesFareBoundary, unknowns,
       sourceIds: [...sourceIds].sort(), evidenceCheckedDate, oldestSourceDate, undatedSourceIds, expiredSourceIds, stale, synthetic, timeRestricted, operatorIds,
     };
   }
@@ -385,8 +476,8 @@ export function createRouter(bundle: StationBundle): Router {
       const fromNode = nodes.get(edge.from);
       const toNode = nodes.get(edge.to);
       const measured = fromNode && toNode ? measureEdge(edge, fromNode.position, toNode.position) : null;
-      return measured !== null &&
-        permits(edge, profile, new Set(profile.avoidModes), new Set(profile.extraClosedEdgeIds), 0, edgeSeconds(edge.mode, measured.lengthM));
+      return measured !== null && allowed(edge, profile, new Set(profile.avoidModes), new Set(profile.extraClosedEdgeIds)) &&
+        openThroughout(edge, profile, profile.at?.minutes ?? 0, edgeSeconds(edge.mode, measured.lengthM), true);
     },
     route(fromNodeIds, toNodeIds, profile = DEFAULT_PROFILE, endpointEvidence = []) {
       const requestedStarts = typeof fromNodeIds === "string" ? [fromNodeIds] : fromNodeIds;
@@ -401,46 +492,72 @@ export function createRouter(bundle: StationBundle): Router {
       const avoided = new Set(profile.avoidModes);
       const closed = new Set(profile.extraClosedEdgeIds);
       // Multi-source label-setting search: every start begins at cost 0, so the cheapest start wins on the
-      // router's own cost. Without clock-dependent hours this is plain Dijkstra (one label per node). With
-      // them, whether an edge is open depends on when the route gets there, so a cheaper but slower path
-      // must not shut out a faster one: each node keeps settled labels with distinct arrival times, and a
-      // label is only dropped for an equally timed cheaper one (or past MAX_LABELS_PER_NODE).
+      // router's own cost. Without clock-dependent hours this is plain Dijkstra (one label per node).
+      // With them, an edge is entered at the earliest moment it is open for the whole traversal, waiting at
+      // its start for a window to open if need be (the wait is a route step, narrated and timed). Waiting
+      // makes the search FIFO: a label that is earlier, and no dearer than waiting until the other's time
+      // would make it, can do everything the other can. So each node keeps only labels no settled one
+      // dominates (a Pareto set over cost and arrival); a loop is always dominated by waiting it out
+      // (WAIT_COST_PER_SECOND), so the search is complete and ends. Its work is still budgeted: past
+      // WORK_BUDGET the answer is `search_limit`, never a false `no_path`.
       const timed = profile.at !== undefined && bundle.edges.some((e) => e.hours?.kind === "window");
-      const perNode = timed ? MAX_LABELS_PER_NODE : 1;
+      const departure = profile.at?.minutes ?? 0;
+      // Escalators cost exactly what waiting does, so a loop ties its ancestor: compare with a relative
+      // tolerance, or rounding (18 vs 18.000000000004) keeps every loop alive until the budget runs out.
+      const dominates = (x: Label, y: Label) =>
+        x.clock <= y.clock && x.cost + WAIT_COST_PER_SECOND * (y.clock - x.clock) * 60 <= y.cost + COST_TOLERANCE * Math.max(1, Math.abs(y.cost));
       const settled = new Map<string, Label[]>();
+      work = 0;
+      openingCache = new Map();
+      const dominated = (label: Label) => {
+        const done = settled.get(label.nodeId) ?? [];
+        work += done.length;
+        return done.some((l) => dominates(l, label));
+      };
       const best = new Map<string, number>();
       const queue = new MinHeap();
       let seq = 0;
       const push = (label: Label) => queue.push({ nodeId: label.nodeId, cost: label.cost, seq: seq++, label });
-      for (const id of starts) push({ nodeId: id, cost: 0, elapsed: 0, parent: null, via: null });
-      const visits = (label: Label, nodeId: string) => {
-        for (let l: Label | null = label; l; l = l.parent) if (l.nodeId === nodeId) return true;
-        return false;
-      };
+      for (const id of starts) push({ nodeId: id, cost: 0, clock: departure, exact: true, parent: null, via: null });
       for (let entry = queue.pop(); entry; entry = queue.pop()) {
         const current = entry.label;
+        if (timed && work > WORK_BUDGET)
+          return { ok: false, reason: "search_limit", message: "The route search hit its work limit; whether a route exists is UNKNOWN." };
         const done = settled.get(current.nodeId) ?? [];
-        // Popped in cost order, so a settled label is never dearer: it covers this one when time doesn't
-        // matter, or when it got there at the same moment.
-        if (done.length >= perNode || done.some((l) => !timed || l.elapsed === current.elapsed)) continue;
+        // Popped in cost order, so a settled label is never dearer.
+        if (timed ? dominated(current) : done.length > 0) continue;
         done.push(current);
         settled.set(current.nodeId, done);
         if (goals.has(current.nodeId)) return result(current, profile, endpointEvidence);
         for (const traversal of adjacency.get(current.nodeId)!) {
+          // The budget is checked per edge tried, so one wide node can't overrun it.
+          if (timed && ++work > WORK_BUDGET)
+            return { ok: false, reason: "search_limit", message: "The route search hit its work limit; whether a route exists is UNKNOWN." };
           const to = traversal.toNodeId;
-          // Every ancestor is settled, so only a node with settled labels can close a loop.
-          const there = settled.get(to)?.length ?? 0;
-          if (there >= perNode || (timed && there > 0 && visits(current, to))) continue;
+          if (!timed && settled.has(to)) continue;
+          if (!allowed(traversal.edge, profile, avoided, closed)) continue;
           const seconds = edgeSeconds(traversal.edge.mode, traversal.measurement.lengthM);
-          if (!permits(traversal.edge, profile, avoided, closed, current.elapsed, seconds)) continue;
-          const cost = current.cost + traversal.measurement.cost;
+          const start = timed
+            ? earliestStart(traversal.edge, profile, current.clock, seconds, current.exact)
+            : openThroughout(traversal.edge, profile, current.clock, seconds, current.exact) ? current.clock : null;
+          if (start === null) continue;
+          const waitSeconds = (start - current.clock) * 60;
+          const cost = current.cost + traversal.measurement.cost + WAIT_COST_PER_SECOND * waitSeconds;
           if (!Number.isFinite(cost)) continue;
           // Untimed, only a strictly cheaper path to a node is worth queueing (as before).
           if (!timed) {
             if (cost >= (best.get(to) ?? Infinity)) continue;
             best.set(to, cost);
           }
-          push({ nodeId: to, cost, elapsed: current.elapsed + seconds, parent: current, via: { fromNodeId: current.nodeId, traversal } });
+          const label: Label = {
+            nodeId: to, cost, clock: start + seconds / 60,
+            // A wait ends on an exact whole minute; a zero-length step keeps it exact.
+            exact: (waitSeconds > 0 || current.exact) && seconds === 0,
+            parent: current,
+            via: { fromNodeId: current.nodeId, traversal, ...(profile.at ? { startClock: start } : {}), ...(waitSeconds > 0 ? { waitSeconds } : {}) },
+          };
+          if (timed && dominated(label)) continue;
+          push(label);
         }
       }
       return { ok: false, reason: "no_path", message: "No traversable path connects the start to a goal." };

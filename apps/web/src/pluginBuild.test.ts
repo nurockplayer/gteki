@@ -97,6 +97,16 @@ describe("production build publication allowlist", () => {
     await expect(run(p)).rejects.toThrow(/asset\.source \(b1\): asset without source provenance/);
   }, 30_000);
 
+  it("refuses to publish sources without credit metadata, synthetic or not", async () => {
+    const p = project(`export const buildScene = () => null;`);
+    const manifest = path.join(p.station, "gteki", "station.json");
+    const m = JSON.parse(fs.readFileSync(manifest, "utf8"));
+    m.sources[0].license = null;
+    m.sources[0].attribution = "";
+    fs.writeFileSync(manifest, JSON.stringify(m));
+    await expect(run(p)).rejects.toThrow(/source\.attribution \(demo-synthetic\).*source\.license \(demo-synthetic\)/);
+  }, 30_000);
+
   it("refuses a synthetic station whose graph derives from a restricted source, even with no assets", async () => {
     const p = project(`export const buildScene = () => null;`);
     const dir = path.join(p.station, "gteki");

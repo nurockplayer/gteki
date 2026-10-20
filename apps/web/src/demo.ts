@@ -102,7 +102,7 @@ export function createDemoFiles(): [StationManifestFile, GraphFile, PoiFile] {
     },
     sources: [{
       id: "demo-synthetic", title: "GTEki core synthetic demo (invented)", publisher: "GTEki shared core",
-      url: "https://github.com/nurockplayer/gteki", license: null, rights: "REUSABLE_WITH_CONDITIONS",
+      url: "https://github.com/nurockplayer/gteki", license: { name: "GTEki synthetic data (invented; no third-party content)", url: "https://github.com/nurockplayer/gteki" }, rights: "REUSABLE_WITH_CONDITIONS",
       attribution: "GTEki synthetic demo — not real data", modified: false, retrievedAt: null, datasetDate: "2026-10-20",
     }],
     floors,

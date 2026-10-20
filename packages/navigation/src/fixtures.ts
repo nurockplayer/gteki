@@ -43,7 +43,7 @@ export function createSyntheticBundle(edges?: Edge[]): StationBundle {
     },
     sources: ["fixture-geometry", "fixture-access"].map((id) => ({
       id, title: "Invented synthetic fixture", publisher: "GTEki tests", url: "https://example.invalid/synthetic",
-      license: null, rights: "REUSABLE_WITH_CONDITIONS", attribution: "GTEki synthetic test fixture",
+      license: { name: "GTEki synthetic data (invented; no third-party content)", url: "https://github.com/nurockplayer/gteki" }, rights: "REUSABLE_WITH_CONDITIONS", attribution: "GTEki synthetic test fixture",
       modified: false, retrievedAt: null, datasetDate: null,
     })),
     floors: [
