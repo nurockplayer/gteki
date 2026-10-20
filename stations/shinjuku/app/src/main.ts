@@ -514,7 +514,7 @@ function renderRoutePanel() {
   if (route.expiredSourceIds.length || route.stale === true) {
     const s = document.createElement("span");
     s.className = "warn";
-    s.textContent = route.expiredSourceIds.length ? "出典の公開期限切れ · Source publication period ended" : "データが古い可能性 · Data may be outdated";
+    s.textContent = route.expiredSourceIds.length ? "出典の有効期限切れ · Source validity ended" : "データが古い可能性 · Data may be outdated";
     s.title = [...route.expiredSourceIds].join(", ");
     un.appendChild(s);
   }
@@ -718,7 +718,7 @@ $("btn-help").addEventListener("click", () => $<HTMLDialogElement>("dlg-help").s
 $("btn-cov").addEventListener("click", () => {
   const c = bundle.coverage;
   const rows = c.gaps.map((g) => `<tr><td>${esc(g.zone)}</td><td>${esc(g.missingFact)}</td><td>${esc(g.fieldWorkNeeded)}</td></tr>`).join("");
-  const srcs = bundle.sources.map((s) => `<li>${esc(s.title)} — ${esc(s.publisher)} · ${esc(s.license?.name ?? "")} · dataset ${esc(s.datasetDate ?? "?")} · 公開期限 ${esc(s.validUntil ?? "-")}</li>`).join("");
+  const srcs = bundle.sources.map((s) => `<li>${esc(s.title)} — ${esc(s.publisher)} · ${esc(s.license?.name ?? "")} · dataset ${esc(s.datasetDate ?? "?")} ${s.validUntil ? `· 有効期限 ${esc(s.validUntil)}` : ""}${s.notes ? `<br><small>${esc(s.notes)}</small>` : ""}</li>`).join("");
   $("cov-body").innerHTML = `<h3>データ範囲と未確認事項 Coverage &amp; gaps</h3><p>${esc(c.summary[0]!.text)}<br><small>${esc(c.summary[1]?.text ?? "")}</small></p><table><tr><th>範囲 Zone</th><th>欠落 Missing</th><th>必要な調査 Needed</th></tr>${rows}</table><h4>出典 Sources</h4><ul>${srcs}</ul><p><small>表示用の階高さ・改札機の台数・ホーム柵・案内サインの意匠は GTEki による簡略表現で、実物の再現ではありません。Visual details (heights, gate machine count, platform doors, sign design) are GTEki simplifications, not reproductions.</small></p><p>通勤客の動き・列車の発着とドアの開閉は演出であり、実際の混雑や時刻表ではありません。<br><small>Commuters, train arrivals and door cycles are simulated ambience — not real crowd data or timetables.</small></p>`;
   $<HTMLDialogElement>("dlg-cov").showModal();
 });

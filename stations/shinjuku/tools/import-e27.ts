@@ -48,6 +48,16 @@ const OUT_GTEKI = join(HERE, "../gteki");
  */
 const ACQUIRED_AT = (JSON.parse(readFileSync(join(HERE, "../sources/manifest.json"), "utf8")) as { acquiredAt: string }).acquiredAt;
 const CHECKED = "2026-10-20";
+/**
+ * Owner policy (option A, 2026-10-20): three statuses are tracked separately.
+ * - Publication period: the dataset page says 「公共交通オープンデータチャレンジ2026 の期間中（2027年3月12日まで）のみの限定公開」.
+ *   That is the provider's *publication* period, not a confirmed end of the PDL 1.0 licence, so it is NOT
+ *   written to Source.validUntil (which the router treats as data validity → stale).
+ * - Reuse licence: PDL 1.0 as published; reuse of derived data after the period is unconfirmed (coverage gap).
+ * - Navigation freshness: datasetDate (and link maint_date) with the router's staleAfterDays.
+ */
+const PUBLICATION_PERIOD_END = "2027-03-12";
+const PERIOD_NOTE = `Publication period (公開提供期限): limited publication for 公共交通オープンデータチャレンジ2026 until ${PUBLICATION_PERIOD_END}, per the dataset page. This is not a confirmed end of the PDL 1.0 licence; reuse of derived data after that date is unconfirmed with the provider (see coverage gap:reuse-after-publication).`;
 const SRC_NWD = "mlit-hokonavi-e27-nwd";
 const SRC_MAP = "mlit-hokonavi-e27-stationmap";
 const OP = "toei";
@@ -717,8 +727,8 @@ const sources: Source[] = [
     retrievedAt: ACQUIRED_AT,
     sha256: { "nwd_oedo_shinjuku_geojson.zip": sha["nwd_oedo_shinjuku_geojson.zip"]! },
     datasetDate: "2026-09-17",
-    validUntil: "2027-03-12",
-    notes: "Limited publication for 公共交通オープンデータチャレンジ2026 (until 2027-03-12). Links maint_date 2025-09-19. Spec: 歩行空間ネットワークデータ整備仕様 (MLIT 2024-07), layer-1 attributes only.",
+    validUntil: null,
+    notes: `${PERIOD_NOTE} Links maint_date 2025-09-19. Spec: 歩行空間ネットワークデータ整備仕様 (MLIT 2024-07), layer-1 attributes only.`,
   },
   {
     id: SRC_MAP,
@@ -733,8 +743,8 @@ const sources: Source[] = [
     retrievedAt: ACQUIRED_AT,
     sha256: { "stationmap_oedo_shinjuku_geojson.zip": sha["stationmap_oedo_shinjuku_geojson.zip"]! },
     datasetDate: "2026-09-17",
-    validUntil: "2027-03-12",
-    notes: "階層別屋内地理空間情報データ仕様書（GSI 2019-03）; source=2 (CAD data).",
+    validUntil: null,
+    notes: `${PERIOD_NOTE} 階層別屋内地理空間情報データ仕様書（GSI 2019-03）; source=2 (CAD data).`,
   },
 ];
 
@@ -761,6 +771,7 @@ const gaps: CoverageGap[] = [
   { id: "gap:hours", floorId: null, zone: "All links", missingFact: "Operating hours (start_time/end_time) not published", sourceDate: null, fieldWorkNeeded: "Operator hours per exit/passage" },
   { id: "gap:escalator-direction", floorId: null, zone: "Escalators", missingFact: "Escalator directions are a 2025-09 snapshot; time-of-day reversals unknown", sourceDate: "2025-09-19", fieldWorkNeeded: "Field check at peak/off-peak" },
   { id: "gap:platform-sides", floorId: floorId(-6), zone: "Platform (地下6階)", missingFact: "Which side serves which direction (都庁前 / 両国・六本木)", sourceDate: null, fieldWorkNeeded: "Field check or licensed operator data" },
+  { id: "gap:reuse-after-publication", floorId: null, zone: "All E27-derived data (graph, geometry, POIs)", missingFact: `Provider confirmation that GTEki's derived Web 3D data may still be reused/distributed (incl. commercially) after the publication period ends ${PUBLICATION_PERIOD_END}. PDL 1.0 is the published licence; its expiry is not asserted.`, sourceDate: "2026-09-17", fieldWorkNeeded: "Written answer from MLIT ほこナビDP窓口; any public release relying on it stays HOLD until confirmed" },
   { id: "gap:closures", floorId: null, zone: "Construction areas around 新宿駅西口・南口", missingFact: "Current closures (e.g. OSM notes exit 2 closed since 2024-03-30 for building demolition — outside E27 data)", sourceDate: null, fieldWorkNeeded: "Operator notices + field check before any real-world guidance" },
 ];
 const coverage = {

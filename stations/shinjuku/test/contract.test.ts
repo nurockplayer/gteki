@@ -30,17 +30,22 @@ describe("Shinjuku gteki/ contract files", () => {
     expect(strict.ok).toBe(false);
   });
 
-  it("flags routes stale once the limited publication (validUntil 2027-03-12) has ended", () => {
+  it("keeps the publication period separate from navigation freshness (Owner policy A)", () => {
+    // 2027-03-12 is the provider's publication period, not data validity: it never makes routes stale
+    expect(bundle.sources.every((s) => (s.validUntil ?? null) === null)).toBe(true);
+    expect(bundle.sources.every((s) => s.notes?.includes("2027-03-12"))).toBe(true);
+    expect(bundle.coverage.gaps.some((g) => g.id === "gap:reuse-after-publication")).toBe(true);
     const r = createRouter(bundle);
     const [a, b] = bundle.spawnNodeIds!;
-    const before = r.route(a!, b!, { fare: "ticketed", stepFree: false, today: "2027-03-12" });
     const after = r.route(a!, b!, { fare: "ticketed", stepFree: false, today: "2027-03-13" });
-    expect(before.ok && after.ok).toBe(true);
-    if (before.ok) expect(before.expiredSourceIds).toEqual([]);
+    expect(after.ok).toBe(true);
     if (after.ok) {
-      expect(after.expiredSourceIds.length).toBeGreaterThan(0);
-      expect(after.stale).toBe(true);
+      expect(after.expiredSourceIds).toEqual([]);
+      expect(after.stale).toBe(false);
     }
+    // freshness comes from the dataset date (router staleAfterDays)
+    const later = r.route(a!, b!, { fare: "ticketed", stepFree: false, today: "2030-01-01" });
+    if (later.ok) expect(later.stale).toBe(true);
   });
 
   it("offers gate, platform and exit spawn points that exist", () => {

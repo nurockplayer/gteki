@@ -32,7 +32,15 @@ To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downlo
   - 歩行空間ネットワークデータ, which gives the graph.
   - 構内地図データ, which gives spaces, fare areas and facilities.
 - **Licence.** Both are under 公共データ利用規約 1.0 (PDL 1.0), so modification and redistribution are allowed with attribution. GTEki shows the attribution in the app footer, the coverage dialog and every source record (`modified: true`).
-- **Expiry risk.** The dataset is a *limited publication* for 公共交通オープンデータチャレンジ2026, valid **until 2027-03-12**. This is recorded as `validUntil`. Before that date the Owner must decide whether the derived data may remain public. HOLD on any release planned after it.
+- **Data-use policy (Owner decision, option A, 2026-10-20).** Three statuses are tracked separately, and none is inferred from another:
+
+  | Status | What we know | Where it lives |
+  | --- | --- | --- |
+  | Publication period (公開提供期限) | The dataset page says it is a limited publication for 公共交通オープンデータチャレンジ2026, **until 2027-03-12**. | Source `notes`, coverage gap `gap:reuse-after-publication` |
+  | Reuse licence (再利用授權) | PDL 1.0 as published. The end of the publication period is **not** asserted to end the licence. Commercial reuse of the derived Web 3D data after that date is **unconfirmed**; an inquiry to MLIT ほこナビDP窓口 is pending. | Source `license` / `rights` (`REUSABLE_WITH_CONDITIONS`), this record |
+  | Navigation freshness (導航資料時效) | Dataset 2026-09-17; link maint_date 2025-09-19. | Source `datasetDate`. The router's `staleAfterDays` flags stale routes. `validUntil` stays `null`, so the publication period never marks routes stale. |
+
+  Sources, SHA-256 hashes, licence and acquisition evidence are kept. Development and acceptance continue. **Any public release relying on rights that are not yet confirmed stays HOLD.**
 - **Evaluated and not used:**
   - PLATEAU ubld 53394536 does not overlap E27.
   - The S10 store CSV has no coordinates.
@@ -98,7 +106,7 @@ Still needed for L2 (not claimed): an independent visual/interaction review (Lan
 
 ## G4 — delivery: **HOLD**
 
-Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --check`, which reproduces byte-identical files from hashed inputs (provenance uses the pinned `acquiredAt` in `sources/manifest.json`, not the local download time). Three fresh read-only Codex reviews ran: 15 findings, then 6 on the fixes, then 2 partials on those. All are fixed; the PR lists each one. Still open: an exact-SHA QA pass by Lane F, the Owner decision on PDL expiry, and Owner merge approval.
+Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --check`, which reproduces byte-identical files from hashed inputs (provenance uses the pinned `acquiredAt` in `sources/manifest.json`, not the local download time). Three fresh read-only Codex reviews ran: 15 findings, then 6 on the fixes, then 2 partials on those. All are fixed; the PR lists each one. Still open: an exact-SHA QA pass by Lane F, the provider's answer on reuse after the publication period (release HOLD until then), and Owner merge approval.
 
 ## Coverage gaps (field work needed)
 
@@ -111,6 +119,7 @@ Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --ch
 | Escalators | Time-of-day direction changes | 2025-09-19 | Field check at peak and off-peak |
 | Platform (B6) | Which side serves 都庁前 vs 両国・六本木 | — | Field check or licensed operator data |
 | Around 西口・南口 | Current closures | — | Operator notices plus a field check |
+| All E27-derived data | Commercial reuse/distribution of derived data after the publication period (2027-03-12) | 2026-09-17 | Written answer from MLIT ほこナビDP窓口 |
 
 ## Deliberate simplifications (not reproductions)
 
