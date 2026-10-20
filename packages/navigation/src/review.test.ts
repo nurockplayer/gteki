@@ -341,3 +341,35 @@ describe("staleness needs one real `today` (PR #15 re-review 2)", () => {
     expect(staleOn("2026-01-03")).toBe(true);
   });
 });
+
+describe("provenance completeness (PR #15 Codex review 6)", () => {
+  it("a source past its validUntil makes the route stale and is named", () => {
+    const b = createSyntheticBundle();
+    for (const s of b.sources) s.datasetDate = "2026-09-01";
+    const fresh = ok(createRouter(b).route("start", "goal", { ...base, today: "2026-10-20" }));
+    expect(fresh.stale).toBe(false);
+    b.sources.find((s) => s.id === "fixture-access")!.validUntil = "2026-10-01";
+    const expired = ok(createRouter(b).route("start", "goal", { ...base, today: "2026-10-20" }));
+    expect(expired.stale).toBe(true);
+    expect(expired.expiredSourceIds).toEqual(["fixture-access"]);
+    b.sources.find((s) => s.id === "fixture-access")!.validUntil = "2026-10";
+    expect(ok(createRouter(b).route("start", "goal", { ...base, today: "2026-10-20" })).stale).toBeNull();
+    // Valid through today itself is still valid; a month-only validUntil covers its first day.
+    b.sources.find((s) => s.id === "fixture-access")!.validUntil = "2026-10-20";
+    expect(ok(createRouter(b).route("start", "goal", { ...base, today: "2026-10-20" })).stale).toBe(false);
+    b.sources.find((s) => s.id === "fixture-access")!.validUntil = "2026-10";
+    expect(ok(createRouter(b).route("start", "goal", { ...base, today: "2026-10-01" })).stale).toBe(false);
+    b.sources.find((s) => s.id === "fixture-access")!.validUntil = "2027-03-12";
+    expect(ok(createRouter(b).route("start", "goal", { ...base, today: "2026-10-20" })).stale).toBe(false);
+  });
+
+  it("traversed nodes' sources are route dependencies", () => {
+    const b = createSyntheticBundle();
+    b.sources.push({ ...b.sources[0]!, id: "node-survey", datasetDate: "2015-01-01" });
+    b.nodes.find((n) => n.id === "start")!.sourceRefs = [{ sourceId: "node-survey", featureId: "n1" }];
+    for (const s of b.sources) if (s.id !== "node-survey") s.datasetDate = "2026-09-01";
+    const r = ok(createRouter(b).route("start", "goal", { ...base, today: "2026-10-20" }));
+    expect(r.sourceIds).toContain("node-survey");
+    expect(r.stale).toBe(true);
+  });
+});

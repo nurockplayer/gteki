@@ -66,7 +66,7 @@ export interface RouteResult {
   crossesFareBoundary: boolean | null;
   /** Facts along the route that are UNKNOWN; UI must show them. */
   unknowns: { kind: RouteUnknown; edgeIds: string[] }[];
-  /** Sources the route depends on (for provenance display). */
+  /** Sources the route depends on: edge geometry/access/hours evidence and traversed nodes' sourceRefs. */
   sourceIds: string[];
   /** Latest checkedDate across the route's evidence (geometry, access and hours). */
   evidenceCheckedDate: string | null;
@@ -74,9 +74,11 @@ export interface RouteResult {
   oldestSourceDate: string | null;
   /** Sources the route depends on that have no datasetDate. */
   undatedSourceIds: string[];
+  /** Sources whose declared validity (`validUntil`) ended before profile.today; any makes the route stale. */
+  expiredSourceIds: string[];
   /**
    * true when some source is older than staleAfterDays before profile.today even at the latest day its
-   * date allows ("2024" may mean 31 Dec 2024); false only when every source is recent even at its earliest
+   * date allows ("2024" may mean 31 Dec 2024), or its validUntil has passed; false only when every source is recent even at its earliest
    * day; null when not evaluable (no `today`, an undated dependency, or a year/month date straddling the cutoff).
    */
   stale: boolean | null;
