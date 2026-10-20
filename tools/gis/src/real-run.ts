@@ -6,7 +6,7 @@ import type { CityInventory } from './citygml.js';
 import { loadInventoryDetail } from './citygml.js';
 import { smallestRoom } from './selection.js';
 import { toolFingerprint } from './provenance.js';
-import { archiveReceipt } from './history.js';
+import { archiveReceipt, archiveStaleConversions } from './history.js';
 
 /** Reproducible ordered CLI receipt. All downloaded and binary logs remain in the external store. */
 await archiveReceipt('real-run');
@@ -26,7 +26,13 @@ async function run(args:string[],selectionEvidence?:unknown){
   return exitCode===0;
 }
 
-await run(['acquire','--all']);
+await archiveStaleConversions(receipt.tool_input_sha256);
+if(!await run(['acquire','--all'])){
+  // Every later step reads the acquisition records; never mix a failed refresh with older stored records.
+  console.error('Acquisition failed; dependent inspections, conversions and reports were not run.');
+  receipt.completed_at=new Date().toISOString();await writeJson(join(docsRoot,'gis','real-run.json'),receipt);
+  process.exit(1);
+}
 const cities=[{source:'plateau-13116-ubld-53394576',frame:'ikebukuro-plateau-ubld-v0'},{source:'plateau-13104-ubld-53394536',frame:'shinjuku-plateau-ubld-v0'}];
 const inventories=new Map<string,CityInventory>();
 for(const city of cities)if(await run(['inspect-citygml',city.source]))inventories.set(city.source,await loadInventoryDetail(city.source));

@@ -2,7 +2,7 @@
 
 Generated from acquisition, inventory, conversion and network JSON; no counts are manually maintained. All results are UNVERIFIED and NOT_FOR_ROUTING.
 
-Tool-input SHA-256: `67f398610e32e391b9622bf25706f9456adbb6c8499381a49e6ad1ecc87a3716` (src, source manifest, frames, synthetic tests/fixtures, package/lock/workspace/TypeScript configuration; sorted relative names plus exact bytes).
+Tool-input SHA-256: `9dcf9e0b5afbeb726412dd3ea06aeea50fde82dc70ab7933f262f6f6ffcda876` (src, source manifest, frames, synthetic tests/fixtures, package/lock/workspace/TypeScript configuration; sorted relative names plus exact bytes).
 
 ## Acquisitions
 
@@ -33,10 +33,12 @@ Tool-input SHA-256: `67f398610e32e391b9622bf25706f9456adbb6c8499381a49e6ad1ecc87
 
 | Run | Polygons | Triangles | Nodes | Bbox error m | Time ms | Peak RSS bytes |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-10fa3e66d03eec8426fd | 6 | 12 | 1 | 0.00000452290078101214 | 10608 | 403013632 |
-| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-8414309c5643be1f476e | 65013 | 148950 | 30358 | 0.0000054997890401864424 | 16389 | 1680687104 |
-| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-918610cb70c8a1c57e35 | 184 | 184 | 6 | 0.0000046096065489109606 | 24140 | 276430848 |
-| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-be6ac4becea01f288b44 | 58761 | 64811 | 32 | 0.000003925928467651829 | 25851 | 490668032 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-4d5ec45342f1e1a32758 | 6 | 12 | 1 | 0.00000452290078101214 | 10496 | 443056128 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-6187d26e0eb33b6dc8bd | 6 | 12 | 1 | 0.00000452290078101214 | 10514 | 950665216 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-a60bb80958010846c2c4 | 65013 | 148950 | 30358 | 0.0000054997890401864424 | 14980 | 1673265152 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-45b2c98204987e86cb07 | 58761 | 64811 | 32 | 0.000003925928467651829 | 25878 | 474333184 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-893414e50e092e4d3c5d | 50 | 50 | 6 | 0.0000046096065489109606 | 24033 | 319438848 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-b875af04e0170b55e5b6 | 184 | 184 | 6 | 0.0000046096065489109606 | 24207 | 259194880 |
 
 ## Network observations
 

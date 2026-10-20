@@ -23,7 +23,7 @@ Reproduce the full run with `pnpm --dir tools/gis install --frozen-lockfile`, th
 
 ## Verified checks (this candidate)
 
-- `typecheck` 0 · `test` **76/76** · `test:real` **3/3** · `acquire --all --offline` **13/13** hashes · real run **16/16** CLI invocations exit 0. The Opus lead re-ran these independently.
+- `typecheck` 0 · `test` **77/77** · `test:real` **3/3** · `acquire --all --offline` **13/13** hashes · real run **16/16** CLI invocations exit 0. The Opus lead re-ran these independently.
 - CRS: two independent controls from the official GSI 測量計算サイト `bl2xy` (JGD2011, zone IX, retrieved 2026-10-20) match within **0.05 mm**. Envelope-corner roundtrips are below 1e-6 m.
 - GLB readback: bbox error ≤ **0.006 mm**. Independent Blender 5.2.2 import of both full-file GLBs reproduces the recorded local bbox to within float32 precision (see [evidence/](evidence/)).
 
@@ -77,3 +77,7 @@ PR [#18](https://github.com/nurockplayer/gteki/pull/18) automated Codex review r
 - Acquisition provenance now calls `git` directly rather than through a wrapper.
 
 The real run was regenerated. The GLB bytes are unchanged, and the superseded conversion receipts are in `history/conversions/pre-review-fix/`.
+
+A second automated review raised two more P2 findings, both fixed with digest `9dcf9e0b5afbeb726412dd3ea06aeea50fde82dc70ab7933f262f6f6ffcda876`:
+- `real-run` now aborts when fresh acquisition fails, instead of continuing against older stored records.
+- Conversion receipts from other tool fingerprints are moved to `history/conversions/tool-<digest>/` automatically, and `summarize` reads only current-fingerprint receipts.

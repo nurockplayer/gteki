@@ -4,7 +4,11 @@ import { docsRoot,readJson,writeJson } from './common.js';
 import { toolFingerprint } from './provenance.js';
 const root=join(docsRoot,'gis');
 async function reports(directory:string):Promise<any[]>{const files=(await readdir(join(root,directory))).filter(f=>f.endsWith('.json')).sort();return Promise.all(files.map(f=>readJson(join(root,directory,f))));}
-const acquisitions=await reports('acquisitions'),inventories=(await reports('inventory')).filter(i=>i.totals),conversions=await reports('conversions'),networks=await reports('networks'),overlaps=await reports('overlap'),crsReports=await reports('crs');
+const acquisitions=await reports('acquisitions'),inventories=(await reports('inventory')).filter(i=>i.totals),allConversions=await reports('conversions'),networks=await reports('networks'),overlaps=await reports('overlap'),crsReports=await reports('crs');
+// Only receipts produced by the current tool fingerprint describe this candidate; older ones are history.
+const snapshot=await toolFingerprint();
+const conversions=allConversions.filter(row=>row.semantic_inputs?.tool_input_sha256===snapshot);
+if(conversions.length!==allConversions.length)console.error(`Ignoring ${allConversions.length-conversions.length} conversion receipt(s) from other tool fingerprints`);
 const previous=await readJson<any>(join(root,'history','phase1','real-data-summary.json'));
 const fullConversion=(rows:any[],source:string)=>rows.find(row=>row.source_id===source&&!row.filters?.ids?.length&&!row.filters?.bboxLocal&&row.filters?.maxPolygons===undefined);
 const changesFromPhase1=inventories.map(inventory=>{
@@ -13,7 +17,6 @@ const changesFromPhase1=inventories.map(inventory=>{
     full_conversion_polygons:{before:oldFull?.totals.polygons_converted??null,after:newFull?.totals.polygons_converted??null},
     full_conversion_triangles:{before:oldFull?.totals.triangles??null,after:newFull?.totals.triangles??null},geometry_references:inventory.geometry_reference_summary??null};
 });
-const snapshot=await toolFingerprint();
 const networkSummary=networks.map(r=>({source_id:r.source_id,counts:r.counts??{features:r.totals?.features??r.feature_count??r.network_inventory?.feature_count??null,layers:r.members?.length??null},
   duplicate_node_ids:r.topology?.duplicate_node_ids?.length??null,duplicate_link_ids:r.topology?.duplicate_link_ids?.length??null,dangling_links:r.topology?.dangling_links?.length??null,
   self_loops:r.topology?.self_loops?.length??null,weak_components:r.topology?.weak_component_count??null,endpoint_mismatches:r.topology?.geometry_endpoint_mismatches_over_0_5m?.length??null,

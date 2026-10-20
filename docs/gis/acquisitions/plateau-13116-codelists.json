@@ -6,8 +6,8 @@
     "sha256": "7e5abc031afa5ab9f4e0da1df9b7e3413d642c7cbdeb6de6f909b4a23a9737ad",
     "json_pointer": "/cities/0/metadataZipUrls/0"
   },
-  "requested_at": "2026-10-20T13:14:41.167Z",
-  "completed_at": "2026-10-20T13:14:41.225Z",
+  "requested_at": "2026-10-20T13:24:51.158Z",
+  "completed_at": "2026-10-20T13:24:51.219Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/zip",
@@ -20,14 +20,14 @@
   "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
   "store_path": "raw/183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600/13116_toshima-ku_pref_2025_citygml_1_op_codelists.zip",
   "tool_version": "0.1.0",
-  "git_commit": "65ce1ccb74fd60949340d88baf1f2a7cc0053b06",
+  "git_commit": "74a1c44f4462a5fad5e561bbca709fb8b80aa81e",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
   "mode": "online",
   "last_offline_check": {
-    "requested_at": "2026-10-20T13:18:00.945Z",
-    "completed_at": "2026-10-20T13:18:00.945Z",
+    "requested_at": "2026-10-20T13:28:05.327Z",
+    "completed_at": "2026-10-20T13:28:05.327Z",
     "tool_version": "0.1.0",
     "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
     "bytes": 805989,
