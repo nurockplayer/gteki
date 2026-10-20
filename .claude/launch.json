@@ -1,6 +1,0 @@
-{
-  "version": "0.0.1",
-  "configurations": [
-    { "name": "ikebukuro-preview", "runtimeExecutable": "pnpm", "runtimeArgs": ["--dir", "stations/ikebukuro", "exec", "vite", "--port", "5181", "--strictPort"], "port": 5181 }
-  ]
-}
