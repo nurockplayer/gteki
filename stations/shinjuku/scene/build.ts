@@ -186,6 +186,22 @@ function merged(geos: THREE.BufferGeometry[]): THREE.BufferGeometry | null {
   return m;
 }
 
+/** Replaced/merged meshes no longer own GPU resources, but a disposal registry
+ * would still keep their CPU arrays alive. Retain only geometries in the final
+ * tree; their arrays remain available for rendering, raycasts and context restore.
+ */
+export function disposeRetiredGeometries(root: THREE.Object3D, resources: { dispose(): void }[]) {
+  const live = new Set<THREE.BufferGeometry>();
+  root.traverse((o) => { if (o instanceof THREE.Mesh) live.add(o.geometry); });
+  for (let i = resources.length - 1; i >= 0; i--) {
+    const resource = resources[i]!;
+    if (resource instanceof THREE.BufferGeometry && !live.has(resource)) {
+      resource.dispose();
+      resources.splice(i, 1);
+    }
+  }
+}
+
 /** Explicit back faces keep the colour and GTAO normal/depth passes in agreement.
  * GTAO overrides materials with a front-sided normal material, so material-only
  * DoubleSide walls leave the inside of a shaft absent from its depth buffer.
@@ -1006,6 +1022,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   for (const child of root.children) if (child instanceof THREE.Mesh && child.material === mat.sidewalk) child.visible = false; // replace uncut legacy pad boxes
   for (const lv of layout.levels.filter((l) => Math.abs(l.z) < 0.1)) for (const child of levelGroups.get(lv.floorId)?.children ?? []) if (child instanceof THREE.Mesh && (child.name === "walkable" || child.material === mat.ceiling)) child.visible = false; // cut street ground and original canopies replace generic top-level caps
   track(surface);
+  disposeRetiredGeometries(root, disposables);
 
   return {
     root,

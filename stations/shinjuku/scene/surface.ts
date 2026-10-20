@@ -218,6 +218,10 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   const dome=new THREE.Mesh(track(new THREE.SphereGeometry(300,24,12)),track(skyMaterial()));dome.name="surface-sky";dome.frustumCulled=false;dome.renderOrder=-1000;
   dome.onBeforeRender=(_renderer,_scene,camera)=>{dome.position.copy(camera.position);dome.updateMatrixWorld();};root.add(dome);
   root.userData.drawCallBudget=batches.size+4;root.userData.buildingParts=buildings.length;
+  // The live update/dispose closures share this scope with add(). Disposing a
+  // source geometry does not release its arrays; drop the batch references once
+  // merging is complete, keeping only the final meshes for rendering/restoration.
+  batches.clear();
   let disposed=false,viewer:XYZ|null=null;
   const visibility={entrances,openings:streets.holes};
   const update=(_dt:number,_t:number)=>{root.visible=viewer!==null&&surfaceVisibleAt(layout,opts.bundle,viewer,visibility);};
