@@ -1,0 +1,1329 @@
+{
+ "schema": "gteki.station/0.1",
+ "stationId": "ikebukuro",
+ "nodes": [
+  {
+   "id": "c_w",
+   "floorId": "b1",
+   "position": {
+    "x": -60.0,
+    "y": 82.0,
+    "z": 27.91
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "c_mid",
+   "floorId": "b1",
+   "position": {
+    "x": -25.0,
+    "y": 70.0,
+    "z": 27.91
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "g_jr_c2",
+   "floorId": "b1",
+   "position": {
+    "x": -14.0,
+    "y": 78.5,
+    "z": 27.91
+   },
+   "kind": "ticket_gate",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "g_jr_c1",
+   "floorId": "b1",
+   "position": {
+    "x": -24.0,
+    "y": 59.5,
+    "z": 27.91
+   },
+   "kind": "ticket_gate",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "c_c",
+   "floorId": "b1",
+   "position": {
+    "x": 4.5,
+    "y": 63.0,
+    "z": 27.91
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "c_e1",
+   "floorId": "b1",
+   "position": {
+    "x": 33.0,
+    "y": 46.0,
+    "z": 28.166
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "c_e2",
+   "floorId": "b1",
+   "position": {
+    "x": 60.0,
+    "y": 34.0,
+    "z": 28.49
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "e_hall",
+   "floorId": "b1",
+   "position": {
+    "x": 92.0,
+    "y": 27.0,
+    "z": 27.79
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "e_low",
+   "floorId": "b1",
+   "position": {
+    "x": 128.0,
+    "y": 34.0,
+    "z": 26.88
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "se_1",
+   "floorId": "b1",
+   "position": {
+    "x": 80.0,
+    "y": 4.0,
+    "z": 27.586
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "se_j",
+   "floorId": "b1",
+   "position": {
+    "x": 99.0,
+    "y": -16.0,
+    "z": 27.08
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x27",
+   "floorId": "street",
+   "position": {
+    "x": 82.5,
+    "y": 44.5,
+    "z": 31.154
+   },
+   "kind": "exit",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x34",
+   "floorId": "street",
+   "position": {
+    "x": 139.5,
+    "y": 53.0,
+    "z": 31.727
+   },
+   "kind": "exit",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x35",
+   "floorId": "street",
+   "position": {
+    "x": 152.0,
+    "y": 19.0,
+    "z": 30.427
+   },
+   "kind": "exit",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x36",
+   "floorId": "street",
+   "position": {
+    "x": 61.5,
+    "y": 23.5,
+    "z": 29.688
+   },
+   "kind": "exit",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x37",
+   "floorId": "street",
+   "position": {
+    "x": 37.5,
+    "y": 19.5,
+    "z": 32.016
+   },
+   "kind": "exit",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x42",
+   "floorId": "street",
+   "position": {
+    "x": 91.5,
+    "y": -29.5,
+    "z": 31.465
+   },
+   "kind": "exit",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x43",
+   "floorId": "street",
+   "position": {
+    "x": 107.5,
+    "y": -9.0,
+    "z": 30.96
+   },
+   "kind": "exit",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  }
+ ],
+ "edges": [
+  {
+   "id": "c_w__c_mid",
+   "from": "c_w",
+   "to": "c_mid",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 37.3,
+   "geometry": [
+    {
+     "x": -60.0,
+     "y": 82.0,
+     "z": 27.91
+    },
+    {
+     "x": -49.0,
+     "y": 79.0,
+     "z": 27.91
+    },
+    {
+     "x": -43.5,
+     "y": 78.5,
+     "z": 27.91
+    },
+    {
+     "x": -25.5,
+     "y": 70.5,
+     "z": 27.91
+    },
+    {
+     "x": -25.0,
+     "y": 70.0,
+     "z": 27.91
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only)",
+    "checkedDate": "2026-10-20",
+    "note": "中央通路 (Central Passage) is a public east-west passage outside fare gates, linking the west and east exits."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "c_mid__g_jr_c2",
+   "from": "c_mid",
+   "to": "g_jr_c2",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 14.0,
+   "geometry": [
+    {
+     "x": -25.0,
+     "y": 70.0,
+     "z": 27.91
+    },
+    {
+     "x": -20.0,
+     "y": 73.0,
+     "z": 27.91
+    },
+    {
+     "x": -19.5,
+     "y": 73.5,
+     "z": 27.91
+    },
+    {
+     "x": -14.0,
+     "y": 78.5,
+     "z": 27.91
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading matched to PLATEAU passage openings (Central Gate 2: 13 m north opening, ~1 m from projected map position; Central Gate 1: south openings, ~6 m)",
+    "checkedDate": "2026-10-20",
+    "note": "JR 中央2改札 opens north and JR 中央1改札 opens south from the Central Passage."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "c_mid__g_jr_c1",
+   "from": "c_mid",
+   "to": "g_jr_c1",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 10.5,
+   "geometry": [
+    {
+     "x": -25.0,
+     "y": 70.0,
+     "z": 27.91
+    },
+    {
+     "x": -24.0,
+     "y": 59.5,
+     "z": 27.91
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading matched to PLATEAU passage openings (Central Gate 2: 13 m north opening, ~1 m from projected map position; Central Gate 1: south openings, ~6 m)",
+    "checkedDate": "2026-10-20",
+    "note": "JR 中央2改札 opens north and JR 中央1改札 opens south from the Central Passage."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "c_mid__c_c",
+   "from": "c_mid",
+   "to": "c_c",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 30.3,
+   "geometry": [
+    {
+     "x": -25.0,
+     "y": 70.0,
+     "z": 27.91
+    },
+    {
+     "x": 4.5,
+     "y": 63.0,
+     "z": 27.91
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only)",
+    "checkedDate": "2026-10-20",
+    "note": "中央通路 (Central Passage) is a public east-west passage outside fare gates, linking the west and east exits."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "g_jr_c2__c_c",
+   "from": "g_jr_c2",
+   "to": "c_c",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 24.6,
+   "geometry": [
+    {
+     "x": -14.0,
+     "y": 78.5,
+     "z": 27.91
+    },
+    {
+     "x": -12.5,
+     "y": 78.5,
+     "z": 27.91
+    },
+    {
+     "x": 0.5,
+     "y": 66.0,
+     "z": 27.91
+    },
+    {
+     "x": 1.0,
+     "y": 66.0,
+     "z": 27.91
+    },
+    {
+     "x": 4.5,
+     "y": 63.0,
+     "z": 27.91
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only)",
+    "checkedDate": "2026-10-20",
+    "note": "中央通路 (Central Passage) is a public east-west passage outside fare gates, linking the west and east exits."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "c_c__c_e1",
+   "from": "c_c",
+   "to": "c_e1",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 38.1,
+   "geometry": [
+    {
+     "x": 4.5,
+     "y": 63.0,
+     "z": 27.91
+    },
+    {
+     "x": 5.5,
+     "y": 64.0,
+     "z": 27.91
+    },
+    {
+     "x": 17.0,
+     "y": 59.0,
+     "z": 27.91
+    },
+    {
+     "x": 24.0,
+     "y": 50.0,
+     "z": 27.91
+    },
+    {
+     "x": 24.5,
+     "y": 47.5,
+     "z": 27.928
+    },
+    {
+     "x": 25.0,
+     "y": 47.0,
+     "z": 27.947
+    },
+    {
+     "x": 32.5,
+     "y": 44.5,
+     "z": 28.17
+    },
+    {
+     "x": 33.0,
+     "y": 46.0,
+     "z": 28.166
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only)",
+    "checkedDate": "2026-10-20",
+    "note": "中央通路 (Central Passage) is a public east-west passage outside fare gates, linking the west and east exits."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "c_e1__c_e2",
+   "from": "c_e1",
+   "to": "c_e2",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 29.6,
+   "geometry": [
+    {
+     "x": 33.0,
+     "y": 46.0,
+     "z": 28.166
+    },
+    {
+     "x": 47.0,
+     "y": 40.5,
+     "z": 28.49
+    },
+    {
+     "x": 60.0,
+     "y": 34.0,
+     "z": 28.49
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only)",
+    "checkedDate": "2026-10-20",
+    "note": "中央通路 (Central Passage) is a public east-west passage outside fare gates, linking the west and east exits."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "c_e1__x37",
+   "from": "c_e1",
+   "to": "x37",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 29.3,
+   "geometry": [
+    {
+     "x": 33.0,
+     "y": 46.0,
+     "z": 28.166
+    },
+    {
+     "x": 31.5,
+     "y": 35.5,
+     "z": 28.244
+    },
+    {
+     "x": 32.0,
+     "y": 26.5,
+     "z": 28.357
+    },
+    {
+     "x": 32.5,
+     "y": 26.0,
+     "z": 28.37
+    },
+    {
+     "x": 33.0,
+     "y": 25.5,
+     "z": 28.648
+    },
+    {
+     "x": 37.5,
+     "y": 19.5,
+     "z": 32.016
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU stair-top closures within 1-7 m",
+    "checkedDate": "2026-10-20",
+    "note": "Exits 27, 34, 35, 36, 37, 41, 42 and 43 connect the public B1 passages east of the JR concourse to street level."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "c_e2__x36",
+   "from": "c_e2",
+   "to": "x36",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 10.9,
+   "geometry": [
+    {
+     "x": 60.0,
+     "y": 34.0,
+     "z": 28.49
+    },
+    {
+     "x": 61.5,
+     "y": 26.0,
+     "z": 28.49
+    },
+    {
+     "x": 61.5,
+     "y": 23.5,
+     "z": 29.688
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU stair-top closures within 1-7 m",
+    "checkedDate": "2026-10-20",
+    "note": "Exits 27, 34, 35, 36, 37, 41, 42 and 43 connect the public B1 passages east of the JR concourse to street level."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "c_e2__e_hall",
+   "from": "c_e2",
+   "to": "e_hall",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 34.0,
+   "geometry": [
+    {
+     "x": 60.0,
+     "y": 34.0,
+     "z": 28.49
+    },
+    {
+     "x": 64.0,
+     "y": 36.0,
+     "z": 28.49
+    },
+    {
+     "x": 72.5,
+     "y": 34.0,
+     "z": 28.362
+    },
+    {
+     "x": 88.0,
+     "y": 29.0,
+     "z": 27.79
+    },
+    {
+     "x": 92.0,
+     "y": 27.0,
+     "z": 27.79
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only)",
+    "checkedDate": "2026-10-20",
+    "note": "中央通路 (Central Passage) is a public east-west passage outside fare gates, linking the west and east exits."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "e_hall__x27",
+   "from": "e_hall",
+   "to": "x27",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 24.4,
+   "geometry": [
+    {
+     "x": 92.0,
+     "y": 27.0,
+     "z": 27.79
+    },
+    {
+     "x": 86.0,
+     "y": 33.0,
+     "z": 27.878
+    },
+    {
+     "x": 80.0,
+     "y": 36.5,
+     "z": 28.196
+    },
+    {
+     "x": 80.0,
+     "y": 37.5,
+     "z": 28.233
+    },
+    {
+     "x": 82.5,
+     "y": 44.5,
+     "z": 31.154
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU stair-top closures within 1-7 m",
+    "checkedDate": "2026-10-20",
+    "note": "Exits 27, 34, 35, 36, 37, 41, 42 and 43 connect the public B1 passages east of the JR concourse to street level."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "e_hall__e_low",
+   "from": "e_hall",
+   "to": "e_low",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 37.1,
+   "geometry": [
+    {
+     "x": 92.0,
+     "y": 27.0,
+     "z": 27.79
+    },
+    {
+     "x": 107.5,
+     "y": 30.0,
+     "z": 27.79
+    },
+    {
+     "x": 115.5,
+     "y": 31.0,
+     "z": 27.79
+    },
+    {
+     "x": 117.0,
+     "y": 32.0,
+     "z": 27.032
+    },
+    {
+     "x": 117.5,
+     "y": 32.5,
+     "z": 26.88
+    },
+    {
+     "x": 128.0,
+     "y": 34.0,
+     "z": 26.88
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU stair-top closures within 1-7 m",
+    "checkedDate": "2026-10-20",
+    "note": "Exits 27, 34, 35, 36, 37, 41, 42 and 43 connect the public B1 passages east of the JR concourse to street level."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "e_low__x34",
+   "from": "e_low",
+   "to": "x34",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 24.9,
+   "geometry": [
+    {
+     "x": 128.0,
+     "y": 34.0,
+     "z": 26.88
+    },
+    {
+     "x": 132.0,
+     "y": 36.0,
+     "z": 26.88
+    },
+    {
+     "x": 137.0,
+     "y": 41.0,
+     "z": 26.88
+    },
+    {
+     "x": 137.0,
+     "y": 42.5,
+     "z": 26.88
+    },
+    {
+     "x": 137.0,
+     "y": 43.0,
+     "z": 27.051
+    },
+    {
+     "x": 139.5,
+     "y": 53.0,
+     "z": 31.727
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU stair-top closures within 1-7 m",
+    "checkedDate": "2026-10-20",
+    "note": "Exits 27, 34, 35, 36, 37, 41, 42 and 43 connect the public B1 passages east of the JR concourse to street level."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "e_low__x35",
+   "from": "e_low",
+   "to": "x35",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 30.0,
+   "geometry": [
+    {
+     "x": 128.0,
+     "y": 34.0,
+     "z": 26.88
+    },
+    {
+     "x": 131.0,
+     "y": 34.5,
+     "z": 26.88
+    },
+    {
+     "x": 146.0,
+     "y": 24.5,
+     "z": 26.88
+    },
+    {
+     "x": 146.5,
+     "y": 24.0,
+     "z": 27.049
+    },
+    {
+     "x": 152.0,
+     "y": 19.0,
+     "z": 30.427
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU stair-top closures within 1-7 m",
+    "checkedDate": "2026-10-20",
+    "note": "Exits 27, 34, 35, 36, 37, 41, 42 and 43 connect the public B1 passages east of the JR concourse to street level."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "e_hall__se_1",
+   "from": "e_hall",
+   "to": "se_1",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 27.6,
+   "geometry": [
+    {
+     "x": 92.0,
+     "y": 27.0,
+     "z": 27.79
+    },
+    {
+     "x": 88.0,
+     "y": 21.5,
+     "z": 27.79
+    },
+    {
+     "x": 81.0,
+     "y": 14.5,
+     "z": 27.79
+    },
+    {
+     "x": 79.0,
+     "y": 8.5,
+     "z": 27.79
+    },
+    {
+     "x": 80.0,
+     "y": 4.0,
+     "z": 27.586
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU stair-top closures within 1-7 m",
+    "checkedDate": "2026-10-20",
+    "note": "Exits 27, 34, 35, 36, 37, 41, 42 and 43 connect the public B1 passages east of the JR concourse to street level."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "se_1__se_j",
+   "from": "se_1",
+   "to": "se_j",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 27.6,
+   "geometry": [
+    {
+     "x": 80.0,
+     "y": 4.0,
+     "z": 27.586
+    },
+    {
+     "x": 86.0,
+     "y": -2.5,
+     "z": 27.08
+    },
+    {
+     "x": 99.0,
+     "y": -16.0,
+     "z": 27.08
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU stair-top closures within 1-7 m",
+    "checkedDate": "2026-10-20",
+    "note": "Exits 27, 34, 35, 36, 37, 41, 42 and 43 connect the public B1 passages east of the JR concourse to street level."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "se_j__x43",
+   "from": "se_j",
+   "to": "x43",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 14.0,
+   "geometry": [
+    {
+     "x": 99.0,
+     "y": -16.0,
+     "z": 27.08
+    },
+    {
+     "x": 100.0,
+     "y": -17.5,
+     "z": 27.08
+    },
+    {
+     "x": 102.0,
+     "y": -15.5,
+     "z": 27.08
+    },
+    {
+     "x": 107.5,
+     "y": -9.0,
+     "z": 30.96
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU stair-top closures within 1-7 m",
+    "checkedDate": "2026-10-20",
+    "note": "Exits 27, 34, 35, 36, 37, 41, 42 and 43 connect the public B1 passages east of the JR concourse to street level."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "se_j__x42",
+   "from": "se_j",
+   "to": "x42",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 16.8,
+   "geometry": [
+    {
+     "x": 99.0,
+     "y": -16.0,
+     "z": 27.08
+    },
+    {
+     "x": 98.0,
+     "y": -21.5,
+     "z": 27.08
+    },
+    {
+     "x": 97.5,
+     "y": -22.0,
+     "z": 27.25
+    },
+    {
+     "x": 91.5,
+     "y": -29.5,
+     "z": 31.465
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU stair-top closures within 1-7 m",
+    "checkedDate": "2026-10-20",
+    "note": "Exits 27, 34, 35, 36, 37, 41, 42 and 43 connect the public B1 passages east of the JR concourse to street level."
+   },
+   "attributes": {}
+  }
+ ]
+}

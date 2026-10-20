@@ -1,0 +1,344 @@
+{
+  "source": {
+    "file": "53394576_ubld_6697_op.gml",
+    "sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+    "bytes": 35427963,
+    "crs": "EPSG:6697 (JGD2011 geographic 3D: lat, lon, orthometric height)",
+    "license": "CC BY 4.0 (PLATEAU / MLIT); modified: reprojected and re-encoded"
+  },
+  "frame": {
+    "type": "ENU local tangent plane",
+    "origin": {
+      "lat": 35.7297,
+      "lon": 139.7114,
+      "h_m": 0.0
+    },
+    "axes": "x=east m, y=north m, z=orthometric height m (TP)",
+    "ellipsoid": "GRS80"
+  },
+  "axis_mapping": {
+    "blender": {
+      "x": "east",
+      "y": "north",
+      "z": "height (TP)"
+    },
+    "gltf": {
+      "x": "east",
+      "y": "height (TP)",
+      "z": "-north"
+    },
+    "enu_to_gltf": [
+      "x",
+      "z",
+      "-y"
+    ],
+    "units": "metres"
+  },
+  "vertex_count_basis": "Blender mesh after 1 mm merge; glTF splits at UV/normal seams",
+  "categories": {
+    "floor": {
+      "input_polygons": 3391,
+      "polygons_with_holes": 0,
+      "degenerate_rings": 0,
+      "degenerate_polygons": 0,
+      "triangulation_failures": 0,
+      "failure_polygons": [],
+      "vertices_merged_or_unused": 0,
+      "faces_removed_by_merge": 0,
+      "vertices": 3396,
+      "triangles": 3391,
+      "bbox_enu": {
+        "min": [
+          -182.0709991455078,
+          -183.01499938964844,
+          25.860000610351562
+        ],
+        "max": [
+          177.7220001220703,
+          185.35400390625,
+          33.167999267578125
+        ]
+      },
+      "max_triangle_area_m2": 378.9811096191406,
+      "max_triangle_edge_m": 39.612299186315504,
+      "triangles_over_100_m2": 22,
+      "triangles_with_edge_over_50_m": 0
+    },
+    "wall": {
+      "input_polygons": 12492,
+      "polygons_with_holes": 0,
+      "degenerate_rings": 0,
+      "degenerate_polygons": 0,
+      "triangulation_failures": 0,
+      "failure_polygons": [],
+      "vertices_merged_or_unused": 0,
+      "faces_removed_by_merge": 0,
+      "vertices": 11471,
+      "triangles": 12492,
+      "bbox_enu": {
+        "min": [
+          -182.0709991455078,
+          -183.01499938964844,
+          25.860000610351562
+        ],
+        "max": [
+          177.7220001220703,
+          185.35400390625,
+          33.167999267578125
+        ]
+      },
+      "max_triangle_area_m2": 50.71303939819336,
+      "max_triangle_edge_m": 93.38240367130034,
+      "triangles_over_100_m2": 0,
+      "triangles_with_edge_over_50_m": 13
+    },
+    "ceiling": {
+      "input_polygons": 7042,
+      "polygons_with_holes": 0,
+      "degenerate_rings": 0,
+      "degenerate_polygons": 0,
+      "triangulation_failures": 0,
+      "failure_polygons": [],
+      "vertices_merged_or_unused": 0,
+      "faces_removed_by_merge": 0,
+      "vertices": 6929,
+      "triangles": 7042,
+      "bbox_enu": {
+        "min": [
+          -182.0709991455078,
+          -183.01499938964844,
+          28.148000717163086
+        ],
+        "max": [
+          177.7220001220703,
+          184.718994140625,
+          32.77000045776367
+        ]
+      },
+      "max_triangle_area_m2": 499.7386169433594,
+      "max_triangle_edge_m": 93.38240367130034,
+      "triangles_over_100_m2": 22,
+      "triangles_with_edge_over_50_m": 38
+    },
+    "stairs_ramps": {
+      "input_polygons": 3587,
+      "polygons_with_holes": 0,
+      "degenerate_rings": 0,
+      "degenerate_polygons": 0,
+      "triangulation_failures": 0,
+      "failure_polygons": [],
+      "vertices_merged_or_unused": 0,
+      "faces_removed_by_merge": 0,
+      "vertices": 3690,
+      "triangles": 3587,
+      "bbox_enu": {
+        "min": [
+          -181.7169952392578,
+          -182.10000610351562,
+          25.860000610351562
+        ],
+        "max": [
+          175.21400451660156,
+          185.35400390625,
+          33.167999267578125
+        ]
+      },
+      "max_triangle_area_m2": 11.229047775268555,
+      "max_triangle_edge_m": 15.36098265359447,
+      "triangles_over_100_m2": 0,
+      "triangles_with_edge_over_50_m": 0
+    },
+    "transport": {
+      "input_polygons": 2692,
+      "polygons_with_holes": 0,
+      "degenerate_rings": 0,
+      "degenerate_polygons": 0,
+      "triangulation_failures": 0,
+      "failure_polygons": [],
+      "vertices_merged_or_unused": 0,
+      "faces_removed_by_merge": 0,
+      "vertices": 1378,
+      "triangles": 2692,
+      "bbox_enu": {
+        "min": [
+          100.13800048828125,
+          15.593000411987305,
+          26.239999771118164
+        ],
+        "max": [
+          154.7239990234375,
+          111.51899719238281,
+          32.928001403808594
+        ]
+      },
+      "max_triangle_area_m2": 11.907008171081543,
+      "max_triangle_edge_m": 12.365707704133976,
+      "triangles_over_100_m2": 0,
+      "triangles_with_edge_over_50_m": 0
+    },
+    "barriers": {
+      "input_polygons": 10992,
+      "polygons_with_holes": 0,
+      "degenerate_rings": 0,
+      "degenerate_polygons": 0,
+      "triangulation_failures": 0,
+      "failure_polygons": [],
+      "vertices_merged_or_unused": 0,
+      "faces_removed_by_merge": 0,
+      "vertices": 6155,
+      "triangles": 10992,
+      "bbox_enu": {
+        "min": [
+          -173.39999389648438,
+          -137.73199462890625,
+          25.860000610351562
+        ],
+        "max": [
+          153.53199768066406,
+          157.21400451660156,
+          32.393001556396484
+        ]
+      },
+      "max_triangle_area_m2": 9.32846450805664,
+      "max_triangle_edge_m": 13.641026400311171,
+      "triangles_over_100_m2": 0,
+      "triangles_with_edge_over_50_m": 0
+    },
+    "floor_elements": {
+      "input_polygons": 80,
+      "polygons_with_holes": 0,
+      "degenerate_rings": 0,
+      "degenerate_polygons": 0,
+      "triangulation_failures": 0,
+      "failure_polygons": [],
+      "vertices_merged_or_unused": 0,
+      "faces_removed_by_merge": 0,
+      "vertices": 42,
+      "triangles": 80,
+      "bbox_enu": {
+        "min": [
+          -86.37300109863281,
+          -4.363999843597412,
+          30.20400047302246
+        ],
+        "max": [
+          -56.172000885009766,
+          64.03500366210938,
+          30.31999969482422
+        ]
+      },
+      "max_triangle_area_m2": 50.71072006225586,
+      "max_triangle_edge_m": 73.0461183951458,
+      "triangles_over_100_m2": 0,
+      "triangles_with_edge_over_50_m": 8
+    },
+    "doors": {
+      "input_polygons": 93,
+      "polygons_with_holes": 0,
+      "degenerate_rings": 0,
+      "degenerate_polygons": 0,
+      "triangulation_failures": 0,
+      "failure_polygons": [],
+      "vertices_merged_or_unused": 0,
+      "faces_removed_by_merge": 0,
+      "vertices": 181,
+      "triangles": 93,
+      "bbox_enu": {
+        "min": [
+          -169.71499633789062,
+          -132.67599487304688,
+          26.239999771118164
+        ],
+        "max": [
+          139.0469970703125,
+          158.7550048828125,
+          31.034000396728516
+        ]
+      },
+      "max_triangle_area_m2": 5.68786096572876,
+      "max_triangle_edge_m": 5.012745728974009,
+      "triangles_over_100_m2": 0,
+      "triangles_with_edge_over_50_m": 0
+    },
+    "windows": {
+      "input_polygons": 236,
+      "polygons_with_holes": 0,
+      "degenerate_rings": 0,
+      "degenerate_polygons": 0,
+      "triangulation_failures": 0,
+      "failure_polygons": [],
+      "vertices_merged_or_unused": 0,
+      "faces_removed_by_merge": 0,
+      "vertices": 342,
+      "triangles": 236,
+      "bbox_enu": {
+        "min": [
+          -154.8090057373047,
+          -134.052001953125,
+          26.239999771118164
+        ],
+        "max": [
+          115.37799835205078,
+          161.8090057373047,
+          31.034000396728516
+        ]
+      },
+      "max_triangle_area_m2": 6.258225440979004,
+      "max_triangle_edge_m": 6.288401655460759,
+      "triangles_over_100_m2": 0,
+      "triangles_with_edge_over_50_m": 0
+    },
+    "portals": {
+      "input_polygons": 700,
+      "polygons_with_holes": 0,
+      "degenerate_rings": 0,
+      "degenerate_polygons": 0,
+      "triangulation_failures": 0,
+      "failure_polygons": [],
+      "vertices_merged_or_unused": 0,
+      "faces_removed_by_merge": 0,
+      "vertices": 1254,
+      "triangles": 700,
+      "bbox_enu": {
+        "min": [
+          -182.0709991455078,
+          -182.03900146484375,
+          25.93000030517578
+        ],
+        "max": [
+          172.9929962158203,
+          185.35400390625,
+          33.167999267578125
+        ]
+      },
+      "max_triangle_area_m2": 37.799964904785156,
+      "max_triangle_edge_m": 29.225302519427682,
+      "triangles_over_100_m2": 0,
+      "triangles_with_edge_over_50_m": 0
+    }
+  },
+  "normal_orientation": {
+    "floor": {
+      "expected": "z > 0",
+      "before_fraction": 0.998820406959599,
+      "before_inverted_triangles": 0,
+      "flipped": false,
+      "after_fraction": 0.998820406959599,
+      "matching_triangles": 3387,
+      "total_triangles": 3391
+    },
+    "ceiling": {
+      "expected": "z < 0",
+      "before_fraction": 0.9781312127236581,
+      "before_inverted_triangles": 74,
+      "flipped": false,
+      "after_fraction": 0.9781312127236581,
+      "matching_triangles": 6888,
+      "total_triangles": 7042
+    }
+  },
+  "blender_version": "5.2.2 LTS",
+  "attribution": "Contains PLATEAU data (MLIT), CC BY 4.0. Modified: reprojected to a local ENU frame, triangulated and re-encoded as glTF by GTEki.",
+  "triangulation_failures": 0,
+  "build_timestamp_utc": "2026-10-20T10:57:33.107716+00:00"
+}

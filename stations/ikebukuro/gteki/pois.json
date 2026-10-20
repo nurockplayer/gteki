@@ -1,0 +1,871 @@
+{
+ "schema": "gteki.station/0.1",
+ "stationId": "ikebukuro",
+ "pois": [
+  {
+   "id": "exit-27",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "27番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 27"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口27"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "27ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "27-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "27"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "27號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x27"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-34",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "34番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 34"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口34"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "34ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "34-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "34"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "34號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x34"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-35",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "35番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 35"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口35"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "35ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "35-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "35"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "35號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x35"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-36",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "36番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 36"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口36"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "36ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "36-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "36"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "36號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x36"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-37",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "37番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 37"
+    },
+    {
+     "lang": "ja",
+     "text": "東口（中央）"
+    },
+    {
+     "lang": "en",
+     "text": "East Exit (Central)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口37"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "37ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "37-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "37"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "37號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x37"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-42",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "42番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 42"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口42"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "42ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "42-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "42"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "42號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x42"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-43",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "43番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 43"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口43"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "43ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "43-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "43"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "43號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x43"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-41",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "41番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 41"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口41"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "41ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "41-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "41"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "41號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-38",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "38番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 38"
+    },
+    {
+     "lang": "ja",
+     "text": "東口（南）"
+    },
+    {
+     "lang": "en",
+     "text": "East Exit (South)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口38"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "38ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "38-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "38"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "38號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-19",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "19番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 19"
+    },
+    {
+     "lang": "ja",
+     "text": "西口（中央）"
+    },
+    {
+     "lang": "en",
+     "text": "West Exit (Central)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口19"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "19ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "19-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "19"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "19號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "jr-central-gate-2",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "JR 中央2改札"
+    },
+    {
+     "lang": "en",
+     "text": "JR Central Gate 2"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "中央2改札"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ちゅうおうにかいさつ"
+    },
+    {
+     "lang": "en",
+     "text": "JR Yamanote Line"
+    },
+    {
+     "lang": "ja",
+     "text": "山手線"
+    },
+    {
+     "lang": "ja",
+     "text": "JR線"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "JR 中央2號剪票口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "g_jr_c2"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "plateau-ubld-13116"
+    ],
+    "method": "gate identity from official map; connector = PLATEAU passage opening",
+    "checkedDate": "2026-10-20"
+   },
+   "notes": [
+    {
+     "lang": "en",
+     "text": "Routes end at the public side of the gate. Platforms inside the fare area are not modelled."
+    }
+   ]
+  },
+  {
+   "id": "jr-central-gate-1",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "JR 中央1改札"
+    },
+    {
+     "lang": "en",
+     "text": "JR Central Gate 1"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "中央1改札"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ちゅうおういちかいさつ"
+    },
+    {
+     "lang": "ja",
+     "text": "JR線"
+    },
+    {
+     "lang": "en",
+     "text": "JR Lines"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "JR 中央1號剪票口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "g_jr_c1"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "plateau-ubld-13116"
+    ],
+    "method": "gate identity from official map; connector = PLATEAU passage opening",
+    "checkedDate": "2026-10-20"
+   },
+   "notes": [
+    {
+     "lang": "en",
+     "text": "Routes end at the public side of the gate. Platforms inside the fare area are not modelled."
+    }
+   ]
+  },
+  {
+   "id": "metro-m-central-west-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "丸ノ内線 中央通路西改札"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage West Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "丸ノ内線"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "metro-m-central-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "丸ノ内線 中央通路中央改札"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage Central Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "丸ノ内線"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "metro-m-central-east-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "丸ノ内線 中央通路東改札"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage East Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "丸ノ内線"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "tobu-central-gate-1",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 中央1改札"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line Central Gate 1"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "tobu-central-gate-2",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 中央2改札"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line Central Gate 2"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "central-passage",
+   "category": "other",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "中央通路"
+    },
+    {
+     "lang": "en",
+     "text": "Central Passage"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ちゅうおうつうろ"
+    },
+    {
+     "lang": "en",
+     "text": "East-West passage"
+    },
+    {
+     "lang": "ja",
+     "text": "東西自由通路"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "中央通道"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "c_mid"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading",
+    "checkedDate": "2026-10-20"
+   }
+  }
+ ]
+}
