@@ -194,15 +194,31 @@ def main():
                     acc += seg
                 else:
                     return None
-                ch = [z for z, _ in ceil.heights(px, py) if z > pz + 2.0]
-                ceiling_z = min(ch) if ch else None
-                bottom, sign_h = pz + CLEAR_BELOW_SIGN, SIGN_H
-                if ceiling_z is not None and bottom + SIGN_H > ceiling_z - CEIL_GAP:
-                    bottom = max(pz + MIN_CLEAR, ceiling_z - CEIL_GAP - SIGN_H)
-                    sign_h = min(SIGN_H, ceiling_z - FLUSH_GAP - bottom)
-                    if sign_h < MIN_SIGN_H:
-                        return None
+                def ceiling_over(cx, cy, half):
+                    """Lowest ceiling over the panel span. Any ceiling above the floor counts, low ones and
+                    beams included: one at or under 2 m must shrink, move or omit the sign."""
+                    zs = []
+                    n = max(1, int(half / 0.25))
+                    for k in range(-n, n + 1):
+                        off = half * k / n
+                        zs += [z for z, _ in ceil.heights(cx + rx * off, cy + ry * off) if z > pz + 0.3]
+                    return min(zs) if zs else None
+
+                def fit(ceiling_z):
+                    bottom, sign_h = pz + CLEAR_BELOW_SIGN, SIGN_H
+                    if ceiling_z is not None and bottom + SIGN_H > ceiling_z - CEIL_GAP:
+                        bottom = max(pz + MIN_CLEAR, ceiling_z - CEIL_GAP - SIGN_H)
+                        sign_h = min(SIGN_H, ceiling_z - FLUSH_GAP - bottom)
+                        if sign_h < MIN_SIGN_H:
+                            return None
+                    return bottom, sign_h
+
                 rx, ry = diry, -dirx  # right of the walking direction
+                ceiling_z = ceiling_over(px, py, 0.0)
+                fitted = fit(ceiling_z)
+                if fitted is None:
+                    return None
+                bottom, sign_h = fitted
                 zlo, zhi = bottom, bottom + sign_h
                 dr = wall_hit(segs, sgrid, px, py, rx, ry, zlo, zhi)
                 dl = wall_hit(segs, sgrid, px, py, -rx, -ry, zlo, zhi)
@@ -218,7 +234,19 @@ def main():
                         shift = -min(1.5, max(0.0, want - dr))
                     px, py = px + rx * shift, py + ry * shift
                     half = min(dl + shift, dr - shift)
-                max_w = round(max(0.6, min(MAX_SIGN_W, 2 * half - 2 * SIDE_MARGIN)), 2)
+                room_w = round(max(0.6, min(MAX_SIGN_W, 2 * half - 2 * SIDE_MARGIN)), 2)
+                # Re-check the ceiling across the whole panel at its final position (beams beside the centre);
+                # where a beam leaves no room, a narrower panel (content trimmed to fit) beats no sign.
+                centre_z = ceiling_z
+                for max_w in [room_w] + [w for w in (4.5, 3.0, 2.0, 1.2) if w < room_w]:
+                    span_z = ceiling_over(px, py, max_w / 2)
+                    ceiling_z = span_z if span_z is not None and (centre_z is None or span_z < centre_z) else centre_z
+                    fitted = fit(ceiling_z)
+                    if fitted is not None:
+                        break
+                else:
+                    return None
+                bottom, sign_h = fitted
                 return px, py, bottom, dirx, diry, ceiling_z, max_w, round(sign_h / SIGN_H, 3)
 
             # ~4 m from the junction (45% of short edges); slide along the edge if a low ceiling, a
