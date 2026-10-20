@@ -219,6 +219,16 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     expect(errors(synthetic)).not.toContain("edge.geometry.rights");
   });
 
+  it("rejects a drawn geometry with fewer than two points instead of drawing a straight fallback", () => {
+    for (const geometry of [[], [{ x: 10, y: 0, z: 0 }]]) {
+      const b = createSyntheticBundle([edge("v", "start", "goal", { geometry })]);
+      expect(errors(b)).toContain("edge.geometry.points");
+    }
+    const ok = createSyntheticBundle([edge("v", "start", "goal", { geometry: [{ x: 0, y: 0, z: 0 }, { x: 20, y: 0, z: 0 }] })]);
+    expect(errors(ok)).not.toContain("edge.geometry.points");
+    expect(errors(createSyntheticBundle([edge("v", "start", "goal")]))).not.toContain("edge.geometry.points");
+  });
+
   it("forbids facts-only geometry even in synthetic bundles", () => {
     const b = createSyntheticBundle();
     expect(b.station.synthetic).toBe(true);

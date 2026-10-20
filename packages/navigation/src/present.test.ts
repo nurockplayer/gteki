@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createRouter, describeRoute, floorDisplayName, routePolyline } from "./index.ts";
+import { createRouter, describeRoute, floorDisplayName, instructionPoints, routePolyline } from "./index.ts";
 import type { RouteResult } from "./index.ts";
 import { createSyntheticBundle, syntheticEdge as edge } from "./fixtures.ts";
 
@@ -83,5 +83,37 @@ describe("describeRoute", () => {
     const kinds = describeRoute(b, route(b, "start", "upper-2"), "en");
     expect(kinds.map((i) => i.kind)).toEqual(["start", "gate", "escalator", "arrive"]);
     expect(kinds[2]!.stepIndexes).toEqual([1, 2]);
+  });
+});
+
+describe("instructionPoints", () => {
+  it("includes the junction an instruction starts from, so one long step frames its whole segment", () => {
+    const b = createSyntheticBundle([edge("only", "start", "goal", { lengthM: 20 })]);
+    const r = route(b, "start", "goal");
+    const points = routePolyline(b, r);
+    const walk = describeRoute(b, r, "en").find((i) => i.stepIndexes.includes(0))!;
+    const pts = instructionPoints(points, walk);
+    expect(pts.map((p) => [p.x, p.y])).toEqual([[0, 0], [20, 0]]);
+    expect(instructionPoints(points, { stepIndexes: [] })).toEqual([]);
+  });
+
+  it("starts a later instruction at the previous step's end, not before it", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("a-up", "a", "upper", { mode: "stairs", lengthM: 6 })]);
+    const r = route(b, "start", "upper");
+    const points = routePolyline(b, r);
+    expect(instructionPoints(points, { stepIndexes: [1] }).map((p) => [p.x, p.y])).toEqual([[10, 0], [10, 0]]);
+  });
+});
+
+describe("routePolyline with a malformed one-point geometry", () => {
+  it("draws the node-to-node fallback in travel direction even when the edge is traversed backwards", () => {
+    const b = createSyntheticBundle([edge("back", "goal", "start", { geometry: [{ x: 5, y: 5, z: 0 }] })]);
+    // An unknown start height tells the directions apart: endpoint snapping alone would hide a flip.
+    b.nodes.find((n) => n.id === "start")!.position.z = null;
+    const r = route(b, "start", "goal");
+    expect(r.steps[0]!.reversed).toBe(true);
+    const pts = routePolyline(b, r);
+    expect(pts.map((p) => [p.x, p.y])).toEqual([[0, 0], [20, 0]]);
+    expect(pts.map((p) => p.zKnown)).toEqual([false, true]);
   });
 });

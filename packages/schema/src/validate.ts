@@ -153,6 +153,9 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       if (floorChangeSeverity(fromFloor, toFloor) === "error") err("floor.change.walk", message, e.id);
       else warn("floor.change.walk", `${message} (landing/adjacent; cite evidence)`, e.id);
     }
+    // A drawn polyline needs both ends; a shorter one would silently fall back to a straight node-to-node line.
+    if (e.geometry !== undefined && (!Array.isArray(e.geometry) || e.geometry.length < 2))
+      err("edge.geometry.points", `geometry has ${Array.isArray(e.geometry) ? e.geometry.length : 0} point(s); a polyline needs at least 2 (omit it for a straight edge)`, e.id);
     if (e.geometry && e.geometry.length >= 2 && fromNode && toNode) {
       const first = e.geometry[0]!;
       const last = e.geometry[e.geometry.length - 1]!;

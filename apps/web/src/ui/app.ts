@@ -1,4 +1,4 @@
-import { createRouter, describeRoute, floorDisplayName, routeBetween, routePolyline } from "@gteki/navigation";
+import { createRouter, describeRoute, floorDisplayName, instructionPoints, routeBetween, routePolyline } from "@gteki/navigation";
 import type { Instruction, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
@@ -491,7 +491,8 @@ export class App {
       const li = el("li", `ins ins-${ins.kind}${i === this.s.activeInstruction ? " active" : ""}`);
       li.append(el("span", "ins-icon"), el("span", "ins-text", ins.text));
       li.addEventListener("click", () => {
-        const pts = this.s.polyline.filter((p) => ins.stepIndexes.includes(p.stepIndex));
+        // Frame the whole described segment, from the junction where it starts.
+        const pts = instructionPoints(this.s.polyline, ins);
         if (pts.length) this.explorer.focusPoints(pts);
       });
       list.append(li);

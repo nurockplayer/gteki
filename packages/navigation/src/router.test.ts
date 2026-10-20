@@ -350,7 +350,11 @@ describe("length, cost and time", () => {
 
   it.each([undefined, [], [{ x: 0, y: 0, z: 0 }]])("excludes null-length non-elevator edges without a usable polyline: %j", (geometry) => {
     const missing = edge("missing-length", "start", "goal", { lengthM: null, geometry });
-    const router = routerFor([missing]);
+    const bundle = createSyntheticBundle([missing]);
+    // A 0/1-point polyline is already a validation error; the router still refuses it if handed one.
+    const errors = validateBundle(bundle).filter((issue) => issue.level === "error").map((issue) => issue.code);
+    expect(errors).toEqual(geometry === undefined ? [] : ["edge.geometry.points"]);
+    const router = createRouter(bundle);
     expect(router.isTraversable(missing, DEFAULT_PROFILE)).toBe(false);
     noPath(router);
   });
