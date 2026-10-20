@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#101215" />
+    <title>GTEki — 新宿駅 都営大江戸線</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <canvas id="view"></canvas>
+    <div id="fade"></div>
+
+    <header id="hud-top">
+      <div class="brand">
+        <span class="logo">GTEki</span>
+        <span class="station"><span class="name"><b>新宿</b> Shinjuku <span class="code">E27</span></span><small>都営大江戸線 Toei Oedo Line</small></span>
+      </div>
+      <div id="floor" class="floor" title="現在の階（表示用の推定高さ）"><span id="floor-label">B1</span><small id="floor-sub">推定 −4 m</small></div>
+    </header>
+
+    <section id="panel" class="panel">
+      <div class="search">
+        <label class="field"><span>出発 From</span><input id="from" placeholder="現在地 Current location" autocomplete="off" /></label>
+        <label class="field"><span>目的地 To</span><input id="to" placeholder="出口・改札・ホーム・トイレ… Exit, gate, platform…" autocomplete="off" /></label>
+        <ul id="results" class="results" role="listbox"></ul>
+        <div class="toggles">
+          <label><input type="checkbox" id="ticketed" checked /> きっぷ・IC あり <small>Have ticket</small></label>
+          <label><input type="checkbox" id="stepfree" /> 段差なし <small>Step-free</small></label>
+        </div>
+      </div>
+      <div id="route" class="route hidden">
+        <div class="route-head">
+          <div><b id="route-dist">–</b><small id="route-eta"></small></div>
+          <div class="route-btns">
+            <button id="guide" class="primary">▶ 案内歩行 Guide</button>
+            <button id="clear" class="ghost">✕</button>
+          </div>
+        </div>
+        <ol id="steps" class="steps"></ol>
+        <div id="unknowns" class="unknowns"></div>
+        <div id="prov" class="prov"></div>
+      </div>
+      <div id="route-error" class="route-error hidden"></div>
+    </section>
+
+    <div id="next" class="next hidden"><span id="next-icon">↑</span><div><b id="next-ja"></b><small id="next-en"></small></div></div>
+    <div id="prompt" class="prompt hidden"></div>
+    <canvas id="minimap" width="440" height="440"></canvas>
+
+    <div id="touch" class="touch">
+      <div id="stick" class="stick"><div id="knob" class="knob"></div></div>
+      <button id="btn-run" class="tbtn">RUN</button>
+      <button id="btn-act" class="tbtn hidden">E</button>
+    </div>
+
+    <footer id="foot">
+      <button id="btn-help" class="ghost small">操作 ?</button>
+      <button id="btn-cov" class="ghost small">データ範囲 Coverage</button>
+      <button id="btn-sound" class="ghost small">🔇 音</button>
+      <span class="attr">出典: 国土交通省「歩行空間ネットワークデータ／構内地図データ（都営地下鉄大江戸線 新宿駅）」を加工して作成 (PDL 1.0) · 高さは推定値 · 実際の移動案内を保証しません</span>
+    </footer>
+
+    <dialog id="dlg-help">
+      <h3>操作 Controls</h3>
+      <ul>
+        <li><b>WASD / ↑↓←→</b> 移動 Move · <b>Shift</b> 走る Run</li>
+        <li><b>ドラッグ Drag</b> 視点 Look · <b>ホイール Wheel</b> ズーム Zoom · <b>V</b> 一人称/三人称</li>
+        <li><b>/</b> 検索 Search · <b>G</b> 案内歩行 Guide · <b>E</b> エレベーター Elevator · <b>M</b> 地図 Map</li>
+        <li>スマホ: 左下スティックで移動、右側ドラッグで視点 · Phone: left stick to move, drag right side to look</li>
+      </ul>
+      <form method="dialog"><button class="primary">OK</button></form>
+    </dialog>
+    <dialog id="dlg-cov"><div id="cov-body"></div><form method="dialog"><button class="primary">閉じる Close</button></form></dialog>
+    <dialog id="dlg-elev"><h3>エレベーター Elevator</h3><div id="elev-floors" class="elev-floors"></div><form method="dialog"><button class="ghost">キャンセル</button></form></dialog>
+
+    <div id="loading">
+      <div class="ld-card">
+        <div class="logo big">GTEki</div>
+        <p>新宿駅 都営大江戸線 E27 を構築中…</p>
+        <p class="sub">Building Toei Oedo Line Shinjuku from public indoor data</p>
+        <div class="bar"><i></i></div>
+      </div>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

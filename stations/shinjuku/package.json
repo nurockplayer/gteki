@@ -1,0 +1,34 @@
+{
+  "name": "@gteki/station-shinjuku",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@gteki/geo": "workspace:*",
+    "@gteki/schema": "workspace:*",
+    "@gteki/navigation": "workspace:*",
+    "@gteki/search": "workspace:*",
+    "three": "^0.186.1",
+    "@gteki/scene-api": "workspace:*"
+  },
+  "exports": {
+    "./gteki/station.json": "./gteki/station.json",
+    "./gteki/graph.json": "./gteki/graph.json",
+    "./gteki/pois.json": "./gteki/pois.json",
+    "./data/plan.json": "./data/plan.json",
+    "./bundle": "./data/bundle.ts",
+    "./scene": "./gteki/scene.ts"
+  },
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "typecheck": "tsc -p tsconfig.json",
+    "import:e27": "tsx tools/import-e27.ts",
+    "check": "pnpm typecheck && vitest run --root ../.. stations/shinjuku"
+  },
+  "devDependencies": {
+    "@types/three": "^0.186.0",
+    "vite": "^8.3.4"
+  }
+}
