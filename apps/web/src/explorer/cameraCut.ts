@@ -8,6 +8,10 @@ import * as THREE from "three";
  * the camera to the avatar's head: a sign between the two opens a hole onto the avatar, and one within the
  * camera's near distance (where the capsule is widest) disappears instead of being sliced by the near plane. The capsule is in view
  * space, so instancing and skinning need no world-position plumbing.
+ *
+ * Known limit: the high-quality GTAO pass draws the scene with its own override MeshNormalMaterial, so a cut
+ * sign still feeds that pass's depth/normals. A flat hanging sign adds little occlusion and no artefact showed
+ * in the Ikebukuro check; cutting it there too would mean overriding GTAOPass internals.
  */
 export class CameraCut {
   /** Shared by every patched material; updated once per frame. */
@@ -35,7 +39,15 @@ export class CameraCut {
       const own = (mat: THREE.Material): THREE.Material => {
         if (!solid.has(mat)) return this.patch(mat);
         let copy = copies.get(mat);
-        if (!copy) { copy = this.patch(mat.clone()); copies.set(mat, copy); this.clones.push(copy); }
+        if (!copy) {
+          // Material.clone() drops shader hooks; the scene's own customisation must survive on the copy.
+          const fresh = mat.clone();
+          fresh.onBeforeCompile = mat.onBeforeCompile;
+          fresh.customProgramCacheKey = mat.customProgramCacheKey;
+          copy = this.patch(fresh);
+          copies.set(mat, copy);
+          this.clones.push(copy);
+        }
         return copy;
       };
       (mesh as THREE.Mesh).material = Array.isArray(m) ? m.map(own) : own(m);
@@ -64,7 +76,13 @@ export class CameraCut {
       prev.call(mat, shader, renderer);
       injectCut(shader, this.uniforms);
     };
-    mat.customProgramCacheKey = () => `${prevKey.call(mat)}|gteki-camera-cut-1`;
+    // three's default key is onBeforeCompile.toString(): evaluate the previous key against the previous hook, or
+    // two signs with different scene hooks would share one program.
+    mat.customProgramCacheKey = () => {
+      const wrapped = mat.onBeforeCompile;
+      mat.onBeforeCompile = prev;
+      try { return `${prevKey.call(mat)}|gteki-camera-cut-1`; } finally { mat.onBeforeCompile = wrapped; }
+    };
     mat.needsUpdate = true;
     return mat;
   }

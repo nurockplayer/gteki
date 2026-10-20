@@ -159,8 +159,9 @@ func test_generated_glb(station_root: Node3D) -> void:
 	signage.set_meta("extras", {"gteki_role": "signage"})
 	source.add_child(signage)
 	signage.owner = source
+	# A neutral name: the child is see-through only by inheriting the group's role.
 	var sign_face := MeshInstance3D.new()
-	sign_face.name = "sign_face"
+	sign_face.name = "face_panel"
 	sign_face.mesh = BoxMesh.new()
 	signage.add_child(sign_face)
 	sign_face.owner = source
@@ -203,11 +204,11 @@ func test_generated_glb(station_root: Node3D) -> void:
 		check(transformed.find_children("*", "StaticBody3D", true, false).size() == 3, "wall/barrier meshes, including an inherited wall child, create colliders")
 	if identity != null:
 		check(identity.transform == Transform3D.IDENTITY, "omitted asset transform is identity")
-		var see_through := identity.find_children("sign_*", "MeshInstance3D", true, false)
-		check(see_through.size() == 2 and see_through.all(func(m): return m.has_meta("gteki_see_through") and not m.has_meta("gteki_collider") and m.visible), "sign meshes are see-through and visible, never colliders")
+		var see_through := [identity.find_child("sign_board", true, false), identity.find_child("face_panel", true, false)]
+		check(see_through.all(func(m): return m != null and m.has_meta("gteki_see_through") and not m.has_meta("gteki_collider") and m.visible), "a sign_ name and a mesh inheriting a signage group are see-through and visible, never colliders")
 	if collision_only != null:
-		var solid_signs := collision_only.find_children("sign_*", "MeshInstance3D", true, false)
-		check(solid_signs.size() == 2 and solid_signs.all(func(m): return m.has_meta("gteki_collider") and not m.has_meta("gteki_see_through")), "a collision asset's signs collide and are not see-through")
+		var solid_signs := [collision_only.find_child("sign_board", true, false), collision_only.find_child("face_panel", true, false)]
+		check(solid_signs.all(func(m): return m != null and m.has_meta("gteki_collider") and not m.has_meta("gteki_see_through")), "a collision asset's signs collide and are not see-through")
 	var rejected := Assets.new()
 	check(not rejected.load_assets({"assets": [{"uri": "../escape.glb", "format": "glb"}]}, "user://", station_root), "reject asset traversal")
 	for odd in ["assets/roof#west.glb", "assets/roof?west.glb"]:

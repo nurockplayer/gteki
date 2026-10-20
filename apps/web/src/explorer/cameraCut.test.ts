@@ -47,6 +47,32 @@ describe("camera see-through cut", () => {
     expect(shader.fragmentShader).toContain("gtekiCutRadii");
   });
 
+  it("keeps scene shader hooks on clones and in program cache keys", () => {
+    const hookA = () => { /* variant A */ }, hookB = () => { /* variant B */ };
+    const a = new THREE.MeshBasicMaterial(), b = new THREE.MeshBasicMaterial();
+    a.onBeforeCompile = hookA; b.onBeforeCompile = hookB;
+    const shared = new THREE.MeshBasicMaterial();
+    const calls: string[] = [];
+    shared.onBeforeCompile = () => { calls.push("shared"); };
+    shared.customProgramCacheKey = () => "scene-key";
+    const root = new THREE.Group();
+    const signA = new THREE.Mesh(new THREE.BoxGeometry(), a), signB = new THREE.Mesh(new THREE.BoxGeometry(), b);
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(), shared), signC = new THREE.Mesh(new THREE.BoxGeometry(), shared);
+    root.add(signA, signB, wall, signC);
+    new CameraCut().apply(root, [signA, signB, signC]);
+    // Different scene hooks keep different programs.
+    expect(a.customProgramCacheKey()).toContain(hookA.toString());
+    expect(a.customProgramCacheKey()).not.toBe(b.customProgramCacheKey());
+    // The clone keeps the scene's hook and key, plus the cut.
+    const clone = signC.material as THREE.Material;
+    expect(clone).not.toBe(shared);
+    expect(clone.customProgramCacheKey()).toBe("scene-key|gteki-camera-cut-1");
+    const shader = builtIn("basic");
+    clone.onBeforeCompile(shader as unknown as THREE.WebGLProgramParametersWithUniforms, {} as THREE.WebGLRenderer);
+    expect(calls).toEqual(["shared"]);
+    expect(shader.fragmentShader).toContain("gtekiCutRadii");
+  });
+
   it("puts the capsule end at the head in view space and disables it in overview", () => {
     const cut = new CameraCut();
     const camera = new THREE.PerspectiveCamera();
