@@ -1,4 +1,4 @@
-import type { EdgeMode, Floor, Node, StationBundle } from "@gteki/schema";
+import type { EdgeMode, Floor, Node, NodeKind, Poi, StationBundle } from "@gteki/schema";
 import type { RouteResult } from "./index.ts";
 
 /**
@@ -85,9 +85,23 @@ export interface Instruction {
   /** Turn (> 45°, measured over ~5 m) to take before this stair/escalator/lift/ramp/gate; null = none. */
   turn?: "left" | "right" | "back" | null;
   toFloorId: string;
+  /**
+   * Arrive only: the route ends at the destination's stair/escalator/ramp connector, not at the
+   * destination itself (e.g. the survey stops at the foot of an exit's stairs). Absent otherwise.
+   */
+  connector?: ConnectorEndKind;
   /** Plain text in the requested language. */
   text: string;
 }
+
+/** Connector node kinds that stand for the start of a further stair/escalator/ramp to the destination. */
+export type ConnectorEndKind = Extract<NodeKind, "stair_end" | "escalator_end" | "ramp_end">;
+const CONNECTOR_END: Record<ConnectorEndKind, { mode: EdgeMode; self: Poi["category"] | null }> = {
+  stair_end: { mode: "stairs", self: "stairs" },
+  escalator_end: { mode: "escalator", self: "escalator" },
+  // No POI category is a ramp, so a ramp_end connector is never the destination itself.
+  ramp_end: { mode: "ramp", self: null },
+};
 
 const VERTICAL: Partial<Record<EdgeMode, InstructionKind>> = { stairs: "stairs", escalator: "escalator", elevator: "elevator", ramp: "ramp" };
 const TURN_DEG = 35;
@@ -128,6 +142,11 @@ const TEXT = {
       return `${via}で${dir ? `${dir}・` : ""}${floor}へ`;
     },
     arrive: () => "目的地に到着",
+    /** `name` null = the destination has no display name: say "目的地". `ridden` = the route ended by using this connector. */
+    connectorArrive: (kind: ConnectorEndKind, name: string | null, ridden: boolean) => {
+      const via = { stair_end: "階段", escalator_end: "エスカレーター", ramp_end: "スロープ" }[kind];
+      return ridden ? `${name ?? "目的地"}への${via}で経路終了` : `${name ?? "目的地"}への${via}はここから`;
+    },
   },
   en: {
     start: () => "Start",
@@ -141,6 +160,12 @@ const TEXT = {
     vertical: (kind: string, sense: string | null, floor: string | null) =>
       `Take the ${kind}${sense ? ` ${sense}` : ""}${floor === null ? "" : ` to ${floor}`}`,
     arrive: () => "Arrive at destination",
+    connectorArrive: (kind: ConnectorEndKind, name: string | null, ridden: boolean) => {
+      const via = { stair_end: "stairs", escalator_end: "escalator", ramp_end: "ramp" }[kind];
+      const to = name ?? "your destination";
+      if (ridden) return `Route ends at the ${via} for ${to}`;
+      return kind === "stair_end" ? `Stairs to ${to} start here` : `${via.charAt(0).toUpperCase()}${via.slice(1)} to ${to} starts here`;
+    },
   },
 };
 
@@ -213,7 +238,19 @@ function turnDelta(points: PolylinePoint[], steps: RouteResult["steps"], i: numb
   return h0 === null || h1 === null ? null : ((h1 - h0 + 540) % 360) - 180;
 }
 
-export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja"): Instruction[] {
+/** POI display name in `lang`, then ja, then the first name; null when it has none. Never an id. */
+function poiDisplayName(poi: Poi, lang: "ja" | "en"): string | null {
+  const named = poi.names.find((n) => n.lang === lang) ?? poi.names.find((n) => n.lang === "ja") ?? poi.names[0];
+  return named?.text || null;
+}
+
+/**
+ * `destination` is the POI the route was computed to (as with `routeBetween`). When the route ends on
+ * one of its connectors that is a stair/escalator/ramp end — and the POI is not that stair/escalator
+ * itself — the last instruction says the connector starts there instead of claiming arrival. It names
+ * only the node kind and the POI: never a direction or floor, which the graph does not evidence there.
+ */
+export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja", destination?: Poi): Instruction[] {
   const t = TEXT[lang];
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
@@ -306,7 +343,15 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     current = { kind: turn, stepIndexes: [i], distanceM: step.lengthM, vertical: null, toFloorId: step.toFloorId, text: "" };
   });
   flush();
-  const lastFloor = nodes.get(route.nodeIds[route.nodeIds.length - 1]!)!.floorId;
-  out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: lastFloor, text: t.arrive() });
+  const goal = nodes.get(route.nodeIds[route.nodeIds.length - 1]!)!;
+  const end = Object.hasOwn(CONNECTOR_END, goal.kind) ? CONNECTOR_END[goal.kind as ConnectorEndKind] : null;
+  if (destination && end && destination.category !== end.self && destination.connectorNodeIds.includes(goal.id)) {
+    const kind = goal.kind as ConnectorEndKind;
+    // Arriving on the connector's own mode means these stairs are the ones just used: claim no further flight.
+    const ridden = route.steps[route.steps.length - 1]?.mode === end.mode;
+    out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, connector: kind, text: t.connectorArrive(kind, poiDisplayName(destination, lang), ridden) });
+  } else {
+    out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, text: t.arrive() });
+  }
   return out;
 }

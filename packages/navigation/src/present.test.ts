@@ -86,6 +86,89 @@ describe("describeRoute", () => {
   });
 });
 
+describe("describeRoute arrival at a stair/escalator/ramp connector", () => {
+  /** Exit A1 reached only via the foot of its unsurveyed stairs at "goal" (a stair_end). */
+  function stairFootExit(kind: "stair_end" | "escalator_end" | "ramp_end" = "stair_end") {
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("a-goal", "a", "goal")]);
+    b.nodes.find((n) => n.id === "goal")!.kind = kind;
+    const exit = b.pois.find((p) => p.id === "exit-a1")!;
+    exit.connectorNodeIds = ["goal"];
+    return { b, exit };
+  }
+
+  it("says the stairs to the destination start at the connector instead of claiming arrival", () => {
+    const { b, exit } = stairFootExit();
+    const r = route(b, "start", "goal");
+    const en = describeRoute(b, r, "en", exit);
+    expect(en[en.length - 1]).toMatchObject({ kind: "arrive", connector: "stair_end", vertical: null, toFloorId: "concourse", text: "Stairs to Exit A1 start here" });
+    const ja = describeRoute(b, r, "ja", exit);
+    expect(ja[ja.length - 1]!.text).toBe("Ａ１出口への階段はここから");
+    // No direction or floor is claimed: the flight beyond the connector is not in the graph.
+    expect(en[en.length - 1]!.text).not.toMatch(/\b(up|down)\b|1F|B1/);
+    expect(ja[ja.length - 1]!.text).not.toMatch(/上|下|1F|B1/);
+  });
+
+  it("covers escalator and ramp ends", () => {
+    for (const [kind, en, ja] of [
+      ["escalator_end", "Escalator to Exit A1 starts here", "Ａ１出口へのエスカレーターはここから"],
+      ["ramp_end", "Ramp to Exit A1 starts here", "Ａ１出口へのスロープはここから"],
+    ] as const) {
+      const { b, exit } = stairFootExit(kind);
+      const r = route(b, "start", "goal");
+      expect(describeRoute(b, r, "en", exit).at(-1)).toMatchObject({ connector: kind, text: en });
+      expect(describeRoute(b, r, "ja", exit).at(-1)!.text).toBe(ja);
+    }
+  });
+
+  it("names the POI in the requested language, then ja, and never by id", () => {
+    const { b, exit } = stairFootExit();
+    const r = route(b, "start", "goal");
+    exit.names = [{ lang: "ja", text: "Ａ１出口" }];
+    expect(describeRoute(b, r, "en", exit).at(-1)!.text).toBe("Stairs to Ａ１出口 start here");
+    exit.names = [];
+    expect(describeRoute(b, r, "en", exit).at(-1)!.text).toBe("Stairs to your destination start here");
+    expect(describeRoute(b, r, "ja", exit).at(-1)!.text).toBe("目的地への階段はここから");
+  });
+
+  it("keeps plain arrival when the destination is the stairs/escalator itself, or no POI is given", () => {
+    const { b, exit } = stairFootExit();
+    const r = route(b, "start", "goal");
+    expect(describeRoute(b, r, "en").at(-1)).toEqual(expect.not.objectContaining({ connector: expect.anything() }));
+    expect(describeRoute(b, r, "en").at(-1)!.text).toBe("Arrive at destination");
+    exit.category = "stairs";
+    expect(describeRoute(b, r, "en", exit).at(-1)!.text).toBe("Arrive at destination");
+    const esc = stairFootExit("escalator_end");
+    esc.exit.category = "escalator";
+    expect(describeRoute(esc.b, route(esc.b, "start", "goal"), "en", esc.exit).at(-1)!.text).toBe("Arrive at destination");
+    // A ramp has no POI category of its own, so a ramp_end connector never counts as the POI itself.
+    const ramp = stairFootExit("ramp_end");
+    ramp.exit.category = "stairs";
+    expect(describeRoute(ramp.b, route(ramp.b, "start", "goal"), "en", ramp.exit).at(-1)!.connector).toBe("ramp_end");
+  });
+
+  it("keeps plain arrival when the route ends on a node that is not this POI's connector or not a *_end", () => {
+    const { b, exit } = stairFootExit();
+    // goal is a stair_end but not this POI's connector.
+    exit.connectorNodeIds = ["start"];
+    expect(describeRoute(b, route(b, "start", "goal"), "en", exit).at(-1)!.text).toBe("Arrive at destination");
+    // An exit/junction connector is the destination itself.
+    b.nodes.find((n) => n.id === "goal")!.kind = "exit";
+    exit.connectorNodeIds = ["goal"];
+    expect(describeRoute(b, route(b, "start", "goal"), "en", exit).at(-1)!.text).toBe("Arrive at destination");
+  });
+
+  it("does not invent a further flight when the route arrives by those very stairs", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("st", "a", "upper", { mode: "stairs" })]);
+    b.nodes.find((n) => n.id === "upper")!.kind = "stair_end";
+    const exit = b.pois.find((p) => p.id === "exit-a1")!;
+    exit.connectorNodeIds = ["upper"];
+    const r = route(b, "start", "upper");
+    const en = describeRoute(b, r, "en", exit);
+    expect(en.at(-1)).toMatchObject({ kind: "arrive", connector: "stair_end", toFloorId: "upper", text: "Route ends at the stairs for Exit A1" });
+    expect(describeRoute(b, r, "ja", exit).at(-1)!.text).toBe("Ａ１出口への階段で経路終了");
+  });
+});
+
 describe("instructionPoints", () => {
   it("includes the junction an instruction starts from, so one long step frames its whole segment", () => {
     const b = createSyntheticBundle([edge("only", "start", "goal", { lengthM: 20 })]);
