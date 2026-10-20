@@ -143,7 +143,31 @@ export function buildCrowd(
   // Camera position as last rendered (onBeforeRender gives the camera without any API change);
   // pedestrians that would fill the lens are hidden instead of blocking the view.
   const cam = new THREE.Vector3(1e9, 0, 0);
-  parts[0].mesh.onBeforeRender = (_r, _s, camera) => { cam.setFromMatrixPosition(camera.matrixWorld); };
+  const camFwd = new THREE.Vector3(0, 0, -1);
+  parts[0].mesh.onBeforeRender = (_r, _s, camera) => {
+    cam.setFromMatrixPosition(camera.matrixWorld);
+    camFwd.set(0, 0, -1).transformDirection(camera.matrixWorld);
+  };
+  // A fixed head-count spread over every verified passage is ~1 person per 30 m on phones. Instead,
+  // people far from the camera and out of its view step back in on a passage 12-40 m away, still
+  // out of view, so the crowd stays around the player without drawing more of them.
+  const FAR_M = 50, SPAWN_MIN_M = 12, SPAWN_MAX_M = 40, MAX_MOVES_PER_FRAME = 2;
+  const inView = (dx: number, dy: number, dz: number, d: number) => (dx * camFwd.x + dy * camFwd.y + dz * camFwd.z) / d > 0.3;
+  function relocate(a: Agent): boolean {
+    for (let attempt = 0; attempt < 8; attempt++) {
+      let r = rand() * total, k = 0;
+      while (k < paths.length - 1 && r > paths[k].length) r -= paths[k++].length;
+      sample(paths[k], r);
+      const dx = pos.x - cam.x, dy = pos.y + 1.1 - cam.y, dz = pos.z - cam.z;
+      const d = Math.hypot(dx, dy, dz);
+      if (d < SPAWN_MIN_M || d > SPAWN_MAX_M || Math.abs(dy) > 6 || inView(dx, dy, dz, d)) continue;
+      a.path = k;
+      a.s = Math.min(paths[k].length, r);
+      a.forward = rand() < 0.5;
+      return true;
+    }
+    return false;
+  }
   const NEAR_CAM_M = 1.2;
   const up = new THREE.Vector3(0, 1, 0);
 
@@ -157,9 +181,15 @@ export function buildCrowd(
 
   let nearby = 0;
   function update(dt: number, _elapsed: number) {
-    let near = 0;
+    let near = 0, moves = 0;
     for (let i = 0; i < agents.length; i++) {
       const a = agents[i];
+      if (moves < MAX_MOVES_PER_FRAME && cam.x < 1e8) {
+        sample(paths[a.path], a.s);
+        const dx = pos.x - cam.x, dy = pos.y + 1.1 - cam.y, dz = pos.z - cam.z;
+        const d = Math.hypot(dx, dy, dz);
+        if (d > FAR_M && !inView(dx, dy, dz, d) && relocate(a)) moves++;
+      }
       let p = paths[a.path];
       a.s += (a.forward ? 1 : -1) * a.speed * dt;
       a.phase += (a.speed * dt * Math.PI * 2) / 1.45; // one gait cycle per ~1.45 m
