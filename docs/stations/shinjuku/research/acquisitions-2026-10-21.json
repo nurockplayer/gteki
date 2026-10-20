@@ -1,0 +1,2173 @@
+{
+  "schemaVersion": 1,
+  "reportDate": "2026-10-21",
+  "reportTimezone": "Asia/Tokyo",
+  "createdAt": "2026-10-20T16:37:12.954288+00:00",
+  "scope": "W5 Shinjuku network research only; source geometry is not embedded in this repository manifest.",
+  "rawRoot": "/Users/tachikoma/Developer/gteki-raw/shinjuku",
+  "receipts": [
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-catalog/robots-hokonavi.txt",
+      "url": "https://ckan.hokonavi.go.jp/robots.txt",
+      "retrievedAt": "2026-10-20T16:17:58.607195+00:00",
+      "status": 200,
+      "finalUrl": "https://ckan.hokonavi.go.jp/robots.txt",
+      "contentType": "text/plain",
+      "lastModified": "Thu, 26 Mar 2026 10:18:15 GMT",
+      "bytes": 105,
+      "sha256": "e0c42af6550ddc09371603c0782b9ddad9e6f39fa6c0042198666f849340ea9c",
+      "relativePath": "w5-catalog/robots-hokonavi.txt",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-catalog/robots-geospatial.txt",
+      "url": "https://www.geospatial.jp/robots.txt",
+      "retrievedAt": "2026-10-20T16:17:59.163164+00:00",
+      "status": 200,
+      "finalUrl": "https://www.geospatial.jp/robots.txt",
+      "contentType": "text/plain; charset=UTF-8",
+      "lastModified": "Thu, 19 Feb 2026 07:42:41 GMT",
+      "bytes": 140,
+      "sha256": "7ae62ac2ab6085ab12da86c63fd7be9dee05ee77de6147374618cfdad2899854",
+      "relativePath": "w5-catalog/robots-geospatial.txt",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-catalog/robots-toshiseibi.txt",
+      "url": "https://www.toshiseibi.metro.tokyo.lg.jp/robots.txt",
+      "retrievedAt": "2026-10-20T16:17:59.288350+00:00",
+      "status": 200,
+      "finalUrl": "https://www.toshiseibi.metro.tokyo.lg.jp/robots.txt",
+      "contentType": "text/plain;charset=UTF-8",
+      "lastModified": null,
+      "bytes": 723,
+      "sha256": "4853f158fb863ad1e6c9b496820e6b667a1226b3b9cb30aec4fc76b6cbcba965",
+      "relativePath": "w5-catalog/robots-toshiseibi.txt",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-catalog/hokonavi-search-shinjuku.json",
+      "url": "https://ckan.hokonavi.go.jp/api/3/action/package_search?q=%E6%96%B0%E5%AE%BF&rows=100",
+      "retrievedAt": "2026-10-20T16:17:59.411031+00:00",
+      "status": 200,
+      "finalUrl": "https://ckan.hokonavi.go.jp/api/3/action/package_search?q=%E6%96%B0%E5%AE%BF&rows=100",
+      "contentType": "application/json;charset=utf-8",
+      "lastModified": null,
+      "bytes": 219,
+      "sha256": "d7c3b1ccbab40cf87082647103a80e42091757f8aba81c950f4152a79f68011f",
+      "relativePath": "w5-catalog/hokonavi-search-shinjuku.json",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-routes/source.html",
+      "url": "https://www.toshiseibi.metro.tokyo.lg.jp/kotsu_butsuryu/kotsuseisaku/kotsu_suishin/shinjuku_shisetsu",
+      "retrievedAt": "2026-10-20T16:17:59.476830+00:00",
+      "status": 200,
+      "finalUrl": "https://www.toshiseibi.metro.tokyo.lg.jp/kotsu_butsuryu/kotsuseisaku/kotsu_suishin/shinjuku_shisetsu",
+      "contentType": "text/html;charset=UTF-8",
+      "lastModified": null,
+      "bytes": 515919,
+      "sha256": "bbb2cbb26e7bc91ca2f0178dcc46ce527a96e2e04d9c383ae099349d4f75b80b",
+      "relativePath": "w5-tokyo-routes/source.html",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-mlit-r2/catalog.html",
+      "url": "https://www.geospatial.jp/ckan/dataset/mlit-indoor-shinjuku-r2",
+      "retrievedAt": "2026-10-20T16:17:59.775518+00:00",
+      "status": 200,
+      "finalUrl": "https://www.geospatial.jp/ckan/dataset/mlit-indoor-shinjuku-r2",
+      "contentType": "text/html; charset=utf-8",
+      "lastModified": null,
+      "bytes": 177120,
+      "sha256": "451f416839f38e0d0039de63593003f44be10c1788a5c827ef91e4049eb20f8a",
+      "relativePath": "w5-mlit-r2/catalog.html",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired",
+      "note": "Public HTML only; restricted archive/terms PDF not acquired."
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-catalog/tokyo-routes.json",
+      "url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000008d0000000037",
+      "retrievedAt": "2026-10-20T16:17:59.996473+00:00",
+      "status": 200,
+      "finalUrl": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000008d0000000037",
+      "contentType": "application/json;charset=utf-8",
+      "lastModified": null,
+      "bytes": 4486,
+      "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
+      "relativePath": "w5-catalog/tokyo-routes.json",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-mlit-r2/terms-resource.html",
+      "url": "https://www.geospatial.jp/ckan/dataset/mlit-indoor-shinjuku-r2/resource/e3b28fde-5546-4c9d-956b-69363d707835",
+      "retrievedAt": "2026-10-20T16:18:28.600695+00:00",
+      "status": 200,
+      "finalUrl": "https://www.geospatial.jp/ckan/dataset/mlit-indoor-shinjuku-r2/resource/e3b28fde-5546-4c9d-956b-69363d707835",
+      "contentType": "text/html; charset=utf-8",
+      "lastModified": null,
+      "bytes": 25856,
+      "sha256": "18dd912b6ba7379285559e89b33e1ab5ff0e77b13ca5143c44c497f28b9a8a05",
+      "relativePath": "w5-mlit-r2/terms-resource.html",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired",
+      "note": "Public HTML only; restricted archive/terms PDF not acquired."
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-mlit-r2/shape-resource.html",
+      "url": "https://www.geospatial.jp/ckan/dataset/mlit-indoor-shinjuku-r2/resource/33e78a35-c16a-4746-b451-47c6122ed51b",
+      "retrievedAt": "2026-10-20T16:18:28.811629+00:00",
+      "status": 200,
+      "finalUrl": "https://www.geospatial.jp/ckan/dataset/mlit-indoor-shinjuku-r2/resource/33e78a35-c16a-4746-b451-47c6122ed51b",
+      "contentType": "text/html; charset=utf-8",
+      "lastModified": null,
+      "bytes": 23134,
+      "sha256": "0396910f4dbc08aa12d59330c264fbb2ce1c4ec02da8641d014101eb285f2aff",
+      "relativePath": "w5-mlit-r2/shape-resource.html",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired",
+      "note": "Public HTML only; restricted archive/terms PDF not acquired."
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-routes/shisetsu_root.zip",
+      "url": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/zip_kiban_shinjuku_terminal_pdf_shisetsu_root",
+      "retrievedAt": "2026-10-20T16:18:28.918832+00:00",
+      "status": 200,
+      "finalUrl": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/zip_kiban_shinjuku_terminal_pdf_shisetsu_root",
+      "contentType": "application/zip",
+      "lastModified": "Tue, 01 Oct 2024 07:52:20 GMT",
+      "bytes": 2317035,
+      "sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+      "relativePath": "w5-tokyo-routes/shisetsu_root.zip",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "archiveMemberCount": 25,
+      "result": "acquired-archive-validated"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-routes/spec.pdf",
+      "url": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/pdf_kiban_shinjuku_terminal_pdf_shisetsu_siyousho",
+      "retrievedAt": "2026-10-20T16:18:29.229538+00:00",
+      "status": 200,
+      "finalUrl": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/pdf_kiban_shinjuku_terminal_pdf_shisetsu_siyousho",
+      "contentType": "application/pdf",
+      "lastModified": "Thu, 03 Oct 2024 11:18:57 GMT",
+      "bytes": 499924,
+      "sha256": "c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095",
+      "relativePath": "w5-tokyo-routes/spec.pdf",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-routes/reference.pdf",
+      "url": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/pdf_kiban_shinjuku_terminal_pdf_shisetsu_siryou",
+      "retrievedAt": "2026-10-20T16:18:29.377377+00:00",
+      "status": 200,
+      "finalUrl": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/pdf_kiban_shinjuku_terminal_pdf_shisetsu_siryou",
+      "contentType": "application/pdf",
+      "lastModified": "Thu, 03 Oct 2024 11:18:57 GMT",
+      "bytes": 523219,
+      "sha256": "d661cd83fb1e914d65de71d354e86ee4aabfcca20e8060930adea5029fbf4f6a",
+      "relativePath": "w5-tokyo-routes/reference.pdf",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-catalog/hokonavi-search-roman.json",
+      "url": "https://ckan.hokonavi.go.jp/api/3/action/package_search?q=shinjuku&rows=100",
+      "retrievedAt": "2026-10-20T16:18:29.573460+00:00",
+      "status": 200,
+      "finalUrl": "https://ckan.hokonavi.go.jp/api/3/action/package_search?q=shinjuku&rows=100",
+      "contentType": "application/json;charset=utf-8",
+      "lastModified": null,
+      "bytes": 81550,
+      "sha256": "b9a325b1b798f9d5992dfdb7438979dbaac9f8159db76f571756e732eb0480af",
+      "relativePath": "w5-catalog/hokonavi-search-roman.json",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-mlit-2017/catalog.html",
+      "url": "https://www.geospatial.jp/ckan/dataset/mlit-indoor-shinjuku",
+      "retrievedAt": "2026-10-20T16:18:29.714222+00:00",
+      "status": 200,
+      "finalUrl": "https://www.geospatial.jp/ckan/dataset/mlit-indoor-shinjuku",
+      "contentType": "text/html; charset=utf-8",
+      "lastModified": null,
+      "bytes": 52924,
+      "sha256": "6ecb7ca5c1cc49a7aa761514cf09e536d4c669bcc51f7f0276af42bdff8d26e1",
+      "relativePath": "w5-mlit-2017/catalog.html",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired",
+      "note": "Public HTML only; restricted archive/terms PDF not acquired."
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-station_oedo_shinjukunishiguchi/nwd_oedo_shinjuku-nishiguchi_geojson.zip",
+      "url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/1ad0189f-f289-4ba0-8bf4-b7a76420a845/download/nwd_oedo_shinjuku-nishiguchi_geojson.zip",
+      "retrievedAt": "2026-10-20T16:19:01.171223+00:00",
+      "status": 200,
+      "finalUrl": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/1ad0189f-f289-4ba0-8bf4-b7a76420a845/download/nwd_oedo_shinjuku-nishiguchi_geojson.zip",
+      "contentType": "application/zip",
+      "lastModified": "Wed, 22 Oct 2025 02:39:03 GMT",
+      "bytes": 41726,
+      "sha256": "18e83aba5af43e6d7fa3695bcad8d7fe41d3a3ca57834f196570629ecf6c69cb",
+      "relativePath": "w5-station_oedo_shinjukunishiguchi/nwd_oedo_shinjuku-nishiguchi_geojson.zip",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "archiveMemberCount": 2,
+      "result": "acquired-archive-validated"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-station_oedo_shinjukunishiguchi/stationmap_oedo_shinjuku-nishiguchi_geojson.zip",
+      "url": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/b0251aca-5a90-469f-9cc0-4c981c1d2e8f/download/stationmap_oedo_shinjuku-nishiguchi_geojson.zip",
+      "retrievedAt": "2026-10-20T16:19:11.176755+00:00",
+      "status": 200,
+      "finalUrl": "https://ckan.hokonavi.go.jp/dataset/4200135e-9754-4974-a371-bd47bdb6a530/resource/b0251aca-5a90-469f-9cc0-4c981c1d2e8f/download/stationmap_oedo_shinjuku-nishiguchi_geojson.zip",
+      "contentType": "application/zip",
+      "lastModified": "Wed, 22 Oct 2025 02:37:25 GMT",
+      "bytes": 54859,
+      "sha256": "d16a78ded406fb9587f2c5f3c0d84fda5e2d4baa5b0c0532cf5f875b97273ebd",
+      "relativePath": "w5-station_oedo_shinjukunishiguchi/stationmap_oedo_shinjuku-nishiguchi_geojson.zip",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "archiveMemberCount": 12,
+      "result": "acquired-archive-validated"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-nwd_shinjuku/link.geojson",
+      "url": "https://ckan.hokonavi.go.jp/dataset/18bc3f49-51b0-4d90-b0e2-afbdf142de29/resource/5abd6a98-2025-4323-b09d-ed4ea2ddf4aa/download/link.geojson",
+      "retrievedAt": "2026-10-20T16:19:21.182711+00:00",
+      "status": 200,
+      "finalUrl": "https://ckan.hokonavi.go.jp/dataset/18bc3f49-51b0-4d90-b0e2-afbdf142de29/resource/5abd6a98-2025-4323-b09d-ed4ea2ddf4aa/download/link.geojson",
+      "contentType": "application/geo+json",
+      "lastModified": "Fri, 05 Sep 2025 06:50:43 GMT",
+      "bytes": 1464892,
+      "sha256": "334a7a7e8ceb515e4e66bd3c43847e29185dc45bba5b404ddd736ee833e4f6c4",
+      "relativePath": "w5-nwd_shinjuku/link.geojson",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-nwd_shinjuku/node.geojson",
+      "url": "https://ckan.hokonavi.go.jp/dataset/18bc3f49-51b0-4d90-b0e2-afbdf142de29/resource/462f206a-b231-419d-a8a8-1500760b3a02/download/node.geojson",
+      "retrievedAt": "2026-10-20T16:19:31.207567+00:00",
+      "status": 200,
+      "finalUrl": "https://ckan.hokonavi.go.jp/dataset/18bc3f49-51b0-4d90-b0e2-afbdf142de29/resource/462f206a-b231-419d-a8a8-1500760b3a02/download/node.geojson",
+      "contentType": "application/geo+json",
+      "lastModified": "Fri, 05 Sep 2025 06:51:32 GMT",
+      "bytes": 829271,
+      "sha256": "6c856563c94dae5d8b2fb955d93c42498937c45ccebf1911e92b2b99929ce528",
+      "relativePath": "w5-nwd_shinjuku/node.geojson",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-nwd_shibuya_sendagaya_shinjuku/link.geojson",
+      "url": "https://ckan.hokonavi.go.jp/dataset/eaf1695b-fc4c-41f0-8ff1-3279d0cfa839/resource/1d2d13e1-3202-4d0e-bb37-b91e80aab01e/download/link.geojson",
+      "retrievedAt": "2026-10-20T16:19:41.294564+00:00",
+      "status": 200,
+      "finalUrl": "https://ckan.hokonavi.go.jp/dataset/eaf1695b-fc4c-41f0-8ff1-3279d0cfa839/resource/1d2d13e1-3202-4d0e-bb37-b91e80aab01e/download/link.geojson",
+      "contentType": "application/geo+json",
+      "lastModified": "Tue, 09 Sep 2025 04:17:28 GMT",
+      "bytes": 6207526,
+      "sha256": "726d7069f7c99bcb315e8e1d3e4dd5d78b7d69503527c1baf449271beef6a4f9",
+      "relativePath": "w5-nwd_shibuya_sendagaya_shinjuku/link.geojson",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-nwd_shibuya_sendagaya_shinjuku/node.geojson",
+      "url": "https://ckan.hokonavi.go.jp/dataset/eaf1695b-fc4c-41f0-8ff1-3279d0cfa839/resource/7f785b36-48db-4279-a4a5-5140e4dac7c5/download/node.geojson",
+      "retrievedAt": "2026-10-20T16:19:51.266328+00:00",
+      "status": 200,
+      "finalUrl": "https://ckan.hokonavi.go.jp/dataset/eaf1695b-fc4c-41f0-8ff1-3279d0cfa839/resource/7f785b36-48db-4279-a4a5-5140e4dac7c5/download/node.geojson",
+      "contentType": "application/geo+json",
+      "lastModified": "Tue, 09 Sep 2025 04:18:26 GMT",
+      "bytes": 3457737,
+      "sha256": "d2b9c1c8aa9e67102c469455203b3b9d22aad162aa8a898aeee542f736cbebc8",
+      "relativePath": "w5-nwd_shibuya_sendagaya_shinjuku/node.geojson",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-mlit-2018/catalog.html",
+      "url": "https://www.geospatial.jp/ckan/dataset/mlit-indoor-shinjuku-h30",
+      "retrievedAt": "2026-10-20T16:19:52.048864+00:00",
+      "status": 200,
+      "finalUrl": "https://www.geospatial.jp/ckan/dataset/mlit-indoor-shinjuku-h30",
+      "contentType": "text/html; charset=utf-8",
+      "lastModified": null,
+      "bytes": 48070,
+      "sha256": "4cac1c26f4bf4010061e887dc54899ddcc83a0c99d19e99735ca2bfa87f5cf4c",
+      "relativePath": "w5-mlit-2018/catalog.html",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired",
+      "note": "Public HTML only; restricted archive/terms PDF not acquired."
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-catalog/plateau-ubld-index.json",
+      "url": "https://api.plateauview.mlit.go.jp/datacatalog/citygml/13104?types=ubld",
+      "retrievedAt": "2026-10-20T16:21:04.860522+00:00",
+      "status": 200,
+      "finalUrl": "https://api.plateauview.mlit.go.jp/datacatalog/citygml/13104?types=ubld",
+      "contentType": "application/json",
+      "lastModified": null,
+      "bytes": 1307,
+      "sha256": "99be07b2b6be25d3925fd33b7257396ec26ff4d52398efb90668f3508ea8aab5",
+      "relativePath": "w5-catalog/plateau-ubld-index.json",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-catalog/plateau-bldg-tran-index.json",
+      "url": "https://api.plateauview.mlit.go.jp/datacatalog/citygml/13104?types=bldg,tran",
+      "retrievedAt": "2026-10-20T16:21:05.103658+00:00",
+      "status": 200,
+      "finalUrl": "https://api.plateauview.mlit.go.jp/datacatalog/citygml/13104?types=bldg,tran",
+      "contentType": "application/json",
+      "lastModified": null,
+      "bytes": 19516,
+      "sha256": "7ca58b66c5ae9de80048e0cb809512c954bfd39c93476545e9806169809a594d",
+      "relativePath": "w5-catalog/plateau-bldg-tran-index.json",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-catalog/tokyo-underground.json",
+      "url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000003d1700000034",
+      "retrievedAt": "2026-10-20T16:21:05.329336+00:00",
+      "status": 200,
+      "finalUrl": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000003d1700000034",
+      "contentType": "application/json;charset=utf-8",
+      "lastModified": null,
+      "bytes": 10047,
+      "sha256": "a4c6426b49e94ccb786a0218140e3eea250ef34be58dd8eac6d4a7648189fb3b",
+      "relativePath": "w5-catalog/tokyo-underground.json",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-catalog/odpt-metro.json",
+      "url": "https://ckan.odpt.org/api/3/action/package_show?id=r_station-tokyometro",
+      "retrievedAt": "2026-10-20T16:21:05.517625+00:00",
+      "status": 200,
+      "finalUrl": "https://ckan.odpt.org/dataset",
+      "contentType": "text/html; charset=utf-8",
+      "lastModified": null,
+      "bytes": 47336,
+      "sha256": "974baf9655b92ec8e8118f0571e547255dde0e9bf25ed3e427ec3161f0bb2668",
+      "relativePath": "w5-catalog/odpt-metro.json",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "semantic-failure-html-instead-of-json",
+      "note": "HTTP 200 is not a valid station-data response. Filename suffix is not the detected format."
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-catalog/odpt-station-search.json",
+      "url": "https://ckan.odpt.org/api/3/action/package_search?q=Station&rows=100",
+      "retrievedAt": "2026-10-20T16:21:05.782100+00:00",
+      "status": 200,
+      "finalUrl": "https://ckan.odpt.org/dataset",
+      "contentType": "text/html; charset=utf-8",
+      "lastModified": null,
+      "bytes": 47336,
+      "sha256": "974baf9655b92ec8e8118f0571e547255dde0e9bf25ed3e427ec3161f0bb2668",
+      "relativePath": "w5-catalog/odpt-station-search.json",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "semantic-failure-html-instead-of-json",
+      "note": "HTTP 200 is not a valid station-data response. Filename suffix is not the detected format."
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-reference/n02.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_0.html",
+      "retrievedAt": "2026-10-20T16:21:05.994913+00:00",
+      "status": 200,
+      "finalUrl": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_0.html",
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 44256,
+      "sha256": "d62c07afac42148988367f14ff55643eb942414aeceabb5a0f8394fc8edff75d",
+      "relativePath": "w5-reference/n02.html",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-reference/keio-dousen.pdf",
+      "url": "https://www.keio.co.jp/assets/pdf/dousen_shinsen.pdf",
+      "retrievedAt": "2026-10-20T16:21:07.436081+00:00",
+      "status": 200,
+      "finalUrl": "https://www.keio.co.jp/assets/pdf/dousen_shinsen.pdf",
+      "contentType": "application/pdf",
+      "lastModified": null,
+      "bytes": 1251135,
+      "sha256": "b0382d2f598b26699acc809b3d04004fe1293c7a03408fdb0fd5ea2d281e2064",
+      "relativePath": "w5-reference/keio-dousen.pdf",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-reference/metro-shinjukusanchome.html",
+      "url": "https://www.tokyometro.jp/station/shinjuku-sanchome/index.html",
+      "retrievedAt": "2026-10-20T16:21:07.693657+00:00",
+      "status": "BLOCKED_OR_FAILED",
+      "error": "HTTP Error 403: Forbidden",
+      "relativePath": "w5-reference/metro-shinjukusanchome.html",
+      "kind": "download-attempt",
+      "result": "blocked"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-reference/seibu.html",
+      "url": "https://www.seiburailway.jp/railway/station/seibu-shinjuku/",
+      "retrievedAt": "2026-10-20T16:21:07.933806+00:00",
+      "status": "BLOCKED_OR_FAILED",
+      "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1081)>",
+      "relativePath": "w5-reference/seibu.html",
+      "kind": "download-attempt",
+      "result": "blocked"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-underground/h-jiko_02.csv",
+      "url": "https://www.bousai.metro.tokyo.lg.jp/content/opendata/csv/h-jiko_02.csv",
+      "retrievedAt": "2026-10-20T16:23:44.230827+00:00",
+      "status": 200,
+      "finalUrl": "https://www.bousai.metro.tokyo.lg.jp/content/opendata/csv/h-jiko_02.csv",
+      "contentType": "text/csv",
+      "lastModified": "Fri, 19 Jan 2018 05:36:14 GMT",
+      "bytes": 1580,
+      "sha256": "f22ab61a98c7e863d9e5165d694dc5eaa27195556df3fdce6c32018cbb718691",
+      "relativePath": "w5-tokyo-underground/h-jiko_02.csv",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-reference/n02-latest.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_1.html",
+      "retrievedAt": "2026-10-20T16:23:44.539087+00:00",
+      "status": 200,
+      "finalUrl": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_1.html",
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 45476,
+      "sha256": "e19c5afd5411ef152bd8e9c24db5170874f1db117f4bd20a108df46e8e3c16d0",
+      "relativePath": "w5-reference/n02-latest.html",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-catalog/hokonavi-package-list.json",
+      "url": "https://ckan.hokonavi.go.jp/api/3/action/package_list",
+      "retrievedAt": "2026-10-20T16:23:45.867793+00:00",
+      "status": 200,
+      "finalUrl": "https://ckan.hokonavi.go.jp/api/3/action/package_list",
+      "contentType": "application/json;charset=utf-8",
+      "lastModified": null,
+      "bytes": 1184,
+      "sha256": "99bbbb823ad2248a1788e16d4b20d46b0a4df511a51d6d26abd9884a21191a90",
+      "relativePath": "w5-catalog/hokonavi-package-list.json",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-reference/odakyu-ace.html",
+      "url": "https://www.odakyu-ace.jp/",
+      "retrievedAt": "2026-10-20T16:23:45.931874+00:00",
+      "status": 200,
+      "finalUrl": "https://www.odakyu-sc.com/odakyu-ace/",
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": null,
+      "bytes": 47205,
+      "sha256": "4335fba7a7264b1266acbc2ea2ffe6d150552828a58b9f7740fd046eea4b5e0c",
+      "relativePath": "w5-reference/odakyu-ace.html",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-reference/subnade-about.html",
+      "url": "https://www.subnade.co.jp/about/",
+      "retrievedAt": "2026-10-20T16:23:46.207536+00:00",
+      "status": "BLOCKED_OR_FAILED",
+      "error": "<urlopen error [SSL: DH_KEY_TOO_SMALL] dh key too small (_ssl.c:1081)>",
+      "relativePath": "w5-reference/subnade-about.html",
+      "kind": "download-attempt",
+      "result": "blocked"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-reference/shinjuku-koji.html",
+      "url": "https://www.shinjuku-kojiinfo.metro.tokyo.lg.jp/",
+      "retrievedAt": "2026-10-20T16:23:46.267369+00:00",
+      "status": 200,
+      "finalUrl": "https://www.shinjuku-kojiinfo.metro.tokyo.lg.jp/",
+      "contentType": "text/html; charset=UTF-8",
+      "lastModified": "Fri, 02 Oct 2026 06:47:21 GMT",
+      "bytes": 101312,
+      "sha256": "5701aeee6a3908d0a71009cd735ffe168be8697161e794a3bef992604839c7d6",
+      "relativePath": "w5-reference/shinjuku-koji.html",
+      "kind": "download-attempt",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "result": "acquired"
+    },
+    {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-reference/metro-m08.html",
+      "url": "https://www.tokyometro.jp/station/shinjuku/yardmap/index_print.html",
+      "retrievedAt": "2026-10-20T16:23:46.401158+00:00",
+      "status": "BLOCKED_OR_FAILED",
+      "error": "HTTP Error 403: Forbidden",
+      "relativePath": "w5-reference/metro-m08.html",
+      "kind": "download-attempt",
+      "result": "blocked"
+    }
+  ],
+  "existingFileVerifications": [
+    {
+      "kind": "existing-file-verification-not-new-download",
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/plateau/53394536_ubld_6697_op.gml",
+      "relativePath": "plateau/53394536_ubld_6697_op.gml",
+      "sourceUrl": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/ubld/53394536_ubld_6697_op.gml",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "bytes": 43830765,
+      "sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
+      "acquiredAtThisTurn": false,
+      "priorAcquisitionTime": "See existing stations/shinjuku/sources/manifest.json; this receipt does not invent a new download timestamp."
+    },
+    {
+      "kind": "existing-file-verification-not-new-download",
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/plateau/metadata.zip",
+      "relativePath": "plateau/metadata.zip",
+      "sourceUrl": "https://assets.cms.plateau.reearth.io/assets/e3/7cb09d-c77c-4a58-835a-5f65842426fb/13104_shinjuku-ku_pref_2025_citygml_1_op_metadata.zip",
+      "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+      "bytes": 26786,
+      "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
+      "acquiredAtThisTurn": false,
+      "priorAcquisitionTime": "See existing stations/shinjuku/sources/manifest.json; this receipt does not invent a new download timestamp."
+    }
+  ],
+  "datasets": {
+    "T23": {
+      "publisher": "東京都都市整備局",
+      "licence": {
+        "name": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "derivativeRedistribution": "yes-conditional-attribution-and-change-notices"
+      },
+      "publicationDate": "2023-02-28",
+      "geometryBaseline": "2020-03; February 2023 revision adds operating hours; not a 2026 survey",
+      "catalogueUrl": "https://catalog.data.metro.tokyo.lg.jp/dataset/t000008d0000000037",
+      "downloadDirectory": "w5-tokyo-routes"
+    },
+    "H-E01": {
+      "publisher": "国土交通省; station source 東京都交通局",
+      "licence": {
+        "name": "公共データ利用規約（第1.0版）",
+        "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+        "derivativeRedistribution": "yes-conditional-see-exclusions-and-lane-release-hold"
+      },
+      "linkMaintenanceDate": "2025-09-17",
+      "catalogueModified": "2026-09-17",
+      "publicationEnd": "2027-03-12",
+      "publicationEndIsNotAssumedLicenceExpiry": true,
+      "downloadDirectory": "w5-station_oedo_shinjukunishiguchi"
+    },
+    "H18": {
+      "publisher": "国土交通省",
+      "licence": {
+        "name": "公共データ利用規約（第1.0版）",
+        "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+        "derivativeRedistribution": "yes-conditional-see-exclusions-and-lane-release-hold"
+      },
+      "contentDate": "2018-10-29",
+      "catalogueModified": "2025-10-28",
+      "downloadDirectory": "w5-nwd_shinjuku"
+    },
+    "H21": {
+      "publisher": "国土交通省",
+      "licence": {
+        "name": "公共データ利用規約（第1.0版）",
+        "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+        "derivativeRedistribution": "yes-conditional-see-exclusions-and-lane-release-hold"
+      },
+      "contentDate": "2021-05-26",
+      "catalogueModified": "2025-10-28",
+      "downloadDirectory": "w5-nwd_shibuya_sendagaya_shinjuku"
+    },
+    "M17-M18-M20": {
+      "publisher": "国土交通省",
+      "licenceLabelInCatalogue": "政府標準利用規約",
+      "specificLicenceVersion": "UNKNOWN",
+      "derivativeRedistribution": "UNKNOWN",
+      "status": "public-catalogue-only; terms PDF and geometry require login",
+      "downloadDirectoryPrefixes": [
+        "w5-mlit-2017",
+        "w5-mlit-2018",
+        "w5-mlit-r2"
+      ]
+    },
+    "P25": {
+      "publisher": "国土交通省 Project PLATEAU / 東京都 source survey",
+      "licence": {
+        "name": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "derivativeRedistribution": "yes-conditional-attribution-and-change-notices"
+      },
+      "catalogueYear": 2025,
+      "apiSpec": "5.0",
+      "undergroundSourceSurveyYear": 2023,
+      "downloadDirectory": "plateau",
+      "status": "existing raw model re-inspected; current catalogue indexes downloaded"
+    },
+    "T-UG": {
+      "publisher": "東京都総務局 catalogue / 東京都都市整備局 source",
+      "licence": {
+        "name": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+        "url": "https://creativecommons.org/licenses/by/4.0/",
+        "derivativeRedistribution": "yes-conditional-attribution-and-change-notices"
+      },
+      "resourceDate": "2018-04-13",
+      "downloadDirectory": "w5-tokyo-underground"
+    },
+    "N02": {
+      "publisher": "国土交通省",
+      "licence": {
+        "name": "公共データ利用規約（第1.0版）",
+        "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+        "derivativeRedistribution": "yes-conditional-see-exclusions-and-lane-release-hold"
+      },
+      "contentDate": "2022-12-31",
+      "spec": "3.1",
+      "status": "catalogue-only; archive not acquired"
+    },
+    "ODPT": {
+      "status": "catalogue/reference research only; no station or GTFS payload acquired",
+      "licence": "varies by operator; see report",
+      "apiAttemptsReturnedHtml": true,
+      "challengeAuthorizationEnd": "2027-03-12",
+      "challengeLicenceRevision": "2026-08-28",
+      "basicApplicationUse": "conditional yes; provider-specific terms not fully established",
+      "basicReusableDataRedistribution": "prohibited absent prior permission or applicable specific exception",
+      "challengeReusableDataRedistribution": "prohibited absent prior permission or applicable specific exception",
+      "challengeApplicationUse": "conditional Challenge participation; expires 2027-03-12; JR-specific competition restrictions also present"
+    },
+    "OSM": {
+      "publisher": "OpenStreetMap contributors",
+      "licence": {
+        "name": "Open Data Commons Open Database License (ODbL) 1.0",
+        "url": "https://opendatacommons.org/licenses/odbl/1-0/"
+      },
+      "status": "cross-check only; no new data acquired; no shipping proposal"
+    }
+  },
+  "inspection": {
+    "T23": {
+      "map_version": 62,
+      "entity_version": 42,
+      "entityCount": 423,
+      "floorStats": [
+        {
+          "floor": {
+            "name": "1F",
+            "type": "indoor",
+            "zlevel": 0,
+            "main": true
+          },
+          "id": 64677,
+          "count": 13125,
+          "bboxLonLat": [
+            139.696606,
+            35.686519,
+            139.7034889,
+            35.694624
+          ],
+          "geometryTypes": {
+            "Polygon": 13121,
+            "MultiPolygon": 1,
+            "Point": 3
+          },
+          "fields": [
+            "area",
+            "barrier",
+            "display_name",
+            "entities",
+            "facility",
+            "from",
+            "int_address",
+            "marker",
+            "nonphysical",
+            "object",
+            "openinghour",
+            "safety",
+            "service",
+            "structure",
+            "to",
+            "traffic",
+            "use",
+            "vegetation"
+          ]
+        },
+        {
+          "floor": {
+            "name": "2F",
+            "type": "indoor",
+            "zlevel": 1
+          },
+          "id": 64678,
+          "count": 309,
+          "bboxLonLat": [
+            139.696746,
+            35.6877894,
+            139.7018733,
+            35.6953073
+          ],
+          "geometryTypes": {
+            "Polygon": 268,
+            "MultiPolygon": 9,
+            "Point": 32
+          },
+          "fields": [
+            "barrier",
+            "class",
+            "currency",
+            "disabledaccess",
+            "display_name",
+            "entities",
+            "facility",
+            "fixture",
+            "from",
+            "gender",
+            "int_address",
+            "openinghour",
+            "service",
+            "structure",
+            "to",
+            "use",
+            "vegetation"
+          ]
+        },
+        {
+          "floor": {
+            "name": "3F",
+            "type": "indoor",
+            "zlevel": 2
+          },
+          "id": 64679,
+          "count": 78,
+          "bboxLonLat": [
+            139.6998346,
+            35.6879646,
+            139.7021531,
+            35.6892511
+          ],
+          "geometryTypes": {
+            "Polygon": 68,
+            "LineString": 4,
+            "Point": 6
+          },
+          "fields": [
+            "area",
+            "disabledaccess",
+            "display_name",
+            "entities",
+            "facility",
+            "gender",
+            "int_address",
+            "meta",
+            "object",
+            "structure",
+            "vegetation"
+          ]
+        },
+        {
+          "floor": {
+            "name": "4F",
+            "type": "indoor",
+            "zlevel": 3
+          },
+          "id": 64680,
+          "count": 142,
+          "bboxLonLat": [
+            139.7002166,
+            35.6880144,
+            139.701729,
+            35.6889968
+          ],
+          "geometryTypes": {
+            "Polygon": 103,
+            "LineString": 36,
+            "Point": 3
+          },
+          "fields": [
+            "area",
+            "class",
+            "display_name",
+            "entities",
+            "facility",
+            "gender",
+            "int_address",
+            "object",
+            "service",
+            "structure",
+            "vegetation"
+          ]
+        },
+        {
+          "floor": {
+            "name": "B1F",
+            "type": "indoor",
+            "zlevel": -2
+          },
+          "id": 64676,
+          "count": 1246,
+          "bboxLonLat": [
+            139.6965262,
+            35.6873837,
+            139.7018188,
+            35.6942694
+          ],
+          "geometryTypes": {
+            "Polygon": 1076,
+            "MultiPolygon": 23,
+            "Point": 104,
+            "LineString": 43
+          },
+          "fields": [
+            "area",
+            "barrier",
+            "class",
+            "currency",
+            "disabledaccess",
+            "display_name",
+            "entities",
+            "facility",
+            "from",
+            "gender",
+            "int_address",
+            "openinghour",
+            "safety",
+            "service",
+            "structure",
+            "to",
+            "traffic",
+            "type",
+            "use",
+            "vegetation"
+          ]
+        },
+        {
+          "floor": {
+            "name": "B2F",
+            "type": "indoor",
+            "zlevel": -3
+          },
+          "id": 64675,
+          "count": 183,
+          "bboxLonLat": [
+            139.697443,
+            35.6901852,
+            139.7033309,
+            35.6928155
+          ],
+          "geometryTypes": {
+            "Polygon": 126,
+            "MultiPolygon": 5,
+            "LineString": 5,
+            "Point": 47
+          },
+          "fields": [
+            "area",
+            "barrier",
+            "currency",
+            "display_name",
+            "entities",
+            "facility",
+            "fixture",
+            "from",
+            "int_address",
+            "openinghour",
+            "safety",
+            "service",
+            "structure",
+            "to",
+            "type",
+            "use"
+          ]
+        },
+        {
+          "floor": {
+            "name": "B3F",
+            "type": "indoor",
+            "zlevel": -5
+          },
+          "id": 64674,
+          "count": 338,
+          "bboxLonLat": [
+            139.6989283,
+            35.691889,
+            139.7037375,
+            35.6950028
+          ],
+          "geometryTypes": {
+            "Polygon": 275,
+            "Point": 57,
+            "MultiPolygon": 2,
+            "LineString": 4
+          },
+          "fields": [
+            "area",
+            "barrier",
+            "class",
+            "currency",
+            "disabledaccess",
+            "display_name",
+            "entities",
+            "facility",
+            "fixture",
+            "from",
+            "gender",
+            "int_address",
+            "object",
+            "safety",
+            "service",
+            "structure",
+            "type",
+            "use"
+          ]
+        },
+        {
+          "floor": {
+            "name": "B4F",
+            "type": "indoor",
+            "zlevel": -6
+          },
+          "id": 64673,
+          "count": 37,
+          "bboxLonLat": [
+            139.6969636,
+            35.6876945,
+            139.6999335,
+            35.6938787
+          ],
+          "geometryTypes": {
+            "Polygon": 37
+          },
+          "fields": [
+            "display_name",
+            "facility",
+            "structure"
+          ]
+        },
+        {
+          "floor": {
+            "name": "B5F",
+            "type": "indoor",
+            "zlevel": -7
+          },
+          "id": 64672,
+          "count": 12,
+          "bboxLonLat": [
+            139.6970956,
+            35.6877679,
+            139.699911,
+            35.6890039
+          ],
+          "geometryTypes": {
+            "Polygon": 12
+          },
+          "fields": [
+            "display_name",
+            "facility"
+          ]
+        },
+        {
+          "floor": {
+            "name": "M1F",
+            "type": "indoor",
+            "zlevel": -1
+          },
+          "id": 64689,
+          "count": 53,
+          "bboxLonLat": [
+            139.699162,
+            35.6895269,
+            139.6998565,
+            35.6923585
+          ],
+          "geometryTypes": {
+            "Polygon": 50,
+            "Point": 3
+          },
+          "fields": [
+            "display_name",
+            "entities",
+            "facility",
+            "from",
+            "gender",
+            "int_address",
+            "service",
+            "structure",
+            "to"
+          ]
+        },
+        {
+          "floor": {
+            "name": "MB2F",
+            "type": "indoor",
+            "zlevel": -4
+          },
+          "id": 64688,
+          "count": 33,
+          "bboxLonLat": [
+            139.6987976,
+            35.692418,
+            139.6994396,
+            35.6937079
+          ],
+          "geometryTypes": {
+            "Polygon": 28,
+            "Point": 5
+          },
+          "fields": [
+            "currency",
+            "display_name",
+            "entities",
+            "facility",
+            "service",
+            "structure",
+            "to"
+          ]
+        }
+      ],
+      "bboxLonLat": [
+        139.6965262,
+        35.686519,
+        139.7037375,
+        35.6953073
+      ],
+      "nav": {
+        "version": 62,
+        "format": "navnet5",
+        "nodeCount": 2506,
+        "linkCount": 2653,
+        "danglingLinkCount": 0,
+        "weakComponents": [
+          2346,
+          89,
+          61,
+          4,
+          3,
+          2,
+          1
+        ],
+        "nodeFields": [
+          "id",
+          "l",
+          "mx",
+          "my"
+        ],
+        "linkFields": [
+          "d",
+          "dm",
+          "dz",
+          "id",
+          "n1",
+          "n2"
+        ],
+        "linkPropertyCounts": {},
+        "directions": {
+          "3": 2635,
+          "2": 12,
+          "1": 6
+        },
+        "floors": {
+          "64672": 27,
+          "64673": 50,
+          "64674": 420,
+          "64688": 52,
+          "64675": 278,
+          "64676": 710,
+          "64689": 97,
+          "64677": 363,
+          "64678": 295,
+          "64679": 96,
+          "64680": 118
+        },
+        "bboxLonLatViaPublishedAffine": [
+          139.69662417506206,
+          35.687430706815796,
+          139.70361691513813,
+          35.695084707636354
+        ],
+        "missingGeometryRefs": 6
+      },
+      "hoursCount": 100,
+      "standardGeometryFeatureCount": 15556
+    },
+    "Hokonavi": {
+      "w5-station_oedo_shinjukunishiguchi": {
+        "link.geojson": {
+          "count": 254,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.6986591269929,
+            35.69217140521896,
+            139.6994428970646,
+            35.69425765677936
+          ],
+          "fields": [
+            "FID",
+            "brail_tile",
+            "direction",
+            "distance",
+            "elevator",
+            "end_id",
+            "lev_diff",
+            "link_id",
+            "maint_date",
+            "r_method",
+            "rank",
+            "roof",
+            "route_type",
+            "rt_struct",
+            "start_id",
+            "tfc_s_type",
+            "tfc_signal",
+            "vtcl_slope",
+            "width"
+          ],
+          "maint_date": {
+            "2025-09-17": 254
+          }
+        },
+        "node.geojson": {
+          "count": 225,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.6986591269929,
+            35.69217140521896,
+            139.6994428970646,
+            35.69425765677936
+          ],
+          "fields": [
+            "FID",
+            "floor",
+            "in_out",
+            "lat",
+            "link1_id",
+            "link2_id",
+            "link3_id",
+            "link4_id",
+            "link5_id",
+            "link6_id",
+            "lon",
+            "node_id"
+          ],
+          "floor": {
+            "0": 4,
+            "-3": 64,
+            "-0.5": 37,
+            "-0.2": 2,
+            "1": 7,
+            "-1": 39,
+            "-1.5": 24,
+            "-2": 12,
+            "-0.7": 4,
+            "-3.5": 6,
+            "-4": 26
+          },
+          "in_out": {
+            "1": 1,
+            "2": 4,
+            "3": 220
+          }
+        },
+        "Shinjuku-nishiguchi_B0.5_Facility.geojson": {
+          "count": 11,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.6990624391616,
+            35.69218573363334,
+            139.69941981254325,
+            35.69285915552645
+          ],
+          "fields": [
+            "FID",
+            "category",
+            "floor_id",
+            "id",
+            "name",
+            "source"
+          ],
+          "name": {
+            " ": 11
+          },
+          "category": {
+            "F011": 3,
+            "F014": 1,
+            "F013": 2,
+            "F012": 2,
+            "F108": 3
+          }
+        },
+        "Shinjuku-nishiguchi_B0.5_Floor.geojson": {
+          "count": 2,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.6990518307332,
+            35.69216427392749,
+            139.69950254436233,
+            35.69288036455656
+          ],
+          "fields": [
+            "FID",
+            "category",
+            "id",
+            "name",
+            "ordinal",
+            "short_name",
+            "source"
+          ],
+          "name": {
+            "地下中1階": 2
+          },
+          "category": {
+            "1": 2
+          }
+        },
+        "Shinjuku-nishiguchi_B0.5_Space.geojson": {
+          "count": 19,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.69905183073317,
+            35.69216427392749,
+            139.69950254436233,
+            35.69288036455652
+          ],
+          "fields": [
+            "FID",
+            "category",
+            "floor_id",
+            "id",
+            "name",
+            "nonpublic",
+            "restricted",
+            "source",
+            "suite",
+            "toll"
+          ],
+          "name": {
+            " ": 19
+          },
+          "category": {
+            "B021": 3,
+            "B025": 1,
+            "B023": 2,
+            "B019": 8,
+            "B029": 3,
+            "B022": 2
+          },
+          "toll": {
+            "3": 11,
+            "1": 8
+          }
+        },
+        "Shinjuku-nishiguchi_B1_Facility.geojson": {
+          "count": 30,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.69881788329587,
+            35.69241792418446,
+            139.69944252800363,
+            35.694226155359836
+          ],
+          "fields": [
+            "FID",
+            "category",
+            "floor_id",
+            "id",
+            "name",
+            "source"
+          ],
+          "name": {
+            "": 30
+          },
+          "category": {
+            "F011": 9,
+            "F012": 2,
+            "F013": 15,
+            "F108": 4
+          }
+        },
+        "Shinjuku-nishiguchi_B1_Floor.geojson": {
+          "count": 2,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.6988125425419,
+            35.692362554555636,
+            139.69944560317728,
+            35.6942706024887
+          ],
+          "fields": [
+            "FID",
+            "category",
+            "id",
+            "name",
+            "ordinal",
+            "short_name",
+            "source"
+          ],
+          "name": {
+            "地下1階": 2
+          },
+          "category": {
+            "1": 2
+          }
+        },
+        "Shinjuku-nishiguchi_B1_Space.geojson": {
+          "count": 64,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.69881254254187,
+            35.69236255455565,
+            139.69944560317725,
+            35.69427060248871
+          ],
+          "fields": [
+            "FID",
+            "category",
+            "floor_id",
+            "id",
+            "name",
+            "nonpublic",
+            "restricted",
+            "source",
+            "suite",
+            "toll"
+          ],
+          "name": {
+            " ": 64
+          },
+          "category": {
+            "B021": 9,
+            "B019": 34,
+            "B022": 2,
+            "B023": 15,
+            "B018": 1,
+            "B029": 3
+          },
+          "toll": {
+            "3": 30,
+            "1": 34
+          }
+        },
+        "Shinjuku-nishiguchi_B3_Facility.geojson": {
+          "count": 28,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.69902571773315,
+            35.69269725472834,
+            139.69928045625636,
+            35.69389531156452
+          ],
+          "fields": [
+            "FID",
+            "category",
+            "floor_id",
+            "id",
+            "name",
+            "source"
+          ],
+          "name": {
+            "": 28
+          },
+          "category": {
+            "F013": 12,
+            "F012": 2,
+            "F014": 2,
+            "F011": 7,
+            "F106": 2,
+            "F003": 1,
+            "F001": 1,
+            "F002": 1
+          }
+        },
+        "Shinjuku-nishiguchi_B3_Floor.geojson": {
+          "count": 1,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.6989431768883,
+            35.69262653929785,
+            139.6993797929794,
+            35.69390894471439
+          ],
+          "fields": [
+            "FID",
+            "category",
+            "id",
+            "name",
+            "ordinal",
+            "short_name",
+            "source"
+          ],
+          "name": {
+            "地下3階": 1
+          },
+          "category": {
+            "1": 1
+          }
+        },
+        "Shinjuku-nishiguchi_B3_Space.geojson": {
+          "count": 85,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.69894317688826,
+            35.69262653929783,
+            139.69937979297939,
+            35.69390894471439
+          ],
+          "fields": [
+            "FID",
+            "category",
+            "floor_id",
+            "id",
+            "name",
+            "nonpublic",
+            "restricted",
+            "source",
+            "suite",
+            "toll"
+          ],
+          "name": {
+            " ": 85
+          },
+          "category": {
+            "B023": 12,
+            "B019": 50,
+            "B018": 1,
+            "B022": 2,
+            "B029": 6,
+            "B025": 2,
+            "B021": 7,
+            "B026": 2,
+            "B009": 1,
+            "B007": 1,
+            "B008": 1
+          },
+          "toll": {
+            "3": 22,
+            "1": 52,
+            "2": 11
+          }
+        },
+        "Shinjuku-nishiguchi_B4_Facility.geojson": {
+          "count": 7,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.6990602782751,
+            35.693162293756146,
+            139.6991921476514,
+            35.6937147378328
+          ],
+          "fields": [
+            "FID",
+            "category",
+            "floor_id",
+            "id",
+            "name",
+            "source"
+          ],
+          "name": {
+            "": 7
+          },
+          "category": {
+            "F011": 3,
+            "F013": 3,
+            "F012": 1
+          }
+        },
+        "Shinjuku-nishiguchi_B4_Floor.geojson": {
+          "count": 1,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.6989153812101,
+            35.69284886629439,
+            139.69926025534156,
+            35.69407840663301
+          ],
+          "fields": [
+            "FID",
+            "category",
+            "id",
+            "name",
+            "ordinal",
+            "short_name",
+            "source"
+          ],
+          "name": {
+            "地下4階": 1
+          },
+          "category": {
+            "1": 1
+          }
+        },
+        "Shinjuku-nishiguchi_B4_Space.geojson": {
+          "count": 74,
+          "crs": {
+            "type": "name",
+            "properties": {
+              "name": "EPSG:6668"
+            }
+          },
+          "bboxLonLat": [
+            139.6989153812101,
+            35.6928488662944,
+            139.69926025534156,
+            35.694078406633004
+          ],
+          "fields": [
+            "FID",
+            "category",
+            "floor_id",
+            "id",
+            "name",
+            "nonpublic",
+            "restricted",
+            "source",
+            "suite",
+            "toll"
+          ],
+          "name": {
+            " ": 74
+          },
+          "category": {
+            "B019": 64,
+            "B021": 3,
+            "B023": 3,
+            "B022": 1,
+            "B029": 3
+          },
+          "toll": {
+            "1": 64,
+            "2": 10
+          }
+        }
+      },
+      "w5-nwd_shinjuku": {
+        "node.geojson": {
+          "count": 1720,
+          "crs": null,
+          "bboxLonLat": [
+            139.687187689,
+            35.685667083,
+            139.706967401,
+            35.697885806
+          ],
+          "fields": [
+            "floor",
+            "in_out",
+            "lat",
+            "link1_id",
+            "link2_id",
+            "link3_id",
+            "link4_id",
+            "link5_id",
+            "lon",
+            "node_id"
+          ],
+          "floor": {
+            "0.0": 1397,
+            "1.0": 128,
+            "0.5": 147,
+            "-1.0": 28,
+            "-0.5": 20
+          },
+          "in_out": {
+            "1": 1506,
+            "2": 58,
+            "3": 156
+          }
+        },
+        "link.geojson": {
+          "count": 1866,
+          "crs": null,
+          "bboxLonLat": [
+            139.687187689,
+            35.685667083,
+            139.706967401,
+            35.697885806
+          ],
+          "fields": [
+            "brail_tile",
+            "direction",
+            "distance",
+            "elevator",
+            "end_id",
+            "lev_diff",
+            "link_id",
+            "rank",
+            "roof",
+            "route_type",
+            "rt_struct",
+            "start_id",
+            "tfc_s_type",
+            "tfc_signal",
+            "vtcl_slope",
+            "width"
+          ]
+        }
+      },
+      "w5-nwd_shibuya_sendagaya_shinjuku": {
+        "node.geojson": {
+          "count": 7155,
+          "crs": null,
+          "bboxLonLat": [
+            139.686879499,
+            35.653740672,
+            139.725555296,
+            35.699617744
+          ],
+          "fields": [
+            "floor",
+            "in_out",
+            "lat",
+            "link1_id",
+            "link2_id",
+            "link3_id",
+            "link4_id",
+            "link5_id",
+            "lon",
+            "node_id"
+          ],
+          "floor": {
+            "0.0": 6414,
+            "0.5": 421,
+            "1.0": 263,
+            "-1.0": 37,
+            "-0.5": 20
+          },
+          "in_out": {
+            "1": 6703,
+            "2": 111,
+            "3": 341
+          }
+        },
+        "link.geojson": {
+          "count": 7921,
+          "crs": null,
+          "bboxLonLat": [
+            139.686879499,
+            35.653740672,
+            139.725555296,
+            35.699617744
+          ],
+          "fields": [
+            "brail_tile",
+            "direction",
+            "distance",
+            "elevator",
+            "end_id",
+            "lev_diff",
+            "link_id",
+            "rank",
+            "roof",
+            "route_type",
+            "rt_struct",
+            "start_id",
+            "tfc_s_type",
+            "tfc_signal",
+            "vtcl_slope",
+            "width"
+          ]
+        }
+      }
+    },
+    "H-E01-GsiSummary": {
+      "counts": {
+        "Floor": 6,
+        "Space": 242,
+        "Facility": 76
+      },
+      "bboxLonLat": [
+        139.69881254254187,
+        35.69216427392749,
+        139.69950254436233,
+        35.69427060248871
+      ]
+    },
+    "T23HistoricalDirectedPaths": {
+      "method": "Geometry-associated node sets; d=1 forward, d=2 reverse, d=3 both; shortest sum of dm; no fare/access/hours/current-construction filtering. Not approved public routes.",
+      "paths": [
+        {
+          "metresSum": 310.27638597991535,
+          "linkCount": 45,
+          "links": [
+            18771986,
+            18771985,
+            18770071,
+            18770072,
+            18769845,
+            18763450,
+            18763479,
+            18763482,
+            18774888,
+            18774889,
+            18763488,
+            18763489,
+            18763477,
+            18763470,
+            18763473,
+            18763515,
+            18763519,
+            18763520,
+            18774885,
+            18774886,
+            18773137,
+            18773138,
+            18763380,
+            18763383,
+            18763386,
+            18763389,
+            18763392,
+            18779090,
+            18779089,
+            18763376,
+            18763373,
+            18763370,
+            18763367,
+            18968993,
+            18968992,
+            18968995,
+            18968994,
+            18769839,
+            18764009,
+            18969029,
+            18764018,
+            18764013,
+            18969030,
+            18788969,
+            18789158
+          ],
+          "startGid": 28993975,
+          "endGid": 28993976
+        },
+        {
+          "metresSum": 221.87182828375808,
+          "linkCount": 30,
+          "links": [
+            18789141,
+            18789048,
+            18789049,
+            18768689,
+            18768692,
+            18768695,
+            18768698,
+            18768701,
+            18789044,
+            18789045,
+            18770141,
+            18770142,
+            18770139,
+            18770109,
+            18770016,
+            18770083,
+            18770091,
+            18770090,
+            18779099,
+            18779102,
+            18779101,
+            18779097,
+            18779096,
+            18779095,
+            18779094,
+            18779093,
+            18779104,
+            18804770,
+            18804769,
+            18789137
+          ],
+          "startGid": 28993982,
+          "endGid": 28993981
+        },
+        {
+          "metresSum": 385.18042734287025,
+          "linkCount": 42,
+          "links": [
+            18789150,
+            18788976,
+            18763757,
+            18763754,
+            18763752,
+            18763753,
+            18772016,
+            18770672,
+            18770671,
+            18770680,
+            18770683,
+            18770684,
+            18787244,
+            18770657,
+            18770653,
+            18770652,
+            18770628,
+            18770634,
+            18771777,
+            18773133,
+            18773135,
+            18773136,
+            18771779,
+            18771780,
+            18771797,
+            18771798,
+            18771795,
+            18771782,
+            18771791,
+            18771792,
+            18771785,
+            18771784,
+            18771786,
+            18771787,
+            18771790,
+            18771788,
+            18771729,
+            18771732,
+            18771733,
+            18771769,
+            18770149,
+            18770147
+          ],
+          "startGid": 28993983,
+          "endGid": 28993975
+        },
+        {
+          "metresSum": 115.25728972515032,
+          "linkCount": 21,
+          "links": [
+            18789167,
+            18763555,
+            18763530,
+            18763527,
+            18763496,
+            18763503,
+            18763512,
+            18763511,
+            18763477,
+            18763489,
+            18763488,
+            18774889,
+            18774888,
+            18763482,
+            18763479,
+            18763450,
+            18769845,
+            18770072,
+            18770071,
+            18771985,
+            18771986
+          ],
+          "startGid": 28993451,
+          "endGid": 28993975
+        },
+        {
+          "metresSum": 137.9837468647161,
+          "linkCount": 27,
+          "links": [
+            18771609,
+            18803093,
+            18803092,
+            18789006,
+            18789005,
+            18762721,
+            18803111,
+            18803110,
+            18762715,
+            18762714,
+            18762689,
+            18769853,
+            18763286,
+            18763288,
+            18763291,
+            18804871,
+            18804870,
+            18769849,
+            18763569,
+            18763567,
+            18789115,
+            18789116,
+            18763571,
+            18763559,
+            18763547,
+            18763556,
+            18789167
+          ],
+          "startGid": 28993091,
+          "endGid": 28993451
+        },
+        {
+          "metresSum": 205.72937054903844,
+          "linkCount": 12,
+          "links": [
+            18771942,
+            18774597,
+            18774598,
+            18969619,
+            18773121,
+            18772081,
+            18772082,
+            18969618,
+            18770422,
+            18981066,
+            18981067,
+            18771939
+          ],
+          "startGid": 29008229,
+          "endGid": 29008228
+        }
+      ]
+    },
+    "P25": {
+      "xmlOccurrenceCounts": {
+        "cityObjectMember": 2,
+        "UndergroundBuilding": 1,
+        "CityObjectGroup": 1,
+        "Room": 153,
+        "Door": 1364,
+        "Window": 62,
+        "FloorSurface": 1911,
+        "CeilingSurface": 7387,
+        "InteriorWallSurface": 5476,
+        "IntBuildingInstallation": 1,
+        "posList": 65081,
+        "lod4MultiSurface": 30202,
+        "lod4Solid": 154
+      },
+      "crsDeclarations": {
+        "http://www.opengis.net/def/crs/EPSG/0/6697": 30359
+      },
+      "envelopeAxisOrder": [
+        "latitude",
+        "longitude",
+        "Tokyo Peil height"
+      ],
+      "lowerCorner": [
+        35.69069941674934,
+        139.69803124047718,
+        15.321
+      ],
+      "upperCorner": [
+        35.69501377379006,
+        139.7036188035924,
+        45.493
+      ],
+      "bboxLonLat": [
+        139.69803124047718,
+        35.69069941674934,
+        139.7036188035924,
+        35.69501377379006
+      ],
+      "countsAreXmlOccurrencesNotDeduplicatedPhysicalObjects": true,
+      "operatorFloorLabelsVerified": false,
+      "navigationGraphVerified": false
+    },
+    "T-UG": {
+      "encoding": "CP932",
+      "rowCount": 13,
+      "columns": [
+        "地下街名（通称名）",
+        "所在地",
+        "経営主体",
+        "開設日年月日",
+        "都計決年月日",
+        "階層",
+        "延床面積（ｍ２）",
+        "用途別延床面積（ｍ２）駐車場",
+        "用途別延床面積（ｍ２）地下道",
+        "用途別延床面積（ｍ２）店舗",
+        "用途別延床面積（ｍ２）その他"
+      ],
+      "geometryPresent": false,
+      "storeyCountsAreWholeFacilityNotPublicWalkingLevels": true,
+      "shinjukuRowCount": 4,
+      "shinjukuFacilityNames": [
+        "新宿駅東口地下街（ルミネエスト）",
+        "新宿駅西口地下街（小田急エース）",
+        "京王新宿名店街（京王モール）",
+        "歌舞伎町地下街（サブナード）"
+      ]
+    }
+  },
+  "comparison": {
+    "E27OriginLatLon": [
+      35.687,
+      139.6994
+    ],
+    "E27ExistingNwdBboxLonLat": [
+      139.69834279674163,
+      35.68683784082645,
+      139.69963422631773,
+      35.68901888089276
+    ],
+    "T23": "partial bbox overlap is not a node seam; no B6F in source inventory",
+    "H-E01": "disjoint from E27; closest NWD latitude approximately 575 m north of origin",
+    "P25": "disjoint from E27; southern envelope approximately 412 m north of origin and 187 m north of E27 NWD north edge"
+  },
+  "method": {
+    "execution": "python3 -I; standard-library ZIP/JSON/CSV/XML inspection; PDF text extraction for specifications and notice",
+    "scriptLocation": "/tmp/gteki-w5-research (outside repository and download directories)",
+    "scriptHashes": {
+      "fetch.py": "8eb1cd51d339d0f828230f5eda653993cd014f230313d2e45e2c378f6f0cc143",
+      "inspect_tokyo.py": "162b450f91bcddf18f679463a1c7872be720782f00a60681e33cfb21c743d160",
+      "inspect_hoko.py": "79535475ff8510f0ad8fcf6422c76f2256f9fed702a12b69a930b0b9f5e0d785",
+      "connections.py": "8624b1dc627f77c4a45d1995d121c9193f07a61d52022430572db0ed802e7b88"
+    },
+    "archiveSafety": "read members without extracting originals; zip CRC checks passed",
+    "robots": "saved robots files; G空間 disallowed query/API paths avoided; Hokonavi subsequent requests paced at 10 seconds; initial catalogue search was about 0.8 seconds after robots fetch before pacing was applied",
+    "browser": "Ego-lite startup unavailable; public web and ordinary HTTPS reads; no login/CAPTCHA bypass/TLS weakening"
+  },
+  "blockers": [
+    "M17/M18/M20 geometry and licence PDFs require login; not acquired",
+    "Tokyo source floor conflicts, historical geometry, seven graph components and six unresolved geometry refs",
+    "No current complete open geometry verified for F13/S02, SS01 platforms, full No.4 corridor or specific Lumine Est basement doors",
+    "Hokonavi publication end and existing lane post-publication reuse HOLD unresolved",
+    "ODPT Challenge authorization end is separate from publication availability; Basic provider-specific terms/payload not fully captured; reusable data redistribution is restricted",
+    "HTTP 403 and TLS failures retained; ODPT HTTP-200 HTML is not data"
+  ],
+  "validation": {
+    "verifiedAt": "2026-10-20T16:37:12.954288+00:00",
+    "allSuccessfulReceiptBytesAndHashesRecomputed": true,
+    "downloadedZipCrcChecksPassed": true,
+    "nodeFloorAndComponentTotalsChecked": true,
+    "appCodeChanged": false
+  },
+  "webOnlyRightsObservations": [
+    {
+      "url": "https://developer.odpt.org/challenge_license",
+      "checkedAt": "2026-10-20T16:37:59.316694+00:00",
+      "transport": "indexed official web text; direct page returns JavaScript shell",
+      "clausesReviewed": [
+        "4: conditional Challenge application use",
+        "8: reusable source/derivative data redistribution restriction",
+        "13: authorization ends 2027-03-12, cessation/deletion",
+        "JR-specific terms: competing-service restriction"
+      ],
+      "localRawSnapshotAcquired": false
+    },
+    {
+      "url": "https://developer.odpt.org/terms/data_basic_license.html",
+      "checkedAt": "2026-10-20T16:37:59.319100+00:00",
+      "transport": "indexed official web text",
+      "clausesReviewed": [
+        "4: public application use, including commercial, with update conditions",
+        "8: reusable source/derivative data redistribution restriction"
+      ],
+      "localRawSnapshotAcquired": false
+    }
+  ],
+  "delivery": {
+    "branch": "claude/shinjuku-s2-w5-research",
+    "parentHead": "399914d5e3f4b80d2babf46113d3edbd91d30594",
+    "commitStatus": "blocked",
+    "commitSha": null,
+    "blocker": "git add denied creating worktree index.lock: Operation not permitted; approval policy never",
+    "pushAttempted": false,
+    "repoFilesChanged": [
+      "docs/stations/shinjuku/research/2026-10-21-network-survey.md",
+      "docs/stations/shinjuku/research/acquisitions-2026-10-21.json"
+    ]
+  }
+}
