@@ -314,7 +314,7 @@ describe("length, cost and time", () => {
     expect(route.estimatedSeconds).toBe(seconds);
   });
 
-  it("handles null-length elevators using geometry for distance and fixed ride time", () => {
+  it("handles null-length elevators: plan walking distance from geometry, fixed ride time", () => {
     const lift = edge("lift", "start", "upper", {
       mode: "elevator", lengthM: null, geometry: [{ x: 0, y: 0, z: 0 }, { x: 10, y: 0, z: 4 }],
     });
@@ -322,7 +322,7 @@ describe("length, cost and time", () => {
     expect(router.isTraversable(lift, stepFree)).toBe(true);
     const route = success(router.route("start", "upper", stepFree));
     expect(route.estimatedSeconds).toBe(45);
-    expect(route.totalLengthM).toBeCloseTo(Math.hypot(10, 4));
+    expect(route.totalLengthM).toBeCloseTo(10); // the 4 m ride is time, not walking length
     expect(route.unknowns).toEqual([]);
   });
 

@@ -168,11 +168,21 @@ func _check_symlink_fence(glb: String) -> void:
 		var escape := Assets.new()
 		check(not escape.load_assets({"assets": [{"id": "out", "uri": "outside.glb", "format": "glb"}]}, gteki, station_root), "symlink escaping the station folder is refused")
 		check(escape.counts.assets == 0, "refused symlink is never read")
+		# <alpha>/gteki → <other>/gteki: the fence stays alpha, so other's files are refused.
+		DirAccess.make_dir_recursive_absolute(root.path_join("alpha"))
+		DirAccess.make_dir_recursive_absolute(root.path_join("other/gteki"))
+		DirAccess.copy_absolute(source, root.path_join("other/gteki/beta.glb"))
+		var alpha_linked := DirAccess.open(root.path_join("alpha")).create_link("../other/gteki", "gteki") == OK
+		check(alpha_linked, "create linked gteki dir")
+		var redirected := Assets.new()
+		check(not redirected.load_assets({"assets": [{"id": "b", "uri": "beta.glb", "format": "glb"}]}, root.path_join("alpha/gteki"), station_root), "a gteki/ dir linked into another station cannot widen the fence")
+		check(redirected.counts.assets == 0, "redirected gteki/ asset is never read")
+		check(Assets.canonical_path("C:/definitely-missing/x") == "" and Assets.canonical_path("relative/x") == "", "canonical_path rejects missing drive paths and relative paths")
 		var chained := Assets.new()
 		check(not chained.load_assets({"assets": [{"id": "chain", "uri": "chained.glb", "format": "glb"}]}, gteki, station_root), "chained symlink escaping on its second hop is refused")
 		check(chained.counts.assets == 0, "refused chained symlink is never read")
 		station_root.free()
-	for f in ["station/gteki/inside.glb", "station/gteki/outside.glb", "station/gteki/chained.glb", "station/links/next.glb", "station/assets/inside.glb", "other/outside.glb", "station/gteki", "station/assets", "station/links", "station", "other", ""]:
+	for f in ["station/gteki/inside.glb", "station/gteki/outside.glb", "station/gteki/chained.glb", "station/links/next.glb", "station/assets/inside.glb", "other/outside.glb", "other/gteki/beta.glb", "alpha/gteki", "alpha", "other/gteki", "station/gteki", "station/assets", "station/links", "station", "other", ""]:
 		DirAccess.remove_absolute(root.path_join(f))
 
 

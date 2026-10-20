@@ -64,11 +64,13 @@ func load_glb(path: String, station_root: Node3D, asset_id: String = "asset", ma
 ## Resolve `uri` under `gteki_dir` to its canonical path and accept it only if that lies inside the
 ## canonical station folder (the parent of gteki/), like the web explorer's fence. Returns "" otherwise.
 static func resolve_in_station(gteki_dir: String, uri: String) -> String:
-	var base := canonical_path(ProjectSettings.globalize_path(gteki_dir))
-	if base.is_empty():
+	var raw := ProjectSettings.globalize_path(gteki_dir).simplify_path()
+	# The fence is the canonical *station* folder, derived independently of where gteki/ points:
+	# if <alpha>/gteki is a link into <beta>, beta's files must not pass as alpha's.
+	var fence := canonical_path(raw.get_base_dir())
+	if fence.is_empty():
 		return ""
-	var fence := base.get_base_dir()
-	var target := canonical_path(base.path_join(uri))
+	var target := canonical_path(raw.path_join(uri))
 	if target.is_empty() or not target.begins_with(fence + "/"):
 		return ""
 	return target
@@ -79,15 +81,21 @@ static func resolve_in_station(gteki_dir: String, uri: String) -> String:
 static func canonical_path(path: String) -> String:
 	if not path.is_absolute_path():
 		return ""
-	var pending := Array(path.simplify_path().split("/", false))
-	var resolved := "/"
+	var simple := path.simplify_path()
+	# Keep the filesystem root ("/" or a Windows drive such as "C:/") out of the component walk.
+	var root := "/"
+	if simple.length() >= 2 and simple[1] == ":":
+		root = simple.substr(0, 2) + "/"
+		simple = simple.substr(2)
+	var pending := Array(simple.split("/", false))
+	var resolved := root
 	var hops := 0
 	while not pending.is_empty():
 		var part: String = pending.pop_front()
 		if part == "." or part.is_empty():
 			continue
 		if part == "..":
-			resolved = resolved.get_base_dir() if resolved != "/" else "/"
+			resolved = resolved.get_base_dir() if resolved != root else root
 			continue
 		var dir := DirAccess.open(resolved)
 		if dir == null:
@@ -97,11 +105,15 @@ static func canonical_path(path: String) -> String:
 			if hops > 40:
 				return ""
 			var link := dir.read_link(part)
+			if link.is_absolute_path():
+				# An absolute target restarts from its own root (drive-aware).
+				root = link.substr(0, 2) + "/" if link.length() >= 2 and link[1] == ":" else "/"
+				resolved = root
+				if root != "/":
+					link = link.substr(2)
 			var rest := Array(link.split("/", false))
 			rest.append_array(pending)
 			pending = rest
-			if link.begins_with("/"):
-				resolved = "/"
 			continue
 		var next := resolved.path_join(part)
 		if not dir.dir_exists(part) and not dir.file_exists(part):

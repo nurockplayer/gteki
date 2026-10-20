@@ -57,6 +57,7 @@ export interface RouteResult {
   ok: true;
   nodeIds: string[];
   steps: RouteStep[];
+  /** Walking distance in metres (stairs/ramps include the climb; lift rides add time, not length). */
   totalLengthM: number;
   /** Estimated walking time (s): walk 1.2 m/s, stairs 0.5 m/s along length, escalator 0.75 m/s, lift 45 s per ride. */
   estimatedSeconds: number;

@@ -72,7 +72,7 @@ describe("vertical instructions never invent direction", () => {
 describe("vertical instructions on one floor", () => {
   it("names no destination floor when the stair chain starts and ends on the same floor", () => {
     const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("st", "a", "b", { mode: "stairs" })]);
-    b.nodes.find((n) => n.id === "b")!.position.z = -2;
+    b.nodes.find((n) => n.id === "b")!.position = { x: 20, y: 0, z: -2 }; // straight on: no turn to name
     const r = ok(createRouter(b).route("start", "b", base));
     expect(describeRoute(b, r, "en").find((i) => i.kind === "stairs")!.text).toBe("Take the stairs down");
     expect(describeRoute(b, r, "ja").find((i) => i.kind === "stairs")!.text).toBe("階段で下へ");
@@ -98,5 +98,77 @@ describe("second review round", () => {
     const r = ok(createRouter(b).route("start", "goal", { ...base, today: "2026-10-20" }));
     expect(r.undatedSourceIds).toEqual(["hours-src"]);
     expect(r.stale).toBeNull();
+  });
+});
+
+describe("third review round", () => {
+  it("refuses a sloped edge whose stated-length fallback geometry has unknown heights (never 0 m)", () => {
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("st", "a", "upper", { mode: "stairs", lengthM: null, geometry: [{ x: 10, y: 0, z: null }, { x: 10, y: 0, z: null }] }),
+    ]);
+    expect(createRouter(b).route("start", "upper", base).ok).toBe(false);
+    b.edges[1]!.geometry = [{ x: 10, y: 0, z: 0 }, { x: 13, y: 0, z: 4 }];
+    expect(ok(createRouter(b).route("start", "upper", base)).steps[1]!.lengthM).toBeCloseTo(5);
+  });
+
+  it("counts a lift ride as time, not walking length", () => {
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("lift", "a", "upper", { mode: "elevator", lengthM: null, geometry: [{ x: 10, y: 0, z: 0 }, { x: 10, y: 0, z: 4 }] }),
+    ]);
+    const r = ok(createRouter(b).route("start", "upper", base));
+    expect(r.steps[1]!.lengthM).toBe(0);
+    expect(r.estimatedSeconds).toBeGreaterThanOrEqual(45);
+  });
+});
+
+describe("turn narration robustness (Ikebukuro lane observations)", () => {
+  it("measures headings over ~5 m, so a short snapping hook does not turn a right turn into 'Turn back'", () => {
+    // Walk east 20 m to node a, but the polyline ends in a 1.5 m hook pointing west; then go south.
+    const b = createSyntheticBundle([
+      edge("in", "start", "a", { lengthM: null, geometry: [{ x: 0, y: 0, z: 0 }, { x: 11.5, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }] }),
+      edge("out", "a", "b", { lengthM: null, geometry: [{ x: 10, y: 0, z: 0 }, { x: 10, y: -10, z: 0 }] }),
+    ]);
+    b.nodes.find((n) => n.id === "b")!.position = { x: 10, y: -10, z: 0 };
+    const kinds = describeRoute(b, ok(createRouter(b).route("start", "b", base)), "en").map((i) => i.kind);
+    expect(kinds).toContain("turn_right");
+    expect(kinds).not.toContain("u_turn");
+  });
+
+  it("does not merge two flights across a real turn and names the turn", () => {
+    // Flight 1 heads east (a → upper); flight 2 turns left (north) to upper-2' on the same floor.
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("f1", "a", "upper", { mode: "stairs" }),
+      edge("f2", "upper", "upper-2", { mode: "stairs", lengthM: null, geometry: [{ x: 10, y: 0, z: 4 }, { x: 10, y: 8, z: 4 }] }),
+    ]);
+    b.nodes.find((n) => n.id === "a")!.position = { x: 0, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "upper-2")!.position = { x: 10, y: 8, z: 4 };
+    b.edges[0] = edge("s-a", "start", "a", { lengthM: 1, geometry: [{ x: -1, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }] });
+    b.nodes.find((n) => n.id === "start")!.position = { x: -1, y: 0, z: 0 };
+    const stairs = describeRoute(b, ok(createRouter(b).route("start", "upper-2", base)), "en").filter((i) => i.kind === "stairs");
+    expect(stairs).toHaveLength(2);
+    expect(stairs[1]!.text).toMatch(/^Turn left, then take the stairs/);
+    expect(describeRoute(b, ok(createRouter(b).route("start", "upper-2", base)), "ja").filter((i) => i.kind === "stairs")[1]!.text).toMatch(/^左へ曲がり、階段/);
+  });
+});
+
+describe("fourth review round", () => {
+  it("interpolates the 5 m heading chord, so a long sparse segment cannot invent a turn", () => {
+    const mk = (incoming: { x: number; y: number; z: number }[]) => {
+      const b = createSyntheticBundle([
+        edge("in", "start", "a", { lengthM: null, geometry: incoming }),
+        edge("st", "a", "goal", { mode: "stairs", lengthM: null, geometry: [{ x: 4, y: 0, z: 0 }, { x: 14, y: 0, z: -2 }] }),
+      ]);
+      b.nodes.find((n) => n.id === "start")!.position = { x: 0, y: -100, z: 0 };
+      b.nodes.find((n) => n.id === "a")!.position = { x: 4, y: 0, z: 0 };
+      b.nodes.find((n) => n.id === "goal")!.position = { x: 14, y: 0, z: -2 };
+      return describeRoute(b, ok(createRouter(b).route("start", "goal", base)), "en").map((i) => i.text);
+    };
+    const sparse = mk([{ x: 0, y: -100, z: 0 }, { x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 0 }]);
+    const dense = mk([{ x: 0, y: -100, z: 0 }, { x: 0, y: -1, z: 0 }, { x: 0, y: 0, z: 0 }, { x: 4, y: 0, z: 0 }]);
+    expect(sparse).toEqual(dense);
+    expect(sparse.join(" / ")).not.toMatch(/Turn right, then/);
   });
 });

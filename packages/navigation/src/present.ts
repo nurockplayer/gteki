@@ -71,6 +71,8 @@ export interface Instruction {
   distanceM: number;
   /** Vertical sense when evidenced by known elevations or same-operator ordinals; otherwise null. */
   vertical: "up" | "down" | null;
+  /** Turn (> 45°, measured over ~5 m) to take before this stair/escalator/lift/ramp/gate; null = none. */
+  turn?: "left" | "right" | "back" | null;
   toFloorId: string;
   /** Plain text in the requested language. */
   text: string;
@@ -78,6 +80,8 @@ export interface Instruction {
 
 const VERTICAL: Partial<Record<EdgeMode, InstructionKind>> = { stairs: "stairs", escalator: "escalator", elevator: "elevator", ramp: "ramp" };
 const TURN_DEG = 35;
+/** Heading change between consecutive flights that splits them into separate instructions. */
+const VERTICAL_TURN_DEG = 45;
 
 /** "level" = heights known and equal (a flat continuation); null = direction UNKNOWN. */
 function verticalSense(a: Floor | undefined, b: Floor | undefined, za: number | null, zb: number | null): "up" | "down" | "level" | null {
@@ -99,6 +103,7 @@ const TEXT = {
     start: () => "出発",
     walk: (m: number) => `約${m}m 直進`,
     turn_left: (m: number) => `左へ曲がり約${m}m`,
+    turnPrefix: (turn: "left" | "right" | "back", text: string) => `${{ left: "左へ曲がり、", right: "右へ曲がり、", back: "引き返して、" }[turn]}${text}`,
     turn_right: (m: number) => `右へ曲がり約${m}m`,
     u_turn: (m: number) => `引き返して約${m}m`,
     gate: () => "改札を通過",
@@ -116,6 +121,7 @@ const TEXT = {
     start: () => "Start",
     walk: (m: number) => `Go straight ~${m} m`,
     turn_left: (m: number) => `Turn left, ~${m} m`,
+    turnPrefix: (turn: "left" | "right" | "back", text: string) => `${{ left: "Turn left", right: "Turn right", back: "Turn back" }[turn]}, then ${text.charAt(0).toLowerCase()}${text.slice(1)}`,
     turn_right: (m: number) => `Turn right, ~${m} m`,
     u_turn: (m: number) => `Turn back, ~${m} m`,
     gate: () => "Pass the ticket gate",
@@ -126,17 +132,49 @@ const TEXT = {
   },
 };
 
-/** Heading (degrees, clockwise from north) of the polyline at the start or end of a step. */
+/** Span over which a step's entry/exit heading is measured, so short snapping hooks don't flip turns. */
+const HEADING_SPAN_M = 5;
+
+/**
+ * Heading (degrees, clockwise from north) of a step where it starts or ends, measured as the chord
+ * over its first/last ~5 m (or the whole step if shorter) rather than its first/last segment.
+ */
 function stepHeading(points: PolylinePoint[], stepIndex: number, end: "start" | "end"): number | null {
   const own = points.map((p, i) => ({ p, i })).filter(({ p }) => p.stepIndex === stepIndex);
   if (own.length === 0) return null;
   const firstIdx = own[0]!.i - 1;
   const lastIdx = own[own.length - 1]!.i;
-  const [a, b] = end === "start" ? [points[firstIdx]!, points[firstIdx + 1]!] : [points[lastIdx - 1]!, points[lastIdx]!];
+  const anchor = end === "start" ? firstIdx : lastIdx;
+  const dir = end === "start" ? 1 : -1;
+  const at = points[anchor]!;
+  // Walk along the step from the junction and stop exactly HEADING_SPAN_M away (interpolating inside
+  // the last segment), so a long sparse segment cannot stretch the chord and invent a turn.
+  let far = { x: at.x, y: at.y };
+  let walked = 0;
+  for (let k = anchor; k + dir >= firstIdx && k + dir <= lastIdx; k += dir) {
+    const p = points[k]!;
+    const q = points[k + dir]!;
+    const seg = Math.hypot(q.x - p.x, q.y - p.y);
+    if (walked + seg >= HEADING_SPAN_M) {
+      const f = seg === 0 ? 0 : (HEADING_SPAN_M - walked) / seg;
+      far = { x: p.x + (q.x - p.x) * f, y: p.y + (q.y - p.y) * f };
+      break;
+    }
+    walked += seg;
+    far = { x: q.x, y: q.y };
+  }
+  const [a, b] = end === "start" ? [at, far] : [far, at];
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   if (Math.hypot(dx, dy) < 1e-6) return null;
   return (Math.atan2(dx, dy) * 180) / Math.PI;
+}
+
+/** Signed heading change (degrees, + = right) from the end of step i-1 to the start of step i. */
+function turnDelta(points: PolylinePoint[], i: number): number | null {
+  const h0 = stepHeading(points, i - 1, "end");
+  const h1 = stepHeading(points, i, "start");
+  return h0 === null || h1 === null ? null : ((h1 - h0 + 540) % 360) - 180;
 }
 
 export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja"): Instruction[] {
@@ -169,7 +207,11 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
       const to = nodes.get(step.toNodeId)!;
       const sense3 = verticalSense(floors.get(step.fromFloorId), floors.get(step.toFloorId), from.position.z, to.position.z);
       const prev = out[out.length - 1]!;
-      const merging = prev.kind === kind && kind !== "gate" && (lastSense === sense3 || lastSense === "level" || sense3 === "level");
+      // A real turn between two flights is a decision point: never hide it inside one instruction.
+      const delta = i > 0 ? turnDelta(points, i) : null;
+      const turnHere: "left" | "right" | "back" | null =
+        delta === null ? null : Math.abs(delta) > 150 ? "back" : delta > VERTICAL_TURN_DEG ? "right" : delta < -VERTICAL_TURN_DEG ? "left" : null;
+      const merging = prev.kind === kind && kind !== "gate" && turnHere === null && (lastSense === sense3 || lastSense === "level" || sense3 === "level");
       if (!merging) chainFromFloorId = step.fromFloorId;
       const label = chainFromFloorId === step.toFloorId ? null : floorDisplayName(floors.get(step.toFloorId), lang);
       // Consecutive segments of one stair/escalator/lift chain read as one instruction — only when they
@@ -181,14 +223,17 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
         prev.distanceM += step.lengthM;
         prev.toFloorId = step.toFloorId;
         prev.vertical = lastSense === "up" || lastSense === "down" ? lastSense : null;
-        prev.text = t.vertical(kind, prev.vertical, label);
+        const merged = t.vertical(kind, prev.vertical, label);
+        prev.text = prev.turn ? t.turnPrefix(prev.turn, merged) : merged;
         return;
       }
       lastSense = sense3;
       const sense = sense3 === "up" || sense3 === "down" ? sense3 : null;
+      const base = kind === "gate" ? t.gate() : t.vertical(kind, sense, label);
+      // A walk instruction only says how far to go, so a turn onto the flight/gate is named here.
       out.push({
-        kind, stepIndexes: [i], distanceM: step.lengthM, vertical: sense, toFloorId: step.toFloorId,
-        text: kind === "gate" ? t.gate() : t.vertical(kind, sense, label),
+        kind, stepIndexes: [i], distanceM: step.lengthM, vertical: sense, turn: turnHere, toFloorId: step.toFloorId,
+        text: turnHere ? t.turnPrefix(turnHere, base) : base,
       });
       return;
     }
@@ -202,10 +247,8 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     const prevStep = route.steps[i - 1];
     let turn: InstructionKind = "walk";
     if (prevStep && !VERTICAL[prevStep.mode] && prevStep.mode !== "gate") {
-      const h0 = stepHeading(points, i - 1, "end");
-      const h1 = stepHeading(points, i, "start");
-      if (h0 !== null && h1 !== null) {
-        const delta = ((h1 - h0 + 540) % 360) - 180;
+      const delta = turnDelta(points, i);
+      if (delta !== null) {
         if (Math.abs(delta) > 150) turn = "u_turn";
         else if (delta > TURN_DEG) turn = "turn_right";
         else if (delta < -TURN_DEG) turn = "turn_left";
