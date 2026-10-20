@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import { createRouter } from "@gteki/navigation";
-import { buildLayout, centroid, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type WallSeg, type XY, type XYZ } from "./layout.ts";
+import { buildLayout, centroid, pointInRings, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
 import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture, type SignIcon } from "./textures.ts";
 
 export const OEDO_MAGENTA = "#b6007a"; // public line colour of the Oedo Line
@@ -62,6 +62,15 @@ export function slabGeometry(rings: XY[][], z: number, uvScale: number, facingDo
   return g;
 }
 
+/** The renderer uses the same affine roof that the head-clearance checks inspect. */
+export function soffitGeometry(s: Soffit): THREE.BufferGeometry {
+  const g = slabGeometry(s.rings, s.z, 2.4, true);
+  const pos = g.attributes.position!;
+  for (let i = 0; i < pos.count; i++) pos.setY(i, soffitHeight(s, { x: pos.getX(i), y: -pos.getZ(i) }));
+  g.computeVertexNormals();
+  return g;
+}
+
 /** Vertical quad strip for a wall segment, UV u = metres/2.4, v = height/3.2. */
 function wallQuad(a: XY, b: XY, z0: number, z1: number, uOff = 0): THREE.BufferGeometry {
   const L = Math.hypot(b.x - a.x, b.y - a.y);
@@ -72,6 +81,26 @@ function wallQuad(a: XY, b: XY, z0: number, z1: number, uOff = 0): THREE.BufferG
   g.setIndex([0, 1, 2, 0, 2, 3]);
   g.computeVertexNormals();
   return g;
+}
+
+function enclosureWallGeometry(w: WallSeg): THREE.BufferGeometry {
+  const g = wallQuad(w.a, w.b, w.zMin, w.zMax, w.a.x + w.a.y);
+  if (!w.profile) return g;
+  const p = g.attributes.position!, uv = g.attributes.uv!;
+  const heights = [w.profile.bottomA, w.profile.bottomB, w.profile.topB, w.profile.topA];
+  for (let i = 0; i < 4; i++) {
+    p.setY(i, heights[i]!);
+    uv.setY(i, (heights[i]! - (w.surfaceBase ? i === 0 || i === 3 ? w.surfaceBase.a : w.surfaceBase.b : 0)) / 3.2);
+  }
+  g.computeVertexNormals();
+  return g;
+}
+
+function runPanel(w: WallSeg, r: Run): WallSeg {
+  const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, l2 = dx * dx + dy * dy;
+  const zAt = (p: XY) => r.a.z + (r.b.z - r.a.z) * ((p.x - r.a.x) * dx + (p.y - r.a.y) * dy) / l2;
+  const a = zAt(w.a), b = zAt(w.b);
+  return { ...w, surfaceBase: { a, b }, profile: { bottomA: a - 0.12, bottomB: b - 0.12, topA: a + 0.9, topB: b + 0.9 } };
 }
 
 function merged(geos: THREE.BufferGeometry[]): THREE.BufferGeometry | null {
@@ -119,21 +148,23 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const concourseTiles = tileTextures({ base: "#c9c4ba", grout: "rgba(90,86,80,0.55)", n: 4, seed: 11 });
   const paidTiles = tileTextures({ base: "#bfbcb6", grout: "rgba(80,80,80,0.55)", n: 4, seed: 23 });
   const platformTiles = tileTextures({ base: "#8e8c88", grout: "rgba(40,40,40,0.6)", n: 4, seed: 37, speckle: 0.09 });
-  for (const t of [concourseTiles, paidTiles, platformTiles]) for (const tex of Object.values(t)) (tex.anisotropy = aniso), track(tex);
+  const wallMaps = wallTexture(OEDO_MAGENTA), ceilingMaps = ceilingTexture();
+  for (const t of [concourseTiles, paidTiles, platformTiles, wallMaps, ceilingMaps]) for (const tex of Object.values(t)) (tex.anisotropy = aniso), track(tex);
   const mat = {
-    floor: track(new THREE.MeshStandardMaterial({ map: concourseTiles.map, roughnessMap: concourseTiles.roughnessMap, roughness: 0.55, metalness: 0.0, envMapIntensity: 0.9 })),
-    floorPaid: track(new THREE.MeshStandardMaterial({ map: paidTiles.map, roughnessMap: paidTiles.roughnessMap, roughness: 0.5, metalness: 0.0, envMapIntensity: 0.9 })),
-    floorPlatform: track(new THREE.MeshStandardMaterial({ map: platformTiles.map, roughnessMap: platformTiles.roughnessMap, roughness: 0.62, metalness: 0.0 })),
-    wall: track(new THREE.MeshStandardMaterial({ map: track(wallTexture(OEDO_MAGENTA)), roughness: 0.42, metalness: 0.05, side: THREE.DoubleSide })),
+    floor: track(new THREE.MeshStandardMaterial({ ...concourseTiles, bumpScale: 0.012, roughness: 0.72, metalness: 0.0, envMapIntensity: 0.9 })),
+    floorPaid: track(new THREE.MeshStandardMaterial({ ...paidTiles, bumpScale: 0.012, roughness: 0.68, metalness: 0.0, envMapIntensity: 0.9 })),
+    floorPlatform: track(new THREE.MeshStandardMaterial({ ...platformTiles, bumpScale: 0.016, roughness: 0.82, metalness: 0.0 })),
+    wall: track(new THREE.MeshStandardMaterial({ ...wallMaps, bumpScale: 0.009, roughness: 0.66, metalness: 0.05, side: THREE.DoubleSide })),
     wallRoom: track(new THREE.MeshStandardMaterial({ color: "#d8d5ce", roughness: 0.7, side: THREE.DoubleSide })),
-    ceiling: track(new THREE.MeshStandardMaterial({ map: track(ceilingTexture()), color: "#9ea2a6", roughness: 0.85, side: THREE.DoubleSide })),
+    ceiling: track(new THREE.MeshStandardMaterial({ ...ceilingMaps, color: "#e2e3de", bumpScale: 0.008, emissive: "#bdc7ce", emissiveIntensity: 0.065, roughness: 0.96, side: THREE.DoubleSide })),
     light: track(new THREE.MeshStandardMaterial({ color: "#ffffff", emissive: "#fff6e8", emissiveIntensity: 3.2, roughness: 0.4 })),
     lightHousing: track(new THREE.MeshStandardMaterial({ color: "#9a9ea2", roughness: 0.35, metalness: 0.6 })),
     tactile: track(new THREE.MeshStandardMaterial({ map: track(tactileTexture()), roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -2 })),
-    steel: track(new THREE.MeshStandardMaterial({ color: "#c7ccd1", roughness: 0.28, metalness: 0.85 })),
+    steel: track(new THREE.MeshStandardMaterial({ color: "#c7ccd1", roughness: 0.28, metalness: 0.85, side: THREE.DoubleSide })),
     darkSteel: track(new THREE.MeshStandardMaterial({ color: "#3b3f44", roughness: 0.45, metalness: 0.6 })),
     rubber: track(new THREE.MeshStandardMaterial({ color: "#121314", roughness: 0.55 })),
-    glass: track(new THREE.MeshPhysicalMaterial({ color: "#cfe6ee", roughness: 0.05, metalness: 0, transmission: opts.quality === "high" ? 0.85 : 0, transparent: true, opacity: opts.quality === "high" ? 1 : 0.25, thickness: 0.02, side: THREE.DoubleSide })),
+    // Tinted reflective glass without a transmission scene pass (also coherent on low quality).
+    glass: track(new THREE.MeshStandardMaterial({ color: "#b4ccd1", roughness: 0.18, metalness: 0.25, transparent: true, opacity: 0.28, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true })),
     stair: track(new THREE.MeshStandardMaterial({ color: "#b9b4aa", roughness: 0.6 })),
     nosing: track(new THREE.MeshStandardMaterial({ color: "#3a3a3a", roughness: 0.7 })),
     escStep: track(new THREE.MeshStandardMaterial({ color: "#6d7177", roughness: 0.4, metalness: 0.7 })),
@@ -175,6 +206,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     far: number;
   }[] = [];
 
+  const fasciaGeos: THREE.BufferGeometry[] = [];
   // ---- per level: slabs, ceilings, walls, railings, lights
   for (const lv of layout.levels) {
     const g = new THREE.Group();
@@ -197,7 +229,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       mesh.name = "walkable";
       g.add(mesh);
     }
-    const ceil = merged(lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)));
+    const ceil = merged([...lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 2.4, true)), ...layout.soffits.filter((s) => s.floorId === lv.floorId).map(soffitGeometry)]);
     if (ceil) g.add(new THREE.Mesh(track(ceil), mat.ceiling));
 
     // walls (u continuous along each segment)
@@ -205,6 +237,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const roomGeos: THREE.BufferGeometry[] = [];
     for (const w of lv.walls) {
       if (w.kind === "trackside") continue;
+      if (w.finish) {
+        (w.finish === "fascia" ? fasciaGeos : wallGeos).push(enclosureWallGeometry(w));
+        continue;
+      }
       (w.kind === "wall" || w.kind === "elevator" ? wallGeos : roomGeos).push(wallQuad(w.a, w.b, w.zMin, w.zMax, w.a.x + w.a.y));
     }
     // public-facing "room" walls use the station cladding as well; plain material only for very short jogs
@@ -230,8 +266,13 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     // platform: platform doors along trackside walls + track bed beyond
     if (isPlatform) buildPlatformEdge(lv.walls.filter((w) => w.kind === "trackside"), lv.z, g);
   }
+  // Fascia joins the existing stair-concrete batch below; shaft cladding is merged with the
+  // source walls per level. No extra wall material draw is needed for the new enclosure.
 
-  // ---- ceiling light lines follow walk edges (corridor centrelines)
+  // ---- underground fixtures, kept in a separate helper for the surface lane's hook
+  buildUndergroundLighting(bundle, layout, levelGroups, root, track);
+
+  // ---- existing surface ceiling lights (street scene is owned by W2)
   {
     const lightGeos: THREE.BufferGeometry[] = [];
     const housingGeos: THREE.BufferGeometry[] = [];
@@ -240,6 +281,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       if (e.mode !== "walk" && e.mode !== "gate" && e.mode !== "ramp") continue;
       const A = nodeById.get(e.from)!;
       const B = nodeById.get(e.to)!;
+      if ((layout.nodeZ.get(A.id) ?? 0) < -0.5) continue;
       if (A.floorId !== B.floorId || A.inOut === "outside") continue;
       const lv = layout.levels.find((l) => l.floorId === A.floorId) ?? layout.levels.find((l) => Math.abs(l.z - (layout.nodeZ.get(A.id) ?? 0)) < 0.5);
       if (!lv) continue;
@@ -260,7 +302,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
 
   // ---- landing pads
   {
-    const pg = merged(layout.pads.map((p) => slabGeometry(p.rings, p.z + 0.002, 2.4)));
+    const pg = merged([...layout.pads.map((p) => slabGeometry(p.rings, p.z + 0.002, 2.4)), ...layout.linkStrips.filter((s) => s.z < -0.5).map((s) => slabGeometry(s.rings, s.z - 0.006, 2.4))]);
     if (pg) {
       const m = new THREE.Mesh(track(pg), mat.floor);
       m.name = "walkable";
@@ -300,9 +342,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // ---- stairs & escalators
   const escalators: BuiltStation["escalators"] = [];
   {
-    const stairGeos: THREE.BufferGeometry[] = [];
+    const stairGeos: THREE.BufferGeometry[] = [...fasciaGeos];
     const nosingGeos: THREE.BufferGeometry[] = [];
     const sideGeos: THREE.BufferGeometry[] = [];
+    const balustradeGeos: THREE.BufferGeometry[] = [];
     const handGeos: THREE.BufferGeometry[] = [];
     const rubberGeos: THREE.BufferGeometry[] = [];
     const steelGeos: THREE.BufferGeometry[] = [];
@@ -330,9 +373,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
             const cx = lo.x + u.x * run * (i + 0.5);
             const cy = lo.y + u.y * run * (i + 0.5);
             const top = lo.z + rise * (i + 1);
-            const box = new THREE.BoxGeometry(run + 0.02, rise * (i + 1) + 0.05, r.width);
+            const box = new THREE.BoxGeometry(run + 0.02, rise + 0.18, r.width);
             box.rotateY(yaw);
-            box.translate(cx, lo.z + (rise * (i + 1)) / 2 - 0.025, -cy);
+            box.translate(cx, top - (rise + 0.18) / 2, -cy);
             stairGeos.push(box);
             const ex = lo.x + u.x * run * i;
             const ey = lo.y + u.y * run * i;
@@ -342,46 +385,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
             nosingGeos.push(nose);
           }
         }
-        // handrails on both sides (and centre if wide)
-        const offs = r.width > 2.8 ? [-hw + 0.08, 0, hw - 0.08] : [-hw + 0.08, hw - 0.08];
-        for (const o of offs) {
-          const a = v3({ x: lo.x + n.x * o - u.x * 0.3, y: lo.y + n.y * o - u.y * 0.3, z: lo.z + 0.85 });
-          const b = v3({ x: hi.x + n.x * o + u.x * 0.3, y: hi.y + n.y * o + u.y * 0.3, z: hi.z + 0.85 });
-          handGeos.push(cylAlong(a, b, 0.022));
-          for (const t of [0.05, 0.5, 0.95])
-            handGeos.push(cylAlong(new THREE.Vector3().lerpVectors(a, b, t).setY(lo.z + (hi.z - lo.z) * t + 0.02), new THREE.Vector3().lerpVectors(a, b, t), 0.015));
-        }
-        // side walls of stairwell (from under the treads up to rail height)
-        for (const s of [-1, 1]) {
-          const o = (hw + 0.04) * s;
-          const pa = { x: lo.x + n.x * o, y: lo.y + n.y * o };
-          const pb = { x: hi.x + n.x * o, y: hi.y + n.y * o };
-          const geo = new THREE.BufferGeometry();
-          const zt0 = lo.z + 1.0;
-          const zt1 = hi.z + 1.0;
-          geo.setAttribute("position", new THREE.Float32BufferAttribute([pa.x, lo.z - 0.4, -pa.y, pb.x, hi.z - 0.4, -pb.y, pb.x, zt1, -pb.y, pa.x, zt0, -pa.y], 3));
-          geo.setAttribute("uv", new THREE.Float32BufferAttribute([0, 0, L / 2.4, 0, L / 2.4, 1, 0, 1], 2));
-          geo.setIndex([0, 1, 2, 0, 2, 3]);
-          geo.computeVertexNormals();
-          sideGeos.push(geo);
-        }
       } else {
         // escalator truss + balustrades
         const truss = boxAlong(v3({ ...lo, z: lo.z - 0.55 }), v3({ ...hi, z: hi.z - 0.55 }), r.width + 0.3, 0.9);
         steelGeos.push(truss);
-        for (const s of [-1, 1]) {
-          const o = (hw + 0.07) * s;
-          const pa = { x: lo.x + n.x * o - u.x * 0.6, y: lo.y + n.y * o - u.y * 0.6, z: lo.z };
-          const pb = { x: hi.x + n.x * o + u.x * 0.6, y: hi.y + n.y * o + u.y * 0.6, z: hi.z };
-          // inner balustrade panel
-          const geo = new THREE.BufferGeometry();
-          geo.setAttribute("position", new THREE.Float32BufferAttribute([pa.x, pa.z, -pa.y, pb.x, pb.z, -pb.y, pb.x, pb.z + 0.9, -pb.y, pa.x, pa.z + 0.9, -pa.y], 3));
-          geo.setIndex([0, 1, 2, 0, 2, 3]);
-          geo.computeVertexNormals();
-          steelGeos.push(geo);
-          // moving handrail (black rubber)
-          rubberGeos.push(boxAlong(v3({ ...pa, z: pa.z + 0.95 }), v3({ ...pb, z: pb.z + 0.95 }), 0.09, 0.07));
-        }
         // animated steps
         const L3 = Math.hypot(L, dz);
         const stepLen = 0.4;
@@ -408,6 +415,25 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         }
       }
     }
+    // Draw exactly the retained collision pieces: a cross-link opens both the visible
+    // balustrade and its collider, including the handrail and escalator skirt.
+    const runsById = new Map(layout.runs.map((r) => [r.edgeId, r]));
+    for (const w of layout.runWalls) {
+      const r = runsById.get(w.runEdgeId!)!;
+      const d = { x: r.b.x - r.a.x, y: r.b.y - r.a.y };
+      const l2 = d.x * d.x + d.y * d.y;
+      const zAt = (p: XY) => r.a.z + (r.b.z - r.a.z) * ((p.x - r.a.x) * d.x + (p.y - r.a.y) * d.y) / l2;
+      const za = zAt(w.a), zb = zAt(w.b);
+      (r.mode === "stairs" ? sideGeos : balustradeGeos).push(enclosureWallGeometry(runPanel(w, r)));
+      const a = v3({ ...w.a, z: za + 0.96 }), b = v3({ ...w.b, z: zb + 0.96 });
+      if (r.mode === "stairs") {
+        handGeos.push(cylAlong(a, b, 0.026));
+      } else {
+        rubberGeos.push(boxAlong(a, b, 0.09, 0.07));
+        steelGeos.push(enclosureWallGeometry({ ...w, profile: { bottomA: za - 0.12, bottomB: zb - 0.12, topA: za + 0.22, topB: zb + 0.22 } }));
+        steelGeos.push(boxAlong(v3({ ...w.a, z: za + 0.88 }), v3({ ...w.b, z: zb + 0.88 }), 0.025, 0.025));
+      }
+    }
     const add = (geos: THREE.BufferGeometry[], m: THREE.Material, name?: string) => {
       const geo = merged(geos);
       if (!geo) return;
@@ -418,6 +444,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     add(stairGeos, mat.stair, "walkable");
     add(nosingGeos, mat.nosing);
     add(sideGeos, mat.wall);
+    add(balustradeGeos, mat.glass);
     add(handGeos, mat.steel);
     add(rubberGeos, mat.rubber);
     add(steelGeos, mat.steel);
@@ -436,6 +463,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const reach = (s: number) => {
         let best = 6;
         for (const w of lv.walls) {
+          if (gl.center.z + 0.6 < w.zMin || gl.center.z + 0.6 > w.zMax) continue;
           const hit = raySeg(gl.center, { x: perp.x * s, y: perp.y * s }, w.a, w.b);
           if (hit !== null && hit < best) best = hit;
         }
@@ -684,7 +712,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     windowBand.translate(0, 1.75, 0);
     const stripe = track(new THREE.BoxGeometry(w + 0.03, 0.12, carLen - 0.4));
     stripe.translate(0, 1.18, 0);
-    const doorGeo = track(new THREE.BoxGeometry(w + 0.025, 1.85, 1.3));
+    const doorGeo = track(merged([-5.2, 0, 5.2].map((z) => new THREE.BoxGeometry(w + 0.025, 1.85, 1.3).translate(0, 1.18, z)))!);
     const skirt = track(new THREE.BoxGeometry(w - 0.1, 0.45, carLen - 0.6));
     skirt.translate(0, 0.2, 0);
     for (let i = 0; i < n; i++) {
@@ -693,11 +721,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       car.add(new THREE.Mesh(windowBand, mat.trainWindow));
       car.add(new THREE.Mesh(stripe, mat.accent));
       car.add(new THREE.Mesh(skirt, mat.darkSteel));
-      for (const dz of [-5.2, 0, 5.2]) {
-        const d = new THREE.Mesh(doorGeo, mat.trainDoor);
-        d.position.set(0, 1.18, dz);
-        car.add(d);
-      }
+      car.add(new THREE.Mesh(doorGeo, mat.trainDoor));
       car.visible = false;
       train.push(car);
     }
@@ -786,6 +810,112 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       });
     },
   };
+}
+
+/** Instanced linear luminaires follow both the corridor axes and the roof pitch of each run. */
+function buildUndergroundLighting(
+  bundle: StationBundle,
+  layout: Layout,
+  groups: Map<string, THREE.Group>,
+  root: THREE.Group,
+  track: <T extends { dispose(): void }>(x: T) => T,
+) {
+  type Fixture = { a: XYZ; b: XYZ };
+  const batches = new Map<string, Fixture[]>();
+  const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
+  const roofs = [...layout.levels.flatMap((lv) => lv.ceilings.map((s) => ({ ...s, floorId: lv.floorId }))), ...layout.soffits];
+  const ceilingAt = (p: XYZ) => {
+    let best: { z: number; floorId: string } | null = null;
+    for (const s of roofs) {
+      const z = soffitHeight(s, p);
+      if (z < p.z + 2.5 || z > p.z + 4.2 || (best && best.z <= z) || !pointInRings(p, s.rings)) continue;
+      best = { z, floorId: s.floorId };
+    }
+    return best;
+  };
+  const seen = new Set<string>();
+  for (const e of bundle.edges) {
+    if (e.mode === "elevator") continue;
+    const a = nodes.get(e.from)!, b = nodes.get(e.to)!;
+    const za = layout.nodeZ.get(a.id) ?? 0, zb = layout.nodeZ.get(b.id) ?? 0;
+    if (Math.min(za, zb) >= -0.5) continue;
+    const length = Math.hypot(b.position.x - a.position.x, b.position.y - a.position.y);
+    const count = Math.floor(length / 3.2);
+    for (let i = 0; i < count; i++) {
+      const t0 = (i + 0.18) / count, t1 = (i + 0.82) / count;
+      const at = (t: number): XYZ => ({ x: a.position.x + (b.position.x - a.position.x) * t, y: a.position.y + (b.position.y - a.position.y) * t, z: za + (zb - za) * t });
+      const p = at(t0), q = at(t1), m = at((t0 + t1) / 2);
+      const rp = ceilingAt(p), rq = ceilingAt(q), rm = ceilingAt(m);
+      if (!rp || !rq || !rm || Math.abs(rm.z - (rp.z + rq.z) / 2) > 0.15) continue;
+      // Undirected duplicate links must not double the fixtures.
+      const key = `${m.x.toFixed(1)},${m.y.toFixed(1)},${rm.z.toFixed(1)}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const fixtures = batches.get(rm.floorId) ?? [];
+      fixtures.push({ a: { ...p, z: rp.z - 0.065 }, b: { ...q, z: rq.z - 0.065 } });
+      batches.set(rm.floorId, fixtures);
+    }
+  }
+  const fixtures = [...batches].flatMap(([floorId, entries]) => {
+    const lv = layout.levels.find((l) => l.floorId === floorId)!;
+    const color = new THREE.Color(lv.label === "B1" || lv.label === "B5" ? "#fff0d3" : "#e7f4ff").multiplyScalar(1.7);
+    return entries.map((entry) => ({ ...entry, color }));
+  });
+  if (fixtures.length) {
+    const strip = new THREE.BoxGeometry(0.16, 0.035, 1);
+    const casing = new THREE.BoxGeometry(0.25, 0.045, 1.04).translate(0, 0.035, 0);
+    for (const [geo, color] of [[strip, new THREE.Color("#ffffff")], [casing, new THREE.Color("#4d5358")]] as const) {
+      const colors = new Float32Array(geo.attributes.position!.count * 3);
+      for (let i = 0; i < colors.length; i += 3) { colors[i] = color.r; colors[i + 1] = color.g; colors[i + 2] = color.b; }
+      geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    }
+    // One repeatable luminaire (recessed painted casing + HDR diffuser), one draw. Both
+    // vertex colour and instance colour survive so levels keep their warm/cool variation.
+    const box = track(mergeGeometries([strip, casing], false)!);
+    strip.dispose();
+    casing.dispose();
+    const material = track(new THREE.MeshBasicMaterial({ color: "#ffffff", vertexColors: true }));
+    const strips = new THREE.InstancedMesh(box, material, fixtures.length);
+    strips.name = "linear-light:underground";
+    const matrix = new THREE.Matrix4(), rotation = new THREE.Quaternion(), center = new THREE.Vector3(), scale = new THREE.Vector3();
+    for (const [i, f] of fixtures.entries()) {
+      const a = v3(f.a), b = v3(f.b), d = b.clone().sub(a);
+      rotation.setFromUnitVectors(new THREE.Vector3(0, 0, 1), d.clone().normalize());
+      center.copy(a).add(b).multiplyScalar(0.5);
+      scale.set(1, 1, d.length());
+      matrix.compose(center, rotation, scale);
+      strips.setMatrixAt(i, matrix);
+      strips.setColorAt(i, f.color);
+    }
+    strips.computeBoundingSphere();
+    root.add(strips);
+  }
+
+  // Bounded, non-shadowing local fill: three gate clusters plus one head/hall anchor per
+  // underground level. Most of the perceived illumination remains emissive fixtures + IBL.
+  const anchors: XYZ[] = [];
+  for (const g of layout.gates) {
+    if (g.center.z >= -0.5 || anchors.some((p) => Math.abs(p.z - g.center.z) < 1 && Math.hypot(p.x - g.center.x, p.y - g.center.y) < 12)) continue;
+    anchors.push(g.center);
+  }
+  for (const lv of layout.levels.filter((l) => l.z < -0.5)) {
+    const candidates = bundle.nodes.filter((n) => n.floorId === lv.floorId && n.inOut === "inside" && n.kind !== "elevator" && Math.abs((layout.nodeZ.get(n.id) ?? 0) - lv.z) < 0.1);
+    const junctions = candidates.filter((n) => bundle.edges.filter((e) => e.from === n.id || e.to === n.id).length >= 3);
+    const sameLevel = anchors.filter((p) => Math.abs(p.z - lv.z) < 0.3);
+    const score = (n: (typeof candidates)[number]) => sameLevel.length ? Math.min(...sameLevel.map((p) => Math.hypot(p.x - n.position.x, p.y - n.position.y))) : 0;
+    const n = (junctions.length ? junctions : candidates).sort((a, b) => score(b) - score(a))[0];
+    if (n) anchors.push({ ...n.position, z: lv.z });
+  }
+  for (const p of anchors.slice(0, 8)) {
+    const roof = ceilingAt(p);
+    if (!roof) continue;
+    const lv = layout.levels.find((l) => l.floorId === roof.floorId)!;
+    const light = new THREE.PointLight(lv.label === "B1" || lv.label === "B5" ? "#fff0dc" : "#e0efff", 3.5, 12, 2);
+    light.position.copy(v3({ ...p, z: roof.z - 0.22 }));
+    light.castShadow = false;
+    groups.get(lv.floorId)!.add(light);
+    track(light);
+  }
 }
 
 /** Distance along ray (origin o, unit dir d) to segment ab, or null. */

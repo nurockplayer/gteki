@@ -29,6 +29,9 @@ export function tileTextures(opts: { base: string; grout: string; n: number; see
   const S = 1024;
   const [c, g] = canvas(S, S);
   const [rc, rg] = canvas(S, S);
+  const [bc, bg] = canvas(S, S);
+  bg.fillStyle = "#cccccc";
+  bg.fillRect(0, 0, S, S);
   const r = rng(opts.seed);
   const cell = S / opts.n;
   const base = new THREE.Color(opts.base);
@@ -56,8 +59,10 @@ export function tileTextures(opts: { base: string; grout: string; n: number; see
   g.lineWidth = 3;
   rg.strokeStyle = "rgb(235,235,235)";
   rg.lineWidth = 3;
+  bg.strokeStyle = "#3d3d3d";
+  bg.lineWidth = 4;
   for (let i = 0; i <= opts.n; i++) {
-    for (const ctx of [g, rg]) {
+    for (const ctx of [g, rg, bg]) {
       ctx.beginPath();
       ctx.moveTo(i * cell, 0);
       ctx.lineTo(i * cell, S);
@@ -66,7 +71,7 @@ export function tileTextures(opts: { base: string; grout: string; n: number; see
       ctx.stroke();
     }
   }
-  return { map: finish(c, 1), roughnessMap: finish(rc, 1, 8, false) };
+  return { map: finish(c, 1), roughnessMap: finish(rc, 1, 8, false), bumpMap: finish(bc, 1, 8, false) };
 }
 
 /** Yellow tactile paving: linear (guidance) bars. */
@@ -100,6 +105,12 @@ export function wallTexture(accent: string) {
   const W = 512;
   const H = 512;
   const [c, g] = canvas(W, H);
+  const [bc, bg] = canvas(W, H);
+  const [rc, rg] = canvas(W, H);
+  bg.fillStyle = "#bfbfbf";
+  bg.fillRect(0, 0, W, H);
+  rg.fillStyle = "#bebebe";
+  rg.fillRect(0, 0, W, H);
   // lower kick zone (dark), upper panels (light)
   g.fillStyle = "#ebe8e1";
   g.fillRect(0, 0, W, H);
@@ -125,16 +136,38 @@ export function wallTexture(accent: string) {
   g.moveTo(0, lowerTop);
   g.lineTo(W, lowerTop);
   g.stroke();
+  for (const x of [0, W / 2]) {
+    bg.fillStyle = "#303030";
+    bg.fillRect(x, 0, 2, H);
+    rg.fillStyle = "#f2f2f2";
+    rg.fillRect(x, 0, 3, H);
+    g.fillStyle = "rgba(255,255,255,0.3)";
+    g.fillRect(x + 2, 0, 1, H);
+  }
+  bg.fillStyle = "#444444";
+  bg.fillRect(0, lowerTop, W, 2);
+  const noise = rng(53);
+  for (let i = 0; i < 2200; i++) {
+    const v = 175 + Math.floor(noise() * 35);
+    rg.fillStyle = `rgb(${v},${v},${v})`;
+    rg.fillRect(noise() * W, noise() * H, 2, 2);
+  }
   const t = finish(c, 1);
   t.repeat.set(1, 1);
-  return t;
+  return { map: t, bumpMap: finish(bc, 1, 8, false), roughnessMap: finish(rc, 1, 8, false) };
 }
 
 export function ceilingTexture() {
   const S = 512;
   const [c, g] = canvas(S, S);
+  const [bc, bg] = canvas(S, S);
+  const [rc, rg] = canvas(S, S);
   g.fillStyle = "#d9dbdc";
   g.fillRect(0, 0, S, S);
+  bg.fillStyle = "#bfbfbf";
+  bg.fillRect(0, 0, S, S);
+  rg.fillStyle = "#dedede";
+  rg.fillRect(0, 0, S, S);
   g.strokeStyle = "rgba(0,0,0,0.12)";
   g.lineWidth = 2;
   for (let i = 0; i <= 4; i++) {
@@ -144,13 +177,28 @@ export function ceilingTexture() {
     g.moveTo(0, (i * S) / 4);
     g.lineTo(S, (i * S) / 4);
     g.stroke();
+    bg.fillStyle = "#444444";
+    bg.fillRect((i * S) / 4, 0, 2, S);
+    bg.fillRect(0, (i * S) / 4, S, 2);
   }
+  // Recessed access hatch and small latch: generic maintenance detail, not a facility claim.
+  g.strokeStyle = "#a4aaac";
+  g.lineWidth = 3;
+  g.strokeRect(265, 265, 108, 108);
+  bg.strokeStyle = "#555555";
+  bg.lineWidth = 3;
+  bg.strokeRect(265, 265, 108, 108);
+  g.fillStyle = "#80888a";
+  g.fillRect(355, 316, 6, 12);
   const r = rng(7);
   for (let i = 0; i < 2500; i++) {
     g.fillStyle = `rgba(0,0,0,${0.03 + r() * 0.03})`;
     g.fillRect(r() * S, r() * S, 1, 1);
+    const v = 205 + Math.floor(r() * 32);
+    rg.fillStyle = `rgb(${v},${v},${v})`;
+    rg.fillRect(r() * S, r() * S, 2, 2);
   }
-  return finish(c, 1);
+  return { map: finish(c, 1), bumpMap: finish(bc, 1, 8, false), roughnessMap: finish(rc, 1, 8, false) };
 }
 
 export type SignIcon = "exit" | "train" | "gate" | "elevator" | "toilet" | "none" | "nomap";
