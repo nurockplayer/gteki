@@ -229,6 +229,43 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     expect(errors(createSyntheticBundle([edge("v", "start", "goal")]))).not.toContain("edge.geometry.points");
   });
 
+  it("rejects evidence records that name no source", () => {
+    const geometry = createSyntheticBundle([edge("v", "start", "goal", { verification: "verified" })]);
+    geometry.edges[0]!.geometryEvidence = { ...geometry.edges[0]!.geometryEvidence, sourceIds: [] };
+    expect(errors(geometry)).toContain("edge.evidence");
+    const access = createSyntheticBundle([edge("v", "start", "goal", { verification: "verified" })]);
+    access.edges[0]!.accessEvidence = { ...access.edges[0]!.accessEvidence!, sourceIds: [] };
+    expect(errors(access)).toContain("edge.evidence");
+    const hours = createSyntheticBundle([edge("v", "start", "goal", { hours: { kind: "always", evidence: { sourceIds: [], method: "synthetic-fixture", checkedDate: "2026-10-20" } } })]);
+    expect(errors(hours)).toContain("edge.evidence");
+    const poi = createSyntheticBundle();
+    poi.pois[0]!.evidence = { ...poi.pois[0]!.evidence, sourceIds: [] };
+    expect(errors(poi)).toContain("poi.evidence");
+    expect(errors(createSyntheticBundle())).toEqual([]);
+  });
+
+  it("applies the geometry rights gate to node position sources", () => {
+    for (const rights of ["REFERENCE_ONLY", "RESTRICTED", "UNVERIFIED"] as const) {
+      const b = createSyntheticBundle();
+      b.station.synthetic = false;
+      b.edges = [];
+      b.sources.find((s) => s.id === "fixture-access")!.rights = rights;
+      b.nodes[0]!.sourceRefs = [{ sourceId: "fixture-access", featureId: "n1" }];
+      expect(errors(b)).toContain("node.source.rights");
+      // The same source cited only as facts elsewhere is fine; only the node position is gated.
+      b.nodes[0]!.sourceRefs = [{ sourceId: "fixture-geometry", featureId: "n1" }];
+      expect(errors(b)).not.toContain("node.source.rights");
+    }
+    const factsOnly = createSyntheticBundle();
+    factsOnly.sources.find((s) => s.id === "fixture-access")!.usage = "facts-only";
+    factsOnly.nodes[0]!.sourceRefs = [{ sourceId: "fixture-access", featureId: "n1" }];
+    expect(errors(factsOnly)).toContain("node.source.rights");
+    const synthetic = createSyntheticBundle();
+    synthetic.sources.find((s) => s.id === "fixture-access")!.rights = "REFERENCE_ONLY";
+    synthetic.nodes[0]!.sourceRefs = [{ sourceId: "fixture-access", featureId: "n1" }];
+    expect(errors(synthetic)).not.toContain("node.source.rights");
+  });
+
   it("forbids facts-only geometry even in synthetic bundles", () => {
     const b = createSyntheticBundle();
     expect(b.station.synthetic).toBe(true);
