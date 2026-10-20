@@ -35,7 +35,10 @@ def name(p, lang):
 
 
 def exit_item(p):
-    return {"id": p["id"], "label": p["id"].split("-")[1], "ja": name(p, "ja"), "en": name(p, "en")}
+    # Signs name the exit itself, as the real ones do, even where the route stops at the stair foot
+    # (Exits 4 and 13, whose POI names say so).
+    n = p["id"].split("-")[1]
+    return {"id": p["id"], "label": n, "ja": f"{n}番出口", "en": f"Exit {n}"}
 
 
 def gate_item(p):
