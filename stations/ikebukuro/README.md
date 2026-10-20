@@ -89,7 +89,9 @@ Done so far:
 
 Remaining before claiming L2:
 
-- Licensed or procedural ambient sound.
+- Ambient sound in the explorer: procedural WebAudio ambience is in the scene (`scene/ambience.ts`)
+  and plays in the preview, but needs the proposed host `ctx.audio` hook before the explorer
+  plays it.
 - A real phone test (only emulated so far).
 - A side-by-side reference review on site.
 - An avatar pass in the explorer (core lane).
@@ -126,7 +128,7 @@ Evidence stills:
 ## Next
 
 1. Field visit with the [survey checklist](docs/coverage-gaps.md).
-2. Ambient sound.
+2. Explorer audio hook (`ctx.audio`, core lane).
 3. Slice 2: South Passage (exits 38–41).
 4. North-east (exits 26–33).
 5. West (Tobu side).
