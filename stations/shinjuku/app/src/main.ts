@@ -33,6 +33,8 @@ renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.92;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+// Post passes render too; reset stats once per frame so QA reads whole-frame calls/triangles.
+renderer.info.autoReset = false;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#0c0d10");
@@ -154,7 +156,16 @@ const cam = { yaw: player.heading, pitch: -0.18, dist: 3.6, firstPerson: false, 
 const camPos = new THREE.Vector3();
 const camTarget = new THREE.Vector3();
 let camInit = false;
+/** QA: fixed free camera in ENU metres (eye → look), used by the screenshot/recording harness. */
+let viewOverride: { eye: { x: number; y: number; z: number }; look: { x: number; y: number; z: number } } | null = null;
 function updateCamera(dt: number, t: number) {
+  if (viewOverride) {
+    const { eye, look } = viewOverride;
+    camera.position.set(eye.x, eye.z, -eye.y);
+    camera.lookAt(look.x, look.z, -look.y);
+    avatar.object.visible = true;
+    return;
+  }
   // gentle auto-follow behind the character while moving and the user is not steering the camera
   if (t - cam.userTurnedAt > 1.4 && player.speed > 0.4) {
     let d = player.heading - cam.yaw;
@@ -759,6 +770,7 @@ function step(dt: number) {
   if (route) updateNext();
   updatePrompt();
   drawMinimap();
+  renderer.info.reset();
   composer.render(dt);
   fpsAcc += dt;
   fpsN++;
@@ -809,6 +821,26 @@ window.__gteki = {
     simOffset += seconds;
     for (let i = 0; i < frames; i++) step(1 / 30);
     return true;
+  },
+  /** QA: fixed free camera (ENU metres); `null` returns to the follow camera. */
+  view(v: typeof viewOverride) {
+    viewOverride = v;
+    camInit = false;
+    return true;
+  },
+  /** QA: renders one frame and returns the share of near-black pixels (open void / unlit background). */
+  voidFraction() {
+    step(1 / 30);
+    const gl = renderer.getContext();
+    const w = gl.drawingBufferWidth, h = gl.drawingBufferHeight;
+    const px = new Uint8Array(w * h * 4);
+    gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    let dark = 0, n = 0;
+    for (let i = 0; i < px.length; i += 4 * 7) {
+      n++;
+      if (px[i]! < 24 && px[i + 1]! < 24 && px[i + 2]! < 28) dark++;
+    }
+    return Math.round((dark / n) * 1000) / 1000;
   },
   crowd,
   station,
