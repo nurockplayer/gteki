@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe,expect,it } from 'vitest';
 import { loadSources } from '../src/acquire.js';
@@ -18,6 +18,8 @@ describe.skipIf(!available)('real acquired sources (optional external store)',()
       const inventory=await inspectCityGml(source);expect(await readFile(file)).toEqual(first);
       const room=smallestRoom(inventory);expect(room).toBeDefined();
       const conversion=await citygmlToGlb(source,frame,{ids:[room!.gml_id],maxPolygons:50});
+      // This bounded check is not a real-run step: drop its docs receipt so it never mixes with real-run receipts.
+      await rm(join(docsRoot,'gis','conversions',`${conversion.run_id}.json`),{force:true});
       expect(conversion.validation.status).toBe('PASS');expect(conversion.validation.bbox_max_error_m).toBeLessThanOrEqual(0.001);expect(conversion.totals.polygons_converted).toBeGreaterThan(0);expect(conversion.totals.polygons_converted).toBeLessThanOrEqual(50);
     },120000);
   }

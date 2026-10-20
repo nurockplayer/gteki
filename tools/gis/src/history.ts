@@ -14,8 +14,12 @@ export async function archiveReceipt(name: 'real-run' | 'validation'): Promise<v
   await writeFile(join(directory, `${name}-${tag}.json`), bytes);
 }
 
-/** Move conversion receipts produced by a different tool fingerprint out of the current receipt directory. */
-export async function archiveStaleConversions(currentFingerprint: string, gisRoot = join(docsRoot, 'gis')): Promise<string[]> {
+/**
+ * Move every existing conversion receipt to history (grouped by its tool fingerprint) before a real run converts,
+ * so the current directory holds only receipts produced by that run, even when an older or out-of-band receipt
+ * shares the current fingerprint.
+ */
+export async function archivePriorConversions(gisRoot = join(docsRoot, 'gis')): Promise<string[]> {
   const current = join(gisRoot, 'conversions');
   let files: string[];
   try { files = (await readdir(current)).filter((file) => file.endsWith('.json')).sort(); }
@@ -24,7 +28,6 @@ export async function archiveStaleConversions(currentFingerprint: string, gisRoo
   for (const file of files) {
     const receipt = JSON.parse(await readFile(join(current, file), 'utf8')) as { semantic_inputs?: { tool_input_sha256?: string } };
     const fingerprint = receipt.semantic_inputs?.tool_input_sha256 ?? 'unknown';
-    if (fingerprint === currentFingerprint) continue;
     const directory = join(gisRoot, 'history', 'conversions', `tool-${fingerprint.slice(0, 16)}`);
     await mkdir(directory, { recursive: true });
     await rename(join(current, file), join(directory, file));

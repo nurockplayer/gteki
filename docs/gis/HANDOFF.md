@@ -104,3 +104,9 @@ A seventh automated review raised three more P2 findings, fixed with digest `6d4
 An eighth automated review raised two more P2 findings, fixed with digest `097463f4985249a454efa867615dcf533516b53eaacb8985584d30a704c500f8`. All 6 GLB outputs are byte-identical to the previous run.
 - An endpoint check runs on a `MultiLineString` link only if it has one part or every part starts exactly where the previous one ended. Otherwise the link is skipped and coverage is reported as partial.
 - `acquire --offline` no longer rejects a stored object just because its old record says `size_check: MISMATCH`. It still checks SHA-256 and byte count, then compares the size with the current manifest, so an object whose manifest has been corrected comes back as `MATCH` without a new download.
+
+A ninth automated review found that the summary listed 6 conversions while `real-run` ran only 4. The two extras were bounded `--max-polygons 50` receipts written by `test:real`. They shared the current fingerprint, so they had survived archiving. Fixed with digest `97b97e29d215a93b8d12c6c9de9b02ab5533ee823d370e277cbaabe5fb484b09`. All 4 GLB outputs are byte-identical to the previous run.
+- Before converting, `real-run` moves every existing conversion receipt to `history/conversions/`.
+- `real-run` records the `conversion_run_id` of each conversion it runs.
+- `summarize` includes only those conversions, and refuses to run if any of them is missing.
+- `test:real` deletes its bounded conversion receipt after checking it.

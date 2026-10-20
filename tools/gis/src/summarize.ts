@@ -18,12 +18,17 @@ async function reports(directory:string):Promise<any[]>{const files=(await readd
 const acquisitions=await reports('acquisitions'),inventories=(await reports('inventory')).filter(i=>i.totals),allConversions=await reports('conversions'),networks=await reports('networks'),overlaps=await reports('overlap'),crsReports=await reports('crs');
 // Only receipts produced by the current tool fingerprint describe this candidate; older ones are history.
 const snapshot=await toolFingerprint();
-const conversions=allConversions.filter(row=>row.semantic_inputs?.tool_input_sha256===snapshot);
-if(conversions.length!==allConversions.length)console.error(`Ignoring ${allConversions.length-conversions.length} conversion receipt(s) from other tool fingerprints`);
 // Refuse to summarize unless the current real run completed cleanly with this exact tool fingerprint and every
 // inventory/network report was produced from the currently recorded acquisition bytes.
 const runReceipt=await readJson<any>(join(root,'real-run.json'));
 const summaryProblems:string[]=[];
+// Only the conversion receipts recorded by this real run describe it; anything else on disk is out-of-band.
+const conversionCommands=(Array.isArray(runReceipt.commands)?runReceipt.commands:[]).filter((c:any)=>/ citygml-to-glb /.test(c.command));
+const runConversionIds=new Set<string>(conversionCommands.map((c:any)=>c.conversion_run_id).filter((id:unknown):id is string=>typeof id==='string'));
+if(conversionCommands.some((c:any)=>typeof c.conversion_run_id!=='string'))summaryProblems.push('real-run.json has a conversion command without a recorded conversion_run_id');
+const conversions=allConversions.filter(row=>runConversionIds.has(row.run_id)&&row.semantic_inputs?.tool_input_sha256===snapshot);
+for(const id of runConversionIds)if(!conversions.some(row=>row.run_id===id))summaryProblems.push(`conversion receipt ${id} recorded by real-run.json is missing or has another fingerprint`);
+if(conversions.length!==allConversions.length)console.error(`Ignoring ${allConversions.length-conversions.length} conversion receipt(s) not produced by the current real run`);
 if(!runReceipt.completed_at)summaryProblems.push('real-run.json has no completed_at');
 if(!Array.isArray(runReceipt.commands)||runReceipt.commands.length===0||runReceipt.commands.some((c:any)=>c.exit_code!==0))summaryProblems.push('real-run.json records a failed or missing command');
 if(runReceipt.tool_input_sha256!==snapshot)summaryProblems.push(`real-run.json fingerprint ${runReceipt.tool_input_sha256} differs from current ${snapshot}`);

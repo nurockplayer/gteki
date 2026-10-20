@@ -7,12 +7,12 @@ import { loadInventoryDetail } from './citygml.js';
 import { smallestRoom } from './selection.js';
 import { toolFingerprint } from './provenance.js';
 import { ensurePrivateStore } from './common.js';
-import { archiveReceipt, archiveStaleConversions } from './history.js';
+import { archiveReceipt, archivePriorConversions } from './history.js';
 
 /** Reproducible ordered CLI receipt. All downloaded and binary logs remain in the external store. */
 ensurePrivateStore();
 await archiveReceipt('real-run');
-const receipt:{started_at:string;completed_at:string|null;tool_input_sha256:string;commands:Array<{command:string;exit_code:number|null;elapsed_ms:number;log_store_path:string;tool_input_sha256:string;selection_evidence?:unknown}>}={started_at:new Date().toISOString(),completed_at:null,tool_input_sha256:await toolFingerprint(),commands:[]};
+const receipt:{started_at:string;completed_at:string|null;tool_input_sha256:string;commands:Array<{command:string;exit_code:number|null;elapsed_ms:number;log_store_path:string;tool_input_sha256:string;selection_evidence?:unknown;conversion_run_id?:string|null}>}={started_at:new Date().toISOString(),completed_at:null,tool_input_sha256:await toolFingerprint(),commands:[]};
 const runTag=receipt.started_at.replace(/[:.]/g,'-');
 const logDirectory=join(getStoreRoot(),'out','run-logs',runTag);await mkdir(logDirectory,{recursive:true});
 async function run(args:string[],selectionEvidence?:unknown){
@@ -21,7 +21,9 @@ async function run(args:string[],selectionEvidence?:unknown){
   let output='';child.stdout.on('data',data=>{output+=String(data);});child.stderr.on('data',data=>{output+=String(data);});
   const exitCode=await new Promise<number|null>((resolve,reject)=>{child.on('error',reject);child.on('close',resolve);});
   await writeFile(join(getStoreRoot(),relative),output);
-  receipt.commands.push({command:`pnpm --dir tools/gis gis ${args.join(' ')}`,exit_code:exitCode,elapsed_ms:Math.round(performance.now()-started),log_store_path:relative,tool_input_sha256:fingerprint,...(selectionEvidence?{selection_evidence:selectionEvidence}:{})});
+  receipt.commands.push({command:`pnpm --dir tools/gis gis ${args.join(' ')}`,exit_code:exitCode,elapsed_ms:Math.round(performance.now()-started),log_store_path:relative,tool_input_sha256:fingerprint,...(selectionEvidence?{selection_evidence:selectionEvidence}:{}),
+    // Bind each conversion command to the receipt it wrote so summarize can select exactly this run's conversions.
+    ...(args[0]==='citygml-to-glb'?{conversion_run_id:exitCode===0?(/"run_id":\s*"([^"]+)"/.exec(output)?.[1]??null):null}:{})});
   await writeJson(join(docsRoot,'gis','real-run.json'),receipt);
   console.log(JSON.stringify(receipt.commands.at(-1)));
   if(exitCode!==0)console.error(output.slice(-2000));
@@ -40,9 +42,9 @@ for(const city of cities)if(await run(['inspect-citygml',city.source]))inventori
 const framed=new Set<string>();
 for(const city of cities)if(inventories.has(city.source)&&await run(['frame-from-envelope',city.source,city.frame])&&await run(['crs-roundtrip',city.frame]))framed.add(city.source);
 // Frame files are fingerprint inputs and may have just been rewritten: rebind the receipt to the post-frame
-// fingerprint that conversions will record, and archive receipts from any other fingerprint.
+// fingerprint that conversions will record, and archive every prior conversion receipt.
 receipt.tool_input_sha256=await toolFingerprint();await writeJson(join(docsRoot,'gis','real-run.json'),receipt);
-await archiveStaleConversions(receipt.tool_input_sha256);
+await archivePriorConversions();
 for(const city of cities){const inventory=inventories.get(city.source);if(!inventory||!framed.has(city.source))continue;const room=smallestRoom(inventory);
   if(room)await run(['citygml-to-glb',city.source,'--frame',city.frame,'--ids',room.gml_id],room);
   else {
