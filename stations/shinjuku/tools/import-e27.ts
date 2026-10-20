@@ -6,7 +6,7 @@
  *   pnpm --filter @gteki/station-shinjuku import:e27 --check    # fails if outputs would change
  *
  * Every derived fact records its method. Findings that shape the derivation
- * (verified against the dataset itself, see docs/G0-evidence.md):
+ * (verified against the dataset itself, see docs/stations/shinjuku/README.md):
  *  - route_type 5/6 are swapped relative to the 2024 spec text in this dataset:
  *    rt6 links lie in GSI escalator spaces (B023), rt5 links in stair spaces (B021).
  *    Mode is therefore taken from the containing CAD space category.
@@ -320,6 +320,22 @@ for (const c of chains) {
     cur = l.properties.start_id === cur ? l.properties.end_id : l.properties.start_id;
     if (!levelNode(cur)) nodeZ.set(cur, z0 + (z1 - z0) * (acc / c.run));
   }
+}
+
+// Walk links that change floor next to a stair/escalator foot (2 in E27, flagged by the validator):
+// render the stair as carrying the height change by moving the stair-end node's *display* height to
+// the far floor, so the walk stays flat. Floor ids and routing are untouched.
+const displayHeightAdjusted: string[] = [];
+for (const l of links) {
+  if (isVertical(l.properties.link_id)) continue;
+  const a = l.properties.start_id;
+  const b = l.properties.end_id;
+  if (floorOfNode(a) === floorOfNode(b)) continue;
+  const vert = (id: string) => (incident.get(id) ?? []).some((x) => isVertical(x.properties.link_id));
+  const [stairEnd, other] = vert(a) && !vert(b) ? [a, b] : vert(b) && !vert(a) ? [b, a] : [null, null];
+  if (!stairEnd || !other || nodeZ.get(stairEnd) === nodeZ.get(other)) continue;
+  nodeZ.set(stairEnd, nodeZ.get(other)!);
+  displayHeightAdjusted.push(`n:${stairEnd}`);
 }
 
 // ---------------------------------------------------------------- facilities → nodes
@@ -742,7 +758,7 @@ const plan = {
   }),
   // Render heights for every node (chain-interpolated on stairs/escalators), keyed by bundle node id.
   nodeRenderZ: Object.fromEntries(raw.nodes.map((n) => [`n:${n.properties.node_id}`, round(nodeZ.get(n.properties.node_id)!, 2)])),
-  heightModel: { escalatorDegrees: 30, escalatorFlatM: ESC_FLAT, stairRiseRatio: STAIR_RATIO, constraints: constraints.length },
+  heightModel: { escalatorDegrees: 30, escalatorFlatM: ESC_FLAT, stairRiseRatio: STAIR_RATIO, constraints: constraints.length, displayHeightAdjusted },
 };
 
 // ---------------------------------------------------------------- report & write

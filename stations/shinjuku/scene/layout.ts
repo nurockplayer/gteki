@@ -70,6 +70,8 @@ export interface WallSeg {
   /** Which side the walkable space is on: +1 = left of a→b. */
   side: 1 | -1;
   kind: "wall" | "room" | "toilet" | "office" | "elevator" | "trackside";
+  /** Bodies whose feet are above this height pass (level walls don't block people on landings/runs above). */
+  bodyMax?: number;
 }
 
 export interface Railing {
@@ -119,6 +121,10 @@ export interface Layout {
   gates: GateLine[];
   /** Flat landing pads at both ends of runs, so floors and ramps meet. */
   pads: SlabPoly[];
+  /** Walk-only ground strips along flat verified links (not rendered): the graph guarantees passage. */
+  linkStrips: SlabPoly[];
+  /** Stair/escalator balustrades as ~1 m wall pieces with local height bands (open where a link crosses). */
+  runWalls: WallSeg[];
   nodeZ: Map<string, number>;
   bounds: { min: XY; max: XY };
 }
@@ -177,6 +183,9 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
   const runs: Run[] = [];
   for (const e of bundle.edges) {
     if (e.mode !== "stairs" && e.mode !== "escalator") continue;
+    // Stairs whose two ends sit on the same (symbolic) level can't be drawn as a slope; they become
+    // flat walk strips below (documented simplification).
+    if (Math.abs(zOf(e.to) - zOf(e.from)) < 0.2) continue;
     const A = nodeById.get(e.from)!;
     const B = nodeById.get(e.to)!;
     runs.push({
@@ -237,6 +246,23 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
     const roomAt = (p: XY) => roles.find(({ s, role }) => role !== "floor" && role !== "connector" && pointInRings(p, s.rings));
     const walls: WallSeg[] = [];
     const railings: Railing[] = [];
+    // Corridors where a stair/escalator run leaves this level: a plan outline crossing the run
+    // there is the step-on mouth, not a wall (the run's own balustrades bound it laterally).
+    const mouths = runs.flatMap((r) =>
+      ([[r.a, r.b], [r.b, r.a]] as const)
+        .filter(([m]) => Math.abs(m.z - z) < 0.3)
+        .map(([m, o]) => {
+          const d = sub(o, m);
+          const L = len(d) || 1;
+          return { m, u: { x: d.x / L, y: d.y / L }, half: r.width / 2 + 0.1, reach: Math.min(4, L) };
+        }),
+    );
+    const inMouth = (p: XY) =>
+      mouths.some(({ m, u, half, reach }) => {
+        const v = sub(p, m);
+        const t = v.x * u.x + v.y * u.y;
+        return t > -0.6 && t < reach && Math.abs(v.x * u.y - v.y * u.x) < half;
+      });
     for (const { s } of walkable) {
       const isVoid = voidIds.has(s.id);
       for (const ring of s.rings) {
@@ -255,7 +281,7 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
           const flush = (end: XY) => {
             if (runStart && runKind) {
               if (runKind === "rail") railings.push({ a: runStart, b: end, z });
-              else walls.push({ a: runStart, b: end, zMin: z, zMax: ceilingZ, side: ccw ? 1 : -1, kind: runKind });
+              else walls.push({ a: runStart, b: end, zMin: z, zMax: ceilingZ, side: ccw ? 1 : -1, kind: runKind, bodyMax: z + 1.0 });
             }
             runStart = null;
             runKind = null;
@@ -274,6 +300,7 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
               const room = roomAt(probe);
               kind = room ? (room.role === "room" ? (room.s.category === "B029" && isPlatform ? "trackside" : "room") : (room.role as WallSeg["kind"])) : "wall";
               if (isVoid) kind = "rail";
+              else if (kind === "wall" && inMouth(mid)) kind = null;
             }
             if (kind !== runKind) {
               flush(p0);
@@ -359,7 +386,107 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
           max = { x: Math.max(max.x, p.x), y: Math.max(max.y, p.y) };
         }
 
-  return { levels, runs, tactile, gates, pads, nodeZ, bounds: { min, max } };
+  // The verified graph is the truth for connectivity; the CAD plan is approximate. Wherever a
+  // routable link passes through (or hugs) a plan wall at walking height, open that wall locally.
+  const segs: { a: XY & { z: number }; b: XY & { z: number }; edgeId: string }[] = [];
+  for (const e of bundle.edges) {
+    if (e.mode === "elevator") continue;
+    const pts = (e.geometry?.length ? e.geometry : [nodeById.get(e.from)!.position, nodeById.get(e.to)!.position]).map((p) => ({ x: p.x, y: p.y }));
+    let total = 0;
+    for (let i = 1; i < pts.length; i++) total += len(sub(pts[i]!, pts[i - 1]!));
+    const za = zOf(e.from);
+    const zb = zOf(e.to);
+    let acc = 0;
+    for (let i = 1; i < pts.length; i++) {
+      const l = len(sub(pts[i]!, pts[i - 1]!));
+      const z0 = za + (zb - za) * (total ? acc / total : 0);
+      acc += l;
+      const z1 = za + (zb - za) * (total ? acc / total : 1);
+      segs.push({ a: { ...pts[i - 1]!, z: z0 }, b: { ...pts[i]!, z: z1 }, edgeId: e.id });
+    }
+  }
+  const CLEAR = 0.5;
+  /** A verified link passes within CLEAR of p with walking height in [zLo, zHi]. */
+  const clearAt = (p: XY, zLo: number, zHi: number, exceptEdge?: string) =>
+    segs.some(({ a, b, edgeId }) => {
+      if (edgeId === exceptEdge) return false;
+      const ab = sub(b, a);
+      const L2 = ab.x * ab.x + ab.y * ab.y;
+      const t = L2 ? Math.max(0, Math.min(1, ((p.x - a.x) * ab.x + (p.y - a.y) * ab.y) / L2)) : 0;
+      const q = lerp(a, b, t);
+      if (len(sub(p, q)) >= CLEAR) return false;
+      const zq = a.z + (b.z - a.z) * t;
+      return zq > zLo && zq < zHi;
+    });
+  for (const lv of levels) {
+    const out: WallSeg[] = [];
+    for (const w of lv.walls) {
+      if (w.kind === "trackside") {
+        out.push(w);
+        continue;
+      }
+      const L = len(sub(w.b, w.a));
+      const n = Math.max(1, Math.ceil(L / 0.1));
+      let start: number | null = null;
+      for (let k = 0; k <= n; k++) {
+        const closed = k < n && !clearAt(lerp(w.a, w.b, (k + 0.5) / n), lv.z - 0.3, lv.z + 1.2);
+        if (closed && start === null) start = k;
+        if (!closed && start !== null) {
+          out.push({ ...w, a: lerp(w.a, w.b, start / n), b: lerp(w.a, w.b, k / n) });
+          start = null;
+        }
+      }
+    }
+    lv.walls = mergeCollinear(out);
+  }
+
+  const runWalls: WallSeg[] = [];
+  for (const r of runs) {
+    const d = sub(r.b, r.a);
+    const L = len(d) || 1;
+    const nrm = { x: -d.y / L, y: d.x / L };
+    // ~1 m pieces so each only blocks near the run's local height
+    const pieces = Math.max(1, Math.ceil(L));
+    for (const sgn of [1, -1]) {
+      const off = (r.width / 2 + 0.08) * sgn;
+      for (let i = 0; i < pieces; i++) {
+        const t0 = i / pieces;
+        const t1 = (i + 1) / pieces;
+        const za = r.a.z + (r.b.z - r.a.z) * t0;
+        const zb = r.a.z + (r.b.z - r.a.z) * t1;
+        const a = { x: r.a.x + d.x * t0 + nrm.x * off, y: r.a.y + d.y * t0 + nrm.y * off };
+        const b = { x: r.a.x + d.x * t1 + nrm.x * off, y: r.a.y + d.y * t1 + nrm.y * off };
+        const zMin = Math.min(za, zb) - 0.3;
+        const zMax = Math.max(za, zb) + 1.1;
+        // open where another verified link's walker body (feet .. +1.7 m) would intersect this piece
+        if (clearAt(lerp(a, b, 0.5), zMin - 1.7, zMax, r.edgeId)) continue;
+        runWalls.push({ a, b, zMin, zMax, side: 1, kind: "wall" });
+      }
+    }
+  }
+
+  const linkStrips: SlabPoly[] = [];
+  for (const e of bundle.edges) {
+    if (e.mode === "elevator") continue;
+    const za = zOf(e.from);
+    if (Math.abs(zOf(e.to) - za) > 0.05) continue;
+    const pts = (e.geometry?.length ? e.geometry : [nodeById.get(e.from)!.position, nodeById.get(e.to)!.position]).map((p) => ({ x: p.x, y: p.y }));
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1]!;
+      const b = pts[i]!;
+      const dd = sub(b, a);
+      const l = len(dd);
+      if (l < 0.05) continue;
+      const u = { x: dd.x / l, y: dd.y / l };
+      const h = 0.5;
+      const n = { x: -u.y * h, y: u.x * h };
+      const a2 = { x: a.x - u.x * h, y: a.y - u.y * h };
+      const b2 = { x: b.x + u.x * h, y: b.y + u.y * h };
+      linkStrips.push({ spaceId: `link:${e.id}:${i}`, rings: [[{ x: a2.x + n.x, y: a2.y + n.y }, { x: b2.x + n.x, y: b2.y + n.y }, { x: b2.x - n.x, y: b2.y - n.y }, { x: a2.x - n.x, y: a2.y - n.y }, { x: a2.x + n.x, y: a2.y + n.y }]], z: za, fare: null, category: "link" });
+    }
+  }
+
+  return { levels, runs, tactile, gates, pads, linkStrips, runWalls, nodeZ, bounds: { min, max } };
 }
 
 export function centroid(r: XY[]): XY {
@@ -403,31 +530,8 @@ export class WalkWorld {
       this.add({ kind: "run", run: r, minX: Math.min(r.a.x, r.b.x) - hw, minY: Math.min(r.a.y, r.b.y) - hw, maxX: Math.max(r.a.x, r.b.x) + hw, maxY: Math.max(r.a.y, r.b.y) + hw });
     }
     for (const lv of layout.levels) for (const w of lv.walls) this.addWall(w);
-    // run side walls (balustrades) as collision
-    for (const r of layout.runs) {
-      const d = sub(r.b, r.a);
-      const L = len(d) || 1;
-      const nrm = { x: -d.y / L, y: d.x / L };
-      // split into ~1 m pieces so each piece only blocks near the run's local height
-      const pieces = Math.max(1, Math.ceil(L / 1));
-      for (const s of [1, -1]) {
-        const off = (r.width / 2 + 0.08) * s;
-        for (let i = 0; i < pieces; i++) {
-          const t0 = i / pieces;
-          const t1 = (i + 1) / pieces;
-          const za = r.a.z + (r.b.z - r.a.z) * t0;
-          const zb = r.a.z + (r.b.z - r.a.z) * t1;
-          this.addWall({
-            a: { x: r.a.x + d.x * t0 + nrm.x * off, y: r.a.y + d.y * t0 + nrm.y * off },
-            b: { x: r.a.x + d.x * t1 + nrm.x * off, y: r.a.y + d.y * t1 + nrm.y * off },
-            zMin: Math.min(za, zb) - 0.3,
-            zMax: Math.max(za, zb) + 1.1,
-            side: 1,
-            kind: "wall",
-          });
-        }
-      }
-    }
+    for (const w of layout.runWalls) this.addWall(w);
+    for (const st of layout.linkStrips) this.addSlab(st);
   }
 
   addWalls(ws: WallSeg[]) {
@@ -461,12 +565,13 @@ export class WalkWorld {
 
   /** All ground heights under p. */
   heightsAt(p: XY): number[] {
-    const out: number[] = [];
+    const slabs: number[] = [];
+    const runs: { z: number; ends: [number, number] }[] = [];
     for (const i of this.grid.get(`${Math.floor(p.x / this.cell)},${Math.floor(p.y / this.cell)}`) ?? []) {
       const s = this.surfaces[i]!;
       if (p.x < s.minX || p.x > s.maxX || p.y < s.minY || p.y > s.maxY) continue;
       if (s.kind === "slab") {
-        if (pointInRings(p, s.rings!)) out.push(s.z!);
+        if (pointInRings(p, s.rings!)) slabs.push(s.z!);
       } else {
         const r = s.run!;
         const ab = sub(r.b, r.a);
@@ -474,13 +579,15 @@ export class WalkWorld {
         const t = ((p.x - r.a.x) * ab.x + (p.y - r.a.y) * ab.y) / L2;
         if (t < 0 || t > 1) continue;
         const q = lerp(r.a, r.b, t);
-        if (len(sub(p, q)) <= r.width / 2) out.push(r.a.z + (r.b.z - r.a.z) * t);
+        if (len(sub(p, q)) <= r.width / 2) runs.push({ z: r.a.z + (r.b.z - r.a.z) * t, ends: [r.a.z, r.b.z] });
       }
     }
-    return out;
+    // A run descending from a slab's level cuts a stairwell in that slab: where the run is already
+    // below the slab (within head clearance), the slab is a hole — otherwise the floor overhangs the
+    // stair and makes a cliff. Deeper runs pass under the floor, which stays.
+    const kept = slabs.filter((z) => !runs.some((r) => r.z < z - 0.25 && r.z > z - 2.4 && (Math.abs(r.ends[0] - z) < 0.3 || Math.abs(r.ends[1] - z) < 0.3)));
+    return [...kept, ...runs.map((r) => r.z)];
   }
-
-  /** Ground under p reachable from height z (step up ≤ up, step down ≤ down). */
   groundAt(p: XY, z: number, up = 0.45, down = 0.7): number | null {
     let best: number | null = null;
     for (const h of this.heightsAt(p)) if (h <= z + up && h >= z - down && (best === null || h > best)) best = h;
@@ -526,7 +633,7 @@ export class WalkWorld {
             if (seen.has(i)) continue;
             seen.add(i);
             const w = this.walls[i]!;
-            if (z + 1.7 < w.zMin || z + 0.3 > w.zMax) continue;
+            if (z + 1.7 < w.zMin || z + 0.3 > w.zMax || (w.bodyMax !== undefined && z > w.bodyMax)) continue;
             const ab = sub(w.b, w.a);
             const L2 = ab.x * ab.x + ab.y * ab.y || 1;
             const t = Math.max(0, Math.min(1, ((q.x - w.a.x) * ab.x + (q.y - w.a.y) * ab.y) / L2));
