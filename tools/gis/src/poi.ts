@@ -7,6 +7,8 @@ import { readZip } from './zip.js';
 import { toolFingerprint } from './provenance.js';
 import { ownValue } from './values.js';
 
+/** Opening-time field names seen in the sources: `openinghour`, `opening hour` (S03 level files) and `hours` (S03 HERE entities). */
+export const OPENING_TIME_FIELD = /opening.?hours?|^hours$/iu;
 export const POI_SOURCES = ['tokyo-s10-shinjuku-csv', 'tokyo-s10-shinjuku-nishiguchi-csv', 'tokyo-s03-zip', 'plateau-13104-related', 'plateau-13116-related'];
 export const RIGHTS_SOURCES = [...POI_SOURCES, 'tokyo-s10-catalog', 'tokyo-s03-spec', 'tokyo-s03-reference', 'tokyo-s03-catalog', 'plateau-13104-related-catalog', 'plateau-13116-related-catalog'];
 export type Row = Record<string, unknown>;
@@ -76,7 +78,7 @@ export function inventoryJson(value: unknown, file: string) {
   const navNodes = Array.isArray(root.n) ? root.n.map(object) : [];
   const fields = fieldStatistics(rows), rootProperties = object(root.properties);
   const originKeys = Object.keys(fields).filter(key => /出典|原典|資料|著作|ライセンス|attribution|copyright|source|license|origin/iu.test(key));
-  const literalKeys = Object.keys(fields).filter(key => /floor|level|場所|階|location|opening.?hour|時間|int_address|^(?:to|from)$/iu.test(key));
+  const literalKeys = Object.keys(fields).filter(key => OPENING_TIME_FIELD.test(key) || /floor|level|場所|階|location|時間|int_address|^(?:to|from)$/iu.test(key));
   return { file, format: features ? 'FeatureCollection' : navLinks.length ? 'HERE_NAVIGATION_JSON' : Array.isArray(root.entities) ? 'HERE_ENTITIES' : 'HERE_COMMUNITY',
     root_keys: Object.keys(root).sort(), feature_count: features?.length ?? null, entity_count: Array.isArray(root.entities) ? root.entities.length : null,
     fields, root_properties: rootProperties, crs: ownValue(root, 'crs') ?? 'UNKNOWN', crs_declared: Object.hasOwn(root, 'crs'),

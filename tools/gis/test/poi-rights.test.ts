@@ -125,6 +125,12 @@ describe('bounded content inventories', () => {
     expect(result.literal_location_time_fields['floor'].literal_distribution[0].value).toBe('地下通路');
     expect(Object.keys(result.origin_attribution_fields)).toEqual(['source']);
   });
+  it('keeps HERE entity `hours` with the literal opening-time fields', () => {
+    const result = inventoryJson({ entities: [{ properties: { hours: 'SYNTHETIC 10:00〜20:00', name: 'Synthetic shop' } }, { properties: { hours: '' } }] }, 'com-entity.geojson');
+    expect(Object.keys(result.literal_location_time_fields)).toEqual(['hours']);
+    expect(result.literal_location_time_fields['hours'].literal_distribution[0].value).toBe('SYNTHETIC 10:00〜20:00');
+    expect(result.routable).toBe(false);
+  });
   it('keeps Path commands out of geographic bboxes and navigation references out of edges', () => {
     const path = inventoryJson({ type: 'FeatureCollection', crs: null, features: [{ geometry: { type: 'Path', coordinates: [[0, 900, 1000], [4]] }, properties: {} }] }, 'path.geojson');
     expect(path).toMatchObject({ crs: 'UNKNOWN', crs_declared: true, bbox: null, unsupported_geometry_count: 1, routable: false });

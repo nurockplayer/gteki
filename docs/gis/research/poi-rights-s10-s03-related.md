@@ -100,6 +100,7 @@ Per-field blank/missing counts, value types and bounded literal distributions ar
 
 ## Literal opening hours and source route structure
 
+- com-entity.geojson: {"hours":{"blank_count":187,"missing_count":187,"types":["string","undefined"],"distinct_count":106,"literal_distribution":[{"value":"10:30〜21:00","count":54},{"value":"10:00〜21:00","count":39},{"value":"10:30〜20:30","count":12},{"value":"11:00〜22:30 (ラストオーダー22:00)","count":8},{"value":"7:00〜23:00","count":6}],"omitted_distinct":101}}; source references [], source nodes 0, source links 0; exported edges 0; routable false.
 - geojson-level-geom-1F.geojson: {"openinghour":{"blank_count":13124,"missing_count":13124,"types":["string","undefined"],"distinct_count":1,"literal_distribution":[{"value":"8:00〜21:30","count":1}],"omitted_distinct":0}}; source references [], source nodes 0, source links 0; exported edges 0; routable false.
 - geojson-level-geom-2F.geojson: {"openinghour":{"blank_count":308,"missing_count":308,"types":["string","undefined"],"distinct_count":1,"literal_distribution":[{"value":"7:00〜23:00","count":1}],"omitted_distinct":0}}; source references [], source nodes 0, source links 0; exported edges 0; routable false.
 - geojson-level-geom-B1F.geojson: {"openinghour":{"blank_count":1243,"missing_count":1243,"types":["string","undefined"],"distinct_count":2,"literal_distribution":[{"value":"6:00〜23:00","count":2},{"value":"5:00〜24:00","count":1}],"omitted_distinct":0}}; source references [], source nodes 0, source links 0; exported edges 0; routable false.
