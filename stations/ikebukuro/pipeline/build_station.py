@@ -13,7 +13,6 @@ import datetime
 import json
 import math
 import os
-import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -199,30 +198,26 @@ def crowd_lanes(grid, edges):
     return lanes
 
 
-def build_instant():
+def build_instant(src):
     """One reproducible build time for generatedAt and the geometry checkedDate.
 
-    SOURCE_DATE_EPOCH wins; otherwise the last commit of the hand-authored source, so rebuilding
-    unchanged inputs rewrites byte-identical artifacts. Wall clock only without git.
+    SOURCE_DATE_EPOCH wins; otherwise the newest evidence date in the hand-authored source (source
+    retrievedAt, access-fact checkedDate), so rebuilding unchanged inputs rewrites byte-identical
+    artifacts and a source edit never depends on when it is committed.
     """
     epoch = os.environ.get("SOURCE_DATE_EPOCH")
-    if not epoch:
-        try:
-            epoch = subprocess.run(
-                ["git", "log", "-1", "--format=%ct", "--", SRC], cwd=ROOT, capture_output=True, text=True, check=True,
-            ).stdout.strip()
-        except (OSError, subprocess.CalledProcessError):
-            epoch = ""
     if epoch:
         return datetime.datetime.fromtimestamp(int(epoch), datetime.timezone.utc)
-    return datetime.datetime.now(datetime.timezone.utc)
+    stamps = [s["retrievedAt"] for s in src["sources"] if s.get("retrievedAt")]
+    stamps += [f["checkedDate"] + "T00:00:00Z" for f in src["accessFacts"] if f.get("checkedDate")]
+    return max(datetime.datetime.fromisoformat(t.replace("Z", "+00:00")) for t in stamps)
 
 
 def main():
     src = json.load(open(SRC))
     surf = Surfaces(ENU)
     segs, sgrid = wall_segments(ENU)
-    built = build_instant()
+    built = build_instant(src)
     today = built.date().isoformat()
     problems = []
 

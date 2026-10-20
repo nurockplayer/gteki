@@ -119,7 +119,7 @@
   "frame": "ENU",
   "datasetVersion": "ikebukuro-b1-slice5.1",
   "synthetic": false,
-  "generatedAt": "2026-10-20T15:17:56+00:00"
+  "generatedAt": "2026-10-21T00:00:00+00:00"
  },
  "sources": [
   {
@@ -1023,7 +1023,10 @@
     "plateau-ubld-13116"
    ],
    "role": "visual+collision",
-   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform"
+   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform",
+   "files": [
+    "assets/ikebukuro_b1.meta.json"
+   ]
   },
   {
    "id": "b1-lit",
@@ -1037,7 +1040,12 @@
     "plateau-ubld-13116"
    ],
    "role": "visual",
-   "derivation": "assets/ikebukuro_b1.glb + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap shipped as assets/ikebukuro_b1_lightmap.webp / _2k.webp (gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json)"
+   "derivation": "assets/ikebukuro_b1.glb + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap shipped as assets/ikebukuro_b1_lightmap.webp / _2k.webp (gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json)",
+   "files": [
+    "assets/ikebukuro_b1_lit.meta.json",
+    "assets/ikebukuro_b1_lightmap.webp",
+    "assets/ikebukuro_b1_lightmap_2k.webp"
+   ]
   }
  ]
 }
