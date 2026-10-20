@@ -289,6 +289,22 @@ describe("describeRoute junction hints", () => {
     expect(describeRoute(b, route(b, "start", "g"), "en")[2]!.junctions).toEqual([{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }]);
   });
 
+  it("never attaches a hint to a wait or moves it: a wait splits the walk at its junction", () => {
+    const b = columnHall();
+    const evidence = b.edges[0]!.hours!.evidence;
+    b.edges = b.edges.map((e) => e.id === "p-q" ? { ...e, hours: { kind: "window" as const, open: "08:00", close: "20:00", evidence } } : e);
+    const r = route(b, "start", "g", { fare: "ticketed", stepFree: false, at: { weekday: "mon", minutes: 7 * 60 + 59 } });
+    expect(r.steps[2]!.waitSeconds).toBeGreaterThan(0);
+    const en = describeRoute(b, r, "en");
+    expect(en.map((i) => i.kind)).toEqual(["start", "walk", "turn_right", "wait", "walk", "arrive"]);
+    const wait = en[3]!;
+    expect(wait).toMatchObject({ beforeStepIndex: 2, stepIndexes: [] });
+    expect(wait.junctions).toBeUndefined();
+    // The walk before the wait ends at p, so p gets no hint; the walk after it still hints at q.
+    expect(en[2]!.junctions).toBeUndefined();
+    expect(en[4]!.junctions).toEqual([{ nodeId: "q", stepIndex: 3, atM: 30, action: "straight", name: "Exit B" }]);
+  });
+
   it("records the routing profile on the result, so callers need not pass it again", () => {
     const b = columnHall();
     const profile: RouteProfile = { fare: "unpaid_only", stepFree: true, extraClosedEdgeIds: ["q-east"] };
