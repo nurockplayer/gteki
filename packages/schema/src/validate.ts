@@ -96,12 +96,21 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     nodeIds.add(n.id);
     if (!floorIds.has(n.floorId)) err("node.floor", `unknown floor ${n.floorId}`, n.id);
     if (!Number.isFinite(n.position.x) || !Number.isFinite(n.position.y)) err("node.position", "non-finite xy", n.id);
-    for (const r of n.sourceRefs) if (!sourceIds.has(r.sourceId)) err("node.source", `unknown source ${r.sourceId}`, n.id);
+    for (const r of n.sourceRefs) {
+      if (!sourceIds.has(r.sourceId)) err("node.source", `unknown source ${r.sourceId}`, n.id);
+      // Node coordinates are drawn and measured (straight edges have no other geometry): same gate as edge geometry.
+      const rights = sourceRights.get(r.sourceId);
+      if (factsOnly.has(r.sourceId)) err("node.source.rights", `node position cites facts-only source ${r.sourceId}; the position would be a derivative`, n.id);
+      else if (rights !== undefined && rights !== "REUSABLE_WITH_CONDITIONS" && !b.station.synthetic)
+        err("node.source.rights", `node position derives from source ${r.sourceId} with rights ${rights}; it cannot ship in the public bundle`, n.id);
+    }
   }
 
   const edgeIds = new Set<string>();
   const checkEvidence = (e: Edge, ev: Edge["geometryEvidence"] | null, label: string) => {
     if (!ev) return;
+    // Evidence that names no source substantiates nothing.
+    if (ev.sourceIds.length === 0) err("edge.evidence", `${label}: no source ids`, e.id);
     for (const s of ev.sourceIds) if (!sourceIds.has(s)) err("edge.evidence", `${label}: unknown source ${s}`, e.id);
     if (!isIsoDate(ev.checkedDate)) err("edge.evidence.date", `${label}: checkedDate ${ev.checkedDate} is not YYYY-MM-DD`, e.id);
   };
@@ -205,6 +214,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (p.floorId !== null && !floorIds.has(p.floorId)) err("poi.floor", `unknown floor ${p.floorId}`, p.id);
     if (p.names.length === 0) err("poi.name", "POI without a name", p.id);
     for (const c of p.connectorNodeIds) if (!nodeIds.has(c)) err("poi.connector", `unknown node ${c}`, p.id);
+    if (p.evidence.sourceIds.length === 0) err("poi.evidence", "no source ids", p.id);
     for (const s of p.evidence.sourceIds) if (!sourceIds.has(s)) err("poi.evidence", `unknown source ${s}`, p.id);
     if (!isIsoDate(p.evidence.checkedDate)) err("poi.evidence.date", `checkedDate ${p.evidence.checkedDate} is not YYYY-MM-DD`, p.id);
     if (p.connectorNodeIds.length === 0) warn("poi.unroutable", "POI has no verified connector; search-only", p.id);
