@@ -15,9 +15,10 @@ import type { Router, PolylinePoint } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
-import { sceneFromGlbRoles, WALKER_BODY } from "@gteki/scene-api";
+import { WALKER_BODY } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
+import { manifestScene } from "./manifestScene.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
 import { Input } from "./input.ts";
 import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer, type Segment2 } from "./walker.ts";
@@ -317,18 +318,7 @@ export class Explorer {
     const assets = station.bundle.assets ?? [];
     if (assets.length === 0) return null;
     // No scene module: load manifest GLBs and classify by gteki_role.
-    const root = new THREE.Group();
-    const walkable: THREE.Object3D[] = [];
-    const colliders: THREE.Object3D[] = [];
-    for (const asset of assets) {
-      const gltf = await ctx.loadGlb(asset.uri);
-      if (asset.transform) gltf.scene.applyMatrix4(new THREE.Matrix4().fromArray(asset.transform));
-      const roles = sceneFromGlbRoles(gltf.scene, { assetRole: asset.role });
-      walkable.push(...roles.walkable);
-      colliders.push(...roles.colliders);
-      root.add(gltf.scene);
-    }
-    return { root, walkable, colliders, dispose: () => disposeObject(root) };
+    return await manifestScene(assets, ctx);
   }
 
   private clearStation(): void {
@@ -730,23 +720,6 @@ export class Explorer {
     this.coreEnvMap?.dispose();
     this.renderer.dispose();
   }
-}
-
-/** Release geometries, materials and their textures owned by a loaded subtree. */
-function disposeObject(root: THREE.Object3D): void {
-  const textures = new Set<THREE.Texture>();
-  const materials = new Set<THREE.Material>();
-  root.traverse((o) => {
-    const mesh = o as THREE.Mesh;
-    mesh.geometry?.dispose();
-    const m = mesh.material;
-    for (const mat of Array.isArray(m) ? m : m ? [m] : []) materials.add(mat);
-  });
-  for (const mat of materials) {
-    for (const value of Object.values(mat)) if (value instanceof THREE.Texture) textures.add(value);
-    mat.dispose();
-  }
-  for (const t of textures) t.dispose();
 }
 
 const AUDIO_UNLOCK_EVENTS = ["pointerdown", "keydown", "touchend"] as const;

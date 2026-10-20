@@ -42,8 +42,10 @@ export function routePolyline(bundle: StationBundle, route: RouteResult): Polyli
     const b = nodeDisplayZ(to, floors.get(to.floorId));
     const edge = edges.get(step.edgeId);
     const symbolicPolyline = edge?.geometryZ === "symbolic";
-    const raw = edge?.geometry && edge.geometry.length >= 2 ? [...edge.geometry] : [from.position, to.position];
-    if (step.reversed && edge?.geometry) raw.reverse();
+    const drawn = edge?.geometry && edge.geometry.length >= 2 ? edge.geometry : null;
+    const raw = drawn ? [...drawn] : [from.position, to.position];
+    // Only drawn geometry is stored in edge direction; the node-to-node fallback already runs from → to.
+    if (step.reversed && drawn) raw.reverse();
     // Interior points: cumulative 2D distance for height interpolation when z is unknown.
     const lengths = [0];
     for (let i = 1; i < raw.length; i++) lengths.push(lengths[i - 1]! + Math.hypot(raw[i]!.x - raw[i - 1]!.x, raw[i]!.y - raw[i - 1]!.y));
@@ -58,6 +60,15 @@ export function routePolyline(bundle: StationBundle, route: RouteResult): Polyli
     }
   });
   return points;
+}
+
+/**
+ * The polyline points an instruction covers, including the junction it starts from (each point is
+ * tagged with the step that *ends* at it, so the step's start carries the previous step's index).
+ */
+export function instructionPoints(points: readonly PolylinePoint[], instruction: Pick<Instruction, "stepIndexes">): PolylinePoint[] {
+  const covered = new Set(instruction.stepIndexes);
+  return points.filter((p, i) => covered.has(p.stepIndex) || (i + 1 < points.length && covered.has(points[i + 1]!.stepIndex)));
 }
 
 export type InstructionKind =
