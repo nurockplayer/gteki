@@ -1,0 +1,429 @@
+{
+  "checked_at": "2026-10-20T12:54:10.749Z",
+  "implementation_status": "IMPLEMENTED_AND_TESTED",
+  "review_state": "AWAITING_LEAD_REVIEW",
+  "tool_input_sha256": "4b67d0bf4bd9d8ef9c8244416ce4f2c537e2307f6ac04bc151a1fae091f412fe",
+  "tool_input_files": 44,
+  "validation_command_count": 5,
+  "real_run_command_count": 16,
+  "default_tests_passed": 74,
+  "real_tests_passed": 3,
+  "summary_command": {
+    "command": "pnpm --dir tools/gis exec tsx src/summarize.ts",
+    "exit_code": 0
+  },
+  "acquisitions": 13,
+  "changed_acquisition_hashes_vs_phase2": 0,
+  "inventories": [
+    {
+      "station_id": "ikebukuro",
+      "totals_unchanged": true,
+      "floor_labels_before": {
+        "status": "PRESENT",
+        "count": 1,
+        "observed_count": 1
+      },
+      "floor_labels_after": {
+        "status": "PRESENT",
+        "count": 1,
+        "observed_count": 1
+      },
+      "floor_label_observations": [
+        {
+          "object_key": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+          "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+          "field": "gml:name",
+          "value": "池袋駅_B1地下通路",
+          "source": "gml:name"
+        }
+      ],
+      "connectivity_topology_before": {
+        "status": "ABSENT_IN_FILE",
+        "count": 0,
+        "observed_count": 0
+      },
+      "connectivity_topology_after": {
+        "status": "ABSENT_IN_FILE",
+        "count": 0,
+        "observed_count": 0
+      },
+      "mathematical_topology": {
+        "status": "ABSENT_IN_FILE",
+        "count": 0,
+        "observed_count": 0
+      },
+      "navigable_connectivity": {
+        "status": "UNKNOWN",
+        "count": null,
+        "observed_count": 0
+      }
+    },
+    {
+      "station_id": "shinjuku",
+      "totals_unchanged": true,
+      "floor_labels_before": {
+        "status": "UNKNOWN",
+        "count": null,
+        "observed_count": 0
+      },
+      "floor_labels_after": {
+        "status": "UNKNOWN",
+        "count": null,
+        "observed_count": 0
+      },
+      "floor_label_observations": [],
+      "connectivity_topology_before": {
+        "status": "ABSENT_IN_FILE",
+        "count": 0,
+        "observed_count": 0
+      },
+      "connectivity_topology_after": {
+        "status": "ABSENT_IN_FILE",
+        "count": 0,
+        "observed_count": 0
+      },
+      "mathematical_topology": {
+        "status": "ABSENT_IN_FILE",
+        "count": 0,
+        "observed_count": 0
+      },
+      "navigable_connectivity": {
+        "status": "UNKNOWN",
+        "count": null,
+        "observed_count": 0
+      }
+    }
+  ],
+  "overlap": [
+    {
+      "station_id": "ikebukuro",
+      "full_json_bytes_unchanged": true,
+      "pair_tables_unchanged": true,
+      "layer_count": 2,
+      "pair_count": 1,
+      "plateau_pairs": [
+        {
+          "layer_a": "plateau-13116-ubld-53394576",
+          "layer_b": "hokonavi-ikebukuro-walk-csv-pair",
+          "source_id_a": "plateau-13116-ubld-53394576",
+          "source_id_b": "hokonavi-ikebukuro-walk-node-csv",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX"
+        }
+      ]
+    },
+    {
+      "station_id": "shinjuku",
+      "full_json_bytes_unchanged": true,
+      "pair_tables_unchanged": true,
+      "layer_count": 21,
+      "pair_count": 210,
+      "plateau_pairs": [
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-network-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 186.44262525628636,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-network-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 186.4426252562791,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 198.82670250489048,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 198.64586110924006,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 198.64586110924733,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 196.69090492264158,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 184.4443807673451,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 184.44438076735264,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 237.15601733837474,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 233.92997097011244,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 233.9299709734545,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 209.7864730376919,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 203.53365692298723,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 203.5336569218264,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 194.27228247483097,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 185.14336080955164,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 185.1433608102574,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 199.94676774950128,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 185.12753409180044,
+          "status": "COMPUTED_BBOX_ONLY"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "hokonavi-oedo-shinjuku-stationmap-geojson",
+          "bbox_relation": "DISJOINT",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": 185.1275340932107,
+          "status": "COMPUTED_BBOX_ONLY"
+        }
+      ]
+    }
+  ],
+  "conversions": [
+    {
+      "source_id": "plateau-13104-ubld-53394536",
+      "filters": {
+        "ids": [
+          "room_d4dc60ab-50c3-4480-9957-069e31c641ad"
+        ],
+        "maxPolygons": 50
+      },
+      "polygons": 6,
+      "triangles": 12,
+      "nodes": 1,
+      "counts_unchanged": true,
+      "glb_sha256_unchanged": true,
+      "bbox_max_error_m": 0.00000452290078101214
+    },
+    {
+      "source_id": "plateau-13104-ubld-53394536",
+      "filters": {},
+      "polygons": 65013,
+      "triangles": 148950,
+      "nodes": 30358,
+      "counts_unchanged": true,
+      "glb_sha256_unchanged": true,
+      "bbox_max_error_m": 0.0000054997890401864424
+    },
+    {
+      "source_id": "plateau-13104-ubld-53394536",
+      "filters": {
+        "ids": [
+          "room_d4dc60ab-50c3-4480-9957-069e31c641ad"
+        ]
+      },
+      "polygons": 6,
+      "triangles": 12,
+      "nodes": 1,
+      "counts_unchanged": true,
+      "glb_sha256_unchanged": true,
+      "bbox_max_error_m": 0.00000452290078101214
+    },
+    {
+      "source_id": "plateau-13116-ubld-53394576",
+      "filters": {
+        "ids": [
+          "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2"
+        ]
+      },
+      "polygons": 184,
+      "triangles": 184,
+      "nodes": 6,
+      "counts_unchanged": true,
+      "glb_sha256_unchanged": true,
+      "bbox_max_error_m": 0.0000046096065489109606
+    },
+    {
+      "source_id": "plateau-13116-ubld-53394576",
+      "filters": {},
+      "polygons": 58761,
+      "triangles": 64811,
+      "nodes": 32,
+      "counts_unchanged": true,
+      "glb_sha256_unchanged": true,
+      "bbox_max_error_m": 0.000003925928467651829
+    },
+    {
+      "source_id": "plateau-13116-ubld-53394576",
+      "filters": {
+        "ids": [
+          "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2"
+        ],
+        "maxPolygons": 50
+      },
+      "polygons": 50,
+      "triangles": 50,
+      "nodes": 6,
+      "counts_unchanged": true,
+      "glb_sha256_unchanged": true,
+      "bbox_max_error_m": 0.0000046096065489109606
+    }
+  ],
+  "networks": [
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-csv",
+      "nodes": 1887,
+      "edges": 2196,
+      "other_features": 0
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-network-geojson",
+      "nodes": 233,
+      "edges": 263,
+      "other_features": 0
+    }
+  ],
+  "normalized_records_checked": 4579,
+  "external_review_requests": 0,
+  "root_node_modules_present": false,
+  "worktree_status": [
+    "?? .serena/",
+    "?? docs/gis/",
+    "?? tools/"
+  ]
+}

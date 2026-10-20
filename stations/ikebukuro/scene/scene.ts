@@ -13,31 +13,9 @@ import walkBridges from "./walk_bridges.json";
 import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
 
-type ThreeNS = typeof THREE_NS;
+import type { SceneContext, SpawnPoint, StationScene } from "@gteki/scene-api";
 
-/** Local mirror of @gteki/scene-api 0.1 (type-only); swap to the package import once core is on main. */
-export interface SceneContext {
-  THREE: ThreeNS;
-  bundle?: unknown;
-  enuToRenderer(p: { x: number; y: number; z: number }): [number, number, number];
-  assetUrl(uri: string): string | null;
-  loadGlb(uri: string): Promise<GLTF>;
-  loadTexture(uri: string, opts?: { colorSpace?: "srgb" | "linear"; flipY?: boolean }): Promise<THREE_NS.Texture>;
-  quality: "low" | "high";
-  renderer: THREE_NS.WebGLRenderer;
-  /** Proposed optional 0.1 addition: host-owned audio, unlocked by a user gesture. */
-  audio?: { context: AudioContext; destination: AudioNode };
-}
-export interface SpawnPoint { x: number; y: number; z: number; headingDeg: number; nodeId?: string; label?: string }
-export interface StationScene {
-  root: THREE_NS.Object3D;
-  walkable: THREE_NS.Object3D[];
-  colliders?: THREE_NS.Object3D[];
-  spawnPoints?: SpawnPoint[];
-  environment?: { lighting?: "default" | "scene"; background?: number; fog?: { color: number; near: number; far: number }; exposure?: number };
-  update?(dtSeconds: number, elapsedSeconds: number): void;
-  dispose(): void;
-}
+type ThreeNS = typeof THREE_NS;
 
 const GLB = "assets/ikebukuro_b1_lit.glb";
 const GLB_FALLBACK = "assets/ikebukuro_b1.glb";

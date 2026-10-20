@@ -1,0 +1,160 @@
+Final independent disposition: PASS
+
+Candidate: 3b6f085efcc168fac3ad688e5108393625cc94176fe963ce278a0d7ea3594745
+
+All five earlier P2 findings are closed. I found no remaining material issue requiring changes for the stated bounded source-data factory. Two concrete P3 observations remain, described below; neither invalidates the supplied bounded results.
+
+I reviewed the complete current source and tests, fixtures, manifest, configuration, lockfile, and supplied receipts. I also independently reconstructed the fingerprint from the 34 rendered tool-input files using the updated algorithm; it matches the candidate digest exactly. This was hashing the supplied text, not executing the implementation or its tests.
+
+All file/line references below use the original paths and line numbers rendered in 
+oracle-final-review-bundle.md
+.
+
+1. Verification of the five earlier P2 corrections
+P2-1 — Traffic-signal fields incorrectly became gate/ticket attributes: CLOSED
+
+The shared alias table no longer maps tfc_signal or tfc_s_type to fare fields. Gate/ticket mappings now use their explicit supported headers, while the original source attributes remain preserved.
+
+Implementation: tools/gis/src/network.ts:26–31,181–195.
+Regression: tools/gis/test/network.test.ts:47–59 asserts preservation of both traffic fields, null/UNKNOWN normalized gate and ticket values, and their inclusion among unmapped columns.
+Real-data evidence: docs/gis/networks/hokonavi-ikebukuro-walk-node-csv.json:177–183 now records null gate/ticket mappings for both node and link inputs.
+
+This corrects the semantic fabrication identified in the first review.
+
+P2-2 — S01 aliases were lost during GeoJSON normalization: CLOSED
+
+CSV and GeoJSON now use the same NORMALIZED_ALIASES table. The relevant mappings are:
+
+Literal source property	Normalized attribute
+rt_struct	route_structure
+vtcl_slope	slope_class
+lev_diff	step_class
+
+The shared definitions are at tools/gis/src/network.ts:26–31; the GeoJSON adapter applies them at :249–250,318. It preserves the supplied category values without decoding them into unsupported meanings.
+
+The regression at tools/gis/test/network.test.ts:92–111 exercises these exact property names and requires the literal values "01", "02", and "03" to survive normalization. It also checks that traffic fields do not become fare fields.
+
+The real S01 inventory confirms that these properties exist and are nonblank in the supplied 263-link layer: docs/gis/networks/hokonavi-oedo-shinjuku-network-geojson.json:24–66,81–102. The corrected adapter therefore covers the actual reported source schema. There is a separate, nonblocking omission of the mapping table from the saved report, discussed below.
+
+P2-3 — Endpoint comparisons overstated identity certainty and coverage: CLOSED
+
+The comparison now requires complete endpoint identifiers and unique node identifiers before producing conclusive results. Duplicate node IDs disable the comparison instead of allowing the coordinate map’s last entry to determine the answer. Missing node coordinates, unresolved references, or insufficient link geometry produce skipped comparisons.
+
+The implementation records checked, skipped, and total links; incomplete coverage yields a null mismatch result and an explicit partial/unknown status.
+
+Implementation: tools/gis/src/network.ts:265–310,328.
+Regression coverage: dangling endpoints at tools/gis/test/network.test.ts:61–78; missing link geometry at :80–89; duplicate node IDs with different coordinates at :113–125; missing node geometry at :127–137.
+Summary propagation: tools/gis/src/summarize.ts:9–15.
+
+The regenerated evidence distinguishes the two real networks correctly:
+
+Dataset	Checked links	Skipped links	Complete	Reported comparison
+S01 GeoJSON	263	0	Yes	Metre comparison using the declared geographic CRS
+R1 CSV	0	2,196	No	UNKNOWN_CRS_FOR_CSV; mismatches remain null
+
+Evidence: docs/gis/networks/hokonavi-oedo-shinjuku-network-geojson.json:368–398 and docs/gis/real-data-summary.json:568–584.
+
+P2-4 — Duplicate gml:id values could merge source identities: CLOSED
+
+The scanner now checks every recognized gml:id against a stream-wide set and throws before constructing a second feature with that identity: tools/gis/src/citygml.ts:148–159.
+
+The regression at tools/gis/test/citygml.test.ts:77–84 changes the synthetic door’s ID to the room’s ID and requires the explicit duplicate-ID rejection. The guard applies before the converter’s feature map can collapse identities.
+
+Successful inventory writes follow the completed scan (tools/gis/src/citygml.ts:347–354), and conversion performs its scans before writing the GLB (tools/gis/src/convert.ts:36–47,63–85). Thus the rejection occurs before a newly successful inventory or conversion artifact is emitted.
+
+P2-5 — Changed frames could overwrite conversion artifacts: CLOSED
+
+Conversion identity now incorporates the complete frame contents and supported filters, with the frame ID also present in the output name: tools/gis/src/convert.ts:13–16.
+
+That identity is used consistently for:
+
+The GLB path: tools/gis/src/convert.ts:107–109.
+The provenance sidecar: :111–112.
+The documentation receipt: :113–116.
+
+The regression at tools/gis/test/geometry.test.ts:23–44 exercises actual conversion and artifact writing. It calls citygmlToGlb three times:
+
+With the initial frame.
+With a changed origin under the same frame ID.
+With a changed frame ID.
+
+Only acquisition/frame lookup and the destination for documentation are mocked. The production conversion, GLB serialization/readback, and sidecar writing remain in the exercised path. The assertions require three distinct GLB paths, confirm that the first GLB’s bytes remain unchanged, and read all three sidecars to check frame provenance and conversion validation.
+
+The test does not explicitly read the three documentation receipts, but their paths use the same distinct runId. That omission does not leave the original overwrite defect unresolved.
+
+2. Adjacent regression review
+Literal identifiers and blank values
+
+I found no material regression in the revised handling.
+
+tools/gis/src/network.ts:38–51 preserves nonblank string identifiers literally, including meaningful whitespace, while blank or structurally invalid identifiers become null. Numeric zero remains a valid supplied identifier. Blank GeoJSON strings are normalized at :242–246, and incomplete identity prevents complete topology claims at :165–175,208–217,265–282,328.
+
+The tests check:
+
+Distinct whitespace-bearing CSV identifiers and preserved floor-label whitespace: tools/gis/test/network.test.ts:30–45.
+Blank/invalid GeoJSON IDs and endpoints, blank labels, and preserved nonblank labels: :139–159.
+Numeric-zero identifiers and floor values: :161–171.
+
+These changes avoid silently trimming distinct source identities into a match.
+
+Negative bbox parsing
+
+The preprocessing at tools/gis/src/cli.ts:10–13 handles the documented separated negative argument, such as:
+
+純文字
+--bbox-local -1000,-1000,1000,1000
+
+It converts that argument into an explicit option value before parseArgs. Four-value parsing remains at :31–33, and finite-number/range validation remains at tools/gis/src/convert.ts:34–35.
+
+The supplied smoke receipt records that exact separated form, the matching candidate digest, exit code 0, the four intended bounds, and a 10-polygon conversion with successful serialization readback: docs/gis/runs/negative-bbox-smoke.json:2–18,22–29,55–63.
+
+3. Remaining concrete findings — P3, nonblocking
+P3 — Qualified gate types do not match the new anchored classifier
+
+Evidence: tools/gis/src/citygml.ts:158,275,299–300.
+
+Feature types retain their qualified names, and semantic() tests the full f.type. The new anchored gate expression at line 299 therefore does not match a recognized feature whose type is, for example, prefix:TicketGate. Such a feature would leave gate presence UNKNOWN. The neighboring connectivity classifier already applies its predicate to nsLocal(f.type).
+
+Action: Apply the gate predicate to the local type name and add a qualified-type regression.
+
+Why this does not block this candidate: Neither attached CityGML feature-type inventory reports a matching gate-type object. The current bounded results therefore do not demonstrate a lost gate observation, and the reported state remains conservative UNKNOWN. See docs/gis/real-data-summary.json:118–132,179–183,240–254,301–305.
+
+P3 — The saved S01 report drops the generated mapping table
+
+Evidence: tools/gis/src/network.ts:325,403,410; docs/gis/reviews/corrections.md:6.
+
+inspectGeoJsonFeatures generates mapped_fields, but the network archive wrapper omits it when assembling both member reports and the combined persisted inventory. Consequently, the author’s statement that the GeoJSON inventory exposes each mapped source property is broader than the saved S01 report supports.
+
+Action: Forward mapped_fields into the persisted report selections, or narrow the documentation statement.
+
+Why this does not block this candidate: The normalized candidate attributes use the corrected shared aliases independently of that reporting omission. The implementation and exact-header regression establish the original P2 correction.
+
+4. Candidate binding and supplied execution evidence
+
+The fingerprint algorithm now recursively includes src, sources, frames, and test, followed by package, lock, workspace, and TypeScript configuration files: tools/gis/src/provenance.ts:7–17. This covers the test sources and nested fixtures that were previously omitted.
+
+My independent reconstruction of the rendered inputs, restoring their LF line endings and final newlines, produced the requested digest exactly. The supplied receipt bindings agree:
+
+Evidence	Recorded result	File/line evidence
+Ordered real-data run	All 15 invocations have exit code 0 and the candidate digest	docs/gis/real-run.json:4–119
+Frozen installation	Exit code 0; same digest	docs/gis/validation.json:7–12
+Typecheck	Exit code 0; same digest	docs/gis/validation.json:15–20
+Synthetic suite	37 passed; exit code 0; same digest	docs/gis/validation.json:23–28
+Real-data suite	3 passed; exit code 0; same digest	docs/gis/validation.json:31–36
+Offline acquisition check	Exit code 0; same digest	docs/gis/validation.json:39–44
+Separated negative-bbox smoke	Exit code 0; same digest	docs/gis/runs/negative-bbox-smoke.json:2–4
+
+The real-test source also supports the stated meaning of those three tests: verification of all 13 stored acquisitions, followed by deterministic repeated inventory generation and a bounded conversion for each city (tools/gis/test/real.test.ts:10–22). The supplied receipt reports three passed tests rather than merely an exit-zero invocation of a skipped suite.
+
+The regenerated full-conversion summaries record 65,013 polygons / 148,950 triangles for Shinjuku and 58,761 polygons / 64,811 triangles for Ikebukuro, with successful count and bbox readback checks (docs/gis/real-data-summary.json:388–409,509–530). These are supplied processing results, not independently inspected geometry.
+
+Review limits and final decision
+
+I did not browse, execute the candidate or its tests, inspect absent raw datasets or GLBs, or independently reproduce the external execution logs. The hash match verifies consistency between the rendered tool inputs and the stated candidate; the execution results remain evidence supplied in the bundle.
+
+The disposition applies to the bounded implementation with every normalized object UNVERIFIED, candidate graphs non-routable, and geometry NOT_FOR_ROUTING. The intentional absence of raw data and GLBs, and the documented limits of CRS roundtrip/readback checks, are not treated as implementation failures.
+
+PASS — candidate 3b6f085efcc168fac3ad688e5108393625cc94176fe963ce278a0d7ea3594745.
+
+oracle-final-review-bundle.md
+文件

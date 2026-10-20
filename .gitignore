@@ -1,7 +1,12 @@
-data-cache/
 node_modules/
 dist/
-stations/*/build/
+.vite/
+*.log
 .DS_Store
-__pycache__/
+/raw/
+coverage/
+.claude/
 .serena/
+data-cache/
+stations/*/build/
+__pycache__/

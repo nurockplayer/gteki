@@ -1,0 +1,72 @@
+{
+  "command": "pnpm --dir tools/gis gis citygml-to-glb plateau-13116-ubld-53394576 --frame ikebukuro-plateau-ubld-v0 --bbox-local -1000,-1000,1000,1000 --max-polygons 10",
+  "exit_code": 0,
+  "tool_input_sha256": "3b6f085efcc168fac3ad688e5108393625cc94176fe963ce278a0d7ea3594745",
+  "result": {
+    "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-5d0392ea7bb289ac",
+    "source_id": "plateau-13116-ubld-53394576",
+    "source_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+    "verification": "UNVERIFIED",
+    "frame_id": "ikebukuro-plateau-ubld-v0",
+    "filters": {
+      "bboxLocal": [
+        -1000,
+        -1000,
+        1000,
+        1000
+      ],
+      "maxPolygons": 10
+    },
+    "store_path": "out/plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-5d0392ea7bb289ac.glb",
+    "sidecar_path": "out/plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-5d0392ea7bb289ac.provenance.json",
+    "totals": {
+      "objects_in_source": 32,
+      "objects_converted": 1,
+      "nodes": 1,
+      "polygons_in_source": 58761,
+      "polygons_converted": 10,
+      "skipped_degenerate": 0,
+      "triangles": 2046
+    },
+    "bbox_source_lat_lon_height": {
+      "min": [
+        35.728049254734366,
+        139.70938689983566,
+        25.498283
+      ],
+      "max": [
+        35.731371787356984,
+        139.7133659340391,
+        33.16767
+      ]
+    },
+    "bbox_local_ENU": {
+      "min": [
+        -180.20170200668872,
+        -184.0400121791863,
+        -3.5017169999999993
+      ],
+      "max": [
+        179.38389699327854,
+        184.82351882128205,
+        4.167670000000001
+      ]
+    },
+    "validation": {
+      "status": "PASS",
+      "node_count": 1,
+      "expected_node_count": 1,
+      "triangle_count": 2046,
+      "expected_triangle_count": 2046,
+      "bbox_max_error_m": 0.000003925928467651829,
+      "tolerance_m": 0.001,
+      "all_nodes_have_gml_id": true
+    },
+    "output_sha256": "08d773f4bf24081cf221b9b0c5899b2999e564cba26480551726588a2860ef97",
+    "output_bytes": 75516,
+    "navigation_use": "NOT_FOR_ROUTING",
+    "geometry_status": "UNVERIFIED_RAW_CONVERSION",
+    "elapsed_ms": 17113,
+    "peak_rss_bytes": 214728704
+  }
+}

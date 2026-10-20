@@ -10,7 +10,11 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { computeBoundsTree, acceleratedRaycast } from "three-mesh-bvh";
+import { parseStationFiles } from "@gteki/schema";
 import { buildScene } from "../gteki/scene.ts";
+import manifest from "../gteki/station.json";
+import graphFile from "../gteki/graph.json";
+import poiFile from "../gteki/pois.json";
 
 (THREE.BufferGeometry.prototype as any).computeBoundsTree = computeBoundsTree;
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
@@ -36,8 +40,11 @@ const audioCtx = params.get("mute") === "1" ? null : new AudioContext();
 const unlock = () => void audioCtx?.resume();
 addEventListener("pointerdown", unlock, { once: true });
 addEventListener("keydown", unlock, { once: true });
+const parsed = parseStationFiles(manifest, graphFile, poiFile);
+if (!parsed.ok) throw new Error(`station bundle invalid: ${parsed.issues.map((i) => i.code).join(", ")}`);
 const station = await buildScene({
   THREE,
+  bundle: parsed.bundle,
   audio: audioCtx ? { context: audioCtx, destination: audioCtx.destination } : undefined,
   renderer,
   quality: mobile ? "low" : "high",

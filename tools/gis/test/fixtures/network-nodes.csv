@@ -1,0 +1,7 @@
+# SYNTHETIC fixture; hand-authored and contains no real station data.
+node_id,longitude,latitude,elevation,floor,in_out
+A,139.700000,35.680000,,B1,1
+A,139.700000,35.680000,,B1,1
+B,139.700100,35.680000,12,,1
+C,139.701000,35.680000,,,
+D,,,,,

@@ -1,0 +1,400 @@
+{
+  "source_id": "hokonavi-oedo-shinjuku-network-geojson",
+  "source_sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff",
+  "archive_entry_count": 2,
+  "members": [
+    {
+      "file": "link.geojson",
+      "feature_count": 263,
+      "geometry_type_counts": {
+        "LineString": 263
+      },
+      "crs": {
+        "type": "name",
+        "properties": {
+          "name": "EPSG:6668"
+        }
+      },
+      "bbox": [
+        139.6983427967416,
+        35.686837840826456,
+        139.6996342263177,
+        35.68901888089276
+      ],
+      "headers": [
+        "FID",
+        "H_F",
+        "brail_tile",
+        "direction",
+        "distance",
+        "elevator",
+        "end_id",
+        "lev_diff",
+        "link_id",
+        "maint_date",
+        "r_method",
+        "rank",
+        "roof",
+        "route_type",
+        "rt_struct",
+        "start_id",
+        "tfc_s_type",
+        "tfc_signal",
+        "vtcl_slope",
+        "width"
+      ],
+      "blank_counts": {
+        "FID": 0,
+        "H_F": 0,
+        "brail_tile": 0,
+        "direction": 0,
+        "distance": 0,
+        "elevator": 0,
+        "end_id": 0,
+        "lev_diff": 0,
+        "link_id": 0,
+        "maint_date": 0,
+        "r_method": 0,
+        "rank": 0,
+        "roof": 0,
+        "route_type": 0,
+        "rt_struct": 0,
+        "start_id": 0,
+        "tfc_s_type": 0,
+        "tfc_signal": 0,
+        "vtcl_slope": 0,
+        "width": 0
+      },
+      "categorical_values": {
+        "brail_tile": {
+          "1": 156,
+          "2": 107
+        },
+        "direction": {
+          "1": 241,
+          "2": 22
+        },
+        "elevator": {
+          "1": 250,
+          "5": 13
+        },
+        "lev_diff": {
+          "1": 209,
+          "5": 54
+        },
+        "route_type": {
+          "1": 194,
+          "4": 13,
+          "5": 29,
+          "6": 22,
+          "7": 5
+        },
+        "rt_struct": {
+          "5": 259,
+          "7": 4
+        },
+        "vtcl_slope": {
+          "1": 206,
+          "2": 1,
+          "3": 5,
+          "7": 44,
+          "8": 7
+        },
+        "width": {
+          "1": 1,
+          "2": 53,
+          "3": 36,
+          "4": 173
+        }
+      },
+      "floor_labels_present_literally": []
+    },
+    {
+      "file": "node.geojson",
+      "feature_count": 233,
+      "geometry_type_counts": {
+        "Point": 233
+      },
+      "crs": {
+        "type": "name",
+        "properties": {
+          "name": "EPSG:6668"
+        }
+      },
+      "bbox": [
+        139.69834279674163,
+        35.68683784082645,
+        139.69963422631773,
+        35.68901888089276
+      ],
+      "headers": [
+        "FID",
+        "H_F",
+        "floor",
+        "in_out",
+        "lat",
+        "link1_id",
+        "link2_id",
+        "link3_id",
+        "link4_id",
+        "link5_id",
+        "link6_id",
+        "link7_id",
+        "link8_id",
+        "lon",
+        "node_id"
+      ],
+      "blank_counts": {
+        "FID": 0,
+        "H_F": 0,
+        "floor": 0,
+        "in_out": 0,
+        "lat": 0,
+        "link1_id": 0,
+        "link2_id": 20,
+        "link3_id": 183,
+        "link4_id": 214,
+        "link5_id": 224,
+        "link6_id": 231,
+        "link7_id": 233,
+        "link8_id": 233,
+        "lon": 0,
+        "node_id": 0
+      },
+      "categorical_values": {
+        "floor": {
+          "0": 8,
+          "1": 2,
+          "-0.5": 10,
+          "-1": 73,
+          "-2": 43,
+          "-2.5": 2,
+          "-3": 47,
+          "-4.5": 16,
+          "-6": 32
+        },
+        "in_out": {
+          "1": 4,
+          "2": 5,
+          "3": 224
+        }
+      },
+      "floor_labels_present_literally": [
+        "-0.5",
+        "-1",
+        "-2",
+        "-2.5",
+        "-3",
+        "-4.5",
+        "-6",
+        "0",
+        "1"
+      ]
+    }
+  ],
+  "other_files": [],
+  "totals": {
+    "files": 2,
+    "features": 496
+  },
+  "network_inventory": {
+    "feature_count": 496,
+    "geometry_type_counts": {
+      "LineString": 263,
+      "Point": 233
+    },
+    "crs": {
+      "type": "name",
+      "properties": {
+        "name": "EPSG:6668"
+      }
+    },
+    "bbox": [
+      139.6983427967416,
+      35.68683784082645,
+      139.69963422631773,
+      35.68901888089276
+    ],
+    "headers": [
+      "FID",
+      "H_F",
+      "brail_tile",
+      "direction",
+      "distance",
+      "elevator",
+      "end_id",
+      "floor",
+      "in_out",
+      "lat",
+      "lev_diff",
+      "link1_id",
+      "link2_id",
+      "link3_id",
+      "link4_id",
+      "link5_id",
+      "link6_id",
+      "link7_id",
+      "link8_id",
+      "link_id",
+      "lon",
+      "maint_date",
+      "node_id",
+      "r_method",
+      "rank",
+      "roof",
+      "route_type",
+      "rt_struct",
+      "start_id",
+      "tfc_s_type",
+      "tfc_signal",
+      "vtcl_slope",
+      "width"
+    ],
+    "blank_counts": {
+      "FID": 0,
+      "H_F": 0,
+      "brail_tile": 233,
+      "direction": 233,
+      "distance": 233,
+      "elevator": 233,
+      "end_id": 233,
+      "floor": 263,
+      "in_out": 263,
+      "lat": 263,
+      "lev_diff": 233,
+      "link1_id": 263,
+      "link2_id": 283,
+      "link3_id": 446,
+      "link4_id": 477,
+      "link5_id": 487,
+      "link6_id": 494,
+      "link7_id": 496,
+      "link8_id": 496,
+      "link_id": 233,
+      "lon": 263,
+      "maint_date": 233,
+      "node_id": 263,
+      "r_method": 233,
+      "rank": 233,
+      "roof": 233,
+      "route_type": 233,
+      "rt_struct": 233,
+      "start_id": 233,
+      "tfc_s_type": 233,
+      "tfc_signal": 233,
+      "vtcl_slope": 233,
+      "width": 233
+    },
+    "categorical_values": {
+      "brail_tile": {
+        "1": 156,
+        "2": 107,
+        "(blank)": 233
+      },
+      "direction": {
+        "1": 241,
+        "2": 22,
+        "(blank)": 233
+      },
+      "elevator": {
+        "1": 250,
+        "5": 13,
+        "(blank)": 233
+      },
+      "floor": {
+        "0": 8,
+        "1": 2,
+        "-0.5": 10,
+        "-1": 73,
+        "-2": 43,
+        "-2.5": 2,
+        "-3": 47,
+        "-4.5": 16,
+        "-6": 32,
+        "(blank)": 263
+      },
+      "in_out": {
+        "1": 4,
+        "2": 5,
+        "3": 224,
+        "(blank)": 263
+      },
+      "lev_diff": {
+        "1": 209,
+        "5": 54,
+        "(blank)": 233
+      },
+      "route_type": {
+        "1": 194,
+        "4": 13,
+        "5": 29,
+        "6": 22,
+        "7": 5,
+        "(blank)": 233
+      },
+      "rt_struct": {
+        "5": 259,
+        "7": 4,
+        "(blank)": 233
+      },
+      "vtcl_slope": {
+        "1": 206,
+        "2": 1,
+        "3": 5,
+        "7": 44,
+        "8": 7,
+        "(blank)": 233
+      },
+      "width": {
+        "1": 1,
+        "2": 53,
+        "3": 36,
+        "4": 173,
+        "(blank)": 233
+      }
+    },
+    "floor_labels_present_literally": [
+      "-0.5",
+      "-1",
+      "-2",
+      "-2.5",
+      "-3",
+      "-4.5",
+      "-6",
+      "0",
+      "1"
+    ]
+  },
+  "topology": {
+    "duplicate_ids": [],
+    "duplicate_node_ids": [],
+    "duplicate_link_ids": [],
+    "dangling_links": [],
+    "self_loops": [],
+    "unreferenced_node_ids": [],
+    "weak_component_count": 1,
+    "weak_components": [
+      {
+        "node_count": 233
+      }
+    ],
+    "completeness": {
+      "node_ids_complete": true,
+      "link_ids_complete": true,
+      "endpoint_ids_complete": true,
+      "graph_complete": true,
+      "unknown_node_identifier_count": 0,
+      "unknown_link_identifier_count": 0,
+      "unknown_endpoint_count": 0
+    },
+    "geometry_endpoint_mismatches_over_0_5m": [],
+    "geometry_endpoint_check_status": "CHECKED_IN_METRES",
+    "geometry_endpoint_distance_method": "GEOGRAPHIC_DEGREES_APPROX_METRES",
+    "geometry_endpoint_coverage": {
+      "checked_links": 263,
+      "skipped_links": 0,
+      "total_links": 263,
+      "complete": true
+    }
+  }
+}

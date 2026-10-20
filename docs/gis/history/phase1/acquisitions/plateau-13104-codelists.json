@@ -1,0 +1,36 @@
+{
+  "source_id": "plateau-13104-codelists",
+  "resolved_url": "https://assets.cms.plateau.reearth.io/assets/e9/b1d234-ec4d-422c-8dd9-2748c965730c/13104_shinjuku-ku_pref_2025_citygml_1_op_codelists.zip",
+  "resolution_evidence": {
+    "source_id": "plateau-catalog-ubld-13116-13104",
+    "sha256": "7e5abc031afa5ab9f4e0da1df9b7e3413d642c7cbdeb6de6f909b4a23a9737ad",
+    "json_pointer": "/cities/1/metadataZipUrls/0"
+  },
+  "requested_at": "2026-10-20T11:39:20.466Z",
+  "completed_at": "2026-10-20T11:39:20.529Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/zip",
+    "content-length": "806577",
+    "etag": "\"4d24041d981978755110afa0f969961c\"",
+    "last-modified": "Fri, 19 Dec 2025 00:02:31 GMT",
+    "date": "Tue, 20 Oct 2026 11:09:59 GMT"
+  },
+  "bytes": 806577,
+  "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+  "store_path": "raw/f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4/13104_shinjuku-ku_pref_2025_citygml_1_op_codelists.zip",
+  "tool_version": "0.1.0",
+  "git_commit": "755092fab572ec1bd165103987e25bc2d1b8d9fa",
+  "expected_bytes": null,
+  "expected_url_match": false,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-20T11:54:19.444Z",
+    "completed_at": "2026-10-20T11:54:19.444Z",
+    "tool_version": "0.1.0",
+    "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+    "bytes": 806577,
+    "status": "PASS"
+  }
+}
