@@ -243,12 +243,12 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     if (role === "floor" || role === "stairs_ramps") walkable.push(m);
     // Ceilings too: walker side-rays (0.45/1.25 m) never reach them, but they keep the follow camera inside.
     if (role === "wall" || role === "barriers" || role === "transport" || role === "ceiling") colliders.push(m);
-    if (role === "doors") {
-      // Most doors are shopfronts onto unmodelled rooms and must be solid. A door a verified route
-      // passes through, such as an exit's doors, stays open.
+    if (role === "doors" || role === "windows") {
+      // Shopfront doors and glazing open onto unmodelled rooms and must be solid. A panel a verified
+      // route passes through, such as an exit's doors, stays open.
       const solid = new THREE.Mesh(solidDoors(THREE, m, routeSegments), mats.byRole.portal_beyond);
       solid.visible = false;
-      solid.userData.gteki_role = "doors_solid";
+      solid.userData.gteki_role = `${role}_solid`;
       colliders.push(solid);
       extra.push(solid);
     }
