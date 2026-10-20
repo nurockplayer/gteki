@@ -27,7 +27,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "import:e27": "tsx tools/import-e27.ts",
     "check": "pnpm typecheck && vitest run --root ../.. stations/shinjuku",
-    "shoot": "tsx tools/shoot.ts"
+    "shoot": "tsx tools/shoot.ts",
+    "record": "tsx tools/record.ts"
   },
   "devDependencies": {
     "@types/three": "^0.186.0",
