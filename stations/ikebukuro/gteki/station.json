@@ -117,9 +117,9 @@
    "crs": "EPSG:6697"
   },
   "frame": "ENU",
-  "datasetVersion": "ikebukuro-b1-slice3.1",
+  "datasetVersion": "ikebukuro-b1-slice4",
   "synthetic": false,
-  "generatedAt": "2026-10-20T12:58:17+00:00"
+  "generatedAt": "2026-10-20T13:08:56+00:00"
  },
  "sources": [
   {
@@ -238,11 +238,11 @@
   "summary": [
    {
     "lang": "en",
-    "text": "Routable (desk-verified against the PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown): slice 1, the B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43; slice 2, the passage along the JR east side to the South Passage east end and the south-east corridor to Exits 38/39/40/41; slice 3, the passage along the JR east side north to the North Passage (Exit 22, 東口（北）) and the passage between the Ikebukuro Shopping Park blocks to Exits 26/28/32/33. The rest of the PLATEAU B1 passage network is explorable but not routable yet. Fare-paid concourses and platforms are not modelled."
+    "text": "Routable (desk-verified against the PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown): slice 1, the B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43; slice 2, the passage along the JR east side to the South Passage east end and the south-east corridor to Exits 38/39/40/41; slice 3, the passage along the JR east side north to the North Passage (Exit 22, 東口（北）) and the passage between the Ikebukuro Shopping Park blocks to Exits 26/28/32/33; slice 4, the Central Passage west to the West Exit (西口) underground hall and its passages to Exits 10/11/15/17/18. The rest of the PLATEAU B1 passage network is explorable but not routable yet. Fare-paid concourses and platforms are not modelled."
    },
    {
     "lang": "ja",
-    "text": "ルート案内対象（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）：第1区画 中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43；第2区画 JR東側通路から南通路東端、南東通路の出口38・39・40・41；第3区画 JR東側通路から北通路（出口22・東口（北））、池袋ショッピングパーク間の通路の出口26・28・32・33。その他のB1地下通路は探索のみ。改札内・ホームは未モデル化。"
+    "text": "ルート案内対象（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）：第1区画 中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43；第2区画 JR東側通路から南通路東端、南東通路の出口38・39・40・41；第3区画 JR東側通路から北通路（出口22・東口（北））、池袋ショッピングパーク間の通路の出口26・28・32・33；第4区画 中央通路（西）から西口地下広場、出口10・11・15・17・18。その他のB1地下通路は探索のみ。改札内・ホームは未モデル化。"
    }
   ],
   "areas": [
@@ -537,6 +537,230 @@
     ]
    },
    {
+    "id": "slice4",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "Central Passage (west), West Exit hall and Exits 15/17/18"
+     },
+     {
+      "lang": "ja",
+      "text": "中央通路（西）・西口地下広場・出口15・17・18"
+     }
+    ],
+    "polygon": [
+     {
+      "x": -56,
+      "y": 79
+     },
+     {
+      "x": -68,
+      "y": 83
+     },
+     {
+      "x": -82,
+      "y": 95
+     },
+     {
+      "x": -92,
+      "y": 100
+     },
+     {
+      "x": -104,
+      "y": 112
+     },
+     {
+      "x": -110,
+      "y": 117
+     },
+     {
+      "x": -124,
+      "y": 117
+     },
+     {
+      "x": -124,
+      "y": 125
+     },
+     {
+      "x": -117,
+      "y": 128
+     },
+     {
+      "x": -121,
+      "y": 134
+     },
+     {
+      "x": -121,
+      "y": 141
+     },
+     {
+      "x": -116,
+      "y": 149
+     },
+     {
+      "x": -114,
+      "y": 156
+     },
+     {
+      "x": -111,
+      "y": 166
+     },
+     {
+      "x": -104,
+      "y": 166
+     },
+     {
+      "x": -103,
+      "y": 160
+     },
+     {
+      "x": -92,
+      "y": 160
+     },
+     {
+      "x": -90,
+      "y": 153
+     },
+     {
+      "x": -96,
+      "y": 150
+     },
+     {
+      "x": -104,
+      "y": 148
+     },
+     {
+      "x": -104,
+      "y": 131
+     },
+     {
+      "x": -104,
+      "y": 124
+     },
+     {
+      "x": -100,
+      "y": 118
+     },
+     {
+      "x": -90,
+      "y": 108
+     },
+     {
+      "x": -80,
+      "y": 101
+     },
+     {
+      "x": -66,
+      "y": 90
+     },
+     {
+      "x": -56,
+      "y": 88
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "slice4-west",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "West Exit passages to Exits 10/11"
+     },
+     {
+      "lang": "ja",
+      "text": "西口地下通路・出口10・11"
+     }
+    ],
+    "polygon": [
+     {
+      "x": -124,
+      "y": 117
+     },
+     {
+      "x": -153,
+      "y": 121
+     },
+     {
+      "x": -158,
+      "y": 124
+     },
+     {
+      "x": -159,
+      "y": 150
+     },
+     {
+      "x": -159,
+      "y": 158
+     },
+     {
+      "x": -156,
+      "y": 166
+     },
+     {
+      "x": -153,
+      "y": 171
+     },
+     {
+      "x": -149,
+      "y": 183
+     },
+     {
+      "x": -142,
+      "y": 182
+     },
+     {
+      "x": -143,
+      "y": 172
+     },
+     {
+      "x": -108,
+      "y": 157
+     },
+     {
+      "x": -105,
+      "y": 152
+     },
+     {
+      "x": -110,
+      "y": 148
+     },
+     {
+      "x": -145,
+      "y": 160
+     },
+     {
+      "x": -148,
+      "y": 140
+     },
+     {
+      "x": -148,
+      "y": 131
+     },
+     {
+      "x": -122,
+      "y": 128
+     },
+     {
+      "x": -122,
+      "y": 125
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
     "id": "plateau-b1-rest",
     "floorId": "b1",
     "status": "visual_only",
@@ -628,6 +852,14 @@
     "zone": "North-east, north of the Ikebukuro Shopping Park passage",
     "missingFact": "Exits 23, 24, 25, 29, 30 and 31: the official map shows two stairs (24, 25) where PLATEAU has one stair top, and 23/29/30/31 lie outside the surveyed geometry",
     "fieldWorkNeeded": "On-site check of which stair is 24 and which is 25; a survey source for the passage north of it"
+   },
+   {
+    "id": "gap-west-stairs",
+    "floorId": "b1",
+    "zone": "West Exit area: Exits 9, 13, 14, 16, 19 and two unlabelled stairwells",
+    "missingFact": "PLATEAU models only the lower flights of Exits 9 and 13 and of two stairwells near (-181, 126) and (-162, 112) (to TP ~30.0 m, street ~33 m); Exits 14, 16 and 19 (西口（中央）) have no stair in the survey",
+    "fieldWorkNeeded": "a survey source for the upper flights (or a later PLATEAU release); on-site check of which stairwell is which exit",
+    "sourceDate": null
    }
   ],
   "freshness": "2023"
@@ -635,7 +867,8 @@
  "spawnNodeIds": [
   "c_e2",
   "c_mid",
-  "n_h"
+  "n_h",
+  "w_c"
  ],
  "assets": [
   {

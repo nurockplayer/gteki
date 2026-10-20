@@ -29,6 +29,21 @@ WALK_TOL = 0.35   # m between interpolated and surveyed height on walk edges
 STAIR_TOL = 0.9   # stairs/escalators: treads are discrete
 
 
+WALL_PIECE = 0.5  # m
+
+
+def _z_at(tz, t):
+    """Heights where a vertical polygon, given as (t along footprint, z) vertices, meets the line t."""
+    out = []
+    for (ta, za), (tb, zb) in zip(tz, tz[1:] + tz[:1]):
+        if min(ta, tb) - 1e-6 <= t <= max(ta, tb) + 1e-6:
+            if abs(tb - ta) < 1e-6:
+                out += [za, zb]
+            else:
+                out.append(za + (zb - za) * (t - ta) / (tb - ta))
+    return out
+
+
 def wall_segments(enu):
     """Vertical wall/barrier faces as 2D segments with a z band."""
     segs = []
@@ -55,7 +70,29 @@ def wall_segments(enu):
                     best = (dd, o[a], o[b])
         if best[1] is None or best[0] < 1e-4:
             continue
-        segs.append((best[1][0], best[1][1], best[2][0], best[2][1], min(zs), max(zs)))
+        # A sloped face (e.g. a stair flight's side wall) spans different heights along its length;
+        # one bounding z band would wrongly block the flight passing beneath it. Split the footprint
+        # into <= WALL_PIECE pieces, each with the face's own z extent over that piece.
+        (ax, ay), (bx, by) = best[1][:2], best[2][:2]
+        L = math.sqrt(best[0])
+        tz = [(((q[0] - ax) * (bx - ax) + (q[1] - ay) * (by - ay)) / L, q[2]) for q in o]
+        n = max(1, math.ceil(L / WALL_PIECE))
+        prev = None
+        for k in range(n):
+            t0, t1 = L * k / n, L * (k + 1) / n
+            band = _z_at(tz, t0) + _z_at(tz, t1) + [z for t, z in tz if t0 < t < t1]
+            if not band:
+                continue
+            lo, hi = round(min(band), 2), round(max(band), 2)
+            if prev and prev[4] == lo and prev[5] == hi:  # merge runs with the same band
+                prev[2], prev[3] = ax + (bx - ax) * t1 / L, ay + (by - ay) * t1 / L
+                continue
+            if prev:
+                segs.append(tuple(prev))
+            prev = [ax + (bx - ax) * t0 / L, ay + (by - ay) * t0 / L,
+                    ax + (bx - ax) * t1 / L, ay + (by - ay) * t1 / L, lo, hi]
+        if prev:
+            segs.append(tuple(prev))
     grid = {}
     for k, (x1, y1, x2, y2, _, _) in enumerate(segs):
         for gx in range(int(math.floor(min(x1, x2) / 4)), int(math.floor(max(x1, x2) / 4)) + 1):

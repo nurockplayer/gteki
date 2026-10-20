@@ -1235,6 +1235,261 @@
     "method": "official-map-reading",
     "checkedDate": "2026-10-20"
    }
+  },
+  {
+   "id": "exit-10",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "10番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 10"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口10"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "10ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "10-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "10"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "10號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x10"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-11",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "11番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 11"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口11"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "11ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "11-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "11"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "11號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x11"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-15",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "15番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 15"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口15"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "15ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "15-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "15"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "15號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x15"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-17",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "17番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 17"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口17"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "17ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "17-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "17"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "17號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x17"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-18",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "18番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 18"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口18"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "18ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "18-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "18"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "18號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x18"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
   }
  ]
 }

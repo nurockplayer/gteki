@@ -13,6 +13,7 @@ for facts only and never published).
 | `gap-step-free` | east hall → east corridor (TP 27.8 → 26.9 m) and every exit | lifts/escalators/ramps: EF_80 transport geometry exists, but type, served levels and hours are unknown | Tokyo Metro / Toshima accessibility pages (facts only) + on-site confirmation | `stepFree` profile (currently fails safely with `no_path`) |
 | `gap-south-west` | South Passage, west of the JR east-side passage | which PLATEAU openings are the JR South Gate and the Yurakucho Line South Passage East Gate; where the South Passage continues west | on-site check of both gate lines against column positions | routing to those gates and the west side |
 | `gap-ne-north` | North-east, north of the shopping-park passage | which stair is Exit 24 and which is 25 (the official map shows two; PLATEAU has one stair top); Exits 23, 29, 30, 31 lie outside the surveyed geometry | on-site check of the 24/25 stairs; a survey source for the passage further north | routing to those exits |
+| `gap-west-stairs` | West Exit area | PLATEAU models only the lower flights of Exits 9 and 13 and of two unlabelled stairwells (to TP ~30.0 m; street ~33 m); Exits 14, 16 and 19 (西口（中央）) have no stair in the survey | a survey source for the upper flights (or a later PLATEAU release); on-site check of which stairwell is which exit | routing to those exits |
 | `gap-freshness` | whole slice | geometry is a 2023 survey; later construction unknown | dated walk-through comparing columns, exits and openings with the GLB | lifts the stale flag for slice 1 |
 
 ## Next slices (geometry already present, desk work first)
@@ -21,7 +22,9 @@ for facts only and never published).
    `gap-south-west`.
 2. ~~**North-east**: exits 22, 26, 28, 32, 33~~ (done, slice 3). Exits 23–25 and 29–31 wait on
    `gap-ne-north`.
-3. **West**: Tobu side, Hope Center, west exits.
+3. **West**: ~~Central Passage west, West Exit hall, exits 10, 11, 15, 17, 18~~ (done, slice 4).
+   Next: the corridor south from the hall to Exits 4–8 and the South Passage west end. Exits 9,
+   13, 14, 16 and 19 wait on `gap-west-stairs`.
 4. **Street level**: exit stair tops are modelled as daylight portals. A street-level GLB (PLATEAU
    bldg/tran LOD1–2 around the station) is needed before exits can be walked out of.
 
