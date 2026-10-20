@@ -107,6 +107,8 @@ Done so far:
   HUD mute works).
 - Exit daylight.
 - A recorded 121 s walk, landmark (JR Central Gate 2) → Exit 35 ([video](docs/evidence/walk-jr-central-gate2-to-exit35.mp4)).
+- A recorded 117 s walk along the routed polyline, West Exit (B1) → Exit 4 stair foot (187 m, slices 4–5)
+  ([video](docs/evidence/walk-west-exit-to-exit4.mp4)).
 - An independent Astra High critique, addressed in `ca399cb`.
 
 Remaining before claiming L2:
