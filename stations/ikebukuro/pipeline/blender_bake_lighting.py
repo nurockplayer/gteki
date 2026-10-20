@@ -379,8 +379,7 @@ def main():
             assert all(obj.get(k) == v for k, v in expected[obj.name].items()), f"{obj.name}: extras changed"
     assert any(o.name == "light_fixtures" and o.get("gteki_role") == "light_fixtures" for o in imported)
     meta = {"fixture_count": len(records), "lightmap_size": args.size, "texel_density": atlas,
-            "bake_samples": args.samples, "encoding": encoding, "bake_time_seconds": bake_seconds,
-            "total_time_seconds": time.monotonic() - start, "blender_version": bpy.app.version_string,
+            "bake_samples": args.samples, "encoding": encoding, "blender_version": bpy.app.version_string,
             "source_glb_sha256": source_hash, "daylight_portal_faces": daylight_faces, "image_stats": stats,
             "bake": f"Cycles {args.device} DIFFUSE DIRECT+INDIRECT, no COLOR; neutral diffuse 0.75",
             "denoising": f"mask-aware Gaussian, sigma {args.denoise} texels (numpy)",
@@ -390,7 +389,11 @@ def main():
         files.append(args.lightmap.with_suffix(".exr"))
     meta["file_sizes_bytes"] = {p.name: p.stat().st_size for p in files}
     args.output.with_suffix(".meta.json").write_text(json.dumps(meta, indent=2) + "\n")
-    print("DONE " + json.dumps(meta), flush=True)
+    # Run timings vary between identical bakes: they go to an untracked report beside the PNG, never the
+    # shipped sidecar. bake_lighting.sh adds the WebP sizes to the sidecar after converting.
+    report = {"bake_time_seconds": bake_seconds, "total_time_seconds": time.monotonic() - start}
+    (args.lightmap.parent / (args.source.stem + "_bake_report.json")).write_text(json.dumps(report, indent=2) + "\n")
+    print("DONE " + json.dumps(meta | report), flush=True)
 
 
 if __name__ == "__main__":

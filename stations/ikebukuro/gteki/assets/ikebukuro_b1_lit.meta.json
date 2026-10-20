@@ -15,8 +15,6 @@
     "denoise_sigma_texels": 1.5,
     "exr": null
   },
-  "bake_time_seconds": 303.4359777910013,
-  "total_time_seconds": 323.4806511660008,
   "blender_version": "5.2.2 LTS",
   "source_glb_sha256": "e0188c5009365d075b1f3828ab12cdc77a900c16de21b8cea271979a1d5b33bd",
   "daylight_portal_faces": 52,
