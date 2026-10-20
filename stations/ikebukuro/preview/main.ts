@@ -88,7 +88,7 @@ scene.add(player);
 const spawns = station.spawnPoints ?? [];
 const spawnId = params.get("spawn");
 const spawnAt = (sp: { x: number; y: number; z: number }) => player.position.copy(enu(sp));
-const sp = spawns.find((s) => s.nodeId === spawnId) ?? spawns[0];
+const sp = spawns.find((s) => s.nodeId === spawnId) ?? spawns[0]!;
 spawnAt(sp);
 // yaw: radians in renderer frame (0 = facing -Z = north); compass heading h -> yaw = -h
 let yaw = params.has("yaw") ? Number(params.get("yaw")) : -(sp.headingDeg * Math.PI) / 180;
@@ -206,7 +206,7 @@ function step(dt: number, render = true) {
   const g = groundAt(player.position, 0.3);
   if (g !== null) player.position.y += (g - player.position.y) * Math.min(1, dt * 20);
   player.rotation.y = yaw;
-  player.children[0].position.y = 1.12 + Math.abs(Math.sin(bob)) * 0.025;
+  player.children[0]!.position.y = 1.12 + Math.abs(Math.sin(bob)) * 0.025;
 
   // camera: orbit behind player, pulled in by walls/ceiling
   const head = player.position.clone().add(new THREE.Vector3(0, 1.55, 0));
@@ -241,7 +241,7 @@ addEventListener("resize", () => {
   /** Save the current frame to build/captures/<name>.jpg (dev server only). */
   async capture(name: string) {
     // toDataURL is synchronous (toBlob never resolves in a hidden tab).
-    const b64 = renderer.domElement.toDataURL("image/jpeg", 0.9).split(",")[1];
+    const b64 = renderer.domElement.toDataURL("image/jpeg", 0.9).split(",")[1]!;
     const body = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
     return (await fetch(`/__capture?name=${encodeURIComponent(name)}`, { method: "POST", body })).ok;
   },
@@ -252,19 +252,19 @@ addEventListener("resize", () => {
   async walkCapture(poly: { x: number; y: number; z: number }[], prefix: string, from = 0, frames = 90, speed = 1.6, fps = 15) {
     const pts = poly.map((p) => enu(p));
     const cum = [0];
-    for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
-    const total = cum[cum.length - 1];
+    for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1]! + pts[i]!.distanceTo(pts[i - 1]!));
+    const total = cum[cum.length - 1]!;
     let k = from;
     for (; k < from + frames; k++) {
       const s = Math.min(total, (k * speed) / fps);
       let i = 1;
-      while (i < cum.length - 1 && cum[i] < s) i++;
-      const t = (s - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]);
-      const p = pts[i - 1].clone().lerp(pts[i], t);
+      while (i < cum.length - 1 && cum[i]! < s) i++;
+      const t = (s - cum[i - 1]!) / Math.max(1e-6, cum[i]! - cum[i - 1]!);
+      const p = pts[i - 1]!.clone().lerp(pts[i]!, t);
       // look ~4 m ahead along the path for a smooth heading
       let j = i;
-      while (j < cum.length - 1 && cum[j] < s + 4) j++;
-      const ahead = pts[j].clone().sub(p);
+      while (j < cum.length - 1 && cum[j]! < s + 4) j++;
+      const ahead = pts[j]!.clone().sub(p);
       const target = Math.atan2(-ahead.x, -ahead.z);
       if (ahead.lengthSq() > 1e-4) {
         const dyaw = Math.atan2(Math.sin(target - yaw), Math.cos(target - yaw));
@@ -274,7 +274,7 @@ addEventListener("resize", () => {
       player.position.set(p.x, groundAt(p, 0.6) ?? p.y, p.z);
       bob += (speed / fps) * 5.5;
       step(1 / fps, true);
-      const b64 = renderer.domElement.toDataURL("image/jpeg", 0.88).split(",")[1];
+      const b64 = renderer.domElement.toDataURL("image/jpeg", 0.88).split(",")[1]!;
       await fetch(`/__capture?name=${prefix}-${String(k).padStart(5, "0")}`, { method: "POST", body: Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)) });
       if (s >= total) return -1;
     }

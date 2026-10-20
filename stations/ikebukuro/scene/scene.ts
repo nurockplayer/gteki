@@ -86,10 +86,10 @@ function splitPortals(THREE: ThreeNS, mesh: THREE_NS.Mesh) {
 
 /** Door triangles in world space, minus every door panel (connected by shared vertices) a route segment
  * crosses at walking height. */
-function solidDoors(THREE: ThreeNS, mesh: THREE_NS.Mesh, routes: THREE_NS.Vector3[][]): THREE_NS.BufferGeometry {
+function solidDoors(THREE: ThreeNS, mesh: THREE_NS.Mesh, routes: [THREE_NS.Vector3, THREE_NS.Vector3][]): THREE_NS.BufferGeometry {
   mesh.updateWorldMatrix(true, false);
   const g = mesh.geometry.index ? mesh.geometry.toNonIndexed() : mesh.geometry;
-  const src = g.attributes.position;
+  const src = g.attributes.position!;
   const v = new THREE.Vector3();
   const arr: number[] = [];
   for (let i = 0; i < src.count; i++) {
@@ -99,12 +99,12 @@ function solidDoors(THREE: ThreeNS, mesh: THREE_NS.Mesh, routes: THREE_NS.Vector
   if (g !== mesh.geometry) g.dispose();
   const tris = arr.length / 9;
   const parent = Array.from({ length: tris }, (_, i) => i);
-  const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+  const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i]!)));
   const owner = new Map<string, number>();
   for (let t = 0; t < tris; t++) {
     for (let k = 0; k < 3; k++) {
       const o = t * 9 + k * 3;
-      const key = `${arr[o].toFixed(2)},${arr[o + 1].toFixed(2)},${arr[o + 2].toFixed(2)}`;
+      const key = `${arr[o]!.toFixed(2)},${arr[o + 1]!.toFixed(2)},${arr[o + 2]!.toFixed(2)}`;
       const prev = owner.get(key);
       if (prev === undefined) owner.set(key, t);
       else parent[find(t)] = find(prev);
@@ -123,14 +123,14 @@ function solidDoors(THREE: ThreeNS, mesh: THREE_NS.Mesh, routes: THREE_NS.Vector
     const r = find(t);
     if (open.has(r)) continue;
     const o = t * 9;
-    const ylo = Math.min(arr[o + 1], arr[o + 4], arr[o + 7]);
-    const yhi = Math.max(arr[o + 1], arr[o + 4], arr[o + 7]);
+    const ylo = Math.min(arr[o + 1]!, arr[o + 4]!, arr[o + 7]!);
+    const yhi = Math.max(arr[o + 1]!, arr[o + 4]!, arr[o + 7]!);
     for (const [a, b] of routes) {
       const y = (a.y + b.y) / 2;
       if (y + 1.8 < ylo || y + 0.1 > yhi) continue; // the triangle spans no body height on this segment
       if ([0, 1, 2].some((k) => {
         const p = o + k * 3, q = o + ((k + 1) % 3) * 3;
-        return cross(a.x, a.z, b.x, b.z, arr[p], arr[p + 2], arr[q], arr[q + 2]);
+        return cross(a.x, a.z, b.x, b.z, arr[p]!, arr[p + 2]!, arr[q]!, arr[q + 2]!);
       })) {
         open.add(r);
         break;
@@ -158,7 +158,7 @@ function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[]): THREE_NS.Mes
     const mat = m.material as THREE_NS.Material | THREE_NS.Material[];
     const side = Array.isArray(mat) ? THREE.DoubleSide : mat.side;
     const g = m.geometry;
-    const src = g.attributes.position;
+    const src = g.attributes.position!;
     const idx = g.index;
     const n = idx ? idx.count : src.count;
     const tri: number[] = new Array(9);
@@ -167,7 +167,7 @@ function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[]): THREE_NS.Mes
         v.fromBufferAttribute(src, idx ? idx.getX(i + k) : i + k).applyMatrix4(m.matrixWorld);
         tri[k * 3] = v.x; tri[k * 3 + 1] = v.y; tri[k * 3 + 2] = v.z;
       }
-      const key = `${side}:${Math.floor((tri[0] + tri[3] + tri[6]) / 3 / TILE)}:${Math.floor((tri[2] + tri[5] + tri[8]) / 3 / TILE)}`;
+      const key = `${side}:${Math.floor((tri[0]! + tri[3]! + tri[6]!) / 3 / TILE)}:${Math.floor((tri[2]! + tri[5]! + tri[8]!) / 3 / TILE)}`;
       let b = buckets.get(key);
       if (!b) buckets.set(key, (b = { side, pos: [] }));
       b.pos.push(...tri);
@@ -194,12 +194,12 @@ function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[]): THREE_NS.Mes
 function openingBands(arr: number[]): number[] {
   const tris = arr.length / 9;
   const parent = Array.from({ length: tris }, (_, i) => i);
-  const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+  const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i]!)));
   const owner = new Map<string, number>();
   for (let t = 0; t < tris; t++) {
     for (let k = 0; k < 3; k++) {
       const o = t * 9 + k * 3;
-      const key = `${arr[o].toFixed(2)},${arr[o + 1].toFixed(2)},${arr[o + 2].toFixed(2)}`;
+      const key = `${arr[o]!.toFixed(2)},${arr[o + 1]!.toFixed(2)},${arr[o + 2]!.toFixed(2)}`;
       const prev = owner.get(key);
       if (prev === undefined) owner.set(key, t);
       else parent[find(t)] = find(prev);
@@ -209,7 +209,7 @@ function openingBands(arr: number[]): number[] {
   for (let t = 0; t < tris; t++) {
     const r = find(t);
     for (let k = 0; k < 3; k++) {
-      const y = arr[t * 9 + k * 3 + 1];
+      const y = arr[t * 9 + k * 3 + 1]!;
       lo.set(r, Math.min(lo.get(r) ?? Infinity, y));
       hi.set(r, Math.max(hi.get(r) ?? -Infinity, y));
     }
@@ -269,7 +269,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const extra: THREE_NS.Mesh[] = [];
   const routeSegments = (graph as { edges: { verification: string; geometry: { x: number; y: number; z: number }[] }[] }).edges
     .filter((e) => e.verification === "verified")
-    .flatMap((e) => e.geometry.slice(1).map((b, i) => [toRenderer(e.geometry[i].x, e.geometry[i].y, e.geometry[i].z), toRenderer(b.x, b.y, b.z)]));
+    .flatMap((e) => e.geometry.slice(1).map((b, i): [THREE_NS.Vector3, THREE_NS.Vector3] => [toRenderer(e.geometry[i]!.x, e.geometry[i]!.y, e.geometry[i]!.z), toRenderer(b.x, b.y, b.z)]));
   gltf.scene.traverse((o) => {
     const m = o as THREE_NS.Mesh;
     if (!m.isMesh) return;
@@ -310,7 +310,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     const pos = new Float32Array(quads.length * 12);
     const idx: number[] = [];
     quads.forEach((q, i) => {
-      q.forEach(([x, y, z], k) => pos.set(ctx.enuToRenderer({ x, y, z }), i * 12 + k * 3));
+      q.forEach(([x, y, z], k) => pos.set(ctx.enuToRenderer({ x: x!, y: y!, z: z! }), i * 12 + k * 3));
       idx.push(i * 4, i * 4 + 1, i * 4 + 2, i * 4, i * 4 + 2, i * 4 + 3);
     });
     const g = new THREE.BufferGeometry();

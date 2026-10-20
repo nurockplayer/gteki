@@ -98,7 +98,7 @@ function paintFitted(blocks: SignContent[], maxW: number) {
   let b = blocks.map((x) => ({ ...x, exits: [...x.exits], gates: [...x.gates] }));
   for (;;) {
     const r = paint(b);
-    const fullest = [...b].sort((p, q) => q.exits.length + q.gates.length - (p.exits.length + p.gates.length))[0];
+    const fullest = [...b].sort((p, q) => q.exits.length + q.gates.length - (p.exits.length + p.gates.length))[0]!;
     if (r.widthM <= maxW || fullest.exits.length + fullest.gates.length <= 1) return r;
     if (fullest.gates.length > 1 || !fullest.exits.length) fullest.gates.pop();
     else if (fullest.exits.length > 1 || !fullest.gates.length) fullest.exits.pop();
@@ -217,8 +217,8 @@ function packAtlas(faces: HTMLCanvasElement[], scale: number) {
     return c;
   });
   faces.forEach((c, i) => {
-    const s = slots[i];
-    pages[s.page].getContext("2d")!.drawImage(c, s.x, s.y, s.w, s.h);
+    const s = slots[i]!;
+    pages[s.page]!.getContext("2d")!.drawImage(c, s.x, s.y, s.w, s.h);
   });
   return { pages, slots };
 }
@@ -292,11 +292,11 @@ export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer
     tex.anisotropy = anisotropy;
     textures.push(tex);
     const parts = faces.flatMap((fc, i) => {
-      if (slots[i].page !== pi) return [];
+      if (slots[i]!.page !== pi) return [];
       const geo = new THREE.PlaneGeometry(fc.widthM, fc.h);
       // Remap the plane's 0..1 UVs onto this face's atlas rectangle (CanvasTexture flips Y).
-      const u0 = slots[i].x / page.width, u1 = (slots[i].x + slots[i].w) / page.width;
-      const vTop = 1 - slots[i].y / page.height, vBot = 1 - (slots[i].y + slots[i].h) / page.height;
+      const u0 = slots[i]!.x / page.width, u1 = (slots[i]!.x + slots[i]!.w) / page.width;
+      const vTop = 1 - slots[i]!.y / page.height, vBot = 1 - (slots[i]!.y + slots[i]!.h) / page.height;
       const uv = geo.getAttribute("uv") as THREE_NS.BufferAttribute;
       for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) * (u1 - u0), vBot + uv.getY(k) * (vTop - vBot));
       return [{ geo, matrix: fc.sign.clone().multiply(fc.local) }];

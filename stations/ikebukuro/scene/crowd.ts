@@ -33,8 +33,8 @@ export function buildCrowd(
     if (e.verification !== "verified" || e.geometry.some((p) => p.z === null)) continue;
     const pts = e.geometry.map((p) => toRenderer(p.x, p.y, p.z as number));
     const cum = [0];
-    for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
-    if (cum[cum.length - 1] > 1) paths.push({ pts, cum, length: cum[cum.length - 1], from: e.from, to: e.to, lane: lanes[e.id] });
+    for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1]! + pts[i]!.distanceTo(pts[i - 1]!));
+    if (cum[cum.length - 1]! > 1) paths.push({ pts, cum, length: cum[cum.length - 1]!, from: e.from, to: e.to, lane: lanes[e.id] });
   }
   const byNode = new Map<string, number[]>();
   paths.forEach((p, i) => {
@@ -53,7 +53,7 @@ export function buildCrowd(
   for (let i = 0; i < count; i++) {
     // place proportionally to path length
     let r = rand() * total, k = 0;
-    while (k < paths.length - 1 && r > paths[k].length) r -= paths[k++].length;
+    while (k < paths.length - 1 && r > paths[k]!.length) r -= paths[k++]!.length;
     agents.push({ path: k, forward: rand() < 0.5, s: r, speed: 1.15 + rand() * 0.5, offset: (rand() * 2 - 1) * 0.9, phase: rand() * 6.28, hiddenUntil: -1 });
   }
 
@@ -119,10 +119,10 @@ export function buildCrowd(
   for (let i = 0; i < count; i++) {
     const r = rand();
     carries.push(r < 0.3 ? "backpack" : r < 0.55 ? "shoulderBag" : null);
-    const coat = COAT[Math.floor(rand() * COAT.length)];
+    const coat = COAT[Math.floor(rand() * COAT.length)]!;
     const trousers = rand() < 0.6 ? 0x1b1d22 : rand() < 0.5 ? 0x2c3442 : 0x5e5649;
-    const skin = SKIN[Math.floor(rand() * SKIN.length)];
-    const hair = HAIR[Math.floor(rand() * HAIR.length)];
+    const skin = SKIN[Math.floor(rand() * SKIN.length)]!;
+    const hair = HAIR[Math.floor(rand() * HAIR.length)]!;
     for (const p of parts) {
       const bag = rand() < 0.5 ? 0x15171a : 0x3d2f25;
       const hex = p.key === "head" || p.key.startsWith("hand") ? skin : p.key === "hair" ? hair : p.key.startsWith("leg") ? trousers : p.key.endsWith("ack") || p.key.endsWith("Bag") ? bag : coat;
@@ -145,7 +145,7 @@ export function buildCrowd(
   const cam = new THREE.Vector3(1e9, 0, 0);
   const frustum = new THREE.Frustum(), viewProj = new THREE.Matrix4();
   let renders = 0;
-  parts[0].mesh.onBeforeRender = (_r, _s, camera) => {
+  parts[0]!.mesh.onBeforeRender = (_r, _s, camera) => {
     renders++;
     cam.setFromMatrixPosition(camera.matrixWorld);
     frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
@@ -162,13 +162,13 @@ export function buildCrowd(
   function relocate(a: Agent): boolean {
     for (let attempt = 0; attempt < 8; attempt++) {
       let r = rand() * total, k = 0;
-      while (k < paths.length - 1 && r > paths[k].length) r -= paths[k++].length;
-      sample(paths[k], r);
+      while (k < paths.length - 1 && r > paths[k]!.length) r -= paths[k++]!.length;
+      sample(paths[k]!, r);
       const dx = pos.x - cam.x, dy = pos.y + 1.1 - cam.y, dz = pos.z - cam.z;
       const d = Math.hypot(dx, dy, dz);
       if (d < SPAWN_MIN_M || d > SPAWN_MAX_M || Math.abs(dy) > 6 || inView(pos)) continue;
       a.path = k;
-      a.s = Math.min(paths[k].length, r);
+      a.s = Math.min(paths[k]!.length, r);
       a.forward = rand() < 0.5;
       a.hiddenUntil = renders;
       return true;
@@ -180,30 +180,30 @@ export function buildCrowd(
 
   function sample(p: Path, s: number) {
     let i = 1;
-    while (i < p.cum.length - 1 && p.cum[i] < s) i++;
-    const t = (s - p.cum[i - 1]) / Math.max(1e-6, p.cum[i] - p.cum[i - 1]);
-    pos.lerpVectors(p.pts[i - 1], p.pts[i], Math.min(1, Math.max(0, t)));
-    dir.subVectors(p.pts[i], p.pts[i - 1]).setY(0).normalize();
+    while (i < p.cum.length - 1 && p.cum[i]! < s) i++;
+    const t = (s - p.cum[i - 1]!) / Math.max(1e-6, p.cum[i]! - p.cum[i - 1]!);
+    pos.lerpVectors(p.pts[i - 1]!, p.pts[i]!, Math.min(1, Math.max(0, t)));
+    dir.subVectors(p.pts[i]!, p.pts[i - 1]!).setY(0).normalize();
   }
 
   let nearby = 0;
   function update(dt: number, _elapsed: number) {
     let near = 0, moves = 0;
     for (let i = 0; i < agents.length; i++) {
-      const a = agents[i];
+      const a = agents[i]!;
       if (moves < MAX_MOVES_PER_FRAME && cam.x < 1e8) {
-        sample(paths[a.path], a.s);
+        sample(paths[a.path]!, a.s);
         const dx = pos.x - cam.x, dy = pos.y + 1.1 - cam.y, dz = pos.z - cam.z;
         const d = Math.hypot(dx, dy, dz);
         if (d > FAR_M && !inView(pos) && relocate(a)) moves++;
       }
-      let p = paths[a.path];
+      let p = paths[a.path]!;
       a.s += (a.forward ? 1 : -1) * a.speed * dt;
       a.phase += (a.speed * dt * Math.PI * 2) / 1.45; // one gait cycle per ~1.45 m
       if (a.s > p.length || a.s < 0) {
         const node = a.s > p.length ? p.to : p.from;
         const options = (byNode.get(node) ?? []).filter((j) => j !== a.path);
-        const next = options.length ? options[Math.floor(rand() * options.length)] : a.path;
+        const next = options.length ? options[Math.floor(rand() * options.length)]! : a.path;
         if (next === a.path && !deadEnds.length) {
           a.forward = !a.forward;
           a.s = Math.min(p.length, Math.max(0, a.s));
@@ -212,14 +212,14 @@ export function buildCrowd(
           // one out of view. With every exit in view, they turn back instead.
           let enter: (typeof deadEnds)[number] | null = null;
           for (let attempt = 0; attempt < 6 && !enter; attempt++) {
-            const e = deadEnds[Math.floor(rand() * deadEnds.length)];
-            const q = paths[e.path];
+            const e = deadEnds[Math.floor(rand() * deadEnds.length)]!;
+            const q = paths[e.path]!;
             sample(q, e.forward ? 0 : q.length);
             if (cam.x > 1e8 || !inView(pos)) enter = e;
           }
           if (enter) {
             a.path = enter.path;
-            p = paths[enter.path];
+            p = paths[enter.path]!;
             a.forward = enter.forward;
             a.s = a.forward ? 0 : p.length;
             a.hiddenUntil = renders;
@@ -229,7 +229,7 @@ export function buildCrowd(
           }
         } else {
           a.path = next;
-          p = paths[next];
+          p = paths[next]!;
           a.forward = p.from === node;
           a.s = a.forward ? 0 : p.length;
         }
@@ -245,8 +245,8 @@ export function buildCrowd(
         const k = Math.min(p.lane.left.length - 1, Math.max(0, Math.floor(a.s / p.lane.stepM)));
         const k2 = Math.min(p.lane.left.length - 1, k + 1);
         // lanes are measured to walkable-cell centres; keep shoulders (~0.3 m) off the walls
-        const left = Math.max(0, Math.min(p.lane.left[k], p.lane.left[k2]) - 0.2);
-        const right = Math.max(0, Math.min(p.lane.right[k], p.lane.right[k2]) - 0.2);
+        const left = Math.max(0, Math.min(p.lane.left[k]!, p.lane.left[k2]!) - 0.2);
+        const right = Math.max(0, Math.min(p.lane.right[k]!, p.lane.right[k2]!) - 0.2);
         const edgeOff = a.forward ? off : -off; // edge frame: + = right of from->to
         off = (a.forward ? 1 : -1) * Math.min(right, Math.max(-left, edgeOff));
       } else {
@@ -281,7 +281,7 @@ export function buildCrowd(
           part.mesh.setMatrixAt(i, base);
           continue;
         }
-        local.makeTranslation(part.pivot[0], part.pivot[1], part.pivot[2]).multiply(rot.makeRotationX(part.swing * sw));
+        local.makeTranslation(part.pivot[0]!, part.pivot[1]!, part.pivot[2]!).multiply(rot.makeRotationX(part.swing * sw));
         part.mesh.setMatrixAt(i, out.multiplyMatrices(base, local));
       }
     }
