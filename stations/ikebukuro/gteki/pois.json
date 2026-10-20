@@ -1490,6 +1490,119 @@
     "method": "exit number from official maps; location = PLATEAU stair-top closure",
     "checkedDate": "2026-10-20"
    }
+  },
+  {
+   "id": "exit-4",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "4番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 4"
+    },
+    {
+     "lang": "ja",
+     "text": "西口（南）"
+    },
+    {
+     "lang": "en",
+     "text": "West Exit (South)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口4"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "4ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "4-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "4"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "4號出口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x4f"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; connector = B1 foot of the exit stairs (PLATEAU wall opening); the stairs are outside the survey",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "jr-south-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "JR 南改札"
+    },
+    {
+     "lang": "en",
+     "text": "JR South Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "南改札"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "みなみかいさつ"
+    },
+    {
+     "lang": "en",
+     "text": "JR Yamanote Line"
+    },
+    {
+     "lang": "ja",
+     "text": "山手線"
+    },
+    {
+     "lang": "ja",
+     "text": "JR線"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "JR 南剪票口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "g_jr_s"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "plateau-ubld-13116"
+    ],
+    "method": "gate identity from official map (facts only); connector on the passage side of the PLATEAU gate-line opening",
+    "checkedDate": "2026-10-21"
+   }
   }
  ]
 }

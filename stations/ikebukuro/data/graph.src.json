@@ -123,7 +123,7 @@
    "crs": "EPSG:6697"
   },
   "frame": "ENU",
-  "datasetVersion": "ikebukuro-b1-slice4",
+  "datasetVersion": "ikebukuro-b1-slice5",
   "synthetic": false
  },
  "sources": [
@@ -353,6 +353,43 @@
    ],
    "method": "official-map-reading (facts only): exit stairs matched one-to-one to PLATEAU stair-top closures (TP 33.15-33.17 m, within ~5 m of the projected map positions)",
    "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-south-passage-west",
+   "text": "南通路 (South Passage) continues west outside the fare gates, past the JR South Gate (南改札) on its north side and the Yurakucho Line South Passage gates on its south side, to the West Exit (South) (西口（南）) hall.",
+   "sourceIds": [
+    "toshima-underground-guide-2022"
+   ],
+   "method": "official-map-reading (facts only) matched to PLATEAU floors (TP 27.6 m)",
+   "checkedDate": "2026-10-21"
+  },
+  {
+   "id": "af-jr-south-gate",
+   "text": "The JR South Gate (南改札) opens onto the north side of the South Passage.",
+   "sourceIds": [
+    "toshima-underground-guide-2022"
+   ],
+   "method": "official-map-reading (facts only): the gate line matched to the only wide (~29 m) opening in the passage's north wall in PLATEAU",
+   "checkedDate": "2026-10-21"
+  },
+  {
+   "id": "af-exit-4",
+   "text": "Exit 4 (西口（南）/ West Exit South) stairs leave from the south side of the West Exit (South) hall. The stairs themselves are outside the PLATEAU survey; GTEki routes to their foot.",
+   "sourceIds": [
+    "toshima-underground-guide-2022",
+    "tokyometro-ikebukuro-yardmap-2026-03"
+   ],
+   "method": "official-map-reading (facts only): the exit area matched to the run of floor-level openings in the hall's south wall in PLATEAU (TP 27.6 m)",
+   "checkedDate": "2026-10-21"
+  },
+  {
+   "id": "af-west-corridor",
+   "text": "A public passage runs north from the West Exit (South) hall, along the west side of the Tobu department store, to the West Exit underground hall. Whether any part of it closes outside shop hours is unknown.",
+   "sourceIds": [
+    "toshima-underground-guide-2022"
+   ],
+   "method": "official-map-reading (facts only) matched to PLATEAU floors (TP 27.6 -> 27.9 m)",
+   "checkedDate": "2026-10-21"
   }
  ],
  "nodes": [
@@ -399,6 +436,51 @@
    "xy": [
     -152,
     166
+   ]
+  },
+  {
+   "id": "w_cj",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -127,
+    120
+   ]
+  },
+  {
+   "id": "sw_h",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -115,
+    -30
+   ]
+  },
+  {
+   "id": "sp_m",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -68,
+    -40
+   ]
+  },
+  {
+   "id": "g_jr_s",
+   "kind": "ticket_gate",
+   "floor": "b1",
+   "xy": [
+    -69.6,
+    -30.4
+   ]
+  },
+  {
+   "id": "x4f",
+   "kind": "stair_end",
+   "floor": "b1",
+   "xy": [
+    -121,
+    -42.5
    ]
   },
   {
@@ -1162,6 +1244,12 @@
   },
   {
    "from": "w_c",
+   "to": "w_cj",
+   "access": "af-west-passages",
+   "mode": "walk"
+  },
+  {
+   "from": "w_cj",
    "to": "w_w",
    "access": "af-west-passages",
    "mode": "walk"
@@ -1204,6 +1292,36 @@
    "from": "w_nw",
    "to": "x11",
    "access": "af-west-exits"
+  },
+  {
+   "from": "sp_j",
+   "to": "sp_m",
+   "access": "af-south-passage-west",
+   "mode": "walk"
+  },
+  {
+   "from": "sp_m",
+   "to": "g_jr_s",
+   "access": "af-jr-south-gate",
+   "mode": "walk"
+  },
+  {
+   "from": "sp_m",
+   "to": "sw_h",
+   "access": "af-south-passage-west",
+   "mode": "walk"
+  },
+  {
+   "from": "sw_h",
+   "to": "x4f",
+   "access": "af-exit-4",
+   "mode": "walk"
+  },
+  {
+   "from": "sw_h",
+   "to": "w_cj",
+   "access": "af-west-corridor",
+   "mode": "walk"
   }
  ],
  "pois": [
@@ -2695,17 +2813,130 @@
     "method": "exit number from official maps; location = PLATEAU stair-top closure",
     "checkedDate": "2026-10-20"
    }
+  },
+  {
+   "id": "exit-4",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "4番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 4"
+    },
+    {
+     "lang": "ja",
+     "text": "西口（南）"
+    },
+    {
+     "lang": "en",
+     "text": "West Exit (South)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口4"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "4ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "4-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "4"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "4號出口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x4f"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; connector = B1 foot of the exit stairs (PLATEAU wall opening); the stairs are outside the survey",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "jr-south-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "JR 南改札"
+    },
+    {
+     "lang": "en",
+     "text": "JR South Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "南改札"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "みなみかいさつ"
+    },
+    {
+     "lang": "en",
+     "text": "JR Yamanote Line"
+    },
+    {
+     "lang": "ja",
+     "text": "山手線"
+    },
+    {
+     "lang": "ja",
+     "text": "JR線"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "JR 南剪票口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "g_jr_s"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "plateau-ubld-13116"
+    ],
+    "method": "gate identity from official map (facts only); connector on the passage side of the PLATEAU gate-line opening",
+    "checkedDate": "2026-10-21"
+   }
   }
  ],
  "coverage": {
   "summary": [
    {
     "lang": "en",
-    "text": "Routable (desk-verified against the PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown): slice 1, the B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43; slice 2, the passage along the JR east side to the South Passage east end and the south-east corridor to Exits 38/39/40/41; slice 3, the passage along the JR east side north to the North Passage (Exit 22, 東口（北）) and the passage between the Ikebukuro Shopping Park blocks to Exits 26/28/32/33; slice 4, the Central Passage west to the West Exit (西口) underground hall and its passages to Exits 10/11/15/17/18. The rest of the PLATEAU B1 passage network is explorable but not routable yet. Fare-paid concourses and platforms are not modelled."
+    "text": "Routable (desk-verified against the PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown): slice 1, the B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43; slice 2, the passage along the JR east side to the South Passage east end and the south-east corridor to Exits 38/39/40/41; slice 3, the passage along the JR east side north to the North Passage (Exit 22, 東口（北）) and the passage between the Ikebukuro Shopping Park blocks to Exits 26/28/32/33; slice 4, the Central Passage west to the West Exit (西口) underground hall and its passages to Exits 10/11/15/17/18; slice 5, the South Passage west past the JR South Gate to the West Exit (South) hall (Exit 4, routed to the foot of its stairs, which are outside the survey) and the passage north to the West Exit hall. The rest of the PLATEAU B1 passage network is explorable but not routable yet. Fare-paid concourses and platforms are not modelled."
    },
    {
     "lang": "ja",
-    "text": "ルート案内対象（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）：第1区画 中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43；第2区画 JR東側通路から南通路東端、南東通路の出口38・39・40・41；第3区画 JR東側通路から北通路（出口22・東口（北））、池袋ショッピングパーク間の通路の出口26・28・32・33；第4区画 中央通路（西）から西口地下広場、出口10・11・15・17・18。その他のB1地下通路は探索のみ。改札内・ホームは未モデル化。"
+    "text": "ルート案内対象（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）：第1区画 中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43；第2区画 JR東側通路から南通路東端、南東通路の出口38・39・40・41；第3区画 JR東側通路から北通路（出口22・東口（北））、池袋ショッピングパーク間の通路の出口26・28・32・33；第4区画 中央通路（西）から西口地下広場、出口10・11・15・17・18；第5区画 南通路（西）・JR南改札から西口（南）地下広場（出口4は計測範囲外の階段の下まで案内）、西口地下広場への通路。その他のB1地下通路は探索のみ。改札内・ホームは未モデル化。"
    }
   ],
   "areas": [
@@ -3224,6 +3455,128 @@
     ]
    },
    {
+    "id": "slice5",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "South Passage (west), West Exit (South) hall and the passage north to the West Exit hall"
+     },
+     {
+      "lang": "ja",
+      "text": "南通路（西）・西口（南）地下広場・西口地下広場への通路"
+     }
+    ],
+    "polygon": [
+     {
+      "x": -2,
+      "y": -40
+     },
+     {
+      "x": -50,
+      "y": -40
+     },
+     {
+      "x": -60,
+      "y": -35.5
+     },
+     {
+      "x": -72,
+      "y": -29
+     },
+     {
+      "x": -88,
+      "y": -22.5
+     },
+     {
+      "x": -100,
+      "y": -14
+     },
+     {
+      "x": -116,
+      "y": -8
+     },
+     {
+      "x": -119,
+      "y": 8
+     },
+     {
+      "x": -121,
+      "y": 60
+     },
+     {
+      "x": -121,
+      "y": 118
+     },
+     {
+      "x": -124,
+      "y": 123
+     },
+     {
+      "x": -131,
+      "y": 123
+     },
+     {
+      "x": -134,
+      "y": 118
+     },
+     {
+      "x": -134,
+      "y": 60
+     },
+     {
+      "x": -133,
+      "y": 10
+     },
+     {
+      "x": -135,
+      "y": 0
+     },
+     {
+      "x": -137,
+      "y": -30
+     },
+     {
+      "x": -134,
+      "y": -38
+     },
+     {
+      "x": -121,
+      "y": -46
+     },
+     {
+      "x": -100,
+      "y": -45
+     },
+     {
+      "x": -70,
+      "y": -46
+     },
+     {
+      "x": -48,
+      "y": -50
+     },
+     {
+      "x": -20,
+      "y": -53
+     },
+     {
+      "x": -6,
+      "y": -50
+     },
+     {
+      "x": -2,
+      "y": -47
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
     "id": "plateau-b1-rest",
     "floorId": "b1",
     "status": "visual_only",
@@ -3305,9 +3658,9 @@
    {
     "id": "gap-south-west",
     "floorId": "b1",
-    "zone": "South Passage, west of the JR east-side passage",
-    "missingFact": "Which PLATEAU openings are the JR South Gate and the Yurakucho Line South Passage East Gate, and where the South Passage continues west",
-    "fieldWorkNeeded": "On-site check of both gate lines against column positions; author the South Passage (west) slice"
+    "zone": "South Passage, south side between the JR South Gate and the West Exit (South) hall",
+    "missingFact": "Which PLATEAU features are the Yurakucho Line South Passage East and West Gates: the gate machines on the official map sit inside surveyed floor with no gate-line opening, so their exact lines and the paid side are not established",
+    "fieldWorkNeeded": "on-site check of both Yurakucho gate lines against column positions"
    },
    {
     "id": "gap-ne-north",
@@ -3323,6 +3676,22 @@
     "missingFact": "PLATEAU models only the lower flights of Exits 9 and 13 and of two stairwells near (-181, 126) and (-162, 112) (to TP ~30.0 m, street ~33 m); Exits 14, 16 and 19 (西口（中央）) have no stair in the survey",
     "fieldWorkNeeded": "a survey source for the upper flights (or a later PLATEAU release); on-site check of which stairwell is which exit",
     "sourceDate": null
+   },
+   {
+    "id": "gap-west-corridor-exits",
+    "floorId": "b1",
+    "zone": "Passage north from the West Exit (South) hall; Hope Center block",
+    "missingFact": "Exits 5, 6a, 6b and 7: their stairs are outside the PLATEAU survey, and their feet cannot be matched one-to-one to PLATEAU openings (Exit 5 has two candidate openings 6 and 13 m from the map position, Exit 6b's nearest is 11 m away and raised; 6a and 7 lie inside the Hope Center block, whose interior is not surveyed)",
+    "fieldWorkNeeded": "on-site note of where each exit stair leaves the passage, counted against column positions",
+    "sourceDate": null
+   },
+   {
+    "id": "gap-tobu-jr-link",
+    "floorId": "b1",
+    "zone": "Passage along the west side of the JR block, between the South Passage and the Central Passage (west)",
+    "missingFact": "Whether this surveyed passage is public (outside fare gates) or a JR-Tobu transfer concourse: the official map shows gate machines along its JR side and Tobu Central Gate 1 at its north end",
+    "fieldWorkNeeded": "on-site check of both ends for gate lines and posted signage",
+    "sourceDate": null
    }
   ],
   "freshness": "2023"
@@ -3331,7 +3700,8 @@
   "c_e2",
   "c_mid",
   "n_h",
-  "w_c"
+  "w_c",
+  "sw_h"
  ],
  "assets": [
   {

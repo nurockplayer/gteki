@@ -88,6 +88,91 @@
    ]
   },
   {
+   "id": "w_cj",
+   "floorId": "b1",
+   "position": {
+    "x": -127.0,
+    "y": 120.0,
+    "z": 27.91
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "sw_h",
+   "floorId": "b1",
+   "position": {
+    "x": -115.0,
+    "y": -30.0,
+    "z": 27.58
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "sp_m",
+   "floorId": "b1",
+   "position": {
+    "x": -68.0,
+    "y": -40.0,
+    "z": 27.58
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "g_jr_s",
+   "floorId": "b1",
+   "position": {
+    "x": -69.5,
+    "y": -30.5,
+    "z": 27.58
+   },
+   "kind": "ticket_gate",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x4f",
+   "floorId": "b1",
+   "position": {
+    "x": -121.0,
+    "y": -42.5,
+    "z": 27.58
+   },
+   "kind": "stair_end",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
    "id": "x10",
    "floorId": "street",
    "position": {
@@ -3622,12 +3707,12 @@
    "attributes": {}
   },
   {
-   "id": "w_c__w_w",
+   "id": "w_c__w_cj",
    "from": "w_c",
-   "to": "w_w",
+   "to": "w_cj",
    "direction": "both",
    "mode": "walk",
-   "lengthM": 45.7,
+   "lengthM": 20.3,
    "geometry": [
     {
      "x": -107.0,
@@ -3642,6 +3727,49 @@
     {
      "x": -122.5,
      "y": 120.5,
+     "z": 27.91
+    },
+    {
+     "x": -127.0,
+     "y": 120.0,
+     "z": 27.91
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU floors (TP 27.9 m)",
+    "checkedDate": "2026-10-20",
+    "note": "From the West Exit underground hall, public passages lead west towards Exits 7-13 and north between Exits 15 and 17; a passage along the north side links the stairs of Exits 10/11 with Exits 17/18."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "w_cj__w_w",
+   "from": "w_cj",
+   "to": "w_w",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 25.7,
+   "geometry": [
+    {
+     "x": -127.0,
+     "y": 120.0,
      "z": 27.91
     },
     {
@@ -4114,6 +4242,277 @@
     "method": "official-map-reading (facts only): exit stairs matched one-to-one to PLATEAU stair-top closures (TP 33.15-33.17 m, within ~5 m of the projected map positions)",
     "checkedDate": "2026-10-20",
     "note": "Exit 15 and Exit 17 rise from the passage running north from the West Exit hall (15 to its west, 17 further north); Exit 18 lies just east of Exit 17; Exits 10 and 11 rise at the west end of the northern passage, 10 to the south of 11."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "sp_j__sp_m",
+   "from": "sp_j",
+   "to": "sp_m",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 64.9,
+   "geometry": [
+    {
+     "x": -5.0,
+     "y": -45.0,
+     "z": 27.58
+    },
+    {
+     "x": -16.5,
+     "y": -48.5,
+     "z": 27.58
+    },
+    {
+     "x": -46.0,
+     "y": -46.5,
+     "z": 27.58
+    },
+    {
+     "x": -47.0,
+     "y": -45.5,
+     "z": 27.58
+    },
+    {
+     "x": -59.0,
+     "y": -41.0,
+     "z": 27.58
+    },
+    {
+     "x": -64.0,
+     "y": -41.0,
+     "z": 27.58
+    },
+    {
+     "x": -68.0,
+     "y": -40.0,
+     "z": 27.58
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU floors (TP 27.6 m)",
+    "checkedDate": "2026-10-21",
+    "note": "南通路 (South Passage) continues west outside the fare gates, past the JR South Gate (南改札) on its north side and the Yurakucho Line South Passage gates on its south side, to the West Exit (South) (西口（南）) hall."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "sp_m__g_jr_s",
+   "from": "sp_m",
+   "to": "g_jr_s",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 9.7,
+   "geometry": [
+    {
+     "x": -68.0,
+     "y": -40.0,
+     "z": 27.58
+    },
+    {
+     "x": -68.0,
+     "y": -37.0,
+     "z": 27.58
+    },
+    {
+     "x": -69.5,
+     "y": -30.5,
+     "z": 27.58
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only): the gate line matched to the only wide (~29 m) opening in the passage's north wall in PLATEAU",
+    "checkedDate": "2026-10-21",
+    "note": "The JR South Gate (南改札) opens onto the north side of the South Passage."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "sp_m__sw_h",
+   "from": "sp_m",
+   "to": "sw_h",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 48.7,
+   "geometry": [
+    {
+     "x": -68.0,
+     "y": -40.0,
+     "z": 27.58
+    },
+    {
+     "x": -100.0,
+     "y": -37.0,
+     "z": 27.58
+    },
+    {
+     "x": -115.0,
+     "y": -30.0,
+     "z": 27.58
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU floors (TP 27.6 m)",
+    "checkedDate": "2026-10-21",
+    "note": "南通路 (South Passage) continues west outside the fare gates, past the JR South Gate (南改札) on its north side and the Yurakucho Line South Passage gates on its south side, to the West Exit (South) (西口（南）) hall."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "sw_h__x4f",
+   "from": "sw_h",
+   "to": "x4f",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 14.3,
+   "geometry": [
+    {
+     "x": -115.0,
+     "y": -30.0,
+     "z": 27.58
+    },
+    {
+     "x": -118.5,
+     "y": -34.5,
+     "z": 27.58
+    },
+    {
+     "x": -118.5,
+     "y": -37.5,
+     "z": 27.58
+    },
+    {
+     "x": -121.0,
+     "y": -42.5,
+     "z": 27.58
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only): the exit area matched to the run of floor-level openings in the hall's south wall in PLATEAU (TP 27.6 m)",
+    "checkedDate": "2026-10-21",
+    "note": "Exit 4 (西口（南）/ West Exit South) stairs leave from the south side of the West Exit (South) hall. The stairs themselves are outside the PLATEAU survey; GTEki routes to their foot."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "sw_h__w_cj",
+   "from": "sw_h",
+   "to": "w_cj",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 152.2,
+   "geometry": [
+    {
+     "x": -115.0,
+     "y": -30.0,
+     "z": 27.58
+    },
+    {
+     "x": -118.5,
+     "y": -0.5,
+     "z": 27.58
+    },
+    {
+     "x": -124.0,
+     "y": 6.5,
+     "z": 27.91
+    },
+    {
+     "x": -127.0,
+     "y": 120.0,
+     "z": 27.91
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU floors (TP 27.6 -> 27.9 m)",
+    "checkedDate": "2026-10-21",
+    "note": "A public passage runs north from the West Exit (South) hall, along the west side of the Tobu department store, to the West Exit underground hall. Whether any part of it closes outside shop hours is unknown."
    },
    "attributes": {}
   }

@@ -1,6 +1,6 @@
 # 池袋駅 Ikebukuro — station lane
 
-Real, searchable, navigable Ikebukuro Station for GTEki. Four slices are routable on a verified
+Real, searchable, navigable Ikebukuro Station for GTEki. Five slices are routable on a verified
 graph and walkable in a lit, signed, populated 3D scene:
 
 - **Slice 1**: the public B1 Central Passage from the JR Central Gates east to Exits
@@ -12,6 +12,9 @@ graph and walkable in a lit, signed, populated 3D scene:
   28, 32 and 33.
 - **Slice 4**: the Central Passage west past the Marunouchi and Tobu gates into the West Exit (西口)
   underground hall, and its passages to Exits 10, 11, 15, 17 and 18.
+- **Slice 5**: the South Passage west past the JR South Gate (南改札) to the West Exit (South) (西口（南）)
+  hall and Exit 4, and the passage north from there to the West Exit hall. The Exit 4 stairs are
+  outside the PLATEAU survey, so routes end at their foot (see "Deliberate simplifications").
 
 **Status: NOT YET ACCEPTED.** Desk-verified, not field-verified. Opening hours are unknown. This
 is not a whole-station model (see [coverage gaps](docs/coverage-gaps.md)).
@@ -26,7 +29,7 @@ pnpm typecheck
 
 - **Preview harness** ([preview/main.ts](preview/main.ts)): third-person walk.
   - Controls: WASD/arrows, Shift to run, mouse drag or wheel for the camera, left-half touch joystick.
-  - URL params: `?spawn=<nodeId>` (`c_mid`, `c_e2`, `sp_e`, `n_h`, `w_c`), `?q=mobile` (low quality, 2k lightmap,
+  - URL params: `?spawn=<nodeId>` (`c_mid`, `c_e2`, `sp_e`, `n_h`, `w_c`, `sw_h`), `?q=mobile` (low quality, 2k lightmap,
     no post FX).
 - **Shared explorer** (core lane, `apps/web`): discovers `gteki/` automatically. Search, route,
   guided walk and free walk run there.
@@ -80,8 +83,8 @@ missing node. An edge is `verified` only when **both** of these hold:
 | Gate | Verdict | Evidence / remaining |
 |---|---|---|
 | **G0** evidence / rights | **PASS (desk)**, **HOLD (field)** | [G0 audit](docs/G0-source-audit.md); rights chain above. Field visit pending ([survey brief](docs/coverage-gaps.md)). |
-| **G1** geometry | **PASS** for slices 1–3 | Real-scale PLATEAU geometry, identity transform, z = TP height. Walker stays on floor, climbs Exit 35 stairs (TP 27.0 → 30.1 m), is blocked by walls and by openings into unmodelled space. No verified edge crosses a wall or opening at 1 m. Slice 2 follows the surveyed level changes: South Passage TP 27.6 → 29.1 m (up) → 25.9 m (down), with exit stairs to TP 32.2–32.6 m. Slice 3: North Passage TP 28.5 m, down to TP 26.2 m between the shopping-park blocks, U-shaped Exit 28 stair via a TP 29.0 m landing. Slice 4: West Exit hall TP 27.9 m, exit stairs to TP 33.15 m; Exit 18 is a three-flight stair (landings TP 29.1 and 30.5 m) whose top flight passes over the bottom one. Sloped wall faces (stair side walls) are split into ≤0.5 m pieces with their own height band, so a flight passing under another is not falsely blocked. Godot 4.7 headless import keeps roles and UV2 (`pipeline/godot_probe.gd`). |
-| **G2** routing | **PASS (desk)** | 55/55 edges verified, 1441 m. Shared-core `parseStationFiles` returns ok; the only warnings are 6 deliberately search-only POIs (Metro/Tobu gates, Exit 19). From JR Central Gate 2: Exit 35 = 197 m, Exit 38 = 242 m, Exit 41 = 291 m, Exit 40 = 369 m, Exit 39 = 425 m, Exit 22 = 173 m, Exit 26 = 223 m, Exit 28 = 244 m, Exit 33 = 269 m, Exit 32 = 278 m, Exit 17 = 166 m, Exit 15 = 169 m, Exit 18 = 176 m, Exit 10 = 211 m, Exit 11 = 212 m. Junction nodes sit at real decision points (e.g. just outside each JR gate), so narration reads "Go straight ~7 m / Turn left…" ([explorer](docs/evidence/explorer-route-jrc2-exit35.jpg)). Negative case: the step-free profile fails safely (`no_path`). |
+| **G1** geometry | **PASS** for slices 1–3 | Real-scale PLATEAU geometry, identity transform, z = TP height. Walker stays on floor, climbs Exit 35 stairs (TP 27.0 → 30.1 m), is blocked by walls and by openings into unmodelled space. No verified edge crosses a wall or opening at 1 m. Slice 2 follows the surveyed level changes: South Passage TP 27.6 → 29.1 m (up) → 25.9 m (down), with exit stairs to TP 32.2–32.6 m. Slice 3: North Passage TP 28.5 m, down to TP 26.2 m between the shopping-park blocks, U-shaped Exit 28 stair via a TP 29.0 m landing. Slice 4: West Exit hall TP 27.9 m, exit stairs to TP 33.15 m; Exit 18 is a three-flight stair (landings TP 29.1 and 30.5 m) whose top flight passes over the bottom one. Sloped wall faces (stair side walls) are split into ≤0.5 m pieces with their own height band, so a flight passing under another is not falsely blocked. Slice 5: South Passage west and West Exit (South) hall TP 27.6 m, rising to TP 27.9 m along the passage north. Godot 4.7 headless import keeps roles and UV2 (`pipeline/godot_probe.gd`). |
+| **G2** routing | **PASS (desk)** | 61/61 edges verified, 1731 m. Shared-core `parseStationFiles` returns ok; the only warnings are 6 deliberately search-only POIs (Metro/Tobu gates, Exit 19). From JR Central Gate 2: Exit 35 = 197 m, Exit 38 = 242 m, Exit 41 = 291 m, Exit 40 = 369 m, Exit 39 = 425 m, Exit 22 = 173 m, Exit 26 = 223 m, Exit 28 = 244 m, Exit 33 = 269 m, Exit 32 = 278 m, Exit 17 = 166 m, Exit 15 = 169 m, Exit 18 = 176 m, Exit 10 = 211 m, Exit 11 = 212 m, JR South Gate = 234 m, Exit 4 (stair foot) = 287 m. Junction nodes sit at real decision points (e.g. just outside each JR gate), so narration reads "Go straight ~7 m / Turn left…" ([explorer](docs/evidence/explorer-route-jrc2-exit35.jpg)). Negative case: the step-free profile fails safely (`no_path`). |
 | **G3** quality (L2) | **GAP**: candidate, not yet claimed | See "G3 detail" below. |
 | **G4** delivery | **HOLD** | PR open; Owner approval needed before merging, and before any real-world navigation claim. |
 
@@ -130,9 +133,13 @@ Evidence stills:
   [passage north from the hall](docs/evidence/20-west-north-passage.jpg),
   [Exit 17 stairs](docs/evidence/23-exit17-stairs.jpg), [Exit 18 U-stair](docs/evidence/21-exit18-ustair.jpg),
   [passage to Exits 10/11](docs/evidence/22-exits-10-11.jpg)
+- Slice 5: [South Passage west](docs/evidence/24-south-passage-west.jpg),
+  [by the JR South Gate](docs/evidence/25-jr-south-gate.jpg),
+  [West Exit (South) hall](docs/evidence/26-west-exit-south-hall.jpg),
+  [Exit 4 stair foot](docs/evidence/27-exit4-foot.jpg), [passage north](docs/evidence/28-west-corridor.jpg)
 
 **Measured** (harness, Apple Silicon, Chromium):
-- quality "low": at most 68 draw calls and 124k triangles per frame (56 crowd agents, 68 signs; measured at `a0c18df`, now 85 signs);
+- quality "low": at most 68 draw calls and 124k triangles per frame (56 crowd agents, 68 signs; measured at `a0c18df`, now 97 signs);
 - shipped assets: 9.5 MB at "high", with lightmap WebP 1.1 MB (4k) or 0.5 MB (2k).
 
 ## Deliberate simplifications
@@ -152,13 +159,17 @@ Evidence stills:
 - **Single risers** modelled as two floor levels (e.g. a 0.19 m step between landings on the
   Exit 39 stair) are passable on stair edges only, so walk-only and step-free routing stay
   strict.
+- **Exits whose stairs are outside the survey** (Exit 4) are routed to the foot of the stairs:
+  the connector is a `stair_end` node on surveyed B1 floor at the PLATEAU wall opening the
+  official map places the exit at. The climb itself is not modelled or claimed, and the opening
+  renders as haze.
 
 ## Next
 
 1. Field visit with the [survey checklist](docs/coverage-gaps.md).
-2. South Passage west: JR South Gate, Yurakucho Line South Passage East Gate (`gap-south-west`).
+2. Yurakucho Line South Passage East/West Gates (`gap-south-west`).
 3. North-east, north part: exits 23–25 and 29–31 (`gap-ne-north`).
-4. West, rest: the corridor south from the West Exit hall to Exits 4–8 and the South Passage west
-   end; Exits 9, 13, 14, 16 and 19 wait on `gap-west-stairs`.
+4. West, rest: Exits 5, 6a, 6b and 7 (`gap-west-corridor-exits`); Exits 9, 13, 14, 16 and 19
+   (`gap-west-stairs`); the passage between the JR and Tobu blocks (`gap-tobu-jr-link`).
 5. Street level.
 6. Step-free routes, once lift evidence exists.
