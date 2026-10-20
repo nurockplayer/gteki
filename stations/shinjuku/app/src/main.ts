@@ -400,7 +400,8 @@ function computeRoute() {
   if (!goal.connectorNodeIds.length) return showRouteError("この目的地は位置情報のみで、検証済みの入口がありません。This destination has no verified entrance node (search-only).");
   const from = startNodeIds();
   if (!from.length) return showRouteError("現在地から経路に接続できません。出発地を選んでください / Can't connect your position to the network — choose a start point");
-  const r = router.route(from, goal.connectorNodeIds, profile());
+  // POI evidence ties origin/destination to their nodes; it joins the route's sources and freshness
+  const r = router.route(from, goal.connectorNodeIds, profile(), [...(fromPick.kind === "poi" ? [fromPick.poi.evidence] : []), goal.evidence]);
   if (!r.ok) {
     const why: Record<string, string> = {
       no_path: "条件を満たす検証済み経路がありません（例: 段差なし・改札外のみ）。No verified route satisfies the profile.",
