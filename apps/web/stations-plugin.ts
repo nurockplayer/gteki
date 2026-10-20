@@ -53,6 +53,14 @@ export function discoverStations(roots: string[]): DiscoveredStation[] {
   return found;
 }
 
+/**
+ * Dev URL for an absolute file path. Each segment is percent-encoded so a literal `%2e%2e` (or `?`, `#`)
+ * in a real directory name can never be re-interpreted by URL normalisation as `..` or a query.
+ */
+export function fsUrl(realPath: string): string {
+  return "/@fs" + realPath.split(path.sep).map((seg) => encodeURIComponent(seg)).join("/");
+}
+
 const VIRTUAL = "virtual:gteki-stations";
 const RESOLVED = "\0" + VIRTUAL;
 
@@ -66,7 +74,7 @@ export function gtekiStations(roots: string[]): Plugin {
    */
   const assetLoader = (file: string) =>
     serve
-      ? `() => Promise.resolve(${JSON.stringify("/@fs" + fs.realpathSync(file).split(path.sep).join("/"))})`
+      ? `() => Promise.resolve(${JSON.stringify(fsUrl(fs.realpathSync(file)))})`
       : `() => import(${fsPath(file)} + "?url").then((m) => m.default)`;
   return {
     name: "gteki-stations",

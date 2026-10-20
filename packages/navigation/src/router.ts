@@ -5,6 +5,7 @@ import type { Router, RouteProfile, RouteResult, RouteStep, RouteUnknown } from 
 
 const WALK_SPEED = 1.2;
 const ELEVATOR_SECONDS = 45;
+const SLOPED_MODES = new Set(["stairs", "escalator", "ramp"]);
 
 const compareIds = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
@@ -78,7 +79,11 @@ interface Measurement {
 
 function measureEdge(edge: Edge): Measurement | null {
   if (edge.lengthM !== null && (!Number.isFinite(edge.lengthM) || edge.lengthM < 0)) return null;
-  const lengthM = edge.lengthM ?? geometryLength(edge.geometry, edge.geometryZ === "symbolic");
+  const symbolicZ = edge.geometryZ === "symbolic";
+  // A plan (x, y) length is a real length only for level travel. Stairs/escalators/ramps with
+  // display-only heights and no stated length are unmeasurable, hence unroutable — never "0 m".
+  if (edge.lengthM === null && symbolicZ && SLOPED_MODES.has(edge.mode)) return null;
+  const lengthM = edge.lengthM ?? geometryLength(edge.geometry, symbolicZ);
   if (lengthM === null) return null;
   // Every mode needs measurable geometry or length; lift cost is fixed per ride.
   if (edge.mode === "elevator") return { lengthM, cost: ELEVATOR_SECONDS * WALK_SPEED };
@@ -200,6 +205,8 @@ export function createRouter(bundle: StationBundle): Router {
       if (edge.wheelchair === null) unknown("wheelchair", edge.id);
       if (edge.steps === null) unknown("steps", edge.id);
       if (edge.accessEvidence === null) unknown("access_evidence", edge.id);
+      // Hours sources are dependencies too: an undated hours source keeps freshness UNKNOWN.
+      for (const sourceId of edge.hours?.evidence.sourceIds ?? []) sourceIds.add(sourceId);
       for (const evidence of [edge.geometryEvidence, edge.accessEvidence]) {
         if (!evidence) continue;
         for (const sourceId of evidence.sourceIds) sourceIds.add(sourceId);

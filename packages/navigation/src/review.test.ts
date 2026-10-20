@@ -78,3 +78,25 @@ describe("vertical instructions on one floor", () => {
     expect(describeRoute(b, r, "ja").find((i) => i.kind === "stairs")!.text).toBe("階段で下へ");
   });
 });
+
+describe("second review round", () => {
+  it("never measures a sloped edge with symbolic heights and no stated length as 0 m", () => {
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("st", "a", "upper", { mode: "stairs", lengthM: null, geometryZ: "symbolic", geometry: [{ x: 10, y: 0, z: 0 }, { x: 10, y: 0, z: 4 }] }),
+    ]);
+    const r = createRouter(b).route("start", "upper", base);
+    expect(r.ok).toBe(false);
+    b.edges[1]!.lengthM = 6;
+    expect(ok(createRouter(b).route("start", "upper", base)).totalLengthM).toBeCloseTo(16);
+  });
+
+  it("counts hours evidence as a freshness dependency", () => {
+    const b = createSyntheticBundle([edge("x", "start", "goal", { hours: { kind: "window", open: "05:00", close: "24:00", evidence: { sourceIds: ["hours-src"], method: "source-attribute:hours", checkedDate: "2026-10-20" } } })]);
+    for (const s of b.sources) s.datasetDate = "2026-09-17";
+    b.sources.push({ ...b.sources[0]!, id: "hours-src", datasetDate: null });
+    const r = ok(createRouter(b).route("start", "goal", { ...base, today: "2026-10-20" }));
+    expect(r.undatedSourceIds).toEqual(["hours-src"]);
+    expect(r.stale).toBeNull();
+  });
+});

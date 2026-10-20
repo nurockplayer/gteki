@@ -48,6 +48,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
   for (const s of b.sources) {
     if (sourceIds.has(s.id)) err("source.dup", `duplicate source id`, s.id);
     sourceIds.add(s.id);
+    if (s.usage !== undefined && s.usage !== "data" && s.usage !== "facts-only") err("source.usage", `unknown usage ${String(s.usage)}`, s.id);
     if (!b.station.synthetic && s.rights !== "REUSABLE_WITH_CONDITIONS" && s.usage !== "facts-only")
       warn("source.rights", `source rights ${s.rights}; must not feed published geometry/data (mark usage:"facts-only" if only cited as evidence)`, s.id);
   }

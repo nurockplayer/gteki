@@ -61,24 +61,53 @@ func load_glb(path: String, station_root: Node3D, asset_id: String = "asset", ma
 	return asset_root
 
 
-## Resolve `uri` under `gteki_dir`, following symlinks only while they stay inside the station
-## folder (the parent of gteki/), like the web explorer's fence. Returns "" when a hop escapes.
+## Resolve `uri` under `gteki_dir` to its canonical path and accept it only if that lies inside the
+## canonical station folder (the parent of gteki/), like the web explorer's fence. Returns "" otherwise.
 static func resolve_in_station(gteki_dir: String, uri: String) -> String:
-	var base := ProjectSettings.globalize_path(gteki_dir).simplify_path()
+	var base := canonical_path(ProjectSettings.globalize_path(gteki_dir))
+	if base.is_empty():
+		return ""
 	var fence := base.get_base_dir()
-	var current := base
-	for part in uri.split("/", false):
-		var parent := current
-		current = parent.path_join(part)
-		var dir := DirAccess.open(parent)
+	var target := canonical_path(base.path_join(uri))
+	if target.is_empty() or not target.begins_with(fence + "/"):
+		return ""
+	return target
+
+
+## realpath(3)-style: resolve every component (including chained and nested links) of an absolute
+## path. Returns "" on a missing component, a non-absolute path or more than 40 link hops.
+static func canonical_path(path: String) -> String:
+	if not path.is_absolute_path():
+		return ""
+	var pending := Array(path.simplify_path().split("/", false))
+	var resolved := "/"
+	var hops := 0
+	while not pending.is_empty():
+		var part: String = pending.pop_front()
+		if part == "." or part.is_empty():
+			continue
+		if part == "..":
+			resolved = resolved.get_base_dir() if resolved != "/" else "/"
+			continue
+		var dir := DirAccess.open(resolved)
 		if dir == null:
 			return ""
 		if dir.is_link(part):
-			var target := dir.read_link(part)
-			current = (target if target.is_absolute_path() else parent.path_join(target)).simplify_path()
-		if current != fence and not current.begins_with(fence + "/"):
+			hops += 1
+			if hops > 40:
+				return ""
+			var link := dir.read_link(part)
+			var rest := Array(link.split("/", false))
+			rest.append_array(pending)
+			pending = rest
+			if link.begins_with("/"):
+				resolved = "/"
+			continue
+		var next := resolved.path_join(part)
+		if not dir.dir_exists(part) and not dir.file_exists(part):
 			return ""
-	return current
+		resolved = next
+	return resolved
 
 
 ## True when the GLB's JSON chunk declares no external (non-data:) buffer or image URIs, so loading

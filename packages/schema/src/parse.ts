@@ -14,15 +14,15 @@ type Kind = "string" | "number" | "boolean" | "array" | "object" | "tri" | "stri
 type Spec = Record<string, Kind | `${Kind}?`>;
 
 const SPECS = {
-  station: { id: "string", names: "array", operators: "array", origin: "object", frame: "string", datasetVersion: "string", generatedAt: "string", synthetic: "boolean" },
+  station: { id: "string", names: "array", codes: "array?", operators: "array", origin: "object", frame: "string", datasetVersion: "string", generatedAt: "string", synthetic: "boolean" },
   origin: { lat: "number", lon: "number", hM: "number|null", datum: "string", crs: "string" },
-  source: { id: "string", title: "string", publisher: "string", url: "string", license: "object|null", rights: "string", attribution: "string", modified: "boolean", retrievedAt: "string|null", datasetDate: "string|null" },
+  source: { id: "string", title: "string", publisher: "string", url: "string", license: "object|null", rights: "string", attribution: "string", modified: "boolean", retrievedAt: "string|null", datasetDate: "string|null", downloadUrls: "array?", usage: "string?", sha256: "object?", validUntil: "string|null?", notes: "string?" },
   floor: { id: "string", operatorId: "string", sourceLabels: "array", ordinal: "number|null", intermediate: "boolean", elevationM: "number|null", elevationSource: "string", renderElevationM: "number", displayNames: "array?" },
   node: { id: "string", floorId: "string", position: "object", kind: "string", inOut: "string|null", sourceRefs: "array", renderZ: "number?" },
   position: { x: "number", y: "number", z: "number|null" },
-  edge: { id: "string", from: "string", to: "string", direction: "string", mode: "string", lengthM: "number|null", paid: "tri", crossesFareBoundary: "tri", wheelchair: "tri", steps: "tri", hours: "object|null", closed: "boolean", verification: "string", geometryEvidence: "object", accessEvidence: "object|null", geometry: "array?", geometryZ: "string?" },
-  evidence: { sourceIds: "array", method: "string", checkedDate: "string" },
-  poi: { id: "string", category: "string", names: "array", aliases: "array", floorId: "string|null", displayPosition: "object|null", connectorNodeIds: "array", paid: "tri", evidence: "object" },
+  edge: { id: "string", from: "string", to: "string", direction: "string", mode: "string", lengthM: "number|null", paid: "tri", crossesFareBoundary: "tri", wheelchair: "tri", steps: "tri", hours: "object|null", closed: "boolean", verification: "string", geometryEvidence: "object", accessEvidence: "object|null", geometry: "array?", geometryZ: "string?", attributes: "object?" },
+  evidence: { sourceIds: "array", method: "string", checkedDate: "string", note: "string?" },
+  poi: { id: "string", category: "string", names: "array", aliases: "array", floorId: "string|null", displayPosition: "object|null", connectorNodeIds: "array", paid: "tri", evidence: "object", notes: "array?" },
   text: { lang: "string", text: "string" },
   operator: { id: "string", names: "array" },
   code: { operatorId: "string", code: "string" },
@@ -31,11 +31,11 @@ const SPECS = {
   featureRef: { sourceId: "string", featureId: "string" },
   hoursAlways: { kind: "string", evidence: "object" },
   hoursWindow: { kind: "string", open: "string", close: "string", days: "array?", evidence: "object" },
-  area: { id: "string", floorId: "string|null", status: "string", label: "array", polygon: "array?", sourceIds: "array" },
-  gap: { id: "string", floorId: "string|null", zone: "string", missingFact: "string", fieldWorkNeeded: "string" },
+  area: { id: "string", floorId: "string|null", status: "string", label: "array", polygon: "array?", sourceIds: "array", note: "string?" },
+  gap: { id: "string", floorId: "string|null", zone: "string", missingFact: "string", fieldWorkNeeded: "string", approximateExtent: "string?", sourceDate: "string|null?" },
   point2: { x: "number", y: "number" },
   coverage: { summary: "array", areas: "array", gaps: "array", freshness: "string|null" },
-  asset: { id: "string", uri: "string", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?" },
+  asset: { id: "string", uri: "string", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?" },
 } satisfies Record<string, Spec>;
 
 function kindOf(v: unknown): string {
@@ -140,13 +140,12 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
       c.check(st.origin, SPECS.origin, "station.json.station.origin");
       c.texts(st.names, "station.names");
       c.each(st.operators, SPECS.operator, "station.operators", (op, where) => c.texts(op.names, `${where}.names`));
-      if (st.codes !== undefined) {
-        if (Array.isArray(st.codes)) c.each(st.codes, SPECS.code, "station.codes");
-        else c.issues.push({ level: "error", code: "shape.type", message: `station.codes: expected array, got ${kindOf(st.codes)}`, ref: "station.codes" });
-      }
+      c.each(st.codes, SPECS.code, "station.codes");
     }
     c.each(m.sources, SPECS.source, "sources", (src, where) => {
       if (src.license !== null) c.check(src.license, SPECS.license, `${where}.license`);
+      c.strings(src.downloadUrls, `${where}.downloadUrls`);
+      if (kindOf(src.sha256) === "object") c.strings(Object.values(src.sha256 as object), `${where}.sha256`);
     });
     c.each(m.floors, SPECS.floor, "floors", (floor, where) => {
       c.each(floor.sourceLabels, SPECS.sourceLabel, `${where}.sourceLabels`);
@@ -180,6 +179,12 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
       c.evidence(edge.geometryEvidence, `${where}.geometryEvidence`);
       if (edge.accessEvidence !== null) c.evidence(edge.accessEvidence, `${where}.accessEvidence`);
       c.hours(edge.hours, `${where}.hours`);
+      if (kindOf(edge.attributes) === "object") {
+        for (const [k, v] of Object.entries(edge.attributes as object)) {
+          if (v !== null && !["string", "boolean"].includes(typeof v) && !(typeof v === "number" && Number.isFinite(v)))
+            c.issues.push({ level: "error", code: "shape.type", message: `${where}.attributes.${k}: expected string|number|boolean|null`, ref: where });
+        }
+      }
       if (Array.isArray(edge.geometry)) edge.geometry.forEach((p, i) => c.check(p, SPECS.position, `${where}.geometry[${i}]`));
     });
   }
@@ -188,6 +193,7 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
       c.evidence(poi.evidence, `${where}.evidence`);
       c.texts(poi.names, `${where}.names`);
       c.texts(poi.aliases, `${where}.aliases`);
+      c.texts(poi.notes, `${where}.notes`);
       c.strings(poi.connectorNodeIds, `${where}.connectorNodeIds`);
       if (poi.displayPosition !== null) c.check(poi.displayPosition, SPECS.position, `${where}.displayPosition`);
     });

@@ -179,7 +179,7 @@ export class App {
     // A later selection supersedes this one: never let a slow station overwrite the one now selected.
     const generation = ++this.openGeneration;
     const current = () => generation === this.openGeneration;
-    this.explorer.stopGuide();
+    this.explorer.cancelPendingLoad();
     this.s.entry = entry;
     this.ui.stationSelect.value = entry.key;
     this.s.origin = null;

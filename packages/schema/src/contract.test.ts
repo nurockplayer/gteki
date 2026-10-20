@@ -215,3 +215,25 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     expect(isOpenAt(w, { weekday: "mon", minutes: 30 })).toBe(false);
   });
 });
+
+describe("review round 2: optional nested fields fail closed", () => {
+  it("refuses malformed optional notes, downloadUrls, sha256, attributes and usage", () => {
+    const cases: ((m: StationManifestFile, g: GraphFile, p: PoiFile) => void)[] = [
+      (_m, _g, p) => { (p.pois[0] as { notes?: unknown }).notes = [{ lang: "ja" }]; },
+      (m) => { (m.sources[0] as { downloadUrls?: unknown }).downloadUrls = [{}]; },
+      (m) => { (m.sources[0] as { sha256?: unknown }).sha256 = { "a.zip": 1 }; },
+      (_m, g) => { (g.edges[0] as { attributes?: unknown }).attributes = { width: { m: 2 } }; },
+      (m) => { (m.sources[0] as { usage?: unknown }).usage = "sometimes"; },
+      (m) => { (m.station as { codes?: unknown }).codes = "E27"; },
+    ];
+    for (const mutate of cases) {
+      const [m, g, p] = split(createSyntheticBundle());
+      mutate(m, g, p);
+      expect(parseStationFiles(m, g, p).ok).toBe(false);
+    }
+    const [m, g, p] = split(createSyntheticBundle());
+    (p.pois[0] as { notes?: unknown }).notes = [{ lang: "ja", text: "始発〜終電" }];
+    (m.sources[0] as { downloadUrls?: unknown }).downloadUrls = ["https://example.invalid/a.zip"];
+    expect(parseStationFiles(m, g, p).ok).toBe(true);
+  });
+});
