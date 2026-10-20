@@ -19,6 +19,14 @@ describe("Shinjuku gteki/ contract files", () => {
     }
   });
 
+  it("cites the render-only PLATEAU street context as a reusable CC BY 4.0 source", () => {
+    const p = bundle.sources.find((s) => s.id === "plateau-13104-shinjuku-ku-2025");
+    expect(p?.rights).toBe("REUSABLE_WITH_CONDITIONS");
+    expect(p?.license?.name).toBe("CC BY 4.0");
+    expect(p?.modified).toBe(true);
+    expect(Object.keys(p?.sha256 ?? {}).length).toBe(8);
+  });
+
   it("never claims measured heights", () => {
     for (const f of bundle.floors) expect(f.elevationM).toBeNull();
     for (const n of bundle.nodes) {
@@ -41,7 +49,9 @@ describe("Shinjuku gteki/ contract files", () => {
   it("keeps the publication period separate from navigation freshness (Owner policy A)", () => {
     // 2027-03-12 is the provider's publication period, not data validity: it never makes routes stale
     expect(bundle.sources.every((s) => (s.validUntil ?? null) === null)).toBe(true);
-    expect(bundle.sources.every((s) => s.notes?.includes("2027-03-12"))).toBe(true);
+    const hokonavi = bundle.sources.filter((s) => s.id.startsWith("mlit-hokonavi-"));
+    expect(hokonavi.length).toBe(2);
+    expect(hokonavi.every((s) => s.notes?.includes("2027-03-12"))).toBe(true);
     expect(bundle.coverage.gaps.some((g) => g.id === "gap:reuse-after-publication")).toBe(true);
     const r = createRouter(bundle);
     const [a, b] = bundle.spawnNodeIds!;

@@ -786,6 +786,34 @@ const sources: Source[] = [
   },
 ];
 
+// Render-only street context (stage 2): PLATEAU bldg/tran around the exits, imported by
+// tools/import-surface.ts into data/surface.json. Cited here so the rights trail of everything the
+// app ships stays in the station record (it adds no nodes, edges, POIs or coverage).
+{
+  const m = JSON.parse(readFileSync(join(HERE, "../sources/surface-manifest.json"), "utf8")) as {
+    dataset: string; datasetUrl: string; licenseUrl: string; year: number;
+    files: { path: string; url: string; sha256: string; kind: string; acquiredAt: string }[];
+  };
+  const data = m.files.filter((f) => f.kind === "bldg" || f.kind === "tran");
+  sources.push({
+    id: "plateau-13104-shinjuku-ku-2025",
+    title: `${m.dataset} — bldg / tran CityGML（E27 出口周辺 4 メッシュ）`,
+    publisher: "国土交通省 Project PLATEAU（東京都 新宿区 3D都市モデル）",
+    url: m.datasetUrl,
+    downloadUrls: data.map((f) => f.url),
+    license: { name: "CC BY 4.0", url: m.licenseUrl },
+    rights: "REUSABLE_WITH_CONDITIONS",
+    usage: "data",
+    attribution: `「${m.dataset}」（国土交通省 Project PLATEAU）を加工して作成`,
+    modified: true,
+    retrievedAt: data.map((f) => f.acquiredAt).sort().at(-1)!,
+    sha256: Object.fromEntries(data.map((f) => [f.path, f.sha256])),
+    datasetDate: null,
+    validUntil: null,
+    notes: "Render-only street context in data/surface.json: LOD1 building footprints/heights and road polygons, simplified; terrain flattened to the symbolic street level. Not used for routing; no datum registration to the underground floors is asserted.",
+  });
+}
+
 const areas: CoverageArea[] = mapLevels.flatMap((ml) => {
   const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
   return raw.levels
