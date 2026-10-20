@@ -173,9 +173,16 @@ def check(glbs, manifest, budget, manifest_meta=None):
         for name, entry in (plan or {}).items():
             if cap and entry["res"] > cap:
                 problems.append(f"{aid}: {name} plan res {entry['res']} exceeds texture_resolution {cap}")
-        for name, n in glb.get("material_images", {}).items():
-            if plan is not None and name in plan and n > len(plan[name]["maps"]):
-                problems.append(f"{aid}: {name} samples {n} images but its plan keeps {plan[name]['maps']}")
+        if plan is not None:
+            # exactly the planned maps: an exporter that drops (or adds) an image must not pass,
+            # and the manifest digest cannot catch it because the manifest is written from the plan
+            sampled = glb.get("material_images", {})
+            for name in sorted(set(plan) | set(sampled)):
+                n = sampled.get(name, 0)
+                if name not in plan:
+                    problems.append(f"{aid}: {name} samples {n} images but has no texture plan")
+                elif n != len(plan[name]["maps"]):
+                    problems.append(f"{aid}: {name} samples {n} images but its plan keeps {plan[name]['maps']}")
         seen = {}
         for im in glb["images"]:
             if im["sha"] in seen:
@@ -235,6 +242,8 @@ def self_test():
         "oversized": ([_png_header(1024, 1024, b"a"), _png_header(512, 512, b"b")], [0, 1], 1),
         "duplicate": ([_png_header(512, 512, b"a"), _png_header(512, 512, b"a")], [0, 1], 1),
         "extra_map": ([_png_header(512, 512, b"a"), _png_header(512, 512, b"b"), _png_header(512, 512, b"c")], [0, 1, 2], 1),
+        "missing_map": ([_png_header(512, 512, b"a")], [0], 1),
+        "no_maps": ([], [], 1),  # every planned image dropped: the material samples nothing
     }
     with tempfile.TemporaryDirectory() as tmp:
         for name, (images, refs, want) in cases.items():
@@ -254,6 +263,9 @@ def self_test():
         assert any("budget" in p for p in check(glbs, {path.stem: {"textures": plan}}, mobile, dict(meta, profile="mobile")))
         assert not any("budget" in p for p in check(glbs, {path.stem: {"textures": plan}}, mobile, meta))
         assert check(glbs, {}, budget, meta) == [f"{path.stem}: GLB is not in manifest.json"]
+        clean = Path(tmp) / "gteki_clean.glb"
+        assert check({clean.stem: scan_glb(clean)}, {clean.stem: {"textures": {}}}, budget, meta) == [
+            f"{clean.stem}: gteki_test samples 2 images but has no texture plan"]
         # a plan above the library's texture_resolution (e.g. an uncapped supplied image)
         path.write_bytes(_fake_glb([_png_header(2048, 1024, b"p")], [0]))
         big = {path.stem: {"textures": {"gteki_test": {"res": 2048, "maps": ["albedo"]}}}}

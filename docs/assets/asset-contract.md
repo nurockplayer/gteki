@@ -73,7 +73,7 @@ Root node `extras.gteki` (object):
 
 No hard FPS numbers are asserted here (see acceptance.md). The manifest records triangles, materials, texture plans and GLB bytes for every asset so station leads can budget. Godot generates mesh LODs automatically on import; the Web build may use meshopt simplification on derivatives.
 
-`tools/blender/catalog/budget.json` caps the committed library (download, unique image bytes, estimated GPU texture memory). `tools/blender/build.sh validate` fails when the cap is exceeded, when an image is larger than its material's plan, when a material samples more images than its plan keeps, or when one GLB embeds the same image twice.
+`tools/blender/catalog/budget.json` caps the committed library (download, unique image bytes, estimated GPU texture memory). `tools/blender/build.sh validate` fails when the cap is exceeded, when an image is larger than its material's plan, when a material samples more or fewer images than its plan keeps (or samples any without a plan), or when one GLB embeds the same image twice.
 
 ## 6. Delivery files
 

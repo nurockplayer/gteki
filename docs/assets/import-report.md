@@ -19,7 +19,7 @@ Everything below was measured on the committed library (`assets/library/glb`) wi
 | --- | --- | --- |
 | Batch build, 48 assets, cold texture cache | `tools/blender/build.sh build` | PASS · ~240 s of generator time on M2 Pro (slowest asset 30 s, most of it cold texture synthesis; cached rebuilds take seconds) |
 | Contract validator (structure, accessor bounds, index range, NaN, transforms, naming, extras, AABB vs `bounds_m`) | `tools/blender/build.sh validate` | **42 PASS · 6 WARN · 0 FAIL** |
-| Texture budget: images vs plan, extra maps, duplicates, manifest coverage, byte/GPU limits | `tools/blender/build.sh validate` (`texture_budget.py --check`) | **PASS** · 21.03 MiB, 2.42 MiB unique images, 192 MiB unique GPU est. ([texture-budget.md](texture-budget.md)) |
+| Texture budget: images vs plan, exact map bindings (extra, missing or unplanned maps fail), duplicates, manifest coverage, byte/GPU limits | `tools/blender/build.sh validate` (`texture_budget.py --check`) | **PASS** · 21.03 MiB, 2.42 MiB unique images, 192 MiB unique GPU est. ([texture-budget.md](texture-budget.md)) |
 | Stdlib self-tests (validator, budget checker, bundle tool) | `tools/blender/build.sh selftest` | **PASS** |
 | Kit bundle round trip: `bundle --all`, then `extract` each asset | `bundle_kit.py` + `validate_glb.py` | **48/48** extracts validate exactly like their sources |
 | Godot 4.7 headless import, with parity against `manifest.json` (StaticBody3D + CollisionShape3D per `-colonly` node, socket position and outward direction, flap nodes per aisle, placement-class origin checks) | `tools/blender/build.sh godot` | **48/48 PASS** · 299 StaticBody3D / 299 CollisionShape3D · 51 sockets |

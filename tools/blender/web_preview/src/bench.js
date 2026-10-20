@@ -94,8 +94,9 @@ async function load(items) {
   } else if (strategy === 'bundle') {
     const gltf = await parse(`/bundles/${bundleName}`);
     const kit = gltf.scene.children[0];
-    // GLTFLoader suffixes repeated node names file-wide; userData.name keeps the original
-    const byId = new Map(kit.children.map(child => [child.userData.name || child.name, child]));
+    // GLTFLoader suffixes repeated node names file-wide; bundle_kit records the original of every
+    // repeated name in extras.gteki_name, which GLTFLoader exposes as userData.gteki_name
+    const byId = new Map(kit.children.map(child => [child.userData.gteki_name || child.userData.name || child.name, child]));
     for (const item of items) {
       const source = byId.get(assetId(item));
       if (!source) throw new Error(`bundle has no ${assetId(item)}`);

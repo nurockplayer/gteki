@@ -115,7 +115,7 @@ The lowest close-up scores belong to the bench (perforated steel at 512) and the
 - **`tools/blender/build.sh validate`** runs `texture_budget.py --check tools/blender/catalog/budget.json` after the contract validator. It fails when:
   - an image is larger than its material's planned `res`;
   - a planned `res` is above the library's `texture_resolution` (supplied poster images are planned too, capped at `tex_res`);
-  - a material samples more images than its plan keeps;
+  - a material samples more or fewer images than its plan keeps, or samples images without a plan;
   - a GLB embeds the same image bytes twice;
   - a GLB and the manifest disagree (missing on either side, or a different `sha256` or byte size);
   - the committed library exceeds the byte or GPU limits.
