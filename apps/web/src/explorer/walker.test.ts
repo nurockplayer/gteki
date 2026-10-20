@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer } from "./walker.ts";
+import { WALKER_BODY } from "@gteki/scene-api";
 
 describe("walker", () => {
   const wall = wallToRenderer({ a: { x: 0, y: 0 }, b: { x: 10, y: 0 }, zMin: 0, zMax: 3 });
@@ -38,5 +39,20 @@ describe("walker", () => {
   it("computes the shortest signed angle", () => {
     expect(angleDelta(0.1, -0.1)).toBeCloseTo(-0.2);
     expect(angleDelta(Math.PI - 0.1, -Math.PI + 0.1)).toBeCloseTo(0.2);
+  });
+});
+
+describe("walker body is part of the scene contract", () => {
+  it("pins the published constants station scenes author against", () => {
+    expect(WALKER_BODY).toEqual({ radiusM: 0.3, bodyBottomM: 0.2, bodyTopM: 1.7, eyeM: 1.62, stepUpM: 0.45, stepDownM: 0.9 });
+  });
+
+  it("blocks only walls whose band overlaps feet+0.2 … feet+1.7 (a railing above a stair run does not)", () => {
+    const wall = (zMin: number, zMax: number) => wallToRenderer({ a: { x: -5, y: 0 }, b: { x: 5, y: 0 }, zMin, zMax });
+    const at = (zMin: number, zMax: number) => resolveWalls(0, 0.1, 0.3, 0, WALKER_BODY.bodyTopM, [wall(zMin, zMax)]);
+    expect(at(1.75, 2.8)).toEqual({ x: 0, z: 0.1 }); // above the head band
+    expect(at(-1, 0.15)).toEqual({ x: 0, z: 0.1 }); // below the shin band
+    expect(at(1.6, 2.8).z).not.toBeCloseTo(0.1); // overlaps at the top edge
+    expect(at(-1, 0.25).z).not.toBeCloseTo(0.1); // overlaps at the bottom edge
   });
 });

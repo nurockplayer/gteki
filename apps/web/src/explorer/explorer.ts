@@ -15,7 +15,7 @@ import type { Router, PolylinePoint } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
-import { sceneFromGlbRoles } from "@gteki/scene-api";
+import { sceneFromGlbRoles, WALKER_BODY } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
@@ -30,8 +30,8 @@ export interface ExplorerEvents {
   onPoiClick?(poiId: string): void;
 }
 
-const EYE = 1.62;
-const RADIUS = 0.3;
+const EYE = WALKER_BODY.eyeM;
+const RADIUS = WALKER_BODY.radiusM;
 const WALK = 1.45;
 const RUN = 3.4;
 const GUIDE_SPEED = 1.6;
@@ -596,7 +596,7 @@ export class Explorer {
     const step = speed * dt;
     const nx = this.pos.x + (fx * mv.y + rx * mv.x) * step;
     const nz = this.pos.z + (fz * mv.y + rz * mv.x) * step;
-    const pushed = resolveWalls(nx, nz, RADIUS, this.pos.y, 1.7, this.walls);
+    const pushed = resolveWalls(nx, nz, RADIUS, this.pos.y, WALKER_BODY.bodyTopM, this.walls);
     const target = new THREE.Vector3(pushed.x, this.pos.y, pushed.z);
     if (this.blockedByColliders(this.pos, target)) return;
     const ground = this.groundAt(target.x, this.pos.y + DEFAULT_GROUND.stepUp + 0.05, target.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1);

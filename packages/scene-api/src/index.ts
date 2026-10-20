@@ -15,7 +15,15 @@ import type { StationBundle } from "@gteki/schema";
 
 export const SCENE_API_VERSION = "gteki.scene/0.1" as const;
 
-/** Vertical wall in station ENU metres; blocks the walker between zMin and zMax. */
+/**
+ * The explorer's walker body, part of the 0.1 contract so scenes can author walls/colliders against it.
+ * Changing any value is a contract change (station leads are consulted first).
+ * - A wall blocks when its band overlaps the body: zMin ≤ feet + bodyTopM and zMax ≥ feet + bodyBottomM.
+ * - Ground may rise ≤ stepUpM or drop ≤ stepDownM per step; otherwise the move is refused.
+ */
+export const WALKER_BODY = { radiusM: 0.3, bodyBottomM: 0.2, bodyTopM: 1.7, eyeM: 1.62, stepUpM: 0.45, stepDownM: 0.9 } as const;
+
+/** Vertical wall in station ENU metres; blocks the walker between zMin and zMax (see WALKER_BODY). */
 export interface WallSegment {
   a: { x: number; y: number };
   b: { x: number; y: number };

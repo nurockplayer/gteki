@@ -1,3 +1,4 @@
+import { WALKER_BODY } from "@gteki/scene-api";
 /**
  * Engine-free walker math (renderer frame: X east, Y up, Z south). Kept pure for unit tests;
  * mesh raycasts live in the explorer and feed `groundY` in.
@@ -24,7 +25,7 @@ export function resolveWalls(x: number, z: number, radius: number, feetY: number
   for (let iter = 0; iter < 3; iter++) {
     let moved = false;
     for (const w of walls) {
-      if (w.yMax < feetY + 0.2 || w.yMin > feetY + bodyHeight) continue;
+      if (w.yMax < feetY + WALKER_BODY.bodyBottomM || w.yMin > feetY + bodyHeight) continue;
       const dx = w.bx - w.ax;
       const dz = w.bz - w.az;
       const len2 = dx * dx + dz * dz;
@@ -58,7 +59,7 @@ export interface GroundRule {
   stepDown: number;
 }
 
-export const DEFAULT_GROUND: GroundRule = { stepUp: 0.45, stepDown: 0.9 };
+export const DEFAULT_GROUND: GroundRule = { stepUp: WALKER_BODY.stepUpM, stepDown: WALKER_BODY.stepDownM };
 
 /** Accept a move only onto known walkable ground: no walking into the void or up walls. */
 export function acceptGround(currentY: number, groundY: number | null, rule: GroundRule = DEFAULT_GROUND): boolean {
