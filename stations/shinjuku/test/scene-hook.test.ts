@@ -49,7 +49,7 @@ describe("shared-explorer scene hook: camera caps", () => {
       ray.far = 60;
       const first = ray.intersectObjects(visible, false)[0];
       if (z >= -4.5 && (!first || first.point.y >= -0.05)) continue;
-      open.push(`${n.id} ${n.floorId} z${z}`);
+      open.push(`${n.id} ${n.floorId} z${z} first:${first?.object.name}@${first?.point.y.toFixed(2)} parent:${first?.object.parent?.name}`);
     }
     expect(open).toEqual([]);
   }, 60_000);

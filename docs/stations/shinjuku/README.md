@@ -11,7 +11,18 @@ pnpm install
 pnpm --filter @gteki/station-shinjuku dev        # lane explorer → http://localhost:5174
 pnpm --filter @gteki/web dev                      # shared explorer (Lane C) → pick 新宿駅
 pnpm --filter @gteki/station-shinjuku import:e27 --check   # data reproducibility (needs raw inputs)
+pnpm --filter @gteki/station-shinjuku import:surface --check   # street context (needs PLATEAU raw inputs)
 ```
+
+Visual QA (needs Google Chrome; the lane dev server on :5274, the shared explorer on :5290; ffmpeg for video):
+
+```bash
+pnpm --filter @gteki/station-shinjuku shoot           # fixed vantages → .qa/shots (PNG + calls/tris/voidFraction)
+pnpm --filter @gteki/station-shinjuku record          # guided walkthrough MP4 on a virtual clock → .qa/video
+pnpm --filter @gteki/station-shinjuku explorer-walk   # guided routes in the shared explorer, per-frame void
+```
+
+`shoot` also takes `--vantages file.json` (ad-hoc or generated views, e.g. every node × edge heading), `--route from,to`, `--w/--h` (phone: 390×844 `--q low`) and `--timings 1`.
 
 To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downloads into `~/Developer/gteki-raw/shinjuku` (override with `GTEKI_RAW_SHINJUKU`) and verifies every file against the sha256 values in `stations/shinjuku/sources/manifest.json`. Nothing raw is committed.
 
@@ -22,9 +33,11 @@ To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downlo
 | `stations/shinjuku/gteki/{station,graph,pois}.json` | Shared contract `gteki.station/0.1` files (Lane C parser). These are the routing truth. |
 | `stations/shinjuku/gteki/scene.ts` | `@gteki/scene-api` hook: the same scene inside the shared explorer. Invisible walk proxies plus ENU walls. |
 | `stations/shinjuku/data/plan.json` | Render-only plan: GSI space polygons and facilities, plus symbolic node heights. Not used for routing. |
-| `stations/shinjuku/scene/` | Renderer-neutral layout (`layout.ts`, analytic WalkWorld collision) and the Three.js builder (`build.ts`). |
+| `stations/shinjuku/scene/` | Renderer-neutral layout (`layout.ts`, analytic WalkWorld collision), the Three.js builder (`build.ts`) and the street context (`surface.ts`, `surface-layout.ts`). |
+| `stations/shinjuku/data/surface.json` | Street context derived from PLATEAU 2025 新宿区 (buildings + roads around the E27 exits). Render-only. |
 | `stations/shinjuku/app/` | The lane's own L2-target explorer: third-person walk, guide, narration, audio, crowd, minimap, phone UI. |
-| `stations/shinjuku/tools/` | Importer (`import-e27.ts`), raw loader, analysis, and the fetch/verify script. |
+| `stations/shinjuku/app/src/characters/` | Original procedural characters (one skinned mesh each, LOD, shared batched draw). |
+| `stations/shinjuku/tools/` | Importers (`import-e27.ts`, `import-surface.ts`), fetch/verify scripts, and QA tools (`shoot.ts`, `record.ts`, `explorer-walk.ts`, `vantages.json`). |
 
 ## G0 — provenance and rights: **PASS (E27 extent)** · GAP (rest of Shinjuku)
 
@@ -41,6 +54,7 @@ To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downlo
   | Navigation freshness (導航資料時效) | Dataset 2026-09-17; link maint_date 2025-09-19. | Source `datasetDate`. The router's `staleAfterDays` flags stale routes. `validUntil` stays `null`, so the publication period never marks routes stale. |
 
   Sources, SHA-256 hashes, licence and acquisition evidence are kept. Development and acceptance continue. **Any public release relying on rights that are not yet confirmed stays HOLD.**
+- **Street context: PLATEAU 2025 新宿区 (CC BY 4.0), stage 2.** Buildings (bldg) and roads (tran) of meshes 53394525/26/35/36 are converted to a render-only street around the exits (`sources/surface-manifest.json` with sha256; `import:surface --check` reproduces `data/surface.json`). It is cited as source `plateau-13104-shinjuku-ku-2025` (`REUSABLE_WITH_CONDITIONS`, `modified: true`) and credited in the footer and coverage dialog. It never feeds routing.
 - **Evaluated and not used:**
   - PLATEAU ubld 53394536 does not overlap E27.
   - The S10 store CSV has no coordinates.
@@ -62,6 +76,7 @@ To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downlo
   - a guided walker that arrives on **every routable POI pair**, under both the ticketed and step-free profiles, at the destination height (±0.35 m).
 - **Checked in-browser** in the lane app, with railings, gates and platform doors in collision: B1 gate area → exit 2 over the stacked switchback, and platform → exit 1.
 - **Heights are symbolic.** The source publishes no z. Level heights come from a least-squares fit of run lengths (30° escalators, stair rise ratio 0.5). Every floor has `elevationM: null`, and every node has `position.z: null` plus a display-only `renderZ`. The HUD says 「推定 … m · est.」.
+- **Overhead clearance (stage 2).** The fit is now constrained so that no stair/escalator run passes less than 2.3 m (2.1 m head room + slab) above any graph edge in plan, generically, with no id list. This moved the symbolic stack down: B0.5 −6.19 m, B1 −7.80 m, B2 −16.20 m … B6 −42.87 m (was B1 −4 m, where the NW switchback hung 1.2 m above the B1 walkway). `test/clearance.test.ts` samples every edge every 0.25 m against runs, pads, link strips, street pads and slabs; `test/mapped-space.test.ts` keeps mapped non-network floor (e.g. the B3 corner at (−21.4, 182.3), GSI space B021) enclosed.
 - **Stacked switchbacks.** The source puts every landing of a multi-flight stair on one floor. For display only, the importer spreads the rise over the flight chain by flight length (`plan.heightModel.landingSpread`), so flights do not render flat or overlap each other. Floor ids and routing are unchanged. Narration still says 「階段を進む」 without a direction for these flights, because the source gives none.
 - **Platform.** The B6 edges follow the real curved platform outline (a polyline per edge, smoothed from the trackside walls).
 
@@ -84,7 +99,15 @@ To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downlo
   - official exit numbers;
   - current closures, e.g. OSM notes exit 2 closed since 2024-03-30, which is outside E27 data.
 
-## G3 — gameplay and L2 visual: **GAP (in progress)**
+## G3 — gameplay and L2 visual: **GAP (stage 2 in review)**
+
+Stage 2 (branch `claude/shinjuku-e27-l2-stage2`, to be folded into #16):
+
+- **Enclosure:** ceilings, inclined shaft soffits, shaft walls, lift shaft linings and caps, slab undersides, elevator portals, stair details and light pools; geometry batched (peak 263 draw calls at the 26 fixed vantages, voidFraction ≤ 0.03 at all of them).
+- **Street:** PLATEAU buildings with five procedural facade styles, roads/sidewalks, generic entrance canopies, street furniture and sky; hidden from underground viewpoints.
+- **Characters:** original procedural commuters and avatar (faces, hair silhouettes, fitted bags, thumbs), one skinned draw, near/far LOD (≈2.6–3.3k / 1.1–1.3k tris); crowd setup 42 → 2.8 ms.
+- **Navigation UX:** collapsible search / phone bottom sheet, route preview with overview, evidence chips, floor-change toast, arrival card, ×1/×2/×4 guide speed, escalator carry, merged narration, step-free refusal with reason and alternative, HUD-aware projected labels on phone, staged start-up with `__gteki.timings()`.
+- **Shared explorer:** underground ceilings/soffits and canopy roofs are invisible camera caps (exported as `cameraBlockers` for the proposed scene-api field, and as colliders until then), the station owns its lighting there (no sun underground), and the street context follows the explorer camera. Worst near-black frame along exit 1 ↔ platform and platform → exit 2 went from 0.60 to ≤ 0.20 (`explorer-walk`).
 
 Implemented and observed in a real browser on desktop, plus a 375×812 phone viewport (emulated, **not** a physical phone):
 
@@ -129,7 +152,10 @@ Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --ch
 - **The train.** A generic small-profile 8-car set, not a model of the 12-000/12-600 series. The dwell cycle is decorative, not a timetable.
 - **Signs.** GTEki's own design and pictograms. No operator sign graphics are copied.
 - **Commuters.** Invented ambient agents walking real graph routes. They are not crowd or occupancy data.
-- **Heights.** Symbolic (see G1). Visual stair and escalator pitch follows the symbolic level heights.
+- **Heights.** Symbolic (see G1), clearance-constrained. Visual stair and escalator pitch follows the symbolic level heights. Where a generic 3.4 m stair width would overlap a walkway beside its foot, 3.0 m (the class-4 lower bound) is used.
+- **Street context.** PLATEAU footprints/heights are real; facades, colours, canopies, signs on canopies, trees and furniture are generic. Canopies are one generic design per street exit, not the real structures.
+- **Characters.** Invented appearance and clothing; procedural faces and hands; rigid hair and bags. Not crowd data.
+- **Lift shafts.** Linings, caps and the headroom hood are procedural fill; the ride itself remains a symbolic transfer.
 - **Flat stair links.** Stairs/escalator links whose two ends render at the same height are shown as flat walkways.
 
 ## Godot path

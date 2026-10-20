@@ -354,8 +354,8 @@ describe("decorative crowd", () => {
   });
 
   it.each([
-    ["B1 gate", { x: -64.26, y: 182.25, z: -4 }],
-    ["B6 platform", { x: -39.13, y: 200.04, z: -39.07 }],
+    ["B1 gate", { x: -64.26, y: 182.25, z: planJson.nodeRenderZ["n:fe13251e6885410b870179837c3832cf"]! }],
+    ["B6 platform", { x: -39.13, y: 200.04, z: planJson.nodeRenderZ["n:96df6458bbe9468488b6a052dcb134a4"]! }],
   ] as const)("keeps a small local group near the real %s vantage over 40 seconds", (_name, vantage) => {
     const { bundle } = loadShinjukuBundle();
     const heights: Record<string, number> = planJson.nodeRenderZ;
