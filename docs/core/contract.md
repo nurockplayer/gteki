@@ -48,6 +48,9 @@ stations/<id>/gteki/
 | Assets, edge geometry and node positions (`sourceRefs`) derived from non-`REUSABLE_WITH_CONDITIONS` or `facts-only` sources are rejected for public bundles | validate |
 | Every evidence record (edge geometry/access/hours, POI) names at least one source | validate |
 | Station origin datum is `JGD2011` | validate |
+| Real-station floors cite at least one source label; routes count the traversed floors' sources in provenance and freshness | validate + router |
+| Polyline endpoints take their node's height for measurement, as drawn (unknown node height = no climb measured) | router |
+| Coverage area `status` is routable / visual_only / unverified / excluded | validate |
 | Real-station nodes cite position sources; POI `displayPosition` and coverage polygons need ≥1 reusable data source | validate |
 | `elevationSource` is one of measured / source-derived / symbolic / unknown; symbolic and unknown keep `elevationM` null | validate |
 | Without `accessEvidence`, an edge's paid / fare-boundary / wheelchair / steps flags are UNKNOWN to the router | router |
