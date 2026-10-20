@@ -12,13 +12,15 @@ for facts only and never published).
 | `gap-metro-tobu-gates` | Central Passage west/centre | which PLATEAU openings are the Marunouchi west/central/east gates and the Tobu central gates 1/2 (two floor-level openings near the projected Marunouchi gates look like stairwells) | on-site check of gate lines against column positions (columns are in the GLB, so a column count per bay is enough) | routing to 5 gate POIs that are search-only today |
 | `gap-step-free` | east hall → east corridor (TP 27.8 → 26.9 m) and every exit | lifts/escalators/ramps: EF_80 transport geometry exists, but type, served levels and hours are unknown | Tokyo Metro / Toshima accessibility pages (facts only) + on-site confirmation | `stepFree` profile (currently fails safely with `no_path`) |
 | `gap-south-west` | South Passage, west of the JR east-side passage | which PLATEAU openings are the JR South Gate and the Yurakucho Line South Passage East Gate; where the South Passage continues west | on-site check of both gate lines against column positions | routing to those gates and the west side |
+| `gap-ne-north` | North-east, north of the shopping-park passage | which stair is Exit 24 and which is 25 (the official map shows two; PLATEAU has one stair top); Exits 23, 29, 30, 31 lie outside the surveyed geometry | on-site check of the 24/25 stairs; a survey source for the passage further north | routing to those exits |
 | `gap-freshness` | whole slice | geometry is a 2023 survey; later construction unknown | dated walk-through comparing columns, exits and openings with the GLB | lifts the stale flag for slice 1 |
 
 ## Next slices (geometry already present, desk work first)
 
 1. ~~**South Passage (east)**: exits 38, 39, 40, 41~~ (done, slice 2). The west half waits on
    `gap-south-west`.
-2. **North-east**: Cherry Road / ISP side, exits 26, 28, 32, 33.
+2. ~~**North-east**: exits 22, 26, 28, 32, 33~~ (done, slice 3). Exits 23–25 and 29–31 wait on
+   `gap-ne-north`.
 3. **West**: Tobu side, Hope Center, west exits.
 4. **Street level**: exit stair tops are modelled as daylight portals. A street-level GLB (PLATEAU
    bldg/tran LOD1–2 around the station) is needed before exits can be walked out of.

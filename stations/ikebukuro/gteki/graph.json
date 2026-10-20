@@ -139,6 +139,23 @@
    ]
   },
   {
+   "id": "c_n",
+   "floorId": "b1",
+   "position": {
+    "x": 46.0,
+    "y": 42.0,
+    "z": 28.49
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
    "id": "c_e2",
    "floorId": "b1",
    "position": {
@@ -213,6 +230,125 @@
     "x": 99.0,
     "y": -16.0,
     "z": 27.08
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "n_h",
+   "floorId": "b1",
+   "position": {
+    "x": 66.0,
+    "y": 113.0,
+    "z": 28.45
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "n_c",
+   "floorId": "b1",
+   "position": {
+    "x": 71.5,
+    "y": 116.5,
+    "z": 28.45
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "n_e",
+   "floorId": "b1",
+   "position": {
+    "x": 97.0,
+    "y": 111.0,
+    "z": 28.45
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "ne_j",
+   "floorId": "b1",
+   "position": {
+    "x": 110.0,
+    "y": 108.0,
+    "z": 26.24
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "ne_m",
+   "floorId": "b1",
+   "position": {
+    "x": 128.0,
+    "y": 100.0,
+    "z": 26.24
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "ne_e",
+   "floorId": "b1",
+   "position": {
+    "x": 149.5,
+    "y": 94.0,
+    "z": 26.24
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "ne_k",
+   "floorId": "b1",
+   "position": {
+    "x": 156.5,
+    "y": 94.5,
+    "z": 26.24
    },
    "kind": "junction",
    "inOut": "inside",
@@ -536,6 +672,91 @@
     "x": 172.5,
     "y": -179.0,
     "z": 32.646
+   },
+   "kind": "exit",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x22",
+   "floorId": "street",
+   "position": {
+    "x": 80.0,
+    "y": 114.5,
+    "z": 32.422
+   },
+   "kind": "exit",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x26",
+   "floorId": "street",
+   "position": {
+    "x": 101.0,
+    "y": 92.0,
+    "z": 32.246
+   },
+   "kind": "exit",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x28",
+   "floorId": "street",
+   "position": {
+    "x": 127.0,
+    "y": 95.0,
+    "z": 32.37
+   },
+   "kind": "exit",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x32",
+   "floorId": "street",
+   "position": {
+    "x": 157.0,
+    "y": 115.5,
+    "z": 32.426
+   },
+   "kind": "exit",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x33",
+   "floorId": "street",
+   "position": {
+    "x": 148.0,
+    "y": 73.0,
+    "z": 32.078
    },
    "kind": "exit",
    "inOut": "inside",
@@ -871,12 +1092,12 @@
    "attributes": {}
   },
   {
-   "id": "c_e1__c_e2",
+   "id": "c_e1__c_n",
    "from": "c_e1",
-   "to": "c_e2",
+   "to": "c_n",
    "direction": "both",
    "mode": "walk",
-   "lengthM": 33.0,
+   "lengthM": 17.8,
    "geometry": [
     {
      "x": 29.0,
@@ -884,9 +1105,58 @@
      "z": 28.073
     },
     {
-     "x": 37.5,
+     "x": 36.0,
+     "y": 42.0,
+     "z": 28.288
+    },
+    {
+     "x": 45.5,
      "y": 41.5,
-     "z": 28.333
+     "z": 28.49
+    },
+    {
+     "x": 46.0,
+     "y": 42.0,
+     "z": 28.49
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only)",
+    "checkedDate": "2026-10-20",
+    "note": "中央通路 (Central Passage) is a public east-west passage outside fare gates, linking the west and east exits."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "c_n__c_e2",
+   "from": "c_n",
+   "to": "c_e2",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 16.4,
+   "geometry": [
+    {
+     "x": 46.0,
+     "y": 42.0,
+     "z": 28.49
     },
     {
      "x": 48.5,
@@ -2347,6 +2617,674 @@
    "attributes": {
     "note": "Stair turns back on itself over three flights (landings at TP 27.4, 29.3 and 31.4 m)."
    }
+  },
+  {
+   "id": "c_n__n_h",
+   "from": "c_n",
+   "to": "n_h",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 76.1,
+   "geometry": [
+    {
+     "x": 46.0,
+     "y": 42.0,
+     "z": 28.49
+    },
+    {
+     "x": 42.5,
+     "y": 53.0,
+     "z": 28.334
+    },
+    {
+     "x": 48.0,
+     "y": 71.5,
+     "z": 28.348
+    },
+    {
+     "x": 66.0,
+     "y": 113.0,
+     "z": 28.45
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only) matched to the PLATEAU passage linking the Central and North Passages",
+    "checkedDate": "2026-10-20",
+    "note": "A public passage runs north from the Central Passage, along the east side of the JR concourse, to the North Passage (北通路)."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "n_h__n_c",
+   "from": "n_h",
+   "to": "n_c",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 6.5,
+   "geometry": [
+    {
+     "x": 66.0,
+     "y": 113.0,
+     "z": 28.45
+    },
+    {
+     "x": 71.5,
+     "y": 116.5,
+     "z": 28.45
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU floors and stair treads (TP 28.5 -> 26.2 m)",
+    "checkedDate": "2026-10-20",
+    "note": "北通路 (North Passage) is a public passage outside fare gates. East of the stairwell to Exit 22 (東口（北）) a short flight leads down to the passage between the Ikebukuro Shopping Park blocks."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "n_c__n_e",
+   "from": "n_c",
+   "to": "n_e",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 27.5,
+   "geometry": [
+    {
+     "x": 71.5,
+     "y": 116.5,
+     "z": 28.45
+    },
+    {
+     "x": 74.0,
+     "y": 114.5,
+     "z": 28.45
+    },
+    {
+     "x": 87.5,
+     "y": 109.0,
+     "z": 28.45
+    },
+    {
+     "x": 97.0,
+     "y": 111.0,
+     "z": 28.45
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU floors and stair treads (TP 28.5 -> 26.2 m)",
+    "checkedDate": "2026-10-20",
+    "note": "北通路 (North Passage) is a public passage outside fare gates. East of the stairwell to Exit 22 (東口（北）) a short flight leads down to the passage between the Ikebukuro Shopping Park blocks."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "n_c__x22",
+   "from": "n_c",
+   "to": "x22",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 11.0,
+   "geometry": [
+    {
+     "x": 71.5,
+     "y": 116.5,
+     "z": 28.45
+    },
+    {
+     "x": 72.5,
+     "y": 118.0,
+     "z": 28.45
+    },
+    {
+     "x": 80.0,
+     "y": 114.5,
+     "z": 32.422
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only): order of exit stairs along the passage matched one-to-one to PLATEAU stair-top closures (TP 32.1-32.4 m, 5-9 m from the projected map positions)",
+    "checkedDate": "2026-10-20",
+    "note": "Exit 22 (東口（北）/ East Exit North) rises from the stairwell in the North Passage; Exits 26, 28 and 33 from the south side of the passage between the Ikebukuro Shopping Park blocks, west to east; Exit 32 from its east end, northwards."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "n_e__ne_j",
+   "from": "n_e",
+   "to": "ne_j",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 14.7,
+   "geometry": [
+    {
+     "x": 97.0,
+     "y": 111.0,
+     "z": 28.45
+    },
+    {
+     "x": 101.5,
+     "y": 112.0,
+     "z": 28.45
+    },
+    {
+     "x": 104.5,
+     "y": 111.0,
+     "z": 26.94
+    },
+    {
+     "x": 107.0,
+     "y": 110.0,
+     "z": 26.765
+    },
+    {
+     "x": 107.5,
+     "y": 110.0,
+     "z": 26.415
+    },
+    {
+     "x": 108.0,
+     "y": 109.5,
+     "z": 26.24
+    },
+    {
+     "x": 110.0,
+     "y": 108.0,
+     "z": 26.24
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU floors and stair treads (TP 28.5 -> 26.2 m)",
+    "checkedDate": "2026-10-20",
+    "note": "北通路 (North Passage) is a public passage outside fare gates. East of the stairwell to Exit 22 (東口（北）) a short flight leads down to the passage between the Ikebukuro Shopping Park blocks."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "ne_j__x26",
+   "from": "ne_j",
+   "to": "x26",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 19.8,
+   "geometry": [
+    {
+     "x": 110.0,
+     "y": 108.0,
+     "z": 26.24
+    },
+    {
+     "x": 107.0,
+     "y": 102.5,
+     "z": 26.24
+    },
+    {
+     "x": 106.5,
+     "y": 102.0,
+     "z": 26.41
+    },
+    {
+     "x": 101.5,
+     "y": 92.5,
+     "z": 31.726
+    },
+    {
+     "x": 101.0,
+     "y": 92.0,
+     "z": 32.246
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only): order of exit stairs along the passage matched one-to-one to PLATEAU stair-top closures (TP 32.1-32.4 m, 5-9 m from the projected map positions)",
+    "checkedDate": "2026-10-20",
+    "note": "Exit 22 (東口（北）/ East Exit North) rises from the stairwell in the North Passage; Exits 26, 28 and 33 from the south side of the passage between the Ikebukuro Shopping Park blocks, west to east; Exit 32 from its east end, northwards."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "ne_j__ne_m",
+   "from": "ne_j",
+   "to": "ne_m",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 19.7,
+   "geometry": [
+    {
+     "x": 110.0,
+     "y": 108.0,
+     "z": 26.24
+    },
+    {
+     "x": 128.0,
+     "y": 100.0,
+     "z": 26.24
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU floors and stair treads (TP 28.5 -> 26.2 m)",
+    "checkedDate": "2026-10-20",
+    "note": "北通路 (North Passage) is a public passage outside fare gates. East of the stairwell to Exit 22 (東口（北）) a short flight leads down to the passage between the Ikebukuro Shopping Park blocks."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "ne_m__x28",
+   "from": "ne_m",
+   "to": "x28",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 20.6,
+   "geometry": [
+    {
+     "x": 128.0,
+     "y": 100.0,
+     "z": 26.24
+    },
+    {
+     "x": 125.5,
+     "y": 95.0,
+     "z": 26.24
+    },
+    {
+     "x": 125.0,
+     "y": 94.5,
+     "z": 26.414
+    },
+    {
+     "x": 123.5,
+     "y": 90.0,
+     "z": 29.029
+    },
+    {
+     "x": 124.5,
+     "y": 89.0,
+     "z": 29.029
+    },
+    {
+     "x": 125.0,
+     "y": 89.5,
+     "z": 29.029
+    },
+    {
+     "x": 127.0,
+     "y": 94.5,
+     "z": 32.051
+    },
+    {
+     "x": 127.0,
+     "y": 95.0,
+     "z": 32.37
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only): order of exit stairs along the passage matched one-to-one to PLATEAU stair-top closures (TP 32.1-32.4 m, 5-9 m from the projected map positions)",
+    "checkedDate": "2026-10-20",
+    "note": "Exit 22 (東口（北）/ East Exit North) rises from the stairwell in the North Passage; Exits 26, 28 and 33 from the south side of the passage between the Ikebukuro Shopping Park blocks, west to east; Exit 32 from its east end, northwards."
+   },
+   "attributes": {
+    "note": "U-shaped stair: two flights with a half landing (TP 29.0 m)."
+   }
+  },
+  {
+   "id": "ne_m__ne_e",
+   "from": "ne_m",
+   "to": "ne_e",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 22.3,
+   "geometry": [
+    {
+     "x": 128.0,
+     "y": 100.0,
+     "z": 26.24
+    },
+    {
+     "x": 149.5,
+     "y": 94.0,
+     "z": 26.24
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU floors and stair treads (TP 28.5 -> 26.2 m)",
+    "checkedDate": "2026-10-20",
+    "note": "北通路 (North Passage) is a public passage outside fare gates. East of the stairwell to Exit 22 (東口（北）) a short flight leads down to the passage between the Ikebukuro Shopping Park blocks."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "ne_e__ne_k",
+   "from": "ne_e",
+   "to": "ne_k",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 9.4,
+   "geometry": [
+    {
+     "x": 149.5,
+     "y": 94.0,
+     "z": 26.24
+    },
+    {
+     "x": 155.0,
+     "y": 91.5,
+     "z": 26.24
+    },
+    {
+     "x": 156.5,
+     "y": 94.5,
+     "z": 26.24
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU floors and stair treads (TP 28.5 -> 26.2 m)",
+    "checkedDate": "2026-10-20",
+    "note": "北通路 (North Passage) is a public passage outside fare gates. East of the stairwell to Exit 22 (東口（北）) a short flight leads down to the passage between the Ikebukuro Shopping Park blocks."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "ne_k__x32",
+   "from": "ne_k",
+   "to": "x32",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 23.0,
+   "geometry": [
+    {
+     "x": 156.5,
+     "y": 94.5,
+     "z": 26.24
+    },
+    {
+     "x": 158.5,
+     "y": 99.5,
+     "z": 26.24
+    },
+    {
+     "x": 159.0,
+     "y": 100.0,
+     "z": 26.365
+    },
+    {
+     "x": 159.0,
+     "y": 101.0,
+     "z": 26.614
+    },
+    {
+     "x": 159.0,
+     "y": 102.0,
+     "z": 26.614
+    },
+    {
+     "x": 159.0,
+     "y": 102.5,
+     "z": 26.756
+    },
+    {
+     "x": 157.5,
+     "y": 114.5,
+     "z": 31.858
+    },
+    {
+     "x": 157.0,
+     "y": 115.5,
+     "z": 32.426
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only): order of exit stairs along the passage matched one-to-one to PLATEAU stair-top closures (TP 32.1-32.4 m, 5-9 m from the projected map positions)",
+    "checkedDate": "2026-10-20",
+    "note": "Exit 22 (東口（北）/ East Exit North) rises from the stairwell in the North Passage; Exits 26, 28 and 33 from the south side of the passage between the Ikebukuro Shopping Park blocks, west to east; Exit 32 from its east end, northwards."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "ne_e__x33",
+   "from": "ne_e",
+   "to": "x33",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 23.8,
+   "geometry": [
+    {
+     "x": 149.5,
+     "y": 94.0,
+     "z": 26.24
+    },
+    {
+     "x": 152.5,
+     "y": 84.0,
+     "z": 26.24
+    },
+    {
+     "x": 152.5,
+     "y": 83.5,
+     "z": 26.24
+    },
+    {
+     "x": 152.5,
+     "y": 83.0,
+     "z": 26.416
+    },
+    {
+     "x": 148.0,
+     "y": 73.0,
+     "z": 32.078
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only): order of exit stairs along the passage matched one-to-one to PLATEAU stair-top closures (TP 32.1-32.4 m, 5-9 m from the projected map positions)",
+    "checkedDate": "2026-10-20",
+    "note": "Exit 22 (東口（北）/ East Exit North) rises from the stairwell in the North Passage; Exits 26, 28 and 33 from the south side of the passage between the Ikebukuro Shopping Park blocks, west to east; Exit 32 from its east end, northwards."
+   },
+   "attributes": {}
   }
  ]
 }

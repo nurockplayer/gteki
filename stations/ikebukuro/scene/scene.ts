@@ -50,6 +50,7 @@ const SPAWNS: { nodeId: string; headingDeg: number; label: string }[] = [
   { nodeId: "c_mid", headingDeg: 100, label: "中央通路 Central Passage" },
   { nodeId: "c_e2", headingDeg: 100, label: "東口方面 toward East exits" },
   { nodeId: "sp_e", headingDeg: 92, label: "南通路 South Passage (east)" },
+  { nodeId: "n_h", headingDeg: 95, label: "北通路 North Passage (east)" },
 ];
 
 function splitPortals(THREE: ThreeNS, mesh: THREE_NS.Mesh) {
