@@ -173,6 +173,23 @@
    ]
   },
   {
+   "id": "e_27j",
+   "floorId": "b1",
+   "position": {
+    "x": 79.0,
+    "y": 32.5,
+    "z": 28.101
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
    "id": "e_hall",
    "floorId": "b1",
    "position": {
@@ -1342,12 +1359,12 @@
    "attributes": {}
   },
   {
-   "id": "c_e2__e_hall",
+   "id": "c_e2__e_27j",
    "from": "c_e2",
-   "to": "e_hall",
+   "to": "e_27j",
    "direction": "both",
    "mode": "walk",
-   "lengthM": 34.0,
+   "lengthM": 19.9,
    "geometry": [
     {
      "x": 60.0,
@@ -1365,8 +1382,52 @@
      "z": 28.362
     },
     {
-     "x": 88.0,
-     "y": 29.0,
+     "x": 79.0,
+     "y": 32.5,
+     "z": 28.101
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-20"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only)",
+    "checkedDate": "2026-10-20",
+    "note": "中央通路 (Central Passage) is a public east-west passage outside fare gates, linking the west and east exits."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "e_27j__e_hall",
+   "from": "e_27j",
+   "to": "e_hall",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 14.1,
+   "geometry": [
+    {
+     "x": 79.0,
+     "y": 32.5,
+     "z": 28.101
+    },
+    {
+     "x": 88.5,
+     "y": 28.5,
      "z": 27.79
     },
     {
@@ -1401,32 +1462,27 @@
    "attributes": {}
   },
   {
-   "id": "e_hall__x27",
-   "from": "e_hall",
+   "id": "e_27j__x27",
+   "from": "e_27j",
    "to": "x27",
    "direction": "both",
    "mode": "stairs",
-   "lengthM": 24.4,
+   "lengthM": 13.4,
    "geometry": [
     {
-     "x": 92.0,
-     "y": 27.0,
-     "z": 27.79
+     "x": 79.0,
+     "y": 32.5,
+     "z": 28.101
     },
     {
-     "x": 86.0,
-     "y": 33.0,
-     "z": 27.878
-    },
-    {
-     "x": 80.0,
-     "y": 36.5,
-     "z": 28.196
-    },
-    {
-     "x": 80.0,
+     "x": 79.0,
      "y": 37.5,
-     "z": 28.233
+     "z": 28.218
+    },
+    {
+     "x": 82.0,
+     "y": 43.5,
+     "z": 30.518
     },
     {
      "x": 82.5,

@@ -79,7 +79,7 @@ missing node. An edge is `verified` only when **both** of these hold:
 |---|---|---|
 | **G0** evidence / rights | **PASS (desk)**, **HOLD (field)** | [G0 audit](docs/G0-source-audit.md); rights chain above. Field visit pending ([survey brief](docs/coverage-gaps.md)). |
 | **G1** geometry | **PASS** for slices 1–3 | Real-scale PLATEAU geometry, identity transform, z = TP height. Walker stays on floor, climbs Exit 35 stairs (TP 27.0 → 30.1 m), is blocked by walls and by openings into unmodelled space. No verified edge crosses a wall or opening at 1 m. Slice 2 follows the surveyed level changes: South Passage TP 27.6 → 29.1 m (up) → 25.9 m (down), with exit stairs to TP 32.2–32.6 m. Slice 3: North Passage TP 28.5 m, down to TP 26.2 m between the shopping-park blocks, U-shaped Exit 28 stair via a TP 29.0 m landing. Godot 4.7 headless import keeps roles and UV2 (`pipeline/godot_probe.gd`). |
-| **G2** routing | **PASS (desk)** | 44/44 edges verified, 1131 m. Shared-core `parseStationFiles` returns ok; the only warnings are 6 deliberately search-only POIs (Metro/Tobu gates, Exit 19). From JR Central Gate 2: Exit 35 = 197 m, Exit 38 = 242 m, Exit 41 = 291 m, Exit 40 = 369 m, Exit 39 = 425 m, Exit 22 = 173 m, Exit 26 = 224 m, Exit 28 = 244 m, Exit 33 = 270 m, Exit 32 = 278 m. Junction nodes sit at real decision points (e.g. just outside each JR gate), so narration reads "Go straight ~7 m / Turn left…" ([explorer](docs/evidence/explorer-route-jrc2-exit35.jpg)). Negative case: the step-free profile fails safely (`no_path`). |
+| **G2** routing | **PASS (desk)** | 45/45 edges verified, 1120 m. Shared-core `parseStationFiles` returns ok; the only warnings are 6 deliberately search-only POIs (Metro/Tobu gates, Exit 19). From JR Central Gate 2: Exit 35 = 197 m, Exit 38 = 242 m, Exit 41 = 291 m, Exit 40 = 369 m, Exit 39 = 425 m, Exit 22 = 173 m, Exit 26 = 224 m, Exit 28 = 244 m, Exit 33 = 270 m, Exit 32 = 278 m. Junction nodes sit at real decision points (e.g. just outside each JR gate), so narration reads "Go straight ~7 m / Turn left…" ([explorer](docs/evidence/explorer-route-jrc2-exit35.jpg)). Negative case: the step-free profile fails safely (`no_path`). |
 | **G3** quality (L2) | **GAP**: candidate, not yet claimed | See "G3 detail" below. |
 | **G4** delivery | **HOLD** | PR open; Owner approval needed before merging, and before any real-world navigation claim. |
 
@@ -126,7 +126,7 @@ Evidence stills:
   [shopping-park passage](docs/evidence/17-isp-passage.jpg), [Exit 28 junction](docs/evidence/18-exit28.jpg)
 
 **Measured** (harness, Apple Silicon, Chromium):
-- quality "low": at most 68 draw calls and 124k triangles per frame (56 crowd agents, 68 signs);
+- quality "low": at most 68 draw calls and 124k triangles per frame (56 crowd agents, 68 signs; measured at `a0c18df`, now 70 signs);
 - shipped assets: 9.5 MB at "high", with lightmap WebP 1.1 MB (4k) or 0.5 MB (2k).
 
 ## Deliberate simplifications
