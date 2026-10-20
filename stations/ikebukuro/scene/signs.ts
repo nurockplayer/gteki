@@ -30,6 +30,9 @@ const PX_PER_M = 300;
 const H = 0.42;
 const ATLAS_W = 4096;
 const GUTTER = 8; // px between faces; the gutter is panel colour so mip filtering never bleeds a foreign colour
+/** Operator chips before gate names, keyed by POI id prefix: plain lettering on a line-colour square
+ *  (GTEki style, no operator logo). Only operators with routable gates need an entry. */
+const GATE_CHIPS: { prefix: string; text: string; bg: string }[] = [{ prefix: "jr-", text: "JR", bg: "#2e9e4f" }];
 
 function roundRect(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   g.beginPath();
@@ -143,20 +146,36 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
     }
   }
   for (const gate of spec.gates) {
+    const chip = GATE_CHIPS.find((c) => gate.id.startsWith(c.prefix));
+    // The chip carries the operator, so the name drops a leading "JR " that would repeat it.
+    const strip = (t: string) => (chip && t.startsWith(chip.text + " ") ? t.slice(chip.text.length + 1) : t);
     measure.font = `600 ${Math.round(h * 0.24)}px ${FONT}`;
-    const ja = gate.ja ?? "";
-    const en = gate.en ?? "";
-    const tw = Math.max(measure.measureText(ja).width, (measure.measureText(en).width * 0.15) / 0.24) + 30;
+    const ja = strip(gate.ja ?? "");
+    const en = strip(gate.en ?? "");
+    const cw = chip ? badge * 1.15 : 0;
+    const off = chip ? cw + 12 : 0;
+    const tw = Math.max(measure.measureText(ja).width, (measure.measureText(en).width * 0.15) / 0.24) + 30 + off;
     parts.push({
       w: tw,
       draw: (g, x) => {
+        if (chip) {
+          g.fillStyle = chip.bg;
+          roundRect(g, x + 14, (h - badge) / 2, cw, badge, 10);
+          g.fill();
+          g.fillStyle = "#ffffff";
+          g.font = `800 ${Math.round(badge * 0.5)}px ${FONT}`;
+          g.textAlign = "center";
+          g.textBaseline = "middle";
+          g.fillText(chip.text, x + 14 + cw / 2, h / 2 + 2);
+          g.textAlign = "left";
+        }
         g.fillStyle = "#ffffff";
         g.textBaseline = "middle";
         g.font = `600 ${Math.round(h * 0.24)}px ${FONT}`;
-        g.fillText(ja, x + 14, h * 0.38);
+        g.fillText(ja, x + 14 + off, h * 0.38);
         g.font = `500 ${Math.round(h * 0.15)}px ${FONT}`;
         g.fillStyle = "#d6dde6";
-        g.fillText(en, x + 16, h * 0.72);
+        g.fillText(en, x + 16 + off, h * 0.72);
       },
     });
   }

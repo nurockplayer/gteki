@@ -158,7 +158,8 @@ Evidence stills:
 - **Shopfronts** are anonymous glowing glazing in PLATEAU window and door openings. No shop
   names or brands.
 - **Signs** use GTEki's design, placed about 4 m along each verified edge from junctions. Their
-  content is computed from the verified graph. Positions are not real sign locations.
+  content is computed from the verified graph. Positions are not real sign locations. Gate names
+  carry a plain line-colour chip ("JR" on green), not an operator logo.
 - **Crowd** is ambient decoration on verified edges, clamped to surveyed walkable lanes. It is
   not a pedestrian-flow model.
 - **Openings into unmodelled space** (fare areas, shops) block movement and render as a fogged
