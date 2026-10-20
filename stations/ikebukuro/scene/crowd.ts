@@ -8,7 +8,7 @@ interface Edge { id: string; from: string; to: string; verification: string; geo
 
 /** cum: 3D arc length (walking speed); hcum: horizontal distance, the axis crowd_lanes.json is sampled on. */
 interface Path { pts: THREE_NS.Vector3[]; cum: number[]; hcum: number[]; length: number; from: string; to: string; lane?: Lane }
-/** Safe lateral extent (m) every stepM along an edge, from pipeline/build_station.py. */
+/** Safe lateral extent (m) every stepM of horizontal distance along an edge, plus one at the end node, from pipeline/build_station.py. */
 export interface Lane { stepM: number; left: number[]; right: number[] }
 interface Agent { path: number; forward: boolean; s: number; speed: number; offset: number; phase: number; hiddenUntil: number }
 

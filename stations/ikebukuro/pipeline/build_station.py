@@ -160,9 +160,10 @@ def outside_coverage(edges, areas):
 
 
 def crowd_lanes(grid, edges):
-    """Presentation data for scene/crowd.ts: per verified edge, every 1 m, how far (m) a pedestrian
-    may stand left/right of the polyline and still be on a surveyed walkable cell (>= 0.35 m from
-    walls) without crossing a wall. Right = right of the edge's from->to direction."""
+    """Presentation data for scene/crowd.ts: per verified edge, every 1 m of horizontal distance and at
+    the end node, how far (m) a pedestrian may stand left/right of the polyline and still be on a
+    surveyed walkable cell (>= 0.35 m from walls) without crossing a wall. Right = right of the edge's
+    from->to direction."""
     lanes = {}
     for e in edges:
         if e["verification"] != "verified":
@@ -171,8 +172,12 @@ def crowd_lanes(grid, edges):
         left, right = [], []
         seg = [(g[i], g[i + 1]) for i in range(len(g) - 1)]
         total = sum(math.dist((a["x"], a["y"]), (b["x"], b["y"])) for a, b in seg)
-        d = 0.0
-        while d <= total + 1e-6:
+        # every whole metre, plus the exact endpoint when the length isn't whole, so the tail
+        # between the last metre and the node is bracketed by its own clearance
+        ds = [float(i) for i in range(int(total + 1e-6) + 1)]
+        if total - ds[-1] > 1e-6:
+            ds.append(total)
+        for d in ds:
             acc = 0.0
             for a, b in seg:
                 L = math.dist((a["x"], a["y"]), (b["x"], b["y"]))
@@ -194,7 +199,6 @@ def crowd_lanes(grid, edges):
                         break
                     ok = o
                 out.append(ok)
-            d += 1.0
         lanes[e["id"]] = {"stepM": 1.0, "left": left, "right": right}
     return lanes
 
