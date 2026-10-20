@@ -1,5 +1,5 @@
 extends RefCounted
-## Draw the route supplied by @gteki/navigation. No graph search lives in Godot.
+## Construct the path supplied by @gteki/navigation. No graph search lives in Godot.
 
 const Station = preload("res://addons/gteki/gteki_station.gd")
 

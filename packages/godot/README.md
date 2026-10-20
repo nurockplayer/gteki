@@ -1,9 +1,10 @@
 # Godot 4.7 compatibility proof
 
 This small headless project consumes the same `gteki.station/0.1` files as the
-TypeScript packages and draws a `gteki.route/0.1` route computed by the existing
-TypeScript router. Godot contains no routing implementation. All fixture data is
-synthetic and cannot be used for real station directions.
+TypeScript packages and constructs a `Path3D`/`Curve3D` from a `gteki.route/0.1`
+route computed by the existing TypeScript router. Godot contains no routing
+implementation. All fixture data is synthetic and cannot be used for real station
+directions.
 
 From the workspace root, with its pinned pnpm dependencies installed:
 
@@ -68,6 +69,7 @@ station inputs print parser issues to stderr and exit 2 without route JSON.
 Unsuccessful routing still prints the result with an empty path and exits 1.
 Godot prints a PASS/FAIL summary and exits 0/1.
 
+The route adapter constructs path data; it does not create visible route geometry.
 This demonstrates contract, coordinates, route transport, and basic runtime GLB
 compatibility. It does **not** claim a high-fidelity Godot client, real station
 coverage, navigation mesh generation, or real-world routing verification. The
