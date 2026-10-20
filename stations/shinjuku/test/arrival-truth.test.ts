@@ -14,7 +14,7 @@ describe("exit arrival truth", () => {
   it("names every exit by the level its connectors are on", () => {
     expect(exits.length).toBeGreaterThan(0);
     for (const p of exits) {
-      const ordinal = floors.get(p.floorId!)!.ordinal;
+      const ordinal = floors.get(p.floorId!)!.ordinal!;
       for (const id of p.connectorNodeIds) expect(nodes.get(id)!.floorId, p.id).toBe(p.floorId);
       const ja = name(p, "ja"), en = name(p, "en");
       if (ordinal >= 0) {
@@ -30,7 +30,7 @@ describe("exit arrival truth", () => {
 
   it("ends routes to below-street exits without any street-level claim", () => {
     const router = createRouter(bundle);
-    const below = exits.filter((p) => floors.get(p.floorId!)!.ordinal < 0);
+    const below = exits.filter((p) => floors.get(p.floorId!)!.ordinal! < 0);
     expect(below.length).toBeGreaterThan(0);
     for (const to of below)
       for (const from of bundle.pois) {
