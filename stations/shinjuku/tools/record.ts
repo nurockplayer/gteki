@@ -58,9 +58,23 @@ await page.addInitScript(() => {
     for (const cb of run) cb(vt);
   };
 });
-await page.goto(`${url}/?q=${q}&crowd=${crowd}`);
-await page.waitForFunction(() => !!(window as any).__gteki, null, { timeout: 60_000 });
+// Drive rAF while startup is awaiting paint, before the complete hooks are published.
+// Waiting for __gteki first would starve the virtual clock during phased startup.
 const dtMs = 1000 / fps;
+try {
+  await page.goto(`${url}/?q=${q}&crowd=${crowd}`, { waitUntil: "commit" });
+  await page.waitForFunction(() => typeof (window as any).__tick === "function", null, { polling: 50, timeout: 60_000 });
+  const startupDeadline = Date.now() + 60_000;
+  while (true) {
+    const ready = await page.evaluate((ms) => { (window as any).__tick(ms); return !!(window as any).__gteki; }, dtMs);
+    if (ready) break;
+    if (Date.now() > startupDeadline) throw new Error("Timed out while driving startup frames");
+    await page.waitForTimeout(10); // Node/Playwright scheduling, independent of the page clock.
+  }
+} catch (error) {
+  await browser.close();
+  throw error;
+}
 const tick = () => page.evaluate((ms) => (window as any).__tick(ms), dtMs);
 for (let i = 0; i < 10; i++) await tick(); // load, first frames, loading veil
 const plan = await page.evaluate(({ from, to }) => {

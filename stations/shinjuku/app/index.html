@@ -93,12 +93,14 @@
     <dialog id="dlg-cov"><div id="cov-body"></div><form method="dialog"><button class="primary">閉じる Close</button></form></dialog>
     <dialog id="dlg-elev"><h3>エレベーター Elevator</h3><div id="elev-floors" class="elev-floors"></div><form method="dialog"><button class="ghost">キャンセル Cancel</button></form></dialog>
 
-    <div id="loading">
+    <div id="loading" aria-busy="true">
       <div class="ld-card">
         <div class="logo big">GTEki</div>
         <p>新宿駅 都営大江戸線 E27 を構築中…</p>
         <p class="sub">Building Toei Oedo Line Shinjuku from public indoor data</p>
-        <div class="bar"><i></i></div>
+        <p id="loading-step" role="status" aria-live="polite">駅のデータを準備中 · Preparing station data</p>
+        <div id="loading-progress" class="bar" role="progressbar" aria-label="準備の進行 Startup progress" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0"><i id="loading-fill"></i></div>
+        <small id="loading-count">0 / 4</small>
       </div>
     </div>
     <script type="module" src="./src/main.ts"></script>

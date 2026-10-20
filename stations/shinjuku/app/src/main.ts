@@ -8,8 +8,6 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import type { Floor, Poi, StationBundle } from "@gteki/schema";
 import { createRouter, routeBetween, type RouteEndpoint, type RouteProfile, type RouteResult } from "@gteki/navigation";
 import { createSearchIndex } from "@gteki/search";
-import { loadShinjukuBundle } from "../../data/bundle.ts";
-import planJson from "../../data/plan.json";
 import { buildStation } from "../../scene/build.ts";
 import { pointInRings, WalkWorld, type Plan } from "../../scene/layout.ts";
 import { Player, PLAYER_RADIUS, sweepCamera, chooseFollowCamera, type GuidePoint, type MoveInput } from "./player.ts";
@@ -18,8 +16,10 @@ import { createAvatar } from "./avatar.ts";
 import { createStationAudio } from "./audio.ts";
 import { CROWD_LIMIT, createCrowd } from "./crowd.ts";
 
-const { bundle } = loadShinjukuBundle();
-const plan = planJson as unknown as Plan;
+import { placeProjectedLabel, type HudRect } from "./hud-layout.ts";
+import { createStartupTimings, paintStartupFrame } from "./hud-startup.ts";
+
+const startup = createStartupTimings();
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const params = new URLSearchParams(location.search);
 const isTouch = matchMedia("(pointer: coarse)").matches;
@@ -66,6 +66,26 @@ motionPreference.addEventListener("change", (e) => {
   $("btn-bob").setAttribute("aria-pressed", String(bobEnabled));
 });
 
+/** Completed phases, rather than an invented download percentage. */
+function loadingStep(completed: number, ja: string, en: string) {
+  $("loading-step").textContent = `${ja} · ${en}`;
+  $("loading-count").textContent = `${completed} / 4`;
+  $("loading-progress").setAttribute("aria-valuenow", String(completed));
+  $("loading-progress").setAttribute("aria-valuetext", `${completed} / 4 · ${ja} · ${en}`);
+  $("loading-fill").style.transform = `scaleX(${completed / 4})`;
+}
+loadingStep(0, "駅のデータを読み込み中", "Reading station data");
+await paintStartupFrame();
+startup.milestone("loading-paint");
+startup.begin("bundle");
+// Defer the JSON modules until the loading veil has had a chance to paint.
+const [bundleModule, planModule] = await Promise.all([import("../../data/bundle.ts"), import("../../data/plan.json")]);
+const { bundle } = bundleModule.loadShinjukuBundle();
+const plan = planModule.default as unknown as Plan;
+startup.complete("bundle");
+loadingStep(1, "駅の空間を構築中", "Building station spaces");
+await paintStartupFrame();
+
 // ------------------------------------------------------------ renderer
 const canvas = $<HTMLCanvasElement>("view");
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" });
@@ -89,7 +109,7 @@ scene.add(fill);
 
 const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.05, 400);
 
-const station = buildStation(bundle, plan, { quality });
+const station = startup.phase("station", () => buildStation(bundle, plan, { quality }));
 scene.add(station.root);
 const world = station.world;
 const layout = station.layout;
@@ -182,20 +202,6 @@ if (gatePoi?.displayPosition) {
 const player = new Player(world, spawnPos);
 if (gatePoi?.displayPosition) player.heading = Math.atan2(gatePoi.displayPosition.x - spawnPos.x, gatePoi.displayPosition.y - spawnPos.y);
 
-const avatar = createAvatar(THREE, 0);
-// Decorative ambient commuters (invented, not crowd data). ?crowd=0 disables.
-const crowdDefault = quality === "high" ? 36 : 16;
-const crowdParam = Number(params.get("crowd") ?? crowdDefault);
-const crowdMax = Number.isNaN(crowdParam) ? crowdDefault : Math.max(0, Math.min(CROWD_LIMIT, Math.floor(crowdParam)));
-const crowd = createCrowd(THREE, bundle, router, nodeZ, { max: crowdMax, seed: 27, playerAvatar: avatar });
-scene.add(crowd.group);
-scene.add(avatar.object);
-avatar.object.traverse((o) => ((o as THREE.Mesh).castShadow = false));
-
-// ------------------------------------------------------------ camera rig
-const cam = { yaw: player.heading, pitch: -0.18, dist: 3.6, firstPerson: false, userTurnedAt: -10 };
-const camPos = new THREE.Vector3();
-const camTarget = new THREE.Vector3();
 // The camera clears human-height props. Walker collision remains the complete world.
 // Full-height architecture and floor/ceiling slabs still constrain every camera candidate.
 const cameraWorld = new WalkWorld({ ...layout, runWalls: [], levels: layout.levels.map((level) => ({
@@ -203,6 +209,38 @@ const cameraWorld = new WalkWorld({ ...layout, runWalls: [], levels: layout.leve
 })) });
 cameraWorld.addWalls(station.propWalls.filter((wall) => wall.zMax - wall.zMin > 1.9));
 const cameraSurfaces = [...layout.levels.flatMap((l) => [...l.slabs, ...l.ceilings]), ...layout.pads, ...layout.streetPads];
+// Submit core geometry from the same safe spawn view and composer used in play.
+// This avoids compiling extra materials for a separate preview camera or pipeline.
+const previewHead = { x: player.x, y: player.y, z: player.z + 1.1 };
+const previewEye = chooseFollowCamera(previewHead, player.heading, -0.28, 3.6, cameraWorld, cameraSurfaces);
+camera.position.set(previewEye.x, previewEye.z, -previewEye.y);
+camera.lookAt(player.x + Math.sin(player.heading) * 1.15, previewHead.z + 0.15, -(player.y + Math.cos(player.heading) * 1.15));
+fill.position.set(player.x, player.z + 2.4, -player.y);
+station.setViewer?.({ x: camera.position.x, y: -camera.position.z, z: camera.position.y });
+renderer.info.reset();
+composer.render(0);
+startup.milestone("first-frame");
+$("loading").classList.add("has-frame");
+loadingStep(2, "通行人を準備中", "Preparing ambient commuters");
+await paintStartupFrame();
+
+const avatar = createAvatar(THREE, 0);
+// Decorative ambient commuters (invented, not crowd data). ?crowd=0 disables.
+const crowdDefault = quality === "high" ? 36 : 16;
+const crowdParam = Number(params.get("crowd") ?? crowdDefault);
+const crowdMax = Number.isNaN(crowdParam) ? crowdDefault : Math.max(0, Math.min(CROWD_LIMIT, Math.floor(crowdParam)));
+const crowd = startup.phase("crowd", () => createCrowd(THREE, bundle, router, nodeZ, { max: crowdMax, seed: 27, playerAvatar: avatar }));
+scene.add(crowd.group);
+scene.add(avatar.object);
+avatar.object.traverse((o) => ((o as THREE.Mesh).castShadow = false));
+loadingStep(3, "操作と表示を準備中", "Preparing controls and views");
+await paintStartupFrame();
+startup.begin("surface-hooks");
+
+// ------------------------------------------------------------ camera rig
+const cam = { yaw: player.heading, pitch: -0.18, dist: 3.6, firstPerson: false, userTurnedAt: -10 };
+const camPos = new THREE.Vector3();
+const camTarget = new THREE.Vector3();
 let cameraDistance = cam.dist;
 let stairPitch = 0;
 let transitionFocus = 0;
@@ -809,6 +847,12 @@ function updateNext() {
     computeRoute(); // Uses the same body-swept current-location attachment as initial routing.
   }
 }
+const labelHud = [...document.querySelectorAll<HTMLElement>("#hud-top .brand, #hud-top .floor, #next, #journey-evidence, #evidence-detail, #floor-toast, #minimap, #panel, #foot, #stick, #btn-run, #btn-act, #prompt, #arrival")];
+function visibleHudRect(el: HTMLElement): HudRect | null {
+  const rect = el.getBoundingClientRect();
+  const style = getComputedStyle(el);
+  return !rect.width || !rect.height || style.display === "none" || style.visibility === "hidden" ? null : rect;
+}
 function projectLabel(id: string, point: GuidePoint, height: number, clamp: boolean) {
   const el = $(id);
   const p = new THREE.Vector3(point.x, point.z + height, -point.y).project(camera);
@@ -816,22 +860,35 @@ function projectLabel(id: string, point: GuidePoint, height: number, clamp: bool
   const visible = inFront && (clamp || (Math.abs(p.x) < 0.85 && Math.abs(p.y) < 0.7 && Math.abs(point.z - player.z) < 4));
   el.classList.toggle("hidden", !visible);
   if (!visible) return;
-  // Keep labels clear of header, footer and the phone sheet.
-  const bottom = innerWidth <= 600 ? (journey === "preview" ? innerHeight * 0.42 : innerHeight - 324) : innerHeight - 110;
-  const margin = el.offsetWidth / 2 + 12;
-  const x = Math.max(margin, Math.min(innerWidth - margin, (p.x + 1) * innerWidth / 2));
-  const y = Math.max(180, Math.min(bottom, (1 - p.y) * innerHeight / 2));
-  el.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`;
+  const obstacles = labelHud.flatMap((element) => { const rect = visibleHudRect(element); return rect ? [rect] : []; });
+  // Reserve the entire band occupied by guidance and its evidence chips.
+  const guidanceBottom = ["next", "journey-evidence"].reduce((bottom, name) => {
+    const rect = visibleHudRect($(name));
+    return rect ? Math.max(bottom, rect.y + rect.height + 8) : bottom;
+  }, 90);
+  if (id === "destination-label") {
+    const cue = visibleHudRect($("maneuver-anchor"));
+    if (cue) obstacles.push(cue);
+  }
+  const bottom = innerWidth <= 600 ? innerHeight - 324 : innerHeight - 110;
+  const placed = placeProjectedLabel(
+    { x: (p.x + 1) * innerWidth / 2, y: (1 - p.y) * innerHeight / 2 },
+    { width: el.offsetWidth, height: el.offsetHeight },
+    { x: 12, y: guidanceBottom, width: innerWidth - 24, height: bottom - guidanceBottom }, obstacles,
+  );
+  el.classList.toggle("hidden", !placed);
+  if (placed) el.style.transform = `translate(${placed.x}px, ${placed.y}px)`;
 }
 function updateWorldLabels() {
   if (!route || journey === "arrived") return;
+  if (cuePoint && journey !== "preview") projectLabel("maneuver-anchor", cuePoint, 0.9, false);
+  else $("maneuver-anchor").classList.add("hidden");
   const end = routePts[routePts.length - 1]!;
   if (toPick?.kind === "poi") {
     const f = nodeById.get(end.nodeId)?.floorId ?? toPick.poi.floorId;
     $("destination-label").textContent = `◎ ${poiName(toPick.poi).ja} / ${poiName(toPick.poi).en} · ${floorLabel(floorById.get(f ?? "")).short}`;
     projectLabel("destination-label", end, 1.4, true);
   }
-  if (cuePoint && journey !== "preview") projectLabel("maneuver-anchor", cuePoint, 0.9, false);
 }
 let routeOffSince = -1;
 
@@ -1044,18 +1101,14 @@ addEventListener("resize", () => {
   composer.setSize(innerWidth, innerHeight);
 });
 
-requestAnimationFrame(() => {
-  $("loading").classList.add("done");
-  frame();
-});
-
 // ------------------------------------------------------------ automation / QA hooks
 declare global {
   interface Window {
     __gteki: unknown;
   }
 }
-window.__gteki = {
+const qaHooks = {
+  timings: startup.snapshot,
   player,
   cam,
   bundle,
@@ -1127,3 +1180,15 @@ window.__gteki = {
   station,
   state: () => ({ crowd: crowd.count, x: player.x, y: player.y, z: player.z, heading: player.heading, floor: floorLabel(floorAtZ(player.z)).short, fps: Math.round(fps), guiding: !!player.guide, journey, stepFree: profile().stepFree, destination: toPick?.kind === "poi" ? toPick.poi.id : null, cameraDistance: +cameraDistance.toFixed(2), avatarVisible: avatar.object.visible, carried: player.carriedByEscalator, guideSpeed: player.guideSpeedMultiplier, reducedMotion, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
 };
+
+startup.complete("surface-hooks");
+loadingStep(4, "準備できました", "Ready to explore");
+await paintStartupFrame();
+clock.start();
+frame();
+startup.milestone("interactive");
+$("loading").classList.add("done");
+$("loading").setAttribute("aria-busy", "false");
+$("loading").setAttribute("aria-hidden", "true");
+// Publish the established hooks together only after the normal scene is rendered.
+window.__gteki = qaHooks;
