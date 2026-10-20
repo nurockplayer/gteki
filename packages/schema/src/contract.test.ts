@@ -237,3 +237,51 @@ describe("review round 2: optional nested fields fail closed", () => {
     expect(parseStationFiles(m, g, p).ok).toBe(true);
   });
 });
+
+describe("PR #15 Codex review: validator gaps", () => {
+  it("checks hours evidence sources like geometry and access evidence", () => {
+    const missing = { ...ev, sourceIds: ["no-such-source"] };
+    const always = createSyntheticBundle([edge("h", "start", "goal", { hours: { kind: "always", evidence: missing } })]);
+    expect(errors(always)).toContain("edge.evidence");
+    const window = createSyntheticBundle([edge("h", "start", "goal", { hours: { kind: "window", open: "09:00", close: "18:00", evidence: missing } })]);
+    expect(errors(window)).toContain("edge.evidence");
+    expect(errors(createSyntheticBundle([edge("h", "start", "goal", { hours: { kind: "always", evidence: ev } })]))).toEqual([]);
+  });
+
+  it("rejects known polyline endpoint heights that disagree with known node heights", () => {
+    const line = (z0: number | null, z1: number | null, geometryZ?: "symbolic") => createSyntheticBundle([edge("p", "start", "goal", {
+      lengthM: null, ...(geometryZ ? { geometryZ } : {}), geometry: [{ x: 0, y: 0, z: z0 }, { x: 10, y: 0, z: 0 }, { x: 20, y: 0, z: z1 }],
+    })]);
+    expect(errors(line(3, 0))).toContain("edge.geometry.endpoints.z");
+    expect(errors(line(0, -0.5))).toContain("edge.geometry.endpoints.z");
+    expect(errors(line(0.05, 0))).not.toContain("edge.geometry.endpoints.z");
+    // Exactly at the tolerance passes at any absolute height (1.1 - 1 is 0.10000000000000009 in floating point).
+    const raised = line(1.1, 0);
+    raised.nodes.find((n) => n.id === "start")!.position.z = 1;
+    expect(errors(raised)).not.toContain("edge.geometry.endpoints.z");
+    raised.edges[0]!.geometry![0]!.z = 1.11;
+    expect(errors(raised)).toContain("edge.geometry.endpoints.z");
+    expect(errors(line(null, null))).not.toContain("edge.geometry.endpoints.z");
+    expect(errors(line(3, 0, "symbolic"))).not.toContain("edge.geometry.endpoints.z");
+    // An unknown node height is never contradicted.
+    const unknownNode = line(3, 0);
+    unknownNode.nodes.find((n) => n.id === "start")!.position.z = null;
+    expect(errors(unknownNode)).not.toContain("edge.geometry.endpoints.z");
+  });
+
+  it("rejects projective asset transforms that Godot refuses", () => {
+    const withTransform = (transform: number[]) => {
+      const b = createSyntheticBundle();
+      b.assets = [{ id: "glb", uri: "scene.glb", format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-geometry"], transform }];
+      return errors(b);
+    };
+    const identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 5, 6, 7, 1];
+    expect(withTransform(identity)).not.toContain("asset.transform");
+    for (const i of [3, 7, 11]) {
+      const m = [...identity]; m[i] = 0.5;
+      expect(withTransform(m)).toContain("asset.transform");
+    }
+    const w = [...identity]; w[15] = 2;
+    expect(withTransform(w)).toContain("asset.transform");
+  });
+});
