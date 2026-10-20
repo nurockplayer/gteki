@@ -3,12 +3,34 @@ import { join } from 'node:path';
 import { docsRoot,readJson,writeJson } from './common.js';
 import { toolFingerprint } from './provenance.js';
 const root=join(docsRoot,'gis');
+function networkSourceHashes(report:any):Array<[string,string]>{
+  const pairs:Array<[string,string]>=[];
+  for(const [idKey,shaKey] of [['source_id','source_sha256'],['node_source_id','node_sha256'],['link_source_id','link_sha256']])
+    if(typeof report[idKey]==='string'&&typeof report[shaKey]==='string'){
+      // CSV pairs are reported as "node_id+link_id" with "node_sha+link_sha"; compare member by member.
+      const ids=report[idKey].split('+'),shas=report[shaKey].split('+');
+      if(ids.length===shas.length)ids.forEach((id:string,i:number)=>pairs.push([id,shas[i]!]));else pairs.push([report[idKey],report[shaKey]]);
+    }
+  return pairs;
+}
+
 async function reports(directory:string):Promise<any[]>{const files=(await readdir(join(root,directory))).filter(f=>f.endsWith('.json')).sort();return Promise.all(files.map(f=>readJson(join(root,directory,f))));}
 const acquisitions=await reports('acquisitions'),inventories=(await reports('inventory')).filter(i=>i.totals),allConversions=await reports('conversions'),networks=await reports('networks'),overlaps=await reports('overlap'),crsReports=await reports('crs');
 // Only receipts produced by the current tool fingerprint describe this candidate; older ones are history.
 const snapshot=await toolFingerprint();
 const conversions=allConversions.filter(row=>row.semantic_inputs?.tool_input_sha256===snapshot);
 if(conversions.length!==allConversions.length)console.error(`Ignoring ${allConversions.length-conversions.length} conversion receipt(s) from other tool fingerprints`);
+// Refuse to summarize unless the current real run completed cleanly with this exact tool fingerprint and every
+// inventory/network report was produced from the currently recorded acquisition bytes.
+const runReceipt=await readJson<any>(join(root,'real-run.json'));
+const summaryProblems:string[]=[];
+if(!runReceipt.completed_at)summaryProblems.push('real-run.json has no completed_at');
+if(!Array.isArray(runReceipt.commands)||runReceipt.commands.length===0||runReceipt.commands.some((c:any)=>c.exit_code!==0))summaryProblems.push('real-run.json records a failed or missing command');
+if(runReceipt.tool_input_sha256!==snapshot)summaryProblems.push(`real-run.json fingerprint ${runReceipt.tool_input_sha256} differs from current ${snapshot}`);
+const acquiredSha=new Map(acquisitions.map((a:any)=>[a.source_id,a.sha256]));
+for(const inventory of inventories)if(acquiredSha.get(inventory.source_id)!==inventory.source_sha256)summaryProblems.push(`inventory ${inventory.source_id} does not match the recorded acquisition`);
+for(const network of networks)for(const [sourceId,sha] of networkSourceHashes(network))if(acquiredSha.get(sourceId)!==sha)summaryProblems.push(`network report ${network.source_id} input ${sourceId} does not match the recorded acquisition`);
+if(summaryProblems.length){console.error(`Summary not written:\n- ${summaryProblems.join('\n- ')}`);process.exit(1);}
 const previous=await readJson<any>(join(root,'history','phase1','real-data-summary.json'));
 const fullConversion=(rows:any[],source:string)=>rows.find(row=>row.source_id===source&&!row.filters?.ids?.length&&!row.filters?.bboxLocal&&row.filters?.maxPolygons===undefined);
 const changesFromPhase1=inventories.map(inventory=>{

@@ -1,63 +1,63 @@
 {
-  "started_at": "2026-10-20T13:44:11.006Z",
-  "completed_at": "2026-10-20T13:45:58.921Z",
-  "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5",
+  "started_at": "2026-10-20T13:53:27.039Z",
+  "completed_at": "2026-10-20T13:55:11.234Z",
+  "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352",
   "commands": [
     {
       "command": "pnpm --dir tools/gis gis acquire --all",
       "exit_code": 0,
-      "elapsed_ms": 2228,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/01-acquire---all.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "elapsed_ms": 2382,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/01-acquire---all.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     },
     {
       "command": "pnpm --dir tools/gis gis inspect-citygml plateau-13116-ubld-53394576",
       "exit_code": 0,
-      "elapsed_ms": 13196,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/02-inspect-citygml-plateau-13116-ubld-53394576.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "elapsed_ms": 12683,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/02-inspect-citygml-plateau-13116-ubld-53394576.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     },
     {
       "command": "pnpm --dir tools/gis gis inspect-citygml plateau-13104-ubld-53394536",
       "exit_code": 0,
-      "elapsed_ms": 6239,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/03-inspect-citygml-plateau-13104-ubld-53394536.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "elapsed_ms": 6344,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/03-inspect-citygml-plateau-13104-ubld-53394536.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     },
     {
       "command": "pnpm --dir tools/gis gis frame-from-envelope plateau-13116-ubld-53394576 ikebukuro-plateau-ubld-v0",
       "exit_code": 0,
-      "elapsed_ms": 424,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/04-frame-from-envelope-plateau-13116-ubld-53394576.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "elapsed_ms": 408,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/04-frame-from-envelope-plateau-13116-ubld-53394576.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     },
     {
       "command": "pnpm --dir tools/gis gis crs-roundtrip ikebukuro-plateau-ubld-v0",
       "exit_code": 0,
-      "elapsed_ms": 395,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/05-crs-roundtrip-ikebukuro-plateau-ubld-v0.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "elapsed_ms": 380,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/05-crs-roundtrip-ikebukuro-plateau-ubld-v0.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     },
     {
       "command": "pnpm --dir tools/gis gis frame-from-envelope plateau-13104-ubld-53394536 shinjuku-plateau-ubld-v0",
       "exit_code": 0,
-      "elapsed_ms": 398,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/06-frame-from-envelope-plateau-13104-ubld-53394536.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "elapsed_ms": 378,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/06-frame-from-envelope-plateau-13104-ubld-53394536.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     },
     {
       "command": "pnpm --dir tools/gis gis crs-roundtrip shinjuku-plateau-ubld-v0",
       "exit_code": 0,
-      "elapsed_ms": 396,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/07-crs-roundtrip-shinjuku-plateau-ubld-v0.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "elapsed_ms": 386,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/07-crs-roundtrip-shinjuku-plateau-ubld-v0.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     },
     {
       "command": "pnpm --dir tools/gis gis citygml-to-glb plateau-13116-ubld-53394576 --frame ikebukuro-plateau-ubld-v0 --ids ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2",
       "exit_code": 0,
-      "elapsed_ms": 25614,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/08-citygml-to-glb-plateau-13116-ubld-53394576.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5",
+      "elapsed_ms": 24829,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/08-citygml-to-glb-plateau-13116-ubld-53394576.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352",
       "selection_evidence": {
         "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2",
         "subtree_polygon_count": 184,
@@ -67,16 +67,16 @@
     {
       "command": "pnpm --dir tools/gis gis citygml-to-glb plateau-13116-ubld-53394576 --frame ikebukuro-plateau-ubld-v0",
       "exit_code": 0,
-      "elapsed_ms": 27536,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/09-citygml-to-glb-plateau-13116-ubld-53394576.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "elapsed_ms": 26480,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/09-citygml-to-glb-plateau-13116-ubld-53394576.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     },
     {
       "command": "pnpm --dir tools/gis gis citygml-to-glb plateau-13104-ubld-53394536 --frame shinjuku-plateau-ubld-v0 --ids room_d4dc60ab-50c3-4480-9957-069e31c641ad",
       "exit_code": 0,
-      "elapsed_ms": 11501,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/10-citygml-to-glb-plateau-13104-ubld-53394536.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5",
+      "elapsed_ms": 10939,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/10-citygml-to-glb-plateau-13104-ubld-53394536.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352",
       "selection_evidence": {
         "gml_id": "room_d4dc60ab-50c3-4480-9957-069e31c641ad",
         "subtree_polygon_count": 6,
@@ -86,44 +86,44 @@
     {
       "command": "pnpm --dir tools/gis gis citygml-to-glb plateau-13104-ubld-53394536 --frame shinjuku-plateau-ubld-v0",
       "exit_code": 0,
-      "elapsed_ms": 16476,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/11-citygml-to-glb-plateau-13104-ubld-53394536.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "elapsed_ms": 15640,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/11-citygml-to-glb-plateau-13104-ubld-53394536.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     },
     {
       "command": "pnpm --dir tools/gis gis inspect-network hokonavi-ikebukuro-walk-node-csv",
       "exit_code": 0,
-      "elapsed_ms": 635,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/12-inspect-network-hokonavi-ikebukuro-walk-node-csv.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "elapsed_ms": 558,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/12-inspect-network-hokonavi-ikebukuro-walk-node-csv.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     },
     {
       "command": "pnpm --dir tools/gis gis inspect-network hokonavi-oedo-shinjuku-network-geojson",
       "exit_code": 0,
-      "elapsed_ms": 431,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/13-inspect-network-hokonavi-oedo-shinjuku-network-geojson.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "elapsed_ms": 432,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/13-inspect-network-hokonavi-oedo-shinjuku-network-geojson.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     },
     {
       "command": "pnpm --dir tools/gis gis inspect-network hokonavi-oedo-shinjuku-stationmap-geojson",
       "exit_code": 0,
-      "elapsed_ms": 433,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/14-inspect-network-hokonavi-oedo-shinjuku-stationmap-geojson.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "elapsed_ms": 403,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/14-inspect-network-hokonavi-oedo-shinjuku-stationmap-geojson.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     },
     {
       "command": "pnpm --dir tools/gis gis overlap",
       "exit_code": 0,
       "elapsed_ms": 573,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/15-overlap-all.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/15-overlap-all.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     },
     {
       "command": "pnpm --dir tools/gis gis gap-packet",
       "exit_code": 0,
-      "elapsed_ms": 393,
-      "log_store_path": "out/run-logs/2026-10-20T13-44-11-006Z/16-gap-packet-all.log",
-      "tool_input_sha256": "8b4664ecf4019e146d6adc77f4d65d425b269396f206e7e5b7973b8b2b8306b5"
+      "elapsed_ms": 385,
+      "log_store_path": "out/run-logs/2026-10-20T13-53-27-039Z/16-gap-packet-all.log",
+      "tool_input_sha256": "8cc78e45f9de57cf12133d00beb2e07f5995f43c09c7e356ec6cb221370a4352"
     }
   ]
 }
