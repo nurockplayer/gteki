@@ -20,6 +20,10 @@ const LOOK_RAD_PER_PX = 0.0042;
 const TICK_S = 0.25;
 const HEIGHT_TOL_M = 0.6;
 
+// A failed walk's trace snapshots every drag (1.4 GB for one route); video, frames and the JSON log
+// already carry the evidence.
+test.use({ trace: "off" });
+
 interface Scenario { id: string; from: string; to: string; expect: string; walk?: boolean; profile?: Record<string, boolean> }
 const scenarios = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, "../fixtures/scenarios.json"), "utf8")) as Record<StationKey, Scenario[]>;
 
