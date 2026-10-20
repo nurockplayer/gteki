@@ -47,6 +47,31 @@
         "Take the escalator down to B6",
         "Go straight ~3 m",
         "Arrive at destination"
+      ],
+      "steps": [
+        "<e:b503c7d9461a4f239a60bbd4011022e9",
+        "<e:638f4f6f4c544479bd5dd7f42c5fb6c9",
+        "<e:cebac08a8d8b4de2a187fa543e1ccb5c",
+        "<e:5be07e75f57a407cb44d6191acbf261d",
+        "<e:03bd24ff9bc0412b92016f57625f0ba5",
+        "<e:6a10e255bd8c4d798a1b8ded66adcc4b",
+        ">e:fcd499174c514ccabf4a43f0dfe0f5c3",
+        ">e:153ed6a940b24635b4b8fd02f2ececfd",
+        "<e:494c225a31704235abfa120e4b298d5a",
+        "<e:3763bee44e4740ac86216e99e212f8d1",
+        "<e:f9e5aa8338b241b5b78933927d42a12a",
+        "<e:02c8371d589e429b8c006d60f3d6b73e",
+        ">e:b56c4b8d15ec46118120e3430388d9f0",
+        ">e:8fcace9d16974a91ae8617b1423de276",
+        "<e:689a2738dac749db9bb63f59f4b0bb62",
+        ">e:e1fa653048b94a5695777d1063b34417",
+        ">e:6d50f884e12d43979ed80980ea53b58b",
+        ">e:a4ed9fc953984c52a914f0cbe73cd318",
+        ">e:55ef6f47ff854c04b6c1a8800ad16e12",
+        ">e:291d449b63224d49ae45000c2c16b7ca",
+        ">e:790fc4f596c547169d3888cd1d709b21",
+        ">e:ac906cd95e89401b9b11858e02f20895",
+        ">e:4fcb23c2d1fc4ddfb267916a3190dc00"
       ]
     }
   },
@@ -105,6 +130,39 @@
         "Turn left, then take the stairs up to Street",
         "Turn right, ~1 m",
         "Arrive at destination"
+      ],
+      "steps": [
+        "<e:451d2ec8f7c84ec5ba9d95591af20721",
+        ">e:2768d162a2d648cf9df2fc76ca89257f",
+        "<e:9609e8988c7f4ca8a2842bbc882d036e",
+        "<e:291d449b63224d49ae45000c2c16b7ca",
+        "<e:55ef6f47ff854c04b6c1a8800ad16e12",
+        "<e:a4ed9fc953984c52a914f0cbe73cd318",
+        "<e:525935a8223f47698df67818a2af4362",
+        ">e:2692fe08625f4a3f92d69a1380a58ccd",
+        "<e:38541dff6da6468697900bff23840f98",
+        "<e:8fcace9d16974a91ae8617b1423de276",
+        "<e:b56c4b8d15ec46118120e3430388d9f0",
+        "<e:e2fdac99be6d433e81b78c67c7e1627d",
+        "<e:94331acc9bf4441aa0a45a152598cbcb",
+        ">e:f9ef1e34217d414d9499493e2cc04f43",
+        "<e:80b372f586204d5cbe5769beffcfbf56",
+        "<e:b8278894353043ea8df46938a26feb97",
+        "<e:991d0a570e5b41c9a76611e1041f8733",
+        ">e:82b122a9cea8444c93cde3c497fcba06",
+        ">e:77dbcfe5c10c445eb3a9fb522feed10c",
+        ">e:c536dec73be340d2beca35ac24eb3799",
+        ">e:203cbf0c5d724f7fa48027cf741e7628",
+        ">e:bbd568af0aed40d19524eebb4dfdec1e",
+        ">e:1f98aaa4ff144db18d34bb6e866a13a9",
+        ">e:1cc1c57ea635401cac4ac6bf895feece",
+        ">e:6ac033af77914fe5a9786676088b952c",
+        ">e:44fd62ca39a848b09273b8dae0d997f8",
+        ">e:8ee41370226046abbed431ca6a539b55",
+        ">e:636c6fc9d3ca4ba19cb9c690274a7943",
+        ">e:82c9a2c2cd704a348fbeb423d07cb125",
+        ">e:0564105d1e914395848a2b09c12368c5",
+        ">e:354be10839214a8098a0aa4b2b72c96b"
       ]
     }
   },
@@ -152,6 +210,30 @@
         "Turn right, ~5 m",
         "Turn left, ~2 m",
         "Arrive at destination"
+      ],
+      "steps": [
+        "<e:45ebdab487134925b3b47cd29bffb99c",
+        "<e:c47791907a064721b81512e75042f440",
+        "<e:3185eb4d50a945d0b7768b74b322263f",
+        "<e:1cea21fdcd794d7b9d4c919f6c49a8b0",
+        "<e:b7887b29a2754c69b88938267d6a04c8",
+        "<e:494c225a31704235abfa120e4b298d5a",
+        "<e:3763bee44e4740ac86216e99e212f8d1",
+        "<e:f9e5aa8338b241b5b78933927d42a12a",
+        "<e:02c8371d589e429b8c006d60f3d6b73e",
+        ">e:b56c4b8d15ec46118120e3430388d9f0",
+        ">e:8fcace9d16974a91ae8617b1423de276",
+        "<e:689a2738dac749db9bb63f59f4b0bb62",
+        ">e:e1fa653048b94a5695777d1063b34417",
+        ">e:6d50f884e12d43979ed80980ea53b58b",
+        ">e:a4ed9fc953984c52a914f0cbe73cd318",
+        ">e:55ef6f47ff854c04b6c1a8800ad16e12",
+        "<e:3528b484d2fd44689e28f1bc3b89348d",
+        "<e:9ede1f406388447387b28bf532e751c8",
+        "<e:4600d5cb18f740f48db0dfe8a2d8bcf6",
+        "<e:098ff25f8d24447bbbe64ce554499b63",
+        "<e:8d2dea0d09e342bdacac639ca1204589",
+        ">e:e4561908aad344cb83b5716b92b213d5"
       ]
     }
   },
@@ -188,6 +270,14 @@
         "Turn right, ~4 m",
         "Turn right, ~5 m",
         "Arrive at destination"
+      ],
+      "steps": [
+        "<e:65edd7ca50844b609d4dcb25bd296936",
+        "<e:ed7e56a8e6234197be06280fcb24aecc",
+        ">e:0ac77dfc247649a4a854e5a2d8da1c21",
+        ">e:ae6e954c23d44cd0b23f55c1c38d9c39",
+        ">e:5df0d1aa7caf40338c990bcbc7088b48",
+        ">e:0b4cccb4b27245dab083a045bea6d016"
       ]
     }
   },

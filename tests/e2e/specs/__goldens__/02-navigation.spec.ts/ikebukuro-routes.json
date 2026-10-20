@@ -33,6 +33,17 @@
         "Take the stairs down",
         "Take the stairs up to street level",
         "Arrive at destination"
+      ],
+      "steps": [
+        ">g_jr_c2__c_g2",
+        ">c_g2__c_c",
+        ">c_c__c_e1",
+        ">c_e1__c_n",
+        ">c_n__c_e2",
+        ">c_e2__e_27j",
+        ">e_27j__e_hall",
+        ">e_hall__e_low",
+        ">e_low__x35"
       ]
     }
   },
@@ -66,6 +77,11 @@
         "Turn left, ~152 m",
         "Turn right, ~14 m",
         "Arrive at destination"
+      ],
+      "steps": [
+        ">w_c__w_cj",
+        "<sw_h__w_cj",
+        ">sw_h__x4f"
       ]
     }
   },
@@ -102,6 +118,16 @@
         "Turn left, ~82 m",
         "Take the stairs up to street level",
         "Arrive at destination"
+      ],
+      "steps": [
+        "<c_mid__g_jr_c1",
+        ">c_mid__c_g2",
+        ">c_g2__c_c",
+        ">c_c__c_e1",
+        ">c_e1__c_n",
+        ">c_n__n_h",
+        ">n_h__n_c",
+        ">n_c__x22"
       ]
     }
   },
@@ -139,6 +165,14 @@
         "Turn left, ~31 m",
         "Turn right, then take the stairs up to street level",
         "Arrive at destination"
+      ],
+      "steps": [
+        "<sp_m__g_jr_s",
+        ">sp_m__sw_h",
+        ">sw_h__w_cj",
+        "<w_c__w_cj",
+        ">w_c__w_n",
+        ">w_n__x18"
       ]
     }
   },
@@ -178,6 +212,19 @@
         "Turn right, ~90 m",
         "Turn left, then take the stairs up to street level",
         "Arrive at destination"
+      ],
+      "steps": [
+        ">c_mid__c_g2",
+        ">c_g2__c_c",
+        ">c_c__c_e1",
+        ">c_e1__c_s",
+        ">c_s__sp_j",
+        ">sp_j__sp_e",
+        ">sp_e__s38_w",
+        ">s38_w__s38_j",
+        ">s38_j__s41_j",
+        ">s41_j__s40_j",
+        ">s40_j__x40"
       ]
     }
   },
@@ -217,6 +264,23 @@
         "Turn right, ~55 m",
         "Turn left, then take the stairs up to street level",
         "Arrive at destination"
+      ],
+      "steps": [
+        "<w_13j__x13f",
+        "<w_cj__w_13j",
+        "<w_c__w_cj",
+        "<c_w__w_c",
+        ">c_w__c_mid",
+        ">c_mid__c_g2",
+        ">c_g2__c_c",
+        ">c_c__c_e1",
+        ">c_e1__c_n",
+        ">c_n__c_e2",
+        ">c_e2__e_27j",
+        ">e_27j__e_hall",
+        ">e_hall__se_1",
+        ">se_1__se_j",
+        ">se_j__x43"
       ]
     }
   },
@@ -256,6 +320,22 @@
         "Turn left, ~46 m",
         "Turn left, then take the stairs up to street level",
         "Arrive at destination"
+      ],
+      "steps": [
+        "<ne_j__x26",
+        "<n_e__ne_j",
+        "<n_c__n_e",
+        "<n_h__n_c",
+        "<c_n__n_h",
+        "<c_e1__c_n",
+        "<c_c__c_e1",
+        "<c_g2__c_c",
+        "<c_mid__c_g2",
+        "<c_w__c_mid",
+        ">c_w__w_c",
+        ">w_c__w_n",
+        "<w_nw__w_n",
+        ">w_nw__x10"
       ]
     }
   },

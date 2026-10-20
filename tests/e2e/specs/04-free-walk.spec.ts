@@ -81,8 +81,29 @@ for (const key of STATIONS) {
       };
       const distTo = (p: Vec3) => Math.hypot(wps[i]!.p.x - p.x, wps[i]!.p.y - p.y);
 
+      // Per-waypoint budget: a walker that keeps making partial progress but never arrives (e.g. a
+      // bend point pressed against a railing) is accepted when close, otherwise reported as blocked.
+      let budgetFor = -1;
+      let budgetStart = 0;
+      let budget = 0;
       while (i < wps.length && simulated < 1500) {
         const wp = wps[i]!;
+        if (budgetFor !== i) { budgetFor = i; budgetStart = simulated; budget = 15 + (3 * distTo(pos)) / 1.45; }
+        if (simulated - budgetStart > budget) {
+          if (distTo(pos) < 1.2) {
+            log.push({ kind: "approx-reached", i, edgeId: wp.edgeId, pos, detail: `${distTo(pos).toFixed(2)} m` });
+            i++;
+            continue;
+          }
+          if (shots < 6) await page.screenshot({ path: shotPath(testInfo, `${key}-freewalk-${s.id}-blocked-${shots++}.png`) });
+          log.push({ kind: "blocked", i, edgeId: wp.edgeId, pos, detail: `budget spent ${distTo(pos).toFixed(2)} m from waypoint (${wp.p.x.toFixed(1)}, ${wp.p.y.toFixed(1)})` });
+          const step = steps[wp.stepIndex]!;
+          await hooks.walkFromNode(page, step.toNodeId);
+          yaw = 0;
+          pos = await hooks.avatar(page);
+          while (i < wps.length && wps[i]!.stepIndex === wp.stepIndex) i++;
+          continue;
+        }
         // Lifts cannot be walked in the explorer: ride = jump to the step's far node, logged.
         if (wp.mode === "elevator") {
           const step = steps[wp.stepIndex]!;

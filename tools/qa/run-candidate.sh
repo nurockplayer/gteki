@@ -69,8 +69,8 @@ cat > "$e2e/artifacts/manifest.json" <<EOF
 {
   "candidateSha": "$(git -C "$cand" rev-parse HEAD)",
   "candidateDirtyFiles": $(git -C "$cand" status --porcelain | grep -vc '^??' || true),
-  "base": "$base $(git -C "$cand" rev-parse "$base")",
-  "merged": "$(for r in $merges; do printf '%s %s; ' "$r" "$(git -C "$cand" rev-parse "$r")"; done)",
+  "refs": "$(for r in $base $merges; do sha=$(git -C "$cand" rev-parse "$r"); git -C "$cand" merge-base --is-ancestor "$sha" HEAD && in=contained || in=NOT-contained; printf '%s %s %s; ' "$r" "$sha" "$in"; done)",
+  "candidateParents": "$(git -C "$cand" log --merges --format='%h %p %s' -5 | tr '\n' ';' | tr '"' "'")",
   "lockfile": "$lock",
   "typecheck": "$tc", "unitTests": "$unit",
   "harnessSha": "$(git -C "$here" rev-parse HEAD)", "harnessDirtyFiles": $harness_dirty,
