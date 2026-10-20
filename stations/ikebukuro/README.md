@@ -47,7 +47,7 @@ pnpm typecheck
 | `data/graph.src.json` | Hand-authored nodes, edges, POIs, access facts, sources and coverage | truth (source) |
 | `gteki/station.json`, `graph.json`, `pois.json` | `gteki.station/0.1` bundle built by `pipeline/build_station.py` | truth (built) |
 | `gteki/scene.ts` → `scene/*.ts` | `gteki.scene/0.1` scene: materials, signs, crowd, lighting | presentation |
-| `gteki/assets/` | One manifest asset: `ikebukuro_b1.glb` (geometry + collision). Its `files` hold the runtime variant `ikebukuro_b1_lit.glb` (+ UV1, fixtures) and the 4k/2k lightmap WebPs, so generic loaders never load both GLBs. `scene.ts` loads the lit variant | presentation |
+| `gteki/assets/` | One manifest asset: `ikebukuro_b1.glb`, role `visual`: generic loaders take collision from its per-mesh `gteki_role` tags (wall/barriers/transport), so door and portal panels on verified routes stay passable. Its `files` hold the runtime variant `ikebukuro_b1_lit.glb` (+ UV1, fixtures) and the 4k/2k lightmap WebPs, so generic loaders never load both GLBs. `scene.ts` loads the lit variant | presentation |
 | `scene/signage.json`, `scene/crowd_lanes.json` | Derived from the verified graph and the PLATEAU walkable grid | presentation |
 | `scene/walk_bridges.json` | Invisible walking strips over hairline cracks between PLATEAU floor polygons | presentation |
 | `scene/access_fences.json` | Walker-blocking fences with a 「通行可否 未確認」/"Access unverified" marker where surveyed floor of unknown access would shortcut the routable areas | presentation |
