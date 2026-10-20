@@ -2926,6 +2926,191 @@
     "method": "gate identity from official map (facts only); connector on the passage side of the PLATEAU gate-line opening",
     "checkedDate": "2026-10-21"
    }
+  },
+  {
+   "id": "north-passage",
+   "category": "other",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "北通路"
+    },
+    {
+     "lang": "en",
+     "text": "North Passage"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "きたつうろ"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "北通道"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "n_h"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only): area name as printed on the map; connector = a junction inside that area",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "south-passage",
+   "category": "other",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "南通路"
+    },
+    {
+     "lang": "en",
+     "text": "South Passage"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "みなみつうろ"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "南通道"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "sp_e"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only): area name as printed on the map; connector = a junction inside that area",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "east-exit-b1",
+   "category": "other",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東口（地下）"
+    },
+    {
+     "lang": "en",
+     "text": "East Exit (B1)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ひがしぐち"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東口（地下）"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "c_e2"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only): area name as printed on the map; connector = a junction inside that area",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "west-exit-b1",
+   "category": "other",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "西口（地下）"
+    },
+    {
+     "lang": "en",
+     "text": "West Exit (B1)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "にしぐち"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "西口（地下）"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "w_c"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only): area name as printed on the map; connector = a junction inside that area",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "west-exit-south-b1",
+   "category": "other",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "西口（南）（地下）"
+    },
+    {
+     "lang": "en",
+     "text": "West Exit South (B1)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "にしぐちみなみ"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "西口（南）（地下）"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "sw_h"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only): area name as printed on the map; connector = a junction inside that area",
+    "checkedDate": "2026-10-21"
+   }
   }
  ],
  "coverage": {
@@ -3697,9 +3882,10 @@
   "freshness": "2023"
  },
  "spawnNodeIds": [
-  "c_e2",
   "c_mid",
+  "c_e2",
   "n_h",
+  "sp_e",
   "w_c",
   "sw_h"
  ],

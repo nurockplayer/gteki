@@ -16,6 +16,10 @@ graph and walkable in a lit, signed, populated 3D scene:
   hall and Exit 4, and the passage north from there to the West Exit hall. The Exit 4 stairs are
   outside the PLATEAU survey, so routes end at their foot (see "Deliberate simplifications").
 
+Area names printed on the official map (北通路, 南通路, 東口（地下）, 西口（地下）, 西口（南）（地下）) are
+searchable POIs at the matching hall or passage node, so search and the explorer's start chips use
+them.
+
 **Status: NOT YET ACCEPTED.** Desk-verified, not field-verified. Opening hours are unknown. This
 is not a whole-station model (see [coverage gaps](docs/coverage-gaps.md)).
 

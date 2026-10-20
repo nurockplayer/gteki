@@ -35,9 +35,13 @@ WALL_PIECE = 0.5  # m
 def write_json(path, obj, indent=None):
     """Write via a temp file and rename, so a watching dev server never reads a half-written file."""
     tmp = path + ".tmp"
-    with open(tmp, "w") as f:
-        json.dump(obj, f, ensure_ascii=False, indent=indent)
-    os.replace(tmp, path)
+    try:
+        with open(tmp, "w") as f:
+            json.dump(obj, f, ensure_ascii=False, indent=indent)
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
 
 
 def _z_at(tz, t):
