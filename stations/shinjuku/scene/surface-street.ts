@@ -1,11 +1,23 @@
 /** Road geometry from PLATEAU; markings and furniture positions are explicitly decorative. */
 import polygonClipping, { type Polygon, type MultiPolygon } from "polygon-clipping";
 import type { StationBundle } from "@gteki/schema";
-import { pointInRings, type Layout, type XY } from "./layout.ts";
+import type { Layout, XY } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
 import { streetFootprint, surfaceOpenings } from "./surface-layout.ts";
-export function inside(p: XY, polys: number[][][][]) {
-  return polys.some((poly) => pointInRings(p, poly.map((r) => r.map(([x,y]) => ({ x: x!, y: y! })))));
+export function inside(p: XY, polys: number[][][][]): boolean {
+  const ringContains = (ring: number[][]) => {
+    let contained = false;
+    for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+      const a = ring[i]!, b = ring[j]!;
+      if (a[1]! > p.y !== b[1]! > p.y && p.x < (b[0]! - a[0]!) * (p.y - a[1]!) / (b[1]! - a[1]!) + a[0]!) contained = !contained;
+    }
+    return contained;
+  };
+  return polys.some((poly) => {
+    if (!poly[0] || !ringContains(poly[0])) return false;
+    for (let i = 1; i < poly.length; i++) if (ringContains(poly[i]!)) return false;
+    return true;
+  });
 }
 export function strip(a: XY, b: XY, width: number): Polygon {
   const L = Math.hypot(b.x-a.x,b.y-a.y) || 1, nx = -(b.y-a.y)/L*width/2, ny=(b.x-a.x)/L*width/2;
