@@ -613,7 +613,8 @@ def self_test():
     unorm = struct.pack("<12H", *(round(c * 65535) for c in apart))  # normalized UNORM16 is valid glTF
     assert lightmapped(None, profile="mobile", uv_bytes=unorm, componentType=5123, normalized=True) == "PASS"
     assert lightmapped(None, uv_bytes=unorm, componentType=5123) == "FAIL"  # integer UVs must be normalized
-    assert lightmapped(apart, type="VEC3", count=4) == "FAIL"
+    vec3 = struct.pack("<18f", *(c for k in range(6) for c in apart[2 * k:2 * k + 2] + (0,)))
+    assert lightmapped(None, uv_bytes=vec3, type="VEC3") == "FAIL"  # six valid UVs, wrong type only
     assert lightmapped(apart, count=5) == "FAIL"  # one UV per vertex
     assert lightmapped(tuple(c + 2 * (k % 2 == 0) for k, c in enumerate(apart))) == "FAIL"  # outside the unit square
     print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs, "
