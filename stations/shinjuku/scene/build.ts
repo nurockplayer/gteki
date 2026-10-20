@@ -9,7 +9,7 @@ import type { StationBundle } from "@gteki/schema";
 import { createRouter } from "@gteki/navigation";
 import { buildLayout, centroid, pointInRings, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
 import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture, SIGN_ROW_HEIGHT, type SignIcon } from "./textures.ts";
-import { protectFareAndAccess, gateMachines } from "./fare-fence.ts";
+import { protectFareAndAccess, gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
 import surfaceJson from "../data/surface.json";
 import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "./surface.ts";
 
@@ -695,37 +695,27 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const geo = merged(geos);
       if (geo) { const mesh = new THREE.Mesh(track(geo), material); mesh.name = "fare/access fence"; root.add(mesh); }
     }
-    // A sign at each separate removed-fill border: no public-access claim for generic back-of-house fill.
-    if (protection.removedAccess.length) {
-      const tex = signTexture([{ icon: "nomap", ja: "通行可否 未確認", en: "Access unverified", tone: "warn" }], 1024);
+    // Classify each closed side from source restrictions; generic fill makes no access claim.
+    const signs = accessSigns(protection, plan);
+    for (const classification of ["restricted", "closed"] as const) {
+      const selected = signs.filter(s => s.classification === classification);
+      if (!selected.length) continue;
+      const wording = ACCESS_WORDING[classification];
+      const tex = signTexture([{ icon: "none", ...wording, tone: "warn" }], 1024);
       track(tex.texture);
       const material = track(new THREE.MeshBasicMaterial({ map: tex.texture, side: THREE.FrontSide, transparent: true }));
-      const used = new Set<string>();
       const signGeos: THREE.BufferGeometry[] = [];
-      for (const area of protection.removedAccess) {
-        const center = centroid(area.rings[0]!);
-        const pts = area.rings[0]!;
-        const bounds = { x0: Math.min(...pts.map(p => p.x)) - .15, x1: Math.max(...pts.map(p => p.x)) + .15, y0: Math.min(...pts.map(p => p.y)) - .15, y1: Math.max(...pts.map(p => p.y)) + .15 };
-        const fence = protection.fences.filter(f => {
-          const x = (f.a.x + f.b.x) / 2, y = (f.a.y + f.b.y) / 2;
-          return f.reason === "access" && f.level === area.level && Math.hypot(f.b.x - f.a.x, f.b.y - f.a.y) >= .7 && x >= bounds.x0 && x <= bounds.x1 && y >= bounds.y0 && y <= bounds.y1;
-        }).sort((a, b) => {
-          const mid = (f: typeof a) => Math.hypot((f.a.x + f.b.x) / 2 - center.x, (f.a.y + f.b.y) / 2 - center.y);
-          return mid(a) - mid(b);
-        })[0];
-        if (!fence || used.has(fence.id)) continue;
-        used.add(fence.id);
+      for (const { fence, z } of selected) {
         const width = Math.min(1.25, Math.hypot(fence.b.x - fence.a.x, fence.b.y - fence.a.y) - .05);
         const geo = new THREE.PlaneGeometry(width, width / tex.aspect);
         geo.translate(0, 0, .035);
         const mesh = new THREE.Mesh(geo, material);
         const mid = { x: (fence.a.x + fence.b.x) / 2, y: (fence.a.y + fence.b.y) / 2 };
-        mesh.position.copy(v3({ ...mid, z: area.z + .82 }));
-        mesh.lookAt(v3({ x: mid.x + fence.b.y - fence.a.y, y: mid.y - fence.b.x + fence.a.x, z: area.z + .82 }));
+        mesh.position.copy(v3({ ...mid, z: z + .82 }));
+        mesh.lookAt(v3({ x: mid.x + fence.b.y - fence.a.y, y: mid.y - fence.b.x + fence.a.x, z: z + .82 }));
         mesh.updateMatrix();
         geo.applyMatrix4(mesh.matrix);
         signGeos.push(geo);
-        // Separate front faces keep the bilingual text readable from either side.
         const back = new THREE.PlaneGeometry(width, width / tex.aspect);
         back.rotateY(Math.PI);
         back.translate(0, 0, -.035);
@@ -733,7 +723,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
         signGeos.push(back);
       }
       const geo = merged(signGeos);
-      if (geo) { const mesh = new THREE.Mesh(track(geo), material); mesh.name = "Access unverified"; root.add(mesh); }
+      if (geo) { const mesh = new THREE.Mesh(track(geo), material); mesh.name = wording.en; root.add(mesh); }
     }
     // Keep closed-off generic fill visible behind its fence, without exporting walkable ground.
     const closedFloors = merged(protection.removedAccess.map(area => slabGeometry(area.rings, area.z, 2)));

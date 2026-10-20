@@ -3,6 +3,7 @@ import type { Layout, Plan, XY } from "../scene/layout.ts";
 import { describe, expect, it } from "vitest";
 import {
   audit,
+  continuousBoundaries,
   BodySweep,
   explorerBands,
   laneBands,
@@ -186,6 +187,24 @@ describe("fare audit refuses physical bypasses", () => {
           l.level === "test",
       ),
     ).toBe(true);
+  });
+  it.each([.63, .6001])("detects a %.4f m off-lattice opening continuously", width => {
+    // Reviewer fixture: no .25 m lattice centre fits, but y=.25 crosses freely.
+    // Also exercise a nearly tangent gap that no practical uniform refinement can resolve.
+    const low = .25 - width / 2, high = .25 + width / 2;
+    const bands = [fence(-2, low), fence(high, 2)];
+    const sweep = new BodySweep(bands);
+    expect(sweep.blocked({ x: -1, y: .25, z: 0 }, { x: 1, y: .25, z: 0 })).toBe(false);
+    const result = run(bands, []);
+    expect(result.paidSeeds).toBe(112);
+    expect(result.leaks).toEqual(expect.arrayContaining([expect.objectContaining({ level: "test", paidSpace: "paid-space", freeSpace: "free-space" })]));
+  });
+  it("detects off-lattice unmapped floor without relying on a paid seed", () => {
+    const result = continuousBoundaries({
+      name: "access fixture", patches: [{ rings: [[{ x: .01, y: .01 }, { x: .04, y: .01 }, { x: .04, y: .04 }, { x: .01, y: .04 }]], height: () => 0 }],
+      bands: [], up: .45, down: .7, ground: () => 0,
+    }, { ...layout, gates: [] }, { ...plan, levels: [{ ...plan.levels[0]!, spaces: [] }] });
+    expect(result.unmapped.length).toBeGreaterThan(0);
   });
   it("does not authorize a passage with no physical gate machines", () => {
     expect(run([], []).leaks.length).toBeGreaterThan(0);
