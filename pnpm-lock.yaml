@@ -179,6 +179,34 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5(@types/node@24.19.2)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15))
 
+  apps/web:
+    dependencies:
+      '@gteki/geo':
+        specifier: workspace:*
+        version: link:../../packages/geo
+      '@gteki/navigation':
+        specifier: workspace:*
+        version: link:../../packages/navigation
+      '@gteki/scene-api':
+        specifier: workspace:*
+        version: link:../../packages/scene-api
+      '@gteki/schema':
+        specifier: workspace:*
+        version: link:../../packages/schema
+      '@gteki/search':
+        specifier: workspace:*
+        version: link:../../packages/search
+      three:
+        specifier: ^0.186.1
+        version: 0.186.1
+    devDependencies:
+      '@types/three':
+        specifier: ^0.186.0
+        version: 0.186.0
+      vite:
+        specifier: ^8.3.4
+        version: 8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)
+
   packages/geo: {}
 
   packages/navigation:

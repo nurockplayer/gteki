@@ -162,3 +162,12 @@ describe("script-run matching", () => {
     expect(hits[0]?.matched).toBe("35ばんでぐち");
   });
 });
+
+describe("head-final ranking", () => {
+  it("ranks a suffix (head noun) match above an infix match", () => {
+    const bundle = createSyntheticBundle();
+    bundle.pois[0]!.names = [{ lang: "ja", text: "トイレ（改札外）" }];
+    bundle.pois[1]!.names = [{ lang: "ja", text: "中央改札" }];
+    expect(createSearchIndex(bundle).search("改札").map((h) => h.poi.id).slice(0, 2)).toEqual(["exit-a1", "toilet"]);
+  });
+});

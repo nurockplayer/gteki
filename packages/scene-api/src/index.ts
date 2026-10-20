@@ -74,7 +74,7 @@ export interface StationSceneModule {
 }
 
 const WALKABLE_ROLES = new Set(["floor", "stairs_ramps", "walkable", "ramp", "stairs"]);
-const COLLIDER_ROLES = new Set(["wall", "walls", "barriers", "barrier", "collider"]);
+const COLLIDER_ROLES = new Set(["wall", "walls", "barriers", "barrier", "transport", "collider"]);
 
 /** glTF extras arrive as userData; also accept "<role>" or "<role>_<n>" object names. */
 export function roleOf(object: THREE.Object3D): string | null {

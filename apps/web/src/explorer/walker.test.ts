@@ -1,0 +1,42 @@
+import { describe, expect, it } from "vitest";
+import { acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer } from "./walker.ts";
+
+describe("walker", () => {
+  const wall = wallToRenderer({ a: { x: 0, y: 0 }, b: { x: 10, y: 0 }, zMin: 0, zMax: 3 });
+
+  it("maps ENU walls to the renderer XZ plane (z = -north)", () => {
+    expect(wallToRenderer({ a: { x: 1, y: 2 }, b: { x: 3, y: 4 }, zMin: -6, zMax: -3 })).toEqual({ ax: 1, az: -2, bx: 3, bz: -4, yMin: -6, yMax: -3 });
+  });
+
+  it("pushes the body out of a wall it overlaps and leaves distant bodies alone", () => {
+    const p = resolveWalls(5, 0.1, 0.3, 0, 1.7, [wall]);
+    expect(p.z).toBeCloseTo(0.3);
+    expect(resolveWalls(5, 2, 0.3, 0, 1.7, [wall])).toEqual({ x: 5, z: 2 });
+  });
+
+  it("ignores walls on other floors", () => {
+    expect(resolveWalls(5, 0.1, 0.3, -6, 1.7, [wall])).toEqual({ x: 5, z: 0.1 });
+  });
+
+  it("only accepts known ground within step limits", () => {
+    expect(acceptGround(0, null)).toBe(false);
+    expect(acceptGround(0, 0.3)).toBe(true);
+    expect(acceptGround(0, 1.0)).toBe(false);
+    expect(acceptGround(0, -0.5)).toBe(true);
+    expect(acceptGround(0, -3)).toBe(false);
+  });
+
+  it("samples a polyline by arc length with unit tangents", () => {
+    const pts = [{ x: 0, y: 0, z: 0 }, { x: 10, y: 0, z: 0 }, { x: 10, y: 0, z: 10 }];
+    const cum = cumulativeLengths(pts);
+    expect(cum).toEqual([0, 10, 20]);
+    expect(samplePolyline(pts, cum, 5)).toMatchObject({ x: 5, z: 0, tx: 1, tz: 0, segment: 0 });
+    expect(samplePolyline(pts, cum, 15)).toMatchObject({ x: 10, z: 5, tx: 0, tz: 1, segment: 1 });
+    expect(samplePolyline(pts, cum, 99)).toMatchObject({ x: 10, z: 10 });
+  });
+
+  it("computes the shortest signed angle", () => {
+    expect(angleDelta(0.1, -0.1)).toBeCloseTo(-0.2);
+    expect(angleDelta(Math.PI - 0.1, -Math.PI + 0.1)).toBeCloseTo(0.2);
+  });
+});

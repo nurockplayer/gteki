@@ -64,6 +64,8 @@ function fuzzyScore(query: string[], candidate: string[]): number {
 function scoreText(query: string, queryChars: string[], tokens: string[], candidate: string): number {
   if (candidate === query) return 100;
   if (candidate.startsWith(query)) return 80;
+  // Japanese compounds are head-final (中央改札, 35番出口): a suffix match names the thing itself.
+  if (candidate.endsWith(query)) return 70;
   if (candidate.includes(query)) return 60;
   const runs = scriptRuns(query);
   const tokenScore = (tokens.length > 1 && tokens.every((token) => candidate.includes(token))) ||

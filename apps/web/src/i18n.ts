@@ -1,0 +1,144 @@
+import type { LocalizedText } from "@gteki/schema";
+
+export type Lang = "ja" | "en";
+
+const STRINGS = {
+  ja: {
+    tagline: "駅を探して、歩いて確かめる",
+    station: "駅",
+    from: "出発地",
+    to: "目的地",
+    fromPlaceholder: "出口・改札・地点を検索",
+    toPlaceholder: "出口・トイレ・ホームなどを検索",
+    swap: "入れ替え",
+    stepFree: "段差なし",
+    unpaidOnly: "改札外のみ",
+    strictHours: "営業時間確認済みのみ",
+    startHere: "ここから出発",
+    avatarHere: "現在のアバター位置（仮想）",
+    searchOnly: "検索のみ（入口未確認）",
+    noResults: "該当なし",
+    route: "ルート",
+    minutes: (m: number) => `約${m}分`,
+    meters: (m: number) => `${m}m`,
+    floors: (n: number) => (n === 0 ? "同じ階" : `${n}回の階移動`),
+    guide: "ガイド開始",
+    walk: "自由に歩く",
+    overview: "全体表示",
+    pause: "一時停止",
+    resume: "再開",
+    exitGuide: "ガイド終了",
+    speed: "速度",
+    firstPerson: "一人称",
+    graphOverlay: "経路網",
+    arrived: "目的地に到着しました",
+    noRoute: "表示できる確認済みルートがありません",
+    noRouteWhy: {
+      no_path: "確認済みの通路だけでは到達できません。条件（段差なし・改札外・営業時間）を見直すか、未調査区間がある可能性があります。",
+      unknown_start: "出発地が経路網にありません。",
+      unknown_goal: "目的地に確認済みの入口がありません。",
+      start_equals_goal: "出発地と目的地が同じです。",
+    } as Record<string, string>,
+    unknownHours: "営業時間未確認",
+    unknownWheelchair: "車いす可否未確認",
+    unknownSteps: "段差有無未確認",
+    unknownPaid: "改札内外未確認",
+    unknownAccess: "通行条件の根拠なし",
+    timeWindow: "時間帯制限あり",
+    stale: "情報が古い可能性",
+    paidCrossing: "改札を通過",
+    synthetic: "合成データ — 実在の駅案内ではありません",
+    syntheticShort: "合成",
+    realCandidate: "公開データ由来・現地未確認を含む",
+    freshness: "データ時点",
+    sources: "出典",
+    symbolicHeight: "高さは表示用の推定です",
+    coverage: "カバー範囲",
+    gaps: "未整備・要調査",
+    validationFailed: "駅データが検証に失敗したため表示しません（安全側）",
+    loading: "読み込み中…",
+    controlsHint: "WASD/矢印で移動・Shiftで走る・ドラッグで視点",
+    touchHint: "左で移動・右ドラッグで視点",
+    noIndoorPositioning: "屋内測位は行いません。出発地を選んでください。",
+    operators: "事業者",
+    language: "English",
+  },
+  en: {
+    tagline: "Find it in the station, then walk it",
+    station: "Station",
+    from: "From",
+    to: "To",
+    fromPlaceholder: "Search exits, gates, places",
+    toPlaceholder: "Search exits, toilets, platforms…",
+    swap: "Swap",
+    stepFree: "Step-free",
+    unpaidOnly: "Outside gates only",
+    strictHours: "Verified hours only",
+    startHere: "Start here",
+    avatarHere: "Current avatar position (virtual)",
+    searchOnly: "Search only (entrance not verified)",
+    noResults: "No matches",
+    route: "Route",
+    minutes: (m: number) => `~${m} min`,
+    meters: (m: number) => `${m} m`,
+    floors: (n: number) => (n === 0 ? "same level" : `${n} level change${n > 1 ? "s" : ""}`),
+    guide: "Start guide",
+    walk: "Walk freely",
+    overview: "Overview",
+    pause: "Pause",
+    resume: "Resume",
+    exitGuide: "End guide",
+    speed: "Speed",
+    firstPerson: "First person",
+    graphOverlay: "Network",
+    arrived: "You have arrived",
+    noRoute: "No verified route to show",
+    noRouteWhy: {
+      no_path: "Verified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet.",
+      unknown_start: "The start is not on the network.",
+      unknown_goal: "The destination has no verified entrance.",
+      start_equals_goal: "Start and destination are the same.",
+    } as Record<string, string>,
+    unknownHours: "Hours unverified",
+    unknownWheelchair: "Wheelchair access unknown",
+    unknownSteps: "Steps unknown",
+    unknownPaid: "Paid/unpaid unknown",
+    unknownAccess: "No access evidence",
+    timeWindow: "Time-restricted",
+    stale: "Possibly outdated",
+    paidCrossing: "Passes a ticket gate",
+    synthetic: "Synthetic data — not real station guidance",
+    syntheticShort: "Synthetic",
+    realCandidate: "From open data; parts not field-verified",
+    freshness: "Data as of",
+    sources: "Sources",
+    symbolicHeight: "Heights are display estimates",
+    coverage: "Coverage",
+    gaps: "Gaps & survey needs",
+    validationFailed: "Station data failed validation and is not shown (fail-safe)",
+    loading: "Loading…",
+    controlsHint: "WASD/arrows to move · Shift to run · drag to look",
+    touchHint: "Left thumb to move · drag right side to look",
+    noIndoorPositioning: "No indoor positioning. Choose where you start.",
+    operators: "Operators",
+    language: "日本語",
+  },
+};
+
+export type Strings = (typeof STRINGS)["ja"];
+
+export function strings(lang: Lang): Strings {
+  return STRINGS[lang] as Strings;
+}
+
+/** Pick the best text for `lang`, falling back to ja then anything. */
+export function pick(texts: LocalizedText[] | undefined, lang: Lang): string {
+  if (!texts || texts.length === 0) return "";
+  return (texts.find((t) => t.lang === lang) ?? texts.find((t) => t.lang === "ja") ?? texts[0]!).text;
+}
+
+export function initialLang(): Lang {
+  const q = new URLSearchParams(location.search).get("lang");
+  if (q === "ja" || q === "en") return q;
+  return navigator.language.toLowerCase().startsWith("ja") ? "ja" : "en";
+}
