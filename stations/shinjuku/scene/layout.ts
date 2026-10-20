@@ -316,7 +316,11 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
     const ceilingH = isPlatform ? 3.6 : lv.ordinal >= 0 ? 3.4 : 3.1;
     const above = plan.levels[li - 1];
     const ceilingZ = above ? Math.min(z + ceilingH, above.renderElevationM - 0.6) : z + ceilingH;
-    const roles = lv.spaces.map((s) => ({ s, role: spaceRole(s) }));
+    const roles = lv.spaces.map((s) => {
+      const outer = s.rings[0]!;
+      return { s, role: spaceRole(s), minX: Math.min(...outer.map((p) => p.x)), maxX: Math.max(...outer.map((p) => p.x)), minY: Math.min(...outer.map((p) => p.y)), maxY: Math.max(...outer.map((p) => p.y)) };
+    });
+    const contains = (p: XY, r: typeof roles[number]) => p.x >= r.minX && p.x <= r.maxX && p.y >= r.minY && p.y <= r.maxY && pointInRings(p, r.s.rings);
     const slabs: SlabPoly[] = [];
     const ceilings: SlabPoly[] = [];
     const rooms: LevelLayout["rooms"] = [];
@@ -346,8 +350,8 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
 
     // Walls & railings: subdivide each walkable polygon edge; probe outward.
     const walkable = roles.filter(({ role }) => role === "floor" || role === "connector");
-    const isOpenAt = (p: XY, self: PlanSpace) => walkable.some(({ s }) => s !== self && pointInRings(p, s.rings));
-    const roomAt = (p: XY) => roles.find(({ s, role }) => role !== "floor" && role !== "connector" && pointInRings(p, s.rings));
+    const isOpenAt = (p: XY, self: PlanSpace) => walkable.some((r) => r.s !== self && contains(p, r));
+    const roomAt = (p: XY) => roles.find((r) => r.role !== "floor" && r.role !== "connector" && contains(p, r));
     const walls: WallSeg[] = [];
     const railings: Railing[] = [];
     // Corridors where a stair/escalator run leaves this level: a plan outline crossing the run
@@ -398,7 +402,7 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
             let kind: WallSeg["kind"] | "rail" | null;
             if (isOpenAt(probe, s)) {
               // boundary between a void stairwell and floor → railing on the floor side
-              const other = walkable.find(({ s: o }) => o !== s && pointInRings(probe, o.rings));
+              const other = walkable.find((r) => r.s !== s && contains(probe, r));
               kind = isVoid !== (other ? voidIds.has(other.s.id) : false) && isVoid ? "rail" : null;
             } else {
               const room = roomAt(probe);
@@ -511,10 +515,17 @@ export function buildLayout(bundle: StationBundle, plan: Plan): Layout {
     }
   }
   const CLEAR = 0.5;
+  // Source walls contain thousands of samples. Reject distant links before the
+  // closest-point calculation; the exact distance/height checks still decide.
+  const boundedSegs = segs.map((s) => ({ ...s,
+    minX: Math.min(s.a.x, s.b.x) - CLEAR, maxX: Math.max(s.a.x, s.b.x) + CLEAR,
+    minY: Math.min(s.a.y, s.b.y) - CLEAR, maxY: Math.max(s.a.y, s.b.y) + CLEAR,
+    minZ: Math.min(s.a.z, s.b.z), maxZ: Math.max(s.a.z, s.b.z),
+  }));
   /** A verified link passes within CLEAR of p with walking height in [zLo, zHi]. */
   const clearAt = (p: XY, zLo: number, zHi: number, exceptEdge?: string) =>
-    segs.some(({ a, b, edgeId }) => {
-      if (edgeId === exceptEdge) return false;
+    boundedSegs.some(({ a, b, edgeId, minX, maxX, minY, maxY, minZ, maxZ }) => {
+      if (edgeId === exceptEdge || p.x < minX || p.x > maxX || p.y < minY || p.y > maxY || maxZ <= zLo || minZ >= zHi) return false;
       const ab = sub(b, a);
       const L2 = ab.x * ab.x + ab.y * ab.y;
       const t = L2 ? Math.max(0, Math.min(1, ((p.x - a.x) * ab.x + (p.y - a.y) * ab.y) / L2)) : 0;
@@ -699,16 +710,28 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     }
   }
 
+  const boundedPassages = passages.map((s) => ({ ...s,
+    minX: Math.min(s.a.x, s.b.x) - 0.65, maxX: Math.max(s.a.x, s.b.x) + 0.65,
+    minY: Math.min(s.a.y, s.b.y) - 0.65, maxY: Math.max(s.a.y, s.b.y) + 0.65,
+    minZ: Math.min(s.a.z, s.b.z) - 0.6, maxZ: Math.max(s.a.z, s.b.z) + 2.45,
+  }));
+
   // Split only new walls; preserve all existing source wall/railing openings. Each kept piece
   // has the same conservative z band in collision and the rendered trapezoid fits inside it.
   const addWall = (lv: LevelLayout, a: XY, b: XY, bottom: (p: XY) => number, top: (p: XY) => number, finish: "shaft" | "fascia", skipExisting = false) => {
     const count = Math.max(1, Math.ceil(len(sub(b, a)) / 0.4));
+    const minX = Math.min(a.x, b.x), maxX = Math.max(a.x, b.x), minY = Math.min(a.y, b.y), maxY = Math.max(a.y, b.y);
+    const wallMinZ = Math.min(bottom(a), bottom(b)), wallMaxZ = Math.min(streetUnderside, Math.max(top(a), top(b)));
+    const nearbyPassages = boundedPassages.filter((s) => s.maxX >= minX && s.minX <= maxX && s.maxY >= minY && s.minY <= maxY && s.maxZ > wallMinZ && s.minZ < wallMaxZ);
+    const existing = skipExisting ? lv.walls.filter((w) => w.finish !== "fascia" &&
+      Math.max(w.a.x, w.b.x) + 0.12 >= minX && Math.min(w.a.x, w.b.x) - 0.12 <= maxX &&
+      Math.max(w.a.y, w.b.y) + 0.12 >= minY && Math.min(w.a.y, w.b.y) - 0.12 <= maxY) : [];
     for (let i = 0; i < count; i++) {
       const p = lerp(a, b, i / count), q = lerp(a, b, (i + 1) / count), mid = lerp(p, q, 0.5);
       const minZ = Math.min(bottom(p), bottom(q)), maxZ = Math.min(streetUnderside, Math.max(top(p), top(q)));
       if (maxZ <= minZ + 0.015) continue;
       let bands: [number, number][] = [[minZ, maxZ]];
-      if (skipExisting) for (const w of lv.walls) {
+      if (skipExisting) for (const w of existing) {
         if (w.finish === "fascia") continue;
         const d = sub(w.b, w.a), l2 = d.x * d.x + d.y * d.y || 1;
         const t = Math.max(0, Math.min(1, ((mid.x - w.a.x) * d.x + (mid.y - w.a.y) * d.y) / l2));
@@ -723,7 +746,8 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
         if (!bands.length) break;
       }
       if (!bands.length) continue;
-      for (const s of passages) {
+      for (const s of nearbyPassages) {
+        if (s.maxX < Math.min(p.x, q.x) || s.minX > Math.max(p.x, q.x) || s.maxY < Math.min(p.y, q.y) || s.minY > Math.max(p.y, q.y) || s.maxZ <= minZ || s.minZ >= maxZ) continue;
         const d = sub(s.b, s.a), l2 = d.x * d.x + d.y * d.y || 1;
         const zs: number[] = [];
         for (const f of [0, 0.5, 1]) {
@@ -751,7 +775,10 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
             continue;
           }
         }
-        lv.walls.push({ a: p, b: q, zMin: lo, zMax: hi, side: 1, kind: "wall", finish, profile, surfaceBase: { a: bottom(p), b: bottom(q) } });
+        const wall: WallSeg = { a: p, b: q, zMin: lo, zMax: hi, side: 1, kind: "wall", finish, profile, surfaceBase: { a: bottom(p), b: bottom(q) } };
+        lv.walls.push(wall);
+        // Preserve the original sequential overlap behavior for later pieces.
+        if (skipExisting) existing.push(wall);
       }
     }
   };
