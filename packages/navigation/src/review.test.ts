@@ -615,6 +615,21 @@ describe("opening hours are checked when the route reaches each edge", () => {
     expect(createRouter(b).route("start", "goal", base).ok).toBe(true);
   });
 
+  it("keeps a faster, dearer path when the cheaper one arrives too late for a later edge", () => {
+    // Stairs: 30 m at 0.5 m/s = 60 s (cheaper); walk: 50 m at 1.2 m/s ≈ 42 s. The gate shuts at 23:00.
+    const b = createSyntheticBundle([
+      edge("stairs-way", "start", "a", { mode: "stairs", lengthM: 30 }),
+      edge("walk-way", "start", "a", { lengthM: 50 }),
+      edge("gate", "a", "goal", { mode: "gate", lengthM: 0, hours: hours("05:00", "23:00") }),
+    ]);
+    const router = createRouter(b);
+    expect(ok(router.route("start", "goal", base)).steps[0]!.edgeId).toBe("stairs-way");
+    for (const policy of ["warn_unknown", "require_known"] as const) {
+      const r = ok(router.route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 22 * 60 + 59 } }));
+      expect(r.steps.map((st) => st.edgeId)).toEqual(["walk-way", "gate"]);
+    }
+  });
+
   it("gives isTraversable the edge's own duration", () => {
     const b = createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 144, hours: hours("05:00", "23:00") })]);
     const router = createRouter(b);

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Plugin } from "vite";
 // Relative (not @gteki/schema) so Vite's config loader bundles the TypeScript source.
-import { parseStationFiles } from "../../packages/schema/src/index.ts";
+import { parseStationFiles, validateBundle } from "../../packages/schema/src/index.ts";
 
 /**
  * Discovers station folders without any station-specific code in the explorer:
@@ -21,6 +21,14 @@ export interface DiscoveredStation {
 /** Emitted code and stylesheets (and their maps); every other emitted file is data that needs a declared origin. */
 const CODE_EXT = /\.([cm]?[jt]sx?|css|scss|sass|less|html?|map)$/i;
 const ASSET_EXT = /\.(glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|ogg|mp3|m4a|json)$/i;
+/**
+ * Validation rules that decide what may be published. Validation exempts synthetic fixtures from them;
+ * a production build never does, so nothing derived from a non-reusable source ships.
+ */
+const PUBLICATION_RULES = new Set([
+  "node.source.rights", "edge.geometry.rights", "floor.elevation.rights", "poi.position.rights",
+  "coverage.polygon.rights", "asset.rights", "asset.source",
+]);
 /** The contract files are loaded as data, not served as assets. */
 const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json"]);
 
@@ -84,13 +92,10 @@ export function publishableAssets(stations: DiscoveredStation[]): Map<string, Se
       failures.push(`${s.dir}: ${errors.slice(0, 5).map((i) => `${i.code}${i.ref ? ` (${i.ref})` : ""}`).join(", ")}${errors.length > 5 ? ` and ${errors.length - 5} more` : ""}`);
       continue;
     }
-    // Publication applies the asset rights rules even to synthetic stations (validation exempts fixtures).
-    const sources = new Map(parsed.bundle.sources.map((src) => [src.id, src]));
-    for (const a of parsed.bundle.assets ?? []) {
-      const bad = a.sourceIds.filter((id) => sources.get(id)?.rights !== "REUSABLE_WITH_CONDITIONS" || sources.get(id)?.usage === "facts-only");
-      if (a.sourceIds.length === 0) failures.push(`${s.dir}: asset ${a.id} has no source provenance`);
-      else if (bad.length) failures.push(`${s.dir}: asset ${a.id} derives from non-reusable sources: ${bad.join(", ")}`);
-    }
+    // Publication applies the rights rules to every station, synthetic or not.
+    const asPublished = { ...parsed.bundle, station: { ...parsed.bundle.station, synthetic: false } };
+    for (const i of validateBundle(asPublished))
+      if (i.level === "error" && PUBLICATION_RULES.has(i.code)) failures.push(`${s.dir}: ${i.code}${i.ref ? ` (${i.ref})` : ""}: ${i.message}`);
     const declared = new Set((parsed.bundle.assets ?? []).flatMap((a) => [a.uri, ...(a.files ?? [])]));
     const found = new Set(s.assets);
     const missing = [...declared].filter((f) => !found.has(f));

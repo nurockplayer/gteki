@@ -128,6 +128,8 @@ const TEXT = {
   ja: {
     start: () => "出発",
     walk: (m: number) => `約${m}m 直進`,
+    /** A walk whose own path bends: no "straight" claim (turns inside one edge aren't named). */
+    continue: (m: number) => `約${m}m 進む`,
     turn_left: (m: number) => `左へ曲がり約${m}m`,
     turnPrefix: (turn: "left" | "right" | "back", text: string) => `${{ left: "左へ曲がり、", right: "右へ曲がり、", back: "引き返して、" }[turn]}${text}`,
     turn_right: (m: number) => `右へ曲がり約${m}m`,
@@ -151,6 +153,7 @@ const TEXT = {
   en: {
     start: () => "Start",
     walk: (m: number) => `Go straight ~${m} m`,
+    continue: (m: number) => `Continue ~${m} m`,
     turn_left: (m: number) => `Turn left, ~${m} m`,
     turnPrefix: (turn: "left" | "right" | "back", text: string) => `${{ left: "Turn left", right: "Turn right", back: "Turn back" }[turn]}, then ${text.charAt(0).toLowerCase()}${text.slice(1)}`,
     turn_right: (m: number) => `Turn right, ~${m} m`,
@@ -246,6 +249,42 @@ function poiDisplayName(poi: Poi, lang: "ja" | "en"): string | null {
 }
 
 /**
+ * True when the walk over these steps keeps within TURN_DEG of its first heading. Every segment of at
+ * least MIN_HEADING_STEP_M in plan has a heading of its own; only consecutive shorter ones are joined into
+ * runs (so centimetre jitter doesn't count, but a gradual curve does, and no short leg hides a bend).
+ */
+function straightInPlan(points: PolylinePoint[], stepIndexes: number[]): boolean {
+  const steps = new Set(stepIndexes);
+  let first: number | null = null;
+  let bent = false;
+  const check = (a: PolylinePoint, b: PolylinePoint) => {
+    const h = (Math.atan2(b.x - a.x, b.y - a.y) * 180) / Math.PI;
+    if (first === null) first = h;
+    else if (Math.abs(((h - first + 540) % 360) - 180) > TURN_DEG) bent = true;
+  };
+  const plan = (a: PolylinePoint, b: PolylinePoint) => Math.hypot(b.x - a.x, b.y - a.y);
+  /** Start of the current run of short segments, if any. */
+  let runFrom: PolylinePoint | null = null;
+  for (let k = 1; k < points.length && !bent; k++) {
+    if (!steps.has(points[k]!.stepIndex)) continue;
+    const a = points[k - 1]!;
+    const b = points[k]!;
+    if (plan(a, b) >= MIN_HEADING_STEP_M) {
+      if (runFrom && plan(runFrom, a) >= MIN_HEADING_STEP_M) check(runFrom, a);
+      runFrom = null;
+      check(a, b);
+      continue;
+    }
+    runFrom ??= a;
+    if (plan(runFrom, b) >= MIN_HEADING_STEP_M) {
+      check(runFrom, b);
+      runFrom = null;
+    }
+  }
+  return !bent;
+}
+
+/**
  * `destination` is the POI the route was computed to (as with `routeBetween`). When the route ends on
  * one of its connectors that is a stair/escalator/ramp end — and the POI is not that stair/escalator
  * itself — the last instruction says the connector starts there instead of claiming arrival. It names
@@ -266,7 +305,8 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
   const flush = () => {
     if (!current) return;
     const m = Math.max(1, Math.round(current.distanceM));
-    if (current.kind === "walk" || current.kind === "turn_left" || current.kind === "turn_right" || current.kind === "u_turn") current.text = t[current.kind](m);
+    if (current.kind === "walk") current.text = straightInPlan(points, current.stepIndexes) ? t.walk(m) : t.continue(m);
+    else if (current.kind === "turn_left" || current.kind === "turn_right" || current.kind === "u_turn") current.text = t[current.kind](m);
     else if (current.kind === "moving_walkway") current.text = current.turn ? t.turnPrefix(current.turn, t.moving_walkway(m)) : t.moving_walkway(m);
     out.push(current);
     current = null;

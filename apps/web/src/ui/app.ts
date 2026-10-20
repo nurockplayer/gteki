@@ -1,12 +1,13 @@
 import { createRouter, describeRoute, floorDisplayName, instructionPoints, routeBetween, routePolyline } from "@gteki/navigation";
 import type { Instruction, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
-import type { Poi, StationBundle } from "@gteki/schema";
+import type { Poi, Source, StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
+import { sourceCredit } from "../credits.ts";
 
 /** Where a route starts: a POI (via its verified entrances) or a graph node (spawn / avatar). */
 type Origin = { kind: "poi"; poi: Poi } | { kind: "node"; nodeId: string; label: string };
@@ -505,12 +506,8 @@ export class App {
     for (const id of r.sourceIds) {
       const s = b.sources.find((x) => x.id === id);
       if (!s) continue;
-      const li = el("li");
-      const a = el("a", undefined, s.title);
-      a.href = s.url;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      li.append(a, el("span", "muted", ` — ${s.attribution}${s.license ? ` (${s.license.name})` : ""}${s.modified ? ` · ${this.t.modified}` : ""}${s.datasetDate ? ` · ${s.datasetDate}` : ""}`));
+      const li = this.creditItem(s);
+      if (s.datasetDate) li.append(el("span", "muted", ` · ${s.datasetDate}`));
       srcList.append(li);
     }
     prov.append(srcList);
@@ -580,6 +577,24 @@ export class App {
     }
   }
 
+  /** A source's credit line: title (linked), attribution, licence (linked) and the modification notice. */
+  private creditItem(s: Source): HTMLLIElement {
+    const c = sourceCredit(s);
+    const link = (text: string, href: string | null): HTMLElement => {
+      if (!href) return el("span", undefined, text);
+      const a = el("a", undefined, text);
+      a.href = href;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      return a;
+    };
+    const li = el("li");
+    li.append(link(c.title, c.href), el("span", "muted", ` — ${c.attribution}`));
+    if (c.license) li.append(el("span", "muted", " ("), link(c.license.name, c.license.href), el("span", "muted", ")"));
+    if (c.modified) li.append(el("span", "muted", ` · ${this.t.modified}`));
+    return li;
+  }
+
   // ---- Coverage --------------------------------------------------------------------
 
   private openCoverage(): void {
@@ -602,7 +617,12 @@ export class App {
       if (!b.coverage.gaps.length) gaps.append(el("li", "muted", "—"));
       d.append(gaps, el("h3", undefined, this.t.sources));
       const src = el("ul");
-      for (const s of b.sources) src.append(el("li", undefined, `${s.title} — ${s.attribution}${s.modified ? ` (${this.t.modified})` : ""} [${s.rights}${s.usage === "facts-only" ? ", facts-only" : ""}]`));
+      // Every source, including those cited only by assets or coverage: link, licence and modification notice.
+      for (const s of b.sources) {
+        const li = this.creditItem(s);
+        li.append(el("span", "muted", ` [${s.rights}${s.usage === "facts-only" ? ", facts-only" : ""}]`));
+        src.append(li);
+      }
       d.append(src);
       // Asset modification notices (e.g. "Blender build from PLATEAU …") disclose how sources were processed.
       const derived = (b.assets ?? []).filter((a) => a.derivation);
