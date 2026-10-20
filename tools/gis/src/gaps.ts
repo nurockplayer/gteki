@@ -106,6 +106,9 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
     }
     if (!network) holds.push('Network inspection is unavailable; HOLD for joining any candidate network to geometry.');
     holds.push(...overlapHolds(overlap));
+    holds.push(overlap?.mesh_coverage?.hold??'Mesh-catalog coverage UNKNOWN; HOLD for geometry/network pairing.');
+    if(network?.attribute_decoding)holds.push('Applicable walking-network specification version remains UNKNOWN; decoded labels and rank checks are literal consistency evidence only.');
+    if(station.id==='ikebukuro')holds.push('R1 CRS is INFERRED_FROM_SPEC; all endpoint and overlap metrics relying on it are CONDITIONAL_ON_INFERRED_CRS. Distance evidence cannot identify the datum.');
     const markdown = [
       `# ${station.id[0]!.toUpperCase()}${station.id.slice(1)} evidence-gap packet`,
       '',
@@ -117,6 +120,14 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
       '',
       '## Spatial bbox comparison',
       ...describeOverlap(overlap),
+      '',
+      '## Literal codes and catalog coverage',
+      `- Applicable specification: ${JSON.stringify(network?.attribute_decoding?.applicable_spec_version??{value:null,status:'UNKNOWN'})}.`,
+      `- Version compatibility: ${JSON.stringify(network?.attribute_decoding?.spec_version_compatibility??null)}.`,
+      `- Rank consistency: ${JSON.stringify(network?.attribute_decoding?.rank_cross_check_2024??null)}.`,
+      `- Literal co-occurrences: ${JSON.stringify(network?.attribute_decoding?.literal_cooccurrences??null)}.`,
+      `- Mesh coverage: ${JSON.stringify(overlap?.mesh_coverage??null)}.`,
+      `- Conditional R1 bbox containment: ${JSON.stringify(overlap?.r1_bbox_containment??null)}.`,
       '',
       '## UNKNOWN and survey questions',
       '- What are the operator-specific floor names and their surveyed elevations? Obtain a source or field survey; labels alone do not establish height.',
@@ -137,12 +148,17 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
       semantic_presence: relevant,
       semantic_presence_rows: semanticFacts,
       literal_floor_label_evidence: inventory?.floor_label_observations ?? null,
+      attribute_decoding:network?.attribute_decoding??null,
+      distance_consistency:network?.distance_consistency??null,
+      representation_comparison:network?.geojson_comparison??network?.csv_comparison??null,
+      mesh_coverage:overlap?.mesh_coverage??null,
+      r1_bbox_containment:overlap?.r1_bbox_containment??null,
       network_summary: network ? (network.counts ?? network.totals ?? null) : null,
       spatial_overlap: overlap ? { report: `overlap/${station.id}.json`, layer_count: overlap.layers.length, pair_count: overlap.pairs.length,
         pair_relations: Object.fromEntries(['INTERSECTS','DISJOINT','UNKNOWN'].map(relation => [relation,overlap.pairs.filter(pair => pair.bbox_relation === relation).length])),
         interpretation_limit: overlap.interpretation_limit } : null,
       holds,
-      unknowns: ['vertical datum interpretation', 'floor-to-elevation mapping', 'operator boundaries', 'paid/unpaid status', 'currency with current station configuration', 'survey accuracy and date'],
+      unknowns: ['vertical datum interpretation', 'floor-to-elevation mapping', 'operator boundaries', 'paid/unpaid status', 'currency with current station configuration', 'survey accuracy and date','applicable walking-network spec version','older PLATEAU vintages','feature correspondence','R1 datum verification'],
     };
     await writeJson(path.join(docsRoot, 'gis', 'gaps', `${station.id}.json`), document);
     await writeFile(path.join(docsRoot, 'gis', 'gaps', `${station.id}.md`), markdown, 'utf8');

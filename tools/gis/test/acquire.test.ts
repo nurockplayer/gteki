@@ -34,9 +34,9 @@ afterEach(async () => {
 });
 
 describe('source acquisition', () => {
-  it('loads exactly the bounded 13-source manifest with explicit unknown rights', () => {
+  it('loads exactly the bounded 19-source manifest with explicit unknown rights', () => {
     const sources = loadSources();
-    expect(sources).toHaveLength(13);
+    expect(sources).toHaveLength(19);
     expect(sources.find((source) => source.source_id === 'plateau-catalog-ubld-13116-13104')?.resolution.kind).toBe('direct');
     expect(sources.find((source) => source.source_id === 'plateau-13116-codelists')?.commercial_use.status).toBe('unknown');
   });

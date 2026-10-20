@@ -599,7 +599,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 186.44262525628636,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -609,7 +610,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 186.4426252562791,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -619,7 +621,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 198.82670250489048,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -629,7 +632,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 198.64586110924006,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -639,7 +643,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 198.64586110924733,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -649,7 +654,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 196.69090492264158,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -659,7 +665,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 184.4443807673451,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -669,7 +676,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 184.44438076735264,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -679,7 +687,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 237.15601733837474,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -689,7 +698,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 233.92997097011244,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -699,7 +709,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 233.9299709734545,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -709,7 +720,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 209.7864730376919,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -719,7 +731,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 203.53365692298723,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -729,7 +742,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 203.5336569218264,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -739,7 +753,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 194.27228247483097,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -749,7 +764,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 185.14336080955164,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -759,7 +775,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 185.1433608102574,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -769,7 +786,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 199.94676774950128,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -779,7 +797,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 185.12753409180044,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "plateau-13104-ubld-53394536",
@@ -789,7 +808,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 185.1275340932107,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -804,7 +824,8 @@
         35.68901888089276
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -819,7 +840,8 @@
         35.68890725467192
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -834,7 +856,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -849,7 +872,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -864,7 +888,8 @@
         35.68892650608127
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -879,7 +904,8 @@
         35.68901888089276
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -894,7 +920,8 @@
         35.68901888089276
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -909,7 +936,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -924,7 +952,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -939,7 +968,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -954,7 +984,8 @@
         35.68880846669198
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -969,7 +1000,8 @@
         35.688864827641275
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -984,7 +1016,8 @@
         35.68886482764128
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -999,7 +1032,8 @@
         35.688948306820954
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -1014,7 +1048,8 @@
         35.68901888089276
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -1029,7 +1064,8 @@
         35.68901888089276
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -1044,7 +1080,8 @@
         35.6888971587508
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -1059,7 +1096,8 @@
         35.68901888089276
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
@@ -1074,7 +1112,8 @@
         35.68901888089276
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1089,7 +1128,8 @@
         35.68890725467192
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1104,7 +1144,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1119,7 +1160,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1134,7 +1176,8 @@
         35.68892650608127
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1149,7 +1192,8 @@
         35.68901888089276
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1164,7 +1208,8 @@
         35.68901888089276
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1179,7 +1224,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1194,7 +1240,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1209,7 +1256,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1224,7 +1272,8 @@
         35.68880846669198
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1239,7 +1288,8 @@
         35.688864827641275
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1254,7 +1304,8 @@
         35.68886482764128
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1269,7 +1320,8 @@
         35.688948306820954
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1284,7 +1336,8 @@
         35.68901888089276
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1299,7 +1352,8 @@
         35.68901888089276
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1314,7 +1368,8 @@
         35.6888971587508
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1329,7 +1384,8 @@
         35.68901888089276
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
@@ -1344,7 +1400,8 @@
         35.68901888089276
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1359,7 +1416,8 @@
         35.68890725467192
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1374,7 +1432,8 @@
         35.68890725467192
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1389,7 +1448,8 @@
         35.68890725467192
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1404,7 +1464,8 @@
         35.68890725467192
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1419,7 +1480,8 @@
         35.68890725467192
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1434,7 +1496,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1449,7 +1512,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1464,7 +1528,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1479,7 +1544,8 @@
         35.68880846669198
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1494,7 +1560,8 @@
         35.688864827641275
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1509,7 +1576,8 @@
         35.68886482764128
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1519,7 +1587,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 2.799635558074621,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1534,7 +1603,8 @@
         35.68890725467192
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1549,7 +1619,8 @@
         35.68890725467192
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1564,7 +1635,8 @@
         35.6888971587508
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1579,7 +1651,8 @@
         35.68890725467192
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
@@ -1594,7 +1667,8 @@
         35.68890725467192
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1609,7 +1683,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1624,7 +1699,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1639,7 +1715,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1654,7 +1731,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1669,7 +1747,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1684,7 +1763,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1699,7 +1779,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1714,7 +1795,8 @@
         35.68880846669198
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1729,7 +1811,8 @@
         35.688864827641275
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1744,7 +1827,8 @@
         35.68886482764128
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1754,7 +1838,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 2.6187949393044003,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1769,7 +1854,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1784,7 +1870,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1799,7 +1886,8 @@
         35.6888971587508
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1814,7 +1902,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
@@ -1829,7 +1918,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -1844,7 +1934,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -1859,7 +1950,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -1874,7 +1966,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -1889,7 +1982,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -1904,7 +1998,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -1919,7 +2014,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -1934,7 +2030,8 @@
         35.68880846669198
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -1949,7 +2046,8 @@
         35.688864827641275
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -1964,7 +2062,8 @@
         35.68886482764128
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -1974,7 +2073,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 2.6187949393044003,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -1989,7 +2089,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -2004,7 +2105,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -2019,7 +2121,8 @@
         35.6888971587508
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -2034,7 +2137,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
@@ -2049,7 +2153,8 @@
         35.68890888471321
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2064,7 +2169,8 @@
         35.68892650608127
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2079,7 +2185,8 @@
         35.68892650608127
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2094,7 +2201,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2109,7 +2217,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2124,7 +2233,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2139,7 +2249,8 @@
         35.68880846669198
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2154,7 +2265,8 @@
         35.688864827641275
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2169,7 +2281,8 @@
         35.68886482764128
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2179,7 +2292,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 0.663838888380842,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2194,7 +2308,8 @@
         35.68892650608127
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2209,7 +2324,8 @@
         35.68892650608127
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2224,7 +2340,8 @@
         35.6888971587508
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2239,7 +2356,8 @@
         35.68892650608127
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
@@ -2254,7 +2372,8 @@
         35.68892650608127
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
@@ -2269,7 +2388,8 @@
         35.689036892457274
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
@@ -2284,7 +2404,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
@@ -2299,7 +2420,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
@@ -2314,7 +2436,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
@@ -2329,7 +2452,8 @@
         35.68880846669198
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
@@ -2344,7 +2468,8 @@
         35.688864827641275
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
@@ -2359,7 +2484,8 @@
         35.68886482764128
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
@@ -2374,7 +2500,8 @@
         35.688948306820954
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
@@ -2389,7 +2516,8 @@
         35.68903059209285
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
@@ -2404,7 +2532,8 @@
         35.68903059209284
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
@@ -2419,7 +2548,8 @@
         35.6888971587508
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
@@ -2434,7 +2564,8 @@
         35.689030734734104
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
@@ -2449,7 +2580,8 @@
         35.68903073473409
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
@@ -2464,7 +2596,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
@@ -2479,7 +2612,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
@@ -2494,7 +2628,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
@@ -2509,7 +2644,8 @@
         35.68880846669198
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
@@ -2524,7 +2660,8 @@
         35.688864827641275
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
@@ -2539,7 +2676,8 @@
         35.68886482764128
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
@@ -2554,7 +2692,8 @@
         35.688948306820954
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
@@ -2569,7 +2708,8 @@
         35.68903059209285
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
@@ -2584,7 +2724,8 @@
         35.68903059209284
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
@@ -2599,7 +2740,8 @@
         35.6888971587508
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
@@ -2614,7 +2756,8 @@
         35.689030734734104
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
@@ -2629,7 +2772,8 @@
         35.68903073473409
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
@@ -2644,7 +2788,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
@@ -2659,7 +2804,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
@@ -2674,7 +2820,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
@@ -2689,7 +2836,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
@@ -2704,7 +2852,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
@@ -2714,7 +2863,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 41.12895174048139,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
@@ -2724,7 +2874,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 36.894750225949835,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
@@ -2734,7 +2885,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 36.8947502266556,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
@@ -2749,7 +2901,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
@@ -2764,7 +2917,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
@@ -2779,7 +2933,8 @@
         35.688561766073896
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
@@ -2794,7 +2949,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
@@ -2809,7 +2965,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
@@ -2824,7 +2981,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
@@ -2839,7 +2997,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
@@ -2849,7 +3008,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 37.90290650386806,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
@@ -2859,7 +3019,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 33.668704989444365,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
@@ -2869,7 +3030,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 33.6687049908559,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
@@ -2884,7 +3046,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
@@ -2899,7 +3062,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
@@ -2914,7 +3078,8 @@
         35.68859084464786
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
@@ -2929,7 +3094,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
@@ -2944,7 +3110,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
@@ -2959,7 +3126,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
@@ -2969,7 +3137,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 37.902906507404076,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
@@ -2979,7 +3148,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 33.668704992980395,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
@@ -2989,7 +3159,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 33.66870499439193,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
@@ -3004,7 +3175,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
@@ -3019,7 +3191,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
@@ -3034,7 +3207,8 @@
         35.68859084464783
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
@@ -3049,7 +3223,8 @@
         35.68880846669198
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
@@ -3064,7 +3239,8 @@
         35.68880846669198
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
@@ -3074,7 +3250,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 13.759406191178837,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
@@ -3084,7 +3261,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 9.525204673511787,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
@@ -3094,7 +3272,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 9.525204674930599,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
@@ -3109,7 +3288,8 @@
         35.68880846669198
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
@@ -3124,7 +3304,8 @@
         35.68880846669198
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
@@ -3139,7 +3320,8 @@
         35.68880846669198
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
@@ -3154,7 +3336,8 @@
         35.688864827641275
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
@@ -3164,7 +3347,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 7.506590014821602,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
@@ -3174,7 +3358,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 3.272388496386187,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
@@ -3184,7 +3369,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 3.2723884985107676,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
@@ -3199,7 +3385,8 @@
         35.688864827641275
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
@@ -3214,7 +3401,8 @@
         35.688864827641275
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
@@ -3229,7 +3417,8 @@
         35.688864827641275
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
@@ -3239,7 +3428,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 7.50659001410853,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
@@ -3249,7 +3439,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 3.2723884956731544,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
@@ -3259,7 +3450,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 3.2723884977977367,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
@@ -3274,7 +3466,8 @@
         35.68886482764128
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
@@ -3289,7 +3482,8 @@
         35.68886482764128
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
@@ -3304,7 +3498,8 @@
         35.68886482764128
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
@@ -3319,7 +3514,8 @@
         35.688948306820954
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
@@ -3334,7 +3530,8 @@
         35.688948306820954
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
@@ -3344,7 +3541,8 @@
       "bbox_relation": "DISJOINT",
       "intersection_bbox_jgd2011_lon_lat": null,
       "minimum_separation_m": 3.9197008147864474,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
@@ -3359,7 +3557,8 @@
         35.688948306820954
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
@@ -3374,7 +3573,8 @@
         35.688948306820954
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
@@ -3389,7 +3589,8 @@
         35.68903059209284
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
@@ -3404,7 +3605,8 @@
         35.6888971587508
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
@@ -3419,7 +3621,8 @@
         35.68903059209285
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
@@ -3434,7 +3637,8 @@
         35.68903059209285
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
@@ -3449,7 +3653,8 @@
         35.6888971587508
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
@@ -3464,7 +3669,8 @@
         35.68903059209284
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
@@ -3479,7 +3685,8 @@
         35.68903059209284
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
@@ -3494,7 +3701,8 @@
         35.6888971587508
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
@@ -3509,7 +3717,8 @@
         35.6888971587508
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     },
     {
       "layer_a": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
@@ -3524,9 +3733,405 @@
         35.68903073473409
       ],
       "minimum_separation_m": 0,
-      "status": "COMPUTED_BBOX_ONLY"
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "KNOWN"
     }
   ],
   "interpretation_limit": "BBox overlap only. It does not establish that features coincide, share a floor, or connect; it is not routing evidence.",
-  "verification": "UNVERIFIED"
+  "verification": "UNVERIFIED",
+  "mesh_coverage": {
+    "catalog": {
+      "source_id": "plateau-catalog-ubld-mesh-533945",
+      "sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e"
+    },
+    "query_second_mesh": "533945",
+    "hokonavi_layers": [
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.6983427967416,
+          35.686837840826456,
+          139.6996342263177,
+          35.68901888089276
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69834279674163,
+          35.68683784082645,
+          139.69963422631773,
+          35.68901888089276
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.6987369826077,
+          35.686869448079385,
+          139.69941646785284,
+          35.68890725467192
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69872148686855,
+          35.686820677189594,
+          139.69942685661496,
+          35.68890888471321
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69872148686855,
+          35.68682067718957,
+          139.69942685661493,
+          35.68890888471321
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69856485886677,
+          35.68686011508616,
+          139.6994982570718,
+          35.68892650608127
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69833684397,
+          35.68682066265168,
+          139.69956007354568,
+          35.689036892457274
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69833684397,
+          35.686820662651655,
+          139.69956007354565,
+          35.689036892457274
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69838152473724,
+          35.68703479231027,
+          139.69957489954618,
+          35.688561766073896
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.6983307610462,
+          35.6870196435793,
+          139.6996556695029,
+          35.68859084464786
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.6983307610462,
+          35.68701964357926,
+          139.69965566950293,
+          35.68859084464783
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69840018115497,
+          35.68764323174838,
+          139.69932328880526,
+          35.68880846669198
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69832963316264,
+          35.68763141279198,
+          139.69933683874092,
+          35.688864827641275
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69832963316264,
+          35.687631412791966,
+          139.69933683874092,
+          35.68886482764128
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69882940237966,
+          35.6889324897203,
+          139.6989314341892,
+          35.688948306820954
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69880743410081,
+          35.68889432393904,
+          139.69894806200864,
+          35.68903059209285
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69880743410081,
+          35.68889432393905,
+          139.69894806200864,
+          35.68903059209284
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.69890206856337,
+          35.687641973395884,
+          139.69932331972637,
+          35.6888971587508
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.698864976564,
+          35.6876263511075,
+          139.69938490951193,
+          35.689030734734104
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+        "metric_status": "KNOWN",
+        "bbox": [
+          139.698864976564,
+          35.68762635110749,
+          139.69938490951193,
+          35.68903073473409
+        ],
+        "third_meshes_touched": [
+          "53394525"
+        ]
+      }
+    ],
+    "catalogued_ubld_files": [
+      {
+        "city_code": "13104",
+        "catalog_year": 2025,
+        "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/ubld/53394536_ubld_6697_op.gml",
+        "nominal_mesh": "53394536",
+        "nominal_mesh_bounds_lon_lat": [
+          139.7,
+          35.69166666666667,
+          139.71249999999998,
+          35.7
+        ],
+        "nominal_mesh_in_hokonavi_bbox_meshes": false,
+        "acquired_source_id": "plateau-13104-ubld-53394536",
+        "acquired_sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
+        "actual_acquired_geometry_bbox_lon_lat": [
+          139.69803124047718,
+          35.69069941674934,
+          139.7036188035924,
+          35.69501377379006
+        ],
+        "declared_envelope_lon_lat": [
+          139.69803124047718,
+          35.69069941674934,
+          139.7036188035924,
+          35.69501377379006
+        ],
+        "actual_bbox_status": "COMPUTED_FROM_ACQUIRED_GEOMETRY",
+        "actual_bbox_within_nominal_mesh": false,
+        "actual_bbox_meshes_touched": [
+          "53394525",
+          "53394526",
+          "53394535",
+          "53394536"
+        ]
+      },
+      {
+        "city_code": "13116",
+        "catalog_year": 2025,
+        "url": "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/ubld/53394576_ubld_6697_op.gml",
+        "nominal_mesh": "53394576",
+        "nominal_mesh_bounds_lon_lat": [
+          139.7,
+          35.725,
+          139.71249999999998,
+          35.733333333333334
+        ],
+        "nominal_mesh_in_hokonavi_bbox_meshes": false,
+        "acquired_source_id": "plateau-13116-ubld-53394576",
+        "acquired_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+        "actual_acquired_geometry_bbox_lon_lat": [
+          139.70938689983566,
+          35.728049254734366,
+          139.7133659340391,
+          35.731371787356984
+        ],
+        "declared_envelope_lon_lat": [
+          139.70938689983566,
+          35.728049254734366,
+          139.7133659340391,
+          35.731371787356984
+        ],
+        "actual_bbox_status": "COMPUTED_FROM_ACQUIRED_GEOMETRY",
+        "actual_bbox_within_nominal_mesh": false,
+        "actual_bbox_meshes_touched": [
+          "53394576",
+          "53394577"
+        ]
+      }
+    ],
+    "any_catalogued_nominal_mesh_touches_hokonavi_bbox_meshes": false,
+    "status": "COMPUTED_NOMINAL_MESH_ONLY",
+    "older_vintages": {
+      "value": null,
+      "status": "UNKNOWN",
+      "note": "This endpoint returns latest catalog entries only; earlier vintages were not enumerated."
+    },
+    "hold": "HOLD: no latest catalogued nominal ubld mesh is among the Hokonavi bbox meshes. Nominal mesh is not actual coverage; older vintages UNKNOWN.",
+    "note": "JIS X 0410 first/second/third mesh calculation; closed bboxes include cells touched at a boundary. File-name mesh is nominal. Actual geometry may extend outside it. No feature correspondence is inferred."
+  },
+  "tool_input_sha256": "9605494ca38c261d1e49019529eba707bf3feafe0e96adc4bf831a85fda0ae15",
+  "input_sources": [
+    {
+      "source_id": "plateau-13116-ubld-53394576",
+      "sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09"
+    },
+    {
+      "source_id": "plateau-13104-ubld-53394536",
+      "sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-csv",
+      "sha256": "2477e6f27d8be30b3e57ee6849a36b5d8c9f56e1d2ff34956fe5934b71f4920a"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-csv",
+      "sha256": "a0f8376556bc7c920be10c27181d8a4219745b55ec2bea6938d28dfeadde80d2"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-geojson",
+      "sha256": "f6b84c9c6d05559f04b4a4796b9286f6bfd1bdb4aea0b112666b3d7585b3eab6"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-network-geojson",
+      "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
+      "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2018-03",
+      "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2024-07",
+      "sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4"
+    },
+    {
+      "source_id": "plateau-catalog-ubld-mesh-533945",
+      "sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e"
+    }
+  ]
 }

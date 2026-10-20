@@ -5,5 +5,7 @@
 - CRS: undefined
 - Bbox: undefined
 - Topology summary: null
+- Attribute decoding: literal lookups only; applicable spec null. Full distributions and rank checks are in the companion JSON.
+- Distance consistency: null
 
 Station-map files are listed as layer inventory only.

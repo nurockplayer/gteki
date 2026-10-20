@@ -26,11 +26,11 @@ async function run(args:string[],selectionEvidence?:unknown){
     ...(args[0]==='citygml-to-glb'?{conversion_run_id:exitCode===0?(/"run_id":\s*"([^"]+)"/.exec(output)?.[1]??null):null}:{})});
   await writeJson(join(docsRoot,'gis','real-run.json'),receipt);
   console.log(JSON.stringify(receipt.commands.at(-1)));
-  if(exitCode!==0)console.error(output.slice(-2000));
+  if(exitCode!==0){console.error(output.slice(-2000));receipt.completed_at=new Date().toISOString();await writeJson(join(docsRoot,'gis','real-run.json'),receipt);process.exit(1);}
   return exitCode===0;
 }
 
-if(!await run(['acquire','--all'])){
+if(!await run(['acquire','--all',...(process.env.GTEKI_GIS_OFFLINE==='1'?['--offline']:[])])){
   // Every later step reads the acquisition records; never mix a failed refresh with older stored records.
   console.error('Acquisition failed; dependent inspections, conversions and reports were not run.');
   receipt.completed_at=new Date().toISOString();await writeJson(join(docsRoot,'gis','real-run.json'),receipt);
@@ -51,11 +51,12 @@ for(const city of cities){const inventory=inventories.get(city.source);if(!inven
     // The bounded Room conversion is a required step; its absence must fail the run rather than pass silently.
     console.error(`No Room with source polygons in ${city.source}; bounded Room conversion unavailable`);
     receipt.commands.push({command:`pnpm --dir tools/gis gis citygml-to-glb ${city.source} --frame ${city.frame} --ids <smallest Room>`,exit_code:1,elapsed_ms:0,log_store_path:'',tool_input_sha256:receipt.tool_input_sha256,selection_evidence:{status:'NO_ROOM_WITH_SOURCE_POLYGONS'}});
-    await writeJson(join(docsRoot,'gis','real-run.json'),receipt);
+    await writeJson(join(docsRoot,'gis','real-run.json'),receipt);process.exit(1);
   }
   await run(['citygml-to-glb',city.source,'--frame',city.frame]);
 }
 await run(['inspect-network','hokonavi-ikebukuro-walk-node-csv']);
+await run(['inspect-network','hokonavi-ikebukuro-walk-node-geojson']);
 await run(['inspect-network','hokonavi-oedo-shinjuku-network-geojson']);
 await run(['inspect-network','hokonavi-oedo-shinjuku-stationmap-geojson']);
 // Derived reports read every inventory/network report on disk; regenerate them only when all inputs were refreshed now.

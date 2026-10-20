@@ -2,11 +2,16 @@ import { parse } from 'csv-parse/sync';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { docsRoot, getStoreRoot, getStoredSource, writeJson } from './common.js';
+import { toolFingerprint } from './provenance.js';
 import { readZip } from './zip.js';
+import { attributeDecoding,codebookInputs } from './attributes.js';
+import { compareNetworkRepresentations, r1GeoEvidence } from './r1.js';
 
 type RawRow = Record<string, string>;
 type XY = [number, number];
 type StatusValue<T> = { value: T | null; status: 'KNOWN' | 'UNKNOWN' };
+type GeoJsonAcquisition = { features: any[]; source_id: string; sha256: string; member: string };
+const FEATURE_ORIGIN = Symbol('originating acquisition');
 
 const KNOWN_IDS = {
   nodeId: ['node_id', 'nodeid', 'nodeID', 'ノードID'],
@@ -209,6 +214,7 @@ export function inspectCsvPair(nodeRows: RawRow[], linkRows: RawRow[], source: {
     source_id: source.source_id, source_sha256: source.sha256,
     files: { node_source_id: source.node_source_id ?? source.source_id, link_source_id: source.link_source_id ?? source.source_id },
     counts: { nodes: nodeRows.length, links: linkRows.length },
+    attribute_decoding: attributeDecoding(nodeRows, linkRows),
     crs: { value: null, status: 'UNKNOWN', note: 'No CRS declaration was found in the CSV pair; endpoint offsets cannot be safely expressed in metres.' },
     bbox: nodeBbox,
     headers: { node: Object.keys(nodeSample), link: Object.keys(linkSample) },
@@ -365,11 +371,11 @@ export function inspectGeoJsonFeatures(features: any[], source: { source_id: str
     : skippedEndpointLinks > 0 ? 'PARTIAL_ENDPOINT_COVERAGE' : 'CHECKED_IN_METRES';
   const floorLabel = (f: any) => firstDefined(f.properties ?? {}, ['floor', 'floor_name', 'floor_label', '階層', '階']) ?? (/floor/i.test(fileName) ? firstDefined(f.properties ?? {}, ['short_name', 'name']) : null);
   const normal = (f: any, i: number) => ({
-    source_id: source.source_id, source_sha256: source.sha256,
+    source_id: f[FEATURE_ORIGIN]?.source_id ?? source.source_id, source_sha256: f[FEATURE_ORIGIN]?.sha256 ?? source.sha256,
     source_native_id: ids[i],
     candidate_kind: classifications[i]!,
     source_native_id_status: ids[i] == null ? 'UNKNOWN' : 'KNOWN',
-    source_member: f.__source_member ?? fileName,
+    source_member: f[FEATURE_ORIGIN]?.member ?? f.__source_member ?? fileName,
     raw_attributes: f.properties ?? {}, geometry: f.geometry ?? null,
     normalized: { floor_label: statusValue(floorLabel(f)), floor_label_source: floorLabel(f), elevation_m: statusValue(null), start_node_id: statusValue(nativeIdentifier(firstDefined(f.properties ?? {}, ['start_node_id', 'start_id', 'from_node_id', '起点ノードID']))), end_node_id: statusValue(nativeIdentifier(firstDefined(f.properties ?? {}, ['end_node_id', 'end_id', 'to_node_id', '終点ノードID']))), geometry_status: f.geometry == null ? 'UNKNOWN' : 'KNOWN', attributes: geoJsonNormalizedAttributes(f.properties ?? {}) },
     verification: 'UNVERIFIED', routable: false,
@@ -382,10 +388,20 @@ export function inspectGeoJsonFeatures(features: any[], source: { source_id: str
     categorical_values: Object.fromEntries(categoryFields.map((f) => [f, valueCounts(statsRows, f)])),
     floor_labels_present_literally: [...new Set(features.map(floorLabel).filter((v) => v !== null).map(String))].sort(),
     topology: { duplicate_ids: ids.every((id) => id !== null) ? duplicates : null, duplicate_node_ids: nodeIdsComplete ? duplicateValues(nodeIdsOnly) : null, duplicate_link_ids: linkIdsComplete ? duplicateValues(linkIdsOnly) : null, dangling_links: graphComplete ? edgeReferences.flatMap((e, i) => [e.start, e.end].filter((id) => id !== null && !nodeIds.has(id)).map((id) => ({ feature_index: i, missing_node_id: id }))) : null, self_loops: graphComplete ? edgeReferences.flatMap((e, i) => e.start !== null && e.start === e.end ? [{ feature_index: i, node_id: e.start }] : []) : null, unreferenced_node_ids: graphComplete ? [...nodeIds].filter((id) => !referenced.has(id)).sort() : null, weak_component_count: graphComplete ? graph.length : null, weak_components: graphComplete ? componentSummary(graph) : null, completeness: { classification_complete: unknownFeatures.length === 0, unknown_feature_count: unknownFeatures.length, node_ids_complete: nodeIdsComplete, link_ids_complete: linkIdsComplete, endpoint_ids_complete: endpointIdsComplete, graph_complete: graphComplete, unknown_node_identifier_count: nodeIdsOnly.filter((id) => id === null).length, unknown_link_identifier_count: linkIdsOnly.filter((id) => id === null).length, unknown_endpoint_count: edgeReferences.reduce((n, edge) => n + Number(edge.start === null) + Number(edge.end === null), 0) }, geometry_endpoint_mismatches_over_0_5m: endpointMismatches, geometry_endpoint_check_status: endpointCheckStatus, geometry_endpoint_distance_method: distanceMethod, geometry_endpoint_coverage: { checked_links: checkedEndpointLinks.length, skipped_links: skippedEndpointLinks, total_links: totalEndpointLinks, complete: endpointCoverageComplete } },
+    attribute_decoding: attributeDecoding(nodeFeatures.map(f=>f.properties??{}),linkFeatures.map(f=>f.properties??{})),
     candidate_features: features.map(normal),
   };
   if (mode === 'stationmap') { delete report.candidate_features; delete report.topology; }
   return report;
+}
+
+export function inspectGeoJsonPair(node: GeoJsonAcquisition, link: GeoJsonAcquisition) {
+  // Attach trusted acquisition identity before combining or classifying features.
+  const originated = ({ features, source_id, sha256, member }: GeoJsonAcquisition) =>
+    features.map(feature => ({ ...feature, [FEATURE_ORIGIN]: { source_id, sha256, member } }));
+  return inspectGeoJsonFeatures([...originated(node), ...originated(link)], {
+    source_id: `${node.source_id}+${link.source_id}`, sha256: `${node.sha256}+${link.sha256}`,
+  }, null, 'R1 node+link GeoJSON pair', 'network');
 }
 
 export function archiveGeoJsonMemberReport(file: string, inspected: ReturnType<typeof inspectGeoJsonFeatures>) {
@@ -399,6 +415,7 @@ export function archiveGeoJsonMemberReport(file: string, inspected: ReturnType<t
     mapped_fields: inspected.mapped_fields,
     blank_counts: inspected.blank_counts,
     categorical_values: inspected.categorical_values,
+    attribute_decoding: inspected.attribute_decoding,
     floor_labels_present_literally: inspected.floor_labels_present_literally,
   };
 }
@@ -413,6 +430,7 @@ export function archiveGeoJsonNetworkInventory(inspected: ReturnType<typeof insp
     mapped_fields: inspected.mapped_fields,
     blank_counts: inspected.blank_counts,
     categorical_values: inspected.categorical_values,
+    attribute_decoding: inspected.attribute_decoding,
     floor_labels_present_literally: inspected.floor_labels_present_literally,
   };
 }
@@ -437,7 +455,7 @@ function geoJsonObjects(data: Buffer): any[] {
 
 function renderNetworkMarkdown(report: any): string {
   const inventoryOnly = report.source_id.includes('stationmap');
-  return `# Network inventory: ${report.source_id}\n\n- Files: ${JSON.stringify(report.files ?? report.members?.map((m: any) => m.file) ?? report.file)}\n- Counts: ${JSON.stringify(report.counts ?? report.totals ?? { features: report.feature_count })}\n- CRS: ${JSON.stringify(report.crs ?? report.network_inventory?.crs)}\n- Bbox: ${JSON.stringify(report.bbox ?? report.network_inventory?.bbox)}\n- Topology summary: ${JSON.stringify(report.topology ?? null)}\n\n${inventoryOnly ? 'Station-map files are listed as layer inventory only.' : 'All exported candidate records remain UNVERIFIED and non-routable. The inspector adds no connections.'}\n`;
+  return `# Network inventory: ${report.source_id}\n\n- Files: ${JSON.stringify(report.files ?? report.members?.map((m: any) => m.file) ?? report.file)}\n- Counts: ${JSON.stringify(report.counts ?? report.totals ?? { features: report.feature_count })}\n- CRS: ${JSON.stringify(report.crs ?? report.network_inventory?.crs)}\n- Bbox: ${JSON.stringify(report.bbox ?? report.network_inventory?.bbox)}\n- Topology summary: ${JSON.stringify(report.topology ?? null)}\n- Attribute decoding: literal lookups only; applicable spec ${JSON.stringify(report.attribute_decoding?.applicable_spec_version??null)}. Full distributions and rank checks are in the companion JSON.\n- Distance consistency: ${JSON.stringify(report.distance_consistency??null)}\n\n${inventoryOnly ? 'Station-map files are listed as layer inventory only.' : 'All exported candidate records remain UNVERIFIED and non-routable. The inspector adds no connections.'}\n`;
 }
 
 async function getSourcePair(sourceId: string) {
@@ -452,6 +470,29 @@ async function getSourcePair(sourceId: string) {
 }
 
 export async function inspectNetwork(sourceId: string): Promise<any> {
+  const specInputs=await codebookInputs(),fingerprint=await toolFingerprint();
+  if (/^hokonavi-ikebukuro-walk-(node|link)-geojson$/.test(sourceId)) {
+    const evidence=await r1GeoEvidence();
+    const csvNode=await getStoredSource('hokonavi-ikebukuro-walk-node-csv'),csvLink=await getStoredSource('hokonavi-ikebukuro-walk-link-csv');
+    const nodeRows=parseCsv(await readFile(csvNode.path)).rows,linkRows=parseCsv(await readFile(csvLink.path)).rows;
+    const inspected=inspectGeoJsonPair(
+      {features:evidence.nodes.features,...evidence.node.record,member:path.basename(evidence.node.record.store_path)},
+      {features:evidence.links.features,...evidence.link.record,member:path.basename(evidence.link.record.store_path)},
+    );
+    inspected.crs=evidence.crs;
+    inspected.counts={nodes:evidence.nodes.features.length,links:evidence.links.features.length};
+    inspected.topology.metric_status='CONDITIONAL_ON_INFERRED_CRS';
+    if(inspected.topology.geometry_endpoint_check_status==='CHECKED_IN_METRES')inspected.topology.geometry_endpoint_check_status='CONDITIONAL_ON_INFERRED_CRS';
+    inspected.distance_consistency=evidence.distance;
+    inspected.csv_comparison=compareNetworkRepresentations(nodeRows,linkRows,evidence.nodes.features,evidence.links.features);
+    inspected.tool_input_sha256=fingerprint;
+    inspected.input_sources=[evidence.node.record,evidence.link.record,csvNode.record,csvLink.record].map(r=>({source_id:r.source_id,sha256:r.sha256})).concat(specInputs);
+    await writeJson(path.join(getStoreRoot(),'out',`${sourceId}.candidate-graph.json`),candidateGraphFromGeoJsonInventory(inspected));
+    delete inspected.candidate_features;
+    await writeJson(path.join(docsRoot,'gis','networks',`${sourceId}.json`),inspected);
+    await writeFile(path.join(docsRoot,'gis','networks',`${sourceId}.md`),renderNetworkMarkdown(inspected));
+    return inspected;
+  }
   if (sourceId === 'hokonavi-ikebukuro-walk-node-csv' || sourceId === 'hokonavi-ikebukuro-walk-link-csv') {
     const pair = await getSourcePair(sourceId);
     const [nodeBuffer, linkBuffer] = await Promise.all([readFile(pair.node.path), readFile(pair.link.path)]);
@@ -464,8 +505,14 @@ export async function inspectNetwork(sourceId: string): Promise<any> {
       node_source_native_id: pair.node.source?.source_id ?? 'hokonavi-ikebukuro-walk-node-csv',
       link_source_native_id: pair.link.source?.source_id ?? 'hokonavi-ikebukuro-walk-link-csv',
     });
+    const evidence=await r1GeoEvidence();
+    report.crs=evidence.crs;
+    report.topology.metric_status='CONDITIONAL_ON_INFERRED_CRS';
+    report.distance_consistency={...evidence.distance,geometry_source_ids:[evidence.node.record.source_id,evidence.link.record.source_id],note:evidence.distance.note+' CSV contains no polyline geometry; these statistics use the acquired GeoJSON links.'};
+    report.geojson_comparison=compareNetworkRepresentations(node.rows,link.rows,evidence.nodes.features,evidence.links.features);
     report.encoding = { node: node.encoding, link: link.encoding };
-    report.input_sources = [pair.node.record, pair.link.record].map((r: any) => ({ source_id: r.source_id, sha256: r.sha256 }));
+    report.tool_input_sha256=fingerprint;
+    report.input_sources = [pair.node.record, pair.link.record,evidence.node.record,evidence.link.record].map((r: any) => ({ source_id: r.source_id, sha256: r.sha256 })).concat(specInputs);
     const out = path.join(getStoreRoot(), 'out', `${sourceId}.candidate-graph.json`);
     await writeJson(out, report.candidate_graph);
     delete report.candidate_graph;
@@ -503,7 +550,9 @@ export async function inspectNetwork(sourceId: string): Promise<any> {
   const uniqueCrs = new Map(declaredCrsValues.map((crs) => [JSON.stringify(crs), crs]));
   const commonCrs = uniqueCrs.size === 1 ? uniqueCrs.values().next().value ?? null : { value: null, status: 'UNKNOWN', note: 'GeoJSON member layers declare different CRS values.' };
   const combined = !isMap ? inspectGeoJsonFeatures(allFeatures, { source_id: sourceId, sha256: source.record.sha256 }, commonCrs, 'combined GeoJSON network layers', 'network') : null;
-  const report: any = { source_id: sourceId, source_sha256: source.record.sha256, archive_entry_count: files.length, members: memberReports, other_files: otherFiles, totals: { files: memberReports.length, features: memberReports.reduce((n, r) => n + r.feature_count, 0) }, ...(combined ? { network_inventory: archiveGeoJsonNetworkInventory(combined), topology: combined.topology } : {}) };
+  const report: any = { source_id: sourceId, source_sha256: source.record.sha256, archive_entry_count: files.length, members: memberReports, other_files: otherFiles, totals: { files: memberReports.length, features: memberReports.reduce((n, r) => n + r.feature_count, 0) }, ...(combined ? { network_inventory: archiveGeoJsonNetworkInventory(combined), topology: combined.topology,attribute_decoding:combined.attribute_decoding } : {}) };
+  report.tool_input_sha256=fingerprint;
+  report.input_sources=[{source_id:sourceId,sha256:source.record.sha256},...specInputs];
   if (memberReports.length === 0) throw new Error(`No GeoJSON members found in ${sourceId}`);
   if (!isMap && combined) {
     await writeJson(path.join(getStoreRoot(), 'out', `${sourceId}.candidate-graph.json`), candidateGraphFromGeoJsonInventory(combined));

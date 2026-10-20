@@ -2,12 +2,46 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { archiveGeoJsonMemberReport, archiveGeoJsonNetworkInventory, candidateGraphFromGeoJsonInventory, inspectCsvPair, inspectGeoJsonFeatures, parseCsv } from '../src/network.js';
+import { archiveGeoJsonMemberReport, archiveGeoJsonNetworkInventory, candidateGraphFromGeoJsonInventory, inspectCsvPair, inspectGeoJsonFeatures, inspectGeoJsonPair, parseCsv } from '../src/network.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const fixture = (name: string) => readFile(path.join(here, 'fixtures', name));
 
 describe('network source inspection', () => {
+  it('retains originating GeoJSON acquisition for ambiguous and cross-classified features from both files', () => {
+    const node = { source_id: 'node-acquisition', sha256: 'node-hash', member: 'node.geojson', features: [
+      { properties: { node_id: 'N1', link_id: 'L1' }, geometry: null },
+      { properties: { link_id: 'L2' }, geometry: null },
+    ] };
+    const link = { source_id: 'link-acquisition', sha256: 'link-hash', member: 'link.geojson', features: [
+      { properties: { node_id: 'N3', link_id: 'L3' }, geometry: null },
+      { properties: { node_id: 'N4' }, geometry: null },
+    ] };
+    const before = structuredClone([node, link]);
+    const inspected = inspectGeoJsonPair(node, link);
+    expect(inspected.candidate_features.map((f: any) => f.candidate_kind)).toEqual(['unknown', 'link', 'unknown', 'node']);
+    for (const [i, candidate] of inspected.candidate_features.entries()) {
+      const origin = i < 2 ? node : link;
+      expect(candidate).toMatchObject({ source_id: origin.source_id, source_sha256: origin.sha256, source_member: origin.member,
+        raw_attributes: origin.features[i % 2]!.properties, verification: 'UNVERIFIED', routable: false });
+    }
+    const graph = candidateGraphFromGeoJsonInventory(inspected);
+    expect(graph.other_features.map((f: any) => f.source_native_id_status)).toEqual(['UNKNOWN', 'UNKNOWN']);
+    expect(graph.other_features.map((f: any) => f.source_native_id)).toEqual([null, null]);
+    expect(graph).toMatchObject({ verification: 'UNVERIFIED', routable: false });
+    expect([node, link]).toEqual(before);
+  });
+
+  it('retains originating CSV acquisition for conflicting role identifiers in both files', () => {
+    const nodes = [{ node_id: 'N1', link_id: 'L1' }], links = [{ node_id: 'N2', link_id: 'L2' }];
+    const report = inspectCsvPair(nodes, links, { source_id: 'pair', sha256: 'pair-hash',
+      node_source_id: 'node-acquisition', node_sha256: 'node-hash', link_source_id: 'link-acquisition', link_sha256: 'link-hash' });
+    expect(report.candidate_graph.nodes[0]).toMatchObject({ source_id: 'node-acquisition', source_sha256: 'node-hash', raw_attributes: nodes[0], verification: 'UNVERIFIED', routable: false });
+    expect(report.candidate_graph.edges[0]).toMatchObject({ source_id: 'link-acquisition', source_sha256: 'link-hash', raw_attributes: links[0], verification: 'UNVERIFIED', routable: false });
+    expect(report.candidate_graph.edges[0]!.normalized.start_node_id).toEqual({ value: null, status: 'UNKNOWN' });
+    expect(report.candidate_graph.edges[0]!.normalized.end_node_id).toEqual({ value: null, status: 'UNKNOWN' });
+  });
+
   it('detects duplicate identifiers, dangling references, self loops, components and unknown nulls', async () => {
     const [nodeBuffer, linkBuffer] = await Promise.all([fixture('network-nodes.csv'), fixture('network-links.csv')]);
     const nodes = parseCsv(nodeBuffer); const links = parseCsv(linkBuffer);

@@ -10,7 +10,7 @@ await archiveReceipt('validation');
 const startedAt=new Date().toISOString(),tag=startedAt.replace(/[:.]/g,'-'),logRoot=`out/validation-logs/${tag}`,fingerprint=await toolFingerprint();
 await mkdir(join(getStoreRoot(),logRoot),{recursive:true});
 const commands=[];
-for(const args of [['install','--frozen-lockfile'],['typecheck'],['test'],['test:real'],['gis','acquire','--all','--offline']]){
+for(const args of [['install','--frozen-lockfile',...(process.env.GTEKI_GIS_OFFLINE==='1'?['--offline']:[])],['typecheck'],['test'],['test:real'],['gis','acquire','--all','--offline']]){
   const started=performance.now(),child=spawn('pnpm',['--dir',packageRoot,...args],{cwd:repoRoot,stdio:['ignore','pipe','pipe']});let output='';
   child.stdout.on('data',data=>{output+=String(data);});child.stderr.on('data',data=>{output+=String(data);});
   const exitCode=await new Promise<number|null>((resolve,reject)=>{child.on('error',reject);child.on('close',resolve);});

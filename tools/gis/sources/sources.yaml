@@ -233,3 +233,113 @@
   availability_deadline: null
   notes: Historical surrounding-network candidate; blank elevation must remain unknown.
   publish_gate: CONDITIONAL
+- source_id: hokonavi-ikebukuro-walk-node-geojson
+  title: "Hokonavi Ikebukuro walking network nodes GeoJSON"
+  station_ids: ["ikebukuro"]
+  publisher: "MLIT Hokonavi DP"
+  official_url: "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=nwd_ikebukuro"
+  resolution: {"kind": "direct"}
+  expected_url: "https://ckan.hokonavi.go.jp/dataset/324ba112-3bc0-4b9c-8a36-7d30edf4cf92/resource/f5d9a6e5-fd54-4b77-acd3-6f73e77676ff/download/node.geojson"
+  expected_bytes: 926326
+  license_name: "PDL 1.0"
+  license_url: "https://www.mlit.go.jp/link.html"
+  attribution_text: "出典：国土交通省／加工して作成"
+  commercial_use: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  modification_allowed: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  redistribution_allowed: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  content_year: 2019
+  availability_deadline: null
+  notes: "CKAN notes last update 2019/01/28 but cite 2024-07 specification; applicable version UNKNOWN. No file CRS declaration."
+  publish_gate: "HOLD"
+  supporting_documents: [{"id": "ckan-metadata", "url": "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=nwd_ikebukuro"}]
+- source_id: hokonavi-ikebukuro-walk-link-geojson
+  title: "Hokonavi Ikebukuro walking network links GeoJSON"
+  station_ids: ["ikebukuro"]
+  publisher: "MLIT Hokonavi DP"
+  official_url: "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=nwd_ikebukuro"
+  resolution: {"kind": "direct"}
+  expected_url: "https://ckan.hokonavi.go.jp/dataset/324ba112-3bc0-4b9c-8a36-7d30edf4cf92/resource/3a384823-0c28-4621-915f-4550537404a6/download/link.geojson"
+  expected_bytes: 1723897
+  license_name: "PDL 1.0"
+  license_url: "https://www.mlit.go.jp/link.html"
+  attribution_text: "出典：国土交通省／加工して作成"
+  commercial_use: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  modification_allowed: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  redistribution_allowed: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  content_year: 2019
+  availability_deadline: null
+  notes: "Raw properties retained. Geodesic distance consistency cannot identify a datum."
+  publish_gate: "HOLD"
+- source_id: mlit-walk-network-spec-2018-03
+  title: "歩行空間ネットワークデータ等整備仕様 平成30年3月"
+  station_ids: ["ikebukuro", "shinjuku"]
+  publisher: "MLIT"
+  official_url: "https://www.mlit.go.jp/sogoseisaku/soukou/sogoseisaku_soukou_tk_000056.html"
+  resolution: {"kind": "direct"}
+  expected_url: "https://www.mlit.go.jp/common/001244374.pdf"
+  expected_bytes: 2440666
+  license_name: "PDL 1.0"
+  license_url: "https://www.mlit.go.jp/link.html"
+  attribution_text: "出典：国土交通省／加工して作成"
+  commercial_use: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  modification_allowed: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  redistribution_allowed: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  content_year: 2018
+  availability_deadline: null
+  notes: "2018-03 spec; content date March 2018. No separate rights notice found in full PDF text. MLIT site terms PDL 1.0 basis captured as supporting site-terms document. Labels are literal transcription only."
+  publish_gate: "HOLD"
+  supporting_documents: [{"id": "site-terms", "url": "https://www.mlit.go.jp/link.html"}, {"id": "spec-landing", "url": "https://www.mlit.go.jp/sogoseisaku/soukou/sogoseisaku_soukou_tk_000056.html"}]
+- source_id: mlit-walk-network-spec-2024-07
+  title: "歩行空間ネットワークデータ整備仕様 令和6年7月"
+  station_ids: ["ikebukuro", "shinjuku"]
+  publisher: "MLIT"
+  official_url: "https://www.mlit.go.jp/sogoseisaku/soukou/sogoseisaku_soukou_tk_000056.html"
+  resolution: {"kind": "direct"}
+  expected_url: "https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf"
+  expected_bytes: 2174437
+  license_name: "PDL 1.0"
+  license_url: "https://www.mlit.go.jp/link.html"
+  attribution_text: "出典：国土交通省／加工して作成"
+  commercial_use: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  modification_allowed: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  redistribution_allowed: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  content_year: 2024
+  availability_deadline: null
+  notes: "2024-07 spec; content date July 2024. No separate rights notice found in full PDF text; MLIT site terms PDL 1.0 basis recorded with the 2018 spec. Applicability UNKNOWN; rank decoding is not accessibility evidence."
+  publish_gate: "HOLD"
+- source_id: mlit-walk-network-spec-2024-07-diff
+  title: "歩行空間ネットワークデータ等整備仕様 2018→2024 新旧比較表"
+  station_ids: ["ikebukuro", "shinjuku"]
+  publisher: "MLIT"
+  official_url: "https://www.mlit.go.jp/sogoseisaku/soukou/sogoseisaku_soukou_tk_000056.html"
+  resolution: {"kind": "direct"}
+  expected_url: "https://www.mlit.go.jp/sogoseisaku/soukou/content/001757260.pdf"
+  expected_bytes: 306273
+  license_name: "PDL 1.0"
+  license_url: "https://www.mlit.go.jp/link.html"
+  attribution_text: "出典：国土交通省／加工して作成"
+  commercial_use: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  modification_allowed: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  redistribution_allowed: {"status": "conditional", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  content_year: 2024
+  availability_deadline: null
+  notes: "2018-03 to 2024-07 comparison; content date July 2024. No separate rights notice found in full PDF text; MLIT site terms PDL 1.0 basis recorded with the 2018 spec. Preserve attribution and mark modifications."
+  publish_gate: "HOLD"
+- source_id: plateau-catalog-ubld-mesh-533945
+  title: "PLATEAU latest ubld catalog snapshot for second mesh 533945"
+  station_ids: ["ikebukuro", "shinjuku"]
+  publisher: "MLIT Project PLATEAU"
+  official_url: "https://api.plateauview.mlit.go.jp/datacatalog/citygml/m:533945?types=ubld"
+  resolution: {"kind": "direct"}
+  expected_url: "https://api.plateauview.mlit.go.jp/datacatalog/citygml/m:533945?types=ubld"
+  expected_bytes: null
+  license_name: "unknown"
+  license_url: null
+  attribution_text: "出典：国土交通省／加工して作成"
+  commercial_use: {"status": "unknown", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  modification_allowed: {"status": "unknown", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  redistribution_allowed: {"status": "unknown", "evidence": "docs/gis/research/network-codes-and-coverage.md"}
+  content_year: null
+  availability_deadline: null
+  notes: "Latest catalog only. Older vintages UNKNOWN. Nominal file mesh does not establish actual geometry coverage."
+  publish_gate: "HOLD"

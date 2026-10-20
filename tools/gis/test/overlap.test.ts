@@ -68,3 +68,10 @@ describe('source bbox overlap reports', () => {
     expect(segmentDistance([[0, 0], [10, 0]], [[10, 0], [10, 5]])).toBe(0);
   });
 });
+
+it('propagates inferred CRS to both layer and pair metrics',()=>{
+  const common={source_id:'synthetic',source_crs:'EPSG:6668',source_crs_bbox:[139.7,35.7,139.71,35.71],bbox_axis_order:'longitude,latitude' as const};
+  const report=buildOverlapReport('ikebukuro',[{...common,layer_id:'a',layer_role:'plateau_ubld'},{...common,layer_id:'b',layer_role:'hokonavi_csv_pair',crs_status:'INFERRED_FROM_SPEC'}]);
+  expect(report.layers[1]!.metric_status).toBe('CONDITIONAL_ON_INFERRED_CRS');
+  expect(report.pairs[0]!.metric_status).toBe('CONDITIONAL_ON_INFERRED_CRS');
+});

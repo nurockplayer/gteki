@@ -191,6 +191,13 @@ async function performAcquisition(source: SourceManifest, options: { retryDelayM
       size_check: downloaded.sizeCheck,
       mode: 'online',
     };
+    if (source.supporting_documents) {
+      record.supporting_documents = [];
+      for (const document of source.supporting_documents) {
+        const result = await downloadUrl(document.url, { backoffMs: options.retryDelayMs });
+        record.supporting_documents.push({ id: document.id, url: result.finalUrl, sha256: result.sha256, bytes: result.bytes, store_path: result.storePath });
+      }
+    }
     await writeJson(join(docsRoot, 'gis', 'acquisitions', `${source.source_id}.json`), record);
     return { ...acquisitionResultFromDownload(source.source_id, { sizeCheck: record.size_check, path: downloaded.path, bytes: record.bytes, expectedBytes: record.expected_bytes }), record };
   } catch (error) {

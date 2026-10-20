@@ -1,7 +1,10 @@
 import { join } from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { docsRoot, readJson, writeJson } from './common.js';
+import { docsRoot, readJson, writeJson, getStoredSource } from './common.js';
 import { projectLonLat } from './crs.js';
+import { catalogCoverage,r1BboxContainment } from './coverage.js';
+import { toolFingerprint } from './provenance.js';
+import { r1GeoEvidence } from './r1.js';
 
 export type BboxLayerInput = {
   layer_id: string;
@@ -12,13 +15,14 @@ export type BboxLayerInput = {
   source_crs_bbox: number[] | null;
   bbox_axis_order: 'latitude,longitude' | 'longitude,latitude' | 'unknown';
   feature_count?: number | null;
+  crs_status?: string;
 };
 
 export type OverlapLayer = BboxLayerInput & {
   /** Normalized shared horizontal JGD2011 longitude,latitude bbox for source-level relation tests. */
   bbox_jgd2011_lon_lat: [number, number, number, number] | null;
   bbox_epsg_6677: [number, number, number, number] | null;
-  metric_status: 'KNOWN' | 'UNKNOWN';
+  metric_status: 'KNOWN' | 'UNKNOWN' | 'CONDITIONAL_ON_INFERRED_CRS';
   metric_note: string | null;
 };
 
@@ -38,6 +42,7 @@ export type OverlapPair = {
   /** Approximate boundary-to-boundary distance using projected bbox edges sampled at 32 segments per edge. */
   minimum_separation_m: number | null;
   status: 'COMPUTED_BBOX_ONLY' | 'UNKNOWN_CRS_OR_BBOX';
+  metric_status?: 'KNOWN' | 'UNKNOWN' | 'CONDITIONAL_ON_INFERRED_CRS';
 };
 
 export type StationOverlapReport = {
@@ -47,6 +52,10 @@ export type StationOverlapReport = {
   pairs: OverlapPair[];
   interpretation_limit: string;
   verification: 'UNVERIFIED';
+  tool_input_sha256?: string;
+  input_sources?: Array<{source_id:string;sha256:string}>;
+  mesh_coverage?: ReturnType<typeof catalogCoverage>;
+  r1_bbox_containment?: ReturnType<typeof r1BboxContainment>;
 };
 
 const LIMIT = 'BBox overlap only. It does not establish that features coincide, share a floor, or connect; it is not routing evidence.';
@@ -109,7 +118,7 @@ function prepareLayer(layer: BboxLayerInput): PreparedOverlapLayer {
   }
   const points = segments.flatMap(([a, b]) => [a, b]);
   const projected: [number, number, number, number] = [Math.min(...points.map(p => p[0])), Math.min(...points.map(p => p[1])), Math.max(...points.map(p => p[0])), Math.max(...points.map(p => p[1]))];
-  return { ...layer, bbox_jgd2011_lon_lat: geographic, bbox_epsg_6677: projected, projected_bbox_boundary_segments: segments, metric_status: 'KNOWN', metric_note: 'Source geographic bbox normalized to JGD2011 lon,lat; edges sampled at 32 segments per edge and projected to EPSG:6677.' };
+  return { ...layer, bbox_jgd2011_lon_lat: geographic, bbox_epsg_6677: projected, projected_bbox_boundary_segments: segments, metric_status: layer.crs_status==='INFERRED_FROM_SPEC'?'CONDITIONAL_ON_INFERRED_CRS':'KNOWN', metric_note: (layer.crs_status==='INFERRED_FROM_SPEC'?'CONDITIONAL on inferred CRS. ':'')+'Source geographic bbox normalized to JGD2011 lon,lat; edges sampled at 32 segments per edge and projected to EPSG:6677.' };
 }
 
 function pointSegmentDistance(point: [number, number], start: [number, number], end: [number, number]): number {
@@ -151,12 +160,12 @@ function compare(a: PreparedOverlapLayer, b: PreparedOverlapLayer): OverlapPair 
 export function buildOverlapReport(stationId: StationOverlapReport['station_id'], inputs: BboxLayerInput[]): StationOverlapReport {
   const layers = inputs.map(prepareLayer);
   const pairs: OverlapPair[] = [];
-  for (let i = 0; i < layers.length; i++) for (let j = i + 1; j < layers.length; j++) pairs.push(compare(layers[i]!, layers[j]!));
+  for (let i = 0; i < layers.length; i++) for (let j = i + 1; j < layers.length; j++) {const a=layers[i]!,b=layers[j]!;pairs.push({...compare(a,b),metric_status:[a,b].some(layer=>layer.metric_status==='UNKNOWN')?'UNKNOWN':[a,b].some(layer=>layer.metric_status==='CONDITIONAL_ON_INFERRED_CRS')?'CONDITIONAL_ON_INFERRED_CRS':'KNOWN'});}
   return { station_id: stationId, method: 'Pairwise bbox relation is computed on source bboxes normalized to JGD2011 longitude,latitude. Disjoint-bbox minimum separation is approximated by comparing projected EPSG:6677 boundary segments sampled at 32 segments per edge. Projected axis-aligned envelopes are retained as context only.',
     layers: layers.map(({projected_bbox_boundary_segments: _segments,...layer})=>layer), pairs, interpretation_limit: LIMIT, verification: 'UNVERIFIED' };
 }
 
-type CityReport = { envelope: { lower: number[]; upper: number[]; srsName: string | null } | null };
+type CityReport = { source_id:string;source_sha256:string;totals?:{bbox_lat_lon_height:{min:number[];max:number[]}|null};envelope: { lower: number[]; upper: number[]; srsName: string | null } | null };
 type GeoMember = { file: string; crs: { properties?: { name?: string } } | null; bbox: number[] | null; feature_count: number };
 type GeoReport = { members: GeoMember[]; bbox?: number[] | null; crs?: { properties?: { name?: string } } | null };
 type CsvReport = { bbox: number[] | null; crs: { value: string | null; status: string }; files?: { node_source_id?: string; link_source_id?: string } };
@@ -182,19 +191,32 @@ export async function generateOverlapReports(): Promise<StationOverlapReport[]> 
     readJson<GeoReport>(join(root, 'networks', 'hokonavi-oedo-shinjuku-network-geojson.json')),
     readJson<GeoReport>(join(root, 'networks', 'hokonavi-oedo-shinjuku-stationmap-geojson.json')),
   ]);
+  const r1=await r1GeoEvidence();
   const ikeCsvBbox = r1Nodes.bbox ?? null;
-  const ikeCsvSource = r1Nodes.crs.status === 'KNOWN' ? r1Nodes.crs.value : null;
+  const ikeCsvSource = ['KNOWN','INFERRED_FROM_SPEC'].includes(r1Nodes.crs.status) ? r1Nodes.crs.value : null;
   const ikeLayers: BboxLayerInput[] = [cityLayer('plateau-13116-ubld-53394576', ikeCity), {
-    layer_id: 'hokonavi-ikebukuro-walk-csv-pair', layer_role: 'hokonavi_csv_pair', source_id: r1Nodes.files?.node_source_id ?? 'hokonavi-ikebukuro-walk-node-csv', source_ids: [r1Nodes.files?.node_source_id ?? 'hokonavi-ikebukuro-walk-node-csv', r1Nodes.files?.link_source_id ?? 'hokonavi-ikebukuro-walk-link-csv'], source_crs: ikeCsvSource, source_crs_bbox: ikeCsvBbox, bbox_axis_order: ikeCsvSource ? 'longitude,latitude' : 'unknown',
+    layer_id: 'hokonavi-ikebukuro-walk-csv-pair', layer_role: 'hokonavi_csv_pair', source_id: r1Nodes.files?.node_source_id ?? 'hokonavi-ikebukuro-walk-node-csv', source_ids: [r1Nodes.files?.node_source_id ?? 'hokonavi-ikebukuro-walk-node-csv', r1Nodes.files?.link_source_id ?? 'hokonavi-ikebukuro-walk-link-csv'], crs_status:r1Nodes.crs.status,source_crs: ikeCsvSource, source_crs_bbox: ikeCsvBbox, bbox_axis_order: ikeCsvSource ? 'longitude,latitude' : 'unknown',
   }];
+  for(const [source,bbox,count] of [[r1.node,r1.node_bbox,r1.nodes.features.length],[r1.link,r1.link_bbox,r1.links.features.length]] as const)ikeLayers.push({layer_id:source.record.source_id,layer_role:'hokonavi_network',source_id:source.record.source_id,source_crs:r1.crs.value,crs_status:r1.crs.status,source_crs_bbox:bbox,bbox_axis_order:'longitude,latitude',feature_count:count});
   const shLayers: BboxLayerInput[] = [cityLayer('plateau-13104-ubld-53394536', shCity), ...geoLayers('hokonavi-oedo-shinjuku-network-geojson', s01Network), ...geoLayers('hokonavi-oedo-shinjuku-stationmap-geojson', stationMap)];
   const reports = [buildOverlapReport('ikebukuro', ikeLayers), buildOverlapReport('shinjuku', shLayers)];
+  const catalog=await getStoredSource('plateau-catalog-ubld-mesh-533945');
+  const catalogData=await readJson<unknown>(catalog.path);
+  const actualBbox=(city:CityReport):number[]|null=>{const b=city.totals?.bbox_lat_lon_height;return b?[b.min[1]!,b.min[0]!,b.max[1]!,b.max[0]!]:null;};
+  const envelope=(city:CityReport):number[]|null=>{const e=city.envelope;return e?[e.lower[1]!,e.lower[0]!,e.upper[1]!,e.upper[0]!]:null;};
+  const acquired=Object.fromEntries(([['13116:53394576',ikeCity],['13104:53394536',shCity]] as const).map(([key,city])=>[key,{source_id:city.source_id,source_sha256:city.source_sha256,bbox:actualBbox(city),envelope:envelope(city)}]));
+  for(const report of reports)report.mesh_coverage=catalogCoverage(catalogData,{source_id:catalog.record.source_id,sha256:catalog.record.sha256},report.layers.filter(layer=>layer.layer_role!=='plateau_ubld'),acquired);
+  reports[0]!.r1_bbox_containment=r1BboxContainment(r1.nodes.features,r1.links.features,actualBbox(ikeCity));
   const out = join(root, 'overlap');
   await mkdir(out, { recursive: true });
+  const inputs=await Promise.all(['plateau-13116-ubld-53394576','plateau-13104-ubld-53394536','hokonavi-ikebukuro-walk-node-csv','hokonavi-ikebukuro-walk-link-csv','hokonavi-ikebukuro-walk-node-geojson','hokonavi-ikebukuro-walk-link-geojson','hokonavi-oedo-shinjuku-network-geojson','hokonavi-oedo-shinjuku-stationmap-geojson','mlit-walk-network-spec-2018-03','mlit-walk-network-spec-2024-07','plateau-catalog-ubld-mesh-533945'].map(id=>getStoredSource(id)));
+  const fingerprint=await toolFingerprint();
   for (const report of reports) {
+    report.tool_input_sha256=fingerprint;
+    report.input_sources=inputs.map(({record})=>({source_id:record.source_id,sha256:record.sha256}));
     await writeJson(join(out, `${report.station_id}.json`), report);
-    const lines = report.pairs.map(pair => `- ${pair.layer_a} ↔ ${pair.layer_b}: ${pair.bbox_relation}; boundary-distance approximation ${pair.minimum_separation_m === null ? 'UNKNOWN' : `${pair.minimum_separation_m.toFixed(3)} m`} (32 samples per edge; ${pair.status}).`);
-    await writeFile(join(out, `${report.station_id}.md`), `# ${report.station_id} bbox overlap report\n\n${report.method}\n\n${report.interpretation_limit}\n\n${lines.length ? lines.join('\n') : 'No layer pairs available.'}\n`);
+    const lines = report.pairs.map(pair => `- ${pair.layer_a} ↔ ${pair.layer_b}: ${pair.bbox_relation}; boundary-distance approximation ${pair.minimum_separation_m === null ? 'UNKNOWN' : `${pair.minimum_separation_m.toFixed(3)} m`} (32 samples per edge; ${pair.status}; ${pair.metric_status}).`);
+    await writeFile(join(out, `${report.station_id}.md`), `# ${report.station_id} bbox overlap report\n\n${report.method}\n\n${report.interpretation_limit}\n\n${lines.length ? lines.join('\n') : 'No layer pairs available.'}\n\nMesh catalog coverage: ${JSON.stringify(report.mesh_coverage)}\n\nR1 bbox containment: ${JSON.stringify(report.r1_bbox_containment??null)}\n`);
   }
   return reports;
 }
