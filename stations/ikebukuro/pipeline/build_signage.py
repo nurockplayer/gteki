@@ -209,7 +209,16 @@ def main():
                 if dl + dr < 2 * MAX_SIGN_W:  # bounded passage: centre between its walls
                     shift = (dr - dl) / 2
                     px, py = px + rx * shift, py + ry * shift
-                max_w = round(max(0.6, min(MAX_SIGN_W, dl + dr - 2 * SIDE_MARGIN)), 2)
+                    half = (dl + dr) / 2
+                else:  # open on one side: ease away from the near wall (<= 1.5 m), stay symmetric
+                    want = MAX_SIGN_W / 2 + SIDE_MARGIN
+                    if dl < dr:
+                        shift = min(1.5, max(0.0, want - dl))
+                    else:
+                        shift = -min(1.5, max(0.0, want - dr))
+                    px, py = px + rx * shift, py + ry * shift
+                    half = min(dl + shift, dr - shift)
+                max_w = round(max(0.6, min(MAX_SIGN_W, 2 * half - 2 * SIDE_MARGIN)), 2)
                 return px, py, bottom, dirx, diry, ceiling_z, max_w, round(sign_h / SIGN_H, 3)
 
             # ~4 m from the junction (45% of short edges); slide along the edge if a low ceiling, a
