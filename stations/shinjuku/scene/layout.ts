@@ -678,6 +678,9 @@ export function clearSoffit<T extends SlabPoly & { origin?: XY; slope?: XY }>(s:
  * New vertical panels are in lv.walls so both consumers use the same physical enclosure.
  */
 function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elevatorLandings: XYZ[], elevatorPassages: Passage[]) {
+  // Finish exit shafts against the 180 mm street slab underside, rather than
+  // stopping 330 mm below it. This remains below the surface canopy and its walls.
+  const streetUnderside = -0.18;
   const underground = layout.levels.filter((lv) => lv.z < -0.5);
   const levelAt = (z: number) => underground.reduce((a, b) => Math.abs(a.z - z) < Math.abs(b.z - z) ? a : b);
   const union = (polys: XY[][][]) => polys.length ? polygonClipping.union(clipPoly(polys[0]!), ...polys.slice(1).map(clipPoly)).map(xyRings) : [];
@@ -702,7 +705,7 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     const count = Math.max(1, Math.ceil(len(sub(b, a)) / 0.4));
     for (let i = 0; i < count; i++) {
       const p = lerp(a, b, i / count), q = lerp(a, b, (i + 1) / count), mid = lerp(p, q, 0.5);
-      const minZ = Math.min(bottom(p), bottom(q)), maxZ = Math.min(-0.51, Math.max(top(p), top(q)));
+      const minZ = Math.min(bottom(p), bottom(q)), maxZ = Math.min(streetUnderside, Math.max(top(p), top(q)));
       if (maxZ <= minZ + 0.015) continue;
       let bands: [number, number][] = [[minZ, maxZ]];
       if (skipExisting) for (const w of lv.walls) {
@@ -769,13 +772,14 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
 
   // The symbolic model spreads switchback landings across non-source elevations. They need
   // their own short ceiling/wall sleeves, otherwise the source-level ceilings miss them.
-  const landingZ = [...new Set([...layout.pads, ...layout.linkStrips].map((p) => p.z))].filter((z) => z + 3.2 < -0.5 && !underground.some((lv) => Math.abs(lv.z - z) < 0.1));
+  const landingZ = [...new Set([...layout.pads, ...layout.linkStrips].map((p) => p.z))].filter((z) => z < -0.5 && !underground.some((lv) => Math.abs(lv.z - z) < 0.1));
   for (const z of landingZ) {
     const lv = levelAt(z);
+    const roofZ = Math.min(z + 3.2, streetUnderside);
     const envelope = union([...layout.pads, ...layout.linkStrips].filter((p) => Math.abs(p.z - z) < 0.1).map((p) => p.rings));
     for (const [i, rings] of envelope.entries()) {
-      addRoof({ spaceId: `landing-roof:${z}:${i}`, floorId: lv.floorId, kind: "landing", rings, z: z + 3.2, fare: null, category: "ceiling" });
-      enclose(lv, rings, () => z - 0.18, () => z + 3.2, "shaft");
+      addRoof({ spaceId: `landing-roof:${z}:${i}`, floorId: lv.floorId, kind: "landing", rings, z: roofZ, fare: null, category: "ceiling" });
+      enclose(lv, rings, () => z - 0.18, () => roofZ, "shaft");
     }
   }
 
@@ -843,19 +847,29 @@ function finishUnderground(layout: Layout, plan: Plan, passages: Passage[], elev
     // One rectangular hull spans intermediate landings and parallel lanes without interior walls.
     const envelope = [ [ [at(minS, minN), at(maxS, minN), at(maxS, maxN), at(minS, maxN), at(minS, minN)] ] ];
     for (const [i, rings] of envelope.entries()) {
-      // Surface exits stay open to the street worker's scene. Crop the pitched roof at -0.51 m.
+      // Surface exits hand off at the street slab underside; the canopy stays above it.
       const roof: Soffit = { spaceId: `shaft-roof:${si}:${i}`, floorId: lv.floorId, kind: "shaft", clearance: rise, rings, origin: lo, slope, z: lo.z + rise, fare: null, category: "ceiling" };
-      const cropped = cropUndergroundRoof(roof);
+      const cropped = cropUndergroundRoof(roof, streetUnderside);
       // A tall shaft cover reaches street before the walking head band does. Continue
       // it as a flat soffit at the surface handoff height, without exposing a roof gap.
-      const transitions = affineMask(rings, (p) => base(p) + rise + 0.51)
-        .flatMap((panel) => affineMask(panel, (p) => -0.51 - base(p) - 2.4));
+      // Retain the shoulder roof beside the opening even where the run's head band
+      // reaches street. clearSoffit cuts the actual swept run footprint out of this
+      // sheet; clipping the entire shaft width by pitch leaves two black side slots.
+      const transitions = affineMask(rings, (p) => base(p) + rise - streetUnderside);
       for (const [j, panel] of transitions.entries()) addRoof({ spaceId: `street-transition:${si}:${i}:${j}`, rings: panel,
-        z: -0.51, floorId: lv.floorId, kind: "landing", fare: null, category: "ceiling" });
+        z: streetUnderside, floorId: lv.floorId, kind: "landing", fare: null, category: "ceiling" });
       for (const s of cropped) {
         addRoof(s);
         shaftVoids.push({ rings: s.rings, bottom, top: (p) => base(p) + rise, ceilingTop: (p) => base(p) + rise });
       }
+      // The run occupies only the middle of the wider shaft. Looking through its
+      // railing must meet a finished structural invert, rather than see below the
+      // pitched side walls into black. This underside is 0.3 m below the lowest
+      // flight datum, not an additional walk surface; crossing paths retain their
+      // full head clearance through the same exact affine cuts as other soffits.
+      const invert: Soffit = { ...roof, spaceId: `shaft-invert:${si}:${i}`, kind: "slab", clearance: undefined,
+        z: lo.z + Math.min(...offsets) - 0.3 };
+      for (const panel of cropUndergroundRoof(invert, streetUnderside)) layout.soffits.push(...clearSoffit(panel, passages, 0.025, 2.1));
       enclose(lv, rings, bottom, (p) => base(p) + rise, "shaft");
     }
     // Raised short collars bridge the clearance cut at the tangent change between an
@@ -1087,6 +1101,16 @@ export function cutWallsByVoids(walls: WallSeg[], voids: { rings: XY[][]; bottom
       const offset = sub(c, w.a), t = cross(offset, edge) / denominator, u = cross(offset, direction) / denominator;
       if (t > 1e-8 && t < 1 - 1e-8 && u >= -1e-8 && u <= 1 + 1e-8) cuts.push(t);
     }
+    // min/max of two affine heights is piecewise affine. Split at each height
+    // crossing before clipping bands; interpolating endpoint min/max over the
+    // whole wall otherwise removes a long triangular wedge outside the void.
+    const wa = profileAt(w, 0), wb = profileAt(w, 1);
+    for (const v of candidates) for (const height of [v.bottom, v.top]) {
+      const va = height(w.a), vb = height(w.b);
+      for (const [a, b] of [[wa.bottom - va, wb.bottom - vb], [wa.top - va, wb.top - vb]]) {
+        if (a! * b! < 0) cuts.push(a! / (a! - b!));
+      }
+    }
     cuts.sort((a, b) => a - b);
     const unique = cuts.filter((t, i) => !i || t - cuts[i - 1]! > 1e-7);
     const intervals = unique.slice(0, -1).map((from, i) => {
@@ -1157,8 +1181,8 @@ export function cutWallsByVoids(walls: WallSeg[], voids: { rings: XY[][]; bottom
   return result;
 }
 
-/** Clip an affine roof to z < -0.5 without changing its pitch. */
-function cropUndergroundRoof(s: Soffit): Soffit[] {
+/** Clip an affine roof at the street underside without changing its pitch. */
+function cropUndergroundRoof(s: Soffit, top: number): Soffit[] {
   const out: XY[][] = [];
   // Shaft footprints have no interior holes before clearance carving.
   for (const ring of s.rings) {
@@ -1166,8 +1190,8 @@ function cropUndergroundRoof(s: Soffit): Soffit[] {
     for (let i = 0; i < ring.length; i++) {
       const a = ring[i]!, b = ring[(i + 1) % ring.length]!;
       const za = soffitHeight(s, a), zb = soffitHeight(s, b);
-      if (za <= -0.51) result.push(a);
-      if ((za <= -0.51) !== (zb <= -0.51)) result.push(lerp(a, b, (-0.51 - za) / (zb - za)));
+      if (za <= top) result.push(a);
+      if ((za <= top) !== (zb <= top)) result.push(lerp(a, b, (top - za) / (zb - za)));
     }
     if (result.length >= 3) out.push(result);
   }
