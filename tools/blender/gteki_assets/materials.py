@@ -135,7 +135,7 @@ def texture_paths(name, res):
         maps = texsynth.GENERATORS[spec["gen"]](res, spec["seed"], **kw)
         stats = {}
         for k, p in paths.items():
-            tmp = p + ".tmp"
+            tmp = f"{p}.{os.getpid()}.tmp"  # full and mobile builds may share the cache
             texsynth.write_png(tmp, maps[k])
             os.replace(tmp, p)
             # statistics of the exact 8-bit values in the PNG, accumulated in float64
@@ -143,9 +143,10 @@ def texture_paths(name, res):
             q = texsynth.quantize8(maps[k]).reshape(-1, 3).astype(np.float64) / 255.0
             stats[k] = {"mean": [round(float(x), 6) for x in q.mean(0)],
                         "std": [round(float(x), 6) for x in q.std(0)]}
-        with open(stats_path + ".tmp", "w") as f:
+        tmp = f"{stats_path}.{os.getpid()}.tmp"
+        with open(tmp, "w") as f:
             json.dump(stats, f, sort_keys=True)
-        os.replace(stats_path + ".tmp", stats_path)
+        os.replace(tmp, stats_path)
     with open(stats_path) as f:
         return dict(paths, stats=json.load(f))
 

@@ -166,7 +166,9 @@ def check(glbs, manifest, budget, manifest_meta=None):
             continue
         # the manifest is the integrity record consumers (and bundle_kit) trust
         for key in ("sha256", "bytes"):
-            if key in manifest[aid] and manifest[aid][key] != glb[key]:
+            if key not in manifest[aid]:
+                problems.append(f"{aid}: manifest entry has no {key}")
+            elif manifest[aid][key] != glb[key]:
                 problems.append(f"{aid}: GLB {key} {glb[key]} differs from manifest {manifest[aid][key]}")
         plan = manifest[aid].get("textures")
         cap = (manifest_meta or {}).get("texture_resolution")
@@ -234,6 +236,11 @@ def _fake_glb(images, material_refs):
 def self_test():
     import tempfile
 
+    def rec(path, textures):
+        """Complete manifest record for one GLB (digest and size are required)."""
+        g = scan_glb(path)
+        return {path.stem: {"sha256": g["sha256"], "bytes": g["bytes"], "textures": textures}}
+
     budget = {"applies_to": {"catalog": "kit.json", "texture_resolution": 1024}, "limits": {"library_mib": 1.0}}
     meta = {"catalog": "../x/kit.json", "texture_resolution": 1024}
     plan = {"gteki_test": {"res": 512, "maps": ["albedo", "orm"]}}
@@ -250,34 +257,35 @@ def self_test():
             path = Path(tmp) / f"gteki_{name}.glb"
             path.write_bytes(_fake_glb(images, refs))
             glbs = {path.stem: scan_glb(path)}
-            got = check(glbs, {path.stem: {"textures": plan}}, budget, meta)
+            got = check(glbs, rec(path, plan), budget, meta)
             assert len(got) == want, (name, got)
         # byte limits: enforced for the matching library, skipped for another catalog / resolution
         glbs = {path.stem: scan_glb(path)}
         tight = dict(budget, limits={"library_mib": 1e-9})
-        assert any("budget library_mib" in p for p in check(glbs, {path.stem: {"textures": plan}}, tight, meta))
+        assert any("budget library_mib" in p for p in check(glbs, rec(path, plan), tight, meta))
         for other in ({"catalog": "station.json", "texture_resolution": 1024}, {"catalog": "kit.json", "texture_resolution": 2048},
                       dict(meta, profile="mobile")):
-            assert not any("budget" in p for p in check(glbs, {path.stem: {"textures": plan}}, tight, other))
+            assert not any("budget" in p for p in check(glbs, rec(path, plan), tight, other))
         mobile = dict(tight, applies_to=dict(budget["applies_to"], profile="mobile"))
-        assert any("budget" in p for p in check(glbs, {path.stem: {"textures": plan}}, mobile, dict(meta, profile="mobile")))
-        assert not any("budget" in p for p in check(glbs, {path.stem: {"textures": plan}}, mobile, meta))
+        assert any("budget" in p for p in check(glbs, rec(path, plan), mobile, dict(meta, profile="mobile")))
+        assert not any("budget" in p for p in check(glbs, rec(path, plan), mobile, meta))
         assert check(glbs, {}, budget, meta) == [f"{path.stem}: GLB is not in manifest.json"]
         clean = Path(tmp) / "gteki_clean.glb"
-        assert check({clean.stem: scan_glb(clean)}, {clean.stem: {"textures": {}}}, budget, meta) == [
+        assert check({clean.stem: scan_glb(clean)}, rec(clean, {}), budget, meta) == [
             f"{clean.stem}: gteki_test samples 2 images but has no texture plan"]
         # a plan above the library's texture_resolution (e.g. an uncapped supplied image)
         path.write_bytes(_fake_glb([_png_header(2048, 1024, b"p")], [0]))
-        big = {path.stem: {"textures": {"gteki_test": {"res": 2048, "maps": ["albedo"]}}}}
+        big = rec(path, {"gteki_test": {"res": 2048, "maps": ["albedo"]}})
         assert check({path.stem: scan_glb(path)}, big, budget, meta) == [
             f"{path.stem}: gteki_test plan res 2048 exceeds texture_resolution 1024"]
         glbs = {path.stem: scan_glb(path)}
         # file digest and size must match the manifest entry
         g = glbs[path.stem]
         assert check(glbs, {path.stem: {"sha256": g["sha256"], "bytes": g["bytes"]}}, budget, meta) == []
+        assert check(glbs, {path.stem: {"bytes": g["bytes"]}}, budget, meta) == [f"{path.stem}: manifest entry has no sha256"]
         stale = check(glbs, {path.stem: {"sha256": "0" * 64, "bytes": g["bytes"] + 1}}, budget, meta)
         assert [p.split(":")[1].split()[1] for p in stale] == ["sha256", "bytes"], stale
-        both = {path.stem: {"textures": plan}, "gteki_gone": {"textures": plan}}
+        both = {**rec(path, plan), "gteki_gone": {"textures": plan}}
         assert [p for p in check(glbs, both, budget, meta) if "gteki_gone" in p] == ["gteki_gone: in manifest.json but its GLB is missing"]
     for w, h in ((512, 256), (1024, 1024)):
         assert image_size(_png_header(w, h)) == (w, h, "png")

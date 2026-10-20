@@ -16,6 +16,7 @@ import struct
 import sys
 
 CONTRACT = "gteki-asset/0.1"
+PALETTES = ("gteki_palette", "gteki_palette_blend")  # mobile swatch atlases
 REQUIRED = ("contract id family variant version generator params bounds_m triangles "
             "dimension_basis fidelity navigation provenance license").split()
 IDENTITY = [1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1.]
@@ -345,6 +346,14 @@ class Validator:
         for material in materials:
             if not material.get("name", "").startswith("gteki_"):
                 self.message("FAIL", f"material name lacks gteki_ prefix: {material.get('name')!r}")
+            if material.get("name") in PALETTES:
+                # 4x4 swatches in a 64x64 atlas: any mip below 16x16 averages unrelated swatches
+                for slot, info in texture_infos(material):
+                    texture = self.index(doc.get("textures", []), info["index"])
+                    sampler = (self.index(doc.get("samplers", []), texture["sampler"]) if "sampler" in texture else {})
+                    if sampler.get("minFilter") not in (9728, 9729):
+                        self.message("FAIL", f"material {material['name']!r} {slot} must sample without mipmaps "
+                                     f"(minFilter NEAREST or LINEAR, got {sampler.get('minFilter')!r})")
         for img in doc.get("images", []):
             if img.get("mimeType") not in ("image/jpeg", "image/png"):
                 self.message("FAIL", f"unsupported image mimeType: {img.get('mimeType')!r}")
@@ -601,6 +610,14 @@ def self_test():
         assert Validator("tiny.glb", encode_glb(textured, binary)).check()["status"] == status, info
     textured["materials"][0]["extensions"] = dict(KHR_materials_clearcoat=dict(clearcoatTexture=dict(index=0, texCoord=-1)))
     assert Validator("tiny.glb", encode_glb(textured, binary)).check()["status"] == "FAIL"
+    # a palette atlas must not be minified through mipmaps
+    for sampler, status in ((dict(magFilter=9728, minFilter=9728), "PASS"), (dict(magFilter=9728, minFilter=9984), "FAIL"),
+                            (None, "FAIL")):
+        pal = copy.deepcopy(textured)
+        pal["materials"][0] = dict(name="gteki_palette", pbrMetallicRoughness=dict(baseColorTexture=dict(index=0)))
+        pal["textures"] = [dict(source=0, **({"sampler": 0} if sampler else {}))]
+        pal["samplers"] = [sampler] if sampler else []
+        assert Validator("tiny.glb", encode_glb(pal, binary)).check()["status"] == status, sampler
     # extras are application data: a texture-like dict there is not a sampled slot
     textured["materials"][0]["extensions"] = {}
     textured["materials"][0]["extras"] = dict(sourceTexture=dict(index=123, texCoord=99))
@@ -643,7 +660,7 @@ def self_test():
     assert lightmapped(apart, count=5) == "FAIL"  # one UV per vertex
     assert lightmapped(tuple(c + 2 * (k % 2 == 0) for k, c in enumerate(apart))) == "FAIL"  # outside the unit square
     print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs, "
-          "texCoord (core, extension, transform, extras), lightmap (overlap, strips, fans, range, NaN, collapsed, mobile UV1)")
+          "texCoord (core, extension, transform, extras), palette mipmaps, lightmap (overlap, strips, fans, range, NaN, collapsed, mobile UV1)")
 
 
 def main():

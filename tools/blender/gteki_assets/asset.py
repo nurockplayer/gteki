@@ -284,9 +284,13 @@ class Asset:
         }
 
 
+NEAREST, NEAREST_MIPMAP_NEAREST = 9728, 9984  # glTF sampler filters
+
+
 def _patch_root_extras(path, root_name, meta):
     """Replace the exporter's IDProperty-flattened root extras with exact JSON
-    (lists of strings, empty lists and booleans keep their types)."""
+    (lists of strings, empty lists and booleans keep their types), and keep
+    nearest-sampled (palette) textures free of mipmaps."""
     with open(path, "rb") as f:
         data = f.read()
     magic, version, _ = struct.unpack_from("<4sII", data, 0)
@@ -300,6 +304,11 @@ def _patch_root_extras(path, root_name, meta):
     if len(roots) != 1 or node.get("name") != root_name:
         raise ValueError(f"{path}: expected single root {root_name!r}")
     node.setdefault("extras", {})["gteki"] = json.loads(json.dumps(meta))
+    for sampler in doc.get("samplers", []):
+        # "Closest" exports as NEAREST_MIPMAP_NEAREST; the palette atlas must never be minified
+        # through mips, where swatches average into each other (only the palette samples Closest)
+        if sampler.get("magFilter") == NEAREST and sampler.get("minFilter") == NEAREST_MIPMAP_NEAREST:
+            sampler["minFilter"] = NEAREST
     js = json.dumps(doc, separators=(",", ":"), ensure_ascii=False).encode()
     js += b" " * (-len(js) % 4)
     body = struct.pack("<II", len(js), 0x4E4F534A) + js + rest
