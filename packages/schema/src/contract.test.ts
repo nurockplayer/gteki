@@ -357,6 +357,33 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     expect(errors(drawn)).not.toContain("floor.renderElevation");
   });
 
+  it("requires credit metadata on the sources of a real station", () => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    expect(errors(b)).not.toContain("source.attribution");
+    expect(errors(b)).not.toContain("source.license");
+    b.sources[0]!.attribution = "  ";
+    b.sources[1]!.license = null;
+    expect(errors(b)).toContain("source.attribution");
+    expect(errors(b)).toContain("source.license");
+    b.sources[1]!.license = { name: "CC BY 4.0", url: "javascript:alert(1)" };
+    expect(errors(b)).toContain("source.license");
+    // A facts-only source is cited as evidence, never redistributed: it needs a credit line, not a licence.
+    b.sources[1]!.usage = "facts-only";
+    b.sources[1]!.license = null;
+    expect(errors(b).filter((c) => c === "source.license")).toEqual([]);
+  });
+
+  it("rejects origin coordinates outside the geodetic range", () => {
+    const b = createSyntheticBundle();
+    expect(errors(b)).not.toContain("station.origin.range");
+    for (const [lat, lon] of [[139, 35], [35, 200], [-91, 0], [Number.NaN, 139]] as const) {
+      const bad = createSyntheticBundle();
+      bad.station.origin = { ...bad.station.origin, lat, lon };
+      expect(errors(bad)).toContain("station.origin.range");
+    }
+  });
+
   it("requires a source for every floor of a real station", () => {
     const b = asRealStation(createSyntheticBundle());
     b.edges = [];

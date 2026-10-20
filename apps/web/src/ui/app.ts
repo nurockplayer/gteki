@@ -4,6 +4,7 @@ import type { Poi, Source, StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
+import { guideStops } from "../explorer/guideStops.ts";
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
@@ -75,6 +76,7 @@ export class App {
     this.explorer = new Explorer(this.root.querySelector(".viewport") as HTMLElement, {
       onMode: (mode) => this.onMode(mode),
       onGuideProgress: (p) => this.onGuideProgress(p),
+      onGuideStop: (index) => this.onGuideStop(index),
       onPoiClick: (id) => {
         const poi = this.s.loaded?.bundle.pois.find((p) => p.id === id);
         if (poi) this.setDestination(poi);
@@ -465,6 +467,8 @@ export class App {
     if (r.synthetic) badge(t.syntheticShort, "warn", t.synthetic);
     const unknownText: Record<string, string> = { hours: t.unknownHours, wheelchair: t.unknownWheelchair, steps: t.unknownSteps, paid: t.unknownPaid, fare_boundary: t.unknownFare, access_evidence: t.unknownAccess };
     for (const u of r.unknowns) badge(`${unknownText[u.kind] ?? u.kind} ×${u.edgeIds.length}`, "unknown");
+    // Waiting for an opening window is part of the time, and is said so.
+    if (r.waitSeconds > 0) badge(t.waiting(Math.max(1, Math.round(r.waitSeconds / 60))), "info");
     if (r.timeRestricted.length) badge(`${t.timeWindow}: ${r.timeRestricted.map((w) => `${w.open}–${w.close}`).join(", ")}`, "unknown");
     if (r.crossesFareBoundary === true) badge(t.paidCrossing, "info");
     if (r.stale === true) badge(t.stale, "warn", r.expiredSourceIds.length > 0 ? `${t.expired}: ${r.expiredSourceIds.join(", ")}` : (r.oldestSourceDate ?? undefined));
@@ -476,7 +480,7 @@ export class App {
 
     const actions = el("div", "actions");
     const guide = el("button", "primary", t.guide);
-    guide.addEventListener("click", () => this.explorer.startGuide(this.s.polyline));
+    guide.addEventListener("click", () => this.startGuide());
     const walk = el("button", undefined, t.walk);
     walk.addEventListener("click", () => {
       const first = this.s.polyline[0];
@@ -533,8 +537,8 @@ export class App {
     if (mode === "guide" && ins) hud.append(el("div", "hud-instruction", ins.text));
     const row = el("div", "hud-row");
     if (mode === "guide") {
-      let paused = false;
-      const pause = el("button", undefined, t.pause);
+      let paused = this.explorer.guidePaused;
+      const pause = el("button", undefined, paused ? t.resume : t.pause);
       pause.addEventListener("click", () => { paused = !paused; this.explorer.setGuidePaused(paused); pause.textContent = paused ? t.resume : t.pause; });
       const speed = el("button", "ghost", `${t.speed} ×1`);
       let mult = 1;
@@ -562,7 +566,26 @@ export class App {
     hud.append(row);
   }
 
+  /** Guide along the route, stopping where each wait for an opening happens. */
+  private startGuide(): void {
+    const stops = guideStops(this.s.polyline, this.s.instructions);
+    this.guideWaits = stops.map((x) => x.instruction);
+    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point));
+  }
+
+  /** The guide reached a wait: it is paused there, and the wait stays the active instruction until resumed. */
+  private onGuideStop(index: number): void {
+    const wait = this.guideWaits[index];
+    if (wait === undefined) return;
+    this.s.activeInstruction = wait;
+    this.renderHud();
+    this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === wait));
+    this.toast(this.s.instructions[wait]!.text, 4000);
+  }
+
   private onGuideProgress(p: { stepIndex: number; done: boolean }): void {
+    // Stopped at a wait (onGuideStop): it stays the active instruction until the guide is resumed.
+    if (this.s.instructions[this.s.activeInstruction]?.kind === "wait" && this.explorer.guidePaused) return;
     const idx = this.s.instructions.findIndex((ins) => ins.stepIndexes.includes(p.stepIndex));
     const next = p.done ? this.s.instructions.length - 1 : idx;
     if (next >= 0 && next !== this.s.activeInstruction) {
@@ -635,6 +658,8 @@ export class App {
     d.showModal();
   }
 
+  /** Instruction indexes of the current guide run's stops, in the order given to the explorer. */
+  private guideWaits: number[] = [];
   private toastTimer = 0;
 
   private toast(text: string, ms = 0): void {
@@ -656,7 +681,7 @@ export class App {
       route: () => this.s.route,
       instructions: () => this.s.instructions.map((i) => i.text),
       mode: () => this.explorer.currentMode,
-      startGuide: () => this.explorer.startGuide(this.s.polyline),
+      startGuide: () => this.startGuide(),
       quality: () => this.explorer.qualityLevel,
       avatar: () => this.explorer.avatarEnu,
       sceneInfo: () => this.explorer.sceneInfo(),

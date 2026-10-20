@@ -19,6 +19,8 @@ import { WALKER_BODY } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { manifestScene } from "./manifestScene.ts";
+import { castAll, castTargets } from "./raycast.ts";
+import { advanceGuide } from "./guideStops.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
 import { Input } from "./input.ts";
 import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer, type Segment2 } from "./walker.ts";
@@ -28,6 +30,8 @@ export type ExplorerMode = "overview" | "walk" | "guide";
 export interface ExplorerEvents {
   onMode?(mode: ExplorerMode): void;
   onGuideProgress?(p: { s: number; total: number; stepIndex: number; done: boolean }): void;
+  /** The guide stopped (and paused) at `stops[index]` given to startGuide. */
+  onGuideStop?(index: number): void;
   onPoiClick?(poiId: string): void;
 }
 
@@ -56,6 +60,10 @@ export class Explorer {
   private readonly routeGroup = new THREE.Group();
   private readonly poiGroup = new THREE.Group();
   private walkable: THREE.Object3D[] = [];
+  /** Meshes actually ray-tested for ground, walls and the follow camera (see castTargets). */
+  private groundTargets: THREE.Object3D[] = [];
+  private colliderTargets: THREE.Object3D[] = [];
+  private cameraTargets: THREE.Object3D[] = [];
   private colliders: THREE.Object3D[] = [];
   private walls: Segment2[] = [];
   private routeTexture: THREE.CanvasTexture | null = null;
@@ -81,7 +89,7 @@ export class Explorer {
   private camDistance = 4.2;
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
-  private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; speed: number } | null = null;
+  private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; speed: number; stops: { s: number; index: number }[]; holding: boolean } | null = null;
   private quality: "low" | "high";
   /** Why the station's own scene could not be shown (L0 fallback is in use), if any. */
   sceneError: string | null = null;
@@ -305,6 +313,9 @@ export class Explorer {
       this.walkable = this.graph.walkable;
     }
     this.world.updateMatrixWorld(true);
+    this.groundTargets = castTargets(this.walkable, this.colliders);
+    this.colliderTargets = castTargets(this.colliders, this.walkable);
+    this.cameraTargets = [...new Set([...this.colliderTargets, ...this.groundTargets])];
     this.phase = "composer";
     this.setupComposer();
     this.frameAll();
@@ -330,6 +341,9 @@ export class Explorer {
     if (this.graph) { this.world.remove(this.graph.root); this.overlays.remove(this.graph.overlay); this.graph.dispose(); this.graph = null; }
     this.walkable = [];
     this.colliders = [];
+    this.groundTargets = [];
+    this.colliderTargets = [];
+    this.cameraTargets = [];
     this.walls = [];
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
@@ -397,7 +411,7 @@ export class Explorer {
     if (this.walkable.length === 0) return null;
     this.ray.set(new THREE.Vector3(x, fromY, z), new THREE.Vector3(0, -1, 0));
     this.ray.far = maxDrop;
-    const hit = this.ray.intersectObjects(this.walkable, false)[0];
+    const hit = castAll(this.ray, this.groundTargets)[0];
     return hit ? hit.point.y : null;
   }
 
@@ -410,7 +424,7 @@ export class Explorer {
     for (const h of [0.5, 1.2]) {
       this.ray.set(from.clone().add(new THREE.Vector3(0, h, 0)), dir);
       this.ray.far = len + RADIUS;
-      if (this.ray.intersectObjects(this.colliders, false).length > 0) return true;
+      if (castAll(this.ray, this.colliderTargets).length > 0) return true;
     }
     return false;
   }
@@ -492,10 +506,16 @@ export class Explorer {
 
   // ---- Guide ---------------------------------------------------------------------
 
-  startGuide(polyline: PolylinePoint[], fromS = 0): void {
+  /**
+   * Walk the polyline. `stopAtPoints` are polyline point indices where the guide must stop and pause (waits
+   * for opening hours): it never moves past one before being resumed, including several at one spot.
+   */
+  startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = []): void {
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
-    this.guide = { pts, cum: cumulativeLengths(pts), steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, speed: GUIDE_SPEED };
+    const cum = cumulativeLengths(pts);
+    const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
+    this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, speed: GUIDE_SPEED, stops, holding: false };
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
     if (first.tx || first.tz) this.yaw = Math.atan2(-first.tx, -first.tz);
@@ -503,7 +523,13 @@ export class Explorer {
   }
 
   setGuidePaused(paused: boolean): void {
-    if (this.guide) this.guide.paused = paused;
+    if (!this.guide) return;
+    this.guide.paused = paused;
+    if (!paused) this.guide.holding = false;
+  }
+
+  get guidePaused(): boolean {
+    return this.guide?.paused ?? false;
   }
 
   setGuideSpeed(multiplier: number): void {
@@ -617,7 +643,9 @@ export class Explorer {
       return;
     }
     const total = g.cum[g.cum.length - 1]!;
-    if (!g.paused) g.s = Math.min(total, g.s + g.speed * dt);
+    // Arrive at a stop, never beyond it, and wait there until resumed.
+    const stopped = g.paused ? null : advanceGuide(g, g.speed * dt, total);
+    if (stopped !== null) g.paused = g.holding = true;
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
     if (p.tx || p.tz) {
@@ -626,7 +654,8 @@ export class Explorer {
     }
     this.yaw -= look.dx * 0.0042;
     const stepIndex = g.steps[Math.min(g.steps.length - 1, p.segment + 1)] ?? -1;
-    this.events.onGuideProgress?.({ s: g.s, total, stepIndex, done: g.s >= total });
+    this.events.onGuideProgress?.({ s: g.s, total, stepIndex, done: g.s >= total && !g.holding });
+    if (stopped !== null) this.events.onGuideStop?.(stopped);
   }
 
   private placeCamera(dt: number): void {
@@ -639,11 +668,10 @@ export class Explorer {
     }
     let dist = this.camDistance;
     const back = dir.clone().negate().add(new THREE.Vector3(0, 0.35, 0)).normalize();
-    const blockers = [...this.colliders, ...this.walkable];
-    if (blockers.length) {
+    if (this.cameraTargets.length) {
       this.ray.set(head, back);
       this.ray.far = dist;
-      const hit = this.ray.intersectObjects(blockers, false)[0];
+      const hit = castAll(this.ray, this.cameraTargets)[0];
       if (hit) dist = Math.max(0.6, hit.distance - 0.25);
     }
     const desired = head.clone().add(back.multiplyScalar(dist));

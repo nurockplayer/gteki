@@ -228,6 +228,12 @@ describe("walk wording follows the walked geometry", () => {
     // A gradual curve of ~0.5 m segments (a half circle from start to goal) still counts.
     const arc = Array.from({ length: 61 }, (_, i) => ({ x: 10 - 10 * Math.cos((i / 60) * Math.PI), y: 10 * Math.sin((i / 60) * Math.PI), z: 0 }));
     expect(say(arc)[1]).toMatch(/^Continue/);
+    // 10 m at 0°, 30 m at +30°, 30 m at −30°: each heading is within 35° of the first, but the walk turns 60°.
+    const r = Math.PI / 180;
+    const zig = [{ x: 0, y: 0, z: 0 }, { x: 0, y: 10, z: 0 }];
+    zig.push({ x: zig[1]!.x + 30 * Math.sin(30 * r), y: zig[1]!.y + 30 * Math.cos(30 * r), z: 0 });
+    zig.push({ x: zig[2]!.x + 30 * Math.sin(-30 * r), y: zig[2]!.y + 30 * Math.cos(-30 * r), z: 0 });
+    expect(say(zig)[1]).toMatch(/^Continue/);
   });
 
   it("still says straight for a straight edge, and ignores sub-metre jitter", () => {
