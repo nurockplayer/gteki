@@ -3,7 +3,8 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { discoverStations, fsUrl, gtekiStations } from "../stations-plugin.ts";
+import { discoverStations, fsUrl, gtekiStations, publishableAssets } from "../stations-plugin.ts";
+import { createDemoFiles } from "./demo.ts";
 import { threeAliases } from "../three-alias.ts";
 
 function tree(): string {
@@ -67,8 +68,8 @@ describe("threeAliases", () => {
 
 describe("virtual station module asset URLs", () => {
   const load = (roots: string[], command: "serve" | "build") => {
-    const plugin = gtekiStations(roots) as unknown as { configResolved(c: { command: string }): void; load(id: string): string };
-    plugin.configResolved({ command });
+    const plugin = gtekiStations(roots) as unknown as { configResolved(c: { command: string; root: string }): void; load(id: string): string };
+    plugin.configResolved({ command, root: os.tmpdir() });
     return plugin.load("\0virtual:gteki-stations");
   };
 
@@ -86,8 +87,38 @@ describe("virtual station module asset URLs", () => {
     expect(code).not.toContain(JSON.stringify(`/@fs${real}`));
   });
 
-  it("uses fingerprinted ?url imports for production builds", () => {
-    expect(load([tree()], "build")).toMatch(/b1\.glb" \+ "\?url"/);
+  /** Real (synthetic demo) contract files, so a production build accepts the fixture station. */
+  const valid = (root: string, files: string[] = ["assets/b1.meta.json"]) => {
+    const [m, g, p] = createDemoFiles();
+    m.assets = [{ id: "b1", uri: "assets/b1.glb", format: "glb", floorIds: [], role: "visual", sourceIds: [], files }];
+    const dir = path.join(root, "alpha", "gteki");
+    fs.writeFileSync(path.join(dir, "station.json"), JSON.stringify(m));
+    fs.writeFileSync(path.join(dir, "graph.json"), JSON.stringify(g));
+    fs.writeFileSync(path.join(dir, "pois.json"), JSON.stringify(p));
+    return root;
+  };
+
+  it("uses statically resolvable, fingerprinted ?url imports for production builds", () => {
+    // One literal specifier: Vite must see "?url" without folding a runtime concatenation.
+    expect(load([valid(tree())], "build")).toMatch(/import\("[^"]*\/b1\.glb\?url"\)/);
+  });
+
+  it("refuses a production build from a station that fails the contract, but still serves it in dev", () => {
+    const root = tree();
+    expect(() => load([root], "build")).toThrow(/refusing a production build with invalid stations: alpha/);
+    expect(() => load([root], "serve")).not.toThrow();
+  });
+
+  it("publishes only declared asset files and refuses undeclared or missing ones", () => {
+    const root = valid(tree());
+    expect([...publishableAssets(discoverStations([root])).get("alpha")!].sort()).toEqual(["assets/b1.glb", "assets/b1.meta.json"]);
+    // An extra file nobody declared (so no rights check covers it) stops the build.
+    fs.writeFileSync(path.join(root, "alpha", "assets", "traced.png"), "x");
+    expect(() => load([root], "build")).toThrow(/undeclared asset files .*assets\/traced\.png/);
+    expect(load([root], "serve")).toContain("assets/traced.png");
+    fs.rmSync(path.join(root, "alpha", "assets", "traced.png"));
+    valid(root, ["assets/b1.meta.json", "assets/b1_lightmap.webp"]);
+    expect(() => load([root], "build")).toThrow(/declared asset files not found: assets\/b1_lightmap\.webp/);
   });
 });
 

@@ -97,7 +97,8 @@ const VERTICAL_TURN_DEG = 45;
 /** "level" = heights known and equal (a flat continuation); null = direction UNKNOWN. */
 function verticalSense(a: Floor | undefined, b: Floor | undefined, za: number | null, zb: number | null): "up" | "down" | "level" | null {
   if (za !== null && zb !== null) return Math.abs(zb - za) > 0.3 ? (zb > za ? "up" : "down") : "level";
-  if (a && b && a.elevationM !== null && b.elevationM !== null && a.elevationM !== b.elevationM) return b.elevationM > a.elevationM ? "up" : "down";
+  const evidenced = (f: Floor) => f.elevationM !== null && (f.elevationSource === "measured" || f.elevationSource === "source-derived");
+  if (a && b && evidenced(a) && evidenced(b) && a.elevationM !== b.elevationM) return b.elevationM! > a.elevationM! ? "up" : "down";
   if (a && b && a.operatorId === b.operatorId && a.ordinal !== null && b.ordinal !== null && a.ordinal !== b.ordinal) return b.ordinal > a.ordinal ? "up" : "down";
   return null;
 }

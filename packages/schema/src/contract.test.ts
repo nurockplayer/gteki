@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createSyntheticBundle, syntheticEdge as edge } from "../../navigation/src/fixtures.ts";
+import { asRealStation, createSyntheticBundle, syntheticEdge as edge } from "../../navigation/src/fixtures.ts";
 import { isOpenAt, parseHm, parseStationFiles, validateBundle } from "./index.ts";
 import type { GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
 
@@ -106,8 +106,7 @@ describe("validator truth rules added in v0.1 core", () => {
   });
 
   it("accepts reference-only sources cited as facts, but never as geometry or asset inputs", () => {
-    const b = createSyntheticBundle([edge("v", "start", "goal", { verification: "verified" })]);
-    b.station.synthetic = false;
+    const b = asRealStation(createSyntheticBundle([edge("v", "start", "goal", { verification: "verified" })]));
     const ref = b.sources.find((s) => s.id === "fixture-access")!;
     ref.rights = "REFERENCE_ONLY";
     expect(warnings(b)).toContain("source.rights");
@@ -264,6 +263,76 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     synthetic.sources.find((s) => s.id === "fixture-access")!.rights = "REFERENCE_ONLY";
     synthetic.nodes[0]!.sourceRefs = [{ sourceId: "fixture-access", featureId: "n1" }];
     expect(errors(synthetic)).not.toContain("node.source.rights");
+  });
+
+  it("requires a JGD2011 station origin", () => {
+    for (const datum of ["WGS84", "jgd2011", ""]) {
+      const b = createSyntheticBundle();
+      (b.station.origin as { datum: string }).datum = datum;
+      expect(errors(b)).toContain("station.origin.datum");
+    }
+    expect(errors(createSyntheticBundle())).not.toContain("station.origin.datum");
+  });
+
+  it("requires position provenance for every node of a real station", () => {
+    const b = createSyntheticBundle();
+    b.station.synthetic = false;
+    b.edges = [];
+    for (const n of b.nodes) n.sourceRefs = [{ sourceId: "fixture-geometry", featureId: n.id }];
+    expect(errors(b)).not.toContain("node.source");
+    b.nodes[0]!.sourceRefs = [];
+    expect(errors(b)).toContain("node.source");
+    // Synthetic fixtures may stay without per-node references.
+    expect(errors(createSyntheticBundle())).not.toContain("node.source");
+  });
+
+  it("needs a reusable geometric basis for POI display positions and coverage polygons", () => {
+    const real = () => {
+      const b = createSyntheticBundle();
+      b.station.synthetic = false;
+      b.edges = [];
+      for (const n of b.nodes) n.sourceRefs = [{ sourceId: "fixture-geometry", featureId: n.id }];
+      b.sources.find((s) => s.id === "fixture-access")!.usage = "facts-only";
+      b.sources.find((s) => s.id === "fixture-access")!.rights = "REFERENCE_ONLY";
+      b.coverage.areas = [{ id: "area", floorId: "concourse", status: "routable", label: [], polygon: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }], sourceIds: ["fixture-geometry", "fixture-access"] }];
+      return b;
+    };
+    // A reusable source alongside a facts-only citation is fine.
+    expect(errors(real())).toEqual([]);
+    const facts = real();
+    facts.pois[0]!.evidence = { ...facts.pois[0]!.evidence, sourceIds: ["fixture-access"] };
+    facts.coverage.areas[0]!.sourceIds = ["fixture-access"];
+    expect(errors(facts)).toEqual(expect.arrayContaining(["poi.position.rights", "coverage.polygon.rights"]));
+    // Without a drawn position or polygon, facts-only citations stay allowed.
+    facts.pois[0]!.displayPosition = null;
+    delete facts.coverage.areas[0]!.polygon;
+    expect(errors(facts)).toEqual([]);
+    const empty = real();
+    empty.coverage.areas[0]!.sourceIds = [];
+    expect(errors(empty)).toContain("coverage.source");
+  });
+
+  it("keeps unknown and symbolic floor elevations null and rejects unknown elevation sources", () => {
+    for (const elevationSource of ["unknown", "symbolic"] as const) {
+      const b = createSyntheticBundle();
+      b.floors[0]!.elevationSource = elevationSource;
+      expect(errors(b)).toContain("floor.elevation");
+    }
+    const bad = createSyntheticBundle();
+    (bad.floors[0] as { elevationSource: string }).elevationSource = "guessed";
+    expect(errors(bad)).toContain("floor.elevation");
+  });
+
+  it("checks declared asset files like the asset uri, and refuses ? and # in either", () => {
+    const withFiles = (uri: string, files: string[]) => {
+      const b = createSyntheticBundle();
+      b.assets = [{ id: "a", uri, format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-geometry"], files }];
+      return errors(b);
+    };
+    expect(withFiles("assets/a.glb", ["assets/a_lightmap.webp", "assets/a.meta.json"])).toEqual([]);
+    for (const bad of ["../x.webp", "assets//x.webp", "assets/x#1.webp", "assets/x?.webp", "/abs.webp", "station.json", "assets/x.exe"])
+      expect(withFiles("assets/a.glb", [bad])).toContain("asset.files");
+    for (const bad of ["assets/roof#west.glb", "assets/roof?west.glb"]) expect(withFiles(bad, [])).toContain("asset.uri");
   });
 
   it("forbids facts-only geometry even in synthetic bundles", () => {

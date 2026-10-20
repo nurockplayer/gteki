@@ -188,6 +188,8 @@ func test_generated_glb(station_root: Node3D) -> void:
 		check(identity.transform == Transform3D.IDENTITY, "omitted asset transform is identity")
 	var rejected := Assets.new()
 	check(not rejected.load_assets({"assets": [{"uri": "../escape.glb", "format": "glb"}]}, "user://", station_root), "reject asset traversal")
+	for odd in ["assets/roof#west.glb", "assets/roof?west.glb"]:
+		check(not Assets.new().load_assets({"assets": [{"uri": odd, "format": "glb"}]}, "user://", station_root), "reject ? and # in asset URIs, as the web contract does")
 	check(not rejected.load_assets({"assets": [{"uri": filename, "format": "glb", "transform": [1]}]}, "user://", station_root), "reject malformed asset transform")
 	_check_symlink_fence(output)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(output))

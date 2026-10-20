@@ -293,6 +293,11 @@ export interface Asset {
   role: AssetRole;
   /** Sources the asset is derived from; their rights gate public distribution. */
   sourceIds: string[];
+  /**
+   * Further files the asset needs at runtime (lightmaps, sidecar metadata, external buffers), relative
+   * like `uri`; they share its `sourceIds` and rights. A production build publishes only declared files.
+   */
+  files?: string[];
   /** e.g. "Blender build from PLATEAU ubld 53394576, 0.5 m grid"; disclosure of modification. */
   derivation?: string;
 }
@@ -337,6 +342,6 @@ export interface PoiFile {
   pois: Poi[];
 }
 
-export { validateBundle, type ValidationIssue } from "./validate.ts";
+export { ASSET_FILE_EXT, isCanonicalAssetPath, validateBundle, type ValidationIssue } from "./validate.ts";
 export { checkShape, composeBundle, parseStationFiles, type ParseResult } from "./parse.ts";
 export { parseHm, isOpenAt, type LocalTime } from "./hours.ts";

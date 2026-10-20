@@ -47,6 +47,13 @@ stations/<id>/gteki/
 | `Source.usage: "facts-only"`: may evidence facts; may not feed edge geometry, node positions or assets | validate |
 | Assets, edge geometry and node positions (`sourceRefs`) derived from non-`REUSABLE_WITH_CONDITIONS` or `facts-only` sources are rejected for public bundles | validate |
 | Every evidence record (edge geometry/access/hours, POI) names at least one source | validate |
+| Station origin datum is `JGD2011` | validate |
+| Real-station nodes cite position sources; POI `displayPosition` and coverage polygons need ≥1 reusable data source | validate |
+| `elevationSource` is one of measured / source-derived / symbolic / unknown; symbolic and unknown keep `elevationM` null | validate |
+| Without `accessEvidence`, an edge's paid / fare-boundary / wheelchair / steps flags are UNKNOWN to the router | router |
+| A production build refuses any discovered station that fails `parseStationFiles` | web build |
+| `Asset.files` declares an asset's further runtime files (lightmaps, sidecar metadata, buffers); they share its sources and rights. A production build publishes only declared files and refuses undeclared, missing, or `?`/`#`-resolving ones | validate + web build |
+| Every emitted file that isn't code or a stylesheet (images of any type, models, audio, fonts, JSON) must be a declared station file or app-owned; Vite-emitted files of unknown origin are refused. Bytes a scene module embeds in code (inlined imports, `?raw`) are station code, reviewed in station PRs | web build |
 | Asset `uri` must be relative, inside the station folder; symlinks are followed only inside it; a GLB's external buffers/images must resolve through the station's asset map (web) or are refused (Godot) | validate, plugin, explorer, godot |
 | Symbolic polyline z (`geometryZ: "symbolic"`) never affects length or cost | router |
 | `Source.validUntil` is the end of the source's declared *data* validity: once passed, dependent routes are stale and list it in `expiredSourceIds`. A provider's publication/availability period or licence term is not `validUntil`; it goes in source `notes` and coverage gaps | router |

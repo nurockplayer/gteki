@@ -412,3 +412,32 @@ describe("elevators and endpoint evidence (PR #15 Codex review 8)", () => {
     expect(withPoi.evidenceCheckedDate).toBe("2030-01-01");
   });
 });
+
+describe("access facts need access evidence", () => {
+  it("treats paid/fare/wheelchair/steps flags as UNKNOWN on an edge without accessEvidence", () => {
+    const bundle = createSyntheticBundle([edge("claimed", "start", "goal", { verification: "synthetic", accessEvidence: null })]);
+    const router = createRouter(bundle);
+    // The flags claim step-free and unpaid, but nothing evidences them.
+    expect(router.route("start", "goal", { ...base, stepFree: true })).toMatchObject({ ok: false, reason: "no_path" });
+    expect(router.route("start", "goal", { ...base, fare: "unpaid_only" })).toMatchObject({ ok: false, reason: "no_path" });
+    const r = ok(router.route("start", "goal", base));
+    expect(r.unknowns.map((u) => u.kind)).toEqual(expect.arrayContaining(["paid", "fare_boundary", "wheelchair", "steps", "access_evidence"]));
+    expect(r.crossesFareBoundary).toBeNull();
+    // With evidence the same flags are honoured.
+    const evidenced = createRouter(createSyntheticBundle([edge("claimed", "start", "goal", { verification: "synthetic" })]));
+    expect(evidenced.route("start", "goal", { ...base, stepFree: true, fare: "unpaid_only" }).ok).toBe(true);
+  });
+});
+
+describe("vertical narration from floor heights", () => {
+  it("never says up/down from an unevidenced floor elevation", () => {
+    const mk = (elevationSource: "source-derived" | "unknown") => {
+      const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("up", "a", "upper", { mode: "stairs", lengthM: 6 })]);
+      for (const n of b.nodes) n.position.z = null;
+      for (const f of b.floors) { f.elevationSource = elevationSource; f.ordinal = null; }
+      return describeRoute(b, ok(createRouter(b).route("start", "upper", base)), "en").find((i) => i.kind === "stairs")!;
+    };
+    expect(mk("source-derived").vertical).toBe("up");
+    expect(mk("unknown").vertical).toBeNull();
+  });
+});
