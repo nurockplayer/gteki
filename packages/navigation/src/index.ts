@@ -100,7 +100,11 @@ export interface RouteFailure {
 }
 
 export interface Router {
-  route(fromNodeId: string, toNodeIds: string | string[], profile?: RouteProfile): RouteResult | RouteFailure;
+  /**
+   * Cheapest route from any start to any goal, ranked by the router's cost (not walking length).
+   * Unknown ids are ignored; `start_equals_goal` when any start already is a goal.
+   */
+  route(fromNodeIds: string | string[], toNodeIds: string | string[], profile?: RouteProfile): RouteResult | RouteFailure;
   /** True when this edge may be used under the profile (exposed for UI/debug overlays). */
   isTraversable(edge: Edge, profile: RouteProfile): boolean;
 }

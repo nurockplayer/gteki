@@ -151,12 +151,13 @@ export function createRouter(bundle: StationBundle): Router {
     return true;
   }
 
-  function result(fromNodeId: string, goal: string, previous: Map<string, Previous>, profile: RouteProfile): RouteResult {
+  function result(goal: string, previous: Map<string, Previous>, profile: RouteProfile): RouteResult {
+    // Starts have no predecessor, so the walk back ends at whichever start the path came from.
     const path: Previous[] = [];
-    for (let nodeId = goal; nodeId !== fromNodeId;) {
-      const step = previous.get(nodeId)!;
+    let fromNodeId = goal;
+    for (let step = previous.get(fromNodeId); step; step = previous.get(fromNodeId)) {
       path.push(step);
-      nodeId = step.fromNodeId;
+      fromNodeId = step.fromNodeId;
     }
     path.reverse();
 
@@ -251,24 +252,28 @@ export function createRouter(bundle: StationBundle): Router {
       return nodes.has(edge.from) && nodes.has(edge.to) && measureEdge(edge) !== null &&
         permits(edge, profile, new Set(profile.avoidModes), new Set(profile.extraClosedEdgeIds));
     },
-    route(fromNodeId, toNodeIds, profile = DEFAULT_PROFILE) {
-      if (!nodes.has(fromNodeId)) return { ok: false, reason: "unknown_start", message: `Unknown start node: ${fromNodeId}` };
+    route(fromNodeIds, toNodeIds, profile = DEFAULT_PROFILE) {
+      const requestedStarts = typeof fromNodeIds === "string" ? [fromNodeIds] : fromNodeIds;
+      const starts = [...new Set(requestedStarts.filter((id) => nodes.has(id)))];
+      if (starts.length === 0) return { ok: false, reason: "unknown_start", message: `Unknown start node: ${requestedStarts.join(", ")}` };
       const requestedGoals = typeof toNodeIds === "string" ? [toNodeIds] : toNodeIds;
       const goals = new Set(requestedGoals.filter((id) => nodes.has(id)));
       if (goals.size === 0) return { ok: false, reason: "unknown_goal", message: "No known goal nodes were supplied." };
-      if (goals.has(fromNodeId)) return { ok: false, reason: "start_equals_goal", message: "The start is already a goal node." };
+      // Already standing at the destination beats any walk from another start.
+      if (starts.some((id) => goals.has(id))) return { ok: false, reason: "start_equals_goal", message: "The start is already a goal node." };
 
       const avoided = new Set(profile.avoidModes);
       const closed = new Set(profile.extraClosedEdgeIds);
-      const distances = new Map<string, number>([[fromNodeId, 0]]);
+      // Multi-source Dijkstra: every start begins at cost 0, so the cheapest start wins on the router's own cost.
+      const distances = new Map<string, number>(starts.map((id) => [id, 0]));
       const previous = new Map<string, Previous>();
       const settled = new Set<string>();
       const queue = new MinHeap();
-      queue.push({ nodeId: fromNodeId, cost: 0 });
+      for (const id of starts) queue.push({ nodeId: id, cost: 0 });
       for (let current = queue.pop(); current; current = queue.pop()) {
         if (settled.has(current.nodeId) || current.cost !== distances.get(current.nodeId)) continue;
         settled.add(current.nodeId);
-        if (goals.has(current.nodeId)) return result(fromNodeId, current.nodeId, previous, profile);
+        if (goals.has(current.nodeId)) return result(current.nodeId, previous, profile);
         for (const traversal of adjacency.get(current.nodeId)!) {
           if (settled.has(traversal.toNodeId) || !permits(traversal.edge, profile, avoided, closed)) continue;
           const cost = current.cost + traversal.measurement.cost;
