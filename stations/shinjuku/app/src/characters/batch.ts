@@ -97,7 +97,7 @@ export function createCharacterBatch(T: typeof THREE): CharacterBatch {
       const start = bones.length;
       for (let b = 0; b < mesh.skeleton.bones.length; b++) {
         bones.push(mesh.skeleton.bones[b]!);
-        inverses.push(mesh.skeleton.boneInverses[b]!.clone());
+        inverses.push(mesh.skeleton.boneInverses[b]!);
       }
       sources.push({ avatar: avatars[i]!, mesh, geometry: mesh.geometry,
         vertexOffset: vertexCount, indexOffset: indexCount,

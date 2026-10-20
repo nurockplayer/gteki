@@ -4,7 +4,7 @@ import type { Router } from "@gteki/navigation";
 import { createAvatar, type Avatar } from "./avatar.ts";
 import { createCharacterBatch } from "./characters/batch.ts";
 
-/** Upper bound on ambient agents (each is a full avatar). */
+/** Upper bound on ambient route agents; visible ones receive a rig lazily. */
 export const CROWD_LIMIT = 80;
 export interface CrowdOptions {
   max: number;
@@ -36,11 +36,12 @@ interface Segment {
   mode: StationBundle["edges"][number]["mode"];
   width: number;
 }
-interface Origin { point: Point; routes: Segment[][] }
+interface Origin { id: string; point: Point; routes: Segment[][]; nextTarget: number }
 interface SpawnPoint { route: Segment[]; edge: number; progress: number }
 interface RoutedSegment { route: Segment[]; edge: number; segment: Segment }
 interface Agent {
-  avatar: Avatar;
+  avatar?: Avatar;
+  outfit: number;
   pose: { climbing: number; onStairs: boolean };
   route: Segment[];
   active: boolean;
@@ -99,46 +100,59 @@ export function createCrowd(
     if (poi.category !== "exit" && poi.category !== "ticket_gate" && poi.category !== "platform" && poi.category !== "toilet") continue;
     for (const id of poi.connectorNodeIds) if (points.has(id)) connectors.add(id);
   }
-  const origins: Origin[] = [];
+  const connectorIds = [...connectors];
+  const origins: Origin[] = connectorIds.map(id => ({ id, point: points.get(id)!, routes: [], nextTarget: 0 }));
   const profile = { fare: "ticketed", stepFree: false } as const;
-  // Cache every directed POI pair once. Routing, avatar creation and scratch
-  // allocation stay out of update(), including on arrival and recycling.
-  for (const from of connectors) {
-    const origin: Origin = { point: points.get(from)!, routes: [] };
-    for (const to of connectors) {
-      if (from === to) continue;
-      const result = router.route(from, to, profile);
+  const routedSegments: RoutedSegment[] = [];
+  const segmentsByEdge = new Map<string, Segment>();
+  const seenSegments = new Set<Segment>();
+  let started = false;
+
+  function warmRoutes(focus: Point): void {
+    // The 34 connectors used to trigger 1,122 route queries synchronously.
+    // Fill the SAME directed-pair cache after the first frame, nearest origins
+    // first, at most 16 queries/update. Remote origins wait until approached.
+    // Segments shared by many POI routes have only one immutable allocation.
+    for (let query = 0; query < 16; query++) {
+      let origin: Origin | undefined, nearest = 135;
+      for (const candidate of origins) {
+        if (candidate.nextTarget >= connectorIds.length) continue;
+        const p = candidate.point, d = distance(p.x, p.y, p.z, focus);
+        if (d <= nearest) { nearest = d; origin = candidate; }
+      }
+      if (!origin) break;
+      const to = connectorIds[origin.nextTarget++]!;
+      if (origin.id === to) { query--; continue; }
+      const result = router.route(origin.id, to, profile);
       if (!result.ok || result.nodeIds.length !== result.steps.length + 1) continue;
       const segments: Segment[] = [];
       let valid = true;
       for (let i = 0; i < result.steps.length; i++) {
-        const a = points.get(result.nodeIds[i]!);
-        const b = points.get(result.nodeIds[i + 1]!);
+        const fromId = result.nodeIds[i]!, toId = result.nodeIds[i + 1]!;
+        const a = points.get(fromId), b = points.get(toId);
         if (!a || !b) { valid = false; break; }
-        const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const dz = b.z - a.z;
-        const length = Math.hypot(dx, dy, dz);
-        const horizontal = Math.hypot(dx, dy);
-        const mode = result.steps[i]!.mode;
-        if (length < 1e-6 && mode !== "elevator") continue;
-        segments.push({ a, b, dx, dy, dz, length, horizontal,
-          nx: horizontal > 0 ? -dy / horizontal : 0,
-          ny: horizontal > 0 ? dx / horizontal : 0,
-          mode, width: mode === "stairs" || mode === "escalator" ? 0.25 : 0.6 });
+        const mode = result.steps[i]!.mode, key = `${fromId}>${toId}:${mode}`;
+        let segment = segmentsByEdge.get(key);
+        if (!segment) {
+          const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+          const length = Math.hypot(dx, dy, dz), horizontal = Math.hypot(dx, dy);
+          if (length < 1e-6 && mode !== "elevator") continue;
+          segment = { a, b, dx, dy, dz, length, horizontal,
+            nx: horizontal > 0 ? -dy / horizontal : 0, ny: horizontal > 0 ? dx / horizontal : 0,
+            mode, width: mode === "stairs" || mode === "escalator" ? 0.25 : 0.6 };
+          segmentsByEdge.set(key, segment);
+        }
+        segments.push(segment);
       }
-      if (valid && segments.length) origin.routes.push(segments);
+      if (!valid || !segments.length) continue;
+      origin.routes.push(segments);
+      for (let edge = 0; edge < segments.length; edge++) {
+        const segment = segments[edge]!;
+        if (seenSegments.has(segment)) continue;
+        seenSegments.add(segment);
+        routedSegments.push({ route: segments, edge, segment });
+      }
     }
-    if (origin.routes.length) origins.push(origin);
-  }
-  const routedSegments: RoutedSegment[] = [];
-  const seenSegments = new Set<string>();
-  for (const origin of origins) for (const route of origin.routes) for (let edge = 0; edge < route.length; edge++) {
-    const s = route[edge]!;
-    const key = `${s.a.x},${s.a.y},${s.a.z}>${s.b.x},${s.b.y},${s.b.z}:${s.mode}`;
-    if (seenSegments.has(key)) continue;
-    seenSegments.add(key);
-    routedSegments.push({ route, edge, segment: s });
   }
 
   function distance(x: number, y: number, z: number, focus: Point): number {
@@ -148,7 +162,7 @@ export function createCrowd(
     if (a.active) count--;
     a.active = false;
     a.localSpawn = false;
-    a.avatar.object.visible = false;
+    if (a.avatar) a.avatar.object.visible = false;
   }
   function segment(a: Agent): Segment {
     return a.route[Math.min(a.edge, a.route.length - 1)]!;
@@ -163,8 +177,10 @@ export function createCrowd(
     a.x = s.a.x + s.dx * t + s.nx * offset;
     a.y = s.a.y + s.dy * t + s.ny * offset;
     a.z = s.a.z + s.dz * t;
-    a.avatar.object.position.set(a.x, a.z, -a.y);
-    if (s.horizontal > 0) a.avatar.object.rotation.y = -Math.atan2(s.dx, s.dy);
+    if (a.avatar) {
+      a.avatar.object.position.set(a.x, a.z, -a.y);
+      if (s.horizontal > 0) a.avatar.object.rotation.y = -Math.atan2(s.dx, s.dy);
+    }
   }
   function enter(a: Agent): void {
     a.progress = 0;
@@ -233,6 +249,7 @@ export function createCrowd(
     let candidates = 0;
     for (let i = 0; i < origins.length; i++) {
       const o = origins[i]!;
+      if (!o.routes.length) continue;
       const p = o.point;
       const d = distance(p.x, p.y, p.z, focus);
       // There is no camera direction in this API, so avoid nearby spawning in
@@ -270,6 +287,11 @@ export function createCrowd(
 
   function update(dt: number, focus: Point): void {
     if (disposed || !Number.isFinite(dt) || dt < 0 || !Number.isFinite(focus.x) || !Number.isFinite(focus.y) || !Number.isFinite(focus.z)) return;
+    // The first update is on the station's first-frame path. Only the player
+    // is rendered then; ambient routing/rig generation starts next update.
+    if (!started) { started = true; return; }
+    if (agents.length) warmRoutes(focus);
+    let creations = 2;
     for (let i = 0; i < agents.length; i++) {
       const a = agents[i]!;
       if (a.active && (a.edge >= a.route.length || distance(a.x, a.y, a.z, focus) > 110)) deactivate(a);
@@ -381,10 +403,23 @@ export function createCrowd(
       // Recycle local walkers at the edge of the neighborhood. Their next
       // spawn remains on a cached routed segment and away from the player.
       if (a.localSpawn && distance(a.x, a.y, a.z, focus) > 40) { deactivate(a); continue; }
-      const object = a.avatar.object;
-      object.visible = a.lift === 0 && Math.abs(a.z - focus.z) <= 8;
+      const visible = a.lift === 0 && Math.abs(a.z - focus.z) <= 8;
       const viewerDistance = Math.hypot(a.x - focus.x, a.y - focus.y, a.z - focus.z);
-      a.avatar.setDistance(viewerDistance);
+      // Metadata can route on other levels without constructing invisible rigs.
+      // Bound first appearance to two rigs/update; shared outfit/LOD geometry
+      // is generated only when such a rig actually needs it.
+      if (!a.avatar && visible && viewerDistance <= 60 && creations > 0) {
+        a.avatar = createAvatar(THREE_, a.outfit);
+        a.avatar.object.userData.decorative = true;
+        group.add(a.avatar.object);
+        avatars.push(a.avatar);
+        creations--;
+        place(a);
+      }
+      if (!a.avatar) continue;
+      const object = a.avatar.object;
+      object.visible = visible;
+      if (visible) a.avatar.setDistance(viewerDistance);
       if (object.visible && viewerDistance <= 60 && dt > 0) {
         const s = segment(a);
         a.pose.onStairs = s.mode === "stairs";
@@ -400,18 +435,15 @@ export function createCrowd(
     const max = Number.isFinite(n) ? Math.max(0, Math.min(CROWD_LIMIT, Math.floor(n))) : 0;
     while (agents.length > max) {
       const a = agents.pop()!;
-      avatars.pop();
       deactivate(a);
-      group.remove(a.avatar.object);
-      a.avatar.dispose();
+      if (a.avatar) {
+        avatars.splice(avatars.indexOf(a.avatar), 1);
+        group.remove(a.avatar.object);
+        a.avatar.dispose();
+      }
     }
     while (agents.length < max) {
-      const avatar = createAvatar(THREE_, 1 + (agents.length % 7));
-      avatar.object.visible = false;
-      avatar.object.userData.decorative = true;
-      group.add(avatar.object);
-      avatars.push(avatar);
-      agents.push({ avatar, pose: { climbing: 0, onStairs: false }, route: [],
+      agents.push({ outfit: 1 + (agents.length % 7), pose: { climbing: 0, onStairs: false }, route: [],
         active: false, edge: 0, progress: 0, lift: 0, speed: 0, lane: 0,
         offset: 0, steer: 0, pace: 1, localSpawn: false, localWait: 0,
         localMoveUntilWait: 0, localWaitsRemaining: 0, x: 0, y: 0, z: 0 });
@@ -426,6 +458,7 @@ export function createCrowd(
     origins.length = 0;
     routedSegments.length = 0;
     seenSegments.clear();
+    segmentsByEdge.clear();
     group.clear();
     group.removeFromParent();
   }
