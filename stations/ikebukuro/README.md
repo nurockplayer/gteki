@@ -58,7 +58,7 @@ pnpm typecheck
 Tools: Homebrew `blender` (5.2 LTS), `webp`, `imagemagick`, `godot` (optional); pnpm.
 
 ```sh
-sh pipeline/fetch_sources.sh      # PLATEAU GML + metadata (sha256-checked) into data-cache/
+bash pipeline/fetch_sources.sh    # PLATEAU GML + metadata (sha256-checked) into data-cache/
 pnpm build:data                   # GML -> ENU JSON -> GLB -> verified graph -> signage -> walk bridges
 pnpm bake:lighting                # 4096 Cycles lightmap (Metal GPU ~5 min; DEVICE=CPU works) -> WebP
 ```

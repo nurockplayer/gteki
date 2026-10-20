@@ -13,6 +13,7 @@ import datetime
 import json
 import math
 import os
+import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -198,11 +199,31 @@ def crowd_lanes(grid, edges):
     return lanes
 
 
+def build_instant():
+    """One reproducible build time for generatedAt and the geometry checkedDate.
+
+    SOURCE_DATE_EPOCH wins; otherwise the last commit of the hand-authored source, so rebuilding
+    unchanged inputs rewrites byte-identical artifacts. Wall clock only without git.
+    """
+    epoch = os.environ.get("SOURCE_DATE_EPOCH")
+    if not epoch:
+        try:
+            epoch = subprocess.run(
+                ["git", "log", "-1", "--format=%ct", "--", SRC], cwd=ROOT, capture_output=True, text=True, check=True,
+            ).stdout.strip()
+        except (OSError, subprocess.CalledProcessError):
+            epoch = ""
+    if epoch:
+        return datetime.datetime.fromtimestamp(int(epoch), datetime.timezone.utc)
+    return datetime.datetime.now(datetime.timezone.utc)
+
+
 def main():
     src = json.load(open(SRC))
     surf = Surfaces(ENU)
     segs, sgrid = wall_segments(ENU)
-    today = datetime.date.today().isoformat()
+    built = build_instant()
+    today = built.date().isoformat()
     problems = []
 
     grid = Grid(surf, segs, sgrid, tuple(src["gridBBox"]))
@@ -316,7 +337,7 @@ def main():
 
     station = {
         "schema": "gteki.station/0.1",
-        "station": src["station"] | {"generatedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")},
+        "station": src["station"] | {"generatedAt": built.isoformat(timespec="seconds")},
         "sources": src["sources"],
         "floors": src["floors"],
         "coverage": src["coverage"],
