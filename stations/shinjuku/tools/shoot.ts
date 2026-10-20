@@ -31,7 +31,7 @@ const checkUI = arg("check-ui", "0") === "1";
 const uiChecks: string[] = [];
 const routePair = arg("route")?.split(",");
 if (routePair && (routePair.length !== 2 || routePair.some((id) => !id))) throw new Error("--route requires fromPoiId,toPoiId");
-const { vantages } = JSON.parse(readFileSync(join(here, "vantages.json"), "utf8")) as { vantages: Vantage[] };
+const { vantages } = JSON.parse(readFileSync(resolve(arg("vantages", join(here, "vantages.json"))!), "utf8")) as { vantages: Vantage[] };
 
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({

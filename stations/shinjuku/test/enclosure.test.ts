@@ -94,6 +94,16 @@ describe("underground enclosure", () => {
     expect(misses.slice(0, 20)).toEqual([]);
   });
 
+  it("caps the complete clearance opening above the B1 elevator hall", () => {
+    const node = nodes.get("n:cbaeded02c114348a1bd8d0c0590584c")!;
+    for (const dx of [-0.5, 0, 0.5]) for (const dy of [-0.5, 0, 0.5]) {
+      const p = { x: node.position.x + dx, y: node.position.y + dy };
+      const cap = layout.soffits.find((s) => s.spaceId.startsWith("elevator-cap:") && pointInRings(p, s.rings));
+      expect(cap).toBeDefined();
+      expect(soffitHeight(cap!, p) - layout.nodeZ.get(node.id)!).toBeGreaterThanOrEqual(2.3);
+    }
+  });
+
   it("opens ceilings across the full tread width of every run", () => {
     const roofs = [...layout.levels.filter((lv) => lv.z < -0.5).flatMap((lv) => lv.ceilings), ...layout.soffits];
     const bad: string[] = [];
@@ -117,7 +127,9 @@ describe("underground enclosure", () => {
     expect(shafts.length).toBeGreaterThan(10);
     expect(layout.soffits.some((s) => s.kind === "landing")).toBe(true);
     expect(layout.soffits.some((s) => s.kind === "slab")).toBe(true);
-    for (const s of layout.soffits) for (const p of s.rings.flat()) expect(soffitHeight(s, p)).toBeLessThanOrEqual(-0.5);
+    for (const s of layout.soffits.filter((s) => !s.spaceId.startsWith("elevator-cap:"))) for (const p of s.rings.flat()) expect(soffitHeight(s, p)).toBeLessThanOrEqual(s.kind === "slab" ? -0.18 + 0.001 : -0.5);
+    // The lift to street has a concealed hood above its highest (street) landing.
+    for (const s of layout.soffits.filter((s) => s.spaceId.startsWith("elevator-cap:"))) expect(s.z).toBeLessThanOrEqual(2.6);
     for (const lv of layout.levels) for (const w of lv.walls.filter((w) => w.finish)) expect(w.zMax).toBeLessThan(-0.5);
   });
 
@@ -225,6 +237,22 @@ describe("enclosure scene assembly (geometry only, no WebGL or raster validation
   afterAll(() => {
     station?.dispose();
     vi.unstubAllGlobals();
+  });
+
+  it("keeps the lift interior hood out of exterior canopy views", () => {
+    const hoods: THREE.InstancedMesh[] = [];
+    station.root.traverse((o) => { if (o.name === "elevator-interior-hood") hoods.push(o as THREE.InstancedMesh); });
+    expect(hoods.length).toBeGreaterThan(0);
+    const camera = new THREE.PerspectiveCamera();
+    station.root.updateMatrixWorld(true);
+    for (const hood of hoods) {
+      camera.position.set(0, 1.7, 0); camera.updateMatrixWorld(true);
+      hood.onBeforeRender(null as never, new THREE.Scene(), camera, hood.geometry, hood.material as THREE.Material, null as never);
+      expect(hood.count).toBe(0);
+      camera.position.y = -6; camera.updateMatrixWorld(true);
+      hood.onBeforeRender(null as never, new THREE.Scene(), camera, hood.geometry, hood.material as THREE.Material, null as never);
+      expect(hood.count).toBe(1);
+    }
   });
 
   it("uses instanced fixtures, bounds fill lights, and avoids glass transmission passes", () => {
