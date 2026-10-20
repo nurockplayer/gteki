@@ -196,6 +196,14 @@ func _write_report() -> void:
 			print("FAIL %s placement=%s check failed: %s" % [row.id, row.get("placement", "?"), check])
 	if manifest.is_empty():
 		print("WARN no GTEKI_MANIFEST: collision/socket parity was not checked")
+	# the library is incomplete if a manifest asset was never imported
+	var imported := {}
+	for row in rows:
+		imported[row.id] = true
+	for id in manifest:
+		if not imported.has(id):
+			counts.FAIL += 1
+			print("FAIL %s listed in manifest but no GLB was imported" % id)
 	print("Godot summary: %d assets; %d PASS, %d FAIL" % [rows.size(), counts.PASS, counts.FAIL])
 	if counts.FAIL > 0:
 		failed = true
