@@ -1,60 +1,227 @@
-// Station-local inspection harness (not the product shell). Orbit around the
-// PLATEAU B1 model with debug colours, or ?mode=top for an orthographic plan.
+// Station-local preview harness (not the product shell): third-person walk
+// through gteki/scene.ts via a gteki.scene/0.1 context, with post-processing,
+// for visual iteration and capture. ?spawn=<nodeId> ?q=mobile ?ao=0 ?exp=<n>.
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { computeBoundsTree, acceleratedRaycast } from "three-mesh-bvh";
+import { buildScene } from "../gteki/scene.ts";
+
+(THREE.BufferGeometry.prototype as any).computeBoundsTree = computeBoundsTree;
+THREE.Mesh.prototype.raycast = acceleratedRaycast;
 
 const params = new URLSearchParams(location.search);
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const mobile = params.get("q") === "mobile" || matchMedia("(pointer: coarse)").matches;
+const renderer = new THREE.WebGLRenderer({ antialias: !mobile, powerPreference: "high-performance", preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.5 : 2));
 renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = Number(params.get("exp") ?? 1.0);
 document.body.appendChild(renderer.domElement);
-// Cutaway: hide everything above ?clip=<TP height m> (default 29.6 m) for plan inspection.
-const clip = new THREE.Plane(new THREE.Vector3(0, -1, 0), Number(params.get("clip") ?? 29.6));
-renderer.clippingPlanes = params.get("clip") === "off" ? [] : [clip];
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0b0d10);
-const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 2000);
-camera.position.set(Number(params.get("cx") ?? 0), Number(params.get("cy") ?? 60), Number(params.get("cz") ?? 0) + 80);
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.target.set(Number(params.get("tx") ?? 0), 28, -Number(params.get("ty") ?? 60));
-camera.position.set(controls.target.x + 40, 90, controls.target.z + 60);
-scene.add(new THREE.HemisphereLight(0xffffff, 0x334455, 1.6));
-const sun = new THREE.DirectionalLight(0xffffff, 1.5);
-sun.position.set(50, 100, 30);
-scene.add(sun);
 
-const COLORS: Record<string, number> = {
-  floor: 0xc9c2b6, wall: 0x8fa3b8, ceiling: 0x555555, stairs_ramps: 0xffc400, transport: 0xff3dbb,
-  barriers: 0x6c7a89, floor_elements: 0x2ecc71, doors: 0x2f80ff, windows: 0x6fe3ff, portals: 0xff2020,
-};
-const hidden = new Set((params.get("hide") ?? "ceiling").split(","));
-new GLTFLoader().load(params.get("glb") ?? "/build/test_b1.glb", (g) => {
-  g.scene.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (!m.isMesh) return;
-    const role = (m.userData.gteki_role as string) ?? m.name;
-    m.material = new THREE.MeshStandardMaterial({
-      color: COLORS[role] ?? 0xffffff, side: THREE.DoubleSide, roughness: 0.8,
-      transparent: role === "portals", opacity: role === "portals" ? 0.45 : 1,
-    });
-    m.visible = !hidden.has(role);
-  });
-  scene.add(g.scene);
-  (window as any).gltf = g;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.05, 600);
+const loader = new GLTFLoader();
+const texLoader = new THREE.TextureLoader();
+const enu = (p: { x: number; y: number; z: number }) => new THREE.Vector3(p.x, p.z, -p.y);
+const assetUrl = (uri: string) => (uri.includes("..") || /^[a-z]+:/i.test(uri) ? null : `/gteki/${uri}`);
+const station = await buildScene({
+  THREE,
+  renderer,
+  quality: mobile ? "low" : "high",
+  enuToRenderer: (p) => [p.x, p.z, -p.y],
+  assetUrl,
+  loadGlb: async (uri) => {
+    const url = assetUrl(uri);
+    const head = url && (await fetch(url, { method: "HEAD" }));
+    if (!url || !head || !head.ok || !(head.headers.get("content-type") ?? "").includes("model")) throw new Error(`missing ${uri}`);
+    return loader.loadAsync(url);
+  },
+  loadTexture: async (uri, opts) => {
+    const url = assetUrl(uri);
+    if (!url) throw new Error(`bad uri ${uri}`);
+    const t = await texLoader.loadAsync(url);
+    t.colorSpace = opts?.colorSpace === "linear" ? THREE.NoColorSpace : THREE.SRGBColorSpace;
+    t.flipY = opts?.flipY ?? true;
+    t.needsUpdate = true;
+    return t;
+  },
 });
+scene.add(station.root);
+const envCfg = station.environment ?? {};
+scene.background = new THREE.Color(envCfg.background ?? 0x101010);
+// Avatar lighting: image-based only, so the station's baked surfaces (own envMap + lightMap) are not double-lit.
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.55;
+if (envCfg.fog) scene.fog = new THREE.Fog(envCfg.fog.color, envCfg.fog.near, envCfg.fog.far);
+const colliders = station.colliders ?? [];
+for (const o of [...station.walkable, ...colliders]) (o as THREE.Mesh).geometry.computeBoundsTree?.();
+
+// --- player -------------------------------------------------------------
+const player = new THREE.Group();
+{
+  const jacket = new THREE.MeshStandardMaterial({ color: 0x2f4a6b, roughness: 0.7 });
+  const skin = new THREE.MeshStandardMaterial({ color: 0xd9b59a, roughness: 0.6 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x1d1f24, roughness: 0.8 });
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.55, 6, 12), jacket);
+  body.position.y = 1.12;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.115, 16, 12), skin);
+  head.position.y = 1.62;
+  const legs = new THREE.Mesh(new THREE.CapsuleGeometry(0.15, 0.55, 4, 10), dark);
+  legs.position.y = 0.48;
+  const bag = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.32, 0.12), dark);
+  bag.position.set(0, 1.2, -0.2);
+  player.add(body, head, legs, bag);
+}
+scene.add(player);
+const spawns = station.spawnPoints ?? [];
+const spawnId = params.get("spawn");
+const spawnAt = (sp: { x: number; y: number; z: number }) => player.position.copy(enu(sp));
+const sp = spawns.find((s) => s.nodeId === spawnId) ?? spawns[0];
+spawnAt(sp);
+// yaw: radians in renderer frame (0 = facing -Z = north); compass heading h -> yaw = -h
+let yaw = params.has("yaw") ? Number(params.get("yaw")) : -(sp.headingDeg * Math.PI) / 180;
+let camYaw = yaw, camPitch = Number(params.get("pitch") ?? 0.12), camDist = Number(params.get("dist") ?? 3.4);
+
+const down = new THREE.Raycaster();
+const side = new THREE.Raycaster();
+function groundAt(p: THREE.Vector3, maxUp = 0.55): number | null {
+  down.set(new THREE.Vector3(p.x, p.y + maxUp + 0.05, p.z), new THREE.Vector3(0, -1, 0));
+  down.far = maxUp + 1.2;
+  const hit = down.intersectObjects(station.walkable, false)[0];
+  return hit ? hit.point.y : null;
+}
+function blocked(from: THREE.Vector3, dir: THREE.Vector3, dist: number): THREE.Vector3 | null {
+  for (const h of [0.45, 1.25]) {
+    side.set(new THREE.Vector3(from.x, from.y + h, from.z), dir);
+    side.far = dist + 0.3;
+    const hit = side.intersectObjects(colliders, false)[0];
+    if (hit?.face) {
+      const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+      n.y = 0;
+      if (n.lengthSq() < 1e-4) continue;
+      return n.normalize();
+    }
+  }
+  return null;
+}
+
+// --- input --------------------------------------------------------------
+const keys = new Set<string>();
+addEventListener("keydown", (e) => keys.add(e.code));
+addEventListener("keyup", (e) => keys.delete(e.code));
+let dragging = false, lx = 0, ly = 0;
+const joy = { id: -1, x0: 0, y0: 0, dx: 0, dy: 0 };
+const look = { id: -1, x: 0, y: 0 };
+renderer.domElement.addEventListener("pointerdown", (e) => {
+  if (e.pointerType === "touch" && e.clientX < innerWidth / 2 && joy.id < 0) {
+    Object.assign(joy, { id: e.pointerId, x0: e.clientX, y0: e.clientY, dx: 0, dy: 0 });
+  } else if (e.pointerType === "touch") {
+    Object.assign(look, { id: e.pointerId, x: e.clientX, y: e.clientY });
+  } else {
+    dragging = true; lx = e.clientX; ly = e.clientY;
+  }
+});
+addEventListener("pointermove", (e) => {
+  if (e.pointerId === joy.id) { joy.dx = (e.clientX - joy.x0) / 60; joy.dy = (e.clientY - joy.y0) / 60; }
+  else if (e.pointerId === look.id) { camYaw -= (e.clientX - look.x) * 0.006; camPitch += (e.clientY - look.y) * 0.004; look.x = e.clientX; look.y = e.clientY; }
+  else if (dragging) { camYaw -= (e.clientX - lx) * 0.005; camPitch += (e.clientY - ly) * 0.004; lx = e.clientX; ly = e.clientY; }
+  camPitch = Math.max(-0.35, Math.min(0.75, camPitch));
+});
+addEventListener("pointerup", (e) => {
+  if (e.pointerId === joy.id) { joy.id = -1; joy.dx = joy.dy = 0; }
+  if (e.pointerId === look.id) look.id = -1;
+  dragging = false;
+});
+addEventListener("wheel", (e) => { camDist = Math.max(1.6, Math.min(8, camDist + e.deltaY * 0.004)); });
+
+// --- post ---------------------------------------------------------------
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+if (!mobile && params.get("ao") !== "0") {
+  const ao = new GTAOPass(scene, camera, innerWidth, innerHeight);
+  ao.updateGtaoMaterial({ radius: 0.6, distanceExponent: 1.4, thickness: 1.2, scale: 1.0, samples: 12 });
+  ao.blendIntensity = 0.85;
+  composer.addPass(ao);
+}
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), mobile ? 0.45 : 0.6, 0.55, 0.92);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+// --- loop ---------------------------------------------------------------
 const hud = document.getElementById("hud")!;
+const clock = new THREE.Clock();
+let fpsAcc = 0, fpsN = 0, fps = 0, bob = 0;
+const camPos = new THREE.Vector3();
+const camRay = new THREE.Raycaster();
 function frame() {
-  controls.update();
-  renderer.render(scene, camera);
-  const t = controls.target;
-  hud.textContent = `target ENU x=${t.x.toFixed(1)} y=${(-t.z).toFixed(1)} z=${t.y.toFixed(1)}`;
+  step(Math.min(clock.getDelta(), 0.05));
   requestAnimationFrame(frame);
+}
+function step(dt: number) {
+  // move intent in camera space
+  let f = 0, s = 0;
+  if (keys.has("KeyW") || keys.has("ArrowUp")) f += 1;
+  if (keys.has("KeyS") || keys.has("ArrowDown")) f -= 1;
+  if (keys.has("KeyA") || keys.has("ArrowLeft")) s -= 1;
+  if (keys.has("KeyD") || keys.has("ArrowRight")) s += 1;
+  f -= joy.dy; s += joy.dx;
+  const mag = Math.min(1, Math.hypot(f, s));
+  const run = keys.has("ShiftLeft") || keys.has("ShiftRight") || Math.hypot(joy.dx, joy.dy) > 1.6;
+  if (mag > 0.05) {
+    const dirYaw = camYaw + Math.atan2(-s, f);
+    yaw += Math.atan2(Math.sin(dirYaw - yaw), Math.cos(dirYaw - yaw)) * Math.min(1, dt * 10);
+    const speed = (run ? 3.6 : 1.45) * mag;
+    const dir = new THREE.Vector3(-Math.sin(dirYaw), 0, -Math.cos(dirYaw));
+    let step = dir.multiplyScalar(speed * dt);
+    const n = blocked(player.position, step.clone().normalize(), step.length());
+    if (n) step = step.sub(n.multiplyScalar(step.dot(n))).multiplyScalar(0.9);
+    if (step.lengthSq() > 0 && !blocked(player.position, step.clone().normalize(), step.length())) {
+      const next = player.position.clone().add(step);
+      const g = groundAt(next);
+      if (g !== null) { next.y = g; player.position.copy(next); }
+    }
+    bob += dt * speed * 5.5;
+  }
+  const g = groundAt(player.position, 0.3);
+  if (g !== null) player.position.y += (g - player.position.y) * Math.min(1, dt * 20);
+  player.rotation.y = yaw;
+  player.children[0].position.y = 1.12 + Math.abs(Math.sin(bob)) * 0.025;
+
+  // camera: orbit behind player, pulled in by walls/ceiling
+  const head = player.position.clone().add(new THREE.Vector3(0, 1.55, 0));
+  const back = new THREE.Vector3(Math.sin(camYaw) * Math.cos(camPitch), Math.sin(camPitch), Math.cos(camYaw) * Math.cos(camPitch));
+  camRay.set(head, back);
+  camRay.far = camDist;
+  const hit = camRay.intersectObjects([...colliders, ...station.walkable], false)[0];
+  const d = hit ? Math.max(0.5, hit.distance - 0.25) : camDist;
+  camPos.copy(head).addScaledVector(back, d);
+  camera.position.lerp(camPos, Math.min(1, dt * 12));
+  camera.lookAt(head.x, head.y - 0.1, head.z);
+
+  composer.render(dt);
+  fpsAcc += dt; fpsN++;
+  if (fpsAcc > 0.5) { fps = fpsN / fpsAcc; fpsAcc = 0; fpsN = 0; }
+  const p = player.position;
+  hud.textContent = `${fps.toFixed(0)} fps  ENU x=${p.x.toFixed(1)} y=${(-p.z).toFixed(1)} z=${p.y.toFixed(2)} m TP\nWASD/drag · Shift run · data: PLATEAU (MLIT) CC BY 4.0, modified`;
 }
 frame();
 addEventListener("resize", () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
 });
-(window as any).cam = { camera, controls, THREE, clip };
+(window as any).gt = {
+  camera, player, scene, station, renderer,
+  setView(y: number, p: number, dist: number) { camYaw = y; camPitch = p; camDist = dist; },
+  /** Teleport to station ENU and face a compass heading (for scripted captures). */
+  go(x: number, y: number, z: number, headingDeg: number) { spawnAt({ x, y, z }); yaw = camYaw = -(headingDeg * Math.PI) / 180; },
+  /** Advance n fixed 1/30 s frames synchronously (works while the tab is hidden). */
+  tick(n = 30, hold: string[] = []) { hold.forEach((k) => keys.add(k)); for (let i = 0; i < n; i++) step(1 / 30); hold.forEach((k) => keys.delete(k)); },
+};

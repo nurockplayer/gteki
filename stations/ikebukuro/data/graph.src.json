@@ -160,7 +160,8 @@
    "modified": false,
    "retrievedAt": "2026-10-20T10:52:00Z",
    "datasetDate": "2022-01",
-   "notes": "Used only to identify which PLATEAU openings are which named passage, exit or gate. No image, layout or pictogram is reproduced."
+   "notes": "Used only to identify which PLATEAU openings are which named passage, exit or gate. No image, layout or pictogram is reproduced.",
+   "usage": "facts-only"
   },
   {
    "id": "tokyometro-ikebukuro-yardmap-2026-03",
@@ -173,7 +174,8 @@
    "modified": false,
    "retrievedAt": "2026-10-20T10:49:00Z",
    "datasetDate": "2026-03",
-   "notes": "Exit numbers and the public status of B1 passages were read from the official map. Nothing is reproduced."
+   "notes": "Exit numbers and the public status of B1 passages were read from the official map. Nothing is reproduced.",
+   "usage": "facts-only"
   }
  ],
  "floors": [
@@ -1557,7 +1559,8 @@
    "sourceIds": [
     "plateau-ubld-13116"
    ],
-   "role": "visual+collision"
+   "role": "visual+collision",
+   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform"
   }
  ]
 }
