@@ -236,8 +236,32 @@ describe("describeRoute junction hints", () => {
     const b = columnHall();
     b.edges = b.edges.filter((e) => e.id !== "p-fork" && e.id !== "q-east");
     b.edges.push(edge("p-stairs", "p", "r", { mode: "stairs", lengthM: 30, wheelchair: false, steps: true }));
-    const r = route(b, "start", "g", { fare: "ticketed", stepFree: true });
-    expect(describeRoute(b, r, "en")[2]!.junctions).toEqual([{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }]);
+    const stepFree: RouteProfile = { fare: "ticketed", stepFree: true, avoidModes: ["stairs"] };
+    const r = route(b, "start", "g", stepFree);
+    expect(describeRoute(b, r, "en", stepFree)[2]!.junctions).toEqual([{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }]);
+  });
+
+  it("drops branches the query closes (closures, known hours at departure, strict UNKNOWN hours)", () => {
+    // A second corridor on the route's own line at p would make the side ambiguous — unless it is shut.
+    const b = columnHall();
+    b.edges = b.edges.filter((e) => e.id !== "q-east");
+    b.edges.push(edge("p-twin", "p", "lift-top", { lengthM: 31, hours: { kind: "window", open: "07:00", close: "09:00", evidence: b.edges[0]!.hours!.evidence } }));
+    const kept = (profile?: RouteProfile) => describeRoute(b, route(b, "start", "g", profile), "en", profile)[2]!.junctions;
+    expect(kept()).toBeUndefined();
+    const keepRight = [{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }];
+    expect(kept({ fare: "ticketed", stepFree: false, extraClosedEdgeIds: ["p-twin"] })).toEqual(keepRight);
+    expect(kept({ fare: "ticketed", stepFree: false, at: { weekday: "mon", minutes: 12 * 60 } })).toEqual(keepRight);
+    expect(kept({ fare: "ticketed", stepFree: false, at: { weekday: "mon", minutes: 8 * 60 } })).toBeUndefined();
+    b.edges.find((e) => e.id === "p-twin")!.hours = null;
+    expect(kept({ fare: "ticketed", stepFree: false, hours: "require_known" })).toEqual(keepRight);
+    expect(kept({ fare: "ticketed", stepFree: false })).toBeUndefined();
+  });
+
+  it("does not count a one-way return edge or a parallel edge to the next node as a branch", () => {
+    const b = columnHall();
+    b.edges = b.edges.filter((e) => e.id !== "p-fork" && e.id !== "q-east");
+    b.edges.push(edge("p-a-back", "p", "a", { direction: "forward" }), edge("q-p-twin", "p", "q", { lengthM: 31, geometry: [{ x: 10, y: -30, z: 0 }, { x: 12, y: -45, z: 0 }, { x: 7, y: -60, z: 0 }] }));
+    expect(describeRoute(b, route(b, "start", "g"), "en")[2]!.junctions).toBeUndefined();
   });
 
   it("says straight past a lift whose doors give no heading, and stays silent when branches cannot be told apart", () => {

@@ -1,7 +1,7 @@
 import type { Edge, EdgeMode, Floor, Node, StationBundle } from "@gteki/schema";
 import { DEFAULT_PROFILE } from "./index.ts";
 import { createRouter } from "./router.ts";
-import type { RouteResult } from "./index.ts";
+import type { RouteProfile, RouteResult } from "./index.ts";
 
 /**
  * Renderer-neutral presentation of a computed route: a station-ENU polyline for drawing and
@@ -308,8 +308,10 @@ function junctionAction(
   points: PolylinePoint[], steps: RouteResult["steps"], i: number, branches: readonly Edge[], nodes: ReadonlyMap<string, Node>,
 ): JunctionHint["action"] | null {
   const node = nodes.get(steps[i]!.fromNodeId)!;
-  const own = new Set([steps[i - 1]!.edgeId, steps[i]!.edgeId]);
-  const others = branches.filter((e) => !own.has(e.id));
+  // Edges back to where the walk came from (a reciprocal one-way pair) or on to where it goes next (a
+  // parallel corridor) are the route's own passage, not another choice.
+  const ownNodes = new Set([steps[i - 1]!.fromNodeId, steps[i]!.toNodeId]);
+  const others = branches.filter((e) => !ownNodes.has(e.from === node.id ? e.to : e.from));
   if (others.length === 0) return null;
   const chosen = turnDelta(points, steps, i);
   const h0 = arrivalHeading(points, steps, i);
@@ -333,12 +335,22 @@ function junctionAction(
   return rivals.every((d) => Math.abs(d) > Math.abs(chosen)) ? "straight" : null;
 }
 
-/** Branches that may be walked away from each node: the station's traversable graph, independent of any traveller profile. */
-function departuresByNode(bundle: StationBundle): Map<string, Edge[]> {
+/**
+ * Branches that may be walked away from each node: the station's traversable graph under the query's
+ * operational restrictions (closures, opening hours at the departure time, strict hours), but not the
+ * traveller's own preferences — a stair or a ticket gate the traveller avoids is still a visible branch.
+ */
+function departuresByNode(bundle: StationBundle, profile: RouteProfile | undefined): Map<string, Edge[]> {
   const router = createRouter(bundle);
+  const operational: RouteProfile = {
+    ...DEFAULT_PROFILE,
+    ...(profile?.extraClosedEdgeIds ? { extraClosedEdgeIds: profile.extraClosedEdgeIds } : {}),
+    ...(profile?.hours ? { hours: profile.hours } : {}),
+    ...(profile?.at ? { at: profile.at } : {}),
+  };
   const out = new Map<string, Edge[]>();
   for (const edge of bundle.edges) {
-    if (edge.from === edge.to || !router.isTraversable(edge, DEFAULT_PROFILE)) continue;
+    if (edge.from === edge.to || !router.isTraversable(edge, operational)) continue;
     for (const nodeId of edge.direction === "both" ? [edge.from, edge.to] : [edge.from]) {
       const list = out.get(nodeId);
       if (list) list.push(edge);
@@ -402,12 +414,17 @@ function straightInPlan(points: PolylinePoint[], stepIndexes: number[]): boolean
   return !bent;
 }
 
-export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja"): Instruction[] {
+/**
+ * Grouped instructions for a route. Pass the route's query `profile` so junction hints count only
+ * branches open under the same closures and hours; without it, every station-traversable branch counts
+ * (which can only withhold a hint, never point the wrong way).
+ */
+export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja", profile?: RouteProfile): Instruction[] {
   const t = TEXT[lang];
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const points = routePolyline(bundle, route);
-  const departures = departuresByNode(bundle);
+  const departures = departuresByNode(bundle, profile);
   const names = junctionNames(bundle, lang);
   const firstFloor = nodes.get(route.nodeIds[0]!)!.floorId;
   const out: Instruction[] = [{ kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, text: t.start() }];
