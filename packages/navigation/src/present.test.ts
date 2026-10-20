@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createRouter, describeRoute, routePolyline } from "./index.ts";
+import { createRouter, describeRoute, floorDisplayName, routePolyline } from "./index.ts";
 import type { RouteResult } from "./index.ts";
 import { createSyntheticBundle, syntheticEdge as edge } from "./fixtures.ts";
 
@@ -59,6 +59,19 @@ describe("describeRoute", () => {
     for (const f of b.floors) f.elevationM = null;
     const unknown = describeRoute(b, route(b, "start", "upper"), "ja");
     expect(unknown[2]).toMatchObject({ kind: "stairs", vertical: null, text: "階段で1Fへ" });
+  });
+
+  it("prefers station-authored floor display names per language, falling back to ja then the source label", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("st", "a", "upper", { mode: "stairs" })]);
+    const upper = b.floors.find((f) => f.id === "upper")!;
+    upper.displayNames = [{ lang: "ja", text: "地上1階" }, { lang: "en", text: "Ground floor" }];
+    expect(describeRoute(b, route(b, "start", "upper"), "en")[2]!.text).toBe("Take the stairs up to Ground floor");
+    expect(describeRoute(b, route(b, "start", "upper"), "ja")[2]!.text).toBe("階段で上へ・地上1階へ");
+    upper.displayNames = [{ lang: "ja", text: "地上1階" }];
+    expect(floorDisplayName(upper, "en")).toBe("地上1階");
+    upper.displayNames = [];
+    expect(floorDisplayName(upper, "en")).toBe("1F");
+    expect(upper.sourceLabels[0]!.label).toBe("1F");
   });
 
   it("merges a chain of escalator segments and keeps gates explicit", () => {

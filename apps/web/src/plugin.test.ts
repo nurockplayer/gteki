@@ -1,8 +1,10 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { discoverStations } from "../stations-plugin.ts";
+import { threeAliases } from "../three-alias.ts";
 
 function tree(): string {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "gteki-plugin-"));
@@ -36,5 +38,28 @@ describe("station discovery", () => {
     const found = discoverStations([a, b]);
     expect(found).toHaveLength(1);
     expect(found[0]!.gtekiDir.startsWith(a)).toBe(true);
+  });
+});
+
+describe("threeAliases", () => {
+  const dir = fs.realpathSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "../node_modules/three"));
+  const aliases = threeAliases(dir);
+  const resolve = (spec: string) => {
+    const a = aliases.find((x) => x.find.test(spec));
+    return a ? spec.replace(a.find, a.replacement) : null;
+  };
+
+  it("maps addons, examples/jsm and the bare entry through three's exports map to real files", () => {
+    for (const spec of ["three", "three/addons", "three/addons/loaders/GLTFLoader.js", "three/examples/jsm/controls/OrbitControls.js", "three/webgpu"]) {
+      const file = resolve(spec);
+      expect(file, spec).not.toBeNull();
+      expect(fs.existsSync(file!), `${spec} → ${file}`).toBe(true);
+    }
+    expect(resolve("three/addons/loaders/GLTFLoader.js")).toBe(path.join(dir, "examples/jsm/loaders/GLTFLoader.js"));
+  });
+
+  it("leaves unrelated specifiers alone", () => {
+    expect(resolve("threejs-extra")).toBeNull();
+    expect(resolve("three-mesh-bvh")).toBeNull();
   });
 });

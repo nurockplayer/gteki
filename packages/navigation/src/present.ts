@@ -86,8 +86,11 @@ function verticalSense(a: Floor | undefined, b: Floor | undefined, za: number | 
   return null;
 }
 
-function floorLabel(floor: Floor | undefined): string {
-  return floor?.sourceLabels[0]?.label ?? floor?.id ?? "?";
+/** Human-facing floor name: station-authored `displayNames` (lang, then ja), else the exact source label. */
+export function floorDisplayName(floor: Floor | undefined, lang: "ja" | "en" = "ja"): string {
+  const names = floor?.displayNames ?? [];
+  const named = names.find((t) => t.lang === lang) ?? names.find((t) => t.lang === "ja") ?? names[0];
+  return named?.text ?? floor?.sourceLabels[0]?.label ?? floor?.id ?? "?";
 }
 
 const TEXT = {
@@ -155,7 +158,7 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
       const from = nodes.get(step.fromNodeId)!;
       const to = nodes.get(step.toNodeId)!;
       const sense = verticalSense(floors.get(step.fromFloorId), floors.get(step.toFloorId), from.position.z, to.position.z);
-      const label = floorLabel(floors.get(step.toFloorId));
+      const label = floorDisplayName(floors.get(step.toFloorId), lang);
       const prev = out[out.length - 1]!;
       // Consecutive segments of one stair/escalator/lift chain read as one instruction.
       if (prev.kind === kind && kind !== "gate" && (prev.vertical === sense || prev.vertical === null || sense === null)) {

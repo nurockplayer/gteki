@@ -8,6 +8,7 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { enuToRenderer } from "@gteki/geo";
 import type { Router, PolylinePoint } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
@@ -59,6 +60,11 @@ export class Explorer {
   private routeTexture: THREE.CanvasTexture | null = null;
 
   private readonly avatar = new THREE.Group();
+  /** Core hemisphere + sun; hidden when a scene declares `environment.lighting: "scene"`. */
+  private readonly coreLights: THREE.Light[] = [];
+  /** Image-based light applied only to core-owned materials (avatar) when the scene owns lighting. */
+  private coreEnvMap: THREE.Texture | null = null;
+  private lighting: "default" | "scene" = "default";
   private readonly pos = new THREE.Vector3();
   private yaw = 0; // radians; 0 = facing north (-Z)
   private pitch = -0.12;
@@ -110,12 +116,13 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; camera: number[]; mode: ExplorerMode } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length,
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
+      lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
     };
   }
 
@@ -134,6 +141,26 @@ export class Explorer {
     sun.shadow.mapSize.set(2048, 2048);
     Object.assign(sun.shadow.camera, { left: -150, right: 150, top: 150, bottom: -150, far: 400 });
     this.scene.add(hemi, sun);
+    this.coreLights.push(hemi, sun);
+  }
+
+  /**
+   * "scene": the station's baked/own lights are the only scene lights (no double lighting of lightmaps).
+   * Three.js lights cannot be masked per object, so the avatar keeps a per-material environment map
+   * instead (scene.environment stays unset, so station materials are unaffected).
+   */
+  private applyLighting(mode: "default" | "scene"): void {
+    this.lighting = mode;
+    for (const l of this.coreLights) l.visible = mode === "default";
+    if (mode === "scene" && !this.coreEnvMap) {
+      const pmrem = new THREE.PMREMGenerator(this.renderer);
+      this.coreEnvMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      pmrem.dispose();
+    }
+    this.avatar.traverse((o) => {
+      const m = (o as THREE.Mesh).material;
+      if (m instanceof THREE.MeshStandardMaterial) { m.envMap = mode === "scene" ? this.coreEnvMap : null; m.needsUpdate = true; }
+    });
   }
 
   private setupComposer(): void {
@@ -217,6 +244,7 @@ export class Explorer {
       if (env?.background !== undefined) this.scene.background = new THREE.Color(env.background);
       if (env?.fog) this.scene.fog = new THREE.Fog(env.fog.color, env.fog.near, env.fog.far);
       if (env?.exposure !== undefined) this.renderer.toneMappingExposure = env.exposure;
+      this.applyLighting(env?.lighting === "scene" ? "scene" : "default");
       this.stationScene.root.updateMatrixWorld(true);
     } else {
       this.world.add(this.graph.root);
@@ -260,6 +288,7 @@ export class Explorer {
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
     this.renderer.toneMappingExposure = 1;
+    this.applyLighting("default");
   }
 
   setGraphOverlay(visible: boolean): void {
@@ -580,6 +609,7 @@ export class Explorer {
     this.clearStation();
     this.input.dispose();
     this.composer?.dispose();
+    this.coreEnvMap?.dispose();
     this.renderer.dispose();
   }
 }

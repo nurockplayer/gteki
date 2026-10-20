@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { Node, StationBundle, Vec3N } from "@gteki/schema";
 import { parseStationFiles } from "@gteki/schema";
-import { createRouter, type RouteProfile, type RouteResult } from "@gteki/navigation";
+import { createRouter, describeRoute, routePolyline, type RouteProfile, type RouteResult } from "@gteki/navigation";
 import { enuToRenderer } from "@gteki/geo";
 
 interface CliOptions {
@@ -107,7 +107,12 @@ export async function runRoute(args: string[]): Promise<number> {
 
   const result = createRouter(bundle).route(options.from, options.goals, options.profile);
   const path = result.ok ? renderPath(bundle, result) : [];
-  process.stdout.write(`${JSON.stringify({ contract: "gteki.route/0.1", stationId: bundle.station.id, result, path }, null, 2)}\n`);
+  // Same renderer-neutral presentation the web explorer uses: edge-geometry polyline and ja/en instructions.
+  const polyline = result.ok
+    ? routePolyline(bundle, result).map((p) => ({ ...p, renderer: enuToRenderer({ x: p.x, y: p.y, z: p.z }) }))
+    : [];
+  const instructions = result.ok ? { ja: describeRoute(bundle, result, "ja"), en: describeRoute(bundle, result, "en") } : { ja: [], en: [] };
+  process.stdout.write(`${JSON.stringify({ contract: "gteki.route/0.1", stationId: bundle.station.id, result, path, polyline, instructions }, null, 2)}\n`);
   return result.ok ? 0 : 1;
 }
 

@@ -51,6 +51,12 @@ describe("@gteki/cli", () => {
       expect(output.result.ok).toBe(true);
       expect(output.result.nodeIds).toEqual(["start", "a", "goal"]);
       expect(output.path[1]).toEqual({ nodeId: "a", enu: { x: 10, y: 0, z: 0 }, renderer: [10, 0, 0], heightSymbolic: false });
+      const extra = JSON.parse(result.stdout) as { polyline: { renderer: number[]; zKnown: boolean; stepIndex: number }[]; instructions: { ja: { kind: string; text: string }[]; en: { kind: string }[] } };
+      expect(extra.polyline[0]).toMatchObject({ stepIndex: -1, renderer: output.path[0]!.renderer });
+      expect(extra.polyline.at(-1)!.renderer).toEqual(output.path.at(-1)!.renderer);
+      expect(extra.instructions.en.map((i) => i.kind)[0]).toBe("start");
+      expect(extra.instructions.en.at(-1)!.kind).toBe("arrive");
+      expect(extra.instructions.ja.length).toBe(extra.instructions.en.length);
     } finally {
       await rm(root, { recursive: true, force: true });
     }
@@ -89,7 +95,7 @@ describe("@gteki/cli", () => {
     try {
       const failure = invoke(routeScript, [root, "start", "isolated"]);
       expect(failure.status).toBe(1);
-      expect(JSON.parse(failure.stdout)).toMatchObject({ result: { ok: false, reason: "no_path" }, path: [] });
+      expect(JSON.parse(failure.stdout)).toMatchObject({ result: { ok: false, reason: "no_path" }, path: [], polyline: [] });
 
       const badOption = invoke(routeScript, [root, "start", "goal", "--today", "2026-02-30"]);
       expect(badOption.status).toBe(2);

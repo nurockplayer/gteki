@@ -1,4 +1,4 @@
-import { createRouter, describeRoute, routePolyline } from "@gteki/navigation";
+import { createRouter, describeRoute, floorDisplayName, routePolyline } from "@gteki/navigation";
 import type { Instruction, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
 import type { Poi, StationBundle, Weekday } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
@@ -311,7 +311,7 @@ export class App {
       const b = el("button", `result cat-${h.poi.category}${h.routable ? "" : " disabled"}`);
       const name = el("span", "result-name", this.poiName(h.poi));
       const meta = el("span", "result-meta");
-      const floor = h.poi.floorId ? floors.get(h.poi.floorId)?.sourceLabels[0]?.label : null;
+      const floor = h.poi.floorId ? floorDisplayName(floors.get(h.poi.floorId), this.s.lang) : null;
       meta.textContent = [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null, h.routable ? null : this.t.searchOnly].filter(Boolean).join(" · ");
       b.append(el("span", "dot"), name, meta);
       b.addEventListener("mousedown", (e) => e.preventDefault());

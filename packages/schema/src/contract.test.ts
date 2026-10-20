@@ -152,6 +152,14 @@ describe("parseStationFiles (fail-closed JSON loading)", () => {
     expect(parseStationFiles(null, [], "x").ok).toBe(false);
   });
 
+  it("accepts optional floor displayNames and refuses malformed entries", () => {
+    const [m, g, p] = split(createSyntheticBundle());
+    m.floors[0]!.displayNames = [{ lang: "ja", text: "地下3階" }, { lang: "en", text: "B3" }];
+    expect(parseStationFiles(m, g, p).ok).toBe(true);
+    (m.floors[0]!.displayNames as unknown[]).push({ lang: "en" });
+    expect(parseStationFiles(m, g, p).issues[0]).toMatchObject({ code: "shape.missing" });
+  });
+
   it("refuses files from different stations or schema versions", () => {
     const [m, g, p] = split(createSyntheticBundle());
     g.stationId = "other";

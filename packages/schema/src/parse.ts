@@ -17,12 +17,13 @@ const SPECS = {
   station: { id: "string", names: "array", operators: "array", origin: "object", frame: "string", datasetVersion: "string", generatedAt: "string", synthetic: "boolean" },
   origin: { lat: "number", lon: "number", hM: "number|null", datum: "string", crs: "string" },
   source: { id: "string", title: "string", publisher: "string", url: "string", license: "object|null", rights: "string", attribution: "string", modified: "boolean", retrievedAt: "string|null", datasetDate: "string|null" },
-  floor: { id: "string", operatorId: "string", sourceLabels: "array", ordinal: "number|null", intermediate: "boolean", elevationM: "number|null", elevationSource: "string", renderElevationM: "number" },
+  floor: { id: "string", operatorId: "string", sourceLabels: "array", ordinal: "number|null", intermediate: "boolean", elevationM: "number|null", elevationSource: "string", renderElevationM: "number", displayNames: "array?" },
   node: { id: "string", floorId: "string", position: "object", kind: "string", inOut: "string|null", sourceRefs: "array", renderZ: "number?" },
   position: { x: "number", y: "number", z: "number|null" },
   edge: { id: "string", from: "string", to: "string", direction: "string", mode: "string", lengthM: "number|null", paid: "tri", crossesFareBoundary: "tri", wheelchair: "tri", steps: "tri", hours: "object|null", closed: "boolean", verification: "string", geometryEvidence: "object", accessEvidence: "object|null", geometry: "array?", geometryZ: "string?" },
   evidence: { sourceIds: "array", method: "string", checkedDate: "string" },
   poi: { id: "string", category: "string", names: "array", aliases: "array", floorId: "string|null", displayPosition: "object|null", connectorNodeIds: "array", paid: "tri", evidence: "object" },
+  text: { lang: "string", text: "string" },
   coverage: { summary: "array", areas: "array", gaps: "array", freshness: "string|null" },
   asset: { id: "string", uri: "string", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?" },
 } satisfies Record<string, Spec>;
@@ -93,7 +94,9 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
     const m = manifest as Record<string, unknown>;
     if (c.check(m.station, SPECS.station, "station.json.station")) c.check((m.station as Record<string, unknown>).origin, SPECS.origin, "station.json.station.origin");
     c.each(m.sources, SPECS.source, "sources");
-    c.each(m.floors, SPECS.floor, "floors");
+    c.each(m.floors, SPECS.floor, "floors", (floor, where) => {
+      if (Array.isArray(floor.displayNames)) floor.displayNames.forEach((t, i) => c.check(t, SPECS.text, `${where}.displayNames[${i}]`));
+    });
     c.check(m.coverage, SPECS.coverage, "coverage");
     c.each(m.assets, SPECS.asset, "assets");
   }

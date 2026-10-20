@@ -69,7 +69,11 @@ station inputs print parser issues to stderr and exit 2 without route JSON.
 Unsuccessful routing still prints the result with an empty path and exits 1.
 Godot prints a PASS/FAIL summary and exits 0/1.
 
-The route adapter constructs path data; it does not create visible route geometry.
+The route JSON also carries `polyline` (edge-geometry points from `routePolyline`, each with
+ENU, `renderer` coordinates and `zKnown`) and `instructions.{ja,en}` from `describeRoute`, so a
+Godot client can draw the same route and read the same turn-by-turn text as the web explorer
+without reimplementing presentation. The route adapter constructs path data from `path`; it does
+not yet consume `polyline` or create visible route geometry.
 This demonstrates contract, coordinates, route transport, and basic runtime GLB
 compatibility. It does **not** claim a high-fidelity Godot client, real station
 coverage, navigation mesh generation, or real-world routing verification. The
