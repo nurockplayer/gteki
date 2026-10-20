@@ -6,6 +6,7 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { createMaterials } from "./materials.ts";
 import { buildSigns, type SignSpec } from "./signs.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
+import { createAmbience } from "./ambience.ts";
 import crowdLanes from "./crowd_lanes.json";
 import signage from "./signage.json";
 import graph from "../gteki/graph.json";
@@ -23,6 +24,8 @@ export interface SceneContext {
   loadTexture(uri: string, opts?: { colorSpace?: "srgb" | "linear"; flipY?: boolean }): Promise<THREE_NS.Texture>;
   quality: "low" | "high";
   renderer: THREE_NS.WebGLRenderer;
+  /** Proposed optional 0.1 addition: host-owned audio, unlocked by a user gesture. */
+  audio?: { context: AudioContext; destination: AudioNode };
 }
 export interface SpawnPoint { x: number; y: number; z: number; headingDeg: number; nodeId?: string; label?: string }
 export interface StationScene {
@@ -179,6 +182,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 40 : 100, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes);
   root.add(crowd.group);
 
+  const ambience = ctx.audio ? createAmbience(ctx.audio.context, ctx.audio.destination) : null;
+
   const nodes = new Map((graph as { nodes: { id: string; position: { x: number; y: number; z: number | null } }[] }).nodes.map((n) => [n.id, n]));
   const spawnPoints: SpawnPoint[] = [];
   for (const s of SPAWNS) {
@@ -192,8 +197,12 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     colliders,
     spawnPoints,
     environment: { lighting: lightmap ? "scene" : "default", background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
-    update: (dt, elapsed) => crowd.update(dt, elapsed),
+    update: (dt, elapsed) => {
+      crowd.update(dt, elapsed);
+      ambience?.update({ nearby: crowd.nearby(), openness: 0.8 });
+    },
     dispose() {
+      ambience?.dispose();
       crowd.dispose();
       mats.dispose();
       signs.dispose();

@@ -31,8 +31,14 @@ const loader = new GLTFLoader();
 const texLoader = new THREE.TextureLoader();
 const enu = (p: { x: number; y: number; z: number }) => new THREE.Vector3(p.x, p.z, -p.y);
 const assetUrl = (uri: string) => (uri.includes("..") || /^[a-z]+:/i.test(uri) ? null : `/gteki/${uri}`);
+// Host-owned audio (proposed ctx.audio): created suspended, resumed on the first user gesture.
+const audioCtx = params.get("mute") === "1" ? null : new AudioContext();
+const unlock = () => void audioCtx?.resume();
+addEventListener("pointerdown", unlock, { once: true });
+addEventListener("keydown", unlock, { once: true });
 const station = await buildScene({
   THREE,
+  audio: audioCtx ? { context: audioCtx, destination: audioCtx.destination } : undefined,
   renderer,
   quality: mobile ? "low" : "high",
   enuToRenderer: (p) => [p.x, p.z, -p.y],

@@ -123,7 +123,9 @@ export function buildCrowd(
     dir.subVectors(p.pts[i], p.pts[i - 1]).setY(0).normalize();
   }
 
+  let nearby = 0;
   function update(dt: number, _elapsed: number) {
+    let near = 0;
     for (let i = 0; i < agents.length; i++) {
       const a = agents[i];
       let p = paths[a.path];
@@ -172,6 +174,7 @@ export function buildCrowd(
       q.setFromAxisAngle(up, Math.atan2(dir.x, dir.z));
       base.compose(pos, q, one);
       const dx = pos.x - cam.x, dz = pos.z - cam.z, dy = pos.y + 1.1 - cam.y;
+      if (dx * dx + dz * dz + dy * dy < 64) near++;
       if (dx * dx + dz * dz + dy * dy < NEAR_CAM_M * NEAR_CAM_M) {
         for (const part of parts) part.mesh.setMatrixAt(i, hidden);
         continue;
@@ -190,12 +193,15 @@ export function buildCrowd(
       }
     }
     for (const part of parts) part.mesh.instanceMatrix.needsUpdate = true;
+    nearby = near;
   }
   update(0, 0);
 
   return {
     group,
     update,
+    /** Pedestrians within 8 m of the last rendered camera (for ambience). */
+    nearby: () => nearby,
     dispose() {
       Object.values(geo).forEach((g) => g.dispose());
       materials.forEach((m) => m.dispose());
