@@ -15,9 +15,10 @@ import type { Router, PolylinePoint } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
-import { WALKER_BODY } from "@gteki/scene-api";
+import { WALKER_BODY, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
+import { CameraCut } from "./cameraCut.ts";
 import { manifestScene } from "./manifestScene.ts";
 import { castAll, castTargets } from "./raycast.ts";
 import { advanceGuide } from "./guideStops.ts";
@@ -66,6 +67,9 @@ export class Explorer {
   private cameraTargets: THREE.Object3D[] = [];
   private colliders: THREE.Object3D[] = [];
   private walls: Segment2[] = [];
+  /** Visual-only signage the follow camera sees through (never walkable or a collider). */
+  private seeThrough: THREE.Object3D[] = [];
+  private readonly cameraCut = new CameraCut();
   private routeTexture: THREE.CanvasTexture | null = null;
 
   private readonly avatar = new THREE.Group();
@@ -134,11 +138,11 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; seeThrough: number; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
-      walkable: this.walkable.length, colliders: this.colliders.length,
+      walkable: this.walkable.length, colliders: this.colliders.length, seeThrough: this.seeThrough.length,
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
     };
@@ -302,6 +306,9 @@ export class Explorer {
       this.walkable = this.stationScene.walkable;
       this.colliders = this.stationScene.colliders ?? [];
       this.walls = (this.stationScene.walls ?? []).map(wallToRenderer);
+      const solid = new Set([...this.walkable, ...this.colliders]);
+      this.seeThrough = seeThroughMeshes(this.stationScene.root).filter((o) => !solid.has(o));
+      this.cameraCut.apply(this.stationScene.root, this.seeThrough);
       const env = this.stationScene.environment;
       if (env?.background !== undefined) this.scene.background = new THREE.Color(env.background);
       if (env?.fog) this.scene.fog = new THREE.Fog(env.fog.color, env.fog.near, env.fog.far);
@@ -345,6 +352,8 @@ export class Explorer {
     this.colliderTargets = [];
     this.cameraTargets = [];
     this.walls = [];
+    this.seeThrough = [];
+    this.cameraCut.clear();
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
     this.renderer.toneMappingExposure = 1;
@@ -604,6 +613,9 @@ export class Explorer {
     else this.orbit.update();
 
     if (this.mode !== "overview") this.placeCamera(dt);
+    // Signs between the follow camera and the avatar (or inside its near distance) are cut, never collided with.
+    this.camera.updateMatrixWorld();
+    this.cameraCut.update(this.camera, this.pos.clone().add(new THREE.Vector3(0, EYE, 0)), this.mode !== "overview");
     this.avatar.position.copy(this.pos);
     this.avatar.rotation.y = this.yaw;
   }
@@ -668,6 +680,7 @@ export class Explorer {
     }
     let dist = this.camDistance;
     const back = dir.clone().negate().add(new THREE.Vector3(0, 0.35, 0)).normalize();
+    // Signs (visual-only) never pull the camera in; cameraCut sees through them instead.
     if (this.cameraTargets.length) {
       this.ray.set(head, back);
       this.ray.far = dist;

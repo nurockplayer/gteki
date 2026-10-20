@@ -96,3 +96,20 @@ describe("roles survive a real glTF import (PR #15 Codex re-review)", () => {
     expect(byName("collider.001").visible).toBe(false);
   });
 });
+
+describe("see-through signage roles", () => {
+  it("finds tagged groups' meshes and sign_ names, never walls or plain meshes", async () => {
+    const { seeThroughMeshes } = await import("./index.ts");
+    const root = new THREE.Group();
+    const signs = new THREE.Group(); signs.userData.gteki_role = "sign"; root.add(signs);
+    const housing = new THREE.Mesh(new THREE.BoxGeometry()); signs.add(housing);
+    const board = new THREE.Mesh(new THREE.BoxGeometry()); board.name = "signage_001"; root.add(board);
+    const wallUnderSign = new THREE.Mesh(new THREE.BoxGeometry()); wallUnderSign.name = "wall"; signs.add(wallUnderSign);
+    const plain = new THREE.Mesh(new THREE.BoxGeometry()); plain.name = "signal_box"; root.add(plain);
+    expect(new Set(seeThroughMeshes(root))).toEqual(new Set([housing, board]));
+    // Signs stay visual-only: not walkable, not colliders, still drawn.
+    const r = sceneFromGlbRoles(root, { assetRole: "visual" });
+    expect(r.colliders).toEqual([wallUnderSign]);
+    expect(housing.visible && board.visible).toBe(true);
+  });
+});
