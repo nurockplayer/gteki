@@ -1,6 +1,6 @@
 # GTEki — Engineering Handoff
 
-Updated: 2026-10-20. **Status: PRE-KICKOFF.** GitHub repository exists and initial documents are being assembled. No station model, routing engine, verified station route or deployed demo has been reported.
+Updated: 2026-10-20. **Status: PRE-KICKOFF.** GitHub repository, initial documents and Issues #1–#6 exist; implementation has not started. No station model, routing engine, verified station route or deployed demo has been reported.
 
 ## Authority
 
@@ -14,6 +14,15 @@ Owner-approved: product name GTEki; public browser-first search/3D navigation; I
 4. `docs/research/source-register.md`
 5. `docs/acceptance.md`
 6. [Notion Research & World Bible](https://app.notion.com/p/3ffd7d8b390781568122c2dae6005de2)
+
+## Open work items
+
+- [#1 Public source research and licensing](https://github.com/nurockplayer/gteki/issues/1)
+- [#2 Renderer-neutral navigation/search contracts](https://github.com/nurockplayer/gteki/issues/2)
+- [#3 Ikebukuro Web 3D walkable slice](https://github.com/nurockplayer/gteki/issues/3)
+- [#4 Search to 3D guided route](https://github.com/nurockplayer/gteki/issues/4)
+- [#5 Shinjuku partial import and coverage](https://github.com/nurockplayer/gteki/issues/5)
+- [#6 Final acceptance, Godot and public-data review](https://github.com/nurockplayer/gteki/issues/6)
 
 ## Next actions
 
