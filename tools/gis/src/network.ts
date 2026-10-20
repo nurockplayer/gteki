@@ -244,6 +244,21 @@ function geometryCoords(geometry: any): number[][] {
   return out;
 }
 
+// Ordered vertices of a link, or null when its endpoints are ambiguous: a MultiLineString counts only when it
+// has one part or every part starts exactly where the previous one ended.
+function linkVertices(geometry: any): number[][] | null {
+  if (/^LineString$/i.test(String(geometry?.type ?? ''))) return geometryCoords(geometry);
+  if (!/^MultiLineString$/i.test(String(geometry?.type ?? '')) || !Array.isArray(geometry.coordinates)) return null;
+  const parts = geometry.coordinates.map((part: any) => geometryCoords({ coordinates: part }));
+  if (parts.length === 0 || parts.some((part: number[][]) => part.length < 2)) return null;
+  for (let k = 1; k < parts.length; k += 1) {
+    const prev = parts[k - 1]![parts[k - 1]!.length - 1]!;
+    const next = parts[k]![0]!;
+    if (prev[0] !== next[0] || prev[1] !== next[1]) return null;
+  }
+  return parts.flat();
+}
+
 function bbox(features: any[]): number[] | null {
   const coords = features.flatMap((f) => geometryCoords(f.geometry));
   if (!coords.length) return null;
@@ -326,12 +341,12 @@ export function inspectGeoJsonFeatures(features: any[], source: { source_id: str
     : /6677/i.test(crsText) ? 'PROJECTED_METRES' : null;
   const nodeIdsUnique = nodeIdsComplete && duplicateValues(nodeIdsOnly).length === 0;
   const endpointChecks = distanceMethod === null || !graphComplete || !nodeIdsUnique ? null : linkFeatures.map((feature, i) => {
-    const points = geometryCoords(feature.geometry);
+    const points = linkVertices(feature.geometry);
     const aId = edgeReferences[i]!.start;
     const bId = edgeReferences[i]!.end;
     const a = aId ? coordinateByNodeId.get(aId) : undefined;
     const b = bId ? coordinateByNodeId.get(bId) : undefined;
-    if (!a || !b || points.length < 2 || points.some((p) => !Number.isFinite(p[0]) || !Number.isFinite(p[1]))) return null;
+    if (!a || !b || !points || points.length < 2 || points.some((p) => !Number.isFinite(p[0]) || !Number.isFinite(p[1]))) return null;
     // Geographic CRSs are longitude,latitude here; an out-of-range position (e.g. swapped axes) cannot be
     // compared in metres, so the link is skipped and coverage becomes partial instead of guessing an axis order.
     if (distanceMethod === 'GEOGRAPHIC_DEGREES_APPROX_METRES' && ![a, b, ...points].every((p) => isGeographicLonLat(p[0], p[1]))) return null;

@@ -206,7 +206,7 @@ export async function acquireSources(ids: string[], options: { offline?: boolean
     const output: AcquisitionResult[] = [];
     for (const id of ids) {
       try {
-        const { record, path } = await import('./common.js').then((m) => m.getStoredSource(id));
+        const { record, path } = await import('./common.js').then((m) => m.getStoredSource(id, { ignoreRecordedSizeCheck: true }));
         // Compare against the current (fingerprinted) manifest, not the expectation stored in the old record.
         const expectedBytes = byId.get(id)!.expected_bytes ?? null;
         const sizeCheck = expectedBytes == null ? 'NOT_SPECIFIED' : record.bytes === expectedBytes ? 'MATCH' : 'MISMATCH';

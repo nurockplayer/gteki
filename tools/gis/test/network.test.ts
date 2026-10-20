@@ -148,6 +148,21 @@ describe('network source inspection', () => {
     expect(report.topology.geometry_endpoint_coverage).toEqual({ checked_links: 0, skipped_links: 1, total_links: 1, complete: false });
   });
 
+  it('checks endpoints only on single-part or exactly continuous MultiLineString links', () => {
+    const nodes = [
+      { type: 'Feature', properties: { node_id: 'n1' }, geometry: { type: 'Point', coordinates: [139.7, 35.6] } },
+      { type: 'Feature', properties: { node_id: 'n2' }, geometry: { type: 'Point', coordinates: [139.71, 35.6] } },
+    ];
+    const link = (coordinates: number[][][]) => ({ type: 'Feature', properties: { link_id: 'l1', start_node_id: 'n1', end_node_id: 'n2' }, geometry: { type: 'MultiLineString', coordinates } });
+    const inspect = (features: any[]) => inspectGeoJsonFeatures(features, { source_id: 'synthetic-multilinestring', sha256: 'synthetic-hash' }, { type: 'name', properties: { name: 'EPSG:6668' } }, 'synthetic.geojson', 'network');
+    const disjoint = inspect([...nodes, link([[[139.7, 35.6], [139.703, 35.6]], [[139.707, 35.6], [139.71, 35.6]]])]);
+    expect(disjoint.topology.geometry_endpoint_check_status).toBe('PARTIAL_ENDPOINT_COVERAGE');
+    expect(disjoint.topology.geometry_endpoint_coverage).toEqual({ checked_links: 0, skipped_links: 1, total_links: 1, complete: false });
+    const continuous = inspect([...nodes, link([[[139.7, 35.6], [139.705, 35.6]], [[139.705, 35.6], [139.71, 35.6]]])]);
+    expect(continuous.topology.geometry_endpoint_check_status).toBe('CHECKED_IN_METRES');
+    expect(continuous.topology.geometry_endpoint_coverage).toEqual({ checked_links: 1, skipped_links: 0, total_links: 1, complete: true });
+  });
+
   it('keeps a Polygon with link and endpoint IDs out of graph roles', () => {
     const features = [
       { type: 'Feature', properties: { node_id: 'n1' }, geometry: { type: 'Point', coordinates: [139.7, 35.6] } },

@@ -135,11 +135,13 @@ function safeStorePath(storeRoot: string, relativePath: string): string {
   return full;
 }
 
-export async function getStoredSource(sourceId: string): Promise<{ record: AcquisitionRecord; source: SourceManifest; path: string }> {
+export async function getStoredSource(sourceId: string, options: { ignoreRecordedSizeCheck?: boolean } = {}): Promise<{ record: AcquisitionRecord; source: SourceManifest; path: string }> {
   safeSourceId(sourceId);
   const record = await readJson<AcquisitionRecord>(join(docsRoot, 'gis', 'acquisitions', `${sourceId}.json`));
   if (record.source_id !== sourceId) throw new Error(`Acquisition record source_id mismatch for ${sourceId}`);
-  if (record.size_check === 'MISMATCH') throw new Error(`Acquisition size mismatch recorded for ${sourceId}`);
+  // Offline re-checks re-evaluate size against the current manifest, so they skip the stale recorded verdict;
+  // the SHA-256/byte integrity check below still applies.
+  if (record.size_check === 'MISMATCH' && !options.ignoreRecordedSizeCheck) throw new Error(`Acquisition size mismatch recorded for ${sourceId}`);
   const source = (await import('./acquire.js')).loadSources().find((item) => item.source_id === sourceId);
   if (!source) throw new Error(`Unknown source_id: ${sourceId}`);
   const path = safeStorePath(getStoreRoot(), record.store_path);
