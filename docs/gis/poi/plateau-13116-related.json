@@ -1,0 +1,3297 @@
+{
+  "source_id": "plateau-13116-related",
+  "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+  "tool_input_sha256": "a2be3979ae1672273b196601a1111fafb8ca4dd58804040f78505fb5b1f3c392",
+  "input_sources": [
+    {
+      "source_id": "plateau-13116-related",
+      "sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787"
+    },
+    {
+      "source_id": "plateau-13116-related-shelter-asset",
+      "sha256": "c55ee2f8663f9b1bd39031864cfdf077322b2747cce9716572417841c23250cc"
+    },
+    {
+      "source_id": "plateau-related-provenance",
+      "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d"
+    },
+    {
+      "source_id": "plateau-13116-related-park-asset",
+      "sha256": "945f9bac031b558a51e142b6a09245766ec81f4aafa5dff125ebc03886bb61b4"
+    },
+    {
+      "source_id": "plateau-13116-related-landmark-asset",
+      "sha256": "4f97bf44670426361bdfebe71e456368c94a76c78ce46e41453a1a64718eafca"
+    },
+    {
+      "source_id": "plateau-13116-related-station-asset",
+      "sha256": "9759eb4bfd8d07e5a628882364d545fd527e7d115de6637cafb659eb9209a004"
+    },
+    {
+      "source_id": "plateau-13116-related-railway-asset",
+      "sha256": "a11295da7a66e9a29a7c15629e93c3eaf0453d5419f4a70b30567a036e9d3c51"
+    },
+    {
+      "source_id": "plateau-13116-related-emergency-route-asset",
+      "sha256": "ba30b4e6178fd7d331e76b9d52d8b42a93ad3f0866d291ea1c33236d3fdc0bca"
+    },
+    {
+      "source_id": "plateau-13116-related-border-asset",
+      "sha256": "c0b661997a0b8e86eb44dd2a6b92bc5641f1dffef1d8003089dbd444fa88157d"
+    },
+    {
+      "source_id": "plateau-13116-ubld-53394576",
+      "sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09"
+    },
+    {
+      "source_id": "plateau-13104-ubld-53394536",
+      "sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-csv",
+      "sha256": "2477e6f27d8be30b3e57ee6849a36b5d8c9f56e1d2ff34956fe5934b71f4920a"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-csv",
+      "sha256": "a0f8376556bc7c920be10c27181d8a4219745b55ec2bea6938d28dfeadde80d2"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-geojson",
+      "sha256": "f6b84c9c6d05559f04b4a4796b9286f6bfd1bdb4aea0b112666b3d7585b3eab6"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-network-geojson",
+      "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
+      "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2018-03",
+      "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2024-07",
+      "sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4"
+    },
+    {
+      "source_id": "plateau-catalog-ubld-mesh-533945",
+      "sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e"
+    }
+  ],
+  "context_evidence": [],
+  "station_ids": [
+    "ikebukuro"
+  ],
+  "members": [
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "format": "FeatureCollection",
+      "root_keys": [
+        "features",
+        "name",
+        "type"
+      ],
+      "feature_count": 42,
+      "entity_count": null,
+      "fields": {
+        "レベル": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "number"
+          ],
+          "distinct_count": 2,
+          "literal_distribution": [
+            {
+              "value": 1,
+              "count": 33
+            },
+            {
+              "value": 3,
+              "count": 9
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "住所": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 38,
+          "literal_distribution": [
+            {
+              "value": "東京都豊島区",
+              "count": 5
+            },
+            {
+              "value": "東京都北区",
+              "count": 1
+            },
+            {
+              "value": "東京都豊島区上池袋1-18-24",
+              "count": 1
+            },
+            {
+              "value": "東京都豊島区上池袋4-28-1",
+              "count": 1
+            },
+            {
+              "value": "東京都豊島区千早2-39-3",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 33
+        },
+        "収容人数": {
+          "blank_count": 37,
+          "missing_count": 0,
+          "types": [
+            "null",
+            "number"
+          ],
+          "distinct_count": 5,
+          "literal_distribution": [
+            {
+              "value": 18500,
+              "count": 1
+            },
+            {
+              "value": 45200,
+              "count": 1
+            },
+            {
+              "value": 56300,
+              "count": 1
+            },
+            {
+              "value": 70300,
+              "count": 1
+            },
+            {
+              "value": 86200,
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "名称": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 42,
+          "literal_distribution": [
+            {
+              "value": "（旧）千川小学校",
+              "count": 1
+            },
+            {
+              "value": "（旧）高田小学校",
+              "count": 1
+            },
+            {
+              "value": "さくら小学校",
+              "count": 1
+            },
+            {
+              "value": "みらい館大明",
+              "count": 1
+            },
+            {
+              "value": "仰高小学校",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 37
+        },
+        "対象とする災害の分類": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 2,
+          "literal_distribution": [
+            {
+              "value": "指定なし",
+              "count": 41
+            },
+            {
+              "value": "地震災害",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "施設の種類": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 2,
+          "literal_distribution": [
+            {
+              "value": "救援センター",
+              "count": 35
+            },
+            {
+              "value": "避難場所",
+              "count": 7
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "施設規模": {
+          "blank_count": 37,
+          "missing_count": 0,
+          "types": [
+            "null",
+            "number"
+          ],
+          "distinct_count": 5,
+          "literal_distribution": [
+            {
+              "value": 115000,
+              "count": 1
+            },
+            {
+              "value": 130800,
+              "count": 1
+            },
+            {
+              "value": 51900,
+              "count": 1
+            },
+            {
+              "value": 53000,
+              "count": 1
+            },
+            {
+              "value": 66800,
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "行政区域": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "number"
+          ],
+          "distinct_count": 2,
+          "literal_distribution": [
+            {
+              "value": 13116,
+              "count": 41
+            },
+            {
+              "value": 13117,
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "高さ": {
+          "blank_count": 6,
+          "missing_count": 0,
+          "types": [
+            "null",
+            "string"
+          ],
+          "distinct_count": 30,
+          "literal_distribution": [
+            {
+              "value": "16.6",
+              "count": 3
+            },
+            {
+              "value": "16.0",
+              "count": 2
+            },
+            {
+              "value": "18.3",
+              "count": 2
+            },
+            {
+              "value": "20.1",
+              "count": 2
+            },
+            {
+              "value": "21.2",
+              "count": 2
+            }
+          ],
+          "omitted_distinct": 25
+        }
+      },
+      "root_properties": {},
+      "crs": "UNKNOWN",
+      "crs_declared": false,
+      "crs_note": "No datum inferred from coordinates or file name.",
+      "geometry_types": {
+        "Point": 42
+      },
+      "coordinate_tuple_count": 42,
+      "unsupported_geometry_count": 0,
+      "bbox": [
+        139.680022,
+        35.716454,
+        139.74348799,
+        35.744312
+      ],
+      "bbox_status": "COMPUTED_NATIVE_XY",
+      "origin_attribution_fields": {},
+      "origin_dataset": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html",
+        "date": "2012年度",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      },
+      "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
+      "literal_location_time_fields": {},
+      "route_structure": {
+        "exported_edges": 0,
+        "source_link_count": 0,
+        "source_node_count": 0,
+        "link_fields": {},
+        "node_fields": {},
+        "start_end_fields": [],
+        "interpretation": "n1/n2 are literal source references. Path geometry files describe drawing shapes, not route edges. No route is validated or exported."
+      },
+      "routable": false,
+      "encoding": "UTF-8",
+      "bytes": 14707,
+      "sha256": "c55ee2f8663f9b1bd39031864cfdf077322b2747cce9716572417841c23250cc"
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "format": "FeatureCollection",
+      "root_keys": [
+        "features",
+        "name",
+        "type"
+      ],
+      "feature_count": 62,
+      "entity_count": null,
+      "fields": {
+        "供用済面積": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "number"
+          ],
+          "distinct_count": 62,
+          "literal_distribution": [
+            {
+              "value": 1013,
+              "count": 1
+            },
+            {
+              "value": 1021,
+              "count": 1
+            },
+            {
+              "value": 1057,
+              "count": 1
+            },
+            {
+              "value": 1071,
+              "count": 1
+            },
+            {
+              "value": 1084,
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 57
+        },
+        "供用開始年": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "number"
+          ],
+          "distinct_count": 40,
+          "literal_distribution": [
+            {
+              "value": 1987,
+              "count": 4
+            },
+            {
+              "value": 1991,
+              "count": 4
+            },
+            {
+              "value": 1993,
+              "count": 4
+            },
+            {
+              "value": 1997,
+              "count": 4
+            },
+            {
+              "value": 1988,
+              "count": 3
+            }
+          ],
+          "omitted_distinct": 35
+        },
+        "公園名": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 62,
+          "literal_distribution": [
+            {
+              "value": "上り屋敷",
+              "count": 1
+            },
+            {
+              "value": "上池袋",
+              "count": 1
+            },
+            {
+              "value": "上池袋さくら",
+              "count": 1
+            },
+            {
+              "value": "上池袋中央",
+              "count": 1
+            },
+            {
+              "value": "上池袋東",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 57
+        },
+        "公園種別": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 5,
+          "literal_distribution": [
+            {
+              "value": "街区公園",
+              "count": 47
+            },
+            {
+              "value": "都市緑地",
+              "count": 8
+            },
+            {
+              "value": "広場公園",
+              "count": 4
+            },
+            {
+              "value": "緑道",
+              "count": 2
+            },
+            {
+              "value": "近隣公園",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "所在地市区町村名": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "豊島区",
+              "count": 62
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "所在地都道府県名": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "東京都",
+              "count": 62
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "管理市区町村": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "豊島区",
+              "count": 62
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "管理都道府県・整備局": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "東京都",
+              "count": 62
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "都市計画決定": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "number"
+          ],
+          "distinct_count": 2,
+          "literal_distribution": [
+            {
+              "value": 2,
+              "count": 34
+            },
+            {
+              "value": 1,
+              "count": 28
+            }
+          ],
+          "omitted_distinct": 0
+        }
+      },
+      "root_properties": {},
+      "crs": "UNKNOWN",
+      "crs_declared": false,
+      "crs_note": "No datum inferred from coordinates or file name.",
+      "geometry_types": {
+        "Point": 62
+      },
+      "coordinate_tuple_count": 62,
+      "unsupported_geometry_count": 0,
+      "bbox": [
+        139.68017243,
+        35.7131,
+        139.7498,
+        35.74576942
+      ],
+      "bbox_status": "COMPUTED_NATIVE_XY",
+      "origin_attribution_fields": {},
+      "origin_dataset": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html",
+        "date": "2011年",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      },
+      "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
+      "literal_location_time_fields": {},
+      "route_structure": {
+        "exported_edges": 0,
+        "source_link_count": 0,
+        "source_node_count": 0,
+        "link_fields": {},
+        "node_fields": {},
+        "start_end_fields": [],
+        "interpretation": "n1/n2 are literal source references. Path geometry files describe drawing shapes, not route edges. No route is validated or exported."
+      },
+      "routable": false,
+      "encoding": "UTF-8",
+      "bytes": 23586,
+      "sha256": "945f9bac031b558a51e142b6a09245766ec81f4aafa5dff125ebc03886bb61b4"
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "format": "FeatureCollection",
+      "root_keys": [
+        "features",
+        "name",
+        "type"
+      ],
+      "feature_count": 143,
+      "entity_count": null,
+      "fields": {
+        "名称": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 143,
+          "literal_distribution": [
+            {
+              "value": "ヴァンガードタワー",
+              "count": 1
+            },
+            {
+              "value": "グランドミレーニア",
+              "count": 1
+            },
+            {
+              "value": "ザ・タワーグランディア",
+              "count": 1
+            },
+            {
+              "value": "サンシャインシティ",
+              "count": 1
+            },
+            {
+              "value": "としまエコミューゼタウン",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 138
+        },
+        "種類": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 11,
+          "literal_distribution": [
+            {
+              "value": "学校",
+              "count": 57
+            },
+            {
+              "value": "郵便局",
+              "count": 30
+            },
+            {
+              "value": "警察署",
+              "count": 26
+            },
+            {
+              "value": "病院",
+              "count": 11
+            },
+            {
+              "value": "消防署",
+              "count": 6
+            }
+          ],
+          "omitted_distinct": 6
+        },
+        "高さ": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "number"
+          ],
+          "distinct_count": 106,
+          "literal_distribution": [
+            {
+              "value": 6.5,
+              "count": 4
+            },
+            {
+              "value": 7.3,
+              "count": 4
+            },
+            {
+              "value": 10.7,
+              "count": 3
+            },
+            {
+              "value": 16.6,
+              "count": 3
+            },
+            {
+              "value": 18.3,
+              "count": 3
+            }
+          ],
+          "omitted_distinct": 101
+        }
+      },
+      "root_properties": {},
+      "crs": "UNKNOWN",
+      "crs_declared": false,
+      "crs_note": "No datum inferred from coordinates or file name.",
+      "geometry_types": {
+        "Point": 143
+      },
+      "coordinate_tuple_count": 143,
+      "unsupported_geometry_count": 0,
+      "bbox": [
+        139.67859707,
+        35.714298848,
+        139.74674529,
+        35.74490964
+      ],
+      "bbox_status": "COMPUTED_NATIVE_XY",
+      "origin_attribution_fields": {},
+      "origin_dataset": {
+        "url": "https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html",
+        "date": "2025年10月15日",
+        "creator": "株式会社パスコ",
+        "converter": "PLATEAU　CMS",
+        "approval_notice": "令7関公第296号"
+      },
+      "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
+      "literal_location_time_fields": {},
+      "route_structure": {
+        "exported_edges": 0,
+        "source_link_count": 0,
+        "source_node_count": 0,
+        "link_fields": {},
+        "node_fields": {},
+        "start_end_fields": [],
+        "interpretation": "n1/n2 are literal source references. Path geometry files describe drawing shapes, not route edges. No route is validated or exported."
+      },
+      "routable": false,
+      "encoding": "UTF-8",
+      "bytes": 25176,
+      "sha256": "5bce275ae60fc312d49a9585cde5341c9d718c0fbea1961568f65d0356c8585a"
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "format": "FeatureCollection",
+      "root_keys": [
+        "features",
+        "name",
+        "type"
+      ],
+      "feature_count": 35,
+      "entity_count": null,
+      "fields": {
+        "事業者種別": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 3,
+          "literal_distribution": [
+            {
+              "value": "民営鉄道",
+              "count": 17
+            },
+            {
+              "value": "公営鉄道",
+              "count": 11
+            },
+            {
+              "value": "JR在来線",
+              "count": 7
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "路線名": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 10,
+          "literal_distribution": [
+            {
+              "value": "荒川線",
+              "count": 9
+            },
+            {
+              "value": "山手線",
+              "count": 5
+            },
+            {
+              "value": "13号線副都心線",
+              "count": 4
+            },
+            {
+              "value": "8号線有楽町線",
+              "count": 4
+            },
+            {
+              "value": "東上本線",
+              "count": 3
+            }
+          ],
+          "omitted_distinct": 5
+        },
+        "運営会社": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 5,
+          "literal_distribution": [
+            {
+              "value": "東京地下鉄",
+              "count": 11
+            },
+            {
+              "value": "東京都",
+              "count": 11
+            },
+            {
+              "value": "東日本旅客鉄道",
+              "count": 7
+            },
+            {
+              "value": "東武鉄道",
+              "count": 3
+            },
+            {
+              "value": "西武鉄道",
+              "count": 3
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "鉄道区分": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 3,
+          "literal_distribution": [
+            {
+              "value": "普通鉄道",
+              "count": 19
+            },
+            {
+              "value": "軌道",
+              "count": 9
+            },
+            {
+              "value": "普通鉄道JR",
+              "count": 7
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "駅名": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 25,
+          "literal_distribution": [
+            {
+              "value": "池袋駅",
+              "count": 7
+            },
+            {
+              "value": "千川駅",
+              "count": 2
+            },
+            {
+              "value": "巣鴨駅",
+              "count": 2
+            },
+            {
+              "value": "要町駅",
+              "count": 2
+            },
+            {
+              "value": "駒込駅",
+              "count": 2
+            }
+          ],
+          "omitted_distinct": 20
+        },
+        "高さ": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "number"
+          ],
+          "distinct_count": 22,
+          "literal_distribution": [
+            {
+              "value": 0,
+              "count": 11
+            },
+            {
+              "value": 5.3,
+              "count": 3
+            },
+            {
+              "value": 3.8,
+              "count": 2
+            },
+            {
+              "value": 10.2,
+              "count": 1
+            },
+            {
+              "value": 11.2,
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 17
+        }
+      },
+      "root_properties": {},
+      "crs": "UNKNOWN",
+      "crs_declared": false,
+      "crs_note": "No datum inferred from coordinates or file name.",
+      "geometry_types": {
+        "Point": 35
+      },
+      "coordinate_tuple_count": 35,
+      "unsupported_geometry_count": 0,
+      "bbox": [
+        139.683010912,
+        35.716569724,
+        139.748127618,
+        35.745291981
+      ],
+      "bbox_status": "COMPUTED_NATIVE_XY",
+      "origin_attribution_fields": {},
+      "origin_dataset": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+        "date": "2024年12月31日時点",
+        "creator": "株式会社パスコ",
+        "converter": "PLATEAU　CMS",
+        "approval_notice": null
+      },
+      "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
+      "literal_location_time_fields": {},
+      "route_structure": {
+        "exported_edges": 0,
+        "source_link_count": 0,
+        "source_node_count": 0,
+        "link_fields": {},
+        "node_fields": {},
+        "start_end_fields": [],
+        "interpretation": "n1/n2 are literal source references. Path geometry files describe drawing shapes, not route edges. No route is validated or exported."
+      },
+      "routable": false,
+      "encoding": "UTF-8",
+      "bytes": 9230,
+      "sha256": "842d4e106ff9d8c10ba9c429fdffab1ac42127ed68c7e5ea7ab3d81c439a9faf"
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "format": "FeatureCollection",
+      "root_keys": [
+        "features",
+        "name",
+        "type"
+      ],
+      "feature_count": 81,
+      "entity_count": null,
+      "fields": {
+        "事業者種別": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 3,
+          "literal_distribution": [
+            {
+              "value": "民営鉄道",
+              "count": 40
+            },
+            {
+              "value": "公営鉄道",
+              "count": 26
+            },
+            {
+              "value": "JR在来線",
+              "count": 15
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "行政区域": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "13116",
+              "count": 81
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "路線名": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 12,
+          "literal_distribution": [
+            {
+              "value": "荒川線",
+              "count": 19
+            },
+            {
+              "value": "山手線",
+              "count": 11
+            },
+            {
+              "value": "13号線副都心線",
+              "count": 10
+            },
+            {
+              "value": "8号線有楽町線",
+              "count": 10
+            },
+            {
+              "value": "東上本線",
+              "count": 6
+            }
+          ],
+          "omitted_distinct": 7
+        },
+        "運営会社": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 5,
+          "literal_distribution": [
+            {
+              "value": "東京地下鉄",
+              "count": 27
+            },
+            {
+              "value": "東京都",
+              "count": 26
+            },
+            {
+              "value": "東日本旅客鉄道",
+              "count": 15
+            },
+            {
+              "value": "西武鉄道",
+              "count": 7
+            },
+            {
+              "value": "東武鉄道",
+              "count": 6
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "鉄道区分": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 3,
+          "literal_distribution": [
+            {
+              "value": "普通鉄道",
+              "count": 47
+            },
+            {
+              "value": "軌道",
+              "count": 19
+            },
+            {
+              "value": "普通鉄道JR",
+              "count": 15
+            }
+          ],
+          "omitted_distinct": 0
+        }
+      },
+      "root_properties": {},
+      "crs": "UNKNOWN",
+      "crs_declared": false,
+      "crs_note": "No datum inferred from coordinates or file name.",
+      "geometry_types": {
+        "LineString": 79,
+        "MultiLineString": 2
+      },
+      "coordinate_tuple_count": 427,
+      "unsupported_geometry_count": 0,
+      "bbox": [
+        139.677425528,
+        35.714544972,
+        139.74909424,
+        35.745580493
+      ],
+      "bbox_status": "COMPUTED_NATIVE_XY",
+      "origin_attribution_fields": {},
+      "origin_dataset": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+        "date": "2024年12月31日時点",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      },
+      "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
+      "literal_location_time_fields": {},
+      "route_structure": {
+        "exported_edges": 0,
+        "source_link_count": 0,
+        "source_node_count": 0,
+        "link_fields": {},
+        "node_fields": {},
+        "start_end_fields": [],
+        "interpretation": "n1/n2 are literal source references. Path geometry files describe drawing shapes, not route edges. No route is validated or exported."
+      },
+      "routable": false,
+      "encoding": "UTF-8",
+      "bytes": 27636,
+      "sha256": "1a28c7ba00f059b75c9ccc83da11cc0343c8834472225718f60c8728d26531b1"
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "format": "FeatureCollection",
+      "root_keys": [
+        "features",
+        "name",
+        "type"
+      ],
+      "feature_count": 26,
+      "entity_count": null,
+      "fields": {
+        "任意ID": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 22,
+          "literal_distribution": [
+            {
+              "value": "10",
+              "count": 3
+            },
+            {
+              "value": "188",
+              "count": 2
+            },
+            {
+              "value": "53",
+              "count": 2
+            },
+            {
+              "value": "107",
+              "count": 1
+            },
+            {
+              "value": "175",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 17
+        },
+        "区分": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 3,
+          "literal_distribution": [
+            {
+              "value": "第２次緊急輸送道路",
+              "count": 12
+            },
+            {
+              "value": "第１次緊急輸送道路",
+              "count": 9
+            },
+            {
+              "value": "第３次緊急輸送道路",
+              "count": 5
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "枝ID": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 5,
+          "literal_distribution": [
+            {
+              "value": "1",
+              "count": 18
+            },
+            {
+              "value": "2",
+              "count": 4
+            },
+            {
+              "value": "4",
+              "count": 2
+            },
+            {
+              "value": "3",
+              "count": 1
+            },
+            {
+              "value": "8",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "行政区域": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "13116",
+              "count": 26
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "資料名称": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "東京都緊急輸送道路ネットワーク計",
+              "count": 26
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "資料年月": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "2019",
+              "count": 26
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "路線名称": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 22,
+          "literal_distribution": [
+            {
+              "value": "都道首都高速5号線",
+              "count": 3
+            },
+            {
+              "value": "千代田練馬田無線",
+              "count": 2
+            },
+            {
+              "value": "池袋谷原線",
+              "count": 2
+            },
+            {
+              "value": "中央環状新宿線",
+              "count": 1
+            },
+            {
+              "value": "国道122号",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 17
+        },
+        "道路種別": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 5,
+          "literal_distribution": [
+            {
+              "value": "一般都道府県道",
+              "count": 8
+            },
+            {
+              "value": "市町村道（認定道路）",
+              "count": 6
+            },
+            {
+              "value": "都市高速道路",
+              "count": 5
+            },
+            {
+              "value": "主要地方道（都道府県道）",
+              "count": 4
+            },
+            {
+              "value": "一般国道",
+              "count": 3
+            }
+          ],
+          "omitted_distinct": 0
+        }
+      },
+      "root_properties": {},
+      "crs": "UNKNOWN",
+      "crs_declared": false,
+      "crs_note": "No datum inferred from coordinates or file name.",
+      "geometry_types": {
+        "LineString": 24,
+        "MultiLineString": 2
+      },
+      "coordinate_tuple_count": 630,
+      "unsupported_geometry_count": 0,
+      "bbox": [
+        139.67742621,
+        35.714460811,
+        139.748381664,
+        35.744917506
+      ],
+      "bbox_status": "COMPUTED_NATIVE_XY",
+      "origin_attribution_fields": {
+        "資料名称": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "東京都緊急輸送道路ネットワーク計",
+              "count": 26
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "資料年月": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "2019",
+              "count": 26
+            }
+          ],
+          "omitted_distinct": 0
+        }
+      },
+      "origin_dataset": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html",
+        "date": "2024年3月時点",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      },
+      "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
+      "literal_location_time_fields": {},
+      "route_structure": {
+        "exported_edges": 0,
+        "source_link_count": 0,
+        "source_node_count": 0,
+        "link_fields": {},
+        "node_fields": {},
+        "start_end_fields": [],
+        "interpretation": "n1/n2 are literal source references. Path geometry files describe drawing shapes, not route edges. No route is validated or exported."
+      },
+      "routable": false,
+      "encoding": "UTF-8",
+      "bytes": 23029,
+      "sha256": "5185b79aebbf156116060dacf06a8d64a7d94c70533cd2110b1d7db5d5dc1d25"
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "format": "FeatureCollection",
+      "root_keys": [
+        "features",
+        "name",
+        "type"
+      ],
+      "feature_count": 1,
+      "entity_count": null,
+      "fields": {
+        "city_code": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "13116",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "city_name": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "豊島区",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "prefecture_code": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "13",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "prefecture_name": {
+          "blank_count": 0,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "東京都",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        }
+      },
+      "root_properties": {},
+      "crs": "UNKNOWN",
+      "crs_declared": false,
+      "crs_note": "No datum inferred from coordinates or file name.",
+      "geometry_types": {
+        "LineString": 1
+      },
+      "coordinate_tuple_count": 1305,
+      "unsupported_geometry_count": 0,
+      "bbox": [
+        139.677344306,
+        35.712265775,
+        139.752760441,
+        35.745792667
+      ],
+      "bbox_status": "COMPUTED_NATIVE_XY",
+      "origin_attribution_fields": {},
+      "origin_dataset": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
+        "date": "2025年1月1日時点",
+        "creator": "株式会社パスコ",
+        "converter": "PLATEAU　CMS",
+        "approval_notice": null
+      },
+      "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
+      "literal_location_time_fields": {},
+      "route_structure": {
+        "exported_edges": 0,
+        "source_link_count": 0,
+        "source_node_count": 0,
+        "link_fields": {},
+        "node_fields": {},
+        "start_end_fields": [],
+        "interpretation": "n1/n2 are literal source references. Path geometry files describe drawing shapes, not route edges. No route is validated or exported."
+      },
+      "routable": false,
+      "encoding": "UTF-8",
+      "bytes": 37670,
+      "sha256": "9294cab74b9d92cf7eecc43a0a0f7dba3384fccfb6b4f521c4d701b3bed54c19"
+    }
+  ],
+  "identity_checks": [
+    {
+      "member": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "member_sha256": "c55ee2f8663f9b1bd39031864cfdf077322b2747cce9716572417841c23250cc",
+      "direct_source_id": "plateau-13116-related-shelter-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/a7/1cc8df-b33b-4564-9aee-93fd29833da3/13116_toshima-ku_pref_2023_shelter.geojson",
+      "direct_sha256": "c55ee2f8663f9b1bd39031864cfdf077322b2747cce9716572417841c23250cc",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/7",
+      "comparison": "JSON-equal",
+      "feature_count": 42,
+      "top_level_differences": [],
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html",
+        "date": "2012年度",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      }
+    },
+    {
+      "member": "13116_toshima-ku_pref_2023_park.geojson",
+      "member_sha256": "945f9bac031b558a51e142b6a09245766ec81f4aafa5dff125ebc03886bb61b4",
+      "direct_source_id": "plateau-13116-related-park-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/cf/2145b2-23b8-4035-9923-7937a7709d15/13116_toshima-ku_pref_2023_park.geojson",
+      "direct_sha256": "945f9bac031b558a51e142b6a09245766ec81f4aafa5dff125ebc03886bb61b4",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/8",
+      "comparison": "JSON-equal",
+      "feature_count": 62,
+      "top_level_differences": [],
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html",
+        "date": "2011年",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      }
+    },
+    {
+      "member": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "member_sha256": "5bce275ae60fc312d49a9585cde5341c9d718c0fbea1961568f65d0356c8585a",
+      "direct_source_id": "plateau-13116-related-landmark-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/90/5bc60c-2ae2-467b-8987-2a30b811da91/13116_toshima-ku_pref_2025_landmark.geojson",
+      "direct_sha256": "4f97bf44670426361bdfebe71e456368c94a76c78ce46e41453a1a64718eafca",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/9",
+      "comparison": "JSON-equal",
+      "feature_count": 143,
+      "top_level_differences": [],
+      "origin": {
+        "url": "https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html",
+        "date": "2025年10月15日",
+        "creator": "株式会社パスコ",
+        "converter": "PLATEAU　CMS",
+        "approval_notice": "令7関公第296号"
+      }
+    },
+    {
+      "member": "13116_toshima-ku_pref_2025_station.geojson",
+      "member_sha256": "842d4e106ff9d8c10ba9c429fdffab1ac42127ed68c7e5ea7ab3d81c439a9faf",
+      "direct_source_id": "plateau-13116-related-station-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/65/a0e7ee-f304-43ce-ab2e-15100b7013c9/13116_toshima-ku_pref_2025_station.geojson",
+      "direct_sha256": "9759eb4bfd8d07e5a628882364d545fd527e7d115de6637cafb659eb9209a004",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/10",
+      "comparison": "JSON-equal",
+      "feature_count": 35,
+      "top_level_differences": [],
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+        "date": "2024年12月31日時点",
+        "creator": "株式会社パスコ",
+        "converter": "PLATEAU　CMS",
+        "approval_notice": null
+      }
+    },
+    {
+      "member": "13116_toshima-ku_pref_2025_railway.geojson",
+      "member_sha256": "1a28c7ba00f059b75c9ccc83da11cc0343c8834472225718f60c8728d26531b1",
+      "direct_source_id": "plateau-13116-related-railway-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/e8/fd417e-b232-4b35-aefe-0bf486fece7c/13116_toshima-ku_pref_2025_railway.geojson",
+      "direct_sha256": "a11295da7a66e9a29a7c15629e93c3eaf0453d5419f4a70b30567a036e9d3c51",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/11",
+      "comparison": "features-equal",
+      "feature_count": 81,
+      "top_level_differences": [
+        "name"
+      ],
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+        "date": "2024年12月31日時点",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      }
+    },
+    {
+      "member": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "member_sha256": "5185b79aebbf156116060dacf06a8d64a7d94c70533cd2110b1d7db5d5dc1d25",
+      "direct_source_id": "plateau-13116-related-emergency-route-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/27/6e8a80-f841-4929-b16a-cacb604a72dc/13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "direct_sha256": "ba30b4e6178fd7d331e76b9d52d8b42a93ad3f0866d291ea1c33236d3fdc0bca",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/12",
+      "comparison": "features-equal",
+      "feature_count": 26,
+      "top_level_differences": [
+        "name"
+      ],
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html",
+        "date": "2024年3月時点",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      }
+    },
+    {
+      "member": "13116_toshima-ku_pref_2025_border.geojson",
+      "member_sha256": "9294cab74b9d92cf7eecc43a0a0f7dba3384fccfb6b4f521c4d701b3bed54c19",
+      "direct_source_id": "plateau-13116-related-border-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/87/dae9cf-8ac1-4206-b74b-52af48ebde24/13116_toshima-ku_pref_2025_border.geojson",
+      "direct_sha256": "c0b661997a0b8e86eb44dd2a6b92bc5641f1dffef1d8003089dbd444fa88157d",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/13",
+      "comparison": "features-equal",
+      "feature_count": 1,
+      "top_level_differences": [
+        "name"
+      ],
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
+        "date": "2025年1月1日時点",
+        "creator": "株式会社パスコ",
+        "converter": "PLATEAU　CMS",
+        "approval_notice": null
+      }
+    }
+  ],
+  "detail": {
+    "store_path": "out/poi/plateau-13116-related-df356f6e0ca6-fb75117a08e0.json",
+    "sha256": "dc3bb956db6f1008e4146f300dc4c316d5fb2786ef52f0ffbab39deae67a2a52",
+    "bytes": 366794
+  },
+  "station_relevance": [
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "plateau-13104-ubld-53394536",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "plateau-13116-ubld-53394576",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "plateau-13104-ubld-53394536",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "plateau-13116-ubld-53394576",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "plateau-13104-ubld-53394536",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "plateau-13116-ubld-53394576",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "plateau-13104-ubld-53394536",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "plateau-13116-ubld-53394576",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "plateau-13104-ubld-53394536",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "plateau-13116-ubld-53394576",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "plateau-13104-ubld-53394536",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "plateau-13116-ubld-53394576",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "plateau-13104-ubld-53394536",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+      "relation": "DISJOINT",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "plateau-13116-ubld-53394576",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+      "relation": "INTERSECTS",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    }
+  ],
+  "coordinates": "SEE_MEMBERS",
+  "routable": false,
+  "verification": "UNVERIFIED",
+  "publish_gate": "HOLD",
+  "limitations": [
+    "No POI becomes a node, edge, door or floor.",
+    "Literal location, opening-hour and level fields remain verbatim in the hashed detail.",
+    "No source currency, operator permission, complete coverage or navigability established."
+  ]
+}

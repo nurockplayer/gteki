@@ -1,0 +1,79 @@
+{
+  "source_id": "plateau-13104-related-catalog",
+  "resolved_url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-20T22:56:23.364Z",
+  "completed_at": "2026-10-20T22:56:23.500Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/json;charset=utf-8",
+    "content-length": null,
+    "etag": null,
+    "last-modified": null,
+    "date": "Tue, 20 Oct 2026 22:56:23 GMT"
+  },
+  "bytes": 187935,
+  "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+  "store_path": "raw/6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942/package_show",
+  "tool_version": "0.1.0",
+  "git_commit": "53b80676cdc5b857ee2fcb37c4f90b121c971e92",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "plateau-site-policy",
+      "requested_url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "http_status": 200,
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "bytes": 31822,
+      "store_path": "raw/3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f/site-policy"
+    },
+    {
+      "id": "pdl-1",
+      "requested_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "http_status": 200,
+      "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+      "bytes": 59216,
+      "store_path": "raw/e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c/public_data_license_v1.0"
+    },
+    {
+      "id": "origin-railway-candidate",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_1.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-v3_1.html",
+      "http_status": 200,
+      "sha256": "5c87c61b5b3455045500909934886b44b23b14256e5aff69dd4539c04c02390a",
+      "bytes": 45476,
+      "store_path": "raw/5c87c61b5b3455045500909934886b44b23b14256e5aff69dd4539c04c02390a/KsjTmplt-N02-v3_1.html"
+    },
+    {
+      "id": "ksj-terms",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+      "http_status": 200,
+      "sha256": "f4663ca5e4ddc5418af5ffb1b47b99464495ba99fa90b0066214057578bdc65d",
+      "bytes": 27978,
+      "store_path": "raw/f4663ca5e4ddc5418af5ffb1b47b99464495ba99fa90b0066214057578bdc65d/agreement.html"
+    },
+    {
+      "id": "ksj-important",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+      "http_status": 200,
+      "sha256": "627094f4daef59b416d828613ff8595d68d33a1e998ac4093b578388842ba4be",
+      "bytes": 62499,
+      "store_path": "raw/627094f4daef59b416d828613ff8595d68d33a1e998ac4093b578388842ba4be/agreement_02.html"
+    }
+  ],
+  "last_offline_check": {
+    "requested_at": "2026-10-20T22:59:54.957Z",
+    "completed_at": "2026-10-20T22:59:54.957Z",
+    "tool_version": "0.1.0",
+    "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+    "bytes": 187935,
+    "status": "PASS"
+  }
+}

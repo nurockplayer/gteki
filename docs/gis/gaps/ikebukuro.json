@@ -1,5 +1,1196 @@
 {
   "station_id": "ikebukuro",
+  "tool_input_sha256": "a2be3979ae1672273b196601a1111fafb8ca4dd58804040f78505fb5b1f3c392",
+  "poi_content": [
+    {
+      "source_id": "plateau-13104-related",
+      "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
+      "routable": false,
+      "coordinates": "SEE_MEMBERS",
+      "members": [
+        {
+          "file": "13104_shinjuku-ku_pref_2023_shelter.geojson",
+          "populated_row_count": null,
+          "feature_count": 110,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.678522,
+            35.677806468,
+            139.742017,
+            35.727285
+          ],
+          "geometry_types": {
+            "Point": 110
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2023_park.geojson",
+          "populated_row_count": null,
+          "feature_count": 168,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.67365,
+            35.67548291,
+            139.74226,
+            35.7259
+          ],
+          "geometry_types": {
+            "Point": 168
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_landmark.geojson",
+          "populated_row_count": null,
+          "feature_count": 201,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.678326236,
+            35.67966927,
+            139.74273124,
+            35.727351972
+          ],
+          "geometry_types": {
+            "Point": 201
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_station.geojson",
+          "populated_row_count": null,
+          "feature_count": 48,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.683470344,
+            35.679904607,
+            139.745628981,
+            35.723363646
+          ],
+          "geometry_types": {
+            "Point": 48
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_railway.geojson",
+          "populated_row_count": null,
+          "feature_count": 108,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.679152355,
+            35.678768507,
+            139.745770351,
+            35.723675633
+          ],
+          "geometry_types": {
+            "LineString": 103,
+            "MultiLineString": 5
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+          "populated_row_count": null,
+          "feature_count": 45,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.675259079,
+            35.674004657,
+            139.745809259,
+            35.729300746
+          ],
+          "geometry_types": {
+            "MultiLineString": 6,
+            "LineString": 39
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_border.geojson",
+          "populated_row_count": null,
+          "feature_count": 1,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.673437782,
+            35.673433081,
+            139.745870441,
+            35.729519946
+          ],
+          "geometry_types": {
+            "LineString": 1
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        }
+      ],
+      "station_relevance": [
+        {
+          "file": "13104_shinjuku-ku_pref_2023_shelter.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "DISJOINT",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2023_shelter.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2023_shelter.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2023_shelter.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2023_park.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "DISJOINT",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2023_park.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2023_park.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2023_park.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_landmark.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "DISJOINT",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_landmark.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_landmark.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_landmark.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_station.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "DISJOINT",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_station.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "DISJOINT",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_station.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "DISJOINT",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_station.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "DISJOINT",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_railway.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "DISJOINT",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_railway.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "DISJOINT",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_railway.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "DISJOINT",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_railway.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "DISJOINT",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_border.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_border.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_border.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_border.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        }
+      ],
+      "detail": {
+        "store_path": "out/poi/plateau-13104-related-d62a5ba1cde0-b7b6d2c7f968.json",
+        "sha256": "3310451f0b1ded0cc634788f1b3c8423804196e84fc883bd13a8dc9dc4fba62a",
+        "bytes": 583075
+      }
+    },
+    {
+      "source_id": "plateau-13116-related",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "routable": false,
+      "coordinates": "SEE_MEMBERS",
+      "members": [
+        {
+          "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+          "populated_row_count": null,
+          "feature_count": 42,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.680022,
+            35.716454,
+            139.74348799,
+            35.744312
+          ],
+          "geometry_types": {
+            "Point": 42
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        },
+        {
+          "file": "13116_toshima-ku_pref_2023_park.geojson",
+          "populated_row_count": null,
+          "feature_count": 62,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.68017243,
+            35.7131,
+            139.7498,
+            35.74576942
+          ],
+          "geometry_types": {
+            "Point": 62
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+          "populated_row_count": null,
+          "feature_count": 143,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.67859707,
+            35.714298848,
+            139.74674529,
+            35.74490964
+          ],
+          "geometry_types": {
+            "Point": 143
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_station.geojson",
+          "populated_row_count": null,
+          "feature_count": 35,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.683010912,
+            35.716569724,
+            139.748127618,
+            35.745291981
+          ],
+          "geometry_types": {
+            "Point": 35
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_railway.geojson",
+          "populated_row_count": null,
+          "feature_count": 81,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.677425528,
+            35.714544972,
+            139.74909424,
+            35.745580493
+          ],
+          "geometry_types": {
+            "LineString": 79,
+            "MultiLineString": 2
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+          "populated_row_count": null,
+          "feature_count": 26,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.67742621,
+            35.714460811,
+            139.748381664,
+            35.744917506
+          ],
+          "geometry_types": {
+            "LineString": 24,
+            "MultiLineString": 2
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_border.geojson",
+          "populated_row_count": null,
+          "feature_count": 1,
+          "crs": "UNKNOWN",
+          "bbox": [
+            139.677344306,
+            35.712265775,
+            139.752760441,
+            35.745792667
+          ],
+          "geometry_types": {
+            "LineString": 1
+          },
+          "literal_location_time_fields": {},
+          "route_structure": []
+        }
+      ],
+      "station_relevance": [
+        {
+          "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2023_park.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2023_park.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2023_park.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2023_park.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_station.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_station.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_station.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_station.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_railway.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_railway.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_railway.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_railway.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_border.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "plateau-13116-ubld-53394576",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "KNOWN",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_border.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_border.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_border.geojson",
+          "station_id": "ikebukuro",
+          "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+          "relation": "INTERSECTS",
+          "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+          "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+          "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+        }
+      ],
+      "detail": {
+        "store_path": "out/poi/plateau-13116-related-df356f6e0ca6-fb75117a08e0.json",
+        "sha256": "dc3bb956db6f1008e4146f300dc4c316d5fb2786ef52f0ffbab39deae67a2a52",
+        "bytes": 366794
+      }
+    }
+  ],
+  "resource_rights": [
+    {
+      "source_id": "plateau-13116-related",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "layer": null,
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": "UNKNOWN",
+        "assessment": "Mixed origin terms; assess individual layers after verified identity."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "UNKNOWN",
+      "reason": "Explicit coverage of the exact resource; Archive contains mixed origin terms; split and apply the individual layer records.; Third-party permission or exclusion-free product subset; Established commercial_use permission; Established redistribution permission; Established modification_allowed permission; Explicit resource- or dataset-level licence; site/origin terms alone do not cover this derivative",
+      "evidence_ids": [
+        "plateau-13116-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13116-related-catalog#resource",
+        "plateau-13116-related-catalog#policy-link"
+      ],
+      "missing_evidence": [
+        "Explicit coverage of the exact resource",
+        "Archive contains mixed origin terms; split and apply the individual layer records.",
+        "Third-party permission or exclusion-free product subset",
+        "Established commercial_use permission",
+        "Established redistribution permission",
+        "Established modification_allowed permission",
+        "Explicit resource- or dataset-level licence; site/origin terms alone do not cover this derivative"
+      ],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "layer": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "RESTRICTED",
+      "reason": "Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.",
+      "evidence_ids": [
+        "plateau-13116-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13116-related-catalog#resource",
+        "plateau-13116-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13116-related-shelter-asset-origin",
+        "plateau-related-provenance#plateau-13116-related-shelter-asset-date",
+        "plateau-related-provenance#plateau-13116-related-shelter-asset-creator",
+        "plateau-related-provenance#ksj-p20",
+        "plateau-related-provenance#ksj-exception-heading",
+        "plateau-related-provenance#ksj-old-rule",
+        "plateau-related-provenance#non-commercial",
+        "plateau-related-provenance#no-copy-redistribution",
+        "plateau-related-provenance#non-database-exception"
+      ],
+      "missing_evidence": [],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "layer": "13116_toshima-ku_pref_2023_park.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "RESTRICTED",
+      "reason": "Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.",
+      "evidence_ids": [
+        "plateau-13116-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13116-related-catalog#resource",
+        "plateau-13116-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13116-related-park-asset-origin",
+        "plateau-related-provenance#plateau-13116-related-park-asset-date",
+        "plateau-related-provenance#plateau-13116-related-park-asset-creator",
+        "plateau-related-provenance#ksj-p13",
+        "plateau-related-provenance#ksj-exception-heading",
+        "plateau-related-provenance#ksj-old-rule",
+        "plateau-related-provenance#non-commercial",
+        "plateau-related-provenance#no-copy-redistribution",
+        "plateau-related-provenance#non-database-exception"
+      ],
+      "missing_evidence": [],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "layer": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": "UNKNOWN",
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "UNKNOWN",
+      "reason": "Published downstream scope and required wording of 令7関公第296号; an approval number alone is not permission.; Downstream survey approval scope and required approval wording are unpublished; Third-party permission or exclusion-free product subset; Established commercial_use permission; Established redistribution permission; Established modification_allowed permission; Verified derivative grant and CC BY 4.0 origin permission",
+      "evidence_ids": [
+        "plateau-13116-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13116-related-catalog#resource",
+        "plateau-13116-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13116-related-landmark-asset-origin",
+        "plateau-related-provenance#plateau-13116-related-landmark-asset-date",
+        "plateau-related-provenance#plateau-13116-related-landmark-asset-creator",
+        "plateau-related-provenance#plateau-13116-related-landmark-asset-converter",
+        "plateau-related-provenance#plateau-13116-related-landmark-asset-approval",
+        "plateau-related-provenance#gsi-origin",
+        "plateau-related-provenance#gsi-terms",
+        "plateau-related-provenance#gsi-survey",
+        "plateau-related-provenance#approval-distinction",
+        "plateau-related-provenance#approval-wording"
+      ],
+      "missing_evidence": [
+        "Published downstream scope and required wording of 令7関公第296号; an approval number alone is not permission.",
+        "Downstream survey approval scope and required approval wording are unpublished",
+        "Third-party permission or exclusion-free product subset",
+        "Established commercial_use permission",
+        "Established redistribution permission",
+        "Established modification_allowed permission",
+        "Verified derivative grant and CC BY 4.0 origin permission"
+      ],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "layer": "13116_toshima-ku_pref_2025_station.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "CLEARED_WITH_CONDITIONS",
+      "reason": "Verified CC BY 4.0 origin plus PLATEAU PDL 1.0/CC BY alternative; retain TP+TN attribution, modifications and supplied survey notices.",
+      "evidence_ids": [
+        "plateau-13116-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13116-related-catalog#resource",
+        "plateau-13116-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13116-related-station-asset-origin",
+        "plateau-related-provenance#plateau-13116-related-station-asset-date",
+        "plateau-related-provenance#plateau-13116-related-station-asset-creator",
+        "plateau-related-provenance#plateau-13116-related-station-asset-converter",
+        "plateau-related-provenance#ksj-n02-2024",
+        "plateau-related-provenance#railway-year-range"
+      ],
+      "missing_evidence": [],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "layer": "13116_toshima-ku_pref_2025_railway.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "CLEARED_WITH_CONDITIONS",
+      "reason": "Verified CC BY 4.0 origin plus PLATEAU PDL 1.0/CC BY alternative; retain TP+TN attribution, modifications and supplied survey notices.",
+      "evidence_ids": [
+        "plateau-13116-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13116-related-catalog#resource",
+        "plateau-13116-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13116-related-railway-asset-origin",
+        "plateau-related-provenance#plateau-13116-related-railway-asset-date",
+        "plateau-related-provenance#plateau-13116-related-railway-asset-creator",
+        "plateau-related-provenance#ksj-n02-2024",
+        "plateau-related-provenance#railway-year-range"
+      ],
+      "missing_evidence": [],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "layer": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "RESTRICTED",
+      "reason": "Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.",
+      "evidence_ids": [
+        "plateau-13116-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13116-related-catalog#resource",
+        "plateau-13116-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13116-related-emergency-route-asset-origin",
+        "plateau-related-provenance#plateau-13116-related-emergency-route-asset-date",
+        "plateau-related-provenance#plateau-13116-related-emergency-route-asset-creator",
+        "plateau-related-provenance#ksj-n10-2024",
+        "plateau-related-provenance#ksj-exception-heading",
+        "plateau-related-provenance#ksj-old-rule",
+        "plateau-related-provenance#non-commercial",
+        "plateau-related-provenance#no-copy-redistribution",
+        "plateau-related-provenance#non-database-exception"
+      ],
+      "missing_evidence": [],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "layer": "13116_toshima-ku_pref_2025_border.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "CLEARED_WITH_CONDITIONS",
+      "reason": "Verified CC BY 4.0 origin plus PLATEAU PDL 1.0/CC BY alternative; retain TP+TN attribution, modifications and supplied survey notices.",
+      "evidence_ids": [
+        "plateau-13116-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13116-related-catalog#resource",
+        "plateau-13116-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13116-related-border-asset-origin",
+        "plateau-related-provenance#plateau-13116-related-border-asset-date",
+        "plateau-related-provenance#plateau-13116-related-border-asset-creator",
+        "plateau-related-provenance#plateau-13116-related-border-asset-converter",
+        "plateau-related-provenance#ksj-n03-2025",
+        "plateau-related-provenance#border-approval"
+      ],
+      "missing_evidence": [],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-catalog",
+      "source_sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+      "layer": null,
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": "UNKNOWN",
+        "assessment": "Mixed origin terms; assess individual layers after verified identity."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "UNKNOWN",
+      "reason": "Explicit coverage of the exact resource; No explicit self-licence for this CKAN metadata response.; Third-party permission or exclusion-free product subset; Established commercial_use permission; Established redistribution permission; Established modification_allowed permission; Explicit resource- or dataset-level licence; site/origin terms alone do not cover this derivative",
+      "evidence_ids": [
+        "plateau-13116-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13116-related-catalog#policy-link"
+      ],
+      "missing_evidence": [
+        "Explicit coverage of the exact resource",
+        "No explicit self-licence for this CKAN metadata response.",
+        "Third-party permission or exclusion-free product subset",
+        "Established commercial_use permission",
+        "Established redistribution permission",
+        "Established modification_allowed permission",
+        "Explicit resource- or dataset-level licence; site/origin terms alone do not cover this derivative"
+      ],
+      "publish_gate": "HOLD",
+      "routable": false
+    }
+  ],
   "source_ids": {
     "citygml": "plateau-13116-ubld-53394576",
     "network": "hokonavi-ikebukuro-walk-node-csv"
@@ -1723,7 +2914,14 @@
     "Any bbox intersection establishes envelope overlap only; HOLD for geometry/graph pairing until feature alignment, floor correspondence and operator evidence are established.",
     "HOLD: nominal mesh membership does not establish actual geometry coverage, feature correspondence or floor alignment.",
     "Applicable walking-network specification version remains UNKNOWN; decoded labels and rank checks are literal consistency evidence only.",
-    "R1 CRS is INFERRED_FROM_SPEC; all endpoint and overlap metrics relying on it are CONDITIONAL_ON_INFERRED_CRS. Distance evidence cannot identify the datum."
+    "R1 CRS is INFERRED_FROM_SPEC; all endpoint and overlap metrics relying on it are CONDITIONAL_ON_INFERRED_CRS. Distance evidence cannot identify the datum.",
+    "POI, S03 and related-layer publish gates remain HOLD. Rights clearance never establishes navigability.",
+    "plateau-13116-related: UNKNOWN; Explicit coverage of the exact resource; Archive contains mixed origin terms; split and apply the individual layer records.; Third-party permission or exclusion-free product subset; Established commercial_use permission; Established redistribution permission; Established modification_allowed permission; Explicit resource- or dataset-level licence; site/origin terms alone do not cover this derivative; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":\"UNKNOWN\",\"assessment\":\"Mixed origin terms; assess individual layers after verified identity.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"].",
+    "plateau-13116-related / 13116_toshima-ku_pref_2023_shelter.geojson: RESTRICTED; Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":false,\"assessment\":\"Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"].",
+    "plateau-13116-related / 13116_toshima-ku_pref_2023_park.geojson: RESTRICTED; Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":false,\"assessment\":\"Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"].",
+    "plateau-13116-related / 13116_toshima-ku_pref_2025_landmark.geojson: UNKNOWN; Published downstream scope and required wording of 令7関公第296号; an approval number alone is not permission.; Downstream survey approval scope and required approval wording are unpublished; Third-party permission or exclusion-free product subset; Established commercial_use permission; Established redistribution permission; Established modification_allowed permission; Verified derivative grant and CC BY 4.0 origin permission; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":\"UNKNOWN\",\"assessment\":\"Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"].",
+    "plateau-13116-related / 13116_toshima-ku_pref_2025_emergency_route.geojson: RESTRICTED; Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":false,\"assessment\":\"Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"].",
+    "plateau-13116-related-catalog: UNKNOWN; Explicit coverage of the exact resource; No explicit self-licence for this CKAN metadata response.; Third-party permission or exclusion-free product subset; Established commercial_use permission; Established redistribution permission; Established modification_allowed permission; Explicit resource- or dataset-level licence; site/origin terms alone do not cover this derivative; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":\"UNKNOWN\",\"assessment\":\"Mixed origin terms; assess individual layers after verified identity.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"]."
   ],
   "unknowns": [
     "vertical datum interpretation",

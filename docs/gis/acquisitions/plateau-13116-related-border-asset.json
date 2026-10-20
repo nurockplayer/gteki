@@ -1,0 +1,32 @@
+{
+  "source_id": "plateau-13116-related-border-asset",
+  "resolved_url": "https://assets.cms.plateau.reearth.io/assets/87/dae9cf-8ac1-4206-b74b-52af48ebde24/13116_toshima-ku_pref_2025_border.geojson",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-20T22:56:29.979Z",
+  "completed_at": "2026-10-20T22:56:29.997Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/geo+json",
+    "content-length": "50847",
+    "etag": "\"084857ede7abc2635b197808e37eab05\"",
+    "last-modified": "Tue, 10 Feb 2026 12:12:36 GMT",
+    "date": "Tue, 20 Oct 2026 22:06:04 GMT"
+  },
+  "bytes": 50847,
+  "sha256": "c0b661997a0b8e86eb44dd2a6b92bc5641f1dffef1d8003089dbd444fa88157d",
+  "store_path": "raw/c0b661997a0b8e86eb44dd2a6b92bc5641f1dffef1d8003089dbd444fa88157d/13116_toshima-ku_pref_2025_border.geojson",
+  "tool_version": "0.1.0",
+  "git_commit": "53b80676cdc5b857ee2fcb37c4f90b121c971e92",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-20T22:59:55.147Z",
+    "completed_at": "2026-10-20T22:59:55.147Z",
+    "tool_version": "0.1.0",
+    "sha256": "c0b661997a0b8e86eb44dd2a6b92bc5641f1dffef1d8003089dbd444fa88157d",
+    "bytes": 50847,
+    "status": "PASS"
+  }
+}

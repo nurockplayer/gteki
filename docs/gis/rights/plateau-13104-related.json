@@ -1,0 +1,2265 @@
+{
+  "source_id": "plateau-13104-related",
+  "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
+  "station_ids": [
+    "shinjuku"
+  ],
+  "tool_input_sha256": "a2be3979ae1672273b196601a1111fafb8ca4dd58804040f78505fb5b1f3c392",
+  "input_sources": [
+    {
+      "source_id": "plateau-13104-related",
+      "sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9"
+    },
+    {
+      "source_id": "plateau-13104-related-catalog",
+      "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942"
+    },
+    {
+      "source_id": "plateau-related-provenance",
+      "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d"
+    },
+    {
+      "source_id": "plateau-13104-related-shelter-asset",
+      "sha256": "29723986e0c34fa1db08d7db4f77abd9a30ef0f00c9fc67890925cc487fd7666"
+    },
+    {
+      "source_id": "plateau-13104-related-park-asset",
+      "sha256": "dde1d2367163f2d4a9bd8ca9a8c7ab305b4cc151b5c83d22c3df500e56874f19"
+    },
+    {
+      "source_id": "plateau-13104-related-landmark-asset",
+      "sha256": "3ca77c5ba33d6884cb23c55f14e9f651f87297324d86502c1b417f2e0f565feb"
+    },
+    {
+      "source_id": "plateau-13104-related-station-asset",
+      "sha256": "7e7071807bb493ce3c9eb2ea0b192d817b1a64b93f693e456f81c9589446d929"
+    },
+    {
+      "source_id": "plateau-13104-related-railway-asset",
+      "sha256": "eb5d25e83fa3955bdf48d15f222dda3989e524289d8be4c007451e13a5c27f3a"
+    },
+    {
+      "source_id": "plateau-13104-related-emergency-route-asset",
+      "sha256": "a76910ca4e2355ccfc25d9f279d6f9929fe7fbec96f0fb0774ce229a6c0fde1f"
+    },
+    {
+      "source_id": "plateau-13104-related-border-asset",
+      "sha256": "8a6b33c4b3731e3c7f5a97b0cee7526c5da73b351e91d113a0eeef0039d2e784"
+    }
+  ],
+  "records": [
+    {
+      "resource": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_url": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_identity": {
+        "matches": true,
+        "prior_sha256": null,
+        "acquired_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9"
+      },
+      "layer": null,
+      "claim_level": "SITE_POLICY",
+      "licence_claimed": {
+        "name": "PLATEAU site policy / Public Data License",
+        "version": "1.0",
+        "url": "https://www.mlit.go.jp/plateau/site-policy/"
+      },
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "exact_resource_covered": false,
+      "archive_catalog_covered": true,
+      "derivative_licence_verified": true,
+      "catalog_resource_id": "99f0b4ff-0d3e-47b3-a553-5a4df36bb563",
+      "resource_licence_fields": [],
+      "evidence": [
+        {
+          "id": "plateau-13104-related-catalog#licence",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_id",
+          "quote": "plateau",
+          "json_pointer": "/result/license_id"
+        },
+        {
+          "id": "plateau-related-provenance#policy-scope",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "Terms of Use §3 コンテンツの利用",
+          "quote": "権利表記の記載がない限り"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-credit",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (1)",
+          "quote": "コンテンツを利用する際は出典を記載してください。"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-cc-alternative",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (3)",
+          "quote": "利用者がCC BYに従って利用することを許諾します。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-commercial",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1 コンテンツの利用",
+          "quote": "商用利用も可能です。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-third-party",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1.2 第三者の権利",
+          "quote": "第三者の権利を侵害しないようにしてください"
+        },
+        {
+          "id": "plateau-related-provenance#trademarks-excluded",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §2(b)(2)",
+          "quote": "特許権および商標権は"
+        },
+        {
+          "id": "plateau-related-provenance#legal-modifications",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §3(a)(1)(B)",
+          "quote": "ライセンス対象物を改変した場合はその旨を記し"
+        },
+        {
+          "id": "plateau-13104-related-catalog#resource",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/resources/4/url",
+          "quote": "13104_shinjuku-ku_2025_related.zip",
+          "json_pointer": "/result/resources/4/url"
+        },
+        {
+          "id": "plateau-13104-related-catalog#policy-link",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_url",
+          "quote": "ps://www.mlit.go.jp/plateau/site-policy/",
+          "json_pointer": "/result/license_url"
+        }
+      ],
+      "evidence_verified": true,
+      "attribution_required": "Per-layer TP+TN attribution and approval notices; archive-wide permission is not asserted.",
+      "modification_notice_required": true,
+      "commercial_use": "unknown",
+      "redistribution": "unknown",
+      "modification_allowed": "unknown",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": "UNKNOWN",
+        "assessment": "Mixed origin terms; assess individual layers after verified identity."
+      },
+      "missing_evidence": [
+        "Explicit coverage of the exact resource",
+        "Archive contains mixed origin terms; split and apply the individual layer records.",
+        "Third-party permission or exclusion-free product subset",
+        "Established commercial_use permission",
+        "Established redistribution permission",
+        "Established modification_allowed permission",
+        "Explicit resource- or dataset-level licence; site/origin terms alone do not cover this derivative"
+      ],
+      "attribution_templates": {
+        "status": "UNKNOWN; internal archive/catalog record only, split required for ZIPs",
+        "examples_only": true,
+        "mandated_verbatim": false,
+        "examples": [
+          "資料：国土交通省 Project PLATEAU「PLATEAU 13104 related GeoJSON ZIP」（https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip）。一括の再利用許諾は未確認。レイヤー別の記録を参照。"
+        ],
+        "note": "Replace placeholders and describe actual modifications. Preserve supplied creator, rights, licence and approval notices; these examples do not grant permission."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "publish_gate": "HOLD",
+      "routable": false,
+      "ward": "新宿区",
+      "catalog_url": "https://www.geospatial.jp/ckan/dataset/plateau-13104-shinjuku-ku-2025",
+      "verdict": "UNKNOWN",
+      "reason": "Explicit coverage of the exact resource; Archive contains mixed origin terms; split and apply the individual layer records.; Third-party permission or exclusion-free product subset; Established commercial_use permission; Established redistribution permission; Established modification_allowed permission; Explicit resource- or dataset-level licence; site/origin terms alone do not cover this derivative"
+    },
+    {
+      "resource": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_url": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_identity": {
+        "matches": true,
+        "prior_sha256": null,
+        "acquired_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9"
+      },
+      "layer": "13104_shinjuku-ku_pref_2023_shelter.geojson",
+      "claim_level": "ORIGIN_DATASET",
+      "licence_claimed": {
+        "name": "KSJ old terms / non-commercial + PLATEAU PDL",
+        "version": "2020-07-01 / 1.0",
+        "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html"
+      },
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "exact_resource_covered": true,
+      "archive_catalog_covered": true,
+      "derivative_licence_verified": true,
+      "catalog_resource_id": "99f0b4ff-0d3e-47b3-a553-5a4df36bb563",
+      "resource_licence_fields": [],
+      "evidence": [
+        {
+          "id": "plateau-13104-related-catalog#licence",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_id",
+          "quote": "plateau",
+          "json_pointer": "/result/license_id"
+        },
+        {
+          "id": "plateau-related-provenance#policy-scope",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "Terms of Use §3 コンテンツの利用",
+          "quote": "権利表記の記載がない限り"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-credit",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (1)",
+          "quote": "コンテンツを利用する際は出典を記載してください。"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-cc-alternative",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (3)",
+          "quote": "利用者がCC BYに従って利用することを許諾します。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-commercial",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1 コンテンツの利用",
+          "quote": "商用利用も可能です。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-third-party",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1.2 第三者の権利",
+          "quote": "第三者の権利を侵害しないようにしてください"
+        },
+        {
+          "id": "plateau-related-provenance#trademarks-excluded",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §2(b)(2)",
+          "quote": "特許権および商標権は"
+        },
+        {
+          "id": "plateau-related-provenance#legal-modifications",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §3(a)(1)(B)",
+          "quote": "ライセンス対象物を改変した場合はその旨を記し"
+        },
+        {
+          "id": "plateau-13104-related-catalog#resource",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/resources/4/url",
+          "quote": "13104_shinjuku-ku_2025_related.zip",
+          "json_pointer": "/result/resources/4/url"
+        },
+        {
+          "id": "plateau-13104-related-catalog#policy-link",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_url",
+          "quote": "ps://www.mlit.go.jp/plateau/site-policy/",
+          "json_pointer": "/result/license_url"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-shelter-asset-origin",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/0/description",
+          "quote": "KsjTmplt-P20.html",
+          "json_pointer": "/data/datasets/0/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-shelter-asset-date",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/0/description",
+          "quote": "データ時点：2012年度",
+          "json_pointer": "/data/datasets/0/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-shelter-asset-creator",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/0/description",
+          "quote": "データ作成：株式会社パスコ",
+          "json_pointer": "/data/datasets/0/description"
+        },
+        {
+          "id": "plateau-related-provenance#ksj-p20",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-p20",
+          "sha256": "6b565cd1eaa37adaa8c2e16dfb0c8f26c9e3d7dfb2086fc1c41c9e94ebed71e8",
+          "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html",
+          "section": "このデータの使用許諾条件",
+          "quote": "非商用"
+        },
+        {
+          "id": "plateau-related-provenance#ksj-exception-heading",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-terms",
+          "sha256": "434139fc587ff99c79d069fe2111ddc959909dcc5e977c78e86f61941ebe19a9",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+          "section": "1.3 / exception heading",
+          "quote": "1.3 本利用ルールが適用されないコンテンツについて"
+        },
+        {
+          "id": "plateau-related-provenance#ksj-old-rule",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-terms",
+          "sha256": "434139fc587ff99c79d069fe2111ddc959909dcc5e977c78e86f61941ebe19a9",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+          "section": "1.3(2) 本利用ルールが適用されないコンテンツ / 商用可・非商用",
+          "quote": "旧国土情報利用約款準拠版"
+        },
+        {
+          "id": "plateau-related-provenance#non-commercial",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-old-terms",
+          "sha256": "5cace97058091c91bb552ab5a6b3c23b67b86c06fd4cc1c5ec151e34c95a18c2",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+          "section": "第1条 (b)",
+          "quote": "非商用目的のみでの利用"
+        },
+        {
+          "id": "plateau-related-provenance#no-copy-redistribution",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-old-terms",
+          "sha256": "5cace97058091c91bb552ab5a6b3c23b67b86c06fd4cc1c5ec151e34c95a18c2",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+          "section": "第1条 (b)",
+          "quote": "ただし複製物の再配布を除く"
+        },
+        {
+          "id": "plateau-related-provenance#non-database-exception",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-old-terms",
+          "sha256": "5cace97058091c91bb552ab5a6b3c23b67b86c06fd4cc1c5ec151e34c95a18c2",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+          "section": "第3条 / 非データベースの空間演算結果の例外",
+          "quote": "GISによって空間演算した結果（データベースでないもの）"
+        }
+      ],
+      "evidence_verified": true,
+      "attribution_required": "Source, creator and processing credits under the old KSJ terms; separate permission is required before requested use.",
+      "modification_notice_required": true,
+      "commercial_use": "no",
+      "redistribution": "no",
+      "modification_allowed": "conditional",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "missing_evidence": [],
+      "attribution_templates": {
+        "status": "RESTRICTED; internal source record only, no release permission",
+        "examples_only": true,
+        "mandated_verbatim": false,
+        "examples": [
+          "原典：国土交通省「国土数値情報」（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html、旧国土情報利用約款準拠版・非商用）。データ作成：株式会社パスコ。商用・複製物再配布は別途許諾が必要。"
+        ],
+        "note": "Replace placeholders and describe actual modifications. Preserve supplied creator, rights, licence and approval notices; these examples do not grant permission."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "publish_gate": "HOLD",
+      "routable": false,
+      "ward": "新宿区",
+      "catalog_url": "https://www.geospatial.jp/ckan/dataset/plateau-13104-shinjuku-ku-2025",
+      "direct_resource": "https://assets.cms.plateau.reearth.io/assets/5c/14236d-19c7-4145-87b6-b5c4fdc91b87/13104_shinjuku-ku_pref_2023_shelter.geojson",
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html",
+        "date": "2012年度",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      },
+      "origin_linkage_verified": true,
+      "identity_check": "JSON-equal",
+      "origin_licence_class": "KSJ_NON_COMMERCIAL",
+      "licence_chain": [
+        {
+          "claim_level": "ORIGIN_DATASET",
+          "name": "KSJ old terms (non-commercial)",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html"
+        },
+        {
+          "claim_level": "SITE_POLICY",
+          "name": "PLATEAU PDL 1.0 (CC BY 4.0 alternative)",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/"
+        }
+      ],
+      "approval_scope": "no_unresolved_scope_identified",
+      "carried_survey_notice": null,
+      "verdict": "RESTRICTED",
+      "reason": "Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted."
+    },
+    {
+      "resource": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_url": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_identity": {
+        "matches": true,
+        "prior_sha256": null,
+        "acquired_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9"
+      },
+      "layer": "13104_shinjuku-ku_pref_2023_park.geojson",
+      "claim_level": "ORIGIN_DATASET",
+      "licence_claimed": {
+        "name": "KSJ old terms / non-commercial + PLATEAU PDL",
+        "version": "2020-07-01 / 1.0",
+        "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html"
+      },
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "exact_resource_covered": true,
+      "archive_catalog_covered": true,
+      "derivative_licence_verified": true,
+      "catalog_resource_id": "99f0b4ff-0d3e-47b3-a553-5a4df36bb563",
+      "resource_licence_fields": [],
+      "evidence": [
+        {
+          "id": "plateau-13104-related-catalog#licence",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_id",
+          "quote": "plateau",
+          "json_pointer": "/result/license_id"
+        },
+        {
+          "id": "plateau-related-provenance#policy-scope",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "Terms of Use §3 コンテンツの利用",
+          "quote": "権利表記の記載がない限り"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-credit",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (1)",
+          "quote": "コンテンツを利用する際は出典を記載してください。"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-cc-alternative",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (3)",
+          "quote": "利用者がCC BYに従って利用することを許諾します。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-commercial",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1 コンテンツの利用",
+          "quote": "商用利用も可能です。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-third-party",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1.2 第三者の権利",
+          "quote": "第三者の権利を侵害しないようにしてください"
+        },
+        {
+          "id": "plateau-related-provenance#trademarks-excluded",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §2(b)(2)",
+          "quote": "特許権および商標権は"
+        },
+        {
+          "id": "plateau-related-provenance#legal-modifications",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §3(a)(1)(B)",
+          "quote": "ライセンス対象物を改変した場合はその旨を記し"
+        },
+        {
+          "id": "plateau-13104-related-catalog#resource",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/resources/4/url",
+          "quote": "13104_shinjuku-ku_2025_related.zip",
+          "json_pointer": "/result/resources/4/url"
+        },
+        {
+          "id": "plateau-13104-related-catalog#policy-link",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_url",
+          "quote": "ps://www.mlit.go.jp/plateau/site-policy/",
+          "json_pointer": "/result/license_url"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-park-asset-origin",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/1/description",
+          "quote": "KsjTmplt-P13.html",
+          "json_pointer": "/data/datasets/1/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-park-asset-date",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/1/description",
+          "quote": "データ時点：2011年",
+          "json_pointer": "/data/datasets/1/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-park-asset-creator",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/1/description",
+          "quote": "データ作成：株式会社パスコ",
+          "json_pointer": "/data/datasets/1/description"
+        },
+        {
+          "id": "plateau-related-provenance#ksj-p13",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-p13",
+          "sha256": "24e6094f40c13f8caf4198d94439594dec3eb11c3c76fe910d5b359fdf6193f5",
+          "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html",
+          "section": "このデータの使用許諾条件",
+          "quote": "非商用"
+        },
+        {
+          "id": "plateau-related-provenance#ksj-exception-heading",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-terms",
+          "sha256": "434139fc587ff99c79d069fe2111ddc959909dcc5e977c78e86f61941ebe19a9",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+          "section": "1.3 / exception heading",
+          "quote": "1.3 本利用ルールが適用されないコンテンツについて"
+        },
+        {
+          "id": "plateau-related-provenance#ksj-old-rule",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-terms",
+          "sha256": "434139fc587ff99c79d069fe2111ddc959909dcc5e977c78e86f61941ebe19a9",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+          "section": "1.3(2) 本利用ルールが適用されないコンテンツ / 商用可・非商用",
+          "quote": "旧国土情報利用約款準拠版"
+        },
+        {
+          "id": "plateau-related-provenance#non-commercial",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-old-terms",
+          "sha256": "5cace97058091c91bb552ab5a6b3c23b67b86c06fd4cc1c5ec151e34c95a18c2",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+          "section": "第1条 (b)",
+          "quote": "非商用目的のみでの利用"
+        },
+        {
+          "id": "plateau-related-provenance#no-copy-redistribution",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-old-terms",
+          "sha256": "5cace97058091c91bb552ab5a6b3c23b67b86c06fd4cc1c5ec151e34c95a18c2",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+          "section": "第1条 (b)",
+          "quote": "ただし複製物の再配布を除く"
+        },
+        {
+          "id": "plateau-related-provenance#non-database-exception",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-old-terms",
+          "sha256": "5cace97058091c91bb552ab5a6b3c23b67b86c06fd4cc1c5ec151e34c95a18c2",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+          "section": "第3条 / 非データベースの空間演算結果の例外",
+          "quote": "GISによって空間演算した結果（データベースでないもの）"
+        }
+      ],
+      "evidence_verified": true,
+      "attribution_required": "Source, creator and processing credits under the old KSJ terms; separate permission is required before requested use.",
+      "modification_notice_required": true,
+      "commercial_use": "no",
+      "redistribution": "no",
+      "modification_allowed": "conditional",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "missing_evidence": [],
+      "attribution_templates": {
+        "status": "RESTRICTED; internal source record only, no release permission",
+        "examples_only": true,
+        "mandated_verbatim": false,
+        "examples": [
+          "原典：国土交通省「国土数値情報」（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html、旧国土情報利用約款準拠版・非商用）。データ作成：株式会社パスコ。商用・複製物再配布は別途許諾が必要。"
+        ],
+        "note": "Replace placeholders and describe actual modifications. Preserve supplied creator, rights, licence and approval notices; these examples do not grant permission."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "publish_gate": "HOLD",
+      "routable": false,
+      "ward": "新宿区",
+      "catalog_url": "https://www.geospatial.jp/ckan/dataset/plateau-13104-shinjuku-ku-2025",
+      "direct_resource": "https://assets.cms.plateau.reearth.io/assets/40/cbcb3f-eaa2-4438-85d9-fcf1cb2e092b/13104_shinjuku-ku_pref_2023_park.geojson",
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html",
+        "date": "2011年",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      },
+      "origin_linkage_verified": true,
+      "identity_check": "JSON-equal",
+      "origin_licence_class": "KSJ_NON_COMMERCIAL",
+      "licence_chain": [
+        {
+          "claim_level": "ORIGIN_DATASET",
+          "name": "KSJ old terms (non-commercial)",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html"
+        },
+        {
+          "claim_level": "SITE_POLICY",
+          "name": "PLATEAU PDL 1.0 (CC BY 4.0 alternative)",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/"
+        }
+      ],
+      "approval_scope": "no_unresolved_scope_identified",
+      "carried_survey_notice": null,
+      "verdict": "RESTRICTED",
+      "reason": "Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted."
+    },
+    {
+      "resource": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_url": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_identity": {
+        "matches": true,
+        "prior_sha256": null,
+        "acquired_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9"
+      },
+      "layer": "13104_shinjuku-ku_pref_2025_landmark.geojson",
+      "claim_level": "ORIGIN_DATASET",
+      "licence_claimed": {
+        "name": "GSI product / survey approval + PLATEAU PDL",
+        "version": "approval scope UNKNOWN / 1.0",
+        "url": "https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html"
+      },
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "exact_resource_covered": true,
+      "archive_catalog_covered": true,
+      "derivative_licence_verified": true,
+      "catalog_resource_id": "99f0b4ff-0d3e-47b3-a553-5a4df36bb563",
+      "resource_licence_fields": [],
+      "evidence": [
+        {
+          "id": "plateau-13104-related-catalog#licence",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_id",
+          "quote": "plateau",
+          "json_pointer": "/result/license_id"
+        },
+        {
+          "id": "plateau-related-provenance#policy-scope",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "Terms of Use §3 コンテンツの利用",
+          "quote": "権利表記の記載がない限り"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-credit",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (1)",
+          "quote": "コンテンツを利用する際は出典を記載してください。"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-cc-alternative",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (3)",
+          "quote": "利用者がCC BYに従って利用することを許諾します。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-commercial",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1 コンテンツの利用",
+          "quote": "商用利用も可能です。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-third-party",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1.2 第三者の権利",
+          "quote": "第三者の権利を侵害しないようにしてください"
+        },
+        {
+          "id": "plateau-related-provenance#trademarks-excluded",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §2(b)(2)",
+          "quote": "特許権および商標権は"
+        },
+        {
+          "id": "plateau-related-provenance#legal-modifications",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §3(a)(1)(B)",
+          "quote": "ライセンス対象物を改変した場合はその旨を記し"
+        },
+        {
+          "id": "plateau-13104-related-catalog#resource",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/resources/4/url",
+          "quote": "13104_shinjuku-ku_2025_related.zip",
+          "json_pointer": "/result/resources/4/url"
+        },
+        {
+          "id": "plateau-13104-related-catalog#policy-link",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_url",
+          "quote": "ps://www.mlit.go.jp/plateau/site-policy/",
+          "json_pointer": "/result/license_url"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-landmark-asset-origin",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/2/description",
+          "quote": "kibanjoho40027.html",
+          "json_pointer": "/data/datasets/2/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-landmark-asset-date",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/2/description",
+          "quote": "データ時点：2025年10月15日",
+          "json_pointer": "/data/datasets/2/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-landmark-asset-creator",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/2/description",
+          "quote": "データ作成：株式会社パスコ",
+          "json_pointer": "/data/datasets/2/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-landmark-asset-converter",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/2/description",
+          "quote": "データ変換：PLATEAU　CMS",
+          "json_pointer": "/data/datasets/2/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-landmark-asset-approval",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/2/description",
+          "quote": "令7関公第296号",
+          "json_pointer": "/data/datasets/2/description"
+        },
+        {
+          "id": "plateau-related-provenance#gsi-origin",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "gsi-origin",
+          "sha256": "0bbbae9566cb71c9059f252a8578812306fb6db4d0ef287ca5e6b49f405b78b2",
+          "url": "https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html",
+          "section": "その他 / 複製・使用",
+          "quote": "測量法第29条又は30条に基づく申請が必要になります。"
+        },
+        {
+          "id": "plateau-related-provenance#gsi-terms",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "gsi-terms",
+          "sha256": "5388d2854a05f3e7b41cb980ecfb2de75b315de68e0d9c94b9334c11e580739e",
+          "url": "https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html",
+          "section": "コンテンツの利用",
+          "quote": "公共データ利用規約（第1.0 版）"
+        },
+        {
+          "id": "plateau-related-provenance#gsi-survey",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "gsi-survey",
+          "sha256": "5888fbd6094d30574d056bfa26827cd8e11391a382a6a2f083a572fa15b08722",
+          "url": "https://www.gsi.go.jp/LAW/2930-index.html",
+          "section": "測量成果の利用手続",
+          "quote": "申請は不要で出典の明示だけで利用できる場合"
+        },
+        {
+          "id": "plateau-related-provenance#approval-distinction",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "gsi-qa",
+          "sha256": "325949a4c9053085311afd402b14a1d17ec27da093ff91dfca4d4362b99ae12b",
+          "url": "https://www.gsi.go.jp/LAW/2930-qa.html",
+          "section": "Q1-24 / 複製と使用承認の区別",
+          "quote": "使用承認を得て作成した成果"
+        },
+        {
+          "id": "plateau-related-provenance#approval-wording",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "gsi-qa",
+          "sha256": "325949a4c9053085311afd402b14a1d17ec27da093ff91dfca4d4362b99ae12b",
+          "url": "https://www.gsi.go.jp/LAW/2930-qa.html",
+          "section": "Q5-2 / 承認書の表示文言",
+          "quote": "承認書に記載される承認番号及び出所の明示の文言"
+        }
+      ],
+      "evidence_verified": true,
+      "attribution_required": "Provisional origin/creator record only; obtain the approval instrument and apply its actual credit wording before reuse.",
+      "modification_notice_required": true,
+      "commercial_use": "unknown",
+      "redistribution": "unknown",
+      "modification_allowed": "unknown",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": "UNKNOWN",
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "missing_evidence": [
+        "Published downstream scope and required wording of 令7関公第296号; an approval number alone is not permission.",
+        "Downstream survey approval scope and required approval wording are unpublished",
+        "Third-party permission or exclusion-free product subset",
+        "Established commercial_use permission",
+        "Established redistribution permission",
+        "Established modification_allowed permission",
+        "Verified derivative grant and CC BY 4.0 origin permission"
+      ],
+      "attribution_templates": {
+        "status": "UNKNOWN; provisional source record only, no clearance",
+        "examples_only": true,
+        "mandated_verbatim": false,
+        "examples": [
+          "原典：国土地理院「数値地図（国土基本情報）」（https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html）。カタログ記載の承認番号：令7関公第296号。データ作成：株式会社パスコ／データ変換：PLATEAU　CMS。承認範囲・指定表示文言は未確認。"
+        ],
+        "note": "Replace placeholders and describe actual modifications. Preserve supplied creator, rights, licence and approval notices; these examples do not grant permission."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "publish_gate": "HOLD",
+      "routable": false,
+      "ward": "新宿区",
+      "catalog_url": "https://www.geospatial.jp/ckan/dataset/plateau-13104-shinjuku-ku-2025",
+      "direct_resource": "https://assets.cms.plateau.reearth.io/assets/91/b00f20-7df7-4e22-8d32-0e8cae83a23d/13104_shinjuku-ku_pref_2025_landmark.geojson",
+      "origin": {
+        "url": "https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html",
+        "date": "2025年10月15日",
+        "creator": "株式会社パスコ",
+        "converter": "PLATEAU　CMS",
+        "approval_notice": "令7関公第296号"
+      },
+      "origin_linkage_verified": true,
+      "identity_check": "JSON-equal",
+      "origin_licence_class": "GSI_APPROVAL_SCOPE_UNKNOWN",
+      "licence_chain": [
+        {
+          "claim_level": "ORIGIN_DATASET",
+          "name": "GSI product / survey approval scope UNKNOWN",
+          "url": "https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html"
+        },
+        {
+          "claim_level": "SITE_POLICY",
+          "name": "PLATEAU PDL 1.0 (CC BY 4.0 alternative)",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/"
+        }
+      ],
+      "approval_scope": "unknown",
+      "carried_survey_notice": "令7関公第296号",
+      "verdict": "UNKNOWN",
+      "reason": "Published downstream scope and required wording of 令7関公第296号; an approval number alone is not permission.; Downstream survey approval scope and required approval wording are unpublished; Third-party permission or exclusion-free product subset; Established commercial_use permission; Established redistribution permission; Established modification_allowed permission; Verified derivative grant and CC BY 4.0 origin permission"
+    },
+    {
+      "resource": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_url": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_identity": {
+        "matches": true,
+        "prior_sha256": null,
+        "acquired_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9"
+      },
+      "layer": "13104_shinjuku-ku_pref_2025_station.geojson",
+      "claim_level": "ORIGIN_DATASET",
+      "licence_claimed": {
+        "name": "CC BY origin + PLATEAU PDL (CC BY alternative)",
+        "version": "4.0 / 1.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja"
+      },
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "exact_resource_covered": true,
+      "archive_catalog_covered": true,
+      "derivative_licence_verified": true,
+      "catalog_resource_id": "99f0b4ff-0d3e-47b3-a553-5a4df36bb563",
+      "resource_licence_fields": [],
+      "evidence": [
+        {
+          "id": "plateau-13104-related-catalog#licence",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_id",
+          "quote": "plateau",
+          "json_pointer": "/result/license_id"
+        },
+        {
+          "id": "plateau-related-provenance#policy-scope",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "Terms of Use §3 コンテンツの利用",
+          "quote": "権利表記の記載がない限り"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-credit",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (1)",
+          "quote": "コンテンツを利用する際は出典を記載してください。"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-cc-alternative",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (3)",
+          "quote": "利用者がCC BYに従って利用することを許諾します。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-commercial",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1 コンテンツの利用",
+          "quote": "商用利用も可能です。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-third-party",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1.2 第三者の権利",
+          "quote": "第三者の権利を侵害しないようにしてください"
+        },
+        {
+          "id": "plateau-related-provenance#trademarks-excluded",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §2(b)(2)",
+          "quote": "特許権および商標権は"
+        },
+        {
+          "id": "plateau-related-provenance#legal-modifications",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §3(a)(1)(B)",
+          "quote": "ライセンス対象物を改変した場合はその旨を記し"
+        },
+        {
+          "id": "plateau-13104-related-catalog#resource",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/resources/4/url",
+          "quote": "13104_shinjuku-ku_2025_related.zip",
+          "json_pointer": "/result/resources/4/url"
+        },
+        {
+          "id": "plateau-13104-related-catalog#policy-link",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_url",
+          "quote": "ps://www.mlit.go.jp/plateau/site-policy/",
+          "json_pointer": "/result/license_url"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-station-asset-origin",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/3/description",
+          "quote": "KsjTmplt-N02-2024.html",
+          "json_pointer": "/data/datasets/3/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-station-asset-date",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/3/description",
+          "quote": "データ時点：2024年12月31日時点",
+          "json_pointer": "/data/datasets/3/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-station-asset-creator",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/3/description",
+          "quote": "データ作成：株式会社パスコ",
+          "json_pointer": "/data/datasets/3/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-station-asset-converter",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/3/description",
+          "quote": "データ変換：PLATEAU　CMS",
+          "json_pointer": "/data/datasets/3/description"
+        },
+        {
+          "id": "plateau-related-provenance#ksj-n02-2024",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-n02-2024",
+          "sha256": "7a94f297cff112a854772445019c391e0c947a9aca882252d85b83b359a88426",
+          "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+          "section": "このデータの使用許諾条件",
+          "quote": "オープンデータ（CC_BY_4.0）"
+        },
+        {
+          "id": "plateau-related-provenance#railway-year-range",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-n02-2024",
+          "sha256": "7a94f297cff112a854772445019c391e0c947a9aca882252d85b83b359a88426",
+          "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+          "section": "このデータの使用許諾条件 / 年度範囲",
+          "quote": "2020年（令和2年）以降"
+        }
+      ],
+      "evidence_verified": true,
+      "attribution_required": "TP (PLATEAU contribution) + TN (origin product), source/licence links, supplied creator/converter credits and actual modification notice; retain any carried survey approval notice.",
+      "modification_notice_required": true,
+      "commercial_use": "conditional",
+      "redistribution": "conditional",
+      "modification_allowed": "conditional",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "missing_evidence": [],
+      "attribution_templates": {
+        "status": "CLEARED_WITH_CONDITIONS; examples TP + TN",
+        "examples_only": true,
+        "mandated_verbatim": false,
+        "examples": [
+          "出典：「3D都市モデル（Project PLATEAU）新宿区（2025年度）」関連データセット（https://www.geospatial.jp/ckan/dataset/plateau-13104-shinjuku-ku-2025）。PLATEAU site policy §3 / PDL 1.0（https://www.digital.go.jp/resources/open_data/public_data_license_v1.0、CC BY 4.0 alternative）。データ作成：株式会社パスコ。データ変換：PLATEAU　CMS。GTEki が［実際の編集・加工内容］を実施。",
+          "原典：国土交通省「国土数値情報（鉄道・2024年）」（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html）、CC BY 4.0（https://creativecommons.org/licenses/by/4.0/legalcode.ja）。原典をもとに作成された関連データを GTEki が［実際の編集・加工内容］。"
+        ],
+        "note": "Replace placeholders and describe actual modifications. Preserve supplied creator, rights, licence and approval notices; these examples do not grant permission."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "publish_gate": "HOLD",
+      "routable": false,
+      "ward": "新宿区",
+      "catalog_url": "https://www.geospatial.jp/ckan/dataset/plateau-13104-shinjuku-ku-2025",
+      "direct_resource": "https://assets.cms.plateau.reearth.io/assets/7c/5ce191-f5a8-4aac-a48a-df1ea472c80a/13104_shinjuku-ku_pref_2025_station.geojson",
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+        "date": "2024年12月31日時点",
+        "creator": "株式会社パスコ",
+        "converter": "PLATEAU　CMS",
+        "approval_notice": null
+      },
+      "origin_linkage_verified": true,
+      "identity_check": "JSON-equal",
+      "origin_licence_class": "CC_BY_4_0",
+      "licence_chain": [
+        {
+          "claim_level": "ORIGIN_DATASET",
+          "name": "CC BY 4.0",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja"
+        },
+        {
+          "claim_level": "SITE_POLICY",
+          "name": "PLATEAU PDL 1.0 (CC BY 4.0 alternative)",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/"
+        }
+      ],
+      "approval_scope": "no_unresolved_scope_identified",
+      "carried_survey_notice": null,
+      "verdict": "CLEARED_WITH_CONDITIONS",
+      "reason": "Verified CC BY 4.0 origin plus PLATEAU PDL 1.0/CC BY alternative; retain TP+TN attribution, modifications and supplied survey notices."
+    },
+    {
+      "resource": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_url": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_identity": {
+        "matches": true,
+        "prior_sha256": null,
+        "acquired_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9"
+      },
+      "layer": "13104_shinjuku-ku_pref_2025_railway.geojson",
+      "claim_level": "ORIGIN_DATASET",
+      "licence_claimed": {
+        "name": "CC BY origin + PLATEAU PDL (CC BY alternative)",
+        "version": "4.0 / 1.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja"
+      },
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "exact_resource_covered": true,
+      "archive_catalog_covered": true,
+      "derivative_licence_verified": true,
+      "catalog_resource_id": "99f0b4ff-0d3e-47b3-a553-5a4df36bb563",
+      "resource_licence_fields": [],
+      "evidence": [
+        {
+          "id": "plateau-13104-related-catalog#licence",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_id",
+          "quote": "plateau",
+          "json_pointer": "/result/license_id"
+        },
+        {
+          "id": "plateau-related-provenance#policy-scope",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "Terms of Use §3 コンテンツの利用",
+          "quote": "権利表記の記載がない限り"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-credit",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (1)",
+          "quote": "コンテンツを利用する際は出典を記載してください。"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-cc-alternative",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (3)",
+          "quote": "利用者がCC BYに従って利用することを許諾します。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-commercial",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1 コンテンツの利用",
+          "quote": "商用利用も可能です。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-third-party",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1.2 第三者の権利",
+          "quote": "第三者の権利を侵害しないようにしてください"
+        },
+        {
+          "id": "plateau-related-provenance#trademarks-excluded",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §2(b)(2)",
+          "quote": "特許権および商標権は"
+        },
+        {
+          "id": "plateau-related-provenance#legal-modifications",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §3(a)(1)(B)",
+          "quote": "ライセンス対象物を改変した場合はその旨を記し"
+        },
+        {
+          "id": "plateau-13104-related-catalog#resource",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/resources/4/url",
+          "quote": "13104_shinjuku-ku_2025_related.zip",
+          "json_pointer": "/result/resources/4/url"
+        },
+        {
+          "id": "plateau-13104-related-catalog#policy-link",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_url",
+          "quote": "ps://www.mlit.go.jp/plateau/site-policy/",
+          "json_pointer": "/result/license_url"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-railway-asset-origin",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/4/description",
+          "quote": "KsjTmplt-N02-2024.html",
+          "json_pointer": "/data/datasets/4/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-railway-asset-date",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/4/description",
+          "quote": "データ時点：2024年12月31日時点",
+          "json_pointer": "/data/datasets/4/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-railway-asset-creator",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/4/description",
+          "quote": "データ作成：株式会社パスコ",
+          "json_pointer": "/data/datasets/4/description"
+        },
+        {
+          "id": "plateau-related-provenance#ksj-n02-2024",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-n02-2024",
+          "sha256": "7a94f297cff112a854772445019c391e0c947a9aca882252d85b83b359a88426",
+          "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+          "section": "このデータの使用許諾条件",
+          "quote": "オープンデータ（CC_BY_4.0）"
+        },
+        {
+          "id": "plateau-related-provenance#railway-year-range",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-n02-2024",
+          "sha256": "7a94f297cff112a854772445019c391e0c947a9aca882252d85b83b359a88426",
+          "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+          "section": "このデータの使用許諾条件 / 年度範囲",
+          "quote": "2020年（令和2年）以降"
+        }
+      ],
+      "evidence_verified": true,
+      "attribution_required": "TP (PLATEAU contribution) + TN (origin product), source/licence links, supplied creator/converter credits and actual modification notice; retain any carried survey approval notice.",
+      "modification_notice_required": true,
+      "commercial_use": "conditional",
+      "redistribution": "conditional",
+      "modification_allowed": "conditional",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "missing_evidence": [],
+      "attribution_templates": {
+        "status": "CLEARED_WITH_CONDITIONS; examples TP + TN",
+        "examples_only": true,
+        "mandated_verbatim": false,
+        "examples": [
+          "出典：「3D都市モデル（Project PLATEAU）新宿区（2025年度）」関連データセット（https://www.geospatial.jp/ckan/dataset/plateau-13104-shinjuku-ku-2025）。PLATEAU site policy §3 / PDL 1.0（https://www.digital.go.jp/resources/open_data/public_data_license_v1.0、CC BY 4.0 alternative）。データ作成：株式会社パスコ。GTEki が［実際の編集・加工内容］を実施。",
+          "原典：国土交通省「国土数値情報（鉄道・2024年）」（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html）、CC BY 4.0（https://creativecommons.org/licenses/by/4.0/legalcode.ja）。原典をもとに作成された関連データを GTEki が［実際の編集・加工内容］。"
+        ],
+        "note": "Replace placeholders and describe actual modifications. Preserve supplied creator, rights, licence and approval notices; these examples do not grant permission."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "publish_gate": "HOLD",
+      "routable": false,
+      "ward": "新宿区",
+      "catalog_url": "https://www.geospatial.jp/ckan/dataset/plateau-13104-shinjuku-ku-2025",
+      "direct_resource": "https://assets.cms.plateau.reearth.io/assets/6f/333acd-650d-45d6-9a0b-f448d77ec9f4/13104_shinjuku-ku_pref_2025_railway.geojson",
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+        "date": "2024年12月31日時点",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      },
+      "origin_linkage_verified": true,
+      "identity_check": "features-equal",
+      "origin_licence_class": "CC_BY_4_0",
+      "licence_chain": [
+        {
+          "claim_level": "ORIGIN_DATASET",
+          "name": "CC BY 4.0",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja"
+        },
+        {
+          "claim_level": "SITE_POLICY",
+          "name": "PLATEAU PDL 1.0 (CC BY 4.0 alternative)",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/"
+        }
+      ],
+      "approval_scope": "no_unresolved_scope_identified",
+      "carried_survey_notice": null,
+      "verdict": "CLEARED_WITH_CONDITIONS",
+      "reason": "Verified CC BY 4.0 origin plus PLATEAU PDL 1.0/CC BY alternative; retain TP+TN attribution, modifications and supplied survey notices."
+    },
+    {
+      "resource": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_url": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_identity": {
+        "matches": true,
+        "prior_sha256": null,
+        "acquired_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9"
+      },
+      "layer": "13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+      "claim_level": "ORIGIN_DATASET",
+      "licence_claimed": {
+        "name": "KSJ old terms / non-commercial + PLATEAU PDL",
+        "version": "2020-07-01 / 1.0",
+        "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html"
+      },
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "exact_resource_covered": true,
+      "archive_catalog_covered": true,
+      "derivative_licence_verified": true,
+      "catalog_resource_id": "99f0b4ff-0d3e-47b3-a553-5a4df36bb563",
+      "resource_licence_fields": [],
+      "evidence": [
+        {
+          "id": "plateau-13104-related-catalog#licence",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_id",
+          "quote": "plateau",
+          "json_pointer": "/result/license_id"
+        },
+        {
+          "id": "plateau-related-provenance#policy-scope",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "Terms of Use §3 コンテンツの利用",
+          "quote": "権利表記の記載がない限り"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-credit",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (1)",
+          "quote": "コンテンツを利用する際は出典を記載してください。"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-cc-alternative",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (3)",
+          "quote": "利用者がCC BYに従って利用することを許諾します。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-commercial",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1 コンテンツの利用",
+          "quote": "商用利用も可能です。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-third-party",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1.2 第三者の権利",
+          "quote": "第三者の権利を侵害しないようにしてください"
+        },
+        {
+          "id": "plateau-related-provenance#trademarks-excluded",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §2(b)(2)",
+          "quote": "特許権および商標権は"
+        },
+        {
+          "id": "plateau-related-provenance#legal-modifications",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §3(a)(1)(B)",
+          "quote": "ライセンス対象物を改変した場合はその旨を記し"
+        },
+        {
+          "id": "plateau-13104-related-catalog#resource",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/resources/4/url",
+          "quote": "13104_shinjuku-ku_2025_related.zip",
+          "json_pointer": "/result/resources/4/url"
+        },
+        {
+          "id": "plateau-13104-related-catalog#policy-link",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_url",
+          "quote": "ps://www.mlit.go.jp/plateau/site-policy/",
+          "json_pointer": "/result/license_url"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-emergency-route-asset-origin",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/5/description",
+          "quote": "KsjTmplt-N10-2024.html",
+          "json_pointer": "/data/datasets/5/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-emergency-route-asset-date",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/5/description",
+          "quote": "データ時点：2024年3月時点",
+          "json_pointer": "/data/datasets/5/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-emergency-route-asset-creator",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/5/description",
+          "quote": "データ作成：株式会社パスコ",
+          "json_pointer": "/data/datasets/5/description"
+        },
+        {
+          "id": "plateau-related-provenance#ksj-n10-2024",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-n10-2024",
+          "sha256": "0a0f31c873f02014ba791314590a92f29fbc50c64c0c4db39a46d661cf85232a",
+          "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html",
+          "section": "このデータの使用許諾条件",
+          "quote": "非商用"
+        },
+        {
+          "id": "plateau-related-provenance#ksj-exception-heading",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-terms",
+          "sha256": "434139fc587ff99c79d069fe2111ddc959909dcc5e977c78e86f61941ebe19a9",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+          "section": "1.3 / exception heading",
+          "quote": "1.3 本利用ルールが適用されないコンテンツについて"
+        },
+        {
+          "id": "plateau-related-provenance#ksj-old-rule",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-terms",
+          "sha256": "434139fc587ff99c79d069fe2111ddc959909dcc5e977c78e86f61941ebe19a9",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+          "section": "1.3(2) 本利用ルールが適用されないコンテンツ / 商用可・非商用",
+          "quote": "旧国土情報利用約款準拠版"
+        },
+        {
+          "id": "plateau-related-provenance#non-commercial",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-old-terms",
+          "sha256": "5cace97058091c91bb552ab5a6b3c23b67b86c06fd4cc1c5ec151e34c95a18c2",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+          "section": "第1条 (b)",
+          "quote": "非商用目的のみでの利用"
+        },
+        {
+          "id": "plateau-related-provenance#no-copy-redistribution",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-old-terms",
+          "sha256": "5cace97058091c91bb552ab5a6b3c23b67b86c06fd4cc1c5ec151e34c95a18c2",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+          "section": "第1条 (b)",
+          "quote": "ただし複製物の再配布を除く"
+        },
+        {
+          "id": "plateau-related-provenance#non-database-exception",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-old-terms",
+          "sha256": "5cace97058091c91bb552ab5a6b3c23b67b86c06fd4cc1c5ec151e34c95a18c2",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+          "section": "第3条 / 非データベースの空間演算結果の例外",
+          "quote": "GISによって空間演算した結果（データベースでないもの）"
+        }
+      ],
+      "evidence_verified": true,
+      "attribution_required": "Source, creator and processing credits under the old KSJ terms; separate permission is required before requested use.",
+      "modification_notice_required": true,
+      "commercial_use": "no",
+      "redistribution": "no",
+      "modification_allowed": "conditional",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "missing_evidence": [],
+      "attribution_templates": {
+        "status": "RESTRICTED; internal source record only, no release permission",
+        "examples_only": true,
+        "mandated_verbatim": false,
+        "examples": [
+          "原典：国土交通省「国土数値情報」（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html、旧国土情報利用約款準拠版・非商用）。データ作成：株式会社パスコ。商用・複製物再配布は別途許諾が必要。"
+        ],
+        "note": "Replace placeholders and describe actual modifications. Preserve supplied creator, rights, licence and approval notices; these examples do not grant permission."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "publish_gate": "HOLD",
+      "routable": false,
+      "ward": "新宿区",
+      "catalog_url": "https://www.geospatial.jp/ckan/dataset/plateau-13104-shinjuku-ku-2025",
+      "direct_resource": "https://assets.cms.plateau.reearth.io/assets/99/35fbea-53b2-41c1-93ac-e0bfbf33175e/13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html",
+        "date": "2024年3月時点",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      },
+      "origin_linkage_verified": true,
+      "identity_check": "features-equal",
+      "origin_licence_class": "KSJ_NON_COMMERCIAL",
+      "licence_chain": [
+        {
+          "claim_level": "ORIGIN_DATASET",
+          "name": "KSJ old terms (non-commercial)",
+          "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html"
+        },
+        {
+          "claim_level": "SITE_POLICY",
+          "name": "PLATEAU PDL 1.0 (CC BY 4.0 alternative)",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/"
+        }
+      ],
+      "approval_scope": "no_unresolved_scope_identified",
+      "carried_survey_notice": null,
+      "verdict": "RESTRICTED",
+      "reason": "Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted."
+    },
+    {
+      "resource": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_url": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "catalog_resource_identity": {
+        "matches": true,
+        "prior_sha256": null,
+        "acquired_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9"
+      },
+      "layer": "13104_shinjuku-ku_pref_2025_border.geojson",
+      "claim_level": "ORIGIN_DATASET",
+      "licence_claimed": {
+        "name": "CC BY origin + PLATEAU PDL (CC BY alternative)",
+        "version": "4.0 / 1.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja"
+      },
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "exact_resource_covered": true,
+      "archive_catalog_covered": true,
+      "derivative_licence_verified": true,
+      "catalog_resource_id": "99f0b4ff-0d3e-47b3-a553-5a4df36bb563",
+      "resource_licence_fields": [],
+      "evidence": [
+        {
+          "id": "plateau-13104-related-catalog#licence",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_id",
+          "quote": "plateau",
+          "json_pointer": "/result/license_id"
+        },
+        {
+          "id": "plateau-related-provenance#policy-scope",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "Terms of Use §3 コンテンツの利用",
+          "quote": "権利表記の記載がない限り"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-credit",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (1)",
+          "quote": "コンテンツを利用する際は出典を記載してください。"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-cc-alternative",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "plateau-policy",
+          "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/",
+          "section": "§3 PDL1.0に関する重要事項 (3)",
+          "quote": "利用者がCC BYに従って利用することを許諾します。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-commercial",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1 コンテンツの利用",
+          "quote": "商用利用も可能です。"
+        },
+        {
+          "id": "plateau-related-provenance#pdl-third-party",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "pdl-1",
+          "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+          "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "section": "1.2 第三者の権利",
+          "quote": "第三者の権利を侵害しないようにしてください"
+        },
+        {
+          "id": "plateau-related-provenance#trademarks-excluded",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §2(b)(2)",
+          "quote": "特許権および商標権は"
+        },
+        {
+          "id": "plateau-related-provenance#legal-modifications",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §3(a)(1)(B)",
+          "quote": "ライセンス対象物を改変した場合はその旨を記し"
+        },
+        {
+          "id": "plateau-13104-related-catalog#resource",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/resources/4/url",
+          "quote": "13104_shinjuku-ku_2025_related.zip",
+          "json_pointer": "/result/resources/4/url"
+        },
+        {
+          "id": "plateau-13104-related-catalog#policy-link",
+          "source_id": "plateau-13104-related-catalog",
+          "supporting_document": null,
+          "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+          "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+          "section": "/result/license_url",
+          "quote": "ps://www.mlit.go.jp/plateau/site-policy/",
+          "json_pointer": "/result/license_url"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-border-asset-origin",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/6/description",
+          "quote": "KsjTmplt-N03-2025.html",
+          "json_pointer": "/data/datasets/6/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-border-asset-date",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/6/description",
+          "quote": "データ時点：2025年1月1日時点",
+          "json_pointer": "/data/datasets/6/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-border-asset-creator",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/6/description",
+          "quote": "データ作成：株式会社パスコ",
+          "json_pointer": "/data/datasets/6/description"
+        },
+        {
+          "id": "plateau-related-provenance#plateau-13104-related-border-asset-converter",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": null,
+          "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+          "url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+          "section": "/data/datasets/6/description",
+          "quote": "データ変換：PLATEAU　CMS",
+          "json_pointer": "/data/datasets/6/description"
+        },
+        {
+          "id": "plateau-related-provenance#ksj-n03-2025",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-n03-2025",
+          "sha256": "9a94356b93b2e7b02d54bfa090d1c35fcf0a881b30a6a8dc651bf208700c3c76",
+          "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
+          "section": "このデータの使用許諾条件",
+          "quote": "オープンデータ（CC_BY_4.0）"
+        },
+        {
+          "id": "plateau-related-provenance#border-approval",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "ksj-n03-2025",
+          "sha256": "9a94356b93b2e7b02d54bfa090d1c35fcf0a881b30a6a8dc651bf208700c3c76",
+          "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
+          "section": "作成方法 / 承認表示",
+          "quote": "測量法に基づく国土地理院長承認（複製）R 6JHf 503"
+        }
+      ],
+      "evidence_verified": true,
+      "attribution_required": "TP (PLATEAU contribution) + TN (origin product), source/licence links, supplied creator/converter credits and actual modification notice; retain any carried survey approval notice.",
+      "modification_notice_required": true,
+      "commercial_use": "conditional",
+      "redistribution": "conditional",
+      "modification_allowed": "conditional",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "missing_evidence": [],
+      "attribution_templates": {
+        "status": "CLEARED_WITH_CONDITIONS; examples TP + TN",
+        "examples_only": true,
+        "mandated_verbatim": false,
+        "examples": [
+          "出典：「3D都市モデル（Project PLATEAU）新宿区（2025年度）」関連データセット（https://www.geospatial.jp/ckan/dataset/plateau-13104-shinjuku-ku-2025）。PLATEAU site policy §3 / PDL 1.0（https://www.digital.go.jp/resources/open_data/public_data_license_v1.0、CC BY 4.0 alternative）。データ作成：株式会社パスコ。データ変換：PLATEAU　CMS。GTEki が［実際の編集・加工内容］を実施。",
+          "原典：国土交通省「国土数値情報（行政区域・2025年）」（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html）、CC BY 4.0（https://creativecommons.org/licenses/by/4.0/legalcode.ja）。原典をもとに作成された関連データを GTEki が［実際の編集・加工内容］。",
+          "測量法に基づく国土地理院長承認（複製）R 6JHf 503"
+        ],
+        "note": "Replace placeholders and describe actual modifications. Preserve supplied creator, rights, licence and approval notices; these examples do not grant permission."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "publish_gate": "HOLD",
+      "routable": false,
+      "ward": "新宿区",
+      "catalog_url": "https://www.geospatial.jp/ckan/dataset/plateau-13104-shinjuku-ku-2025",
+      "direct_resource": "https://assets.cms.plateau.reearth.io/assets/ba/9b52d4-5140-424e-846b-77a96eb0d42b/13104_shinjuku-ku_pref_2025_border.geojson",
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
+        "date": "2025年1月1日時点",
+        "creator": "株式会社パスコ",
+        "converter": "PLATEAU　CMS",
+        "approval_notice": null
+      },
+      "origin_linkage_verified": true,
+      "identity_check": "features-equal",
+      "origin_licence_class": "CC_BY_4_0",
+      "licence_chain": [
+        {
+          "claim_level": "ORIGIN_DATASET",
+          "name": "CC BY 4.0",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja"
+        },
+        {
+          "claim_level": "SITE_POLICY",
+          "name": "PLATEAU PDL 1.0 (CC BY 4.0 alternative)",
+          "url": "https://www.mlit.go.jp/plateau/site-policy/"
+        }
+      ],
+      "approval_scope": "no_unresolved_scope_identified",
+      "carried_survey_notice": "測量法に基づく国土地理院長承認（複製）R 6JHf 503",
+      "verdict": "CLEARED_WITH_CONDITIONS",
+      "reason": "Verified CC BY 4.0 origin plus PLATEAU PDL 1.0/CC BY alternative; retain TP+TN attribution, modifications and supplied survey notices."
+    }
+  ],
+  "identity_checks": [
+    {
+      "member": "13104_shinjuku-ku_pref_2023_shelter.geojson",
+      "member_sha256": "29723986e0c34fa1db08d7db4f77abd9a30ef0f00c9fc67890925cc487fd7666",
+      "direct_source_id": "plateau-13104-related-shelter-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/5c/14236d-19c7-4145-87b6-b5c4fdc91b87/13104_shinjuku-ku_pref_2023_shelter.geojson",
+      "direct_sha256": "29723986e0c34fa1db08d7db4f77abd9a30ef0f00c9fc67890925cc487fd7666",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/0",
+      "comparison": "JSON-equal",
+      "feature_count": 110,
+      "top_level_differences": [],
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html",
+        "date": "2012年度",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      }
+    },
+    {
+      "member": "13104_shinjuku-ku_pref_2023_park.geojson",
+      "member_sha256": "dde1d2367163f2d4a9bd8ca9a8c7ab305b4cc151b5c83d22c3df500e56874f19",
+      "direct_source_id": "plateau-13104-related-park-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/40/cbcb3f-eaa2-4438-85d9-fcf1cb2e092b/13104_shinjuku-ku_pref_2023_park.geojson",
+      "direct_sha256": "dde1d2367163f2d4a9bd8ca9a8c7ab305b4cc151b5c83d22c3df500e56874f19",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/1",
+      "comparison": "JSON-equal",
+      "feature_count": 168,
+      "top_level_differences": [],
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html",
+        "date": "2011年",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      }
+    },
+    {
+      "member": "13104_shinjuku-ku_pref_2025_landmark.geojson",
+      "member_sha256": "46e24aaba2269b7c0246399f39e342e64aa4a3b490f124bc9792cc06e0201574",
+      "direct_source_id": "plateau-13104-related-landmark-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/91/b00f20-7df7-4e22-8d32-0e8cae83a23d/13104_shinjuku-ku_pref_2025_landmark.geojson",
+      "direct_sha256": "3ca77c5ba33d6884cb23c55f14e9f651f87297324d86502c1b417f2e0f565feb",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/2",
+      "comparison": "JSON-equal",
+      "feature_count": 201,
+      "top_level_differences": [],
+      "origin": {
+        "url": "https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html",
+        "date": "2025年10月15日",
+        "creator": "株式会社パスコ",
+        "converter": "PLATEAU　CMS",
+        "approval_notice": "令7関公第296号"
+      }
+    },
+    {
+      "member": "13104_shinjuku-ku_pref_2025_station.geojson",
+      "member_sha256": "686de855377b6a80a7d4b8551dc25bd012c5819def8bb96ad1e4a251818e0341",
+      "direct_source_id": "plateau-13104-related-station-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/7c/5ce191-f5a8-4aac-a48a-df1ea472c80a/13104_shinjuku-ku_pref_2025_station.geojson",
+      "direct_sha256": "7e7071807bb493ce3c9eb2ea0b192d817b1a64b93f693e456f81c9589446d929",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/3",
+      "comparison": "JSON-equal",
+      "feature_count": 48,
+      "top_level_differences": [],
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+        "date": "2024年12月31日時点",
+        "creator": "株式会社パスコ",
+        "converter": "PLATEAU　CMS",
+        "approval_notice": null
+      }
+    },
+    {
+      "member": "13104_shinjuku-ku_pref_2025_railway.geojson",
+      "member_sha256": "66e634d12a5d46db83cecf7c208d57917570337f0c07cb69b474722f251c5ce4",
+      "direct_source_id": "plateau-13104-related-railway-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/6f/333acd-650d-45d6-9a0b-f448d77ec9f4/13104_shinjuku-ku_pref_2025_railway.geojson",
+      "direct_sha256": "eb5d25e83fa3955bdf48d15f222dda3989e524289d8be4c007451e13a5c27f3a",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/4",
+      "comparison": "features-equal",
+      "feature_count": 108,
+      "top_level_differences": [
+        "name"
+      ],
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+        "date": "2024年12月31日時点",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      }
+    },
+    {
+      "member": "13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+      "member_sha256": "3ae0d5be56263e66b7891aaa2507ce00b2ec6545b4882f3713ba564e624c4aa7",
+      "direct_source_id": "plateau-13104-related-emergency-route-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/99/35fbea-53b2-41c1-93ac-e0bfbf33175e/13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+      "direct_sha256": "a76910ca4e2355ccfc25d9f279d6f9929fe7fbec96f0fb0774ce229a6c0fde1f",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/5",
+      "comparison": "features-equal",
+      "feature_count": 45,
+      "top_level_differences": [
+        "name"
+      ],
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html",
+        "date": "2024年3月時点",
+        "creator": "株式会社パスコ",
+        "converter": null,
+        "approval_notice": null
+      }
+    },
+    {
+      "member": "13104_shinjuku-ku_pref_2025_border.geojson",
+      "member_sha256": "4395632d6709a63d8a9dff3e28d26059133c05753826a8e2a38680a412180b77",
+      "direct_source_id": "plateau-13104-related-border-asset",
+      "direct_url": "https://assets.cms.plateau.reearth.io/assets/ba/9b52d4-5140-424e-846b-77a96eb0d42b/13104_shinjuku-ku_pref_2025_border.geojson",
+      "direct_sha256": "8a6b33c4b3731e3c7f5a97b0cee7526c5da73b351e91d113a0eeef0039d2e784",
+      "catalog_sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+      "catalog_pointer": "/data/datasets/6",
+      "comparison": "features-equal",
+      "feature_count": 1,
+      "top_level_differences": [
+        "name"
+      ],
+      "origin": {
+        "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
+        "date": "2025年1月1日時点",
+        "creator": "株式会社パスコ",
+        "converter": "PLATEAU　CMS",
+        "approval_notice": null
+      }
+    }
+  ],
+  "terms_fetches": [
+    {
+      "id": "api-docs",
+      "requested_url": "https://docs.plateauview.mlit.go.jp/api/",
+      "url": "https://docs.plateauview.mlit.go.jp/api/",
+      "http_status": 200,
+      "sha256": "a5e8a60e2f1aa596aed11415eea09efc6b5f759f37a0df4c91b0858c8cb7c2d8",
+      "bytes": 39834,
+      "store_path": "raw/a5e8a60e2f1aa596aed11415eea09efc6b5f759f37a0df4c91b0858c8cb7c2d8/api"
+    },
+    {
+      "id": "ksj-p20",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html",
+      "http_status": 200,
+      "sha256": "6b565cd1eaa37adaa8c2e16dfb0c8f26c9e3d7dfb2086fc1c41c9e94ebed71e8",
+      "bytes": 91991,
+      "store_path": "raw/6b565cd1eaa37adaa8c2e16dfb0c8f26c9e3d7dfb2086fc1c41c9e94ebed71e8/KsjTmplt-P20.html"
+    },
+    {
+      "id": "ksj-p13",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html",
+      "http_status": 200,
+      "sha256": "24e6094f40c13f8caf4198d94439594dec3eb11c3c76fe910d5b359fdf6193f5",
+      "bytes": 91454,
+      "store_path": "raw/24e6094f40c13f8caf4198d94439594dec3eb11c3c76fe910d5b359fdf6193f5/KsjTmplt-P13.html"
+    },
+    {
+      "id": "ksj-n02-2024",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+      "http_status": 200,
+      "sha256": "7a94f297cff112a854772445019c391e0c947a9aca882252d85b83b359a88426",
+      "bytes": 54007,
+      "store_path": "raw/7a94f297cff112a854772445019c391e0c947a9aca882252d85b83b359a88426/KsjTmplt-N02-2024.html"
+    },
+    {
+      "id": "ksj-n10-2024",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html",
+      "http_status": 200,
+      "sha256": "0a0f31c873f02014ba791314590a92f29fbc50c64c0c4db39a46d661cf85232a",
+      "bytes": 242194,
+      "store_path": "raw/0a0f31c873f02014ba791314590a92f29fbc50c64c0c4db39a46d661cf85232a/KsjTmplt-N10-2024.html"
+    },
+    {
+      "id": "ksj-n03-2025",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
+      "http_status": 200,
+      "sha256": "9a94356b93b2e7b02d54bfa090d1c35fcf0a881b30a6a8dc651bf208700c3c76",
+      "bytes": 1832971,
+      "store_path": "raw/9a94356b93b2e7b02d54bfa090d1c35fcf0a881b30a6a8dc651bf208700c3c76/KsjTmplt-N03-2025.html"
+    },
+    {
+      "id": "ksj-terms",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+      "http_status": 200,
+      "sha256": "434139fc587ff99c79d069fe2111ddc959909dcc5e977c78e86f61941ebe19a9",
+      "bytes": 27978,
+      "store_path": "raw/434139fc587ff99c79d069fe2111ddc959909dcc5e977c78e86f61941ebe19a9/agreement.html"
+    },
+    {
+      "id": "ksj-old-terms",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+      "http_status": 200,
+      "sha256": "5cace97058091c91bb552ab5a6b3c23b67b86c06fd4cc1c5ec151e34c95a18c2",
+      "bytes": 62499,
+      "store_path": "raw/5cace97058091c91bb552ab5a6b3c23b67b86c06fd4cc1c5ec151e34c95a18c2/agreement_02.html"
+    },
+    {
+      "id": "gsi-origin",
+      "requested_url": "https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html",
+      "url": "https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html",
+      "http_status": 200,
+      "transport": "curl",
+      "sha256": "0bbbae9566cb71c9059f252a8578812306fb6db4d0ef287ca5e6b49f405b78b2",
+      "bytes": 32237,
+      "store_path": "raw/0bbbae9566cb71c9059f252a8578812306fb6db4d0ef287ca5e6b49f405b78b2/kibanjoho40027.html"
+    },
+    {
+      "id": "gsi-terms",
+      "requested_url": "https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html",
+      "url": "https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html",
+      "http_status": 200,
+      "transport": "curl",
+      "sha256": "5388d2854a05f3e7b41cb980ecfb2de75b315de68e0d9c94b9334c11e580739e",
+      "bytes": 23271,
+      "store_path": "raw/5388d2854a05f3e7b41cb980ecfb2de75b315de68e0d9c94b9334c11e580739e/kikakuchousei40182.html"
+    },
+    {
+      "id": "gsi-survey",
+      "requested_url": "https://www.gsi.go.jp/LAW/2930-index.html",
+      "url": "https://www.gsi.go.jp/LAW/2930-index.html",
+      "http_status": 200,
+      "transport": "curl",
+      "sha256": "5888fbd6094d30574d056bfa26827cd8e11391a382a6a2f083a572fa15b08722",
+      "bytes": 40480,
+      "store_path": "raw/5888fbd6094d30574d056bfa26827cd8e11391a382a6a2f083a572fa15b08722/2930-index.html"
+    },
+    {
+      "id": "gsi-qa",
+      "requested_url": "https://www.gsi.go.jp/LAW/2930-qa.html",
+      "url": "https://www.gsi.go.jp/LAW/2930-qa.html",
+      "http_status": 200,
+      "transport": "curl",
+      "sha256": "325949a4c9053085311afd402b14a1d17ec27da093ff91dfca4d4362b99ae12b",
+      "bytes": 49660,
+      "store_path": "raw/325949a4c9053085311afd402b14a1d17ec27da093ff91dfca4d4362b99ae12b/2930-qa.html"
+    },
+    {
+      "id": "plateau-policy",
+      "requested_url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "http_status": 200,
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "bytes": 31822,
+      "store_path": "raw/3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f/site-policy"
+    },
+    {
+      "id": "pdl-1",
+      "requested_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "http_status": 200,
+      "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+      "bytes": 59216,
+      "store_path": "raw/e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c/public_data_license_v1.0"
+    },
+    {
+      "id": "cc-by-4-legal-ja",
+      "requested_url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+      "http_status": 200,
+      "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+      "bytes": 53871,
+      "store_path": "raw/bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548/legalcode.ja"
+    }
+  ],
+  "coverage_note": "Reuse rights only; every publish gate HOLD and routable false. S03 ZIP/reference PDF and related ZIPs require scoped splits. Catalog metadata has no inferred self-licence."
+}

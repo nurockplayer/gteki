@@ -2,21 +2,21 @@
   "source_id": "mlit-walk-network-spec-2018-03",
   "resolved_url": "https://www.mlit.go.jp/common/001244374.pdf",
   "resolution_evidence": null,
-  "requested_at": "2026-10-20T17:06:18.183Z",
-  "completed_at": "2026-10-20T17:06:18.577Z",
+  "requested_at": "2026-10-20T22:56:19.725Z",
+  "completed_at": "2026-10-20T22:56:19.951Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/pdf",
     "content-length": null,
     "etag": "W/\"9212b6b967d31e5947940f041b9712da\"",
     "last-modified": "Wed, 11 Sep 2024 12:17:44 GMT",
-    "date": "Tue, 20 Oct 2026 17:06:19 GMT"
+    "date": "Tue, 20 Oct 2026 22:56:06 GMT"
   },
   "bytes": 2440666,
   "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
   "store_path": "raw/9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974/001244374.pdf",
   "tool_version": "0.1.0",
-  "git_commit": "dd786983029385ac3ac81b87029cfc8206cbfeb0",
+  "git_commit": "53b80676cdc5b857ee2fcb37c4f90b121c971e92",
   "expected_bytes": 2440666,
   "expected_url_match": true,
   "size_check": "MATCH",
@@ -24,22 +24,26 @@
   "supporting_documents": [
     {
       "id": "site-terms",
+      "requested_url": "https://www.mlit.go.jp/link.html",
       "url": "https://www.mlit.go.jp/link.html",
+      "http_status": 200,
       "sha256": "8d73d659e9fa5f64a24499428e8a8599b160a954cb5ffb2aacac898ab19f200b",
       "bytes": 10457,
       "store_path": "raw/8d73d659e9fa5f64a24499428e8a8599b160a954cb5ffb2aacac898ab19f200b/link.html"
     },
     {
       "id": "spec-landing",
+      "requested_url": "https://www.mlit.go.jp/sogoseisaku/soukou/sogoseisaku_soukou_tk_000056.html",
       "url": "https://www.mlit.go.jp/sogoseisaku/soukou/sogoseisaku_soukou_tk_000056.html",
+      "http_status": 200,
       "sha256": "6db0d9b2ef922856549d2459323efe534b838cc73be6f01826f656e0fee42838",
       "bytes": 8781,
       "store_path": "raw/6db0d9b2ef922856549d2459323efe534b838cc73be6f01826f656e0fee42838/sogoseisaku_soukou_tk_000056.html"
     }
   ],
   "last_offline_check": {
-    "requested_at": "2026-10-20T17:10:10.259Z",
-    "completed_at": "2026-10-20T17:10:10.259Z",
+    "requested_at": "2026-10-20T22:59:54.795Z",
+    "completed_at": "2026-10-20T22:59:54.795Z",
     "tool_version": "0.1.0",
     "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
     "bytes": 2440666,

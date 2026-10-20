@@ -1,0 +1,61 @@
+{
+  "source_id": "tokyo-s03-catalog",
+  "resolved_url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000008d0000000037",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-20T22:56:21.796Z",
+  "completed_at": "2026-10-20T22:56:21.829Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/json;charset=utf-8",
+    "content-length": null,
+    "etag": null,
+    "last-modified": null,
+    "date": "Tue, 20 Oct 2026 22:56:21 GMT"
+  },
+  "bytes": 4486,
+  "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
+  "store_path": "raw/f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96/package_show",
+  "tool_version": "0.1.0",
+  "git_commit": "53b80676cdc5b857ee2fcb37c4f90b121c971e92",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "cc-by-4-deed-ja",
+      "requested_url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+      "url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+      "http_status": 200,
+      "sha256": "cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382",
+      "bytes": 33449,
+      "store_path": "raw/cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382/deed.ja"
+    },
+    {
+      "id": "landing",
+      "requested_url": "https://www.toshiseibi.metro.tokyo.lg.jp/kotsu_butsuryu/kotsuseisaku/kotsu_suishin/shinjuku_shisetsu",
+      "url": "https://www.toshiseibi.metro.tokyo.lg.jp/kotsu_butsuryu/kotsuseisaku/kotsu_suishin/shinjuku_shisetsu",
+      "http_status": 200,
+      "sha256": "b6cba940b149b943b6683dc48aba22fc0d77211354df8528e5a05bae1a80ced7",
+      "bytes": 517456,
+      "store_path": "raw/b6cba940b149b943b6683dc48aba22fc0d77211354df8528e5a05bae1a80ced7/shinjuku_shisetsu"
+    },
+    {
+      "id": "tokyo-bureau-policy",
+      "requested_url": "https://www.toshiseibi.metro.tokyo.lg.jp/policy",
+      "url": "https://www.toshiseibi.metro.tokyo.lg.jp/policy",
+      "http_status": 200,
+      "sha256": "040aebd4149ff15b0e6a74b540b42bf9707a8d1ebc6c09794a99812087db59d6",
+      "bytes": 600659,
+      "store_path": "raw/040aebd4149ff15b0e6a74b540b42bf9707a8d1ebc6c09794a99812087db59d6/policy"
+    }
+  ],
+  "last_offline_check": {
+    "requested_at": "2026-10-20T22:59:54.934Z",
+    "completed_at": "2026-10-20T22:59:54.934Z",
+    "tool_version": "0.1.0",
+    "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
+    "bytes": 4486,
+    "status": "PASS"
+  }
+}
