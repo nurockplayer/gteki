@@ -94,6 +94,35 @@ describe("underground enclosure", () => {
     expect(misses.slice(0, 20)).toEqual([]);
   });
 
+  it("closes the visible side slots below both edges of every deep escalator", () => {
+    const inverts = layout.soffits.filter((s) => s.spaceId.startsWith("shaft-invert:"));
+    const runs = layout.runs.filter((r) => r.mode === "escalator" && Math.max(r.a.z, r.b.z) < -0.5);
+    expect(runs.length).toBeGreaterThan(10);
+    for (const r of runs) for (const side of [-1, 1]) {
+      const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, length = Math.hypot(dx, dy);
+      const offset = side * (r.width / 2 + 0.1);
+      const p = { x: (r.a.x + r.b.x) / 2 - dy / length * offset, y: (r.a.y + r.b.y) / 2 + dx / length * offset };
+      const floor = (r.a.z + r.b.z) / 2;
+      expect(inverts.some((s) => pointInRings(p, s.rings) && soffitHeight(s, p) <= floor - 0.18), r.edgeId).toBe(true);
+    }
+  });
+
+  it("roofs near-street stair landings through the street slab underside", () => {
+    // These symbolic landings are too high for the old z + 3.2 < -0.5 sleeve rule,
+    // but still need a roof before handing the ascending flight to its street canopy.
+    const landings = bundle.nodes.filter((n) => {
+      const z = layout.nodeZ.get(n.id)!;
+      return z > -3.7 && z < -2.6 && n.kind !== "elevator";
+    });
+    expect(landings.length).toBeGreaterThan(0);
+    for (const n of landings) for (const dx of [-0.3, 0, 0.3]) for (const dy of [-0.3, 0, 0.3]) {
+      const p = { x: n.position.x + dx, y: n.position.y + dy };
+      const roofs = layout.soffits.filter((s) => s.kind !== "slab" && pointInRings(p, s.rings));
+      expect(roofs.some((s) => soffitHeight(s, p) >= layout.nodeZ.get(n.id)! + 2.1 && soffitHeight(s, p) <= -0.18 + 0.001), n.id).toBe(true);
+    }
+    expect(layout.levels.flatMap((lv) => lv.walls).some((w) => w.finish === "shaft" && Math.abs(w.zMax + 0.18) < 1e-6)).toBe(true);
+  });
+
   it("caps the complete clearance opening above the B1 elevator hall", () => {
     const node = nodes.get("n:cbaeded02c114348a1bd8d0c0590584c")!;
     for (const dx of [-0.5, 0, 0.5]) for (const dy of [-0.5, 0, 0.5]) {
@@ -122,15 +151,15 @@ describe("underground enclosure", () => {
     expect(bad.slice(0, 20)).toEqual([]);
   });
 
-  it("adds pitched roofs for deep runs and stays below the street lane boundary", () => {
+  it("adds pitched roofs for deep runs and finishes below the street slab", () => {
     const shafts = layout.soffits.filter((s) => s.kind === "shaft");
     expect(shafts.length).toBeGreaterThan(10);
     expect(layout.soffits.some((s) => s.kind === "landing")).toBe(true);
     expect(layout.soffits.some((s) => s.kind === "slab")).toBe(true);
-    for (const s of layout.soffits.filter((s) => !s.spaceId.startsWith("elevator-cap:"))) for (const p of s.rings.flat()) expect(soffitHeight(s, p)).toBeLessThanOrEqual(s.kind === "slab" ? -0.18 + 0.001 : -0.5);
+    for (const s of layout.soffits.filter((s) => !s.spaceId.startsWith("elevator-cap:"))) for (const p of s.rings.flat()) expect(soffitHeight(s, p)).toBeLessThanOrEqual(-0.18 + 0.001);
     // The lift to street has a concealed hood above its highest (street) landing.
     for (const s of layout.soffits.filter((s) => s.spaceId.startsWith("elevator-cap:"))) expect(s.z).toBeLessThanOrEqual(2.6);
-    for (const lv of layout.levels) for (const w of lv.walls.filter((w) => w.finish)) expect(w.zMax).toBeLessThan(-0.5);
+    for (const lv of layout.levels) for (const w of lv.walls.filter((w) => w.finish)) expect(w.zMax).toBeLessThanOrEqual(-0.18);
   });
 
   it("preserves a finished underside below the walker's own floor", () => {
@@ -175,6 +204,18 @@ describe("underground enclosure", () => {
     expect(cut.map((w) => [w.a.x, w.b.x, w.surfaceBase!.a, w.surfaceBase!.b])).toEqual([[0, 3, 0, 1.5], [7, 10, 3.5, 5]]);
     const untouched = cutWallsByVoids([wall], [{ rings: [[{ x: 3, y: 2 }, { x: 7, y: 2 }, { x: 7, y: 3 }, { x: 3, y: 3 }]], bottom: () => -1, top: () => 10 }]);
     expect(untouched).toEqual([wall]);
+  });
+
+  it("preserves the wall below a pitched void until the void actually reaches it", () => {
+    const wall: WallSeg = { a: { x: 0, y: 0 }, b: { x: 10, y: 0 }, zMin: 0, zMax: 3, side: 1, kind: "wall" };
+    const pieces = cutWallsByVoids([wall], [{ rings: [[{ x: -1, y: -1 }, { x: 11, y: -1 }, { x: 11, y: 1 }, { x: -1, y: 1 }]], bottom: () => -1, top: (p) => p.x - 5 }]);
+    // At x=2 the void is below the floor. At x=6 it removes only z <= 1.
+    for (const [x, low] of [[2, 0], [6, 1]]) {
+      const panel = pieces.find((w) => w.a.x <= x! && w.b.x >= x!)!;
+      const t = (x! - panel.a.x) / (panel.b.x - panel.a.x);
+      const bottom = panel.profile ? panel.profile.bottomA + (panel.profile.bottomB - panel.profile.bottomA) * t : panel.zMin;
+      expect(bottom).toBeCloseTo(low!, 5);
+    }
   });
 
   it("never leaves an inverted wedge when a shaft roof crosses a flat wall's top", () => {

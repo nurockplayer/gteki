@@ -201,6 +201,16 @@ export function surfaceVisibleAt(layout: Layout, bundle: StationBundle, viewer: 
   const nearTop = viewer.z > -2 || context.entrances.some((e) =>
     Math.hypot(viewer.x - e.top.x, viewer.y - e.top.y) <= 30 && viewer.z > e.firstLandingZ + 1.2);
   if (!nearTop) return false;
+  // A stair shaft is wider than its street opening to accommodate the following
+  // camera. Its shoulder can still see sky through the adjacent open canopy even
+  // when the eye is outside the opening's plan projection. Do not apply this to
+  // lifts: their enclosed halls have their own hood rather than a view of street.
+  if (context.entrances.some((e) => {
+    if (e.firstLandingZ >= -0.5 || viewer.z <= e.firstLandingZ + 1.2) return false;
+    const dx = viewer.x - e.center.x, dy = viewer.y - e.center.y;
+    return Math.abs(dx * e.u.x + dy * e.u.y) <= e.halfLength + 0.8 &&
+      Math.abs(-dx * e.u.y + dy * e.u.x) <= e.halfWidth + 1.8;
+  })) return true;
   // The follow camera can reach -1.95 m while standing on the flat B1 floor.
   // Below grade, only an opening (plus a conservative 0.8 m approach margin)
   // gives sight of the surface; the remaining ground/ceiling is opaque.
