@@ -100,6 +100,13 @@ export interface Instruction {
   toFloorId: string;
   /** Choice points this walk passes through without a turn, in walking order; absent when none. */
   junctions?: JunctionHint[];
+  /**
+   * Turns taken on short walking legs (under ~5 m) folded into the start of this instruction, in walking
+   * order, before its own turn; each is still named once, at the junction where it happens. Absent when none.
+   */
+  leadTurns?: Turn[];
+  /** Same, for short legs folded into the end of the last instruction before arrival. Absent when none. */
+  trailTurns?: Turn[];
   /** Plain text in the requested language. */
   text: string;
 }
@@ -119,6 +126,8 @@ export interface JunctionHint {
   /** Name of a POI reached from this node, in the requested language when available; null = none (never invented). */
   name: string | null;
 }
+
+export type Turn = "left" | "right" | "back";
 
 const VERTICAL: Partial<Record<EdgeMode, InstructionKind>> = { stairs: "stairs", escalator: "escalator", elevator: "elevator", ramp: "ramp" };
 const TURN_DEG = 35;
@@ -141,28 +150,46 @@ export function floorDisplayName(floor: Floor | undefined, lang: "ja" | "en" = "
   return named?.text ?? floor?.sourceLabels[0]?.label ?? floor?.id ?? "?";
 }
 
+/** A run of turns in walking order: the first in full, later ones as "then …" ("again" when repeated). */
+function turnRun(turns: readonly Turn[], first: Record<Turn, string>, next: Record<Turn, string>, again: Record<Turn, string>, sep: string): string {
+  return turns.map((turn, k) => (k === 0 ? first : turn === turns[k - 1] ? again : next)[turn]).join(sep);
+}
+
+const lowerFirst = (text: string) => `${text.charAt(0).toLowerCase()}${text.slice(1)}`;
+
 const TEXT = {
   ja: {
     start: () => "出発",
     walk: (m: number) => `約${m}m 直進`,
     /** A walk whose own path bends: no "straight" claim (turns inside one edge aren't named). */
     continue: (m: number) => `約${m}m 進む`,
-    turn_left: (m: number) => `左へ曲がり約${m}m`,
-    turnPrefix: (turn: "left" | "right" | "back", text: string) => `${{ left: "左へ曲がり、", right: "右へ曲がり、", back: "引き返して、" }[turn]}${text}`,
-    turn_right: (m: number) => `右へ曲がり約${m}m`,
-    u_turn: (m: number) => `引き返して約${m}m`,
+    turns: (turns: readonly Turn[]) => turnRun(turns,
+      { left: "左へ曲がり", right: "右へ曲がり", back: "引き返して" },
+      { left: "すぐ左へ曲がり", right: "すぐ右へ曲がり", back: "すぐ引き返して" },
+      { left: "さらに左へ曲がり", right: "さらに右へ曲がり", back: "再び引き返して" }, "、"),
+    turnWalk: (turns: readonly Turn[], m: number) => `${TEXT.ja.turns(turns)}約${m}m`,
+    turnPrefix: (turns: readonly Turn[], text: string) => `${TEXT.ja.turns(turns)}、${text}`,
     gate: () => "改札を通過",
     moving_walkway: (m: number) => `動く歩道で約${m}m`,
-    /** `floor` null = the chain starts and ends on the same floor: name no destination floor. */
-    vertical: (kind: string, sense: string | null, floor: string | null) => {
+    /**
+     * `floor` null = the chain starts and ends on the same floor: name no destination floor.
+     * `continued` = the flight right after another of the same kind (only short legs between).
+     */
+    vertical: (kind: string, sense: string | null, floor: string | null, continued: boolean) => {
       const via = { stairs: "階段", escalator: "エスカレーター", elevator: "エレベーター", ramp: "スロープ" }[kind];
       const dir = sense === "up" ? "上へ" : sense === "down" ? "下へ" : "";
-      if (floor === null) return dir ? `${via}で${dir}` : `${via}を利用`;
-      return `${via}で${dir ? `${dir}・` : ""}${floor}へ`;
+      const again = continued ? "引き続き" : "";
+      if (floor === null) return dir ? `${again}${via}で${dir}` : continued ? `引き続き${via}を進む` : `${via}を利用`;
+      return `${again}${via}で${dir ? `${dir}・` : ""}${floor}へ`;
     },
     junction: (atM: number, action: JunctionHint["action"], name: string | null) =>
       `約${atM}m先${name === null ? "" : `、${name}`}の分岐は${{ straight: "そのまま直進", keep_left: "左寄りに進む", keep_right: "右寄りに進む" }[action]}`,
-    withJunctions: (text: string, hints: string[]) => [text, ...hints].join("。"),
+    /** Main text, then junction hints, then the turns of short legs folded into its end. */
+    compose: (text: string, hints: string[], trail: readonly Turn[]) =>
+      `${[text, ...hints].join("。")}${trail.length === 0 ? "" : `、${turnRun(trail,
+        { left: "その先で左へ", right: "その先で右へ", back: "その先で引き返す" },
+        { left: "すぐ左へ", right: "すぐ右へ", back: "すぐ引き返す" },
+        { left: "さらに左へ", right: "さらに右へ", back: "再び引き返す" }, "、")}`}`,
     arrive: () => "目的地に到着",
     wait: (time: string, dayOffset: number, weekday: string) =>
       `${dayOffset === 0 ? "" : dayOffset === 1 ? "翌日" : `${dayOffset < 7 ? "" : `${dayOffset}日後の`}${{ mon: "月", tue: "火", wed: "水", thu: "木", fri: "金", sat: "土", sun: "日" }[weekday]}曜日`}${time}まで待つ`,
@@ -171,19 +198,22 @@ const TEXT = {
     start: () => "Start",
     walk: (m: number) => `Go straight ~${m} m`,
     continue: (m: number) => `Continue ~${m} m`,
-    turn_left: (m: number) => `Turn left, ~${m} m`,
-    turnPrefix: (turn: "left" | "right" | "back", text: string) => `${{ left: "Turn left", right: "Turn right", back: "Turn back" }[turn]}, then ${text.charAt(0).toLowerCase()}${text.slice(1)}`,
-    turn_right: (m: number) => `Turn right, ~${m} m`,
-    u_turn: (m: number) => `Turn back, ~${m} m`,
+    turns: (turns: readonly Turn[]) => turnRun(turns,
+      { left: "Turn left", right: "Turn right", back: "Turn back" },
+      { left: "then left", right: "then right", back: "then turn back" },
+      { left: "then left again", right: "then right again", back: "then turn back again" }, ", "),
+    turnWalk: (turns: readonly Turn[], m: number) => `${TEXT.en.turns(turns)}, ~${m} m`,
+    turnPrefix: (turns: readonly Turn[], text: string) => `${TEXT.en.turns(turns)}, then ${lowerFirst(text)}`,
     gate: () => "Pass the ticket gate",
     moving_walkway: (m: number) => `Moving walkway ~${m} m`,
-    vertical: (kind: string, sense: string | null, floor: string | null) =>
-      `Take the ${kind}${sense ? ` ${sense}` : ""}${floor === null ? "" : ` to ${floor}`}`,
+    vertical: (kind: string, sense: string | null, floor: string | null, continued: boolean) =>
+      `${continued ? `Continue ${sense ?? "on"} the ${kind}` : `Take the ${kind}${sense ? ` ${sense}` : ""}`}${floor === null ? "" : ` to ${floor}`}`,
     junction: (atM: number, action: JunctionHint["action"], name: string | null) =>
       `After ~${atM} m, ${action === "straight"
         ? name === null ? "continue straight through the junction" : `continue straight past ${name}`
         : `keep ${action === "keep_left" ? "left" : "right"} at ${name ?? "the junction"}`}`,
-    withJunctions: (text: string, hints: string[]) => `${[text, ...hints].join(". ")}.`,
+    compose: (text: string, hints: string[], trail: readonly Turn[]) =>
+      `${[text, ...hints].join(". ")}${trail.length === 0 ? "" : `, then ${lowerFirst(TEXT.en.turns(trail))}`}${hints.length > 0 ? "." : ""}`,
     arrive: () => "Arrive at destination",
     wait: (time: string, dayOffset: number, weekday: string) =>
       `Wait until ${time}${dayOffset === 0 ? "" : dayOffset === 1 ? " tomorrow" : ` on ${{ mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" }[weekday]}${dayOffset < 7 ? "" : `, ${dayOffset} days later`}`}`,
@@ -402,6 +432,66 @@ function junctionNames(bundle: StationBundle, lang: "ja" | "en"): Map<string, st
   return out;
 }
 
+const WALK_KINDS: ReadonlySet<InstructionKind> = new Set(["walk", "turn_left", "turn_right", "u_turn"]);
+const WALK_TURN: Partial<Record<InstructionKind, Turn>> = { turn_left: "left", turn_right: "right", u_turn: "back" };
+/** Walking legs shorter than this are folded into a neighbouring instruction instead of being read out alone. */
+const SHORT_LEG_M = 5;
+
+/** An instruction before its text is written; `label` is the floor a flight leads to (null = none to name). */
+type Draft = Instruction & { label: string | null };
+
+/**
+ * Folds walking legs under SHORT_LEG_M (without junction hints) into their neighbours, so a few metres
+ * between two turns or onto a flight are not read out as lines of their own. Each folded turn is kept,
+ * in order, on the instruction that starts (or, before arrival, ends) at that junction:
+ * - a straight leg off a flight, lift, gate or walkway is just the way out of it: added to that instruction;
+ * - other short legs lead into the next instruction ("Turn left, then right, ~16 m");
+ * - short legs right before arrival end the instruction before them ("…, then turn right");
+ * - the opening leg sets the heading every later turn is measured from, so it is only folded into a
+ *   flight, lift, gate or walkway it leads straight onto.
+ */
+function foldShortLegs(drafts: Draft[]): Draft[] {
+  const isWalk = (d: Draft) => WALK_KINDS.has(d.kind);
+  const isShort = (d: Draft) => isWalk(d) && d.distanceM < SHORT_LEG_M && !d.junctions;
+  const turnsOf = (legs: Draft[]) => legs.flatMap((d) => [...(d.leadTurns ?? []), ...(WALK_TURN[d.kind] ? [WALK_TURN[d.kind]!] : [])]);
+  const lengthOf = (legs: Draft[]) => legs.reduce((sum, d) => sum + d.distanceM, 0);
+  const appendTo = (into: Draft, legs: Draft[]) => {
+    into.stepIndexes.push(...legs.flatMap((d) => d.stepIndexes));
+    into.distanceM += lengthOf(legs);
+    into.toFloorId = legs[legs.length - 1]!.toFloorId;
+    const trail = turnsOf(legs);
+    if (trail.length > 0) into.trailTurns = [...(into.trailTurns ?? []), ...trail];
+  };
+  const out: Draft[] = [drafts[0]!];
+  let pending: Draft[] = [];
+  for (const d of drafts.slice(1, -1)) {
+    const last = out[out.length - 1]!;
+    if (isShort(d)) {
+      if (pending.length === 0 && d.kind === "walk" && !isWalk(last) && last.kind !== "start") appendTo(last, [d]);
+      else pending.push(d);
+      continue;
+    }
+    if (out.length === 1 && pending[0]?.kind === "walk" && (pending.length > 1 || isWalk(d))) out.push(pending.shift()!);
+    if (pending.length > 0) {
+      const lead = lengthOf(pending);
+      const turns = turnsOf(pending);
+      d.stepIndexes = [...pending.flatMap((p) => p.stepIndexes), ...d.stepIndexes];
+      d.distanceM += lead;
+      for (const j of d.junctions ?? []) j.atM += lead;
+      if (turns.length > 0) d.leadTurns = turns;
+      pending = [];
+    }
+    out.push(d);
+  }
+  if (pending.length > 0) {
+    const last = out[out.length - 1]!;
+    if (last.kind === "start") out.push(...pending);
+    else appendTo(last, pending);
+  }
+  out.push(drafts[drafts.length - 1]!);
+  return out;
+}
+
 /**
  * True when every heading along the walk over these steps lies within one TURN_DEG-wide range (so neither
  * one turn nor a zig-zag, e.g. +30° then −30°, exceeds TURN_DEG). Every segment of at
@@ -465,24 +555,21 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
   };
   const names = junctionNames(bundle, lang);
   const firstFloor = nodes.get(route.nodeIds[0]!)!.floorId;
-  const out: Instruction[] = [{ kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, text: t.start() }];
-  let current: Instruction | null = null;
+  const out: Draft[] = [{ kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, text: t.start(), label: null }];
+  let current: Draft | null = null;
   /** Evidenced sense of the last vertical instruction, including "level". */
   let lastSense: "up" | "down" | "level" | null = null;
   /** Floor where the current vertical chain started. */
   let chainFromFloorId: string | null = null;
   const flush = () => {
-    if (!current) return;
-    const m = Math.max(1, Math.round(current.distanceM));
-    if (current.kind === "walk" || current.kind === "turn_left" || current.kind === "turn_right" || current.kind === "u_turn") {
-      const main = current.kind === "walk" ? (straightInPlan(points, current.stepIndexes) ? t.walk(m) : t.continue(m)) : t[current.kind](m);
-      const hints = (current.junctions ?? []).map((j) => t.junction(j.atM, j.action, j.name));
-      current.text = hints.length > 0 ? t.withJunctions(main, hints) : main;
-    }
-    else if (current.kind === "moving_walkway") current.text = current.turn ? t.turnPrefix(current.turn, t.moving_walkway(m)) : t.moving_walkway(m);
-    out.push(current);
+    if (current) out.push(current);
     current = null;
   };
+  const stepSense = (k: number) => {
+    const s = route.steps[k]!;
+    return verticalSense(floors.get(s.fromFloorId), floors.get(s.toFloorId), nodes.get(s.fromNodeId)!.position.z, nodes.get(s.toNodeId)!.position.z);
+  };
+  const floorLabel = (fromFloorId: string, toFloorId: string) => fromFloorId === toFloorId ? null : floorDisplayName(floors.get(toFloorId), lang);
 
   route.steps.forEach((step, i) => {
     // A wait for an opening window is its own instruction, before the step it waits for.
@@ -496,17 +583,29 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     if (vertical || step.mode === "gate") {
       flush();
       const kind: InstructionKind = vertical ?? "gate";
-      const from = nodes.get(step.fromNodeId)!;
-      const to = nodes.get(step.toNodeId)!;
-      const sense3 = verticalSense(floors.get(step.fromFloorId), floors.get(step.toFloorId), from.position.z, to.position.z);
+      const sense3 = stepSense(i);
       const prev = out[out.length - 1]!;
+      if (kind === "elevator" && prev.kind === "elevator") {
+        // One lift ride, however many cab, door or floor links it is stored as: ride from where it was
+        // boarded to where it is left. Up/down only when that is evidenced and no link of it says otherwise.
+        const first = route.steps[prev.stepIndexes[0]!]!;
+        prev.stepIndexes.push(i);
+        prev.distanceM += step.lengthM;
+        prev.toFloorId = step.toFloorId;
+        const ride = verticalSense(floors.get(first.fromFloorId), floors.get(step.toFloorId), nodes.get(first.fromNodeId)!.position.z, nodes.get(step.toNodeId)!.position.z);
+        const legs = prev.stepIndexes.map(stepSense);
+        const sense = ride === "up" || ride === "down" ? ride : null;
+        prev.vertical = sense && !legs.includes(sense === "up" ? "down" : "up") ? sense : null;
+        prev.label = floorLabel(first.fromFloorId, step.toFloorId);
+        return;
+      }
       // A real turn between two flights is a decision point: never hide it inside one instruction.
       const delta = i > 0 ? turnDelta(points, route.steps, i) : null;
-      const turnHere: "left" | "right" | "back" | null =
+      const turnHere: Turn | null =
         delta === null ? null : Math.abs(delta) > 150 ? "back" : delta > VERTICAL_TURN_DEG ? "right" : delta < -VERTICAL_TURN_DEG ? "left" : null;
       const merging = prev.kind === kind && kind !== "gate" && turnHere === null && (lastSense === sense3 || lastSense === "level" || sense3 === "level");
       if (!merging) chainFromFloorId = step.fromFloorId;
-      const label = chainFromFloorId === step.toFloorId ? null : floorDisplayName(floors.get(step.toFloorId), lang);
+      const label = floorLabel(chainFromFloorId!, step.toFloorId);
       // Consecutive segments of one stair/escalator/lift chain read as one instruction — only when they
       // share the same evidenced sense; a known "up" never absorbs a segment whose direction is UNKNOWN.
       // A known-level segment continues either sense.
@@ -516,28 +615,22 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
         prev.distanceM += step.lengthM;
         prev.toFloorId = step.toFloorId;
         prev.vertical = lastSense === "up" || lastSense === "down" ? lastSense : null;
-        const merged = t.vertical(kind, prev.vertical, label);
-        prev.text = prev.turn ? t.turnPrefix(prev.turn, merged) : merged;
+        prev.label = label;
         return;
       }
       lastSense = sense3;
       const sense = sense3 === "up" || sense3 === "down" ? sense3 : null;
-      const base = kind === "gate" ? t.gate() : t.vertical(kind, sense, label);
       // A walk instruction only says how far to go, so a turn onto the flight/gate is named here.
-      out.push({
-        kind, stepIndexes: [i], distanceM: step.lengthM, vertical: sense, turn: turnHere, toFloorId: step.toFloorId,
-        text: turnHere ? t.turnPrefix(turnHere, base) : base,
-      });
+      out.push({ kind, stepIndexes: [i], distanceM: step.lengthM, vertical: sense, turn: turnHere, toFloorId: step.toFloorId, text: "", label });
       return;
     }
     if (step.mode === "moving_walkway") {
       flush();
       // Like a flight or gate, the turn onto the walkway is named on the walkway instruction itself.
       const delta = i > 0 ? turnDelta(points, route.steps, i) : null;
-      const turn: "left" | "right" | "back" | null =
+      const turn: Turn | null =
         delta === null ? null : Math.abs(delta) > 150 ? "back" : delta > TURN_DEG ? "right" : delta < -TURN_DEG ? "left" : null;
-      current = { kind: "moving_walkway", stepIndexes: [i], distanceM: step.lengthM, vertical: null, toFloorId: step.toFloorId, text: "", ...(turn ? { turn } : {}) };
-      flush();
+      out.push({ kind: "moving_walkway", stepIndexes: [i], distanceM: step.lengthM, vertical: null, toFloorId: step.toFloorId, text: "", label: null, ...(turn ? { turn } : {}) });
       return;
     }
     // Walking: start a new instruction when the heading turns at the junction.
@@ -557,9 +650,8 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
       // Passing a choice point without turning: say which branch to keep to, since no turn marks it.
       const action = junctionAction(points, route.steps, i, departures.get(step.fromNodeId) ?? [], nodes, edges, openDuringRoute);
       if (action) {
-        (current.junctions ??= []).push({
-          nodeId: step.fromNodeId, stepIndex: i, atM: Math.max(1, Math.round(current.distanceM)), action, name: names.get(step.fromNodeId) ?? null,
-        });
+        // `atM` stays unrounded until the text is written: folding short legs in front may still move it.
+        (current.junctions ??= []).push({ nodeId: step.fromNodeId, stepIndex: i, atM: current.distanceM, action, name: names.get(step.fromNodeId) ?? null });
       }
       current.stepIndexes.push(i);
       current.distanceM += step.lengthM;
@@ -567,10 +659,28 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
       return;
     }
     flush();
-    current = { kind: turn, stepIndexes: [i], distanceM: step.lengthM, vertical: null, toFloorId: step.toFloorId, text: "" };
+    current = { kind: turn, stepIndexes: [i], distanceM: step.lengthM, vertical: null, toFloorId: step.toFloorId, text: "", label: null };
   });
   flush();
   const lastFloor = nodes.get(route.nodeIds[route.nodeIds.length - 1]!)!.floorId;
-  out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: lastFloor, text: t.arrive() });
-  return out;
+  out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: lastFloor, text: t.arrive(), label: null });
+
+  return foldShortLegs(out).map(({ label, ...ins }, k, all) => {
+    if (ins.kind === "start" || ins.kind === "arrive") return ins;
+    const m = Math.max(1, Math.round(ins.distanceM));
+    for (const j of ins.junctions ?? []) j.atM = Math.max(1, Math.round(j.atM));
+    const turns = [...(ins.leadTurns ?? []), ...(WALK_TURN[ins.kind] ? [WALK_TURN[ins.kind]!] : []), ...(ins.turn ? [ins.turn] : [])];
+    let main: string;
+    if (WALK_KINDS.has(ins.kind)) main = turns.length > 0 ? t.turnWalk(turns, m) : straightInPlan(points, ins.stepIndexes) ? t.walk(m) : t.continue(m);
+    else {
+      // A flight right after another of the same kind (only short legs between) continues it, unless it
+      // is known to reverse it (down, then up).
+      const before = all[k - 1]!;
+      const continued = (ins.kind === "stairs" || ins.kind === "ramp") && before.kind === ins.kind && (ins.vertical === null || ins.vertical === before.vertical);
+      const base = ins.kind === "gate" ? t.gate() : ins.kind === "moving_walkway" ? t.moving_walkway(m) : t.vertical(ins.kind, ins.vertical, label, continued);
+      main = turns.length > 0 ? t.turnPrefix(turns, base) : base;
+    }
+    const hints = (ins.junctions ?? []).map((j) => t.junction(j.atM, j.action, j.name));
+    return { ...ins, text: t.compose(main, hints, ins.trailTurns ?? []) };
+  });
 }

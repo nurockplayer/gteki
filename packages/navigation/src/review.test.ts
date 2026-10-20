@@ -155,8 +155,9 @@ describe("turn narration robustness (Ikebukuro lane observations)", () => {
     b.nodes.find((n) => n.id === "start")!.position = { x: -1, y: 0, z: 0 };
     const stairs = describeRoute(b, ok(createRouter(b).route("start", "upper-2", base)), "en").filter((i) => i.kind === "stairs");
     expect(stairs).toHaveLength(2);
-    expect(stairs[1]!.text).toMatch(/^Turn left, then take the stairs/);
-    expect(describeRoute(b, ok(createRouter(b).route("start", "upper-2", base)), "ja").filter((i) => i.kind === "stairs")[1]!.text).toMatch(/^左へ曲がり、階段/);
+    // The second flight follows straight on from the first: a continuation, with its turn still named.
+    expect(stairs[1]!.text).toBe("Turn left, then continue on the stairs");
+    expect(describeRoute(b, ok(createRouter(b).route("start", "upper-2", base)), "ja").filter((i) => i.kind === "stairs")[1]!.text).toBe("左へ曲がり、引き続き階段を進む");
   });
 });
 
@@ -809,5 +810,40 @@ describe("opening hours are checked when the route reaches each edge", () => {
     const router = createRouter(createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 144, hours: hours("05:00", "23:00") })]));
     waitsFor(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 22 * 60 + 59 } }), "passage", { weekday: "tue", minutes: 5 * 60, dayOffset: 1 });
     noWait(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 22 * 60 + 57 } }));
+  });
+});
+
+describe("continued flights never invent or flip a direction (Shinjuku E27 narration)", () => {
+  /** Flight 1 heads east from a; flight 2 turns left (north) at its foot. All on one floor: senses come from z alone. */
+  function twoFlights(z1: number, z2: number | null) {
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("f1", "a", "upper", { mode: "stairs" }),
+      edge("f2", "upper", "upper-2", { mode: "stairs" }),
+    ]);
+    b.nodes.find((n) => n.id === "upper")!.position = { x: 20, y: 0, z: z1 };
+    b.nodes.find((n) => n.id === "upper-2")!.position = { x: 20, y: 10, z: z2 };
+    for (const id of ["upper", "upper-2"]) b.nodes.find((n) => n.id === id)!.floorId = "concourse";
+    const r = ok(createRouter(b).route("start", "upper-2", base));
+    return { en: describeRoute(b, r, "en").filter((i) => i.kind === "stairs"), ja: describeRoute(b, r, "ja").filter((i) => i.kind === "stairs") };
+  }
+
+  it("continues a flight in the same evidenced sense", () => {
+    const { en, ja } = twoFlights(2, 4);
+    expect(en.map((i) => i.text)).toEqual(["Take the stairs up", "Turn left, then continue up the stairs"]);
+    expect(ja[1]!.text).toBe("左へ曲がり、引き続き階段で上へ");
+  });
+
+  it("does not call a flight that reverses the last one a continuation", () => {
+    // Down to a passage under the line, then up the other side.
+    const { en, ja } = twoFlights(-3, 0);
+    expect(en.map((i) => i.text)).toEqual(["Take the stairs down", "Turn left, then take the stairs up"]);
+    expect(ja[1]!.text).toBe("左へ曲がり、階段で上へ");
+  });
+
+  it("continues on the stairs without a direction when the next flight's is unknown", () => {
+    const { en, ja } = twoFlights(-3, null);
+    expect(en[1]).toMatchObject({ vertical: null, text: "Turn left, then continue on the stairs" });
+    expect(ja[1]!.text).toBe("左へ曲がり、引き続き階段を進む");
   });
 });
