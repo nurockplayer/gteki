@@ -125,6 +125,13 @@ describe("describeRoute arrival at a stair/escalator/ramp connector", () => {
     const r = route(b, "start", "goal");
     exit.names = [{ lang: "ja", text: "Ａ１出口" }];
     expect(describeRoute(b, r, "en", exit).at(-1)!.text).toBe("Stairs to Ａ１出口 start here");
+    // A blank or whitespace-only name never hides another language's name, nor becomes the label.
+    exit.names = [{ lang: "en", text: "" }, { lang: "ja", text: "Ａ１出口" }];
+    expect(describeRoute(b, r, "en", exit).at(-1)!.text).toBe("Stairs to Ａ１出口 start here");
+    exit.names = [{ lang: "en", text: "   " }, { lang: "ja", text: " " }, { lang: "zh-Hant", text: "A1出口" }];
+    expect(describeRoute(b, r, "en", exit).at(-1)!.text).toBe("Stairs to A1出口 start here");
+    exit.names = [{ lang: "en", text: "  " }];
+    expect(describeRoute(b, r, "en", exit).at(-1)!.text).toBe("Stairs to your destination start here");
     exit.names = [];
     expect(describeRoute(b, r, "en", exit).at(-1)!.text).toBe("Stairs to your destination start here");
     expect(describeRoute(b, r, "ja", exit).at(-1)!.text).toBe("目的地への階段はここから");

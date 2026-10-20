@@ -238,10 +238,11 @@ function turnDelta(points: PolylinePoint[], steps: RouteResult["steps"], i: numb
   return h0 === null || h1 === null ? null : ((h1 - h0 + 540) % 360) - 180;
 }
 
-/** POI display name in `lang`, then ja, then the first name; null when it has none. Never an id. */
+/** POI display name in `lang`, then ja, then the first non-blank name; null when it has none. Never an id. */
 function poiDisplayName(poi: Poi, lang: "ja" | "en"): string | null {
-  const named = poi.names.find((n) => n.lang === lang) ?? poi.names.find((n) => n.lang === "ja") ?? poi.names[0];
-  return named?.text || null;
+  const names = poi.names.map((n) => ({ lang: n.lang, text: n.text.trim() })).filter((n) => n.text !== "");
+  const named = names.find((n) => n.lang === lang) ?? names.find((n) => n.lang === "ja") ?? names[0];
+  return named?.text ?? null;
 }
 
 /**
