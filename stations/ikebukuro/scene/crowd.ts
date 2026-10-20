@@ -9,7 +9,7 @@ interface Edge { id: string; from: string; to: string; verification: string; geo
 interface Path { pts: THREE_NS.Vector3[]; cum: number[]; length: number; from: string; to: string; lane?: Lane }
 /** Safe lateral extent (m) every stepM along an edge, from pipeline/build_station.py. */
 export interface Lane { stepM: number; left: number[]; right: number[] }
-interface Agent { path: number; forward: boolean; s: number; speed: number; offset: number; phase: number }
+interface Agent { path: number; forward: boolean; s: number; speed: number; offset: number; phase: number; hiddenUntil: number }
 
 const COAT = [0x1e2229, 0x2b2f36, 0x3a3f47, 0x4a4036, 0x1f2a3a, 0x5b5f66, 0x6d5a48, 0x2c3b2f, 0x7a1f24, 0xb8b2a6, 0x24324a];
 const SKIN = [0xe0bfa3, 0xd5ad8c, 0xc99b7a, 0xe8cdb5];
@@ -54,7 +54,7 @@ export function buildCrowd(
     // place proportionally to path length
     let r = rand() * total, k = 0;
     while (k < paths.length - 1 && r > paths[k].length) r -= paths[k++].length;
-    agents.push({ path: k, forward: rand() < 0.5, s: r, speed: 1.15 + rand() * 0.5, offset: (rand() * 2 - 1) * 0.9, phase: rand() * 6.28 });
+    agents.push({ path: k, forward: rand() < 0.5, s: r, speed: 1.15 + rand() * 0.5, offset: (rand() * 2 - 1) * 0.9, phase: rand() * 6.28, hiddenUntil: -1 });
   }
 
   // Articulated low-poly pedestrian: parts pivot at hip/shoulder; local +Z is forward.
@@ -144,7 +144,9 @@ export function buildCrowd(
   // pedestrians that would fill the lens are hidden instead of blocking the view.
   const cam = new THREE.Vector3(1e9, 0, 0);
   const frustum = new THREE.Frustum(), viewProj = new THREE.Matrix4();
+  let renders = 0;
   parts[0].mesh.onBeforeRender = (_r, _s, camera) => {
+    renders++;
     cam.setFromMatrixPosition(camera.matrixWorld);
     frustum.setFromProjectionMatrix(viewProj.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
   };
@@ -168,6 +170,7 @@ export function buildCrowd(
       a.path = k;
       a.s = Math.min(paths[k].length, r);
       a.forward = rand() < 0.5;
+      a.hiddenUntil = renders;
       return true;
     }
     return false;
@@ -219,6 +222,7 @@ export function buildCrowd(
             p = paths[enter.path];
             a.forward = enter.forward;
             a.s = a.forward ? 0 : p.length;
+            a.hiddenUntil = renders;
           } else {
             a.forward = !a.forward;
             a.s = Math.min(p.length, Math.max(0, a.s));
@@ -254,6 +258,15 @@ export function buildCrowd(
       base.compose(pos, q, one);
       const dx = pos.x - cam.x, dz = pos.z - cam.z, dy = pos.y + 1.1 - cam.y;
       if (dx * dx + dz * dz + dy * dy < 64) near++;
+      // Someone who just moved stays hidden until a frame rendered after the move shows the spot out
+      // of view: a turn of any speed between the move and the next frame never shows the jump.
+      if (a.hiddenUntil >= 0) {
+        if (renders > a.hiddenUntil && !inView(pos)) a.hiddenUntil = -1;
+        else {
+          for (const part of parts) part.mesh.setMatrixAt(i, hidden);
+          continue;
+        }
+      }
       if (dx * dx + dz * dz + dy * dy < NEAR_CAM_M * NEAR_CAM_M) {
         for (const part of parts) part.mesh.setMatrixAt(i, hidden);
         continue;
