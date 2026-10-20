@@ -159,7 +159,7 @@ export function storeRelativePath(sha256: string, filename: string): string {
 export async function getGitCommit(): Promise<string | null> {
   try {
     const execFileAsync = promisify(execFile);
-    const { stdout } = await execFileAsync('rtk', ['git', 'rev-parse', 'HEAD'], { cwd: repoRoot });
+    const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repoRoot });
     const commit = stdout.trim();
     return /^[a-f0-9]{40,64}$/.test(commit) ? commit : null;
   } catch { return null; }

@@ -124,6 +124,18 @@ describe('network source inspection', () => {
     expect(report.topology.geometry_endpoint_coverage).toEqual({ checked_links: 0, skipped_links: 1, total_links: 1, complete: false });
   });
 
+  it('skips geographic endpoint checks for out-of-range (axis-swapped) positions instead of reporting them checked', () => {
+    const features = [
+      { type: 'Feature', properties: { node_id: 'n1' }, geometry: { type: 'Point', coordinates: [35.7, 139.7] } },
+      { type: 'Feature', properties: { node_id: 'n2' }, geometry: { type: 'Point', coordinates: [35.71, 139.7] } },
+      { type: 'Feature', properties: { link_id: 'l1', start_node_id: 'n1', end_node_id: 'n2' }, geometry: { type: 'LineString', coordinates: [[35.7, 139.7], [35.71, 139.7]] } },
+    ];
+    const report = inspectGeoJsonFeatures(features, { source_id: 'synthetic-swapped-axes', sha256: 'synthetic-hash' }, { type: 'name', properties: { name: 'EPSG:6668' } }, 'synthetic.geojson', 'network');
+    expect(report.topology.geometry_endpoint_check_status).toBe('PARTIAL_ENDPOINT_COVERAGE');
+    expect(report.topology.geometry_endpoint_mismatches_over_0_5m).toBeNull();
+    expect(report.topology.geometry_endpoint_coverage).toEqual({ checked_links: 0, skipped_links: 1, total_links: 1, complete: false });
+  });
+
   it('reports partial endpoint coverage when a referenced node has no geometry coordinates', () => {
     const features = [
       { type: 'Feature', properties: { node_id: 'n1' }, geometry: null },

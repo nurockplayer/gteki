@@ -23,7 +23,7 @@ Reproduce the full run with `pnpm --dir tools/gis install --frozen-lockfile`, th
 
 ## Verified checks (this candidate)
 
-- `typecheck` 0 · `test` **74/74** · `test:real` **3/3** · `acquire --all --offline` **13/13** hashes · real run **16/16** CLI invocations exit 0. The Opus lead re-ran these independently.
+- `typecheck` 0 · `test` **76/76** · `test:real` **3/3** · `acquire --all --offline` **13/13** hashes · real run **16/16** CLI invocations exit 0. The Opus lead re-ran these independently.
 - CRS: two independent controls from the official GSI 測量計算サイト `bl2xy` (JGD2011, zone IX, retrieved 2026-10-20) match within **0.05 mm**. Envelope-corner roundtrips are below 1e-6 m.
 - GLB readback: bbox error ≤ **0.006 mm**. Independent Blender 5.2.2 import of both full-file GLBs reproduces the recorded local bbox to within float32 precision (see [evidence/](evidence/)).
 
@@ -71,3 +71,9 @@ Reproduce the full run with `pnpm --dir tools/gis install --frozen-lockfile`, th
 ## Review trail
 
 The fresh read-only Codex review sessions are recorded in [fix-pass.md](fix-pass.md). Round 1 returned REQUEST_CHANGES with 1×P1 and 6×P2: nested ownership, `OrientableSurface` sign plus xlink reuse, namespace URIs, export membership, `linkID`, dictionary identity and categorical fields. Round 2 confirmed all of those fixed and raised 4×P2 + 1×P3 new edge cases, which were fixed in phase 3. Round 3 (closure) verified all five fixes with code, tests and in-memory probes, found no P0/P1 issues and returned **APPROVE** with no blocking items for tool digest `4b67d0bf4bd9d8ef9c8244416ce4f2c537e2307f6ac04bc151a1fae091f412fe`. An earlier ChatGPT-browser review that the implementer ran on its own initiative is kept, sanitized, under [history/](history/README.md). That route is not a channel the lead approved, and the Codex reviews supersede it.
+
+PR [#18](https://github.com/nurockplayer/gteki/pull/18) automated Codex review raised two P2 findings, both fixed with regressions in tool digest `67f398610e32e391b9622bf25706f9456adbb6c8499381a49e6ad1ecc87a3716`:
+- Geographic endpoint checks now skip out-of-range (for example, axis-swapped) positions, which makes coverage PARTIAL instead of CHECKED.
+- Acquisition provenance now calls `git` directly rather than through a wrapper.
+
+The real run was regenerated. The GLB bytes are unchanged, and the superseded conversion receipts are in `history/conversions/pre-review-fix/`.

@@ -1,5 +1,5 @@
 {
-  "tool_input_sha256": "4b67d0bf4bd9d8ef9c8244416ce4f2c537e2307f6ac04bc151a1fae091f412fe",
+  "tool_input_sha256": "67f398610e32e391b9622bf25706f9456adbb6c8499381a49e6ad1ecc87a3716",
   "verification": "UNVERIFIED",
   "navigation_use": "NOT_FOR_ROUTING",
   "acquisitions": [
@@ -955,68 +955,7 @@
   ],
   "conversions": [
     {
-      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-07071f1cb68e3049aee5",
-      "source_id": "plateau-13104-ubld-53394536",
-      "filters": {
-        "ids": [
-          "room_d4dc60ab-50c3-4480-9957-069e31c641ad"
-        ],
-        "maxPolygons": 50
-      },
-      "totals": {
-        "objects_in_source": 30358,
-        "objects_converted": 1,
-        "nodes": 1,
-        "polygons_in_source": 79363,
-        "polygon_definitions_in_source": 65013,
-        "polygons_converted": 6,
-        "skipped_degenerate": 0,
-        "solid_uses_represented_by_selected_boundaries": 0,
-        "triangles": 12
-      },
-      "validation": {
-        "status": "PASS",
-        "node_count": 1,
-        "expected_node_count": 1,
-        "triangle_count": 12,
-        "expected_triangle_count": 12,
-        "bbox_max_error_m": 0.00000452290078101214,
-        "tolerance_m": 0.001,
-        "all_nodes_have_gml_id": true
-      },
-      "elapsed_ms": 10888,
-      "peak_rss_bytes": 936017920
-    },
-    {
-      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-4bdf223d5ebc9ceeca18",
-      "source_id": "plateau-13104-ubld-53394536",
-      "filters": {},
-      "totals": {
-        "objects_in_source": 30358,
-        "objects_converted": 30357,
-        "nodes": 30358,
-        "polygons_in_source": 79363,
-        "polygon_definitions_in_source": 65013,
-        "polygons_converted": 65013,
-        "skipped_degenerate": 0,
-        "solid_uses_represented_by_selected_boundaries": 14350,
-        "triangles": 148950
-      },
-      "validation": {
-        "status": "PASS",
-        "node_count": 30358,
-        "expected_node_count": 30358,
-        "triangle_count": 148950,
-        "expected_triangle_count": 148950,
-        "bbox_max_error_m": 0.0000054997890401864424,
-        "tolerance_m": 0.001,
-        "all_nodes_have_gml_id": true
-      },
-      "elapsed_ms": 19454,
-      "peak_rss_bytes": 1575010304
-    },
-    {
-      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-a47217a8db365bfddcb1",
+      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-10fa3e66d03eec8426fd",
       "source_id": "plateau-13104-ubld-53394536",
       "filters": {
         "ids": [
@@ -1044,11 +983,39 @@
         "tolerance_m": 0.001,
         "all_nodes_have_gml_id": true
       },
-      "elapsed_ms": 12653,
-      "peak_rss_bytes": 419495936
+      "elapsed_ms": 10608,
+      "peak_rss_bytes": 403013632
     },
     {
-      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-41bc3b2a337aadc09432",
+      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-8414309c5643be1f476e",
+      "source_id": "plateau-13104-ubld-53394536",
+      "filters": {},
+      "totals": {
+        "objects_in_source": 30358,
+        "objects_converted": 30357,
+        "nodes": 30358,
+        "polygons_in_source": 79363,
+        "polygon_definitions_in_source": 65013,
+        "polygons_converted": 65013,
+        "skipped_degenerate": 0,
+        "solid_uses_represented_by_selected_boundaries": 14350,
+        "triangles": 148950
+      },
+      "validation": {
+        "status": "PASS",
+        "node_count": 30358,
+        "expected_node_count": 30358,
+        "triangle_count": 148950,
+        "expected_triangle_count": 148950,
+        "bbox_max_error_m": 0.0000054997890401864424,
+        "tolerance_m": 0.001,
+        "all_nodes_have_gml_id": true
+      },
+      "elapsed_ms": 16389,
+      "peak_rss_bytes": 1680687104
+    },
+    {
+      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-918610cb70c8a1c57e35",
       "source_id": "plateau-13116-ubld-53394576",
       "filters": {
         "ids": [
@@ -1076,11 +1043,11 @@
         "tolerance_m": 0.001,
         "all_nodes_have_gml_id": true
       },
-      "elapsed_ms": 25937,
-      "peak_rss_bytes": 271876096
+      "elapsed_ms": 24140,
+      "peak_rss_bytes": 276430848
     },
     {
-      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-8505a4f2d1cadc7233c0",
+      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-be6ac4becea01f288b44",
       "source_id": "plateau-13116-ubld-53394576",
       "filters": {},
       "totals": {
@@ -1104,41 +1071,8 @@
         "tolerance_m": 0.001,
         "all_nodes_have_gml_id": true
       },
-      "elapsed_ms": 28598,
-      "peak_rss_bytes": 464355328
-    },
-    {
-      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-8eaaa1832e13979a784e",
-      "source_id": "plateau-13116-ubld-53394576",
-      "filters": {
-        "ids": [
-          "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2"
-        ],
-        "maxPolygons": 50
-      },
-      "totals": {
-        "objects_in_source": 32,
-        "objects_converted": 1,
-        "nodes": 6,
-        "polygons_in_source": 98173,
-        "polygon_definitions_in_source": 58761,
-        "polygons_converted": 50,
-        "skipped_degenerate": 0,
-        "solid_uses_represented_by_selected_boundaries": 184,
-        "triangles": 50
-      },
-      "validation": {
-        "status": "PASS",
-        "node_count": 6,
-        "expected_node_count": 6,
-        "triangle_count": 50,
-        "expected_triangle_count": 50,
-        "bbox_max_error_m": 0.0000046096065489109606,
-        "tolerance_m": 0.001,
-        "all_nodes_have_gml_id": true
-      },
-      "elapsed_ms": 24737,
-      "peak_rss_bytes": 312786944
+      "elapsed_ms": 25851,
+      "peak_rss_bytes": 490668032
     }
   ],
   "networks": [

@@ -265,6 +265,11 @@ function geoJsonMappedFields(fields: string[]): Record<string, string | null> {
   return Object.fromEntries(Object.entries(NORMALIZED_ALIASES).map(([name, aliases]) => [name, fields.find((field) => aliases.includes(field)) ?? null]));
 }
 
+function isGeographicLonLat(lon: unknown, lat: unknown): boolean {
+  return typeof lon === 'number' && typeof lat === 'number' && Number.isFinite(lon) && Number.isFinite(lat)
+    && lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90;
+}
+
 export function inspectGeoJsonFeatures(features: any[], source: { source_id: string; sha256: string }, declaredCrs: unknown, fileName: string, mode: 'network' | 'stationmap') {
   const fields = [...new Set(features.flatMap((f) => Object.keys(f.properties ?? {})))].sort();
   const statsRows = features.map((f) => f.properties ?? {});
@@ -324,6 +329,9 @@ export function inspectGeoJsonFeatures(features: any[], source: { source_id: str
     const a = aId ? coordinateByNodeId.get(aId) : undefined;
     const b = bId ? coordinateByNodeId.get(bId) : undefined;
     if (!a || !b || points.length < 2 || points.some((p) => !Number.isFinite(p[0]) || !Number.isFinite(p[1]))) return null;
+    // Geographic CRSs are longitude,latitude here; an out-of-range position (e.g. swapped axes) cannot be
+    // compared in metres, so the link is skipped and coverage becomes partial instead of guessing an axis order.
+    if (distanceMethod === 'GEOGRAPHIC_DEGREES_APPROX_METRES' && ![a, b, ...points].every((p) => isGeographicLonLat(p[0], p[1]))) return null;
     const dStart = distanceMetres([points[0]![0]!, points[0]![1]!], a, distanceMethod === 'GEOGRAPHIC_DEGREES_APPROX_METRES');
     const last = points[points.length - 1]!;
     const dEnd = distanceMetres([last[0]!, last[1]!], b, distanceMethod === 'GEOGRAPHIC_DEGREES_APPROX_METRES');
