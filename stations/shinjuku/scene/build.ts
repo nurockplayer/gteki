@@ -9,6 +9,7 @@ import type { StationBundle } from "@gteki/schema";
 import { createRouter } from "@gteki/navigation";
 import { buildLayout, centroid, pointInRings, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
 import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture, SIGN_ROW_HEIGHT, type SignIcon } from "./textures.ts";
+import { protectFareAndAccess, gateMachines } from "./fare-fence.ts";
 import surfaceJson from "../data/surface.json";
 import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "./surface.ts";
 
@@ -303,6 +304,7 @@ function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE
 // ---------------------------------------------------------------- main
 export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptions): BuiltStation {
   const layout = buildLayout(bundle, plan);
+  const protection = protectFareAndAccess(layout, plan, bundle);
   const root = new THREE.Group();
   root.name = "shinjuku-e27";
   const disposables: { dispose(): void }[] = [];
@@ -641,27 +643,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const topGeos: THREE.BufferGeometry[] = [];
     const icGeos: THREE.BufferGeometry[] = [];
     const okGeos: THREE.BufferGeometry[] = [];
-    for (const gl of layout.gates) {
-      const lv = layout.levels.reduce((best, l) => (Math.abs(l.z - gl.center.z) < Math.abs(best.z - gl.center.z) ? l : best));
-      const perp = { x: -gl.dir.y, y: gl.dir.x };
-      // extend to nearest walls on each side (max 6 m)
-      const reach = (s: number) => {
-        let best = 6;
-        for (const w of lv.walls) {
-          if (gl.center.z + 0.6 < w.zMin || gl.center.z + 0.6 > w.zMax) continue;
-          const hit = raySeg(gl.center, { x: perp.x * s, y: perp.y * s }, w.a, w.b);
-          if (hit !== null && hit < best) best = hit;
-        }
-        return best;
-      };
-      const left = reach(1);
-      const right = reach(-1);
-      const span = left + right;
-      const n = Math.max(2, Math.min(10, Math.round(span / 0.92) + 1));
+    for (const gl of protection.gates) {
       const yaw = Math.atan2(gl.dir.y, gl.dir.x);
-      for (let i = 0; i < n; i++) {
-        const o = -right + (span * i) / (n - 1);
-        const c = { x: gl.center.x + perp.x * o, y: gl.center.y + perp.y * o };
+      for (const c of gateMachines(gl)) {
         const body = new THREE.BoxGeometry(1.5, 0.95, 0.2);
         body.rotateY(yaw);
         body.translate(c.x, gl.center.z + 0.475, -c.y);
@@ -688,6 +672,72 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       const geo = merged(geos);
       if (geo) root.add(new THREE.Mesh(track(geo), m));
     }
+  }
+
+  // ---- source fare borders and unverified procedural access fill
+  {
+    const steel: THREE.BufferGeometry[] = [], base: THREE.BufferGeometry[] = [], panels: THREE.BufferGeometry[] = [];
+    for (const f of protection.fences) {
+      const z = f.zMin + 0.05, a = v3({ ...f.a, z }), b = v3({ ...f.b, z });
+      base.push(boxAlong(a.clone().add(new THREE.Vector3(0, .08, 0)), b.clone().add(new THREE.Vector3(0, .08, 0)), .12, .16));
+      panels.push(boxAlong(a.clone().add(new THREE.Vector3(0, .63, 0)), b.clone().add(new THREE.Vector3(0, .63, 0)), .035, .96));
+      steel.push(boxAlong(a.clone().add(new THREE.Vector3(0, 1.13, 0)), b.clone().add(new THREE.Vector3(0, 1.13, 0)), .045, .045));
+      const count = Math.max(1, Math.ceil(a.distanceTo(b) / 1.4));
+      for (let i = 0; i <= count; i++) {
+        const p = a.clone().lerp(b, i / count);
+        const post = new THREE.BoxGeometry(.044, 1.15, .044);
+        post.translate(p.x, p.y + .575, p.z);
+        steel.push(post);
+      }
+      propWalls.push(f);
+    }
+    for (const [geos, material] of [[steel, mat.steel], [base, mat.darkSteel], [panels, mat.glass]] as const) {
+      const geo = merged(geos);
+      if (geo) { const mesh = new THREE.Mesh(track(geo), material); mesh.name = "fare/access fence"; root.add(mesh); }
+    }
+    // A sign at each separate removed-fill border: no public-access claim for generic back-of-house fill.
+    if (protection.removedAccess.length) {
+      const tex = signTexture([{ icon: "nomap", ja: "通行可否 未確認", en: "Access unverified", tone: "warn" }], 1024);
+      track(tex.texture);
+      const material = track(new THREE.MeshBasicMaterial({ map: tex.texture, side: THREE.FrontSide, transparent: true }));
+      const used = new Set<string>();
+      const signGeos: THREE.BufferGeometry[] = [];
+      for (const area of protection.removedAccess) {
+        const center = centroid(area.rings[0]!);
+        const pts = area.rings[0]!;
+        const bounds = { x0: Math.min(...pts.map(p => p.x)) - .15, x1: Math.max(...pts.map(p => p.x)) + .15, y0: Math.min(...pts.map(p => p.y)) - .15, y1: Math.max(...pts.map(p => p.y)) + .15 };
+        const fence = protection.fences.filter(f => {
+          const x = (f.a.x + f.b.x) / 2, y = (f.a.y + f.b.y) / 2;
+          return f.reason === "access" && f.level === area.level && Math.hypot(f.b.x - f.a.x, f.b.y - f.a.y) >= .7 && x >= bounds.x0 && x <= bounds.x1 && y >= bounds.y0 && y <= bounds.y1;
+        }).sort((a, b) => {
+          const mid = (f: typeof a) => Math.hypot((f.a.x + f.b.x) / 2 - center.x, (f.a.y + f.b.y) / 2 - center.y);
+          return mid(a) - mid(b);
+        })[0];
+        if (!fence || used.has(fence.id)) continue;
+        used.add(fence.id);
+        const width = Math.min(1.25, Math.hypot(fence.b.x - fence.a.x, fence.b.y - fence.a.y) - .05);
+        const geo = new THREE.PlaneGeometry(width, width / tex.aspect);
+        geo.translate(0, 0, .035);
+        const mesh = new THREE.Mesh(geo, material);
+        const mid = { x: (fence.a.x + fence.b.x) / 2, y: (fence.a.y + fence.b.y) / 2 };
+        mesh.position.copy(v3({ ...mid, z: area.z + .82 }));
+        mesh.lookAt(v3({ x: mid.x + fence.b.y - fence.a.y, y: mid.y - fence.b.x + fence.a.x, z: area.z + .82 }));
+        mesh.updateMatrix();
+        geo.applyMatrix4(mesh.matrix);
+        signGeos.push(geo);
+        // Separate front faces keep the bilingual text readable from either side.
+        const back = new THREE.PlaneGeometry(width, width / tex.aspect);
+        back.rotateY(Math.PI);
+        back.translate(0, 0, -.035);
+        back.applyMatrix4(mesh.matrix);
+        signGeos.push(back);
+      }
+      const geo = merged(signGeos);
+      if (geo) { const mesh = new THREE.Mesh(track(geo), material); mesh.name = "Access unverified"; root.add(mesh); }
+    }
+    // Keep closed-off generic fill visible behind its fence, without exporting walkable ground.
+    const closedFloors = merged(protection.removedAccess.map(area => slabGeometry(area.rings, area.z, 2)));
+    if (closedFloors) { const mesh = new THREE.Mesh(track(closedFloors), mat.floor); mesh.name = "unverified floor behind barrier (render only)"; root.add(mesh); }
   }
 
   // ---- coverage portals at dataset dead-ends (honest boundary)
