@@ -39,18 +39,63 @@ function fixture(mode: EdgeMode = "walk", z = 4, forward = false) {
   }));
   return { bundle, nodeZ: (id: string) => id === "b" ? z : 0 };
 }
-function crowdFor(f: ReturnType<typeof fixture>, max = 1, seed = 123) {
+function crowdFor(f: ReturnType<typeof fixture>, max = 1, seed = 123, initialFocus = focus) {
   const router = createRouter(f.bundle);
   const route = vi.spyOn(router, "route");
   const crowd = createCrowd(THREE, f.bundle, router, f.nodeZ, { max, seed });
   crowds.push(crowd);
+  prime(crowd, initialFocus);
   return { crowd, route };
+}
+function prime(crowd: Crowd, point = focus): void {
+  for (let frame = 0; frame < 100; frame++) crowd.update(0, point);
 }
 function avatarAt(index: number): Avatar {
   return vi.mocked(createAvatar).mock.results[index]!.value as Avatar;
 }
 
 describe("decorative crowd", () => {
+  it("defers crowd work past the first frame and bounds route queries and rig creation", () => {
+    const { bundle } = loadShinjukuBundle();
+    const router = createRouter(bundle), route = vi.spyOn(router, "route");
+    const heights: Record<string, number> = planJson.nodeRenderZ;
+    const crowd = createCrowd(THREE, bundle, router, id => heights[id] ?? 0, { max: 80 });
+    crowds.push(crowd);
+    expect(createAvatar).not.toHaveBeenCalled();
+    expect(route).not.toHaveBeenCalled();
+    const vantage = { x: -39.13, y: 200.04, z: -39.07 };
+    crowd.update(1 / 60, vantage);
+    expect(createAvatar).not.toHaveBeenCalled();
+    expect(route).not.toHaveBeenCalled();
+    for (let frame = 0; frame < 100; frame++) {
+      const queries = route.mock.calls.length, rigs = vi.mocked(createAvatar).mock.calls.length;
+      crowd.update(1 / 60, vantage);
+      expect(route.mock.calls.length - queries).toBeLessThanOrEqual(16);
+      expect(vi.mocked(createAvatar).mock.calls.length - rigs).toBeLessThanOrEqual(2);
+    }
+    expect(crowd.count).toBeGreaterThan(6);
+    expect(actors(crowd).length).toBeLessThan(crowd.count);
+    const queries = route.mock.calls.length;
+    expect(queries).toBeLessThan(1122); // remote origins are still unbuilt
+    crowd.update(0, vantage);
+    expect(route).toHaveBeenCalledTimes(queries);
+  });
+
+  it("does not create rigs or LOD geometry for agents hidden on another level", () => {
+    const f = fixture("walk", 0, true), router = createRouter(f.bundle);
+    const crowd = createCrowd(THREE, f.bundle, router, f.nodeZ, { max: 1 });
+    crowds.push(crowd);
+    prime(crowd, { ...focus, z: -9 });
+    expect(crowd.count).toBe(1);
+    expect(createAvatar).not.toHaveBeenCalled();
+    crowd.update(0, focus);
+    expect(createAvatar).toHaveBeenCalledOnce();
+    const avatar = avatarAt(0);
+    vi.mocked(avatar.setDistance).mockClear();
+    crowd.update(0, { ...focus, z: -9 });
+    expect(avatar.setDistance).not.toHaveBeenCalled();
+  });
+
   it("borrows the player for rendering without counting or disposing it as an ambient commuter", () => {
     const player = createAvatar(THREE), f = fixture();
     const crowd = createCrowd(THREE, f.bundle, createRouter(f.bundle), f.nodeZ, { max: 0, playerAvatar: player });
@@ -150,13 +195,12 @@ describe("decorative crowd", () => {
   it("despawns in an elevator for 20 seconds and reappears at its destination", () => {
     const { crowd } = crowdFor(fixture("elevator", 4, true));
     crowd.update(0, focus);
-    const object = actors(crowd)[0]!;
-    expect(object.visible).toBe(false);
+    expect(actors(crowd)).toHaveLength(0); // no rig inside an invisible elevator
     crowd.update(19.9, focus);
-    expect(object.visible).toBe(false);
-    expect(object.position.y).toBe(0);
-    expect(avatarAt(0).update).not.toHaveBeenCalled();
+    expect(actors(crowd)).toHaveLength(0);
+    expect(createAvatar).not.toHaveBeenCalled();
     crowd.update(0.1, focus);
+    const object = actors(crowd)[0]!;
     expect(object.visible).toBe(true);
     expect(object.position.toArray()).toEqual([10, 4, -10]);
     expect(crowd.count).toBe(1);
@@ -184,8 +228,11 @@ describe("decorative crowd", () => {
     const { crowd: preferred } = crowdFor(far);
     preferred.update(0, focus);
     expect(actors(preferred)[0]!.position.x).toBe(10);
-    const { crowd: fallback } = crowdFor(far);
+    const { crowd: fallback } = crowdFor(far, 1, 123, { ...focus, x: 10 });
     fallback.update(0, { ...focus, x: 10 });
+    expect(fallback.count).toBe(1);
+    expect(actors(fallback)).toHaveLength(0); // 75 m away: route exists without a rig
+    fallback.update(0, { ...focus, x: 30 });
     expect(actors(fallback)[0]!.position.x).toBe(85);
   });
 
@@ -316,11 +363,13 @@ describe("decorative crowd", () => {
     if (_name === "B6 platform") crowd.setMax(24);
     crowd.update(0, vantage);
     for (let frame = 0; frame < 160; frame++) crowd.update(0.25, vantage);
+    // Walkers may approach after spawning; the separate spawn test checks
+    // the initial personal-space exclusion. Count people visible 2–25 m away.
     const nearby = actors(crowd).filter((object) => {
       if (!object.visible) return false;
       const dx = object.position.x - vantage.x;
       const dy = -object.position.z - vantage.y;
-      return Math.abs(object.position.y - vantage.z) <= 1.25 && Math.hypot(dx, dy) >= 7 && Math.hypot(dx, dy) <= 25;
+      return Math.abs(object.position.y - vantage.z) <= 1.25 && Math.hypot(dx, dy) >= 2 && Math.hypot(dx, dy) <= 25;
     });
     expect(nearby.length).toBeGreaterThanOrEqual(3);
     expect(crowd.count).toBeLessThanOrEqual(24);
@@ -330,20 +379,24 @@ describe("decorative crowd", () => {
     const f = fixture("walk", 0);
     f.bundle.pois.push({ ...f.bundle.pois[0]!, id: "invalid", connectorNodeIds: ["missing", "a"] });
     const { crowd } = crowdFor(f, 3);
-    expect(createAvatar).toHaveBeenNthCalledWith(3, THREE, 3);
+    expect(createAvatar).toHaveBeenCalled();
     crowd.update(0, focus);
     expect(crowd.count).toBeLessThanOrEqual(3);
+    const initial = vi.mocked(createAvatar).mock.results.map(result => result.value as Avatar);
     crowd.setMax(1);
     expect(crowd.count).toBeLessThanOrEqual(1);
-    expect(avatarAt(1).dispose).toHaveBeenCalledOnce();
-    expect(avatarAt(2).dispose).toHaveBeenCalledOnce();
+    expect(initial.filter(a => vi.mocked(a.dispose).mock.calls.length).length).toBeGreaterThanOrEqual(1);
     crowd.setMax(8);
-    expect(createAvatar).toHaveBeenLastCalledWith(THREE, 1);
+    prime(crowd);
+    expect(actors(crowd).length).toBeGreaterThan(2);
     crowd.setMax(-1);
     expect(crowd.count).toBe(0);
     expect(actors(crowd)).toHaveLength(0);
+    const created = vi.mocked(createAvatar).mock.results.map(result => result.value as Avatar);
+    for (const avatar of created) expect(avatar.dispose).toHaveBeenCalledOnce();
     crowd.setMax(1);
-    const last = avatarAt(10);
+    prime(crowd);
+    const last = vi.mocked(createAvatar).mock.results.at(-1)!.value as Avatar;
     const parent = new THREE.Group();
     parent.add(crowd.group);
     crowd.dispose();
@@ -361,7 +414,7 @@ describe("decorative crowd", () => {
       const c = crowdFor(empty).crowd;
       c.update(1, focus);
       expect(c.count).toBe(0);
-      expect(actors(c)[0]!.visible).toBe(false);
+      expect(actors(c)).toHaveLength(0);
     }
   });
 });

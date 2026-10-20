@@ -31,7 +31,7 @@ describe("procedural commuter", () => {
       expect(mesh.material).toBeInstanceOf(THREE.MeshStandardMaterial);
       expect(mesh.material.vertexColors).toBe(true);
       expect(mesh.geometry.groups).toHaveLength(0);
-      expect(mesh.geometry.index!.count / 3).toBeLessThan(4000);
+      expect(mesh.geometry.index!.count / 3).toBeLessThanOrEqual(3300);
       expect(mesh.castShadow).toBe(true);
       const weights = mesh.geometry.getAttribute("skinWeight"), normals = mesh.geometry.getAttribute("normal");
       let blended = 0;
@@ -42,7 +42,7 @@ describe("procedural commuter", () => {
       }
       expect(blended).toBeGreaterThan(70);
       avatar.setDistance(30);
-      expect(getMesh(avatar).geometry.index!.count / 3).toBeLessThan(1400);
+      expect(getMesh(avatar).geometry.index!.count / 3).toBeLessThanOrEqual(1300);
       avatar.setDistance(0);
     }
     expect(heights.size).toBe(8);
@@ -52,6 +52,70 @@ describe("procedural commuter", () => {
     expect(avatar.object.userData.outfit).toContain("backpack");
     avatar.setColorway(Number.NaN);
     expect(avatar.object.userData.outfit).toContain("backpack");
+    avatar.dispose();
+  });
+
+  it("builds only the requested outfit/LOD and shares immutable bind inverses, not pose bones", () => {
+    const geometries: THREE.BufferGeometry[] = [];
+    const T = { ...THREE, BufferGeometry: new Proxy(THREE.BufferGeometry, {
+      construct(Target, args) {
+        const geometry = Reflect.construct(Target, args) as THREE.BufferGeometry;
+        geometries.push(geometry);
+        return geometry;
+      },
+    }) };
+    const a = createAvatar(T, 5), b = createAvatar(T, 5);
+    expect(geometries).toHaveLength(1);
+    expect(getMesh(a).geometry.name).toContain("knitwear / shoulder bag");
+    expect(getMesh(a).skeleton.boneInverses).toBe(getMesh(b).skeleton.boneInverses);
+    expect(getMesh(a).skeleton.bones[0]).not.toBe(getMesh(b).skeleton.bones[0]);
+    a.setDistance(28);
+    expect(geometries).toHaveLength(2);
+    b.setDistance(30);
+    expect(geometries).toHaveLength(2);
+    expect(getMesh(a).geometry).toBe(getMesh(b).geometry);
+    a.dispose(); b.dispose();
+  });
+
+  it("keeps backpack webbing against the jacket through walk/run shoulder motion", () => {
+    const avatar = createAvatar(THREE), mesh = getMesh(avatar), g = mesh.geometry;
+    const p = g.getAttribute("position"), uv = g.getAttribute("uv"), skin = g.getAttribute("skinIndex");
+    const straps: number[] = [], cloth: number[][] = [];
+    for (let i = 0; i < p.count; i++) if (Math.floor(uv.getX(i) * 8) === 6
+      && p.getZ(i) < -0.015 && p.getY(i) >= 1.1 && p.getY(i) <= 1.43) straps.push(i);
+    for (let i = 0; i < g.index!.count; i += 3) {
+      const ids = [g.index!.getX(i), g.index!.getX(i + 1), g.index!.getX(i + 2)];
+      if (ids.every(v => Math.floor(uv.getX(v) * 8) === 0 && skin.getX(v) === 1)) cloth.push(ids);
+    }
+    expect(straps.length).toBeGreaterThan(40);
+    const point = new THREE.Vector3(), closest = new THREE.Vector3();
+    for (const speed of [0, 1.45, 3.6]) {
+      for (let f = 0; f < 60; f++) avatar.update(1 / 60, speed);
+      avatar.object.updateMatrixWorld(true); mesh.skeleton.update();
+      const triangles = cloth.map(ids => new THREE.Triangle(...ids.map(v => mesh.getVertexPosition(v, new THREE.Vector3())) as [THREE.Vector3, THREE.Vector3, THREE.Vector3]));
+      for (const i of straps) {
+        mesh.getVertexPosition(i, point);
+        const distance = Math.min(...triangles.map(t => t.closestPointToPoint(point, closest).distanceTo(point)));
+        expect(distance).toBeLessThan(0.018);
+      }
+    }
+    avatar.dispose();
+  });
+
+  it("has exposed eye accents and a visible thumb split in the near silhouette", () => {
+    const avatar = createAvatar(THREE), mesh = getMesh(avatar), g = mesh.geometry;
+    avatar.object.updateMatrixWorld(true); mesh.skeleton.update();
+    const ray = new THREE.Raycaster(), colors = g.getAttribute("color");
+    for (const x of [-0.034, 0.034]) {
+      ray.set(new THREE.Vector3(x, 1.636, -1), new THREE.Vector3(0, 0, 1));
+      const hit = ray.intersectObject(mesh)[0]!;
+      expect(hit).toBeDefined();
+      expect(colors.getX(hit.face!.a) + colors.getY(hit.face!.a) + colors.getZ(hit.face!.a)).toBeLessThan(0.2);
+    }
+    for (const [x, expected] of [[-0.222, true], [-0.179, true], [-0.192, false]] as const) {
+      ray.set(new THREE.Vector3(x, 0.861, -1), new THREE.Vector3(0, 0, 1));
+      expect(ray.intersectObject(mesh).length > 0).toBe(expected);
+    }
     avatar.dispose();
   });
 

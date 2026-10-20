@@ -28,7 +28,7 @@ export const HAIR = ["short side part", "crop / fade", "long layered", "bob", "g
 // Index into an original 8-pixel roughness atlas. RGB vertex colour carries
 // pigment and quiet crease occlusion; the atlas gives each surface its own BRDF.
 export const SURFACE = { fabric: 0, skin: 1, hair: 2, leather: 3, sole: 4, metal: 5, bag: 6 } as const;
-export const ROUGHNESS = [0.92, 0.74, 0.58, 0.48, 0.87, 0.36, 0.82, 1] as const;
+export const ROUGHNESS = [0.92, 0.74, 0.68, 0.48, 0.87, 0.36, 0.82, 1] as const;
 
 type Ring = [y: number, rx: number, rz: number, x?: number, z?: number];
 type Skin = [bone: number, next?: number, blend?: number];
@@ -93,18 +93,54 @@ export function buildCharacter(T: typeof THREE, outfit: number, far: boolean): T
       indices.push(v[0]!, v[facing > 0 ? i + 1 : i]!, v[facing > 0 ? i : i + 1]!);
     }
   }
-  function ribbon(points: number[][], width: number, tint: number, bone: number): void {
-    // Small original straps with thickness, rather than flat oversized blocks.
-    for (let i = 1; i < points.length; i++) {
-      const a = points[i - 1]!, b = points[i]!;
-      const shape = new T.CylinderGeometry(width, width, Math.hypot(b[0]! - a[0]!, b[1]! - a[1]!, b[2]! - a[2]!), far ? 4 : 5, 1);
-      shape.applyQuaternion(new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 1, 0),
-        new T.Vector3(b[0]! - a[0]!, b[1]! - a[1]!, b[2]! - a[2]!).normalize()));
-      shape.translate((a[0]! + b[0]!) / 2, (a[1]! + b[1]!) / 2, (a[2]! + b[2]!) / 2);
-      const start = position.length / 3, p = shape.getAttribute("position");
-      for (let j = 0; j < p.count; j++) vertex(p.getX(j), p.getY(j), p.getZ(j), tint, [bone]);
-      for (const index of shape.index!.array) indices.push(start + index);
-      shape.dispose();
+  function surfaceZ(rings: Ring[], x: number, y: number, n: number, front = true): number {
+    const upper = rings.findIndex(r => r[0] >= y);
+    const a = rings[Math.max(0, upper - 1)]!, b = rings[Math.max(0, upper)]!;
+    // Intersect the actual loft triangles, including their diagonal, rather
+    // than an ideal ellipse: decals must not sink through a low-poly facet.
+    const point = (r: Ring, j: number) => {
+      const angle = j / n * Math.PI * 2;
+      return [(r[3] ?? 0) + Math.cos(angle) * r[1], r[0], (r[4] ?? 0) + Math.sin(angle) * r[2]];
+    };
+    for (let j = front ? n / 2 : 0; j < (front ? n : n / 2); j++) {
+      const p = point(a, j), q = point(a, j + 1), r = point(b, j), t = point(b, j + 1);
+      for (const [v0, v1, v2] of [[p, r, q], [q, r, t]] as [number[], number[], number[]][]) {
+        const det = (v1[1]! - v2[1]!) * (v0[0]! - v2[0]!) + (v2[0]! - v1[0]!) * (v0[1]! - v2[1]!);
+        if (Math.abs(det) < 1e-10) continue;
+        const u = ((v1[1]! - v2[1]!) * (x - v2[0]!) + (v2[0]! - v1[0]!) * (y - v2[1]!)) / det;
+        const v = ((v2[1]! - v0[1]!) * (x - v2[0]!) + (v0[0]! - v2[0]!) * (y - v2[1]!)) / det;
+        if (u >= -1e-6 && v >= -1e-6 && u + v <= 1.000001) return u * v0[2]! + v * v1[2]! + (1 - u - v) * v2[2]!;
+      }
+    }
+    return 0;
+  }
+
+  function ribbon(points: number[][], width: number, tint: number,
+    skin: number | ((x: number, y: number, z: number) => Skin), depth = width): void {
+    // One continuous swept surface, without allocating temporary geometries.
+    // A flattened section gives webbing a fabric profile instead of a rope.
+    const n = far ? 4 : 6, start = position.length / 3;
+    const tangent = new T.Vector3(), u = new T.Vector3(), v = new T.Vector3();
+    for (let i = 0; i < points.length; i++) {
+      const p = points[i]!, a = points[Math.max(0, i - 1)]!, b = points[Math.min(points.length - 1, i + 1)]!;
+      tangent.set(b[0]! - a[0]!, b[1]! - a[1]!, b[2]! - a[2]!).normalize();
+      u.set(Math.abs(tangent.x) < 0.9 ? 1 : 0, Math.abs(tangent.x) < 0.9 ? 0 : 1, 0);
+      u.addScaledVector(tangent, -u.dot(tangent)).normalize();
+      v.crossVectors(tangent, u);
+      for (let j = 0; j < n; j++) {
+        const angle = j / n * Math.PI * 2, w = Math.cos(angle) * width, d = Math.sin(angle) * depth;
+        const x = p[0]! + u.x * w + v.x * d, y = p[1]! + u.y * w + v.y * d, z = p[2]! + u.z * w + v.z * d;
+        vertex(x, y, z, tint, typeof skin === "number" ? [skin] : skin(x, y, z));
+      }
+    }
+    for (let i = 1; i < points.length; i++) for (let j = 0; j < n; j++) {
+      const a = start + (i - 1) * n + j, b = start + (i - 1) * n + (j + 1) % n;
+      indices.push(a, b, a + n, b, b + n, a + n);
+    }
+    for (let j = 1; j < n - 1; j++) {
+      indices.push(start, start + j + 1, start + j);
+      const end = start + (points.length - 1) * n;
+      indices.push(end, end + j, end + j + 1);
     }
   }
   const jacket = palette[0], trousers = palette[1], shirt = palette[2], shoe = palette[3];
@@ -116,39 +152,68 @@ export function buildCharacter(T: typeof THREE, outfit: number, far: boolean): T
   // Sloping clavicles and fitted deltoids. The coat hem is a complete loop
   // sharing ONE garment transform, never split between opposing thigh bones.
   if (coat) hemLoop = Array.from({ length: radial }, (_, i) => position.length / 3 + radial + i);
-  loft([[coat ? 0.728 : 0.929, coat ? 0.208 : 0.148, coat ? 0.183 : 0.098],
+  const torso: Ring[] = [[coat ? 0.728 : 0.929, coat ? 0.208 : 0.148, coat ? 0.183 : 0.098],
     [coat ? 0.735 : 0.935, coat ? 0.216 : 0.158, coat ? 0.19 : 0.105],
     [coat ? 0.83 : 0.98, coat ? 0.198 : 0.157, coat ? 0.158 : 0.109], [1.06, 0.148, 0.104],
     [1.21, 0.158, 0.116], [1.34, 0.184, 0.11], [1.385, 0.183, 0.096],
-    [1.422, 0.132, 0.075], [1.465, 0.058, 0.048], [1.478, 0.043, 0.04]], jacket,
+    [1.422, 0.132, 0.075], [1.465, 0.058, 0.048], [1.478, 0.043, 0.04]];
+  loft(torso, jacket,
   coat ? y => [BONE.spine, BONE.hem, Math.max(0, Math.min(1, (1.06 - y) / 0.22))] : spine);
   surface = SURFACE.skin;
   // Adult head: 23.6 cm chin-to-crown, broader cheekbones, tapered jaw and
   // brow/cheek/chin planes. Facial features stay small against the silhouette.
   oval(0, 1.491, 0.002, 0.044, 0.059, 0.043, skin, BONE.head, 4);
-  loft([[1.525, 0.028, 0.027, 0, -0.025], [1.539, 0.051, 0.052, 0, -0.012],
-    [1.566, 0.072, 0.07, 0, -0.005], [1.605, 0.092, 0.084],
-    [1.645, 0.092, 0.086], [1.69, 0.09, 0.085, 0, 0.004],
+  const faceStart = position.length / 3;
+  const face: Ring[] = [[1.525, 0.024, 0.027, 0, -0.025], [1.539, 0.044, 0.048, 0, -0.014],
+    [1.566, 0.064, 0.065, 0, -0.008], [1.601, 0.086, 0.082, 0, -0.003],
+    [1.628, 0.091, 0.077], [1.653, 0.09, 0.089], [1.69, 0.087, 0.084, 0, 0.004],
     [1.735, 0.065, 0.065, 0, 0.008], [1.757, 0.025, 0.026, 0, 0.009],
-    [1.761, 0, 0, 0, 0.009]], skin, [BONE.head], far ? 6 : 16);
-  const crease = new T.Color(skin).multiplyScalar(0.72).getHex();
+    [1.761, 0, 0, 0, 0.009]];
+  loft(face, skin, [BONE.head], far ? 6 : 16);
+  // Restrained orbital/temple occlusion remains readable in diffuse station light.
+  for (let i = faceStart; i < position.length / 3; i++) {
+    const y = position[i * 3 + 1]!, z = position[i * 3 + 2]!;
+    const socket = z < -0.025 && Math.abs(y - 1.628) < 0.012 ? 0.84 : 1;
+    const jaw = y < 1.57 ? 0.93 : 1;
+    for (let c = 0; c < 3; c++) colors[i * 3 + c]! *= socket * jaw;
+  }
+  const crease = new T.Color(skin).multiplyScalar(0.62).getHex();
   for (const side of [-1, 1]) {
-    oval(side * 0.092, 1.619, 0.005, 0.013, 0.025, 0.016, skin, BONE.head, 4, 6);
-    if (!far) oval(side * 0.101, 1.619, 0.001, 0.005, 0.014, 0.009, crease, BONE.head, 3, 5);
+    oval(side * 0.091, 1.619, 0.005, 0.012, 0.025, 0.016, skin, BONE.head, 4, 6);
+    if (!far) oval(side * 0.1, 1.619, 0.001, 0.004, 0.014, 0.008, crease, BONE.head, 3, 4);
   }
   if (!far) {
-    // A narrow bridge and rounded nose tip, cheek and brow planes. No white
-    // eyeballs: dark inset eyes remain readable without an uncanny stare.
-    loft([[1.594, 0.007, 0.005, 0, -0.09], [1.601, 0.014, 0.014, 0, -0.095],
-      [1.616, 0.011, 0.015, 0, -0.09], [1.646, 0.006, 0.006, 0, -0.082]], skin, [BONE.head], 6);
-    for (const side of [-1, 1]) {
-
-
-      oval(side * 0.034, 1.638, -0.083, 0.009, 0.0035, 0.0035, 0x302b29, BONE.head, 3, 6);
-      ribbon([[side * 0.016, 1.653, -0.087], [side * 0.033, 1.654, -0.085],
-        [side * 0.051, 1.651, -0.077]], 0.0018, hair, BONE.head);
+    // A connected wedge gives the bridge, tip and nostril wings distinct planes.
+    // The tip projects 3 cm beyond the orbital plane, rather than a flat decal.
+    const nose = [[0, 1.657, -0.083], [-0.009, 1.637, -0.086], [0.009, 1.637, -0.086],
+      [-0.014, 1.604, -0.092], [0.014, 1.604, -0.092], [0, 1.614, -0.108], [0, 1.6, -0.1]];
+    const ni = nose.map(([x, y, z]) => vertex(x!, y!, z!, skin, [BONE.head]));
+    for (const [a, b, c] of [[0, 1, 5], [0, 5, 2], [1, 3, 5], [2, 5, 4], [3, 6, 5], [4, 5, 6]]) {
+      indices.push(ni[a!]!, ni[c!]!, ni[b!]!);
     }
-    oval(0, 1.565, -0.077, 0.016, 0.002, 0.003, crease, BONE.head, 3, 6);
+    function facialPatch(points: number[][], tint: number): void {
+      const midpoint = (a: number[], b: number[]) => [(a[0]! + b[0]!) / 2, (a[1]! + b[1]!) / 2];
+      // Subdivide across cheek/orbit facets so the centre of a decal cannot
+      // disappear into the head even when its perimeter is correctly fitted.
+      for (let i = 1; i < points.length - 1; i++) {
+        const a = points[0]!, b = points[i]!, c = points[i + 1]!;
+        const ab = midpoint(a, b), bc = midpoint(b, c), ca = midpoint(c, a);
+        for (const triangle of [[a, ab, ca], [ab, b, bc], [ca, bc, c], [ab, bc, ca]]) {
+          patch(triangle.map(([x, y]) => [x!, y!, surfaceZ(face, x!, y!, 16) - 0.0025]), tint, BONE.head);
+        }
+      }
+    }
+    for (const side of [-1, 1]) {
+      // Almond eyes and tapered brows sit on the orbital plane, without
+      // separate protruding eyeballs/socket geometry or painted white sclera.
+      facialPatch([[side * 0.021, 1.636], [side * 0.032, 1.641], [side * 0.047, 1.638],
+        [side * 0.041, 1.633], [side * 0.028, 1.633]], 0x332b28);
+      facialPatch([[side * 0.018, 1.654], [side * 0.032, 1.657], [side * 0.055, 1.653],
+        [side * 0.039, 1.654], [side * 0.019, 1.65]], hair);
+      facialPatch([[side * 0.022, 1.631], [side * 0.043, 1.631], [side * 0.033, 1.629]], crease);
+    }
+    facialPatch([[-0.014, 1.568], [-0.004, 1.57], [0, 1.569], [0.005, 1.57],
+      [0.014, 1.568], [0, 1.566]], crease);
 
   }
   surface = SURFACE.hair;
@@ -159,8 +224,8 @@ export function buildCharacter(T: typeof THREE, outfit: number, far: boolean): T
     const count = far ? 8 : 16;
     for (let row = 0; row < 3; row++) for (let j = 0; j <= count; j++) {
       const a = -0.14 + j / count * (Math.PI + 0.28), back = Math.max(0, Math.sin(a));
-      const y = [1.697 + back * 0.025, 1.655, 1.599][row]!;
-      const r = [0.086, 0.099, 0.091][row]!;
+      const y = [1.697 + back * 0.025, 1.655, 1.599 + Math.sin(a * 9) * 0.004][row]!;
+      const r = [0.079, 0.094, 0.077][row]!;
       vertex(Math.cos(a) * r, y, Math.sin(a) * r + 0.009, hair, [BONE.head]);
     }
     for (let r = 0; r < 2; r++) for (let j = 0; j < count; j++) {
@@ -168,7 +233,7 @@ export function buildCharacter(T: typeof THREE, outfit: number, far: boolean): T
       indices.push(a, a + 1, b, a + 1, b + 1, b);
     }
   } else {
-    const top = outfit === 0 ? 1.808 : outfit === 1 ? 1.768 : outfit === 5 ? 1.806 : 1.793;
+    const top = outfit === 0 ? 1.797 : outfit === 1 ? 1.768 : outfit === 5 ? 1.806 : 1.793;
     for (let row = 0; row <= rows; row++) for (let j = 0; j < hn; j++) {
       const a = j / hn * Math.PI * 2, front = Math.max(0, -Math.sin(a));
       const fringe = Math.max(0, Math.min(1, (front - 0.12) / 0.5));
@@ -181,13 +246,17 @@ export function buildCharacter(T: typeof THREE, outfit: number, far: boolean): T
       if (outfit === 0) edge += Math.cos(a) * 0.018 + front * 0.006;
       if (outfit === 5) edge = 1.625 + fringe * 0.065 + Math.cos(a * 3) * 0.008;
       if (outfit === 7) edge += front * 0.018;
+      const lock = Math.sin(a * (outfit === 6 ? 9 : 7) + outfit * 1.7);
+      edge += (far ? 0.002 : long ? 0.01 : 0.007) * lock * (0.3 + 0.7 * Math.max(front, Math.sin(a)));
       const y = top + (edge - top) * (1 - Math.cos(t * Math.PI / 2))
         + (outfit === 0 ? Math.cos(a + 0.5) * Math.sin(t * Math.PI) * 0.012 : 0);
       const width = long ? (outfit === 6 ? 0.117 : 0.115) : outfit === 1 ? 0.099 : 0.105;
-      const volume = 1 + (outfit === 5 ? Math.cos(a * 3 + t * 2) * 0.065 : 0);
+      const nape = !long && Math.sin(a) > 0 ? Math.max(0, (t - 0.65) / 0.35) * 0.16 : 0;
+      const volume = 1 - nape + Math.sin(a * 7 + t * 3 + outfit) * Math.sin(t * Math.PI) * (long ? 0.055 : 0.035)
+        + (outfit === 5 ? Math.cos(a * 3 + t * 2) * 0.065 : 0);
       const sweep = outfit === 0 ? -0.016 * (1 - t) : outfit === 2 ? 0.012 * t * t : 0;
       vertex(Math.cos(a) * width * cap * volume + sweep, y,
-        Math.sin(a) * (long ? 0.115 : 0.101) * cap * (0.88 + 0.12 * t) + 0.012,
+        Math.sin(a) * (long ? 0.115 : 0.101) * cap * (0.88 + 0.12 * t) * volume + 0.012,
         hair, [BONE.head], (outfit === 1 && t > 0.65 ? 0.72 + 0.28 * (1 - t) : 0.91) + 0.09 * Math.abs(Math.cos(a * 2 + t)));
     }
     for (let row = 0; row < rows; row++) for (let j = 0; j < hn; j++) {
@@ -204,6 +273,13 @@ export function buildCharacter(T: typeof THREE, outfit: number, far: boolean): T
     for (let j = 0; j < hn; j++) {
       const a = edgeStart + j, b = edgeStart + (j + 1) % hn, c = innerStart + j, d = innerStart + (j + 1) % hn;
       indices.push(a, b, c, b, d, c);
+    }
+    if (!far && outfit !== 1) for (let lock = 0; lock < (long ? 5 : 3); lock++) {
+      const x = (lock - (long ? 2 : 1)) * (long ? 0.027 : 0.025);
+      const y = outfit === 6 ? 1.681 : outfit === 3 ? 1.69 : 1.707 + x * (outfit === 0 ? 0.32 : 0.1);
+      loft([[y - 0.013 - (lock % 2) * 0.006, 0.001, 0.001, x - 0.007, -0.087],
+        [y, 0.01, 0.004, x, -0.087], [y + 0.021, 0.014, 0.006, x + 0.007, -0.077]],
+      hair, [BONE.head], 4);
     }
     if (!far && outfit === 0) ribbon([[0.031, 1.799, -0.033], [0.034, 1.797, 0.011],
       [0.033, 1.777, 0.057]], 0.0022, 0x1e1917, BONE.head);
@@ -283,9 +359,9 @@ export function buildCharacter(T: typeof THREE, outfit: number, far: boolean): T
     loft([[0.819, 0.009, 0.011, x + side * 0.006, -0.006],
       [0.824, 0.023, 0.017, x + side * 0.008, -0.007], [0.852, 0.025, 0.02, x + side * 0.01, -0.009],
       [0.883, 0.028, 0.022, x + side * 0.009, -0.005], [0.909, 0.022, 0.02, x + side * 0.008]], skin, [elbow], far ? 6 : 8);
-    loft([[0.846, 0.003, 0.005, x - side * 0.019, -0.022],
-      [0.857, 0.011, 0.012, x - side * 0.024, -0.019], [0.883, 0.013, 0.014, x - side * 0.015, -0.007],
-      [0.897, 0.009, 0.01, x - side * 0.009]], skin, [elbow], far ? 4 : 6);
+    loft([[0.852, 0.004, 0.005, x - side * 0.031, -0.033],
+      [0.861, 0.009, 0.01, x - side * 0.034, -0.031], [0.879, 0.01, 0.011, x - side * 0.026, -0.019],
+      [0.897, 0.01, 0.011, x - side * 0.01, -0.006]], skin, [elbow], far ? 4 : 6);
     const hip = side < 0 ? BONE.leftHip : BONE.rightHip;
     const knee = hip + 1, ankle = hip + 2;
     const lx = side * 0.092;
@@ -335,8 +411,21 @@ export function buildCharacter(T: typeof THREE, outfit: number, far: boolean): T
       [1.285, 0.123, 0.07, 0, 0.172], [1.365, 0.092, 0.057, 0, 0.164],
       [1.389, 0, 0, 0, 0.15]], bag, spine);
     oval(0, 1.13, 0.232, 0.092, 0.068, 0.019, new T.Color(bag).multiplyScalar(0.87).getHex(), BONE.spine, far ? 4 : 5);
-    for (const side of [-1, 1]) ribbon([[side * 0.09, 1.32, 0.18], [side * 0.146, 1.445, 0.035],
-      [side * 0.15, 1.37, -0.105], [side * 0.142, 1.11, -0.102], [side * 0.096, 1.06, 0.15]], 0.01, bag, BONE.spine);
+    // Sample the SAME torso cross-sections as the jacket. Front webbing rests
+    // 3 mm above it, wraps around the shoulder, then returns under the arm.
+    function onTorso(x: number, y: number, front: boolean): number[] {
+      return [x, y, surfaceZ(torso, x, y, radial, front) + (front ? -0.003 : 0.003)];
+    }
+    for (const side of [-1, 1]) {
+      const points = [[side * 0.09, 1.32, 0.18], onTorso(side * 0.11, 1.405, false),
+        onTorso(side * 0.115, 1.427, false), onTorso(side * 0.115, 1.427, true),
+        onTorso(side * 0.11, 1.385, true), onTorso(side * 0.105, 1.34, true),
+        onTorso(side * 0.095, 1.21, true), onTorso(side * 0.095, 1.11, true),
+        onTorso(side * 0.136, 1.075, true), [side * 0.156, 1.1, 0.01], [side * 0.1, 1.105, 0.16]];
+      // Webbing follows the jacket's spine rig (arm bones would lift it off
+      // the chest during a swing); the shoulder is part of that same loft.
+      ribbon(points, 0.011, bag, BONE.spine, 0.003);
+    }
     if (!far) ribbon([[-0.032, 1.371, 0.16], [-0.027, 1.414, 0.16], [0.027, 1.414, 0.16], [0.032, 1.371, 0.16]], 0.008, 0x514c43, BONE.spine);
   } else if ([2, 5, 6, 7].includes(outfit)) {
     const tote = outfit === 2 || outfit === 6;

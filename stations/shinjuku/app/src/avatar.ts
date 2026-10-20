@@ -19,6 +19,8 @@ function buildCache(T: typeof THREE) {
   atlas.magFilter = atlas.minFilter = T.NearestFilter;
   atlas.needsUpdate = true;
   return { references: 0, geometries: new Map<string, THREE.BufferGeometry>(),
+    // Bind inverses are immutable: pose bones/matrices remain instance-owned.
+    bindInverses: undefined as THREE.Matrix4[] | undefined,
     atlas, material: new T.MeshStandardMaterial({ vertexColors: true, roughness: 1, roughnessMap: atlas, metalness: 0 }) };
 }
 const CACHES = new WeakMap<typeof THREE, ReturnType<typeof buildCache>>();
@@ -32,7 +34,8 @@ export function createAvatar(T: typeof THREE, colorway = 0): Avatar {
   shared.references++;
   const object = new T.Group();
   object.name = "CommuterAvatar";
-  let index = 0, far = false, distance = 0, disposed = false;
+  const normalize = (i: number) => Number.isFinite(i) ? ((Math.trunc(i) % 8) + 8) % 8 : 0;
+  let index = normalize(colorway), far = false, distance = 0, disposed = false;
   function geometry(): THREE.BufferGeometry {
     const key = `${index}/${far}`;
     let result = shared.geometries.get(key);
@@ -72,8 +75,9 @@ export function createAvatar(T: typeof THREE, colorway = 0): Avatar {
   const left = leg(true), right = leg(false);
   const hem = joint(pelvis, "hem");
   object.updateMatrixWorld(true);
-  const skeleton = new T.Skeleton(bones);
-  mesh.bind(skeleton);
+  const skeleton = new T.Skeleton(bones, shared.bindInverses);
+  shared.bindInverses ??= skeleton.boneInverses;
+  mesh.bind(skeleton, new T.Matrix4());
   function describe(): void {
     object.userData.outfit = OUTFITS[index];
     object.userData.hair = HAIR[index];
@@ -82,7 +86,7 @@ export function createAvatar(T: typeof THREE, colorway = 0): Avatar {
   }
   function setColorway(i: number): void {
     if (disposed) return;
-    index = Number.isFinite(i) ? ((Math.trunc(i) % 8) + 8) % 8 : 0;
+    index = normalize(i);
     mesh.geometry = geometry();
     object.scale.setScalar(HEIGHTS[index]!);
     describe();

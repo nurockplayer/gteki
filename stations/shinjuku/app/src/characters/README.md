@@ -26,8 +26,9 @@ visual simplifications, as are all clothing and passenger variety.
 One shared opaque material uses vertex colour plus an original 8 × 1 linear-data
 roughness atlas: matte fabric, softer skin, subdued hair sheen and semi-gloss
 shoes. Geometry, material and atlas are reference-counted; the last avatar frees
-them. Each skeleton releases its own bone texture. Near geometry is 2,734–3,272
-triangles; far geometry is 1,062–1,272. There are no material groups.
+them. Immutable bind inverses are shared between rigs and the batch; pose bones
+and matrices remain independent. Each skeleton releases its own bone texture. Near geometry is 2,592–3,258
+triangles; far geometry is 1,062–1,300. There are no material groups.
 
 `batch.ts` combines the crowd into one skinned draw per render pass, retaining
 independent bones for each avatar. It rebases skin indices, merges geometry only
@@ -66,3 +67,43 @@ in `.qa/shots/`. Ego-lite renders the original outfit/portrait galleries. The
 close front/back free cameras rely on the preceding platform setup vantage.
 NPC positions can vary with live browser frame timing; render counters are not
 FPS or device performance claims. Scene screenshots retain the existing HUD.
+
+Round 3 fits flat backpack webbing to the actual jacket facets and skins it to
+the jacket's spine/shoulder surface. Eyes and brows are subdivided vertex-colour
+patches fitted to orbital facets; the brow ridge, tapered cheeks/jaw and nose
+wedge supply facial structure. Hair has swept fringe clumps, crown ridges and
+style-dependent nape taper. Near hands have a visible thumb gap. Accessories
+are swept directly into the character buffers, without temporary cylinder
+geometries or per-character textures.
+
+Crowd construction now creates only lightweight agent records. The first
+update renders the borrowed player without routing or constructing commuters.
+Subsequent updates fill the same directed POI-pair cache, at most 16 queries per
+update, prioritizing origins within 135 weighted metres of the focus. Remote
+origins wait until approached; cached edge geometry is shared between routes.
+An agent receives a rig only when on a visible level and within 60 m, at most
+two new rigs per update. Hidden agents continue their existing route simulation;
+far geometry is generated lazily when a visible rig needs it. Revisited areas
+reuse the cached routes and rigs. The 80-agent cap, seeded repeatability, route
+profiles, direction, widths, speeds and elevator behavior are preserved. Cache
+warming order changes the exact seeded crowd placement versus round 2, and
+ambient people appear gradually during the first frames. These are deliberate
+presentation simplifications, not station facts.
+
+Round 3 evidence is in `.qa/round3/` and `.qa/shots/`; the integrated `cbec97e`
+reference captures are in `.qa/round3-before/`. Load measurements isolate player
+and crowd setup from station geometry, router construction, network loading and
+GPU shader compilation. A fresh-process Node/V8 benchmark records elapsed time,
+constructor counts, collected JS heap and ArrayBuffer memory before setup,
+after setup and after 120 updates. The stored baseline source is copied from
+`cbec97e`; both versions run against the same routing data. These measurements
+must not be equated with the lead's whole-explorer browser heap/load figures.
+
+The browser CPU probe uses seven alternating runs of the two implementations in
+Ego-lite, with modules/data/router already loaded and no station geometry or GPU
+rendering. It records player construction, crowd construction, the first update
+and the total of 120 updates. The heap probe uses seven fresh Node/V8 processes
+per version, collecting garbage across event-loop turns before each snapshot;
+ArrayBuffer bytes are reported separately from JS heap. The scene focus is the
+B6 platform, `crowd=24`, seed 27. Both probes include the borrowed player and
+shared batch. They measure this subsystem, not end-to-end explorer loading.
