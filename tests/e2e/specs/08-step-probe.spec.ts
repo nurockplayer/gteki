@@ -5,7 +5,8 @@ import { hooks, openStation, routeWaypoints, save, shotPath, type StationKey } f
  * Confirm-by-eye tool for a free-walk "blocked" result. Re-walks each routed step on its own,
  * starting at the step's from-node, aiming at every vertex of the exact edge geometry with one real
  * drag and holding W. No nudges, no recovery. A step that stops here, away from its geometry, points
- * at the scene; a step that completes here but blocked in 04-free-walk points at the autopilot.
+ * at the scene; a step that completes here but blocked in 04-free-walk points at the autopilot. A step
+ * that ends at the right place but off the display height points at overlapping walkable surfaces.
  *
  *   GTEKI_PROBE=shinjuku:poi:platform:oedo>poi:exit:2 pnpm exec playwright test specs/08-step-probe.spec.ts
  */
@@ -61,9 +62,10 @@ test(`step probe ${spec}`, async ({ page }, testInfo) => {
     const end = pts.at(-1)!;
     const miss = Math.hypot(end.x - pos.x, end.y - pos.y);
     const r = { s, edgeId: step.edgeId, mode: step.mode, vertices: pts.length, end: pos, missM: Math.round(miss * 100) / 100, worstVertexMissM: Math.round(worst * 100) / 100, dz: Math.round((pos.z - end.z) * 100) / 100 };
-    if (miss > 1) await page.screenshot({ path: shotPath(testInfo, `${key}-probe-step${String(s).padStart(2, "0")}.png`) });
+    if (miss > 1 || Math.abs(pos.z - end.z) > 0.6) await page.screenshot({ path: shotPath(testInfo, `${key}-probe-step${String(s).padStart(2, "0")}.png`) });
     results.push(r);
   }
   save(testInfo, `${key}-step-probe.json`, { from, to, results });
   expect.soft(results.filter((r) => typeof r.missM === "number" && (r.missM as number) > 1), "steps that stop more than 1 m short of their end").toEqual([]);
+  expect.soft(results.filter((r) => typeof r.dz === "number" && Math.abs(r.dz as number) > 0.6), "steps that end off the route's display height").toEqual([]);
 });
