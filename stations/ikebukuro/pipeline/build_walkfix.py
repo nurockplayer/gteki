@@ -72,8 +72,9 @@ def bridges(polys):
     es = edges(polys)
     grid = {}
     for k, (_, a, b, _) in enumerate(es):
-        for gx in range(int(math.floor(min(a[0], b[0]) / CELL)), int(math.floor(max(a[0], b[0]) / CELL)) + 1):
-            for gy in range(int(math.floor(min(a[1], b[1]) / CELL)), int(math.floor(max(a[1], b[1]) / CELL)) + 1):
+        # Pad by GAP so two edges of one crack always share a cell even across a cell boundary.
+        for gx in range(int(math.floor((min(a[0], b[0]) - GAP) / CELL)), int(math.floor((max(a[0], b[0]) + GAP) / CELL)) + 1):
+            for gy in range(int(math.floor((min(a[1], b[1]) - GAP) / CELL)), int(math.floor((max(a[1], b[1]) + GAP) / CELL)) + 1):
                 grid.setdefault((gx, gy), set()).add(k)
     seen = set()
     quads = []
