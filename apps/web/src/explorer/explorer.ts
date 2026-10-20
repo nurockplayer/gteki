@@ -306,8 +306,6 @@ export class Explorer {
       this.walkable = this.stationScene.walkable;
       this.colliders = this.stationScene.colliders ?? [];
       this.walls = (this.stationScene.walls ?? []).map(wallToRenderer);
-      const solid = new Set([...this.walkable, ...this.colliders]);
-      this.seeThrough = this.cameraCut.apply(this.stationScene.root, seeThroughMeshes(this.stationScene.root).filter((o) => !solid.has(o)));
       const env = this.stationScene.environment;
       if (env?.background !== undefined) this.scene.background = new THREE.Color(env.background);
       if (env?.fog) this.scene.fog = new THREE.Fog(env.fog.color, env.fog.near, env.fog.far);
@@ -322,6 +320,11 @@ export class Explorer {
     this.groundTargets = castTargets(this.walkable, this.colliders);
     this.colliderTargets = castTargets(this.colliders, this.walkable);
     this.cameraTargets = [...new Set([...this.colliderTargets, ...this.groundTargets])];
+    if (this.stationScene) {
+      // A sign that stands, or sits under a listed group, among the walkable/collider targets is never cut.
+      const solid = new Set([...this.walkable, ...this.colliders, ...this.cameraTargets]);
+      this.seeThrough = this.cameraCut.apply(this.stationScene.root, seeThroughMeshes(this.stationScene.root).filter((o) => !solid.has(o)));
+    }
     this.phase = "composer";
     this.setupComposer();
     this.frameAll();
