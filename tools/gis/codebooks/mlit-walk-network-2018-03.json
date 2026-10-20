@@ -1,0 +1,589 @@
+{
+  "version": "2018-03",
+  "spec_source_id": "mlit-walk-network-spec-2018-03",
+  "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+  "status": "LITERAL_LABEL_LOOKUP_ONLY",
+  "link": {
+    "rt_struct": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "車道と歩道の物理的な分離あり",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "車道と歩道の物理的な分離なし",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "横断歩道",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "横断歩道の路面標示の無い道路の横断部",
+          "transcription_check": "TEXT"
+        },
+        "5": {
+          "label": "地下通路",
+          "transcription_check": "TEXT"
+        },
+        "6": {
+          "label": "歩道橋",
+          "transcription_check": "TEXT"
+        },
+        "7": {
+          "label": "施設内通路",
+          "transcription_check": "TEXT"
+        },
+        "8": {
+          "label": "その他の経路の構造",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "route_type": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "対応する属性情報なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "動く歩道",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "踏切",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "エレベーター",
+          "transcription_check": "TEXT"
+        },
+        "5": {
+          "label": "エスカレーター",
+          "transcription_check": "TEXT"
+        },
+        "6": {
+          "label": "階段",
+          "transcription_check": "TEXT"
+        },
+        "7": {
+          "label": "スロープ",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "direction": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "両方向",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "起点より終点方向",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "終点より起点方向",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "width": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "1.0m 未満",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "1.0m 以上～2.0m 未満",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "2.0m 以上～3.0m 未満",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "3.0m 以上",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "tfc_signal": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "歩行者用信号機なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "歩車分離式信号機あり",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "押しボタン式信号機あり",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "これら以外の信号機",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "tfc_s_type": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "音響設備なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "音響設備あり（音響用押しボタンなし）",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "音響設備あり（音響用押しボタンあり）",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "brail_tile": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "視覚障害者誘導用ブロック等なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "視覚障害者誘導用ブロック等あり",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "roof": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "あり",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "tfc_restr": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 15,
+      "codes": {
+        "1": {
+          "label": "自由に通行できる",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "通り抜けが好ましくない（プライベート空間）通路",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "料金の支払いが必要",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "handrail": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 15,
+      "codes": {
+        "1": {
+          "label": "なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "右側にあり",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "左側にあり",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "両側にあり",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "waterway": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 15,
+      "codes": {
+        "1": {
+          "label": "なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": null,
+          "transcription_check": "MANUAL",
+          "reason": "表3.2 printed p15 literally prints 「1：なし、2、99:不明」; code 2 has no printed label. Label remains UNKNOWN, not repaired from 2024."
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "bus_stop": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 15,
+      "codes": {
+        "1": {
+          "label": "なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "あり",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "door_type": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 16,
+      "codes": {
+        "1": {
+          "label": "なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "自動ドア",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "自動ドア（押しボタン式）",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "手動式引戸",
+          "transcription_check": "TEXT"
+        },
+        "5": {
+          "label": "手動式開戸",
+          "transcription_check": "TEXT"
+        },
+        "6": {
+          "label": "回転ドア",
+          "transcription_check": "TEXT"
+        },
+        "7": {
+          "label": "その他のドア",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "main_user": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 16,
+      "codes": {
+        "1": {
+          "label": "歩行者",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "車両",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "elevator": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "エレベーターなし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "エレベーターあり（バリアフリー対応なし）",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "エレベーターあり（車いす使用者対応）",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "エレベーターあり（視覚障害者対応）",
+          "transcription_check": "TEXT"
+        },
+        "5": {
+          "label": "エレベーターあり（車いす使用者、視覚障害者対応）",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "condition": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 15,
+      "codes": {
+        "1": {
+          "label": "車いすの通行に支障なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "車いすの通行に支障あり",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "facility": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 16,
+      "codes": {
+        "1": {
+          "label": "なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "車いすステップ付きエスカレーター",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "階段昇降機",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "段差解消機",
+          "transcription_check": "TEXT"
+        },
+        "5": {
+          "label": "音声案内装置",
+          "transcription_check": "TEXT"
+        },
+        "6": {
+          "label": "その他の補助施設",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "vtcl_slope": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "5％以下",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "5％より大きい（起点より終点が高い）",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "5％より大きい（起点より終点が低い）",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "lev_diff": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "2 ㎝以下",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "2 ㎝より大きい",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "no_serv_d": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.2",
+      "printed_page": 15,
+      "codes": {
+        "1": {
+          "label": "月曜日",
+          "transcription_check": "TEXT"
+        },
+        "7": {
+          "label": "日曜日",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      },
+      "encoding": "weekday_digits",
+      "note": "1 through 7 in increasing order, or 99. Only endpoint weekday labels are printed; intermediate weekday labels remain UNKNOWN."
+    }
+  },
+  "node": {
+    "in_out": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.6",
+      "printed_page": 30,
+      "codes": {
+        "1": {
+          "label": "施設外",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "施設内外の境界",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "施設内",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "floor": {
+      "spec_source_id": "mlit-walk-network-spec-2018-03",
+      "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "table": "3.6",
+      "printed_page": 30,
+      "codes": {},
+      "encoding": "numeric_floor",
+      "numeric_rule": {
+        "label": "階層数",
+        "outdoor_ground": 0,
+        "indoor_first": 1,
+        "indoor_basement_first": -1,
+        "default_intermediate_increment": 0.5,
+        "permitted_intermediate_increment": 0.1,
+        "location_code_increment": 0.5,
+        "explanation_printed_page": 31,
+        "note": "Ordinal floor number only; never height, accessibility or operator floor equivalence."
+      },
+      "rule_labels": [
+        "屋外は基本的に地上部分の階層数を「0」とする。",
+        "地下 1 階の場合は「-1」とする。",
+        "0.5 刻みで設定することを基本とするが、0.1 刻みで設定しても良いこととする。"
+      ]
+    }
+  }
+}

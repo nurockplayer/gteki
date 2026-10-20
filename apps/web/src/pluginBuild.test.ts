@@ -103,8 +103,10 @@ describe("production build publication allowlist", () => {
     const m = JSON.parse(fs.readFileSync(manifest, "utf8"));
     m.sources[0].license = null;
     m.sources[0].attribution = "";
+    m.sources[0].url = "not a url";
     fs.writeFileSync(manifest, JSON.stringify(m));
-    await expect(run(p)).rejects.toThrow(/source\.attribution \(demo-synthetic\).*source\.license \(demo-synthetic\)/);
+    await expect(run(p)).rejects.toThrow(/source\.url \(demo-synthetic\).*source\.attribution \(demo-synthetic\)|source\.attribution \(demo-synthetic\).*source\.url \(demo-synthetic\)/);
+    await expect(run(p)).rejects.toThrow(/source\.license \(demo-synthetic\)/);
   }, 30_000);
 
   it("refuses a synthetic station whose graph derives from a restricted source, even with no assets", async () => {

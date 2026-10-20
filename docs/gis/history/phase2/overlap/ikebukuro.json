@@ -1,0 +1,68 @@
+{
+  "station_id": "ikebukuro",
+  "method": "Pairwise bbox relation is computed on source bboxes normalized to JGD2011 longitude,latitude. Disjoint-bbox minimum separation is approximated by comparing projected EPSG:6677 boundary segments sampled at 32 segments per edge. Projected axis-aligned envelopes are retained as context only.",
+  "layers": [
+    {
+      "layer_id": "plateau-13116-ubld-53394576",
+      "layer_role": "plateau_ubld",
+      "source_id": "plateau-13116-ubld-53394576",
+      "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+      "source_crs_bbox": [
+        35.728049254734366,
+        139.70938689983566,
+        35.731371787356984,
+        139.7133659340391
+      ],
+      "bbox_axis_order": "latitude,longitude",
+      "bbox_jgd2011_lon_lat": [
+        139.70938689983566,
+        35.728049254734366,
+        139.7133659340391,
+        35.731371787356984
+      ],
+      "bbox_epsg_6677": [
+        -11212.591842153019,
+        -30165.046109413684,
+        -10852.18476879648,
+        -29795.987013402348
+      ],
+      "metric_status": "KNOWN",
+      "metric_note": "Source geographic bbox normalized to JGD2011 lon,lat; edges sampled at 32 segments per edge and projected to EPSG:6677."
+    },
+    {
+      "layer_id": "hokonavi-ikebukuro-walk-csv-pair",
+      "layer_role": "hokonavi_csv_pair",
+      "source_id": "hokonavi-ikebukuro-walk-node-csv",
+      "source_ids": [
+        "hokonavi-ikebukuro-walk-node-csv",
+        "hokonavi-ikebukuro-walk-link-csv"
+      ],
+      "source_crs": null,
+      "source_crs_bbox": [
+        139.69533618,
+        35.724141027,
+        139.722924068,
+        35.733731143
+      ],
+      "bbox_axis_order": "unknown",
+      "bbox_jgd2011_lon_lat": null,
+      "bbox_epsg_6677": null,
+      "metric_status": "UNKNOWN",
+      "metric_note": "Source CRS or coordinate axis order is unknown; no metric projection was inferred."
+    }
+  ],
+  "pairs": [
+    {
+      "layer_a": "plateau-13116-ubld-53394576",
+      "layer_b": "hokonavi-ikebukuro-walk-csv-pair",
+      "source_id_a": "plateau-13116-ubld-53394576",
+      "source_id_b": "hokonavi-ikebukuro-walk-node-csv",
+      "bbox_relation": "UNKNOWN",
+      "intersection_bbox_jgd2011_lon_lat": null,
+      "minimum_separation_m": null,
+      "status": "UNKNOWN_CRS_OR_BBOX"
+    }
+  ],
+  "interpretation_limit": "BBox overlap only. It does not establish that features coincide, share a floor, or connect; it is not routing evidence.",
+  "verification": "UNVERIFIED"
+}

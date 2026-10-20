@@ -1,0 +1,419 @@
+{
+  "source_id": "plateau-13116-ubld-53394576",
+  "source_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+  "verification": "UNVERIFIED",
+  "namespaces": {
+    "brid": "http://www.opengis.net/citygml/bridge/2.0",
+    "tran": "http://www.opengis.net/citygml/transportation/2.0",
+    "frn": "http://www.opengis.net/citygml/cityfurniture/2.0",
+    "wtr": "http://www.opengis.net/citygml/waterbody/2.0",
+    "sch": "http://www.ascc.net/xml/schematron",
+    "veg": "http://www.opengis.net/citygml/vegetation/2.0",
+    "xlink": "http://www.w3.org/1999/xlink",
+    "tun": "http://www.opengis.net/citygml/tunnel/2.0",
+    "tex": "http://www.opengis.net/citygml/texturedsurface/2.0",
+    "gml": "http://www.opengis.net/gml",
+    "app": "http://www.opengis.net/citygml/appearance/2.0",
+    "gen": "http://www.opengis.net/citygml/generics/2.0",
+    "dem": "http://www.opengis.net/citygml/relief/2.0",
+    "luse": "http://www.opengis.net/citygml/landuse/2.0",
+    "uro": "https://www.geospatial.jp/iur/uro/3.2",
+    "xAL": "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0",
+    "bldg": "http://www.opengis.net/citygml/building/2.0",
+    "smil20": "http://www.w3.org/2001/SMIL20/",
+    "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    "smil20lang": "http://www.w3.org/2001/SMIL20/Language",
+    "pbase": "http://www.opengis.net/citygml/profiles/base/2.0",
+    "core": "http://www.opengis.net/citygml/2.0",
+    "grp": "http://www.opengis.net/citygml/cityobjectgroup/2.0"
+  },
+  "crs_inheritance": "Geometry without srsName inherits the CRS from the sole CityModel boundedBy gml:Envelope.",
+  "schema_location": "https://www.geospatial.jp/iur/uro/3.2 ../../schemas/iur/uro/3.2/urbanObject.xsd http://www.opengis.net/citygml/2.0 http://schemas.opengis.net/citygml/2.0/cityGMLBase.xsd http://www.opengis.net/citygml/landuse/2.0 http://schemas.opengis.net/citygml/landuse/2.0/landUse.xsd http://www.opengis.net/citygml/building/2.0 http://schemas.opengis.net/citygml/building/2.0/building.xsd http://www.opengis.net/citygml/transportation/2.0 http://schemas.opengis.net/citygml/transportation/2.0/transportation.xsd http://www.opengis.net/citygml/generics/2.0 http://schemas.opengis.net/citygml/generics/2.0/generics.xsd http://www.opengis.net/citygml/relief/2.0 http://schemas.opengis.net/citygml/relief/2.0/relief.xsd http://www.opengis.net/citygml/cityobjectgroup/2.0 http://schemas.opengis.net/citygml/cityobjectgroup/2.0/cityObjectGroup.xsd http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/base/gml.xsd http://www.opengis.net/citygml/appearance/2.0 http://schemas.opengis.net/citygml/appearance/2.0/appearance.xsd ",
+  "srs_names": [
+    "http://www.opengis.net/def/crs/EPSG/0/6697"
+  ],
+  "srs_dimensions": [
+    "3"
+  ],
+  "envelope": {
+    "lower": [
+      35.728049254734366,
+      139.70938689983566,
+      25.498283
+    ],
+    "upper": [
+      35.731371787356984,
+      139.7133659340391,
+      33.16767
+    ],
+    "raw_lower": "35.728049254734366 139.70938689983566 25.498283",
+    "raw_upper": "35.731371787356984 139.7133659340391 33.16767",
+    "srsName": "http://www.opengis.net/def/crs/EPSG/0/6697",
+    "axis_order": "latitude,longitude,height"
+  },
+  "creation_dates": [
+    "2024-03-15"
+  ],
+  "group_memberships": [
+    {
+      "relation": "groupMember",
+      "from_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+      "target": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
+      "resolves": true
+    },
+    {
+      "relation": "groupMember",
+      "from_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+      "target": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2",
+      "resolves": true
+    },
+    {
+      "relation": "groupMember",
+      "from_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+      "target": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3",
+      "resolves": true
+    },
+    {
+      "relation": "parent",
+      "from_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+      "target": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e",
+      "resolves": true
+    }
+  ],
+  "codelist_resolution": [
+    {
+      "code": "EF_25",
+      "code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "label": "壁およびバリア（バリケード）エレメント",
+      "status": "RESOLVED"
+    },
+    {
+      "code": "EF_30",
+      "code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "label": "屋根、床、舗装エレメント",
+      "status": "RESOLVED"
+    },
+    {
+      "code": "EF_35",
+      "code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "label": "階段および傾斜路（スロープ）エレメント",
+      "status": "RESOLVED"
+    },
+    {
+      "code": "EF_80",
+      "code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "label": "輸送機能",
+      "status": "RESOLVED"
+    }
+  ],
+  "semantic_presence": {
+    "floors": {
+      "status": "PRESENT",
+      "count": 3,
+      "observed_count": 3,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_FloorSurface",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_FloorSurface",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_FloorSurface"
+      ],
+      "evidence": "FloorSurface feature count 3; IDs sample: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_FloorSurface, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_FloorSurface, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_FloorSurface",
+      "gml_ids_total": 3,
+      "gml_ids_truncated": false
+    },
+    "doors": {
+      "status": "PRESENT",
+      "count": 3,
+      "observed_count": 3,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Door",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_Door",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_Door"
+      ],
+      "evidence": "Door element count 3; IDs sample: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Door, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_Door, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_Door",
+      "gml_ids_total": 3,
+      "gml_ids_truncated": false
+    },
+    "windows": {
+      "status": "PRESENT",
+      "count": 1,
+      "observed_count": 1,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Window"
+      ],
+      "evidence": "Window element count 1; IDs sample: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Window",
+      "gml_ids_total": 1,
+      "gml_ids_truncated": false
+    },
+    "door_representation": {
+      "status": "UNKNOWN",
+      "count": null,
+      "observed_count": 3,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Door",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_Door",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_Door"
+      ],
+      "evidence": "3 bldg:Door semantic objects observed (93 owned polygons). One object per physical opening versus aggregate representation is not established by the semantic object count.",
+      "gml_ids_total": 3,
+      "gml_ids_truncated": false
+    },
+    "stairs": {
+      "status": "UNKNOWN",
+      "count": null,
+      "observed_count": 0,
+      "gml_ids": [],
+      "evidence": "Unambiguous explicit element type or resolved label only; combined stair/ramp categories do not establish an individual facility type.",
+      "gml_ids_total": 0,
+      "gml_ids_truncated": false
+    },
+    "escalators": {
+      "status": "UNKNOWN",
+      "count": null,
+      "observed_count": 0,
+      "gml_ids": [],
+      "evidence": "Explicit element type or resolved function label only.",
+      "gml_ids_total": 0,
+      "gml_ids_truncated": false
+    },
+    "elevators": {
+      "status": "UNKNOWN",
+      "count": null,
+      "observed_count": 0,
+      "gml_ids": [],
+      "evidence": "Explicit element type or resolved function label only.",
+      "gml_ids_total": 0,
+      "gml_ids_truncated": false
+    },
+    "ramps": {
+      "status": "UNKNOWN",
+      "count": null,
+      "observed_count": 0,
+      "gml_ids": [],
+      "evidence": "Unambiguous explicit element type or resolved label only; combined stair/ramp categories do not establish an individual facility type.",
+      "gml_ids_total": 0,
+      "gml_ids_truncated": false
+    },
+    "stairs_or_ramps_category": {
+      "status": "PRESENT",
+      "count": 2,
+      "observed_count": 2,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_IntInstallation_EF_35"
+      ],
+      "evidence": "Resolved codelist category combines stairs and ramps; these are source semantic groups, not a count of individual stairs or ramps.",
+      "gml_ids_total": 2,
+      "gml_ids_truncated": false
+    },
+    "ticket_gates_paid_area_boundary": {
+      "status": "UNKNOWN",
+      "count": null,
+      "observed_count": 0,
+      "gml_ids": [],
+      "evidence": "Explicit element types only; no inference from geometry.",
+      "gml_ids_total": 0,
+      "gml_ids_truncated": false
+    },
+    "connectivity_topology": {
+      "status": "ABSENT_IN_FILE",
+      "count": 0,
+      "observed_count": 0,
+      "gml_ids": [],
+      "evidence": "Count of explicitly named connectivity or topology feature elements.",
+      "gml_ids_total": 0,
+      "gml_ids_truncated": false
+    },
+    "floor_labels": {
+      "status": "PRESENT",
+      "count": 1,
+      "observed_count": 1,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a"
+      ],
+      "evidence": "Literal floor-like text in names or uro attributes; 1 matching features.",
+      "gml_ids_total": 1,
+      "gml_ids_truncated": false
+    },
+    "installations": {
+      "status": "PRESENT",
+      "count": 7,
+      "observed_count": 7,
+      "gml_ids": [
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_25",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_80",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_80",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_30",
+        "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_IntInstallation_EF_35"
+      ],
+      "evidence": "IntBuildingInstallation feature count 7; IDs sample: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_25, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_80, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_80, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_30, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_IntInstallation_EF_35",
+      "gml_ids_total": 7,
+      "gml_ids_truncated": false
+    }
+  },
+  "unknowns": [
+    "Vertical datum interpretation beyond declared EPSG:6697",
+    "Floor-to-elevation mapping",
+    "Operator and management boundaries",
+    "Paid/unpaid area boundaries unless explicit source elements exist",
+    "Currency versus the documented 2023 survey date",
+    "Current real-world condition and route connectivity"
+  ],
+  "totals": {
+    "feature_count": 32,
+    "polygon_count": 58761,
+    "ring_count": 58795,
+    "interior_ring_count": 34,
+    "vertex_count": 241060,
+    "degenerate_polygon_count": 0,
+    "degenerate_polygon_reasons": {
+      "fewer_than_3_distinct_vertices": 0,
+      "projected_zero_area": 0
+    },
+    "unclosed_ring_count": 0,
+    "bbox_lat_lon_height": {
+      "min": [
+        35.728049254734366,
+        139.70938689983566,
+        25.498283
+      ],
+      "max": [
+        35.731371787356984,
+        139.7133659340391,
+        33.16767
+      ]
+    },
+    "height_range": [
+      25.498283,
+      33.16767
+    ]
+  },
+  "feature_tree": {
+    "store_path": "out/plateau-13116-ubld-53394576.inventory-detail.json",
+    "sha256": "b2176f4ae02541d2a0dab4307c2d226b9f53108bfac4656c8d9c24e883a3e086",
+    "bytes": 64005,
+    "feature_count": 32
+  },
+  "feature_type_counts": {
+    "grp:CityObjectGroup": 1,
+    "uro:UndergroundBuilding": 1,
+    "bldg:IntBuildingInstallation": 7,
+    "bldg:ClosureSurface": 4,
+    "bldg:RoofSurface": 1,
+    "bldg:WallSurface": 1,
+    "bldg:GroundSurface": 1,
+    "bldg:Room": 3,
+    "bldg:CeilingSurface": 3,
+    "bldg:FloorSurface": 3,
+    "bldg:InteriorWallSurface": 3,
+    "bldg:Window": 1,
+    "bldg:Door": 3
+  },
+  "compact_features": [
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332a",
+      "type": "grp:CityObjectGroup",
+      "parent_gml_id": null,
+      "names": [
+        "池袋駅_B1地下通路"
+      ],
+      "function_code": null,
+      "function_code_space": null,
+      "function_label": null
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_25",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e",
+      "names": null,
+      "function_code": "EF_25",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "壁およびバリア（バリケード）エレメント"
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_80",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e",
+      "names": null,
+      "function_code": "EF_80",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "輸送機能"
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
+      "type": "bldg:Room",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e",
+      "names": null,
+      "function_code": null,
+      "function_code_space": null,
+      "function_label": null
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
+      "names": null,
+      "function_code": "EF_25",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "壁およびバリア（バリケード）エレメント"
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
+      "names": null,
+      "function_code": "EF_35",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "階段および傾斜路（スロープ）エレメント"
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_80",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
+      "names": null,
+      "function_code": "EF_80",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "輸送機能"
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_30",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
+      "names": null,
+      "function_code": "EF_30",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "屋根、床、舗装エレメント"
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2",
+      "type": "bldg:Room",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e",
+      "names": null,
+      "function_code": null,
+      "function_code_space": null,
+      "function_label": null
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3",
+      "type": "bldg:Room",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e",
+      "names": null,
+      "function_code": null,
+      "function_code_space": null,
+      "function_label": null
+    },
+    {
+      "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_IntInstallation_EF_35",
+      "type": "bldg:IntBuildingInstallation",
+      "parent_gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3",
+      "names": null,
+      "function_code": "EF_35",
+      "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
+      "function_label": "階段および傾斜路（スロープ）エレメント"
+    }
+  ],
+  "compact_features_total": 11,
+  "group_membership_count": 4,
+  "group_memberships_truncated": false
+}

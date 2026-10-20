@@ -1,0 +1,34 @@
+{
+  "glb": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-8505a4f2d1cadc7233c0.glb",
+  "record": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-8505a4f2d1cadc7233c0.json",
+  "blender_version": "5.2.2 LTS",
+  "mesh_objects": 28,
+  "imported_bbox_ENU": {
+    "min": [
+      -180.2017059326172,
+      -184.04000854492188,
+      -3.5017170906066895
+    ],
+    "max": [
+      179.38389587402344,
+      184.82351684570312,
+      4.167669773101807
+    ]
+  },
+  "expected_bbox_ENU": {
+    "min": [
+      -180.20170200668872,
+      -184.0400121791863,
+      -3.5017169999999993
+    ],
+    "max": [
+      179.38389699327854,
+      184.82351882128205,
+      4.167670000000001
+    ]
+  },
+  "max_abs_error_m": 3.925928467651829e-06,
+  "tolerance_m": 0.001,
+  "status": "PASS",
+  "navigation_use": "NOT_FOR_ROUTING"
+}

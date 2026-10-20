@@ -1,0 +1,21 @@
+{
+  "fixture_status": "LEAD_SUPPLIED_OFFICIAL_GSI_RESPONSE",
+  "retrieved_date": "2026-10-20",
+  "source": "Geospatial Information Authority of Japan Survey Calculation Site bl2xy; values supplied by the lead for this pass, not retrieved from the network by this tool",
+  "controls": [
+    {
+      "url": "https://vldb.gsi.go.jp/sokuchi/surveycalc/surveycalc/bl2xy.pl?outputType=json&refFrame=2&zone=9&latitude=35.729710&longitude=139.711376",
+      "latitude": 35.729710,
+      "longitude": 139.711376,
+      "response": { "publicX": "-29980.5762", "publicY": "-11032.4224", "gridConv": "0.071219444", "scaleFactor": "0.99990150" },
+      "axis_mapping": { "publicX": "northing_m", "publicY": "easting_m" }
+    },
+    {
+      "url": "https://vldb.gsi.go.jp/sokuchi/surveycalc/surveycalc/bl2xy.pl?outputType=json&refFrame=2&zone=9&latitude=35.692857&longitude=139.700825",
+      "latitude": 35.692857,
+      "longitude": 139.700825,
+      "response": { "publicX": "-34067.9082", "publicY": "-11992.3996", "gridConv": "0.077311111", "scaleFactor": "0.99990177" },
+      "axis_mapping": { "publicX": "northing_m", "publicY": "easting_m" }
+    }
+  ]
+}
