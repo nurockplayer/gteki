@@ -11,6 +11,14 @@ describe("Shinjuku gteki/ contract files", () => {
     expect((bundle.station.codes ?? []).map((c) => c.code)).toContain("E27");
   });
 
+  it("gives every POI a distinct display name in each language (search results stay distinguishable)", () => {
+    for (const lang of ["ja", "en"]) {
+      const names = bundle.pois.map((p) => p.names.find((n) => n.lang === lang)?.text);
+      expect(names.every(Boolean)).toBe(true);
+      expect(new Set(names).size).toBe(names.length);
+    }
+  });
+
   it("never claims measured heights", () => {
     for (const f of bundle.floors) expect(f.elevationM).toBeNull();
     for (const n of bundle.nodes) {

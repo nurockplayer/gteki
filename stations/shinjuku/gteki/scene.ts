@@ -15,7 +15,9 @@ export const buildScene: BuildScene = (ctx) => {
   const { layout } = built;
 
   // Invisible walk proxies: the explorer raycasts these from above (non-recursive), so each is a Mesh.
-  const proxyMat = new T.MeshBasicMaterial({ visible: false });
+  // DoubleSide: the explorer's third-person camera also raycasts these, and from below it must hit
+  // the slab's underside (FrontSide back faces are invisible to rays, so the camera passed through).
+  const proxyMat = new T.MeshBasicMaterial({ visible: false, side: T.DoubleSide });
   const walkable: THREE.Mesh[] = [];
   const proxies = new T.Group();
   proxies.name = "walk proxies (invisible)";
@@ -60,6 +62,30 @@ export const buildScene: BuildScene = (ctx) => {
     zMin: w.bodyMin !== undefined ? Math.max(w.zMin, w.bodyMin + WALKER_BODY.bodyTopM) : w.zMin,
     zMax: w.bodyMax !== undefined ? Math.min(w.zMax, w.bodyMax + WALKER_BODY.bodyBottomM) : w.zMax,
   }));
+  // The explorer's follow camera only raycasts colliders + walkable, so without colliders it swung
+  // through walls. One invisible DoubleSide mesh of the same wall bands gives it something to hit.
+  // It cannot block more than `walls` already does: a collider ray at feet + h (0.2 ≤ h ≤ 1.7) only
+  // hits a quad whose band contains that height, which the walls' band test blocks anyway.
+  const colliders: THREE.Mesh[] = [];
+  if (walls.length) {
+    const pos: number[] = [];
+    const idx: number[] = [];
+    for (const w of walls) {
+      if (w.zMax <= w.zMin) continue;
+      const i = pos.length / 3;
+      pos.push(w.a.x, w.zMin, -w.a.y, w.b.x, w.zMin, -w.b.y, w.b.x, w.zMax, -w.b.y, w.a.x, w.zMax, -w.a.y);
+      idx.push(i, i + 1, i + 2, i, i + 2, i + 3);
+    }
+    const g = new T.BufferGeometry();
+    g.setAttribute("position", new T.Float32BufferAttribute(pos, 3));
+    g.setIndex(idx);
+    g.computeBoundingSphere();
+    const m = new T.Mesh(g, proxyMat);
+    m.name = "wall collider (invisible)";
+    m.userData.gteki_role = "collider";
+    proxies.add(m);
+    colliders.push(m);
+  }
   const nodes = new Map(ctx.bundle.nodes.map((n) => [n.id, n]));
   const spawnPoints: SpawnPoint[] = (ctx.bundle.spawnNodeIds ?? []).flatMap((id) => {
     const n = nodes.get(id);
@@ -72,13 +98,14 @@ export const buildScene: BuildScene = (ctx) => {
   const scene: StationScene = {
     root: built.root,
     walkable,
+    colliders,
     walls,
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92 },
     update: (dt, t) => built.update(dt, t),
     dispose() {
       built.dispose();
-      for (const m of walkable) m.geometry.dispose();
+      for (const m of [...walkable, ...colliders]) m.geometry.dispose();
       proxyMat.dispose();
     },
   };

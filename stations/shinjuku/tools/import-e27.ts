@@ -563,15 +563,53 @@ const compass = (p: { x: number; y: number }) => {
   return dirs[(Math.round(((a + 360) % 360) / 45) % 8) as 0]!;
 };
 const vEv = (method: string, note?: string) => ev([SRC_NWD, SRC_MAP], method, note);
-exits.forEach((x, i) => {
+// Exits whose level + compass side coincide are told apart by how they are reached: the first
+// vertical connector (elevator / stairs / escalator) found on foot from the exit node, nearest by
+// walked length over the source graph (≤ 40 m). Graph fact, not an official exit name.
+const ACCESS_LABEL = { elevator: ["エレベーター", "elevator"], stairs: ["階段", "stairs"], escalator: ["エスカレーター", "escalator"] } as const;
+function exitAccess(nodeId: string): keyof typeof ACCESS_LABEL | null {
+  const dist = new Map([[`n:${nodeId}`, 0]]);
+  const queue = [`n:${nodeId}`];
+  let best: { mode: keyof typeof ACCESS_LABEL; d: number } | null = null;
+  while (queue.length) {
+    queue.sort((a, b) => dist.get(a)! - dist.get(b)!);
+    const id = queue.shift()!;
+    const d = dist.get(id)!;
+    if (d > 40 || (best && d >= best.d)) break;
+    for (const e of edges) {
+      if (e.from !== id && e.to !== id) continue;
+      if (e.mode in ACCESS_LABEL) {
+        if (!best || d < best.d) best = { mode: e.mode as keyof typeof ACCESS_LABEL, d };
+        continue;
+      }
+      if (e.mode !== "walk") continue;
+      const other = e.from === id ? e.to : e.from;
+      const nd = d + (e.lengthM ?? 0);
+      if (nd < (dist.get(other) ?? Infinity)) {
+        dist.set(other, nd);
+        queue.push(other);
+      }
+    }
+  }
+  return best?.mode ?? null;
+}
+const exitBase = exits.map((x) => {
   const [ja, en] = compass(x.p);
+  return { ja: `${x.level === "1" ? "地上" : "地下1階"}・${ja}側`, en: `${x.level === "1" ? "street level" : "B1"}, ${en} side` };
+});
+exits.forEach((x, i) => {
   const n = rawNodes.get(x.nodeId)!;
+  let { ja, en } = exitBase[i]!;
+  if (exitBase.some((b, j) => j !== i && b.ja === ja)) {
+    const access = exitAccess(x.nodeId);
+    if (access) (ja += `・${ACCESS_LABEL[access][0]}`), (en += `, ${ACCESS_LABEL[access][1]}`);
+  }
   pois.push({
     id: `poi:exit:${i + 1}`,
     category: "exit",
     names: [
-      { lang: "ja", text: `出口（${x.level === "1" ? "地上" : "地下1階"}・${ja}側）` },
-      { lang: "en", text: `Exit (${x.level === "1" ? "street level" : "B1"}, ${en} side)` },
+      { lang: "ja", text: `出口（${ja}）` },
+      { lang: "en", text: `Exit (${en})` },
     ],
     aliases: [
       { lang: "ja-Hrkt", text: "でぐち" },
