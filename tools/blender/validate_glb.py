@@ -371,7 +371,8 @@ class Validator:
             if negative:
                 self.message("FAIL", f"node {index} {node.get('name')!r} has negative scale/reflection")
             if any(abs(s - 1) > 1e-6 for s in scales):
-                self.message("FAIL" if index == root_index else "WARN", f"node {index} has non-unit scale {scales}")
+                # the contract applies every transform's scale: unapplied scale on any node fails
+                self.message("FAIL", f"node {index} has non-unit scale {scales}")
             if node.get("name", "").startswith("SOCKET_"):
                 socket = node.get("extras", {}).get("socket")
                 if not isinstance(socket, str):
@@ -589,6 +590,9 @@ def self_test():
     assert result["status"] == "WARN" and result["aabb"] == dict(min=[1., 0., 0.], max=[3., 3., 1.])
     moved["meshes"][0]["primitives"][0]["mode"] = 6
     assert Validator("tiny.glb", encode_glb(moved, binary)).check()["triangles"] == 1
+    scaled = copy.deepcopy(doc)
+    scaled["nodes"][1]["scale"] = [1, 2, 1]  # child scale is not applied
+    assert Validator("tiny.glb", encode_glb(scaled, binary)).check()["status"] == "FAIL"
     # a texture must sample a UV set the primitive has (texCoord -1 / 1 without TEXCOORD_1 fail)
     for coord, attrs, status in ((0, ("TEXCOORD_0",), "PASS"), (-1, ("TEXCOORD_0",), "FAIL"),
                                  (1, ("TEXCOORD_0",), "FAIL"), (1, ("TEXCOORD_0", "TEXCOORD_1"), "PASS")):
