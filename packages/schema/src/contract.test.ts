@@ -200,6 +200,25 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     }
   });
 
+  it("rejects public edge geometry derived from non-reusable sources, as for assets", () => {
+    for (const rights of ["REFERENCE_ONLY", "RESTRICTED", "UNVERIFIED"] as const) {
+      const b = createSyntheticBundle([edge("v", "start", "goal", { verification: "verified" })]);
+      b.station.synthetic = false;
+      b.sources.find((s) => s.id === "fixture-geometry")!.rights = rights;
+      // Default `data` usage: the source warning alone used to let the geometry through.
+      expect(errors(b)).toContain("edge.geometry.rights");
+    }
+    // A rights value outside the enum (even an empty string) is an error and never passes as reusable.
+    const blank = createSyntheticBundle([edge("v", "start", "goal", { verification: "verified" })]);
+    blank.station.synthetic = false;
+    (blank.sources.find((s) => s.id === "fixture-geometry")! as { rights: string }).rights = "";
+    blank.assets = [{ id: "x", uri: "assets/x.glb", format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-geometry"] }];
+    expect(errors(blank)).toEqual(expect.arrayContaining(["source.rights.value", "edge.geometry.rights", "asset.rights"]));
+    const synthetic = createSyntheticBundle();
+    synthetic.sources.find((s) => s.id === "fixture-geometry")!.rights = "REFERENCE_ONLY";
+    expect(errors(synthetic)).not.toContain("edge.geometry.rights");
+  });
+
   it("forbids facts-only geometry even in synthetic bundles", () => {
     const b = createSyntheticBundle();
     expect(b.station.synthetic).toBe(true);

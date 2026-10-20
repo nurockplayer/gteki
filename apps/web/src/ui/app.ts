@@ -1,4 +1,4 @@
-import { createRouter, describeRoute, floorDisplayName, routePolyline } from "@gteki/navigation";
+import { createRouter, describeRoute, floorDisplayName, routeBetween, routePolyline } from "@gteki/navigation";
 import type { Instruction, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
@@ -422,14 +422,9 @@ export class App {
     this.s.instructions = [];
     this.explorer.clearRoute();
     if (!router || !loaded || !origin || !destination) { this.renderSheet(); return; }
-    const starts = origin.kind === "poi" ? origin.poi.connectorNodeIds : [origin.nodeId];
-    const goals = destination.connectorNodeIds;
-    const profile = this.profile();
-    // One multi-source query: the router ranks entrances by its own cost and keeps "already there".
-    const best: RouteResult | RouteFailure = starts.length === 0
-      ? { ok: false, reason: "unknown_start", message: "origin has no verified entrance" }
-      : goals.length === 0 ? { ok: false, reason: "unknown_goal", message: "destination has no verified entrance" }
-      : router.route(starts, goals, profile, [...(origin.kind === "poi" ? [origin.poi.evidence] : []), destination.evidence]);
+    // One multi-source query: the router ranks entrances by its own cost and keeps "already there";
+    // routeBetween also applies the fare policy to the POIs themselves.
+    const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, this.profile());
     this.s.route = best;
     if (best.ok) {
       this.s.polyline = routePolyline(loaded.bundle, best);
