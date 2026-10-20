@@ -79,7 +79,8 @@ def texture_infos(material):
             if "index" in value and path and path[-1].endswith("Texture"):
                 found.append((".".join(path), value))
             for key, child in value.items():
-                walk(child, path + [key])
+                if key != "extras":  # application data, never sampled
+                    walk(child, path + [key])
         elif isinstance(value, list):
             for i, child in enumerate(value):
                 walk(child, path + [str(i)])
@@ -92,6 +93,18 @@ def effective_texcoord(info):
     """KHR_texture_transform may override the UV set a texture samples."""
     transform_ext = info.get("extensions", {}).get("KHR_texture_transform", {})
     return transform_ext.get("texCoord", info.get("texCoord", 0))
+
+
+def triangle_corners(order, mode):
+    """Corner index triples of a TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN primitive (others: none)."""
+    if mode == 4:
+        return [tuple(order[k:k + 3]) for k in range(0, len(order) - 2, 3)]
+    if mode == 5:
+        return [(order[k], order[k + 1], order[k + 2]) if k % 2 == 0 else (order[k + 1], order[k], order[k + 2])
+                for k in range(len(order) - 2)]
+    if mode == 6:
+        return [(order[0], order[k], order[k + 1]) for k in range(1, len(order) - 1)]
+    return []
 
 
 def _cross(o, a, b):
@@ -351,26 +364,45 @@ class Validator:
         checked_meshes = set()
 
         def lightmap_overlap(node):
-            """TEXCOORD_1 is a lightmap: one UV space per mesh, shared by its primitives, without overlap."""
+            """TEXCOORD_1 is a lightmap: one UV space per mesh, shared by its primitives, inside the
+            unit square and without overlap. Mobile builds carry it on every visual triangle primitive."""
             if node["mesh"] in checked_meshes:
                 return
             checked_meshes.add(node["mesh"])
             tris = []
             for primitive in meshes[node["mesh"]].get("primitives", []):
-                if "TEXCOORD_1" not in primitive.get("attributes", {}) or primitive.get("mode", 4) != 4:
+                mode = primitive.get("mode", 4)
+                if mode not in (4, 5, 6):
+                    continue
+                if "TEXCOORD_1" not in primitive.get("attributes", {}):
+                    if meta.get("profile") == "mobile":
+                        self.message("FAIL", f"mesh {node['mesh']} has no lightmap UV (TEXCOORD_1); mobile requires one")
                     continue
                 accessor = self.index(accessors, primitive["attributes"]["TEXCOORD_1"])
-                uv = read(accessor) if accessor.get("type") == "VEC2" else None
-                if uv is None:
+                normalized = {5121: 255, 5123: 65535}
+                if (accessor.get("type") != "VEC2" or "sparse" in accessor or "bufferView" not in accessor
+                        or not (accessor.get("componentType") == 5126
+                                or (accessor.get("componentType") in normalized and accessor.get("normalized")))):
+                    self.message("FAIL", f"mesh {node['mesh']} TEXCOORD_1 must be a dense VEC2 of floats or normalized "
+                                 "unsigned bytes/shorts")
                     continue
+                if accessor["count"] != self.index(accessors, primitive["attributes"]["POSITION"])["count"]:
+                    self.message("FAIL", f"mesh {node['mesh']} TEXCOORD_1 count differs from POSITION count")
+                    continue
+                uv = read(accessor)
                 if accessor["componentType"] != 5126:
-                    scale = {5121: 255, 5123: 65535}.get(accessor["componentType"], 1)
+                    scale = normalized[accessor["componentType"]]
                     uv = [(u / scale, v / scale) for u, v in uv]
+                if not all(math.isfinite(c) for p in uv for c in p):
+                    self.message("FAIL", f"mesh {node['mesh']} TEXCOORD_1 contains NaN/Inf")
+                    continue
+                if any(c < -1e-6 or c > 1 + 1e-6 for p in uv for c in p):
+                    self.message("FAIL", f"mesh {node['mesh']} lightmap UV (TEXCOORD_1) leaves the unit square")
                 order = ([v for (v,) in read(self.index(accessors, primitive["indices"]))]
                          if "indices" in primitive else list(range(len(uv))))
                 if any(v >= len(uv) for v in order):
                     continue  # reported by the index range check
-                tris += [tuple(uv[order[k + j]] for j in range(3)) for k in range(0, len(order) - 2, 3)]
+                tris += [tuple(uv[i] for i in corners) for corners in triangle_corners(order, mode)]
             overlapping = uv_overlaps(tris)
             if overlapping:
                 self.message("FAIL", f"node {node.get('name')!r} lightmap UV (TEXCOORD_1) has "
@@ -529,8 +561,9 @@ def self_test():
                                  (1, ("TEXCOORD_0",), "FAIL"), (1, ("TEXCOORD_0", "TEXCOORD_1"), "PASS")):
         textured = copy.deepcopy(doc)
         textured["materials"][0]["pbrMetallicRoughness"] = dict(baseColorTexture=dict(index=0, texCoord=coord))
+        textured["accessors"].append(dict(bufferView=0, byteOffset=8, componentType=5126, count=3, type="VEC2"))
         for attr in attrs:
-            textured["meshes"][0]["primitives"][0]["attributes"][attr] = 0
+            textured["meshes"][0]["primitives"][0]["attributes"][attr] = 1
         assert Validator("tiny.glb", encode_glb(textured, binary)).check()["status"] == status, (coord, attrs)
     # extension slots and KHR_texture_transform overrides are checked too
     for info, status in ((dict(index=0, extensions=dict(KHR_texture_transform=dict(texCoord=2))), "FAIL"),
@@ -541,22 +574,39 @@ def self_test():
         assert Validator("tiny.glb", encode_glb(textured, binary)).check()["status"] == status, info
     textured["materials"][0]["extensions"] = dict(KHR_materials_clearcoat=dict(clearcoatTexture=dict(index=0, texCoord=-1)))
     assert Validator("tiny.glb", encode_glb(textured, binary)).check()["status"] == "FAIL"
-    # lightmap UVs (TEXCOORD_1) of one mesh must not overlap; touching charts are fine
-    for shift, status in ((0.5, "FAIL"), (1.0, "PASS")):
+    # extras are application data: a texture-like dict there is not a sampled slot
+    textured["materials"][0]["extensions"] = {}
+    textured["materials"][0]["extras"] = dict(sourceTexture=dict(index=123, texCoord=99))
+    assert Validator("tiny.glb", encode_glb(textured, binary)).check()["status"] == "PASS"
+
+    def lightmapped(uvs, mode=4, profile=None, attrs=("POSITION", "TEXCOORD_1")):
+        """Two-triangle mesh (six corners) with the given lightmap UVs."""
         lm = copy.deepcopy(doc)
-        uv = struct.pack("<12f", 0, 0, 1, 0, 0, 1, shift, 0, shift + 1, 0, shift, 1)
-        data = struct.pack("<18f", *([-1, 0, 0, 1, 0, 0, 0, 1, -1] * 2)) + uv
+        data = struct.pack("<18f", *([-1, 0, 0, 1, 0, 0, 0, 1, -1] * 2)) + struct.pack("<12f", *uvs)
         lm["buffers"][0]["byteLength"] = len(data)
         lm["bufferViews"] = [dict(buffer=0, byteLength=72), dict(buffer=0, byteOffset=72, byteLength=48)]
         lm["accessors"] = [dict(bufferView=0, componentType=5126, count=6, type="VEC3", min=[-1, 0, -1], max=[1, 1, 0]),
                            dict(bufferView=1, componentType=5126, count=6, type="VEC2")]
-        lm["meshes"].append(dict(primitives=[dict(attributes=dict(POSITION=0, TEXCOORD_1=1), material=0)]))
-        lm["meshes"][0]["primitives"][0]["attributes"]["POSITION"] = 0
+        lm["meshes"].append(dict(primitives=[dict(attributes={a: i for i, a in enumerate(attrs)}, material=0, mode=mode)]))
         lm["nodes"][1]["mesh"] = 1
-        lm["nodes"][0]["extras"]["gteki"]["triangles"] = 2
-        assert Validator("tiny.glb", encode_glb(lm, data)).check()["status"] == status, shift
+        lm["nodes"][0]["extras"]["gteki"]["triangles"] = 2 if mode == 4 else 4
+        if profile:
+            lm["nodes"][0]["extras"]["gteki"]["profile"] = profile
+        return Validator("tiny.glb", encode_glb(lm, data)).check()["status"]
+
+    # lightmap UVs (TEXCOORD_1) of one mesh must not overlap; touching charts are fine
+    for shift, status in ((0.25, "FAIL"), (0.5, "PASS")):
+        assert lightmapped((0, 0, .5, 0, 0, 1, shift, 0, shift + .5, 0, shift, 1)) == status, shift
+    twice = (0, 0, 1, 0, 0, 1) * 2  # the same chart twice, as a strip and as a fan
+    assert lightmapped(twice, mode=5) == "FAIL" and lightmapped(twice, mode=6) == "FAIL"
+    apart = (0, 0, .5, 0, 0, 1, .5, 0, 1, 0, .5, 1)  # touching at a vertex
+    assert lightmapped(apart, profile="mobile") == "PASS"
+    assert lightmapped(apart, profile="mobile", attrs=("POSITION",)) == "FAIL"  # mobile requires UV1
+    assert lightmapped(apart, attrs=("POSITION",)) == "PASS"  # full builds carry no UV1
+    assert lightmapped((math.nan,) + apart[1:]) == "FAIL"
+    assert lightmapped(tuple(c + 2 * (k % 2 == 0) for k, c in enumerate(apart))) == "FAIL"  # outside the unit square
     print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs, "
-          "texCoord (core, extension, transform), lightmap overlap")
+          "texCoord (core, extension, transform, extras), lightmap (overlap, strips, fans, range, NaN, mobile UV1)")
 
 
 def main():

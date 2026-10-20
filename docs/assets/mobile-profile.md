@@ -18,7 +18,7 @@ Where gates go, how many aisles they have, and how they look stay with each stat
 | Draws per asset | one per material per group | Static `VIS_*` groups merge into `VIS_body`. Pivoted groups (gate flaps) stay separate nodes, so they can still be animated |
 | Materials | `gteki_*` PBR, 1–3 JPEG maps each | Every colour-only material folds into one kit-wide palette. `gteki_palette` is opaque and `gteki_palette_blend` is glass: a 64×64 PNG with 4×4-texel swatches for albedo + alpha, ORM and emissive (strength 4). Each face's UV is the centre of its swatch, so mip levels never bleed. Content materials keep their own textures, as JPEG: sign faces (`gteki_sign_face_*`), screens and posters |
 | Geometry | full bevels and segments | Visual parts use half the segments (cylinders ≥ 8, tubes ≥ 6) and no bevels, and tube paths are Douglas–Peucker simplified (distance to the chord segment, at half the tube radius). **Collision is byte-identical to full**: `build.py` generates each asset a second time at full detail (bmesh only) and keeps that twin's colliders. `bounds_m` covers the tier's own visuals and colliders, within 3.1 mm of full |
-| Lightmap UV | — | `UVLightmap` (glTF `TEXCOORD_1`) on every visual mesh, for stations that bake lighting (Ikebukuro does). Smart UV Project can fold a chart over itself (square columns, escalators), so every face that overlaps another is detached into its own chart and the layout is repacked. `validate_glb.py` fails any mesh whose UV1 triangles overlap |
+| Lightmap UV | — | `UVLightmap` (glTF `TEXCOORD_1`) on every visual mesh, for stations that bake lighting (Ikebukuro does). Smart UV Project can fold a chart over itself (square columns, escalators), so every face whose triangles overlap another's (in Blender's own tessellation, which the exporter writes) is detached into its own chart and the layout is repacked; a face that folds over itself is split into triangles first. The build checks again after the final repack and after UV quantization. `validate_glb.py` fails a mobile visual primitive without UV1, and any UV1 that is not a dense VEC2, is NaN/Inf, leaves the unit square, or overlaps (triangles, strips and fans alike) |
 | Texture binding | implicit UV0 | Every texture is bound to UV0 by an explicit UV Map node in Blender, and exports with `texCoord` omitted (glTF's default, 0). Without that node the exporter wrote `texCoord: -1` (invalid) or a nondeterministic `1`. `validate_glb.py` now fails any texture, in a core or an extension slot, whose effective `texCoord` (including a `KHR_texture_transform` override) is not an int ≥ 0 naming an existing `TEXCOORD_n` |
 | Manifest | — | Top-level `"profile": "mobile"`; `materials` and `textures` list what was exported (palette plan included). The full manifest is byte-identical to before |
 
@@ -142,6 +142,16 @@ A fresh read-only Codex review of `f87559e` found one P1, six P2 and one P3. All
 | P2 | A relative `OUT` broke `build.sh web` | `OUT` is made absolute |
 | P2 | The BatchedMesh recipe left the source meshes drawing | The recipe hides each source mesh |
 | P3 | §8 said `texCoord` is explicit; the export omits the default 0 | §8 states the effective binding |
+
+A second fresh read-only Codex review, of `9c3c34a`, confirmed all eight fixes with decoded-GLB evidence. It byte-compared all 299 collision nodes, re-derived every number on this page and found bounds within 0.05 mm of the vertices. It then found four P2 and one P3 gaps, which were not defects in the committed assets but places where the repair and the validator could let a bad lightmap through. All five are fixed:
+
+| # | Finding | Fix |
+| --- | --- | --- |
+| P2 | The builder fan-split faces and ignored overlaps within one face, so a folded quad passed and a concave face could be flagged wrongly | Detection uses Blender's own loop triangles and counts same-face overlaps; a folded face is split into triangles, then detached |
+| P2 | UV1 of triangle strips and fans was never checked | Strips and fans are expanded into triangles before the overlap test |
+| P2 | Missing, non-VEC2, sparse, NaN or out-of-square UV1 passed | Mobile visual primitives must have UV1; it must be a dense VEC2 (float or normalized), finite, one per vertex, and inside [0, 1] |
+| P2 | A texture-like object under material `extras` was taken as a texture slot | `extras` are skipped at every level |
+| P3 | The last repack was never checked | Each repack is checked, and the layout is checked again after quantization |
 
 ## Commands
 

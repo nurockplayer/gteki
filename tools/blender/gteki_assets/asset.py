@@ -384,26 +384,47 @@ def _lightmap_uvs(obj):
     me.uv_layers.active = base
     base.active_render = True
     _quantize_uvs(me)
+    bm = bmesh.new()  # snapping to the grid must not create an overlap either
+    bm.from_mesh(me)
+    try:
+        if _lightmap_overlaps(bm, bm.loops.layers.uv["UVLightmap"])[0]:
+            raise RuntimeError(f"{me.name}: lightmap UVs overlap after quantization")
+    finally:
+        bm.free()
+
+
+def _lightmap_overlaps(bm, uv):
+    """Faces whose lightmap triangles overlap, and the faces that fold over themselves.
+    Uses Blender's own tessellation, which the glTF exporter writes."""
+    from validate_glb import uv_overlaps  # stdlib; build.py puts tools/blender on sys.path
+
+    bm.faces.index_update()
+    bm.faces.ensure_lookup_table()
+    loop_tris = bm.calc_loop_triangles()
+    tris = [tuple(tuple(loop[uv].uv) for loop in t) for t in loop_tris]
+    owner = [t[0].face.index for t in loop_tris]
+    pairs = uv_overlaps(tris)
+    bad = sorted({owner[i] for pair in pairs for i in pair})
+    folded = sorted({owner[a] for a, b in pairs if owner[a] == owner[b]})
+    return bad, folded
 
 
 def _separate_overlaps(me, layer, attempts=4):
     """Smart UV Project can fold a chart over itself. Detach every face that overlaps another
-    into its own chart and repack, until nothing overlaps (validate_glb checks the export)."""
-    from validate_glb import uv_overlaps  # stdlib; build.py puts tools/blender on sys.path
-
-    for _ in range(attempts):
+    into its own chart (splitting faces that fold over themselves) and repack, until nothing
+    overlaps (validate_glb checks the export)."""
+    for attempt in range(attempts + 1):
         bm = bmesh.from_edit_mesh(me)
         uv = bm.loops.layers.uv[layer]
-        bm.faces.ensure_lookup_table()
-        tris, owner = [], []
-        for f in bm.faces:
-            loops = f.loops
-            for k in range(1, len(loops) - 1):
-                tris.append((tuple(loops[0][uv].uv), tuple(loops[k][uv].uv), tuple(loops[k + 1][uv].uv)))
-                owner.append(f.index)
-        bad = sorted({owner[i] for pair in uv_overlaps(tris) if owner[pair[0]] != owner[pair[1]] for i in pair})
+        bad, folded = _lightmap_overlaps(bm, uv)
         if not bad:
             return
+        if attempt == attempts:
+            break
+        if folded:  # its triangles become faces of their own; detached on the next pass
+            bmesh.ops.triangulate(bm, faces=[bm.faces[i] for i in folded], quad_method="FIXED", ngon_method="EAR_CLIP")
+            bmesh.update_edit_mesh(me)
+            continue
         for n, index in enumerate(bad):  # its own chart, outside the unit square until repacked
             for loop in bm.faces[index].loops:
                 loop[uv].uv += Vector((2.0 + 2.0 * n, 0.0))
@@ -411,7 +432,7 @@ def _separate_overlaps(me, layer, attempts=4):
         bpy.ops.mesh.select_all(action="SELECT")
         bpy.ops.uv.select_all(action="SELECT")
         bpy.ops.uv.pack_islands(rotate=False, margin=0.01)
-    raise RuntimeError(f"{me.name}: lightmap UVs still overlap after {attempts} repacks")
+    raise RuntimeError(f"{me.name}: lightmap UVs still overlap after {attempts} repairs")
 
 
 def _part_object(part, mats, coll):
