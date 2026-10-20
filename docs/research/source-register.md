@@ -63,3 +63,16 @@ Open a station-specific evidence-gap Issue with exact zone, floor, landmark, mis
 ## Research exit criterion
 
 Deliver source-by-source official page, real download file or explicit absence, footprint, floor, date, rights, transform feasibility, and safe usage classification. Never equate 'a model exists' with 'a usable station navigation graph exists'.
+
+## 2026-10-20 evidence update — first research pass completed
+
+Full evidence dossier, downloadable file links, per-source rights checks, and explicit UNKNOWNs: [GTEki_Public_Data_Research_2026-10-20.md](GTEki_Public_Data_Research_2026-10-20.md).
+
+- Ikebukuro: PLATEAU 2025 `ubld` individual CityGML listed at 35,427,963 bytes; metadata identifies 2023 Tokyo LiDAR SLAM source and CC BY 4.0. **GML contents and actual indoor station coverage have not been independently downloaded or validated.** Do not assert complete station or station-current geometry.
+- Shinjuku: PLATEAU 2025 `ubld` listed at 43,830,765 bytes; same year-versus-survey caution and unresolved floor coverage.
+- Ikebukuro walking network: 2,196 link and 1,887 node rows, dated 2019-01-28; all inspected nodes `in_out=1` (outside facility) and empty elevation. **Not a verified indoor graph.**
+- Shinjuku Oedo E27: operator-specific layered indoor network in GeoJSON/CSV/Shapefile, PDL 1.0; **partial area only**, source levels 1F/B1/B2/B3/B5/B6 must not be conflated with JR/other operators.
+- Operator station maps: useful verification references; reproduction, tracing, redistribution or derivation into released GLB/texture/structured map **not authorized by mere public access**.
+- POIs and visual materials: resource-specific licensing and accuracy checks still required. Google Maps/Street View must not feed a scraped/re-distributed reconstruction pipeline.
+
+Status nomenclature: a verified **metadata/license/source link** is not a verified **coverage/topology/current passenger route**. Treat these as separate fields. No M0 route has passed current-world acceptance. Initial candidate table above predates the detailed evidence dossier; consult the dossier for current source-level findings.
