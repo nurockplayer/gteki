@@ -258,6 +258,11 @@ describe("describeRoute junction hints", () => {
     expect(kept({ fare: "ticketed", stepFree: false, at: { weekday: "mon", minutes: 8 * 60 + 59.5 } })).toBeUndefined();
     // Shut for the whole walk, across midnight into Monday: dropped.
     expect(kept({ fare: "ticketed", stepFree: false, at: { weekday: "sun", minutes: 23 * 60 + 59.5 } })).toEqual(keepRight);
+    // A malformed departure (minute 1440) is an UNKNOWN time, never Monday 00:00: the branch counts.
+    const malformed: RouteProfile = { fare: "ticketed", stepFree: false, at: { weekday: "sun", minutes: 23 * 60 + 59.5 } };
+    const r = route(b, "start", "g", malformed);
+    r.profile.at = { weekday: "sun", minutes: 1440 };
+    expect(describeRoute(b, r, "en")[2]!.junctions).toBeUndefined();
     b.edges.find((e) => e.id === "p-twin")!.hours = null;
     expect(kept({ fare: "ticketed", stepFree: false, hours: "require_known" })).toEqual(keepRight);
     expect(kept({ fare: "ticketed", stepFree: false })).toBeUndefined();

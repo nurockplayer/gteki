@@ -352,6 +352,8 @@ const WEEK: Weekday[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
  */
 function shutForWholeRoute(edge: Edge, at: LocalTime, spanSeconds: number, strict: boolean): boolean {
   if (edge.hours === null || edge.hours.kind === "always") return false;
+  // A malformed departure (unknown weekday, minutes outside 0–1439) is an UNKNOWN time: never roll it into a known one.
+  if (!WEEK.includes(at.weekday) || !(at.minutes >= 0 && at.minutes < 1440) || !Number.isFinite(spanSeconds)) return false;
   const from = Math.floor(at.minutes);
   const to = Math.min(Math.ceil(at.minutes + spanSeconds / 60), from + 7 * 1440);
   for (let c = from; c <= to; c++) {
@@ -364,8 +366,9 @@ function shutForWholeRoute(edge: Edge, at: LocalTime, spanSeconds: number, stric
 
 /**
  * Branches that may be walked away from each node: the station's traversable graph under the query's
- * operational restrictions (closures, strict hours, and known hours over the route's time span), but not
- * the traveller's own preferences — a stair or a ticket gate the traveller avoids is still a visible branch.
+ * operational restrictions (closures, strict hours), but not the traveller's own preferences — a stair
+ * or a ticket gate the traveller avoids is still a visible branch. Known hours are checked separately,
+ * and only for branches at the route's junctions (see shutForWholeRoute).
  */
 function departuresByNode(bundle: StationBundle, route: RouteResult): Map<string, Edge[]> {
   const router = createRouter(bundle);
@@ -378,7 +381,6 @@ function departuresByNode(bundle: StationBundle, route: RouteResult): Map<string
   const out = new Map<string, Edge[]>();
   for (const edge of bundle.edges) {
     if (edge.from === edge.to || !router.isTraversable(edge, operational)) continue;
-    if (profile.at && shutForWholeRoute(edge, profile.at, route.estimatedSeconds, profile.hours === "require_known")) continue;
     for (const nodeId of edge.direction === "both" ? [edge.from, edge.to] : [edge.from]) {
       const list = out.get(nodeId);
       if (list) list.push(edge);
@@ -453,6 +455,13 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
   const points = routePolyline(bundle, route);
   const edges = new Map(bundle.edges.map((e) => [e.id, e]));
   const departures = departuresByNode(bundle, route);
+  const shut = new Map<Edge, boolean>();
+  const { at } = route.profile;
+  const openDuringRoute = (e: Edge): boolean => {
+    if (!at) return true;
+    if (!shut.has(e)) shut.set(e, shutForWholeRoute(e, at, route.estimatedSeconds, route.profile.hours === "require_known"));
+    return !shut.get(e);
+  };
   const names = junctionNames(bundle, lang);
   const firstFloor = nodes.get(route.nodeIds[0]!)!.floorId;
   const out: Instruction[] = [{ kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, text: t.start() }];
@@ -545,7 +554,8 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     }
     if (current && turn === "walk") {
       // Passing a choice point without turning: say which branch to keep to, since no turn marks it.
-      const action = junctionAction(points, route.steps, i, departures.get(step.fromNodeId) ?? [], nodes, edges);
+      const branches = (departures.get(step.fromNodeId) ?? []).filter(openDuringRoute);
+      const action = junctionAction(points, route.steps, i, branches, nodes, edges);
       if (action) {
         (current.junctions ??= []).push({
           nodeId: step.fromNodeId, stepIndex: i, atM: Math.max(1, Math.round(current.distanceM)), action, name: names.get(step.fromNodeId) ?? null,
