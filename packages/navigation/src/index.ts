@@ -99,3 +99,4 @@ export interface Router {
 }
 
 export { createRouter } from "./router.ts";
+export { describeRoute, nodeDisplayZ, routePolyline, type Instruction, type InstructionKind, type PolylinePoint } from "./present.ts";

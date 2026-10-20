@@ -105,6 +105,20 @@ describe("validator truth rules added in v0.1 core", () => {
     expect(errors(b)).toContain("asset.rights");
   });
 
+  it("accepts reference-only sources cited as facts, but never as geometry or asset inputs", () => {
+    const b = createSyntheticBundle([edge("v", "start", "goal", { verification: "verified" })]);
+    b.station.synthetic = false;
+    const ref = b.sources.find((s) => s.id === "fixture-access")!;
+    ref.rights = "REFERENCE_ONLY";
+    expect(warnings(b)).toContain("source.rights");
+    ref.usage = "facts-only";
+    expect(warnings(b)).not.toContain("source.rights");
+    expect(errors(b)).toEqual([]);
+    b.edges[0]!.geometryEvidence = { ...b.edges[0]!.geometryEvidence, sourceIds: ["fixture-access"] };
+    b.assets = [{ id: "x", uri: "assets/x.glb", format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-access"] }];
+    expect(errors(b)).toEqual(expect.arrayContaining(["edge.geometry.rights", "asset.rights"]));
+  });
+
   it("flags fare crossings that are not gate edges and bidirectional escalators", () => {
     const b = createSyntheticBundle([
       edge("fare", "start", "a", { crossesFareBoundary: true, paid: null }),

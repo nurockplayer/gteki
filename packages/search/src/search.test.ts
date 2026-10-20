@@ -150,3 +150,15 @@ describe("station POI search", () => {
     expect(indexFor(bundleWith([...pois].reverse())).search("gate")).toEqual(expected);
   });
 });
+
+describe("script-run matching", () => {
+  it("matches parts across word order and script changes", async () => {
+    const { scriptRuns } = await import("./search.ts");
+    expect(scriptRuns(normalizeJa("でぐち35"))).toEqual(["でぐち", "35"]);
+    const bundle = createSyntheticBundle();
+    bundle.pois[1]!.aliases.push({ lang: "ja-Hrkt", text: "35ばんでぐち" });
+    const hits = createSearchIndex(bundle).search("でぐち35");
+    expect(hits[0]?.poi.id).toBe("exit-a1");
+    expect(hits[0]?.matched).toBe("35ばんでぐち");
+  });
+});

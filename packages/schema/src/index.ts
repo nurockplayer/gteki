@@ -40,6 +40,12 @@ export interface Source {
   downloadUrls?: string[];
   license: { name: string; url: string } | null;
   rights: RightsStatus;
+  /**
+   * How GTEki uses the source. "facts-only": cited only as evidence for facts (a passage is
+   * public, an exit number, a gate identity); nothing derived from it is distributed.
+   * Omitted = "data" (contents or derivatives may ship).
+   */
+  usage?: "data" | "facts-only";
   /** Credit line to display wherever derived data is shown. */
   attribution: string;
   /** True when GTEki modified/derived the data (must be disclosed for PDL/CC BY). */

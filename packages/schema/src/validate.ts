@@ -44,11 +44,12 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
 
   const sourceIds = new Set<string>();
   const sourceRights = new Map(b.sources.map((s) => [s.id, s.rights]));
+  const factsOnly = new Set(b.sources.filter((s) => s.usage === "facts-only").map((s) => s.id));
   for (const s of b.sources) {
     if (sourceIds.has(s.id)) err("source.dup", `duplicate source id`, s.id);
     sourceIds.add(s.id);
-    if (!b.station.synthetic && s.rights !== "REUSABLE_WITH_CONDITIONS")
-      warn("source.rights", `source rights ${s.rights}; must not feed published geometry/data`, s.id);
+    if (!b.station.synthetic && s.rights !== "REUSABLE_WITH_CONDITIONS" && s.usage !== "facts-only")
+      warn("source.rights", `source rights ${s.rights}; must not feed published geometry/data (mark usage:"facts-only" if only cited as evidence)`, s.id);
   }
 
   const operatorIds = new Set(b.station.operators.map((o) => o.id));
@@ -95,6 +96,8 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (e.verification === "verified" && !e.accessEvidence)
       warn("edge.access", "verified edge without access evidence; access facts are UNKNOWN", e.id);
     checkEvidence(e, e.geometryEvidence, "geometryEvidence");
+    for (const s of e.geometryEvidence.sourceIds)
+      if (factsOnly.has(s) && !b.station.synthetic) err("edge.geometry.rights", `polyline geometry cites facts-only source ${s}; geometry would be a derivative`, e.id);
     checkEvidence(e, e.accessEvidence, "accessEvidence");
     if (e.crossesFareBoundary === true && e.paid === false)
       err("edge.fare", "fare-boundary edge cannot be marked fully unpaid", e.id);
@@ -143,6 +146,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     for (const f of a.floorIds) if (!floorIds.has(f)) err("asset.floor", `unknown floor ${f}`, a.id);
     for (const s of a.sourceIds) {
       if (!sourceIds.has(s)) err("asset.source", `unknown source ${s}`, a.id);
+      if (factsOnly.has(s)) err("asset.rights", `asset derives from facts-only source ${s}`, a.id);
       const rights = sourceRights.get(s);
       if (rights && rights !== "REUSABLE_WITH_CONDITIONS" && !b.station.synthetic)
         err("asset.rights", `asset derives from source ${s} with rights ${rights}; it cannot ship in the public bundle`, a.id);

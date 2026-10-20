@@ -15,6 +15,25 @@ interface IndexedPoi {
   texts: { original: string; normalized: string }[];
 }
 
+/**
+ * Split a normalised query where the script changes (digits / latin / kana / kanji), so word
+ * order differences like "でぐち35" vs "35ばんでぐち" still match all parts.
+ */
+export function scriptRuns(normalized: string): string[] {
+  const kind = (c: string) => (/\p{Nd}/u.test(c) ? "d" : /[a-z]/.test(c) ? "l" : /\p{Script=Hiragana}/u.test(c) ? "h" : /\p{Script=Han}/u.test(c) ? "k" : "o");
+  const runs: string[] = [];
+  let current = "";
+  let currentKind = "";
+  for (const c of normalized) {
+    const k = kind(c);
+    if (current && k !== currentKind) { runs.push(current); current = ""; }
+    current += c;
+    currentKind = k;
+  }
+  if (current) runs.push(current);
+  return runs;
+}
+
 /** Ordered subsequence matching, penalising skipped characters within the match. */
 function fuzzyScore(query: string[], candidate: string[]): number {
   if (query.length > candidate.length) return 0;
@@ -46,7 +65,9 @@ function scoreText(query: string, queryChars: string[], tokens: string[], candid
   if (candidate === query) return 100;
   if (candidate.startsWith(query)) return 80;
   if (candidate.includes(query)) return 60;
-  const tokenScore = tokens.length > 1 && tokens.every((token) => candidate.includes(token)) ? 40 : 0;
+  const runs = scriptRuns(query);
+  const tokenScore = (tokens.length > 1 && tokens.every((token) => candidate.includes(token))) ||
+    (runs.length > 1 && runs.every((run) => candidate.includes(run))) ? 40 : 0;
   return Math.max(tokenScore, fuzzyScore(queryChars, [...candidate]));
 }
 
