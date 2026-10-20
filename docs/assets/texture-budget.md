@@ -117,7 +117,7 @@ The lowest close-up scores belong to the bench (perforated steel at 512) and the
   - a planned `res` is above the library's `texture_resolution` (supplied poster images are planned too, capped at `tex_res`);
   - a material samples more images than its plan keeps;
   - a GLB embeds the same image bytes twice;
-  - a GLB and the manifest disagree;
+  - a GLB and the manifest disagree (missing on either side, or a different `sha256` or byte size);
   - the committed library exceeds the byte or GPU limits.
 
   The limits only apply to the library they were measured on (`kit_v0_1.json` at 1024), so station catalogs and HQ builds are checked by the rules alone. Raise a limit deliberately, in the PR that needs it, with numbers.

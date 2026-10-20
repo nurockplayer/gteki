@@ -72,7 +72,8 @@ def gpu_bytes(w, h, kind):
 
 
 def scan_glb(path):
-    doc, binary = parse_glb(path.read_bytes())
+    data = path.read_bytes()
+    doc, binary = parse_glb(data)
     views = doc.get("bufferViews", [])
     images = []
     for index, image in enumerate(doc.get("images", [])):
@@ -98,7 +99,7 @@ def scan_glb(path):
                 sampled.setdefault(material.get("name"), set()).add(source)
     for image in images:
         image["materials"] = sorted(users.get(image["index"], ()))
-    return dict(file=path.name, bytes=path.stat().st_size, images=images,
+    return dict(file=path.name, bytes=len(data), sha256=hashlib.sha256(data).hexdigest(), images=images,
                 material_images={k: len(v) for k, v in sampled.items()})
 
 
@@ -162,6 +163,10 @@ def check(glbs, manifest, budget, manifest_meta=None):
         if aid not in manifest:
             problems.append(f"{aid}: GLB is not in manifest.json")
             continue
+        # the manifest is the integrity record consumers (and bundle_kit) trust
+        for key in ("sha256", "bytes"):
+            if key in manifest[aid] and manifest[aid][key] != glb[key]:
+                problems.append(f"{aid}: GLB {key} {glb[key]} differs from manifest {manifest[aid][key]}")
         plan = manifest[aid].get("textures")
         cap = (manifest_meta or {}).get("texture_resolution")
         for name, entry in (plan or {}).items():
@@ -250,6 +255,11 @@ def self_test():
         assert check({path.stem: scan_glb(path)}, big, budget, meta) == [
             f"{path.stem}: gteki_test plan res 2048 exceeds texture_resolution 1024"]
         glbs = {path.stem: scan_glb(path)}
+        # file digest and size must match the manifest entry
+        g = glbs[path.stem]
+        assert check(glbs, {path.stem: {"sha256": g["sha256"], "bytes": g["bytes"]}}, budget, meta) == []
+        stale = check(glbs, {path.stem: {"sha256": "0" * 64, "bytes": g["bytes"] + 1}}, budget, meta)
+        assert [p.split(":")[1].split()[1] for p in stale] == ["sha256", "bytes"], stale
         both = {path.stem: {"textures": plan}, "gteki_gone": {"textures": plan}}
         assert [p for p in check(glbs, both, budget, meta) if "gteki_gone" in p] == ["gteki_gone: in manifest.json but its GLB is missing"]
     for w, h in ((512, 256), (1024, 1024)):
