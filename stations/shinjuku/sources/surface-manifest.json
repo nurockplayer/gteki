@@ -85,6 +85,40 @@
       "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
       "kind": "provenance",
       "acquiredAt": "2026-10-20T16:18:39+00:00"
+    },
+    {
+      "path": "53394525_tran_6697_op.gml",
+      "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/tran/53394525_tran_6697_op.gml",
+      "bytes": 34370375,
+      "sha256": "5b6e432a857c3241766abcda3c3c596b5ff8f298e1ae95051619fbb191c4c195",
+      "kind": "tran",
+      "acquiredAt": "2026-10-20T16:41:06+00:00"
+    },
+    {
+      "path": "53394526_tran_6697_op.gml",
+      "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/tran/53394526_tran_6697_op.gml",
+      "bytes": 11415006,
+      "sha256": "2ff55bf2847f8f9ce30dff083a3fedf77599390d08644002b56c8cf50fe829d5",
+      "kind": "tran",
+      "acquiredAt": "2026-10-20T16:41:07+00:00"
+    },
+    {
+      "path": "53394535_tran_6697_op.gml",
+      "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/tran/53394535_tran_6697_op.gml",
+      "bytes": 31785752,
+      "sha256": "1141159b90ee2a901eae0b4afa76ebd11141296caa97fa5ac9cd87a5ee07db6c",
+      "kind": "tran",
+      "acquiredAt": "2026-10-20T16:41:07+00:00"
+    },
+    {
+      "path": "53394536_tran_6697_op.gml",
+      "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/tran/53394536_tran_6697_op.gml",
+      "bytes": 25412513,
+      "sha256": "b6732ec989aebb843e71c9707efee32686980d0f51244e25cc691d0e4f84a019",
+      "kind": "tran",
+      "acquiredAt": "2026-10-20T16:41:08+00:00"
     }
-  ]
+  ],
+  "tranCatalogApi": "https://api.plateauview.mlit.go.jp/datacatalog/citygml/13104?types=tran",
+  "tranCoverageNote": "2025年度 新宿区 tran CityGML; four 3rd-mesh tiles matching the building context (53394525, 53394526, 53394535, 53394536), LOD1 road polygons only."
 }

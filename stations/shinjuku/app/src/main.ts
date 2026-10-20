@@ -756,6 +756,7 @@ function step(dt: number) {
   station.update(dt, t);
   crowd.update(dt, { x: player.x, y: player.y, z: player.z });
   updateCamera(dt, performance.now() / 1000);
+  station.setViewer?.({ x: camera.position.x, y: -camera.position.z, z: camera.position.y }); // W2: cull street from underground passes.
   avatar.object.position.set(player.x, player.z, -player.y);
   avatar.object.rotation.y = -player.heading + Math.PI; // avatar faces -Z (north) at rotation 0... heading 0 = north
   avatar.object.rotation.y = -player.heading;

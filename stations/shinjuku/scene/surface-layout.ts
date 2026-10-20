@@ -1,7 +1,7 @@
 /** Surface geometry/collision contracts. Procedural context never adds a walk surface. */
 import polygonClipping, { type MultiPolygon, type Polygon } from "polygon-clipping";
 import type { StationBundle } from "@gteki/schema";
-import { type Layout, type XY, type WallSeg } from "./layout.ts";
+import { pointInRings, type Layout, type XY, type WallSeg } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
 
 export const GROUND_EXTENT = { minX: -710, minY: -610, maxX: 650, maxY: 810 };
@@ -115,18 +115,70 @@ export function surfaceColumns(layout: Layout, bundle: StationBundle): WallSeg[]
   return surfaceEntrances(layout, bundle).flatMap((e) => [-1, 1].flatMap((side) => [-1, 1].flatMap((end) => {
     const p = { x: e.center.x + e.u.x * e.halfLength * end - e.u.y * e.halfWidth * side, y: e.center.y + e.u.y * e.halfLength * end + e.u.x * e.halfWidth * side };
     if (segs.some(({ a, b }) => { const q = dist(p, a, b); return q.d < 0.8 && a.z + (b.z - a.z) * q.t > -2; })) return [];
-    return [{ a: { x: p.x - 0.07, y: p.y }, b: { x: p.x + 0.07, y: p.y }, zMin: 0, zMax: 3.45, side: 1 as const, kind: "office" as const }];
+    return [{ a: { x: p.x - 0.04, y: p.y }, b: { x: p.x + 0.04, y: p.y }, zMin: 0, zMax: 2.95, side: 1 as const, kind: "office" as const }];
   })));
+}
+
+export interface CanopyWallSeg extends WallSeg {
+  /** Renderer hint: glazed stair-side panel or the opaque end wall. */
+  canopyPart: "side" | "back";
+}
+
+/** Side glazing and the closed end of each entrance canopy. Segments are cut
+ * around all nearby graph paths so the decorative enclosure never narrows or
+ * blocks a published edge. Panels stay at body height and enter WalkWorld. */
+export function surfaceCanopyWalls(layout: Layout, bundle: StationBundle): CanopyWallSeg[] {
+  const segs = graphSegments(layout, bundle);
+  const walls: CanopyWallSeg[] = [];
+  const clear = (p: XY) => segs.some(({ a, b }) => {
+    const q = dist(p, a, b), z = a.z + (b.z - a.z) * q.t;
+    // WalkWorld checks wall height against the full 1.7 m body, so a walker
+    // descending to -1.65 m can still touch a wall whose sill is at street z=0.
+    return q.d < 0.65 && z > -1.7 && z < 2.65;
+  });
+
+  const appendClipped = (a: XY, b: XY, canopyPart: CanopyWallSeg["canopyPart"]) => {
+    const length = Math.hypot(b.x - a.x, b.y - a.y);
+    const pieces = Math.max(1, Math.ceil(length / 0.1));
+    let start: XY | null = null;
+    for (let i = 0; i <= pieces; i++) {
+      const p = { x: a.x + (b.x - a.x) * i / pieces, y: a.y + (b.y - a.y) * i / pieces };
+      const next = { x: a.x + (b.x - a.x) * (i + 1) / pieces, y: a.y + (b.y - a.y) * (i + 1) / pieces };
+      const midpoint = { x: (p.x + next.x) / 2, y: (p.y + next.y) / 2 };
+      const keep = i < pieces && ![p, midpoint, next].some(clear);
+      if (keep && !start) start = p;
+      if (!keep && start) {
+        if (Math.hypot(p.x - start.x, p.y - start.y) > 0.15) walls.push({
+          a: start, b: p, zMin: 0, zMax: canopyPart === "back" ? 2.95 : 2.35,
+          side: 1, kind: "wall", canopyPart,
+        });
+        start = null;
+      }
+    }
+  };
+
+  for (const e of surfaceEntrances(layout, bundle)) {
+    const v = { x: -e.u.y, y: e.u.x };
+    const end = (along: number, across: number): XY => ({
+      x: e.center.x + e.u.x * along + v.x * across,
+      y: e.center.y + e.u.y * along + v.y * across,
+    });
+    for (const side of [-1, 1]) appendClipped(end(-e.halfLength, side * e.halfWidth), end(e.halfLength, side * e.halfWidth), "side");
+    // The low end of the stair run is the back of the canopy. The clear graph
+    // corridor cuts a doorway where the actual run passes through this plane.
+    appendClipped(end(-e.halfLength, -e.halfWidth), end(-e.halfLength, e.halfWidth), "back");
+  }
+  return walls;
 }
 
 /** Call once after buildLayout. It adds only obstacles, never walkable context. */
 export function surfaceWalls(layout: Layout, bundle: StationBundle, surface?: SurfaceData): WallSeg[] {
-  const walls = [...surfacePadWalls(layout, bundle), ...surfaceColumns(layout, bundle)];
+  const walls = [...surfacePadWalls(layout, bundle), ...surfaceColumns(layout, bundle), ...surfaceCanopyWalls(layout, bundle)];
   if (surface) for (const b of surfaceBuildingFootprints(surface, layout, bundle)) for (const ring of b.rings) for (let i = 1; i < ring.length; i++) walls.push({ a: { x: ring[i - 1]![0], y: ring[i - 1]![1] }, b: { x: ring[i]![0], y: ring[i]![1] }, zMin: 0, zMax: b.height + 0.55, side: 1, kind: "room" });
   return walls;
 }
 
-export interface SurfaceEntrance { id: string; labelJa: string; labelEn: string; center: XY; u: XY; halfWidth: number; halfLength: number }
+export interface SurfaceEntrance { id: string; labelJa: string; labelEn: string; center: XY; top: XY; firstLandingZ: number; u: XY; halfWidth: number; halfLength: number }
 /** One generic canopy per actual ground-level exit POI; B1 exits stay underground. */
 export function surfaceEntrances(layout: Layout, bundle: StationBundle): SurfaceEntrance[] {
   return bundle.pois.filter((p) => p.category === "exit" && p.connectorNodeIds.some((id) => Math.abs(layout.nodeZ.get(id) ?? -100) < 0.1)).map((p) => {
@@ -138,6 +190,20 @@ export function surfaceEntrances(layout: Layout, bundle: StationBundle): Surface
     const L = Math.hypot(top.x - low.x, top.y - low.y) || 1;
     const u = { x: (top.x - low.x) / L, y: (top.y - low.y) / L };
     const reach = run ? Math.min(L, 2.6 / Math.abs(run.a.z - run.b.z) * L) : 2;
-    return { id: p.id, labelJa: p.names.find((n) => n.lang === "ja")!.text, labelEn: p.names.find((n) => n.lang === "en")!.text, center: { x: top.x - u.x * reach / 2, y: top.y - u.y * reach / 2 }, u, halfWidth: (run?.width ?? 2.2) / 2 + 0.5, halfLength: reach / 2 + 1.1 };
+    return { id: p.id, labelJa: p.names.find((n) => n.lang === "ja")!.text, labelEn: p.names.find((n) => n.lang === "en")!.text, center: { x: top.x - u.x * (reach / 2 + .475), y: top.y - u.y * (reach / 2 + .475) }, top: { x: top.x, y: top.y }, firstLandingZ: run ? Math.min(run.a.z, run.b.z) : 0, u, halfWidth: (run?.width ?? 2.2) / 2 + 0.5, halfLength: reach / 2 + .625 };
   });
+}
+
+/** Surface rendering is only needed in the open air or close to an exit after
+ * the viewer has risen above its first landing. `viewer` is station ENU. */
+export function surfaceVisibleAt(layout: Layout, bundle: StationBundle, viewer: { x: number; y: number; z: number }, context = { entrances: surfaceEntrances(layout, bundle), openings: surfaceOpenings(layout, bundle) }): boolean {
+  if (viewer.z >= 0) return true;
+  const nearTop = viewer.z > -2 || context.entrances.some((e) =>
+    Math.hypot(viewer.x - e.top.x, viewer.y - e.top.y) <= 30 && viewer.z > e.firstLandingZ + 1.2);
+  if (!nearTop) return false;
+  // The follow camera can reach -1.95 m while standing on the flat B1 floor.
+  // Below grade, only an opening (plus a conservative 0.8 m approach margin)
+  // gives sight of the surface; the remaining ground/ceiling is opaque.
+  return context.openings.some(poly => pointInRings(viewer, poly.map(r => r.map(([x,y]) => ({x,y})))) ||
+    poly.some(r => r.slice(1).some(([x,y],i) => dist(viewer,{x:r[i]![0],y:r[i]![1]},{x,y}).d < .8)));
 }

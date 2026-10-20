@@ -9,7 +9,7 @@ import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { EnuFrame } from "@gteki/geo";
-import type { SurfaceBuilding, SurfaceData } from "../scene/surface-data.ts";
+import type { SurfaceBuilding, SurfaceData, SurfaceRoad } from "../scene/surface-data.ts";
 
 export const ORIGIN = { lat: 35.687, lon: 139.6994, h: 0 };
 const frame = new EnuFrame(ORIGIN);
@@ -74,6 +74,9 @@ export function parseBuildings(xml: string, exits: P[], radius = 300): SurfaceBu
     const measured = Number(feature[2]!.match(/<bldg:measuredHeight\s+uom="m">([^<]+)<\/bldg:measuredHeight>/)?.[1]);
     const height = Number.isFinite(measured) && measured > 0 ? measured : top - base;
     if (height <= 0) throw new Error(`Invalid height: ${feature[1]}`);
+    const usage = feature[2]!.match(/<bldg:usage(?:\s[^>]*)?>([^<]+)<\/bldg:usage>/)?.[1]?.trim() ?? null;
+    const storeysValue = Number(feature[2]!.match(/<bldg:storeysAboveGround(?:\s[^>]*)?>([^<]+)<\/bldg:storeysAboveGround>/)?.[1]);
+    const storeys = Number.isInteger(storeysValue) && storeysValue > 0 && storeysValue < 9999 ? storeysValue : null;
     let part = 0;
     for (const poly of polys) {
       if (!poly[0]!.every((p) => Math.abs(p[2] - base) < 0.02)) continue;
@@ -83,7 +86,28 @@ export function parseBuildings(xml: string, exits: P[], radius = 300): SurfaceBu
       const xs = rings[0]!.map((p) => p[0]), ys = rings[0]!.map((p) => p[1]);
       const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
       if (!exits.some(([x, y]) => Math.hypot(Math.max(minX - x, 0, x - maxX), Math.max(minY - y, 0, y - maxY)) <= radius)) continue;
-      out.push({ id: `${feature[1]}:${part++}`, rings: rings.map(simplifyRing), height: quant(height), groundHeight: quant(base), heightSource: Number.isFinite(measured) && measured > 0 ? "measuredHeight" : "lod1Solid" });
+      out.push({ id: `${feature[1]}:${part++}`, rings: rings.map(simplifyRing), height: quant(height), groundHeight: quant(base), heightSource: Number.isFinite(measured) && measured > 0 ? "measuredHeight" : "lod1Solid", usage, storeys });
+    }
+  }
+  return out;
+}
+/** Parse PLATEAU tran:Road LOD1 MultiSurface polygons. Each polygon is a separate
+ * compact render record, preserving its exterior and any interior rings. */
+export function parseRoads(xml: string, exits: P[], radius = 300): SurfaceRoad[] {
+  if (!/srsName="[^"]*(?:\/|:)6697"/.test(xml) || /<!DOCTYPE|<!ENTITY/.test(xml)) throw new Error("Expected entity-free EPSG:6697 CityGML");
+  const out: SurfaceRoad[] = [];
+  for (const feature of xml.matchAll(/<tran:Road\s[^>]*gml:id="([^"]+)"[^>]*>([\s\S]*?)<\/tran:Road>/g)) {
+    const multi = feature[2]!.match(/<tran:lod1MultiSurface>([\s\S]*?)<\/tran:lod1MultiSurface>/)?.[1];
+    if (!multi) continue;
+    let part = 0;
+    for (const polygon of multi.matchAll(/<gml:Polygon(?:\s[^>]*)?>([\s\S]*?)<\/gml:Polygon>/g)) {
+      const sourceRings = [...polygon[1]!.matchAll(/<gml:LinearRing(?:\s[^>]*)?>([\s\S]*?)<\/gml:LinearRing>/g)].map((ring) => tuples(ring[1]!));
+      if (!sourceRings.length) continue;
+      const rings = sourceRings.map((ring) => ring.map(([lat, lon, h]): P => { const p = surfaceEnu(lat, lon, h); return [p.x, p.y]; }));
+      const xs = rings[0]!.map((p) => p[0]), ys = rings[0]!.map((p) => p[1]);
+      const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+      if (!exits.some(([x, y]) => Math.hypot(Math.max(minX - x, 0, x - maxX), Math.max(minY - y, 0, y - maxY)) <= radius)) continue;
+      out.push({ id: `${feature[1]}:${part++}`, rings: rings.map(simplifyRing) });
     }
   }
   return out;
@@ -95,25 +119,29 @@ export function importSurface(check = false) {
   const graph = JSON.parse(readFileSync(join(here, "../gteki/graph.json"), "utf8"));
   const exits: P[] = graph.nodes.filter((n: { floorId: string; inOut: string }) => ["toei-nwd-0", "toei-nwd-1"].includes(n.floorId) && n.inOut !== "inside").map((n: { position: { x: number; y: number } }) => [n.position.x, n.position.y]);
   const buildings: SurfaceBuilding[] = [];
+  const roads: SurfaceRoad[] = [];
   for (const f of manifest.files) {
     const data = readFileSync(join(raw, f.path));
     if (data.byteLength !== f.bytes || createHash("sha256").update(data).digest("hex") !== f.sha256) throw new Error(`Hash/bytes mismatch: ${f.path}`);
     if (f.kind === "bldg") buildings.push(...parseBuildings(data.toString("utf8"), exits));
+    if (f.kind === "tran") roads.push(...parseRoads(data.toString("utf8"), exits));
   }
   buildings.sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  roads.sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   if (!buildings.length || new Set(buildings.map((b) => b.id)).size !== buildings.length) throw new Error("Empty or duplicate context");
+  if (!roads.length || new Set(roads.map((r) => r.id)).size !== roads.length) throw new Error("Empty or duplicate road context");
   const surface: SurfaceData = {
-    version: 1, origin: ORIGIN, attribution: "東京都 3D都市モデル（Project PLATEAU）新宿区（2025年度） / CC BY 4.0. Modified by GTEki: LOD1 footprints simplified and extruded; procedural facades; terrain flattened. Not an official model.",
+    version: 1, origin: ORIGIN, attribution: "東京都 3D都市モデル（Project PLATEAU）新宿区（2025年度） / CC BY 4.0. Modified by GTEki: LOD1 building footprints and road polygons simplified; buildings extruded; procedural facades, sidewalks and markings; terrain flattened. Not an official model.",
     license: manifest.license, source: manifest.datasetUrl, note: "render-only context, not routing",
     heightNote: "Source EPSG:6697 orthometric groundHeight is retained for provenance. Render bases are flattened to symbolic station street z=0; source measuredHeight (or LOD1 height) is preserved. No datum registration to underground symbolic floors is asserted.",
-    buildings,
+    buildings, roads,
   };
   const bytes = JSON.stringify(surface) + "\n";
   if (Buffer.byteLength(bytes) >= 1_500_000) throw new Error("Surface exceeds 1.5 MB budget");
   const target = join(here, "../data/surface.json");
   if (check) { if (readFileSync(target, "utf8") !== bytes) throw new Error("surface.json differs; run import:surface"); }
   else writeFileSync(target, bytes);
-  console.log(`${check ? "Checked" : "Wrote"} ${buildings.length} building parts, ${Buffer.byteLength(bytes)} bytes`);
+  console.log(`${check ? "Checked" : "Wrote"} ${buildings.length} building parts and ${roads.length} road polygons, ${Buffer.byteLength(bytes)} bytes`);
   return bytes;
 }
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) importSurface(process.argv.includes("--check"));

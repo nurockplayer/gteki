@@ -1,16 +1,31 @@
 import { describe, expect, it, vi } from "vitest";
+import { BufferGeometry, Float32BufferAttribute, Group, Mesh, MeshBasicMaterial } from "three";
 import { WalkWorld, buildLayout, pointInRings, type Plan } from "../scene/layout.ts";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json";
 import surfaceJson from "../data/surface.json";
-import { buildSurface, surfaceWalls, type SurfaceData } from "../scene/surface.ts";
-import { surfaceBuildingFootprints, surfaceEntrances, surfaceGround, surfaceOpenings, surfacePadWalls, streetFootprint } from "../scene/surface-layout.ts";
+import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "../scene/surface.ts";
+import { surfaceBuildingFootprints, surfaceCanopyWalls, surfaceEntrances, surfaceGround, surfaceOpenings, surfacePadWalls, surfaceVisibleAt, streetFootprint } from "../scene/surface-layout.ts";
+import { inside, surfaceStreets } from "../scene/surface-street.ts";
 import { parseBuildings, simplifyRing, surfaceEnu } from "../tools/import-surface.ts";
 
 const { bundle } = loadShinjukuBundle();
 const layout = buildLayout(bundle, planJson as Plan);
 const data = surfaceJson as SurfaceData;
 const inPolys = (x: number, y: number, polys: number[][][][]) => polys.some((p) => pointInRings({ x, y }, p.map((r) => r.map(([x, y]) => ({ x: x!, y: y! })))));
+const distanceToPolys = (p: { x: number; y: number }, polys: number[][][][]) => {
+  let best = Infinity;
+  for (const poly of polys) {
+    const rings = poly.map((r) => r.map(([x, y]) => ({ x: x!, y: y! })));
+    if (pointInRings(p, rings)) return 0;
+    for (const ring of rings) for (let i = 1; i < ring.length; i++) {
+      const a = ring[i - 1]!, b = ring[i]!, dx = b.x - a.x, dy = b.y - a.y;
+      const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
+      best = Math.min(best, Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy));
+    }
+  }
+  return best;
+};
 
 // Real corners of bldg_3e60150b-c9eb-4f23-aad3-01dada906f15, tile 53394525,
 // pinned in surface-manifest.json. Controls calculated independently with GRS80
@@ -55,6 +70,18 @@ describe("PLATEAU surface importer", () => {
 });
 
 describe("street geometry and collision", () => {
+  it("removes only above-ground fixtures from a mixed underground/street batch", () => {
+    const geometry = new BufferGeometry();
+    geometry.setAttribute("position", new Float32BufferAttribute([0,-5,0, 1,-5,0, 1,-5,1, 0,3.4,0, 1,3.4,0, 1,3.4,1], 3));
+    geometry.setIndex([0,1,2,3,4,5]);
+    const material = new MeshBasicMaterial(), root = new Group();
+    root.add(new Mesh(geometry, material));
+    const before = geometry.attributes.position!.array.slice();
+    trimSurfaceCeilingFixtures(root, [material]);
+    expect(Array.from(geometry.index!.array)).toEqual([0,1,2]);
+    expect(geometry.attributes.position!.array).toEqual(before);
+    geometry.dispose(); material.dispose();
+  });
   const openings = surfaceOpenings(layout, bundle), ground = surfaceGround(layout, bundle);
   it("leaves every top run open across its full width and the walker's head clearance", () => {
     let samples = 0;
@@ -76,9 +103,52 @@ describe("street geometry and collision", () => {
       expect(inPolys(n.position.x, n.position.y, ground)).toBe(false);
     }
   });
+  it("keeps road asphalt and markings clear of every exit opening and top run", () => {
+    const streets = surfaceStreets(data, layout, bundle);
+    for (const r of layout.runs) for (let i = 1; i < 100; i++) {
+      const t = i / 100, z = r.a.z + (r.b.z - r.a.z) * t;
+      if (z < -2.5 || z > -0.03) continue;
+      const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, L = Math.hypot(dx, dy);
+      for (const side of [-0.49, 0, 0.49]) {
+        const p = { x: r.a.x + dx * t - dy / L * r.width * side, y: r.a.y + dy * t + dx / L * r.width * side };
+        expect(inside(p, streets.asphalt), r.edgeId).toBe(false);
+        expect(streets.markings.some((marking) => inside(p, [marking])), r.edgeId).toBe(false);
+      }
+    }
+    for (const opening of streets.holes) {
+      const outer = opening[0]!, xs = outer.map(([x]) => x!), ys = outer.map(([, y]) => y!);
+      for (let x = Math.min(...xs) + 0.05; x < Math.max(...xs); x += 0.2) for (let y = Math.min(...ys) + 0.05; y < Math.max(...ys); y += 0.2) {
+        const p = { x, y };
+        if (!inside(p, [opening])) continue;
+        expect(inside(p, streets.asphalt)).toBe(false);
+        expect(streets.markings.some((marking) => inside(p, [marking]))).toBe(false);
+      }
+    }
+  });
+  it("keeps tree crowns at least 2 m from every existing street pad", () => {
+    const streets = surfaceStreets(data, layout, bundle);
+    for (const f of streets.furniture.filter((item) => item.tree)) {
+      expect(distanceToPolys(f.p, streets.pads)).toBeGreaterThanOrEqual(2);
+    }
+  });
   it("uses every ground-level exit's existing label, and creates no B1 canopy", () => {
     const es = surfaceEntrances(layout, bundle); expect(es.map((e) => e.id)).toEqual(["poi:exit:1", "poi:exit:2", "poi:exit:3", "poi:exit:4"]);
     for (const e of es) expect(e.labelEn).toBe(bundle.pois.find((p) => p.id === e.id)!.names.find((n) => n.lang === "en")!.text);
+  });
+  it("keeps surface rendering near street level and above an exit's first landing", () => {
+    const exit = surfaceEntrances(layout, bundle).find((e) => e.id === "poi:exit:4")!;
+    expect(surfaceVisibleAt(layout, bundle, { x: -39.13, y: 200.04, z: -10 })).toBe(false);
+    expect(surfaceVisibleAt(layout, bundle, { x: -39.13, y: 200.04, z: -1.99 })).toBe(false); // solid ground above
+    expect(surfaceVisibleAt(layout, bundle, { x: exit.top.x-exit.u.x, y: exit.top.y-exit.u.y, z: -2.5 })).toBe(true);
+    expect(surfaceVisibleAt(layout, bundle, { x: 1.01, y: 1.14, z: -1.95 })).toBe(false); // B1 concourse follow camera
+    expect(surfaceVisibleAt(layout, bundle, { x: -3.95, y: .13, z: -1.95 })).toBe(false); // B1 elevator follow camera
+    expect(surfaceVisibleAt(layout, bundle, { x: exit.top.x + 10, y: exit.top.y, z: -3 })).toBe(false);
+    expect(surfaceVisibleAt(layout, bundle, { x: exit.top.x + 31, y: exit.top.y, z: -2.5 })).toBe(false);
+  });
+  it("adds body-height canopy glazing and end walls while opening every nearby graph path", () => {
+    const walls = surfaceCanopyWalls(layout, bundle);
+    expect(walls.some((w) => w.canopyPart === "side" && w.zMax === 2.35)).toBe(true);
+    expect(walls.some((w) => w.canopyPart === "back" && w.zMax === 2.95)).toBe(true);
   });
   it("adds obstacles without adding walkable surfaces", () => {
     const world = new WalkWorld(layout), before = world.heightsAt({ x: -300, y: 100 });
@@ -119,15 +189,25 @@ describe("street geometry and collision", () => {
     vi.stubGlobal("document", { createElement: () => ({ width: 0, height: 0, getContext: () => ({ fillRect() {}, fillText() {} }) }) });
     try {
       const built = buildSurface(data, layout, { bundle, quality: "high" });
-      expect(built.root.userData.drawCallBudget).toBeLessThanOrEqual(30); // <=60 even with a second normal/depth pass
+      expect(built.root.userData.drawCallBudget).toBeLessThanOrEqual(20); // reserve up to three scene passes
       expect(built.root.userData.buildingParts).toBeGreaterThan(100);
       let tris = 0, meshes = 0;
-      built.root.traverse((o) => { if ("isMesh" in o) { const m = o as import("three").Mesh; expect(m.geometry.attributes.position!.array.every(Number.isFinite)).toBe(true); tris += (m.geometry.index?.count ?? m.geometry.attributes.position!.count) / 3; meshes++; } });
+      built.root.traverse((o) => { if ("isMesh" in o) { const m = o as import("three").Mesh; expect(m.geometry.attributes.position!.array.every(Number.isFinite)).toBe(true); tris += (m.geometry.index?.count ?? m.geometry.attributes.position!.count) / 3 * ("count" in m ? Number(m.count) : 1); meshes++; } });
       console.log("surface static geometry (not GPU report):", { meshes, tris, batches: built.root.userData.drawCallBudget });
-      expect(meshes).toBeLessThanOrEqual(30);
+      expect(meshes).toBeLessThanOrEqual(20);
+      expect(tris).toBeLessThan(60_000);
+      expect(built.root.visible).toBe(false);
+      built.setViewer({ x: -39.13, y: 200.04, z: -37.5 }); built.update(1, 1);
+      expect(built.root.visible).toBe(false);
+      built.setViewer({ x: -60, y: 212, z: 1.7 });
+      expect(built.root.visible).toBe(true);
+      built.setViewer({ x: -64.26, y: 182.25, z: -2.45 });
+      expect(built.root.visible).toBe(false);
       const mesh = built.root.getObjectByName("surface-ground") as import("three").Mesh;
       const disposed = vi.fn(); mesh.geometry.addEventListener("dispose", disposed);
-      built.dispose(); built.dispose(); expect(disposed).toHaveBeenCalledTimes(1); expect(built.root.children).toHaveLength(0);
+      const instancesDisposed = vi.fn();
+      for (const name of ["surface-tree-crowns", "surface-tree-trunks", "surface-streetlights"]) (built.root.getObjectByName(name) as import("three").InstancedMesh).addEventListener("dispose", instancesDisposed);
+      built.dispose(); built.dispose(); expect(disposed).toHaveBeenCalledTimes(1); expect(instancesDisposed).toHaveBeenCalledTimes(3); expect(built.root.children).toHaveLength(0);
     } finally { vi.unstubAllGlobals(); }
   });
 });
