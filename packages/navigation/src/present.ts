@@ -119,7 +119,10 @@ export interface JunctionHint {
   nodeId: string;
   /** Index into route.steps of the step that leaves the junction. */
   stepIndex: number;
-  /** Walking distance from the start of the instruction to the junction. */
+  /**
+   * Walking distance to the junction from where the instruction's own walk starts: after its last turn,
+   * so short legs folded in front of it (`leadTurns`) never move where a hint is said to be.
+   */
   atM: number;
   /** "straight": the chosen branch is clearly the straightest (or the middle of a fork). */
   action: "straight" | "keep_left" | "keep_right";
@@ -437,8 +440,11 @@ const WALK_TURN: Partial<Record<InstructionKind, Turn>> = { turn_left: "left", t
 /** Walking legs shorter than this are folded into a neighbouring instruction instead of being read out alone. */
 const SHORT_LEG_M = 5;
 
-/** An instruction before its text is written; `label` is the floor a flight leads to (null = none to name). */
-type Draft = Instruction & { label: string | null };
+/**
+ * An instruction before its text is written; `label` is the floor a flight leads to (null = none to name),
+ * `ownM` the distance of its own walk or walkway, without the short legs folded into it.
+ */
+type Draft = Instruction & { label: string | null; ownM?: number };
 
 /**
  * Folds walking legs under SHORT_LEG_M (without junction hints) into their neighbours, so a few metres
@@ -448,7 +454,9 @@ type Draft = Instruction & { label: string | null };
  * - other short legs lead into the next instruction ("Turn left, then right, ~16 m");
  * - short legs right before arrival end the instruction before them ("…, then turn right");
  * - the opening leg sets the heading every later turn is measured from, so it is only folded into a
- *   flight, lift, gate or walkway it leads straight onto.
+ *   flight, lift, gate or walkway it leads straight onto, without a turn of its own.
+ * `distanceM` and `stepIndexes` grow to cover folded legs; spoken distances stay those of the
+ * instruction's own walk (`ownM`), so "~20 m, then turn back" still turns back after 20 m.
  */
 function foldShortLegs(drafts: Draft[]): Draft[] {
   const isWalk = (d: Draft) => WALK_KINDS.has(d.kind);
@@ -462,6 +470,7 @@ function foldShortLegs(drafts: Draft[]): Draft[] {
     const trail = turnsOf(legs);
     if (trail.length > 0) into.trailTurns = [...(into.trailTurns ?? []), ...trail];
   };
+  for (const d of drafts) d.ownM = d.distanceM;
   const out: Draft[] = [drafts[0]!];
   let pending: Draft[] = [];
   for (const d of drafts.slice(1, -1)) {
@@ -471,13 +480,11 @@ function foldShortLegs(drafts: Draft[]): Draft[] {
       else pending.push(d);
       continue;
     }
-    if (out.length === 1 && pending[0]?.kind === "walk" && (pending.length > 1 || isWalk(d))) out.push(pending.shift()!);
+    if (out.length === 1 && pending[0]?.kind === "walk" && (pending.length > 1 || isWalk(d) || d.turn)) out.push(pending.shift()!);
     if (pending.length > 0) {
-      const lead = lengthOf(pending);
       const turns = turnsOf(pending);
       d.stepIndexes = [...pending.flatMap((p) => p.stepIndexes), ...d.stepIndexes];
-      d.distanceM += lead;
-      for (const j of d.junctions ?? []) j.atM += lead;
+      d.distanceM += lengthOf(pending);
       if (turns.length > 0) d.leadTurns = turns;
       pending = [];
     }
@@ -650,8 +657,7 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
       // Passing a choice point without turning: say which branch to keep to, since no turn marks it.
       const action = junctionAction(points, route.steps, i, departures.get(step.fromNodeId) ?? [], nodes, edges, openDuringRoute);
       if (action) {
-        // `atM` stays unrounded until the text is written: folding short legs in front may still move it.
-        (current.junctions ??= []).push({ nodeId: step.fromNodeId, stepIndex: i, atM: current.distanceM, action, name: names.get(step.fromNodeId) ?? null });
+        (current.junctions ??= []).push({ nodeId: step.fromNodeId, stepIndex: i, atM: Math.max(1, Math.round(current.distanceM)), action, name: names.get(step.fromNodeId) ?? null });
       }
       current.stepIndexes.push(i);
       current.distanceM += step.lengthM;
@@ -665,10 +671,9 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
   const lastFloor = nodes.get(route.nodeIds[route.nodeIds.length - 1]!)!.floorId;
   out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: lastFloor, text: t.arrive(), label: null });
 
-  return foldShortLegs(out).map(({ label, ...ins }, k, all) => {
+  return foldShortLegs(out).map(({ label, ownM, ...ins }, k, all) => {
     if (ins.kind === "start" || ins.kind === "arrive") return ins;
-    const m = Math.max(1, Math.round(ins.distanceM));
-    for (const j of ins.junctions ?? []) j.atM = Math.max(1, Math.round(j.atM));
+    const m = Math.max(1, Math.round(ownM ?? ins.distanceM));
     const turns = [...(ins.leadTurns ?? []), ...(WALK_TURN[ins.kind] ? [WALK_TURN[ins.kind]!] : []), ...(ins.turn ? [ins.turn] : [])];
     let main: string;
     if (WALK_KINDS.has(ins.kind)) main = turns.length > 0 ? t.turnWalk(turns, m) : straightInPlan(points, ins.stepIndexes) ? t.walk(m) : t.continue(m);

@@ -483,7 +483,7 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     expect(ins[2]!.trailTurns).toBeUndefined();
   });
 
-  it("measures junction hints from the start of the instruction, folded legs included", () => {
+  it("speaks distances and junction hints from the last turn, never moving a turn by a folded leg", () => {
     const b = createSyntheticBundle([
       edge("s0-x", "s0", "x"), edge("x-a", "x", "a", { lengthM: 4 }), edge("s-a", "start", "a"), edge("a-east", "a", "goal"),
       edge("a-p", "a", "p", { lengthM: 30 }), edge("p-q", "p", "q", { lengthM: 30 }), edge("q-g", "q", "g", { lengthM: 30 }),
@@ -493,14 +493,49 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     b.nodes.push(at("s0", 6, 10), at("x", 6, 0), at("p", 10, -30), at("q", 7, -60), at("g", 7, -90), at("r", 25, -55), at("s", 37, -60));
     b.nodes.find((n) => n.id === "start")!.position = { x: 0, y: 5, z: 0 };
     const ins = describeRoute(b, route(b, "s0", "g"), "en");
+    // The 4 m leg after the left turn is folded in front: ~90 m and the hints count from the right turn at `a`.
     expect(ins.map((i) => i.text)).toEqual([
       "Start",
       "Go straight ~10 m",
-      "Turn left, then right, ~94 m. After ~34 m, keep right at the junction. After ~64 m, continue straight through the junction.",
+      "Turn left, then right, ~90 m. After ~30 m, keep right at the junction. After ~60 m, continue straight through the junction.",
       "Arrive at destination",
     ]);
-    expect(ins[2]!.junctions!.map((j) => j.atM)).toEqual([34, 64]);
-    expect(describeRoute(b, route(b, "s0", "g"), "ja")[2]!.text).toBe("左へ曲がり、すぐ右へ曲がり約94m。約34m先の分岐は右寄りに進む。約64m先の分岐はそのまま直進");
+    expect(ins[2]).toMatchObject({ stepIndexes: [1, 2, 3, 4], distanceM: 94, leadTurns: ["left"] });
+    expect(ins[2]!.junctions!.map((j) => j.atM)).toEqual([30, 60]);
+    expect(describeRoute(b, route(b, "s0", "g"), "ja")[2]!.text).toBe("左へ曲がり、すぐ右へ曲がり約90m。約30m先の分岐は右寄りに進む。約60m先の分岐はそのまま直進");
+  });
+
+  it("turns back where the walk ends, not after the folded leg", () => {
+    const b = createSyntheticBundle([edge("s-goal", "start", "goal", { lengthM: 20 }), edge("back", "goal", "a", { lengthM: 4 })]);
+    b.nodes.find((n) => n.id === "a")!.position = { x: 16, y: 0, z: 0 };
+    const r = route(b, "start", "a");
+    expect(describeRoute(b, r, "en")[1]).toMatchObject({ stepIndexes: [0, 1], distanceM: 24, trailTurns: ["back"], text: "Go straight ~20 m, then turn back" });
+    expect(texts(b, r, "ja")[1]).toBe("約20m 直進、その先で引き返す");
+  });
+
+  it("gives a moving walkway its own length, not the steps folded onto it", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a", { lengthM: 3 }), edge("walkway", "a", "goal", { mode: "moving_walkway", lengthM: 10 }), edge("off", "goal", "isolated", { lengthM: 2 })]);
+    b.nodes.find((n) => n.id === "a")!.position = { x: 3, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "goal")!.position = { x: 13, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "isolated")!.position = { x: 15, y: 0, z: 0 };
+    const r = route(b, "start", "isolated");
+    expect(describeRoute(b, r, "en")[1]).toMatchObject({ stepIndexes: [0, 1, 2], distanceM: 15, text: "Moving walkway ~10 m" });
+    expect(texts(b, r, "ja")[1]).toBe("動く歩道で約10m");
+  });
+
+  it("keeps an opening leg that ends in a turn onto a flight or gate", () => {
+    for (const mode of ["stairs", "gate"] as const) {
+      const b = createSyntheticBundle([edge("s-a", "start", "a", { lengthM: 3 }), edge("onto", "a", "upper", { mode, ...(mode === "gate" ? { crossesFareBoundary: true, paid: null } : {}) })]);
+      b.nodes.find((n) => n.id === "a")!.position = { x: 3, y: 0, z: 0 };
+      b.nodes.find((n) => n.id === "upper")!.position = { x: 3, y: 10, z: mode === "gate" ? 0 : 4 };
+      if (mode === "gate") b.nodes.find((n) => n.id === "upper")!.floorId = "concourse";
+      const r = route(b, "start", "upper");
+      const en = describeRoute(b, r, "en");
+      expect(en.map((i) => i.stepIndexes)).toEqual([[], [0], [1], []]);
+      expect(en[1]!.text).toBe("Go straight ~3 m");
+      expect(en[2]!.text).toBe(mode === "gate" ? "Turn left, then pass the ticket gate" : "Turn left, then take the stairs up to 1F");
+      expect(texts(b, r, "ja").slice(1, 3)).toEqual(["約3m 直進", mode === "gate" ? "左へ曲がり、改札を通過" : "左へ曲がり、階段で上へ・1Fへ"]);
+    }
   });
 
   /** The E27 lift (1F・B1・B2): door ↔ cab links on one floor, then one cab link per floor passed. */
