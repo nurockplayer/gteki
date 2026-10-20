@@ -1,0 +1,11 @@
+; Minimal runtime compatibility harness. No editor import is required.
+config_version=5
+
+[application]
+config/name="GTEki contract proof"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/use_custom_user_dir=true
+config/custom_user_dir_name="gteki-godot-proof"
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
