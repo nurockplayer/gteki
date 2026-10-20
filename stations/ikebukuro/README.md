@@ -1,6 +1,6 @@
 # 池袋駅 Ikebukuro — station lane
 
-Real, searchable, navigable Ikebukuro Station for GTEki. Two slices are routable on a verified
+Real, searchable, navigable Ikebukuro Station for GTEki. Three slices are routable on a verified
 graph and walkable in a lit, signed, populated 3D scene:
 
 - **Slice 1**: the public B1 Central Passage from the JR Central Gates east to Exits

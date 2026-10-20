@@ -83,6 +83,32 @@ def _cross_t(ax, ay, bx, by, cx, cy, dx, dy):
     return None if den == 0 else ((cx - ax) * sy - (cy - ay) * sx) / den
 
 
+def _in_poly(x, y, poly):
+    inside = False
+    for a, b in zip(poly, poly[1:] + poly[:1]):
+        if (a["y"] > y) != (b["y"] > y) and x < (b["x"] - a["x"]) * (y - a["y"]) / (b["y"] - a["y"]) + a["x"]:
+            inside = not inside
+    return inside
+
+
+def outside_coverage(edges, areas):
+    """Verified edges with samples outside every routable coverage area (coverage must not under-claim)."""
+    polys = [a["polygon"] for a in areas if a.get("status") == "routable" and a.get("polygon")]
+    bad = []
+    for e in edges:
+        if e["verification"] != "verified":
+            continue
+        g = e["geometry"]
+        for p, q in zip(g, g[1:]):
+            n = max(1, math.ceil(math.dist((p["x"], p["y"]), (q["x"], q["y"])) / STEP))
+            pts = [(p["x"] + (q["x"] - p["x"]) * k / n, p["y"] + (q["y"] - p["y"]) * k / n) for k in range(n + 1)]
+            miss = next(((round(x, 1), round(y, 1)) for x, y in pts if not any(_in_poly(x, y, P) for P in polys)), None)
+            if miss:
+                bad.append(f"edge {e['id']}: verified geometry at {miss} is outside every routable coverage area")
+                break
+    return bad
+
+
 def crowd_lanes(grid, edges):
     """Presentation data for scene/crowd.ts: per verified edge, every 1 m, how far (m) a pedestrian
     may stand left/right of the polyline and still be on a surveyed walkable cell (>= 0.35 m from
@@ -233,6 +259,7 @@ def main():
             "attributes": {k: v for k, v in e.items() if k in ("note",)},
         })
 
+    problems += outside_coverage(edges_out, src["coverage"]["areas"])
     if problems:
         print("\n".join(problems))
         print(f"FAIL: {len(problems)} problem(s); station.json not written")
