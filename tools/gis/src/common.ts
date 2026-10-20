@@ -154,6 +154,7 @@ export async function getStoredSource(sourceId: string, options: { ignoreRecorde
   if (!source) throw new Error(`Unknown source_id: ${sourceId}`);
   const expectedRequest = (await import('./acquire.js')).recordRequest(source.request);
   if (JSON.stringify(record.request) !== JSON.stringify(expectedRequest)) throw new Error(`Acquisition request mismatch for ${sourceId}`);
+  await assertRecordMatchesManifest(record, source);
   const path = safeStorePath(getStoreRoot(), record.store_path);
   await assertPathWithinStore(getStoreRoot(), dirname(path));
   await assertPathWithinStore(getStoreRoot(), path);
@@ -164,6 +165,40 @@ export async function getStoredSource(sourceId: string, options: { ignoreRecorde
     await verifyStoredFile(documentPath, document.sha256, document.bytes);
   }
   return { record, source, path };
+}
+
+/** RFC 6901 lookup over parsed JSON; undefined when any segment is absent. */
+export function jsonPointerValue(value: unknown, pointer: string): unknown {
+  if (pointer === '') return value;
+  if (!pointer.startsWith('/')) return undefined;
+  let current: unknown = value;
+  for (const raw of pointer.slice(1).split('/')) {
+    const key = raw.replace(/~1/g, '/').replace(/~0/g, '~');
+    if (current === null || typeof current !== 'object' || !Object.hasOwn(current, key)) return undefined;
+    current = (current as Record<string, unknown>)[key];
+  }
+  return current;
+}
+
+/**
+ * A cached acquisition is accepted only while it still answers the current manifest: the same
+ * direct URL, or the same catalog snapshot and pointer for catalog-resolved sources, and the
+ * same supporting-document IDs and requested URLs in order.
+ */
+export async function assertRecordMatchesManifest(record: AcquisitionRecord, source: SourceManifest): Promise<void> {
+  const id = source.source_id;
+  if (source.resolution.kind === 'direct') {
+    if (record.resolved_url !== source.expected_url) throw new Error(`Acquisition URL for ${id} no longer matches the manifest; re-acquire it`);
+  } else {
+    const evidence = record.resolution_evidence;
+    if (!evidence || evidence.source_id !== source.resolution.catalog_source_id) throw new Error(`Acquisition for ${id} was not resolved from catalog ${source.resolution.catalog_source_id}; re-acquire it`);
+    const catalog = await getStoredSource(evidence.source_id);
+    if (catalog.record.sha256 !== evidence.sha256) throw new Error(`Acquisition for ${id} was resolved from an older ${evidence.source_id} snapshot; re-acquire it`);
+    if (jsonPointerValue(await readJson<unknown>(catalog.path), evidence.json_pointer) !== record.resolved_url) throw new Error(`Acquisition URL for ${id} does not match ${evidence.source_id}${evidence.json_pointer}; re-acquire it`);
+  }
+  const expected = (source.supporting_documents ?? []).map((document) => [document.id, document.url]);
+  const recorded = (record.supporting_documents ?? []).map((document) => [document.id, document.requested_url ?? document.url]);
+  if (JSON.stringify(recorded) !== JSON.stringify(expected)) throw new Error(`Supporting documents for ${id} no longer match the manifest; re-acquire it`);
 }
 
 export async function verifyStoredFile(path: string, expectedSha256: string, expectedBytes: number): Promise<void> {

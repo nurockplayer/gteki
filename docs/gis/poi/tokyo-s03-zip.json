@@ -1,7 +1,7 @@
 {
   "source_id": "tokyo-s03-zip",
   "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
-  "tool_input_sha256": "162a987fd3cfb005a3021a666b282ec338427db6476d7335577e87cdf4598788",
+  "tool_input_sha256": "366c57bc79580c2ca7b5233f320ae5f8683985f9ae28d6125f70eebc0aa592a6",
   "input_sources": [
     {
       "source_id": "tokyo-s03-zip",
