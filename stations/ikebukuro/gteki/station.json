@@ -119,7 +119,7 @@
   "frame": "ENU",
   "datasetVersion": "ikebukuro-b1-slice1",
   "synthetic": false,
-  "generatedAt": "2026-10-20T11:52:59+00:00"
+  "generatedAt": "2026-10-20T12:25:03+00:00"
  },
  "sources": [
   {
@@ -238,11 +238,11 @@
   "summary": [
    {
     "lang": "en",
-    "text": "Slice 1: the public B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43 is routable (desk-verified against PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown). The rest of the PLATEAU B1 passage network is explorable but not routable yet. Fare-paid concourses and platforms are not modelled."
+    "text": "Routable (desk-verified against the PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown): slice 1, the B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43; slice 2, the passage along the JR east side to the South Passage east end and the south-east corridor to Exits 38/39/40/41. The rest of the PLATEAU B1 passage network is explorable but not routable yet. Fare-paid concourses and platforms are not modelled."
    },
    {
     "lang": "ja",
-    "text": "第1区画：中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43までをルート案内対象とします（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）。その他のB1地下通路は探索のみ。改札内・ホームは未モデル化。"
+    "text": "ルート案内対象（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）：第1区画 中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43；第2区画 JR東側通路から南通路東端、南東通路の出口38・39・40・41。その他のB1地下通路は探索のみ。改札内・ホームは未モデル化。"
    }
   ],
   "areas": [
@@ -288,6 +288,120 @@
      {
       "x": -65,
       "y": 55
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "slice2",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "JR east-side passage, South Passage (east) and south-east exits"
+     },
+     {
+      "lang": "ja",
+      "text": "JR東側通路・南通路（東）・南東出口"
+     }
+    ],
+    "polygon": [
+     {
+      "x": 12,
+      "y": 28
+     },
+     {
+      "x": 40,
+      "y": 24
+     },
+     {
+      "x": 14,
+      "y": -40
+     },
+     {
+      "x": 18,
+      "y": -58
+     },
+     {
+      "x": 50,
+      "y": -58
+     },
+     {
+      "x": 50,
+      "y": -50
+     },
+     {
+      "x": 56,
+      "y": -50
+     },
+     {
+      "x": 56,
+      "y": -60
+     },
+     {
+      "x": 70,
+      "y": -60
+     },
+     {
+      "x": 70,
+      "y": -48
+     },
+     {
+      "x": 82,
+      "y": -36
+     },
+     {
+      "x": 88,
+      "y": -40
+     },
+     {
+      "x": 78,
+      "y": -62
+     },
+     {
+      "x": 80,
+      "y": -90
+     },
+     {
+      "x": 180,
+      "y": -165
+     },
+     {
+      "x": 176,
+      "y": -184
+     },
+     {
+      "x": 166,
+      "y": -184
+     },
+     {
+      "x": 120,
+      "y": -150
+     },
+     {
+      "x": 66,
+      "y": -100
+     },
+     {
+      "x": 66,
+      "y": -74
+     },
+     {
+      "x": 10,
+      "y": -74
+     },
+     {
+      "x": -14,
+      "y": -60
+     },
+     {
+      "x": -14,
+      "y": -38
      }
     ],
     "sourceIds": [
@@ -369,18 +483,18 @@
     "fieldWorkNeeded": "Verify lifts/escalators near Exits 34/35 against the Tokyo Metro accessibility page and on site"
    },
    {
-    "id": "gap-exit-41",
-    "floorId": "b1",
-    "zone": "south-east",
-    "missingFact": "Exit 41 stair is on a corridor not connected to slice 1 within the current graph bbox",
-    "fieldWorkNeeded": "Author the South Passage slice"
-   },
-   {
     "id": "gap-freshness",
     "floorId": null,
     "zone": "whole slice",
     "missingFact": "Geometry is from a 2023 survey; construction changes since then are unknown",
     "fieldWorkNeeded": "Dated walk-through comparing columns, exits and openings"
+   },
+   {
+    "id": "gap-south-west",
+    "floorId": "b1",
+    "zone": "South Passage, west of the JR east-side passage",
+    "missingFact": "Which PLATEAU openings are the JR South Gate and the Yurakucho Line South Passage East Gate, and where the South Passage continues west",
+    "fieldWorkNeeded": "On-site check of both gate lines against column positions; author the South Passage (west) slice"
    }
   ],
   "freshness": "2023"

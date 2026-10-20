@@ -2,8 +2,8 @@
  "_doc": "Hand-authored source for the Ikebukuro graph. Node xy are anchors in station ENU metres; the builder snaps them to the PLATEAU walkable grid (<= snapR m) and derives z. Edge polylines and stairs/walk mode come from A* over surveyed floor and stair treads. An edge is emitted as verified only when its geometry check passes AND it references an accessFact. See docs/G0-source-audit.md.",
  "gridBBox": [
   -90,
-  170,
-  -60,
+  180,
+  -190,
   120
  ],
  "station": {
@@ -268,6 +268,35 @@
    ],
    "method": "official-map-reading matched to PLATEAU passage openings (Central Gate 2: 13 m north opening, ~1 m from projected map position; Central Gate 1: south openings, ~6 m)",
    "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-east-jr-passage",
+   "text": "A public passage runs south from the Central Passage, between the JR concourse (east side) and the Seibu store, to the South Passage.",
+   "sourceIds": [
+    "toshima-underground-guide-2022"
+   ],
+   "method": "official-map-reading (facts only) matched to the PLATEAU passage linking the Central and South Passages",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-south-passage",
+   "text": "南通路 (South Passage) is a public passage outside fare gates. Its east end continues past the Seibu store, up one short flight and down another, to the corridor serving Exits 39, 40 and 41.",
+   "sourceIds": [
+    "toshima-underground-guide-2022",
+    "tokyometro-ikebukuro-yardmap-2026-03"
+   ],
+   "method": "official-map-reading (facts only) matched to PLATEAU floors and stair treads (TP 27.6 -> 29.1 -> 25.9 m)",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-south-exits",
+   "text": "Exit 38 (東口（南）/ East Exit South) rises from the South Passage east end beside Seibu; Exit 41 from a north branch of the south-east corridor; Exits 40 and 39 from that corridor, in that order, towards Meiji-dori.",
+   "sourceIds": [
+    "toshima-underground-guide-2022",
+    "tokyometro-ikebukuro-yardmap-2026-03"
+   ],
+   "method": "official-map-reading (facts only): order of exit stairs along each passage matched one-to-one to PLATEAU stair-top closures (TP 32.2-32.8 m)",
+   "checkedDate": "2026-10-20"
   }
  ],
  "nodes": [
@@ -321,9 +350,19 @@
    "kind": "junction",
    "floor": "b1",
    "xy": [
-    32,
-    47
+    29,
+    45
    ]
+  },
+  {
+   "id": "c_s",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    26,
+    32
+   ],
+   "zHint": 28.2
   },
   {
    "id": "c_e2",
@@ -443,6 +482,124 @@
     -9.0
    ],
    "zHint": 30.96
+  },
+  {
+   "id": "sp_j",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -5,
+    -45
+   ]
+  },
+  {
+   "id": "sp_e",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    10,
+    -63
+   ]
+  },
+  {
+   "id": "s38_w",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    21,
+    -64
+   ],
+   "zHint": 29.05
+  },
+  {
+   "id": "s38_j",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    52,
+    -65
+   ],
+   "zHint": 29.05
+  },
+  {
+   "id": "s41_j",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    73,
+    -71
+   ],
+   "zHint": 25.86
+  },
+  {
+   "id": "s41_f",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    73.5,
+    -55
+   ],
+   "zHint": 26.69
+  },
+  {
+   "id": "s40_j",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    128,
+    -133
+   ],
+   "zHint": 25.93
+  },
+  {
+   "id": "s39_f",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    168,
+    -168
+   ],
+   "zHint": 26.04
+  },
+  {
+   "id": "x38",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    53.5,
+    -52.5
+   ],
+   "zHint": 32.64
+  },
+  {
+   "id": "x41",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    84.5,
+    -39.5
+   ],
+   "zHint": 32.15
+  },
+  {
+   "id": "x40",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    131.0,
+    -129.0
+   ],
+   "zHint": 32.5
+  },
+  {
+   "id": "x39",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    172.5,
+    -179.0
+   ],
+   "zHint": 32.6
   }
  ],
  "edges": [
@@ -490,6 +647,12 @@
   },
   {
    "from": "c_e1",
+   "to": "c_s",
+   "access": "af-central-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "c_s",
    "to": "x37",
    "access": "af-east-exits"
   },
@@ -544,6 +707,75 @@
    "from": "se_j",
    "to": "x42",
    "access": "af-east-exits"
+  },
+  {
+   "from": "c_s",
+   "to": "sp_j",
+   "access": "af-east-jr-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "sp_j",
+   "to": "sp_e",
+   "access": "af-south-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "sp_e",
+   "to": "s38_w",
+   "access": "af-south-passage"
+  },
+  {
+   "from": "s38_w",
+   "to": "s38_j",
+   "access": "af-south-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "s38_j",
+   "to": "x38",
+   "access": "af-south-exits"
+  },
+  {
+   "from": "s38_j",
+   "to": "s41_j",
+   "access": "af-south-passage"
+  },
+  {
+   "from": "s41_j",
+   "to": "s41_f",
+   "access": "af-south-exits"
+  },
+  {
+   "from": "s41_f",
+   "to": "x41",
+   "access": "af-south-exits"
+  },
+  {
+   "from": "s41_j",
+   "to": "s40_j",
+   "access": "af-south-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "s40_j",
+   "to": "x40",
+   "access": "af-south-exits",
+   "maxRatio": 6,
+   "note": "U-shaped stair: two flights with a half landing, so the walked path is much longer than the straight line."
+  },
+  {
+   "from": "s40_j",
+   "to": "s39_f",
+   "access": "af-south-exits",
+   "mode": "walk"
+  },
+  {
+   "from": "s39_f",
+   "to": "x39",
+   "access": "af-south-exits",
+   "maxRatio": 3,
+   "note": "Stair turns back on itself over three flights (landings at TP 27.4, 29.3 and 31.4 m)."
   }
  ],
  "pois": [
@@ -947,9 +1179,11 @@
      "text": "41號出口"
     }
    ],
-   "floorId": null,
+   "floorId": "street",
    "displayPosition": null,
-   "connectorNodeIds": [],
+   "connectorNodeIds": [
+    "x41"
+   ],
    "paid": false,
    "evidence": {
     "sourceIds": [
@@ -957,7 +1191,7 @@
      "tokyometro-ikebukuro-yardmap-2026-03",
      "plateau-ubld-13116"
     ],
-    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
     "checkedDate": "2026-10-20"
    }
   },
@@ -1004,9 +1238,11 @@
      "text": "38號出口"
     }
    ],
-   "floorId": null,
+   "floorId": "street",
    "displayPosition": null,
-   "connectorNodeIds": [],
+   "connectorNodeIds": [
+    "x38"
+   ],
    "paid": false,
    "evidence": {
     "sourceIds": [
@@ -1014,7 +1250,109 @@
      "tokyometro-ikebukuro-yardmap-2026-03",
      "plateau-ubld-13116"
     ],
-    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-39",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "39番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 39"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口39"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "39ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "39-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "39"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "39號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x39"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-40",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "40番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 40"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口40"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "40ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "40-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "40"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "40號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x40"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
     "checkedDate": "2026-10-20"
    }
   },
@@ -1417,11 +1755,11 @@
   "summary": [
    {
     "lang": "en",
-    "text": "Slice 1: the public B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43 is routable (desk-verified against PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown). The rest of the PLATEAU B1 passage network is explorable but not routable yet. Fare-paid concourses and platforms are not modelled."
+    "text": "Routable (desk-verified against the PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown): slice 1, the B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43; slice 2, the passage along the JR east side to the South Passage east end and the south-east corridor to Exits 38/39/40/41. The rest of the PLATEAU B1 passage network is explorable but not routable yet. Fare-paid concourses and platforms are not modelled."
    },
    {
     "lang": "ja",
-    "text": "第1区画：中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43までをルート案内対象とします（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）。その他のB1地下通路は探索のみ。改札内・ホームは未モデル化。"
+    "text": "ルート案内対象（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）：第1区画 中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43；第2区画 JR東側通路から南通路東端、南東通路の出口38・39・40・41。その他のB1地下通路は探索のみ。改札内・ホームは未モデル化。"
    }
   ],
   "areas": [
@@ -1467,6 +1805,120 @@
      {
       "x": -65,
       "y": 55
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "slice2",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "JR east-side passage, South Passage (east) and south-east exits"
+     },
+     {
+      "lang": "ja",
+      "text": "JR東側通路・南通路（東）・南東出口"
+     }
+    ],
+    "polygon": [
+     {
+      "x": 12,
+      "y": 28
+     },
+     {
+      "x": 40,
+      "y": 24
+     },
+     {
+      "x": 14,
+      "y": -40
+     },
+     {
+      "x": 18,
+      "y": -58
+     },
+     {
+      "x": 50,
+      "y": -58
+     },
+     {
+      "x": 50,
+      "y": -50
+     },
+     {
+      "x": 56,
+      "y": -50
+     },
+     {
+      "x": 56,
+      "y": -60
+     },
+     {
+      "x": 70,
+      "y": -60
+     },
+     {
+      "x": 70,
+      "y": -48
+     },
+     {
+      "x": 82,
+      "y": -36
+     },
+     {
+      "x": 88,
+      "y": -40
+     },
+     {
+      "x": 78,
+      "y": -62
+     },
+     {
+      "x": 80,
+      "y": -90
+     },
+     {
+      "x": 180,
+      "y": -165
+     },
+     {
+      "x": 176,
+      "y": -184
+     },
+     {
+      "x": 166,
+      "y": -184
+     },
+     {
+      "x": 120,
+      "y": -150
+     },
+     {
+      "x": 66,
+      "y": -100
+     },
+     {
+      "x": 66,
+      "y": -74
+     },
+     {
+      "x": 10,
+      "y": -74
+     },
+     {
+      "x": -14,
+      "y": -60
+     },
+     {
+      "x": -14,
+      "y": -38
      }
     ],
     "sourceIds": [
@@ -1548,18 +2000,18 @@
     "fieldWorkNeeded": "Verify lifts/escalators near Exits 34/35 against the Tokyo Metro accessibility page and on site"
    },
    {
-    "id": "gap-exit-41",
-    "floorId": "b1",
-    "zone": "south-east",
-    "missingFact": "Exit 41 stair is on a corridor not connected to slice 1 within the current graph bbox",
-    "fieldWorkNeeded": "Author the South Passage slice"
-   },
-   {
     "id": "gap-freshness",
     "floorId": null,
     "zone": "whole slice",
     "missingFact": "Geometry is from a 2023 survey; construction changes since then are unknown",
     "fieldWorkNeeded": "Dated walk-through comparing columns, exits and openings"
+   },
+   {
+    "id": "gap-south-west",
+    "floorId": "b1",
+    "zone": "South Passage, west of the JR east-side passage",
+    "missingFact": "Which PLATEAU openings are the JR South Gate and the Yurakucho Line South Passage East Gate, and where the South Passage continues west",
+    "fieldWorkNeeded": "On-site check of both gate lines against column positions; author the South Passage (west) slice"
    }
   ],
   "freshness": "2023"

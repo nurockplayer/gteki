@@ -49,6 +49,7 @@ const LIGHTMAP_GAIN = 0.09;
 const SPAWNS: { nodeId: string; headingDeg: number; label: string }[] = [
   { nodeId: "c_mid", headingDeg: 100, label: "中央通路 Central Passage" },
   { nodeId: "c_e2", headingDeg: 100, label: "東口方面 toward East exits" },
+  { nodeId: "sp_e", headingDeg: 92, label: "南通路 South Passage (east)" },
 ];
 
 function splitPortals(THREE: ThreeNS, mesh: THREE_NS.Mesh) {
@@ -179,7 +180,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy());
   root.add(signs.group);
 
-  const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 40 : 100, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes);
+  const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes);
   root.add(crowd.group);
 
   const ambience = ctx.audio ? createAmbience(ctx.audio.context, ctx.audio.destination) : null;

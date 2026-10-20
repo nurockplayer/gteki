@@ -402,9 +402,11 @@
      "text": "41號出口"
     }
    ],
-   "floorId": null,
+   "floorId": "street",
    "displayPosition": null,
-   "connectorNodeIds": [],
+   "connectorNodeIds": [
+    "x41"
+   ],
    "paid": false,
    "evidence": {
     "sourceIds": [
@@ -412,7 +414,7 @@
      "tokyometro-ikebukuro-yardmap-2026-03",
      "plateau-ubld-13116"
     ],
-    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
     "checkedDate": "2026-10-20"
    }
   },
@@ -459,9 +461,11 @@
      "text": "38號出口"
     }
    ],
-   "floorId": null,
+   "floorId": "street",
    "displayPosition": null,
-   "connectorNodeIds": [],
+   "connectorNodeIds": [
+    "x38"
+   ],
    "paid": false,
    "evidence": {
     "sourceIds": [
@@ -469,7 +473,109 @@
      "tokyometro-ikebukuro-yardmap-2026-03",
      "plateau-ubld-13116"
     ],
-    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-39",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "39番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 39"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口39"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "39ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "39-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "39"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "39號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x39"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-40",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "40番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 40"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口40"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "40ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "40-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "40"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "40號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x40"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
     "checkedDate": "2026-10-20"
    }
   },

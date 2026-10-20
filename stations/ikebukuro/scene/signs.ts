@@ -4,7 +4,11 @@
 // Japanese exit colour convention). No operator logos or typefaces.
 import type * as THREE_NS from "three";
 
+type Arrow = "up" | "left" | "right";
+
 interface SignContent {
+  /** Direction to take at the junction for everything in this block (default straight on). */
+  arrow?: Arrow;
   exits: { id: string; label: string; ja: string | null; en: string | null }[];
   gates: { id: string; ja: string | null; en: string | null }[];
 }
@@ -13,8 +17,10 @@ export interface SignSpec extends SignContent {
   id: string;
   position: { x: number; y: number; z: number };
   facing: { x: number; y: number };
-  /** Read when walking toward the junction: destinations straight ahead through it. */
-  back?: SignContent;
+  /** Read when walking toward the junction: one block per turn taken there (left, straight on, right). */
+  back?: SignContent[];
+  /** Clear passage width at the sign (m); content is trimmed to fit. */
+  maxWidthM?: number;
 }
 
 const FONT = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans CJK JP","Yu Gothic",system-ui,sans-serif';
@@ -31,28 +37,75 @@ function roundRect(g: CanvasRenderingContext2D, x: number, y: number, w: number,
   g.closePath();
 }
 
-function drawArrow(g: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+function drawArrow(g: CanvasRenderingContext2D, cx: number, cy: number, s: number, arrow: Arrow) {
+  g.save();
+  g.translate(cx, cy);
+  g.rotate(arrow === "left" ? -Math.PI / 2 : arrow === "right" ? Math.PI / 2 : 0);
   g.fillStyle = "#ffffff";
   g.beginPath();
-  g.moveTo(cx, cy - s * 0.5);
-  g.lineTo(cx + s * 0.42, cy);
-  g.lineTo(cx + s * 0.14, cy);
-  g.lineTo(cx + s * 0.14, cy + s * 0.5);
-  g.lineTo(cx - s * 0.14, cy + s * 0.5);
-  g.lineTo(cx - s * 0.14, cy);
-  g.lineTo(cx - s * 0.42, cy);
+  g.moveTo(0, -s * 0.5);
+  g.lineTo(s * 0.42, 0);
+  g.lineTo(s * 0.14, 0);
+  g.lineTo(s * 0.14, s * 0.5);
+  g.lineTo(-s * 0.14, s * 0.5);
+  g.lineTo(-s * 0.14, 0);
+  g.lineTo(-s * 0.42, 0);
   g.closePath();
   g.fill();
+  g.restore();
 }
 
-/** Draw one sign face; returns canvas and physical width in metres. */
-function paint(spec: SignContent): { canvas: HTMLCanvasElement; widthM: number } {
+type Part = { w: number; draw: (g: CanvasRenderingContext2D, x: number) => void };
+
+/** Draw one sign face (one or more arrow blocks); returns canvas and physical width in metres. */
+function paint(blocks: SignContent[]): { canvas: HTMLCanvasElement; widthM: number } {
   const h = Math.round(H * PX_PER_M);
-  const measure = document.createElement("canvas").getContext("2d")!;
   const pad = 22;
+  const parts: Part[] = [];
+  blocks.forEach((b, i) => {
+    if (i > 0) {
+      parts.push({ w: 34, draw: (g, x) => { g.fillStyle = "#4a5361"; g.fillRect(x + 15, 18, 4, h - 36); } });
+    }
+    parts.push(...blockParts(b, h, pad));
+  });
+  const width = Math.ceil(parts.reduce((s, p) => s + p.w, 0) + pad * 2);
+  const c = document.createElement("canvas");
+  c.width = Math.min(4096, width);
+  c.height = h;
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#1c222b";
+  g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = "#2b3340";
+  g.fillRect(0, 0, c.width, 6);
+  let x = pad;
+  for (const p of parts) {
+    p.draw(g, x);
+    x += p.w;
+  }
+  return { canvas: c, widthM: c.width / PX_PER_M };
+}
+
+/** Paint, trimming the fullest block until the face fits maxW: a second gate goes first
+ *  (gates usually share the same way), then the farthest exits. */
+function paintFitted(blocks: SignContent[], maxW: number) {
+  let b = blocks.map((x) => ({ ...x, exits: [...x.exits], gates: [...x.gates] }));
+  for (;;) {
+    const r = paint(b);
+    const fullest = [...b].sort((p, q) => q.exits.length + q.gates.length - (p.exits.length + p.gates.length))[0];
+    if (r.widthM <= maxW || fullest.exits.length + fullest.gates.length <= 1) return r;
+    if (fullest.gates.length > 1 || !fullest.exits.length) fullest.gates.pop();
+    else if (fullest.exits.length > 1 || !fullest.gates.length) fullest.exits.pop();
+    else fullest.gates.pop();
+    b = b.filter((x) => x.exits.length || x.gates.length);
+  }
+}
+
+function blockParts(spec: SignContent, h: number, pad: number): Part[] {
+  const measure = document.createElement("canvas").getContext("2d")!;
   const badge = h - 2 * pad - 34;
-  const parts: { w: number; draw: (g: CanvasRenderingContext2D, x: number) => void }[] = [];
-  parts.push({ w: h * 0.62, draw: (g, x) => drawArrow(g, x + h * 0.31, h / 2, h * 0.58) });
+  const parts: Part[] = [];
+  const arrow = spec.arrow ?? "up";
+  parts.push({ w: h * 0.62, draw: (g, x) => drawArrow(g, x + h * 0.31, h / 2, h * 0.58, arrow) });
   if (spec.exits.length) {
     measure.font = `600 ${Math.round(h * 0.2)}px ${FONT}`;
     const lw = Math.max(measure.measureText("出口").width, measure.measureText("Exit").width) + 18;
@@ -103,21 +156,7 @@ function paint(spec: SignContent): { canvas: HTMLCanvasElement; widthM: number }
       },
     });
   }
-  const width = Math.ceil(parts.reduce((s, p) => s + p.w, 0) + pad * 2);
-  const c = document.createElement("canvas");
-  c.width = Math.min(4096, width);
-  c.height = h;
-  const g = c.getContext("2d")!;
-  g.fillStyle = "#1c222b";
-  g.fillRect(0, 0, c.width, c.height);
-  g.fillStyle = "#2b3340";
-  g.fillRect(0, 0, c.width, 6);
-  let x = pad;
-  for (const p of parts) {
-    p.draw(g, x);
-    x += p.w;
-  }
-  return { canvas: c, widthM: c.width / PX_PER_M };
+  return parts;
 }
 
 /** Build all signs as one group, positioned in the renderer frame via toRenderer. */
@@ -127,8 +166,11 @@ export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer
   // Unlit: the station has no dynamic lights (baked lighting only).
   const housing = new THREE.MeshBasicMaterial({ color: 0x4f565f });
   const textures: THREE_NS.Texture[] = [];
-  const face = (content: SignContent) => {
-    const { canvas, widthM } = paint(content);
+  const face = (content: SignContent[], maxW: number) => {
+    const fit = paintFitted(content, maxW);
+    const { canvas } = fit;
+    const widthM = Math.min(fit.widthM, maxW);
+    const h = H * (widthM / fit.widthM); // last resort: scale a single item down
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = anisotropy;
@@ -136,12 +178,13 @@ export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer
     // Internally lit sign face (unlit material, mild boost).
     const mat = new THREE.MeshBasicMaterial({ map: tex, toneMapped: false });
     mat.color.setScalar(1.1);
-    return { mesh: new THREE.Mesh(new THREE.PlaneGeometry(widthM, H), mat), widthM };
+    return { mesh: new THREE.Mesh(new THREE.PlaneGeometry(widthM, h), mat), widthM };
   };
   for (const s of specs) {
-    const front = face(s);
-    const hasBack = !!s.back && (s.back.exits.length > 0 || s.back.gates.length > 0);
-    const back = hasBack ? face(s.back!) : null;
+    const maxW = s.maxWidthM ?? Infinity;
+    const front = face([s], maxW);
+    const backBlocks = (s.back ?? []).filter((b) => b.exits.length > 0 || b.gates.length > 0);
+    const back = backBlocks.length ? face(backBlocks, maxW) : null;
     const width = Math.max(front.widthM, back?.widthM ?? 0);
     const box = new THREE.Mesh(new THREE.BoxGeometry(width + 0.06, H + 0.06, 0.08), housing);
     front.mesh.position.z = 0.041;

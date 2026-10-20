@@ -20,6 +20,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 from floorquery import Surfaces  # noqa: E402
+from build_station import wall_segments  # noqa: E402
 
 CLEAR_BELOW_SIGN = 2.25  # m above walking surface
 SIGN_H = 0.42
@@ -36,6 +37,54 @@ def exit_item(p):
 
 def gate_item(p):
     return {"id": p["id"], "ja": name(p, "ja"), "en": name(p, "en")}
+
+
+def along(geom, d):
+    """Point d metres along a polyline (clamped to its end)."""
+    acc = 0.0
+    for a, b in zip(geom, geom[1:]):
+        seg = math.dist((a["x"], a["y"]), (b["x"], b["y"]))
+        if acc + seg >= d and seg > 0:
+            t = (d - acc) / seg
+            return a["x"] + (b["x"] - a["x"]) * t, a["y"] + (b["y"] - a["y"]) * t
+        acc += seg
+    return geom[-1]["x"], geom[-1]["y"]
+
+
+def turn(hin, hout):
+    """Arrow for leaving a junction along hout when arriving along hin (ENU, x east, y north)."""
+    ang = math.degrees(math.atan2(hin[0] * hout[1] - hin[1] * hout[0], hin[0] * hout[0] + hin[1] * hout[1]))
+    return "up" if abs(ang) <= 45 else ("left" if ang > 0 else "right")
+
+
+ARROW_ORDER = {"left": 0, "up": 1, "right": 2}
+SIDE_MARGIN = 0.15  # m between a sign's end and the nearest wall or column
+MAX_SIGN_W = 6.0
+
+
+def wall_hit(segs, sgrid, px, py, dx, dy, zlo, zhi, maxd=12.0):
+    """Distance along (dx, dy) to the first wall face spanning any of the sign's height band."""
+    best = maxd
+    cells = set()
+    for k in range(int(maxd / 2) + 2):
+        cx, cy = px + dx * k * 2, py + dy * k * 2
+        for a in (-1, 0, 1):
+            for b in (-1, 0, 1):
+                cells.add((int(math.floor(cx / 4)) + a, int(math.floor(cy / 4)) + b))
+    for c in cells:
+        for k in sgrid.get(c, []):
+            x1, y1, x2, y2, smin, smax = segs[k]
+            if smax < zlo or smin > zhi:
+                continue
+            ex, ey = x2 - x1, y2 - y1
+            den = dx * ey - dy * ex
+            if abs(den) < 1e-9:
+                continue
+            t = ((x1 - px) * ey - (y1 - py) * ex) / den
+            u = ((x1 - px) * dy - (y1 - py) * dx) / den
+            if 0 < t < best and 0 <= u <= 1:
+                best = t
+    return best
 
 
 def main():
@@ -69,6 +118,17 @@ def main():
         for c in p["connectorNodeIds"]:
             dest.setdefault(c, []).append(p)
 
+    edges = {e["id"]: e for e in graph["edges"]}
+    segs, sgrid = wall_segments(os.path.join(ROOT, "build", "ubld_enu.json"))
+
+    def out_dir(nid, key):
+        e = edges[key[0]]
+        geom = e["geometry"][::-1] if key[1] else e["geometry"]
+        x, y = along(geom, 5.0)
+        n = nodes[nid]["position"]
+        L = math.hypot(x - n["x"], y - n["y"]) or 1.0
+        return (x - n["x"]) / L, (y - n["y"]) / L
+
     signs = []
     for nid, n in nodes.items():
         if n["kind"] == "exit" or len(adj.get(nid, [])) < 2:
@@ -100,44 +160,80 @@ def main():
             items.sort(key=lambda t: t[0])
             exits = [p for _, p in items if p["category"] == "exit"][:5]
             gates = [p for _, p in items if p["category"] == "ticket_gate"][:2]
-            # Back face, read by people walking toward the junction: everything reached through it.
-            back = sorted(((dist[t], p) for t, plist in dest.items() if t in dist and first.get(t) != key
+            # Back face, read by people walking toward the junction: everything reached through it,
+            # grouped by the turn they take there (left / straight on / right).
+            back = sorted(((dist[t], t, p) for t, plist in dest.items() if t in dist and first.get(t) != key
                            for p in plist), key=lambda t: t[0])
-            back_exits = [p for _, p in back if p["category"] == "exit"][:5]
-            back_gates = [p for _, p in back if p["category"] == "ticket_gate"][:2]
+            back_exits = [(t, p) for _, t, p in back if p["category"] == "exit"][:5]
+            back_gates = [(t, p) for _, t, p in back if p["category"] == "ticket_gate"][:2]
+            ox, oy = out_dir(nid, key)
+            hin = (-ox, -oy)  # reader walks along this edge toward the junction
+            arrow_of = {t: "up" if t == nid else turn(hin, out_dir(nid, first[t])) for t, _ in back_exits + back_gates}
+            blocks = {}
+            for t, p in back_exits:
+                blocks.setdefault(arrow_of[t], {"arrow": arrow_of[t], "exits": [], "gates": []})["exits"].append(exit_item(p))
+            for t, p in back_gates:
+                blocks.setdefault(arrow_of[t], {"arrow": arrow_of[t], "exits": [], "gates": []})["gates"].append(gate_item(p))
             geom = e["geometry"][::-1] if rev else e["geometry"]
-            # point ~4 m along the polyline (or 45% for short edges)
             total = sum(math.dist((a["x"], a["y"]), (b["x"], b["y"])) for a, b in zip(geom, geom[1:]))
-            target_d = min(4.0, total * 0.45)
-            acc = 0.0
-            px = py = pz = None
-            dirx = diry = 0.0
-            for a, b in zip(geom, geom[1:]):
-                seg = math.dist((a["x"], a["y"]), (b["x"], b["y"]))
-                if acc + seg >= target_d and seg > 0:
-                    t = (target_d - acc) / seg
-                    px, py = a["x"] + (b["x"] - a["x"]) * t, a["y"] + (b["y"] - a["y"]) * t
-                    pz = a["z"] + (b["z"] - a["z"]) * t
-                    dirx, diry = (b["x"] - a["x"]) / seg, (b["y"] - a["y"]) / seg
+
+            def place(target_d):
+                """Sign at target_d m along the edge: centred across the passage, under the ceiling."""
+                acc = 0.0
+                for a, b in zip(geom, geom[1:]):
+                    seg = math.dist((a["x"], a["y"]), (b["x"], b["y"]))
+                    if acc + seg >= target_d and seg > 0:
+                        t = (target_d - acc) / seg
+                        px, py = a["x"] + (b["x"] - a["x"]) * t, a["y"] + (b["y"] - a["y"]) * t
+                        pz = a["z"] + (b["z"] - a["z"]) * t
+                        dirx, diry = (b["x"] - a["x"]) / seg, (b["y"] - a["y"]) / seg
+                        break
+                    acc += seg
+                else:
+                    return None
+                ch = [z for z, _ in ceil.heights(px, py) if z > pz + 2.0]
+                ceiling_z = min(ch) if ch else None
+                bottom = pz + CLEAR_BELOW_SIGN
+                if ceiling_z is not None and bottom + SIGN_H > ceiling_z - CEIL_GAP:
+                    bottom = max(pz + 2.05, ceiling_z - CEIL_GAP - SIGN_H)
+                rx, ry = diry, -dirx  # right of the walking direction
+                zlo, zhi = bottom, bottom + SIGN_H
+                dr = wall_hit(segs, sgrid, px, py, rx, ry, zlo, zhi)
+                dl = wall_hit(segs, sgrid, px, py, -rx, -ry, zlo, zhi)
+                if dl + dr < 2 * MAX_SIGN_W:  # bounded passage: centre between its walls
+                    shift = (dr - dl) / 2
+                    px, py = px + rx * shift, py + ry * shift
+                max_w = round(max(0.6, min(MAX_SIGN_W, dl + dr - 2 * SIDE_MARGIN)), 2)
+                return px, py, bottom, dirx, diry, ceiling_z, max_w
+
+            # ~4 m from the junction (45% of short edges); slide along the edge if a column or a
+            # narrowing leaves too little room there, preferring positions close to 4 m.
+            base = min(4.0, total * 0.45)
+            cands = [base] + [base + k for k in (1, -1, 2, -1.5, 3, 4, 5) if 1.5 <= base + k <= total * 0.6]
+            best = None
+            for d in cands:
+                r = place(d)
+                if r is None:
+                    continue
+                if best is None or r[6] > best[6] + 0.5:
+                    best = r
+                if best[6] >= 4.2:
                     break
-                acc += seg
-            if px is None:
+            if best is None:
                 continue
-            ch = [z for z, _ in ceil.heights(px, py) if z > pz + 2.0]
-            ceiling_z = min(ch) if ch else None
-            bottom = pz + CLEAR_BELOW_SIGN
-            if ceiling_z is not None and bottom + SIGN_H > ceiling_z - CEIL_GAP:
-                bottom = max(pz + 2.05, ceiling_z - CEIL_GAP - SIGN_H)
+            px, py, bottom, dirx, diry, ceiling_z, max_w = best
             signs.append({
                 "id": f"sign-{nid}-{e['id']}{'-r' if rev else ''}",
                 "atNode": nid,
                 "position": {"x": round(px, 3), "y": round(py, 3), "z": round(bottom + SIGN_H / 2, 3)},
+                "maxWidthM": max_w,
                 # unit vector the readable face points to (back toward the junction)
                 "facing": {"x": round(-dirx, 4), "y": round(-diry, 4)},
                 "ceilingZ": ceiling_z,
                 "exits": [exit_item(p) for p in exits],
                 "gates": [gate_item(p) for p in gates],
-                "back": {"exits": [exit_item(p) for p in back_exits], "gates": [gate_item(p) for p in back_gates]},
+                "arrow": "up",
+                "back": sorted(blocks.values(), key=lambda b: ARROW_ORDER[b["arrow"]]),
             })
     out = os.path.join(ROOT, "scene", "signage.json")
     json.dump({"generatedFrom": "gteki/graph.json + gteki/pois.json (verified edges only)", "signs": signs},

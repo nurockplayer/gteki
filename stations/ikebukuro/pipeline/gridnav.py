@@ -14,6 +14,7 @@ RES = 0.5
 CLEAR = 0.35
 WALK_STEP = 0.12   # max height change per 0.5 m on floor (ramps up to ~1:4)
 STAIR_STEP = 0.45  # per 0.5 m on stairs
+RISER = 0.22       # a single step modelled as two floor levels (landings); stairs edges only
 
 
 def _seg_dist(px, py, x1, y1, x2, y2):
@@ -97,11 +98,12 @@ class Grid:
                 h = math.hypot(nx - x, ny - y)
                 for nlv, (nz, nkind) in enumerate(c):
                     lim = (STAIR_STEP if "stairs" in (kind, nkind) else WALK_STEP) * h / RES
-                    if abs(nz - z) > lim:
+                    step = abs(nz - z)
+                    if step > lim and not (step <= RISER and kind == nkind == "floor"):
                         continue
                     if self._blocked(x, y, nx, ny, min(z, nz)):
                         continue
-                    yield (i + di, j + dj, nlv), math.sqrt(h * h + (nz - z) ** 2), nkind
+                    yield (i + di, j + dj, nlv), math.sqrt(h * h + (nz - z) ** 2), "riser" if step > lim else nkind
 
     def _blocked(self, x, y, nx, ny, z):
         for k in self._near_segs(x, y):
@@ -129,7 +131,7 @@ class Grid:
             if gc > straight * max_ratio + 20:
                 continue
             for nb, cost, nkind in self._neighbours(cur):
-                if nkind == "stairs" and not allow_stairs:
+                if nkind in ("stairs", "riser") and not allow_stairs:
                     continue
                 ng = gc + cost
                 if ng < g.get(nb, 1e18):
@@ -148,6 +150,8 @@ class Grid:
             z, kind = self.cells[(i, j)][lv]
             stairs_used |= kind == "stairs"
             x, y = self.xy(i, j)
+            if pts and abs(z - pts[-1][2]) > WALK_STEP * math.hypot(x - pts[-1][0], y - pts[-1][1]) / RES:
+                stairs_used = True  # a riser between landings
             pts.append((x, y, z))
         return {"points": pts, "length": g[b], "stairs": stairs_used,
                 "ratio": g[b] / straight if straight > 0 else 1.0}

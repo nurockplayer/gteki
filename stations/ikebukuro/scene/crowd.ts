@@ -161,8 +161,9 @@ export function buildCrowd(
       if (p.lane) {
         const k = Math.min(p.lane.left.length - 1, Math.max(0, Math.round(a.s / p.lane.stepM)));
         const k2 = Math.min(p.lane.left.length - 1, k + 1);
-        const left = Math.min(p.lane.left[k], p.lane.left[k2]);
-        const right = Math.min(p.lane.right[k], p.lane.right[k2]);
+        // lanes are measured to walkable-cell centres; keep shoulders (~0.3 m) off the walls
+        const left = Math.max(0, Math.min(p.lane.left[k], p.lane.left[k2]) - 0.2);
+        const right = Math.max(0, Math.min(p.lane.right[k], p.lane.right[k2]) - 0.2);
         const edgeOff = a.forward ? off : -off; // edge frame: + = right of from->to
         off = (a.forward ? 1 : -1) * Math.min(right, Math.max(-left, edgeOff));
       } else {
