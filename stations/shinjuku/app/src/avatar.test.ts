@@ -21,8 +21,10 @@ describe("procedural commuter", () => {
       expect(bounds.min.y).toBeCloseTo(0, 5);
       expect(height).toBeGreaterThan(1.65);
       expect(height).toBeLessThan(1.85);
-      expect(height / (0.232 * avatar.object.scale.y)).toBeGreaterThan(7.5);
-      expect(height / (0.232 * avatar.object.scale.y)).toBeLessThan(7.7);
+      // The 23.6 cm head excludes hairstyle volume; a receding crown and a
+      // textured crop naturally give different visible height/head ratios.
+      expect(height / (0.236 * avatar.object.scale.y)).toBeGreaterThan(7.4);
+      expect(height / (0.236 * avatar.object.scale.y)).toBeLessThan(7.7);
       let meshes = 0;
       avatar.object.traverse(part => { if (part instanceof THREE.Mesh) meshes++; });
       expect(meshes).toBe(1);
@@ -44,7 +46,7 @@ describe("procedural commuter", () => {
       avatar.setDistance(0);
     }
     expect(heights.size).toBe(8);
-    expect(hairs.size).toBe(4);
+    expect(hairs.size).toBe(8);
     expect(avatar.object.userData.outfit).toContain("coat");
     avatar.setColorway(-8);
     expect(avatar.object.userData.outfit).toContain("backpack");
@@ -75,7 +77,7 @@ describe("procedural commuter", () => {
     avatar.dispose();
   });
 
-  it.each([0, 4])("plants stance feet without sliding at 1.45 m/s, including height scale (outfit %i)", (outfit) => {
+  it.each([0, 3, 4, 6])("plants stance feet without sliding at 1.45 m/s, including height scale (outfit %i)", (outfit) => {
     const avatar = createAvatar(THREE, outfit);
     const ankle = avatar.object.getObjectByName("leftAnkle")!;
     const p = new THREE.Vector3(), before = new THREE.Vector3();
@@ -151,6 +153,41 @@ describe("procedural commuter", () => {
     avatar.dispose();
   });
 
+  it.each([2, 3, 6, 7])("keeps the hem loop continuous and level through opposing leg motion (outfit %i)", outfit => {
+    const avatar = createAvatar(THREE, outfit), mesh = getMesh(avatar);
+    const loop = mesh.geometry.userData.hemLoop as number[];
+    expect(loop.length).toBeGreaterThanOrEqual(12);
+    const p = new THREE.Vector3(), edgeLengths: number[] = [];
+    const vertices = loop.map(i => mesh.getVertexPosition(i, new THREE.Vector3()).clone());
+    for (let i = 0; i < loop.length; i++) edgeLengths.push(vertices[i]!.distanceTo(vertices[(i + 1) % loop.length]!));
+    for (const speed of [1.45, 3.6]) for (let f = 0; f < 120; f++) {
+      avatar.update(1 / 60, speed);
+      avatar.object.updateMatrixWorld(true); mesh.skeleton.update();
+      const posed = loop.map(i => mesh.getVertexPosition(i, p).clone());
+      // A closed hem may sway and expand, but cannot tear, form a V, or
+      // alternate its height with the left/right thighs.
+      for (let i = 0; i < loop.length; i++) expect(posed[i]!.distanceTo(posed[(i + 1) % loop.length]!)).toBeLessThan(edgeLengths[i]! * 1.7);
+      expect(Math.max(...posed.map(p => p.y)) - Math.min(...posed.map(p => p.y))).toBeLessThan(0.025);
+    }
+    avatar.dispose();
+  });
+
+  it("samples distinct matte fabric, skin, hair and shoe roughness from one shared atlas", () => {
+    const avatar = createAvatar(THREE), mesh = getMesh(avatar);
+    const atlas = mesh.material.roughnessMap as THREE.DataTexture;
+    expect(atlas.image.width).toBe(8);
+    expect(atlas.image.height).toBe(1);
+    expect(mesh.material.transparent).toBe(false);
+    const uv = mesh.geometry.getAttribute("uv");
+    const pixels = new Set<number>();
+    for (let i = 0; i < uv.count; i++) pixels.add(Math.floor(uv.getX(i) * 8));
+    for (const pixel of [0, 1, 2, 3, 4, 6]) expect(pixels.has(pixel)).toBe(true);
+    const bytes = atlas.image.data!;
+    expect(bytes[1]).toBeGreaterThan(bytes[2 * 4 + 1]!); // cloth > hair
+    expect(bytes[1]).toBeGreaterThan(bytes[3 * 4 + 1]!); // cloth > shoes
+    avatar.dispose();
+  });
+
   it("shares all outfit/LOD resources, owns skeletons, and releases the last reference exactly once", () => {
     const first = createAvatar(THREE), survivor = createAvatar(THREE);
     const geometries = new Set<THREE.BufferGeometry>();
@@ -160,6 +197,7 @@ describe("procedural commuter", () => {
     }
     const disposals = [...geometries].map(g => vi.spyOn(g, "dispose"));
     const material = vi.spyOn(getMesh(first).material, "dispose");
+    const atlas = vi.spyOn(getMesh(first).material.roughnessMap!, "dispose");
     const skeleton = vi.spyOn(getMesh(first).skeleton, "dispose");
     first.setDistance(0); first.setColorway(0);
     expect(getMesh(first).geometry).toBe(getMesh(survivor).geometry);
@@ -167,10 +205,10 @@ describe("procedural commuter", () => {
     expect(getMesh(first).skeleton).not.toBe(getMesh(survivor).skeleton);
     first.dispose(); first.dispose();
     expect(skeleton).toHaveBeenCalledOnce();
-    for (const dispose of [...disposals, material]) expect(dispose).not.toHaveBeenCalled();
+    for (const dispose of [...disposals, material, atlas]) expect(dispose).not.toHaveBeenCalled();
     survivor.update(1 / 60, 1.45);
     survivor.dispose(); survivor.dispose();
-    for (const dispose of [...disposals, material]) expect(dispose).toHaveBeenCalledOnce();
+    for (const dispose of [...disposals, material, atlas]) expect(dispose).toHaveBeenCalledOnce();
     const replacement = createAvatar(THREE);
     expect(geometries.has(getMesh(replacement).geometry)).toBe(false);
     replacement.dispose();

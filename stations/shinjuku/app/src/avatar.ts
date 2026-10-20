@@ -1,5 +1,5 @@
 import type * as THREE from "three";
-import { ANKLE, BONE, buildCharacter, HAIR, HEIGHTS, HIP, OUTFITS, SHIN, THIGH } from "./characters/mesh.ts";
+import { ANKLE, BONE, buildCharacter, HAIR, HEIGHTS, HIP, OUTFITS, ROUGHNESS, SHIN, THIGH } from "./characters/mesh.ts";
 import { runningBlend, sampleFoot, strideLength, type FootPose } from "./characters/gait.ts";
 
 export interface Avatar {
@@ -12,8 +12,14 @@ export interface Avatar {
 }
 
 function buildCache(T: typeof THREE) {
+  // A tiny original linear-data atlas, shared by every commuter and LOD.
+  // Each surface samples a pixel centre: no external assets or extra draws.
+  const pixels = new Uint8Array(ROUGHNESS.flatMap(r => [255, Math.round(r * 255), 255, 255]));
+  const atlas = new T.DataTexture(pixels, ROUGHNESS.length, 1);
+  atlas.magFilter = atlas.minFilter = T.NearestFilter;
+  atlas.needsUpdate = true;
   return { references: 0, geometries: new Map<string, THREE.BufferGeometry>(),
-    material: new T.MeshStandardMaterial({ vertexColors: true, roughness: 0.83, metalness: 0 }) };
+    atlas, material: new T.MeshStandardMaterial({ vertexColors: true, roughness: 1, roughnessMap: atlas, metalness: 0 }) };
 }
 const CACHES = new WeakMap<typeof THREE, ReturnType<typeof buildCache>>();
 
@@ -64,6 +70,7 @@ export function createAvatar(T: typeof THREE, colorway = 0): Avatar {
     return { hip, knee, ankle };
   }
   const left = leg(true), right = leg(false);
+  const hem = joint(pelvis, "hem");
   object.updateMatrixWorld(true);
   const skeleton = new T.Skeleton(bones);
   mesh.bind(skeleton);
@@ -125,18 +132,23 @@ export function createAvatar(T: typeof THREE, colorway = 0): Avatar {
     stairs += ((opts?.onStairs ? 1 : 0) - stairs) * blend;
     climb += ((Number.isFinite(opts?.climbing) ? clamp(opts!.climbing!) : 0) - climb) * blend;
     const scale = object.scale.y;
-    const stride = strideLength(running) * (1 - stairs * 0.25);
+    // Shorter steps fit a skirt's envelope; phase still follows actual distance,
+    // so its stance foot remains planted at the same world walking speed.
+    const tailoredStride = index === 3 || index === 6 ? 0.76 : 1;
+    const stride = strideLength(running) * (1 - stairs * 0.25) * tailoredStride;
     cycle = (cycle + step * speed / (stride * scale)) % 1;
     breathPhase = (breathPhase + step * 2.05) % (Math.PI * 2);
     idlePhase = (idlePhase + step * 0.7) % (Math.PI * 2);
     const phase = cycle * Math.PI * 2, swing = Math.cos(phase), idle = 1 - movement;
-    pelvis.position.y = HIP - movement * (0.095 + running * 0.05 + (1 - Math.cos(phase * 2)) * 0.006);
+    pelvis.position.y = HIP - movement * ((tailoredStride < 1 ? 0.055 : 0.095) + running * 0.05 + (1 - Math.cos(phase * 2)) * 0.006);
     pelvis.position.x = movement * Math.sin(phase) * 0.009 + idle * Math.sin(idlePhase) * 0.003;
     pelvis.rotation.set(0, movement * Math.sin(phase) * 0.045, movement * swing * 0.012);
     inversePelvis.copy(pelvis.quaternion).invert();
     body.rotation.set(-movement * (0.025 + running * 0.13 + climb * 0.05),
       -pelvis.rotation.y * 1.45 + idle * Math.sin(idlePhase) * 0.009, -pelvis.rotation.z * 0.7);
     body.scale.y = 1 + Math.sin(breathPhase) * 0.0025;
+    hem.scale.z = 1 + movement * (tailoredStride < 1 ? 0.32 : 0.3);
+    hem.rotation.set(movement * Math.sin(phase * 2) * 0.022, 0, movement * Math.sin(phase - 0.5) * 0.025);
     head.rotation.x = -body.rotation.x * 0.65;
     head.rotation.y = idle * Math.sin(idlePhase + 0.8) * 0.025;
     const stance = 0.6 - running * 0.2;
@@ -157,6 +169,7 @@ export function createAvatar(T: typeof THREE, colorway = 0): Avatar {
     if (--shared.references === 0) {
       for (const geometry of shared.geometries.values()) geometry.dispose();
       shared.material.dispose();
+      shared.atlas.dispose();
       CACHES.delete(T);
     }
     object.clear();

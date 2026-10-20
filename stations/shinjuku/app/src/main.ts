@@ -146,7 +146,7 @@ const avatar = createAvatar(THREE, 0);
 const crowdDefault = quality === "high" ? 36 : 16;
 const crowdParam = Number(params.get("crowd") ?? crowdDefault);
 const crowdMax = Number.isNaN(crowdParam) ? crowdDefault : Math.max(0, Math.min(CROWD_LIMIT, Math.floor(crowdParam)));
-const crowd = createCrowd(THREE, bundle, router, nodeZ, { max: crowdMax, seed: 27 });
+const crowd = createCrowd(THREE, bundle, router, nodeZ, { max: crowdMax, seed: 27, playerAvatar: avatar });
 scene.add(crowd.group);
 scene.add(avatar.object);
 avatar.object.traverse((o) => ((o as THREE.Mesh).castShadow = false));
@@ -771,6 +771,7 @@ function step(dt: number) {
   updatePrompt();
   drawMinimap();
   renderer.info.reset();
+  crowd.prepareRender(camera);
   composer.render(dt);
   fpsAcc += dt;
   fpsN++;
