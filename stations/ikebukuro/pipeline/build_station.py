@@ -347,7 +347,9 @@ def main():
         "nodes": [{
             "id": n["id"], "floorId": n["floor"],
             "position": {"x": n["xy"][0], "y": n["xy"][1], "z": n["z"]},
-            "kind": n["kind"], "inOut": n.get("inOut", "inside"),
+            # MLIT in_out: an exit node is the opening onto the street (boundary); a stair_end foot is still
+            # inside, since the climb past it is not modelled.
+            "kind": n["kind"], "inOut": n.get("inOut") or ("boundary" if n["kind"] == "exit" else "inside"),
             "sourceRefs": n.get("sourceRefs", [{"sourceId": "plateau-ubld-13116", "featureId": "walkable-grid-cell"}]),
         } for n in nodes.values()],
         "edges": edges_out,

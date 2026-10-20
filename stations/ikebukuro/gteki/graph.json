@@ -215,7 +215,7 @@
     "z": 33.146
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -232,7 +232,7 @@
     "z": 33.146
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -249,7 +249,7 @@
     "z": 33.146
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -266,7 +266,7 @@
     "z": 33.146
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -283,7 +283,7 @@
     "z": 33.168
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -657,7 +657,7 @@
     "z": 31.154
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -674,7 +674,7 @@
     "z": 31.727
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -691,7 +691,7 @@
     "z": 30.427
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -708,7 +708,7 @@
     "z": 29.688
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -725,7 +725,7 @@
     "z": 32.016
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -742,7 +742,7 @@
     "z": 31.465
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -759,7 +759,7 @@
     "z": 30.96
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -912,7 +912,7 @@
     "z": 32.642
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -929,7 +929,7 @@
     "z": 32.153
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -946,7 +946,7 @@
     "z": 32.506
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -963,7 +963,7 @@
     "z": 32.646
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -980,7 +980,7 @@
     "z": 32.422
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -997,7 +997,7 @@
     "z": 32.246
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -1014,7 +1014,7 @@
     "z": 32.37
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -1031,7 +1031,7 @@
     "z": 32.426
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -1048,7 +1048,7 @@
     "z": 32.078
    },
    "kind": "exit",
-   "inOut": "inside",
+   "inOut": "boundary",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
