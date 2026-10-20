@@ -107,3 +107,21 @@ per version, collecting garbage across event-loop turns before each snapshot;
 ArrayBuffer bytes are reported separately from JS heap. The scene focus is the
 B6 platform, `crowd=24`, seed 27. Both probes include the borrowed player and
 shared batch. They measure this subsystem, not end-to-end explorer loading.
+
+Round 4 closes the lower interior of long hair with an inward-facing surface.
+The former single-sided rear shell exposed its thin lower bevel from front and
+three-quarter views, making it read as stray strands across the neck. The inner
+surface joins that rim back into the head volume. A shared anatomical bound
+sweeps lower hair behind the neck's coronal centre plane, blended over one neck
+radius above its top; hair length, side volume and head skinning are retained.
+This applies to all styles without exceptions. The three long cuts add 80 near
+or 32 far triangles each, within the existing overall 3,258/1,300 maxima. No
+geometry object, material, texture or per-frame animation work is added.
+
+`characters/neck.test.ts` checks every hair vertex of every style and both LODs
+in bind pose and across complete settled walk/run cycles, in the moving neck's
+reference frame. It also ray-tests the inward-facing rear volume of every cut
+that reaches the neck, so an isolated rim cannot pass the geometric bound alone.
+Round 4 before/after captures and the same isolated setup/heap probes are under
+`.qa/round4/`. Facial, hair and anatomy proportions remain deliberate procedural
+approximations; no station fact or third-party asset is introduced.

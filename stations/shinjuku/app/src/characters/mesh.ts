@@ -9,6 +9,12 @@ export const HIP = 0.93;
 export const THIGH = 0.41;
 export const SHIN = 0.43;
 export const ANKLE = 0.09;
+// The neck is attached to the head rig. Its coronal centre plane is the
+// lower-hair limit: a nape may extend down, but cannot wrap across the throat.
+export const NECK = { y: 1.491, z: 0.002, rx: 0.044, ry: 0.059, rz: 0.043,
+  collarY: 1.478, chinY: 1.525 } as const;
+const NAPE_TOP = NECK.y + NECK.ry;
+const NAPE_BACK = NECK.z;
 export const HEIGHTS = [1, 1.025, 0.97, 0.945, 1.04, 0.99, 0.96, 1.015] as const;
 // Jacket, trousers, shirt, shoes, skin, hair, bag. No uniform or brand is represented.
 const PALETTES = [
@@ -44,6 +50,13 @@ export function buildCharacter(T: typeof THREE, outfit: number, far: boolean): T
   let hemLoop: number[] = [];
   const radial = far ? 6 : 12;
   function vertex(x: number, y: number, z: number, tint: number, skin: Skin, shade = 1): number {
+    if (surface === SURFACE.hair && y < NAPE_TOP + NECK.ry && z < NAPE_BACK) {
+      // Long shell rims and side-lock tips used to curl inward below the jaw,
+      // leaving thin dark bridges across the neck. Sweep the complete lower
+      // hair volume behind its centre plane, blending over one neck radius
+      // above the nape. Length, side volume, topology and head weights remain.
+      z += (NAPE_BACK - z) * Math.min(1, (NAPE_TOP + NECK.ry - y) / NECK.ry);
+    }
     const index = position.length / 3;
     position.push(x, y, z);
     uv.push((surface + 0.5) / ROUGHNESS.length, 0.5);
@@ -162,7 +175,7 @@ export function buildCharacter(T: typeof THREE, outfit: number, far: boolean): T
   surface = SURFACE.skin;
   // Adult head: 23.6 cm chin-to-crown, broader cheekbones, tapered jaw and
   // brow/cheek/chin planes. Facial features stay small against the silhouette.
-  oval(0, 1.491, 0.002, 0.044, 0.059, 0.043, skin, BONE.head, 4);
+  oval(0, NECK.y, NECK.z, NECK.rx, NECK.ry, NECK.rz, skin, BONE.head, 4);
   const faceStart = position.length / 3;
   const face: Ring[] = [[1.525, 0.024, 0.027, 0, -0.025], [1.539, 0.044, 0.048, 0, -0.014],
     [1.566, 0.064, 0.065, 0, -0.008], [1.601, 0.086, 0.082, 0, -0.003],
@@ -273,6 +286,26 @@ export function buildCharacter(T: typeof THREE, outfit: number, far: boolean): T
     for (let j = 0; j < hn; j++) {
       const a = edgeStart + j, b = edgeStart + (j + 1) % hn, c = innerStart + j, d = innerStart + (j + 1) % hn;
       indices.push(a, b, c, b, d, c);
+    }
+    if (long) {
+      // A long cut is a volume below the skull, not a single-sided cap. Its
+      // missing inner wall exposed only the bottom bevel in front views,
+      // making that rim read as stray strands crossing the neck. Continue
+      // the rim upward with inward-facing skin, tucked inside the head.
+      let previous = innerStart;
+      for (let row = rows - 1; row >= rows - 2; row--) {
+        const next = position.length / 3;
+        for (let j = 0; j < hn; j++) {
+          const v = (hairStart + row * hn + j) * 3;
+          vertex(position[v]! * 0.87, position[v + 1]! + 0.006,
+            (position[v + 2]! - 0.012) * 0.87 + 0.012, hair, [BONE.head], 0.88);
+        }
+        for (let j = 0; j < hn; j++) {
+          const a = previous + j, b = previous + (j + 1) % hn, c = next + j, d = next + (j + 1) % hn;
+          indices.push(a, b, c, b, d, c);
+        }
+        previous = next;
+      }
     }
     if (!far && outfit !== 1) for (let lock = 0; lock < (long ? 5 : 3); lock++) {
       const x = (lock - (long ? 2 : 1)) * (long ? 0.027 : 0.025);
