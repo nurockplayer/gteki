@@ -50,7 +50,8 @@ pnpm typecheck
 | `gteki/assets/` | One manifest asset: `ikebukuro_b1.glb` (geometry + collision). Its `files` hold the runtime variant `ikebukuro_b1_lit.glb` (+ UV1, fixtures) and the 4k/2k lightmap WebPs, so generic loaders never load both GLBs. `scene.ts` loads the lit variant | presentation |
 | `scene/signage.json`, `scene/crowd_lanes.json` | Derived from the verified graph and the PLATEAU walkable grid | presentation |
 | `scene/walk_bridges.json` | Invisible walking strips over hairline cracks between PLATEAU floor polygons | presentation |
-| `pipeline/` | Reproducible data and asset build (stdlib Python + Blender) | — |
+| `scene/access_fences.json` | Walker-blocking fences with a 「通行可否 未確認」/"Access unverified" marker where surveyed floor of unknown access would shortcut the routable areas | presentation |
+| `pipeline/` | Reproducible data and asset build (stdlib Python + Blender; one Node walker check) | — |
 | `docs/` | G0 source audit, coverage gaps, evidence | — |
 
 ## Reproduce
@@ -59,8 +60,9 @@ Tools: Homebrew `blender` (5.2 LTS), `webp`, `imagemagick`, `godot` (optional); 
 
 ```sh
 bash pipeline/fetch_sources.sh    # PLATEAU GML + metadata (sha256-checked) into data-cache/
-pnpm build:data                   # GML -> ENU JSON -> GLB -> verified graph -> signage -> walk bridges
+pnpm build:data                   # GML -> ENU JSON -> GLB -> verified graph -> signage -> walk bridges -> access fences
 pnpm bake:lighting                # 4096 Cycles lightmap (Metal GPU ~5 min; DEVICE=CPU works) -> WebP
+pnpm check:access                 # walker flood: every unknown-access link stays closed
 ```
 
 `build_station.py` exits non-zero if any edge fails geometry validation or if a POI points at a
@@ -173,6 +175,17 @@ Evidence stills:
   the connector is a `stair_end` node on surveyed B1 floor at the PLATEAU wall opening the
   official map places the exit at. The climb itself is not modelled or claimed, and the opening
   renders as haze.
+- **Surveyed floor whose access is unknown** stays visible but cannot be walked through where
+  it would link two routable areas by a shortcut (more than 20 m shorter than the verified way
+  round): the JR–Tobu passage (`gap-tobu-jr-link`) and the passage running west from slice 3 to
+  the West Exit area, whose graph is not yet authored. `pipeline/build_access.py` finds such
+  links on the walkable grid, places fences on a minimum cut near each mouth, carries their ends
+  on to a wall, a floor edge or a routable area, and fails the build if a fence comes within
+  0.75 m of a verified edge or a link is still open on that grid; `pnpm check:access` then floods
+  the same areas with the explorer's own walker rules and fails on any leak. Fences block the
+  explorer's walker only; the graph, routing and gridnav are unchanged. Dead ends of unknown
+  access (e.g. the Yurakucho gate area, `gap-south-west`) stay explorable, since they lead
+  nowhere.
 
 ## Next
 

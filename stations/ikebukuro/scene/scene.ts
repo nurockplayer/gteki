@@ -5,11 +5,13 @@ import type * as THREE_NS from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { createMaterials } from "./materials.ts";
 import { buildSigns, type SignSpec } from "./signs.ts";
+import { buildAccessFences, type FenceSpec } from "./fences.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { createAmbience } from "./ambience.ts";
 import crowdLanes from "./crowd_lanes.json";
 import signage from "./signage.json";
 import walkBridges from "./walk_bridges.json";
+import accessFences from "./access_fences.json";
 import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
 
@@ -305,6 +307,13 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     walkable.push(bridges);
   }
 
+  // Surveyed passages that would link routable areas by an unverified way (e.g. the JR-Tobu passage,
+  // possibly a fare-paid transfer concourse) are fenced off: visible, labelled, not walkable.
+  const fenceData = accessFences as { label: { ja: string; en: string }; fences: FenceSpec[] };
+  const fences = buildAccessFences(THREE, fenceData.fences, fenceData.label, toRenderer);
+  root.add(fences.visual, fences.collider);
+  colliders.push(fences.collider);
+
   // Lightmap (baked by pipeline/blender_bake_lighting.py, TEXCOORD_1). Falls back to a hemisphere rig.
   let lightmap: THREE_NS.Texture | null = null;
   if (baked) {
@@ -372,6 +381,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       gltf.scene.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
       for (const e of extra) e.geometry.dispose();
       bridges?.geometry.dispose();
+      fences.dispose();
       bridges?.material.dispose();
       for (const t of rayTiles) t.geometry.dispose();
       for (const m of new Set(rayTiles.map((t) => t.material))) m.dispose();
