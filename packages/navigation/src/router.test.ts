@@ -179,7 +179,7 @@ describe("access and verification rules", () => {
   it("chooses a step-free detour over stairs and unknown-wheelchair shortcuts", () => {
     const router = routerFor([
       edge("stairs", "start", "upper", { mode: "stairs", lengthM: 5, wheelchair: false, steps: true }),
-      edge("unknown-wheelchair", "start", "upper", { lengthM: 1, wheelchair: null }),
+      edge("unknown-wheelchair", "start", "upper", { mode: "ramp", lengthM: 1, wheelchair: null }),
       edge("walk-to-ramp", "start", "b"),
       edge("ramp", "b", "upper", { mode: "ramp" }),
     ]);
@@ -231,8 +231,8 @@ describe("access and verification rules", () => {
 describe("route facts and provenance", () => {
   it("counts each floor-changing step, including reversed traversal", () => {
     const router = routerFor([
-      edge("walk", "start", "a"), edge("up", "a", "upper"),
-      edge("upstairs-walk", "upper", "upper-2"), edge("down", "upper-2", "goal"),
+      edge("walk", "start", "a"), edge("up", "a", "upper", { mode: "ramp" }),
+      edge("upstairs-walk", "upper", "upper-2"), edge("down", "upper-2", "goal", { mode: "ramp" }),
     ]);
     expect(success(router.route("start", "goal")).floorChanges).toBe(2);
     const reverse = success(router.route("upper-2", "start"));
@@ -363,7 +363,7 @@ describe("length, cost and time", () => {
 
   it("includes vertical distance when both segment endpoints have known heights", () => {
     const route = success(routerFor([edge("polyline", "start", "upper", {
-      lengthM: null, geometry: [{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 2 }, { x: 10, y: 0, z: 4 }],
+      mode: "ramp", lengthM: null, geometry: [{ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 2 }, { x: 10, y: 0, z: 4 }],
     })]).route("start", "upper"));
     expect(route.totalLengthM).toBeCloseTo(Math.hypot(10, 4));
     expect(route.estimatedSeconds).toBeCloseTo(Math.hypot(10, 4) / 1.2);

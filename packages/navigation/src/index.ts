@@ -1,4 +1,4 @@
-import type { Edge, EdgeMode, StationBundle } from "@gteki/schema";
+import type { Edge, EdgeMode, LocalTime, StationBundle } from "@gteki/schema";
 
 /**
  * Renderer-neutral router over the verified directed station graph.
@@ -18,12 +18,26 @@ export interface RouteProfile {
   stepFree: boolean;
   /** Avoid these modes entirely (e.g. ["escalator"]). */
   avoidModes?: EdgeMode[];
-  /** Ignore hours: hours === null is reported as an unknown, never assumed open. */
   /** Edge ids closed for this query in addition to edge.closed. */
   extraClosedEdgeIds?: string[];
+  /**
+   * Unknown opening hours (hours === null):
+   * - "warn_unknown" (default): routable, reported in `unknowns` as kind "hours"; the UI must
+   *   show "hours unverified". No open dataset for either station publishes passage hours.
+   * - "require_known": excluded (strict, fail-closed).
+   * Nothing is ever asserted to be open 24h without an `always` hours record.
+   */
+  hours?: "warn_unknown" | "require_known";
+  /** Station-local departure time. When given, edges whose known hours are closed are excluded. */
+  at?: LocalTime;
+  /** ISO date "today" used to flag stale sources; omit for no staleness verdict. */
+  today?: string;
+  /** Source datasetDate older than this (days before `today`) marks the route stale. Default 730. */
+  staleAfterDays?: number;
 }
 
 export const DEFAULT_PROFILE: RouteProfile = { fare: "ticketed", stepFree: false };
+export const DEFAULT_STALE_AFTER_DAYS = 730;
 
 export interface RouteStep {
   edgeId: string;
@@ -54,6 +68,16 @@ export interface RouteResult {
   sourceIds: string[];
   /** Latest checkedDate across the route's evidence. */
   evidenceCheckedDate: string | null;
+  /** Oldest source datasetDate the route depends on (the weakest freshness link); null = undated. */
+  oldestSourceDate: string | null;
+  /** true when oldestSourceDate is older than staleAfterDays before profile.today; null when not evaluable. */
+  stale: boolean | null;
+  /** True when the route uses synthetic data: never present it as real directions. */
+  synthetic: boolean;
+  /** Edges with known opening windows used without a departure time (`profile.at`); UI must show the window. */
+  timeRestricted: { edgeId: string; open: string; close: string; days?: string[] }[];
+  /** Operators whose floors the route touches, in order of first appearance. */
+  operatorIds: string[];
 }
 
 export type RouteFailureReason =

@@ -1,5 +1,6 @@
 import type { Edge, StationBundle, Vec3N } from "@gteki/schema";
-import { DEFAULT_PROFILE } from "./index.ts";
+import { isOpenAt } from "@gteki/schema";
+import { DEFAULT_PROFILE, DEFAULT_STALE_AFTER_DAYS } from "./index.ts";
 import type { Router, RouteProfile, RouteResult, RouteStep, RouteUnknown } from "./index.ts";
 
 const WALK_SPEED = 1.2;
@@ -96,8 +97,18 @@ interface Previous {
   traversal: Traversal;
 }
 
+const DAY_MS = 86_400_000;
+
+function daysBetween(older: string, newer: string): number | null {
+  const a = Date.parse(older);
+  const b = Date.parse(newer);
+  return Number.isFinite(a) && Number.isFinite(b) ? (b - a) / DAY_MS : null;
+}
+
 export function createRouter(bundle: StationBundle): Router {
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
+  const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
+  const sourceDates = new Map(bundle.sources.map((source) => [source.id, source.datasetDate]));
   const adjacency = new Map<string, Traversal[]>();
   for (const nodeId of nodes.keys()) adjacency.set(nodeId, []);
   for (const edge of bundle.edges) {
@@ -120,10 +131,16 @@ export function createRouter(bundle: StationBundle): Router {
     if (edge.closed || closed.has(edge.id) || avoided.has(edge.mode)) return false;
     if (profile.stepFree && (edge.wheelchair !== true || edge.steps === true)) return false;
     if (profile.fare === "unpaid_only" && (edge.paid !== false || edge.crossesFareBoundary !== false)) return false;
+    if (edge.hours === null) return profile.hours !== "require_known";
+    if (profile.at) {
+      const open = isOpenAt(edge.hours, profile.at);
+      if (open === false) return false;
+      if (open === null && profile.hours === "require_known") return false;
+    }
     return true;
   }
 
-  function result(fromNodeId: string, goal: string, previous: Map<string, Previous>): RouteResult {
+  function result(fromNodeId: string, goal: string, previous: Map<string, Previous>, profile: RouteProfile): RouteResult {
     const path: Previous[] = [];
     for (let nodeId = goal; nodeId !== fromNodeId;) {
       const step = previous.get(nodeId)!;
@@ -141,6 +158,14 @@ export function createRouter(bundle: StationBundle): Router {
     let floorChanges = 0;
     let crossesFareBoundary = false;
     let evidenceCheckedDate: string | null = null;
+    let synthetic = bundle.station.synthetic;
+    const timeRestricted: RouteResult["timeRestricted"] = [];
+    const operatorIds: string[] = [];
+    const touchOperator = (floorId: string) => {
+      const operatorId = floors.get(floorId)?.operatorId;
+      if (operatorId !== undefined && !operatorIds.includes(operatorId)) operatorIds.push(operatorId);
+    };
+    touchOperator(nodes.get(fromNodeId)!.floorId);
     const unknown = (kind: RouteUnknown, edgeId: string) => {
       const ids = unknownEdges.get(kind) ?? [];
       ids.push(edgeId);
@@ -159,7 +184,13 @@ export function createRouter(bundle: StationBundle): Router {
         : lengthM / (edge.mode === "stairs" ? 0.5 : edge.mode === "escalator" ? 0.75 : WALK_SPEED);
       if (fromFloorId !== toFloorId) floorChanges++;
       if (edge.crossesFareBoundary === true) crossesFareBoundary = true;
+      touchOperator(toFloorId);
+      if (edge.verification === "synthetic") synthetic = true;
       if (edge.hours === null) unknown("hours", edge.id);
+      else if (edge.hours.kind === "window" && !profile.at) {
+        const { open, close, days } = edge.hours;
+        timeRestricted.push(days ? { edgeId: edge.id, open, close, days } : { edgeId: edge.id, open, close });
+      }
       if (edge.paid === null) unknown("paid", edge.id);
       if (edge.wheelchair === null) unknown("wheelchair", edge.id);
       if (edge.steps === null) unknown("steps", edge.id);
@@ -178,7 +209,20 @@ export function createRouter(bundle: StationBundle): Router {
       const edgeIds = unknownEdges.get(kind);
       return edgeIds ? [{ kind, edgeIds }] : [];
     });
-    return { ok: true, nodeIds, steps, totalLengthM, estimatedSeconds, floorChanges, crossesFareBoundary, unknowns, sourceIds: [...sourceIds].sort(), evidenceCheckedDate };
+    let oldestSourceDate: string | null = null;
+    for (const sourceId of sourceIds) {
+      const date = sourceDates.get(sourceId) ?? null;
+      if (date !== null && (oldestSourceDate === null || date < oldestSourceDate)) oldestSourceDate = date;
+    }
+    let stale: boolean | null = null;
+    if (profile.today && oldestSourceDate) {
+      const age = daysBetween(oldestSourceDate, profile.today);
+      if (age !== null) stale = age > (profile.staleAfterDays ?? DEFAULT_STALE_AFTER_DAYS);
+    }
+    return {
+      ok: true, nodeIds, steps, totalLengthM, estimatedSeconds, floorChanges, crossesFareBoundary, unknowns,
+      sourceIds: [...sourceIds].sort(), evidenceCheckedDate, oldestSourceDate, stale, synthetic, timeRestricted, operatorIds,
+    };
   }
 
   return {
@@ -203,7 +247,7 @@ export function createRouter(bundle: StationBundle): Router {
       for (let current = queue.pop(); current; current = queue.pop()) {
         if (settled.has(current.nodeId) || current.cost !== distances.get(current.nodeId)) continue;
         settled.add(current.nodeId);
-        if (goals.has(current.nodeId)) return result(fromNodeId, current.nodeId, previous);
+        if (goals.has(current.nodeId)) return result(fromNodeId, current.nodeId, previous, profile);
         for (const traversal of adjacency.get(current.nodeId)!) {
           if (settled.has(traversal.toNodeId) || !permits(traversal.edge, profile, avoided, closed)) continue;
           const cost = current.cost + traversal.measurement.cost;

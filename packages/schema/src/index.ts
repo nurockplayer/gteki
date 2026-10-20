@@ -7,7 +7,13 @@
  * - Only `verification: "verified"` edges enter real-world routing; `synthetic`
  *   data is allowed only in bundles flagged `station.synthetic === true` (fixtures).
  * - Floors are operator-scoped; no cross-operator floor equivalence is implied by labels.
- * - Coordinates are station-local ENU metres (x east, y north, z up) around `station.origin`.
+ * - Coordinates are station-local metres around `station.origin`: x east, y north on the ENU
+ *   tangent plane; z = source height minus origin height (no curvature term, so a TP height stays
+ *   a TP height when origin.hM = 0). Renderer frame (glTF / Three.js / Godot, Y-up): (x, z, -y).
+ *
+ * File layout (station-owned; shared core only reads): stations/<id>/gteki/
+ *   station.json → StationManifestFile, graph.json → GraphFile, pois.json → PoiFile,
+ *   optional scene.ts (see @gteki/scene-api). `composeBundle` joins them into a StationBundle.
  */
 
 export const SCHEMA_VERSION = "gteki.station/0.1" as const;
@@ -138,6 +144,8 @@ export interface Node {
   id: string;
   floorId: string;
   position: Vec3N;
+  /** Display-only height used when position.z is null (e.g. interpolated along a stair chain). Never routed on. */
+  renderZ?: number;
   kind: NodeKind;
   /** MLIT in_out: outside facility / boundary / inside. */
   inOut: "outside" | "boundary" | "inside" | null;
@@ -148,9 +156,18 @@ export type EdgeMode = "walk" | "stairs" | "escalator" | "elevator" | "ramp" | "
 
 export type Verification = "verified" | "geometry_only" | "unverified" | "synthetic";
 
+export type Weekday = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+
 export type HoursSpec =
   | { kind: "always"; evidence: EvidenceRef }
-  | { kind: "window"; open: string; close: string; evidence: EvidenceRef };
+  /**
+   * Station-local opening window "HH:MM"–"HH:MM" (close may be after 24:00, e.g. "25:30",
+   * for service past midnight). `days` omitted = every day; a holiday calendar is not modelled.
+   */
+  | { kind: "window"; open: string; close: string; days?: Weekday[]; evidence: EvidenceRef };
+
+/** What the z values of an edge polyline mean. Routing never uses `symbolic` heights. */
+export type GeometryZKind = "measured" | "source" | "symbolic";
 
 export interface Edge {
   id: string;
@@ -163,6 +180,8 @@ export interface Edge {
   lengthM: number | null;
   /** Polyline in station ENU; endpoints coincide with node positions. */
   geometry?: Vec3N[];
+  /** Provenance of the polyline z values (default "source"). */
+  geometryZ?: GeometryZKind;
   /** Inside a fare-paid area. true/false/null(unknown). */
   paid: Tri;
   /** Crosses the paid/unpaid boundary (ticket gate). */
@@ -245,6 +264,24 @@ export interface Coverage {
   freshness: string | null;
 }
 
+export type AssetRole = "visual" | "collision" | "visual+collision";
+
+/** A renderable asset. Geometry never establishes pedestrian connectivity; the graph does. */
+export interface Asset {
+  id: string;
+  /** Path relative to stations/<id>/gteki/ (no "..", no scheme). */
+  uri: string;
+  format: "glb";
+  floorIds: string[];
+  /** Column-major 4x4 from asset space to the renderer frame; omitted = identity (authored in renderer frame). */
+  transform?: number[];
+  role: AssetRole;
+  /** Sources the asset is derived from; their rights gate public distribution. */
+  sourceIds: string[];
+  /** e.g. "Blender build from PLATEAU ubld 53394576, 0.5 m grid"; disclosure of modification. */
+  derivation?: string;
+}
+
 export interface StationBundle {
   schema: typeof SCHEMA_VERSION;
   station: Station;
@@ -254,6 +291,37 @@ export interface StationBundle {
   edges: Edge[];
   pois: Poi[];
   coverage: Coverage;
+  /** Suggested user-choosable start nodes (no indoor positioning is claimed). */
+  spawnNodeIds?: string[];
+  assets?: Asset[];
+}
+
+/** stations/<id>/gteki/station.json */
+export interface StationManifestFile {
+  schema: typeof SCHEMA_VERSION;
+  station: Station;
+  sources: Source[];
+  floors: Floor[];
+  coverage: Coverage;
+  spawnNodeIds?: string[];
+  assets?: Asset[];
+}
+
+/** stations/<id>/gteki/graph.json */
+export interface GraphFile {
+  schema: typeof SCHEMA_VERSION;
+  stationId: string;
+  nodes: Node[];
+  edges: Edge[];
+}
+
+/** stations/<id>/gteki/pois.json */
+export interface PoiFile {
+  schema: typeof SCHEMA_VERSION;
+  stationId: string;
+  pois: Poi[];
 }
 
 export { validateBundle, type ValidationIssue } from "./validate.ts";
+export { checkShape, composeBundle, parseStationFiles, type ParseResult } from "./parse.ts";
+export { parseHm, isOpenAt, type LocalTime } from "./hours.ts";

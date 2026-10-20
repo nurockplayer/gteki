@@ -100,3 +100,48 @@ export function threeToEnu(t: [number, number, number]): Enu {
 export function dist2(a: { x: number; y: number }, b: { x: number; y: number }): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
+
+/**
+ * The GTEki station frame: x/y on the ENU tangent plane at `origin`, z = source height − origin
+ * height (no earth-curvature term). Keeping z height-preserving means an orthometric (TP) source
+ * height stays a TP height when origin.h = 0, so floors and ramps keep their published values.
+ * Horizontal error versus a strict ENU frame is the curvature drop only (≈ 2 cm at 500 m), and
+ * toLocal/toGeodetic are exact inverses of each other.
+ */
+export class StationFrame {
+  private readonly enu: EnuFrame;
+
+  constructor(readonly origin: Geodetic) {
+    this.enu = new EnuFrame(origin);
+  }
+
+  toLocal(g: Geodetic): Enu {
+    const e = this.enu.toEnu({ lat: g.lat, lon: g.lon, h: this.origin.h });
+    return { x: e.x, y: e.y, z: g.h - this.origin.h };
+  }
+
+  /** Inverse of toLocal; z is restored exactly as height. */
+  toGeodetic(local: Enu): Geodetic {
+    // Solve for the tangent-plane offset z' at which (x, y, z') sits on the origin-height
+    // surface; toLocal(lat, lon) then reproduces (x, y). dh/dz' ≈ 1 near the origin.
+    let z = 0;
+    let g = this.enu.toGeodetic({ x: local.x, y: local.y, z });
+    for (let i = 0; i < 6 && Math.abs(g.h - this.origin.h) > 1e-9; i++) {
+      z -= g.h - this.origin.h;
+      g = this.enu.toGeodetic({ x: local.x, y: local.y, z });
+    }
+    return { lat: g.lat, lon: g.lon, h: local.z + this.origin.h };
+  }
+}
+
+/** The shared station → renderer mapping (glTF / Three.js / Godot are all Y-up, right-handed). */
+export const enuToRenderer = enuToThree;
+export const rendererToEnu = threeToEnu;
+
+/** Column-major 4x4 of enuToRenderer, for engines that take a node transform. */
+export const ENU_TO_RENDERER_MATRIX: readonly number[] = Object.freeze([
+  1, 0, 0, 0,
+  0, 0, -1, 0,
+  0, 1, 0, 0,
+  0, 0, 0, 1,
+]);
