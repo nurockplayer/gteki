@@ -8,7 +8,7 @@ describe("Shinjuku gteki/ contract files", () => {
   it("parse fail-closed with no errors", () => {
     expect(issues.filter((i) => i.level === "error")).toEqual([]);
     expect(bundle.station.synthetic).toBe(false);
-    expect(bundle.station.codes.map((c) => c.code)).toContain("E27");
+    expect((bundle.station.codes ?? []).map((c) => c.code)).toContain("E27");
   });
 
   it("never claims measured heights", () => {
