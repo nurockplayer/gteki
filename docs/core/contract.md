@@ -47,6 +47,7 @@ stations/<id>/gteki/
 | Assets derived from non-`REUSABLE_WITH_CONDITIONS` sources are rejected for public bundles | validate |
 | Asset `uri` must be relative, inside the station folder; symlinks are followed only inside it; a GLB's external buffers/images must resolve through the station's asset map (web) or are refused (Godot) | validate, plugin, explorer, godot |
 | Symbolic polyline z (`geometryZ: "symbolic"`) never affects length or cost | router |
+| `Source.validUntil` is the end of the source's declared *data* validity: once passed, dependent routes are stale and list it in `expiredSourceIds`. A provider's publication/availability period or licence term is not `validUntil`; it goes in source `notes` and coverage gaps | router |
 | `route(starts, goals)` takes one or many starts (a POI's connectors) and ranks them by the router's own cost in one multi-source query; any start that is already a goal yields `start_equals_goal`. Callers never compare routes by `totalLengthM` | router |
 | Profile `at`/`today` are station-local (Asia/Tokyo), read from `Intl` parts, never reparsed in the host zone | web |
 | Routes report `oldestSourceDate`, `undatedSourceIds`, `stale` (default > 730 days; `null` while any dependency is undated unless dated evidence already proves staleness), tri-state `crossesFareBoundary` (unknown → `unknowns.fare_boundary`), `sourceIds`, `timeRestricted`, `operatorIds` | router |

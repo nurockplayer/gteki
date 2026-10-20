@@ -54,7 +54,11 @@ export interface Source {
   /** sha256 of each downloaded file, keyed by file name. */
   sha256?: Record<string, string>;
   datasetDate: string | null;
-  /** Source-declared end of publication / validity, if any. */
+  /**
+   * Last day the source declares its *data* valid (e.g. a temporary closure notice). After it, routes
+   * depending on the source are stale. Not a publication/availability period or a licence term: record
+   * those in `notes` (and coverage gaps), since they never make the data wrong.
+   */
   validUntil?: string | null;
   notes?: string;
 }
