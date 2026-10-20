@@ -66,6 +66,12 @@
      "arrow": "up",
      "exits": [
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-17",
        "label": "17",
        "ja": "17番出口",
@@ -88,12 +94,6 @@
        "label": "10",
        "ja": "10番出口",
        "en": "Exit 10"
-      },
-      {
-       "id": "exit-11",
-       "label": "11",
-       "ja": "11番出口",
-       "en": "Exit 11"
       }
      ],
      "gates": []
@@ -117,6 +117,12 @@
    "ceilingZ": 30.69,
    "exits": [
     {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    },
+    {
      "id": "exit-17",
      "label": "17",
      "ja": "17番出口",
@@ -139,12 +145,6 @@
      "label": "10",
      "ja": "10番出口",
      "en": "Exit 10"
-    },
-    {
-     "id": "exit-11",
-     "label": "11",
-     "ja": "11番出口",
-     "en": "Exit 11"
     }
    ],
    "gates": [],
@@ -262,7 +262,14 @@
    "back": [
     {
      "arrow": "left",
-     "exits": [],
+     "exits": [
+      {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      }
+     ],
      "gates": [
       {
        "id": "jr-south-gate",
@@ -297,12 +304,6 @@
        "label": "10",
        "ja": "10番出口",
        "en": "Exit 10"
-      },
-      {
-       "id": "exit-11",
-       "label": "11",
-       "ja": "11番出口",
-       "en": "Exit 11"
       }
      ],
      "gates": []
@@ -379,12 +380,6 @@
        "label": "27",
        "ja": "27番出口",
        "en": "Exit 27"
-      },
-      {
-       "id": "exit-22",
-       "label": "22",
-       "ja": "22番出口",
-       "en": "Exit 22"
       }
      ],
      "gates": [
@@ -403,6 +398,12 @@
     {
      "arrow": "right",
      "exits": [
+      {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
       {
        "id": "exit-4",
        "label": "4",
@@ -430,6 +431,12 @@
    },
    "ceilingZ": 31.891,
    "exits": [
+    {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    },
     {
      "id": "exit-4",
      "label": "4",
@@ -517,6 +524,12 @@
    "ceilingZ": 30.42,
    "exits": [
     {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    },
+    {
      "id": "exit-4",
      "label": "4",
      "ja": "4番出口",
@@ -539,12 +552,6 @@
      "label": "27",
      "ja": "27番出口",
      "en": "Exit 27"
-    },
-    {
-     "id": "exit-22",
-     "label": "22",
-     "ja": "22番出口",
-     "en": "Exit 22"
     }
    ],
    "gates": [
@@ -677,16 +684,16 @@
        "en": "Exit 15"
       },
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-4",
        "label": "4",
        "ja": "4番出口",
        "en": "Exit 4"
-      },
-      {
-       "id": "exit-37",
-       "label": "37",
-       "ja": "37番出口",
-       "en": "Exit 37"
       }
      ],
      "gates": [
@@ -770,10 +777,10 @@
      "arrow": "right",
      "exits": [
       {
-       "id": "exit-4",
-       "label": "4",
-       "ja": "4番出口",
-       "en": "Exit 4"
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
       }
      ],
      "gates": [
@@ -833,10 +840,10 @@
      "arrow": "up",
      "exits": [
       {
-       "id": "exit-4",
-       "label": "4",
-       "ja": "4番出口",
-       "en": "Exit 4"
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
       }
      ],
      "gates": [
@@ -908,10 +915,10 @@
      "arrow": "left",
      "exits": [
       {
-       "id": "exit-4",
-       "label": "4",
-       "ja": "4番出口",
-       "en": "Exit 4"
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
       }
      ],
      "gates": [
@@ -966,7 +973,7 @@
    ]
   },
   {
-   "id": "sign-w_w-w_cj__w_w-r",
+   "id": "sign-w_w-w_13j__w_w-r",
    "atNode": "w_w",
    "position": {
     "x": -148.11,
@@ -981,6 +988,12 @@
    },
    "ceilingZ": 31.0,
    "exits": [
+    {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    },
     {
      "id": "exit-17",
      "label": "17",
@@ -1004,12 +1017,6 @@
      "label": "4",
      "ja": "4番出口",
      "en": "Exit 4"
-    },
-    {
-     "id": "exit-37",
-     "label": "37",
-     "ja": "37番出口",
-     "en": "Exit 37"
     }
    ],
    "gates": [
@@ -1082,6 +1089,12 @@
      "arrow": "left",
      "exits": [
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-17",
        "label": "17",
        "ja": "17番出口",
@@ -1104,12 +1117,6 @@
        "label": "4",
        "ja": "4番出口",
        "en": "Exit 4"
-      },
-      {
-       "id": "exit-37",
-       "label": "37",
-       "ja": "37番出口",
-       "en": "Exit 37"
       }
      ],
      "gates": [
@@ -1124,6 +1131,267 @@
        "en": "JR Central Gate 2"
       }
      ]
+    }
+   ]
+  },
+  {
+   "id": "sign-w_13j-w_cj__w_13j-r",
+   "atNode": "w_13j",
+   "position": {
+    "x": -135.61,
+    "y": 122.067,
+    "z": 30.37
+   },
+   "maxWidthM": 6.0,
+   "scale": 1.0,
+   "facing": {
+    "x": -0.9724,
+    "y": 0.2334
+   },
+   "ceilingZ": 31.0,
+   "exits": [
+    {
+     "id": "exit-17",
+     "label": "17",
+     "ja": "17番出口",
+     "en": "Exit 17"
+    },
+    {
+     "id": "exit-15",
+     "label": "15",
+     "ja": "15番出口",
+     "en": "Exit 15"
+    },
+    {
+     "id": "exit-18",
+     "label": "18",
+     "ja": "18番出口",
+     "en": "Exit 18"
+    },
+    {
+     "id": "exit-4",
+     "label": "4",
+     "ja": "4番出口",
+     "en": "Exit 4"
+    },
+    {
+     "id": "exit-37",
+     "label": "37",
+     "ja": "37番出口",
+     "en": "Exit 37"
+    }
+   ],
+   "gates": [
+    {
+     "id": "jr-central-gate-1",
+     "ja": "JR 中央1改札",
+     "en": "JR Central Gate 1"
+    },
+    {
+     "id": "jr-central-gate-2",
+     "ja": "JR 中央2改札",
+     "en": "JR Central Gate 2"
+    }
+   ],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-10",
+       "label": "10",
+       "ja": "10番出口",
+       "en": "Exit 10"
+      },
+      {
+       "id": "exit-11",
+       "label": "11",
+       "ja": "11番出口",
+       "en": "Exit 11"
+      }
+     ],
+     "gates": []
+    },
+    {
+     "arrow": "right",
+     "exits": [
+      {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      }
+     ],
+     "gates": []
+    }
+   ]
+  },
+  {
+   "id": "sign-w_13j-w_13j__w_w",
+   "atNode": "w_13j",
+   "position": {
+    "x": -143.39,
+    "y": 123.933,
+    "z": 30.37
+   },
+   "maxWidthM": 6.0,
+   "scale": 1.0,
+   "facing": {
+    "x": 0.9724,
+    "y": -0.2334
+   },
+   "ceilingZ": 31.0,
+   "exits": [
+    {
+     "id": "exit-10",
+     "label": "10",
+     "ja": "10番出口",
+     "en": "Exit 10"
+    },
+    {
+     "id": "exit-11",
+     "label": "11",
+     "ja": "11番出口",
+     "en": "Exit 11"
+    }
+   ],
+   "gates": [],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "left",
+     "exits": [
+      {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      }
+     ],
+     "gates": []
+    },
+    {
+     "arrow": "up",
+     "exits": [
+      {
+       "id": "exit-17",
+       "label": "17",
+       "ja": "17番出口",
+       "en": "Exit 17"
+      },
+      {
+       "id": "exit-15",
+       "label": "15",
+       "ja": "15番出口",
+       "en": "Exit 15"
+      },
+      {
+       "id": "exit-18",
+       "label": "18",
+       "ja": "18番出口",
+       "en": "Exit 18"
+      },
+      {
+       "id": "exit-4",
+       "label": "4",
+       "ja": "4番出口",
+       "en": "Exit 4"
+      }
+     ],
+     "gates": [
+      {
+       "id": "jr-central-gate-1",
+       "ja": "JR 中央1改札",
+       "en": "JR Central Gate 1"
+      },
+      {
+       "id": "jr-central-gate-2",
+       "ja": "JR 中央2改札",
+       "en": "JR Central Gate 2"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sign-w_13j-w_13j__x13f",
+   "atNode": "w_13j",
+   "position": {
+    "x": -139.5,
+    "y": 125.925,
+    "z": 30.37
+   },
+   "maxWidthM": 6.0,
+   "scale": 1.0,
+   "facing": {
+    "x": -0.0,
+    "y": -1.0
+   },
+   "ceilingZ": 31.0,
+   "exits": [
+    {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    }
+   ],
+   "gates": [],
+   "arrow": "up",
+   "back": [
+    {
+     "arrow": "left",
+     "exits": [
+      {
+       "id": "exit-17",
+       "label": "17",
+       "ja": "17番出口",
+       "en": "Exit 17"
+      },
+      {
+       "id": "exit-15",
+       "label": "15",
+       "ja": "15番出口",
+       "en": "Exit 15"
+      },
+      {
+       "id": "exit-18",
+       "label": "18",
+       "ja": "18番出口",
+       "en": "Exit 18"
+      }
+     ],
+     "gates": [
+      {
+       "id": "jr-central-gate-1",
+       "ja": "JR 中央1改札",
+       "en": "JR Central Gate 1"
+      },
+      {
+       "id": "jr-central-gate-2",
+       "ja": "JR 中央2改札",
+       "en": "JR Central Gate 2"
+      }
+     ]
+    },
+    {
+     "arrow": "right",
+     "exits": [
+      {
+       "id": "exit-10",
+       "label": "10",
+       "ja": "10番出口",
+       "en": "Exit 10"
+      },
+      {
+       "id": "exit-11",
+       "label": "11",
+       "ja": "11番出口",
+       "en": "Exit 11"
+      }
+     ],
+     "gates": []
     }
    ]
   },
@@ -1143,6 +1411,12 @@
    },
    "ceilingZ": 31.0,
    "exits": [
+    {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    },
     {
      "id": "exit-4",
      "label": "4",
@@ -1166,12 +1440,6 @@
      "label": "40",
      "ja": "40番出口",
      "en": "Exit 40"
-    },
-    {
-     "id": "exit-39",
-     "label": "39",
-     "ja": "39番出口",
-     "en": "Exit 39"
     }
    ],
    "gates": [
@@ -1309,6 +1577,12 @@
        "en": "Exit 10"
       },
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-4",
        "label": "4",
        "ja": "4番出口",
@@ -1319,12 +1593,6 @@
        "label": "38",
        "ja": "38番出口",
        "en": "Exit 38"
-      },
-      {
-       "id": "exit-41",
-       "label": "41",
-       "ja": "41番出口",
-       "en": "Exit 41"
       }
      ],
      "gates": [
@@ -1397,6 +1665,12 @@
        "en": "Exit 17"
       },
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-15",
        "label": "15",
        "ja": "15番出口",
@@ -1407,12 +1681,6 @@
        "label": "18",
        "ja": "18番出口",
        "en": "Exit 18"
-      },
-      {
-       "id": "exit-4",
-       "label": "4",
-       "ja": "4番出口",
-       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -1466,6 +1734,12 @@
        "en": "Exit 17"
       },
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-15",
        "label": "15",
        "ja": "15番出口",
@@ -1476,12 +1750,6 @@
        "label": "18",
        "ja": "18番出口",
        "en": "Exit 18"
-      },
-      {
-       "id": "exit-4",
-       "label": "4",
-       "ja": "4番出口",
-       "en": "Exit 4"
       }
      ],
      "gates": [
@@ -1586,12 +1854,6 @@
        "label": "38",
        "ja": "38番出口",
        "en": "Exit 38"
-      },
-      {
-       "id": "exit-41",
-       "label": "41",
-       "ja": "41番出口",
-       "en": "Exit 41"
       }
      ],
      "gates": [
@@ -1605,6 +1867,12 @@
     {
      "arrow": "up",
      "exits": [
+      {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
       {
        "id": "exit-10",
        "label": "10",
@@ -1623,7 +1891,7 @@
    ]
   },
   {
-   "id": "sign-w_cj-w_cj__w_w",
+   "id": "sign-w_cj-w_cj__w_13j",
    "atNode": "w_cj",
    "position": {
     "x": -130.89,
@@ -1638,6 +1906,12 @@
    },
    "ceilingZ": 31.0,
    "exits": [
+    {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    },
     {
      "id": "exit-10",
      "label": "10",
@@ -1769,16 +2043,16 @@
      "arrow": "left",
      "exits": [
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-10",
        "label": "10",
        "ja": "10番出口",
        "en": "Exit 10"
-      },
-      {
-       "id": "exit-11",
-       "label": "11",
-       "ja": "11番出口",
-       "en": "Exit 11"
       }
      ],
      "gates": []
@@ -1897,6 +2171,12 @@
      "arrow": "right",
      "exits": [
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-17",
        "label": "17",
        "ja": "17番出口",
@@ -1913,12 +2193,6 @@
        "label": "18",
        "ja": "18番出口",
        "en": "Exit 18"
-      },
-      {
-       "id": "exit-10",
-       "label": "10",
-       "ja": "10番出口",
-       "en": "Exit 10"
       }
      ],
      "gates": [
@@ -1961,6 +2235,12 @@
      "arrow": "up",
      "exits": [
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-17",
        "label": "17",
        "ja": "17番出口",
@@ -1971,12 +2251,6 @@
        "label": "15",
        "ja": "15番出口",
        "en": "Exit 15"
-      },
-      {
-       "id": "exit-18",
-       "label": "18",
-       "ja": "18番出口",
-       "en": "Exit 18"
       }
      ],
      "gates": []
@@ -2029,6 +2303,12 @@
    "ceilingZ": 30.17,
    "exits": [
     {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    },
+    {
      "id": "exit-17",
      "label": "17",
      "ja": "17番出口",
@@ -2051,12 +2331,6 @@
      "label": "10",
      "ja": "10番出口",
      "en": "Exit 10"
-    },
-    {
-     "id": "exit-11",
-     "label": "11",
-     "ja": "11番出口",
-     "en": "Exit 11"
     }
    ],
    "gates": [
@@ -2194,6 +2468,12 @@
        "en": "Exit 4"
       },
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-17",
        "label": "17",
        "ja": "17番出口",
@@ -2210,12 +2490,6 @@
        "label": "18",
        "ja": "18番出口",
        "en": "Exit 18"
-      },
-      {
-       "id": "exit-10",
-       "label": "10",
-       "ja": "10番出口",
-       "en": "Exit 10"
       }
      ],
      "gates": []
@@ -2336,6 +2610,12 @@
      "en": "Exit 4"
     },
     {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    },
+    {
      "id": "exit-17",
      "label": "17",
      "ja": "17番出口",
@@ -2352,12 +2632,6 @@
      "label": "18",
      "ja": "18番出口",
      "en": "Exit 18"
-    },
-    {
-     "id": "exit-10",
-     "label": "10",
-     "ja": "10番出口",
-     "en": "Exit 10"
     }
    ],
    "gates": [],
@@ -2435,6 +2709,12 @@
    "ceilingZ": 30.5,
    "exits": [
     {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    },
+    {
      "id": "exit-17",
      "label": "17",
      "ja": "17番出口",
@@ -2457,12 +2737,6 @@
      "label": "10",
      "ja": "10番出口",
      "en": "Exit 10"
-    },
-    {
-     "id": "exit-11",
-     "label": "11",
-     "ja": "11番出口",
-     "en": "Exit 11"
     }
    ],
    "gates": [],
@@ -2599,6 +2873,12 @@
      "arrow": "up",
      "exits": [
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-17",
        "label": "17",
        "ja": "17番出口",
@@ -2621,12 +2901,6 @@
        "label": "10",
        "ja": "10番出口",
        "en": "Exit 10"
-      },
-      {
-       "id": "exit-11",
-       "label": "11",
-       "ja": "11番出口",
-       "en": "Exit 11"
       }
      ],
      "gates": []
@@ -2662,16 +2936,16 @@
      "arrow": "left",
      "exits": [
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-17",
        "label": "17",
        "ja": "17番出口",
        "en": "Exit 17"
-      },
-      {
-       "id": "exit-15",
-       "label": "15",
-       "ja": "15番出口",
-       "en": "Exit 15"
       }
      ],
      "gates": []
@@ -2772,16 +3046,16 @@
      "arrow": "right",
      "exits": [
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-17",
        "label": "17",
        "ja": "17番出口",
        "en": "Exit 17"
-      },
-      {
-       "id": "exit-15",
-       "label": "15",
-       "ja": "15番出口",
-       "en": "Exit 15"
       }
      ],
      "gates": [
@@ -2811,6 +3085,12 @@
    "ceilingZ": 30.5,
    "exits": [
     {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    },
+    {
      "id": "exit-17",
      "label": "17",
      "ja": "17番出口",
@@ -2833,12 +3113,6 @@
      "label": "10",
      "ja": "10番出口",
      "en": "Exit 10"
-    },
-    {
-     "id": "exit-11",
-     "label": "11",
-     "ja": "11番出口",
-     "en": "Exit 11"
     }
    ],
    "gates": [
@@ -2965,6 +3239,12 @@
      "arrow": "left",
      "exits": [
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-17",
        "label": "17",
        "ja": "17番出口",
@@ -2987,12 +3267,6 @@
        "label": "10",
        "ja": "10番出口",
        "en": "Exit 10"
-      },
-      {
-       "id": "exit-11",
-       "label": "11",
-       "ja": "11番出口",
-       "en": "Exit 11"
       }
      ],
      "gates": [
@@ -3033,6 +3307,12 @@
    "ceilingZ": 30.5,
    "exits": [
     {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    },
+    {
      "id": "exit-17",
      "label": "17",
      "ja": "17番出口",
@@ -3055,12 +3335,6 @@
      "label": "10",
      "ja": "10番出口",
      "en": "Exit 10"
-    },
-    {
-     "id": "exit-11",
-     "label": "11",
-     "ja": "11番出口",
-     "en": "Exit 11"
     }
    ],
    "gates": [
@@ -3181,6 +3455,12 @@
      "arrow": "up",
      "exits": [
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-17",
        "label": "17",
        "ja": "17番出口",
@@ -3203,12 +3483,6 @@
        "label": "10",
        "ja": "10番出口",
        "en": "Exit 10"
-      },
-      {
-       "id": "exit-11",
-       "label": "11",
-       "ja": "11番出口",
-       "en": "Exit 11"
       }
      ],
      "gates": [
@@ -3243,6 +3517,12 @@
    "ceilingZ": 30.558,
    "exits": [
     {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    },
+    {
      "id": "exit-17",
      "label": "17",
      "ja": "17番出口",
@@ -3265,12 +3545,6 @@
      "label": "10",
      "ja": "10番出口",
      "en": "Exit 10"
-    },
-    {
-     "id": "exit-11",
-     "label": "11",
-     "ja": "11番出口",
-     "en": "Exit 11"
     }
    ],
    "gates": [
@@ -3409,6 +3683,12 @@
      "arrow": "up",
      "exits": [
       {
+       "id": "exit-13",
+       "label": "13",
+       "ja": "13番出口",
+       "en": "Exit 13"
+      },
+      {
        "id": "exit-17",
        "label": "17",
        "ja": "17番出口",
@@ -3419,12 +3699,6 @@
        "label": "15",
        "ja": "15番出口",
        "en": "Exit 15"
-      },
-      {
-       "id": "exit-18",
-       "label": "18",
-       "ja": "18番出口",
-       "en": "Exit 18"
       }
      ],
      "gates": [
@@ -3878,6 +4152,12 @@
      "en": "Exit 38"
     },
     {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
+    },
+    {
      "id": "exit-17",
      "label": "17",
      "ja": "17番出口",
@@ -3888,12 +4168,6 @@
      "label": "15",
      "ja": "15番出口",
      "en": "Exit 15"
-    },
-    {
-     "id": "exit-18",
-     "label": "18",
-     "ja": "18番出口",
-     "en": "Exit 18"
     }
    ],
    "gates": [
@@ -7495,6 +7769,12 @@
      "label": "4",
      "ja": "4番出口",
      "en": "Exit 4"
+    },
+    {
+     "id": "exit-13",
+     "label": "13",
+     "ja": "13番出口",
+     "en": "Exit 13"
     },
     {
      "id": "exit-10",

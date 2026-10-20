@@ -15,7 +15,7 @@ for facts only and never published).
 | `gap-west-corridor-exits` | passage north from the West Exit (South) hall; Hope Center block | Exits 5, 6a, 6b, 7: stairs outside the survey and feet not matchable one-to-one to PLATEAU openings (Exit 5: two candidates 6 and 13 m from the map position; 6b: nearest 11 m and raised; 6a/7 inside the unsurveyed Hope Center block) | on-site note of where each stair leaves the passage, counted against columns | routing to those exits |
 | `gap-tobu-jr-link` | passage along the west side of the JR block, South Passage ↔ Central Passage (west) | whether it is public or a JR–Tobu transfer concourse (gate machines along its JR side; Tobu Central Gate 1 at its north end) | on-site check of both ends for gate lines and signage | a second west–east link |
 | `gap-ne-north` | North-east, north of the shopping-park passage | which stair is Exit 24 and which is 25 (the official map shows two; PLATEAU has one stair top); Exits 23, 29, 30, 31 lie outside the surveyed geometry | on-site check of the 24/25 stairs; a survey source for the passage further north | routing to those exits |
-| `gap-west-stairs` | West Exit area | PLATEAU models only the lower flights of Exits 9 and 13 and of two unlabelled stairwells (to TP ~30.0 m; street ~33 m); Exits 14, 16 and 19 (西口（中央）) have no stair in the survey | a survey source for the upper flights (or a later PLATEAU release); on-site check of which stairwell is which exit | routing to those exits |
+| `gap-west-stairs` | West Exit area | PLATEAU models only the lower flights of Exit 9 and of two stairwells near (-181, 126) and (-165, 113) (to TP ~30 m; street ~33 m). Exit 9's flight is ~9 m from its map position; the (-181, 126) flight sits beside the wide stair to the Fukutoshin Line West Passage, and the (-165, 113) flight runs into the Hope Center block towards Exit 7's map position, so neither is matched. Exit 8's stairs are ~12 m beyond the surveyed floor at the passage's west end. Exits 14, 16 and 19 (西口（中央）) have no stair in the survey. (Exit 13's lower flight matches its map position within ~3 m and is routed to its foot.) | a survey source for the upper flights and the passage west to Exit 8 (or a later PLATEAU release); on-site check of which stairwell is which exit | routing to Exits 7, 8, 9 and the upper flight of 13 |
 | `gap-freshness` | whole slice | geometry is a 2023 survey; later construction unknown | dated walk-through comparing columns, exits and openings with the GLB | lifts the stale flag for slice 1 |
 
 ## Next slices (geometry already present, desk work first)
@@ -26,7 +26,7 @@ for facts only and never published).
    `gap-ne-north`.
 3. **West**: ~~Central Passage west, West Exit hall, exits 10, 11, 15, 17, 18~~ (done, slice 4).
    ~~Passage south to the West Exit (South) hall~~ (done, slice 5). Exits 5–7 wait on
-   `gap-west-corridor-exits`; 9, 13, 14, 16 and 19 on `gap-west-stairs`.
+   `gap-west-corridor-exits`; ~~13 (stair foot)~~ (done, slice 5.1); 8, 9, 14, 16 and 19 on `gap-west-stairs`.
 4. **Street level**: exit stair tops are modelled as daylight portals. A street-level GLB (PLATEAU
    bldg/tran LOD1–2 around the station) is needed before exits can be walked out of.
 

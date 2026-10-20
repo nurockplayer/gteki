@@ -71,6 +71,40 @@
    ]
   },
   {
+   "id": "w_13j",
+   "floorId": "b1",
+   "position": {
+    "x": -139.5,
+    "y": 123.0,
+    "z": 27.91
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "x13f",
+   "floorId": "b1",
+   "position": {
+    "x": -139.5,
+    "y": 129.5,
+    "z": 27.91
+   },
+   "kind": "stair_end",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
    "id": "w_nw",
    "floorId": "b1",
    "position": {
@@ -3760,16 +3794,59 @@
    "attributes": {}
   },
   {
-   "id": "w_cj__w_w",
+   "id": "w_cj__w_13j",
    "from": "w_cj",
-   "to": "w_w",
+   "to": "w_13j",
    "direction": "both",
    "mode": "walk",
-   "lengthM": 25.7,
+   "lengthM": 12.9,
    "geometry": [
     {
      "x": -127.0,
      "y": 120.0,
+     "z": 27.91
+    },
+    {
+     "x": -139.5,
+     "y": 123.0,
+     "z": 27.91
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-21"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU floors (TP 27.9 m)",
+    "checkedDate": "2026-10-20",
+    "note": "From the West Exit underground hall, public passages lead west towards Exits 7-13 and north between Exits 15 and 17; a passage along the north side links the stairs of Exits 10/11 with Exits 17/18."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "w_13j__w_w",
+   "from": "w_13j",
+   "to": "w_w",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 12.9,
+   "geometry": [
+    {
+     "x": -139.5,
+     "y": 123.0,
      "z": 27.91
     },
     {
@@ -3799,6 +3876,50 @@
     "method": "official-map-reading (facts only) matched to PLATEAU floors (TP 27.9 m)",
     "checkedDate": "2026-10-20",
     "note": "From the West Exit underground hall, public passages lead west towards Exits 7-13 and north between Exits 15 and 17; a passage along the north side links the stairs of Exits 10/11 with Exits 17/18."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "w_13j__x13f",
+   "from": "w_13j",
+   "to": "x13f",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 6.5,
+   "geometry": [
+    {
+     "x": -139.5,
+     "y": 123.0,
+     "z": 27.91
+    },
+    {
+     "x": -139.5,
+     "y": 129.5,
+     "z": 27.91
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-21"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only): the exit stair matched to the only PLATEAU stair flight within ~3 m of the projected map position, same climb direction (TP 27.9 m foot)",
+    "checkedDate": "2026-10-21",
+    "note": "Exit 13 stairs leave the north side of the passage running west from the West Exit hall, between the hall and the stairs of Exits 9 and 10. PLATEAU surveys only their lower flight (to TP ~30.2 m); GTEki routes to their foot."
    },
    "attributes": {}
   },

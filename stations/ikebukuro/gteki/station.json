@@ -117,9 +117,9 @@
    "crs": "EPSG:6697"
   },
   "frame": "ENU",
-  "datasetVersion": "ikebukuro-b1-slice5",
+  "datasetVersion": "ikebukuro-b1-slice5.1",
   "synthetic": false,
-  "generatedAt": "2026-10-20T15:07:05+00:00"
+  "generatedAt": "2026-10-20T15:13:43+00:00"
  },
  "sources": [
   {
@@ -978,9 +978,9 @@
    {
     "id": "gap-west-stairs",
     "floorId": "b1",
-    "zone": "West Exit area: Exits 9, 13, 14, 16, 19 and two unlabelled stairwells",
-    "missingFact": "PLATEAU models only the lower flights of Exits 9 and 13 and of two stairwells near (-181, 126) and (-162, 112) (to TP ~30.0 m, street ~33 m); Exits 14, 16 and 19 (西口（中央）) have no stair in the survey",
-    "fieldWorkNeeded": "a survey source for the upper flights (or a later PLATEAU release); on-site check of which stairwell is which exit",
+    "zone": "West Exit area: Exits 8, 9, 14, 16, 19 and two unmatched stairwells",
+    "missingFact": "PLATEAU models only the lower flights of Exit 9 and of two stairwells near (-181, 126) and (-165, 113) (to TP ~30 m, street ~33 m). Exit 9's flight lies ~9 m from its map position; the (-181, 126) flight sits beside the wide stair to the Fukutoshin Line West Passage, and the (-165, 113) flight runs into the Hope Center block towards Exit 7's map position, so neither is matched. Exit 8's stairs lie at the west end of the passage, ~12 m beyond the surveyed floor. Exits 14, 16 and 19 (西口（中央）) have no stair in the survey. (Exit 13's lower flight matches its map position and is routed to its foot.)",
+    "fieldWorkNeeded": "a survey source for the upper flights and the passage west to Exit 8 (or a later PLATEAU release); on-site check of which stairwell is which exit",
     "sourceDate": null
    },
    {
