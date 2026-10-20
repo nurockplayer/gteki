@@ -276,7 +276,9 @@ export function createCrowd(
       if (distance(a.x, a.y, a.z, focus) > 110) { deactivate(a); continue; }
       const object = a.avatar.object;
       object.visible = a.lift === 0 && Math.abs(a.z - focus.z) <= 8;
-      if (object.visible && dt > 0) {
+      const viewerDistance = Math.hypot(a.x - focus.x, a.y - focus.y, a.z - focus.z);
+      a.avatar.setDistance(viewerDistance);
+      if (object.visible && viewerDistance <= 60 && dt > 0) {
         const s = segment(a);
         a.pose.onStairs = s.mode === "stairs";
         a.pose.climbing = s.mode === "escalator" || a.edge >= a.route.length ? 0

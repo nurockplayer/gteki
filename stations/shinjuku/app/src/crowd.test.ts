@@ -11,7 +11,7 @@ import { createCrowd, type Crowd } from "./crowd.ts";
 vi.mock("./avatar.ts", async () => {
   const { Group } = await import("three");
   return { createAvatar: vi.fn(() => ({
-    object: new Group(), update: vi.fn(), setColorway: vi.fn(), dispose: vi.fn(),
+    object: new Group(), update: vi.fn(), setColorway: vi.fn(), setDistance: vi.fn(), dispose: vi.fn(),
   })) };
 });
 
@@ -45,6 +45,20 @@ function avatarAt(index: number): Avatar {
 }
 
 describe("decorative crowd", () => {
+  it("passes viewer distance to LOD, pauses distant rig animation and keeps the same route moving", () => {
+    const { crowd } = crowdFor(fixture("walk", 0, true));
+    crowd.update(0, focus);
+    const avatar = avatarAt(0), start = avatar.object.position.x;
+    crowd.update(1, { x: -55, y: 10, z: 0 });
+    expect(avatar.object.visible).toBe(true);
+    expect(avatar.object.position.x).toBeGreaterThan(start);
+    expect(vi.mocked(avatar.setDistance).mock.lastCall![0]).toBeGreaterThan(60);
+    expect(avatar.update).not.toHaveBeenCalled();
+    crowd.update(1 / 60, focus);
+    expect(vi.mocked(avatar.setDistance).mock.lastCall![0]).toBeLessThan(25);
+    expect(avatar.update).toHaveBeenCalledOnce();
+  });
+
   it("uses routed POI connectors, personal speeds, ENU conversion and interpolated nodeZ", () => {
     const { crowd, route } = crowdFor(fixture());
     expect(route).toHaveBeenCalledWith("a", "b", { fare: "ticketed", stepFree: false });
