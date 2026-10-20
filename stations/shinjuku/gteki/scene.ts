@@ -3,7 +3,7 @@
  * renderer-neutral layout + Three.js builder; geometry is a visual/physical approximation and
  * never adds routes (the explorer routes only on graph.json).
  */
-import type { BuildScene, SpawnPoint, StationScene, WallSegment } from "@gteki/scene-api";
+import { WALKER_BODY, type BuildScene, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
 import type * as THREE from "three";
 import { buildStation, slabGeometry } from "../scene/build.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
@@ -55,10 +55,10 @@ export const buildScene: BuildScene = (ctx) => {
   const walls: WallSegment[] = [...layout.levels.flatMap((lv) => lv.walls), ...layout.runWalls, ...railingWalls(layout), ...built.propWalls].map((w) => ({
     a: w.a,
     b: w.b,
-    // The shared walker blocks feet f when zMin ≤ f + 1.7 and zMax ≥ f + 0.2, so WalkWorld's body limits
-    // fold into the band: bodyMin → raise zMin, bodyMax → lower zMax.
-    zMin: w.bodyMin !== undefined ? Math.max(w.zMin, w.bodyMin + 1.7) : w.zMin,
-    zMax: w.bodyMax !== undefined ? Math.min(w.zMax, w.bodyMax + 0.2) : w.zMax,
+    // The shared walker blocks feet f when zMin ≤ f + bodyTopM and zMax ≥ f + bodyBottomM (WALKER_BODY),
+    // so WalkWorld's body limits fold into the band: bodyMin → raise zMin, bodyMax → lower zMax.
+    zMin: w.bodyMin !== undefined ? Math.max(w.zMin, w.bodyMin + WALKER_BODY.bodyTopM) : w.zMin,
+    zMax: w.bodyMax !== undefined ? Math.min(w.zMax, w.bodyMax + WALKER_BODY.bodyBottomM) : w.zMax,
   }));
   const nodes = new Map(ctx.bundle.nodes.map((n) => [n.id, n]));
   const spawnPoints: SpawnPoint[] = (ctx.bundle.spawnNodeIds ?? []).flatMap((id) => {
