@@ -190,6 +190,8 @@ class Asset:
         return root
 
     def export(self, out_dir, save_blend_dir=None, jpeg_quality=88):
+        if not contract.is_asset_id(self.id):
+            raise ValueError(f"asset id {self.id!r} must match {contract.ASSET_ID_PATTERN}")
         os.makedirs(out_dir, exist_ok=True)
         path = os.path.join(out_dir, f"{self.id}.glb")
         bpy.ops.object.select_all(action="DESELECT")

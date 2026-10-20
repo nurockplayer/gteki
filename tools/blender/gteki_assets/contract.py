@@ -26,3 +26,14 @@ DEFAULT_TEX_RES = 1024
 #   Blender X  -> glTF X   (width, centred)
 #   Blender Y  -> glTF -Z  (travel axis: entry at y=0, far end at y=+length)
 #   Blender Z  -> glTF Y   (up; walking surface at z=0)
+
+
+# An asset id is the GLB file name and the root node name: one safe path
+# component (no separators, no dots, so never absolute or "..").
+ASSET_ID_PATTERN = r"[A-Za-z0-9_][A-Za-z0-9_-]*"
+
+
+def is_asset_id(value):
+    import re
+
+    return isinstance(value, str) and re.fullmatch(ASSET_ID_PATTERN, value) is not None

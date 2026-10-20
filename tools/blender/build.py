@@ -45,6 +45,10 @@ def main(argv):
     manifest_path = args.manifest or os.path.join(args.out, "manifest.json")
 
     ids = [item["id"] for item in catalog["assets"]]
+    unsafe = [repr(i) for i in ids if not contract.is_asset_id(i)]
+    if unsafe:
+        sys.exit(f"[gteki] {args.catalog}: ids must match {contract.ASSET_ID_PATTERN} "
+                 f"(they become file names): {', '.join(unsafe)}")
     repeated = sorted({i for i in ids if ids.count(i) > 1})
     if repeated:
         sys.exit(f"[gteki] {args.catalog} lists these ids more than once: {', '.join(repeated)}")

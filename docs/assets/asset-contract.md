@@ -21,7 +21,7 @@ Kit assets are **generic, parametric building blocks** (passages, gates, stairs,
 
 ## 2. Node naming and roles
 
-Every GLB has exactly one root node named after the asset id, e.g. `gteki_gate_array_4w1`.
+Every GLB has exactly one root node named after the asset id, e.g. `gteki_gate_array_4w1`. Ids are also file names, so they must be a single safe component: `[A-Za-z0-9_][A-Za-z0-9_-]*` (the build rejects anything else).
 
 | Prefix / suffix | Role | Web | Godot |
 | --- | --- | --- | --- |
