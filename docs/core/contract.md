@@ -57,7 +57,7 @@ stations/<id>/gteki/
 
 `buildScene(ctx) → { root, walkable, colliders?, walls?, spawnPoints?, environment?, update?, dispose }`. Use `ctx.THREE` (one Three instance), `ctx.loadGlb`, `ctx.loadTexture` (keeps `uv1` for lightmaps; geometry is never merged). Without a scene module the explorer loads `assets[]` and classifies by `gteki_role` (`floor`/`stairs_ramps` → walkable; `wall`/`barriers`/`transport` → colliders). If the scene throws, the explorer shows the L0 graph view; routing is unaffected.
 
-`environment: { background?, fog?, exposure?, lighting? }`. `lighting: "scene"` turns off the explorer's hemisphere + sun (for baked lightmaps / underground stations); the explorer then lights only its own avatar through a per-material environment map, never `scene.environment`. Scene modules may import `three`, `three/addons/*` or `three/examples/jsm/*`; all resolve to the explorer's single copy through three's `exports` map.
+`environment: { background?, fog?, exposure?, lighting? }`. `lighting: "scene"` turns off the explorer's hemisphere + sun (for baked lightmaps / underground stations); the explorer then lights only its own avatar through a per-material environment map, never `scene.environment`. `WALKER_BODY` (radius 0.3 m, body band feet+0.2 … feet+1.7 m, eye 1.62 m, step up 0.45 / down 0.9 m) is part of the contract: a `WallSegment` blocks only when its `zMin…zMax` overlaps the body band, so scenes can author railings above stair runs without blocking them. Changing it requires both leads' check. Scene modules may import `three`, `three/addons/*` or `three/examples/jsm/*`; all resolve to the explorer's single copy through three's `exports` map.
 
 ## Web explorer
 
