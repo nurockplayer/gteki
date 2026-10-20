@@ -3555,7 +3555,14 @@
         "gteki_poster_01",
         "gteki_glass_clear"
       ],
-      "textures": {},
+      "textures": {
+        "gteki_poster_01": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.4,
@@ -3603,7 +3610,14 @@
         "gteki_poster_04",
         "gteki_glass_clear"
       ],
-      "textures": {},
+      "textures": {
+        "gteki_poster_04": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.4,
@@ -3651,7 +3665,14 @@
         "gteki_poster_08",
         "gteki_glass_clear"
       ],
-      "textures": {},
+      "textures": {
+        "gteki_poster_08": {
+          "res": 1024,
+          "maps": [
+            "albedo"
+          ]
+        }
+      },
       "bounds_m": {
         "min": [
           -0.4,

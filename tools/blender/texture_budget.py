@@ -163,6 +163,10 @@ def check(glbs, manifest, budget, manifest_meta=None):
             problems.append(f"{aid}: GLB is not in manifest.json")
             continue
         plan = manifest[aid].get("textures")
+        cap = (manifest_meta or {}).get("texture_resolution")
+        for name, entry in (plan or {}).items():
+            if cap and entry["res"] > cap:
+                problems.append(f"{aid}: {name} plan res {entry['res']} exceeds texture_resolution {cap}")
         for name, n in glb.get("material_images", {}).items():
             if plan is not None and name in plan and n > len(plan[name]["maps"]):
                 problems.append(f"{aid}: {name} samples {n} images but its plan keeps {plan[name]['maps']}")
@@ -240,6 +244,12 @@ def self_test():
         for other in ({"catalog": "station.json", "texture_resolution": 1024}, {"catalog": "kit.json", "texture_resolution": 2048}):
             assert not any("budget" in p for p in check(glbs, {path.stem: {"textures": plan}}, tight, other))
         assert check(glbs, {}, budget, meta) == [f"{path.stem}: GLB is not in manifest.json"]
+        # a plan above the library's texture_resolution (e.g. an uncapped supplied image)
+        path.write_bytes(_fake_glb([_png_header(2048, 1024, b"p")], [0]))
+        big = {path.stem: {"textures": {"gteki_test": {"res": 2048, "maps": ["albedo"]}}}}
+        assert check({path.stem: scan_glb(path)}, big, budget, meta) == [
+            f"{path.stem}: gteki_test plan res 2048 exceeds texture_resolution 1024"]
+        glbs = {path.stem: scan_glb(path)}
         both = {path.stem: {"textures": plan}, "gteki_gone": {"textures": plan}}
         assert [p for p in check(glbs, both, budget, meta) if "gteki_gone" in p] == ["gteki_gone: in manifest.json but its GLB is missing"]
     for w, h in ((512, 256), (1024, 1024)):

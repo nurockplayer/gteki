@@ -22,7 +22,7 @@ import os
 
 import bpy
 
-from . import texsynth
+from . import contract, texsynth
 
 # name -> spec. Colours are sRGB.
 SPECS = {
@@ -107,7 +107,11 @@ def _cache_dir():
 
 
 def _spec_hash(name, spec, res):
-    blob = json.dumps({"n": name, "s": spec, "r": res, "v": texsynth.TEXSYNTH_VERSION}, sort_keys=True, default=list)
+    key = {"n": name, "s": spec, "r": res, "v": texsynth.TEXSYNTH_VERSION}
+    salt = texsynth.HQ_AWARE.get(spec.get("gen"))
+    if salt and res != texture_res(name, contract.DEFAULT_TEX_RES):
+        key["hq"] = salt  # canonical sizes keep their names (and GLB bytes)
+    blob = json.dumps(key, sort_keys=True, default=list)
     return hashlib.sha256(blob.encode()).hexdigest()[:12]
 
 
@@ -125,7 +129,10 @@ def texture_paths(name, res):
     if not all(os.path.exists(p) for p in [*paths.values(), stats_path]):
         import numpy as np
 
-        maps = texsynth.GENERATORS[spec["gen"]](res, spec["seed"], **spec.get("kw", {}))
+        kw = dict(spec.get("kw", {}))
+        if spec["gen"] in texsynth.HQ_AWARE:
+            kw["hq"] = res / texture_res(name, contract.DEFAULT_TEX_RES)
+        maps = texsynth.GENERATORS[spec["gen"]](res, spec["seed"], **kw)
         stats = {}
         for k, p in paths.items():
             tmp = p + ".tmp"
@@ -147,9 +154,39 @@ def _flat(stats, key, channels):
     return all(stats[key]["std"][c] * 255.0 < FLAT_LEVELS[key] for c in channels)
 
 
+def external_image(name, tex_res):
+    """(path, long side) of the image to embed for a material with a supplied
+    `image`, downscaled (cached, deterministic JPEG) when its long side exceeds
+    `tex_res`; images already within the cap are embedded unchanged."""
+    src = os.path.join(_repo_root(), SPECS[name]["image"])
+    img = bpy.data.images.load(src, check_existing=True)
+    w, h = img.size
+    if max(w, h) <= tex_res:
+        return src, max(w, h)
+    with open(src, "rb") as f:
+        digest = hashlib.sha256(f.read()).hexdigest()[:12]
+    path = os.path.join(_cache_dir(), f"{name}_{tex_res}_{digest}.jpg")
+    k = tex_res / max(w, h)
+    size = (max(1, round(w * k)), max(1, round(h * k)))
+    if not os.path.exists(path):
+        small = img.copy()
+        small.scale(*size)
+        tmp = f"{path}.{os.getpid()}.tmp.jpg"
+        small.filepath_raw = tmp
+        small.file_format = "JPEG"
+        small.save(quality=90)
+        bpy.data.images.remove(small)
+        os.replace(tmp, path)
+    return path, max(size)
+
+
 def texture_plan(name, tex_res):
     """What a textured material exports: {res, maps: {albedo|orm|normal: path},
-    factors: {color (sRGB), rough, metal}}; None for factor-only materials."""
+    factors: {color (sRGB), rough, metal}}; None for factor-only materials.
+    A supplied `image` is one albedo map whose long side is `res`."""
+    if "image" in SPECS[name]:
+        path, res = external_image(name, tex_res)
+        return {"res": res, "maps": {"albedo": path}, "factors": {}}
     tex = texture_paths(name, texture_res(name, tex_res))
     if tex is None:
         return None
@@ -198,8 +235,8 @@ def get(name, tex_res):
 
     plan = texture_plan(name, tex_res)
     if "image" in spec:
-        # externally supplied image (e.g. generated poster art), path relative to repo root
-        img = _load_image(os.path.join(_repo_root(), spec["image"]), False)
+        # externally supplied image (e.g. generated poster art), capped at tex_res
+        img = _load_image(plan["maps"]["albedo"], False)
         tex = nt.nodes.new("ShaderNodeTexImage")
         tex.image = img
         tex.location = (-500, 250)

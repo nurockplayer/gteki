@@ -44,7 +44,11 @@ def main(argv):
     glb_dir = os.path.join(args.out, "glb")
     manifest_path = args.manifest or os.path.join(args.out, "manifest.json")
 
-    unknown = sorted(only - {item["id"] for item in catalog["assets"]})
+    ids = [item["id"] for item in catalog["assets"]]
+    repeated = sorted({i for i in ids if ids.count(i) > 1})
+    if repeated:
+        sys.exit(f"[gteki] {args.catalog} lists these ids more than once: {', '.join(repeated)}")
+    unknown = sorted(only - set(ids))
     if unknown:
         sys.exit(f"[gteki] --only names ids not in {args.catalog}: {', '.join(unknown)}")
     previous = {}

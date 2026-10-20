@@ -14,6 +14,12 @@ Conventions:
 import numpy as np
 
 TEXSYNTH_VERSION = 4  # bump when output pixels change, invalidates caches
+# Generators that take `hq` = res / the material's canonical res (its size at
+# the default 1024 build): 1 in the committed library, 2 at TEX_RES=2048. They
+# scale noise relief with it so HQ builds keep the canonical look. The value is
+# a cache salt for non-canonical sizes: cache file names become glTF image
+# names, so bumping TEXSYNTH_VERSION would rename every embedded image.
+HQ_AWARE = {"concrete": 1, "brushed_metal": 1, "painted_metal": 1}  # 1: relief scales with hq
 
 
 # --------------------------------------------------------------------------- noise
@@ -210,28 +216,29 @@ def tile_grid(res, seed, tiles=(2, 2), grout_px=6, base=(0.74, 0.74, 0.72), vari
     return _out(albedo, normal, rough, np.zeros_like(rough))
 
 
-def brushed_metal(res, seed, base=(0.62, 0.63, 0.64), rough=0.32):
+def brushed_metal(res, seed, base=(0.62, 0.63, 0.64), rough=0.32, hq=1.0):
     """Brushed stainless: streaks along U."""
     streak = spectral_noise(res, seed, beta=1.6, aniso=(40.0, 1.0), lowcut=2.0)
     cloud = spectral_noise(res, seed + 1, beta=2.5)
     albedo = srgb(base)[None, None, :] * (0.92 + 0.12 * streak + 0.04 * cloud)[..., None]
     height = streak * 0.3
-    normal = normal_from_height(height, strength=0.8)
+    # streak noise is partly scale-free: sqrt(hq) keeps the relief within ~5 % (HQ_AWARE)
+    normal = normal_from_height(height, strength=0.8 * hq ** 0.5)
     r = rough + 0.10 * (streak - 0.5) + 0.06 * cloud
     return _out(albedo, normal, r.astype(np.float32), np.ones_like(r))
 
 
-def painted_metal(res, seed, base, rough=0.38, orange_peel=0.25):
+def painted_metal(res, seed, base, rough=0.38, orange_peel=0.25, hq=1.0):
     """Powder-coated / enamel steel with faint orange-peel."""
     peel = band_noise(res, seed, freq=180 * res / 1024, width=0.5)
     cloud = spectral_noise(res, seed + 1, beta=2.6)
     albedo = srgb(base)[None, None, :] * (0.975 + 0.04 * cloud)[..., None]
-    normal = normal_from_height(peel * orange_peel, strength=1.0)
+    normal = normal_from_height(peel * orange_peel, strength=1.0 * hq ** 0.5)  # see brushed_metal
     r = rough + 0.05 * (cloud - 0.5)
     return _out(albedo, normal, r.astype(np.float32), np.zeros_like(r))
 
 
-def concrete(res, seed, base=(0.56, 0.56, 0.55), rough=0.82):
+def concrete(res, seed, base=(0.56, 0.56, 0.55), rough=0.82, hq=1.0):
     rng = np.random.default_rng(seed)
     cloud = spectral_noise(res, seed, beta=2.2)
     fine = spectral_noise(res, seed + 1, beta=0.8)
@@ -242,7 +249,7 @@ def concrete(res, seed, base=(0.56, 0.56, 0.55), rough=0.82):
         _stamp_disc(pits, cx, cy, rng.uniform(0.6, 2.2) * scale, 1.0)
     albedo = srgb(base)[None, None, :] * (0.86 + 0.2 * cloud + 0.06 * fine - 0.25 * pits)[..., None]
     height = 0.4 * cloud + 0.2 * fine - 0.6 * pits
-    normal = normal_from_height(height, strength=1.2)
+    normal = normal_from_height(height, strength=1.2 * hq)  # HQ_AWARE
     r = rough + 0.08 * (fine - 0.5)
     return _out(albedo, normal, r.astype(np.float32), np.zeros_like(r))
 
