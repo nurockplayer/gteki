@@ -207,6 +207,18 @@ importers:
         specifier: ^8.3.4
         version: 8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)
 
+  packages/cli:
+    dependencies:
+      '@gteki/geo':
+        specifier: workspace:*
+        version: link:../geo
+      '@gteki/navigation':
+        specifier: workspace:*
+        version: link:../navigation
+      '@gteki/schema':
+        specifier: workspace:*
+        version: link:../schema
+
   packages/geo: {}
 
   packages/navigation:
