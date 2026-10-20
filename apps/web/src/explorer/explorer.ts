@@ -67,7 +67,7 @@ export class Explorer {
   private cameraTargets: THREE.Object3D[] = [];
   private colliders: THREE.Object3D[] = [];
   private walls: Segment2[] = [];
-  /** Visual-only signage the follow camera sees through (never walkable or a collider). */
+  /** Visual-only signage the follow camera sees through (never walkable or a collider), as actually cut. */
   private seeThrough: THREE.Object3D[] = [];
   private readonly cameraCut = new CameraCut();
   private routeTexture: THREE.CanvasTexture | null = null;
@@ -307,8 +307,7 @@ export class Explorer {
       this.colliders = this.stationScene.colliders ?? [];
       this.walls = (this.stationScene.walls ?? []).map(wallToRenderer);
       const solid = new Set([...this.walkable, ...this.colliders]);
-      this.seeThrough = seeThroughMeshes(this.stationScene.root).filter((o) => !solid.has(o));
-      this.cameraCut.apply(this.stationScene.root, this.seeThrough);
+      this.seeThrough = this.cameraCut.apply(this.stationScene.root, seeThroughMeshes(this.stationScene.root).filter((o) => !solid.has(o)));
       const env = this.stationScene.environment;
       if (env?.background !== undefined) this.scene.background = new THREE.Color(env.background);
       if (env?.fog) this.scene.fog = new THREE.Fog(env.fog.color, env.fog.near, env.fog.far);

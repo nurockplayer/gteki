@@ -3,6 +3,12 @@ import { describe, expect, it } from "vitest";
 import { CameraCut, injectCut } from "./cameraCut.ts";
 
 const builtIn = (name: "basic" | "standard") => ({ vertexShader: THREE.ShaderLib[name].vertexShader, fragmentShader: THREE.ShaderLib[name].fragmentShader, uniforms: {} as Record<string, THREE.IUniform> });
+const compile = (mat: THREE.Material) => {
+  const shader = builtIn("basic");
+  mat.onBeforeCompile(shader as unknown as THREE.WebGLProgramParametersWithUniforms, {} as THREE.WebGLRenderer);
+  return shader;
+};
+const mesh = (mat: THREE.Material | THREE.Material[]) => new THREE.Mesh(new THREE.BoxGeometry(), mat);
 
 describe("camera see-through cut", () => {
   it("splices a view-space capsule discard into every built-in mesh material", () => {
@@ -25,95 +31,62 @@ describe("camera see-through cut", () => {
     expect(shader.fragmentShader).toBe("void main() {}");
   });
 
-  it("clones a material shared with a solid mesh and patches an unshared one in place", () => {
-    const shared = new THREE.MeshBasicMaterial(), own = new THREE.MeshBasicMaterial();
+  it("cuts only sign-only built-in materials, in place; shared and custom-shader materials stay solid", () => {
+    const shared = new THREE.MeshBasicMaterial(), own = new THREE.MeshBasicMaterial(), custom = new THREE.ShaderMaterial();
+    const ownArray = [own, shared];
     const root = new THREE.Group();
-    const wall = new THREE.Mesh(new THREE.BoxGeometry(), shared);
-    const signA = new THREE.Mesh(new THREE.BoxGeometry(), shared), signB = new THREE.Mesh(new THREE.BoxGeometry(), [own, shared]);
-    root.add(wall, signA, signB);
-    const cut = new CameraCut();
-    cut.apply(root, [signA, signB]);
-    expect(wall.material).toBe(shared);
-    expect(signA.material).not.toBe(shared);
-    expect((signB.material as THREE.Material[])[0]).toBe(own);
-    expect((signB.material as THREE.Material[])[1]).toBe(signA.material);
-    expect(shared.customProgramCacheKey()).not.toContain("gteki-camera-cut");
+    const wall = mesh(shared), sharedSign = mesh(shared), arraySign = mesh(ownArray), shaderSign = mesh(custom);
+    root.add(wall, sharedSign, arraySign, shaderSign);
+    const cut = new CameraCut().apply(root, [sharedSign, arraySign, shaderSign]);
+    expect(cut).toEqual([arraySign]);
+    // Nothing is swapped or copied.
+    expect(sharedSign.material).toBe(shared);
+    expect(arraySign.material).toBe(ownArray);
     expect(own.customProgramCacheKey()).toContain("gteki-camera-cut");
-    // Chains a scene's own onBeforeCompile.
-    const calls: string[] = [];
-    const custom = new THREE.MeshBasicMaterial();
-    custom.onBeforeCompile = () => { calls.push("scene"); };
-    const sign = new THREE.Mesh(new THREE.BoxGeometry(), custom); root.add(sign);
-    cut.apply(root, [sign]);
-    const shader = builtIn("basic");
-    custom.onBeforeCompile(shader as unknown as THREE.WebGLProgramParametersWithUniforms, {} as THREE.WebGLRenderer);
-    expect(calls).toEqual(["scene"]);
-    expect(shader.fragmentShader).toContain("gtekiCutRadii");
+    expect(shared.customProgramCacheKey()).not.toContain("gteki-camera-cut");
+    expect(custom.customProgramCacheKey()).not.toContain("gteki-camera-cut");
   });
 
-  it("keeps scene shader hooks on clones and in program cache keys", () => {
-    const hookA = () => { /* variant A */ }, hookB = () => { /* variant B */ };
-    const a = new THREE.MeshBasicMaterial(), b = new THREE.MeshBasicMaterial();
-    a.onBeforeCompile = hookA; b.onBeforeCompile = hookB;
-    const shared = new THREE.MeshBasicMaterial();
+  it("chains the scene's onBeforeCompile and keeps hook identity in the program key", () => {
     const calls: string[] = [];
-    shared.onBeforeCompile = () => { calls.push("shared"); };
-    shared.customProgramCacheKey = () => "scene-key";
+    const hookA = () => { calls.push("A"); }, hookB = () => { calls.push("B"); };
+    const a = new THREE.MeshBasicMaterial(), b = new THREE.MeshBasicMaterial(), keyed = new THREE.MeshBasicMaterial();
+    a.onBeforeCompile = hookA; b.onBeforeCompile = hookB;
+    keyed.customProgramCacheKey = () => "scene-key";
     const root = new THREE.Group();
-    const signA = new THREE.Mesh(new THREE.BoxGeometry(), a), signB = new THREE.Mesh(new THREE.BoxGeometry(), b);
-    const wall = new THREE.Mesh(new THREE.BoxGeometry(), shared), signC = new THREE.Mesh(new THREE.BoxGeometry(), shared);
-    root.add(signA, signB, wall, signC);
-    new CameraCut().apply(root, [signA, signB, signC]);
-    // Different scene hooks keep different programs.
+    const signA = mesh(a), signB = mesh(b), signK = mesh(keyed);
+    root.add(signA, signB, signK);
+    new CameraCut().apply(root, [signA, signB, signK]);
     expect(a.customProgramCacheKey()).toContain(hookA.toString());
     expect(a.customProgramCacheKey()).not.toBe(b.customProgramCacheKey());
-    // The clone keeps the scene's hook and key, plus the cut.
-    const clone = signC.material as THREE.Material;
-    expect(clone).not.toBe(shared);
-    expect(clone.customProgramCacheKey()).toBe("scene-key|gteki-camera-cut-1");
-    const shader = builtIn("basic");
-    clone.onBeforeCompile(shader as unknown as THREE.WebGLProgramParametersWithUniforms, {} as THREE.WebGLRenderer);
-    expect(calls).toEqual(["shared"]);
-    expect(shader.fragmentShader).toContain("gtekiCutRadii");
+    expect(keyed.customProgramCacheKey()).toMatch(/^scene-key\|gteki-camera-cut-\d+$/);
+    expect(compile(a).fragmentShader).toContain("gtekiCutRadii");
+    expect(calls).toEqual(["A"]);
   });
 
-  it("carries the scene's per-render hook onto a copy", () => {
-    const shared = new THREE.MeshBasicMaterial();
-    const seen: THREE.Material[] = [];
-    shared.onBeforeRender = function (this: THREE.Material) { seen.push(this); };
-    const root = new THREE.Group();
-    const wall = new THREE.Mesh(new THREE.BoxGeometry(), shared), sign = new THREE.Mesh(new THREE.BoxGeometry(), shared);
-    root.add(wall, sign);
-    new CameraCut().apply(root, [sign]);
-    const copy = sign.material as THREE.Material;
-    copy.onBeforeRender({} as THREE.WebGLRenderer, new THREE.Scene(), new THREE.Camera(), new THREE.BufferGeometry(), sign, new THREE.Group());
-    expect(seen).toEqual([copy]);
-  });
-
-  it("clear restores scene materials, so a reused material is never cut twice or left cut", () => {
+  it("clear restores scene hooks, and a material reused as a sign later compiles under a new key", () => {
     const mat = new THREE.MeshBasicMaterial();
     const sceneHook = mat.onBeforeCompile, sceneKey = mat.customProgramCacheKey();
     const cut = new CameraCut();
-    // Station A: the material is sign-only and patched in place.
-    const a = new THREE.Group(), signA = new THREE.Mesh(new THREE.BoxGeometry(), mat);
+    const a = new THREE.Group(), signA = mesh(mat);
     a.add(signA);
     cut.apply(a, [signA]);
-    expect(mat.customProgramCacheKey()).toContain("gteki-camera-cut");
+    const firstKey = mat.customProgramCacheKey();
     cut.clear();
     expect(mat.onBeforeCompile).toBe(sceneHook);
     expect(mat.customProgramCacheKey()).toBe(sceneKey);
-    // Station B reuses it for a wall and a sign: the wall stays solid, the sign's copy is cut exactly once.
-    const b = new THREE.Group(), wall = new THREE.Mesh(new THREE.BoxGeometry(), mat), signB = new THREE.Mesh(new THREE.BoxGeometry(), mat);
+    // Next station: the same material on a wall and a sign stays solid.
+    const b = new THREE.Group(), wall = mesh(mat), signB = mesh(mat);
     b.add(wall, signB);
-    cut.apply(b, [signB]);
+    expect(cut.apply(b, [signB])).toEqual([]);
     expect(mat.customProgramCacheKey()).toBe(sceneKey);
-    const copy = signB.material as THREE.Material;
-    const shader = builtIn("basic");
-    copy.onBeforeCompile(shader as unknown as THREE.WebGLProgramParametersWithUniforms, {} as THREE.WebGLRenderer);
-    expect(shader.fragmentShader.split("uniform vec4 gtekiCutRadii;").length).toBe(2);
-    // Clearing puts the scene's own material back on the sign.
     cut.clear();
-    expect(signB.material).toBe(mat);
+    // Sign-only again: a fresh key (three caches programs per material and key) and exactly one cut.
+    const c = new THREE.Group(), signC = mesh(mat);
+    c.add(signC);
+    cut.apply(c, [signC]);
+    expect(mat.customProgramCacheKey()).not.toBe(firstKey);
+    expect(compile(mat).fragmentShader.split("uniform vec4 gtekiCutRadii;").length).toBe(2);
   });
 
   it("puts the capsule end at the head in view space and disables it in overview", () => {

@@ -6,8 +6,8 @@ import * as THREE from "three";
  * Signs are merged into a few large meshes, so hiding whole objects would blank every sign in the station.
  * Instead each patched material discards fragments, with a screen-space dither, inside a tapered capsule from
  * the camera to the avatar's head: a sign between the two opens a hole onto the avatar, and one within the
- * camera's near distance (where the capsule is widest) disappears instead of being sliced by the near plane. The capsule is in view
- * space, so instancing and skinning need no world-position plumbing.
+ * camera's near distance (where the capsule is widest) disappears instead of being sliced by the near plane.
+ * The capsule is in view space, so instancing and skinning need no world-position plumbing.
  *
  * Known limit: the high-quality GTAO pass draws the scene with its own override MeshNormalMaterial, so a cut
  * sign still feeds that pass's depth/normals. A flat hanging sign adds little occlusion and no artefact showed
@@ -22,40 +22,27 @@ export class CameraCut {
   };
   /** Patched materials and the hooks they had before, restored on clear (a scene may reuse its materials). */
   private readonly patched = new Map<THREE.Material, Hooks>();
-  /** Copies made where a material is shared with meshes that must stay solid; owned (and disposed) here. */
-  private clones: THREE.Material[] = [];
-  /** Meshes whose material was swapped for a copy, with what they drew before. */
-  private swaps: [THREE.Mesh, THREE.Material | THREE.Material[]][] = [];
+  /**
+   * Part of the program cache key, new for every apply: three caches programs per material and per key, and a
+   * reused material compiled under an earlier key would keep that program's stale uniform bindings.
+   */
+  private generation = 0;
 
   /**
-   * Patch the materials of `meshes`. A material also drawn by a mesh outside `meshes` (anywhere under `root`)
-   * is cloned for the see-through meshes, so walls sharing it keep every fragment.
+   * Patch the materials of `meshes` in place and return the meshes that are now cut. A material also drawn by a
+   * mesh outside `meshes` (anywhere under `root`) stays solid, as does a custom ShaderMaterial: a sign is cut only
+   * through built-in mesh materials of its own, so walls never lose fragments and scene materials are never copied.
    */
-  apply(root: THREE.Object3D, meshes: readonly THREE.Object3D[]): void {
+  apply(root: THREE.Object3D, meshes: readonly THREE.Object3D[]): THREE.Object3D[] {
     const cut = new Set(meshes);
     const solid = new Set<THREE.Material>();
     root.traverse((o) => { if (!cut.has(o)) for (const m of materialsOf(o)) solid.add(m); });
-    const copies = new Map<THREE.Material, THREE.Material>();
-    for (const mesh of cut) {
-      const m = (mesh as THREE.Mesh).material;
-      if (!m) continue;
-      const own = (mat: THREE.Material): THREE.Material => {
-        if (!solid.has(mat)) return this.patch(mat);
-        let copy = copies.get(mat);
-        if (!copy) {
-          // Material.clone() drops hooks; the scene's own (never an earlier cut's) must survive on the copy.
-          const fresh = mat.clone();
-          Object.assign(fresh, this.patched.get(mat) ?? hooksOf(mat));
-          copy = this.patch(fresh);
-          copies.set(mat, copy);
-          this.clones.push(copy);
-        }
-        return copy;
-      };
-      const next = Array.isArray(m) ? m.map(own) : own(m);
-      if (Array.isArray(m) ? m.some((x, i) => x !== (next as THREE.Material[])[i]) : next !== m) this.swaps.push([mesh as THREE.Mesh, m]);
-      (mesh as THREE.Mesh).material = next;
-    }
+    const key = `gteki-camera-cut-${++this.generation}`;
+    return [...cut].filter((mesh) => {
+      const own = materialsOf(mesh).filter((m) => !solid.has(m) && !(m as THREE.ShaderMaterial).isShaderMaterial && !(m as THREE.SpriteMaterial).isSpriteMaterial);
+      for (const m of own) this.patch(m, key);
+      return own.length > 0;
+    });
   }
 
   /** Each frame: the cut capsule runs from the camera to `head` (world). `enabled` false turns it off. */
@@ -65,19 +52,15 @@ export class CameraCut {
     else this.uniforms.gtekiCutRadii.value.set(0, 0, 0, 0);
   }
 
-  /** Undo everything apply did: scene meshes and materials get their own state back, copies are disposed. */
+  /** Give every patched material its own hooks back. */
   clear(): void {
-    for (const [mesh, material] of this.swaps) mesh.material = material;
     for (const [mat, hooks] of this.patched) { Object.assign(mat, hooks); mat.needsUpdate = true; }
-    for (const m of this.clones) m.dispose();
-    this.swaps = [];
     this.patched.clear();
-    this.clones = [];
   }
 
-  private patch(mat: THREE.Material): THREE.Material {
-    if (this.patched.has(mat)) return mat;
-    const hooks = hooksOf(mat);
+  private patch(mat: THREE.Material, key: string): void {
+    if (this.patched.has(mat)) return;
+    const hooks: Hooks = { onBeforeCompile: mat.onBeforeCompile, customProgramCacheKey: mat.customProgramCacheKey };
     this.patched.set(mat, hooks);
     const prev = hooks.onBeforeCompile;
     const prevKey = hooks.customProgramCacheKey;
@@ -90,10 +73,9 @@ export class CameraCut {
     mat.customProgramCacheKey = () => {
       const wrapped = mat.onBeforeCompile;
       mat.onBeforeCompile = prev;
-      try { return `${prevKey.call(mat)}|gteki-camera-cut-1`; } finally { mat.onBeforeCompile = wrapped; }
+      try { return `${prevKey.call(mat)}|${key}`; } finally { mat.onBeforeCompile = wrapped; }
     };
     mat.needsUpdate = true;
-    return mat;
   }
 }
 
@@ -101,12 +83,8 @@ export class CameraCut {
 const CUT_AT_CAMERA = [0.6, 1.0] as const;
 const CUT_AT_HEAD = [0.35, 0.6] as const;
 
-type Hooks = Pick<THREE.Material, "onBeforeCompile" | "customProgramCacheKey" | "onBeforeRender">;
-
-/** Own or inherited hook functions, captured so they can be restored or carried onto a copy. */
-function hooksOf(mat: THREE.Material): Hooks {
-  return { onBeforeCompile: mat.onBeforeCompile, customProgramCacheKey: mat.customProgramCacheKey, onBeforeRender: mat.onBeforeRender };
-}
+/** Own or inherited hook functions, captured to be restored. */
+type Hooks = Pick<THREE.Material, "onBeforeCompile" | "customProgramCacheKey">;
 
 function materialsOf(o: THREE.Object3D): THREE.Material[] {
   const m = (o as THREE.Mesh).material;
