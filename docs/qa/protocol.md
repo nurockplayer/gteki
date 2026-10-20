@@ -45,7 +45,9 @@ Outputs go to `tests/e2e/artifacts/`, which is git-ignored:
 | `03-guided-walkthrough` | Real clicks: search fields, Start guide, HUD speed | Recorded guided walk at ×4. A frame every 3–4 s with the HUD instruction, avatar position, exposure and label overlap. | Ends at the destination, arrival feedback, several instructions shown | FPS / draw calls during the walk |
 | `04-free-walk` | Real mouse-look drags + `W` via `simulate()` | Can a player physically walk each verified route under the explorer's own walls, colliders and ground rules? Wall probe from each spawn. | No blocks, no off-surface height, reaches the goal, walls stop a 30 s run | Blocked positions with screenshots. Lift rides are logged as simulated jumps. |
 | `05-performance` | Hooks + held `W` | Load, overview, guide and walk frame times. Draw calls per frame. Heap. Transfer size. The actual WebGL renderer string. | none | Everything. No FPS threshold is asserted (acceptance forbids ungrounded thresholds). |
+| `06-repros` | Hooks + real drags + fixed keys | Minimal reproductions of reported defects, independent of the autopilot | The defect's own condition | Stop positions, 3rd/1st-person frames |
 | `07-lane-apps` | Lane hooks | Lane client frames for side-by-side visual comparison | none | Frames, stats |
+| `08-step-probe` | Real drags + `W`, opt-in via `GTEKI_PROBE=<station>:<from>><to>` | Re-walks each routed step alone from its from-node along the exact edge geometry, with no nudges. Separates autopilot steering from scene geometry before a free-walk block is filed. | Steps ending > 1 m short | Per-step end position, screenshots of short steps |
 
 ### Real vs simulated, stated per run
 
