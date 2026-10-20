@@ -30,7 +30,8 @@
     "check": "pnpm typecheck && vitest run --root ../.. stations/shinjuku",
     "shoot": "tsx tools/shoot.ts",
     "record": "tsx tools/record.ts",
-    "explorer-walk": "tsx tools/explorer-walk.ts"
+    "explorer-walk": "tsx tools/explorer-walk.ts",
+    "perf": "tsx tools/perf.ts"
   },
   "devDependencies": {
     "@types/three": "^0.186.0",
