@@ -2169,5 +2169,115 @@
       "docs/stations/shinjuku/research/2026-10-21-network-survey.md",
       "docs/stations/shinjuku/research/acquisitions-2026-10-21.json"
     ]
-  }
+  },
+  "followUpRounds": [
+    {
+      "entryId": "w5-round2-tokyo-terminal-join-2026-10-21",
+      "appendedAt": "2026-10-20T21:58:03.012785+00:00",
+      "reportDate": "2026-10-21",
+      "baseHead": "cbec97e",
+      "purpose": "ENU join analysis against current E27 graph; original acquisition history preserved",
+      "reusedArtifacts": [
+        {
+          "kind": "reuse-and-hash-verification-not-redownload",
+          "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-routes/shisetsu_root.zip",
+          "url": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/zip_kiban_shinjuku_terminal_pdf_shisetsu_root",
+          "acquiredAt": "2026-10-20T16:18:28.918832+00:00",
+          "bytes": 2317035,
+          "sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+          "verifiedAt": "2026-10-20T21:58:03.012785+00:00",
+          "originalReceiptField": "receipts[].retrievedAt retained unchanged"
+        },
+        {
+          "kind": "reuse-and-hash-verification-not-redownload",
+          "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-routes/spec.pdf",
+          "url": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/pdf_kiban_shinjuku_terminal_pdf_shisetsu_siyousho",
+          "acquiredAt": "2026-10-20T16:18:29.229538+00:00",
+          "bytes": 499924,
+          "sha256": "c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095",
+          "verifiedAt": "2026-10-20T21:58:03.012785+00:00",
+          "originalReceiptField": "receipts[].retrievedAt retained unchanged"
+        }
+      ],
+      "downloads": [
+        {
+          "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-join-2026-10-21/e28-catalog.json",
+          "url": "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=station_oedo_tochomae",
+          "acquiredAt": "2026-10-20T21:48:50.565260+00:00",
+          "status": 200,
+          "finalUrl": "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=station_oedo_tochomae",
+          "contentType": "application/json;charset=utf-8",
+          "bytes": 17545,
+          "sha256": "5510069946dadda31e14d2e47ac23ad3d97bcdb8dd0baa397b92d13f74079de0"
+        },
+        {
+          "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-join-2026-10-21/keio-robots.txt",
+          "url": "https://www.keio.co.jp/robots.txt",
+          "acquiredAt": "2026-10-20T21:48:50.813572+00:00",
+          "status": 200,
+          "finalUrl": "https://www.keio.co.jp/robots.txt",
+          "contentType": "text/plain",
+          "bytes": 524,
+          "sha256": "1d508e99f38d795456fcd6d339ded4b4f2a043dd04d9c2ddd5e84e2faf0c433a"
+        },
+        {
+          "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-join-2026-10-21/keio-exit2-closure-20240129.pdf",
+          "url": "https://www.keio.co.jp/news/update/announce/announce2023/20240129_oshirase.pdf",
+          "acquiredAt": "2026-10-20T21:49:00.936552+00:00",
+          "status": 200,
+          "finalUrl": "https://www.keio.co.jp/news/update/announce/announce2023/20240129_oshirase.pdf",
+          "contentType": "application/pdf",
+          "bytes": 364366,
+          "sha256": "b0270c590ce60bcab2368f9c2ac3e6280ef858ff80a4f3de60a23d2194a70a7b"
+        },
+        {
+          "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-join-2026-10-21/tokyo-route-catalog-current.json",
+          "url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000008d0000000037",
+          "acquiredAt": "2026-10-20T21:49:01.418475+00:00",
+          "status": 200,
+          "finalUrl": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000008d0000000037",
+          "contentType": "application/json;charset=utf-8",
+          "bytes": 4486,
+          "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96"
+        },
+        {
+          "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-join-2026-10-21/e28-nwd.zip",
+          "url": "https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/34a413dc-2859-4cb8-b460-b0216d646c5d/download/nwd_oedo_tochomae_geojson.zip",
+          "acquiredAt": "2026-10-20T21:49:33.218665+00:00",
+          "status": 200,
+          "finalUrl": "https://ckan.hokonavi.go.jp/dataset/0497448d-15ca-44be-b27b-89d99f83c85d/resource/34a413dc-2859-4cb8-b460-b0216d646c5d/download/nwd_oedo_tochomae_geojson.zip",
+          "contentType": "application/zip",
+          "bytes": 48671,
+          "sha256": "817183f3c32b8a5f777a4ee2386f26a17306e0140a3a53004736762cc0428bbf"
+        }
+      ],
+      "licenceChecks": {
+        "TokyoTerminal": {
+          "catalogue": "https://catalog.data.metro.tokyo.lg.jp/dataset/t000008d0000000037",
+          "licenceName": "クリエイティブ・コモンズ 表示（CC BY）",
+          "licenceId": "CC-BY-4.0",
+          "licenceUrl": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+          "result": "conditional derivative redistribution permitted; no new freshness claim"
+        },
+        "E28": {
+          "catalogue": "https://ckan.hokonavi.go.jp/dataset/station_oedo_tochomae",
+          "licenceName": "公共データ利用規約(第1.0版）",
+          "licenceUrl": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+          "result": "conditional derivative redistribution; separate from publication period"
+        },
+        "KeioClosurePdf": {
+          "licence": "UNKNOWN; reference only",
+          "derivedMapRedistributionProposed": false
+        }
+      },
+      "accessNotes": [
+        "Ego-lite startup failed within sandbox; no TaskSpace acquired",
+        "Public downloads succeeded; no login/CAPTCHA bypass/TLS weakening",
+        "Saved robots files checked; new same-host downloads paced at least 10 seconds",
+        "No app screenshot requested; derived overlay generated locally"
+      ],
+      "rawAnalysisDirectory": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-join-2026-10-21",
+      "summaryFile": "2026-10-21-tokyo-terminal-join-summary.json"
+    }
+  ]
 }
