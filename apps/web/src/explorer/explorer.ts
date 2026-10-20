@@ -323,7 +323,7 @@ export class Explorer {
     for (const asset of assets) {
       const gltf = await ctx.loadGlb(asset.uri);
       if (asset.transform) gltf.scene.applyMatrix4(new THREE.Matrix4().fromArray(asset.transform));
-      const roles = sceneFromGlbRoles(gltf.scene);
+      const roles = sceneFromGlbRoles(gltf.scene, { assetRole: asset.role });
       walkable.push(...roles.walkable);
       colliders.push(...roles.colliders);
       root.add(gltf.scene);

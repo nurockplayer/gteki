@@ -1,4 +1,4 @@
-import type { Edge, EdgeMode, LocalTime, StationBundle } from "@gteki/schema";
+import type { Edge, EdgeMode, EvidenceRef, LocalTime, StationBundle } from "@gteki/schema";
 
 /**
  * Renderer-neutral router over the verified directed station graph.
@@ -106,8 +106,10 @@ export interface Router {
   /**
    * Cheapest route from any start to any goal, ranked by the router's cost (not walking length).
    * Unknown ids are ignored; `start_equals_goal` when any start already is a goal.
+   * `endpointEvidence` is what ties the caller's origin/destination to these nodes (e.g. both POIs'
+   * `evidence`); it joins the route's sources, freshness and checked date.
    */
-  route(fromNodeIds: string | string[], toNodeIds: string | string[], profile?: RouteProfile): RouteResult | RouteFailure;
+  route(fromNodeIds: string | string[], toNodeIds: string | string[], profile?: RouteProfile, endpointEvidence?: readonly EvidenceRef[]): RouteResult | RouteFailure;
   /** True when this edge may be used under the profile (exposed for UI/debug overlays). */
   isTraversable(edge: Edge, profile: RouteProfile): boolean;
 }

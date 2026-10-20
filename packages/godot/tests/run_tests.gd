@@ -98,15 +98,55 @@ func test_generated_glb(station_root: Node3D) -> void:
 	var source := Node3D.new()
 	source.name = "GeneratedFixture"
 	# floor/wall test names; metadata_only tests extras independently of names.
-	for entry in [["floor", "floor"], ["wall", "wall"], ["metadata_only", "stairs_ramps"], ["barriers", "barriers"]]:
+	# "floor_001" has no metadata: it is walkable by name prefix, exactly as on the web.
+	for entry in [["floor", "floor"], ["wall", "wall"], ["metadata_only", "stairs_ramps"], ["barriers", "barriers"], ["plain_box", ""], ["floor_001", ""]]:
 		var mesh := MeshInstance3D.new()
 		mesh.name = entry[0]
 		mesh.mesh = BoxMesh.new()
-		mesh.set_meta("gteki_role", entry[1])
-		# GLTFDocument serializes the dedicated extras dictionary, not arbitrary metadata.
-		mesh.set_meta("extras", {"gteki_role": entry[1]})
+		if entry[1] != "":
+			mesh.set_meta("gteki_role", entry[1])
+			# GLTFDocument serializes the dedicated extras dictionary, not arbitrary metadata.
+			mesh.set_meta("extras", {"gteki_role": entry[1]})
 		source.add_child(mesh)
 		mesh.owner = source
+	# A grouped mesh: the group carries the role, the child mesh is untagged and inherits it.
+	var group := Node3D.new()
+	group.name = "floor_group"
+	group.set_meta("gteki_role", "floor")
+	group.set_meta("extras", {"gteki_role": "floor"})
+	source.add_child(group)
+	group.owner = source
+	var grouped := MeshInstance3D.new()
+	grouped.name = "grouped_mesh"
+	grouped.mesh = BoxMesh.new()
+	group.add_child(grouped)
+	grouped.owner = source
+	# A wall group: its untagged child mesh inherits "wall" and must collide.
+	var wall_group := Node3D.new()
+	wall_group.name = "wall_group"
+	wall_group.set_meta("gteki_role", "wall")
+	wall_group.set_meta("extras", {"gteki_role": "wall"})
+	source.add_child(wall_group)
+	wall_group.owner = source
+	var wall_child := MeshInstance3D.new()
+	wall_child.name = "wall_child"
+	wall_child.mesh = BoxMesh.new()
+	wall_group.add_child(wall_child)
+	wall_child.owner = source
+	# Normalisation parity with the web: " FLOOR " is floor, and an empty child role is absent (inherits).
+	var shouty := Node3D.new()
+	shouty.name = "shouty_group"
+	shouty.set_meta("gteki_role", " FLOOR ")
+	shouty.set_meta("extras", {"gteki_role": " FLOOR "})
+	source.add_child(shouty)
+	shouty.owner = source
+	var empty_role := MeshInstance3D.new()
+	empty_role.name = "empty_role"
+	empty_role.mesh = BoxMesh.new()
+	empty_role.set_meta("gteki_role", "")
+	empty_role.set_meta("extras", {"gteki_role": ""})
+	shouty.add_child(empty_role)
+	empty_role.owner = source
 	var document := GLTFDocument.new()
 	var state := GLTFState.new()
 	var export_error := document.append_from_scene(source, state)
@@ -126,15 +166,24 @@ func test_generated_glb(station_root: Node3D) -> void:
 	var manifest := {"assets": [
 		{"id": "transformed", "uri": filename, "format": "glb", "transform": matrix},
 		{"id": "identity", "uri": filename, "format": "glb"},
+		{"id": "collision_only", "uri": filename, "format": "glb", "role": "collision"},
 	]}
 	check(assets.load_assets(manifest, "user://", station_root), "generated GLBs reimport through manifest: %s" % str(assets.issues))
-	check(assets.counts == {"assets": 2, "walkable": 4, "collider": 4}, "GLB names/extras classify all four roles: %s" % str(assets.counts))
+	# Meshes per asset: walkable floor, stairs_ramps, floor_001 and the floor/" FLOOR " groups' children; colliding wall,
+	# barriers and the wall group's child. The collision asset also turns its untagged box into a collider.
+	check(assets.counts == {"assets": 3, "walkable": 15, "collider": 10}, "GLB names/extras/prefixes/inherited roles classify like the web; manifest collision role covers untagged meshes: %s" % str(assets.counts))
+	var collision_only := station_root.get_node_or_null("collision_only") as Node3D
+	if collision_only != null:
+		var grouped_mesh := collision_only.find_child("grouped_mesh", true, false)
+		check(grouped_mesh != null and not grouped_mesh.has_meta("gteki_collider") and grouped_mesh.find_children("*", "StaticBody3D", true, false).is_empty(), "a mesh inheriting a walkable role never falls back to colliding")
+		var drawn := collision_only.find_children("*", "MeshInstance3D", true, false).filter(func(m): return m.visible)
+		check(drawn.is_empty(), "collision-only asset is not drawn")
 	var transformed := station_root.get_node_or_null("transformed") as Node3D
 	var identity := station_root.get_node_or_null("identity") as Node3D
 	check(transformed != null and identity != null, "assets parented under station root")
 	if transformed != null:
 		check((transformed.transform * Vector3(1, 2, 3)).distance_to(Vector3(17, 12, 5)) < EPSILON, "asset column-major basis/translation")
-		check(transformed.find_children("*", "StaticBody3D", true, false).size() == 2, "wall/barrier meshes create colliders")
+		check(transformed.find_children("*", "StaticBody3D", true, false).size() == 3, "wall/barrier meshes, including an inherited wall child, create colliders")
 	if identity != null:
 		check(identity.transform == Transform3D.IDENTITY, "omitted asset transform is identity")
 	var rejected := Assets.new()

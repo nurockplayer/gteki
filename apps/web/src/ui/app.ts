@@ -429,7 +429,7 @@ export class App {
     const best: RouteResult | RouteFailure = starts.length === 0
       ? { ok: false, reason: "unknown_start", message: "origin has no verified entrance" }
       : goals.length === 0 ? { ok: false, reason: "unknown_goal", message: "destination has no verified entrance" }
-      : router.route(starts, goals, profile);
+      : router.route(starts, goals, profile, [...(origin.kind === "poi" ? [origin.poi.evidence] : []), destination.evidence]);
     this.s.route = best;
     if (best.ok) {
       this.s.polyline = routePolyline(loaded.bundle, best);
