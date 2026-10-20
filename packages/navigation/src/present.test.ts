@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { createRouter, describeRoute, floorDisplayName, instructionPoints, routePolyline } from "./index.ts";
-import type { RouteResult } from "./index.ts";
+import type { RouteProfile, RouteResult } from "./index.ts";
 import { createSyntheticBundle, syntheticEdge as edge } from "./fixtures.ts";
 
-function route(bundle: ReturnType<typeof createSyntheticBundle>, from: string, to: string): RouteResult {
-  const r = createRouter(bundle).route(from, to);
+function route(bundle: ReturnType<typeof createSyntheticBundle>, from: string, to: string, profile?: RouteProfile): RouteResult {
+  const r = createRouter(bundle).route(from, to, profile);
   if (!r.ok) throw new Error(r.message);
   return r;
 }
@@ -48,7 +48,8 @@ describe("describeRoute", () => {
     const straight = describeRoute(b, route(b, "start", "goal"), "ja");
     expect(straight.map((i) => i.kind)).toEqual(["start", "walk", "arrive"]);
     expect(straight[1]!.distanceM).toBe(20);
-    expect(straight[1]!.text).toBe("約20m 直進");
+    // `a` is a real choice point (the northern branch) and reaches the Restroom POI.
+    expect(straight[1]!.text).toBe("約20m 直進。約10m先、トイレの分岐はそのまま直進");
   });
 
   it("says up/down only when evidenced and names the source floor label", () => {
@@ -149,5 +150,129 @@ describe("walk wording follows the walked geometry", () => {
   it("still says straight for a straight edge, and ignores sub-metre jitter", () => {
     expect(say(undefined)).toEqual(["約20m 直進", "Go straight ~20 m"]);
     expect(say([{ x: 0, y: 0, z: 0 }, { x: 10, y: 0.3, z: 0 }, { x: 10.2, y: 0, z: 0 }, { x: 20, y: 0, z: 0 }])[0]).toBe("約20m 直進");
+  });
+});
+
+describe("describeRoute junction hints", () => {
+  const at = (id: string, x: number, y: number) => ({ id, floorId: "concourse", position: { x, y, z: 0 }, kind: "junction" as const, inOut: null, sourceRefs: [] });
+
+  /**
+   * Synthetic reproduction of the Ikebukuro column-hall report: after turning right at `a`, one ~90 m
+   * walk bends under the turn threshold at p and q, both choice points. p: a branch peels off 31° to
+   * the left of arrival, so the route (bending 6° right) must keep right. q: a branch leaves east at
+   * ~96°, so the route is clearly the straightest and goes on past Exit B.
+   */
+  function columnHall(extra: Parameters<typeof createSyntheticBundle>[0] = []) {
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("a-east", "a", "goal"),
+      edge("a-p", "a", "p", { lengthM: 30 }),
+      edge("p-q", "p", "q", { lengthM: 30 }),
+      edge("q-g", "q", "g", { lengthM: 30 }),
+      edge("p-fork", "p", "r", { lengthM: 30 }),
+      edge("q-east", "q", "s", { lengthM: 30 }),
+      ...extra!,
+    ]);
+    b.nodes.push(at("p", 10, -30), at("q", 7, -60), at("g", 7, -90), at("r", 25, -55), at("s", 37, -60), at("lift-top", 7, -60));
+    b.pois.push({
+      id: "exit-b", category: "exit", names: [{ lang: "ja", text: "Ｂ出口" }, { lang: "en", text: "Exit B" }], aliases: [],
+      floorId: "concourse", displayPosition: { x: 7, y: -60, z: 0 }, connectorNodeIds: ["q"], paid: false, evidence: b.pois[0]!.evidence,
+    });
+    return b;
+  }
+
+  it("names keep-right and straight-past choices inside one merged walk", () => {
+    const b = columnHall();
+    const r = route(b, "start", "g");
+    const en = describeRoute(b, r, "en");
+    expect(en.map((i) => i.kind)).toEqual(["start", "walk", "turn_right", "arrive"]);
+    expect(en[2]).toMatchObject({
+      distanceM: 90,
+      junctions: [
+        { nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null },
+        { nodeId: "q", stepIndex: 3, atM: 60, action: "straight", name: "Exit B" },
+      ],
+      text: "Turn right, ~90 m. After ~30 m, keep right at the junction. After ~60 m, continue straight past Exit B.",
+    });
+    // The turn at `a` is a choice point too, but the turn instruction already marks it.
+    expect(en[1]!.junctions).toBeUndefined();
+    expect(describeRoute(b, r, "ja")[2]!.text).toBe("右へ曲がり約90m。約30m先の分岐は右寄りに進む。約60m先、Ｂ出口の分岐はそのまま直進");
+  });
+
+  it("mirrors to keep-left and falls back to the ja POI name, never an id", () => {
+    const b = columnHall();
+    for (const n of b.nodes) n.position.x = -n.position.x;
+    b.pois.find((p) => p.id === "exit-b")!.names = [{ lang: "ja", text: "Ｂ出口" }];
+    const en = describeRoute(b, route(b, "start", "g"), "en");
+    expect(en.map((i) => i.kind)).toEqual(["start", "walk", "turn_left", "arrive"]);
+    expect(en[2]!.text).toBe("Turn left, ~90 m. After ~30 m, keep left at the junction. After ~60 m, continue straight past Ｂ出口.");
+    b.pois.find((p) => p.id === "exit-b")!.names = [];
+    expect(describeRoute(b, route(b, "start", "g"), "en")[2]!.junctions![1]).toMatchObject({ action: "straight", name: null });
+  });
+
+  it("counts only branches that can be walked away from the node", () => {
+    const strip = (b: ReturnType<typeof columnHall>) => b.edges.filter((e) => e.id !== "p-fork" && e.id !== "q-east");
+    const kept = (b: ReturnType<typeof columnHall>) => describeRoute(b, route(b, "start", "g"), "en")[2]!;
+    // Degree 2 (the route's own in/out edges only): no hint, and the text is unchanged.
+    const plain = columnHall();
+    plain.edges = strip(plain);
+    expect(kept(plain).junctions).toBeUndefined();
+    expect(kept(plain).text).toBe("Turn right, ~90 m");
+    for (const blocked of [{ closed: true }, { verification: "unverified" as const }, { verification: "geometry_only" as const }]) {
+      const b = columnHall();
+      b.edges = [...strip(b), edge("q-east", "q", "s", { lengthM: 30, ...blocked })];
+      expect(kept(b).junctions).toBeUndefined();
+    }
+    // A one-way branch that only arrives at q offers no choice there; one that leaves q does.
+    const into = columnHall();
+    into.edges = [...strip(into), edge("q-east", "s", "q", { lengthM: 30, direction: "forward" })];
+    expect(kept(into).junctions).toBeUndefined();
+    const out = columnHall();
+    out.edges = [...strip(out), edge("q-east", "q", "s", { lengthM: 30, direction: "forward" })];
+    expect(kept(out).junctions).toEqual([{ nodeId: "q", stepIndex: 3, atM: 60, action: "straight", name: "Exit B" }]);
+  });
+
+  it("reads the station graph, not the traveller profile: a stair branch is still a visible choice", () => {
+    const b = columnHall();
+    b.edges = b.edges.filter((e) => e.id !== "p-fork" && e.id !== "q-east");
+    b.edges.push(edge("p-stairs", "p", "r", { mode: "stairs", lengthM: 30, wheelchair: false, steps: true }));
+    const r = route(b, "start", "g", { fare: "ticketed", stepFree: true });
+    expect(describeRoute(b, r, "en")[2]!.junctions).toEqual([{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }]);
+  });
+
+  it("says straight past a lift whose doors give no heading, and stays silent when branches cannot be told apart", () => {
+    const lift = columnHall();
+    lift.edges = lift.edges.filter((e) => e.id !== "p-fork" && e.id !== "q-east");
+    lift.edges.push(edge("q-lift", "q", "upper", { mode: "elevator", lengthM: 2 }));
+    expect(describeRoute(lift, route(lift, "start", "g"), "en")[2]!.junctions).toEqual([{ nodeId: "q", stepIndex: 3, atM: 60, action: "straight", name: "Exit B" }]);
+    // A second corridor leaving p along exactly the route's line: "keep left/right/straight" would be a guess.
+    const twin = columnHall();
+    twin.edges = twin.edges.filter((e) => e.id !== "p-fork" && e.id !== "q-east");
+    twin.edges.push(edge("p-twin", "p", "lift-top", { lengthM: 31 }));
+    expect(describeRoute(twin, route(twin, "start", "g"), "en")[2]!.junctions).toBeUndefined();
+  });
+
+  it("calls the middle of a three-way fork straight only when it is the straightest", () => {
+    const fork = (leftX: number, rightX: number) => {
+      const b = columnHall();
+      b.edges = b.edges.filter((e) => e.id !== "p-fork" && e.id !== "q-east");
+      b.nodes.push(at("fork-l", leftX, -55), at("fork-r", rightX, -55));
+      b.edges.push(edge("p-l", "p", "fork-l", { lengthM: 30 }), edge("p-r", "p", "fork-r", { lengthM: 30 }));
+      return describeRoute(b, route(b, "start", "g"), "en")[2]!;
+    };
+    // Branches at about 31° either side of arrival; the route bends 6°: it is the straightest.
+    expect(fork(25, -5).junctions).toEqual([{ nodeId: "p", stepIndex: 2, atM: 30, action: "straight", name: null }]);
+    // Both branches lie left of the route (31° and 2° right of arrival vs the route's 6°): keep right.
+    expect(fork(25, 9).junctions).toEqual([{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }]);
+    // A branch dead ahead is straighter than the route, with another on its far side: no side or "straight" is safe.
+    expect(fork(10, -5).junctions).toBeUndefined();
+  });
+
+  it("measures headings over the first ~5 m, so a snapping hook on a branch does not move it", () => {
+    const b = columnHall();
+    b.edges = b.edges.filter((e) => e.id !== "q-east");
+    // The fork's first 0.3 m hooks hard right before running 31° left of arrival.
+    b.edges = b.edges.map((e) => e.id === "p-fork" ? { ...e, geometry: [{ x: 10, y: -30, z: 0 }, { x: 9.7, y: -30.1, z: 0 }, { x: 25, y: -55, z: 0 }] } : e);
+    expect(describeRoute(b, route(b, "start", "g"), "en")[2]!.junctions).toEqual([{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }]);
   });
 });
