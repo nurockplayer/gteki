@@ -1,30 +1,26 @@
 {
-  "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-aba3f90ae468713ffe2f",
+  "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-cd53d13464d76f1d1685",
   "source_id": "plateau-13116-ubld-53394576",
   "source_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
   "verification": "UNVERIFIED",
   "frame_id": "ikebukuro-plateau-ubld-v0",
-  "filters": {
-    "ids": [
-      "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2"
-    ]
-  },
-  "store_path": "out/plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-aba3f90ae468713ffe2f.glb",
-  "sidecar_path": "out/plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-aba3f90ae468713ffe2f.provenance.json",
+  "filters": {},
+  "store_path": "out/plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-cd53d13464d76f1d1685.glb",
+  "sidecar_path": "out/plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-cd53d13464d76f1d1685.provenance.json",
   "totals": {
     "objects_in_source": 32,
-    "objects_converted": 5,
-    "nodes": 6,
+    "objects_converted": 28,
+    "nodes": 32,
     "polygons_in_source": 98173,
     "polygon_definitions_in_source": 58761,
-    "polygons_converted": 184,
+    "polygons_converted": 58761,
     "skipped_degenerate": 0,
-    "solid_uses_represented_by_selected_boundaries": 184,
-    "triangles": 184
+    "solid_uses_represented_by_selected_boundaries": 39412,
+    "triangles": 64811
   },
   "semantic_inputs": {
     "tool_version": "0.1.0",
-    "tool_input_sha256": "9605494ca38c261d1e49019529eba707bf3feafe0e96adc4bf831a85fda0ae15",
+    "tool_input_sha256": "3a59c536b3d0efee1964f814e9144dc501e4262488e750c1889831759354f6e5",
     "dictionary_sha256": "e543815e7442ad158f59e511e14d76866f7bf525a541e66e7b95a57bf4371743",
     "codelist_inputs": [
       {
@@ -318,42 +314,42 @@
   "geometry_policy": "Boundary/opening representations retain their source orientation. Coincident solid reference uses are retained in inventory/sidecar and not drawn again when the referenced definition is already represented by a selected boundary/opening object. Other solid uses are converted with their own orientation.",
   "bbox_source_lat_lon_height": {
     "min": [
-      35.73095350980933,
-      139.71027781460776,
-      27.91
+      35.728049254734366,
+      139.70938689983566,
+      25.498283
     ],
     "max": [
-      35.73108282557796,
-      139.71052577159858,
-      31
+      35.731371787356984,
+      139.7133659340391,
+      33.16767
     ]
   },
   "bbox_local_ENU": {
     "min": [
-      -99.5794720074864,
-      138.4812118210575,
-      -1.0899999999999999
+      -180.20170200668872,
+      -184.0400121791863,
+      -3.5017169999999993
     ],
     "max": [
-      -77.15707800371092,
-      152.85119482061054,
-      2
+      179.38389699327854,
+      184.82351882128205,
+      4.167670000000001
     ]
   },
   "validation": {
     "status": "PASS",
-    "node_count": 6,
-    "expected_node_count": 6,
-    "triangle_count": 184,
-    "expected_triangle_count": 184,
-    "bbox_max_error_m": 0.0000046096065489109606,
+    "node_count": 32,
+    "expected_node_count": 32,
+    "triangle_count": 64811,
+    "expected_triangle_count": 64811,
+    "bbox_max_error_m": 0.000003925928467651829,
     "tolerance_m": 0.001,
     "all_nodes_have_gml_id": true
   },
-  "output_sha256": "ed64bd3fa1e4f8b012956d26f67092453807cf059b7f4a4c59cb0aeddb5bdc3b",
-  "output_bytes": 25240,
+  "output_sha256": "30ddfc719fbd2e1fd647ec084187f91cfe4b602b9dfacd3266b859407e08a6f1",
+  "output_bytes": 5200788,
   "navigation_use": "NOT_FOR_ROUTING",
   "geometry_status": "UNVERIFIED_RAW_CONVERSION",
-  "elapsed_ms": 33147,
-  "peak_rss_bytes": 210173952
+  "elapsed_ms": 26824,
+  "peak_rss_bytes": 432816128
 }

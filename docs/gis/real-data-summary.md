@@ -2,7 +2,7 @@
 
 Generated from acquisition, inventory, conversion and network JSON; no counts are manually maintained. All results are UNVERIFIED and NOT_FOR_ROUTING.
 
-Tool-input SHA-256: `9605494ca38c261d1e49019529eba707bf3feafe0e96adc4bf831a85fda0ae15` (src, source manifest, codebooks, frames, synthetic tests/fixtures, package/lock/workspace/TypeScript configuration; sorted relative names plus exact bytes).
+Tool-input SHA-256: `3a59c536b3d0efee1964f814e9144dc501e4262488e750c1889831759354f6e5` (src, source manifest, codebooks, frames, synthetic tests/fixtures, package/lock/workspace/TypeScript configuration; sorted relative names plus exact bytes).
 
 ## Acquisitions
 
@@ -39,10 +39,10 @@ Tool-input SHA-256: `9605494ca38c261d1e49019529eba707bf3feafe0e96adc4bf831a85fda
 
 | Run | Polygons | Triangles | Nodes | Bbox error m | Time ms | Peak RSS bytes |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-c3a66e05d19eddca7391 | 6 | 12 | 1 | 0.00000452290078101214 | 12097 | 382091264 |
-| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-c41dfb6ed905d2237956 | 65013 | 148950 | 30358 | 0.0000054997890401864424 | 19732 | 1249214464 |
-| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-1c97c64d92eaafc80145 | 58761 | 64811 | 32 | 0.000003925928467651829 | 34795 | 403324928 |
-| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-aba3f90ae468713ffe2f | 184 | 184 | 6 | 0.0000046096065489109606 | 33147 | 210173952 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-15cf20f911843ce38da7 | 65013 | 148950 | 30358 | 0.0000054997890401864424 | 18379 | 1738637312 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-7d309a4ba9fa25a9ae64 | 6 | 12 | 1 | 0.00000452290078101214 | 11151 | 377012224 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-31375e717db26c653752 | 184 | 184 | 6 | 0.0000046096065489109606 | 26591 | 211288064 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-cd53d13464d76f1d1685 | 58761 | 64811 | 32 | 0.000003925928467651829 | 26824 | 432816128 |
 
 ## Network observations
 

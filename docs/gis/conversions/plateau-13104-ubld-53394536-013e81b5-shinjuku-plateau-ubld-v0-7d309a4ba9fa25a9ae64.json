@@ -1,5 +1,5 @@
 {
-  "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-c3a66e05d19eddca7391",
+  "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-7d309a4ba9fa25a9ae64",
   "source_id": "plateau-13104-ubld-53394536",
   "source_sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
   "verification": "UNVERIFIED",
@@ -9,8 +9,8 @@
       "room_d4dc60ab-50c3-4480-9957-069e31c641ad"
     ]
   },
-  "store_path": "out/plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-c3a66e05d19eddca7391.glb",
-  "sidecar_path": "out/plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-c3a66e05d19eddca7391.provenance.json",
+  "store_path": "out/plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-7d309a4ba9fa25a9ae64.glb",
+  "sidecar_path": "out/plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-7d309a4ba9fa25a9ae64.provenance.json",
   "totals": {
     "objects_in_source": 30358,
     "objects_converted": 1,
@@ -24,7 +24,7 @@
   },
   "semantic_inputs": {
     "tool_version": "0.1.0",
-    "tool_input_sha256": "9605494ca38c261d1e49019529eba707bf3feafe0e96adc4bf831a85fda0ae15",
+    "tool_input_sha256": "3a59c536b3d0efee1964f814e9144dc501e4262488e750c1889831759354f6e5",
     "dictionary_sha256": "e543815e7442ad158f59e511e14d76866f7bf525a541e66e7b95a57bf4371743",
     "codelist_inputs": [
       {
@@ -354,6 +354,6 @@
   "output_bytes": 3168,
   "navigation_use": "NOT_FOR_ROUTING",
   "geometry_status": "UNVERIFIED_RAW_CONVERSION",
-  "elapsed_ms": 12097,
-  "peak_rss_bytes": 382091264
+  "elapsed_ms": 11151,
+  "peak_rss_bytes": 377012224
 }

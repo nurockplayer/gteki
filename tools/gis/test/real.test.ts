@@ -18,7 +18,7 @@ describe.skipIf(!available)('real acquired sources (optional external store)',()
   },120000);
   for(const book of codebooks)it(`checks every literal codebook label against acquired ${book.version} PDF text`,async()=>{
     const source=await getStoredSource(book.spec_source_id);expect(source.record.sha256).toBe(book.spec_sha256);
-    const text=execFileSync('/opt/homebrew/bin/pdftotext',['-raw',source.path,'-'],{encoding:'utf8',maxBuffer:8*1024*1024});
+    const text=execFileSync(process.env.GTEKI_GIS_PDFTOTEXT||'pdftotext',['-raw',source.path,'-'],{encoding:'utf8',maxBuffer:8*1024*1024});
     const normalize=(value:string)=>value.replace(/\s/gu,'');
     const normalized=normalize(text);
     const visit=(value:any):void=>{

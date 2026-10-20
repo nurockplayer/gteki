@@ -350,6 +350,6 @@
   "output_bytes": 53955156,
   "navigation_use": "NOT_FOR_ROUTING",
   "geometry_status": "UNVERIFIED_RAW_CONVERSION",
-  "elapsed_ms": 22746,
-  "peak_rss_bytes": 1559052288
+  "elapsed_ms": 19732,
+  "peak_rss_bytes": 1249214464
 }

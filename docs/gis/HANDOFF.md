@@ -91,7 +91,7 @@ Full evidence: [research/network-codes-and-coverage.md](research/network-codes-a
 
 **Rank-check method rules:** these follow the spec's red underlines (表3.3, p21). Under mobility-trace data, only the underlined readings are checked: width C, slope/step A–C upper bounds and slope/step Z. Every other trace case is `not_checkable`, and the check never corrects a rank.
 
-**Verification (Opus lead's independent online rerun):** `typecheck` 0 · `test` **201/201** · `test:real` **6/6** · real run **17/17** · digest `9605494ca38c261d1e49019529eba707bf3feafe0e96adc4bf831a85fda0ae15`. The GLB outputs are byte-identical to PR #18.
+**Verification (Opus lead's independent online rerun):** `typecheck` 0 · `test` **201/201** · `test:real` **6/6** · real run **17/17** · digest `9605494ca38c261d1e49019529eba707bf3feafe0e96adc4bf831a85fda0ae15`. The GLB outputs are byte-identical to PR #18. After the PR-bot fix that resolves `pdftotext` through `PATH` (override with `GTEKI_GIS_PDFTOTEXT`), the digest is `3a59c536b3d0efee1964f814e9144dc501e4262488e750c1889831759354f6e5`, with the same test counts and GLBs.
 
 **Review:** five fresh read-only Codex GPT-6 Astra (high) reviews.
 - Rounds 1–4: REQUEST_CHANGES on P2 items only, all fixed. They covered prototype-name codes, invalid join IDs, non-numeric coercion, trace-rank rules (three refinements), offline receipt links and candidate provenance.
