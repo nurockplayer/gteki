@@ -163,15 +163,17 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
   return parts;
 }
 
-/** Shelf-pack face canvases (all the same height) into as few atlas pages as fit. */
-function packAtlas(faces: HTMLCanvasElement[]) {
-  const rowH = faces[0] ? faces[0].height + GUTTER : 0;
+/** Shelf-pack face canvases (all the same height) into as few atlas pages as fit, drawn at `scale`
+ *  (< 1 on low quality: same layout, fewer texels). Slots carry the drawn size for the UVs. */
+function packAtlas(faces: HTMLCanvasElement[], scale: number) {
+  const dims = faces.map((c) => ({ w: Math.ceil(c.width * scale), h: Math.round(c.height * scale) }));
+  const rowH = dims[0] ? dims[0].h + GUTTER : 0;
   const rowsPerPage = Math.max(1, Math.floor(ATLAS_W / Math.max(1, rowH)));
-  const slots: { page: number; x: number; y: number }[] = [];
+  const slots: { page: number; x: number; y: number; w: number; h: number }[] = [];
   let page = 0, row = 0, x = GUTTER;
   const pageRows: number[] = [0];
-  for (const c of faces) {
-    if (x + c.width + GUTTER > ATLAS_W) {
+  for (const d of dims) {
+    if (x + d.w + GUTTER > ATLAS_W) {
       row++;
       x = GUTTER;
       if (row >= rowsPerPage) {
@@ -180,21 +182,25 @@ function packAtlas(faces: HTMLCanvasElement[]) {
         pageRows.push(0);
       }
     }
-    slots.push({ page, x, y: GUTTER + row * rowH });
+    slots.push({ page, x, y: GUTTER + row * rowH, ...d });
     pageRows[page] = row + 1;
-    x += c.width + GUTTER;
+    x += d.w + GUTTER;
   }
-  const pages = pageRows.map((rows) => {
+  const pages = pageRows.map((rows, pi) => {
     const c = document.createElement("canvas");
-    c.width = ATLAS_W;
-    // Power-of-two height keeps mipmapping cheap on every GPU.
+    // Power-of-two sides keep mipmapping cheap on every GPU; a short last page also narrows.
     c.height = Math.min(ATLAS_W, 2 ** Math.ceil(Math.log2(GUTTER + rows * rowH)));
+    c.width = rows > 1 ? ATLAS_W : 2 ** Math.ceil(Math.log2(Math.max(64, ...slots.filter((s) => s.page === pi).map((s) => s.x + s.w + GUTTER))));
     const g = c.getContext("2d")!;
     g.fillStyle = "#1c222b";
     g.fillRect(0, 0, c.width, c.height);
+    g.imageSmoothingQuality = "high";
     return c;
   });
-  faces.forEach((c, i) => pages[slots[i].page].getContext("2d")!.drawImage(c, slots[i].x, slots[i].y));
+  faces.forEach((c, i) => {
+    const s = slots[i];
+    pages[s.page].getContext("2d")!.drawImage(c, s.x, s.y, s.w, s.h);
+  });
   return { pages, slots };
 }
 
@@ -225,7 +231,7 @@ function merge(THREE: typeof THREE_NS, parts: { geo: THREE_NS.BufferGeometry; ma
  * Build all signs as one group, positioned in the renderer frame via toRenderer.
  * Faces share atlas textures and all geometry is merged, so ~100 signs cost about three draw calls.
  */
-export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3, anisotropy: number) {
+export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3, anisotropy: number, texelScale = 1) {
   const group = new THREE.Group();
   group.name = "ikebukuro_signs";
   type Face = { canvas: HTMLCanvasElement; widthM: number; h: number; local: THREE_NS.Matrix4; sign: THREE_NS.Matrix4 };
@@ -259,7 +265,7 @@ export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer
   const housing = new THREE.MeshBasicMaterial({ color: 0x4f565f });
   group.add(new THREE.Mesh(merge(THREE, boxes, false), housing));
 
-  const { pages, slots } = packAtlas(faces.map((x) => x.canvas));
+  const { pages, slots } = packAtlas(faces.map((x) => x.canvas), texelScale);
   const textures: THREE_NS.Texture[] = [];
   pages.forEach((page, pi) => {
     const tex = new THREE.CanvasTexture(page);
@@ -270,8 +276,8 @@ export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer
       if (slots[i].page !== pi) return [];
       const geo = new THREE.PlaneGeometry(fc.widthM, fc.h);
       // Remap the plane's 0..1 UVs onto this face's atlas rectangle (CanvasTexture flips Y).
-      const u0 = slots[i].x / page.width, u1 = (slots[i].x + fc.canvas.width) / page.width;
-      const vTop = 1 - slots[i].y / page.height, vBot = 1 - (slots[i].y + fc.canvas.height) / page.height;
+      const u0 = slots[i].x / page.width, u1 = (slots[i].x + slots[i].w) / page.width;
+      const vTop = 1 - slots[i].y / page.height, vBot = 1 - (slots[i].y + slots[i].h) / page.height;
       const uv = geo.getAttribute("uv") as THREE_NS.BufferAttribute;
       for (let k = 0; k < uv.count; k++) uv.setXY(k, u0 + uv.getX(k) * (u1 - u0), vBot + uv.getY(k) * (vTop - vBot));
       return [{ geo, matrix: fc.sign.clone().multiply(fc.local) }];

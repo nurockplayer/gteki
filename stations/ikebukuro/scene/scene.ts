@@ -181,7 +181,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     m.envMapIntensity = role === "floor" ? 0.35 : role === "ceiling" ? 0.05 : role === "transport" ? 0.9 : 0.2;
   }
 
-  const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy());
+  // Low quality paints signs at ~160 px/m instead of 300: a quarter of the texture memory, still legible at phone size.
+  const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy(), low ? 0.54 : 1);
   root.add(signs.group);
 
   const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes);
