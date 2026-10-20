@@ -34,7 +34,7 @@ stations/<id>/gteki/
 
 | Rule | Where |
 | --- | --- |
-| `null` = UNKNOWN for every tri-state; a missing field is an error, never a default | parse |
+| `null` = UNKNOWN for every tri-state; a missing field is an error, never a default. Nested records (hours union, texts, labels, evidence, coverage) are checked too: `hours: {}` is an error, not "open" | parse |
 | Only `verified` edges route in real bundles; `synthetic` edges only in `station.synthetic` bundles, and results are stamped `synthetic` | validate, router |
 | `closed: true` / query closures never route | router |
 | Step-free requires `wheelchair === true` and `steps !== true` (unknown excluded) | router |
@@ -45,12 +45,13 @@ stations/<id>/gteki/
 | Operator floors are never equated by label (`B1` ≠ `B1`); optional `Floor.displayNames` (ja/en, station-authored) are display-only and `sourceLabels` stay exact | schema, tests |
 | `Source.usage: "facts-only"`: may evidence facts; may not feed edge geometry or assets | validate |
 | Assets derived from non-`REUSABLE_WITH_CONDITIONS` sources are rejected for public bundles | validate |
-| Asset `uri` must be relative, inside the station folder | validate, plugin |
-| Routes report `oldestSourceDate`, `stale` (default > 730 days), `sourceIds`, `timeRestricted`, `operatorIds` | router |
+| Asset `uri` must be relative, inside the station folder; symlinks are followed only inside it; a GLB's external buffers/images must resolve through the station's asset map (web) or are refused (Godot) | validate, plugin, explorer, godot |
+| Symbolic polyline z (`geometryZ: "symbolic"`) never affects length or cost | router |
+| Routes report `oldestSourceDate`, `undatedSourceIds`, `stale` (default > 730 days; `null` while any dependency is undated unless dated evidence already proves staleness), tri-state `crossesFareBoundary` (unknown → `unknowns.fare_boundary`), `sourceIds`, `timeRestricted`, `operatorIds` | router |
 
 ## Renderer-neutral presentation
 
-`routePolyline(bundle, route)` and `describeRoute(bundle, route, "ja" | "en")` give every client the same polyline and turn-by-turn text. Up/down is said only when evidenced (known z, known elevation, or same-operator ordinals). Floors are named via `floorDisplayName(floor, lang)`: `displayNames` in that language, then ja, then the exact source label.
+`routePolyline(bundle, route)` and `describeRoute(bundle, route, "ja" | "en")` give every client the same polyline and turn-by-turn text. Up/down is said only when evidenced (known z, known elevation, or same-operator ordinals), and a chain with a known direction never absorbs a segment whose direction is unknown. Floors are named via `floorDisplayName(floor, lang)`: `displayNames` in that language, then ja, then the exact source label.
 
 ## Scene hook (`gteki.scene/0.1`)
 
