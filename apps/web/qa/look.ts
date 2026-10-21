@@ -18,7 +18,9 @@
 //   env=room[:n]|n|0      environment light intensity n (default 1 if given bare); 0 removes scene.environment
 //   tm=agx|aces|neutral   tone mapping (aces resets exposure to 1 unless exp is given)
 //   exp=<EV>|blender      exposure = 2^EV (replaces the explorer's); "blender" = the layout's own exposure (-0.2 / -0.35)
-//   shadows=1             kit meshes cast+receive; fit the explorer sun's shadow camera to the layout bbox
+//   shadows=1             the explorer's own sun shadow (shadows.ts policy + followShadow frustum), focused on the camera's
+//                         look_at point as if the walker stood there; one explorer update runs before the first render
+//   shadowR=<n>           shadow blur radius in PCF texels (default SHADOW_RADIUS);  shadowH=<m> frustum half-extent (default SHADOW_HALF_EXTENT_M)
 //   sun=blender           sun travels along Blender's vertical_hero direction;  sunI=<n> sun intensity
 //   hemi=<n>              hemisphere intensity override
 //   bg=world|<hex>        background (and fog colour) = Blender world colour for the layout, or a hex
@@ -233,30 +235,24 @@ function applyLook(box: THREE.Box3): void {
   const toSun = q.get("sun") === "blender" ? BLENDER_SUN_TRAVEL.clone().negate().normalize() : sun.position.clone().normalize();
   if (q.get("sun") === "blender") applied.sun = "blender";
 
-  const shadows = flag("shadows") === true;
-  const dist = Math.max(60, box.getSize(new THREE.Vector3()).length() * 1.5);
-  if (q.get("sun") === "blender" || shadows) {
+  if (q.get("sun") === "blender") {
+    // The explorer's shadow fit keeps this direction (sun minus target) and moves both with its focus.
+    const dist = Math.max(60, box.getSize(new THREE.Vector3()).length() * 1.5);
     sun.position.copy(center).addScaledVector(toSun, dist);
     sun.target.position.copy(center);
     sun.target.updateMatrixWorld();
     sun.updateMatrixWorld();
   }
-  if (shadows) {
-    // The explorer enables its shadow map (and sun.castShadow) on high quality only: on low this stays a no-op.
-    kit.traverse((n) => { const m = n as THREE.Mesh; if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } });
-    const ground = ex.world.getObjectByName("look-ground");
-    if (ground) ground.receiveShadow = true;
-    // Tight ortho frustum around the kit bbox in light space.
-    const view = new THREE.Matrix4().lookAt(sun.position, center, new THREE.Vector3(0, 1, 0)).setPosition(sun.position).invert();
-    const lb = new THREE.Box3();
-    for (let i = 0; i < 8; i++) {
-      lb.expandByPoint(new THREE.Vector3(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).applyMatrix4(view));
-    }
-    const pad = 1;
-    Object.assign(sun.shadow.camera, { left: lb.min.x - pad, right: lb.max.x + pad, bottom: lb.min.y - pad, top: lb.max.y + pad, near: Math.max(0.1, -lb.max.z - pad), far: -lb.min.z + pad });
-    sun.shadow.camera.updateProjectionMatrix();
-    sun.shadow.normalBias = 0.03;
-    applied.shadows = { fit: [lb.min.x, lb.max.x, lb.min.y, lb.max.y, lb.min.z, lb.max.z].map((v) => +v.toFixed(2)), mapSize: sun.shadow.mapSize.x, sunCastShadow: sun.castShadow, shadowMapEnabled: renderer.shadowMap.enabled };
+  const shadowR = num("shadowR");
+  if (shadowR !== null) { sun.shadow.radius = shadowR; applied.shadowR = shadowR; }
+  if (flag("shadows") === true) {
+    // The explorer's real path: policy over the world (kit + studio ground), walker stood at the camera's look_at
+    // (Blender (x, y, z) -> three (x, z, -y)), then its own per-frame update once. A no-op on low quality.
+    const focus = new THREE.Vector3(cam!.look_at[0]!, cam!.look_at[2]!, -cam!.look_at[1]!);
+    const half = num("shadowH") ?? undefined;
+    const counts = ex.devShadows(ex.world, focus, half);
+    ex.updateShadows();
+    applied.shadows = { ...counts, ...ex.sceneInfo().shadows, radius: sun.shadow.radius, normalBias: sun.shadow.normalBias, mapSize: sun.shadow.mapSize.x, sunCastShadow: sun.castShadow, shadowMapEnabled: renderer.shadowMap.enabled };
   }
 
   // Background / fog.
