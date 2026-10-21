@@ -142,6 +142,7 @@ export const WALK_SPEED = 1.45;
 export const RUN_SPEED = 3.6;
 /** Longest single collision/ground step (m). */
 const MAX_SUBSTEP = 0.2;
+const GUIDE_LOOKAHEAD = 1;
 export const PLAYER_RADIUS = 0.3;
 const RADIUS = PLAYER_RADIUS;
 
@@ -231,7 +232,9 @@ export class Player {
     }
 
     // acceleration with snappy, game-like response
-    const accel = manual || this.guide ? 9 : 12;
+    // A fast guide turns as tightly as a walking one: momentum at ×4 + run (14 m/s) would otherwise
+    // carry the body ~1.5 m wide of a corner, past fence ends that sit a body-width off the route.
+    const accel = manual ? 9 : this.guide ? 9 * this.guideSpeedMultiplier ** 2 : 12;
     const tvx = wish.x * target;
     const tvy = wish.y * target;
     const k = 1 - Math.exp(-accel * dt);
@@ -324,6 +327,19 @@ export class Player {
     }
     // stuck safety: if we cannot make progress (blocked by a prop), nudge directly to the point
     if (Math.abs(p.z - this.z) > 1.2 && d < 0.8) this.teleport(p);
+    // Steer at a point just ahead on the route segment, not straight at its end: momentum carries a
+    // fast guide wide of a corner, and the chord from there can cut behind a fence end the verified
+    // segment itself clears.
+    const prev = g[this.guideIndex - 1];
+    if (!p.escalator && prev && !prev.elevator) {
+      const sx = p.x - prev.x, sy = p.y - prev.y, len = Math.hypot(sx, sy);
+      if (len > 1e-6) {
+        const along = Math.max(0, Math.min(len, ((this.x - prev.x) * sx + (this.y - prev.y) * sy) / len));
+        const ahead = Math.min(len, along + GUIDE_LOOKAHEAD) / len;
+        const cx = prev.x + sx * ahead - this.x, cy = prev.y + sy * ahead - this.y, c = Math.hypot(cx, cy);
+        if (c > 1e-6) return { x: cx / c, y: cy / c };
+      }
+    }
     return { x: dx / d, y: dy / d };
   }
 }

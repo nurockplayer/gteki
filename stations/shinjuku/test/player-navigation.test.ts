@@ -13,6 +13,42 @@ function openWorld(
   } as unknown as WalkWorld;
 }
 
+describe("guided corners", () => {
+  // Fence ends can sit one body-width (0.32 m) off a verified route, so a fast guide must not swing
+  // wide of a corner: before the fix ×4 + run overshot by up to 0.65 m.
+  const outsideOvershoot = (turnDeg: number, multiplier: 1 | 2 | 4, fps: number) => {
+    const t = (turnDeg * Math.PI) / 180;
+    const corner = { x: 0, y: 10 };
+    const end = { x: -10 * Math.sin(t), y: 10 + 10 * Math.cos(t) };
+    const player = new Player(openWorld(), { x: 0, y: 0, z: 0 });
+    let arrived = false;
+    player.onGuideEvent = (event) => { if (event.type === "arrived") arrived = true; };
+    player.startGuide([
+      { x: 0, y: 0, z: 0, nodeId: "start" },
+      { ...corner, z: 0, nodeId: "corner" },
+      { ...end, z: 0, nodeId: "end" },
+    ]);
+    player.setGuideSpeed(multiplier);
+    const dx = end.x - corner.x, dy = end.y - corner.y, len = Math.hypot(dx, dy);
+    let worst = 0;
+    for (let i = 0; i < 2000 && !arrived; i++) {
+      player.update(1 / fps, { forward: 0, strafe: 0, run: true }, player.heading);
+      // Left turn: the outside is +x of the first leg and the right of the second.
+      const first = player.y <= corner.y ? player.x : -Infinity;
+      const along = ((player.x - corner.x) * dx + (player.y - corner.y) * dy) / len;
+      const second = along >= 0 ? ((player.x - corner.x) * dy - (player.y - corner.y) * dx) / len : -Infinity;
+      worst = Math.max(worst, Math.min(Math.max(first, second), Math.hypot(player.x - corner.x, player.y - corner.y)));
+    }
+    expect(arrived).toBe(true);
+    return worst;
+  };
+
+  it.each([30, 55, 90, 135])("stays within 0.1 m outside a %s° turn at ×1/×2/×4 + run, 20–60 fps", (turn) => {
+    for (const multiplier of [1, 2, 4] as const)
+      for (const fps of [20, 30, 60]) expect(outsideOvershoot(turn, multiplier, fps), `×${multiplier} ${fps} fps`).toBeLessThanOrEqual(0.1);
+  });
+});
+
 describe("guided escalator carry", () => {
   it("carries at 0.5 m/s in 3D while keeping the rider idle", () => {
     const world = openWorld((x) => x * 0.75);
