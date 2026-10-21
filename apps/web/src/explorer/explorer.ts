@@ -19,6 +19,7 @@ import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, clampDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
+import { STREET, StreetBackdrop, isOutdoors } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
@@ -50,6 +51,9 @@ export class Explorer {
   private readonly orbit: OrbitControls;
   private composer: PostFx | null = null;
   private readonly overviewLook = new OverviewLook();
+  private readonly street = new StreetBackdrop();
+  /** Render height of the station's street floor when it is an underground (scene-lit) station, else null. */
+  private streetY: number | null = null;
   private readonly timer = new THREE.Timer();
   private readonly input: Input;
   private readonly ray = new THREE.Raycaster();
@@ -121,7 +125,7 @@ export class Explorer {
     this.orbit.screenSpacePanning = false;
 
     this.input = new Input(this.renderer.domElement, host);
-    this.scene.add(this.world, this.overlays, this.avatar);
+    this.scene.add(this.world, this.overlays, this.avatar, this.street.group);
     this.overlays.add(this.routeGroup, this.poiGroup);
     this.buildAvatar();
     this.defaultEnvironment();
@@ -286,6 +290,7 @@ export class Explorer {
     // Overview may have been entered while loading (against an empty world): restore first, so the new
     // scene's fog and materials are the ones saved, then re-apply once the scene is attached.
     this.overviewLook.set(this.scene, this.world, false);
+    this.street.restore(this.scene);
     if (this.stationScene) {
       this.world.add(this.stationScene.root);
       this.overlays.add(this.graph.overlay);
@@ -298,6 +303,8 @@ export class Explorer {
       if (env?.fog) this.scene.fog = new THREE.Fog(env.fog.color, env.fog.near, env.fog.far);
       if (env?.exposure !== undefined) this.renderer.toneMappingExposure = env.exposure;
       this.applyLighting(env?.lighting === "scene" ? "scene" : "default");
+      const streets = station.bundle.floors.filter((f) => f.ordinal === 0 && !f.intermediate);
+      this.streetY = env?.lighting === "scene" && streets.length ? Math.max(...streets.map((f) => f.renderElevationM)) : null;
       this.stationScene.root.updateMatrixWorld(true);
     } else {
       this.world.add(this.graph.root);
@@ -325,6 +332,8 @@ export class Explorer {
   }
 
   private clearStation(): void {
+    this.street.restore(this.scene);
+    this.streetY = null;
     this.overviewLook.set(this.scene, this.world, false);
     this.disconnectStationAudio();
     this.stopGuide();
@@ -372,6 +381,7 @@ export class Explorer {
     if (mode === "overview") this.orbit.target.copy(this.pos);
     const xray = this.routeGroup.getObjectByName("route-xray");
     if (xray) xray.visible = mode === "overview";
+    if (mode === "overview") this.street.restore(this.scene);
     this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
   }
@@ -597,7 +607,10 @@ export class Explorer {
     else if (this.mode === "guide") this.stepGuide(dt);
     else this.orbit.update();
 
-    if (this.mode !== "overview") this.placeCamera(dt);
+    if (this.mode !== "overview") {
+      this.placeCamera(dt);
+      this.street.update(this.scene, this.camera, this.pos, isOutdoors(this.pos.y, this.streetY, this.coveredOverhead()), dt);
+    }
     const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw);
     this.bodyYaw = motion.yaw;
     this.lastAvatarPos.copy(this.pos);
@@ -654,6 +667,14 @@ export class Explorer {
     const stepIndex = g.steps[Math.min(g.steps.length - 1, p.segment + 1)] ?? -1;
     this.events.onGuideProgress?.({ s: g.s, total, stepIndex, done: g.s >= total && !g.holding });
     if (stopped !== null) this.events.onGuideStop?.(stopped);
+  }
+
+  /** Anything (ceiling, slab, canopy) above the walker's head within the sky-clearance distance. */
+  private coveredOverhead(): boolean {
+    if (this.streetY === null || !this.cameraTargets.length) return true;
+    this.ray.set(this.pos.clone().add(new THREE.Vector3(0, EYE, 0)), new THREE.Vector3(0, 1, 0));
+    this.ray.far = STREET.skyClearance;
+    return castAll(this.ray, this.cameraTargets).length > 0;
   }
 
   private placeCamera(dt: number): void {
@@ -751,6 +772,7 @@ export class Explorer {
     this.input.dispose();
     this.disposeComposer();
     this.avatarRig?.dispose();
+    this.street.dispose();
     this.avatar.traverse((o) => {
       // The rig disposed its own parts; the shadow and marker ring are explorer-owned.
       const m = o as THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>;
