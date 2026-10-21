@@ -24,10 +24,18 @@ describe("shared-explorer scene hook: camera caps", () => {
   });
 
   it("exports the underground ceiling caps as camera blockers and (until the explorer reads them) colliders", () => {
-    const caps = scene.cameraBlockers ?? [];
+    const caps = (scene.cameraBlockers ?? []).filter((o) => scene.colliders?.includes(o));
     expect(caps.length).toBe(1);
-    expect(scene.colliders).toContain(caps[0]);
     expect((caps[0] as THREE.Mesh).material).toMatchObject({ visible: false, side: THREE.DoubleSide });
+  });
+
+  it("adds hanging signs and fence sign panels as camera-only blockers, never as colliders", () => {
+    const signs = (scene.cameraBlockers ?? []).filter((o) => !scene.colliders?.includes(o));
+    const names = signs.map((o) => o.name);
+    expect(names).toContain("sign-cases");
+    expect(names.some((n) => n.startsWith("sign-faces:"))).toBe(true);
+    expect(names).toContain("Restricted area");
+    for (const o of signs) expect(scene.walkable).not.toContain(o);
   });
 
   it("caps the follow camera above underground nodes (except lift shafts and exit stairs open to the sky)", () => {

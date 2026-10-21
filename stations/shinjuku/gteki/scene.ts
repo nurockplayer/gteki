@@ -148,6 +148,11 @@ export const buildScene: BuildScene = (ctx) => {
       cameraBlockers.push(m);
     }
   }
+  // Hanging wayfinding boxes and fence sign panels sit at head-to-ceiling height: camera-only blockers.
+  built.root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (m.isMesh && (m.name.startsWith("sign-faces:") || m.name === "sign-cases" || m.name === "Restricted area" || m.name === "No entry")) cameraBlockers.push(m);
+  });
   // Underground station: it owns its lighting, as in the lane app. The explorer's default sun cast hard
   // pillar shadows across B1 floors through no opening at all. Same hemisphere and image-based light as
   // the lane app (app/src/main.ts), applied to the station's own materials only.

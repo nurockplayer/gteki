@@ -225,22 +225,24 @@ export function signTexture(lines: { arrow?: "left" | "right" | "up" | "down" | 
   const [c, g] = canvas(widthPx, H);
   lines.forEach((l, i) => {
     const y0 = i * rowH;
-    const bg = l.tone === "exit" ? "#f4c81a" : l.tone === "line" ? "#1d1f22" : l.tone === "warn" ? "#2b2d30" : "#1d1f22";
-    const fg = l.tone === "exit" ? "#121212" : "#ffffff";
+    // Warnings are light notice panels: a near-black board reads as a hole once a camera is close.
+    const light = l.tone === "exit" || l.tone === "warn";
+    const bg = l.tone === "exit" ? "#f4c81a" : l.tone === "warn" ? "#ecebe6" : "#1d1f22";
+    const fg = light ? "#121212" : "#ffffff";
     g.fillStyle = bg;
     g.fillRect(0, y0, widthPx, rowH);
     if (i > 0) {
-      g.fillStyle = "rgba(255,255,255,0.18)";
+      g.fillStyle = light ? "rgba(0,0,0,0.18)" : "rgba(255,255,255,0.18)";
       g.fillRect(0, y0, widthPx, 2);
     }
     let x = 24;
     // icon tile
     if (l.icon !== "none") {
-      g.fillStyle = l.tone === "exit" ? "#121212" : l.icon === "train" ? "#b6007a" : "#ffffff";
+      g.fillStyle = light ? "#121212" : l.icon === "train" ? "#b6007a" : "#ffffff";
       g.beginPath();
       g.roundRect(x, y0 + 14, 100, 100, 12);
       g.fill();
-      drawIcon(g, l.icon, x, y0 + 14, 100, l.tone === "exit" ? "#f4c81a" : l.icon === "train" ? "#ffffff" : "#1d1f22");
+      drawIcon(g, l.icon, x, y0 + 14, 100, light ? bg : l.icon === "train" ? "#ffffff" : "#1d1f22");
       x += 124;
     }
     g.fillStyle = fg;

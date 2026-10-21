@@ -48,6 +48,6 @@ describe("station geometry lifetime", () => {
     expect(result.bytes).toBe(13_280_466);
     // Round 7 fences the restricted remainder around verified corridors; regenerated with
     // test/helpers/retained-geometry.ts. Retired arrays must still be collectible.
-    expect(result.geometryHash).toBe("38112954136b01e85bc28db2976a2ba2c3171b214b14d43db3eff285e8768b70");
+    expect(result.geometryHash).toBe("346f46d57184e2fb2d97bf3a5b6f2599f672ea99a3e2a07cd787f19a91a45f14");
   }, 60_000);
 });

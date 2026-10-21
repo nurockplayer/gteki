@@ -1599,7 +1599,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
   }
   for (const [geos, color, metalness] of [[caseGeos, "#2b2d30", 0.4], [rodGeos, "#888888", 0.8]] as const) {
     const geo = merged(geos);
-    if (geo) root.add(new THREE.Mesh(track(geo), track(new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness }))));
+    if (geo) { const m = new THREE.Mesh(track(geo), track(new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness }))); if (geos === caseGeos) m.name = "sign-cases"; root.add(m); }
   }
   // keep centroid helper referenced for tree-shaking clarity
   void centroid;
