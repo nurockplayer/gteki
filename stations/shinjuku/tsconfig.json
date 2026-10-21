@@ -1,0 +1,4 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "include": ["gteki", "scene", "app/src", "tools", "test", "vite.config.ts"]
+}

@@ -1,0 +1,72 @@
+{
+  "note": "Raw inputs live OUTSIDE the repo (default ~/Developer/gteki-raw/shinjuku, override GTEKI_RAW_SHINJUKU). Only derived, licence-compatible outputs are committed. Fetch with tools/fetch-sources.sh; verify hashes before importing.",
+  "acquiredAt": "2026-10-20T10:45:52Z",
+  "files": [
+    {
+      "path": "e27/nwd_oedo_shinjuku_geojson.zip",
+      "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff",
+      "url": "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/d4519a9a-917a-4de8-9104-83e21246c04c/download/nwd_oedo_shinjuku_geojson.zip",
+      "license": "PDL 1.0",
+      "use": "data (graph)",
+      "validUntil": "2027-03-12"
+    },
+    {
+      "path": "e27/stationmap_oedo_shinjuku_geojson.zip",
+      "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090",
+      "url": "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/9c5ecc7b-a6e4-4d92-978c-9b66ca642172/download/stationmap_oedo_shinjuku_geojson.zip",
+      "license": "PDL 1.0",
+      "use": "data (render plan, fare zones, facilities)",
+      "validUntil": "2027-03-12"
+    },
+    {
+      "path": "e27/dataset.json",
+      "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
+      "url": "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45",
+      "license": "PDL 1.0",
+      "use": "metadata (licence, dates)"
+    },
+    {
+      "path": "e27/station_oedo_shinjuku.pdf",
+      "sha256": "a150f39ef07028ca9eb382ef44a637bd399c24d8b7a457cccad76da3f57e36f8",
+      "url": "(resource listed in dataset.json)",
+      "license": "PDL 1.0",
+      "use": "visual cross-check only; not redistributed"
+    },
+    {
+      "path": "spec/nwd_spec_2024.pdf",
+      "sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "url": "https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf",
+      "license": "government publication",
+      "use": "spec reference"
+    },
+    {
+      "path": "spec/gsi_indoor_spec_2019.pdf",
+      "sha256": "6bc6638a52ce2e285d056abb267e46b1fb917d323863ec3b4d0c50c1d5a5bd1d",
+      "url": "https://www.gsi.go.jp/common/000212574.pdf",
+      "license": "government publication",
+      "use": "spec reference"
+    },
+    {
+      "path": "plateau/53394536_ubld_6697_op.gml",
+      "sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
+      "url": "PLATEAU 新宿区 ubld (G空間情報センター)",
+      "license": "PLATEAU site policy (CC BY 4.0 compatible)",
+      "use": "evaluated; does NOT overlap E27 → unused"
+    },
+    {
+      "path": "s10/other_stores_shinjuku.csv",
+      "sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
+      "url": "ほこナビDP S10 store list",
+      "license": "PDL 1.0",
+      "use": "evaluated; no coordinates → not imported"
+    },
+    {
+      "path": "osm/entrances.json",
+      "sha256": null,
+      "url": "Overpass API (subway/train entrances around 35.690,139.700)",
+      "license": "ODbL 1.0",
+      "use": "cross-check only (exit 2 closure note); not shipped",
+      "retrievedAt": "2026-10-20T10:55:25Z"
+    }
+  ]
+}
