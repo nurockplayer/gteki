@@ -22,8 +22,8 @@
   "size_check": "NOT_SPECIFIED",
   "mode": "online",
   "last_offline_check": {
-    "requested_at": "2026-10-21T00:18:39.151Z",
-    "completed_at": "2026-10-21T00:18:39.151Z",
+    "requested_at": "2026-10-21T17:37:59.163Z",
+    "completed_at": "2026-10-21T17:37:59.163Z",
     "tool_version": "0.1.0",
     "sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
     "bytes": 2317035,

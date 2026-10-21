@@ -69,8 +69,8 @@
     }
   ],
   "last_offline_check": {
-    "requested_at": "2026-10-21T00:18:39.249Z",
-    "completed_at": "2026-10-21T00:18:39.249Z",
+    "requested_at": "2026-10-21T17:37:59.248Z",
+    "completed_at": "2026-10-21T17:37:59.248Z",
     "tool_version": "0.1.0",
     "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
     "bytes": 187935,

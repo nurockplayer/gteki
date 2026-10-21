@@ -350,6 +350,10 @@
     "sample": [],
     "truncated": false
   },
+  "geometry_coverage_gaps": {
+    "unconsumed_coordinate_elements": 0,
+    "by_element": {}
+  },
   "geometry_reference_summary": {
     "total": 14350,
     "resolved": 14350,
@@ -766,9 +770,9 @@
     ]
   },
   "feature_tree": {
-    "store_path": "out/plateau-13104-ubld-53394536-8ef243c333ea2192a81b1098355d83fc8efeea81887d100fb56c55d2b23efef7.inventory-detail.json",
-    "sha256": "8ef243c333ea2192a81b1098355d83fc8efeea81887d100fb56c55d2b23efef7",
-    "bytes": 66088892,
+    "store_path": "out/plateau-13104-ubld-53394536-6979c91981ea655a4ab1c2d5f5f24f789ac48c3df1b4b79fc534213220ceb7a4.inventory-detail.json",
+    "sha256": "6979c91981ea655a4ab1c2d5f5f24f789ac48c3df1b4b79fc534213220ceb7a4",
+    "bytes": 66088989,
     "feature_count": 30358
   },
   "feature_type_counts": {

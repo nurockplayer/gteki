@@ -1,5 +1,5 @@
 {
-  "tool_input_sha256": "7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad049a2",
+  "tool_input_sha256": "ca9ef46e121b7da44432c6b39e75b87bfc5be56e7e661fdd04e6bfbaefcbf403",
   "verification": "UNVERIFIED",
   "navigation_use": "NOT_FOR_ROUTING",
   "poi": [
@@ -1840,6 +1840,18 @@
       "size_check": "MATCH"
     },
     {
+      "source_id": "plateau-13104-bldg-53394525",
+      "bytes": 94275150,
+      "sha256": "6ee3ab2254dd634b437ebc2afbb5dbb430acb9cc5c2f7cfe687ca637f403d327",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "plateau-13104-bldg-53394526",
+      "bytes": 62700939,
+      "sha256": "b6a84b0148dff5a33fbaf012549eb482979ffa75fd9f764f20fb9a7434fcda3c",
+      "size_check": "MATCH"
+    },
+    {
       "source_id": "plateau-13104-codelists",
       "bytes": 806577,
       "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
@@ -1849,6 +1861,12 @@
       "source_id": "plateau-13104-metadata",
       "bytes": 26786,
       "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "plateau-13104-package-2023",
+      "bytes": 1792735,
+      "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
       "size_check": "NOT_SPECIFIED"
     },
     {
@@ -1912,9 +1930,33 @@
       "size_check": "NOT_SPECIFIED"
     },
     {
+      "source_id": "plateau-13104-tran-53394525",
+      "bytes": 34370375,
+      "sha256": "5b6e432a857c3241766abcda3c3c596b5ff8f298e1ae95051619fbb191c4c195",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "plateau-13104-tran-53394526",
+      "bytes": 11415006,
+      "sha256": "2ff55bf2847f8f9ce30dff083a3fedf77599390d08644002b56c8cf50fe829d5",
+      "size_check": "MATCH"
+    },
+    {
       "source_id": "plateau-13104-ubld-53394536",
       "bytes": 43830765,
       "sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "plateau-13116-bldg-53394576",
+      "bytes": 153213705,
+      "sha256": "29009b87ac7c7bf07f2bc8862362629d7c11fb81240b392b2c975ff04f6f7873",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "plateau-13116-bldg-53394577",
+      "bytes": 168102762,
+      "sha256": "96b2c510ac44d955c0902612d0c702ee3594ca699993e0b187cbff86c2b82c37",
       "size_check": "MATCH"
     },
     {
@@ -1990,10 +2032,28 @@
       "size_check": "NOT_SPECIFIED"
     },
     {
+      "source_id": "plateau-13116-tran-53394576",
+      "bytes": 20812006,
+      "sha256": "6cc53f9c3ddfa90423ae1ae5c5741ceb004be2ddd6580b533644c449a7d068f7",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "plateau-13116-tran-53394577",
+      "bytes": 32601545,
+      "sha256": "052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2",
+      "size_check": "MATCH"
+    },
+    {
       "source_id": "plateau-13116-ubld-53394576",
       "bytes": 35427963,
       "sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
       "size_check": "MATCH"
+    },
+    {
+      "source_id": "plateau-catalog-bldg-tran-13116-13104",
+      "bytes": 34932,
+      "sha256": "cff24d7b1e50a4561188118e6dcff5c57f945f87d4aaa8b1cf3e8ae7efbf5668",
+      "size_check": "NOT_SPECIFIED"
     },
     {
       "source_id": "plateau-catalog-ubld-13116-13104",
@@ -2473,9 +2533,9 @@
         }
       },
       "feature_tree": {
-        "store_path": "out/plateau-13104-ubld-53394536-8ef243c333ea2192a81b1098355d83fc8efeea81887d100fb56c55d2b23efef7.inventory-detail.json",
-        "sha256": "8ef243c333ea2192a81b1098355d83fc8efeea81887d100fb56c55d2b23efef7",
-        "bytes": 66088892,
+        "store_path": "out/plateau-13104-ubld-53394536-6979c91981ea655a4ab1c2d5f5f24f789ac48c3df1b4b79fc534213220ceb7a4.inventory-detail.json",
+        "sha256": "6979c91981ea655a4ab1c2d5f5f24f789ac48c3df1b4b79fc534213220ceb7a4",
+        "bytes": 66088989,
         "feature_count": 30358
       }
     },
@@ -2920,16 +2980,16 @@
         }
       },
       "feature_tree": {
-        "store_path": "out/plateau-13116-ubld-53394576-dfa5489fa2bdcf070d6f13c3abd777f6181b588ec8f4c071a55bb0b81c1d5edb.inventory-detail.json",
-        "sha256": "dfa5489fa2bdcf070d6f13c3abd777f6181b588ec8f4c071a55bb0b81c1d5edb",
-        "bytes": 8202304,
+        "store_path": "out/plateau-13116-ubld-53394576-9f91403dfa6797b18db2b37eae39c6d551ac2e0b40ba49ad66efb759dfe9ec8e.inventory-detail.json",
+        "sha256": "9f91403dfa6797b18db2b37eae39c6d551ac2e0b40ba49ad66efb759dfe9ec8e",
+        "bytes": 8202401,
         "feature_count": 32
       }
     }
   ],
   "conversions": [
     {
-      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-92f96981cb9c62036365",
+      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-56fb51caa16f1e70850d",
       "source_id": "plateau-13104-ubld-53394536",
       "filters": {
         "ids": [
@@ -2957,11 +3017,11 @@
         "tolerance_m": 0.001,
         "all_nodes_have_gml_id": true
       },
-      "elapsed_ms": 14971,
-      "peak_rss_bytes": 393052160
+      "elapsed_ms": 12874,
+      "peak_rss_bytes": 393998336
     },
     {
-      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-98639ff0109884b5936f",
+      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-5dc72d34d55c55984c94",
       "source_id": "plateau-13104-ubld-53394536",
       "filters": {},
       "totals": {
@@ -2985,11 +3045,11 @@
         "tolerance_m": 0.001,
         "all_nodes_have_gml_id": true
       },
-      "elapsed_ms": 21454,
-      "peak_rss_bytes": 1614053376
+      "elapsed_ms": 20694,
+      "peak_rss_bytes": 1198546944
     },
     {
-      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-17badba2f620875f74fc",
+      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-1abf0c1d6c74b0a48010",
       "source_id": "plateau-13116-ubld-53394576",
       "filters": {},
       "totals": {
@@ -3013,11 +3073,11 @@
         "tolerance_m": 0.001,
         "all_nodes_have_gml_id": true
       },
-      "elapsed_ms": 35080,
-      "peak_rss_bytes": 461127680
+      "elapsed_ms": 29865,
+      "peak_rss_bytes": 383651840
     },
     {
-      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-b8254bb6613425689e57",
+      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-cba8626d02272aa587f1",
       "source_id": "plateau-13116-ubld-53394576",
       "filters": {
         "ids": [
@@ -3045,8 +3105,8 @@
         "tolerance_m": 0.001,
         "all_nodes_have_gml_id": true
       },
-      "elapsed_ms": 33465,
-      "peak_rss_bytes": 221462528
+      "elapsed_ms": 28206,
+      "peak_rss_bytes": 232132608
     }
   ],
   "networks": [

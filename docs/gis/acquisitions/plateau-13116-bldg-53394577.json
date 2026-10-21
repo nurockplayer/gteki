@@ -24,5 +24,13 @@
   "expected_bytes": 168102762,
   "expected_url_match": true,
   "size_check": "MATCH",
-  "mode": "online"
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-21T17:38:00.495Z",
+    "completed_at": "2026-10-21T17:38:00.495Z",
+    "tool_version": "0.1.0",
+    "sha256": "96b2c510ac44d955c0902612d0c702ee3594ca699993e0b187cbff86c2b82c37",
+    "bytes": 168102762,
+    "status": "PASS"
+  }
 }
