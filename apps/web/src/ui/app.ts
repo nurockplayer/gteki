@@ -1,5 +1,5 @@
-import { createRouter, describeRoute, floorDisplayName, instructionPoints, routeBetween, routePolyline } from "@gteki/navigation";
-import type { Instruction, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
+import { createRouter, describeRoute, explainNoPathWith, floorDisplayName, instructionPoints, routeBetween, routePolyline } from "@gteki/navigation";
+import type { Instruction, NoPathCause, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
 import type { Poi, Source, StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
@@ -8,6 +8,7 @@ import { guideStops } from "../explorer/guideStops.ts";
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, type GuideTierId } from "../explorer/guidePace.ts";
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
+import { noPathView } from "../noPath.ts";
 import { stationClock } from "../stationClock.ts";
 import { sourceCredit } from "../credits.ts";
 
@@ -28,6 +29,8 @@ interface State {
   destination: Poi | null;
   profile: { stepFree: boolean; unpaidOnly: boolean; strictHours: boolean };
   route: RouteResult | RouteFailure | null;
+  /** Which enabled option made the last `no_path` refuse (null = not a no_path). */
+  noPath: NoPathCause | null;
   polyline: PolylinePoint[];
   instructions: Instruction[];
   activeInstruction: number;
@@ -58,7 +61,7 @@ export class App {
   private readonly s: State = {
     lang: initialLang(), entries: [], entry: null, loaded: null, router: null, search: null,
     origin: null, destination: null, profile: { stepFree: false, unpaidOnly: false, strictHours: false },
-    route: null, polyline: [], instructions: [], activeInstruction: 0,
+    route: null, noPath: null, polyline: [], instructions: [], activeInstruction: 0,
   };
   private explorer!: Explorer;
   private readonly ui = {
@@ -440,14 +443,18 @@ export class App {
   private computeRoute(): void {
     const { router, loaded, origin, destination } = this.s;
     this.s.route = null;
+    this.s.noPath = null;
     this.s.polyline = [];
     this.s.instructions = [];
     this.explorer.clearRoute();
     if (!router || !loaded || !origin || !destination) { this.renderSheet(); return; }
     // One multi-source query: the router ranks entrances by its own cost and keeps "already there";
     // routeBetween also applies the fare policy to the POIs themselves.
-    const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, this.profile());
+    const profile = this.profile();
+    const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, profile);
     this.s.route = best;
+    // Only after a no_path: re-ask with the user's own options relaxed to say which one refused.
+    if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathWith((p) => routeBetween(router, origin, destination, p), profile);
     if (best.ok) {
       this.s.polyline = routePolyline(loaded.bundle, best);
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination);
@@ -468,7 +475,24 @@ export class App {
     const t = this.t;
     if (!r.ok) {
       const card = el("div", "card no-route");
-      card.append(el("h2", undefined, t.noRoute), el("p", undefined, t.noRouteWhy[r.reason] ?? r.message));
+      const view = r.reason === "no_path" && this.s.noPath ? noPathView(t, this.s.noPath) : null;
+      card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? t.noRouteWhy[r.reason] ?? r.message));
+      if (view && view.relax.length > 0) {
+        const relax = el("div", "actions");
+        const relaxOff = (keys: typeof view.relax) => { for (const k of keys) this.s.profile[k] = false; this.renderProfile(); this.computeRoute(); };
+        if (view.all) {
+          const b = el("button", "chip accent", t.noPath.relaxAll);
+          b.addEventListener("click", () => relaxOff(view.relax));
+          relax.append(b);
+        } else {
+          for (const k of view.relax) {
+            const b = el("button", "chip accent", t.noPath.relax(t[k]));
+            b.addEventListener("click", () => relaxOff([k]));
+            relax.append(b);
+          }
+        }
+        card.append(relax);
+      }
       sheet.append(card);
       return;
     }

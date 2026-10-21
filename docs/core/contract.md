@@ -40,6 +40,7 @@ stations/<id>/gteki/
 | Step-free requires `wheelchair === true` and `steps !== true` (unknown excluded) | router |
 | `unpaid_only` excludes edges whose paid/crossing state isn't `false` | router |
 | `unpaid_only` also rejects origin/destination POIs whose `paid` isn't `false` (`routeBetween`) | navigation |
+| A `no_path` is explained by `explainNoPath` / `explainNoPathWith`, called only after the failure: it re-routes with each option the traveller enabled (step-free, outside gates, verified hours, avoided modes) relaxed alone, then all together if none helps, so at most (enabled options) + 1 extra `route()` calls and none when no option is enabled. Cause is `option` (every sufficient single option, each tagged `unknown` when the relaxed route rests on UNKNOWN facts, never worded as known-inaccessible), `combination`, `none` (verified graph does not connect), or `unknown` (any retry hit `search_limit`). The web failure card names the option(s) by their toggle labels, offers a one-tap turn-off, and keeps the generic text for `none` | navigation, web |
 | Unknown hours: default `warn_unknown` (routes, reported as `unknowns: hours`, UI shows “hours unverified”); `require_known` excludes. Known windows are evaluated at `profile.at` (station-local) | router |
 | Floor change on a walk/gate edge: ERROR for same-operator non-adjacent/unordered floors; WARNING at landings (intermediate), adjacent ordinals or inter-operator transfers | validate |
 | Fare crossing outside a `gate` edge, bidirectional escalators → warnings | validate |
