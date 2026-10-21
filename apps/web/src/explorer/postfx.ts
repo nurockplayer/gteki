@@ -1,8 +1,9 @@
 // High-quality post-processing chain for the explorer (presentation only).
 //
 // HDR scene (half float, MSAA) → GTAO → bloom on true highlights only → tone map (AgX) + sRGB → grade.
-// Bloom keys on linear luma above 2.5, well over what lit white surfaces reach under the environment light:
-// they stay crisp, and only emitters (fixtures, bright signs, daylight) get a halo. The grade adds gentle
+// Bloom keys on linear luma above the lighting plan's threshold (2.5 under the environment light, where lit
+// white surfaces pass 1; 1.0 for scene-lit stations): lit surfaces stay crisp, and only emitters (fixtures,
+// bright signs, daylight) get a halo. The grade adds gentle
 // contrast, a vignette and dither so dark ceilings and fog never band. Everything here is renderer-neutral styling; it never changes what the scene shows.
 import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
@@ -112,6 +113,11 @@ export class PostFx {
   setSize(w: number, h: number): void {
     this.composer.setSize(w, h);
     this.grade.uniforms.uAspect!.value = w / Math.max(1, h);
+  }
+
+  /** Per-station bloom threshold (see lighting.ts BLOOM_THRESHOLD). */
+  setBloomThreshold(threshold: number): void {
+    this.bloom.threshold = threshold;
   }
 
   render(dt: number): void {

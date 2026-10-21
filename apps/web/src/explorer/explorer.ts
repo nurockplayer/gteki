@@ -182,6 +182,7 @@ export class Explorer {
   /** PMREM of RoomEnvironment, built once on first use: `scene.environment` in default lighting, the avatar's envMap in scene lighting. */
   private coreEnvMap: THREE.Texture | null = null;
   private lighting: "default" | "scene" = "default";
+  private bloomThreshold = resolveLighting().bloomThreshold;
   /** Host-owned WebAudio for station scenes; created lazily, resumed on the first user gesture. */
   private audio: { context: AudioContext; master: GainNode } | null = null;
   /**
@@ -306,6 +307,8 @@ export class Explorer {
     for (const l of this.coreLights) l.visible = plan.coreLights;
     if (this.hemi) this.hemi.intensity = plan.hemiIntensity;
     this.renderer.toneMappingExposure = plan.toneMappingExposure;
+    this.bloomThreshold = plan.bloomThreshold;
+    this.composer?.setBloomThreshold(plan.bloomThreshold);
     if (!this.coreEnvMap) {
       const pmrem = new THREE.PMREMGenerator(this.renderer);
       this.coreEnvMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -328,6 +331,7 @@ export class Explorer {
   private setupComposer(): void {
     if (this.composer || this.quality !== "high") return;
     this.composer = new PostFx(this.renderer, this.scene, this.camera);
+    this.composer.setBloomThreshold(this.bloomThreshold);
   }
 
   private buildAvatar(): void {

@@ -7,6 +7,11 @@ export const DEFAULT_ENV_INTENSITY = 0.25;
 export const HEMI_INTENSITY = 0.6;
 /** Converts a station's `exposure` (tuned under ACES) to AgX, which reads darker at the same exposure. */
 export const AGX_EXPOSURE_GAIN = 1.15;
+/**
+ * High-tier bloom threshold (linear luma). Under the environment light, lit white surfaces pass 1, so only
+ * emitters above 2.5 glow. A scene-lit station without it keeps 1.0, the value its bake was balanced against.
+ */
+export const BLOOM_THRESHOLD = { environment: 2.5, scene: 1.0 } as const;
 
 /** The slice of a scene's `environment` the lighting policy reads. */
 export interface LightingEnv {
@@ -26,6 +31,7 @@ export interface LightingPlan {
   /** The avatar carries its own envMap (scene mode without `scene.environment`). */
   avatarEnvMap: boolean;
   toneMappingExposure: number;
+  bloomThreshold: number;
 }
 
 /**
@@ -44,5 +50,6 @@ export function resolveLighting(env?: LightingEnv): LightingPlan {
     environmentIntensity: env?.envIntensity ?? DEFAULT_ENV_INTENSITY,
     avatarEnvMap: !sceneEnvironment,
     toneMappingExposure: (env?.exposure ?? 1) * AGX_EXPOSURE_GAIN,
+    bloomThreshold: sceneEnvironment ? BLOOM_THRESHOLD.environment : BLOOM_THRESHOLD.scene,
   };
 }

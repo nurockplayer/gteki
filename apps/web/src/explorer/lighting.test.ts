@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AGX_EXPOSURE_GAIN, DEFAULT_ENV_INTENSITY, HEMI_INTENSITY, resolveLighting } from "./lighting.ts";
+import { AGX_EXPOSURE_GAIN, BLOOM_THRESHOLD, DEFAULT_ENV_INTENSITY, HEMI_INTENSITY, resolveLighting } from "./lighting.ts";
 
 describe("core lighting plan", () => {
   it("lights a default station with core lights and the environment at the default intensity", () => {
@@ -28,5 +28,11 @@ describe("core lighting plan", () => {
     expect(resolveLighting().toneMappingExposure).toBeCloseTo(AGX_EXPOSURE_GAIN);
     expect(resolveLighting({ exposure: 0.92 }).toneMappingExposure).toBeCloseTo(0.92 * AGX_EXPOSURE_GAIN);
     expect(resolveLighting({ lighting: "scene", exposure: 1.0 }).toneMappingExposure).toBeCloseTo(AGX_EXPOSURE_GAIN);
+  });
+
+  it("keeps a scene-lit station's bloom threshold unless it opts into the environment light", () => {
+    expect(resolveLighting().bloomThreshold).toBe(BLOOM_THRESHOLD.environment);
+    expect(resolveLighting({ lighting: "scene" }).bloomThreshold).toBe(BLOOM_THRESHOLD.scene);
+    expect(resolveLighting({ lighting: "scene", envIntensity: 0.2 }).bloomThreshold).toBe(BLOOM_THRESHOLD.environment);
   });
 });
