@@ -66,6 +66,11 @@ pnpm check:access                 # outline has no fence gap; walker flood never
 pnpm check:godot                  # headless Godot: loader colliders + every verified edge traversable (see below)
 ```
 
+Lightmap provenance: `ikebukuro_b1_lit.meta.json` records `source_glb_sha256` `e0188c50…`, while the shipped
+`ikebukuro_b1.glb` is `aef077a6…`. Commit 93023f3 rebuilt the generic GLB and changed the `mat_portals` material only
+(glTF JSON apart from `materials`, and the BIN buffer, are byte-identical); the bake replaces every material, so the
+lightmap is not stale. `scene/lit_provenance.test.ts` pins this pair and fails on any change, forcing a re-bake or a re-documentation.
+
 `build_station.py` exits non-zero if any edge fails geometry validation or if a POI points at a
 missing node. An edge is `verified` only when **both** of these hold:
 
