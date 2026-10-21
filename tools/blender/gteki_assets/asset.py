@@ -57,6 +57,7 @@ class Asset:
         self.provenance = contract.PROVENANCE  # families override these for supplied artwork
         self.license = contract.LICENSE
         self.placement = "free"
+        self.role = None  # station bake role (contract §9); dressing generators set it
         self.materials = []
         self.parts = []  # (group, Part)
         self.collision = []  # (name, Part)
@@ -156,6 +157,13 @@ class Asset:
                 _lightmap_uvs(o)
         else:
             self.export_materials = list(self.materials)
+        if self.role:
+            if self.role not in contract.ROLES:
+                raise ValueError(f"role {self.role!r} must be one of {contract.ROLES}")
+            # custom properties export as node extras: a station reads the root or any VIS_* node
+            root["gteki_role"] = self.role
+            for o in vis_objs:
+                o["gteki_role"] = self.role
         bpy.context.view_layer.update()
 
         col_objs = []
@@ -255,7 +263,7 @@ class Asset:
             bpy.ops.wm.save_as_mainfile(filepath=os.path.join(save_blend_dir, f"{self.id}.blend"), compress=True)
         with open(path, "rb") as f:
             data = f.read()
-        return {
+        entry = {
             "id": self.id,
             "family": self.family,
             "variant": self.variant,
@@ -282,6 +290,9 @@ class Asset:
             "collision_nodes": [f"{contract.COL}{n}{contract.COL_SUFFIX}" for n, _ in self.collision],
             "generator": self.generator,
         }
+        if self.role:  # keeps the manifest of role-less assets byte-identical
+            entry["role"] = self.role
+        return entry
 
 
 NEAREST, NEAREST_MIPMAP_NEAREST = 9728, 9984  # glTF sampler filters

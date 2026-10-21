@@ -389,7 +389,8 @@ def _escalator_path(p):
     return [(0.0, 0.0)] + path + [(length, rise)]
 
 
-def escalator(asset_id, params, tex_res):
+def escalator(asset_id, params, tex_res, handrail_segments=10, handrail_corner=0.035):
+    """``handrail_*`` shape the moving handrail's sweep only (not params); dressing.py thins it."""
     p = _params(ESCALATOR_DEFAULTS, params)
     _positive(p, "rise", "step_width", "incline", "step_depth", "transition_run", "landing",
               "handrail_height", "handrail_radius", "newel_radius", "deck_width", "skirt_height",
@@ -511,8 +512,8 @@ def escalator(asset_id, params, tex_res):
             points.append((gx, rail_y0 + r * math.cos(ang), h - r + r * math.sin(ang)))
         points.append(points[0])
         handrail = a.part("moving_handrails")
-        handrail.tube(points, p["handrail_radius"], "gteki_rubber_black", segments=10,
-                      caps=False, corner_radius=0.035, corner_steps=3)
+        handrail.tube(points, p["handrail_radius"], "gteki_rubber_black", segments=handrail_segments,
+                      caps=False, corner_radius=handrail_corner, corner_steps=3)
         bases = a.part("newel_bases", bevel=0.004, bevel_segments=2)
         for top in (False, True):
             cy, z = (rail_y1, p["rise"]) if top else (rail_y0, 0)

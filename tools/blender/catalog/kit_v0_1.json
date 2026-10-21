@@ -50,6 +50,14 @@
     {"id": "gteki_barrier_rail_2400_solid", "generator": "barrier_rail", "params": {"length": 2.4, "infill": "solid", "end_posts": "start"}, "tags": ["prop"]},
     {"id": "gteki_barrier_rail_2400_rails", "generator": "barrier_rail", "params": {"length": 2.4, "infill": "rails"}, "tags": ["prop"]},
     {"id": "gteki_ticket_kiosk", "generator": "ticket_kiosk", "params": {}, "tags": ["prop"]},
-    {"id": "gteki_escalator_s1000_r5000_down", "generator": "escalator", "params": {"direction": "down"}, "tags": ["vertical"]}
+    {"id": "gteki_escalator_s1000_r5000_down", "generator": "escalator", "params": {"direction": "down"}, "tags": ["vertical"]},
+    {"id": "gteki_escalator_dress_s1000_r4000_glass", "generator": "escalator_dressing", "params": {"rise_mm": 4000, "width_mm": 1000, "angle_deg": 30}, "tags": ["dressing", "escalator"]},
+    {"id": "gteki_escalator_dress_s1000_r4000_glass_treads", "generator": "escalator_dressing", "params": {"rise_mm": 4000, "width_mm": 1000, "angle_deg": 30, "treads": true, "skirts": true}, "tags": ["dressing", "escalator"]},
+    {"id": "gteki_escalator_dress_s600_r3500_panel", "generator": "escalator_dressing", "params": {"rise_mm": 3500, "width_mm": 600, "angle_deg": 30, "balustrade": "panel", "direction": "down"}, "tags": ["dressing", "escalator"]},
+    {"id": "gteki_stair_nosing_w2400_n18", "generator": "stair_dressing", "params": {"step_count": 18, "riser_mm": 160, "tread_mm": 300, "width_mm": 2400, "parts": ["nosing"]}, "tags": ["dressing", "stair"]},
+    {"id": "gteki_stair_rails_w2400_n18_both", "generator": "stair_dressing", "params": {"step_count": 18, "riser_mm": 160, "tread_mm": 300, "width_mm": 2400, "parts": ["handrail", "skirt"], "handrail_sides": "both"}, "tags": ["dressing", "stair"]},
+    {"id": "gteki_railing_run_glass_h1100_l4000", "generator": "railing_run", "params": {"points": [[0, 0], [4000, 0]], "height_mm": 1100, "style": "glass"}, "tags": ["dressing", "barrier"]},
+    {"id": "gteki_railing_run_steel_h1100_l", "generator": "railing_run", "params": {"points": [[0, 0], [3000, 0], [3000, 2000]], "height_mm": 1100, "style": "steel"}, "tags": ["dressing", "barrier"]},
+    {"id": "gteki_fare_fence_glass_h1150", "generator": "railing_run", "params": {"points": [[0, 0], [3600, 0]], "height_mm": 1150, "style": "glass"}, "tags": ["dressing", "barrier", "fare_fence"]}
   ]
 }

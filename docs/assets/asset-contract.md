@@ -111,3 +111,30 @@ python3 tools/blender/bundle_kit.py info --bundle kit.glb
   - Geometry: visual parts use about half the segments and no bevels. Collision is byte-identical to `full`: the build generates a full-detail twin of each asset and keeps its colliders.
 - Byte limits are per profile: `tools/blender/catalog/budget.json` for `full`, `budget_mobile.json` for `mobile`, each with `applies_to.profile`. The per-image rules, the texCoord check (core and extension slots, `KHR_texture_transform` overrides; `extras` are not texture slots) and the lightmap checks apply to every library; only `mobile` requires UV1.
 
+
+## 9. Dressing pieces: `gteki_role` and origins
+
+Dressing pieces (`family: "dressing"`, generators in `families/dressing.py`) go on geometry a station already has: an escalator slab or truss, a stair's treads, a floor plan. They are **visual only** (no `COL_*-colonly` nodes) and carry no structure of their own. Every size is a catalog param, in millimetres, so a station gets a piece that fits its geometry while the kit holds no station measurements.
+
+**Station role.** A dressing piece may carry `gteki_role`, a string, so a station bake can sort it without reading the id:
+
+| Value | Pieces |
+| --- | --- |
+| `barriers` | railings, fare fences, stair handrails and side skirts |
+| `transport` | escalator parts (balustrade, moving handrail, newels, comb plates, optional skirts and static treads) |
+| `stairs_ramps` | only pieces that lie on a walkable surface, such as stair nosing strips |
+
+- The key sits in the extras of the root node and of every `VIS_*` node (`extras.gteki_role`), next to `extras.gteki`, not inside it. The manifest entry has `role`.
+- A GLB has one role. A stair kit that mixes nosing strips with rails or skirts has no single role and omits the key. Catalog entries that a station bakes should keep walkable and non-walkable parts in separate pieces.
+- Both profiles carry it: mobile merges the static groups into `VIS_body`, and that node and the root carry the same value.
+- The role is a tag only. It changes no geometry, collision or navigation; the kit still claims no navigation truth.
+
+**Origins.** The origin is the point a station anchors to, in the §1 frame (the exporter turns the authored +Y into −Z). Anything that reaches in front of the origin (`z > 0` in glTF) is allowed, like an approach apron.
+
+| Generator | Placement | Origin |
+| --- | --- | --- |
+| `escalator_dressing` | `linear` | floor level, centred in X, on the bottom comb plate line. The escalator rises toward −Z; the comb-to-comb run is `params.comb_run_m`. The newel and handrail turnaround reach about 0.55 m in front of the origin, and the optional skirts `landing_mm` in front |
+| `stair_dressing` | `linear` | floor level under the first (bottom) nosing, centred in X. Risers climb toward −Z; the handrail's lower extension starts 0.75 m in front |
+| `railing_run` | `free` | the plan origin of `params.points` (`[x_mm, y_mm]`, +y is −Z), floor level. `start` and `end` sockets sit on the first and last point and face outward along the run |
+
+`params.allow_below_floor` is set only where a piece sinks into the station's slab: escalator skirts (60 mm) and static treads (45 mm). Textures use the usual metric UV0; the mobile tier adds the TEXCOORD_1 lightmap layout. A station that bakes with its own second UV set uses UV0 for materials only.

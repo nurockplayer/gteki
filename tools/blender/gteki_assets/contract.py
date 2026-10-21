@@ -8,6 +8,9 @@ PROVENANCE = "original procedural geometry and textures; see assets/library/PROV
 FIDELITY = "generic kit; not a replica of any operator equipment or station"
 NAVIGATION = "none — visual/physical only; routing truth lives in the station graph"
 
+# Station bake roles (contract §9): optional `gteki_role` on the root and VIS_* nodes of dressing pieces.
+ROLES = ("barriers", "transport", "stairs_ramps")
+
 # dimension_basis values (contract §3). The kit never claims "station-verified".
 GENERIC_TYPICAL = "generic-typical"
 SYNTHETIC = "synthetic"

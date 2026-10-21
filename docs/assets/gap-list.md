@@ -103,6 +103,13 @@ Each batch is one PR with 5–10 pieces, a contact sheet and both tiers passing 
 
 **Parametric fit.** Dressing pieces (runs, escalator and stair dressing, cladding) take their length, rise, width and path as catalog params. That way a station gets a piece that fits its geometry rather than a fixed module, while the kit itself stays generic: no station measurements live in the kit catalog.
 
+**D2 status.** Generator code and eight default variants are in (`families/dressing.py`, catalog ids `gteki_escalator_dress_*`, `gteki_stair_*`, `gteki_railing_run_*`, `gteki_fare_fence_glass_h1150`); the GLBs are built in a separate GPU slot.
+- **Escalator dressing** keeps the balustrade, moving handrail, newels and comb plates of the existing escalator, with side skirts and static treads (for Ikebukuro's flat slabs) as options. Truss, slabs and colliders are left out. Origin on the bottom comb plate line. Params: `rise_mm`, `angle_deg` or `run_mm`, `width_mm`, `landing_mm` (one value for both ends).
+- **Stair dressing** is nosing strips (`vertical_safety_yellow`), a two-tier handrail run on the nosing pitch line, and side skirts, chosen with `parts`. Origin under the bottom nosing. Nosing-only pieces carry `stairs_ramps`; rails and skirts carry `barriers`.
+- **Railing runs** follow a `points` polyline (glass or steel) with posts, a top rail and a base channel. Guard height 1100 mm, fare fence 1150 mm. Origin at the plan origin of `points`.
+- `gteki_role` is on the root and every `VIS_*` node (contract §9). No piece has colliders.
+- **Open:** asymmetric top and bottom landings and closed-loop runs wait for a station that needs them. Once a station lead sends the dimensions to fit, more variants are catalog entries only.
+
 ## Station answers that bind the batches
 
 **Ikebukuro:**

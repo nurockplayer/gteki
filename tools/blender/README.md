@@ -1,6 +1,6 @@
 # GTEki Blender asset factory (Lane E)
 
-Reproducible, parametric generators for a **generic, reusable station kit** (passages, junctions, fare-gate arrays, stairs, escalators, lift portals, wayfinding signs, props). Output is contract GLB (`docs/assets/asset-contract.md`) for the Three.js Web client and Godot 4. The kit carries no navigation truth and does not replicate any operator's equipment or any specific Ikebukuro/Shinjuku location; station leads decide placement and art direction.
+Reproducible, parametric generators for a **generic, reusable station kit** (passages, junctions, fare-gate arrays, stairs, escalators, lift portals, wayfinding signs, props, and dressing fitted to a station's own stairs, escalators and floor plan). Output is contract GLB (`docs/assets/asset-contract.md`) for the Three.js Web client and Godot 4. The kit carries no navigation truth and does not replicate any operator's equipment or any specific Ikebukuro/Shinjuku location; station leads decide placement and art direction.
 
 ## Requirements
 
@@ -49,7 +49,7 @@ Editable sources: add `--save-blend <dir>` to `build.py` to save a `.blend` per 
 | `gteki_assets/asset.py` | Asset assembly: parts → bevel + weighted normals → joined `VIS_*`, `*-colonly` collision, sockets, light hints, extras, GLB export |
 | `gteki_assets/texsynth.py` | Seeded **tileable** numpy textures (terrazzo, tiles, metals, tactile blocks, treads, …) |
 | `gteki_assets/materials.py` | Stable `gteki_*` PBR material library |
-| `gteki_assets/families/*.py` | Generators by family |
+| `gteki_assets/families/*.py` | Generators by family (`dressing.py`: see below) |
 | `render_preview.py` | GLB round-trip renders |
 | `validate_glb.py` | Stdlib contract validator (`--self-test` included) |
 | `texture_budget.py` | Download / GPU texture report, before-after compare, layout costing, budget check (`catalog/budget.json`) |
@@ -69,3 +69,15 @@ A generator is `fn(asset_id, params, tex_res) -> Asset` registered in its module
 - Set `repeat_m` to the material's real repeat. Texture size follows from it (`materials.texture_res`), and maps that come out flat are exported as factors (`materials.texture_plan`), so do not pad a generator with invisible noise to "fill" a map. A face with a single 0–1 UV island that is not square (signs) should draw at its physical aspect (see `signage._face_shape`).
 
 Determinism: all randomness is seeded, textures are cached by content hash, UVs are quantized after modifiers; `build.sh repro` guards it.
+
+## Dressing family
+
+`families/dressing.py` makes pieces that go on geometry a station already has. They are visual only, carry `gteki_role` (contract §9) and take every size as a catalog param in millimetres, so the kit holds no station measurements. The escalator and stair generators reuse `vertical.py`.
+
+| Generator | Params (defaults) | Origin |
+| --- | --- | --- |
+| `escalator_dressing` | `rise_mm` 4000, `width_mm` 1000, `angle_deg` 30 or `run_mm` (horizontal run of the incline), `landing_mm` 800 (newel clearance and skirt length, both ends), `flat_steps` 2, `balustrade` glass or panel, `direction`, `skirts` false, `treads` false (static treads for flat slabs), `indicators` false | bottom comb plate line |
+| `stair_dressing` | `step_count` 18, `riser_mm` 160, `tread_mm` 300, `width_mm` 2400, `parts` of nosing, handrail, skirt, `handrail_sides` / `skirt_sides` both, left, right or none, `rail_mount` post or wall, `post_spacing_mm` 1800, `skirt_mm` 140, `skirt_drop_mm` 200 | floor under the bottom nosing |
+| `railing_run` | `points` (`[[x_mm, y_mm], ...]`), `height_mm` 1100 (guard; 1150 for a fare fence), `style` glass or steel, `post_spacing_mm` 1200, `mid_rails` 2 (steel) | plan origin of `points` |
+
+Variants are the `gteki_escalator_dress_*`, `gteki_stair_*`, `gteki_railing_run_*` and `gteki_fare_fence_*` ids in the catalog. Build them with `ONLY=<ids> tools/blender/build.sh build`.
