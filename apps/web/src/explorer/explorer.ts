@@ -10,16 +10,16 @@ import type { Router, PolylinePoint } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
-import { WALKER_BODY, seeThroughMeshes } from "@gteki/scene-api";
+import { WALKER_BODY, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene } from "./manifestScene.ts";
-import { castAll, castTargets } from "./raycast.ts";
+import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
-import { FOLLOW, clampDistance, followPose } from "./followCamera.ts";
+import { FOLLOW, followDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
@@ -174,11 +174,16 @@ export class Explorer {
   private readonly routeGroup = new THREE.Group();
   private readonly poiGroup = new THREE.Group();
   private walkable: THREE.Object3D[] = [];
-  /** Meshes actually ray-tested for ground, walls and the follow camera (see castTargets). */
+  /** Meshes actually ray-tested for ground, walls and the follow camera (see explorerTargets). */
   private groundTargets: THREE.Object3D[] = [];
   private colliderTargets: THREE.Object3D[] = [];
   private cameraTargets: THREE.Object3D[] = [];
+  /** Walls and floors only: the street probe's sky test (camera-only blockers such as signs never hide the sky). */
+  private skyTargets: THREE.Object3D[] = [];
+  private blockerTargets: ReadonlySet<THREE.Object3D> = new Set();
   private colliders: THREE.Object3D[] = [];
+  /** Camera-only blockers (ceilings): stop the follow camera, never the walker. */
+  private cameraBlockers: THREE.Object3D[] = [];
   private walls: Segment2[] = [];
   /** Visual-only signage the follow camera sees through (never walkable or a collider), as actually cut. */
   private seeThrough: THREE.Object3D[] = [];
@@ -266,11 +271,11 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; seeThrough: number; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
-      walkable: this.walkable.length, colliders: this.colliders.length, seeThrough: this.seeThrough.length,
+      walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
     };
@@ -379,7 +384,7 @@ export class Explorer {
       loadGlb: (uri) => {
         const url = station.assetUrls.get(uri);
         if (!url) return Promise.reject(new Error(`asset not found in station folder: ${uri}`));
-        const loader = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder).setResourcePath(`${ASSET_SCHEME}${stationDir(uri)}/`);
+        const loader = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder).setResourcePath(`${ASSET_SCHEME}${stationDir(uri)}/`).register(glbPrimitivePlugin);
         return loader.loadAsync(url).catch((err: unknown) => { throw fenceError(err); });
       },
       loadTexture: async (uri, opts = {}) => {
@@ -426,6 +431,7 @@ export class Explorer {
       this.graph.overlay.visible = false;
       this.walkable = this.stationScene.walkable;
       this.colliders = this.stationScene.colliders ?? [];
+      this.cameraBlockers = this.stationScene.cameraBlockers ?? [];
       this.walls = (this.stationScene.walls ?? []).map(wallToRenderer);
       const env = this.stationScene.environment;
       if (env?.background !== undefined) this.scene.background = new THREE.Color(env.background);
@@ -443,13 +449,17 @@ export class Explorer {
       this.walkable = this.graph.walkable;
     }
     this.world.updateMatrixWorld(true);
-    this.groundTargets = castTargets(this.walkable, this.colliders);
-    this.colliderTargets = castTargets(this.colliders, this.walkable);
-    this.cameraTargets = [...new Set([...this.colliderTargets, ...this.groundTargets])];
+    const targets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);
+    this.groundTargets = targets.ground;
+    this.colliderTargets = targets.collider;
+    this.skyTargets = targets.sky;
+    this.cameraTargets = targets.camera;
+    this.blockerTargets = targets.blockers;
     if (this.stationScene) {
-      // A sign that stands, or sits under a listed group, among the walkable/collider targets is never cut.
-      const solid = new Set([...this.walkable, ...this.colliders, ...this.cameraTargets]);
-      this.seeThrough = this.cameraCut.apply(this.stationScene.root, seeThroughMeshes(this.stationScene.root).filter((o) => !solid.has(o)));
+      // A sign that stands, or sits under a listed group, among the walkable/collider/camera targets is never cut:
+      // a mesh that is both a sign and a camera blocker stops the camera and stays solid.
+      const signs = cuttableSigns(seeThroughMeshes(this.stationScene.root), [this.walkable, this.colliders, this.cameraBlockers, this.cameraTargets]);
+      this.seeThrough = this.cameraCut.apply(this.stationScene.root, signs);
     }
     this.buildOccluders(this.stationScene?.root ?? this.graph.root);
     this.phase = "composer";
@@ -483,9 +493,12 @@ export class Explorer {
     if (this.graph) { this.world.remove(this.graph.root); this.overlays.remove(this.graph.overlay); this.graph.dispose(); this.graph = null; }
     this.walkable = [];
     this.colliders = [];
+    this.cameraBlockers = [];
     this.groundTargets = [];
     this.colliderTargets = [];
     this.cameraTargets = [];
+    this.skyTargets = [];
+    this.blockerTargets = new Set();
     this.walls = [];
     this.seeThrough = [];
     this.cameraCut.clear();
@@ -670,8 +683,8 @@ export class Explorer {
   /**
    * Candidate occluders, fixed at load (trees are never built mid-frame): every station mesh plus the
    * walkable/collider meshes. Whether and how each one blocks is decided per sweep frame:
-   * - proxies (the meshes the walker and follow camera ray-test, see castTargets) block even when
-   *   hidden or detached, from either side;
+   * - proxies (the walkable/collider meshes the walker ray-tests, see explorerTargets; never camera-only
+   *   blockers) block even when hidden or detached, from either side;
    * - other meshes block while drawn under this scene with an opaque, filled material;
    * - deforming meshes (skinned, morphed, batched) never block, since a static BVH cannot follow them;
    * - instanced crowds (DynamicDrawUsage) and instance sets above MAX_OCCLUDER_INSTANCES block only as
@@ -693,7 +706,9 @@ export class Explorer {
       });
     };
     root.traverse(add);
-    this.proxies = new Set(this.cameraTargets);
+    // Walls and floors only: a camera-only blocker is hidden geometry and never hides a label (a drawn one
+    // still occludes as a visual mesh above).
+    this.proxies = new Set(this.skyTargets);
     for (const p of this.proxies) add(p);
     this.labelSweepDoneAt = -Infinity;
   }
@@ -1028,7 +1043,7 @@ export class Explorer {
    */
   private updateStreetProbe(dt: number): void {
     const p = this.streetProbe;
-    if (this.streetY === null || this.pos.y < this.streetY - STREET.maxBelowStreet || !this.cameraTargets.length) {
+    if (this.streetY === null || this.pos.y < this.streetY - STREET.maxBelowStreet || !this.skyTargets.length) {
       p.outdoors = false;
       p.level = false;
       p.at.set(Infinity, 0, 0);
@@ -1044,7 +1059,7 @@ export class Explorer {
     p.wait = 0.25;
     this.ray.set(this.probeOrigin.set(this.pos.x, this.pos.y + EYE, this.pos.z), this.probeUp);
     this.ray.far = STREET.skyClearance;
-    p.outdoors = isOutdoors(this.pos.y, this.streetY, castAll(this.ray, this.cameraTargets).length > 0);
+    p.outdoors = isOutdoors(this.pos.y, this.streetY, castAll(this.ray, this.skyTargets).length > 0);
     this.ray.set(this.probeOrigin.set(this.pos.x, this.pos.y + 0.4, this.pos.z), this.probeDown);
     this.ray.far = 1.2;
     const hit = castAll(this.ray, this.groundTargets)[0];
@@ -1071,7 +1086,7 @@ export class Explorer {
     if (this.cameraTargets.length) {
       this.ray.set(head, new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)));
       this.ray.far = FOLLOW.shoulder + 0.25;
-      const side = castAll(this.ray, this.cameraTargets)[0];
+      const side = castCamera(this.ray, this.cameraTargets, this.blockerTargets)[0];
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
     const pose = followPose(head, this.yaw, this.pitch, shoulder);
@@ -1079,10 +1094,13 @@ export class Explorer {
     if (this.cameraTargets.length) {
       this.ray.set(pose.pivot, pose.back);
       this.ray.far = dist + FOLLOW.clearance;
-      dist = clampDistance(dist, castAll(this.ray, this.cameraTargets)[0]?.distance ?? null);
+      const hits = castCamera(this.ray, this.cameraTargets, this.blockerTargets).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+      dist = followDistance(dist, hits);
     }
     const desired = pose.pivot.clone().addScaledVector(pose.back, dist);
     this.camera.position.lerp(desired, 1 - Math.exp(-dt * 10));
+    // The smoothed position, not only the target, stays below camera-only blockers.
+    if (this.blockerTargets.size) keepBelowBlockers(pose.pivot, this.camera.position, [...this.blockerTargets], FOLLOW.clearance, this.ray);
     this.camera.lookAt(pose.target);
   }
 

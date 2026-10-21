@@ -12,6 +12,7 @@ export async function manifestScene(assets: readonly Asset[], ctx: Pick<SceneCon
   const root = new THREE.Group();
   const walkable: THREE.Object3D[] = [];
   const colliders: THREE.Object3D[] = [];
+  const cameraBlockers: THREE.Object3D[] = [];
   try {
     for (const asset of assets) {
       const gltf = await ctx.loadGlb(asset.uri);
@@ -21,12 +22,13 @@ export async function manifestScene(assets: readonly Asset[], ctx: Pick<SceneCon
       const roles = sceneFromGlbRoles(gltf.scene, { assetRole: asset.role });
       walkable.push(...roles.walkable);
       colliders.push(...roles.colliders);
+      cameraBlockers.push(...roles.cameraBlockers);
     }
   } catch (error) {
     disposeObject(root);
     throw error;
   }
-  return { root, walkable, colliders, dispose: () => disposeObject(root) };
+  return { root, walkable, colliders, cameraBlockers, dispose: () => disposeObject(root) };
 }
 
 /** Release geometries, materials and their textures owned by a loaded subtree. */
