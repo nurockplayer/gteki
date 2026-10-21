@@ -130,4 +130,4 @@ export interface Router {
  */
 export { createRouter } from "./router.ts";
 export { routeBetween, type RouteEndpoint } from "./poi.ts";
-export { describeRoute, floorDisplayName, instructionPoints, nodeDisplayZ, routePolyline, type Instruction, type InstructionKind, type JunctionHint, type PolylinePoint, type Turn } from "./present.ts";
+export { describeRoute, floorDisplayName, instructionPoints, nodeDisplayZ, routePolyline, type ConnectorEndKind, type Instruction, type InstructionKind, type JunctionHint, type PolylinePoint, type Turn } from "./present.ts";

@@ -1,5 +1,5 @@
 import { isOpenAt } from "@gteki/schema";
-import type { Edge, EdgeMode, Floor, LocalTime, Node, StationBundle, Weekday } from "@gteki/schema";
+import type { Edge, EdgeMode, Floor, LocalTime, Node, NodeKind, Poi, StationBundle, Weekday } from "@gteki/schema";
 import { DEFAULT_PROFILE } from "./index.ts";
 import { createRouter } from "./router.ts";
 import type { RouteProfile, RouteResult } from "./index.ts";
@@ -107,6 +107,11 @@ export interface Instruction {
   leadTurns?: Turn[];
   /** Same, for short legs folded into the end of the last instruction before arrival. Absent when none. */
   trailTurns?: Turn[];
+  /**
+   * Arrive only: the route ends at the destination's stair/escalator/ramp connector, not at the
+   * destination itself (e.g. the survey stops at the foot of an exit's stairs). Absent otherwise.
+   */
+  connector?: ConnectorEndKind;
   /** Plain text in the requested language. */
   text: string;
 }
@@ -131,6 +136,15 @@ export interface JunctionHint {
 }
 
 export type Turn = "left" | "right" | "back";
+
+/** Connector node kinds that stand for the start of a further stair/escalator/ramp to the destination. */
+export type ConnectorEndKind = Extract<NodeKind, "stair_end" | "escalator_end" | "ramp_end">;
+const CONNECTOR_END: Record<ConnectorEndKind, { mode: EdgeMode; self: Poi["category"] | null }> = {
+  stair_end: { mode: "stairs", self: "stairs" },
+  escalator_end: { mode: "escalator", self: "escalator" },
+  // No POI category is a ramp, so a ramp_end connector is never the destination itself.
+  ramp_end: { mode: "ramp", self: null },
+};
 
 const VERTICAL: Partial<Record<EdgeMode, InstructionKind>> = { stairs: "stairs", escalator: "escalator", elevator: "elevator", ramp: "ramp" };
 const TURN_DEG = 35;
@@ -199,6 +213,11 @@ const TEXT = {
       return hints.length === 0 ? `${text}、${turns}` : [text, ...hints, turns].join("。");
     },
     arrive: () => "目的地に到着",
+    /** `name` null = the destination has no display name: say "目的地". `ridden` = the route ended by using this connector. */
+    connectorArrive: (kind: ConnectorEndKind, name: string | null, ridden: boolean) => {
+      const via = { stair_end: "階段", escalator_end: "エスカレーター", ramp_end: "スロープ" }[kind];
+      return ridden ? `${name ?? "目的地"}への${via}で経路終了` : `${name ?? "目的地"}への${via}はここから`;
+    },
     wait: (time: string, dayOffset: number, weekday: string) =>
       `${dayOffset === 0 ? "" : dayOffset === 1 ? "翌日" : `${dayOffset < 7 ? "" : `${dayOffset}日後の`}${{ mon: "月", tue: "火", wed: "水", thu: "木", fri: "金", sat: "土", sun: "日" }[weekday]}曜日`}${time}まで待つ`,
   },
@@ -226,6 +245,12 @@ const TEXT = {
       return `${[text, ...hints, ...(trail.length === 0 ? [] : [`After ~${m} m, ${lowerFirst(TEXT.en.turns(trail))}`])].join(". ")}.`;
     },
     arrive: () => "Arrive at destination",
+    connectorArrive: (kind: ConnectorEndKind, name: string | null, ridden: boolean) => {
+      const via = { stair_end: "stairs", escalator_end: "escalator", ramp_end: "ramp" }[kind];
+      const to = name ?? "your destination";
+      if (ridden) return `Route ends at the ${via} for ${to}`;
+      return kind === "stair_end" ? `Stairs to ${to} start here` : `${via.charAt(0).toUpperCase()}${via.slice(1)} to ${to} starts here`;
+    },
     wait: (time: string, dayOffset: number, weekday: string) =>
       `Wait until ${time}${dayOffset === 0 ? "" : dayOffset === 1 ? " tomorrow" : ` on ${{ mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" }[weekday]}${dayOffset < 7 ? "" : `, ${dayOffset} days later`}`}`,
   },
@@ -524,6 +549,13 @@ function foldShortLegs(drafts: Draft[]): Draft[] {
   return out;
 }
 
+/** POI display name in `lang`, then ja, then the first non-blank name; null when it has none. Never an id. */
+function poiDisplayName(poi: Poi, lang: "ja" | "en"): string | null {
+  const names = poi.names.map((n) => ({ lang: n.lang, text: n.text.trim() })).filter((n) => n.text !== "");
+  const named = names.find((n) => n.lang === lang) ?? names.find((n) => n.lang === "ja") ?? names[0];
+  return named?.text ?? null;
+}
+
 /**
  * True when every heading along the walk over these steps lies within one TURN_DEG-wide range (so neither
  * one turn nor a zig-zag, e.g. +30° then −30°, exceeds TURN_DEG). Every segment of at
@@ -570,8 +602,13 @@ function straightInPlan(points: PolylinePoint[], stepIndexes: number[]): boolean
 /**
  * Grouped instructions for a route. Junction hints count only branches open under the route's own
  * closures and hours (`route.profile`), never hiding one for the traveller's preferences.
+ *
+ * `destination` is the POI the route was computed to (as with `routeBetween`). When the route ends on
+ * one of its connectors that is a stair/escalator/ramp end — and the POI is not that stair/escalator
+ * itself — the last instruction says the connector starts there instead of claiming arrival. It names
+ * only the node kind and the POI: never a direction or floor, which the graph does not evidence there.
  */
-export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja"): Instruction[] {
+export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja", destination?: Poi): Instruction[] {
   const t = TEXT[lang];
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
@@ -693,8 +730,16 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     current = { kind: turn, stepIndexes: [i], distanceM: step.lengthM, vertical: null, toFloorId: step.toFloorId, text: "", label: null };
   });
   flush();
-  const lastFloor = nodes.get(route.nodeIds[route.nodeIds.length - 1]!)!.floorId;
-  out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: lastFloor, text: t.arrive(), label: null });
+  const goal = nodes.get(route.nodeIds[route.nodeIds.length - 1]!)!;
+  const end = Object.hasOwn(CONNECTOR_END, goal.kind) ? CONNECTOR_END[goal.kind as ConnectorEndKind] : null;
+  if (destination && end && destination.category !== end.self && destination.connectorNodeIds.includes(goal.id)) {
+    const kind = goal.kind as ConnectorEndKind;
+    // Arriving on the connector's own mode means these stairs are the ones just used: claim no further flight.
+    const ridden = route.steps[route.steps.length - 1]?.mode === end.mode;
+    out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, connector: kind, text: t.connectorArrive(kind, poiDisplayName(destination, lang), ridden), label: null });
+  } else {
+    out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, text: t.arrive(), label: null });
+  }
 
   return foldShortLegs(out).map(({ label, ownM, ownSteps, ...ins }, k, all) => {
     if (ins.kind === "start" || ins.kind === "arrive" || ins.kind === "wait") return ins;

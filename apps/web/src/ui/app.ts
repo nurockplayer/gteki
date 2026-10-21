@@ -432,7 +432,7 @@ export class App {
     this.s.route = best;
     if (best.ok) {
       this.s.polyline = routePolyline(loaded.bundle, best);
-      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang);
+      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination);
       this.s.activeInstruction = 0;
       this.explorer.showRoute(this.s.polyline);
       if (this.explorer.currentMode === "overview") this.explorer.focusPoints(this.s.polyline);
@@ -596,7 +596,11 @@ export class App {
       this.s.activeInstruction = next;
       this.renderHud();
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === next));
-      if (p.done) this.toast(this.t.arrived, 2500);
+      if (p.done) {
+        // A route ending on a stair/escalator/ramp connector has not reached the destination: say so.
+        const last = this.s.instructions[this.s.instructions.length - 1];
+        this.toast(last?.connector ? last.text : this.t.arrived, 2500);
+      }
     }
   }
 
