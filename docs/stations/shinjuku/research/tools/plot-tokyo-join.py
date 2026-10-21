@@ -79,7 +79,7 @@ for i,(f,c) in enumerate(colors.items()):
     x=60+i*169;line([x,1330],[x+22,1330],c,5);text(x+29,1337,f,18)
 line([60,1370],[90,1370],'#d43545',5);text(100,1377,'E27',19)
 line([220,1370],[250,1370],'#00865b',5);text(260,1377,'proposed B1 corridor',19)
-text(570,1377,'Derived: Tokyo Metropolitan Government, CC BY 4.0; MLIT E27, PDL 1.0. Modified by GTEki.',18)
+text(570,1377,'Derived: Tokyo Metropolitan Government, CC BY 4.0; MLIT E27 (licence basis unconfirmed; Owner override #16). Modified by GTEki.',18)
 parts.append('</svg>');svg=RAW/'tokyo-e27-overlay.svg';svg.write_text('\n'.join(parts)+'\n')
 output=REPO/'docs/stations/shinjuku/research/figures/2026-10-21-tokyo-e27-overlay.png'
 # Rasterize this small SVG subset with installed Cairo, using an explicit font.
