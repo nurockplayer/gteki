@@ -20,9 +20,12 @@ while [ $# -gt 0 ] && [ "$1" != "--" ]; do merges="$merges $1"; shift; done
 [ "${1:-}" = "--" ] && shift
 cand="$work/candidate"
 mkdir -p "$work"
-# A full desktop run writes ~0.5 GB of video and frames; a full disk silently corrupts evidence.
-free_kb=$(df -Pk "$here" | awk 'NR == 2 { print $4 }')
-[ "$free_kb" -ge 2097152 ] || { echo "less than 2 GB free on $(df -P "$here" | awk 'NR == 2 { print $6 }'); refusing to run" >&2; exit 1; }
+# A full desktop run writes ~0.5 GB of video and frames (under $here) and the candidate, build and
+# logs (under $work); a full disk silently corrupts evidence. Check both filesystems.
+for d in "$here" "$work"; do
+  free_kb=$(df -Pk "$d" | awk 'NR == 2 { print $4 }')
+  [ "$free_kb" -ge 2097152 ] || { echo "less than 2 GB free on $(df -P "$d" | awk 'NR == 2 { print $6 }') (for $d); refusing to run" >&2; exit 1; }
+done
 
 if [ "${QA_REUSE:-0}" != 1 ]; then
   git -C "$here" fetch origin --quiet

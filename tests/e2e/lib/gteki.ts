@@ -219,6 +219,34 @@ export function stationData(key: StationKey) {
   return { graph, pois: (Array.isArray(pois) ? pois : pois.pois) as { id: string; connectorNodeIds: string[]; category: string; paid: boolean | null; names: { lang: string; text: string }[] }[], station };
 }
 
+/**
+ * Horizontal distance (m) from p to the nearest graph edge whose display height at that point is
+ * within dzTol of p.z. A walker that escaped the station through a wall gap ends far from every edge
+ * on its level; Infinity means no edge on that level at all.
+ */
+export function distanceToNetwork(key: StationKey, p: Vec3, dzTol = 2.5): number {
+  const { graph, station } = stationData(key);
+  const nodes = new Map(graph.nodes.map((n) => [n.id, n]));
+  const floors = new Map((station.floors as { id: string; renderElevationM?: number }[]).map((f) => [f.id, f]));
+  const zOf = (n: GraphNode) => n.position.z ?? n.renderZ ?? floors.get(n.floorId)?.renderElevationM ?? 0;
+  let best = Infinity;
+  for (const e of graph.edges) {
+    const a = nodes.get(e.from), b = nodes.get(e.to);
+    if (!a || !b) continue;
+    const pts = e.geometry && e.geometry.length >= 2 ? e.geometry : [a.position, b.position];
+    const za = zOf(a), zb = zOf(b);
+    for (let i = 1; i < pts.length; i++) {
+      const s = pts[i - 1]!, t = pts[i]!;
+      const vx = t.x - s.x, vy = t.y - s.y, len2 = vx * vx + vy * vy || 1;
+      const u = Math.max(0, Math.min(1, ((p.x - s.x) * vx + (p.y - s.y) * vy) / len2));
+      const z = za + (zb - za) * ((i - 1 + u) / (pts.length - 1));
+      if (Math.abs(p.z - z) > dzTol) continue;
+      best = Math.min(best, Math.hypot(p.x - (s.x + u * vx), p.y - (s.y + u * vy)));
+    }
+  }
+  return best;
+}
+
 export interface Waypoint { p: Vec3; zKnown: boolean; mode: string; edgeId: string; stepIndex: number }
 
 interface RouteStepLike { edgeId: string; fromNodeId: string; toNodeId: string; reversed: boolean; mode: string }

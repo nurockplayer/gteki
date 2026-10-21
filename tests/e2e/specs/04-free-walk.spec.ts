@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { hooks, openStation, routeWaypoints, save, shotPath, stationData, STATIONS, type StationKey, type Vec3 } from "../lib/gteki.ts";
+import { distanceToNetwork, hooks, openStation, routeWaypoints, save, shotPath, stationData, STATIONS, type StationKey, type Vec3 } from "../lib/gteki.ts";
 
 /**
  * Collision-honest free walk. Unlike the guide (which plays the route polyline on rails), this
@@ -19,6 +19,7 @@ import { hooks, openStation, routeWaypoints, save, shotPath, stationData, STATIO
 const LOOK_RAD_PER_PX = 0.0042;
 const TICK_S = 0.25;
 const HEIGHT_TOL_M = 0.6;
+const MAX_OFF_NETWORK_M = 15;
 
 // A failed walk's trace snapshots every drag (1.4 GB for one route); video, frames and the JSON log
 // already carry the evidence.
@@ -96,6 +97,7 @@ for (const key of STATIONS) {
         if (simulated - budgetStart > budget) {
           if (distTo(pos) < 1.2) {
             log.push({ kind: "approx-reached", i, edgeId: wp.edgeId, pos, detail: `${distTo(pos).toFixed(2)} m` });
+            if (Math.abs(pos.z - wp.p.z) > HEIGHT_TOL_M) log.push({ kind: "height-mismatch", i, edgeId: wp.edgeId, pos, detail: `avatar z ${pos.z.toFixed(2)} vs route display z ${wp.p.z.toFixed(2)} (${wp.zKnown ? "surveyed" : "symbolic"}, approx-reached)` });
             i++;
             continue;
           }
@@ -181,13 +183,18 @@ for (const key of STATIONS) {
     await openStation(page, key);
     const spawns = (stationData(key).station.spawnNodeIds as string[]).slice(0, 3);
     expect(spawns.length, "station declares spawn points").toBeGreaterThan(0);
-    const results: { spawn: string; dir: string; moved: number; z0: number; z1: number }[] = [];
+    // World bounds come back in the renderer frame (x, z, −y); convert to station ENU.
+    const w = (await hooks.sceneInfo(page)).world as number[];
+    const bounds = { x0: w[0]!, x1: w[3]!, y0: -w[5]!, y1: -w[2]!, z0: w[1]!, z1: w[4]! };
+    const results: { spawn: string; dir: string; moved: number; z0: number; z1: number; end: Vec3; inBounds: boolean; networkM: number }[] = [];
     for (const spawn of spawns) {
       for (const [dir, keys] of [["forward", ["KeyW", "ShiftLeft"]], ["back", ["KeyS", "ShiftLeft"]], ["left", ["KeyA", "ShiftLeft"]], ["right", ["KeyD", "ShiftLeft"]]] as const) {
         expect(await hooks.walkFromNode(page, spawn), `spawn ${spawn} has ground`).toBe(true);
         const a = await hooks.avatar(page);
         const b = await hooks.simulate(page, 30, [...keys]);
-        results.push({ spawn, dir, moved: Math.round(Math.hypot(b.x - a.x, b.y - a.y) * 10) / 10, z0: a.z, z1: b.z });
+        const inBounds = b.x > bounds.x0 + 1 && b.x < bounds.x1 - 1 && b.y > bounds.y0 + 1 && b.y < bounds.y1 - 1 && b.z > bounds.z0 - 0.5 && b.z < bounds.z1 + 0.5;
+        const networkM = Math.round(distanceToNetwork(key, b) * 10) / 10;
+        results.push({ spawn, dir, moved: Math.round(Math.hypot(b.x - a.x, b.y - a.y) * 10) / 10, z0: a.z, z1: b.z, end: b, inBounds, networkM });
       }
     }
     await page.screenshot({ path: shotPath(testInfo, `${key}-wall-probe-end.png`) });
@@ -195,7 +202,14 @@ for (const key of STATIONS) {
     // Control: the walker must actually move from each spawn, or "stopped by a wall" means nothing.
     for (const spawn of spawns) expect.soft(Math.max(...results.filter((r) => r.spawn === spawn).map((r) => r.moved)), `${spawn}: walker moves at all`).toBeGreaterThan(2);
     // 30 s of running is ~100 m in open space; inside a passage a wall must stop it well before.
+    // Distance alone cannot prove containment (a wall gap lets the walker out within 95 m), so the
+    // endpoint must also stay inside the scene bounds and near the walkable network on its own level:
+    // MAX_OFF_NETWORK_M is wider than the widest hall either station models around its centre lines.
     // Height change is recorded, not asserted: running straight may legitimately take a stair.
-    for (const r of results) expect.soft(r.moved, `${r.spawn} ${r.dir}: ran ${r.moved} m without hitting a wall`).toBeLessThan(95);
+    for (const r of results) {
+      expect.soft(r.moved, `${r.spawn} ${r.dir}: ran ${r.moved} m without hitting a wall`).toBeLessThan(95);
+      expect.soft(r.inBounds, `${r.spawn} ${r.dir}: ended outside the station scene at (${r.end.x.toFixed(1)}, ${r.end.y.toFixed(1)}, ${r.end.z.toFixed(1)})`).toBe(true);
+      expect.soft(r.networkM, `${r.spawn} ${r.dir}: ended ${r.networkM} m from any walkable edge on its level`).toBeLessThan(MAX_OFF_NETWORK_M);
+    }
   });
 }
