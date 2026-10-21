@@ -1,0 +1,14 @@
+{
+  "name": "@gteki/e2e",
+  "private": true,
+  "type": "module",
+  "description": "Lane F browser QA harness. Standalone (not a workspace member): drives a GTEki checkout given by GTEKI_ROOT.",
+  "scripts": {
+    "test": "playwright test",
+    "test:desktop": "playwright test --project=desktop-chromium",
+    "report": "playwright show-report artifacts/html"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}
