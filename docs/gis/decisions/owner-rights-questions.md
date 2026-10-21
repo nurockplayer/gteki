@@ -22,7 +22,7 @@ Open rights questions from Issues #39 and #26 and the committed rights records. 
 | 7 | Ship PLATEAU related landmark layer? | No | No |
 | 8 | Accept catalog-API PLATEAU files as the release the licence covers? | No (nothing new ships on it) | **Accept** |
 | 9 | Keep textures out of every ship? | Yes | Yes |
-| 10 | Add the "building bases flattened" notice to the Shinjuku credit? | Yes | Yes (wording pending) |
+| 10 | Add the "building bases flattened" notice to the Shinjuku credit? | Yes | Yes (Option A, Shinjuku only) |
 | 11 | Treat the E27 package PDL 1.0 as covering both E27 resources? | No | No |
 | 12 | Does road risk acceptance (b) also cover Shinjuku (13104) tran? | No | **Yes** |
 
