@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Headless Godot collider check for Ikebukuro (issue #35): see godot_colliders.gd.
-# Usage: sh pipeline/godot_colliders.sh [report.json] [--control]     (GODOT_BIN overrides /opt/homebrew/bin/godot)
+# Usage: bash pipeline/godot_colliders.sh [report.json] [--control]     (GODOT_BIN overrides /opt/homebrew/bin/godot)
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
