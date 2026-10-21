@@ -1,0 +1,32 @@
+diff --git a/stations/ikebukuro/gteki/station.json b/stations/ikebukuro/gteki/station.json
+index 1458b36..db71966 100644
+--- a/stations/ikebukuro/gteki/station.json
++++ b/stations/ikebukuro/gteki/station.json
+@@ -156,7 +156,12 @@
+    "retrievedAt": "2026-10-20T10:52:00Z",
+    "datasetDate": "2022-01",
+    "notes": "Used only to identify which PLATEAU openings are which named passage, exit or gate. No image, layout or pictogram is reproduced.",
+-   "usage": "facts-only"
++   "usage": "facts-only",
++   "creditNote": [
++    { "lang": "ja", "text": "ライセンスなし・事実のみ参照（複製なし）" },
++    { "lang": "en", "text": "No licence; cited for facts only (not reproduced)" }
++   ],
++   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+   },
+   {
+    "id": "tokyometro-ikebukuro-yardmap-2026-03",
+@@ -170,7 +175,12 @@
+    "retrievedAt": "2026-10-20T10:49:00Z",
+    "datasetDate": "2026-03",
+    "notes": "Exit numbers and the public status of B1 passages were read from the official map. Nothing is reproduced.",
+-   "usage": "facts-only"
++   "usage": "facts-only",
++   "creditNote": [
++    { "lang": "ja", "text": "ライセンスなし・事実のみ参照（複製なし）" },
++    { "lang": "en", "text": "No licence; cited for facts only (not reproduced)" }
++   ],
++   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+   }
+  ],
+  "floors": [

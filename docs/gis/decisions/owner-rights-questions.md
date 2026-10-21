@@ -134,5 +134,5 @@ Open rights questions from Issues #39 and #26 and the committed rights records. 
 
 ## Engineering follow-ups from #26 (not Owner questions)
 
-- Make the facts-only credit say 「ライセンスなし・事實のみ參照（複製なし）」 explicitly.
+- Make the facts-only credit say 「ライセンスなし・事實のみ參照（複製なし）」 explicitly. Wording, source list and proposals for #122: [facts-only-credit-wording.md](facts-only-credit-wording.md).
 - Optional per-source clearance record with a decision reference and date. The issue says not to make it a merge gate.
