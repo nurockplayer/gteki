@@ -13,7 +13,7 @@ import type { SceneContext, StationScene } from "@gteki/scene-api";
 import { WALKER_BODY, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
-import { bodyBlocked } from "./bodyCollision.ts";
+import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
@@ -562,12 +562,14 @@ export class Explorer {
     return hit ? hit.point.y : null;
   }
 
-  private blockedByColliders(from: THREE.Vector3, to: THREE.Vector3): boolean {
-    if (this.colliders.length === 0) return false;
-    return bodyBlocked(from, to, (origin, dir, far) => {
+  /** The collider surface that stops the walker's body going from `from` to `to`, or null when the move is free. */
+  private blockedByColliders(from: THREE.Vector3, to: THREE.Vector3): BodyBlock | null {
+    if (this.colliders.length === 0) return null;
+    return bodyBlock(from, to, (origin, dir, far) => {
       this.ray.set(origin, dir);
       this.ray.far = far;
-      return castAll(this.ray, this.colliderTargets)[0]?.distance ?? null;
+      const hit = castAll(this.ray, this.colliderTargets)[0];
+      return hit ? { distance: hit.distance, normal: hitNormal(hit, dir) } : null;
     }, RADIUS);
   }
 
@@ -975,8 +977,16 @@ export class Explorer {
     const nx = this.pos.x + (fx * mv.y + rx * mv.x) * step;
     const nz = this.pos.z + (fz * mv.y + rz * mv.x) * step;
     const pushed = resolveWalls(nx, nz, RADIUS, this.pos.y, WALKER_BODY.bodyTopM, this.walls);
-    const target = new THREE.Vector3(pushed.x, this.pos.y, pushed.z);
-    if (this.blockedByColliders(this.pos, target)) return;
+    let target = new THREE.Vector3(pushed.x, this.pos.y, pushed.z);
+    const block = this.blockedByColliders(this.pos, target);
+    if (block) {
+      // Slide along the surface that stopped the move rather than sticking to it.
+      const slid = slideAlong(this.pos, target, block.normal);
+      if (!slid) return;
+      const along = resolveWalls(slid.x, slid.z, RADIUS, this.pos.y, WALKER_BODY.bodyTopM, this.walls);
+      target = new THREE.Vector3(along.x, this.pos.y, along.z);
+      if (this.blockedByColliders(this.pos, target)) return;
+    }
     const ground = this.groundAt(target.x, this.pos.y + DEFAULT_GROUND.stepUp + 0.05, target.z, DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1);
     if (!acceptGround(this.pos.y, ground)) return;
     this.pos.set(target.x, THREE.MathUtils.damp(this.pos.y, ground!, 18, dt), target.z);
