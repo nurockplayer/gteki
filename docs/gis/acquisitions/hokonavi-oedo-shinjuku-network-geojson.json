@@ -2,21 +2,21 @@
   "source_id": "hokonavi-oedo-shinjuku-network-geojson",
   "resolved_url": "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/d4519a9a-917a-4de8-9104-83e21246c04c/download/nwd_oedo_shinjuku_geojson.zip",
   "resolution_evidence": null,
-  "requested_at": "2026-10-21T10:43:42.455Z",
-  "completed_at": "2026-10-21T10:43:42.618Z",
+  "requested_at": "2026-10-21T10:53:23.388Z",
+  "completed_at": "2026-10-21T10:53:23.543Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/zip",
     "content-length": "42909",
     "etag": "\"1761096298.1254551-42909-1941049894\"",
     "last-modified": "Wed, 22 Oct 2025 01:24:58 GMT",
-    "date": "Wed, 21 Oct 2026 10:43:42 GMT"
+    "date": "Wed, 21 Oct 2026 10:53:23 GMT"
   },
   "bytes": 42909,
   "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff",
   "store_path": "raw/f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff/nwd_oedo_shinjuku_geojson.zip",
   "tool_version": "0.1.0",
-  "git_commit": "df75b560913ed833daeaf18b03d1cb638baf7ecb",
+  "git_commit": "a577d90e15a7c29958e665cf79141c773e6bf7de",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
@@ -29,5 +29,13 @@
       "bytes": 17954,
       "store_path": "raw/d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88/package_show"
     }
-  ]
+  ],
+  "last_offline_check": {
+    "requested_at": "2026-10-21T10:57:35.473Z",
+    "completed_at": "2026-10-21T10:57:35.473Z",
+    "tool_version": "0.1.0",
+    "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff",
+    "bytes": 42909,
+    "status": "PASS"
+  }
 }

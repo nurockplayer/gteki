@@ -2,23 +2,31 @@
   "source_id": "plateau-site-policy",
   "resolved_url": "https://www.mlit.go.jp/plateau/site-policy/",
   "resolution_evidence": null,
-  "requested_at": "2026-10-21T10:43:44.003Z",
-  "completed_at": "2026-10-21T10:43:44.058Z",
+  "requested_at": "2026-10-21T10:53:25.557Z",
+  "completed_at": "2026-10-21T10:53:25.625Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "text/html",
     "content-length": null,
     "etag": "W/\"00a70ba5e4ef7d9f2b18b4e928763c86\"",
     "last-modified": "Wed, 07 Oct 2026 05:02:30 GMT",
-    "date": "Wed, 21 Oct 2026 10:43:45 GMT"
+    "date": "Wed, 21 Oct 2026 10:53:26 GMT"
   },
   "bytes": 31822,
   "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
   "store_path": "raw/3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f/site-policy",
   "tool_version": "0.1.0",
-  "git_commit": "df75b560913ed833daeaf18b03d1cb638baf7ecb",
+  "git_commit": "a577d90e15a7c29958e665cf79141c773e6bf7de",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
-  "mode": "online"
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-21T10:57:35.621Z",
+    "completed_at": "2026-10-21T10:57:35.621Z",
+    "tool_version": "0.1.0",
+    "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+    "bytes": 31822,
+    "status": "PASS"
+  }
 }

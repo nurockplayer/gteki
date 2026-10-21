@@ -6,23 +6,31 @@
     "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
     "json_pointer": "/result/resources/1/url"
   },
-  "requested_at": "2026-10-21T10:43:44.748Z",
-  "completed_at": "2026-10-21T10:43:44.915Z",
+  "requested_at": "2026-10-21T10:53:26.274Z",
+  "completed_at": "2026-10-21T10:53:26.461Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/pdf",
     "content-length": null,
     "etag": null,
     "last-modified": "Thu, 03 Oct 2024 11:18:57 GMT",
-    "date": "Wed, 21 Oct 2026 10:43:44 GMT"
+    "date": "Wed, 21 Oct 2026 10:53:26 GMT"
   },
   "bytes": 499924,
   "sha256": "c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095",
   "store_path": "raw/c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095/pdf_kiban_shinjuku_terminal_pdf_shisetsu_siyousho",
   "tool_version": "0.1.0",
-  "git_commit": "df75b560913ed833daeaf18b03d1cb638baf7ecb",
+  "git_commit": "a577d90e15a7c29958e665cf79141c773e6bf7de",
   "expected_bytes": 499924,
   "expected_url_match": false,
   "size_check": "MATCH",
-  "mode": "online"
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-21T10:57:35.653Z",
+    "completed_at": "2026-10-21T10:57:35.653Z",
+    "tool_version": "0.1.0",
+    "sha256": "c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095",
+    "bytes": 499924,
+    "status": "PASS"
+  }
 }
