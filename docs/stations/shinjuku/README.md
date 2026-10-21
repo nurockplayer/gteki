@@ -39,12 +39,12 @@ To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downlo
 | `stations/shinjuku/app/src/characters/` | Original procedural characters (one skinned mesh each, LOD, shared batched draw). |
 | `stations/shinjuku/tools/` | Importers (`import-e27.ts`, `import-surface.ts`), fetch/verify scripts, and QA tools (`shoot.ts`, `record.ts`, `explorer-walk.ts`, `vantages.json`). |
 
-## G0 — provenance and rights: **PASS (E27 extent)** · GAP (rest of Shinjuku)
+## G0 — provenance and rights: **published under the Owner's override** at the #16 merge ([#16](https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757), Owner comment 2026-10-21T10:31:49Z). Not a PASS on rights evidence. Open: `gap:reuse-after-publication`, the ほこナビDP inquiry about reuse after 2027-03-12.
 
 - **Sources.** Both are from ほこナビDP (MLIT), dataset `2d8ff84b-…`, last modified 2026-09-17, link maint_date 2025-09-19:
   - 歩行空間ネットワークデータ, which gives the graph.
   - 構内地図データ, which gives spaces, fare areas and facilities.
-- **Licence.** Both are under 公共データ利用規約 1.0 (PDL 1.0), so modification and redistribution are allowed with attribution. GTEki shows the attribution in the app footer, the coverage dialog and every source record (`modified: true`).
+- **Licence.** Both are under 公共データ利用規約 1.0 (PDL 1.0), so modification and redistribution are allowed with attribution. The public `apps/web` build shows the E27 credit in the Coverage dialog and in the 出典 line of each route card; every source record carries `modified: true`. The lane app in `stations/shinjuku/app` also has a footer credit, but it is a development tool, not a release surface.
 - **Data-use policy (Owner decision, option A, 2026-10-20).** Three statuses are tracked separately, and none is inferred from another:
 
   | Status | What we know | Where it lives |
@@ -54,7 +54,7 @@ To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downlo
   | Navigation freshness (導航資料時效) | Dataset 2026-09-17; link maint_date 2025-09-19. | Source `datasetDate`. The router's `staleAfterDays` flags stale routes. `validUntil` stays `null`, so the publication period never marks routes stale. |
 
   Sources, SHA-256 hashes, licence and acquisition evidence are kept. Development and acceptance continue. **Any public release relying on rights that are not yet confirmed stays HOLD.**
-- **Street context: PLATEAU 2025 新宿区 (CC BY 4.0), stage 2.** Buildings (bldg) and roads (tran) of meshes 53394525/26/35/36 are converted to a render-only street around the exits (`sources/surface-manifest.json` with sha256; `import:surface --check` reproduces `data/surface.json`). It is cited as source `plateau-13104-shinjuku-ku-2025` (`REUSABLE_WITH_CONDITIONS`, `modified: true`) and credited in the footer and coverage dialog. It never feeds routing.
+- **Street context: PLATEAU 2025 新宿区 (CC BY 4.0), stage 2.** Buildings (bldg) and roads (tran) of meshes 53394525/26/35/36 are converted to a render-only street around the exits (`sources/surface-manifest.json` with sha256; `import:surface --check` reproduces `data/surface.json`). It is cited as source `plateau-13104-shinjuku-ku-2025` (`REUSABLE_WITH_CONDITIONS`, `modified: true`) and credited in the Coverage dialog (and the lane app footer). It never feeds routing.
 - **Evaluated and not used:**
   - PLATEAU ubld 53394536 does not overlap E27.
   - The S10 store CSV has no coordinates.
