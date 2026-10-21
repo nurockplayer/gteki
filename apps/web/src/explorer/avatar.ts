@@ -313,7 +313,20 @@ function shoeShape(d: Detail, s: ShoeSpec): THREE.BufferGeometry {
     if (z < -0.1) y += s.spring * (-0.1 - z) ** 2 * (v + 1) * 0.5;
     pos.setXYZ(i, u * halfFn(z), y, z);
   }
+  // Sphere y becomes length and z height: a mirroring map, so the triangles must be re-wound.
+  flipWinding(g);
   return smoothed(g);
+}
+
+function flipWinding(g: THREE.BufferGeometry): void {
+  const index = g.getIndex();
+  if (!index) throw new Error("flipWinding expects indexed geometry");
+  for (let i = 0; i + 2 < index.count; i += 3) {
+    const b = index.getX(i + 1);
+    index.setX(i + 1, index.getX(i + 2));
+    index.setX(i + 2, b);
+  }
+  index.needsUpdate = true;
 }
 
 /** Flat webbing ribbon along a curve; `outward` gives the surface normal at each sample. */

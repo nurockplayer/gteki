@@ -283,6 +283,9 @@ export class Explorer {
     this.stationScene = built;
     this.sceneError = sceneError;
 
+    // Overview may have been entered while loading (against an empty world): restore first, so the new
+    // scene's fog and materials are the ones saved, then re-apply once the scene is attached.
+    this.overviewLook.set(this.scene, this.world, false);
     if (this.stationScene) {
       this.world.add(this.stationScene.root);
       this.overlays.add(this.graph.overlay);
@@ -748,6 +751,14 @@ export class Explorer {
     this.input.dispose();
     this.disposeComposer();
     this.avatarRig?.dispose();
+    this.avatar.traverse((o) => {
+      // The rig disposed its own parts; the shadow and marker ring are explorer-owned.
+      const m = o as THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>;
+      if (!m.isMesh || !(m.material instanceof THREE.MeshBasicMaterial)) return;
+      m.geometry.dispose();
+      m.material.map?.dispose();
+      m.material.dispose();
+    });
     this.coreEnvMap?.dispose();
     this.renderer.dispose();
   }

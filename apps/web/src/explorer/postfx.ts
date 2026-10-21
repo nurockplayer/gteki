@@ -82,6 +82,9 @@ export class PostFx {
     const hiDpi = pr >= 1.5;
     const target = new THREE.WebGLRenderTarget(size.x * pr, size.y * pr, { type: THREE.HalfFloatType, samples: hiDpi ? 0 : settings.msaa });
     this.composer = new EffectComposer(renderer, target);
+    // The supplied target is already in device pixels; size the composer in CSS pixels so passes added
+    // below are not scaled by the pixel ratio a second time.
+    this.composer.setSize(size.x, size.y);
     this.composer.addPass(new RenderPass(scene, camera));
     this.gtao = new GTAOPass(scene, camera, size.x, size.y);
     this.gtao.blendIntensity = settings.ao.blend;

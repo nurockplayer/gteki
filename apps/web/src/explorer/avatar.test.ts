@@ -172,3 +172,32 @@ describe("avatar", () => {
     expect(() => rig.update(1 / 60, 1)).not.toThrow();
   });
 });
+
+describe("avatar surfaces", () => {
+  it("every closed part faces outward (no inside-out winding)", () => {
+    const rig = createAvatar({ quality: "high" });
+    const p = new THREE.Vector3(), n = new THREE.Vector3(), c = new THREE.Vector3();
+    rig.root.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      const g = mesh.geometry;
+      g.computeBoundingBox();
+      g.boundingBox!.getCenter(c);
+      const pos = g.getAttribute("position"), nor = g.getAttribute("normal");
+      if (!nor) return;
+      // Recompute from winding so the test sees what the GPU culls by, not the stored normals.
+      const check = g.clone();
+      check.computeVertexNormals();
+      const wn = check.getAttribute("normal");
+      let out = 0;
+      for (let i = 0; i < pos.count; i++) {
+        p.fromBufferAttribute(pos, i).sub(c);
+        n.fromBufferAttribute(wn, i);
+        if (p.dot(n) > 0) out++;
+      }
+      check.dispose();
+      expect(out / pos.count, `${mesh.name || "mesh"} winding`).toBeGreaterThan(0.6);
+    });
+    rig.dispose();
+  });
+});
