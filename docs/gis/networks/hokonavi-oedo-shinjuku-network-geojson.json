@@ -21,6 +21,7 @@
         139.6996342263177,
         35.68901888089276
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "H_F",
@@ -832,6 +833,7 @@
         139.69963422631773,
         35.68901888089276
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "H_F",
@@ -1125,6 +1127,7 @@
       139.69963422631773,
       35.68901888089276
     ],
+    "bbox_status": "COMPUTED",
     "headers": [
       "FID",
       "H_F",
@@ -3215,7 +3218,7 @@
       "note": "Literal co-occurrence counts only; missing or duplicate endpoint identifiers have unknown floor. No floor equivalence or connectivity is inferred."
     }
   },
-  "tool_input_sha256": "7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad049a2",
+  "tool_input_sha256": "9789b8f0e796708a5952c32a3107402019254309449ee766e8bb0bfb933f8a2a",
   "input_sources": [
     {
       "source_id": "hokonavi-oedo-shinjuku-network-geojson",

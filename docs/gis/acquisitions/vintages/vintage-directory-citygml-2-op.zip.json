@@ -1,0 +1,70 @@
+{
+  "source_id": "vintage-directory-citygml-2-op.zip",
+  "acquisition_kind": "ZIP_CENTRAL_DIRECTORY",
+  "archive": "citygml_2_op.zip",
+  "resolved_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
+  "final_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
+  "package_source": {
+    "source_id": "plateau-13104-package-2023",
+    "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
+    "json_pointer": "/result/resources/2/url"
+  },
+  "central_directory": {
+    "sha256": "ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6",
+    "bytes": 2841587,
+    "store_path": "raw/ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6/citygml_2_op.zip-central-directory.bin"
+  },
+  "member_inventory": {
+    "sha256": "5430038441a005ede41afa2bc45edf04180d19328149a44aad9b6bff8f47e68a",
+    "bytes": 14238607,
+    "store_path": "raw/5430038441a005ede41afa2bc45edf04180d19328149a44aad9b6bff8f47e68a/citygml_2_op.zip-member-inventory.json",
+    "entry_count": 22845
+  },
+  "total_archive_bytes": 776906633,
+  "etag": "\"bc3e22745a66aea5957644a705cf1734\"",
+  "last_modified": "Tue, 24 Jun 2025 09:24:51 GMT",
+  "validator_type": "STRONG_ETAG",
+  "ranges": [
+    {
+      "start": 0,
+      "end": 0,
+      "bytes": 1,
+      "final_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
+      "requested_at": "2026-10-21T15:00:28.980Z",
+      "completed_at": "2026-10-21T15:00:29.136Z",
+      "sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
+      "store_path": "raw/5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2/range-0-0.bin"
+    },
+    {
+      "start": 776841076,
+      "end": 776906632,
+      "bytes": 65557,
+      "final_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
+      "requested_at": "2026-10-21T15:00:29.136Z",
+      "completed_at": "2026-10-21T15:00:29.241Z",
+      "sha256": "b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd",
+      "store_path": "raw/b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd/range-776841076-776906632.bin"
+    },
+    {
+      "start": 774065024,
+      "end": 776906610,
+      "bytes": 2841587,
+      "final_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
+      "requested_at": "2026-10-21T15:00:29.241Z",
+      "completed_at": "2026-10-21T15:00:29.389Z",
+      "sha256": "ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6",
+      "store_path": "raw/ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6/range-774065024-776906610.bin"
+    }
+  ],
+  "requested_at": "2026-10-21T15:00:28.980Z",
+  "completed_at": "2026-10-21T15:00:29.389Z",
+  "tool_version": "0.1.0",
+  "git_commit": "9a885a5496cccdf8c5f62f912f5cb7ad1efb6825",
+  "verification": "UNVERIFIED",
+  "routable": false,
+  "publish_gate": "HOLD",
+  "licence": {
+    "value": null,
+    "status": "UNKNOWN"
+  }
+}

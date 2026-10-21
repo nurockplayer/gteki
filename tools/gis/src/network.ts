@@ -3,6 +3,8 @@ import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { docsRoot, getStoreRoot, getStoredSource, writeJson } from './common.js';
 import { toolFingerprint } from './provenance.js';
+import { crsName } from './crs-declaration.js';
+import { geometriesBbox, hasOverridingCrs } from './geo-bbox.js';
 import { readZip } from './zip.js';
 import { attributeDecoding,codebookInputs } from './attributes.js';
 import { compareNetworkRepresentations, r1GeoEvidence } from './r1.js';
@@ -245,8 +247,9 @@ export function inspectCsvPair(nodeRows: RawRow[], linkRows: RawRow[], source: {
 function geometryCoords(geometry: any): number[][] {
   if (!geometry) return [];
   const out: number[][] = [];
-  const visit = (v: any): void => { if (Array.isArray(v) && v.length >= 2 && v.slice(0, 2).every((x) => typeof x === 'number')) out.push(v); else if (Array.isArray(v)) v.forEach(visit); };
-  visit(geometry.coordinates);
+  // GeoJSON positions nest at most four levels deep; anything deeper is ignored instead of recursing without bound.
+  const visit = (v: any, depth: number): void => { if (Array.isArray(v) && v.length >= 2 && v.slice(0, 2).every((x) => typeof x === 'number')) out.push(v); else if (Array.isArray(v) && depth < 4) v.forEach((child) => visit(child, depth + 1)); };
+  visit(geometry.coordinates, 0);
   return out;
 }
 
@@ -265,10 +268,21 @@ function linkVertices(geometry: any): number[][] | null {
   return parts.flat();
 }
 
-function bbox(features: any[]): number[] | null {
-  const coords = features.flatMap((f) => geometryCoords(f.geometry));
-  if (!coords.length) return null;
-  return [0, 1].map((axis) => Math.min(...coords.map((c) => c[axis]))).concat([0, 1].map((axis) => Math.max(...coords.map((c) => c[axis]))));
+/** Strict bbox: malformed, unsupported, over-budget or CRS-overriding geometry withholds it (status INCOMPLETE_*). */
+function bboxResult(features: any[]) {
+  return geometriesBbox(features.map((f) => f?.geometry), { overridingCrs: hasOverridingCrs(features) });
+}
+
+/**
+ * The CRS declaration of a parsed GeoJSON document. An absent `crs` stays null (the RFC 7946 assumption path); an explicit
+ * `"crs": null` is a declaration that no CRS applies, so it is UNKNOWN and never assumed to be CRS84.
+ */
+export function geoJsonDeclaredCrs(parsed: unknown): unknown {
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed) || !Object.hasOwn(parsed, 'crs')) return null;
+  const declared = (parsed as Record<string, unknown>).crs;
+  return declared === null
+    ? { value: null, status: 'UNKNOWN', note: 'Explicit "crs": null declares no CRS; coordinates are not assumed to be CRS84 and no datum is inferred.' }
+    : declared;
 }
 
 function firstDefined(properties: Record<string, any>, names: readonly string[]): any {
@@ -342,8 +356,13 @@ export function inspectGeoJsonFeatures(features: any[], source: { source_id: str
   const referenced = new Set(edgeReferences.flatMap((e) => [e.start, e.end]).filter((v): v is string => v !== null));
   const graphLinks = edgeReferences;
   const graph = weakComponents(nodeIds, graphLinks);
-  const crsText = typeof declaredCrs === 'string' ? declaredCrs : JSON.stringify(declaredCrs ?? 'CRS84');
-  const distanceMethod = /4326|6668|crs84/i.test(crsText) || declaredCrs == null ? 'GEOGRAPHIC_DEGREES_APPROX_METRES'
+  // Only a plain {type:"name"} declaration identifies a CRS; linked, typed, malformed or unknown structures never
+  // contribute text from their other members (for example a link's name next to an href). A feature-level or
+  // geometry-level `crs` overrides the collection CRS, so no single endpoint-distance method then applies.
+  const bboxInfo = bboxResult(features);
+  const namedCrs = declaredCrs == null ? 'CRS84' : typeof declaredCrs === 'string' ? declaredCrs : crsName(declaredCrs);
+  const crsText = typeof namedCrs === 'string' && !bboxInfo.geometry_level_crs && !hasOverridingCrs(features) ? namedCrs : null;
+  const distanceMethod = crsText === null ? null : /4326|6668|crs84/i.test(crsText) ? 'GEOGRAPHIC_DEGREES_APPROX_METRES'
     : /6677/i.test(crsText) ? 'PROJECTED_METRES' : null;
   const nodeIdsUnique = nodeIdsComplete && duplicateValues(nodeIdsOnly).length === 0;
   const endpointChecks = distanceMethod === null || !graphComplete || !nodeIdsUnique ? null : linkFeatures.map((feature, i) => {
@@ -383,7 +402,7 @@ export function inspectGeoJsonFeatures(features: any[], source: { source_id: str
   const report: any = {
     source_id: source.source_id, source_sha256: source.sha256, file: fileName, mode,
     feature_count: features.length, geometry_type_counts: Object.fromEntries([...new Set(features.map((f) => f.geometry?.type ?? 'null'))].sort().map((t) => [t, features.filter((f) => (f.geometry?.type ?? 'null') === t).length])),
-    crs: declaredCrs ?? { value: 'RFC 7946 default CRS84 longitude/latitude assumed because no crs member is present', status: 'ASSUMPTION' }, bbox: bbox(features),
+    crs: declaredCrs ?? { value: 'RFC 7946 default CRS84 longitude/latitude assumed because no crs member is present', status: 'ASSUMPTION' }, bbox: bboxInfo.bbox, bbox_status: bboxInfo.status,
     headers: fields, mapped_fields: geoJsonMappedFields(fields), blank_counts: Object.fromEntries(fields.map((f) => [f, statsRows.filter((r) => r[f] == null || String(r[f]).trim() === '').length])),
     categorical_values: Object.fromEntries(categoryFields.map((f) => [f, valueCounts(statsRows, f)])),
     floor_labels_present_literally: [...new Set(features.map(floorLabel).filter((v) => v !== null).map(String))].sort(),
@@ -411,6 +430,7 @@ export function archiveGeoJsonMemberReport(file: string, inspected: ReturnType<t
     geometry_type_counts: inspected.geometry_type_counts,
     crs: inspected.crs,
     bbox: inspected.bbox,
+    bbox_status: inspected.bbox_status,
     headers: inspected.headers,
     mapped_fields: inspected.mapped_fields,
     blank_counts: inspected.blank_counts,
@@ -426,6 +446,7 @@ export function archiveGeoJsonNetworkInventory(inspected: ReturnType<typeof insp
     geometry_type_counts: inspected.geometry_type_counts,
     crs: inspected.crs,
     bbox: inspected.bbox,
+    bbox_status: inspected.bbox_status,
     headers: inspected.headers,
     mapped_fields: inspected.mapped_fields,
     blank_counts: inspected.blank_counts,
@@ -538,11 +559,11 @@ export async function inspectNetwork(sourceId: string): Promise<any> {
       otherFiles.push({ file: file.name, uncompressed_bytes: file.data.length });
       continue;
     }
-    declaredCrsValues.push(parsed.crs ?? null);
+    declaredCrsValues.push(geoJsonDeclaredCrs(parsed));
     if (isMap) {
-      memberReports.push(inspectGeoJsonFeatures(features, { source_id: sourceId, sha256: source.record.sha256 }, parsed.crs ?? null, file.name, 'stationmap'));
+      memberReports.push(inspectGeoJsonFeatures(features, { source_id: sourceId, sha256: source.record.sha256 }, geoJsonDeclaredCrs(parsed), file.name, 'stationmap'));
     } else {
-      const inspected = inspectGeoJsonFeatures(features, { source_id: sourceId, sha256: source.record.sha256 }, parsed.crs ?? null, file.name, 'stationmap');
+      const inspected = inspectGeoJsonFeatures(features, { source_id: sourceId, sha256: source.record.sha256 }, geoJsonDeclaredCrs(parsed), file.name, 'stationmap');
       memberReports.push(archiveGeoJsonMemberReport(file.name, inspected));
       allFeatures.push(...features.map((feature) => ({ ...feature, __source_member: file.name })));
     }
