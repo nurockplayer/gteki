@@ -3,6 +3,7 @@ import polygonClipping, {
   type MultiPolygon,
   type Polygon,
 } from "polygon-clipping";
+import generatedRestrictions from "./fare-restricted.generated.json" with { type: "json" };
 import type { StationBundle } from "@gteki/schema";
 import {
   pointInRings,
@@ -28,6 +29,8 @@ export interface FareProtection {
   fences: Fence[];
   gates: GateLine[];
   removedAccess: { level: string; z: number; rings: XY[][] }[];
+  restrictedConflicts: RestrictedConflict[];
+  restrictionCacheHit: boolean;
 }
 const poly = (rings: XY[][]): Polygon =>
   rings.map((r) => r.map((p) => [p.x, p.y]));
@@ -86,6 +89,188 @@ function distance(p: XY, a: XY, b: XY) {
   return Math.hypot(p.x - a.x - dx * t, p.y - a.y - dy * t);
 }
 
+export const VERIFIED_CORRIDOR_M = .32;
+export const RESTRICTED_ALIGNMENT_M = .015;
+export interface VerifiedFloorSegment { edgeId: string; floor: string; z: number; a: XY; b: XY }
+export interface RestrictedConflict { spaceId: string; edgeId: string; floor: string; overlapLengthM: number; maxEdgeDepthM: number }
+export interface RestrictedRegion {
+  spaceId: string; floor: string; z: number; source: XY[][];
+  /** R minus the 0.32 m verified corridor; physical panels inset 10 mm within their width. */
+  remainder: XY[][][]; barrier: XY[][][]; paths: VerifiedFloorSegment[];
+}
+function nearPoint(p: XY, a: XY, b: XY): XY {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
+  return { x: a.x + dx * t, y: a.y + dy * t };
+}
+export function restrictedDepth(p: XY, rs: XY[][]) {
+  if (!pointInRings(p, rs)) return 0;
+  return Math.min(...rs.flatMap(r => r.map((a, i) => distance(p, a, r[(i + 1) % r.length]!))));
+}
+export function verifiedFloorSegments(layout: Layout, plan: Plan, bundle: StationBundle): VerifiedFloorSegment[] {
+  const nodes = new Map(bundle.nodes.map(n => [n.id, n])), out: VerifiedFloorSegment[] = [];
+  for (const edge of bundle.edges) {
+    if (edge.verification !== "verified") continue;
+    const from = nodes.get(edge.from)!, to = nodes.get(edge.to)!;
+    const points = edge.geometry?.length ? edge.geometry : [from.position, to.position];
+    const lengths = [0];
+    for (let i = 1; i < points.length; i++) lengths.push(lengths[i - 1]! + Math.hypot(points[i]!.x - points[i - 1]!.x, points[i]!.y - points[i - 1]!.y));
+    const za = layout.nodeZ.get(from.id)!, zb = layout.nodeZ.get(to.id)!;
+    for (const level of plan.levels) {
+      if (from.floorId !== level.floorId && to.floorId !== level.floorId) continue;
+      for (let i = 1; i < points.length; i++) {
+        const a = points[i - 1]!, b = points[i]!, dz = zb - za, total = lengths.at(-1) || 1;
+        const z0 = za + dz * lengths[i - 1]! / total, z1 = za + dz * lengths[i]! / total;
+        let lo = 0, hi = 1;
+        if (Math.abs(z1 - z0) < 1e-9) { if (Math.abs(z0 - level.renderElevationM) > .02) continue; }
+        else {
+          const t0 = (level.renderElevationM - .02 - z0) / (z1 - z0), t1 = (level.renderElevationM + .02 - z0) / (z1 - z0);
+          lo = Math.max(0, Math.min(t0, t1)); hi = Math.min(1, Math.max(t0, t1));
+          if (lo > hi) continue;
+        }
+        out.push({ edgeId: edge.id, floor: level.label, z: level.renderElevationM,
+          a: { x: a.x + (b.x - a.x) * lo, y: a.y + (b.y - a.y) * lo },
+          b: { x: a.x + (b.x - a.x) * hi, y: a.y + (b.y - a.y) * hi } });
+      }
+    }
+  }
+  return out;
+}
+function capsule(a: XY, b: XY, radius: number, steps = 32): Polygon {
+  const angle = Math.atan2(b.y - a.y, b.x - a.x), pts: [number, number][] = [];
+  for (const [p, start] of [[b, angle - Math.PI / 2], [a, angle + Math.PI / 2]] as const)
+    for (let i = 0; i <= steps; i++) { const t = start + Math.PI * i / steps; pts.push([Math.round((p.x + radius * Math.cos(t)) * 1e8) / 1e8, Math.round((p.y + radius * Math.sin(t)) * 1e8) / 1e8]); }
+  pts.push(pts[0]!); return [pts];
+}
+function cuts(a: XY, b: XY, rs: XY[][]) {
+  const dx = b.x - a.x, dy = b.y - a.y, out = [0, 1];
+  for (const r of rs) for (let i = 0; i < r.length; i++) {
+    const p = r[i]!, q = r[(i + 1) % r.length]!, ex = q.x - p.x, ey = q.y - p.y;
+    const den = dx * ey - dy * ex;
+    if (Math.abs(den) < 1e-12) continue;
+    const t = ((p.x - a.x) * ey - (p.y - a.y) * ex) / den, u = ((p.x - a.x) * dy - (p.y - a.y) * dx) / den;
+    if (t > 0 && t < 1 && u >= 0 && u <= 1) out.push(t);
+  }
+  return [...new Set(out)].sort((a, b) => a - b);
+}
+/** Exact upper envelope of the nearest-boundary squared-distance quadratics along a line. */
+function segmentConflict(a: XY, b: XY, rs: XY[][]) {
+  const dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy), at = (t: number) => ({ x: a.x + dx * t, y: a.y + dy * t });
+  const edges = rs.flatMap(r => r.map((p, i) => ({ p, q: r[(i + 1) % r.length]! }))).filter(e => Math.hypot(e.q.x - e.p.x, e.q.y - e.p.y) > 1e-10);
+  let insideLength = 0, maximum = 0;
+  const boundary = cuts(a, b, rs);
+  for (let k = 1; k < boundary.length; k++) {
+    const lo = boundary[k - 1]!, hi = boundary[k]!;
+    if (!pointInRings(at((lo + hi) / 2), rs)) continue;
+    insideLength += length * (hi - lo);
+    const breaks = [lo, hi];
+    for (const { p, q } of edges) {
+      const ex = q.x - p.x, ey = q.y - p.y, n = ex * ex + ey * ey, v = dx * ex + dy * ey;
+      if (Math.abs(v) < 1e-15) continue;
+      const d = (a.x - p.x) * ex + (a.y - p.y) * ey;
+      for (const t of [-d / v, (n - d) / v]) if (t > lo && t < hi) breaks.push(t);
+    }
+    breaks.sort((a, b) => a - b);
+    for (let j = 1; j < breaks.length; j++) {
+      const l = breaks[j - 1]!, h = breaks[j]!, mid = at((l + h) / 2);
+      const quadratics = edges.map(({ p, q }) => {
+        const ex = q.x - p.x, ey = q.y - p.y, n = ex * ex + ey * ey;
+        const projection = ((mid.x - p.x) * ex + (mid.y - p.y) * ey) / n;
+        if (projection <= 0 || projection >= 1) {
+          const v = projection <= 0 ? p : q, x = a.x - v.x, y = a.y - v.y;
+          return [dx * dx + dy * dy, 2 * (x * dx + y * dy), x * x + y * y];
+        }
+        const c = (a.x - p.x) * ey - (a.y - p.y) * ex, d = dx * ey - dy * ex;
+        return [d * d / n, 2 * c * d / n, c * c / n];
+      });
+      const candidates = [l, h];
+      for (let u = 0; u < quadratics.length; u++) for (let v = u + 1; v < quadratics.length; v++) {
+        const qa = quadratics[u]!, qb = quadratics[v]!, A = qa[0]! - qb[0]!, B = qa[1]! - qb[1]!, C = qa[2]! - qb[2]!;
+        if (Math.abs(A) < 1e-12) { if (Math.abs(B) > 1e-12) candidates.push(-C / B); }
+        else { const disc = B * B - 4 * A * C; if (disc >= 0) candidates.push((-B - Math.sqrt(disc)) / (2 * A), (-B + Math.sqrt(disc)) / (2 * A)); }
+      }
+      for (const t of candidates) if (t >= l - 1e-12 && t <= h + 1e-12) maximum = Math.max(maximum, restrictedDepth(at(Math.max(l, Math.min(h, t))), rs));
+    }
+  }
+  return { insideLength, maximum };
+}
+type RestrictedAccess = { regions: RestrictedRegion[]; conflicts: RestrictedConflict[]; segments: VerifiedFloorSegment[] };
+const accessByLayout = new WeakMap<Layout, RestrictedAccess | (() => RestrictedAccess)>();
+export const derivedRestrictedAccess = (layout: Layout) => {
+  const value = accessByLayout.get(layout);
+  if (typeof value !== "function") return value;
+  const result = value(); accessByLayout.set(layout, result); return result;
+};
+export interface RestrictedGeometry { inputKey: string; fences: Fence[]; conflicts: RestrictedConflict[] }
+const HASH_INITIAL = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+const HASH_ROUND = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0xfc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x6ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
+/** Synchronous SHA-256 of the complete cache input; checked against Node crypto. */
+export function restrictionDigest(input: string) {
+  const bytes = new TextEncoder().encode(input), length = Math.ceil((bytes.length + 9) / 64) * 64;
+  const padded = new Uint8Array(length); padded.set(bytes); padded[bytes.length] = 128;
+  const view = new DataView(padded.buffer); view.setUint32(length - 8, Math.floor(bytes.length / 0x20000000)); view.setUint32(length - 4, bytes.length << 3);
+  const state = new Uint32Array(HASH_INITIAL), words = new Uint32Array(64);
+  const rotate = (n: number, bits: number) => (n >>> bits) | (n << (32 - bits));
+  for (let block = 0; block < length; block += 64) {
+    for (let i = 0; i < 16; i++) words[i] = view.getUint32(block + i * 4);
+    for (let i = 16; i < 64; i++) {
+      const a = words[i - 15]!, b = words[i - 2]!;
+      words[i] = words[i - 16]! + (rotate(a, 7) ^ rotate(a, 18) ^ (a >>> 3)) + words[i - 7]! + (rotate(b, 17) ^ rotate(b, 19) ^ (b >>> 10));
+    }
+    let a = state[0]!, b = state[1]!, c = state[2]!, d = state[3]!, e = state[4]!, f = state[5]!, g = state[6]!, h = state[7]!;
+    for (let i = 0; i < 64; i++) {
+      const first = (h + (rotate(e, 6) ^ rotate(e, 11) ^ rotate(e, 25)) + ((e & f) ^ (~e & g)) + HASH_ROUND[i]! + words[i]!) >>> 0;
+      const second = ((rotate(a, 2) ^ rotate(a, 13) ^ rotate(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
+      h = g; g = f; f = e; e = (d + first) >>> 0; d = c; c = b; b = a; a = (first + second) >>> 0;
+    }
+    for (const [i, v] of [a, b, c, d, e, f, g, h].entries()) state[i] = state[i]! + v;
+  }
+  return Array.from(state, n => n.toString(16).padStart(8, "0")).join("");
+}
+export function restrictedInputKey(layout: Layout, plan: Plan, bundle: StationBundle, base: Fence[]) {
+  // Digest the complete source/graph/layout input; CI compares the fresh derivation
+  // and separately requires review of every change to the conflict table.
+  return restrictionDigest(JSON.stringify(["restricted-boundary-v5", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
+    plan.levels.map(l => [l.label, l.renderElevationM, l.spaces.filter(s => s.restricted)]),
+    verifiedFloorSegments(layout, plan, bundle),
+    layout.levels.map(l => [l.label, l.z, l.slabs.map(s => [s.z, s.rings]), l.walls]),
+    [layout.pads, layout.linkStrips, layout.streetPads].map(ss => ss.map(s => [s.z, s.rings])),
+    layout.runWalls, railingWalls(layout), base]));
+}
+export function deriveRestrictedAccess(layout: Layout, plan: Plan, bundle: StationBundle, radius = VERIFIED_CORRIDOR_M) {
+  const segments = verifiedFloorSegments(layout, plan, bundle), conflicts: RestrictedConflict[] = [], regions: RestrictedRegion[] = [];
+  for (const level of plan.levels) for (const space of level.spaces.filter(s => s.restricted)) {
+    const outer = space.rings[0]!, x0 = Math.min(...outer.map(p => p.x)), x1 = Math.max(...outer.map(p => p.x));
+    const y0 = Math.min(...outer.map(p => p.y)), y1 = Math.max(...outer.map(p => p.y));
+    const nearby = segments.filter(e => e.floor === level.label && Math.max(e.a.x, e.b.x) + radius >= x0 && Math.min(e.a.x, e.b.x) - radius <= x1 && Math.max(e.a.y, e.b.y) + radius >= y0 && Math.min(e.a.y, e.b.y) - radius <= y1)
+      .filter(e => {
+        if (pointInRings(e.a, space.rings) || pointInRings(e.b, space.rings) || cuts(e.a, e.b, space.rings).length > 2) return true;
+        return space.rings.some(r => r.some((p, i) => Math.min(distance(e.a, p, r[(i + 1) % r.length]!), distance(e.b, p, r[(i + 1) % r.length]!), distance(p, e.a, e.b)) < radius));
+      });
+    for (const edgeId of [...new Set(nearby.map(e => e.edgeId))]) {
+      const values = nearby.filter(e => e.edgeId === edgeId).map(e => segmentConflict(e.a, e.b, space.rings));
+      conflicts.push({ spaceId: space.id, edgeId, floor: level.label,
+        overlapLengthM: Math.round(values.reduce((n, v) => n + v.insideLength, 0) * 1e6) / 1e6,
+        maxEdgeDepthM: Math.max(0, Math.ceil(Math.max(...values.map(v => v.maximum)) * 1e6 - 1e-8) / 1e6) });
+    }
+    const subtract = (r: number) => nearby.length ? polygonClipping.difference(poly(space.rings), union(nearby.map(e => capsule(e.a, e.b, r, r === radius ? 32 : 16)))).map(rings) : [space.rings];
+    regions.push({ spaceId: space.id, floor: level.label, z: level.renderElevationM, source: space.rings, paths: nearby, remainder: subtract(radius), barrier: subtract(radius - .01) });
+  }
+  conflicts.sort((a, b) => a.floor.localeCompare(b.floor) || a.spaceId.localeCompare(b.spaceId) || a.edgeId.localeCompare(b.edgeId));
+  const result = { regions, conflicts, segments };
+  accessByLayout.set(layout, result);
+  return result;
+}
+/** Local centreline depth, not a whole-room or whole-edge blanket exception. */
+export function restrictionAt(p: XY, region: RestrictedRegion, radius = VERIFIED_CORRIDOR_M) {
+  const depth = restrictedDepth(p, region.source);
+  if (depth === 0) return { inside: false, depth: 0, permitted: true, corridor: false, edgeDepth: 0 };
+  const paths = region.paths.filter(e => distance(p, e.a, e.b) <= radius + 1e-9);
+  const edgeDepth = Math.max(0, ...paths.map(e => restrictedDepth(nearPoint(p, e.a, e.b), region.source)));
+  return { inside: true, depth, corridor: paths.length > 0, edgeDepth,
+    permitted: depth <= RESTRICTED_ALIGNMENT_M + (paths.length ? edgeDepth : 0) + 1e-7 };
+}
+
 /** Trim ONLY procedural elevator-envelope fill to the independently mapped footprint.
  * The surrounding render-only enclosure may remain; its floor must not imply public access.
  * Both WalkWorld and explorer proxies are built later from these same clipped pads.
@@ -94,6 +279,7 @@ export function protectFareAndAccess(
   layout: Layout,
   plan: Plan,
   bundle: StationBundle,
+  options: { recomputeRestricted?: boolean; onRestricted?: (geometry: RestrictedGeometry) => void } = {},
 ): FareProtection {
   const fences: Fence[] = [],
     removedAccess: FareProtection["removedAccess"] = [];
@@ -139,7 +325,7 @@ export function protectFareAndAccess(
         );
       const feet = e.za + (e.zb - e.za) * t;
       return (
-        (e.mode === "elevator" || (feet >= z - 1.75 && feet <= z + 0.95)) &&
+        (feet >= z - 1.75 && feet <= z + 0.95) &&
         distance(p, e.a, e.b) < radius
       );
     });
@@ -310,57 +496,75 @@ export function protectFareAndAccess(
           Math.abs(g.center.z - h.center.z) < 0.02,
       ) === i,
   );
-  // A boundary-alignment return is safe only when the whole published route stays clear.
-  const guards = restrictedEntranceGuards(layout, plan, bundle);
-  for (let i = 0; i < guards.length; i += 3) {
-    const group = guards.slice(i, i + 3);
-    const clear = group.every(f => {
-      const count = Math.max(1, Math.ceil(Math.hypot(f.b.x - f.a.x, f.b.y - f.a.y) / .002));
-      for (let j = 0; j <= count; j++) if (routeClear({ x: f.a.x + (f.b.x - f.a.x) * j / count, y: f.a.y + (f.b.y - f.a.y) * j / count }, f.zMin + .05, .3001)) return false;
-      return true;
-    });
-    if (clear) fences.push(...group);
+  const inputKey = restrictedInputKey(layout, plan, bundle, fences);
+  const saved = generatedRestrictions as RestrictedGeometry;
+  if (!options.recomputeRestricted && saved.inputKey === inputKey) {
+    fences.splice(0, fences.length, ...structuredClone(saved.fences));
+    accessByLayout.set(layout, () => deriveRestrictedAccess(layout, plan, bundle));
+    options.onRestricted?.(structuredClone(saved));
+    return { fences, gates, removedAccess, restrictedConflicts: saved.conflicts, restrictionCacheHit: true };
   }
+  const restricted = deriveRestrictedAccess(layout, plan, bundle);
+  fences.push(...deriveRestrictedFences(layout, restricted, fences));
   closeBarrierEnds(layout, fences, gates, (a, b, z) => {
     const steps = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / .03));
-    for (let i = 0; i <= steps; i++) if (routeClear({ x: a.x + (b.x - a.x) * i / steps, y: a.y + (b.y - a.y) * i / steps }, z, .34)) return false;
+    for (let i = 0; i <= steps; i++) if (routeClear({ x: a.x + (b.x - a.x) * i / steps, y: a.y + (b.y - a.y) * i / steps }, z, .3001)) return false;
     return true;
   });
-  return { fences, gates, removedAccess };
+  options.onRestricted?.(structuredClone({ inputKey, fences, conflicts: restricted.conflicts }));
+  return { fences, gates, removedAccess, restrictedConflicts: restricted.conflicts, restrictionCacheHit: false };
 }
 
-/** Source-restricted entrances whose verified endpoint lies on a CAD boundary.
- * A return 0.315 m inside the boundary leaves the 0.3 m body at most a 1.5 cm
- * alignment sliver inside it, while retaining the published endpoint's clearance.
- */
-export function restrictedEntranceGuards(layout: Layout, plan: Plan, bundle: StationBundle): Fence[] {
-  const out: Fence[] = [];
-  for (const lv of plan.levels) for (const space of lv.spaces.filter(s => s.restricted)) {
-    const points = space.rings[0]!, x0 = Math.min(...points.map(p => p.x)), x1 = Math.max(...points.map(p => p.x));
-    const y0 = Math.min(...points.map(p => p.y)), y1 = Math.max(...points.map(p => p.y));
-    const nodes = bundle.nodes.filter(n => n.floorId === lv.floorId && Math.abs((layout.nodeZ.get(n.id) ?? Infinity) - lv.renderElevationM) < .02 &&
-      n.position.x >= x0 && n.position.x <= x1 && n.position.y >= y0 && n.position.y <= y1 && pointInRings(n.position, space.rings));
-    for (const node of nodes) {
-      const near = space.rings.flatMap(r => r.slice(1).map((b, i) => {
-        const a = r[i]!, dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy);
-        const t = Math.max(0, Math.min(length, ((node.position.x - a.x) * dx + (node.position.y - a.y) * dy) / length));
-        const q = { x: a.x + dx * t / length, y: a.y + dy * t / length };
-        return { a, b, q, length, t, distance: Math.hypot(q.x - node.position.x, q.y - node.position.y) };
-      })).filter(e => e.length > 1e-8).sort((a, b) => a.distance - b.distance)[0];
-      if (!near || near.distance > .02 || near.distance < 1e-8) continue;
-      const n = { x: (node.position.x - near.q.x) / near.distance, y: (node.position.y - near.q.y) / near.distance };
-      const u = { x: (near.b.x - near.a.x) / near.length, y: (near.b.y - near.a.y) / near.length };
-      const at = (t: number, depth: number): XY => ({ x: near.a.x + u.x * t + n.x * depth, y: near.a.y + u.y * t + n.y * depth });
-      const a = at(Math.max(0, near.t - .85), 0), b = at(Math.min(near.length, near.t + .85), 0);
-      const c = { x: a.x + n.x * .315, y: a.y + n.y * .315 }, d = { x: b.x + n.x * .315, y: b.y + n.y * .315 };
-      for (const [i, [from, to]] of [[a, c], [c, d], [d, b]].entries()) out.push({
-        id: `restricted:${space.id}:${node.id}:${i}`, restrictedSpaceId: space.id, restrictedNodeId: node.id,
-        closedSide: i === 1 ? { x: (c.x + d.x) / 2 + n.x * .1, y: (c.y + d.y) / 2 + n.y * .1 } : undefined, reason: "access", level: lv.label,
-        a: from!, b: to!, zMin: lv.renderElevationM - .05, zMax: lv.renderElevationM + 1.15, side: 1, kind: "wall",
-      });
+const restrictedBoundaries = new WeakMap<Layout, { level: string; z: number; points: XY[] }[]>();
+/** Pure general derivation. The generated cache is checked against this in Vitest. */
+export function deriveRestrictedFences(layout: Layout, restricted: RestrictedAccess, base: Fence[]) {
+  const fences: Fence[] = [], boundaries: { level: string; z: number; points: XY[] }[] = [];
+  restrictedBoundaries.set(layout, boundaries);
+  // Union adjacent restricted fill: internal source-space borders need no duplicate fence.
+  for (const level of layout.levels) {
+    const regions = restricted.regions.filter(r => r.floor === level.label);
+    if (!regions.length) continue;
+    const floor = [...level.slabs, ...layout.pads, ...layout.linkStrips, ...layout.streetPads].filter(s => Math.abs(s.z - level.z) < .02);
+    const blocked = union(regions.flatMap(r => r.barrier.map(poly)));
+    if (!blocked.length || !floor.length) continue;
+    const blockers = [...level.walls, ...layout.runWalls, ...railingWalls(layout), ...base.filter(f => f.level === level.label)].filter(w => level.z + 1.7 >= w.zMin && level.z + .3 <= w.zMax &&
+      (w.bodyMin === undefined || level.z >= w.bodyMin) && (w.bodyMax === undefined || level.z <= w.bodyMax));
+    const privateFloor = polygonClipping.difference(polygonClipping.intersection(blocked, union(floor.map(s => poly(s.rings)))), union(blockers.map(w => capsule(w.a, w.b, .01, 8)))).map(rings);
+    const simplify = (ring: XY[]) => {
+      const points = ring.slice(0, -1);
+      if (points.length < 4) return ring;
+      const reduce = (pts: XY[]): XY[] => {
+        if (pts.length < 3) return pts;
+        let max = .004, split = -1;
+        for (let i = 1; i < pts.length - 1; i++) { const d = distance(pts[i]!, pts[0]!, pts.at(-1)!); if (d > max) { max = d; split = i; } }
+        return split < 0 ? [pts[0]!, pts.at(-1)!] : [...reduce(pts.slice(0, split + 1)).slice(0, -1), ...reduce(pts.slice(split))];
+      };
+      const anchor = points.reduce((best, p, i) => Math.hypot(p.x - points[0]!.x, p.y - points[0]!.y) > Math.hypot(points[best]!.x - points[0]!.x, points[best]!.y - points[0]!.y) ? i : best, 1);
+      return [...reduce(points.slice(0, anchor + 1)).slice(0, -1), ...reduce([...points.slice(anchor), points[0]!])];
+    };
+    const floorEdges = privateFloor.flat();
+    for (const rs of blocked.map(rings)) for (const raw of rs) {
+      const ring = simplify(raw);
+      boundaries.push({ level: level.label, z: level.z, points: ring });
+      for (let i = 1; i < ring.length; i++) {
+        const a = ring[i - 1]!, b = ring[i]!, dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy);
+        if (length < 1e-8) continue;
+        const divisions = cuts(a, b, floorEdges);
+        for (let j = 1; j < divisions.length; j++) {
+          const lo = divisions[j - 1]!, hi = divisions[j]!, middle = (lo + hi) / 2;
+          const mid = { x: a.x + dx * middle, y: a.y + dy * middle };
+          if (!privateFloor.some(rs => pointInRings(mid, rs) || [-.005, .005].some(d => pointInRings({ x: mid.x - dy / length * d, y: mid.y + dx / length * d }, rs)))) continue;
+          const from = { x: a.x + dx * lo, y: a.y + dy * lo }, to = { x: a.x + dx * hi, y: a.y + dy * hi };
+          if (Math.hypot(to.x - from.x, to.y - from.y) < 1e-8) continue;
+          const candidates = [-.01, .01, -.001, .001, -.00001, .00001].map(d => ({ x: mid.x - dy / length * d, y: mid.y + dx / length * d }));
+          const source = regions.map(r => ({ r, p: candidates.find(p => pointInRings(p, r.source)) })).find(v => v.p);
+          fences.push({ id: `restricted:${source?.r.spaceId ?? level.label}:${base.length + fences.length}`, restrictedSpaceId: source?.r.spaceId,
+            reason: "access", level: level.label, a: from, b: to, closedSide: source?.p, zMin: level.z - .05, zMax: level.z + 1.15, side: 1, kind: "wall" });
+        }
+      }
     }
   }
-  return out;
+  return fences;
 }
 
 /** Close actual centre lines, rather than relying on overlapping radius capsules.
@@ -386,15 +590,54 @@ function closeBarrierEnds(layout: Layout, fences: Fence[], gates: GateLine[], cl
     const other = self && end ? self[end === "a" ? "b" : "a"] : undefined;
     const outward = (q: XY) => !other || distance(q, p, other) > 1e-5 ||
       (q.x - p.x) * (p.x - other.x) + (q.y - p.y) * (p.y - other.y) >= -1e-8;
+    const extensionHit = (w: WallSeg): XY[] => {
+      if (!other) return [];
+      const dx = p.x - other.x, dy = p.y - other.y, ex = w.b.x - w.a.x, ey = w.b.y - w.a.y, cross = dx * ey - dy * ex;
+      if (Math.abs(cross) < 1e-12) return [];
+      const t = ((w.a.x - p.x) * ey - (w.a.y - p.y) * ex) / cross, u = ((w.a.x - p.x) * dy - (w.a.y - p.y) * dx) / cross;
+      return t >= 0 && u >= 0 && u <= 1 ? [{ x: p.x + dx * t, y: p.y + dy * t }] : [];
+    };
     const optionsAt = (radius: number) => [...walls, ...fences].filter(w => w !== self && w !== exclude && blocking(w, z) &&
       p.x >= Math.min(w.a.x, w.b.x) - radius && p.x <= Math.max(w.a.x, w.b.x) + radius &&
       p.y >= Math.min(w.a.y, w.b.y) - radius && p.y <= Math.max(w.a.y, w.b.y) + radius)
-      .flatMap(w => [nearest(p, w), w.a, w.b].filter(outward).map(q => ({ w, q, d: Math.hypot(p.x - q.x, p.y - q.y) })))
+      .flatMap(w => [nearest(p, w), w.a, w.b, ...extensionHit(w)].filter(outward).map(q => ({ w, q, d: Math.hypot(p.x - q.x, p.y - q.y) })))
       .filter(v => v.d <= radius).sort((a, b) => a.d - b.d);
     const options = optionsAt(2);
     if ((options[0]?.d ?? Infinity) <= .02) return;
     const option = options.find(v => clear(p, v.q, z));
-    if (!option) return; // The independent endpoint test reports any unresolved join.
+    if (!option) {
+      // Continue on R' around its corner when a straight cap would cross a verified
+      // corridor. Every leg remains on the source-derived boundary until a wall joins it.
+      for (const boundary of restrictedBoundaries.get(layout) ?? []) {
+        if (boundary.level !== level || Math.abs(boundary.z - z) > .02) continue;
+        const ring = boundary.points.slice(0, -1), count = ring.length;
+        for (let i = 0; i < count; i++) {
+          const a = ring[i]!, b = ring[(i + 1) % count]!;
+          if (distance(p, a, b) > 1e-6) continue;
+          for (const direction of [-1, 1]) {
+            const path: XY[] = [p];
+            for (let step = 0; step < count; step++) {
+              const index = direction > 0 ? (i + 1 + step) % count : (i - step + count) % count;
+              const q = ring[index]!, last = path.at(-1)!;
+              if (Math.hypot(q.x - last.x, q.y - last.y) < 1e-8) continue;
+              if (path.length === 1 && !outward(q)) break;
+              if (!clear(last, q, z)) break;
+              path.push(q);
+              const destinations = [...walls, ...fences].filter(w => w !== self && w !== exclude && blocking(w, z))
+                .map(w => nearest(q, w)).filter(v => Math.hypot(v.x - q.x, v.y - q.y) <= 2 && Math.hypot(v.x - p.x, v.y - p.y) > .02)
+                .sort((a, b) => Math.hypot(a.x - q.x, a.y - q.y) - Math.hypot(b.x - q.x, b.y - q.y));
+              const destination = destinations.find(v => clear(q, v, z));
+              if (!destination) continue;
+              path.push(destination);
+              for (let j = 1; j < path.length; j++) if (Math.hypot(path[j]!.x - path[j - 1]!.x, path[j]!.y - path[j - 1]!.y) > 1e-8)
+                fences.push({ id: `join:${level}:${fences.length}`, reason, level, a: { ...path[j - 1]! }, b: { ...path[j]! }, zMin: z - .05, zMax: z + 1.15, side: 1, kind: "wall" });
+              return;
+            }
+          }
+        }
+      }
+      return; // The independent endpoint test rejects an unresolved join.
+    }
     const { q } = option;
     if (self && end) {
       const other = self[end === "a" ? "b" : "a"], dx = p.x - other.x, dy = p.y - other.y, len = Math.hypot(dx, dy);
@@ -460,7 +703,7 @@ export function accessSigns(protection: FareProtection, plan: Plan) {
       ...ACCESS_WORDING[classification] }];
   });
   const named = new Set<string>();
-  for (const fence of signFences.filter(f => f.closedSide).sort((a, b) => Math.hypot(b.b.x - b.a.x, b.b.y - b.a.y) - Math.hypot(a.b.x - a.a.x, a.b.y - a.a.y))) if (fence.closedSide && fence.restrictedSpaceId && !named.has(fence.restrictedSpaceId)) {
+  for (const fence of signFences.filter(f => f.closedSide && Math.hypot(f.b.x - f.a.x, f.b.y - f.a.y) >= .7).sort((a, b) => Math.hypot(b.b.x - b.a.x, b.b.y - b.a.y) - Math.hypot(a.b.x - a.a.x, a.b.y - a.a.y))) if (fence.closedSide && fence.restrictedSpaceId && !named.has(fence.restrictedSpaceId)) {
     named.add(fence.restrictedSpaceId);
     signs.push({
     fence, z: fence.zMin + .05, removedSide: fence.closedSide, classification: "restricted",

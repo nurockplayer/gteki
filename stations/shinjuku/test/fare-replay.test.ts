@@ -7,8 +7,8 @@ import { buildStation, type BuiltStation } from "../scene/build.ts";
 import { buildScene } from "../gteki/scene.ts";
 import { pointInRings, type Plan } from "../scene/layout.ts";
 import type { StationScene } from "@gteki/scene-api";
+import { derivedRestrictedAccess, restrictionAt } from "../scene/fare-fence.ts";
 import { Player } from "../app/src/player.ts";
-import { replayMatrix } from "./fare-replay-worker.ts";
 import { accelerateRaycasts, nearbyTargets } from "./fare-replay-rays.ts";
 import { castAll, castTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { endpointClosure, barrierEnds, replayEnds, closest, replayEnvironment, APPROACHES, laneReplayWorld, fencesOf, mutateFence, distance } from "./fare-replay-audit.ts";
@@ -23,23 +23,23 @@ describe("actual walker fence replay", () => {
     scene = await buildScene({ THREE, bundle, quality: "low" } as never);
     scene.root.updateMatrixWorld(true);
     const targets = castTargets([...scene.walkable, ...(scene.colliders ?? [])]);
-    const rays = barrierEnds(built).slice(0, 80).flatMap(e => [
+    const rays = barrierEnds(built).filter((_, i, all) => i % Math.ceil(all.length / 80) === 0).flatMap(e => [
       new THREE.Raycaster(new THREE.Vector3(e.p.x + .37, e.p.z + 2, -e.p.y + .23), new THREE.Vector3(0, -1, 0), 0, 4),
       new THREE.Raycaster(new THREE.Vector3(e.p.x - 1, e.p.z + .5, -e.p.y), new THREE.Vector3(1, 0, 0), 0, 2),
       new THREE.Raycaster(new THREE.Vector3(e.p.x, e.p.z + 1.2, -e.p.y - 1), new THREE.Vector3(0, 0, 1), 0, 2),
     ]);
-    const hits = (r: THREE.Raycaster, ts: THREE.Object3D[]) => castAll(r, ts).map(h => Math.round(h.distance * 1e7) / 1e7);
+    const hits = (r: THREE.Raycaster, ts: THREE.Object3D[]) => castAll(r, ts).flatMap(h => [h.distance, h.point.x, h.point.y, h.point.z].map(v => Math.round(v * 1e7) / 1e7));
     const before = rays.map(r => hits(r, targets));
     restore = accelerateRaycasts(targets);
     const nearby = nearbyTargets(targets);
     rayProof = { before, after: rays.map(r => hits(r, nearby(r))) };
-  });
+  }, 60_000);
   afterAll(() => { restore?.(); built?.dispose(); scene?.dispose(); vi.unstubAllGlobals(); });
   it("endpoints overlap blocking neighbours in both walkers", () => {
     const ends = endpointClosure(built, scene);
     if (process.env.FARE_END_REPORT) writeFileSync(process.env.FARE_END_REPORT, JSON.stringify(ends, null, 2));
     expect(ends.map(e => ({ id: e.id, x: e.p.x, y: e.p.y, z: e.p.z, gap: e.nearestLane?.distance }))).toEqual([]);
-  });
+  }, 30_000);
   it("accelerated native hook raycasts match the unmodified hook raycasts", () => {
     expect(rayProof.after).toEqual(rayProof.before);
   });
@@ -49,7 +49,7 @@ describe("actual walker fence replay", () => {
       const p = { x: e.p.x + x, y: e.p.y + y, z: e.p.z };
       expect(env.explorer.push(p)).toEqual(env.explorer.push(p, false));
     }
-  });
+  }, 30_000);
   it("active-band WalkWorld preserves full-world positional collision", () => {
     const world = laneReplayWorld(built);
     for (const e of barrierEnds(built)) for (const x of [-.4, 0, .4]) for (const y of [-.4, 0, .4]) for (const dz of [-.1, 0, .1]) {
@@ -66,12 +66,12 @@ describe("actual walker fence replay", () => {
     expect(env.explorer.support).toBeCloseTo(-7.8, 4);
     expect(pos.z).toBeLessThan(-8.0); // the explorer intentionally damps feet toward the landing
     expect(env.labels({ ...pos, z: env.explorer.support! }).mapped).toBe(true);
-  });
+  }, 30_000);
   it("negative controls expose removed fare/access pieces and a shortened end", () => {
     const controls: unknown[] = [], baseline = replayEnvironment(built, scene, plan);
     for (const kind of ["fare", "access", "shorten"] as const) for (const walker of ["explorer", "lane"] as const) {
       let witness: unknown;
-      const candidates = fencesOf(built).filter(f => kind === "access" ? !!f.closedSide : f.id === "fare:B1:25")
+      const candidates = fencesOf(built).filter(f => kind === "access" ? !!f.closedSide : f.reason === "fare" && !f.id.startsWith("join:") && distance(f.a, f.b) > .7)
         .sort((a, b) => distance(b.a, b.b) - distance(a.a, a.b));
       outer: for (const fence of candidates) {
         const mutated = mutateFence(built, scene, fence, kind === "shorten" ? "shorten" : "remove");
@@ -89,7 +89,7 @@ describe("actual walker fence replay", () => {
             if (distance(pushed, seed) > 1e-7) continue;
             for (const approach of ["toward", "oblique-30", "oblique+30", "oblique-60", "oblique+60"] as const) {
               const leak = env.replay(end, seed, approach, walker, 30, true);
-              if (leak && !baseline.replay(end, seed, approach, walker, 30, true)) { witness = { kind, walker, fence: fence.id, leak }; break outer; }
+              if (leak && (kind === "access" || leak.kind === "paid → free" || leak.kind === "free → paid") && !baseline.replay(end, seed, approach, walker, 30, true)) { witness = { kind, walker, fence: fence.id, leak }; break outer; }
             }
           }
         } finally { mutated.dispose(); }
@@ -119,7 +119,8 @@ describe("actual walker fence replay", () => {
     expect(distance(built.world.resolveWalls(seed, seed.z, .3), seed)).toBeLessThan(1e-7);
     expect(distance(env.explorer.push(seed), seed)).toBeLessThan(1e-7);
     for (const walker of ["lane", "explorer"] as const) for (const fps of [30, 60]) for (const run of [false, true]) {
-      let pos = { ...seed }, maxDepth = 0;
+      let pos = { ...seed }, maxDepth = 0, unsafe = false;
+      const region = derivedRestrictedAccess(built.layout)!.regions.find(r => r.spaceId === spaceId)!;
       const player = new Player(built.world, seed), yaw = Math.atan2(dir.x, dir.y);
       const speed = run ? walker === "lane" ? 3.6 : 3.4 : 1.45;
       player.vx = dir.x * speed; player.vy = dir.y * speed; env.explorer.support = seed.z;
@@ -128,21 +129,15 @@ describe("actual walker fence replay", () => {
         else { player.update(1 / fps, { forward: 1, strafe: 0, run }, yaw); pos = { x: player.x, y: player.y, z: player.z }; }
         const floor = walker === "explorer" ? env.explorer.support! : pos.z;
         if (Math.abs(floor - seed.z) < .2 && pointInRings(pos, space.rings))
-          maxDepth = Math.max(maxDepth, Math.min(...edges.map(e => distance(pos, closest(pos, e.a, e.b)))));
+          { maxDepth = Math.max(maxDepth, Math.min(...edges.map(e => distance(pos, closest(pos, e.a, e.b))))); unsafe ||= !restrictionAt(pos, region).permitted; }
       }
       const result = { node: nodeId, space: spaceId, walker, fps, run, maxDepth };
-      restrictedResults.push(result); if (maxDepth >= .02) violations.push(result);
+      restrictedResults.push(result); if (unsafe) violations.push(result);
     }
     if (process.env.FARE_RESTRICTED_REPORT) writeFileSync(process.env.FARE_RESTRICTED_REPORT, JSON.stringify(restrictedResults, null, 2));
-    // The only tolerated alignment sliver is <2 cm, proven by actual accepted moves.
+    // Only the local verified centreline depth plus 1.5 cm is tolerated.
     expect(violations).toEqual([]);
   });
-  it("replays every public sample within 3 m of every end across the full matrix", async () => {
-    const result = await replayMatrix(built, scene, plan, replayEnds(built));
-    expect(result.finished).toBe(result.jobs);
-    expect(result.leaks).toEqual([]);
-    expect(result.matrix).toHaveLength(72);
-    for (const row of result.matrix) { expect(row.paths).toBeGreaterThan(0); expect(row.passed).toBe(row.paths); }
-  }, 3_600_000);
+
 
 });

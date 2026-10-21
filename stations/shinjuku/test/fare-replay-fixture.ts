@@ -3,6 +3,8 @@ import * as THREE from "three";
 import type { StationScene } from "@gteki/scene-api";
 import { slabGeometry, type BuiltStation } from "../scene/build.ts";
 import { WalkWorld, type Layout, type Plan, type XY } from "../scene/layout.ts";
+import { loadShinjukuBundle } from "../data/bundle.ts";
+import { deriveRestrictedAccess } from "../scene/fare-fence.ts";
 import type { Fence } from "../scene/fare-fence.ts";
 export function accessFixture(width: number, publicBeyond: boolean, restricted = false) {
   const rect = (x0: number, x1: number): XY[][] => [[{ x: x0, y: -3 }, { x: x1, y: -3 }, { x: x1, y: 3 }, { x: x0, y: 3 }]];
@@ -29,6 +31,29 @@ export function accessFixture(width: number, publicBeyond: boolean, restricted =
   const wall = new THREE.Mesh(geometry, material); wall.name = "wall collider (invisible)";
   const root = new THREE.Group(); root.add(floor, wall); root.updateMatrixWorld(true);
   const scene = { root, walkable: [floor], colliders: [wall], walls, dispose() {} } as StationScene;
-  const built = { root, world, layout, propWalls: [fence] } as BuiltStation;
+  const built: BuiltStation = { root, world, layout, propWalls: [fence], escalators: [], signs: [], levelGroups: new Map(), update() {}, dispose() {}, trainStatus: () => [] };
   return { scene, built, plan, fence, dispose() { floor.geometry.dispose(); geometry.dispose(); material.dispose(); } };
+}
+
+/** Same actual walkers/meshes; only the generic derivation's corridor radius is mutated. */
+export function restrictedCorridorFixture(radius: number) {
+  const base = accessFixture(3, false, true), { built, scene, plan } = base;
+  const template = loadShinjukuBundle().bundle, a = "fixture:verified-a", b = "fixture:verified-b";
+  const nodes = [a, b].map((id, i) => ({ ...template.nodes[0]!, id, floorId: "fixture", position: { x: -.1, y: i ? 3 : -3, z: 0 } }));
+  const bundle = { ...template, nodes, pois: [], edges: [{ ...template.edges[0]!, id: "fixture:verified-edge", from: a, to: b,
+    verification: "verified" as const, mode: "walk" as const, geometry: nodes.map(n => n.position) }] };
+  built.layout.nodeZ.set(a, 0); built.layout.nodeZ.set(b, 0);
+  const canonical = deriveRestrictedAccess(built.layout, plan, bundle).regions;
+  const derived = deriveRestrictedAccess(built.layout, plan, bundle, radius);
+  const props: Fence[] = derived.regions.flatMap(r => r.barrier.flatMap(rs => rs.flatMap(ring => ring.slice(1).map((p, i) => ({
+    id: `fixture:restricted:${i}`, reason: "access" as const, level: "fixture", a: ring[i]!, b: p, zMin: -.05, zMax: 1.15, side: 1 as const, kind: "wall" as const,
+  })))));
+  const walls = [...built.layout.levels.flatMap(l => l.walls), ...props], positions: number[] = [], indices: number[] = [];
+  for (const w of walls) { const i = positions.length / 3; positions.push(w.a.x, w.zMin, -w.a.y, w.b.x, w.zMin, -w.b.y, w.b.x, w.zMax, -w.b.y, w.a.x, w.zMax, -w.a.y); indices.push(i, i + 1, i + 2, i, i + 2, i + 3); }
+  const geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3)); geometry.setIndex(indices);
+  const material = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }), mesh = new THREE.Mesh(geometry, material);
+  mesh.name = "wall collider (invisible)"; mesh.updateMatrixWorld(true);
+  const world = new WalkWorld(built.layout); world.addWalls(props);
+  return { built: { ...built, world, propWalls: props }, scene: { ...scene, walls, colliders: [mesh] }, plan, canonical,
+    dispose() { geometry.dispose(); material.dispose(); base.dispose(); } };
 }
