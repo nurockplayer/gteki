@@ -513,32 +513,68 @@ function beyondMaterial(THREE: ThreeNS) {
         // cameraPosition is not uploaded for basic materials; recover the eye from the view matrix.
         `vec3 eye = -transpose(mat3(viewMatrix)) * viewMatrix[3].xyz;
         vec3 rd = normalize(vWorldP - eye);
-        vec3 fogc = vec3(0.15, 0.145, 0.135); // lightmapped surfaces sit at ~0.1-0.25 linear before ACES
-        vec3 col = fogc;
+        float H = max(vBand.y - vBand.x, 0.5);
+        // Soft-edged bar coverage that tends to its mean (2 * hw) once the filter outgrows the feature,
+        // so distant fixtures dissolve into an even glow instead of shimmering or vanishing.
+        #define GT_BAR(f, hw, w) mix(1.0 - smoothstep((hw) - (w), (hw) + (w), (f)), 2.0 * (hw), smoothstep(0.3, 0.8, (w)))
+        float lampX = 0.07, lampY = 0.32;
+        // Distance haze: the continuation darkens and desaturates into a dim cool distance, with a faint
+        // brighter band at the horizon line so the eye reads a receding space rather than a flat wall.
+        vec3 farc = vec3(0.028, 0.030, 0.034);
+        vec3 glow = vec3(0.060, 0.058, 0.054) * exp(-abs(rd.y) * 14.0);
+        // Vertical vignette across the opening: the top and bottom edges sink slightly toward the dark.
+        float vh = clamp((vWorldP.y - vBand.x) / H, 0.0, 1.0);
+        float vig = 1.0 - 0.3 * pow(abs(vh - 0.45) * 2.0, 2.0);
+        vec3 col = farc + glow;
         float t = 1e3;
-        // Renderer y is TP height; x/z are metric, so the floor tile and fixture grids match the station's.
-        if (rd.y < -0.01) {
-          t = (vBand.x - vWorldP.y) / rd.y;
+        float far = 1.0;
+        float ady = abs(rd.y);
+        if (ady > 0.004) {
+          bool down = rd.y < 0.0;
+          t = max(((down ? vBand.x : vBand.y) - vWorldP.y) / rd.y, 0.0);
           vec3 h = vWorldP + rd * t;
-          vec2 q = h.xz / 0.6, w = fwidth(q);
-          vec2 f = fract(q);
-          float grout = 1.0 - smoothstep(0.035, 0.035 + w.x, f.x) * smoothstep(0.035, 0.035 + w.y, f.y);
-          grout *= 1.0 - smoothstep(0.1, 0.4, max(w.x, w.y)); // no shimmer where tiles get sub-pixel
-          col = mix(vec3(0.27, 0.26, 0.245), vec3(0.17, 0.165, 0.155), grout * exp(-t / 5.0));
-        } else if (rd.y > 0.01) {
-          t = (vBand.y - vWorldP.y) / rd.y;
-          vec3 h = vWorldP + rd * t;
-          vec2 q = h.xz / vec2(2.4, 3.0), w = fwidth(q);
-          vec2 f = abs(fract(q) - 0.5);
-          float lamp = (1.0 - smoothstep(0.07, 0.07 + w.x, f.x)) * (1.0 - smoothstep(0.32, 0.32 + w.y, f.y));
-          lamp *= (1.0 - smoothstep(0.03, 0.12, max(w.x, w.y))) * exp(-t / 8.0); // grazing rays: fade, never streak
-          col = mix(vec3(0.06, 0.058, 0.055), vec3(1.6, 1.55, 1.45), lamp);
+          float att = exp(-t / 16.0);
+          vec3 near;
+          if (down) {
+            // Floor: the station's own tile scale and brightness at the opening plane, then falloff.
+            vec2 q = h.xz / 0.6, w = fwidth(q);
+            vec2 f = fract(q);
+            float grout = 1.0 - smoothstep(0.035, 0.035 + w.x, f.x) * smoothstep(0.035, 0.035 + w.y, f.y);
+            grout *= 1.0 - smoothstep(0.1, 0.4, max(w.x, w.y));
+            near = mix(vec3(0.31, 0.30, 0.28), vec3(0.23, 0.222, 0.208), grout * exp(-t / 5.0));
+            // Glossy reflection of the ceiling fixtures: mirror the ray at the floor, trace to the ceiling.
+            vec3 rr = vec3(rd.x, -rd.y, rd.z);
+            float tc = H / max(rr.y, 0.004);
+            vec2 hc = h.xz + rr.xz * tc;
+            float blur = 0.05 * (t + tc) + 0.03;
+            vec2 qc = hc / vec2(2.4, 3.0);
+            vec2 wc = fwidth(qc) * 0.75 + vec2(blur / 2.4, blur / 3.0);
+            vec2 fc = abs(fract(qc) - 0.5);
+            float refl = GT_BAR(fc.x, lampX, wc.x) * GT_BAR(fc.y, lampY, wc.y);
+            float fres = 0.04 + 0.96 * pow(1.0 - ady, 5.0);
+            near += vec3(1.0, 0.97, 0.9) * refl * fres * 0.9 * exp(-tc / 30.0);
+          } else {
+            // Ceiling: tile seams at the station's panel scale plus linear fixtures receding in rows.
+            vec2 q = h.xz / 0.6, w = fwidth(q);
+            vec2 f = fract(q);
+            float seam = 1.0 - smoothstep(0.02, 0.02 + w.x, f.x) * smoothstep(0.02, 0.02 + w.y, f.y);
+            seam *= 1.0 - smoothstep(0.1, 0.4, max(w.x, w.y));
+            near = mix(vec3(0.13, 0.126, 0.118), vec3(0.07, 0.068, 0.064), seam * exp(-t / 5.0));
+            vec2 ql = h.xz / vec2(2.4, 3.0);
+            vec2 wl = fwidth(ql) * 0.75 + 1e-4;
+            vec2 fl = abs(fract(ql) - 0.5);
+            float lamp = GT_BAR(fl.x, lampX, wl.x) * GT_BAR(fl.y, lampY, wl.y);
+            near = mix(near, vec3(1.7, 1.65, 1.55), lamp * exp(-t / 40.0));
+          }
+          // Falls off toward the haze; fully hazed by the time rays are near-horizontal.
+          far = 1.0 - att * smoothstep(0.004, 0.06, ady);
+          col = mix(near, col, far);
         }
-        col = mix(col, fogc, 1.0 - exp(-max(t, 0.0) / 10.0));
+        col *= mix(1.0, vig, far);
         vec4 diffuseColor = vec4(col * diffuse, opacity);`,
       );
   };
-  m.customProgramCacheKey = () => "gteki-ikebukuro-beyond-4";
+  m.customProgramCacheKey = () => "gteki-ikebukuro-beyond-5";
   return m;
 }
 
