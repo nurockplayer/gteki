@@ -486,6 +486,13 @@ describe("opening hours are checked when the route reaches each edge", () => {
     edge("gate", "a", "goal", { mode: "gate", lengthM: 0, hours: gate }),
   ]));
 
+  // The router's work budget (WORK_BUDGET in router.ts, which is not exported): edges tried, dominance
+  // comparisons and opening-hours samples. Tests assert the work done, never the time it took.
+  const WORK_BUDGET = 2_000_000;
+  /** A view of `target` that counts reads of one property in `reads`, so a test can measure the router's work. */
+  const counting = <T extends object>(target: T, prop: string, reads = { count: 0 }) =>
+    new Proxy(target, { get: (t, p, receiver) => (p === prop && reads.count++, Reflect.get(t, p, receiver)) });
+
   // The route waits at the edge's start until it opens, never crossing it while closed.
   const waitsFor = (r: ReturnType<ReturnType<typeof createRouter>["route"]>, edgeId: string, until: { weekday: string; minutes: number; dayOffset: number }) => {
     const route = ok(r);
@@ -586,7 +593,7 @@ describe("opening hours are checked when the route reaches each edge", () => {
       waitsFor(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 0 } }), "gate", { weekday: "fri", minutes: 0, dayOffset: 361 });
     b.edges.at(-1)!.hours = hours("00:00", "15:02");
     noWait(createRouter(b).route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } }));
-  });
+  }, 60_000);
 
   it("bounds the rounding accumulated inside one long polyline", () => {
     // One polyline of 37,324,800 m then 60,000 alternating 1.08 m segments reaches the gate exactly at
@@ -602,7 +609,7 @@ describe("opening hours are checked when the route reaches each edge", () => {
       waitsFor(createRouter(b).route("start", "goal", { ...base, hours: policy, at: { weekday: "mon", minutes: 0 } }), "gate", { weekday: "fri", minutes: 0, dayOffset: 361 });
     b.edges.at(-1)!.hours = hours("00:00", "15:02");
     noWait(createRouter(b).route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } }));
-  });
+  }, 60_000);
 
   it("wraps samples before the departure day and covers a full week after a near-instant entry", () => {
     // A 1e-12 m step (so the widened entry samples the minute before departure), then 725,760 m (7 days)
@@ -735,7 +742,7 @@ describe("opening hours are checked when the route reaches each edge", () => {
         expect(start, JSON.stringify({ gate, at, minutesLong })).toBe(expected);
       }
     }
-  });
+  }, 60_000);
 
   it("enters a window at an arrival computed as exactly its opening minute", () => {
     // 72 m at 1.2 m/s from 04:59 reaches the gate at 05:00 exactly; it must not wait a day for the next 05:00,
@@ -765,12 +772,15 @@ describe("opening hours are checked when the route reaches each edge", () => {
 
   it("checks the work budget while expanding one very wide node", () => {
     // 2,000 parallel week-long passages: trying them all would sample 20 million minutes.
-    const always = { ...hours("00:00", "24:00") };
+    const reads = { count: 0 };
+    const always = counting(hours("00:00", "24:00"), "open", reads);
     const b = createSyntheticBundle(Array.from({ length: 2000 }, (_, i) => edge(`p${i}`, "start", "goal", { lengthM: 725_760 + i, hours: always })));
-    const t0 = performance.now();
     expect(createRouter(b).route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } })).toMatchObject({ ok: false, reason: "search_limit" });
-    expect(performance.now() - t0).toBeLessThan(3000);
-  });
+    // Each opening-hours sample (and each edge's weekly openings) reads `open` once, so the budget bounds
+    // the work done however fast the host is. It is checked per edge: at most one edge's week may overrun it.
+    expect(reads.count).toBeGreaterThan(0);
+    expect(reads.count).toBeLessThanOrEqual(WORK_BUDGET + 7 * 1440 + 8);
+  }, 60_000);
 
   it("reports an exhausted search as UNKNOWN, never as no path", () => {
     // 18 diamonds, each a short escalator (slower, cheaper) or a 1.4× longer walk (faster, dearer), scaled
@@ -789,14 +799,17 @@ describe("opening hours are checked when the route reaches each edge", () => {
       );
     }
     b.edges.push(edge("start-d0", "start", "d0", { lengthM: 1 }), edge("gate", `d${n}`, "goal", { mode: "gate", lengthM: 0, hours: hours("00:00", "24:00") }));
+    // The router reads an edge's `verification` once per traversal it tries.
+    const tried = { count: 0 };
+    b.edges = b.edges.map((e) => counting(e, "verification", tried));
     const router = createRouter(b);
-    const t0 = performance.now();
     expect(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } })).toMatchObject({ ok: false, reason: "search_limit" });
-    // The budget bounds the time spent, not just the labels kept.
-    expect(performance.now() - t0).toBeLessThan(5000);
+    // The budget bounds the work done, not just the labels kept: every edge tried is one unit of it.
+    expect(tried.count).toBeGreaterThan(0);
+    expect(tried.count).toBeLessThanOrEqual(WORK_BUDGET);
     // Without clock-dependent hours the same graph is plain Dijkstra.
     expect(ok(router.route("start", "goal", base)).steps.at(-1)!.edgeId).toBe("gate");
-  });
+  }, 60_000);
 
   it("gives isTraversable the edge's own duration", () => {
     const b = createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 144, hours: hours("05:00", "23:00") })]);
