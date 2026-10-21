@@ -711,7 +711,8 @@ export class Explorer {
       ? this.probeNormal.copy(hit.face.normal).applyNormalMatrix(this.probeNormalMatrix.getNormalMatrix(hit.object.matrixWorld)).y
       : null;
     // Single-sided winding varies across source polygons: only the tilt matters.
-    p.level = atStreetTop(this.pos, this.streetTops) || footingLevel(hit ? roleOf(hit.object) : null, normalY === null ? null : Math.abs(normalY), p.level);
+    const footing = footingLevel(hit ? roleOf(hit.object) : null, normalY === null ? null : Math.abs(normalY), p.level);
+    p.level = atStreetTop(this.pos, this.streetTops, footing);
   }
 
   private placeCamera(dt: number): void {

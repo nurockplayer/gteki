@@ -19,6 +19,8 @@ export const STREET = {
   /** Also level within this of an exit's street-level node (m, horizontal / vertical): stairs end there. */
   topRadius: 2.5,
   topRise: 0.3,
+  /** On level floor, an exit top this far away (m, horizontal) still sets the street height. */
+  topFloorRadius: 40,
   /** The plane sits this far under the walker's feet, so stair-top slabs and closures draw over it. */
   planeDrop: 0.15,
   planeRadius: 700,
@@ -49,21 +51,19 @@ export function footingLevel(role: string | null | undefined, normalY: number | 
 }
 
 /**
- * Exit stairs often end in no modelled street floor at all: the walker arrives on the stair's last tread at
- * the exit's street-level node. Standing at such a node (not below it on the flight) counts as level.
+ * Street pavement may show only at street height: at an exit's street-level node (exit stairs often end in
+ * no modelled street floor, the walker arrives on the last tread), or on level floor at the height of a
+ * nearby exit top. Open intermediate landings lower down never qualify.
  */
-export function atStreetTop(pos: THREE.Vector3, tops: readonly THREE.Vector3[]): boolean {
-  const r2 = STREET.topRadius * STREET.topRadius;
-  return tops.some((t) => (pos.x - t.x) ** 2 + (pos.z - t.z) ** 2 < r2 && Math.abs(pos.y - t.y) < STREET.topRise);
+export function atStreetTop(pos: THREE.Vector3, tops: readonly THREE.Vector3[], onLevelFloor = false): boolean {
+  const r = onLevelFloor ? STREET.topFloorRadius : STREET.topRadius;
+  return tops.some((t) => (pos.x - t.x) ** 2 + (pos.z - t.z) ** 2 < r * r && Math.abs(pos.y - t.y) < STREET.topRise);
 }
 
-/** The gteki role of a hit mesh: its own tag or name, else the nearest tagged or named ancestor's. */
+/** The gteki role of a hit mesh: the nearest tag on it or an ancestor, else its own name. */
 export function roleOf(o: THREE.Object3D | null): string | null {
-  for (let x = o; x; x = x.parent) {
-    if (typeof x.userData.gteki_role === "string") return x.userData.gteki_role;
-    if (x.name) return x.name;
-  }
-  return null;
+  for (let x = o; x; x = x.parent) if (typeof x.userData.gteki_role === "string") return x.userData.gteki_role;
+  return o?.name || null;
 }
 
 const SKY_VERT = /* glsl */ `

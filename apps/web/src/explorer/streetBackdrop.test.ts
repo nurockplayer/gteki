@@ -50,6 +50,8 @@ describe("level footing", () => {
     const mesh = new THREE.Mesh();
     parent.add(mesh);
     expect(roleOf(mesh)).toBe("stairs_ramps");
+    mesh.name = "Mesh001"; // an arbitrary name never masks an inherited tag
+    expect(roleOf(mesh)).toBe("stairs_ramps");
     mesh.userData.gteki_role = "floor";
     expect(roleOf(mesh)).toBe("floor");
   });
@@ -61,5 +63,9 @@ describe("street tops", () => {
     expect(atStreetTop(new THREE.Vector3(10.5, 33.17, -3), tops)).toBe(true);
     expect(atStreetTop(new THREE.Vector3(10, 32.5, -2.5), tops)).toBe(false);
     expect(atStreetTop(new THREE.Vector3(14, 33.17, -4), tops)).toBe(false);
+  });
+  it("accepts level floor at street height nearby, never an open landing lower down", () => {
+    expect(atStreetTop(new THREE.Vector3(30, 33.2, -4), tops, true)).toBe(true);
+    expect(atStreetTop(new THREE.Vector3(12, 30.59, -4), tops, true)).toBe(false);
   });
 });

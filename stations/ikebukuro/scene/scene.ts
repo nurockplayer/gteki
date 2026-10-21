@@ -125,10 +125,10 @@ function solidDoors(THREE: ThreeNS, mesh: THREE_NS.Mesh, routes: [THREE_NS.Vecto
 }
 
 /** Raycast-only copies of `meshes` in world space, bucketed into TILE m squares (by triangle centroid)
- * per face side and role, so a ray only scans the tiles its bounding spheres say it can reach. Each tile
- * keeps its source role (`userData.gteki_role`), so a hit still tells a stair tread from floor. */
+ * per face side (and, with `byRole`, per source role), so a ray only scans the tiles its bounding spheres say
+ * it can reach. Walkable tiles keep their role (`userData.gteki_role`) so a hit tells a stair tread from floor. */
 const TILE = 8;
-function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[]): THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial>[] {
+function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[], byRole = false): THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial>[] {
   const sides = new Map<number, THREE_NS.MeshBasicMaterial>();
   const buckets = new Map<string, { side: number; role: string; pos: number[] }>();
   const v = new THREE.Vector3();
@@ -138,7 +138,7 @@ function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[]): THREE_NS.Mes
     m.updateWorldMatrix(true, false);
     const mat = m.material as THREE_NS.Material | THREE_NS.Material[];
     const side = Array.isArray(mat) ? THREE.DoubleSide : mat.side;
-    const role = (m.userData.gteki_role as string | undefined) ?? m.name;
+    const role = byRole ? ((m.userData.gteki_role as string | undefined) ?? m.name) : "";
     const g = m.geometry;
     const src = g.attributes.position!;
     const idx = g.index;
@@ -164,7 +164,7 @@ function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[]): THREE_NS.Mes
     geo.computeBoundingSphere();
     geo.computeBoundingBox();
     const t = new THREE.Mesh(geo, mat);
-    t.userData.gteki_role = b.role;
+    if (b.role) t.userData.gteki_role = b.role;
     t.visible = false;
     t.matrixAutoUpdate = false;
     t.updateMatrixWorld(true);
@@ -361,7 +361,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
 
   // The explorer raycasts walkable and colliders several times a frame. Whole-station meshes cost a
   // full triangle scan per ray; ~8 m tiles let three.js skip every tile out of a short ray's reach.
-  const walkTiles = raycastTiles(THREE, walkable), colliderTiles = raycastTiles(THREE, colliders);
+  const walkTiles = raycastTiles(THREE, walkable, true), colliderTiles = raycastTiles(THREE, colliders);
   const rayTiles = [...walkTiles, ...colliderTiles];
   return {
     root,
