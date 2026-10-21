@@ -638,7 +638,8 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     return m;
   };
   const floor = std({ map: floorMap, roughnessMap: floorRough, roughness: 1, metalness: 0, normalMap: floorNormal, envMapIntensity: ENV_INTENSITY.floor });
-  const wall = std({ color: 0xdfe2e4, roughness: 0.42, metalness: 0, side: THREE.DoubleSide });
+  const wall = std({ color: 0xdedee0, // cooler than the warm bake, never brighter than the old 0xe2e0da (luminance 0.731 vs 0.745)
+    roughness: 0.42, metalness: 0, side: THREE.DoubleSide });
   const ceiling = std({ map: ceilMap, normalMap: ceilNormal, roughness: 0.95, side: THREE.DoubleSide });
   const stairs = std({ map: stairMap, normalMap: stairNormal, roughness: 0.7 });
   const barriers = std({ color: 0xc6cacf, roughness: 0.3, metalness: 0, side: THREE.DoubleSide });
