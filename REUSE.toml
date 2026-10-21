@@ -201,6 +201,8 @@ path = [
   "docs/gis/poi/*.json",
   "docs/gis/gaps/shinjuku.json",
   "docs/gis/gaps/shinjuku.md",
+  "docs/gis/history/**/gaps/shinjuku.json",  # archived copies: same E27-derived floor labels and bounds
+  "docs/gis/history/**/gaps/shinjuku.md",
   "docs/gis/research/poi-rights-s10-s03-related.md",
 ]
 precedence = "override"
