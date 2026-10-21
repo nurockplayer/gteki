@@ -19,6 +19,7 @@ import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, clampDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
+import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
@@ -50,6 +51,17 @@ export class Explorer {
   private readonly orbit: OrbitControls;
   private composer: PostFx | null = null;
   private readonly overviewLook = new OverviewLook();
+  private readonly street = new StreetBackdrop();
+  /** Render height of the station's street floor when it is an underground (scene-lit) station, else null. */
+  private streetY: number | null = null;
+  private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
+  private readonly probeDown = new THREE.Vector3(0, -1, 0);
+  private readonly probeNormal = new THREE.Vector3();
+  private readonly probeNormalMatrix = new THREE.Matrix3();
+  /** Street-level graph nodes (exit tops) in renderer space. */
+  private streetTops: THREE.Vector3[] = [];
+  private readonly probeOrigin = new THREE.Vector3();
+  private readonly probeUp = new THREE.Vector3(0, 1, 0);
   private readonly timer = new THREE.Timer();
   private readonly input: Input;
   private readonly ray = new THREE.Raycaster();
@@ -121,7 +133,7 @@ export class Explorer {
     this.orbit.screenSpacePanning = false;
 
     this.input = new Input(this.renderer.domElement, host);
-    this.scene.add(this.world, this.overlays, this.avatar);
+    this.scene.add(this.world, this.overlays, this.avatar, this.street.group);
     this.overlays.add(this.routeGroup, this.poiGroup);
     this.buildAvatar();
     this.defaultEnvironment();
@@ -286,6 +298,7 @@ export class Explorer {
     // Overview may have been entered while loading (against an empty world): restore first, so the new
     // scene's fog and materials are the ones saved, then re-apply once the scene is attached.
     this.overviewLook.set(this.scene, this.world, false);
+    this.street.restore(this.scene);
     if (this.stationScene) {
       this.world.add(this.stationScene.root);
       this.overlays.add(this.graph.overlay);
@@ -298,6 +311,11 @@ export class Explorer {
       if (env?.fog) this.scene.fog = new THREE.Fog(env.fog.color, env.fog.near, env.fog.far);
       if (env?.exposure !== undefined) this.renderer.toneMappingExposure = env.exposure;
       this.applyLighting(env?.lighting === "scene" ? "scene" : "default");
+      const streets = station.bundle.floors.filter((f) => f.ordinal === 0 && !f.intermediate);
+      this.streetY = env?.lighting === "scene" && streets.length ? Math.max(...streets.map((f) => f.renderElevationM)) : null;
+      this.streetTops = station.bundle.nodes
+        .filter((n) => streets.some((f) => f.id === n.floorId))
+        .map((n) => R(n.position.x, n.position.y, nodeDisplayZ(n, streets.find((f) => f.id === n.floorId)).z));
       this.stationScene.root.updateMatrixWorld(true);
     } else {
       this.world.add(this.graph.root);
@@ -325,6 +343,10 @@ export class Explorer {
   }
 
   private clearStation(): void {
+    this.street.restore(this.scene);
+    this.streetY = null;
+    this.streetTops = [];
+    this.streetProbe.at.set(Infinity, 0, 0);
     this.overviewLook.set(this.scene, this.world, false);
     this.disconnectStationAudio();
     this.stopGuide();
@@ -372,6 +394,7 @@ export class Explorer {
     if (mode === "overview") this.orbit.target.copy(this.pos);
     const xray = this.routeGroup.getObjectByName("route-xray");
     if (xray) xray.visible = mode === "overview";
+    if (mode === "overview") this.street.restore(this.scene);
     this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
   }
@@ -597,7 +620,11 @@ export class Explorer {
     else if (this.mode === "guide") this.stepGuide(dt);
     else this.orbit.update();
 
-    if (this.mode !== "overview") this.placeCamera(dt);
+    if (this.mode !== "overview") {
+      this.placeCamera(dt);
+      this.updateStreetProbe(dt);
+      this.street.update(this.scene, this.camera, this.pos, this.streetProbe.outdoors, dt, this.streetProbe.level);
+    }
     const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw);
     this.bodyYaw = motion.yaw;
     this.lastAvatarPos.copy(this.pos);
@@ -654,6 +681,41 @@ export class Explorer {
     const stepIndex = g.steps[Math.min(g.steps.length - 1, p.segment + 1)] ?? -1;
     this.events.onGuideProgress?.({ s: g.s, total, stepIndex, done: g.s >= total && !g.holding });
     if (stopped !== null) this.events.onGuideStop?.(stopped);
+  }
+
+  /**
+   * Outdoors/level-ground probe for the street backdrop. Skipped entirely below street range; otherwise
+   * refreshed when the walker has moved 0.25 m (raycasts are not free on large stations).
+   */
+  private updateStreetProbe(dt: number): void {
+    const p = this.streetProbe;
+    if (this.streetY === null || this.pos.y < this.streetY - STREET.maxBelowStreet || !this.cameraTargets.length) {
+      p.outdoors = false;
+      p.level = false;
+      p.at.set(Infinity, 0, 0);
+      return;
+    }
+    // Every 0.25 m walked, plus once shortly after stopping, so the footing where the walker halts is used.
+    // While the pavement shows, every step: stepping down off the top must hide it on the first tread.
+    p.wait -= dt;
+    const moved = p.at.distanceToSquared(this.pos);
+    const due = moved >= 0.0625 || (moved > 1e-6 && (p.level || p.wait <= 0));
+    if (!due) return;
+    p.at.copy(this.pos);
+    p.wait = 0.25;
+    this.ray.set(this.probeOrigin.set(this.pos.x, this.pos.y + EYE, this.pos.z), this.probeUp);
+    this.ray.far = STREET.skyClearance;
+    p.outdoors = isOutdoors(this.pos.y, this.streetY, castAll(this.ray, this.cameraTargets).length > 0);
+    this.ray.set(this.probeOrigin.set(this.pos.x, this.pos.y + 0.4, this.pos.z), this.probeDown);
+    this.ray.far = 1.2;
+    const hit = castAll(this.ray, this.groundTargets)[0];
+    const normalY = hit?.face
+      ? this.probeNormal.copy(hit.face.normal).applyNormalMatrix(this.probeNormalMatrix.getNormalMatrix(hit.object.matrixWorld)).y
+      : null;
+    // Single-sided winding varies across source polygons: only the tilt matters.
+    const footing = footingLevel(hit ? roleOf(hit.object) : null, normalY === null ? null : Math.abs(normalY), p.level);
+    // The surface actually underfoot, not the walker's smoothed height, decides which tread this is.
+    p.level = atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
   }
 
   private placeCamera(dt: number): void {
@@ -751,6 +813,7 @@ export class Explorer {
     this.input.dispose();
     this.disposeComposer();
     this.avatarRig?.dispose();
+    this.street.dispose();
     this.avatar.traverse((o) => {
       // The rig disposed its own parts; the shadow and marker ring are explorer-owned.
       const m = o as THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>;
