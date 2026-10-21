@@ -1,7 +1,7 @@
 // The ambient crowd keeps its route logic and draw budget while being drawn as articulated commuters.
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { buildCrowd } from "./crowd.ts";
+import { LOW_QUALITY_MAX_COUNT, buildCrowd } from "./crowd.ts";
 
 const edges = [
   { id: "e1", from: "a", to: "j", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 30, y: 0, z: 0 }] },
@@ -52,6 +52,38 @@ describe("ikebukuro crowd", () => {
     expect(all / 300).toBeLessThan(2900);
     expect(all / 300).toBeGreaterThan(1800);
     c.dispose();
+  });
+
+  it("keeps the high-quality parts exactly as they were", () => {
+    const c = make(150);
+    const expected: Record<string, number> = {
+      torso: 336, shirt: 136, skirt: 108, head: 436, hair_short: 180, hair_long: 276, hair_tail: 252, upper_arm: 96, forearm: 96, hand: 84,
+      thigh: 108, shin: 96, shoe: 176, backpack: 272, shoulder_bag: 184,
+    };
+    for (const [n, t] of Object.entries(expected)) expect(tris(named(c, n))).toBe(t);
+    let all = 0;
+    for (const m of meshes(c)) all += tris(m) * m.count;
+    expect(all).toBe(388008);
+    c.dispose();
+  });
+
+  it("holds the low-quality crowd (56 people) to 60k triangles in at most 15 draws", () => {
+    expect(LOW_QUALITY_MAX_COUNT).toBeGreaterThanOrEqual(56);
+    expect(LOW_QUALITY_MAX_COUNT).toBeLessThan(150);
+    const count = 56;
+    const c = make(count);
+    const high = make(150);
+    expect(meshes(c).length).toBeLessThanOrEqual(15);
+    let all = 0, allHigh = 0;
+    for (const m of meshes(c)) all += tris(m) * m.count;
+    for (const m of meshes(high)) allHigh += tris(m) * m.count;
+    expect(all).toBeLessThanOrEqual(60_000); // triangles per person x count
+    expect(all / count).toBeLessThanOrEqual(60_000 / count);
+    expect(all / count).toBeLessThan((allHigh / 150) * 0.5); // coarser than high quality in every part that matters
+    // every part is no richer than its high-quality twin
+    for (const m of meshes(c)) expect(tris(m)).toBeLessThanOrEqual(tris(named(high, m.name.replace("crowd_", ""))));
+    c.dispose();
+    high.dispose();
   });
 
   it("gives people varied hair, outerwear and heights", () => {
@@ -171,5 +203,120 @@ describe("ikebukuro crowd gait", () => {
       expect(Math.min(...ys)).toBeGreaterThan(-0.012);
       expect(Math.max(...ys)).toBeLessThan(0.25);
     }
+  });
+
+  /** Every vertex of the rigid shoe (upper and sole), transformed by its instance matrix, over 6 s = several gait cycles. */
+  function soleTrack(count: number) {
+    const long = [{ id: "L", from: "a", to: "b", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 4000, y: 0, z: 0 }] }];
+    const c = buildCrowd(THREE, long, toRenderer, count, new THREE.Texture(), {});
+    const shoe = named(c, "shoe");
+    const pos = shoe.geometry.getAttribute("position");
+    const m = new THREE.Matrix4(), p = new THREE.Vector3();
+    const dt = 1 / 120;
+    const lowest: number[][] = [[], []];
+    let nSole = 0;
+    for (let v = 0; v < pos.count; v++) if (pos.getY(v) < -0.045) nSole++;
+    for (let k = 0; k < 120 * 6; k++) {
+      c.update(dt, k * dt);
+      for (let side = 0; side < 2; side++) {
+        shoe.getMatrixAt(side, m);
+        let lo = Infinity;
+        for (let v = 0; v < pos.count; v++) lo = Math.min(lo, p.fromBufferAttribute(pos, v).applyMatrix4(m).y);
+        lowest[side]!.push(lo);
+      }
+    }
+    c.dispose();
+    return { lowest, nSole, tris: tris(shoe) };
+  }
+
+  for (const [label, count] of [["low", 56], ["high", 150]] as const) {
+    it(`keeps every sole vertex above the floor through the whole gait cycle (${label} quality)`, () => {
+      const { lowest, nSole, tris: t } = soleTrack(count);
+      expect(nSole).toBeGreaterThan(10);
+      expect(t).toBe(label === "low" ? 84 : 176);
+      for (const side of [0, 1]) {
+        const lo = lowest[side]!;
+        expect(Math.min(...lo)).toBeGreaterThanOrEqual(-0.002); // floor is y = 0
+        // and the stance foot really stands on it (no hovering): most of the stance 60 % has a vertex within 2 mm of the floor
+        expect(lo.filter((y) => Math.abs(y) <= 0.002).length / lo.length).toBeGreaterThan(0.45);
+        expect(Math.max(...lo)).toBeLessThan(0.25);
+      }
+    });
+  }
+});
+
+describe("ikebukuro crowd near-camera hiding", () => {
+  const TAU = Math.PI * 2;
+  const LONG = [{ id: "L", from: "a", to: "b", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 4000, y: 0, z: 0 }] }];
+  const EYE = 1.6, NEAR = 1.2;
+  /** The single walker's start, replayed from the crowd's seeded stream (position along the edge, direction, speed, bob phase). */
+  function firstWalker() {
+    let st = 7 >>> 0;
+    const r = () => ((st = (st * 1664525 + 1013904223) >>> 0) / 4294967296);
+    const s = r() * 4000, forward = r() < 0.5, speed = 1.15 + r() * 0.5;
+    r(); // lane offset
+    return { s, forward, speed, phase: r() * 6.28 };
+  }
+  // The earlier build's rule: the walker is lifted by |cos(phase)| * 2.5 cm (one phase cycle per 1.45 m) before the camera checks.
+  const legacyBob = (phase: number) => Math.abs(Math.cos(phase)) * 0.025;
+  const legacyHidden = (h: number, bob: number) => h * h + (bob + 1.1 - EYE) ** 2 < NEAR * NEAR;
+
+  const camera = new THREE.PerspectiveCamera(70, 1.5, 0.05, 200);
+  /** Put the camera EYE m high, h m (horizontally) beside the point x on the edge, and let the crowd see it as a rendered frame. */
+  function renderFrom(c: ReturnType<typeof make>, x: number, h: number) {
+    camera.position.set(x, EYE, h);
+    camera.lookAt(x, 1.0, 0);
+    camera.updateMatrixWorld(true);
+    named(c, "torso").onBeforeRender(null as never, null as never, camera, null as never, null as never, null as never);
+  }
+  const hidden = (c: ReturnType<typeof make>) => {
+    const m = new THREE.Matrix4();
+    named(c, "torso").getMatrixAt(0, m);
+    return m.determinant() === 0;
+  };
+
+  it("hides the walker at exactly the legacy distances (1.0947 m at camera height 1.6 m, bob 0.02381 m)", () => {
+    const w = firstWalker();
+    const c = buildCrowd(THREE, LONG, toRenderer, 1, new THREE.Texture(), {});
+    // find the single step dt after which the legacy bob is 0.02381 m
+    const f = (dt: number) => legacyBob(w.phase + (w.speed * dt * TAU) / 1.45) - 0.02381;
+    let lo = 0, hi = 0;
+    for (let dt = 1e-3; dt < 2; dt += 1e-3) if (f(dt) * f(dt + 1e-3) <= 0) { lo = dt; hi = dt + 1e-3; break; }
+    expect(hi).toBeGreaterThan(0);
+    for (let i = 0; i < 60; i++) { const mid = (lo + hi) / 2; if (f(lo) * f(mid) <= 0) hi = mid; else lo = mid; }
+    const dt = (lo + hi) / 2, bob = legacyBob(w.phase + (w.speed * dt * TAU) / 1.45);
+    expect(bob).toBeCloseTo(0.02381, 5);
+    const h = 1.0947;
+    expect(legacyHidden(h, bob)).toBe(true); // origin/main hides this walker ...
+    expect(h * h + (1.1 - EYE) ** 2).toBeGreaterThan(NEAR * NEAR); // ... which a flat pose would not
+    renderFrom(c, w.s + (w.forward ? 1 : -1) * w.speed * dt, h);
+    c.update(dt, dt);
+    expect(hidden(c)).toBe(true);
+    c.dispose();
+  });
+
+  it("makes the same near-camera hide / show decision as the legacy bob formula over many frames", () => {
+    const w = firstWalker();
+    const c = buildCrowd(THREE, LONG, toRenderer, 1, new THREE.Texture(), {});
+    const dt = 1 / 60, flat = Math.sqrt(NEAR * NEAR - (1.1 - EYE) ** 2);
+    let s = w.s, phase = w.phase, windows = 0, shown = 0;
+    for (let k = 0; k < 900; k++) {
+      s += (w.forward ? 1 : -1) * w.speed * dt;
+      phase += (w.speed * dt * TAU) / 1.45;
+      const bob = legacyBob(phase);
+      const edge = Math.sqrt(NEAR * NEAR - (bob + 1.1 - EYE) ** 2); // legacy hides inside this horizontal distance
+      let h: number;
+      if (k % 2 === 0) {
+        if (edge - flat < 1e-3) { renderFrom(c, s, flat + 0.2); c.update(dt, k * dt); continue; }
+        h = (edge + flat) / 2; // inside the legacy radius, outside the radius of a flat walker
+      } else h = edge + 0.02;
+      renderFrom(c, s, h);
+      c.update(dt, k * dt);
+      expect(hidden(c)).toBe(legacyHidden(h, bob));
+      if (legacyHidden(h, bob)) windows++; else shown++;
+    }
+    expect(windows).toBeGreaterThan(100);
+    expect(shown).toBeGreaterThan(100);
+    c.dispose();
   });
 });

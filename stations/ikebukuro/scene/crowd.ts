@@ -12,8 +12,9 @@ interface Edge { id: string; from: string; to: string; verification: string; geo
 interface Path { pts: THREE_NS.Vector3[]; cum: number[]; hcum: number[]; length: number; from: string; to: string; lane?: Lane }
 /** Safe lateral extent (m) over each stepM interval of horizontal distance along an edge (the last ends at the end node), from pipeline/build_station.py. */
 export interface Lane { stepM: number; left: number[]; right: number[] }
-/** phase: gait phase in radians, advanced by distance walked (one cycle per two steps). */
-interface Agent { path: number; forward: boolean; s: number; speed: number; offset: number; phase: number; hiddenUntil: number }
+/** phase: gait phase in radians, advanced by distance walked (one cycle per two steps). bobPhase: the earlier build's bob phase
+ * (one cycle per ~1.45 m); it only feeds the near-camera / visibility decisions, which must not change with the new pose. */
+interface Agent { path: number; forward: boolean; s: number; speed: number; offset: number; phase: number; bobPhase: number; hiddenUntil: number }
 
 /* ------------------------------------------------------------------------------------------ */
 /* appearance palettes (sRGB hex; albedos kept realistic so nothing washes out to grey)        */
@@ -113,15 +114,22 @@ function sampleFoot(phi: number, stride: number, out: FootSample) {
   }
 }
 
-// The planted foot rolls about its heel (heel-strike, pitch > 0) and then its ball (toe-off, pitch < 0), so the
-// pivot point stays fixed on the floor. Offsets are relative to the ankle in the flat-foot pose; toe points to +Z.
-const HEEL = [-0.07, -ANKLE_H] as const; // [z, y]
-const BALL = [0.105, -ANKLE_H] as const;
-/** Ankle displacement (from its flat-foot position) that keeps the pivot fixed at pitch th (toes up positive). */
-function pivotOffset(th: number, out: { dy: number; dz: number }) {
-  const p = th >= 0 ? HEEL : BALL, c = Math.cos(th), s = Math.sin(th);
-  out.dz = p[0] - (-p[1] * s + p[0] * c);
-  out.dy = p[1] - (p[1] * c + p[0] * s);
+// The planted foot is a rigid shoe that rolls about its lowest support point: the heel while the toes are up
+// (heel-strike, pitch > 0) and the toe edge of the sole while the heel is up (toe-off, pitch < 0), so no sole
+// vertex ever goes below the floor and the contact point stays fixed on it. The support points are the actual
+// sole vertices of the shoe geometry in use (low and high quality differ), as (z, y) pairs relative to the ankle
+// in the flat-foot pose; toe points to +Z.
+/** Ankle displacement (from its flat-foot position) that puts the lowest sole vertex on the floor, fixed in z, at pitch th (toes up positive). */
+function pivotOffset(th: number, sole: Float64Array, out: { dy: number; dz: number }) {
+  const c = Math.cos(th), s = Math.sin(th);
+  let low = Infinity, z0 = 0, z1 = 0;
+  for (let k = 0; k < sole.length; k += 2) {
+    const z = sole[k]!, y = sole[k + 1]!;
+    const ry = y * c + z * s;
+    if (ry < low) { low = ry; z0 = z; z1 = -y * s + z * c; }
+  }
+  out.dy = -ANKLE_H - low;
+  out.dz = z0 - z1;
 }
 
 /* ------------------------------------------------------------------------------------------ */
@@ -134,10 +142,16 @@ interface Ring { c: V3; a: V3; b: V3 }
 const Yring = (y: number, rx: number, rz = rx, cz = 0, cx = 0): Ring => ({ c: [cx, y, cz], a: [rx, 0, 0], b: [0, 0, rz] });
 const Zring = (z: number, hw: number, hh: number, cy: number, cx = 0): Ring => ({ c: [cx, cy, z], a: [hw, 0, 0], b: [0, hh, 0] });
 
-/** The face budget of the whole person, by part: radial segments of each lofted piece. */
-const SEG = { torso: 14, torus: 10, head: 14, hair: 10, limb: 8, thigh: 9, shin: 8, shoe: 8, hand: 7, pack: 8 };
+/** The face budget of the whole person, by part: radial segments of each lofted piece (high quality). */
+const SEG_HIGH = { torso: 14, torus: 10, head: 14, hair: 10, limb: 8, thigh: 9, shin: 8, shoe: 8, hand: 7, pack: 8 };
+/** Low quality: coarser sections (even counts keep the soles flat), one cap step, fewer stations. */
+const SEG_LOW = { torso: 8, torus: 6, head: 8, hair: 6, limb: 6, thigh: 6, shin: 6, shoe: 6, hand: 4, pack: 6 };
+/** The quality is the one the scene already selects through the head-count: 56 on low, 150 on high. */
+export const LOW_QUALITY_MAX_COUNT = 80;
 
-function makeGeometry(THREE: typeof THREE_NS) {
+function makeGeometry(THREE: typeof THREE_NS, low: boolean) {
+  const SEG = low ? SEG_LOW : SEG_HIGH;
+  const CS = low ? 1 : 2; // elliptical cap steps
   const subdivide = (rs: Ring[], sub: number): Ring[] => {
     if (sub <= 1 || rs.length < 3) return rs;
     const flat = rs.map((r) => [...r.c, ...r.a, ...r.b]);
@@ -277,13 +291,15 @@ function makeGeometry(THREE: typeof THREE_NS) {
 
   /** A tapered limb hanging from its pivot (y = 0) down to -len, ball-capped at both ends. */
   const limb = (len: number, rTop: number, rows: readonly (readonly [number, number])[], rBot: number, seg: number, zs = 1, capBot = rBot) => {
-    const rs: Ring[] = [Yring(0, rTop, rTop * zs), ...rows.map(([t, r]) => Yring(-t * len, r, r * zs)), Yring(-len, rBot, rBot * zs)];
-    return loft(caps(rs, rTop, capBot, 2), seg);
+    // low quality keeps only the widest station between the ends
+    const kept = low ? [rows.reduce((m, r) => (r[1] > m[1] ? r : m))] : rows;
+    const rs: Ring[] = [Yring(0, rTop, rTop * zs), ...kept.map(([t, r]) => Yring(-t * len, r, r * zs)), Yring(-len, rBot, rBot * zs)];
+    return loft(caps(rs, rTop, capBot, CS), seg);
   };
 
   /** Ribbon along a smoothed path (straps). */
   const strap = (pts: V3[], halfW: number, halfT: number, outward: (p: V3) => V3) => {
-    const sub = 2;
+    const sub = low ? 1 : 2;
     const path: V3[] = [];
     for (let i = 0; i < pts.length - 1; i++) {
       const p0 = pts[Math.max(0, i - 1)]!, p1 = pts[i]!, p2 = pts[i + 1]!, p3 = pts[Math.min(pts.length - 1, i + 2)]!;
@@ -303,16 +319,17 @@ function makeGeometry(THREE: typeof THREE_NS) {
   };
 
   /* ---------------- torso: jacket / coat body, shirt, tail ---------------- */
-  const JACKET: [number, number][] = [
+  const JACKET_HIGH: [number, number][] = [
     [0.85, 0.19], [0.93, 0.176], [1.02, 0.156], [1.12, 0.15], [1.22, 0.157], [1.3, 0.161], [1.36, 0.16], [1.4, 0.15], [1.435, 0.115], [1.468, 0.066],
   ];
+  const JACKET: [number, number][] = low ? JACKET_HIGH.filter(([y]) => ![0.93, 1.12, 1.3].includes(y)) : JACKET_HIGH;
   const rJ = tableFn(JACKET);
   const ly = (y: number) => y - CHEST_Y;
   const rLin = (y: number) => {
     for (let i = 1; i < JACKET.length; i++) if (y <= JACKET[i]![0]) return lerp(JACKET[i - 1]![1], JACKET[i]![1], (y - JACKET[i - 1]![0]) / (JACKET[i]![0] - JACKET[i - 1]![0]));
     return JACKET[JACKET.length - 1]![1];
   };
-  const torso = loft(caps(JACKET.map(([y, r]) => Yring(ly(y), r, r * TORSO_DEPTH)), 0.014, 0.022, 2), SEG.torso, 2.3);
+  const torso = loft(caps(JACKET.map(([y, r]) => Yring(ly(y), r, r * TORSO_DEPTH)), 0.014, 0.022, CS), SEG.torso, 2.3);
   bake(torso, (x, y, z, _nx, ny) => {
     const wy = y + CHEST_Y;
     let f = 0.74 + 0.26 * smoothstep(0.85, 1.08, wy);
@@ -324,9 +341,10 @@ function makeGeometry(THREE: typeof THREE_NS) {
   });
 
   // Open-collar shirt: light V panel just proud of the coat front + a collar band around the neck.
-  const panelRows = 8, panelCols = 5;
+  const panelCols = low ? 4 : 5;
   const ppos: number[] = [], pidx: number[] = [];
-  const panelYs = [1.452, 1.435, 1.4, 1.36, 1.3, 1.22, 1.12, 1.03]; // includes the jacket's own stations: no chord cuts a corner
+  const panelYs = low ? [1.452, 1.435, 1.4, 1.36, 1.22, 1.02] : [1.452, 1.435, 1.4, 1.36, 1.3, 1.22, 1.12, 1.03]; // includes the jacket's own stations: no chord cuts a corner
+  const panelRows = panelYs.length;
   for (let j = 0; j < panelRows; j++) {
     const y = panelYs[j]!;
     const w = lerp(0.0, 0.44, smoothstep(1.02, 1.42, y) ** 0.8);
@@ -350,7 +368,7 @@ function makeGeometry(THREE: typeof THREE_NS) {
     const wy = y + CHEST_Y;
     return (0.7 + 0.3 * smoothstep(1.0, 1.4, wy)) * (1 - 0.4 * smoothstep(0.03, 0.06, Math.abs(x)) * smoothstep(1.46, 1.3, wy));
   });
-  const collar = torus(ly(1.484), 0.06, 0.054, 0.014, 0.016, SEG.torus, 4);
+  const collar = torus(ly(1.484), 0.06, 0.054, 0.014, 0.016, SEG.torus, low ? 3 : 4);
   bake(collar, (_x, _y, z) => 0.85 + 0.15 * smoothstep(-0.05, 0.05, z));
   const shirt = merge([panel, collar]);
 
@@ -370,7 +388,7 @@ function makeGeometry(THREE: typeof THREE_NS) {
   const kx = (ny: number) => 1 - 0.3 * (ny < 0 ? -ny : 0) ** 1.7;
   const kz = (ny: number) => 1 - 0.2 * (ny < 0 ? -ny : 0) ** 1.4;
   const skullRings: Ring[] = [];
-  const SROWS = 10;
+  const SROWS = low ? 6 : 10;
   for (let j = 0; j <= SROWS; j++) {
     const ang = -Math.PI / 2 + (j / SROWS) * Math.PI, ny = Math.sin(ang), sc = Math.cos(ang);
     skullRings.push(Yring(HC + ny * hh, wx * kx(ny) * sc, wz * kz(ny) * sc, 0.004));
@@ -385,32 +403,33 @@ function makeGeometry(THREE: typeof THREE_NS) {
     if (Math.abs(x) > 0.07) f *= 0.93;
     return f;
   });
-  const neck = loft(caps([Yring(-0.1, 0.058, 0.055, 0.008), Yring(-0.01, 0.05, 0.048, 0.008), Yring(0.04, 0.046, 0.045, 0.008)], 0.01, 0.01, 1), 8);
+  const neck = loft(caps([Yring(-0.1, 0.058, 0.055, 0.008), Yring(-0.01, 0.05, 0.048, 0.008), Yring(0.04, 0.046, 0.045, 0.008)], 0.01, 0.01, 1), low ? 5 : 8);
   bake(neck, (_x, y) => 1 - 0.45 * smoothstep(0.0, 0.08, y) - 0.1 * smoothstep(-0.06, -0.1, y));
-  const nose = ellipsoid(0.0085, 0.019, 0.013, 6, 4).rotateX(-0.3).translate(0, HC - 0.014, frontZ(0, HC - 0.014) - 0.001);
-  const ears = [-1, 1].map((s) => ellipsoid(0.0075, 0.023, 0.0145, 5, 4).translate(s * (wx - 0.001), HC - 0.004, 0.008));
-  const eyes = [-1, 1].map((s) => dark(ellipsoid(0.0085, 0.0062, 0.004, 5, 3).translate(s * 0.031, HC + 0.006, frontZ(s * 0.031, HC + 0.006) + 0.0005), 0.16));
+  const nose = ellipsoid(0.0085, 0.019, 0.013, low ? 4 : 6, low ? 3 : 4).rotateX(-0.3).translate(0, HC - 0.014, frontZ(0, HC - 0.014) - 0.001);
+  const ears = low ? [] : [-1, 1].map((s) => ellipsoid(0.0075, 0.023, 0.0145, 5, 4).translate(s * (wx - 0.001), HC - 0.004, 0.008));
+  const eyes = [-1, 1].map((s) => dark(ellipsoid(0.0085, 0.0062, 0.004, low ? 4 : 5, low ? 2 : 3).translate(s * 0.031, HC + 0.006, frontZ(s * 0.031, HC + 0.006) + 0.0005), 0.16));
   const head = merge([skull, neck, nose, ...ears, ...eyes]);
 
   /* ---------------- hair: three silhouettes (short, long, ponytail) ---------------- */
   const hairCap = () => {
-    const rs = [
+    const all = [
       Yring(-0.04, 0.062, 0.068, -0.036), Yring(-0.005, 0.075, 0.086, -0.027), Yring(0.03, 0.08, 0.098, -0.018), Yring(0.065, 0.088, 0.106, -0.01),
       Yring(0.095, 0.085, 0.108, -0.004), Yring(0.125, 0.068, 0.092, 0), Yring(0.15, 0.04, 0.055, 0),
     ];
-    return loft(caps(rs, 0.012, 0.016, 2), SEG.hair);
+    const rs = low ? [all[0]!, all[2]!, all[4]!, all[5]!] : all;
+    return loft(caps(rs, 0.012, 0.016, CS), SEG.hair);
   };
   const hairShade = (g: THREE_NS.BufferGeometry) => bake(g, (x, y, z) => (0.5 + 0.5 * smoothstep(-0.1, 0.15, y)) * (0.92 + 0.08 * Math.sin(x * 120 + z * 80 + y * 50)));
   const hair0 = hairShade(hairCap());
-  const hair1 = hairShade(merge([hairCap(), loft(caps([Yring(0.05, 0.075, 0.045, -0.075), Yring(-0.03, 0.085, 0.05, -0.085), Yring(-0.1, 0.09, 0.052, -0.09), Yring(-0.16, 0.088, 0.045, -0.085)], 0.02, 0.03, 2), 8)]));
-  const hair2 = hairShade(merge([hairCap(), loft(caps([Yring(0.1, 0.02, 0.02, -0.1), Yring(0.04, 0.026, 0.026, -0.12), Yring(-0.03, 0.024, 0.024, -0.125), Yring(-0.1, 0.016, 0.016, -0.12)], 0.03, 0.03, 2), 6)]));
+  const hair1 = hairShade(merge([hairCap(), loft(caps([Yring(0.05, 0.075, 0.045, -0.075), Yring(-0.03, 0.085, 0.05, -0.085), Yring(-0.1, 0.09, 0.052, -0.09), Yring(-0.16, 0.088, 0.045, -0.085)], 0.02, 0.03, CS), low ? 5 : 8)]));
+  const hair2 = hairShade(merge([hairCap(), loft(caps([Yring(0.1, 0.02, 0.02, -0.1), Yring(0.04, 0.026, 0.026, -0.12), Yring(-0.03, 0.024, 0.024, -0.125), Yring(-0.1, 0.016, 0.016, -0.12)], 0.03, 0.03, CS), low ? 4 : 6)]));
 
   /* ---------------- limbs ---------------- */
   const upperArm = limb(L_UPPER_ARM, 0.052, [[0.15, 0.056], [0.55, 0.05]], 0.046, SEG.limb);
   bake(upperArm, (x, y) => (1 - 0.3 * smoothstep(0.0, 0.05, Math.abs(x)) * smoothstep(-0.02, -0.12, y) * 0.8) * (1 - 0.1 * smoothstep(-0.24, -0.3, y)));
   const foreArm = limb(L_FOREARM, 0.046, [[0.15, 0.045], [0.6, 0.038]], 0.0345, SEG.limb, 1, 0.014);
   bake(foreArm, (_x, y) => (y < -0.235 ? 0.78 : 1));
-  const hand = loft(caps([Yring(-0.012, 0.022, 0.028), Yring(-0.05, 0.0185, 0.037), Yring(-0.1, 0.0175, 0.039), Yring(-0.14, 0.0125, 0.031)], 0.01, 0.028, 2), SEG.hand);
+  const hand = loft(caps([Yring(-0.012, 0.022, 0.028), Yring(-0.05, 0.0185, 0.037), Yring(-0.1, 0.0175, 0.039), Yring(-0.14, 0.0125, 0.031)], 0.01, 0.028, CS), SEG.hand);
   bake(hand, (_x, y) => 0.86 + 0.14 * smoothstep(-0.17, -0.05, y));
   const thigh = limb(L_THIGH, 0.07, [[0.14, 0.08], [0.55, 0.066]], 0.054, SEG.thigh);
   bake(thigh, (_x, y, z) => {
@@ -425,15 +444,26 @@ function makeGeometry(THREE: typeof THREE_NS) {
   /* ---------------- shoe: rounded upper + darker sole ---------------- */
   const upperTop = tableFn([[-0.08, -0.012], [-0.056, 0.014], [-0.02, 0.026], [0.025, 0.022], [0.065, 0.008], [0.105, -0.008], [0.142, -0.022], [0.176, -0.032]]);
   const half = tableFn([[-0.08, 0.034], [-0.06, 0.041], [-0.02, 0.045], [0.04, 0.047], [0.09, 0.05], [0.13, 0.05], [0.178, 0.04]]);
-  const shoeRings = [-0.08, -0.03, 0.04, 0.11, 0.176].map((z) => {
+  const shoeRings = (low ? [-0.08, 0.0, 0.1, 0.176] : [-0.08, -0.03, 0.04, 0.11, 0.176]).map((z) => {
     const top = upperTop(z), bot = -0.052;
     return Zring(z, half(z), (top - bot) / 2, (top + bot) / 2);
   });
-  const upper = loft(caps(shoeRings, 0.006, 0.006, 2), SEG.shoe, 2.6);
+  const upper = loft(caps(shoeRings, 0.006, 0.006, CS), SEG.shoe, 2.6);
   bake(upper, (_x, y) => 0.8 + 0.2 * smoothstep(-0.05, 0.0, y));
-  const soleRings = [-0.084, 0.0, 0.1, 0.18].map((z, i) => Zring(z, [0.035, 0.048, 0.052, 0.04][i]!, 0.015, -0.057));
+  const soleRings = (low ? [-0.084, 0.1, 0.18] : [-0.084, 0.0, 0.1, 0.18]).map((z, i) => Zring(z, (low ? [0.035, 0.052, 0.04] : [0.035, 0.048, 0.052, 0.04])[i]!, 0.015, -0.057));
   const sole = dark(loft(caps(soleRings, 0.004, 0.004, 1), SEG.shoe, 3.4), 0.34);
   const shoe = merge([upper, sole]);
+  // Rigid-foot support points: every vertex in the lower part of the shoe as (z, y), with duplicates folded.
+  const solePts = (() => {
+    const p = shoe.getAttribute("position"), seen = new Set<string>(), out: number[] = [];
+    for (let i = 0; i < p.count; i++) {
+      const z = p.getZ(i), y = p.getY(i);
+      if (y > -0.045) continue;
+      const key = `${Math.round(z * 1e4)},${Math.round(y * 1e4)}`;
+      if (!seen.has(key)) { seen.add(key); out.push(z, y); }
+    }
+    return new Float64Array(out);
+  })();
 
   /* ---------------- bags ---------------- */
   const outward = (p: V3): V3 => {
@@ -444,22 +474,22 @@ function makeGeometry(THREE: typeof THREE_NS) {
     const r = rJ(y) - inset;
     return [r * Math.sin(phi), ly(y), r * TORSO_DEPTH * Math.cos(phi)];
   };
-  const backpackBody = loft(caps([Yring(ly(1.0), 0.13, 0.06, -0.19), Yring(ly(1.12), 0.146, 0.07, -0.19), Yring(ly(1.3), 0.146, 0.07, -0.19), Yring(ly(1.4), 0.128, 0.062, -0.19)], 0.03, 0.03, 2), SEG.pack, 4.2);
-  const pocket = loft(caps([Yring(ly(1.05), 0.09, 0.025, -0.255), Yring(ly(1.17), 0.1, 0.028, -0.255)], 0.02, 0.02, 1), 8, 4);
+  const backpackBody = loft(caps([Yring(ly(1.0), 0.13, 0.06, -0.19), Yring(ly(1.12), 0.146, 0.07, -0.19), Yring(ly(1.3), 0.146, 0.07, -0.19), Yring(ly(1.4), 0.128, 0.062, -0.19)], 0.03, 0.03, CS), SEG.pack, 4.2);
+  const pocket = loft(caps([Yring(ly(1.05), 0.09, 0.025, -0.255), Yring(ly(1.17), 0.1, 0.028, -0.255)], 0.02, 0.02, 1), low ? 6 : 8, 4);
   const straps = [-1, 1].map((s) => strap([
     [s * 0.1, ly(1.37), -0.17], [s * 0.098, ly(1.45), -0.06], surf(1.39, Math.PI - s * 0.95, -0.004), surf(1.25, Math.PI - s * 1.3, -0.004), [s * 0.14, ly(1.08), -0.08],
   ], 0.021, 0.006, outward));
   const backpack = merge([backpackBody, pocket, ...straps]);
   bake(backpack, (_x, y, z) => (0.78 + 0.22 * smoothstep(ly(1.0), ly(1.3), y)) * (z > -0.15 ? 0.82 : 1));
 
-  const bagBody = loft(caps([Yring(0.86 - CHEST_Y, 0.052, 0.14, -0.01, 0.275), Yring(0.95 - CHEST_Y, 0.057, 0.16, -0.01, 0.275), Yring(1.04 - CHEST_Y, 0.052, 0.15, -0.01, 0.275)], 0.03, 0.02, 2), SEG.pack, 3.2);
+  const bagBody = loft(caps([Yring(0.86 - CHEST_Y, 0.052, 0.14, -0.01, 0.275), Yring(0.95 - CHEST_Y, 0.057, 0.16, -0.01, 0.275), Yring(1.04 - CHEST_Y, 0.052, 0.15, -0.01, 0.275)], 0.03, 0.02, CS), SEG.pack, 3.2);
   const bagStrap = strap([
     [0.27, 1.04 - CHEST_Y, 0.1], [0.245, 1.2 - CHEST_Y, 0.075], [0.19, 1.37 - CHEST_Y, 0.05], [0.14, ly(1.45), 0.0], [0.19, 1.37 - CHEST_Y, -0.06], [0.245, 1.2 - CHEST_Y, -0.09], [0.27, 1.04 - CHEST_Y, -0.12],
   ], 0.014, 0.006, (p) => [p[0] - 0.1, 0.6, p[2] * 4]);
   const shoulderBag = merge([bagBody, bagStrap]);
   bake(shoulderBag, (_x, y) => 0.7 + 0.3 * smoothstep(0.86 - CHEST_Y, 1.04 - CHEST_Y, y));
 
-  return { torso, shirt, skirt, head, hair0, hair1, hair2, upperArm, foreArm, hand, thigh, shin, shoe, backpack, shoulderBag };
+  return { torso, shirt, skirt, head, hair0, hair1, hair2, upperArm, foreArm, hand, thigh, shin, shoe, solePts, backpack, shoulderBag };
 }
 
 interface Look {
@@ -505,10 +535,12 @@ export function buildCrowd(
     // place proportionally to path length
     let r = rand() * total, k = 0;
     while (k < paths.length - 1 && r > paths[k]!.length) r -= paths[k++]!.length;
-    agents.push({ path: k, forward: rand() < 0.5, s: r, speed: 1.15 + rand() * 0.5, offset: (rand() * 2 - 1) * 0.9, phase: rand() * 6.28, hiddenUntil: -1 });
+    agents.push({ path: k, forward: rand() < 0.5, s: r, speed: 1.15 + rand() * 0.5, offset: (rand() * 2 - 1) * 0.9, phase: 0, bobPhase: 0, hiddenUntil: -1 });
+    const a = agents[i]!;
+    a.phase = a.bobPhase = rand() * 6.28;
   }
 
-  const geo = makeGeometry(THREE);
+  const geo = makeGeometry(THREE, count <= LOW_QUALITY_MAX_COUNT);
   // One material per surface type. Albedos are real-world values; the envMap is the only light, so it is
   // held down a little to keep dark coats dark.
   // Specular is cut back (MeshPhysicalMaterial.specularIntensity): with F0 = 0.04 against a bright studio envMap,
@@ -768,9 +800,10 @@ export function buildCrowd(
       const fs = sd === 0 ? fl : fr;
       const bagArm = L.carry === "shoulderBag" && L.bagSide === s;
       const amp = bagArm ? 0.08 : 0.42;
+      const abduct = bagArm ? 0.05 : 0.035 + 0.015 * Math.abs(fs); // sideways angle: arms hang close to the body (<= 3 deg)
       const fwd = -fs * amp + 0.07;
       const fwdN = bagArm ? 0.3 : clamp(0.5 - 0.5 * fs, 0, 1);
-      eul.set(-fwd - (bagArm ? 0.05 : 0), 0, s * (bagArm ? 0.2 : 0.07 + 0.03 * Math.abs(fs)), "XZY");
+      eul.set(-fwd - (bagArm ? 0.05 : 0), 0, s * abduct, "XZY");
       mT.makeRotationFromEuler(eul).setPosition(s * SHOULDER_X, SHOULDER_DY, 0);
       mA.multiplyMatrices(mChest, mT); // upper arm
       put(P.upperArm, i, sd, mA);
@@ -785,7 +818,7 @@ export function buildCrowd(
     for (let sd = 0; sd < 2; sd++) {
       const s = sd === 0 ? 1 : -1;
       const ft = sd === 0 ? ftL : ftR;
-      pivotOffset(ft.pitch, gnd);
+      pivotOffset(ft.pitch, geo.solePts, gnd);
       vp.set(s * 0.095, ANKLE_H + gnd.dy + ft.lift, ft.f + gnd.dz).applyMatrix4(mHipsInv);
       const flex = legIK(s, vp.x, vp.y, vp.z, qThigh);
       qKnee.setFromAxisAngle(axisX, flex);
@@ -829,6 +862,7 @@ export function buildCrowd(
       const L = looks[i]!;
       a.s += (a.forward ? 1 : -1) * a.speed * dt;
       a.phase += (a.speed * dt * TAU) / (L.stride * L.sw); // gait phase follows distance walked: planted feet do not slide
+      a.bobPhase += (a.speed * dt * TAU) / 1.45; // the earlier build's phase: one cycle per ~1.45 m
       if (a.s > p.length || a.s < 0) {
         const node = a.s > p.length ? p.to : p.from;
         const options = (byNode.get(node) ?? []).filter((j) => j !== a.path);
@@ -883,19 +917,22 @@ export function buildCrowd(
       }
       pos.addScaledVector(side, off);
       q.setFromAxisAngle(up, Math.atan2(dir.x, dir.z));
-      base.compose(pos, q, bodyScale.set(L.sw, L.sh, L.sw));
+      base.compose(pos, q, bodyScale.set(L.sw, L.sh, L.sw)); // rendered pose: the feet stand on the true floor
+      // Visibility and proximity decisions keep the earlier build's small vertical bob so who gets hidden
+      // near the camera (and who counts as nearby) is unchanged; the pose above does not use it.
+      const floorY = pos.y;
+      pos.y += Math.abs(Math.cos(a.bobPhase)) * 0.025;
       const dx = pos.x - cam.x, dz = pos.z - cam.z, dy = pos.y + 1.1 - cam.y;
       if (dx * dx + dz * dz + dy * dy < 64) near++;
       // Someone who just moved stays hidden until a frame rendered after the move shows the spot out
       // of view: a turn of any speed between the move and the next frame never shows the jump.
+      let shown = true;
       if (a.hiddenUntil >= 0) {
         if (renders > a.hiddenUntil && !inView(pos)) a.hiddenUntil = -1;
-        else {
-          hide(i);
-          continue;
-        }
+        else shown = false;
       }
-      if (dx * dx + dz * dz + dy * dy < NEAR_CAM_M * NEAR_CAM_M) {
+      pos.y = floorY;
+      if (!shown || dx * dx + dz * dz + dy * dy < NEAR_CAM_M * NEAR_CAM_M) {
         hide(i);
         continue;
       }
