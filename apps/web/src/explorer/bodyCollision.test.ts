@@ -183,21 +183,21 @@ describe("bodyBlock", () => {
     }
   });
 
-  it("casts 3 + 12 rays per height, and the start's 12 more only when the target disc touches something", () => {
+  it("casts 3 + 2 + 12 rays per height, and the start's 12 more only when the target disc touches something", () => {
     let calls = 0;
     const open: CastFn = () => (calls++, null);
     expect(blocked(v(0, 0), v(0.05, 0), open)).toBe(false);
-    expect(calls).toBe(BODY_HEIGHTS.length * (3 + BODY_RAYS));
+    expect(calls).toBe(BODY_HEIGHTS.length * (3 + 2 + BODY_RAYS));
     // A surface at the target only: the disc slipped into touching, so the start is looked at as well.
     calls = 0;
     const slip: CastFn = (origin) => (calls++, origin.x > 0.04 && origin.x < 0.06 ? { distance: 0.2, normal: new THREE.Vector3(0, 0, 1) } : null);
     expect(blocked(v(0, 0), v(0.05, 0), slip)).toBe(true);
-    expect(calls).toBe(3 + 2 * BODY_RAYS);
+    expect(calls).toBe(3 + 2 + 2 * BODY_RAYS);
     // A surface the motion goes into is refused without the start being cast.
     calls = 0;
     const into: CastFn = (origin) => (calls++, origin.x > 0.04 && origin.x < 0.06 ? { distance: 0.2, normal: new THREE.Vector3(-1, 0, 0) } : null);
     expect(blocked(v(0, 0), v(0.05, 0), into)).toBe(true);
-    expect(calls).toBe(3 + BODY_RAYS);
+    expect(calls).toBe(3 + 2 + BODY_RAYS);
   });
 
   describe("convex corners", () => {
@@ -281,6 +281,25 @@ describe("bodyBlock", () => {
         }
       }
       expect(hits).toBeGreaterThan(0);
+    });
+
+    it("lets an overlapped walker back away diagonally (Codex P2 on #81), but not dig in diagonally", () => {
+      const wall = block(1, 1.4, -20, 20, 0, 2, winding);
+      const cast = caster(wall);
+      // Codex's case: the +side sweep ray would start at x = 1.022, behind the wall.
+      expect(blocked(v(0.85, 0), v(0.8, -0.035), cast)).toBe(false);
+      for (const deg of [10, 30, 45, 60, 80]) {
+        for (const sign of [1, -1]) {
+          const a = (deg * Math.PI) / 180;
+          const from = v(0.85, 0);
+          const to = from.clone().add(v(-Math.cos(a) * 0.05, sign * Math.sin(a) * 0.05));
+          expect([deg, sign, blocked(from, to, cast)]).toEqual([deg, sign, false]);
+          expect(overlap(wall, to.x, to.z)).toBeLessThan(overlap(wall, from.x, from.z));
+          // The same angle going in instead of out.
+          const into = from.clone().add(v(Math.cos(a) * 0.03, sign * Math.sin(a) * 0.03));
+          expect([deg, sign, blocked(from, into, cast)]).toEqual([deg, sign, true]);
+        }
+      }
     });
 
     it("behaves the same: leave, slide, never deeper, corner escape", () => {

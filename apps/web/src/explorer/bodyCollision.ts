@@ -58,12 +58,14 @@ export function hitNormal(hit: THREE.Intersection, dir: THREE.Vector3): THREE.Ve
  * and the surface that stops it (null when the move is free). At each height the move is refused when either
  *  - the sweep hits: a centreline ray and two side rays `radius` to either side of it (horizontal, perpendicular
  *    to the motion), cast from `from` toward `to`. The centreline looks `radius` past `to`; the side rays stop at it.
+ *    A side ray that would start behind a surface the body already overlaps is skipped.
  *  - the body disc at `to` is pushed into a surface: a radial ray of length `radius` from `to` hits a surface
  *    whose normal opposes the horizontal motion (the move goes into it). Moving along a surface or away from it
  *    is allowed, so a walker that overlaps a wall can still leave. A disc that touches something it did not at
  *    `from` is refused whatever the normals say: a body never slips into overlap.
  * `cast` is the ray test against the colliders; having none at all is the caller's early-out.
- * Costs 3 + 12 rays per height, plus 12 more at `from` when the target disc touches something.
+ * Costs 3 + 2 + 12 rays per height (the 2 look sideways from `from` for a surface a side ray would start behind), plus
+ * 12 more at `from` when the target disc touches something.
  */
 export function bodyBlock(from: THREE.Vector3, to: THREE.Vector3, cast: CastFn, radius: number, heights: readonly number[] = BODY_HEIGHTS): BodyBlock | null {
   const mx = to.x - from.x;
@@ -81,6 +83,11 @@ export function bodyBlock(from: THREE.Vector3, to: THREE.Vector3, cast: CastFn, 
     const px = (-mz / flat) * radius;
     const pz = (mx / flat) * radius;
     for (const side of [1, -1]) {
+      // A side whose origin is already past a surface (the start disc overlaps it) is not swept: from there the
+      // ray would cross that surface while the walker backs away from it. The target disc still guards that side.
+      origin.set(from.x, from.y + h, from.z);
+      dir.set(px * side, 0, pz * side).divideScalar(radius);
+      if (cast(origin, dir, radius)) continue;
       origin.set(from.x + px * side, from.y + h, from.z + pz * side);
       dir.set(mx / len, my / len, mz / len);
       const beside = cast(origin, dir, len);
