@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { markGlbPrimitives, sceneFromGlbRoles, seeThroughMeshes } from "@gteki/scene-api";
+import { glbPrimitivePlugin, sceneFromGlbRoles, seeThroughMeshes } from "@gteki/scene-api";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { LightProbeGridHelperWebGL } from "three/addons/helpers/LightProbeGridHelperWebGL.js";
 import { LightProbeGridWebGL } from "three/addons/lighting/LightProbeGridWebGL.js";
@@ -379,25 +379,31 @@ describe("camera-only blockers", () => {
     const json = {
       asset: { version: "2.0" },
       scene: 0,
-      scenes: [{ nodes: [0, 1, 2] }],
+      // A second, disjoint scene: GLTFLoader prunes its associations per scene, the flag must not depend on them.
+      scenes: [{ nodes: [0, 1, 2] }, { nodes: [3] }],
       nodes: [
         { name: "slab", mesh: 0, extras: { gteki_role: "camera_blocker" } },
         { name: "panel", mesh: 1 },
         { name: "single", mesh: 2 },
+        { name: "other_scene", mesh: 1 },
       ],
       meshes: [mesh("sign_panel"), mesh("floor_panel"), { name: "floor_single", primitives: [{ attributes: { POSITION: 0 } }] }],
       buffers: [{ byteLength: positions.byteLength }],
       bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: positions.byteLength }],
       accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [0, 0, 0], max: [1, 0, 1] }],
     };
-    const gltf = markGlbPrimitives(await new GLTFLoader().parseAsync(glb(json, positions), ""));
+    const gltf = await new GLTFLoader().register(glbPrimitivePlugin).parseAsync(glb(json, positions), "");
+    expect(gltf.scenes).toHaveLength(2);
+    // Load once, place a clone (the documented scene-module workflow): the clone keeps the protection.
+    for (const scene of [gltf.scene, gltf.scene.clone()]) {
+      const parts = scene.getObjectByName("slab")!.children;
+      expect(parts.map((o) => o.name)).toEqual(["sign_panel", "sign_panel_1"]);
+      expect(sceneFromGlbRoles(scene).cameraBlockers).toEqual(parts);
+      expect(seeThroughMeshes(scene)).toEqual([]);
+    }
+    expect(sceneFromGlbRoles(gltf.scenes[1]!).walkable).toEqual([]);
     const node = (name: string) => gltf.scene.getObjectByName(name)!;
-    const slabParts = node("slab").children;
-    expect(slabParts).toHaveLength(2);
-    expect(slabParts.map((o) => o.name)).toEqual(["sign_panel", "sign_panel_1"]);
     const roles = sceneFromGlbRoles(gltf.scene);
-    expect(roles.cameraBlockers).toEqual(slabParts);
-    expect(seeThroughMeshes(gltf.scene)).toEqual([]);
     // An untagged node never takes a role from its mesh resource's name.
     expect(roles.walkable).toEqual([]);
     // A single-primitive mesh is the node itself and keeps its node name ("single", no role).

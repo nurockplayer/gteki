@@ -10,7 +10,7 @@
  *   except `walls` and `spawnPoints`, which are station ENU for engine neutrality.
  */
 import type * as THREE from "three";
-import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
+import type { GLTF, GLTFLoaderPlugin, GLTFParser } from "three/examples/jsm/loaders/GLTFLoader.js";
 import type { StationBundle } from "@gteki/schema";
 
 export const SCENE_API_VERSION = "gteki.scene/0.1" as const;
@@ -117,20 +117,25 @@ const CAMERA_ROLES = new Set(["camera_blocker"]);
  */
 const SEE_THROUGH_ROLES = new Set(["sign", "signs", "signage"]);
 
-/** Meshes GLTFLoader generated for the primitives of a multi-primitive glTF mesh (see markGlbPrimitives). */
-const GLB_PRIMITIVES = new WeakSet<THREE.Object3D>();
+/** userData flag on the meshes GLTFLoader generates for a multi-primitive glTF mesh (see glbPrimitivePlugin). */
+const GLB_PRIMITIVE = "gteki_glb_primitive";
 
 /**
- * Record the meshes GLTFLoader generated for the primitives of a multi-primitive glTF mesh. They sit under
- * the node's Group and are named after the mesh resource, not the node, so their names (and mesh-level
- * extras) never give them a role: they inherit the node's, as in Godot, which keeps one node with several
- * surfaces. The explorer's `loadGlb` calls this for every GLB; returns `gltf`.
+ * A GLTFLoader plugin (`loader.register(glbPrimitivePlugin)`) that flags the meshes GLTFLoader generates for
+ * the primitives of a multi-primitive glTF mesh. They sit under the node's Group and are named after the mesh
+ * resource, not the node, so their names (and mesh-level extras) never give them a role: they inherit the
+ * node's, as in Godot, which keeps one node with several surfaces. The flag is in userData, so it holds in
+ * every scene of the file and survives `clone()`. The explorer's `loadGlb` registers it.
  */
-export function markGlbPrimitives(gltf: GLTF): GLTF {
-  gltf.parser?.associations?.forEach((ref, object) => {
-    if (ref?.primitives !== undefined && ref.nodes === undefined && (object as THREE.Object3D).isObject3D === true) GLB_PRIMITIVES.add(object as THREE.Object3D);
-  });
-  return gltf;
+export function glbPrimitivePlugin(parser: GLTFParser): GLTFLoaderPlugin {
+  return {
+    name: "gteki_glb_primitives",
+    loadMesh: async (meshIndex: number) => {
+      const mesh = await parser.loadMesh(meshIndex);
+      if ((mesh as THREE.Object3D).type === "Group") for (const primitive of mesh.children) primitive.userData[GLB_PRIMITIVE] = true;
+      return mesh;
+    },
+  };
 }
 
 /**
@@ -138,7 +143,7 @@ export function markGlbPrimitives(gltf: GLTF): GLTF {
  * lowercased, and an empty one counts as absent (same normalisation as the Godot loader).
  */
 export function roleOf(object: THREE.Object3D): string | null {
-  if (GLB_PRIMITIVES.has(object)) return null;
+  if (object.userData?.[GLB_PRIMITIVE] === true) return null;
   const extra = object.userData?.gteki_role;
   if (typeof extra === "string" && extra.trim() !== "") return extra.trim().toLowerCase();
   // GLTFLoader sanitises node names ("floor.001" → "floor001") and keeps the authored one in userData.name.

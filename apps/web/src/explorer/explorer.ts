@@ -10,7 +10,7 @@ import type { Router, PolylinePoint } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
-import { WALKER_BODY, markGlbPrimitives, seeThroughMeshes } from "@gteki/scene-api";
+import { WALKER_BODY, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { CameraCut } from "./cameraCut.ts";
@@ -384,8 +384,8 @@ export class Explorer {
       loadGlb: (uri) => {
         const url = station.assetUrls.get(uri);
         if (!url) return Promise.reject(new Error(`asset not found in station folder: ${uri}`));
-        const loader = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder).setResourcePath(`${ASSET_SCHEME}${stationDir(uri)}/`);
-        return loader.loadAsync(url).then(markGlbPrimitives, (err: unknown) => { throw fenceError(err); });
+        const loader = new GLTFLoader(manager).setMeshoptDecoder(MeshoptDecoder).setResourcePath(`${ASSET_SCHEME}${stationDir(uri)}/`).register(glbPrimitivePlugin);
+        return loader.loadAsync(url).catch((err: unknown) => { throw fenceError(err); });
       },
       loadTexture: async (uri, opts = {}) => {
         const url = station.assetUrls.get(uri);
