@@ -5,16 +5,15 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import { buildScene } from "../gteki/scene.ts";
 
 const { bundle } = loadShinjukuBundle();
-type HookScene = StationScene & { cameraBlockers?: THREE.Object3D[] };
 
 describe("shared-explorer scene hook: camera caps", () => {
-  let scene: HookScene;
+  let scene: StationScene;
   let layoutZ: Map<string, number>;
   beforeAll(async () => {
     // Geometry only: stub canvas drawing as the enclosure test does.
     const context = new Proxy({}, { get: (_t, key) => (key === "createLinearGradient" || key === "createRadialGradient") ? () => ({ addColorStop() {} }) : () => undefined });
     vi.stubGlobal("document", { createElement: () => ({ width: 1, height: 1, getContext: () => context }) });
-    scene = (await buildScene({ THREE, bundle, quality: "low" } as never)) as HookScene;
+    scene = (await buildScene({ THREE, bundle, quality: "low" } as never)) as StationScene;
     layoutZ = new Map(bundle.nodes.map((n) => [n.id, n.renderZ ?? 0]));
     scene.root.updateMatrixWorld(true);
   }, 60_000);
@@ -23,7 +22,7 @@ describe("shared-explorer scene hook: camera caps", () => {
     vi.unstubAllGlobals();
   });
 
-  it("exports the underground ceiling caps as camera blockers and (until the explorer reads them) colliders", () => {
+  it("exports the ceiling caps as camera blockers and as colliders (so the street probe sees roofs)", () => {
     const caps = (scene.cameraBlockers ?? []).filter((o) => scene.colliders?.includes(o));
     expect(caps.length).toBe(1);
     expect((caps[0] as THREE.Mesh).material).toMatchObject({ visible: false, side: THREE.DoubleSide });

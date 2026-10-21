@@ -110,9 +110,9 @@ export const buildScene: BuildScene = (ctx) => {
   // otherwise left through the ceiling (only street pads are walkable above B1), viewing the station from
   // above its own roof. Horizontal walk rays never hit these horizontal/inclined caps along an edge: the
   // enclosure test keeps every edge ≥ 2.1 m below them, above the 1.2 m ray.
-  // Camera-only blockers (proposed additive scene-api field `cameraBlockers`): the same caps, already cut
-  // wherever a stairwell or shaft passes, so the camera can follow down a stairwell. Until the explorer
-  // reads that field the caps also stay in `colliders`, which the follow camera already raycasts.
+  // Camera blockers (scene-api `cameraBlockers`): the same caps, already cut wherever a stairwell or
+  // shaft passes, so the camera can follow down a stairwell. The caps also stay in `colliders`: the
+  // explorer's street probe tests only walls and floors for open sky, and a roof must count there too.
   const cameraBlockers: THREE.Mesh[] = [];
   const underground = new Set(layout.levels.filter((lv) => lv.z < -0.5).map((lv) => lv.floorId));
   const caps = [
@@ -202,8 +202,7 @@ export const buildScene: BuildScene = (ctx) => {
     return [{ x: n.position.x, y: n.position.y, z: layout.nodeZ.get(id) ?? n.renderZ ?? 0, headingDeg: 0, nodeId: id, ...(label ? { label } : {}) }];
   });
 
-  // Typed as an intersection so this compiles both before and after scene-api gains `cameraBlockers`.
-  const scene: StationScene & { cameraBlockers?: THREE.Object3D[] } = {
+  const scene: StationScene = {
     root: built.root,
     walkable,
     colliders,
