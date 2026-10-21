@@ -247,6 +247,45 @@ export function distanceToNetwork(key: StationKey, p: Vec3, dzTol = 2.5): number
   return best;
 }
 
+interface PlanSpace { id: string; category: string; restricted: boolean; rings: { x: number; y: number }[][] }
+interface PlanLevel { label: string; renderElevationM: number; spaces: PlanSpace[] }
+const planCache = new Map<StationKey, { levels: PlanLevel[] } | null>();
+
+function ringContains(ring: { x: number; y: number }[], p: { x: number; y: number }): boolean {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const a = ring[i]!, b = ring[j]!;
+    if ((a.y > p.y) !== (b.y > p.y) && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
+  }
+  return inside;
+}
+
+/**
+ * The mapped, unrestricted space (stations/<key>/data/plan.json) that contains p on a level whose
+ * renderElevationM is within dzTol of p.z. undefined: the station has no plan, so callers fall back
+ * to distanceToNetwork. null: p is in no unrestricted space on its level. A point inside a hole of a
+ * space is outside it.
+ */
+export function mappedSpaceAt(key: StationKey, p: Vec3, dzTol = 2.5): { id: string; category: string; level: string; restricted: false } | null | undefined {
+  if (!planCache.has(key)) {
+    const root = process.env.GTEKI_ROOT;
+    if (!root) throw new Error("GTEKI_ROOT must point at the candidate checkout");
+    const file = path.join(root, "stations", key, "data", "plan.json");
+    planCache.set(key, fs.existsSync(file) ? (JSON.parse(fs.readFileSync(file, "utf8")) as { levels: PlanLevel[] }) : null);
+  }
+  const plan = planCache.get(key);
+  if (!plan) return undefined;
+  for (const level of plan.levels) {
+    if (Math.abs(p.z - level.renderElevationM) > dzTol) continue;
+    for (const space of level.spaces) {
+      if (space.restricted || !space.rings[0]) continue;
+      // rings[0] is the outer boundary; a point inside any further ring (a hole) is outside the space.
+      if (ringContains(space.rings[0], p) && !space.rings.slice(1).some((hole) => ringContains(hole, p))) return { id: space.id, category: space.category, level: level.label, restricted: false };
+    }
+  }
+  return null;
+}
+
 export interface Waypoint { p: Vec3; zKnown: boolean; mode: string; edgeId: string; stepIndex: number }
 
 interface RouteStepLike { edgeId: string; fromNodeId: string; toNodeId: string; reversed: boolean; mode: string }
