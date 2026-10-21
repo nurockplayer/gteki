@@ -17,7 +17,16 @@ export const FOLLOW = {
   clearance: 0.3,
   /** Closest the camera comes to the pivot (m). */
   minDistance: 0.55,
-  defaultDistance: 3.4,
+  /**
+   * Boom length (m). Third-person FOV narrowed 60 -> 50 degrees (#94), which alone grows the avatar by
+   * tan(30)/tan(25) = 1.24x on screen. Holding its size would need 3.4 * 1.24 = 4.2 m, but a longer boom meets
+   * more walls and hanging signs and is clamped more often. 3.8 m was tried first, but at the default pitch it
+   * lifts the camera to 2.58 m under a 2.6 m ceiling (the followCamera test holds it below 2.5 m, reached at
+   * about 3.47 m), so ordinary walking would sit in the ceiling clamp. 3.45 m is the longest round boom that
+   * clears it: the avatar ends up about 22% larger on screen and the view reads tighter and more architectural.
+   * Going longer needs a lower `lift`, which is a separate change for Lane F QA.
+   */
+  defaultDistance: 3.45,
   /** The look-at point sits this far below the pivot's view line, so the whole body (feet too) stays in frame. */
   drop: 0.45,
   /** Lowered booms tried under a camera-only blocker, in equal elevation steps down to `lowestBoom`. */
@@ -29,6 +38,30 @@ export const FOLLOW = {
   /** Otherwise the best lowered boom must beat the unlowered distance by this much (m), or the boom stays put. */
   boomGain: 0.25,
 } as const;
+
+/** Vertical field of view (degrees) per camera mode. */
+export const FOV = {
+  /** Third person (walk and guide): narrower, closer to the Blender reference renders (43-49 degrees). */
+  follow: 50,
+  /** First person stays at 60: 50 feels tunnel-like at eye height on a phone. Lane F QA can revisit. */
+  firstPerson: 60,
+  /** Overview orbit view, unchanged; overview framing (frameAll/fitOverview) is fitted to it. */
+  overview: 60,
+  /** Time constant (s) of the exponential approach between modes. */
+  settle: 0.25,
+} as const;
+
+/** The vertical FOV a camera mode wants. */
+export function targetFov(mode: "overview" | "walk" | "guide", firstPerson: boolean): number {
+  if (mode === "overview") return FOV.overview;
+  return firstPerson ? FOV.firstPerson : FOV.follow;
+}
+
+/** One framerate-independent step of `current` toward `target` (exponential, time constant `FOV.settle`); lands exactly within 0.01 degrees. */
+export function approachFov(current: number, target: number, dt: number): number {
+  const next = target + (current - target) * Math.exp(-Math.max(0, dt) / FOV.settle);
+  return Math.abs(next - target) < 0.01 ? target : next;
+}
 
 export interface FollowPose {
   /** Point the camera orbits around (head height, shifted over the shoulder). */

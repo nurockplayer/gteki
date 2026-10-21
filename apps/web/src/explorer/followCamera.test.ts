@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW, clampDistance, followBoom, followDistance, followPose, viewDirection } from "./followCamera.ts";
+import { FOLLOW, FOV, approachFov, clampDistance, followBoom, followDistance, followPose, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("stays under a 2.6 m ceiling at the default pitch and distance", () => {

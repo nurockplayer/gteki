@@ -20,7 +20,7 @@ import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers 
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
-import { FOLLOW, followBoom, followDistance, followPose } from "./followCamera.ts";
+import { FOLLOW, FOV, approachFov, followBoom, followDistance, followPose, targetFov } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
@@ -119,7 +119,7 @@ interface PoiLabel {
 export class Explorer {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
-  readonly camera = new THREE.PerspectiveCamera(60, 1, 0.05, 2000);
+  readonly camera = new THREE.PerspectiveCamera(FOV.overview, 1, 0.05, 2000);
   private readonly labels = new CSS2DRenderer();
   private readonly orbit: OrbitControls;
   private composer: PostFx | null = null;
@@ -530,7 +530,7 @@ export class Explorer {
     if (xray) xray.visible = mode === "overview";
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
-    if (mode === "overview") { this.street.restore(this.scene); this.snapCamera = false; }
+    if (mode === "overview") { this.street.restore(this.scene); this.snapCamera = false; this.setFov(FOV.overview, true); }
     this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
   }
@@ -1081,7 +1081,16 @@ export class Explorer {
     p.level = atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
   }
 
+  /** Move the lens toward `target`; the projection is rebuilt only while the FOV actually changes. */
+  private setFov(target: number, snap: boolean, dt = 0): void {
+    const next = snap ? target : approachFov(this.camera.fov, target, dt);
+    if (next === this.camera.fov) return;
+    this.camera.fov = next;
+    this.camera.updateProjectionMatrix();
+  }
+
   private placeCamera(dt: number, snap = false): void {
+    this.setFov(targetFov(this.mode, this.firstPerson), snap, dt);
     const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
     if (this.firstPerson) {
