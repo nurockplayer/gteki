@@ -48,6 +48,7 @@ Outputs go to `tests/e2e/artifacts/`, which is git-ignored:
 | `06-repros` | Hooks + real drags + fixed keys | Minimal reproductions of reported defects, independent of the autopilot | The defect's own condition | Stop positions, 3rd/1st-person frames |
 | `07-lane-apps` | Lane hooks | Lane client frames for side-by-side visual comparison | none | Frames, stats |
 | `08-step-probe` | Real drags + `W`, opt-in via `GTEKI_PROBE=<station>:<from>><to>` | Re-walks each routed step alone from its from-node along the exact edge geometry, with no nudges. Separates autopilot steering from scene geometry before a free-walk block is filed. | Steps ending > 1 m short | Per-step end position, screenshots of short steps |
+| `09-label-fade` | Real drags + `simulate()`, 8 poses per walking route | POI label fade evidence for human review. Per pose: live frame (a), same frame with labels hidden (b), and (b) annotated with a box per visible label, red = faded (`occluded`), green = shown, + at the anchor (c). A faded label with no drawn geometry in its sight line in (b) is the defect (e.g. a hidden camera-only cap). | Soft only: at least half the poses show a visible label | Per-pose label list (text, rect, occluded, opacity), `__gteki.labels()` counts, avatar, camera, total faded / shown |
 
 ### Real vs simulated, stated per run
 
