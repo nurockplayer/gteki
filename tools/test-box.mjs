@@ -1,10 +1,11 @@
 import { execFile, spawn, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdirSync } from "node:fs";
+import { accessSync, constants, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { setTimeout } from "node:timers/promises";
 import { promisify } from "node:util";
+import { activeContainerNames, blockingContainers, findOnPath, isOrbStackContext, parseIgnoreList } from "./box-idle.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const name = `gteki-box-${randomUUID().replaceAll("-", "").slice(0, 12)}`;
@@ -35,6 +36,37 @@ cd /w
 pnpm install --frozen-lockfile
 exec pnpm exec vitest run --mode heavy --maxWorkers=1 --passWithNoTests "$@"
 `;
+
+const executable = (path) => { try { accessSync(path, constants.X_OK); return true; } catch { return false; } };
+
+// Everything but exited/dead blocks (created, running, paused, restarting, ...).
+async function blockers() {
+  const { stdout } = await docker(["ps", "-a", "--format", "{{.Names}}\t{{.State}}"]);
+  return blockingContainers(activeContainerNames(stdout), parseIgnoreList(process.env.GTEKI_BOX_IDLE_IGNORE));
+}
+
+// Best effort and never throws: the test result's exit code always wins.
+// OrbStack's VM keeps freed guest memory, so only stopping it gives RAM back.
+async function stopIdleVm() {
+  if (process.env.GTEKI_BOX_STOP_VM === "0") return;
+  try {
+    // Only on the OrbStack backend; plain Docker/Linux skips silently.
+    const orbctl = findOnPath("orbctl", process.env.PATH, executable);
+    if (!orbctl || !isOrbStackContext((await docker(["context", "show"])).stdout)) return;
+    let blocking = await blockers();
+    if (!blocking.length) {
+      console.log("test:heavy:box: VM idle, stopping OrbStack to release memory");
+      blocking = await blockers(); // revalidate: another box may have started meanwhile
+      if (!blocking.length) {
+        await promisify(execFile)(orbctl, ["stop"]);
+        return;
+      }
+      console.log(`test:heavy:box: a container appeared (${blocking.join(", ")}); VM staying up`);
+      return;
+    }
+    console.log(`test:heavy:box: other containers running (${blocking.join(", ")}); leaving VM up`);
+  } catch {}
+}
 
 async function main() {
   const info = spawnSync("docker", ["info"], { encoding: "utf8" });
@@ -127,6 +159,8 @@ async function main() {
       if (id) console.error(`test:heavy:box: container cleanup failed: ${error.stderr?.trim() || error.message}`);
     }
     for (const [signal, handler] of handlers) process.off(signal, handler);
+    // Handlers are gone, so a further signal terminates the process at once.
+    await stopIdleVm();
   }
   return interrupted ? signals[interrupted] : code;
 }
