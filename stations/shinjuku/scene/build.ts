@@ -13,6 +13,7 @@ import { prepareLayout } from "./build-cache.ts";
 import { gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
 import surfaceJson from "../data/surface.json";
 import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "./surface.ts";
+import { withSurfaceMemo } from "./surface-layout.ts";
 
 export const OEDO_MAGENTA = "#b6007a"; // public line colour of the Oedo Line
 
@@ -1077,9 +1078,12 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   update(0, 0);
 
   // W2 surface hook: context adds obstacles only; existing pads remain the walk limit.
-  const surface = buildSurface(surfaceJson as SurfaceData, layout, { ...opts, bundle });
+  // The street layer and its walls ask for the same polygon derivations; compute each once (see surface-layout.ts).
+  const { surface, surfaceBarriers } = withSurfaceMemo(() => ({
+    surface: buildSurface(surfaceJson as SurfaceData, layout, { ...opts, bundle }),
+    surfaceBarriers: surfaceWalls(layout, bundle, surfaceJson as SurfaceData),
+  }));
   root.add(surface.root);
-  const surfaceBarriers = surfaceWalls(layout, bundle, surfaceJson as SurfaceData);
   propWalls.push(...surfaceBarriers);
   world.addWalls(surfaceBarriers);
   trimSurfaceCeilingFixtures(root, [mat.light, mat.lightHousing]); // remove only floating street ceiling strips

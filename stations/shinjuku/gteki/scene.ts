@@ -9,7 +9,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
-import { surfaceEntrances, surfaceRoofs } from "../scene/surface-layout.ts";
+import { surfaceEntrances, surfaceRoofs, withSurfaceMemo } from "../scene/surface-layout.ts";
 import plan from "../data/plan.json" with { type: "json" };
 
 /** Camera that renders the station, reported to the street layer (see the probe in buildScene). */
@@ -139,6 +139,7 @@ export const buildScene: BuildScene = (ctx) => {
   // explorer's street probe tests only walls and floors for open sky, and a roof must count there too.
   const cameraBlockers: THREE.Mesh[] = [];
   const underground = new Set(layout.levels.filter((lv) => lv.z < -0.5).map((lv) => lv.floorId));
+  const street = withSurfaceMemo(() => ({ entrances: surfaceEntrances(layout, ctx.bundle), roofs: surfaceRoofs(layout, ctx.bundle) }));
   const caps = [
     ...layout.levels.filter((lv) => underground.has(lv.floorId)).flatMap((lv) => lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 1, true))),
     // Above-ground source spaces are drawn with ceilings too: the 1F entrance structures over exit stairs
@@ -148,7 +149,7 @@ export const buildScene: BuildScene = (ctx) => {
     ...layout.soffits.filter((s) => underground.has(s.floorId)).map(soffitGeometry),
     // Street entrance canopies: the glass roof sits at 3.08 m; cap just below it so the follow camera
     // stays under the canopy instead of looking down onto the bright glazing.
-    ...surfaceEntrances(layout, ctx.bundle).map((e) => {
+    ...street.entrances.map((e) => {
       const n = { x: -e.u.y, y: e.u.x };
       const corner = (sl: number, sw: number) => [e.center.x + e.u.x * e.halfLength * sl + n.x * e.halfWidth * sw, 3.0, -(e.center.y + e.u.y * e.halfLength * sl + n.y * e.halfWidth * sw)];
       const g = new T.BufferGeometry();
@@ -157,7 +158,7 @@ export const buildScene: BuildScene = (ctx) => {
       return g;
     }),
     // Glazing over roofed (E27 roof = 2) runs open beyond the canopies, at 3.05 m: cap just below it.
-    ...surfaceRoofs(layout, ctx.bundle).map((r) => {
+    ...street.roofs.map((r) => {
       const n = { x: -r.u.y, y: r.u.x };
       const corner = (sl: number, sw: number) => [r.center.x + r.u.x * r.halfLength * sl + n.x * r.halfWidth * sw, 2.95, -(r.center.y + r.u.y * r.halfLength * sl + n.y * r.halfWidth * sw)];
       const g = new T.BufferGeometry();
