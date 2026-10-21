@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { setTimeout } from "node:timers/promises";
 import { promisify } from "node:util";
-import { blockingContainers, findOnPath, isOrbStackContext, parseIgnoreList } from "./box-idle.mjs";
+import { activeContainerNames, blockingContainers, findOnPath, isOrbStackContext, parseIgnoreList } from "./box-idle.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const name = `gteki-box-${randomUUID().replaceAll("-", "").slice(0, 12)}`;
@@ -39,12 +39,10 @@ exec pnpm exec vitest run --mode heavy --maxWorkers=1 --passWithNoTests "$@"
 
 const executable = (path) => { try { accessSync(path, constants.X_OK); return true; } catch { return false; } };
 
-// Created and running containers both count: test-box creates before it starts.
+// Everything but exited/dead blocks (created, running, paused, restarting, ...).
 async function blockers() {
-  const { stdout } = await docker(["ps", "-a", "--filter", "status=created", "--filter", "status=running",
-    "--format", "{{.Names}}"]);
-  const names = stdout.split("\n").map((line) => line.trim()).filter(Boolean);
-  return blockingContainers(names, parseIgnoreList(process.env.GTEKI_BOX_IDLE_IGNORE));
+  const { stdout } = await docker(["ps", "-a", "--format", "{{.Names}}\t{{.State}}"]);
+  return blockingContainers(activeContainerNames(stdout), parseIgnoreList(process.env.GTEKI_BOX_IDLE_IGNORE));
 }
 
 // Best effort and never throws: the test result's exit code always wins.

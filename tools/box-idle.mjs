@@ -24,3 +24,13 @@ export function findOnPath(command, pathEnv, isExecutable, separator = ":") {
   return (pathEnv ?? "").split(separator).filter(Boolean)
     .map((dir) => `${dir.replace(/\/$/, "")}/${command}`).find(isExecutable);
 }
+
+// Parses `docker ps -a --format '{{.Names}}\t{{.State}}'` output. Every state
+// except exited/dead may still hold or regain memory (created, running, paused,
+// restarting, removing, or any future state), so those count as active.
+export function activeContainerNames(output) {
+  return output.split("\n").map((line) => line.trim()).filter(Boolean).flatMap((line) => {
+    const [name, state = ""] = line.split("\t").map((field) => field.trim());
+    return name && !["exited", "dead"].includes(state.toLowerCase()) ? [name] : [];
+  });
+}

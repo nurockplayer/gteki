@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findOnPath, isOrbStackContext, isVmIdle, parseIgnoreList } from "./box-idle.mjs";
+import { activeContainerNames, findOnPath, isOrbStackContext, isVmIdle, parseIgnoreList } from "./box-idle.mjs";
 
 describe("isOrbStackContext", () => {
   it("matches only the orbstack context", () => {
@@ -48,4 +48,20 @@ describe("parseIgnoreList", () => {
     expect(parseIgnoreList(" a, b ,,c")).toEqual(["a", "b", "c"]);
   });
   it("allows an empty list", () => expect(parseIgnoreList("")).toEqual([]));
+});
+
+describe("activeContainerNames", () => {
+  const rows = (...states) => states.map((state, i) => `c${i}\t${state}`).join("\n");
+  it("ignores exited and dead containers", () => {
+    expect(activeContainerNames(rows("exited", "dead"))).toEqual([]);
+  });
+  it.each(["created", "running", "paused", "restarting", "removing", "someday"])(
+    "treats %s as active", (state) => {
+      expect(activeContainerNames(rows(state))).toEqual(["c0"]);
+    });
+  it("handles empty output, blank lines and a missing state", () => {
+    expect(activeContainerNames("")).toEqual([]);
+    expect(activeContainerNames("\n\n")).toEqual([]);
+    expect(activeContainerNames("odd")).toEqual(["odd"]);
+  });
 });
