@@ -5,7 +5,7 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import { buildStation, type BuiltStation } from "../scene/build.ts";
 import { buildScene } from "../gteki/scene.ts";
-import type { Plan } from "../scene/layout.ts";
+import { pointInRings, type Plan } from "../scene/layout.ts";
 import type { StationScene } from "@gteki/scene-api";
 import { replayMatrix } from "./fare-replay-worker.ts";
 import { accelerateRaycasts, nearbyTargets } from "./fare-replay-rays.ts";
@@ -97,6 +97,27 @@ describe("actual walker fence replay", () => {
     }
     if (process.env.FARE_NEGATIVE_REPORT) writeFileSync(process.env.FARE_NEGATIVE_REPORT, JSON.stringify(controls, null, 2));
     expect(controls.every(c => !(c as { missing?: boolean }).missing), JSON.stringify(controls)).toBe(true);
+  }, 300_000);
+  it("prevents public approaches entering the source-restricted B2 elevator space", () => {
+    const node = bundle.nodes.find(n => n.id === "n:0919a5249d6e4dc8b4899750baafa2b3")!;
+    const level = plan.levels.find(l => l.floorId === node.floorId)!;
+    const space = level.spaces.find(s => s.id === "d4523859711343eb8d35ee32580fb7ed")!;
+    const end = { id: `restricted:${space.id}`, p: { ...node.position, z: level.renderElevationM }, other: { x: node.position.x, y: node.position.y - 1 } };
+    const env = replayEnvironment(built, scene, plan), seeds = env.seeds(end);
+    const violations = [];
+    for (const walker of ["lane", "explorer"] as const) for (const fps of [30, 60]) for (const run of [false, true]) {
+      const starts = seeds.flatMap(s => s[walker] ? [s[walker]!] : []).sort((a, b) => distance(a, end.p) - distance(b, end.p));
+      let violation;
+      outer: for (const start of starts) for (const approach of APPROACHES) {
+        const leak = env.replay(end, start, approach, walker, fps, run);
+        if (leak && Math.abs(leak.to.z - level.renderElevationM) < .2 && pointInRings(leak.to, space.rings)) {
+          violation = leak; break outer;
+        }
+      }
+      if (violation) violations.push(violation);
+    }
+    if (process.env.FARE_RESTRICTED_REPORT) writeFileSync(process.env.FARE_RESTRICTED_REPORT, JSON.stringify(violations, null, 2));
+    expect(violations).toEqual([]);
   }, 300_000);
   it("replays every public sample within 3 m of every end across the full matrix", async () => {
     const result = await replayMatrix(built, scene, plan, replayEnds(built));
