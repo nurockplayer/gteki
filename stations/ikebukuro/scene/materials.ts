@@ -270,7 +270,9 @@ vec2 gtSeam(float c, float P, float w, float depth, float fw) {
 }
 `;
 
-const glslReliefEnd = (relief: number) => /* glsl */ `
+/** The lightmap balance never lifts a surface's final linear luminance past this (bloom threshold is 1.0). */
+const BALANCE_KNEE = 0.9;
+const glslReliefEnd = (relief: number, gain = 1) => /* glsl */ `
 #include <lights_fragment_end>
 {
   vec3 gtUp = normalize(viewMatrix[1].xyz);
@@ -278,6 +280,22 @@ const glslReliefEnd = (relief: number) => /* glsl */ `
   reflectedLight.indirectDiffuse *= max(1.0 + ${relief.toFixed(3)} * dot(normal - nonPerturbedNormal, gtL), 0.0);
   reflectedLight.indirectSpecular *= gtEnvBoost;
 }
+${gain === 1 ? "" : `#ifdef USE_LIGHTMAP
+{
+  // Lightmap balance with a soft knee, applied last: dark baked diffuse gets the full gain, tapering so the
+  // boost only fills headroom up to the knee in the FINAL sum (after relief and every other term); a surface
+  // already brighter than the knee keeps its own value.
+  const float G = ${gain.toFixed(3)}, K = ${BALANCE_KNEE.toFixed(3)};
+  const vec3 Y = vec3(0.2126, 0.7152, 0.0722);
+  float gtD = dot(reflectedLight.indirectDiffuse, Y);
+  float gtS = dot(reflectedLight.directDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance, Y);
+  float gtK = K - gtS;
+  if (gtK > 0.0 && gtD > 1e-5) {
+    float gtD1 = max(gtD, G * gtD / (1.0 + (G - 1.0) * gtD / gtK));
+    reflectedLight.indirectDiffuse *= gtD1 / gtD;
+  }
+}
+#endif`}
 `;
 
 interface CladSpec {
@@ -411,6 +429,7 @@ type Kind = "floor" | "wall" | "column" | "ceiling" | "stairs";
 
 function patchLit(m: THREE_NS.MeshStandardMaterial, kind: Kind, relief: number, clad?: CladSpec) {
   const isClad = kind === "wall" || kind === "column";
+  const gain = LIGHTMAP_BALANCE[kind === "column" ? "barriers" : kind] ?? 1;
   const isStair = kind === "stairs";
   const vHead = `varying vec3 vWP;
 ${isClad ? "attribute float aFloorY;\nvarying vec2 vPanelUv;\nvarying float vFloorOk;\nvarying float vVert;" : ""}
@@ -431,9 +450,9 @@ ${isStair ? "vNose = aNose;\nvVert = 1.0 - step(0.5, abs(normal.y));" : ""}`;
     sh.fragmentShader = sh.fragmentShader
       .replace("#include <common>", `#include <common>\n${fHead}`)
       .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>\n${fBody}`)
-      .replace("#include <lights_fragment_end>", glslReliefEnd(relief));
+      .replace("#include <lights_fragment_end>", glslReliefEnd(relief, gain));
   };
-  m.customProgramCacheKey = () => `gteki-ikebukuro-${kind}-1`;
+  m.customProgramCacheKey = () => `gteki-ikebukuro-${kind}-3`;
 }
 
 const WALL_CLAD: CladSpec = {
@@ -448,6 +467,14 @@ const COLUMN_CLAD: CladSpec = {
 };
 
 /** Environment-reflection strength per role (scene.ts assigns the shared envMap). */
+/**
+ * Baked-light balance per role (multiplies the lightmap intensity). The bake lights mostly the floor under
+ * the downlights; real passages read bright because enamel walls, cladding and ceiling panels get wall-wash
+ * and floor bounce the bake underestimates. Applied in the lit shader with a soft knee (BALANCE_KNEE), so no
+ * boosted surface crosses the bloom threshold. Presentation only; the floor (and with it exposure) is unchanged.
+ */
+export const LIGHTMAP_BALANCE: Record<string, number> = { wall: 2.0, barriers: 1.9, ceiling: 2.0 };
+
 export const ENV_INTENSITY: Record<string, number> = { floor: 0.35, ceiling: 0.05, transport: 0.9, wall: 0.2, barriers: 0.2, stairs_ramps: 0.2, floor_elements: 0.2 };
 
 /** Generic lit shopfront: mullions and a warm interior gradient (no brands). */
@@ -611,10 +638,11 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     return m;
   };
   const floor = std({ map: floorMap, roughnessMap: floorRough, roughness: 1, metalness: 0, normalMap: floorNormal, envMapIntensity: ENV_INTENSITY.floor });
-  const wall = std({ color: 0xe2e0da, roughness: 0.42, metalness: 0, side: THREE.DoubleSide });
+  const wall = std({ color: 0xdedee0, // cooler than the warm bake, never brighter than the old 0xe2e0da (luminance 0.731 vs 0.745)
+    roughness: 0.42, metalness: 0, side: THREE.DoubleSide });
   const ceiling = std({ map: ceilMap, normalMap: ceilNormal, roughness: 0.95, side: THREE.DoubleSide });
   const stairs = std({ map: stairMap, normalMap: stairNormal, roughness: 0.7 });
-  const barriers = std({ color: 0xc9cacc, roughness: 0.3, metalness: 0, side: THREE.DoubleSide });
+  const barriers = std({ color: 0xc6cacf, roughness: 0.3, metalness: 0, side: THREE.DoubleSide });
   patchLit(floor, "floor", 0.9);
   patchLit(wall, "wall", 0.9, WALL_CLAD);
   patchLit(ceiling, "ceiling", 0.6);
