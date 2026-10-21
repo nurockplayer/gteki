@@ -1,5 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { isVmIdle, parseIgnoreList } from "./box-idle.mjs";
+import { findOnPath, isOrbStackContext, isVmIdle, parseIgnoreList } from "./box-idle.mjs";
+
+describe("isOrbStackContext", () => {
+  it("matches only the orbstack context", () => {
+    expect(isOrbStackContext("orbstack\n")).toBe(true);
+    expect(isOrbStackContext("default\n")).toBe(false);
+    expect(isOrbStackContext("")).toBe(false);
+  });
+});
+
+describe("findOnPath", () => {
+  const exists = (path) => path === "/opt/bin/orbctl";
+  it("finds an executable on PATH", () => {
+    expect(findOnPath("orbctl", "/usr/bin::/opt/bin/", exists)).toBe("/opt/bin/orbctl");
+  });
+  it("returns undefined when absent or PATH is unset", () => {
+    expect(findOnPath("orbctl", "/usr/bin", exists)).toBeUndefined();
+    expect(findOnPath("orbctl", undefined, exists)).toBeUndefined();
+  });
+});
 
 describe("isVmIdle", () => {
   it("is idle with no containers", () => expect(isVmIdle([])).toBe(true));

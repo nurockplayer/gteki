@@ -14,3 +14,13 @@ export function blockingContainers(runningNames, ignoreList = DEFAULT_IDLE_IGNOR
 export function isVmIdle(runningNames, ignoreList = DEFAULT_IDLE_IGNORE) {
   return blockingContainers(runningNames, ignoreList).length === 0;
 }
+
+// The step only applies to the OrbStack backend; plain Docker/Linux skips it.
+export function isOrbStackContext(contextName) {
+  return contextName.trim().toLowerCase() === "orbstack";
+}
+
+export function findOnPath(command, pathEnv, isExecutable, separator = ":") {
+  return (pathEnv ?? "").split(separator).filter(Boolean)
+    .map((dir) => `${dir.replace(/\/$/, "")}/${command}`).find(isExecutable);
+}
