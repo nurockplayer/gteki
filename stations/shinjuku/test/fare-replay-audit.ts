@@ -9,6 +9,7 @@ import { resolveWalls, acceptGround, wallToRenderer, DEFAULT_GROUND, type Segmen
 import { castAll, castTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { accelerateRaycasts, nearbyTargets } from "./fare-replay-rays.ts";
 import { Player } from "../app/src/player.ts";
+import { renderedFootprint, type FringeCertificate } from "./fare-replay-footprint.ts";
 
 export function closest(p: XY, a: XY, b: XY): XY {
   const dx = b.x - a.x, dy = b.y - a.y;
@@ -236,6 +237,7 @@ export function publicLabels(built: BuiltStation, plan: Plan, regions = derivedR
   const source = plan.levels.map(l => ({ z: l.renderElevationM, spaces: l.spaces }));
   const network = [...built.layout.linkStrips, ...built.layout.pads.filter(p => p.spaceId.startsWith("pad:")), ...built.layout.streetPads];
   const prepared = source.map(l => ({ ...l, public: containsPolygons(l.spaces.filter(s => !s.restricted).map(s => s.rings)),
+    fringe: renderedFootprint(l.spaces.filter(s => !s.restricted).map(s => s.rings)),
     restricted: l.spaces.filter(s => s.restricted), restrictedHas: containsPolygons(l.spaces.filter(s => s.restricted).map(s => s.rings)),
     paid: containsPolygons(l.spaces.filter(s => !s.restricted && s.toll === "paid").map(s => s.rings)),
     free: containsPolygons(l.spaces.filter(s => !s.restricted && s.toll === "free").map(s => s.rings)) }));
@@ -247,15 +249,29 @@ export function publicLabels(built: BuiltStation, plan: Plan, regions = derivedR
         const key = `${x},${y}`, list = regionCells.get(key) ?? []; list.push(r); regionCells.set(key, list);
       }
   }
-  const net = [...new Set(network.map(n => n.z))].map(z => ({ z, has: containsPolygons(network.filter(n => n.z === z).map(n => n.rings)) }));
-  return (p: XYZ) => {
+  const net = [...new Set(network.map(n => n.z))].map(z => ({ z, has: containsPolygons(network.filter(n => n.z === z).map(n => n.rings)),
+    fringe: renderedFootprint(network.filter(n => n.z === z).map(n => n.rings)) }));
+  const limited = (p: XYZ, seed: boolean) => (regionCells.get(`${Math.floor(p.x / 4)},${Math.floor(p.y / 4)}`) ?? []).some(r => {
+    if (Math.abs(r.z - p.z) >= .02) return false;
+    if (!restrictionAt(p, r).permitted) return true;
+    // The 15 mm depth bound measures drift from public floor. It does not turn
+    // internal borders between two restricted polygons into public seed strips.
+    return seed && pointInRings(p, r.source) && !r.paths.some(e => distance(p, closest(p, e.a, e.b)) <= .32 + 1e-9);
+  });
+  return (p: XYZ, seed = false) => {
     const levels = prepared.filter(l => Math.abs(l.z - p.z) < .2);
-    const restricted = (regionCells.get(`${Math.floor(p.x / 4)},${Math.floor(p.y / 4)}`) ?? []).some(r => Math.abs(r.z - p.z) < .02 && !restrictionAt(p, r).permitted);
-    const mapped = !restricted && (levels.some(l => l.public(p)) || net.some(n => Math.abs(n.z - p.z) < .2 && n.has(p)) || built.layout.runs.some(r => {
+    const restricted = limited(p, seed);
+    let mapped = !restricted && (levels.some(l => l.public(p)) || net.some(n => Math.abs(n.z - p.z) < .2 && n.has(p)) || built.layout.runs.some(r => {
       const q = closest(p, r.a, r.b), len = distance(r.a, r.b), t = len ? distance(r.a, q) / len : 0;
       return distance(p, q) <= r.width / 2 && Math.abs(r.a.z + (r.b.z - r.a.z) * t - p.z) < .2;
     }));
-    return { mapped, fare: levels.some(l => l.paid(p)) ? "paid" : levels.some(l => l.free(p)) ? "free" : null };
+    let fringe: FringeCertificate | undefined;
+    if (!seed && !mapped && !restricted) {
+      const publicAt = (q: XY) => !limited({ ...q, z: p.z }, true);
+      fringe = [...levels, ...net.filter(n => Math.abs(n.z - p.z) < .2)].map(l => l.fringe(p, publicAt)).find(Boolean);
+      mapped = !!fringe;
+    }
+    return { mapped, fringe, fare: levels.some(l => l.paid(p)) ? "paid" : levels.some(l => l.free(p)) ? "free" : null };
   };
 }
 
@@ -306,8 +322,8 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
           if (!row) {
             row = {};
             const a = built.world.groundAt(p, z), b = explorer.ground({ ...p, z });
-            if (a !== null && labels({ ...p, z: a }).mapped && distance(built.world.resolveWalls(p, a, .3), p) < 1e-7) row.lane = { ...p, z: a };
-            if (acceptGround(z, b) && labels({ ...p, z: b! }).mapped && distance(explorer.push({ ...p, z: b! }), p) < 1e-7) row.explorer = { ...p, z: b! };
+            if (a !== null && labels({ ...p, z: a }, true).mapped && distance(built.world.resolveWalls(p, a, .3), p) < 1e-7) row.lane = { ...p, z: a };
+            if (acceptGround(z, b) && labels({ ...p, z: b! }, true).mapped && distance(explorer.push({ ...p, z: b! }), p) < 1e-7) row.explorer = { ...p, z: b! };
             seedCache.set(key, row);
           }
           if (row.lane || row.explorer) result.push(row);
@@ -317,8 +333,8 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
       const angle = i * Math.PI / 4, p = { x: end.p.x + Math.cos(angle) * radius, y: end.p.y + Math.sin(angle) * radius };
       const row: { lane?: XYZ; explorer?: XYZ } = {};
       const a = built.world.groundAt(p, end.p.z), b = explorer.ground({ ...p, z: end.p.z });
-      if (a !== null && labels({ ...p, z: a }).mapped && distance(built.world.resolveWalls(p, a, .3), p) < 1e-7) row.lane = { ...p, z: a };
-      if (acceptGround(end.p.z, b) && labels({ ...p, z: b! }).mapped && distance(explorer.push({ ...p, z: b! }), p) < 1e-7) row.explorer = { ...p, z: b! };
+      if (a !== null && labels({ ...p, z: a }, true).mapped && distance(built.world.resolveWalls(p, a, .3), p) < 1e-7) row.lane = { ...p, z: a };
+      if (acceptGround(end.p.z, b) && labels({ ...p, z: b! }, true).mapped && distance(explorer.push({ ...p, z: b! }), p) < 1e-7) row.explorer = { ...p, z: b! };
       if (row.lane || row.explorer) result.push(row);
     }
     // A 25 cm lattice can miss the entire narrow centre corridor. Explicitly
@@ -332,19 +348,20 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
         const p = { x: q.x - (path.b.y - path.a.y) / (len || 1) * offset, y: q.y + (path.b.x - path.a.x) / (len || 1) * offset };
         const key = `${p.x},${p.y},${path.z}`; if (seen.has(key)) continue; seen.add(key);
         const row: { lane?: XYZ; explorer?: XYZ } = {}, a = built.world.groundAt(p, path.z), b = explorer.ground({ ...p, z: path.z });
-        if (a !== null && labels({ ...p, z: a }).mapped && distance(built.world.resolveWalls(p, a, .3), p) < 1e-7) row.lane = { ...p, z: a };
-        if (acceptGround(path.z, b) && labels({ ...p, z: b! }).mapped && distance(explorer.push({ ...p, z: b! }), p) < 1e-7) row.explorer = { ...p, z: b! };
+        if (a !== null && labels({ ...p, z: a }, true).mapped && distance(built.world.resolveWalls(p, a, .3), p) < 1e-7) row.lane = { ...p, z: a };
+        if (acceptGround(path.z, b) && labels({ ...p, z: b! }, true).mapped && distance(explorer.push({ ...p, z: b! }), p) < 1e-7) row.explorer = { ...p, z: b! };
         if (row.lane || row.explorer) result.push(row);
       }
     }
     return result;
   };
   const gateWorld = { propBands: laneBands(built.propWalls) } as WalkerAudit;
-  const traceMemo = new Map<string, { leak: ReplayLeak | null; frames: number; position: XYZ }>();
+  const traceMemo = new Map<string, { leak: ReplayLeak | null; frames: number; position: XYZ; fringeContacts: number; maxFringeM: number }>();
   const memoCapacity = Math.max(1, options.memoCapacity ?? 50000);
   let eviction = traceMemo.keys();
   let lastPosition: XYZ | null = null;
   let frames = 0, integratedFrames = 0;
+  let fringeContacts = 0, maxFringeM = 0;
   const replay = (end: End, start: XYZ, approach: Approach, walker: Walker, fps: number, run: boolean): ReplayLeak | null => {
     const tangent = { x: end.p.x - end.other.x, y: end.p.y - end.other.y }, len = Math.hypot(tangent.x, tangent.y) || 1;
     tangent.x /= len; tangent.y /= len;
@@ -372,8 +389,9 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
     const encode = (n: number) => Object.is(n, -0) ? "-0" : String(n);
     const key = [walker, fps, run, ...[start.x, start.y, start.z].map(encode), ...phases.flatMap(p => [encode(p.dir.x), encode(p.dir.y), Math.ceil(p.length / speed * fps)])].join(":");
     const known = shortcuts ? traceMemo.get(key) : undefined;
-    if (known) { frames += known.frames; lastPosition = { ...known.position }; traceMemo.delete(key); traceMemo.set(key, known); return known.leak ? { ...known.leak, end: end.id, approach } : null; }
-    const before = frames;
+    if (known) { frames += known.frames; fringeContacts += known.fringeContacts; maxFringeM = Math.max(maxFringeM, known.maxFringeM); lastPosition = { ...known.position }; traceMemo.delete(key); traceMemo.set(key, known); return known.leak ? { ...known.leak, end: end.id, approach } : null; }
+    const before = frames, beforeFringe = fringeContacts;
+    let traceMaxFringeM = 0;
     const finish = (leak: ReplayLeak | null) => {
       lastPosition = { ...pos };
       if (shortcuts) {
@@ -382,7 +400,7 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
           if (oldest.done) { eviction = traceMemo.keys(); oldest = eviction.next(); }
           if (!oldest.done) traceMemo.delete(oldest.value);
         }
-        traceMemo.set(key, { leak, frames: frames - before, position: { ...pos } });
+        traceMemo.set(key, { leak, frames: frames - before, position: { ...pos }, fringeContacts: fringeContacts - beforeFringe, maxFringeM: traceMaxFringeM });
       }
       return leak;
     };
@@ -398,6 +416,11 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
         frames++; integratedFrames++;
         const supported = walker === "explorer" ? { ...pos, z: explorer.support ?? pos.z } : pos;
         const next = labels(supported);
+        if (next.fringe) {
+          if (next.fringe.distanceM >= .02 || next.fringe.distanceM >= WALKER_BODY.radiusM || next.fringe.distanceM > next.fringe.roundingBoundM)
+            throw new Error("A quantisation fringe admitted the body");
+          fringeContacts++; traceMaxFringeM = Math.max(traceMaxFringeM, next.fringe.distanceM); maxFringeM = Math.max(maxFringeM, traceMaxFringeM);
+        }
         if (!next.mapped) return finish({ end: end.id, approach, walker, fps, run, from, to: pos, kind: "verified → unmapped/restricted" });
         if (next.fare && last && next.fare !== last && !gateCrossing(lastKnown, supported, built.layout, plan, gateWorld))
           return finish({ end: end.id, approach, walker, fps, run, from, to: pos, kind: `${last} → ${next.fare}` });
@@ -419,7 +442,8 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
     }
     return finish(null);
   };
-  return { explorer, seeds, replay, labels, position: () => lastPosition, frames: () => frames, integratedFrames: () => integratedFrames };
+  return { explorer, seeds, replay, labels, position: () => lastPosition, frames: () => frames, integratedFrames: () => integratedFrames,
+    fringes: () => ({ contacts: fringeContacts, maxM: maxFringeM }) };
 }
 
 /** Delete/shorten exactly one shipped piece in BOTH physical representations. */

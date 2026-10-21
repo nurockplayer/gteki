@@ -67,6 +67,19 @@ describe("actual walker fence replay", () => {
     expect(pos.z).toBeLessThan(-8.0); // the explorer intentionally damps feet toward the landing
     expect(env.labels({ ...pos, z: env.explorer.support! }).mapped).toBe(true);
   }, 30_000);
+  it("replays the actual B6 Float32 corner fringe without admitting a body into unknown floor", () => {
+    const env = replayEnvironment(built, scene, plan, undefined, { shortcuts: false });
+    const end = replayEnds(built).find(e => e.id === "restricted:f059e99c14b14a8f89235e9b4519ef41:628:a")!;
+    const start = { x: -46.375, y: 205.125, z: -42.869998931884766 };
+    expect(env.labels(start, true).mapped).toBe(true);
+    const fringe = { x: -46.73906288694196, y: 205.2002590080444, z: start.z };
+    expect(env.labels(fringe).fringe).toBeDefined();
+    expect(env.labels(fringe, true).mapped).toBe(false); // no synthetic public seeds in the fringe
+    for (const walker of ["lane", "explorer"] as const) for (const fps of [30, 60]) for (const run of [false, true])
+      for (const approach of APPROACHES) expect(env.replay(end, start, approach, walker, fps, run), `${walker}/${fps}/${run}/${approach}`).toBeNull();
+    expect(env.fringes().contacts).toBeGreaterThan(0);
+    expect(env.fringes().maxM).toBeLessThan(.00002);
+  }, 30_000);
   it("negative controls expose removed fare/access pieces and a shortened end", () => {
     const controls: unknown[] = [], baseline = replayEnvironment(built, scene, plan);
     for (const kind of ["fare", "access", "shorten"] as const) for (const walker of ["explorer", "lane"] as const) {
@@ -84,7 +97,7 @@ describe("actual walker fence replay", () => {
             let seed = { x: center.x + normal.x * side * offset, y: center.y + normal.y * side * offset, z: center.z };
             const ground = walker === "lane" ? mutated.built.world.groundAt(seed, seed.z) : env.explorer.ground(seed);
             if (ground === null) continue; seed = { ...seed, z: ground };
-            if (!env.labels(seed).mapped) continue;
+            if (!env.labels(seed, true).mapped) continue;
             const pushed = walker === "lane" ? mutated.built.world.resolveWalls(seed, seed.z, .3) : env.explorer.push(seed);
             if (distance(pushed, seed) > 1e-7) continue;
             for (const approach of ["toward", "oblique-30", "oblique+30", "oblique-60", "oblique+60"] as const) {

@@ -24,7 +24,7 @@ interface MeshData { name: string; attributes: Record<string, Buffer>; index?: B
 interface Fixture { kind: "shinjuku-fare-replay"; failFast: boolean; regions: RestrictedRegion[]; layout: Layout; props: WallSeg[]; meshes: MeshData[]; walkable: number[]; colliders: number[]; walls: NonNullable<StationScene["walls"]>; plan: Plan }
 export interface MatrixRow { walker: Walker; fps: number; run: boolean; approach: string; paths: number; passed: number }
 interface Job { id: number; end: End; walker: Walker }
-interface Result { id: number; rows: MatrixRow[]; frames: number; integratedFrames: number; seeds: number; groupDone?: boolean; leak?: ReplayLeak }
+interface Result { id: number; rows: MatrixRow[]; frames: number; integratedFrames: number; seeds: number; fringeContacts: number; maxFringeM: number; groupDone?: boolean; leak?: ReplayLeak }
 function capture(built: BuiltStation, scene: StationScene, plan: Plan): Fixture {
   const objects = [...new Set([...scene.walkable, ...(scene.colliders ?? [])])];
   const buffer = (attribute: THREE.BufferAttribute): Buffer => {
@@ -57,6 +57,7 @@ export async function replayMatrix(built: BuiltStation, scene: StationScene, pla
   let next = 0, finished = 0;
   const report = () => ({ jobs: jobs.length, finished, failFast: fixture.failFast, startedAt, finishedAt: Date.now(), wallMs: performance.now() - start, integratedFrames: results.reduce((n, r) => n + r.integratedFrames, 0), frames: results.reduce((n, r) => n + r.frames, 0),
     failedPaths: [...matrix.values()].reduce((n, r) => n + r.paths - r.passed, 0),
+    fringeContacts: results.reduce((n, r) => n + r.fringeContacts, 0), maxFringeM: Math.max(0, ...results.map(r => r.maxFringeM)),
     matrix: [...matrix.values()], zeroSeedJobs: results.filter(r => !r.seeds).map(r => jobs[r.id]!.end.id), leaks: results.flatMap(r => r.leak ? [r.leak] : []) });
   const save = () => { if (process.env.FARE_REPLAY_REPORT) writeFileSync(process.env.FARE_REPLAY_REPORT.replace(/\.json$/, shard === undefined ? ".json" : `-${shard + 1}.json`), JSON.stringify(report(), null, 2)); };
   const tasks = Array.from({ length: Math.min(6, Math.max(1, Math.floor(availableParallelism() / 2)), groups.length) }, () => new Promise<void>((resolve, reject) => {
@@ -97,8 +98,8 @@ if (parentPort && workerData?.kind === "shinjuku-fare-replay") {
   const env = replayEnvironment(built, scene, fixture.plan, fixture.regions);
   parentPort.on("message", (group: Job[]) => {
    for (const [groupIndex, job] of group.entries()) {
-    const seeds = env.seeds(job.end), rows: MatrixRow[] = [], before = env.frames(), integratedBefore = env.integratedFrames();
-    const result: Result = { id: job.id, rows, frames: 0, integratedFrames: 0, groupDone: groupIndex === group.length - 1, seeds: seeds.filter(s => s[job.walker]).length };
+    const seeds = env.seeds(job.end), rows: MatrixRow[] = [], before = env.frames(), integratedBefore = env.integratedFrames(), fringeBefore = env.fringes().contacts;
+    const result: Result = { id: job.id, rows, frames: 0, integratedFrames: 0, fringeContacts: 0, maxFringeM: 0, groupDone: groupIndex === group.length - 1, seeds: seeds.filter(s => s[job.walker]).length };
     outer: for (const fps of [30, 60]) for (const run of [false, true]) for (const approach of APPROACHES) {
       const row: MatrixRow = { walker: job.walker, fps, run, approach, paths: 0, passed: 0 }; rows.push(row);
       for (const seed of seeds) {
@@ -107,7 +108,8 @@ if (parentPort && workerData?.kind === "shinjuku-fare-replay") {
         if (leak) { result.leak ??= leak; if (fixture.failFast) break outer; } else row.passed++;
       }
     }
-    result.frames = env.frames() - before; result.integratedFrames = env.integratedFrames() - integratedBefore; parentPort!.postMessage(result);
+    result.frames = env.frames() - before; result.integratedFrames = env.integratedFrames() - integratedBefore;
+    result.fringeContacts = env.fringes().contacts - fringeBefore; result.maxFringeM = env.fringes().maxM; parentPort!.postMessage(result);
     if (result.leak && fixture.failFast) break;
    }
   });
