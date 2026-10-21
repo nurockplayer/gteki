@@ -1,7 +1,7 @@
 {
   "source_id": "hokonavi-ikebukuro-walk-node-geojson",
   "source_sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33",
-  "tool_input_sha256": "c0db4d9e1479b6503ca84aa81ac4156b0f0b71f1d5a84644b2f5e22c824acef0",
+  "tool_input_sha256": "3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0",
   "station_ids": [
     "ikebukuro"
   ],
@@ -33,6 +33,13 @@
     }
   ],
   "evidence": [
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "sha256": "82c7ecca22de1c08b8c0ad4b0c1c362af032f80d745c74d5c9a06b4b8f5ff039",
+      "location": "supporting_documents/ckan-metadata:/result/resources/3/url",
+      "exact_url": "https://ckan.hokonavi.go.jp/dataset/324ba112-3bc0-4b9c-8a36-7d30edf4cf92/resource/f5d9a6e5-fd54-4b77-acd3-6f73e77676ff/download/node.geojson",
+      "scope": "Exact catalog resource URL matched acquisition resolved_url in the hashed supporting CKAN snapshot. Package membership only."
+    },
     {
       "source_id": "hokonavi-ikebukuro-walk-node-geojson",
       "sha256": "82c7ecca22de1c08b8c0ad4b0c1c362af032f80d745c74d5c9a06b4b8f5ff039",

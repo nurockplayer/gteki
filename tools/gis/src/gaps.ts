@@ -5,6 +5,7 @@ import type { StationOverlapReport } from './overlap.js';
 import { loadSources } from './acquire.js';
 import { toolFingerprint } from './provenance.js';
 import { assertNetworkInspectionCurrent } from './network-evidence.js';
+import { assertRightsReportCurrent } from './rights-evidence.js';
 import { assertOverlapReportCurrent, assertPoiInspectionCurrent, assertVintageResearchCurrent } from './inspection-evidence.js';
 
 const STATIONS = [
@@ -96,6 +97,8 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
   for(const [index,poi] of pois.entries())await assertPoiInspectionCurrent(poi,poiIds[index]!,{fingerprint});
   await assertVintageResearchCurrent(vintage,{fingerprint});
   for(const r of [...rights,...pois,vintage])if(r.tool_input_sha256!==fingerprint)throw new Error('Gap packet input has a stale tool fingerprint');
+  // Rights evidence must still name current acquisitions, including CKAN supporting-document hashes.
+  for(const [index,source] of loadSources().entries())await assertRightsReportCurrent(rights[index],source.source_id,{fingerprint});
   const overlaps = new Map<string, StationOverlapReport | null>();
   for (const station of STATIONS) {
     const overlap = await maybeReport(`overlap/${station.id}.json`) as StationOverlapReport | null;

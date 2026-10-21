@@ -2,7 +2,7 @@
   "source_id": "plateau-13116-related-2025",
   "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
   "source_bytes": 28543,
-  "tool_input_sha256": "c0db4d9e1479b6503ca84aa81ac4156b0f0b71f1d5a84644b2f5e22c824acef0",
+  "tool_input_sha256": "3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0",
   "input_sources": [
     {
       "source_id": "plateau-13116-related-2025",
@@ -99,6 +99,11 @@
         "高さ"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 1,
         "values": {
@@ -109,6 +114,8 @@
       "literal_field_distributions": {
         "レベル": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -121,6 +128,8 @@
         },
         "住所": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 38,
           "distinct_values": {
             "distinct_count": 38,
@@ -169,6 +178,8 @@
         },
         "収容人数": {
           "blank_count": 37,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 5,
           "distinct_values": {
             "distinct_count": 5,
@@ -184,6 +195,8 @@
         },
         "名称": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 42,
           "distinct_values": {
             "distinct_count": 42,
@@ -234,6 +247,8 @@
         },
         "対象とする災害の分類": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -246,6 +261,8 @@
         },
         "施設の種類": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -258,6 +275,8 @@
         },
         "施設規模": {
           "blank_count": 37,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 5,
           "distinct_values": {
             "distinct_count": 5,
@@ -273,6 +292,8 @@
         },
         "行政区域": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -285,6 +306,8 @@
         },
         "高さ": {
           "blank_count": 6,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 30,
           "distinct_values": {
             "distinct_count": 30,
@@ -380,6 +403,11 @@
         "都市計画決定"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 1,
         "values": {
@@ -390,6 +418,8 @@
       "literal_field_distributions": {
         "供用済面積": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 62,
           "distinct_values": {
             "distinct_count": 62,
@@ -440,6 +470,8 @@
         },
         "供用開始年": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 40,
           "distinct_values": {
             "distinct_count": 40,
@@ -490,6 +522,8 @@
         },
         "公園名": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 62,
           "distinct_values": {
             "distinct_count": 62,
@@ -540,6 +574,8 @@
         },
         "公園種別": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 5,
           "distinct_values": {
             "distinct_count": 5,
@@ -555,6 +591,8 @@
         },
         "所在地市区町村名": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -566,6 +604,8 @@
         },
         "所在地都道府県名": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -577,6 +617,8 @@
         },
         "管理市区町村": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -588,6 +630,8 @@
         },
         "管理都道府県・整備局": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -599,6 +643,8 @@
         },
         "都市計画決定": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -660,6 +706,11 @@
         "高さ"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 1,
         "values": {
@@ -670,6 +721,8 @@
       "literal_field_distributions": {
         "名称": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 143,
           "distinct_values": {
             "distinct_count": 143,
@@ -720,6 +773,8 @@
         },
         "種類": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 11,
           "distinct_values": {
             "distinct_count": 11,
@@ -741,6 +796,8 @@
         },
         "高さ": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 106,
           "distinct_values": {
             "distinct_count": 106,
@@ -843,6 +900,11 @@
         "高さ"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 1,
         "values": {
@@ -853,6 +915,8 @@
       "literal_field_distributions": {
         "事業者種別": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -866,6 +930,8 @@
         },
         "路線名": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 10,
           "distinct_values": {
             "distinct_count": 10,
@@ -886,6 +952,8 @@
         },
         "運営会社": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 5,
           "distinct_values": {
             "distinct_count": 5,
@@ -901,6 +969,8 @@
         },
         "鉄道区分": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -914,6 +984,8 @@
         },
         "駅名": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 25,
           "distinct_values": {
             "distinct_count": 25,
@@ -949,6 +1021,8 @@
         },
         "高さ": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 22,
           "distinct_values": {
             "distinct_count": 22,
@@ -1032,6 +1106,11 @@
         "鉄道区分"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 2,
         "values": {
@@ -1043,6 +1122,8 @@
       "literal_field_distributions": {
         "事業者種別": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -1056,6 +1137,8 @@
         },
         "行政区域": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1067,6 +1150,8 @@
         },
         "路線名": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 12,
           "distinct_values": {
             "distinct_count": 12,
@@ -1089,6 +1174,8 @@
         },
         "運営会社": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 5,
           "distinct_values": {
             "distinct_count": 5,
@@ -1104,6 +1191,8 @@
         },
         "鉄道区分": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -1173,6 +1262,11 @@
         "道路種別"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 2,
         "values": {
@@ -1184,6 +1278,8 @@
       "literal_field_distributions": {
         "任意ID": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 22,
           "distinct_values": {
             "distinct_count": 22,
@@ -1216,6 +1312,8 @@
         },
         "区分": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -1229,6 +1327,8 @@
         },
         "枝ID": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 5,
           "distinct_values": {
             "distinct_count": 5,
@@ -1244,6 +1344,8 @@
         },
         "行政区域": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1255,6 +1357,8 @@
         },
         "資料名称": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1266,6 +1370,8 @@
         },
         "資料年月": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1277,6 +1383,8 @@
         },
         "路線名称": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 22,
           "distinct_values": {
             "distinct_count": 22,
@@ -1309,6 +1417,8 @@
         },
         "道路種別": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 5,
           "distinct_values": {
             "distinct_count": 5,
@@ -1376,6 +1486,11 @@
         "prefecture_name"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 1,
         "values": {
@@ -1386,6 +1501,8 @@
       "literal_field_distributions": {
         "city_code": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1397,6 +1514,8 @@
         },
         "city_name": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1408,6 +1527,8 @@
         },
         "prefecture_code": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1419,6 +1540,8 @@
         },
         "prefecture_name": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,

@@ -5,6 +5,7 @@ import { toolFingerprint } from './provenance.js';
 import { loadSources } from './acquire.js';
 import { verifyVintageEvidence } from './vintage.js';
 import { verifyPoiEvidence } from './poi.js';
+import { rightsEvidenceItems } from './rights-evidence.js';
 const root=join(docsRoot,'gis');
 function networkSourceHashes(report:any):Array<[string,string]>{
   const pairs:Array<[string,string]>=[];
@@ -50,6 +51,9 @@ for(const report of [...poi,...rights,vintage]){
   if(report.tool_input_sha256!==snapshot)summaryProblems.push(`POI/rights/vintage report ${report.source_id} has a stale tool fingerprint`);
   for(const [id,sha] of networkSourceHashes(report))if(acquiredSha.get(id)!==sha)summaryProblems.push(`POI/rights/vintage report ${report.source_id} has stale source ${id}`);
 }
+// Rights evidence hashes (including CKAN supporting-document snapshots) must name current acquisitions.
+const supportingSha=new Map<string,Set<string>>(acquisitions.map((a:any)=>[a.source_id,new Set<string>((a.supporting_documents??[]).map((d:any)=>d.sha256))]));
+for(const report of rights)for(const item of rightsEvidenceItems(report))if(acquiredSha.get(item.source_id)!==item.sha256&&!supportingSha.get(item.source_id)?.has(item.sha256))summaryProblems.push(`rights report ${report.source_id} ${item.where} has stale evidence ${item.source_id}`);
 for(const id of ['toei-stores-shinjuku-csv','toei-stores-shinjuku-nishiguchi-csv','tokyo-shinjuku-facilities-zip','tokyo-shinjuku-facilities-spec-pdf','plateau-13104-related-2025','plateau-13116-related-2025'])if(!poi.some(r=>r.source_id===id))summaryProblems.push(`Missing POI report ${id}`);
 for(const command of ['inspect-vintages','rights',...poi.map(r=>`inspect-poi ${r.source_id}`)])if(!runReceipt.commands?.some((c:any)=>c.command===`pnpm --dir tools/gis gis ${command}`&&c.exit_code===0))summaryProblems.push(`Missing successful real-run command ${command}`);
 for(const inventory of inventories)if(acquiredSha.get(inventory.source_id)!==inventory.source_sha256)summaryProblems.push(`inventory ${inventory.source_id} does not match the recorded acquisition`);

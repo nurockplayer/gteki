@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const fixture = vi.hoisted(() => ({ reports: new Map<string, any>(), writes: vi.fn(), fingerprint: 'f'.repeat(64) }));
 vi.mock('../src/common.js', () => ({
   docsRoot: '/fixture/docs', writeJson: fixture.writes,
-  getStoredSource: async (id: string) => ({ path: id, record: { source_id: id, sha256: 'b'.repeat(64) } }),
+  getStoredSource: async (id: string) => ({ path: id, record: { source_id: id, sha256: 'b'.repeat(64), ...(id === 'rights-src' ? { supporting_documents: [{ id: 'ckan-metadata', sha256: 'c'.repeat(64) }] } : {}) } }),
   readJson: async (path: string) => {
     if (path.includes('/overlap/')) {
       const report = fixture.reports.get(`overlap-${path.split('/').at(-1)!.replace(/\.json$/, '')}`);
@@ -19,7 +19,7 @@ vi.mock('node:fs/promises', () => ({ mkdir: vi.fn(), writeFile: fixture.writes }
 vi.mock('../src/provenance.js', () => ({ toolFingerprint: async () => fixture.fingerprint }));
 vi.mock('../src/poi.js', () => ({ verifyPoiEvidence: async () => ({ status: 'PASS', errors: [] }) }));
 vi.mock('../src/vintage.js', () => ({ verifyVintageEvidence: async (r: any) => ({ status: r.input_sources.some((s: any) => s.sha256 !== 'b'.repeat(64)) ? 'FAIL' : 'PASS', errors: ['stale vintage input'] }) }));
-vi.mock('../src/acquire.js', () => ({ loadSources: () => [] }));
+vi.mock('../src/acquire.js', () => ({ loadSources: () => [{ source_id: 'rights-src' }] }));
 vi.mock('../src/r1.js', () => ({ r1GeoEvidence: async () => ({
   node: { record: { source_id: 'synthetic-node' } }, link: { record: { source_id: 'synthetic-link' } },
   node_bbox: null, link_bbox: null, nodes: { features: [] }, links: { features: [] }, crs: { value: null, status: 'UNKNOWN' },
@@ -38,6 +38,13 @@ const networkReports: Record<string, string> = {
 };
 beforeEach(() => {
   fixture.writes.mockClear(); fixture.reports.clear();
+  // Rights evidence names the acquired file and a supporting CKAN snapshot by hash.
+  fixture.reports.set('rights-src', {
+    source_id: 'rights-src', source_sha256: 'b'.repeat(64), tool_input_sha256: fixture.fingerprint, station_ids: ['shinjuku'],
+    licence: { value: null, status: 'UNKNOWN' }, resource_licence: { value: null, status: 'UNKNOWN' }, publish_gate: 'HOLD', input_sources: [{ source_id: 'rights-src', sha256: 'b'.repeat(64) }],
+    evidence: [{ source_id: 'rights-src', sha256: 'c'.repeat(64), location: '/result/license_id', scope: 'package' }],
+    declarations: [{ value: 'CC-BY-4.0', status: 'PACKAGE_LEVEL_DECLARED', evidence: { source_id: 'rights-src', sha256: 'c'.repeat(64), location: '/result/license_id', scope: 'package' } }],
+  });
   for (const id of poiIds) fixture.reports.set(id, {
     source_id: id, source_sha256: 'b'.repeat(64), tool_input_sha256: fixture.fingerprint,
     input_sources: [id, ...(id === 'tokyo-shinjuku-facilities-zip' ? ['tokyo-shinjuku-facilities-spec-pdf'] : [])].map(source_id => ({ source_id, sha256: 'b'.repeat(64) })),
@@ -59,6 +66,17 @@ it.each(['fingerprint', 'input hash'])('rejects a stale second-station overlap %
     input_sources: [{ source_id: 'plateau-13104-related-2025', sha256: field === 'input hash' ? 'a'.repeat(64) : 'b'.repeat(64) }],
   });
   await expect(gapPacket()).rejects.toThrow(/Stale overlap/);
+  expect(fixture.writes).not.toHaveBeenCalled();
+});
+
+it.each([
+  ['a changed supporting-document snapshot', (r: any) => { r.evidence[0].sha256 = 'a'.repeat(64); }],
+  ['a changed declaration evidence hash', (r: any) => { r.declarations[0].evidence.sha256 = 'a'.repeat(64); }],
+  ['a changed publication-period note hash', (r: any) => { r.publication_period_notes = [{ source_id: 'rights-src', sha256: 'a'.repeat(64), location: '/x', text: 'x' }]; }],
+])('rejects rights evidence with %s although the acquired file hash is unchanged', async (_label, mutate) => {
+  mutate(fixture.reports.get('rights-src'));
+  expect(fixture.reports.get('rights-src').source_sha256).toBe('b'.repeat(64));
+  await expect(gapPacket()).rejects.toThrow('Stale rights evidence');
   expect(fixture.writes).not.toHaveBeenCalled();
 });
 

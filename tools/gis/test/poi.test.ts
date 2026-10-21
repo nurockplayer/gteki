@@ -236,6 +236,30 @@ describe('POI source inspection', () => {
     expect(report.bbox_counts.malformed_geometries).toBe(0);
   });
 
+  it('inspects recognized literal fields beyond the 200-property cap and never counts skipped properties as absent', () => {
+    const filler = Object.fromEntries(Array.from({ length: 205 }, (_, index) => [`f${String(index).padStart(3, '0')}`, 'x']));
+    const feature = (properties: Record<string, unknown>) => ({ type: 'Feature', properties, geometry: { type: 'Point', coordinates: [139.7, 35.7] } });
+    const report = inspectPoiGeoJson('capped', 'a'.repeat(64), 'capped.geojson', {
+      type: 'FeatureCollection', features: [
+        feature({ name: 'A' }),
+        // Regression: `name` is the 206th key, so the cap used to drop it and count it as blank.
+        feature({ ...filler, name: 'B', late_generic: 'z' }),
+      ],
+    }) as any;
+    const table = report.literal_value_tables.find((item: any) => item.field === 'name');
+    expect(table).toMatchObject({ complete: true, value_count: 2, blank_count: 0 });
+    expect(Object.keys(table.values).sort()).toEqual(['A', 'B']);
+    expect(report.literal_field_distributions.name).toMatchObject({ complete: true, blank_count: 0, unobserved_feature_count: 0 });
+    // A skipped generic property is unobserved, not absent; its distribution is marked incomplete.
+    expect(report.literal_field_distributions.f000).toMatchObject({ complete: false, unobserved_feature_count: 1 });
+    expect(report.property_keys_truncated).toBe(true);
+    expect(report.property_scan).toEqual({ property_cap: 200, features_over_cap: 1, recognized_literal_fields_exempt: true });
+    expect(report.literal_field_distributions.late_generic).toBeUndefined();
+    // Features within the cap keep exact absent counts.
+    const small = inspectPoiGeoJson('small', 'a'.repeat(64), 'small.geojson', { type: 'FeatureCollection', features: [feature({ name: 'A' }), feature({})] }) as any;
+    expect(small.literal_field_distributions.name).toMatchObject({ complete: true, blank_count: 1 });
+  });
+
   it('preserves bbox counts in a ZIP GeoJSON member summary', () => {
     const geo = inspectPoiGeoJson('member', 'e'.repeat(64), 'member.geojson', { type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [139.7, 35.7] } }] }) as any;
     const member = poiGeoJsonMember('member.geojson', 42, geo) as any;

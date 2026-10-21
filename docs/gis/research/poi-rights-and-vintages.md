@@ -1,6 +1,6 @@
 # POI, facility rights and PLATEAU vintage evidence
 
-Tool-input SHA-256: `c0db4d9e1479b6503ca84aa81ac4156b0f0b71f1d5a84644b2f5e22c824acef0`. Generated from integrity-checked acquisitions and current inspection reports. All candidates remain UNVERIFIED / routable:false.
+Tool-input SHA-256: `3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0`. Generated from integrity-checked acquisitions and current inspection reports. All candidates remain UNVERIFIED / routable:false.
 
 ## Scope and station identity
 

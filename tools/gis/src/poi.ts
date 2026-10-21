@@ -4,10 +4,11 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import path from 'node:path';
-import { assertPathWithinStore, docsRoot, ensurePrivateStore, getStoredSource, getStoreRoot, storeRelativePath, writeJson } from './common.js';
+import { assertPathWithinStore, docsRoot, ensurePrivateStore, getStoredSource, getStoreRoot, storeRelativePath } from './common.js';
 import { toolFingerprint } from './provenance.js';
 import { readZip, type ZipEntry } from './zip.js';
 import { displayZipMemberName } from './zip-names.js';
+import { commitReportFiles, type ReportFile } from './report-transaction.js';
 
 const execFileAsync = promisify(execFile);
 const MAX_CSV_BYTES = 64 * 1024 * 1024;
@@ -203,6 +204,12 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
   const geometryCounts = new Map<string, number>();
   const propertyCounts = new Map<string, Map<string, number>>();
   const propertyPresent = new Map<string, number>();
+  // Recognized literal fields are always inspected, independent of the generic per-feature
+  // property cap; skipped generic properties are "unobserved", never "absent".
+  const PROPERTY_CAP = 200;
+  const relevantLiteralFields = new Set<string>([...STATION_FIELDS, ...LANDMARK_FIELDS, ...OPERATOR_FIELDS, ...LINE_FIELDS, ...NAME_FIELDS]);
+  const propertyPresentFullyScanned = new Map<string, number>();
+  let featuresOverPropertyCap = 0;
   const attributionCounts = new Map<string, Map<string, number>>();
   const endpointFieldSets = new Map<string, number>();
   const bboxKeys = ['bbox', 'BBOX', 'extent', 'Extent'] as const;
@@ -302,10 +309,15 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
     }
     const effectiveCrs = geometry === null ? undefined : visitGeometry(feature, geometry);
     const properties = Object.hasOwn(feature, 'properties') && feature.properties && typeof feature.properties === 'object' && !Array.isArray(feature.properties) ? feature.properties as Record<string, unknown> : Object.create(null) as Record<string, unknown>;
-    for (const field of Object.keys(properties).slice(0, 200)) {
+    const propertyKeys = Object.keys(properties);
+    const overCap = propertyKeys.length > PROPERTY_CAP;
+    if (overCap) featuresOverPropertyCap++;
+    for (const [position, field] of propertyKeys.entries()) {
+      if (position >= PROPERTY_CAP && !relevantLiteralFields.has(field)) continue;
       const map = propertyCounts.get(field) ?? new Map<string, number>();
       addCount(map, properties[field]); propertyCounts.set(field, map);
       propertyPresent.set(field, (propertyPresent.get(field) ?? 0) + 1);
+      if (!overCap) propertyPresentFullyScanned.set(field, (propertyPresentFullyScanned.get(field) ?? 0) + 1);
     }
     for (const field of ATTRIBUTION_FIELDS) {
       if (!Object.hasOwn(properties, field)) continue;
@@ -333,10 +345,12 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
   const literalDistributions = Object.fromEntries([...propertyCounts].sort(([a], [b]) => a.localeCompare(b)).map(([field, counts]) => {
     const values = distribution(counts); const blanks = values.values['(blank)'] ?? 0; delete values.values['(blank)'];
     const distinctCount = Math.max(0, values.distinct_count - Number(blanks > 0));
-    return [field, { blank_count: features.length - (propertyPresent.get(field) ?? 0) + blanks, distinct_count: distinctCount, distinct_values: { ...values, distinct_count: distinctCount } }];
+    // Features over the cap never count a skipped generic property as absent.
+    const exact = relevantLiteralFields.has(field) || featuresOverPropertyCap === 0;
+    const absent = exact ? features.length - (propertyPresent.get(field) ?? 0) : features.length - featuresOverPropertyCap - (propertyPresentFullyScanned.get(field) ?? 0);
+    return [field, { blank_count: absent + blanks, complete: exact, unobserved_feature_count: exact ? 0 : featuresOverPropertyCap, distinct_count: distinctCount, distinct_values: { ...values, distinct_count: distinctCount } }];
   }));
   const sourceAttributions = Object.fromEntries([...attributionCounts].sort(([a], [b]) => a.localeCompare(b)).map(([field, counts]) => [field, distribution(counts)]));
-  const relevantLiteralFields = new Set<string>([...STATION_FIELDS, ...LANDMARK_FIELDS, ...OPERATOR_FIELDS, ...LINE_FIELDS, ...NAME_FIELDS]);
   const literalValueTables = [...propertyCounts].filter(([field]) => relevantLiteralFields.has(field)).sort(([a], [b]) => a.localeCompare(b)).map(([field, counts]) => {
     const values = Object.fromEntries([...counts].filter(([value]) => value !== '(blank)' && value !== '(non-scalar)').sort(([a], [b]) => a.localeCompare(b)));
     return { file, field, values, value_count: Object.keys(values).length, complete: true, blank_count: counts.get('(blank)') ?? 0 };
@@ -349,7 +363,7 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
   const commonCrsName = mixedCrs ? null : effectiveCrsRecords.length ? effectiveCrsRecords[0]!.name : rootCrsName;
   const layerCrsStatus = mixedCrs ? 'MIXED' : effectiveCrsRecords[0]?.status ?? crsReference(rootCrsPresent, declaredCrs).status;
   return {
-    file, format: 'GeoJSON', feature_count: features.length, bbox, raw_coordinates_bbox: rawBbox, bbox_status: coordinateTraversalIncomplete ? 'INCOMPLETE_LIMIT_REACHED' : malformedGeometryCount > 0 ? 'INCOMPLETE_MALFORMED_GEOMETRY' : bbox ? 'COMPUTED_GEOGRAPHIC' : 'UNKNOWN', bbox_counts: { coordinate_visits: coordinateVisitCount, coordinate_positions: coordinatePositionCount, geometry_visits: geometryVisitCount, geometry_visit_limit: geometryVisitLimit, malformed_geometries: malformedGeometryCount, visit_limit: 1_000_000 }, property_keys: [...propertyCounts.keys()].sort(), property_keys_truncated: propertyCounts.size >= 200, geometry_type_counts: distribution(geometryCounts),
+    file, format: 'GeoJSON', feature_count: features.length, bbox, raw_coordinates_bbox: rawBbox, bbox_status: coordinateTraversalIncomplete ? 'INCOMPLETE_LIMIT_REACHED' : malformedGeometryCount > 0 ? 'INCOMPLETE_MALFORMED_GEOMETRY' : bbox ? 'COMPUTED_GEOGRAPHIC' : 'UNKNOWN', bbox_counts: { coordinate_visits: coordinateVisitCount, coordinate_positions: coordinatePositionCount, geometry_visits: geometryVisitCount, geometry_visit_limit: geometryVisitLimit, malformed_geometries: malformedGeometryCount, visit_limit: 1_000_000 }, property_keys: [...propertyCounts.keys()].sort(), property_keys_truncated: propertyCounts.size >= 200 || featuresOverPropertyCap > 0, property_scan: { property_cap: PROPERTY_CAP, features_over_cap: featuresOverPropertyCap, recognized_literal_fields_exempt: true }, geometry_type_counts: distribution(geometryCounts),
     line_feature_count: (geometryCounts.get('LineString') ?? 0) + (geometryCounts.get('MultiLineString') ?? 0), endpoint_field_sets: Object.fromEntries([...endpointFieldSets].sort(([a], [b]) => a.localeCompare(b))),
     crs: { properties: { name: commonCrsName } }, crs_status: layerCrsStatus, declared_crs: declaredCrs,
     effective_crs_declarations: [...new Map(effectiveCrsRecords.filter(record=>record.present).map(record=>[JSON.stringify(record.declaration),record.declaration])).values()],
@@ -360,7 +374,7 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
 
 /** Keep bbox completeness evidence when a GeoJSON layer is nested in an acquired ZIP. */
 export function poiGeoJsonMember(file: string, bytes: number, geo: Record<string, unknown>): Record<string, unknown> & { file: string; bytes: number; kind: string } {
-  return { file, bytes, kind: 'GEOJSON', feature_count: geo.feature_count, bbox: geo.bbox, bbox_status: geo.bbox_status, bbox_counts: geo.bbox_counts, raw_coordinates_bbox: geo.raw_coordinates_bbox, crs: geo.crs, crs_status: geo.crs_status, declared_crs: geo.declared_crs, crs_interpretation: geo.crs_interpretation, property_keys: geo.property_keys, property_keys_truncated: geo.property_keys_truncated, geometry_type_counts: geo.geometry_type_counts, literal_field_distributions: geo.literal_field_distributions, source_attributions: geo.source_attributions, line_feature_count: geo.line_feature_count, endpoint_field_sets: geo.endpoint_field_sets };
+  return { file, bytes, kind: 'GEOJSON', feature_count: geo.feature_count, bbox: geo.bbox, bbox_status: geo.bbox_status, bbox_counts: geo.bbox_counts, raw_coordinates_bbox: geo.raw_coordinates_bbox, crs: geo.crs, crs_status: geo.crs_status, declared_crs: geo.declared_crs, crs_interpretation: geo.crs_interpretation, property_keys: geo.property_keys, property_keys_truncated: geo.property_keys_truncated, property_scan: geo.property_scan, geometry_type_counts: geo.geometry_type_counts, literal_field_distributions: geo.literal_field_distributions, source_attributions: geo.source_attributions, line_feature_count: geo.line_feature_count, endpoint_field_sets: geo.endpoint_field_sets };
 }
 
 async function zipReport(sourceId: string, sha256: string, filePath: string): Promise<Record<string, unknown>> {
@@ -492,8 +506,12 @@ export async function inspectPoi(sourceId: string): Promise<Record<string, unkno
     ...(spec ? { specification_source: { source_id: spec.source_id, sha256: spec.sha256, report: await pdfReport(spec.path) } } : {}),
   };
   const outDir = path.join(docsRoot, 'gis', 'poi');
-  await writeJson(path.join(outDir, `${sourceId}.json`), report);
-  await writeFile(path.join(outDir, `${sourceId}.md`), renderPoiMarkdown(report), 'utf8');
+  // Prepare both renderings first, then publish JSON and Markdown as one rollback-capable bundle.
+  const files: ReportFile[] = [
+    { path: path.join(outDir, `${sourceId}.json`), content: `${JSON.stringify(report, null, 2)}\n` },
+    { path: path.join(outDir, `${sourceId}.md`), content: renderPoiMarkdown(report) },
+  ];
+  await commitReportFiles(files, path.join(docsRoot, 'gis'));
   return report;
 }
 

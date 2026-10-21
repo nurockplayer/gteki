@@ -8,7 +8,7 @@ const fixture = vi.hoisted(() => ({
   report: {} as any,
   researchError: false,
   metadataText: '',
-  metadataKind: 'dataset' as 'dataset'|'metadata'|'both',
+  metadataKind: 'dataset' as 'dataset'|'metadata'|'both'|'coded'|'foreign-namespace',
   priorFiles: new Map<string,string>(),
   fingerprint: 'f'.repeat(64),
   archiveUrl: 'https://assets.example/assets/b5/dd5300/shinjuku_2023_citygml_2_op.zip',
@@ -18,8 +18,9 @@ vi.mock('../src/acquire.js', () => ({ loadSources: () => fixture.sources }));
 vi.mock('../src/zip.js', () => ({ readZip: async () => {
   const dataset = `<identificationInfo><MD_DataIdentification><resourceConstraints><MD_Constraints><useLimitation>${fixture.metadataText}</useLimitation></MD_Constraints></resourceConstraints></MD_DataIdentification></identificationInfo>`;
   const record = `<metadataConstraints><MD_LegalConstraints><useLimitation>${fixture.metadataText}</useLimitation></MD_LegalConstraints></metadataConstraints>`;
-  const inner = fixture.metadataKind === 'dataset' ? dataset : fixture.metadataKind === 'metadata' ? record : record + dataset.replace(fixture.metadataText, 'Copyright reserved.');
-  return [{name:'metadata.xml',data:Buffer.from(`<MD_Metadata xmlns="http://zgate.gsi.go.jp/ch/jmp/">${inner}</MD_Metadata>`)}];
+  const coded = dataset.replace('</MD_DataIdentification>', '').replace('</resourceConstraints>', '<useConstraints><MD_RestrictionCode codeListValue="restricted"/></useConstraints></resourceConstraints></MD_DataIdentification>');
+  const inner = fixture.metadataKind === 'coded' ? coded : fixture.metadataKind === 'dataset' || fixture.metadataKind === 'foreign-namespace' ? dataset : fixture.metadataKind === 'metadata' ? record : record + dataset.replace(fixture.metadataText, 'Copyright reserved.');
+  return [{name:'metadata.xml',data:Buffer.from(`<MD_Metadata xmlns="${fixture.metadataKind === 'foreign-namespace' ? 'urn:unrelated' : 'http://zgate.gsi.go.jp/ch/jmp/'}">${inner}</MD_Metadata>`)}];
 } }));
 vi.mock('../src/provenance.js', () => ({ toolFingerprint: async () => fixture.fingerprint }));
 vi.mock('../src/vintage.js', () => ({ verifyVintageEvidence: async () => ({ status: 'PASS', errors: [] }) }));
@@ -160,6 +161,32 @@ describe('rights generation for vintage members',()=>{
     expect(fixture.writes.size).toBe(0);
   });
 
+  describe('Ikebukuro package attribution requires exact resource membership',()=>{
+    const docSha='9'.repeat(64),docPath='/virtual/store/raw/doc/package_show';
+    const install=(resources:Array<{url:string}>)=>{
+      for(const [i,id] of ['hokonavi-ikebukuro-walk-node-geojson','hokonavi-ikebukuro-walk-link-csv'].entries()){
+        fixture.sources.push({...fixture.sources[0] as object,source_id:id,expected_url:'https://example.invalid/manifest'});
+        fixture.records.set(id,{source_id:id,sha256:String(i+3).repeat(64),resolved_url:`https://ckan.example/${id}.dl`,...(i===0?{supporting_documents:[{id:'ckan-metadata',sha256:docSha,store_path:'raw/doc/package_show'}]}:{})});
+      }
+      fixture.json.set(docPath,{success:true,result:{license_id:'CC-BY-4.0',license_url:'https://creativecommons.org/licenses/by/4.0/',resources}});
+    };
+    it('attributes the package licence only to sources with exactly one exact resource URL and records the pointer',async()=>{
+      install([{url:'https://ckan.example/hokonavi-ikebukuro-walk-node-geojson.dl'},{url:'https://ckan.example/hokonavi-ikebukuro-walk-link-csv.dl'}]);
+      const records=await generateRights();
+      for(const [id,index] of [['hokonavi-ikebukuro-walk-node-geojson',0],['hokonavi-ikebukuro-walk-link-csv',1]] as const) {
+        const record=records.find(r=>r.source_id===id)!;
+        expect(record.licence).toMatchObject({value:'CC-BY-4.0',status:'PACKAGE_LEVEL_DECLARED'});
+        expect(record.evidence).toContainEqual(expect.objectContaining({sha256:docSha,location:`supporting_documents/ckan-metadata:/result/resources/${index}/url`}));
+      }
+    });
+    it.each([['no match',[{url:'https://ckan.example/other.dl'}]],['duplicate matches',[{url:'https://ckan.example/hokonavi-ikebukuro-walk-link-csv.dl'},{url:'https://ckan.example/hokonavi-ikebukuro-walk-link-csv.dl'}]]])('leaves a source UNKNOWN with %s',async(_label,resources)=>{
+      install(resources as Array<{url:string}>);
+      const record=(await generateRights()).find(r=>r.source_id==='hokonavi-ikebukuro-walk-link-csv')!;
+      expect(record.licence).toMatchObject({value:null,status:'UNKNOWN'});
+      expect(record.declarations).toEqual([]);
+      expect(record.caveats.some(c=>c.includes('exact resource URL matches'))).toBe(true);
+    });
+  });
   it.each(['CC BY 4.0 does not apply.','CC BY 4.0 は適用されません。','Licensed under CC BY 4.0'])('keeps the exact metadata quote without promoting non-affirmative rights: %s',async text=>{
     const id='plateau-13104-metadata',pkgId='plateau-13104-package-2025';
     fixture.metadataText=text;
@@ -186,6 +213,23 @@ describe('rights generation for vintage members',()=>{
     expect(record.file_embedded_licence.value).toBeNull();
     expect(record.declarations.some(d=>d.status==='FILE_EMBEDDED')).toBe(false);
     expect(record.evidence).toContainEqual(expect.objectContaining({location:expect.stringContaining('metadataConstraints'),scope:expect.stringContaining('METADATA_RECORD_ONLY')}));
+    expect(record.publish_gate).toBe('HOLD');
+  });
+  it.each([
+    ['coded','a coded restriction beside the affirmative text'],
+    ['foreign-namespace','an unrecognized XML namespace'],
+  ] as const)('does not promote an affirmative statement to FILE_EMBEDDED with %s',async(kind,_label)=>{
+    const id='plateau-13104-metadata',pkgId='plateau-13104-package-2025';
+    fixture.metadataText='Licensed under CC BY 4.0';fixture.metadataKind=kind;
+    fixture.sources.push({...fixture.sources[0] as object,source_id:id,resolution:{kind:'plateau_catalog_api'}});
+    fixture.records.set(id,{source_id:id,sha256:'1'.repeat(64),resolved_url:'https://assets.example/metadata.zip'});
+    fixture.records.set(pkgId,{source_id:pkgId,sha256:packageSha});
+    fixture.json.set(`/virtual/source/${pkgId}`,{success:true,result:{license_id:'plateau',resources:[]}});
+    const record=(await generateRights()).find(r=>r.source_id===id)!;
+    expect(record.file_embedded_licence).toMatchObject({value:null,status:'UNKNOWN'});
+    expect(record.declarations.some(d=>d.status==='FILE_EMBEDDED')).toBe(false);
+    expect(record.evidence).toContainEqual(expect.objectContaining({quote:'Licensed under CC BY 4.0'}));
+    if(kind==='coded')expect(record.evidence).toContainEqual(expect.objectContaining({quote:expect.stringContaining('codeListValue="restricted"'),location:expect.stringContaining('#CODED')}));
     expect(record.publish_gate).toBe('HOLD');
   });
   it('archives superseded vintage rights and acquisitions in the same prepared bundle',async()=>{

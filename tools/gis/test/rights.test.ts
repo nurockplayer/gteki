@@ -40,7 +40,7 @@ describe('rights evidence scope',()=>{
   const dataset=(element:string,text:string)=>`<MD_Metadata xmlns="${NS}"><identificationInfo><MD_DataIdentification><resourceConstraints><MD_Constraints><${element}>${text}</${element}></MD_Constraints></resourceConstraints></MD_DataIdentification></identificationInfo></MD_Metadata>`;
   const metadataRecord=(text:string)=>`<MD_Metadata xmlns="${NS}"><metadataConstraints><MD_LegalConstraints><useLimitation>${text}</useLimitation></MD_LegalConstraints></metadataConstraints></MD_Metadata>`;
   it('records only explicit metadata XML rights and leaves absent rights unknown',()=>{
-    expect(embeddedMetadataRights(dataset('useLimitation','Licensed under CC BY 4.0'))).toEqual([{value:'CC BY 4.0',quote:'Licensed under CC BY 4.0',element:'useLimitation',path:datasetPath,scope:'DATASET_RESOURCE_CONSTRAINTS'}]);
+    expect(embeddedMetadataRights(dataset('useLimitation','Licensed under CC BY 4.0'))).toEqual([{value:'CC BY 4.0',quote:'Licensed under CC BY 4.0',element:'useLimitation',path:datasetPath,scope:'DATASET_RESOURCE_CONSTRAINTS',kind:'TEXT'}]);
     expect(embeddedMetadataRights(dataset('useLimitation','See the publisher'))).toEqual([expect.objectContaining({value:null,quote:'See the publisher',element:'useLimitation'})]);
     expect(embeddedMetadataRights(dataset('useLimitation','Not licensed under CC BY 4.0'))).toEqual([expect.objectContaining({value:null,quote:'Not licensed under CC BY 4.0'})]);
     expect(embeddedMetadataRights(dataset('abstract','CC BY 4.0'))).toEqual([]);
@@ -55,6 +55,29 @@ describe('rights evidence scope',()=>{
     // Mixed namespaces along the chain and chains containing both constraint kinds fail closed.
     expect(embeddedMetadataRights(`<MD_Metadata xmlns="${NS}" xmlns:o="urn:other"><identificationInfo><MD_DataIdentification><o:resourceConstraints><o:MD_Constraints><o:useLimitation>Licensed under CC BY 4.0</o:useLimitation></o:MD_Constraints></o:resourceConstraints></MD_DataIdentification></identificationInfo></MD_Metadata>`)[0]!.scope).toBe('UNKNOWN');
     expect(classifyMetadataRightsScope(['MD_Metadata','metadataConstraints','resourceConstraints','MD_Constraints','useLimitation'].map(local=>({uri:'u',local})))).toBe('UNKNOWN');
+  });
+  it('requires a recognized metadata namespace: an equal but unrecognized namespace never establishes dataset rights',()=>{
+    const wrap=(ns:string)=>`<MD_Metadata xmlns="${ns}"><identificationInfo><MD_DataIdentification><resourceConstraints><MD_Constraints><useLimitation>Licensed under CC BY 4.0</useLimitation></MD_Constraints></resourceConstraints></MD_DataIdentification></identificationInfo></MD_Metadata>`;
+    // Regression: xmlns="urn:unrelated" used to classify as DATASET_RESOURCE_CONSTRAINTS.
+    const [unrelated]=embeddedMetadataRights(wrap('urn:unrelated'));
+    expect(unrelated).toMatchObject({scope:'UNKNOWN',value:'CC BY 4.0',quote:'Licensed under CC BY 4.0',path:expect.stringContaining('{urn:unrelated}MD_Metadata')});
+    expect(embeddedMetadataRights(wrap(NS))[0]!.scope).toBe('DATASET_RESOURCE_CONSTRAINTS');
+    expect(embeddedMetadataRights(wrap('http://www.isotc211.org/2005/gmd'))[0]!.scope).toBe('DATASET_RESOURCE_CONSTRAINTS');
+    const record=(ns:string)=>`<MD_Metadata xmlns="${ns}"><metadataConstraints><MD_LegalConstraints><useLimitation>Licensed under CC BY 4.0</useLimitation></MD_LegalConstraints></metadataConstraints></MD_Metadata>`;
+    expect(embeddedMetadataRights(record('urn:unrelated'))[0]!.scope).toBe('UNKNOWN');
+    expect(embeddedMetadataRights(record(NS))[0]!.scope).toBe('METADATA_RECORD_ONLY');
+  });
+  it('preserves coded and linked constraints that have no text as non-affirmative evidence',()=>{
+    const xml=(inner:string)=>`<MD_Metadata xmlns="${NS}" xmlns:xlink="http://www.w3.org/1999/xlink"><identificationInfo><MD_DataIdentification><resourceConstraints><MD_LegalConstraints><useLimitation>Licensed under CC BY 4.0</useLimitation>${inner}</MD_LegalConstraints></resourceConstraints></MD_DataIdentification></identificationInfo></MD_Metadata>`;
+    // Regression: the textless restriction code used to disappear, leaving only the affirmative text.
+    const coded=embeddedMetadataRights(xml('<useConstraints><MD_RestrictionCode codeList="http://example.invalid/codelist" codeListValue="restricted"/></useConstraints>'));
+    expect(coded.map(f=>f.kind)).toEqual(['TEXT','CODED']);
+    expect(coded[1]).toMatchObject({value:null,element:'MD_RestrictionCode',scope:'DATASET_RESOURCE_CONSTRAINTS',quote:expect.stringContaining('codeListValue="restricted"')});
+    const linked=embeddedMetadataRights(xml('<otherConstraints xlink:href="https://example.invalid/terms"/>'));
+    expect(linked.map(f=>f.kind)).toEqual(['TEXT','LINKED']);
+    expect(linked[1]).toMatchObject({value:null,quote:'href="https://example.invalid/terms"'});
+    // Outside any constraints container, attributes are not rights evidence.
+    expect(embeddedMetadataRights(`<MD_Metadata xmlns="${NS}"><identificationInfo><MD_DataIdentification><topicCategory codeListValue="x"/></MD_DataIdentification></identificationInfo></MD_Metadata>`)).toEqual([]);
   });
   it.each([
     'CC BY 4.0', 'PDL 1.0', 'CC BY 4.0 does not apply.', 'CC BY 4.0 は適用されません。',

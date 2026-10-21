@@ -2,7 +2,7 @@
   "source_id": "tokyo-shinjuku-facilities-zip",
   "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
   "source_bytes": 2317035,
-  "tool_input_sha256": "c0db4d9e1479b6503ca84aa81ac4156b0f0b71f1d5a84644b2f5e22c824acef0",
+  "tool_input_sha256": "3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0",
   "input_sources": [
     {
       "source_id": "tokyo-shinjuku-facilities-zip",
@@ -205,6 +205,11 @@
         "vegetation"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 3,
         "values": {
@@ -217,6 +222,8 @@
       "literal_field_distributions": {
         "area": {
           "blank_count": 13102,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -228,6 +235,8 @@
         },
         "barrier": {
           "blank_count": 13124,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -239,6 +248,8 @@
         },
         "display_name": {
           "blank_count": 12787,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 85,
           "distinct_values": {
             "distinct_count": 85,
@@ -289,6 +300,8 @@
         },
         "entities": {
           "blank_count": 13034,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -300,6 +313,8 @@
         },
         "facility": {
           "blank_count": 12849,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 7,
           "distinct_values": {
             "distinct_count": 7,
@@ -317,6 +332,8 @@
         },
         "from": {
           "blank_count": 13120,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -329,6 +346,8 @@
         },
         "int_address": {
           "blank_count": 13109,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 16,
           "distinct_values": {
             "distinct_count": 16,
@@ -355,6 +374,8 @@
         },
         "marker": {
           "blank_count": 13029,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -366,6 +387,8 @@
         },
         "nonphysical": {
           "blank_count": 13029,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -377,6 +400,8 @@
         },
         "object": {
           "blank_count": 13124,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -388,6 +413,8 @@
         },
         "openinghour": {
           "blank_count": 13124,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -399,6 +426,8 @@
         },
         "safety": {
           "blank_count": 13124,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -410,6 +439,8 @@
         },
         "service": {
           "blank_count": 13124,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -421,6 +452,8 @@
         },
         "structure": {
           "blank_count": 13102,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -432,6 +465,8 @@
         },
         "to": {
           "blank_count": 13113,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -444,6 +479,8 @@
         },
         "traffic": {
           "blank_count": 435,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -456,6 +493,8 @@
         },
         "use": {
           "blank_count": 13124,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -467,6 +506,8 @@
         },
         "vegetation": {
           "blank_count": 13112,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -541,6 +582,11 @@
         "vegetation"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 3,
         "values": {
@@ -553,6 +599,8 @@
       "literal_field_distributions": {
         "barrier": {
           "blank_count": 300,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -564,6 +612,8 @@
         },
         "class": {
           "blank_count": 300,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -575,6 +625,8 @@
         },
         "currency": {
           "blank_count": 303,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -586,6 +638,8 @@
         },
         "disabledaccess": {
           "blank_count": 307,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -597,6 +651,8 @@
         },
         "display_name": {
           "blank_count": 102,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 63,
           "distinct_values": {
             "distinct_count": 63,
@@ -647,6 +703,8 @@
         },
         "entities": {
           "blank_count": 298,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -658,6 +716,8 @@
         },
         "facility": {
           "blank_count": 40,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 10,
           "distinct_values": {
             "distinct_count": 10,
@@ -678,6 +738,8 @@
         },
         "fixture": {
           "blank_count": 308,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -689,6 +751,8 @@
         },
         "from": {
           "blank_count": 304,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -700,6 +764,8 @@
         },
         "gender": {
           "blank_count": 303,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -713,6 +779,8 @@
         },
         "int_address": {
           "blank_count": 269,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 40,
           "distinct_values": {
             "distinct_count": 40,
@@ -763,6 +831,8 @@
         },
         "openinghour": {
           "blank_count": 308,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -774,6 +844,8 @@
         },
         "service": {
           "blank_count": 292,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -787,6 +859,8 @@
         },
         "structure": {
           "blank_count": 302,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -798,6 +872,8 @@
         },
         "to": {
           "blank_count": 305,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -810,6 +886,8 @@
         },
         "use": {
           "blank_count": 307,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -821,6 +899,8 @@
         },
         "vegetation": {
           "blank_count": 303,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -890,6 +970,11 @@
         "vegetation"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 3,
         "values": {
@@ -902,6 +987,8 @@
       "literal_field_distributions": {
         "area": {
           "blank_count": 77,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -913,6 +1000,8 @@
         },
         "disabledaccess": {
           "blank_count": 77,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -924,6 +1013,8 @@
         },
         "display_name": {
           "blank_count": 46,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 8,
           "distinct_values": {
             "distinct_count": 8,
@@ -942,6 +1033,8 @@
         },
         "entities": {
           "blank_count": 77,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -953,6 +1046,8 @@
         },
         "facility": {
           "blank_count": 17,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 9,
           "distinct_values": {
             "distinct_count": 9,
@@ -972,6 +1067,8 @@
         },
         "gender": {
           "blank_count": 75,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -985,6 +1082,8 @@
         },
         "int_address": {
           "blank_count": 76,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -997,6 +1096,8 @@
         },
         "meta": {
           "blank_count": 77,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1008,6 +1109,8 @@
         },
         "object": {
           "blank_count": 67,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1019,6 +1122,8 @@
         },
         "structure": {
           "blank_count": 77,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1030,6 +1135,8 @@
         },
         "vegetation": {
           "blank_count": 75,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1100,6 +1207,11 @@
         "vegetation"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 3,
         "values": {
@@ -1112,6 +1224,8 @@
       "literal_field_distributions": {
         "area": {
           "blank_count": 138,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -1124,6 +1238,8 @@
         },
         "class": {
           "blank_count": 139,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1135,6 +1251,8 @@
         },
         "display_name": {
           "blank_count": 94,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 24,
           "distinct_values": {
             "distinct_count": 24,
@@ -1169,6 +1287,8 @@
         },
         "entities": {
           "blank_count": 130,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1180,6 +1300,8 @@
         },
         "facility": {
           "blank_count": 32,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 10,
           "distinct_values": {
             "distinct_count": 10,
@@ -1200,6 +1322,8 @@
         },
         "gender": {
           "blank_count": 138,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -1212,6 +1336,8 @@
         },
         "int_address": {
           "blank_count": 137,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 5,
           "distinct_values": {
             "distinct_count": 5,
@@ -1227,6 +1353,8 @@
         },
         "object": {
           "blank_count": 125,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1238,6 +1366,8 @@
         },
         "service": {
           "blank_count": 138,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -1251,6 +1381,8 @@
         },
         "structure": {
           "blank_count": 141,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1262,6 +1394,8 @@
         },
         "vegetation": {
           "blank_count": 136,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1341,6 +1475,11 @@
         "vegetation"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 4,
         "values": {
@@ -1354,6 +1493,8 @@
       "literal_field_distributions": {
         "area": {
           "blank_count": 1232,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1365,6 +1506,8 @@
         },
         "barrier": {
           "blank_count": 1226,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1376,6 +1519,8 @@
         },
         "class": {
           "blank_count": 1241,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1387,6 +1532,8 @@
         },
         "currency": {
           "blank_count": 1233,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1398,6 +1545,8 @@
         },
         "disabledaccess": {
           "blank_count": 1243,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1409,6 +1558,8 @@
         },
         "display_name": {
           "blank_count": 795,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 214,
           "distinct_values": {
             "distinct_count": 214,
@@ -1459,6 +1610,8 @@
         },
         "entities": {
           "blank_count": 1069,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1470,6 +1623,8 @@
         },
         "facility": {
           "blank_count": 680,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 13,
           "distinct_values": {
             "distinct_count": 13,
@@ -1493,6 +1648,8 @@
         },
         "from": {
           "blank_count": 1239,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -1505,6 +1662,8 @@
         },
         "gender": {
           "blank_count": 1228,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 4,
           "distinct_values": {
             "distinct_count": 4,
@@ -1519,6 +1678,8 @@
         },
         "int_address": {
           "blank_count": 1107,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 139,
           "distinct_values": {
             "distinct_count": 139,
@@ -1569,6 +1730,8 @@
         },
         "openinghour": {
           "blank_count": 1243,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -1581,6 +1744,8 @@
         },
         "safety": {
           "blank_count": 1244,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1592,6 +1757,8 @@
         },
         "service": {
           "blank_count": 1214,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 5,
           "distinct_values": {
             "distinct_count": 5,
@@ -1607,6 +1774,8 @@
         },
         "structure": {
           "blank_count": 1243,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1618,6 +1787,8 @@
         },
         "to": {
           "blank_count": 1234,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -1630,6 +1801,8 @@
         },
         "traffic": {
           "blank_count": 644,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -1642,6 +1815,8 @@
         },
         "type": {
           "blank_count": 1242,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -1655,6 +1830,8 @@
         },
         "use": {
           "blank_count": 1245,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1666,6 +1843,8 @@
         },
         "vegetation": {
           "blank_count": 1239,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1741,6 +1920,11 @@
         "use"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 4,
         "values": {
@@ -1754,6 +1938,8 @@
       "literal_field_distributions": {
         "area": {
           "blank_count": 179,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1765,6 +1951,8 @@
         },
         "barrier": {
           "blank_count": 178,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1776,6 +1964,8 @@
         },
         "currency": {
           "blank_count": 180,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1787,6 +1977,8 @@
         },
         "display_name": {
           "blank_count": 41,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 90,
           "distinct_values": {
             "distinct_count": 90,
@@ -1837,6 +2029,8 @@
         },
         "entities": {
           "blank_count": 130,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1848,6 +2042,8 @@
         },
         "facility": {
           "blank_count": 37,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 10,
           "distinct_values": {
             "distinct_count": 10,
@@ -1868,6 +2064,8 @@
         },
         "fixture": {
           "blank_count": 170,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -1880,6 +2078,8 @@
         },
         "from": {
           "blank_count": 181,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -1892,6 +2092,8 @@
         },
         "int_address": {
           "blank_count": 141,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 42,
           "distinct_values": {
             "distinct_count": 42,
@@ -1942,6 +2144,8 @@
         },
         "openinghour": {
           "blank_count": 176,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1953,6 +2157,8 @@
         },
         "safety": {
           "blank_count": 182,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1964,6 +2170,8 @@
         },
         "service": {
           "blank_count": 170,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 4,
           "distinct_values": {
             "distinct_count": 4,
@@ -1978,6 +2186,8 @@
         },
         "structure": {
           "blank_count": 182,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -1989,6 +2199,8 @@
         },
         "to": {
           "blank_count": 180,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -2001,6 +2213,8 @@
         },
         "type": {
           "blank_count": 182,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2012,6 +2226,8 @@
         },
         "use": {
           "blank_count": 182,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2089,6 +2305,11 @@
         "use"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 4,
         "values": {
@@ -2102,6 +2323,8 @@
       "literal_field_distributions": {
         "area": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2113,6 +2336,8 @@
         },
         "barrier": {
           "blank_count": 336,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2124,6 +2349,8 @@
         },
         "class": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2135,6 +2362,8 @@
         },
         "currency": {
           "blank_count": 333,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2146,6 +2375,8 @@
         },
         "disabledaccess": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2157,6 +2388,8 @@
         },
         "display_name": {
           "blank_count": 79,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 176,
           "distinct_values": {
             "distinct_count": 176,
@@ -2207,6 +2440,8 @@
         },
         "entities": {
           "blank_count": 189,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2218,6 +2453,8 @@
         },
         "facility": {
           "blank_count": 20,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 11,
           "distinct_values": {
             "distinct_count": 11,
@@ -2239,6 +2476,8 @@
         },
         "fixture": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2250,6 +2489,8 @@
         },
         "from": {
           "blank_count": 329,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -2262,6 +2503,8 @@
         },
         "gender": {
           "blank_count": 329,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -2275,6 +2518,8 @@
         },
         "int_address": {
           "blank_count": 215,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 123,
           "distinct_values": {
             "distinct_count": 123,
@@ -2325,6 +2570,8 @@
         },
         "object": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2336,6 +2583,8 @@
         },
         "safety": {
           "blank_count": 335,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2347,6 +2596,8 @@
         },
         "service": {
           "blank_count": 329,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -2360,6 +2611,8 @@
         },
         "structure": {
           "blank_count": 335,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2371,6 +2624,8 @@
         },
         "type": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2382,6 +2637,8 @@
         },
         "use": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2444,6 +2701,11 @@
         "structure"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 1,
         "values": {
@@ -2454,6 +2716,8 @@
       "literal_field_distributions": {
         "display_name": {
           "blank_count": 5,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -2467,6 +2731,8 @@
         },
         "facility": {
           "blank_count": 1,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 4,
           "distinct_values": {
             "distinct_count": 4,
@@ -2481,6 +2747,8 @@
         },
         "structure": {
           "blank_count": 36,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2540,6 +2808,11 @@
         "facility"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 1,
         "values": {
@@ -2550,6 +2823,8 @@
       "literal_field_distributions": {
         "display_name": {
           "blank_count": 1,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -2563,6 +2838,8 @@
         },
         "facility": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 4,
           "distinct_values": {
             "distinct_count": 4,
@@ -2632,6 +2909,11 @@
         "to"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 2,
         "values": {
@@ -2643,6 +2925,8 @@
       "literal_field_distributions": {
         "display_name": {
           "blank_count": 7,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 26,
           "distinct_values": {
             "distinct_count": 26,
@@ -2679,6 +2963,8 @@
         },
         "entities": {
           "blank_count": 38,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2690,6 +2976,8 @@
         },
         "facility": {
           "blank_count": 3,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 7,
           "distinct_values": {
             "distinct_count": 7,
@@ -2707,6 +2995,8 @@
         },
         "from": {
           "blank_count": 52,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2718,6 +3008,8 @@
         },
         "gender": {
           "blank_count": 51,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -2730,6 +3022,8 @@
         },
         "int_address": {
           "blank_count": 35,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 18,
           "distinct_values": {
             "distinct_count": 18,
@@ -2758,6 +3052,8 @@
         },
         "service": {
           "blank_count": 52,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2769,6 +3065,8 @@
         },
         "structure": {
           "blank_count": 51,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2780,6 +3078,8 @@
         },
         "to": {
           "blank_count": 50,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -2845,6 +3145,11 @@
         "to"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 2,
         "values": {
@@ -2856,6 +3161,8 @@
       "literal_field_distributions": {
         "currency": {
           "blank_count": 32,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2867,6 +3174,8 @@
         },
         "display_name": {
           "blank_count": 9,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 11,
           "distinct_values": {
             "distinct_count": 11,
@@ -2888,6 +3197,8 @@
         },
         "entities": {
           "blank_count": 29,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2899,6 +3210,8 @@
         },
         "facility": {
           "blank_count": 3,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 6,
           "distinct_values": {
             "distinct_count": 6,
@@ -2915,6 +3228,8 @@
         },
         "service": {
           "blank_count": 31,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -2927,6 +3242,8 @@
         },
         "structure": {
           "blank_count": 32,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -2938,6 +3255,8 @@
         },
         "to": {
           "blank_count": 27,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -3005,6 +3324,11 @@
         "vegetation"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 2,
         "values": {
@@ -3016,6 +3340,8 @@
       "literal_field_distributions": {
         "area": {
           "blank_count": 13106,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3027,6 +3353,8 @@
         },
         "barrier": {
           "blank_count": 13128,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3038,6 +3366,8 @@
         },
         "display_name": {
           "blank_count": 12787,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 85,
           "distinct_values": {
             "distinct_count": 85,
@@ -3088,6 +3418,8 @@
         },
         "entities": {
           "blank_count": 13038,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3099,6 +3431,8 @@
         },
         "facility": {
           "blank_count": 12849,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 7,
           "distinct_values": {
             "distinct_count": 7,
@@ -3116,6 +3450,8 @@
         },
         "from": {
           "blank_count": 13124,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -3128,6 +3464,8 @@
         },
         "int_address": {
           "blank_count": 13113,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 16,
           "distinct_values": {
             "distinct_count": 16,
@@ -3154,6 +3492,8 @@
         },
         "marker": {
           "blank_count": 13033,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3165,6 +3505,8 @@
         },
         "nonphysical": {
           "blank_count": 13033,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3176,6 +3518,8 @@
         },
         "object": {
           "blank_count": 13128,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3187,6 +3531,8 @@
         },
         "opening hour": {
           "blank_count": 13128,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3198,6 +3544,8 @@
         },
         "safety": {
           "blank_count": 13128,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3209,6 +3557,8 @@
         },
         "service": {
           "blank_count": 13128,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3220,6 +3570,8 @@
         },
         "structure": {
           "blank_count": 13106,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3231,6 +3583,8 @@
         },
         "to": {
           "blank_count": 13117,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -3243,6 +3597,8 @@
         },
         "traffic": {
           "blank_count": 439,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -3255,6 +3611,8 @@
         },
         "use": {
           "blank_count": 13128,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3266,6 +3624,8 @@
         },
         "vegetation": {
           "blank_count": 13116,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3330,6 +3690,11 @@
         "vegetation"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 2,
         "values": {
@@ -3341,6 +3706,8 @@
       "literal_field_distributions": {
         "barrier": {
           "blank_count": 300,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3352,6 +3719,8 @@
         },
         "class": {
           "blank_count": 300,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3363,6 +3732,8 @@
         },
         "currency": {
           "blank_count": 303,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3374,6 +3745,8 @@
         },
         "disabled access": {
           "blank_count": 307,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3385,6 +3758,8 @@
         },
         "display_name": {
           "blank_count": 102,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 63,
           "distinct_values": {
             "distinct_count": 63,
@@ -3435,6 +3810,8 @@
         },
         "entities": {
           "blank_count": 298,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3446,6 +3823,8 @@
         },
         "facility": {
           "blank_count": 40,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 10,
           "distinct_values": {
             "distinct_count": 10,
@@ -3466,6 +3845,8 @@
         },
         "fixture": {
           "blank_count": 308,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3477,6 +3858,8 @@
         },
         "from": {
           "blank_count": 304,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3488,6 +3871,8 @@
         },
         "gender": {
           "blank_count": 303,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -3501,6 +3886,8 @@
         },
         "int_address": {
           "blank_count": 269,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 40,
           "distinct_values": {
             "distinct_count": 40,
@@ -3551,6 +3938,8 @@
         },
         "opening hour": {
           "blank_count": 308,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3562,6 +3951,8 @@
         },
         "service": {
           "blank_count": 292,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -3575,6 +3966,8 @@
         },
         "structure": {
           "blank_count": 302,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3586,6 +3979,8 @@
         },
         "to": {
           "blank_count": 305,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -3598,6 +3993,8 @@
         },
         "use": {
           "blank_count": 307,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3609,6 +4006,8 @@
         },
         "vegetation": {
           "blank_count": 303,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -3668,6 +4067,11 @@
         "vegetation"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 2,
         "values": {
@@ -3679,6 +4083,8 @@
       "literal_field_distributions": {
         "area": {
           "blank_count": 77,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3690,6 +4096,8 @@
         },
         "disabled access": {
           "blank_count": 77,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3701,6 +4109,8 @@
         },
         "display_name": {
           "blank_count": 46,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 8,
           "distinct_values": {
             "distinct_count": 8,
@@ -3719,6 +4129,8 @@
         },
         "entities": {
           "blank_count": 77,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3730,6 +4142,8 @@
         },
         "facility": {
           "blank_count": 17,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 9,
           "distinct_values": {
             "distinct_count": 9,
@@ -3749,6 +4163,8 @@
         },
         "gender": {
           "blank_count": 75,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -3762,6 +4178,8 @@
         },
         "int_address": {
           "blank_count": 76,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -3774,6 +4192,8 @@
         },
         "meta": {
           "blank_count": 77,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3785,6 +4205,8 @@
         },
         "object": {
           "blank_count": 67,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3796,6 +4218,8 @@
         },
         "structure": {
           "blank_count": 77,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3807,6 +4231,8 @@
         },
         "vegetation": {
           "blank_count": 75,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3865,6 +4291,11 @@
         "vegetation"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 2,
         "values": {
@@ -3876,6 +4307,8 @@
       "literal_field_distributions": {
         "area": {
           "blank_count": 138,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -3888,6 +4321,8 @@
         },
         "class": {
           "blank_count": 139,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3899,6 +4334,8 @@
         },
         "display_name": {
           "blank_count": 94,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 24,
           "distinct_values": {
             "distinct_count": 24,
@@ -3933,6 +4370,8 @@
         },
         "entities": {
           "blank_count": 130,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -3944,6 +4383,8 @@
         },
         "facility": {
           "blank_count": 32,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 10,
           "distinct_values": {
             "distinct_count": 10,
@@ -3964,6 +4405,8 @@
         },
         "gender": {
           "blank_count": 138,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -3976,6 +4419,8 @@
         },
         "int_address": {
           "blank_count": 137,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 5,
           "distinct_values": {
             "distinct_count": 5,
@@ -3991,6 +4436,8 @@
         },
         "object": {
           "blank_count": 125,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4002,6 +4449,8 @@
         },
         "service": {
           "blank_count": 138,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -4015,6 +4464,8 @@
         },
         "structure": {
           "blank_count": 141,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4026,6 +4477,8 @@
         },
         "vegetation": {
           "blank_count": 136,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4093,6 +4546,11 @@
         "vegetation"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 2,
         "values": {
@@ -4104,6 +4562,8 @@
       "literal_field_distributions": {
         "area": {
           "blank_count": 1234,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4115,6 +4575,8 @@
         },
         "barrier": {
           "blank_count": 1228,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4126,6 +4588,8 @@
         },
         "class": {
           "blank_count": 1243,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4137,6 +4601,8 @@
         },
         "currency": {
           "blank_count": 1235,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4148,6 +4614,8 @@
         },
         "disabled access": {
           "blank_count": 1245,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4159,6 +4627,8 @@
         },
         "display_name": {
           "blank_count": 795,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 214,
           "distinct_values": {
             "distinct_count": 214,
@@ -4209,6 +4679,8 @@
         },
         "entities": {
           "blank_count": 1071,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4220,6 +4692,8 @@
         },
         "facility": {
           "blank_count": 680,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 13,
           "distinct_values": {
             "distinct_count": 13,
@@ -4243,6 +4717,8 @@
         },
         "from": {
           "blank_count": 1241,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -4255,6 +4731,8 @@
         },
         "gender": {
           "blank_count": 1230,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 4,
           "distinct_values": {
             "distinct_count": 4,
@@ -4269,6 +4747,8 @@
         },
         "int_address": {
           "blank_count": 1109,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 139,
           "distinct_values": {
             "distinct_count": 139,
@@ -4319,6 +4799,8 @@
         },
         "opening hour": {
           "blank_count": 1245,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -4331,6 +4813,8 @@
         },
         "safety": {
           "blank_count": 1246,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4342,6 +4826,8 @@
         },
         "service": {
           "blank_count": 1216,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 5,
           "distinct_values": {
             "distinct_count": 5,
@@ -4357,6 +4843,8 @@
         },
         "structure": {
           "blank_count": 1245,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4368,6 +4856,8 @@
         },
         "to": {
           "blank_count": 1236,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -4380,6 +4870,8 @@
         },
         "traffic": {
           "blank_count": 646,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -4392,6 +4884,8 @@
         },
         "type": {
           "blank_count": 1244,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -4405,6 +4899,8 @@
         },
         "use": {
           "blank_count": 1247,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4416,6 +4912,8 @@
         },
         "vegetation": {
           "blank_count": 1241,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4479,6 +4977,11 @@
         "use"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 2,
         "values": {
@@ -4490,6 +4993,8 @@
       "literal_field_distributions": {
         "area": {
           "blank_count": 180,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4501,6 +5006,8 @@
         },
         "barrier": {
           "blank_count": 179,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4512,6 +5019,8 @@
         },
         "currency": {
           "blank_count": 181,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4523,6 +5032,8 @@
         },
         "display_name": {
           "blank_count": 41,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 90,
           "distinct_values": {
             "distinct_count": 90,
@@ -4573,6 +5084,8 @@
         },
         "entities": {
           "blank_count": 131,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4584,6 +5097,8 @@
         },
         "facility": {
           "blank_count": 37,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 10,
           "distinct_values": {
             "distinct_count": 10,
@@ -4604,6 +5119,8 @@
         },
         "fixture": {
           "blank_count": 171,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -4616,6 +5133,8 @@
         },
         "from": {
           "blank_count": 182,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -4628,6 +5147,8 @@
         },
         "int_address": {
           "blank_count": 142,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 42,
           "distinct_values": {
             "distinct_count": 42,
@@ -4678,6 +5199,8 @@
         },
         "opening hour": {
           "blank_count": 177,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4689,6 +5212,8 @@
         },
         "safety": {
           "blank_count": 183,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4700,6 +5225,8 @@
         },
         "service": {
           "blank_count": 171,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 4,
           "distinct_values": {
             "distinct_count": 4,
@@ -4714,6 +5241,8 @@
         },
         "structure": {
           "blank_count": 183,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4725,6 +5254,8 @@
         },
         "to": {
           "blank_count": 181,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -4737,6 +5268,8 @@
         },
         "type": {
           "blank_count": 183,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4748,6 +5281,8 @@
         },
         "use": {
           "blank_count": 183,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4813,6 +5348,11 @@
         "use"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 2,
         "values": {
@@ -4824,6 +5364,8 @@
       "literal_field_distributions": {
         "area": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4835,6 +5377,8 @@
         },
         "barrier": {
           "blank_count": 336,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4846,6 +5390,8 @@
         },
         "class": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4857,6 +5403,8 @@
         },
         "currency": {
           "blank_count": 333,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4868,6 +5416,8 @@
         },
         "disabled access": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4879,6 +5429,8 @@
         },
         "display_name": {
           "blank_count": 79,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 176,
           "distinct_values": {
             "distinct_count": 176,
@@ -4929,6 +5481,8 @@
         },
         "entities": {
           "blank_count": 189,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4940,6 +5494,8 @@
         },
         "facility": {
           "blank_count": 20,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 11,
           "distinct_values": {
             "distinct_count": 11,
@@ -4961,6 +5517,8 @@
         },
         "fixture": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -4972,6 +5530,8 @@
         },
         "from": {
           "blank_count": 329,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -4984,6 +5544,8 @@
         },
         "gender": {
           "blank_count": 329,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -4997,6 +5559,8 @@
         },
         "int_address": {
           "blank_count": 215,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 123,
           "distinct_values": {
             "distinct_count": 123,
@@ -5047,6 +5611,8 @@
         },
         "object": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -5058,6 +5624,8 @@
         },
         "safety": {
           "blank_count": 335,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -5069,6 +5637,8 @@
         },
         "service": {
           "blank_count": 329,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -5082,6 +5652,8 @@
         },
         "structure": {
           "blank_count": 335,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -5093,6 +5665,8 @@
         },
         "type": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -5104,6 +5678,8 @@
         },
         "use": {
           "blank_count": 337,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -5154,6 +5730,11 @@
         "structure"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 1,
         "values": {
@@ -5164,6 +5745,8 @@
       "literal_field_distributions": {
         "display_name": {
           "blank_count": 5,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -5177,6 +5760,8 @@
         },
         "facility": {
           "blank_count": 1,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 4,
           "distinct_values": {
             "distinct_count": 4,
@@ -5191,6 +5776,8 @@
         },
         "structure": {
           "blank_count": 36,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -5240,6 +5827,11 @@
         "facility"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 1,
         "values": {
@@ -5250,6 +5842,8 @@
       "literal_field_distributions": {
         "display_name": {
           "blank_count": 1,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,
@@ -5263,6 +5857,8 @@
         },
         "facility": {
           "blank_count": 0,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 4,
           "distinct_values": {
             "distinct_count": 4,
@@ -5322,6 +5918,11 @@
         "to"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 2,
         "values": {
@@ -5333,6 +5934,8 @@
       "literal_field_distributions": {
         "display_name": {
           "blank_count": 7,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 26,
           "distinct_values": {
             "distinct_count": 26,
@@ -5369,6 +5972,8 @@
         },
         "entities": {
           "blank_count": 38,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -5380,6 +5985,8 @@
         },
         "facility": {
           "blank_count": 3,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 7,
           "distinct_values": {
             "distinct_count": 7,
@@ -5397,6 +6004,8 @@
         },
         "from": {
           "blank_count": 52,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -5408,6 +6017,8 @@
         },
         "gender": {
           "blank_count": 51,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -5420,6 +6031,8 @@
         },
         "int_address": {
           "blank_count": 35,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 18,
           "distinct_values": {
             "distinct_count": 18,
@@ -5448,6 +6061,8 @@
         },
         "service": {
           "blank_count": 52,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -5459,6 +6074,8 @@
         },
         "structure": {
           "blank_count": 51,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -5470,6 +6087,8 @@
         },
         "to": {
           "blank_count": 50,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -5525,6 +6144,11 @@
         "to"
       ],
       "property_keys_truncated": false,
+      "property_scan": {
+        "property_cap": 200,
+        "features_over_cap": 0,
+        "recognized_literal_fields_exempt": true
+      },
       "geometry_type_counts": {
         "distinct_count": 2,
         "values": {
@@ -5536,6 +6160,8 @@
       "literal_field_distributions": {
         "currency": {
           "blank_count": 32,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -5547,6 +6173,8 @@
         },
         "display_name": {
           "blank_count": 9,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 11,
           "distinct_values": {
             "distinct_count": 11,
@@ -5568,6 +6196,8 @@
         },
         "entities": {
           "blank_count": 29,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -5579,6 +6209,8 @@
         },
         "facility": {
           "blank_count": 3,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 6,
           "distinct_values": {
             "distinct_count": 6,
@@ -5595,6 +6227,8 @@
         },
         "service": {
           "blank_count": 31,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 2,
           "distinct_values": {
             "distinct_count": 2,
@@ -5607,6 +6241,8 @@
         },
         "structure": {
           "blank_count": 32,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 1,
           "distinct_values": {
             "distinct_count": 1,
@@ -5618,6 +6254,8 @@
         },
         "to": {
           "blank_count": 27,
+          "complete": true,
+          "unobserved_feature_count": 0,
           "distinct_count": 3,
           "distinct_values": {
             "distinct_count": 3,

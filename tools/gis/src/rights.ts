@@ -91,7 +91,16 @@ export function exactPackageAssetFolderMatch(resources:unknown, childUrl:string)
   return match;
 }
 export type MetadataRightsScope = 'DATASET_RESOURCE_CONSTRAINTS' | 'METADATA_RECORD_ONLY' | 'UNKNOWN';
-export type MetadataRightsFinding = {value:string|null;quote:string;element:string;path:string;scope:MetadataRightsScope};
+/** TEXT is an element's own text; CODED is a codeList/codeListValue attribute; LINKED is an xlink:href-style reference. */
+export type MetadataRightsKind = 'TEXT' | 'CODED' | 'LINKED';
+export type MetadataRightsFinding = {value:string|null;quote:string;element:string;path:string;scope:MetadataRightsScope;kind:MetadataRightsKind};
+/** Namespace URIs whose ISO 19115 element semantics are understood. Equal-but-unrecognized
+ * namespaces (for example xmlns="urn:unrelated") never establish dataset rights.
+ */
+export const SUPPORTED_METADATA_NAMESPACES:ReadonlySet<string>=new Set([
+  'http://zgate.gsi.go.jp/ch/jmp/', // JMP 2.0 (the acquired PLATEAU metadata)
+  'http://www.isotc211.org/2005/gmd', // ISO 19139 gmd
+]);
 /** Scope of a rights statement from its namespace-qualified ancestor chain (Clark names).
  * Only identificationInfo/<Identification>/resourceConstraints/... describes the dataset;
  * metadataConstraints constrain the metadata record itself. Anything else stays UNKNOWN.
@@ -100,8 +109,11 @@ export function classifyMetadataRightsScope(ancestors:Array<{uri:string;local:st
   const locals=ancestors.map(a=>a.local);
   const hasMetadata=locals.includes('metadataConstraints'),hasResource=locals.includes('resourceConstraints');
   if(hasMetadata&&hasResource)return 'UNKNOWN';
-  if(hasMetadata&&locals[0]==='MD_Metadata'&&locals[1]==='metadataConstraints'&&ancestors.every(a=>a.uri===ancestors[0]!.uri))return 'METADATA_RECORD_ONLY';
-  if(locals[0]==='MD_Metadata'&&locals[1]==='identificationInfo'&&locals[2]?.endsWith('Identification')&&locals[3]==='resourceConstraints'&&locals.length>=6&&ancestors.every(a=>a.uri===ancestors[0]!.uri))return 'DATASET_RESOURCE_CONSTRAINTS';
+  const first=ancestors[0]?.uri;
+  // One consistent, recognized namespace along the whole chain; equality alone proves nothing.
+  if(!first||!SUPPORTED_METADATA_NAMESPACES.has(first)||!ancestors.every(a=>a.uri===first))return 'UNKNOWN';
+  if(hasMetadata&&locals[0]==='MD_Metadata'&&locals[1]==='metadataConstraints')return 'METADATA_RECORD_ONLY';
+  if(locals[0]==='MD_Metadata'&&locals[1]==='identificationInfo'&&locals[2]?.endsWith('Identification')&&locals[3]==='resourceConstraints'&&locals.length>=6)return 'DATASET_RESOURCE_CONSTRAINTS';
   return 'UNKNOWN';
 }
 export function embeddedMetadataRights(xml:string):MetadataRightsFinding[] {
@@ -110,8 +122,24 @@ export function embeddedMetadataRights(xml:string):MetadataRightsFinding[] {
   const parser=new SaxesParser({xmlns:true});
   const stack:Array<{element:string;uri:string;text:string;capture:boolean}>=[],found:MetadataRightsFinding[]=[];
   const keys=new Set(['useLimitation','otherConstraints','accessConstraints','useConstraints','license','licence']);
+  const pathOf=(ancestors:Array<{uri:string;local:string}>)=>ancestors.map(a=>a.uri?`{${a.uri}}${a.local}`:a.local).join('/');
   parser.on('doctype',()=>{throw new Error('DOCTYPE declarations are forbidden in metadata XML');});
-  parser.on('opentag',tag=>{const element=tag.local;stack.push({element,uri:tag.uri,text:'',capture:keys.has(element)});});
+  parser.on('opentag',tag=>{
+    const element=tag.local;
+    const frame={element,uri:tag.uri,text:'',capture:keys.has(element)};
+    stack.push(frame);
+    // Coded (codeListValue) and linked (xlink:href) restrictions have no text but still constrain use.
+    // Preserve them whenever they sit in, or inside, a rights/constraints element.
+    const inConstraints=stack.some(f=>f.capture||/Constraints$/.test(f.element));
+    if(!inConstraints)return;
+    const ancestors=stack.map(f=>({uri:f.uri,local:f.element}));
+    const attributes=Object.values(tag.attributes as Record<string,{local:string;value:string}>);
+    const coded=attributes.filter(a=>a.local==='codeListValue'||a.local==='codeList');
+    const linked=attributes.filter(a=>a.local==='href');
+    const note=(items:typeof attributes)=>items.map(a=>`${a.local}=${JSON.stringify(a.value)}`).join(' ').slice(0,170);
+    for(const [items,kind] of [[coded,'CODED'],[linked,'LINKED']] as const)
+      if(items.length)found.push({value:null,quote:note(items),element,path:pathOf(ancestors),scope:classifyMetadataRightsScope(ancestors),kind});
+  });
   parser.on('text',text=>{for(const frame of stack)if(frame.capture)frame.text+=text;});
   parser.on('cdata',text=>{for(const frame of stack)if(frame.capture)frame.text+=text;});
   parser.on('closetag',()=>{
@@ -124,7 +152,7 @@ export function embeddedMetadataRights(xml:string):MetadataRightsFinding[] {
     const english=text.match(/^(?:this (?:dataset|data|work|content) is )?licensed under (CC\s*BY\s*4\.0|PDL\s*1\.0)[.!。]?$/i);
     const japanese=text.match(/^(?:本データ|本作品|本コンテンツ)は\s*(CC\s*BY\s*4\.0|PDL\s*1\.0)\s*に基づき提供されています[。.]?$/);
     const known=english?.[1]??japanese?.[1]??null;
-    found.push({value:known?known.toUpperCase().replace(/\s+/g,' '):null,quote:text,element:frame.element,path:ancestors.map(a=>a.uri?`{${a.uri}}${a.local}`:a.local).join('/'),scope:classifyMetadataRightsScope(ancestors)});
+    found.push({value:known?known.toUpperCase().replace(/\s+/g,' '):null,quote:text,element:frame.element,path:pathOf(ancestors),scope:classifyMetadataRightsScope(ancestors),kind:'TEXT'});
   });
   parser.write(xml).close();
   return found;
@@ -200,14 +228,24 @@ export async function generateRights():Promise<RightsRecord[]> {
     if(source.source_id.startsWith('hokonavi-ikebukuro-walk-')) {
       const support=await getStoredSource('hokonavi-ikebukuro-walk-node-geojson');
       const doc=support.record.supporting_documents?.find(d=>d.id==='ckan-metadata');
-      if(doc){const payload=await readJson<unknown>(join(getStoreRoot(),doc.store_path));const decl=packageLicence(payload);if(decl.value){
+      if(doc){const payload=await readJson<unknown>(join(getStoreRoot(),doc.store_path));const decl=packageLicence(payload);
         const result=own(payload,'result'),resources=own(result,'resources');
-        const ev=shortEvidence(support.record.source_id,doc.sha256,'supporting_documents/ckan-metadata:/result/license_id',decl.value,'Package declaration; exact resource and third-party scope UNKNOWN.');evidence.push(ev);declarations.push({value:decl.value,status:'PACKAGE_LEVEL_DECLARED',evidence:ev});licence={value:decl.value,status:'PACKAGE_LEVEL_DECLARED',scope:ev.scope};
-        const policyUrl=own(result,'license_url');if(typeof policyUrl==='string'&&policyUrl)evidence.push(shortEvidence(support.record.source_id,doc.sha256,'supporting_documents/ckan-metadata:/result/license_url',policyUrl,'Package licence URL; package scope only.'));
-        publicationPeriodNotes=findPublicationPeriodNotes(payload).map(note=>({source_id:support.record.source_id,sha256:doc.sha256,location:`supporting_documents/ckan-metadata:${note.pointer}`,text:note.text}));
-        for(const note of publicationPeriodNotes)evidence.push({source_id:support.record.source_id,sha256:doc.sha256,location:note.location,scope:'Acquired publication-period metadata; availability date is separate from licence duration.'});
-        if(publicationPeriodNotes.length)caveats.push('Acquired Hokonavi package metadata states a publication/availability period. This records source availability only and does not establish licence expiration or revocation.');
-      }}
+        // The shared package snapshot belongs to this source only through exactly one exact
+        // resource URL (same discipline as matchAcquiredResource); no pointer exists for a
+        // direct acquisition, so only the observed final URL can match. Otherwise UNKNOWN.
+        const memberIndexes=Array.isArray(resources)?resources.flatMap((resource:unknown,index:number)=>own(resource,'url')===stored.record.resolved_url?[index]:[]):[];
+        if(memberIndexes.length!==1) {
+          caveats.push(`Supporting CKAN package snapshot has ${memberIndexes.length} exact resource URL matches for ${source.source_id}; package licence and availability notes are not attributed (UNKNOWN).`);
+        } else if(decl.value){
+          const i=memberIndexes[0]!;
+          evidence.push(urlEvidence(support.record.source_id,doc.sha256,`supporting_documents/ckan-metadata:/result/resources/${i}/url`,stored.record.resolved_url,'Exact catalog resource URL matched acquisition resolved_url in the hashed supporting CKAN snapshot. Package membership only.'));
+          const ev=shortEvidence(support.record.source_id,doc.sha256,'supporting_documents/ckan-metadata:/result/license_id',decl.value,'Package declaration; exact resource and third-party scope UNKNOWN.');evidence.push(ev);declarations.push({value:decl.value,status:'PACKAGE_LEVEL_DECLARED',evidence:ev});licence={value:decl.value,status:'PACKAGE_LEVEL_DECLARED',scope:ev.scope};
+          const policyUrl=own(result,'license_url');if(typeof policyUrl==='string'&&policyUrl)evidence.push(shortEvidence(support.record.source_id,doc.sha256,'supporting_documents/ckan-metadata:/result/license_url',policyUrl,'Package licence URL; package scope only.'));
+          publicationPeriodNotes=findPublicationPeriodNotes(payload).map(note=>({source_id:support.record.source_id,sha256:doc.sha256,location:`supporting_documents/ckan-metadata:${note.pointer}`,text:note.text}));
+          for(const note of publicationPeriodNotes)evidence.push({source_id:support.record.source_id,sha256:doc.sha256,location:note.location,scope:'Acquired publication-period metadata; availability date is separate from licence duration.'});
+          if(publicationPeriodNotes.length)caveats.push('Acquired Hokonavi package metadata states a publication/availability period. This records source availability only and does not establish licence expiration or revocation.');
+        }
+      }
     }
     const plateauCatalogSource=source.resolution.kind==='plateau_catalog_api'&&/13104|13116/.test(source.source_id);
     if(source.source_id==='plateau-site-policy'||parent?.startsWith('plateau-')||plateauCatalogSource) {
@@ -260,8 +298,9 @@ export async function generateRights():Promise<RightsRecord[]> {
           for(const {entry,found} of xmlRights) {
             const scope=found.scope==='METADATA_RECORD_ONLY'?'METADATA_RECORD_ONLY: statement under metadataConstraints constrains the metadata record itself, not the described dataset; never a dataset licence.'
               :found.scope==='UNKNOWN'?'Metadata XML rights-field evidence outside identificationInfo/*/resourceConstraints; scope UNKNOWN. Licence UNKNOWN.'
+              :found.kind!=='TEXT'?`Dataset-scoped ${found.kind==='CODED'?'coded (codeListValue)':'linked (href)'} restriction preserved as evidence; it is not a supported affirmative statement, so embedded rights are not unqualified.`
               :found.value===null?'Metadata XML rights-field evidence only; no supported unambiguous affirmative licence declaration. Licence UNKNOWN.':'FILE_EMBEDDED affirmative metadata XML declaration under identificationInfo/*/resourceConstraints for the described dataset; ZIP-wide applicability is not inferred.';
-            const ev=shortEvidence(source.source_id,stored.record.sha256,`ZIP:${entry.name}:${found.path}`,found.quote,scope);
+            const ev=shortEvidence(source.source_id,stored.record.sha256,`ZIP:${entry.name}:${found.path}${found.kind==='TEXT'?'':`#${found.kind}`}`,found.quote,scope);
             evidence.push(ev);
             if(found.value!==null&&found.scope==='DATASET_RESOURCE_CONSTRAINTS')affirmative.push({value:found.value,evidence:ev});
           }
