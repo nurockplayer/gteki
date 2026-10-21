@@ -14,8 +14,8 @@ export const STREET = {
   maxBelowStreet: 2.5,
   /** Open sky is looked for this far above the walker's head (m). */
   skyClearance: 40,
-  /** Pavement shows only on level footing: height change over the last ~0.8 m walked under this (m). */
-  levelTolerance: 0.12,
+  /** Footing counts as level when its face normal is within ~10° of up (and it is not a stair). */
+  levelNormalY: 0.985,
   /** The plane sits this far under the walker's feet, so stair-top slabs and closures draw over it. */
   planeDrop: 0.15,
   planeRadius: 700,
@@ -34,22 +34,20 @@ export function isOutdoors(walkerY: number, streetY: number | null, coveredOverh
 }
 
 /**
- * Level footing from the walker's own path: over the last ~0.8 m walked the height barely changed (a stair
- * climbs ~0.5 m per metre). A jump over 2 m is a teleport onto a spawn floor and counts as level. Updates
- * `state.anchor` and returns the new level flag (or the previous one between samples).
+ * Whether the walker stands on level street footing (where the pavement may show) rather than on a stair.
+ * Decided from what is under their feet, never from history, so it is right on arrival and on every
+ * landing: a stair/ramp surface or a tilted face (> ~10°) is not level; invisible crack bridges (thin
+ * strips over seams, often on stairs) keep the previous answer, and so does a missed ground ray.
  */
-export function trackLevel(state: { anchor: THREE.Vector3; level: boolean }, pos: THREE.Vector3): boolean {
-  const moved = Math.hypot(pos.x - state.anchor.x, pos.z - state.anchor.z);
-  if (moved > 2) {
-    state.anchor.copy(pos);
-    return true;
-  }
-  if (moved > 0.8) {
-    const level = Math.abs(pos.y - state.anchor.y) < STREET.levelTolerance;
-    state.anchor.copy(pos);
-    return level;
-  }
-  return state.level;
+export function footingLevel(role: string | null | undefined, normalY: number | null, previous: boolean): boolean {
+  if (normalY === null || role === "walk_bridges") return previous;
+  return role !== "stairs_ramps" && normalY > STREET.levelNormalY;
+}
+
+/** The gteki role of a hit mesh (own userData, else the nearest tagged ancestor, else its name). */
+export function roleOf(o: THREE.Object3D | null): string | null {
+  for (let x = o; x; x = x.parent) if (typeof x.userData.gteki_role === "string") return x.userData.gteki_role;
+  return o?.name ?? null;
 }
 
 const SKY_VERT = /* glsl */ `
@@ -112,6 +110,7 @@ export class StreetBackdrop {
   private readonly fog = new THREE.Fog(0x000000, 1, 2);
   private saved: { fog: THREE.Scene["fog"] } | null = null;
   private blend = 0;
+  private groundBlend = 0;
 
   constructor() {
     this.group.name = "street-backdrop";
@@ -173,12 +172,15 @@ export class StreetBackdrop {
     this.sky.material.uniforms.uOpacity!.value = b;
     // The plane follows the walker's feet and shows only on level ground: on a stair (or at the lip of a
     // stairwell) it would cut across the flight below, so there the stair geometry stays visible.
+    // It fades rather than pops at the stair lip, and stays at the last level footing's height while fading.
     const up = outdoors && level;
-    this.ground.visible = up;
+    this.groundBlend = THREE.MathUtils.damp(this.groundBlend, up ? 1 : 0, 8, dt);
+    this.ground.visible = this.groundBlend > 0.01;
     // Follow the camera in whole tiles so the pavement pattern stays put in the world.
     const snap = (v: number) => Math.round(v / 1.2) * 1.2;
-    if (up) this.ground.position.set(snap(camera.position.x), walker.y - STREET.planeDrop, snap(camera.position.z));
-    this.ground.material.opacity = b;
+    const y = up ? walker.y - STREET.planeDrop : this.ground.position.y;
+    this.ground.position.set(snap(camera.position.x), y, snap(camera.position.z));
+    this.ground.material.opacity = b * this.groundBlend;
   }
 
   /** Put the station's own fog back and hide the backdrop (overview, station switch, going underground). */
@@ -188,6 +190,7 @@ export class StreetBackdrop {
       this.saved = null;
     }
     this.blend = 0;
+    this.groundBlend = 0;
     this.group.visible = false;
   }
 

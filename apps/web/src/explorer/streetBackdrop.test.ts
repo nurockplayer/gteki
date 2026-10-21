@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { StreetBackdrop, isOutdoors, trackLevel } from "./streetBackdrop.ts";
+import { StreetBackdrop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 
 describe("street backdrop", () => {
   it("is outdoors only with a street floor, open sky and a walker near street height", () => {
@@ -30,17 +30,25 @@ describe("street backdrop", () => {
 });
 
 describe("level footing", () => {
-  it("is false while climbing a stair and true after walking on flat ground", () => {
-    const st = { anchor: new THREE.Vector3(0, 30, 0), level: false };
-    // A stair: 0.3 m tread, 0.17 m riser.
-    for (let i = 1; i <= 10; i++) st.level = trackLevel(st, new THREE.Vector3(0, 30 + i * 0.17, -i * 0.3));
-    expect(st.level).toBe(false);
-    for (let i = 1; i <= 10; i++) st.level = trackLevel(st, new THREE.Vector3(0, 31.7, -3 - i * 0.3));
-    expect(st.level).toBe(true);
+  it("is level on flat floor and not on a stair, a ramp or a tilted face", () => {
+    expect(footingLevel("floor", 1, false)).toBe(true);
+    expect(footingLevel("stairs_ramps", 1, true)).toBe(false);
+    expect(footingLevel("floor", 0.95, true)).toBe(false);
   });
 
-  it("treats a teleport as landing on level ground", () => {
-    const st = { anchor: new THREE.Vector3(0, 28, 0), level: false };
-    expect(trackLevel(st, new THREE.Vector3(80, 32.5, 10))).toBe(true);
+  it("keeps the previous answer on crack bridges and when the ground ray misses", () => {
+    expect(footingLevel("walk_bridges", 1, false)).toBe(false);
+    expect(footingLevel("walk_bridges", 1, true)).toBe(true);
+    expect(footingLevel("floor", null, false)).toBe(false);
+  });
+
+  it("finds the role on the mesh or its nearest tagged ancestor", () => {
+    const parent = new THREE.Group();
+    parent.userData.gteki_role = "stairs_ramps";
+    const mesh = new THREE.Mesh();
+    parent.add(mesh);
+    expect(roleOf(mesh)).toBe("stairs_ramps");
+    mesh.userData.gteki_role = "floor";
+    expect(roleOf(mesh)).toBe("floor");
   });
 });

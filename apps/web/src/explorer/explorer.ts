@@ -19,7 +19,7 @@ import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, clampDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
-import { STREET, StreetBackdrop, isOutdoors, trackLevel } from "./streetBackdrop.ts";
+import { STREET, StreetBackdrop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
@@ -54,7 +54,9 @@ export class Explorer {
   private readonly street = new StreetBackdrop();
   /** Render height of the station's street floor when it is an underground (scene-lit) station, else null. */
   private streetY: number | null = null;
-  private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), anchor: new THREE.Vector3(Infinity, 0, 0), outdoors: false, level: true };
+  private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
+  private readonly probeDown = new THREE.Vector3(0, -1, 0);
+  private readonly probeNormal = new THREE.Vector3();
   private readonly probeOrigin = new THREE.Vector3();
   private readonly probeUp = new THREE.Vector3(0, 1, 0);
   private readonly timer = new THREE.Timer();
@@ -613,7 +615,7 @@ export class Explorer {
 
     if (this.mode !== "overview") {
       this.placeCamera(dt);
-      this.updateStreetProbe();
+      this.updateStreetProbe(dt);
       this.street.update(this.scene, this.camera, this.pos, this.streetProbe.outdoors, dt, this.streetProbe.level);
     }
     const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw);
@@ -678,21 +680,29 @@ export class Explorer {
    * Outdoors/level-ground probe for the street backdrop. Skipped entirely below street range; otherwise
    * refreshed when the walker has moved 0.25 m (raycasts are not free on large stations).
    */
-  private updateStreetProbe(): void {
+  private updateStreetProbe(dt: number): void {
     const p = this.streetProbe;
     if (this.streetY === null || this.pos.y < this.streetY - STREET.maxBelowStreet || !this.cameraTargets.length) {
       p.outdoors = false;
-      p.level = false; // climbing into street range from below starts on a stair, not level ground
-      p.anchor.copy(this.pos);
+      p.level = false;
       p.at.set(Infinity, 0, 0);
       return;
     }
-    if (p.at.distanceToSquared(this.pos) < 0.0625) return;
+    // Every 0.25 m walked, plus once shortly after stopping, so the footing where the walker halts is used.
+    p.wait -= dt;
+    const moved = p.at.distanceToSquared(this.pos);
+    if (moved < 0.0625 && (moved < 1e-6 || p.wait > 0)) return;
     p.at.copy(this.pos);
+    p.wait = 0.25;
     this.ray.set(this.probeOrigin.set(this.pos.x, this.pos.y + EYE, this.pos.z), this.probeUp);
     this.ray.far = STREET.skyClearance;
     p.outdoors = isOutdoors(this.pos.y, this.streetY, castAll(this.ray, this.cameraTargets).length > 0);
-    p.level = trackLevel(p, this.pos);
+    this.ray.set(this.probeOrigin.set(this.pos.x, this.pos.y + 0.4, this.pos.z), this.probeDown);
+    this.ray.far = 1.2;
+    const hit = castAll(this.ray, this.groundTargets)[0];
+    const normalY = hit?.face ? this.probeNormal.copy(hit.face.normal).transformDirection(hit.object.matrixWorld).y : null;
+    // Single-sided winding varies across source polygons: only the tilt matters.
+    p.level = footingLevel(hit ? roleOf(hit.object) : null, normalY === null ? null : Math.abs(normalY), p.level);
   }
 
   private placeCamera(dt: number): void {
