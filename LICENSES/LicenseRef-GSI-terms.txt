@@ -10,7 +10,8 @@ URLs:
   (all in docs/gis/acquisitions/plateau-related-provenance.json)
 
 Stands for GSI-origin content: the Survey Calculation Site bl2xy control
-values in tools/gis/test/fixtures/gsi-bl2xy-controls.json. No licence is
+response values in tools/gis/test/fixtures/gsi-bl2xy-controls.json and
+docs/gis/crs/*.json. No licence is
 recorded for those values. Not relicensed.
 
 Pointer only: terms as published by the licensor. GTEki does not author or

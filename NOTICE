@@ -48,7 +48,7 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        Credit (Shinjuku context only, where building bases are flattened to
        street level; Ikebukuro keeps real heights and must not carry it):
          出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成（建物の基部を地表面の高さにそろえて表示）
-       English line in the station record and GLB metadata: "Contains PLATEAU
+       English line in the station record and in ikebukuro_b1.meta.json: "Contains PLATEAU
        data (MLIT), CC BY 4.0. Modified: reprojected to a local ENU frame,
        triangulated and re-encoded by GTEki."
        Modification notice: 「加工」 above. Modifications: reprojected to a
@@ -56,19 +56,24 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        lighting fixtures and lightmap added (Ikebukuro ubld); context meshes
        merged, textures not converted, roads as geometry only (no tran
        attribute).
-       Project-made screenshots in docs/visual/evidence/ that show the Ikebukuro
-       ubld-derived geometry (all but crowd-lineup.jpg) are CC BY 4.0 (GTEki
-       contributors) and carry the Ikebukuro PLATEAU credit above, with the
-       PLATEAU terms as a second licence entry.
+       Project-made screenshots and recordings that show the Ikebukuro
+       ubld-derived geometry (docs/visual/evidence/ except crowd-lineup.jpg,
+       stations/ikebukuro/docs/evidence/, and the Ikebukuro Lane F captures in
+       docs/qa/reports/2026-10-21-evidence/) are CC BY 4.0 (GTEki contributors)
+       and carry the Ikebukuro PLATEAU credit above, with the PLATEAU terms as a
+       second licence entry. Only the GTEki rendering work is CC BY.
        Roads (tran): Owner risk acceptance, not a licence finding
        (docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md).
        Not relicensed. Textures are not shipped. PLATEAU codelists, schemas,
-       metadata and catalog responses have rights "unknown" and are not shipped.
+       metadata and catalog responses have rights "unknown". The codelist labels
+       are committed as labels inside docs/gis/inventory/ (#129 tracks trimming or
+       reclassifying them); no other codelist, schema or catalog file is committed.
 
    4.2 PLATEAU "related" layers (13104, 13116) - not shipped
-       Shelter (P20), park (P13) and emergency route (N10) are RESTRICTED (KSJ
-       old terms, non-commercial; LicenseRef-KSJ-old-terms-noncommercial) with
-       no release permission. The landmark layer is UNKNOWN (GSI origin). The
+       Shelter (P20), park (P13) and emergency route (N10) are RESTRICTED (国土数値情報
+       old 利用約款, https://nlftp.mlit.go.jp/ksj/other/agreement_02.html) with
+       no release permission. The inventory files that describe them carry the
+       no-licence marker LicenseRef-facts-only-no-licence. The landmark layer is UNKNOWN (GSI origin). The
        station, railway and border layers are cleared with conditions but do
        not ship. Only inventories with literal values are committed; they are
        scheduled for removal (#124). No credit entry is needed unless a layer
@@ -95,6 +100,11 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
        The registry (tools/gis/sources/sources.yaml) carries a different wording,
        「出典：国土交通省「ほこナビDP」／加工して作成」; the Owner has not chosen one.
        The source's own drawings, symbols and styling do not ship.
+       The five Shinjuku Lane F captures in docs/qa/reports/2026-10-21-evidence/
+       are CC BY 4.0 for the GTEki rendering work (director decision on PR #131)
+       and carry the marker above for the E27 content, which is not relicensed.
+       stations/shinjuku/gteki/station.json is E27-derived and carries the
+       marker; its own "license: PDL 1.0" line is stale against Q11 = No.
 
    4.4 Hokonavi Ikebukuro walking network (historic) - nothing ships
        Only inventories are committed (LicenseRef-PDL-1.0-JP for the CSV records,
@@ -126,8 +136,8 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
 
    4.8 GSI (国土地理院) items - LicenseRef-GSI-terms
        Two Survey Calculation Site bl2xy control responses
-       (tools/gis/test/fixtures/gsi-bl2xy-controls.json; also quoted in
-       docs/gis/crs/*.md). No licence or approved wording is recorded: do not
+       (tools/gis/test/fixtures/gsi-bl2xy-controls.json; also in
+       docs/gis/crs/*.json). No licence or approved wording is recorded: do not
        invent one. If the PLATEAU border layer ever ships, keep 「測量法に基づく国土地理院長承認（複製）R 6JHf 503」.
 
    4.9 Facts-only sources - LicenseRef-facts-only-no-licence
