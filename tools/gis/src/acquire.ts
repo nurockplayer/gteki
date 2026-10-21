@@ -155,7 +155,14 @@ async function resolveCatalogSource(source: SourceManifest): Promise<Resolved> {
     record = result.record;
     path = result.path;
   }
-  const payload = await readJson<unknown>(path);
+  const selected = selectCatalogResource(source, await readJson<unknown>(path));
+  return { url: selected.value, evidence: { source_id: catalog.source_id, sha256: record.sha256, json_pointer: selected.pointer } };
+}
+
+/** Applies a source's catalog selector (city code + `resolution.match`) to a catalog payload. */
+export function selectCatalogResource(source: SourceManifest, payload: unknown): { value: string; pointer: string } {
+  const resolution = source.resolution;
+  if (resolution.kind === 'direct') throw new Error(`${source.source_id} is not catalog-resolved`);
   const match = resolution.match;
   const cityCode = /^plateau-(13116|13104)-/.exec(source.source_id)?.[1];
   if (!cityCode || !payload || typeof payload !== 'object' || !Array.isArray((payload as { cities?: unknown }).cities)) {
@@ -188,7 +195,7 @@ async function resolveCatalogSource(source: SourceManifest): Promise<Resolved> {
     catch { return false; }
   });
   if (!selected) throw new Error(`Catalog did not contain expected resource ${match} for ${source.source_id}`);
-  return { url: selected.value, evidence: { source_id: catalog.source_id, sha256: record.sha256, json_pointer: selected.pointer } };
+  return selected;
 }
 
 export type AcquisitionResult = { source_id: string; ok: boolean; record?: AcquisitionRecord; path?: string; error?: string };

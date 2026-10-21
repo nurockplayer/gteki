@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { assertRecordMatchesManifest, getGitCommit, jsonPointerValue, type AcquisitionRecord, type SourceManifest } from '../src/common.js';
+import { assertRecordMatchesManifest, getGitCommit, type AcquisitionRecord, type SourceManifest } from '../src/common.js';
+import { selectCatalogResource } from '../src/acquire.js';
 
 describe('provenance', () => {
   it('records the git commit using git directly, without any wrapper executable', async () => {
@@ -25,10 +26,11 @@ describe('cached acquisitions follow the manifest', () => {
     const catalogSource = { ...source, resolution: { kind: 'plateau_catalog_api', catalog_source_id: 'catalog-b', match: 'x' } } as unknown as SourceManifest;
     await expect(assertRecordMatchesManifest({ ...record, resolution_evidence: { source_id: 'catalog-a', sha256: 'b'.repeat(64), json_pointer: '/x' } }, catalogSource)).rejects.toThrow(/not resolved from catalog catalog-b/);
   });
-  it('resolves RFC 6901 pointers without inherited keys', () => {
-    const value = { cities: [{ 'a/b': { '~k': 1 } }] };
-    expect(jsonPointerValue(value, '/cities/0/a~1b/~0k')).toBe(1);
-    expect(jsonPointerValue(value, '/cities/1')).toBeUndefined();
-    expect(jsonPointerValue(value, '/constructor')).toBeUndefined();
+  it('re-runs the catalog selector, so a changed match selects a different resource', () => {
+    const payload = { cities: [{ cityCode: '13104', metadataZipUrls: ['https://example.test/x_codelists.zip', 'https://example.test/x_schemas.zip'] }] };
+    const selector = (match: string) => ({ source_id: 'plateau-13104-synthetic', resolution: { kind: 'plateau_catalog_api', catalog_source_id: 'catalog', match } }) as unknown as SourceManifest;
+    expect(selectCatalogResource(selector('_codelists.zip'), payload)).toEqual({ value: 'https://example.test/x_codelists.zip', pointer: '/cities/0/metadataZipUrls/0' });
+    expect(selectCatalogResource(selector('_schemas.zip'), payload).pointer).toBe('/cities/0/metadataZipUrls/1');
+    expect(() => selectCatalogResource(selector('_missing.zip'), payload)).toThrow(/did not contain/);
   });
 });

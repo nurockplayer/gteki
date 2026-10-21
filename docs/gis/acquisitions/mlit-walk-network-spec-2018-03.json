@@ -2,21 +2,21 @@
   "source_id": "mlit-walk-network-spec-2018-03",
   "resolved_url": "https://www.mlit.go.jp/common/001244374.pdf",
   "resolution_evidence": null,
-  "requested_at": "2026-10-21T00:03:19.347Z",
-  "completed_at": "2026-10-21T00:03:19.550Z",
+  "requested_at": "2026-10-21T00:13:53.461Z",
+  "completed_at": "2026-10-21T00:13:53.664Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/pdf",
     "content-length": null,
     "etag": "W/\"9212b6b967d31e5947940f041b9712da\"",
     "last-modified": "Wed, 11 Sep 2024 12:17:44 GMT",
-    "date": "Tue, 20 Oct 2026 23:58:36 GMT"
+    "date": "Wed, 21 Oct 2026 00:13:38 GMT"
   },
   "bytes": 2440666,
   "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
   "store_path": "raw/9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974/001244374.pdf",
   "tool_version": "0.1.0",
-  "git_commit": "9106749653bcce2d2ce1270a71a07d0d09ce2c52",
+  "git_commit": "df0365dea7dcc1d87005917ae4e38f02a5cc6a42",
   "expected_bytes": 2440666,
   "expected_url_match": true,
   "size_check": "MATCH",
@@ -42,8 +42,8 @@
     }
   ],
   "last_offline_check": {
-    "requested_at": "2026-10-21T00:06:55.350Z",
-    "completed_at": "2026-10-21T00:06:55.350Z",
+    "requested_at": "2026-10-21T00:18:39.001Z",
+    "completed_at": "2026-10-21T00:18:39.001Z",
     "tool_version": "0.1.0",
     "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
     "bytes": 2440666,

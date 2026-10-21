@@ -167,22 +167,9 @@ export async function getStoredSource(sourceId: string, options: { ignoreRecorde
   return { record, source, path };
 }
 
-/** RFC 6901 lookup over parsed JSON; undefined when any segment is absent. */
-export function jsonPointerValue(value: unknown, pointer: string): unknown {
-  if (pointer === '') return value;
-  if (!pointer.startsWith('/')) return undefined;
-  let current: unknown = value;
-  for (const raw of pointer.slice(1).split('/')) {
-    const key = raw.replace(/~1/g, '/').replace(/~0/g, '~');
-    if (current === null || typeof current !== 'object' || !Object.hasOwn(current, key)) return undefined;
-    current = (current as Record<string, unknown>)[key];
-  }
-  return current;
-}
-
 /**
  * A cached acquisition is accepted only while it still answers the current manifest: the same
- * direct URL, or the same catalog snapshot and pointer for catalog-resolved sources, and the
+ * direct URL, or the current catalog snapshot and selector result for catalog-resolved sources, and the
  * same supporting-document IDs and requested URLs in order.
  */
 export async function assertRecordMatchesManifest(record: AcquisitionRecord, source: SourceManifest): Promise<void> {
@@ -194,7 +181,9 @@ export async function assertRecordMatchesManifest(record: AcquisitionRecord, sou
     if (!evidence || evidence.source_id !== source.resolution.catalog_source_id) throw new Error(`Acquisition for ${id} was not resolved from catalog ${source.resolution.catalog_source_id}; re-acquire it`);
     const catalog = await getStoredSource(evidence.source_id);
     if (catalog.record.sha256 !== evidence.sha256) throw new Error(`Acquisition for ${id} was resolved from an older ${evidence.source_id} snapshot; re-acquire it`);
-    if (jsonPointerValue(await readJson<unknown>(catalog.path), evidence.json_pointer) !== record.resolved_url) throw new Error(`Acquisition URL for ${id} does not match ${evidence.source_id}${evidence.json_pointer}; re-acquire it`);
+    // Re-run the current selector, so a changed resolution.match cannot reuse the old resource.
+    const selected = (await import('./acquire.js')).selectCatalogResource(source, await readJson<unknown>(catalog.path));
+    if (selected.pointer !== evidence.json_pointer || selected.value !== record.resolved_url) throw new Error(`Acquisition URL for ${id} is not the current catalog selection (${evidence.source_id}${selected.pointer}); re-acquire it`);
   }
   const expected = (source.supporting_documents ?? []).map((document) => [document.id, document.url]);
   const recorded = (record.supporting_documents ?? []).map((document) => [document.id, document.requested_url ?? document.url]);
