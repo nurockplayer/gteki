@@ -20,6 +20,7 @@ import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers 
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
+import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { FOLLOW, followBoom, followDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
@@ -167,6 +168,7 @@ export class Explorer {
   private walls: Segment2[] = [];
   /** Visual-only signage the follow camera sees through (never walkable or a collider), as actually cut. */
   private seeThrough: THREE.Object3D[] = [];
+  private bakedAo: BakedAoCounts = { materials: 0, scaled: 0, disabled: 0 };
   private readonly cameraCut = new CameraCut();
   private routeTexture: THREE.CanvasTexture | null = null;
   private routeLines: OccludedLineStyle | null = null;
@@ -256,12 +258,13 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environmentIntensity: number | null; exposure: number; street: { active: boolean; opacity: number } } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; bakedAo: BakedAoCounts; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environmentIntensity: number | null; exposure: number; street: { active: boolean; opacity: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
+      bakedAo: { ...this.bakedAo },
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
       environmentIntensity: this.scene.environment ? this.scene.environmentIntensity : null, exposure: this.renderer.toneMappingExposure,
@@ -462,6 +465,8 @@ export class Explorer {
       this.seeThrough = this.cameraCut.apply(this.stationScene.root, signs);
     }
     this.buildOccluders(this.stationScene?.root ?? this.graph.root);
+    // Baked aoMaps (kit GLBs and stations' own): per-tier intensity, once per attach (idempotent per material).
+    this.bakedAo = this.stationScene ? applyBakedAo(this.stationScene.root, this.quality) : { materials: 0, scaled: 0, disabled: 0 };
     this.phase = "composer";
     this.setupComposer();
     this.frameAll();
