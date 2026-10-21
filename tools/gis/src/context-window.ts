@@ -205,11 +205,11 @@ export function meshesTouchedByWindow(discs: readonly Disc[], frame: Pick<Statio
   return { meshes: [...found].sort(), disc_count: discs.length, margin_m: marginM };
 }
 
-/** Which of the needed meshes lack a configured bldg or tran source id (`plateau-<city>-<bldg|tran>-<mesh>`). */
-export function missingMeshSources(needed: readonly string[], sourceIds: readonly string[]): Array<{ mesh: string; kind: 'bldg' | 'tran'; reason: 'not_in_context_config' }> {
+/** Which of the needed meshes lack a configured source id (`plateau-<city>-<bldg|tran>-<mesh>`) for each requested kind. */
+export function missingMeshSources(needed: readonly string[], sourceIds: readonly string[], kinds: readonly ('bldg' | 'tran')[] = ['bldg', 'tran']): Array<{ mesh: string; kind: 'bldg' | 'tran'; reason: 'not_in_context_config' }> {
   const have = new Set<string>();
   for (const id of sourceIds) { const m = /^plateau-\d{5}-(bldg|tran)-(\d{8})$/.exec(id); if (m) have.add(`${m[1]}:${m[2]}`); }
   const missing: Array<{ mesh: string; kind: 'bldg' | 'tran'; reason: 'not_in_context_config' }> = [];
-  for (const mesh of needed) for (const kind of ['bldg', 'tran'] as const) if (!have.has(`${kind}:${mesh}`)) missing.push({ mesh, kind, reason: 'not_in_context_config' });
+  for (const mesh of needed) for (const kind of kinds) if (!have.has(`${kind}:${mesh}`)) missing.push({ mesh, kind, reason: 'not_in_context_config' });
   return missing;
 }

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NodeIO } from '@gltf-transform/core';
 import * as common from '../src/common.js';
-import { assertMeshCoverage, bboxIntersectsDisc, buildContextGlb, contextGlb, contextMergedName, contextNodeName, EXPLORER_ROLE_WORDS, explorerRoleFromName, loadContextConfig, parseMergeSpec, type ContextInput, type ContextVariant, type MergeSpec } from '../src/context.js';
+import { assertMeshCoverage, bboxIntersectsDisc, buildContextGlb, contextGlb, contextMergedName, contextNodeName, EXPLORER_ROLE_WORDS, explorerRoleFromName, loadContextConfig, parseKinds, parseMergeSpec, type ContextInput, type ContextVariant, type MergeSpec } from '../src/context.js';
 import { bboxIntersectsAnyDisc, buildContextWindow, meshCellBounds, meshCode3, meshesTouchedByWindow, readGraphWindowNodes, type NodeRule } from '../src/context-window.js';
 import { scanContextFeatures, type ContextFeatureRecord } from '../src/context-scan.js';
 import { loadFrame } from '../src/crs.js';
@@ -694,5 +694,74 @@ describe('low variant', () => {
     expect(low.report.layout.meshes.map((m) => [m.name, m.triangles])).toEqual([['ctx_bldg_all', 72], ['ctx_road_all', 4]]);
     expect(low.document.getRoot().listNodes().every((n) => n.getExtras().variant === 'low')).toBe(true);
     expect(() => parseMergeSpec('kind')).not.toThrow();
+  });
+});
+
+describe('--kinds (buildings-only context)', () => {
+  const all4 = ['plateau-13116-bldg-53394576', 'plateau-13116-bldg-53394577', 'plateau-13116-tran-53394576', 'plateau-13116-tran-53394577'];
+  function mockStore(dir: string) {
+    const manifest = new Map(loadSources().map((s) => [s.source_id, s]));
+    const stored = vi.spyOn(common, 'getStoredSource').mockImplementation(async (id: string) => ({ path: fixture(id.includes('-bldg-') ? 'context-bldg.xml' : 'context-tran.xml'), record: { source_id: id, sha256: createHash('sha256').update(id).digest('hex') }, source: manifest.get(id)! }) as Awaited<ReturnType<typeof common.getStoredSource>>);
+    vi.spyOn(common, 'getStoreRoot').mockReturnValue(dir);
+    const originalWrite = common.writeJson;
+    vi.spyOn(common, 'writeJson').mockImplementation(async (path, value) => originalWrite(path.startsWith(common.docsRoot) ? join(dir, 'docs', relative(common.docsRoot, path)) : path, value));
+    return stored;
+  }
+
+  it('kinds=bldg: only ctx_bldg_* meshes, no tran source is read, kinds recorded in receipt, run id, window and extras', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-kinds-')); dirs.push(dir);
+    const stored = mockStore(dir);
+    const full = await contextGlb('ikebukuro', { sourceIds: all4, exitRadiusM: 0 });
+    stored.mockClear();
+    const bldg = await contextGlb('ikebukuro', { sourceIds: all4, exitRadiusM: 0, kinds: 'bldg' });
+    expect(stored.mock.calls.map((c) => c[0]).sort()).toEqual([all4[0], all4[1]]); // tran sources are never opened
+    expect(bldg.kinds).toEqual(['bldg']); expect(full.kinds).toEqual(['bldg', 'tran']);
+    expect(bldg.run_id).toMatch(/-high-kind-bldg-[a-f0-9]{20}$/);
+    expect(full.run_id).toMatch(/-high-kind-[a-f0-9]{20}$/); expect(full.run_id).not.toMatch(/-bldg-/);
+    expect(bldg.run_id).not.toBe(full.run_id);
+    expect(bldg.window.kinds).toEqual(['bldg']);
+    expect(bldg.sources.map((src) => src.kind)).toEqual(['bldg', 'bldg']);
+    expect(bldg.totals).toMatchObject({ meshes: 1, draw_calls: 1, triangles_by_kind: { building: 52, road: 0 }, features_by_kind: { building: 4, road: 0 } });
+    expect(bldg.layout.meshes.map((m) => m.name)).toEqual(['ctx_bldg_all']);
+    expect(bldg.mesh_coverage).toMatchObject({ kinds: ['bldg'], needed_sources: [all4[0], all4[1]], excluded_kind_sources: [all4[2], all4[3]] });
+    const doc = await new NodeIO().readBinary(await readFile(join(dir, bldg.store_path)));
+    expect(doc.getRoot().listNodes().map((n) => n.getName())).toEqual(['ctx_bldg_all']);
+    expect(doc.getRoot().listMaterials().map((m) => m.getName())).toEqual(['building', 'road_surface']); // fixed merged material set; no road geometry uses it
+    for (const extras of [doc.getRoot().listNodes()[0]!.getExtras(), doc.getRoot().listMeshes()[0]!.getExtras(), doc.getRoot().listScenes()[0]!.getExtras()]) expect(extras.kinds).toEqual(['bldg']);
+    expect((doc.getRoot().listNodes()[0]!.getExtras().window as { kinds: string[] }).kinds).toEqual(['bldg']);
+    const receipt = JSON.parse(await readFile(join(dir, 'docs', 'gis', 'context', `${bldg.run_id}.json`), 'utf8'));
+    expect(receipt).toMatchObject({ run_id: bldg.run_id, kinds: ['bldg'], window: { kinds: ['bldg'] } });
+  });
+
+  it('kinds=tran works too; coverage is checked only for the requested kinds', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-kinds-tran-')); dirs.push(dir);
+    const stored = mockStore(dir);
+    // No tran source for mesh 53394577 is configured: fine for bldg, fatal for tran or both.
+    const bldgOnly = [all4[0]!, all4[1]!, all4[2]!];
+    await expect(contextGlb('ikebukuro', { sourceIds: bldgOnly, exitRadiusM: 0 })).rejects.toThrow(/53394577 tran/);
+    await expect(contextGlb('ikebukuro', { sourceIds: bldgOnly, exitRadiusM: 0, kinds: 'tran' })).rejects.toThrow(/no tran source is configured for: 53394577 tran/);
+    await expect(contextGlb('ikebukuro', { sourceIds: [all4[0]!, all4[2]!, all4[3]!], exitRadiusM: 0, kinds: 'bldg' })).rejects.toThrow(/no bldg source is configured for: 53394577 bldg/);
+    stored.mockClear();
+    const ok = await contextGlb('ikebukuro', { sourceIds: [all4[0]!, all4[1]!], exitRadiusM: 0, kinds: ['bldg'] });
+    expect(ok.mesh_coverage.needed_meshes).toEqual(['53394576', '53394577']);
+    const tran = await contextGlb('ikebukuro', { sourceIds: all4, exitRadiusM: 0, kinds: 'tran' });
+    expect(tran.run_id).toMatch(/-kind-tran-/);
+    expect(tran.layout.meshes.map((m) => m.name)).toEqual(['ctx_road_all']);
+    expect(tran.totals.triangles_by_kind).toEqual({ building: 0, road: 4 });
+  });
+
+  it('refuses invalid kinds and keeps the Ikebukuro config default at both', async () => {
+    expect(parseKinds('tran,bldg')).toEqual(['bldg', 'tran']); // canonical order, so the same run id either way
+    expect(parseKinds('bldg,bldg')).toEqual(['bldg']);
+    for (const bad of ['', 'ubld', 'bldg,road', 'all', ',']) expect(() => parseKinds(bad)).toThrow(/Invalid --kinds/);
+    expect(() => parseKinds([])).toThrow(/Invalid --kinds/);
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-kinds-bad-')); dirs.push(dir);
+    const stored = mockStore(dir);
+    await expect(contextGlb('ikebukuro', { sourceIds: all4, kinds: 'road' })).rejects.toThrow(/Invalid --kinds "road"/);
+    expect(stored).not.toHaveBeenCalled();
+    const config = await loadContextConfig('ikebukuro');
+    expect(config.kinds === undefined || config.kinds.join() === 'bldg,tran').toBe(true);
+    await expect(buildContextGlb({ frame: await stationFrame(), radiusM: 250, inputs, outputPath: join(dir, 'x.glb'), kinds: ['bldg', 'x' as never] })).rejects.toThrow(/Invalid --kinds/);
+    await expect(buildContextGlb({ frame: await stationFrame(), radiusM: 250, inputs: [inputs[0]!], outputPath: join(dir, 'y.glb'), kinds: ['tran'] })).rejects.toThrow(/at least one source of kind tran/);
   });
 });

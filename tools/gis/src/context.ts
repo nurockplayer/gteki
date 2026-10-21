@@ -40,6 +40,15 @@ export function parseVariant(text: string): ContextVariant {
   throw new Error(`Invalid --variant ${JSON.stringify(text)}: expected high or low`);
 }
 
+export const ALL_KINDS: readonly ContextKind[] = ['bldg', 'tran'];
+/** `--kinds bldg,tran`: a non-empty subset of bldg and tran, returned in canonical order. */
+export function parseKinds(value: string | readonly string[]): ContextKind[] {
+  const items = typeof value === 'string' ? value.split(',').map((v) => v.trim()) : [...value];
+  if (!items.length || items.some((k) => k !== 'bldg' && k !== 'tran')) throw new Error(`Invalid --kinds ${JSON.stringify(typeof value === 'string' ? value : value.join(','))}: expected bldg and/or tran (comma separated)`);
+  return ALL_KINDS.filter((k) => items.includes(k));
+}
+const kindsLabel = (kinds: readonly ContextKind[]): string => kinds.join(',');
+
 const MATERIALS: Record<string, [number, number, number, number]> = {
   building_wall: [0.78, 0.76, 0.72, 1], building_roof: [0.55, 0.5, 0.48, 1], building_other: [0.7, 0.69, 0.67, 1], road_surface: [0.36, 0.37, 0.39, 1],
   building: [0.7, 0.69, 0.67, 1],
@@ -58,6 +67,8 @@ export interface ContextBuildArgs {
   /** Library default is the per-feature layout of PR #96 (`none`); the CLI/config default is `kind`. */
   merge?: MergeSpec;
   variant?: ContextVariant;
+  /** Kinds to convert (default both). Inputs of an excluded kind are never opened. */
+  kinds?: readonly ContextKind[];
 }
 export type ExclusionReason =
   | 'missing_gml_id' | 'duplicate_gml_id' | 'no_polygon_geometry'
@@ -156,12 +167,14 @@ const triangleTotal = (groups: Map<string, Group>): number => { let n = 0; for (
 
 /** Two bounded passes per source, then one GLB. No store or docs access: the CLI wrapper adds provenance around it. */
 export async function buildContextGlb(args: ContextBuildArgs) {
-  const { frame, inputs, outputPath } = args;
+  const { frame, outputPath } = args;
+  const kinds = parseKinds(args.kinds ?? ALL_KINDS);
+  const inputs = args.inputs.filter((i) => kinds.includes(i.kind));
   const merge: MergeSpec = args.merge ?? { mode: 'none' };
   const variant: ContextVariant = args.variant ?? 'high';
   if (!isStationEnuFrame(frame)) throw new Error('context conversion requires a station-enu frame');
   const window = args.window ?? await buildContextWindow({ r_origin_m: args.radiusM as number, r_exit_m: 0 }, { stationId: frame.station_id });
-  if (!inputs.length) throw new Error('context conversion needs at least one source');
+  if (!inputs.length) throw new Error(`context conversion needs at least one source of kind ${kindsLabel(kinds)}`);
   const merged = merge.mode !== 'none';
   const discs: readonly Disc[] = window.discs;
   const project = stationEnuProjector(frame.origin);
@@ -270,7 +283,7 @@ export async function buildContextGlb(args: ContextBuildArgs) {
 
   // Emit meshes: per-feature nodes in file order; merged meshes sorted by name.
   const emitted = merged ? [...order].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)) : order;
-  const windowExtras = { r_origin_m: window.spec.r_origin_m, r_exit_m: window.spec.r_exit_m, disc_count: discs.length, node_rule: window.spec.node_rule, mesh_margin_m: window.spec.mesh_margin_m, graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null };
+  const windowExtras = { kinds, r_origin_m: window.spec.r_origin_m, r_exit_m: window.spec.r_exit_m, disc_count: discs.length, node_rule: window.spec.node_rule, mesh_margin_m: window.spec.mesh_margin_m, graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null };
   let triangleCount = 0, drawCalls = 0;
   const meshReport: Array<Record<string, unknown>> = [];
   const trianglesByKind: Record<ContextKind, number> = { bldg: 0, tran: 0 };
@@ -278,8 +291,8 @@ export async function buildContextGlb(args: ContextBuildArgs) {
   for (const bucket of emitted) {
     const common = { gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, verification: 'UNVERIFIED', geometry_status: 'UNVERIFIED_RAW_CONVERSION', frame_id: frame.frame_id, station_id: frame.station_id, station_json_sha256: frame.station_json_sha256, attribution_text: [...bucket.attributions].join(' / '), height_basis: 'EPSG:6697 orthometric height as published (TP); station z = height - origin.hM; no ground height synthesised' };
     const extras = bucket.single
-      ? { ...common, gml_id: bucket.single.gml_id, feature_type: bucket.single.type, source_id: bucket.single.source.sourceId, source_sha256: bucket.single.source.sourceSha256, lod_used: bucket.single.lod_used, lod_fallback: bucket.single.lod_fallback }
-      : { ...common, merged: true, merge: mergeLabel(merge), variant, kind: bucket.kind === 'bldg' ? 'building' : 'road', tile: bucket.tile, feature_count: bucket.features, source_ids: [...bucket.sources.keys()].sort(), source_sha256s: Object.fromEntries([...bucket.sources].sort(([a], [b]) => (a < b ? -1 : 1))), lod_used: Object.fromEntries(Object.entries(bucket.lodUsed).sort(([a], [b]) => (a < b ? -1 : 1))), graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null, window: windowExtras, feature_table: 'sidecar and receipt: gml_id, source_id, lod, mesh, tri_start, tri_count' };
+      ? { ...common, kinds, gml_id: bucket.single.gml_id, feature_type: bucket.single.type, source_id: bucket.single.source.sourceId, source_sha256: bucket.single.source.sourceSha256, lod_used: bucket.single.lod_used, lod_fallback: bucket.single.lod_fallback }
+      : { ...common, merged: true, merge: mergeLabel(merge), variant, kinds, kind: bucket.kind === 'bldg' ? 'building' : 'road', tile: bucket.tile, feature_count: bucket.features, source_ids: [...bucket.sources.keys()].sort(), source_sha256s: Object.fromEntries([...bucket.sources].sort(([a], [b]) => (a < b ? -1 : 1))), lod_used: Object.fromEntries(Object.entries(bucket.lodUsed).sort(([a], [b]) => (a < b ? -1 : 1))), graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null, window: windowExtras, feature_table: 'sidecar and receipt: gml_id, source_id, lod, mesh, tri_start, tri_count' };
     const node = document.createNode(bucket.name).setExtras(extras);
     const mesh = document.createMesh(bucket.name).setExtras(extras);
     for (const [material, group] of [...bucket.groups].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
@@ -299,10 +312,10 @@ export async function buildContextGlb(args: ContextBuildArgs) {
     if (merged) meshReport.push({ name: bucket.name, kind: bucket.kind === 'bldg' ? 'building' : 'road', tile: bucket.tile, features: bucket.features, triangles: bucket.triangles, primitives: bucket.groups.size, materials: [...bucket.groups.keys()].sort(), lod_used: bucket.lodUsed, source_ids: [...bucket.sources.keys()].sort() });
   }
   const nodeCount = emitted.length;
-  const sceneWindow = { center_station_xy_m: [0, 0] as [number, number], radius_m: window.spec.r_origin_m, r_origin_m: window.spec.r_origin_m, r_exit_m: window.spec.r_exit_m, disc_count: discs.length, mesh_margin_m: window.spec.mesh_margin_m, node_rule: window.spec.node_rule, graph: window.graph, rule: WINDOW_RULE };
+  const sceneWindow = { kinds, center_station_xy_m: [0, 0] as [number, number], radius_m: window.spec.r_origin_m, r_origin_m: window.spec.r_origin_m, r_exit_m: window.spec.r_exit_m, disc_count: discs.length, mesh_margin_m: window.spec.mesh_margin_m, node_rule: window.spec.node_rule, graph: window.graph, rule: WINDOW_RULE };
   scene.setExtras({
     gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, verification: 'UNVERIFIED', station_id: frame.station_id, frame_id: frame.frame_id,
-    station_json_sha256: frame.station_json_sha256, graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null, window: windowExtras, merge: mergeLabel(merge), variant,
+    station_json_sha256: frame.station_json_sha256, graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null, window: windowExtras, kinds, merge: mergeLabel(merge), variant,
     selection_rule: SELECTION_RULE, lod_policy: variant === 'low' ? LOD_POLICY_LOW : LOD_POLICY, policy_version: CONTEXT_POLICY_VERSION, attribution_text: attribution,
   });
   await mkdir(dirname(outputPath), { recursive: true });
@@ -346,7 +359,7 @@ export async function buildContextGlb(args: ContextBuildArgs) {
   return {
     verification: 'UNVERIFIED' as const, navigation_use: 'NOT_FOR_ROUTING' as const, visual_only: true, geometry_status: 'UNVERIFIED_RAW_CONVERSION' as const,
     station_id: frame.station_id, frame, window: sceneWindow, selection_rule: SELECTION_RULE, lod_policy: variant === 'low' ? LOD_POLICY_LOW : LOD_POLICY, policy_version: CONTEXT_POLICY_VERSION,
-    variant, merge: mergeLabel(merge),
+    variant, merge: mergeLabel(merge), kinds,
     sources: perSource,
     totals: {
       features_in_sources: perSource.reduce((n, s) => n + s.features_in_source, 0), outside_window: perSource.reduce((n, s) => n + s.outside_window, 0), selected_in_window: perSource.reduce((n, s) => n + s.selected, 0),
@@ -363,7 +376,7 @@ export async function buildContextGlb(args: ContextBuildArgs) {
 export interface StationWindowConfig { r_origin_m?: number; r_exit_m: number; node_rule?: NodeRule; mesh_margin_m?: number }
 export interface StationContextConfig {
   station: string; status: 'READY' | 'BLOCKED'; frame_id: string; radius_m: number; sources: string[]; blocked_reason?: string; notes?: string;
-  window?: StationWindowConfig; merge?: string; variant?: ContextVariant;
+  window?: StationWindowConfig; merge?: string; variant?: ContextVariant; kinds?: ContextKind[];
 }
 export async function loadContextConfig(station: string): Promise<StationContextConfig> {
   if (!STATION_ENU_FRAME_ID_PATTERN.test(station)) throw new Error(`Invalid station id: ${station}`);
@@ -374,30 +387,31 @@ export async function loadContextConfig(station: string): Promise<StationContext
   if (config.window?.r_origin_m !== undefined && config.window.r_origin_m !== config.radius_m) throw new Error(`Context config for ${station}: window.r_origin_m ${config.window.r_origin_m} differs from radius_m ${config.radius_m}`);
   if (config.merge !== undefined) parseMergeSpec(config.merge);
   if (config.variant !== undefined) parseVariant(config.variant);
+  if (config.kinds !== undefined) parseKinds(config.kinds);
   return config;
 }
 
 const SOURCE_ID = /^plateau-(\d{5})-(bldg|tran)-(\d{8})$/;
 export interface MeshCoverageReport {
-  method: string; needed_meshes: string[]; margin_m: number; needed_sources: string[]; unused_sources: string[];
+  method: string; needed_meshes: string[]; margin_m: number; needed_sources: string[]; unused_sources: string[]; excluded_kind_sources: string[]; kinds: ContextKind[];
   missing: Array<{ mesh: string; kind: 'bldg' | 'tran'; reason: string }>;
 }
 /** Fail closed: every 3rd-level mesh the window touches needs a configured bldg and tran source. Returns what the window needs. */
-export function assertMeshCoverage(station: string, window: ContextWindow, frame: Pick<StationEnuFrame, 'origin'>, sourceIds: readonly string[]): { meshes: string[]; unusedSources: string[]; neededSources: string[] } {
+export function assertMeshCoverage(station: string, window: ContextWindow, frame: Pick<StationEnuFrame, 'origin'>, sourceIds: readonly string[], kinds: readonly ContextKind[] = ALL_KINDS): { meshes: string[]; unusedSources: string[]; excludedKindSources: string[]; neededSources: string[] } {
   const coverage = meshesTouchedByWindow(window.discs, frame, window.spec.mesh_margin_m);
-  const missing = missingMeshSources(coverage.meshes, sourceIds);
+  const missing = missingMeshSources(coverage.meshes, sourceIds, kinds);
   const needed = new Set(coverage.meshes);
-  const neededSources: string[] = [], unusedSources: string[] = [];
-  for (const id of sourceIds) { const m = SOURCE_ID.exec(id); if (m && needed.has(m[3]!)) neededSources.push(id); else unusedSources.push(id); }
+  const neededSources: string[] = [], unusedSources: string[] = [], excludedKindSources: string[] = [];
+  for (const id of sourceIds) { const m = SOURCE_ID.exec(id); if (m && !kinds.includes(m[2] as ContextKind)) excludedKindSources.push(id); else if (m && needed.has(m[3]!)) neededSources.push(id); else unusedSources.push(id); }
   if (missing.length) {
     const list = missing.map((m) => `${m.mesh} ${m.kind} (not in the context config)`).join(', ');
-    throw new Error(`Context window for ${station} needs 3rd-level meshes ${coverage.meshes.join(', ')}, but no source is configured for: ${list}. Nothing was converted (a silently clipped window is refused). Add the sources to tools/gis/sources/sources.yaml and tools/gis/sources/context/${station}.json and acquire them, or shrink the window.`);
+    throw new Error(`Context window for ${station} needs 3rd-level meshes ${coverage.meshes.join(', ')}, but no ${kinds.join('/')} source is configured for: ${list}. Nothing was converted (a silently clipped window is refused). Add the sources to tools/gis/sources/sources.yaml and tools/gis/sources/context/${station}.json and acquire them, or shrink the window.`);
   }
-  return { meshes: coverage.meshes, unusedSources, neededSources };
+  return { meshes: coverage.meshes, unusedSources, excludedKindSources, neededSources };
 }
 
 export interface ContextRunOptions {
-  radiusM?: number; exitRadiusM?: number; sourceIds?: string[]; frameId?: string; merge?: string; variant?: ContextVariant;
+  radiusM?: number; exitRadiusM?: number; sourceIds?: string[]; frameId?: string; merge?: string; variant?: ContextVariant; kinds?: string | readonly string[];
   /** Test hook: read this file instead of the repo graph.json. */
   graphPath?: string; poisPath?: string;
 }
@@ -408,6 +422,7 @@ export async function contextGlb(station: string, options: ContextRunOptions = {
   if (config.status === 'BLOCKED') throw new Error(`Context for ${station} is blocked: ${config.blocked_reason ?? 'no reason recorded'}`);
   const merge = parseMergeSpec(options.merge ?? config.merge ?? DEFAULT_MERGE);
   const variant = options.variant !== undefined ? parseVariant(options.variant) : config.variant ?? 'high';
+  const kinds = parseKinds(options.kinds ?? config.kinds ?? ALL_KINDS);
   const sourceIds = options.sourceIds?.length ? options.sourceIds : config.sources;
   const frame = await loadFrame(options.frameId ?? config.frame_id);
   if (!isStationEnuFrame(frame) || frame.station_id !== station) throw new Error(`Frame ${options.frameId ?? config.frame_id} is not a station-enu frame for ${station}`);
@@ -425,7 +440,7 @@ export async function contextGlb(station: string, options: ContextRunOptions = {
 
   // Fail closed on mesh coverage before any source is read or converted.
   for (const id of sourceIds) if (!SOURCE_ID.test(id)) throw new Error(`${id} is not a PLATEAU bldg/tran mesh source`);
-  const coverage = assertMeshCoverage(station, window, frame, sourceIds);
+  const coverage = assertMeshCoverage(station, window, frame, sourceIds, kinds);
   const inputs: ContextInput[] = [];
   const manifests: Array<{ record: unknown; source: SourceManifest }> = [];
   const notAcquired: Array<{ mesh: string; kind: string; source_id: string; error: string }> = [];
@@ -439,14 +454,15 @@ export async function contextGlb(station: string, options: ContextRunOptions = {
     } catch (error) { notAcquired.push({ mesh: match[3]!, kind: match[2]!, source_id: id, error: (error as Error).message }); }
   }
   if (notAcquired.length) throw new Error(`Context window for ${station} needs sources that are not acquired or not usable: meshes ${[...new Set(notAcquired.map((m) => m.mesh))].join(', ')}: ${notAcquired.map((m) => `${m.source_id} (${m.error})`).join('; ')}. Nothing was converted; run \`gis acquire <source_id>\` for each.`);
-  const meshCoverage: MeshCoverageReport = { method: 'JIS X 0410 3rd-level (8 digit) cells, projected into the station frame, tested against every disc of the window (closed; widened by margin_m)', needed_meshes: coverage.meshes, margin_m: window.spec.mesh_margin_m, needed_sources: coverage.neededSources, unused_sources: coverage.unusedSources, missing: [] };
+  const meshCoverage: MeshCoverageReport = { method: 'JIS X 0410 3rd-level (8 digit) cells, projected into the station frame, tested against every disc of the window (closed; widened by margin_m)', needed_meshes: coverage.meshes, margin_m: window.spec.mesh_margin_m, needed_sources: coverage.neededSources, unused_sources: coverage.unusedSources, excluded_kind_sources: coverage.excludedKindSources, kinds, missing: [] };
 
   const fingerprint = await toolFingerprint();
-  const digest = createHash('sha256').update(JSON.stringify({ frame, window: window.spec, discs: window.discs.map((d) => [d.id, d.x, d.y, d.r]), graph: window.graph?.graph_sha256 ?? null, merge: mergeLabel(merge), variant, sources: inputs.map((i) => [i.sourceId, i.sourceSha256]), policy: CONTEXT_POLICY_VERSION, fingerprint })).digest('hex').slice(0, 20);
+  const digest = createHash('sha256').update(JSON.stringify({ frame, window: window.spec, discs: window.discs.map((d) => [d.id, d.x, d.y, d.r]), graph: window.graph?.graph_sha256 ?? null, merge: mergeLabel(merge), variant, kinds, sources: inputs.map((i) => [i.sourceId, i.sourceSha256]), policy: CONTEXT_POLICY_VERSION, fingerprint })).digest('hex').slice(0, 20);
   const exitPart = window.spec.r_exit_m > 0 ? `-x${window.spec.r_exit_m}` : '';
-  const runId = `context-${station}-r${radiusM}${exitPart}-${frame.frame_id}-${variant}-${mergeLabel(merge).replace(':', '')}-${digest}`;
+  const kindsPart = kinds.length === ALL_KINDS.length ? '' : `-${kinds.join('-')}`; // full (bldg+tran) runs keep the old id shape; a subset is visible in the id
+  const runId = `context-${station}-r${radiusM}${exitPart}-${frame.frame_id}-${variant}-${mergeLabel(merge).replace(':', '')}${kindsPart}-${digest}`;
   const relativeOutput = `out/${runId}.glb`, outputPath = join(getStoreRoot(), relativeOutput);
-  const report = await buildContextGlb({ frame, window, inputs, outputPath, merge, variant });
+  const report = await buildContextGlb({ frame, window, inputs, outputPath, merge, variant, kinds });
   const outputBytes = await readFile(outputPath), outputSha256 = createHash('sha256').update(outputBytes).digest('hex');
   const { per_feature, ...summaryBody } = report;
   // The feature table (gml_id -> mesh and triangle range) travels in the sidecar and, compactly, in the receipt.
