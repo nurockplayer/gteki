@@ -9,7 +9,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
-import { surfaceEntrances } from "../scene/surface-layout.ts";
+import { surfaceEntrances, surfaceRoofs } from "../scene/surface-layout.ts";
 import plan from "../data/plan.json" with { type: "json" };
 
 export const buildScene: BuildScene = (ctx) => {
@@ -117,12 +117,25 @@ export const buildScene: BuildScene = (ctx) => {
   const underground = new Set(layout.levels.filter((lv) => lv.z < -0.5).map((lv) => lv.floorId));
   const caps = [
     ...layout.levels.filter((lv) => underground.has(lv.floorId)).flatMap((lv) => lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 1, true))),
+    // Above-ground source spaces are drawn with ceilings too: the 1F entrance structures over exit stairs
+    // and landings, whose E27 links are roofed (roof = 2). Capping them keeps the camera and the street
+    // probe under the roof that is drawn, instead of reading the landing under it as open sky.
+    ...layout.levels.filter((lv) => !underground.has(lv.floorId)).flatMap((lv) => lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 1, true))),
     ...layout.soffits.filter((s) => underground.has(s.floorId)).map(soffitGeometry),
     // Street entrance canopies: the glass roof sits at 3.08 m; cap just below it so the follow camera
     // stays under the canopy instead of looking down onto the bright glazing.
     ...surfaceEntrances(layout, ctx.bundle).map((e) => {
       const n = { x: -e.u.y, y: e.u.x };
       const corner = (sl: number, sw: number) => [e.center.x + e.u.x * e.halfLength * sl + n.x * e.halfWidth * sw, 3.0, -(e.center.y + e.u.y * e.halfLength * sl + n.y * e.halfWidth * sw)];
+      const g = new T.BufferGeometry();
+      g.setAttribute("position", new T.Float32BufferAttribute([corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, 1)].flat(), 3));
+      g.setIndex([0, 1, 2, 0, 2, 3]);
+      return g;
+    }),
+    // Glazing over roofed (E27 roof = 2) runs open beyond the canopies, at 3.05 m: cap just below it.
+    ...surfaceRoofs(layout, ctx.bundle).map((r) => {
+      const n = { x: -r.u.y, y: r.u.x };
+      const corner = (sl: number, sw: number) => [r.center.x + r.u.x * r.halfLength * sl + n.x * r.halfWidth * sw, 2.95, -(r.center.y + r.u.y * r.halfLength * sl + n.y * r.halfWidth * sw)];
       const g = new T.BufferGeometry();
       g.setAttribute("position", new T.Float32BufferAttribute([corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, 1)].flat(), 3));
       g.setIndex([0, 1, 2, 0, 2, 3]);
@@ -149,9 +162,11 @@ export const buildScene: BuildScene = (ctx) => {
     }
   }
   // Hanging wayfinding boxes and fence sign panels sit at head-to-ceiling height: camera-only blockers.
+  // So do the drawn street paving and kerbs: with symbolic heights a shallow landing under the street
+  // (exit 2, 1.68 m down) puts the eye just under the pavement, and nothing may read through it as sky.
   built.root.traverse((o) => {
     const m = o as THREE.Mesh;
-    if (m.isMesh && (m.name.startsWith("sign-faces:") || m.name === "sign-cases" || m.name === "Restricted area" || m.name === "No entry")) cameraBlockers.push(m);
+    if (m.isMesh && (m.name.startsWith("sign-faces:") || m.name === "sign-cases" || m.name === "Restricted area" || m.name === "No entry" || m.name === "surface-ground" || m.name === "surface-stone")) cameraBlockers.push(m);
   });
   // Underground station: it owns its lighting, as in the lane app. The explorer's default sun cast hard
   // pillar shadows across B1 floors through no opening at all. Same hemisphere and image-based light as

@@ -5,7 +5,7 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json";
 import surfaceJson from "../data/surface.json";
 import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "../scene/surface.ts";
-import { surfaceBuildingFootprints, surfaceCanopyWalls, surfaceEntrances, surfaceGround, surfaceOpenings, surfacePadWalls, surfaceVisibleAt, streetFootprint } from "../scene/surface-layout.ts";
+import { surfaceBuildingFootprints, surfaceCanopyWalls, surfaceEntrances, surfaceGround, surfaceOpenings, surfacePadWalls, surfaceRoofs, surfaceVisibleAt, streetFootprint } from "../scene/surface-layout.ts";
 import { inside, surfaceStreets } from "../scene/surface-street.ts";
 import { parseBuildings, simplifyRing, surfaceEnu } from "../tools/import-surface.ts";
 
@@ -134,6 +134,12 @@ describe("street geometry and collision", () => {
   it("uses every ground-level exit's existing label, and creates no B1 canopy", () => {
     const es = surfaceEntrances(layout, bundle); expect(es.map((e) => e.id)).toEqual(["poi:exit:1", "poi:exit:2", "poi:exit:3", "poi:exit:4"]);
     for (const e of es) expect(e.labelEn).toBe(bundle.pois.find((p) => p.id === e.id)!.names.find((n) => n.lang === "en")!.text);
+  });
+  it("roofs only source-roofed runs (E27 roof = 2) that are open to the street beyond a canopy", () => {
+    const roofs = surfaceRoofs(layout, bundle);
+    // exit 2's second flight above the street slab, and exit 4's stair beside its escalator canopy.
+    expect(roofs.map((r) => r.edgeId).sort()).toEqual(["e:636c6fc9d3ca4ba19cb9c690274a7943", "e:c3fe6342f158400ab602dd610f636329"]);
+    for (const r of roofs) expect(bundle.edges.find((e) => e.id === r.edgeId)!.attributes?.roof).toBe(2);
   });
   it("keeps surface rendering near street level and above an exit's first landing", () => {
     const exit = surfaceEntrances(layout, bundle).find((e) => e.id === "poi:exit:4")!;

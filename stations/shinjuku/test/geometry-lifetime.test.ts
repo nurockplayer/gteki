@@ -45,9 +45,9 @@ describe("station geometry lifetime", () => {
     expect(result.retired).toBeGreaterThan(30_000); // exercise the real PLATEAU and station merges
     expect(result.retained).toBe(0);
     expect(result.live).toBe(136);
-    expect(result.bytes).toBe(13_280_466);
-    // Round 7 fences the restricted remainder around verified corridors; regenerated with
+    expect(result.bytes).toBe(13_288_866);
+    // Glazing over roofed (E27 roof = 2) exit runs open beyond the canopies; regenerated with
     // test/helpers/retained-geometry.ts. Retired arrays must still be collectible.
-    expect(result.geometryHash).toBe("346f46d57184e2fb2d97bf3a5b6f2599f672ea99a3e2a07cd787f19a91a45f14");
+    expect(result.geometryHash).toBe("2b3a94baf32629b9d6371d6f365c808fd67efcb924a7ae00dc27daebdecb48b4");
   }, 60_000);
 });

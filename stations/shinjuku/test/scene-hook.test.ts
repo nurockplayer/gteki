@@ -62,6 +62,37 @@ describe("shared-explorer scene hook: camera caps", () => {
     expect(open).toEqual([]);
   }, 60_000);
 
+  it("caps the camera under the drawn roof of every roofed exit link (E27 roof = 2) near street level", () => {
+    // MLIT pedestrian network spec, 屋根の有無: 1 = none, 2 = roofed. Above such a link the street probe and
+    // follow camera must meet the roof that is drawn there, not read the space under it as open sky.
+    const ray = new THREE.Raycaster();
+    const blockers = [...scene.cameraBlockers!, ...scene.walkable];
+    const visible: THREE.Object3D[] = [];
+    scene.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh && m.visible && !Array.isArray(m.material) && m.material.visible !== false) visible.push(m); });
+    const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
+    const unroofed: string[] = [], uncapped: string[] = [];
+    let samples = 0;
+    for (const e of bundle.edges) {
+      if (e.attributes?.roof !== 2 || e.mode === "elevator") continue;
+      const a = nodes.get(e.from)!, b = nodes.get(e.to)!, za = layoutZ.get(e.from)!, zb = layoutZ.get(e.to)!;
+      for (let k = 1; k < 10; k++) {
+        const t = k / 10, z = za + (zb - za) * t;
+        if (z < -4.5 || z > 0.1) continue;
+        samples++;
+        const eye = new THREE.Vector3(a.position.x + (b.position.x - a.position.x) * t, z + 1.62, -(a.position.y + (b.position.y - a.position.y) * t));
+        ray.set(eye, new THREE.Vector3(0, 1, 0));
+        ray.far = 60;
+        const roof = ray.intersectObjects(visible, false)[0], cap = ray.intersectObjects(blockers, false)[0];
+        if (!roof && !cap) unroofed.push(`${e.id}@${t} z${z.toFixed(2)}`);
+        // Fixtures (lights, signs) hang up to ~0.1 m under the slab that the cap follows.
+        else if (roof && (!cap || cap.distance > roof.distance + 0.15)) uncapped.push(`${e.id}@${t} roof:${roof.object.name}@${roof.point.y.toFixed(2)}`);
+      }
+    }
+    expect(samples).toBeGreaterThan(50);
+    expect(unroofed).toEqual([]);
+    expect(uncapped).toEqual([]);
+  }, 60_000);
+
   it("never blocks the walker's horizontal rays along any graph edge", () => {
     const ray = new THREE.Raycaster();
     const caps = scene.cameraBlockers!;

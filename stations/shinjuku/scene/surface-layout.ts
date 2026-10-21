@@ -194,6 +194,36 @@ export function surfaceEntrances(layout: Layout, bundle: StationBundle): Surface
   });
 }
 
+/**
+ * Roof over each stair/escalator run whose E27 link is roofed (屋根の有無 = 2 in the MLIT pedestrian network
+ * spec) where the run is open to the street (the surfaceOpenings band) and no entrance canopy covers it.
+ * The source states only that the link is roofed, so this is generic glazing at canopy height, not a claim
+ * about the real structure.
+ */
+export interface SurfaceRoof { edgeId: string; center: XY; u: XY; halfWidth: number; halfLength: number }
+
+export function surfaceRoofs(layout: Layout, bundle: StationBundle, entrances = surfaceEntrances(layout, bundle)): SurfaceRoof[] {
+  const roofed = new Set(bundle.edges.filter((e) => e.attributes?.roof === 2).map((e) => e.id));
+  const underCanopy = (p: XY) => entrances.some((e) => {
+    const dx = p.x - e.center.x, dy = p.y - e.center.y;
+    return Math.abs(dx * e.u.x + dy * e.u.y) <= e.halfLength && Math.abs(-dx * e.u.y + dy * e.u.x) <= e.halfWidth;
+  });
+  const roofs: SurfaceRoof[] = [];
+  for (const r of layout.runs) {
+    const dz = r.b.z - r.a.z;
+    if (!roofed.has(r.edgeId) || Math.abs(dz) < 0.01 || Math.max(r.a.z, r.b.z) < -2.6 || Math.min(r.a.z, r.b.z) > 0.1) continue;
+    const ts = [-2.6, 0.02].map((z) => (z - r.a.z) / dz).sort((a, b) => a - b);
+    const lo = Math.max(0, ts[0]!), hi = Math.min(1, ts[1]!);
+    if (hi <= lo) continue;
+    const at = (t: number) => ({ x: r.a.x + (r.b.x - r.a.x) * t, y: r.a.y + (r.b.y - r.a.y) * t });
+    if (Array.from({ length: 11 }, (_, k) => at(lo + ((hi - lo) * k) / 10)).every(underCanopy)) continue;
+    const a = at(lo), b = at(hi), L = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    // Same 0.08 m construction clearance as the opening, plus a 0.3 m overhang on every side.
+    roofs.push({ edgeId: r.edgeId, center: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, u: { x: (b.x - a.x) / L, y: (b.y - a.y) / L }, halfWidth: r.width / 2 + 0.38, halfLength: L / 2 + 0.3 });
+  }
+  return roofs;
+}
+
 /** Surface rendering is only needed in the open air or close to an exit after
  * the viewer has risen above its first landing. `viewer` is station ENU. */
 export function surfaceVisibleAt(layout: Layout, bundle: StationBundle, viewer: { x: number; y: number; z: number }, context = { entrances: surfaceEntrances(layout, bundle), openings: surfaceOpenings(layout, bundle) }): boolean {

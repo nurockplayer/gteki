@@ -9,7 +9,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import type { StationBundle } from "@gteki/schema";
 import type { Layout, XY, XYZ } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
-import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfaceGround, surfacePadWalls, surfaceCanopyWalls, surfaceVisibleAt } from "./surface-layout.ts";
+import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfaceGround, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceVisibleAt } from "./surface-layout.ts";
 import { daylight, facadeTexture, hash, pavingTexture, skyMaterial } from "./surface-materials.ts";
 import { inside, strip, surfaceStreets } from "./surface-street.ts";
 export { surfaceWalls } from "./surface-layout.ts";
@@ -150,6 +150,16 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
       for(const off of [-.12,0,.12]){const p=at(e.halfLength+.4,off,.018),q=at(e.halfLength+3.3,off,.018);add("tactile",beam(p,q,.017,.012),mats.tactile);}
     }
   });
+  // Roofed (E27 roof = 2) runs open to the street beyond the canopies: plain glazing just under canopy height.
+  for(const r of surfaceRoofs(layout,opts.bundle,entrances)){
+    const at=(along:number,across:number,z:number)=>new THREE.Vector3(r.center.x+r.u.x*along-r.u.y*across,z,-(r.center.y+r.u.y*along+r.u.x*across));
+    const roof=new THREE.BoxGeometry(r.halfWidth*2,.028,r.halfLength*2);
+    roof.rotateY(Math.atan2(r.u.x,-r.u.y));roof.translate(r.center.x,3.05,-r.center.y);add("glass",roof,mats.glass);
+    for(const side of [-1,1]){
+      add("steel",beam(at(-r.halfLength,side*r.halfWidth,2.97),at(r.halfLength,side*r.halfWidth,2.97),.075,.09),mats.steel);
+      add("steel",beam(at(side*r.halfLength,-r.halfWidth,2.97),at(side*r.halfLength,r.halfWidth,2.97),.075,.09),mats.steel);
+    }
+  }
   const signTexture=track(new THREE.CanvasTexture(atlas));signTexture.colorSpace=THREE.SRGBColorSpace;
   const signMaterial=track(daylight("#ffffff",signTexture,0,true));signMaterial.side=THREE.FrontSide;
   if(batches.has("signs"))batches.get("signs")!.material=signMaterial;
