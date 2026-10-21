@@ -10,7 +10,7 @@ import type { Layout, XY, XYZ } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
 import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceVisibleIn } from "./surface-layout.ts";
 import { daylight, facadeTexture, hash, pavingTexture, skyMaterial } from "./surface-materials.ts";
-import { inside, strip, surfacePaving, surfaceStreets } from "./surface-street.ts";
+import { inside, strip, surfaceKerbs, surfaceLampRails, surfacePaving, surfaceStreets } from "./surface-street.ts";
 export { surfaceWalls } from "./surface-layout.ts";
 export type { SurfaceData } from "./surface-data.ts";
 
@@ -97,11 +97,7 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
   mats.paint.polygonOffset=true;mats.paint.polygonOffsetFactor=-1;mats.paint.polygonOffsetUnits=-1;
   for(const poly of streets.markings)add("paint",flat(poly,-.055),mats.paint);
   // Kerbs are context outside the evidence-limited pads, with breaks at openings.
-  for(const poly of streets.asphalt)for(const ring of poly)for(let i=1;i<ring.length;i++){
-    const a={x:ring[i-1]![0],y:ring[i-1]![1]},b={x:ring[i]![0],y:ring[i]![1]};
-    if(Math.hypot(b.x-a.x,b.y-a.y)<.5)continue;
-    const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
-    if(inside(mid,streets.pads)||inside(mid,streets.holes))continue;
+  for(const {a,b} of surfaceKerbs(surface,layout,opts.bundle)){
     add("stone",quad(a,b,-.06,.11),mats.stone);
     add("stone",flat(strip(a,b,.13),.11),mats.stone);
   }
@@ -214,11 +210,7 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
   instance("surface-tree-trunks",new THREE.CylinderGeometry(.12,.17,3,6),mats.stone,trees.map(({p})=>matrix(p,1.6)),trees.map(()=>new THREE.Color("#75685b")));
   const lampParts=[new THREE.CylinderGeometry(.055,.095,6,8),new THREE.BoxGeometry(.85,.12,.28)];lampParts[0]!.translate(0,3,0);lampParts[1]!.translate(.32,6,0);
   const lamp=mergeGeometries(lampParts,false)!;lampParts.forEach(g=>g.dispose());instance("surface-streetlights",lamp,mats.steel,lights.map(({p})=>matrix(p,0)));
-  for(const {p,u} of lights){
-    const safe=(q:XY)=>!inside(q,streets.pads)&&!inside(q,streets.holes)&&!inside(q,streets.asphalt)&&!inside(q,surface.buildings.map(b=>b.rings));
-    const a={x:p.x+u.x*2,y:p.y+u.y*2},b={x:p.x+u.x*5,y:p.y+u.y*5};
-    const samples=Array.from({length:31},(_,i)=>({x:a.x+(b.x-a.x)*i/30,y:a.y+(b.y-a.y)*i/30}));
-    if(!samples.every(q=>[-.15,0,.15].every(dx=>[-.15,0,.15].every(dy=>safe({x:q.x+dx,y:q.y+dy})))))continue;
+  for(const {a,b} of surfaceLampRails(surface,layout,opts.bundle)){
     add("steel",beam(pos(a,.85),pos(b,.85),.04,.04),mats.steel);
     for(const q of [a,b]){
       const bollard=new THREE.CylinderGeometry(.065,.065,.9,8);bollard.translate(q.x,.45,-q.y);add("steel",bollard,mats.steel);

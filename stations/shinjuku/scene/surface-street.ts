@@ -30,6 +30,36 @@ export function surfaceStreets(surface: SurfaceData, layout: Layout, bundle: Sta
 export function surfacePaving(surface: SurfaceData, layout: Layout, bundle: StationBundle): MultiPolygon {
   return surfaceMemoized("surfacePaving", [layout, bundle, surface], () => polygonClipping.difference(surfaceGround(layout, bundle), surfaceStreets(surface, layout, bundle).asphalt));
 }
+/** Kerb edges: asphalt outline edges of 0.5 m or more that are outside the walk pads and stair openings. */
+export function surfaceKerbs(surface: SurfaceData, layout: Layout, bundle: StationBundle): { a: XY; b: XY }[] {
+  return surfaceMemoized("surfaceKerbs", [layout, bundle, surface], () => {
+    const streets = surfaceStreets(surface, layout, bundle), kerbs: { a: XY; b: XY }[] = [];
+    for (const poly of streets.asphalt) for (const ring of poly) for (let i = 1; i < ring.length; i++) {
+      const a = { x: ring[i - 1]![0], y: ring[i - 1]![1] }, b = { x: ring[i]![0], y: ring[i]![1] };
+      if (Math.hypot(b.x - a.x, b.y - a.y) < .5) continue;
+      const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      if (inside(mid, streets.pads) || inside(mid, streets.holes)) continue;
+      kerbs.push({ a, b });
+    }
+    return kerbs;
+  });
+}
+/** Bollard rails beside each streetlight whose whole 3 m run (and 0.15 m margin) is clear of pads, openings,
+ * asphalt and buildings. */
+export function surfaceLampRails(surface: SurfaceData, layout: Layout, bundle: StationBundle): { a: XY; b: XY }[] {
+  return surfaceMemoized("surfaceLampRails", [layout, bundle, surface], () => {
+    const streets = surfaceStreets(surface, layout, bundle), rails: { a: XY; b: XY }[] = [];
+    const buildings = surface.buildings.map((b) => b.rings);
+    for (const { p, u } of streets.furniture.filter((f) => !f.tree)) {
+      const safe = (q: XY) => !inside(q, streets.pads) && !inside(q, streets.holes) && !inside(q, streets.asphalt) && !inside(q, buildings);
+      const a = { x: p.x + u.x * 2, y: p.y + u.y * 2 }, b = { x: p.x + u.x * 5, y: p.y + u.y * 5 };
+      const samples = Array.from({ length: 31 }, (_, i) => ({ x: a.x + (b.x - a.x) * i / 30, y: a.y + (b.y - a.y) * i / 30 }));
+      if (!samples.every((q) => [-.15, 0, .15].every((dx) => [-.15, 0, .15].every((dy) => safe({ x: q.x + dx, y: q.y + dy }))))) continue;
+      rails.push({ a, b });
+    }
+    return rails;
+  });
+}
 function computeStreets(surface: SurfaceData, layout: Layout, bundle: StationBundle) {
   // Millimetre construction grid avoids near-zero sweep-line segments where
   // buffered road corners meet the independently quantised station pads.

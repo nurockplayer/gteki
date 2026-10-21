@@ -5,7 +5,7 @@ import surfaceJson from "../data/surface.json" with { type: "json" };
 import baked from "../data/surface-baked.ts";
 import { buildLayout, type Plan } from "../scene/layout.ts";
 import { protectFareAndAccess } from "../scene/fare-fence.ts";
-import { deriveSurface, surfaceInputKey, surfaceSeed } from "../scene/surface-bake.ts";
+import { deriveSurface, surfaceInputKey, surfaceSeed, unpackValues } from "../scene/surface-bake.ts";
 import type { SurfaceData } from "../scene/surface-data.ts";
 import { bakedText } from "../tools/bake-surface.ts";
 import { readFileSync } from "node:fs";
@@ -24,7 +24,7 @@ describe("baked street-layer table (#72)", () => {
     const layout = buildLayout(bundle, plan);
     protectFareAndAccess(layout, plan, bundle);
     const fresh = deriveSurface(surface, layout, bundle);
-    expect(JSON.parse(baked.valuesJson)).toStrictEqual(fresh);
+    expect(unpackValues(baked.valuesJson)).toStrictEqual(fresh);
     expect(bakedText()).toBe(readFileSync(fileURLToPath(new URL("../data/surface-baked.ts", import.meta.url)), "utf8"));
   }, 60_000);
 
