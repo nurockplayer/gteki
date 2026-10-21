@@ -197,6 +197,11 @@ function segmentConflict(a: XY, b: XY, rs: XY[][]) {
 }
 type RestrictedAccess = { regions: RestrictedRegion[]; conflicts: RestrictedConflict[]; segments: VerifiedFloorSegment[] };
 const accessByLayout = new WeakMap<Layout, RestrictedAccess | (() => RestrictedAccess)>();
+/** A structural copy of an already-protected layout (see build-cache.ts) re-derives its restricted
+ * access lazily, exactly as a generated-table hit does. */
+export function adoptRestrictedAccess(layout: Layout, plan: Plan, bundle: StationBundle) {
+  accessByLayout.set(layout, () => deriveRestrictedAccess(layout, plan, bundle));
+}
 export const derivedRestrictedAccess = (layout: Layout) => {
   const value = accessByLayout.get(layout);
   if (typeof value !== "function") return value;
@@ -282,7 +287,14 @@ export function protectFareAndAccess(
   layout: Layout,
   plan: Plan,
   bundle: StationBundle,
-  options: { recomputeRestricted?: boolean; onRestricted?: (geometry: RestrictedGeometry) => void } = {},
+  options: {
+    recomputeRestricted?: boolean;
+    onRestricted?: (geometry: RestrictedGeometry) => void;
+    /** Default true: confirm the generated table was derived from exactly this input before using it.
+     * `false` skips only that fingerprint (a pure check: its value never reaches the geometry, see
+     * restricted-access.test.ts); stale tables are then caught in CI, not at load. */
+    verifyGeneratedInput?: boolean;
+  } = {},
 ): FareProtection {
   const fences: Fence[] = [],
     removedAccess: FareProtection["removedAccess"] = [];
@@ -499,8 +511,9 @@ export function protectFareAndAccess(
           Math.abs(g.center.z - h.center.z) < 0.02,
       ) === i,
   );
-  const inputKey = restrictedInputKey(layout, plan, bundle, fences);
   const saved = generatedRestrictions as RestrictedGeometry;
+  const trusted = options.verifyGeneratedInput === false && !options.recomputeRestricted && !options.onRestricted;
+  const inputKey = trusted ? saved.inputKey : restrictedInputKey(layout, plan, bundle, fences);
   if (!options.recomputeRestricted && saved.inputKey === inputKey) {
     fences.splice(0, fences.length, ...structuredClone(saved.fences));
     accessByLayout.set(layout, () => deriveRestrictedAccess(layout, plan, bundle));

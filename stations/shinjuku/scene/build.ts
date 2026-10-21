@@ -7,9 +7,10 @@ import polygonClipping from "polygon-clipping";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import { createRouter } from "@gteki/navigation";
-import { buildLayout, centroid, pointInRings, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
+import { centroid, pointInRings, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
 import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture, SIGN_ROW_HEIGHT, type SignIcon } from "./textures.ts";
-import { protectFareAndAccess, gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
+import { prepareLayout } from "./build-cache.ts";
+import { gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
 import surfaceJson from "../data/surface.json";
 import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "./surface.ts";
 
@@ -36,6 +37,11 @@ export interface BuiltStation {
 
 export interface BuildOptions {
   quality: "low" | "high";
+  /** Reuse the built layout and fences across builds of equal bundle and plan (the shared explorer's
+   * reopen). Output is byte-identical; see build-cache.ts. */
+  reuseLayout?: boolean;
+  /** false skips the restricted-area input fingerprint at load (CI still checks it). Default true. */
+  verifyRestrictedInput?: boolean;
 }
 
 // ---------------------------------------------------------------- helpers
@@ -303,8 +309,8 @@ function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE
 
 // ---------------------------------------------------------------- main
 export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptions): BuiltStation {
-  const layout = buildLayout(bundle, plan);
-  const protection = protectFareAndAccess(layout, plan, bundle);
+  // `let`, not `const`: both are cleared before returning (see the end of this function).
+  let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput });
   const root = new THREE.Group();
   root.name = "shinjuku-e27";
   const disposables: { dispose(): void }[] = [];
@@ -1079,7 +1085,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   track(surface);
   disposeRetiredGeometries(root, disposables);
 
-  return {
+  const built: BuiltStation = {
     root,
     layout,
     world,
@@ -1098,6 +1104,13 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       });
     },
   };
+  // The closures above (update, dispose, onBeforeRender hooks) share this function's scope for as long as
+  // the scene lives, and they never read the layout or the fare protection again. Without this, a running
+  // scene kept ~9 MB of build-time polygons reachable through them (#72). `built.layout` still holds it
+  // for callers that want it (the lane app, tests); the shared explorer's scene drops `built`.
+  layout = undefined as never;
+  protection = undefined as never;
+  return built;
 }
 
 /** Merge static trim; instanced train finishes, gate leaves and fixtures stay independent. */

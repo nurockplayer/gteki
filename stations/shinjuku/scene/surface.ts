@@ -9,7 +9,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import type { StationBundle } from "@gteki/schema";
 import type { Layout, XY, XYZ } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
-import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfaceGround, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceVisibleAt } from "./surface-layout.ts";
+import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfaceGround, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceVisibleIn } from "./surface-layout.ts";
 import { daylight, facadeTexture, hash, pavingTexture, skyMaterial } from "./surface-materials.ts";
 import { inside, strip, surfaceStreets } from "./surface-street.ts";
 export { surfaceWalls } from "./surface-layout.ts";
@@ -57,7 +57,20 @@ function beam(a: THREE.Vector3, b: THREE.Vector3, width: number, depth: number) 
   g.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
   return g;
 }
+/** Builds the street layer and returns only what the live scene keeps. The construction lives in its own
+ * function on purpose: any closure that survives (visibility update, setViewer, dispose, the sky hook)
+ * keeps the whole scope it was defined in reachable, and this scope holds the street polygons, building
+ * footprints and every source geometry (#72). The survivors are created in buildSurface, whose scope
+ * holds nothing else. */
 export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high" }) {
+  const { root, resources, visibility } = assembleSurface(surface, layout, opts);
+  const dome = root.getObjectByName("surface-sky")!;
+  dome.onBeforeRender = (_renderer, _scene, camera) => { dome.position.copy(camera.position); dome.updateMatrixWorld(); };
+  let disposed = false, viewer: XYZ | null = null;
+  const update = (_dt: number, _t: number) => { root.visible = viewer !== null && surfaceVisibleIn(visibility, viewer); };
+  return { root, update, setViewer(p: XYZ) { viewer = { ...p }; update(0, 0); }, dispose() { if (disposed) return; disposed = true; for (const r of resources) r.dispose(); resources.clear(); root.clear(); } };
+}
+function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high" }) {
   const root = new THREE.Group(); root.name = "surface-render-only"; root.visible = false;
   root.userData.attribution = surface.attribution;
   const resources = new Set<{ dispose(): void }>();
@@ -225,15 +238,8 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
     const merged=mergeGeometries(gs,false)!;gs.forEach(g=>g.dispose());
     const mesh=new THREE.Mesh(track(merged),batch.material);mesh.name=`surface-${name}`;root.add(mesh);
   }
-  const dome=new THREE.Mesh(track(new THREE.SphereGeometry(300,24,12)),track(skyMaterial()));dome.name="surface-sky";dome.frustumCulled=false;dome.renderOrder=-1000;
-  dome.onBeforeRender=(_renderer,_scene,camera)=>{dome.position.copy(camera.position);dome.updateMatrixWorld();};root.add(dome);
+  const dome=new THREE.Mesh(track(new THREE.SphereGeometry(300,24,12)),track(skyMaterial()));dome.name="surface-sky";dome.frustumCulled=false;dome.renderOrder=-1000;root.add(dome);
   root.userData.drawCallBudget=batches.size+4;root.userData.buildingParts=buildings.length;
-  // The live update/dispose closures share this scope with add(). Disposing a
-  // source geometry does not release its arrays; drop the batch references once
-  // merging is complete, keeping only the final meshes for rendering/restoration.
   batches.clear();
-  let disposed=false,viewer:XYZ|null=null;
-  const visibility={entrances,openings:streets.holes};
-  const update=(_dt:number,_t:number)=>{root.visible=viewer!==null&&surfaceVisibleAt(layout,opts.bundle,viewer,visibility);};
-  return {root,update,setViewer(p:XYZ){viewer={...p};update(0,0);},dispose(){if(disposed)return;disposed=true;for(const r of resources)r.dispose();resources.clear();root.clear();}};
+  return {root,resources,visibility:{entrances,openings:streets.holes}};
 }

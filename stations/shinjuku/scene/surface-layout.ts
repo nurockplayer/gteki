@@ -227,6 +227,11 @@ export function surfaceRoofs(layout: Layout, bundle: StationBundle, entrances = 
 /** Surface rendering is only needed in the open air or close to an exit after
  * the viewer has risen above its first landing. `viewer` is station ENU. */
 export function surfaceVisibleAt(layout: Layout, bundle: StationBundle, viewer: { x: number; y: number; z: number }, context = { entrances: surfaceEntrances(layout, bundle), openings: surfaceOpenings(layout, bundle) }): boolean {
+  return surfaceVisibleIn(context, viewer);
+}
+/** The visibility rule itself. It needs only the entrances and openings, so a live scene can keep those
+ * (small) and let go of the layout (#72). */
+export function surfaceVisibleIn(context: { entrances: ReturnType<typeof surfaceEntrances>; openings: ReturnType<typeof surfaceOpenings> }, viewer: { x: number; y: number; z: number }): boolean {
   if (viewer.z >= 0) return true;
   const nearTop = viewer.z > -2 || context.entrances.some((e) =>
     Math.hypot(viewer.x - e.top.x, viewer.y - e.top.y) <= 30 && viewer.z > e.firstLandingZ + 1.2);

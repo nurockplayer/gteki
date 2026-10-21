@@ -12,9 +12,37 @@ import { railingWalls, type Plan } from "../scene/layout.ts";
 import { surfaceEntrances, surfaceRoofs } from "../scene/surface-layout.ts";
 import plan from "../data/plan.json" with { type: "json" };
 
+/** Camera that renders the station, reported to the street layer (see the probe in buildScene). */
+function viewerTracker(setViewer: ((pos: { x: number; y: number; z: number }) => void) | undefined) {
+  let camera: THREE.Camera | null = null;
+  const report = (cam: THREE.Camera) => setViewer?.({ x: cam.position.x, y: -cam.position.z, z: cam.position.y });
+  return {
+    onBeforeRender: (_r: unknown, _s: unknown, cam: THREE.Camera) => { camera = cam; report(cam); },
+    refresh: () => { if (camera) report(camera); },
+  };
+}
+
+/** update/dispose of the returned scene. They live out here, not inside buildScene, on purpose: a closure
+ * keeps its entire defining scope alive, and buildScene's scope holds the layout, the built station and
+ * every intermediate array (#72: ~9 MB retained for the life of the scene). Pass only what they use. */
+function sceneLifecycle(stepBuilt: (dt: number, t: number) => void, disposeBuilt: () => void, refreshViewer: () => void, meshes: THREE.Object3D[], owned: { dispose(): void }[], envTarget: THREE.WebGLRenderTarget | null) {
+  return {
+    update: (dt: number, t: number) => {
+      refreshViewer();
+      stepBuilt(dt, t);
+    },
+    dispose() {
+      disposeBuilt();
+      for (const m of meshes) (m as THREE.Mesh).geometry.dispose();
+      for (const o of owned) o.dispose();
+      envTarget?.dispose(); // render target owns the texture plus its framebuffer/depth
+    },
+  };
+}
+
 export const buildScene: BuildScene = (ctx) => {
   const T = ctx.THREE;
-  const built = buildStation(ctx.bundle, plan as unknown as Plan, { quality: ctx.quality });
+  const built = buildStation(ctx.bundle, plan as unknown as Plan, { quality: ctx.quality, reuseLayout: true, verifyRestrictedInput: false });
   const { layout } = built;
 
   // Invisible walk proxies: the explorer raycasts these from above (non-recursive), so each is a Mesh.
@@ -64,12 +92,8 @@ export const buildScene: BuildScene = (ctx) => {
   probe.frustumCulled = false;
   // update() runs before each render, so it re-reports the last seen camera's *current* position; the
   // probe alone would lag a frame (the render list is already built when onBeforeRender fires).
-  let viewCamera: THREE.Camera | null = null;
-  const reportViewer = (cam: THREE.Camera) => built.setViewer?.({ x: cam.position.x, y: -cam.position.z, z: cam.position.y });
-  probe.onBeforeRender = (_r, _s, cam) => {
-    viewCamera = cam;
-    reportViewer(cam);
-  };
+  const viewer = viewerTracker(built.setViewer);
+  probe.onBeforeRender = viewer.onBeforeRender;
   built.root.add(probe);
 
   // Level walls only block bodies near their own level (bodyMax); approximate that for the
@@ -213,17 +237,7 @@ export const buildScene: BuildScene = (ctx) => {
     walls,
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
-    update: (dt, t) => {
-      if (viewCamera) reportViewer(viewCamera);
-      built.update(dt, t);
-    },
-    dispose() {
-      built.dispose();
-      for (const m of [...walkable, ...colliders, probe]) m.geometry.dispose();
-      proxyMat.dispose();
-      probeMat.dispose();
-      envTarget?.dispose(); // render target owns the texture plus its framebuffer/depth
-    },
+    ...sceneLifecycle(built.update, built.dispose, viewer.refresh, [...walkable, ...colliders, probe], [proxyMat, probeMat], envTarget),
   };
   return scene;
 };
