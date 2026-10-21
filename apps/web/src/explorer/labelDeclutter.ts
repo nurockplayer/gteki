@@ -31,6 +31,8 @@ export interface DeclutterItem {
   faded?: boolean;
   /** Shown by the previous pass: it keeps its place when merely touching (hysteresis against flicker). */
   wasVisible?: boolean;
+  /** `false` when w/h are an estimate (not yet measured from the DOM). */
+  measured?: boolean;
 }
 
 export interface DeclutterOptions {
@@ -84,4 +86,33 @@ function compare(a: DeclutterItem, b: DeclutterItem): number {
     || Number(Boolean(a.faded)) - Number(Boolean(b.faded))
     || Number(!a.routable) - Number(!b.routable)
     || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+}
+
+/** Label font size (px) and the box around the text, as styled by `.poi-label` (dot, padding, border). */
+export const LABEL_FONT_PX = 12;
+const LABEL_BOX = { chrome: 31, h: 26 };
+
+/** Whether a character is drawn about one em wide (CJK, kana, Hangul, full-width forms); else it is ASCII-like. */
+function fullWidth(code: number): boolean {
+  return (code >= 0x1100 && code <= 0x11ff) || (code >= 0x2e80 && code <= 0xa4cf) || (code >= 0xac00 && code <= 0xd7a3)
+    || (code >= 0xf900 && code <= 0xfaff) || (code >= 0xfe30 && code <= 0xfe6f) || (code >= 0xff00 && code <= 0xff60) || (code >= 0xffe0 && code <= 0xffe6);
+}
+
+/**
+ * A label's box (px) before it has been measured. Full-width characters count a full em and others 0.55 em,
+ * rounded up, so the first pass errs toward a larger box (hiding) rather than letting a wide label overlap.
+ */
+export function estimateLabelBox(text: string, fontPx = LABEL_FONT_PX): { w: number; h: number } {
+  let em = 0;
+  for (const ch of text) em += fullWidth(ch.codePointAt(0)!) ? 1 : 0.55;
+  return { w: Math.ceil(LABEL_BOX.chrome + em * fontPx), h: LABEL_BOX.h };
+}
+
+/**
+ * Ids kept by a pass whose box was only estimated. Their real size is known only once the browser has laid
+ * them out (after they are shown), so the caller schedules another pass for them; once measured they are
+ * no longer reported, so this settles.
+ */
+export function revealedUnmeasured(items: readonly DeclutterItem[], keep: ReadonlySet<string>): string[] {
+  return items.filter((i) => i.measured === false && keep.has(i.id)).map((i) => i.id);
 }

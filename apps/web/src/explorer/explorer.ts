@@ -23,7 +23,7 @@ import { PostFx } from "./postfx.ts";
 import { FOLLOW, followBoom, followDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { OVERVIEW_OFFSET, frameBounds, routableBounds } from "./overviewFraming.ts";
-import { declutter, labelClass, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
+import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
 import { avatarMotion } from "./avatarMotion.ts";
@@ -62,8 +62,8 @@ const LABEL_RAYS = { low: { count: 6, ms: 0.6 }, high: { count: 16, ms: 1.5 } } 
 const LABEL_RECHECK_MS = 1000;
 /** Overview declutter runs at most this often (ms) while the view changes. */
 const DECLUTTER_MS = 80;
-/** A label's box before it has been measured (px): dot, padding and border plus ~7 px per character. */
-const LABEL_BOX_GUESS = { base: 31, perChar: 7, h: 26 };
+/** A revealed label that still cannot be measured (never laid out) is re-checked this many times, then left on its estimate. */
+const MEASURE_TRIES = 5;
 /** Instanced meshes with more instances than this occlude only as registered proxies. */
 const MAX_OCCLUDER_INSTANCES = 1024;
 
@@ -127,6 +127,8 @@ interface PoiLabel {
   routable: boolean;
   /** Measured box of the label element (px), cached; null until it has been laid out. */
   size: { w: number; h: number } | null;
+  /** Passes that revealed this label while it was still unmeasured. */
+  measureTries: number;
 }
 
 export class Explorer {
@@ -698,7 +700,7 @@ export class Explorer {
       const obj = new CSS2DObject(el);
       obj.position.copy(at).add(new THREE.Vector3(0, LABEL_LIFT, 0));
       this.poiGroup.add(obj);
-      this.poiLabels.push({ poiId: poi.id, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.has(poi.id), state: "shown", decluttered: false, klass: labelClass(isSelected, poi.category), routable: Boolean(node), size: null });
+      this.poiLabels.push({ poiId: poi.id, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.has(poi.id), state: "shown", decluttered: false, klass: labelClass(isSelected, poi.category), routable: Boolean(node), size: null, measureTries: 0 });
     }
     this.poiGroup.updateMatrixWorld(true);
     this.labelSweep.invalidate(this.poiLabels.length);
@@ -866,14 +868,19 @@ export class Explorer {
       if (l.state === "hidden") continue;
       p.setFromMatrixPosition(l.obj.matrixWorld).project(this.camera);
       if (p.z < -1 || p.z > 1) continue; // behind the camera or past far: the CSS2D renderer hides it
-      const size = l.size ?? { w: LABEL_BOX_GUESS.base + LABEL_BOX_GUESS.perChar * (l.obj.element.textContent?.length ?? 0), h: LABEL_BOX_GUESS.h };
+      const size = l.size ?? estimateLabelBox(l.obj.element.textContent ?? "");
       const x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh;
       if (x + size.w / 2 < 0 || x - size.w / 2 > vw || y + size.h / 2 < 0 || y - size.h / 2 > vh) continue;
-      items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible });
+      items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible, measured: l.size !== null });
       byId.set(l.poiId, l);
     }
     const keep = declutter(items);
     for (const [id, l] of byId) l.decluttered = !keep.has(id);
+    // A label shown on an estimate gets its real size once the CSS2D renderer has laid it out: run again then.
+    // Bounded: a label that never lays out is retried MEASURE_TRIES times, then left on its estimate.
+    for (const id of revealedUnmeasured(items, keep)) {
+      if (byId.get(id)!.measureTries++ < MEASURE_TRIES) this.declutterDirty = true;
+    }
   }
 
   private labelOccluded(label: PoiLabel): boolean {

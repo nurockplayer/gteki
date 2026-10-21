@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DECLUTTER_HOLD_PX, DECLUTTER_PAD_PX, LABEL_CLASS, declutter, labelClass, type DeclutterItem } from "./labelDeclutter.ts";
+import { DECLUTTER_HOLD_PX, DECLUTTER_PAD_PX, LABEL_CLASS, declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem } from "./labelDeclutter.ts";
 
 const item = (id: string, x: number, y: number, over: Partial<DeclutterItem> = {}): DeclutterItem => ({
   id, x, y, w: 80, h: 24, klass: LABEL_CLASS.other, routable: true, ...over,
@@ -121,5 +121,48 @@ describe("declutter", () => {
 
   it("copes with no labels", () => {
     expect(declutter([]).size).toBe(0);
+  });
+});
+
+describe("estimateLabelBox", () => {
+  it("counts full-width characters as one em and ASCII as 0.55 em at 12 px", () => {
+    expect(estimateLabelBox("").w).toBe(31);
+    expect(estimateLabelBox("abcdefghij").w).toBe(Math.ceil(31 + 10 * 0.55 * 12));
+    expect(estimateLabelBox("西口地下改札").w).toBe(31 + 6 * 12);
+  });
+
+  it("errs toward wide for Japanese: a CJK label is far wider than the same count of ASCII letters", () => {
+    expect(estimateLabelBox("新宿駅南口").w).toBeGreaterThan(estimateLabelBox("abcde").w);
+    // The old 7 px/char guess gave 66 px for 5 characters; the label is about 91 px.
+    expect(estimateLabelBox("新宿駅南口").w).toBeGreaterThanOrEqual(31 + 5 * 12);
+  });
+
+  it("treats kana, fullwidth forms and Hangul as full width, mixed text per character", () => {
+    expect(estimateLabelBox("ひらがな").w).toBe(31 + 4 * 12);
+    expect(estimateLabelBox("ＡＢ").w).toBe(31 + 2 * 12);
+    expect(estimateLabelBox("한글").w).toBe(31 + 2 * 12);
+    expect(estimateLabelBox("出口A").w).toBe(Math.ceil(31 + (2 + 0.55) * 12));
+  });
+
+  it("scales with the font size", () => {
+    expect(estimateLabelBox("口", 16).w).toBe(31 + 16);
+  });
+});
+
+describe("revealedUnmeasured", () => {
+  const a = item("a", 0, 0, { measured: false });
+  const b = item("b", 300, 0, { measured: true });
+  const c = item("c", 600, 0, { measured: false });
+
+  it("reports kept labels that were placed on an estimate, so another pass is scheduled", () => {
+    expect(revealedUnmeasured([a, b, c], declutter([a, b, c]))).toEqual(["a", "c"]);
+  });
+
+  it("does not report dropped or already measured labels, so it settles once measured", () => {
+    const hidden = item("d", 5, 0, { measured: false, klass: LABEL_CLASS.other });
+    const front = item("e", 0, 0, { klass: LABEL_CLASS.exit, measured: true });
+    expect(revealedUnmeasured([hidden, front], declutter([hidden, front]))).toEqual([]);
+    const measured = [a, b, c].map((i) => ({ ...i, measured: true }));
+    expect(revealedUnmeasured(measured, declutter(measured))).toEqual([]);
   });
 });
