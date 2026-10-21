@@ -52,6 +52,8 @@ jobs:
         working-directory: tests/e2e
         env:
           GTEKI_ROOT: ${{ github.workspace }}
+          # 03 checks the guide's UI flow only; arrival needs the real-time playback a GPU host gives (see the spec).
+          GTEKI_GUIDE_FLOW_ONLY: "1"
         run: pnpm exec playwright test specs/01-smoke.spec.ts specs/03-guided-walkthrough.spec.ts --project=desktop-chromium --trace=off
 
       # Failure only, and small: per-test evidence JSON (records the quality path), screenshots and error
