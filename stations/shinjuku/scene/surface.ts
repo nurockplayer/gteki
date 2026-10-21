@@ -4,14 +4,13 @@
  * the exported obstacle segments, which the integration hook adds to WalkWorld.
  */
 import * as THREE from "three";
-import polygonClipping from "polygon-clipping";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import type { Layout, XY, XYZ } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
-import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfaceGround, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceVisibleIn } from "./surface-layout.ts";
+import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceVisibleIn } from "./surface-layout.ts";
 import { daylight, facadeTexture, hash, pavingTexture, skyMaterial } from "./surface-materials.ts";
-import { inside, strip, surfaceStreets } from "./surface-street.ts";
+import { inside, strip, surfacePaving, surfaceStreets } from "./surface-street.ts";
 export { surfaceWalls } from "./surface-layout.ts";
 export type { SurfaceData } from "./surface-data.ts";
 
@@ -92,7 +91,7 @@ function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: S
   const streets=surfaceStreets(surface,layout,opts.bundle);
   // Adjacent road/paving polygons, not nearly coplanar overlays: avoids distant
   // depth fighting and gives the asphalt a small, deliberate kerb depression.
-  const paving=polygonClipping.difference(surfaceGround(layout,opts.bundle),streets.asphalt);
+  const paving=surfacePaving(surface,layout,opts.bundle);
   for(const poly of paving)add("ground",texturedFlat(poly,-.012,3.2),mats.ground);
   for(const poly of streets.asphalt)add("asphalt",texturedFlat(poly,-.06,5),mats.asphalt);
   mats.paint.polygonOffset=true;mats.paint.polygonOffsetFactor=-1;mats.paint.polygonOffsetUnits=-1;

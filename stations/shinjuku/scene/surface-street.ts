@@ -3,7 +3,7 @@ import polygonClipping, { type Polygon, type MultiPolygon } from "polygon-clippi
 import type { StationBundle } from "@gteki/schema";
 import type { Layout, XY } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
-import { streetFootprint, surfaceOpenings } from "./surface-layout.ts";
+import { streetFootprint, surfaceGround, surfaceMemoized, surfaceOpenings } from "./surface-layout.ts";
 export function inside(p: XY, polys: number[][][][]): boolean {
   const ringContains = (ring: number[][]) => {
     let contained = false;
@@ -24,6 +24,13 @@ export function strip(a: XY, b: XY, width: number): Polygon {
   return [[[a.x+nx,a.y+ny],[b.x+nx,b.y+ny],[b.x-nx,b.y-ny],[a.x-nx,a.y-ny],[a.x+nx,a.y+ny]]];
 }
 export function surfaceStreets(surface: SurfaceData, layout: Layout, bundle: StationBundle) {
+  return surfaceMemoized("surfaceStreets", [layout, bundle, surface], () => computeStreets(surface, layout, bundle));
+}
+/** Level-0 paving: the ground rectangle minus the stair openings minus the asphalt. */
+export function surfacePaving(surface: SurfaceData, layout: Layout, bundle: StationBundle): MultiPolygon {
+  return surfaceMemoized("surfacePaving", [layout, bundle, surface], () => polygonClipping.difference(surfaceGround(layout, bundle), surfaceStreets(surface, layout, bundle).asphalt));
+}
+function computeStreets(surface: SurfaceData, layout: Layout, bundle: StationBundle) {
   // Millimetre construction grid avoids near-zero sweep-line segments where
   // buffered road corners meet the independently quantised station pads.
   const snap = (polys: MultiPolygon): MultiPolygon => polys.map(poly => poly.map(r => r.map(([x,y]) => [Math.round(x*1000)/1000,Math.round(y*1000)/1000] as [number,number])));

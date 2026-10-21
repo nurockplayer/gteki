@@ -8,7 +8,7 @@ import { clearLayoutCache, prepareLayout } from "../scene/build-cache.ts";
 import generated from "../scene/fare-restricted.generated.json" with { type: "json" };
 import { protectFareAndAccess } from "../scene/fare-fence.ts";
 import { buildLayout } from "../scene/layout.ts";
-import { exactHash, fullDigest, protectOnly, stationDigest, withCanvasStub, type FullDigest } from "./helpers/scene-digest.ts";
+import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCanvasStub, type FullDigest } from "./helpers/scene-digest.ts";
 
 /**
  * #72 guard. test/fixtures/scene-digest.json was captured from the unmodified code at fe8d3b6 (the #61
@@ -59,6 +59,17 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
     for (const d of digests) expect(d).toEqual(base.station);
     // The snapshot itself is still the pristine post-protect layout.
     expect(exactHash(prepareLayout(bundle, plan, { reuse: true }).layout)).toBe(base.protect.layoutAfterProtect);
+  }, 120_000);
+
+  it("derives the street layer itself when the baked table is not used, with the same result", () => {
+    for (const useBakedSurface of [true, false]) {
+      const built = withCanvasStub(() => buildStation(bundle, plan, { quality: "low", useBakedSurface }));
+      expect(stationDigest(built), `useBakedSurface=${useBakedSurface}`).toEqual(base.station);
+      // The scene hook adds an empty viewer probe on top of the station root; compare drawn triangles only.
+      const drawn = (v: FullDigest["scene"]["low"]["visual"]) => Object.fromEntries(Object.entries(v).filter(([, g]) => g.triangles > 0));
+      expect(drawn(visualDigest(built.root)), `useBakedSurface=${useBakedSurface}`).toEqual(drawn(base.scene.low.visual));
+      built.dispose();
+    }
   }, 120_000);
 
   it("keys the cache by content: a changed bundle or plan never reuses the snapshot", () => {

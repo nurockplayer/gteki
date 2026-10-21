@@ -12,8 +12,10 @@ import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture,
 import { prepareLayout } from "./build-cache.ts";
 import { gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
 import surfaceJson from "../data/surface.json";
+import bakedSurface from "../data/surface-baked.ts";
 import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "./surface.ts";
 import { withSurfaceMemo } from "./surface-layout.ts";
+import { surfaceSeed } from "./surface-bake.ts";
 
 export const OEDO_MAGENTA = "#b6007a"; // public line colour of the Oedo Line
 
@@ -43,6 +45,9 @@ export interface BuildOptions {
   reuseLayout?: boolean;
   /** false skips the restricted-area input fingerprint at load (CI still checks it). Default true. */
   verifyRestrictedInput?: boolean;
+  /** false derives the street layer's polygons instead of reading data/surface-baked.ts. Default true; the
+   * baked table is used only if it was made from exactly this surface, bundle and plan (surface-bake.ts). */
+  useBakedSurface?: boolean;
 }
 
 // ---------------------------------------------------------------- helpers
@@ -1079,10 +1084,11 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
 
   // W2 surface hook: context adds obstacles only; existing pads remain the walk limit.
   // The street layer and its walls ask for the same polygon derivations; compute each once (see surface-layout.ts).
+  const seed = opts.useBakedSurface === false ? null : surfaceSeed(bakedSurface, surfaceJson as SurfaceData, layout, bundle, plan);
   const { surface, surfaceBarriers } = withSurfaceMemo(() => ({
     surface: buildSurface(surfaceJson as SurfaceData, layout, { ...opts, bundle }),
     surfaceBarriers: surfaceWalls(layout, bundle, surfaceJson as SurfaceData),
-  }));
+  }), seed);
   root.add(surface.root);
   propWalls.push(...surfaceBarriers);
   world.addWalls(surfaceBarriers);

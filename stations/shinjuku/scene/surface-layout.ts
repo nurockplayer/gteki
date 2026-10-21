@@ -8,16 +8,24 @@ import type { SurfaceData } from "./surface-data.ts";
  * buildStation asks for the same street footprint, openings, graph segments, entrances, pad walls and
  * building footprints from several places (render, WalkWorld, the explorer hook); each is a polygon-clipping
  * union/difference. Outside the scope nothing is cached, so tests that edit a layout or bundle between calls
- * see fresh results. Results are shared between callers and must be treated as read-only (as they are). */
+ * see fresh results. Results are shared between callers and must be treated as read-only (as they are).
+ *
+ * The scope can also be seeded with the baked results of the heaviest derivations (surface-bake.ts). A seed
+ * is used only for the exact (layout, bundle, surface) objects it was validated against. */
+export interface SurfaceSeed { layout: object; bundle: object; surface: object; values: Partial<Record<string, unknown>> }
 let activeMemo: Map<string, WeakMap<object, unknown>> | null = null;
-export function withSurfaceMemo<T>(fn: () => T): T {
-  const outer = activeMemo;
+let activeSeed: SurfaceSeed | null = null;
+export function withSurfaceMemo<T>(fn: () => T, seed?: SurfaceSeed | null): T {
+  const outer = activeMemo, outerSeed = activeSeed;
   activeMemo = outer ?? new Map();
-  try { return fn(); } finally { activeMemo = outer; }
+  if (seed) activeSeed = seed;
+  try { return fn(); } finally { activeMemo = outer; activeSeed = outerSeed; }
 }
-/** keys: the objects the result depends on, outermost first (layout, bundle, ...). */
-function memoized<T>(name: string, keys: object[], compute: () => T): T {
+/** keys: the objects the result depends on, outermost first (layout, bundle, surface?). */
+export function surfaceMemoized<T>(name: string, keys: object[], compute: () => T): T {
   if (!activeMemo) return compute();
+  const seed = activeSeed;
+  if (seed && seed.values[name] !== undefined && keys[0] === seed.layout && keys[1] === seed.bundle && (keys[2] === undefined || keys[2] === seed.surface)) return seed.values[name] as T;
   let level = activeMemo.get(name);
   if (!level) activeMemo.set(name, (level = new WeakMap()));
   for (const key of keys) {
@@ -40,7 +48,7 @@ const rect = (x: number, y: number, hx: number, hy: number): Polygon => [[[x - h
 /** All existing evidence-limited level-0 surfaces, including boundary-node landings
  * (exit 1 is a boundary node, so has no STREET_PAD of its own). No area is added. */
 export function streetFootprint(layout: Layout): MultiPolygon {
-  return memoized("streetFootprint", [layout], () => {
+  return surfaceMemoized("streetFootprint", [layout], () => {
     const slabs = [...layout.streetPads, ...layout.pads, ...layout.linkStrips, ...layout.levels.filter((l) => Math.abs(l.z) < 0.1).flatMap((l) => l.slabs)].filter((s) => Math.abs(s.z) < 0.1);
     return slabs.length ? polygonClipping.union(ringPoly(slabs[0]!.rings), ...slabs.slice(1).map((s) => ringPoly(s.rings))) : [];
   });
@@ -50,7 +58,7 @@ export function streetFootprint(layout: Layout): MultiPolygon {
  * underground slab helper, start at the run mouth (no 0.25 m opaque lip).
  * The opening extends down to 2.6 m head clearance. Flat top slabs stay solid. */
 export function surfaceOpenings(layout: Layout, bundle: StationBundle): MultiPolygon {
-  return memoized("surfaceOpenings", [layout, bundle], () => {
+  return surfaceMemoized("surfaceOpenings", [layout, bundle], () => {
     const holes: Polygon[] = [];
     for (const r of layout.runs) {
       const dz = r.b.z - r.a.z;
@@ -81,7 +89,7 @@ export function surfaceGround(layout: Layout, bundle: StationBundle): MultiPolyg
 }
 
 export function graphSegments(layout: Layout, bundle: StationBundle) {
-  return memoized("graphSegments", [layout, bundle], () => {
+  return surfaceMemoized("graphSegments", [layout, bundle], () => {
     return bundle.edges.flatMap((e) => {
       const a = bundle.nodes.find((n) => n.id === e.from)!, b = bundle.nodes.find((n) => n.id === e.to)!;
       const pts = e.geometry?.length ? e.geometry : [a.position, b.position];
@@ -103,7 +111,7 @@ const dist = (p: XY, a: XY, b: XY) => {
  * segments are rendered and passed to WalkWorld. Local graph mouths are opened
  * with 0.65 m clearance (0.3 m body + rail thickness + margin), at every height. */
 export function surfacePadWalls(layout: Layout, bundle: StationBundle): WallSeg[] {
-  return memoized("surfacePadWalls", [layout, bundle], () => {
+  return surfaceMemoized("surfacePadWalls", [layout, bundle], () => {
     const footprint = streetFootprint(layout), segs = graphSegments(layout, bundle);
     const clear = (p: XY) => segs.some(({ a, b }) => { const q = dist(p, a, b), z = a.z + (b.z - a.z) * q.t; return q.d < 0.65 && z > -2.0 && z < 1.2; });
     const walls: WallSeg[] = [];
@@ -127,7 +135,7 @@ export function surfacePadWalls(layout: Layout, bundle: StationBundle): WallSeg[
  * graph corridor near street height. This is an explicit visual simplification
  * where the independent source dates/symbolic level geometry disagree. */
 export function surfaceBuildingFootprints(surface: SurfaceData, layout: Layout, bundle: StationBundle) {
-  return memoized("surfaceBuildingFootprints", [layout, bundle, surface], () => {
+  return surfaceMemoized("surfaceBuildingFootprints", [layout, bundle, surface], () => {
     const keep: Polygon[] = [];
     for (const poly of streetFootprint(layout)) {
       keep.push(poly);
@@ -150,7 +158,7 @@ export function surfaceBuildingFootprints(surface: SurfaceData, layout: Layout, 
 }
 
 export function surfaceColumns(layout: Layout, bundle: StationBundle): WallSeg[] {
-  return memoized("surfaceColumns", [layout, bundle], () => {
+  return surfaceMemoized("surfaceColumns", [layout, bundle], () => {
     const segs = graphSegments(layout, bundle);
     return surfaceEntrances(layout, bundle).flatMap((e) => [-1, 1].flatMap((side) => [-1, 1].flatMap((end) => {
       const p = { x: e.center.x + e.u.x * e.halfLength * end - e.u.y * e.halfWidth * side, y: e.center.y + e.u.y * e.halfLength * end + e.u.x * e.halfWidth * side };
@@ -169,7 +177,7 @@ export interface CanopyWallSeg extends WallSeg {
  * around all nearby graph paths so the decorative enclosure never narrows or
  * blocks a published edge. Panels stay at body height and enter WalkWorld. */
 export function surfaceCanopyWalls(layout: Layout, bundle: StationBundle): CanopyWallSeg[] {
-  return memoized("surfaceCanopyWalls", [layout, bundle], () => {
+  return surfaceMemoized("surfaceCanopyWalls", [layout, bundle], () => {
     const segs = graphSegments(layout, bundle);
     const walls: CanopyWallSeg[] = [];
     const clear = (p: XY) => segs.some(({ a, b }) => {
@@ -224,7 +232,7 @@ export function surfaceWalls(layout: Layout, bundle: StationBundle, surface?: Su
 export interface SurfaceEntrance { id: string; labelJa: string; labelEn: string; center: XY; top: XY; firstLandingZ: number; u: XY; halfWidth: number; halfLength: number }
 /** One generic canopy per actual ground-level exit POI; B1 exits stay underground. */
 export function surfaceEntrances(layout: Layout, bundle: StationBundle): SurfaceEntrance[] {
-  return memoized("surfaceEntrances", [layout, bundle], () => {
+  return surfaceMemoized("surfaceEntrances", [layout, bundle], () => {
     return bundle.pois.filter((p) => p.category === "exit" && p.connectorNodeIds.some((id) => Math.abs(layout.nodeZ.get(id) ?? -100) < 0.1)).map((p) => {
       const node = bundle.nodes.find((n) => n.id === p.connectorNodeIds[0])!;
       const nearby = layout.runs.filter((r) => Math.max(r.a.z, r.b.z) > -0.1 && Math.min(Math.hypot(r.a.x - node.position.x, r.a.y - node.position.y), Math.hypot(r.b.x - node.position.x, r.b.y - node.position.y)) < 9);
