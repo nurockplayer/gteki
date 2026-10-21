@@ -8,8 +8,8 @@
     "note": "Central Passage east, PR #14 evidence route",
     "result": {
       "ok": true,
-      "lengthM": 196.7,
-      "seconds": 242,
+      "lengthM": 198.6,
+      "seconds": 246,
       "floorChanges": 1,
       "crossesFareBoundary": false,
       "synthetic": false,
@@ -27,9 +27,9 @@
       "instructions": [
         "Start",
         "Go straight ~7 m",
-        "Turn left, ~72 m",
+        "Turn left, ~72 m. After ~54 m, continue straight through the junction.",
         "Turn right, ~16 m",
-        "Turn left, ~34 m",
+        "Turn left, ~34 m. After ~20 m, continue straight through the junction.",
         "Take the stairs down",
         "Take the stairs up to street level",
         "Arrive at destination"
@@ -76,7 +76,7 @@
         "Go straight ~20 m",
         "Turn left, ~152 m",
         "Turn right, ~14 m",
-        "Arrive at destination"
+        "Stairs to Exit 4 start here"
       ],
       "steps": [
         ">w_c__w_cj",
@@ -114,7 +114,7 @@
         "Start",
         "Go straight ~11 m",
         "Turn right, ~11 m",
-        "Turn right, ~72 m",
+        "Turn right, ~72 m. After ~54 m, continue straight through the junction.",
         "Turn left, ~82 m",
         "Take the stairs up to street level",
         "Arrive at destination"
@@ -203,9 +203,9 @@
       ],
       "instructions": [
         "Start",
-        "Go straight ~11 m",
+        "Continue ~11 m",
         "Turn right, ~54 m",
-        "Turn right, ~125 m",
+        "Turn right, ~125 m. After ~13 m, continue straight through the junction. After ~98 m, keep left at the junction.",
         "Take the stairs up",
         "Go straight ~31 m",
         "Turn right, then take the stairs down",
@@ -237,8 +237,8 @@
     "note": "West stair foot across the station to the east",
     "result": {
       "ok": true,
-      "lengthM": 343.3,
-      "seconds": 302,
+      "lengthM": 345.3,
+      "seconds": 306,
       "floorChanges": 1,
       "crossesFareBoundary": false,
       "synthetic": false,
@@ -256,11 +256,11 @@
       "instructions": [
         "Start",
         "Go straight ~7 m",
-        "Turn left, ~33 m",
-        "Turn right, ~112 m",
-        "Turn right, ~72 m",
+        "Turn left, ~33 m. After ~13 m, continue straight through the junction.",
+        "Turn right, ~112 m. After ~100 m, keep left at Central Passage.",
+        "Turn right, ~72 m. After ~54 m, continue straight through the junction.",
         "Turn right, ~16 m",
-        "Turn left, ~34 m",
+        "Turn left, ~34 m. After ~20 m, continue straight through the junction.",
         "Turn right, ~55 m",
         "Turn left, then take the stairs up to street level",
         "Arrive at destination"
@@ -313,10 +313,10 @@
         "Start",
         "Take the stairs down to B1 passages",
         "Turn left, then take the stairs up",
-        "Go straight ~28 m",
+        "Continue ~28 m",
         "Turn left, ~82 m",
-        "Turn right, ~72 m",
-        "Turn left, ~143 m",
+        "Turn right, ~72 m. After ~18 m, continue straight through the junction.",
+        "Turn left, ~143 m. After ~11 m, continue straight past Central Passage. After ~112 m, continue straight past West Exit (B1).",
         "Turn left, ~46 m",
         "Turn left, then take the stairs up to street level",
         "Arrive at destination"

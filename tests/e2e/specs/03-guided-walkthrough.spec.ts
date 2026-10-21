@@ -40,6 +40,10 @@ for (const key of STATIONS) {
       const seen = new Set<string>();
       const t0 = Date.now();
       let arrived = false;
+      // A route that ends at an unmodelled connector (e.g. a stair foot below a street exit) says so in
+      // its last instruction, and the app toasts that line instead of "arrived" (#21).
+      const finalLine = (await hooks.instructions(page)).at(-1) ?? "";
+      const isArrival = (t: string) => /arriv|到着/i.test(t) || (finalLine !== "" && t === finalLine);
       const budgetMs = Math.max(60_000, (route.totalLengthM / (1.6 * 4)) * 1000 * 1.6 + 20_000);
       let i = 0;
       let still = 0;
@@ -53,7 +57,7 @@ for (const key of STATIONS) {
         const avatar = await hooks.avatar(page);
         frames.push({ t: Date.now() - t0, instruction, avatar, stats: await imageStats(page, png), overlaps: await labelUiOverlaps(page) });
         // The arrival toast lasts 2.5 s; the probe's observer records it even between samples.
-        if ((await toasts(page)).some((t) => /arriv|到着/i.test(t))) arrived = true;
+        if ((await toasts(page)).some(isArrival)) arrived = true;
         const pos = JSON.stringify(avatar, (_k, v) => (typeof v === "number" ? Math.round(v * 10) / 10 : v));
         still = pos === last ? still + 1 : 0;
         last = pos;
@@ -62,11 +66,11 @@ for (const key of STATIONS) {
       }
       const end = await hooks.avatar(page);
       await page.waitForTimeout(1000);
-      if ((await toasts(page)).some((t) => /arriv|到着/i.test(t))) arrived = true;
+      if ((await toasts(page)).some(isArrival)) arrived = true;
       const nodes = new Map(stationData(key).graph.nodes.map((n) => [n.id, n]));
       const goal = nodes.get(route.nodeIds.at(-1))!.position;
       const distToGoal = Math.hypot(end.x - goal.x, end.y - goal.y);
-      save(testInfo, `${key}-walk-${w.label}.json`, { route: { lengthM: route.totalLengthM, floorChanges: route.floorChanges, instructions: await hooks.instructions(page) }, instructionsSeenInHud: [...seen], arrived, distToGoal, elapsedMs: Date.now() - t0, end, perf, frames });
+      save(testInfo, `${key}-walk-${w.label}.json`, { route: { lengthM: route.totalLengthM, floorChanges: route.floorChanges, instructions: await hooks.instructions(page) }, instructionsSeenInHud: [...seen], toasts: await toasts(page), arrived, distToGoal, elapsedMs: Date.now() - t0, end, perf, frames });
       expect.soft(distToGoal, "guide ended at the destination").toBeLessThan(2);
       expect.soft(arrived, "arrival feedback (toast) shown to the user").toBe(true);
       expect.soft(seen.size, "HUD showed several instructions").toBeGreaterThan(1);
