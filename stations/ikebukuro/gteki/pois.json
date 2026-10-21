@@ -424,22 +424,14 @@
    "names": [
     {
      "lang": "ja",
-     "text": "36番出口（階段下・B1）"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 36 (stair foot, B1)"
-    }
-   ],
-   "aliases": [
-    {
-     "lang": "ja",
      "text": "36番出口"
     },
     {
      "lang": "en",
      "text": "Exit 36"
-    },
+    }
+   ],
+   "aliases": [
     {
      "lang": "ja",
      "text": "出口36"
@@ -2191,11 +2183,11 @@
    "names": [
     {
      "lang": "ja",
-     "text": "4番出口（階段下・B1）"
+     "text": "4番出口"
     },
     {
      "lang": "en",
-     "text": "Exit 4 (stair foot, B1)"
+     "text": "Exit 4"
     },
     {
      "lang": "ja",
@@ -2207,14 +2199,6 @@
     }
    ],
    "aliases": [
-    {
-     "lang": "ja",
-     "text": "4番出口"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 4"
-    },
     {
      "lang": "ja",
      "text": "出口4"
@@ -2258,22 +2242,14 @@
    "names": [
     {
      "lang": "ja",
-     "text": "13番出口（階段下・B1）"
-    },
-    {
-     "lang": "en",
-     "text": "Exit 13 (stair foot, B1)"
-    }
-   ],
-   "aliases": [
-    {
-     "lang": "ja",
      "text": "13番出口"
     },
     {
      "lang": "en",
      "text": "Exit 13"
-    },
+    }
+   ],
+   "aliases": [
     {
      "lang": "ja",
      "text": "出口13"
