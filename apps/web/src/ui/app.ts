@@ -552,10 +552,13 @@ export class App {
     if (mode === "guide" && ins) hud.append(el("div", "hud-instruction", ins.text));
     const row = el("div", "hud-row");
     if (mode === "guide") {
-      // The HUD is rebuilt on every instruction change: every control starts from the explorer's state.
-      let paused = this.explorer.guidePaused;
-      const pause = el("button", undefined, paused ? t.resume : t.pause);
-      pause.addEventListener("click", () => { paused = !paused; this.explorer.setGuidePaused(paused); pause.textContent = paused ? t.resume : t.pause; });
+      // Built from the explorer's state; instruction changes then go through updateGuideHud, so the controls stay put under the pointer.
+      const pause = el("button", "guide-pause", this.explorer.guidePaused ? t.resume : t.pause);
+      pause.addEventListener("click", () => {
+        const paused = !this.explorer.guidePaused;
+        this.explorer.setGuidePaused(paused);
+        pause.textContent = paused ? t.resume : t.pause;
+      });
       const speed = el("button", "ghost guide-speed");
       const showSpeed = (): void => {
         const tier = this.explorer.guideTier;
@@ -596,6 +599,19 @@ export class App {
     hud.append(row);
   }
 
+  /** Refresh the guide HUD's instruction and pause label in place (the buttons must not be replaced mid-click); full rebuild if it isn't a guide HUD. */
+  private updateGuideHud(): void {
+    const hud = this.ui.hud;
+    const pause = hud.querySelector<HTMLButtonElement>("button.guide-pause");
+    if (this.explorer.currentMode !== "guide" || !pause) { this.renderHud(); return; }
+    const ins = this.s.instructions[this.s.activeInstruction];
+    const cur = hud.querySelector(".hud-instruction");
+    if (!ins) cur?.remove();
+    else if (cur) cur.textContent = ins.text;
+    else hud.prepend(el("div", "hud-instruction", ins.text));
+    pause.textContent = this.explorer.guidePaused ? this.t.resume : this.t.pause;
+  }
+
   /** Guide along the route, stopping where each wait for an opening happens. */
   private startGuide(): void {
     const stops = guideStops(this.s.polyline, this.s.instructions);
@@ -609,7 +625,7 @@ export class App {
     const wait = this.guideWaits[index];
     if (wait === undefined) return;
     this.s.activeInstruction = wait;
-    this.renderHud();
+    this.updateGuideHud();
     this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === wait));
     this.toast(this.s.instructions[wait]!.text, 4000);
   }
@@ -621,7 +637,7 @@ export class App {
     const next = p.done ? this.s.instructions.length - 1 : idx;
     if (next >= 0 && next !== this.s.activeInstruction) {
       this.s.activeInstruction = next;
-      this.renderHud();
+      this.updateGuideHud();
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === next));
       if (p.done) {
         // A route ending on a stair/escalator/ramp connector has not reached the destination: say so.
