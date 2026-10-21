@@ -53,7 +53,7 @@ To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downlo
   | Reuse licence (再利用授權) | PDL 1.0 as published. The end of the publication period is **not** asserted to end the licence. Commercial reuse of the derived Web 3D data after that date is **unconfirmed**; an inquiry to MLIT ほこナビDP窓口 is pending. | Source `license` / `rights` (`REUSABLE_WITH_CONDITIONS`), this record |
   | Navigation freshness (導航資料時效) | Dataset 2026-09-17; link maint_date 2025-09-19. | Source `datasetDate`. The router's `staleAfterDays` flags stale routes. `validUntil` stays `null`, so the publication period never marks routes stale. |
 
-  Sources, SHA-256 hashes, licence and acquisition evidence are kept. Development and acceptance continue. **Any public release relying on rights that are not yet confirmed stays HOLD.**
+  Sources, SHA-256 hashes, licence and acquisition evidence are kept. Development and acceptance continue. **Any public release relying on rights that are not yet confirmed stays HOLD** (Owner policy, 2026-10-20). For E27, the Owner overrode this at the #16 merge ([#16](https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757)); reuse after 2027-03-12 is still open (`gap:reuse-after-publication`).
 - **Street context: PLATEAU 2025 新宿区 (CC BY 4.0), stage 2.** Buildings (bldg) and roads (tran) of meshes 53394525/26/35/36 are converted to a render-only street around the exits (`sources/surface-manifest.json` with sha256; `import:surface --check` reproduces `data/surface.json`). It is cited as source `plateau-13104-shinjuku-ku-2025` (`REUSABLE_WITH_CONDITIONS`, `modified: true`) and credited in the Coverage dialog (and the lane app footer). It never feeds routing.
 - **Evaluated and not used:**
   - PLATEAU ubld 53394536 does not overlap E27.
@@ -133,9 +133,9 @@ Implemented and observed in a real browser on desktop, plus a 375×812 phone vie
 
 Still needed for L2 (not claimed): an independent visual/interaction review (Lane F), a recorded landmark→destination walkthrough video, a physical phone test, avatar and NPC fidelity, lighting polish on the upper concourse levels, and performance numbers from a real device.
 
-## G4 — delivery: **HOLD**
+## G4 — delivery: **GAP** (release published by Owner override at [#16](https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757); QA and rights items open)
 
-Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --check`, which reproduces byte-identical files from hashed inputs (provenance uses the pinned `acquiredAt` in `sources/manifest.json`, not the local download time). Three fresh read-only Codex reviews ran: 15 findings, then 6 on the fixes, then 2 partials on those. All are fixed; the PR lists each one. Still open: an exact-SHA QA pass by Lane F, the provider's answer on reuse after the publication period (release HOLD until then), and Owner merge approval.
+Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --check`, which reproduces byte-identical files from hashed inputs (provenance uses the pinned `acquiredAt` in `sources/manifest.json`, not the local download time). Three fresh read-only Codex reviews ran: 15 findings, then 6 on the fixes, then 2 partials on those. All are fixed; the PR lists each one. Still open: an exact-SHA QA pass by Lane F. Release: published by Owner override at [#16](https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757); reuse after 2027-03-12 open.
 
 ## Coverage gaps (field work needed)
 
