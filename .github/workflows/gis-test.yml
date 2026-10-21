@@ -1,0 +1,48 @@
+name: GIS tools tests
+
+on:
+  pull_request:
+    paths:
+      - 'tools/gis/**'
+      - '.github/workflows/gis-test.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tools/gis/**'
+      - '.github/workflows/gis-test.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: gis-test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tools/gis
+    steps:
+      - uses: actions/checkout@v4
+
+      # pnpm version comes from tools/gis/package.json packageManager.
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: tools/gis/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: pnpm
+          cache-dependency-path: tools/gis/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+
+      # Unit tests only: real.test.ts needs the external multi-GB store and is excluded by vitest.config.ts.
+      - run: pnpm test
