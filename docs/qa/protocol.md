@@ -47,13 +47,34 @@ Outputs go to `tests/e2e/artifacts/`, which is git-ignored:
 | `05-performance` | Hooks + held `W` | Load, overview, guide and walk frame times. Draw calls per frame. Heap. Transfer size. The actual WebGL renderer string. | none | Everything. No FPS threshold is asserted (acceptance forbids ungrounded thresholds). |
 | `06-repros` | Hooks + real drags + fixed keys | Minimal reproductions of reported defects, independent of the autopilot | The defect's own condition | Stop positions, 3rd/1st-person frames |
 | `07-lane-apps` | Lane hooks | Lane client frames for side-by-side visual comparison | none | Frames, stats |
-| `08-step-probe` | Real drags + `W`, opt-in via `GTEKI_PROBE=<station>:<from>><to>` | Re-walks each routed step alone from its from-node along the exact edge geometry, with no nudges. Separates autopilot steering from scene geometry before a free-walk block is filed. | Steps ending > 1 m short | Per-step end position, screenshots of short steps |
+| `08-step-probe` | Real drags + `W`, opt-in via `GTEKI_PROBE=<station>:<from>><to>` (several, comma-separated, give one test and one `<station>-step-probe-<from>-<to>.json` each) | Re-walks each routed step alone from its from-node along the exact edge geometry, with no nudges. Separates autopilot steering from scene geometry before a free-walk block is filed. | Steps ending > 1 m short | Per-step end position, screenshots of short steps |
 | `09-label-fade` | Real drags + `simulate()`, 8 poses per walking route | POI label fade evidence for human review. Per pose: live frame (a), same frame with labels hidden (b), and (b) annotated with a box per visible label, red = faded by occlusion, amber = a selected route endpoint faded only for being on another floor (not occlusion evidence), green = shown, + at the CSS2D anchor (the rect's centre) (c). A red label with no drawn geometry in its sight line in (b) is the defect (e.g. a hidden camera-only cap). | Soft only: at least half the poses show a visible label | Per-pose label list (text, rect, anchor, occluded, selected, opacity), `__gteki.labels()` counts, avatar, camera, total faded / off-floor / shown |
 | `10-look-compare` | Dev-only look harness (`apps/web/qa/look.html`), no interaction | Tracks #94: the game's baseline look vs Lane E's Blender renders at the same camera (vertical_demo/`hero`, concourse_demo/`gates_closed`), 1600×900 at DPR 1. Tiers: desktop (`quality=high&tier=full`, desktop project only), phone (`quality=low&tier=full`) and phone-kit (`quality=low&tier=mobile`); the phone tiers also run in the phone projects. Per case: screenshot, side-by-side (reference left, game right) and RMSE against the reference JPG in `docs/assets/img`. RMSE is relative evidence from a desktop GPU, never a gate, and does not replace human visual review. `run-candidate.sh` starts a Vite dev server on port+1 for it (`GTEKI_LOOK_URL`; `pnpm build` does not emit `look.html`); the spec skips without it. | Soft only: harness reached ready, screenshot and reference exist for every case | RMSE, draw calls and median frame ms per case (`look-compare.json`), screenshots, side-by-sides |
 
 ### CI smoke
 
 The `e2e-smoke` workflow runs `01-smoke` and `03-guided-walkthrough` on `desktop-chromium` for every PR, on a GitHub runner with software WebGL (SwiftShader, selected by `CI=1` in the config, at 960×600 on the explorer's low-quality path). There, `03` runs flow-only (`GTEKI_GUIDE_FLOW_ONLY=1`): it checks that the guide starts, the fast tier is selected and the HUD instructions advance, then stops. At about 7 fps, with the explorer's 0.05 s frame cap, no walk can arrive within the job, so arrival and distance are judged only on GPU runs. It starts as a non-required check and becomes required after about a week of stable runs ([#76](https://github.com/nurockplayer/gteki/issues/76)). It catches regressions in scene loading and the guide flow. Visual and performance verdicts still come only from GPU runs on the dev Mac: a SwiftShader run is never evidence for them.
+
+### Shinjuku B-checks
+
+`tools/qa/shinjuku-b-checks.sh <workdir> <base-ref> [merge-ref ...]` is the one-command acceptance run for a Shinjuku candidate ([#61](https://github.com/nurockplayer/gteki/pull/61)): B1–B8, C3 ([#70](https://github.com/nurockplayer/gteki/issues/70)) and phone speed. It wraps `run-candidate.sh` (exact candidate, manifest) and runs only the Shinjuku-relevant tests on all three projects, with one worker and traces off: `01` (opens), `02` (scenario goldens), `03` (both guided walks), `04` (the wall probe, not the long free walks), `05` (performance) and `08` with the S1 and S2 probes (`GTEKI_PROBE`, desktop only). It then runs `tools/qa/summarize-b-checks.mjs`, which writes `tests/e2e/artifacts/b-checks.md` and `b-checks.json` (one row per metric, so later runs can be diffed). The summarizer also runs on its own: `node tools/qa/summarize-b-checks.mjs <evidence-dir> [--candidate <dir>]`.
+
+Run it on an idle host. `05` reports the phone walk fps, and a replay or another heavy job lowers it (the `b511263` iPhone 15 emulation read 40.2 fps under load).
+
+| Item | Source | Rule | Verdict |
+|---|---|---|---|
+| B2 black voids | `03` per-frame near-black | max over both walks ≤ 0.10 on every project. Clipped white is listed, not judged | PASS / FAIL |
+| B3 north switchback | `08` S1 probe | every step ends ≤ 1 m from its end and \|dz\| ≤ 0.6 m (the asserts in `08`) | PASS / FAIL |
+| B7 second walkable surface | `08` S2 probe | same thresholds | PASS / FAIL |
+| B4 overview draw calls | `05` overview max | no regression past `b511263` (279 desktop / 127 phone); above main (913 / 314) is FAIL | PASS / GAP / FAIL |
+| B5 exit display names | `pois.json` of the candidate | no two exit POIs share a display name. Without `--candidate` only the `09` labels are available and the result is GAP, never PASS | PASS / GAP / FAIL |
+| B6 step-free Exit 1 → platform | `02` summary | the step-free scenario is `ok:false`, reason `no_path` | PASS / FAIL |
+| B8 B3 containment | `04` wall probe | `04`'s own rule: run < 95 m, inside the scene bounds, and < 15 m from a walkable edge or inside a mapped unrestricted space | PASS / GAP / FAIL |
+| Phone speed | `05` walk fps | ≥ 55 fps on every project, valid GPU renderer. Below that is GAP: rerun on an idle host before judging | PASS / GAP |
+
+A row whose evidence is missing says `n/a (not run)`; the script never prints PASS without the data.
+
+**Still needs human eyes:** B1 (camera above the slabs: the `exit1-platform` frames must be interior views under lit ceilings) and C3 (the camera crowding the avatar on the exit:2 street stair: the last frames of `platform-exit2`, around `-10` on desktop). The summarizer lists those frame files and the `sceneInfo` camera-blocker count but marks both `needs eyes`. A passing table is evidence for the reviewer, not acceptance.
 
 ### Real vs simulated, stated per run
 
