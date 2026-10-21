@@ -503,14 +503,14 @@ export function continuousBoundaries(walker: WalkerAudit, layout: Layout, plan: 
     return a + (i ? -signed : signed);
   }, 0), 0);
   const capsule = (w: Band): Polygon => {
-    const angle = Math.atan2(w.b.y - w.a.y, w.b.x - w.a.x), r: number[][] = [];
+    const angle = Math.atan2(w.b.y - w.a.y, w.b.x - w.a.x), r: [number, number][] = [];
     for (const [c, offset] of [[w.b, -Math.PI / 2], [w.a, Math.PI / 2]] as const)
       for (let i = 0; i <= 32; i++) {
         const t = angle + offset + i * Math.PI / 32;
         // Snap only blockers, with an inward guard larger than rounding error.
         // Near-coincident CAD walls otherwise destabilize polygon-clipping's sweep.
-        r.push([c.x + (R - EPS - 1e-7) * Math.cos(t), c.y + (R - EPS - 1e-7) * Math.sin(t)]
-          .map(v => Math.round(v * 1e7) / 1e7));
+        const snap = (v: number) => Math.round(v * 1e7) / 1e7;
+        r.push([snap(c.x + (R - EPS - 1e-7) * Math.cos(t)), snap(c.y + (R - EPS - 1e-7) * Math.sin(t))]);
       }
     r.push(r[0]!);
     return [r];
