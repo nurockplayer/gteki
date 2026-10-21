@@ -82,6 +82,7 @@ Every rights verdict is about reuse terms only. It never makes data routable or 
 - Open test item: on merged main, the first `test:real` run once failed 2/6 (log not captured), and three reruns passed 6/6. The rights-research runs have passed 10/10. Capture the log if it recurs.
 - Cosmetic: `rights/README.md` cells show raw JSON for the exclusion objects; a readable rendering is a follow-up.
 - Use the operator-permission/field-survey template: [gaps/operator-survey-questions.md](gaps/operator-survey-questions.md).
+- M0-01 coverage gap list (Issue #1): [research/m0-01-coverage-gaps.md](research/m0-01-coverage-gaps.md) — per-station source/rights/coverage matrix, go/no-go for candidate geometry, ranked gaps and source-register corrections.
 
 ## Gap research (2026-10-21, stacked on PR #18)
 
