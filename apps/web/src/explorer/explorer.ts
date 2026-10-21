@@ -16,6 +16,7 @@ import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
+import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, followDistance, followPose } from "./followCamera.ts";
@@ -45,7 +46,6 @@ const EYE = WALKER_BODY.eyeM;
 const RADIUS = WALKER_BODY.radiusM;
 const WALK = 1.45;
 const RUN = 3.4;
-const GUIDE_SPEED = 1.6;
 /** POI labels float this high above their entrance. */
 const LABEL_LIFT = 2.4;
 
@@ -188,9 +188,9 @@ export class Explorer {
   private camDistance: number = FOLLOW.defaultDistance;
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
-  private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean } | null = null;
-  /** The user's guide speed multiplier; kept across instruction changes and later guides. */
-  private guideMultiplier = 1;
+  private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
+  /** The user's guide speed tier; kept across instruction changes and later guides. */
+  private tier: GuideTierId = DEFAULT_GUIDE_TIER;
   private poiLabels: PoiLabel[] = [];
   private readonly labelSweep = new OcclusionSweep();
   private occluders: Occluder[] = [];
@@ -845,13 +845,14 @@ export class Explorer {
   /**
    * Walk the polyline. `stopAtPoints` are polyline point indices where the guide must stop and pause (waits
    * for opening hours): it never moves past one before being resumed, including several at one spot.
+   * `paceSpans` cap the speed where connectors or short instructions need it (see guidePace.ts).
    */
-  startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = []): void {
+  startGuide(polyline: PolylinePoint[], fromS = 0, stopAtPoints: readonly number[] = [], paceSpans: readonly PaceSpan[] = []): void {
     const pts = polyline.map((p) => R(p.x, p.y, p.z));
     if (pts.length < 2) return;
     const cum = cumulativeLengths(pts);
     const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
-    this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false };
+    this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
     if (first.tx || first.tz) this.yaw = Math.atan2(-first.tx, -first.tz);
@@ -868,13 +869,13 @@ export class Explorer {
     return this.guide?.paused ?? false;
   }
 
-  setGuideSpeed(multiplier: number): void {
-    this.guideMultiplier = multiplier;
+  setGuideTier(id: GuideTierId): void {
+    this.tier = id;
   }
 
-  /** The user's guide speed multiplier, so a re-rendered HUD shows the real state. */
-  get guideSpeed(): number {
-    return this.guideMultiplier;
+  /** The user's guide speed tier, so a re-rendered HUD shows the real state. */
+  get guideTier(): GuideTierId {
+    return this.tier;
   }
 
   stopGuide(): void {
@@ -999,7 +1000,7 @@ export class Explorer {
     }
     const total = g.cum[g.cum.length - 1]!;
     // Arrive at a stop, never beyond it, and wait there until resumed.
-    const stopped = g.paused ? null : advanceGuide(g, GUIDE_SPEED * this.guideMultiplier * dt, total);
+    const stopped = g.paused ? null : advanceGuide(g, pacedDistance(g.s, dt, this.tier, g.spans), total);
     if (stopped !== null) g.paused = g.holding = true;
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
