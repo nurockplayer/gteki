@@ -178,7 +178,7 @@ describe("fare and access integrity at 0.25 m with a swept 0.3 m body", () => {
     for (const time of [0, 25, 55, 90]) built.update(1 / 30, time);
     expect(built.propWalls.length).toBe(count);
   });
-  it("guides every routable POI pair with the actual prop/fence collision world", () => {
+  it.each([20, 30])("guides every routable POI pair at ×4+RUN/%s fps with the actual prop/fence world", (fps) => {
     const router = createRouter(bundle),
       nodes = new Map(bundle.nodes.map((n) => [n.id, n])),
       stuck: string[] = [];
@@ -215,11 +215,11 @@ describe("fare and access integrity at 0.25 m with a swept 0.3 m body", () => {
           for (
             let t = 0;
             t < route.totalLengthM / 0.5 / 4 + 60 && !arrived;
-            t += 1 / 30
+            t += 1 / fps
           )
             player.update(
-              1 / 30,
-              { forward: 0, strafe: 0, run: false },
+              1 / fps,
+              { forward: 0, strafe: 0, run: true },
               player.heading,
             );
           walked++;

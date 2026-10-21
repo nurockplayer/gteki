@@ -359,7 +359,7 @@ function labels(grid: Map<string, number[]>, layout: Layout, plan: Plan) {
   }
   return { out, cells };
 }
-function gateCrossing(
+export function gateCrossing(
   a: XYZ,
   b: XYZ,
   layout: Layout,

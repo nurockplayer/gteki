@@ -20,7 +20,7 @@ describe("access barrier sign truth", () => {
       expect(sign.sourceSpaceId, sign.fence.id).toBe(restricted?.id ?? null);
       expect([sign.ja, sign.en], sign.fence.id).toEqual(restricted
         ? ["立入制限区域", "Restricted area"] : ["立入不可", "No entry"]);
-      expect(protection.removedAccess.some(a => a.level === sign.fence.level && pointInRings(sign.removedSide, a.rings))).toBe(true);
+      expect(!!sign.fence.restrictedSpaceId || protection.removedAccess.some(a => a.level === sign.fence.level && pointInRings(sign.removedSide, a.rings))).toBe(true);
     }
   });
   it("indexed polygon membership preserves source edges, holes and boundary decisions", () => {

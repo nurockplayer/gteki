@@ -7,6 +7,7 @@ import type { StationBundle } from "@gteki/schema";
 import {
   pointInRings,
   centroid,
+  railingWalls,
   type GateLine,
   type Layout,
   type Plan,
@@ -18,6 +19,10 @@ export interface Fence extends WallSeg {
   id: string;
   reason: "fare" | "access";
   level: string;
+  signSpan?: { a: XY; b: XY };
+  restrictedSpaceId?: string;
+  restrictedNodeId?: string;
+  closedSide?: XY;
 }
 export interface FareProtection {
   fences: Fence[];
@@ -117,7 +122,7 @@ export function protectFareAndAccess(
         zb: za + ((zb - za) * lengths[i + 1]!) / (lengths.at(-1) || 1),
       }));
     });
-  const routeClear = (p: XY, z: number) =>
+  const routeClear = (p: XY, z: number, radius = .44) =>
     paths.some((e) => {
       if (p.x < e.x0 || p.x > e.x1 || p.y < e.y0 || p.y > e.y1 ||
           z < Math.min(e.za, e.zb) - 0.95 || z > Math.max(e.za, e.zb) + 1.75)
@@ -135,7 +140,7 @@ export function protectFareAndAccess(
       const feet = e.za + (e.zb - e.za) * t;
       return (
         (e.mode === "elevator" || (feet >= z - 1.75 && feet <= z + 0.95)) &&
-        distance(p, e.a, e.b) < 0.44
+        distance(p, e.a, e.b) < radius
       );
     });
   for (const lv of layout.levels) {
@@ -225,7 +230,7 @@ export function protectFareAndAccess(
             let start: XY | null = null;
             const at = (t: number) => ({ x: a.x + dx * t, y: a.y + dy * t });
             const flush = (end: XY) => {
-              if (start && Math.hypot(end.x - start.x, end.y - start.y) > 0.02)
+              if (start && Math.hypot(end.x - start.x, end.y - start.y) > 0.02) {
                 fences.push({
                   id: `${reason}:${lv.label}:${fences.length}`,
                   reason,
@@ -237,6 +242,7 @@ export function protectFareAndAccess(
                   kind: "wall",
                   side: 1,
                 });
+              }
               start = null;
             };
             // Preserve the original 8 cm probe positions, but visit only edge
@@ -304,7 +310,110 @@ export function protectFareAndAccess(
           Math.abs(g.center.z - h.center.z) < 0.02,
       ) === i,
   );
+  // A boundary-alignment return is safe only when the whole published route stays clear.
+  const guards = restrictedEntranceGuards(layout, plan, bundle);
+  for (let i = 0; i < guards.length; i += 3) {
+    const group = guards.slice(i, i + 3);
+    const clear = group.every(f => {
+      const count = Math.max(1, Math.ceil(Math.hypot(f.b.x - f.a.x, f.b.y - f.a.y) / .002));
+      for (let j = 0; j <= count; j++) if (routeClear({ x: f.a.x + (f.b.x - f.a.x) * j / count, y: f.a.y + (f.b.y - f.a.y) * j / count }, f.zMin + .05, .3001)) return false;
+      return true;
+    });
+    if (clear) fences.push(...group);
+  }
+  closeBarrierEnds(layout, fences, gates, (a, b, z) => {
+    const steps = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / .03));
+    for (let i = 0; i <= steps; i++) if (routeClear({ x: a.x + (b.x - a.x) * i / steps, y: a.y + (b.y - a.y) * i / steps }, z, .34)) return false;
+    return true;
+  });
   return { fences, gates, removedAccess };
+}
+
+/** Source-restricted entrances whose verified endpoint lies on a CAD boundary.
+ * A return 0.315 m inside the boundary leaves the 0.3 m body at most a 1.5 cm
+ * alignment sliver inside it, while retaining the published endpoint's clearance.
+ */
+export function restrictedEntranceGuards(layout: Layout, plan: Plan, bundle: StationBundle): Fence[] {
+  const out: Fence[] = [];
+  for (const lv of plan.levels) for (const space of lv.spaces.filter(s => s.restricted)) {
+    const points = space.rings[0]!, x0 = Math.min(...points.map(p => p.x)), x1 = Math.max(...points.map(p => p.x));
+    const y0 = Math.min(...points.map(p => p.y)), y1 = Math.max(...points.map(p => p.y));
+    const nodes = bundle.nodes.filter(n => n.floorId === lv.floorId && Math.abs((layout.nodeZ.get(n.id) ?? Infinity) - lv.renderElevationM) < .02 &&
+      n.position.x >= x0 && n.position.x <= x1 && n.position.y >= y0 && n.position.y <= y1 && pointInRings(n.position, space.rings));
+    for (const node of nodes) {
+      const near = space.rings.flatMap(r => r.slice(1).map((b, i) => {
+        const a = r[i]!, dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy);
+        const t = Math.max(0, Math.min(length, ((node.position.x - a.x) * dx + (node.position.y - a.y) * dy) / length));
+        const q = { x: a.x + dx * t / length, y: a.y + dy * t / length };
+        return { a, b, q, length, t, distance: Math.hypot(q.x - node.position.x, q.y - node.position.y) };
+      })).filter(e => e.length > 1e-8).sort((a, b) => a.distance - b.distance)[0];
+      if (!near || near.distance > .02 || near.distance < 1e-8) continue;
+      const n = { x: (node.position.x - near.q.x) / near.distance, y: (node.position.y - near.q.y) / near.distance };
+      const u = { x: (near.b.x - near.a.x) / near.length, y: (near.b.y - near.a.y) / near.length };
+      const at = (t: number, depth: number): XY => ({ x: near.a.x + u.x * t + n.x * depth, y: near.a.y + u.y * t + n.y * depth });
+      const a = at(Math.max(0, near.t - .85), 0), b = at(Math.min(near.length, near.t + .85), 0);
+      const c = { x: a.x + n.x * .315, y: a.y + n.y * .315 }, d = { x: b.x + n.x * .315, y: b.y + n.y * .315 };
+      for (const [i, [from, to]] of [[a, c], [c, d], [d, b]].entries()) out.push({
+        id: `restricted:${space.id}:${node.id}:${i}`, restrictedSpaceId: space.id, restrictedNodeId: node.id,
+        closedSide: i === 1 ? { x: (c.x + d.x) / 2 + n.x * .1, y: (c.y + d.y) / 2 + n.y * .1 } : undefined, reason: "access", level: lv.label,
+        a: from!, b: to!, zMin: lv.renderElevationM - .05, zMax: lv.renderElevationM + 1.15, side: 1, kind: "wall",
+      });
+    }
+  }
+  return out;
+}
+
+/** Close actual centre lines, rather than relying on overlapping radius capsules.
+ * Keep every verified edge clear; these are procedural joins, not additional passages.
+ */
+function closeBarrierEnds(layout: Layout, fences: Fence[], gates: GateLine[], clear: (a: XY, b: XY, z: number) => boolean) {
+  for (const f of fences) if (f.reason === "access") f.signSpan = { a: { ...f.a }, b: { ...f.b } };
+  const machines = gates.flatMap(g => gateMachines(g).map(c => ({
+    a: { x: c.x - g.dir.x * .75, y: c.y - g.dir.y * .75 },
+    b: { x: c.x + g.dir.x * .75, y: c.y + g.dir.y * .75 },
+    zMin: g.center.z - .1, zMax: g.center.z + 1, bodyMin: g.center.z - .5,
+    kind: "wall" as const, side: 1 as const,
+  })));
+  const walls = [...layout.levels.flatMap(l => l.walls), ...layout.runWalls, ...railingWalls(layout), ...machines];
+  const nearest = (p: XY, w: WallSeg) => {
+    const dx = w.b.x - w.a.x, dy = w.b.y - w.a.y;
+    const t = Math.max(0, Math.min(1, ((p.x - w.a.x) * dx + (p.y - w.a.y) * dy) / (dx * dx + dy * dy || 1)));
+    return { x: w.a.x + dx * t, y: w.a.y + dy * t };
+  };
+  const blocking = (w: WallSeg, z: number) => z + 1.7 >= w.zMin && z + .3 <= w.zMax &&
+    (w.bodyMin === undefined || z >= w.bodyMin) && (w.bodyMax === undefined || z <= w.bodyMax);
+  const join = (p: XY, z: number, level: string, reason: Fence["reason"], self?: Fence, end?: "a" | "b", exclude?: WallSeg) => {
+    const other = self && end ? self[end === "a" ? "b" : "a"] : undefined;
+    const outward = (q: XY) => !other || distance(q, p, other) > 1e-5 ||
+      (q.x - p.x) * (p.x - other.x) + (q.y - p.y) * (p.y - other.y) >= -1e-8;
+    const optionsAt = (radius: number) => [...walls, ...fences].filter(w => w !== self && w !== exclude && blocking(w, z) &&
+      p.x >= Math.min(w.a.x, w.b.x) - radius && p.x <= Math.max(w.a.x, w.b.x) + radius &&
+      p.y >= Math.min(w.a.y, w.b.y) - radius && p.y <= Math.max(w.a.y, w.b.y) + radius)
+      .flatMap(w => [nearest(p, w), w.a, w.b].filter(outward).map(q => ({ w, q, d: Math.hypot(p.x - q.x, p.y - q.y) })))
+      .filter(v => v.d <= radius).sort((a, b) => a.d - b.d);
+    const options = optionsAt(2);
+    if ((options[0]?.d ?? Infinity) <= .02) return;
+    const option = options.find(v => clear(p, v.q, z));
+    if (!option) return; // The independent endpoint test reports any unresolved join.
+    const { q } = option;
+    if (self && end) {
+      const other = self[end === "a" ? "b" : "a"], dx = p.x - other.x, dy = p.y - other.y, len = Math.hypot(dx, dy);
+      const extension = ((q.x - p.x) * dx + (q.y - p.y) * dy) / len;
+      const along = { x: p.x + dx / len * (extension + .015), y: p.y + dy / len * (extension + .015) };
+      if (extension >= 0 && distance(along, option.w.a, option.w.b) <= .015 && clear(p, along, z)) {
+        self[end] = along; return;
+      }
+    }
+    fences.push({ id: `join:${level}:${fences.length}`, reason, level, a: { ...p }, b: { ...q },
+      zMin: z - .05, zMax: z + 1.15, side: 1, kind: "wall" });
+  };
+  for (const f of [...fences]) for (const end of ["a", "b"] as const)
+    join(f[end], f.zMin + .05, f.level, f.reason, f, end);
+  let i = 0;
+  for (const g of gates) for (const c of gateMachines(g)) {
+    const level = layout.levels.find(l => Math.abs(l.z - g.center.z) < .02)!.label;
+    join(c, g.center.z, level, "fare", undefined, undefined, machines[i++]!);
+  }
 }
 
 /** End machines straddle the verified aisle. Other source-to-source boundaries are fenced. */
@@ -323,13 +432,14 @@ export const ACCESS_WORDING = {
 } as const;
 export function accessSigns(protection: FareProtection, plan: Plan) {
   const used = new Set<string>();
-  return protection.removedAccess.flatMap(area => {
+  const signFences = protection.fences.filter(f => !f.id.startsWith("join:")).map(f => ({ ...f, ...(f.signSpan ?? {}) }));
+  const signs = protection.removedAccess.flatMap(area => {
     const center = centroid(area.rings[0]!), pts = area.rings[0]!;
     const x0 = Math.min(...pts.map(p => p.x)) - .15, x1 = Math.max(...pts.map(p => p.x)) + .15;
     const y0 = Math.min(...pts.map(p => p.y)) - .15, y1 = Math.max(...pts.map(p => p.y)) + .15;
-    const fence = protection.fences.filter(f => {
+    const fence = signFences.filter(f => {
       const x = (f.a.x + f.b.x) / 2, y = (f.a.y + f.b.y) / 2;
-      return f.reason === "access" && f.level === area.level && Math.hypot(f.b.x - f.a.x, f.b.y - f.a.y) >= .7 && x >= x0 && x <= x1 && y >= y0 && y <= y1;
+      return f.reason === "access" && !f.restrictedSpaceId && f.level === area.level && Math.hypot(f.b.x - f.a.x, f.b.y - f.a.y) >= .7 && x >= x0 && x <= x1 && y >= y0 && y <= y1;
     }).sort((a, b) => {
       const distance = (f: Fence) => Math.hypot((f.a.x + f.b.x) / 2 - center.x, (f.a.y + f.b.y) / 2 - center.y);
       return distance(a) - distance(b);
@@ -349,4 +459,13 @@ export function accessSigns(protection: FareProtection, plan: Plan) {
     return [{ fence, z: area.z, removedSide, classification, sourceSpaceId: source?.id ?? null,
       ...ACCESS_WORDING[classification] }];
   });
+  const named = new Set<string>();
+  for (const fence of signFences.filter(f => f.closedSide).sort((a, b) => Math.hypot(b.b.x - b.a.x, b.b.y - b.a.y) - Math.hypot(a.b.x - a.a.x, a.b.y - a.a.y))) if (fence.closedSide && fence.restrictedSpaceId && !named.has(fence.restrictedSpaceId)) {
+    named.add(fence.restrictedSpaceId);
+    signs.push({
+    fence, z: fence.zMin + .05, removedSide: fence.closedSide, classification: "restricted",
+    sourceSpaceId: fence.restrictedSpaceId, ...ACCESS_WORDING.restricted,
+    });
+  }
+  return signs;
 }
