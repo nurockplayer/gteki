@@ -70,13 +70,9 @@ describe("shared-explorer scene hook: camera caps", () => {
     expect(open).toEqual([]);
   }, 60_000);
 
-  it("caps the camera under the drawn roof of every roofed exit link (E27 roof = 2) near street level", () => {
-    // MLIT pedestrian network spec, 屋根の有無: 1 = none, 2 = roofed. Above such a link the street probe and
-    // follow camera must meet the roof that is drawn there, not read the space under it as open sky.
+  /** Up-rays from eye height over every roofed (E27 roof = 2) link sample near street level. */
+  function roofedLinkSamples(visible: THREE.Object3D[], blockers: THREE.Object3D[]) {
     const ray = new THREE.Raycaster();
-    const blockers = [...scene.cameraBlockers!, ...scene.walkable];
-    const visible: THREE.Object3D[] = [];
-    scene.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh && m.visible && !Array.isArray(m.material) && m.material.visible !== false) visible.push(m); });
     const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
     const unroofed: string[] = [], uncapped: string[] = [];
     let samples = 0;
@@ -91,14 +87,35 @@ describe("shared-explorer scene hook: camera caps", () => {
         ray.set(eye, new THREE.Vector3(0, 1, 0));
         ray.far = 60;
         const roof = ray.intersectObjects(visible, false)[0], cap = ray.intersectObjects(blockers, false)[0];
-        if (!roof && !cap) unroofed.push(`${e.id}@${t} z${z.toFixed(2)}`);
+        // A cap alone is not a roof: something must be drawn there, and the camera must meet a cap no later.
+        if (!roof) unroofed.push(`${e.id}@${t} z${z.toFixed(2)}${cap ? ` cap:${cap.object.name}@${cap.point.y.toFixed(2)}` : ""}`);
         // Fixtures (lights, signs) hang up to ~0.1 m under the slab that the cap follows.
-        else if (roof && (!cap || cap.distance > roof.distance + 0.15)) uncapped.push(`${e.id}@${t} roof:${roof.object.name}@${roof.point.y.toFixed(2)}`);
+        else if (!cap || cap.distance > roof.distance + 0.15) uncapped.push(`${e.id}@${t} roof:${roof.object.name}@${roof.point.y.toFixed(2)}`);
       }
     }
+    return { samples, unroofed, uncapped };
+  }
+  const drawn = () => {
+    const visible: THREE.Object3D[] = [];
+    scene.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh && m.visible && !Array.isArray(m.material) && m.material.visible !== false) visible.push(m); });
+    return visible;
+  };
+
+  it("caps the camera under the drawn roof of every roofed exit link (E27 roof = 2) near street level", () => {
+    // MLIT pedestrian network spec, 屋根の有無: 1 = none, 2 = roofed. Above such a link the street probe and
+    // follow camera must meet the roof that is drawn there, not read the space under it as open sky.
+    const { samples, unroofed, uncapped } = roofedLinkSamples(drawn(), [...scene.cameraBlockers!, ...scene.walkable]);
     expect(samples).toBeGreaterThan(50);
     expect(unroofed).toEqual([]);
     expect(uncapped).toEqual([]);
+  }, 60_000);
+
+  it("negative controls: a cap without its drawn glazing, or glazing without its cap, fails the roofed-link check", () => {
+    const visible = drawn(), blockers = [...scene.cameraBlockers!, ...scene.walkable];
+    // Drop the drawn street glazing (canopies + roofed-run glazing) but keep every cap.
+    expect(roofedLinkSamples(visible.filter((o) => o.name !== "surface-glass"), blockers).unroofed.length).toBeGreaterThan(0);
+    // Keep the glazing but drop the merged ceiling/canopy cap.
+    expect(roofedLinkSamples(visible, blockers.filter((o) => o.name !== "ceiling collider (invisible)")).uncapped.length).toBeGreaterThan(0);
   }, 60_000);
 
   it("never blocks the walker's horizontal rays along any graph edge", () => {
