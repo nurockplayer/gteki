@@ -569,15 +569,17 @@ function beyondMaterial(THREE: ThreeNS) {
         seam *= 1.0 - smoothstep(0.1, 0.4, max(wC.x, wC.y));
         vec3 ceilC = mix(vec3(0.13, 0.126, 0.118), vec3(0.07, 0.068, 0.064), seam * exp(-tC / 5.0));
         float lamp = gtPulse(qL.x, lampX, wL.x) * gtPulse(qL.y, lampY, wL.y);
-        // Averaged (unresolved) fixtures stay under the bloom threshold; only resolved cores exceed it.
+        // Averaged (unresolved) fixtures stay under the bloom threshold (luminance 0.92); the extra core
+        // emission is gated by resolution, so only fixtures resolved on both axes exceed it.
         float res = 1.0 - smoothstep(0.5, 1.0, max(wL.x / (2.0 * lampX), wL.y / (2.0 * lampY)));
-        ceilC = mix(ceilC, vec3(1.0, 0.97, 0.91) * mix(1.4, 1.7, res), lamp);
+        const vec3 lampC = vec3(1.0, 0.97, 0.91);
+        ceilC = mix(ceilC, lampC * 0.95, lamp) + lampC * (0.75 * res * lamp);
         vec3 near = down ? floorC : ceilC;
         vec3 col = mix(farc * vig, near, vis);
         vec4 diffuseColor = vec4(col * diffuse, opacity);`,
       );
   };
-  m.customProgramCacheKey = () => "gteki-ikebukuro-beyond-6";
+  m.customProgramCacheKey = () => "gteki-ikebukuro-beyond-7";
   return m;
 }
 
