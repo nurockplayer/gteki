@@ -161,12 +161,15 @@ export const buildScene: BuildScene = (ctx) => {
       cameraBlockers.push(m);
     }
   }
-  // Hanging wayfinding boxes and fence sign panels sit at head-to-ceiling height: camera-only blockers.
-  // So do the drawn street paving and kerbs: with symbolic heights a shallow landing under the street
-  // (exit 2, 1.68 m down) puts the eye just under the pavement, and nothing may read through it as sky.
+  // Hanging wayfinding boxes and fence sign panels are signage (role "sign"): the explorer dithers them
+  // where they come between the camera and the walker instead of stopping the camera in front of a dark
+  // board (A/B/C explorer walk: blockers framed 0.16–0.25 near-black close-ups). The drawn street paving
+  // and kerbs are camera-only blockers: nothing may look through the pavement from below.
   built.root.traverse((o) => {
     const m = o as THREE.Mesh;
-    if (m.isMesh && (m.name.startsWith("sign-faces:") || m.name === "sign-cases" || m.name === "Restricted area" || m.name === "No entry" || m.name === "surface-ground" || m.name === "surface-stone")) cameraBlockers.push(m);
+    if (!m.isMesh) return;
+    if (m.name.startsWith("sign-faces:") || m.name === "sign-cases" || m.name === "Restricted area" || m.name === "No entry") m.userData.gteki_role = "sign";
+    else if (m.name === "surface-ground" || m.name === "surface-stone") cameraBlockers.push(m);
   });
   // Underground station: it owns its lighting, as in the lane app. The explorer's default sun cast hard
   // pillar shadows across B1 floors through no opening at all. Same hemisphere and image-based light as

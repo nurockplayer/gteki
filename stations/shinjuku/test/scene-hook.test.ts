@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
-import type { StationScene } from "@gteki/scene-api";
+import { seeThroughMeshes, type StationScene } from "@gteki/scene-api";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import { buildScene } from "../gteki/scene.ts";
 
@@ -28,13 +28,22 @@ describe("shared-explorer scene hook: camera caps", () => {
     expect((caps[0] as THREE.Mesh).material).toMatchObject({ visible: false, side: THREE.DoubleSide });
   });
 
-  it("adds hanging signs and fence sign panels as camera-only blockers, never as colliders", () => {
-    const signs = (scene.cameraBlockers ?? []).filter((o) => !scene.colliders?.includes(o));
+  it("tags hanging signs and fence sign panels as see-through signage, never blockers or colliders", () => {
+    const signs = seeThroughMeshes(scene.root);
     const names = signs.map((o) => o.name);
     expect(names).toContain("sign-cases");
     expect(names.some((n) => n.startsWith("sign-faces:"))).toBe(true);
     expect(names).toContain("Restricted area");
-    for (const o of signs) expect(scene.walkable).not.toContain(o);
+    for (const o of signs) {
+      expect(scene.cameraBlockers).not.toContain(o);
+      expect(scene.colliders).not.toContain(o);
+      expect(scene.walkable).not.toContain(o);
+    }
+  });
+
+  it("makes the drawn street paving and kerbs camera-only blockers", () => {
+    const names = (scene.cameraBlockers ?? []).filter((o) => !scene.colliders?.includes(o)).map((o) => o.name).sort();
+    expect(names).toEqual(["surface-ground", "surface-stone"]);
   });
 
   it("caps the follow camera above underground nodes (except lift shafts and exit stairs open to the sky)", () => {
