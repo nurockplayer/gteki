@@ -19,6 +19,8 @@ export const STREET = {
   /** Also level within this of an exit's street-level node (m, horizontal / vertical): stairs end there. */
   topRadius: 2.5,
   topRise: 0.3,
+  /** On a stair, only the exit top itself (the last tread, at the node's height) counts (m). */
+  topTread: 0.08,
   /** On level floor, an exit top this far away (m, horizontal) still sets the street height. */
   topFloorRadius: 40,
   /** The plane sits this far under the walker's feet, so stair-top slabs and closures draw over it. */
@@ -57,7 +59,8 @@ export function footingLevel(role: string | null | undefined, normalY: number | 
  */
 export function atStreetTop(pos: THREE.Vector3, tops: readonly THREE.Vector3[], onLevelFloor = false): boolean {
   const r = onLevelFloor ? STREET.topFloorRadius : STREET.topRadius;
-  return tops.some((t) => (pos.x - t.x) ** 2 + (pos.z - t.z) ** 2 < r * r && Math.abs(pos.y - t.y) < STREET.topRise);
+  const rise = onLevelFloor ? STREET.topRise : STREET.topTread;
+  return tops.some((t) => (pos.x - t.x) ** 2 + (pos.z - t.z) ** 2 < r * r && Math.abs(pos.y - t.y) < rise);
 }
 
 /** The gteki role of a hit mesh: the nearest tag on it or an ancestor, else its own name. */
@@ -188,9 +191,9 @@ export class StreetBackdrop {
     this.sky.material.uniforms.uOpacity!.value = b;
     // The plane follows the walker's feet and shows only on level ground: on a stair (or at the lip of a
     // stairwell) it would cut across the flight below, so there the stair geometry stays visible.
-    // It fades rather than pops at the stair lip, and stays at the last level footing's height while fading.
     const up = outdoors && level;
-    this.groundBlend = THREE.MathUtils.damp(this.groundBlend, up ? 1 : 0, 8, dt);
+    // Fades in on arrival; clears at once when footing stops being level, so it never covers a stair going down.
+    this.groundBlend = up ? THREE.MathUtils.damp(this.groundBlend, 1, 8, dt) : 0;
     this.ground.visible = this.groundBlend > 0.01;
     // Follow the camera in whole tiles so the pavement pattern stays put in the world.
     const snap = (v: number) => Math.round(v / 1.2) * 1.2;

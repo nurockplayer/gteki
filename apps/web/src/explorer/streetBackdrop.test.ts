@@ -61,6 +61,8 @@ describe("street tops", () => {
   const tops = [new THREE.Vector3(10, 33.17, -4)];
   it("counts the exit's street-level node as level ground, not the flight below it", () => {
     expect(atStreetTop(new THREE.Vector3(10.5, 33.17, -3), tops)).toBe(true);
+    expect(atStreetTop(new THREE.Vector3(10.3, 32.93, -3.3), tops)).toBe(false); // last tread but one
+    expect(atStreetTop(new THREE.Vector3(10.3, 32.93, -3.3), tops, true)).toBe(true); // level floor there would count
     expect(atStreetTop(new THREE.Vector3(10, 32.5, -2.5), tops)).toBe(false);
     expect(atStreetTop(new THREE.Vector3(14, 33.17, -4), tops)).toBe(false);
   });
