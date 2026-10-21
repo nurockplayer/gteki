@@ -802,8 +802,11 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const signs = buildSigns(bundle, layout, root, track);
   addWallBackFaces(root, mat.wall, track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
-  mergeRootFinishes(root, [mat.steel, mat.glass], track, true);
-  mergeRootFinishes(root, [mat.darkSteel, mat.gateOk, mat.accent], track);
+  // Batch names say what is inside. The steel batch is the stair handrails and brackets, escalator trusses and
+  // skirts, fare/access fence rails and posts, lift-portal door finishes and level trim: ~50k triangles in all,
+  // of which the portals are only ~650 (#72). The batch used to inherit the name "elevator-portal:finish".
+  mergeRootFinishes(root, [[mat.steel, "static-steel-finishes"], [mat.glass, "static-glass-finishes"]], track, true);
+  mergeRootFinishes(root, [[mat.darkSteel, "static-dark-steel-finishes"], [mat.gateOk, "static-gate-ok-finishes"], [mat.accent, "static-accent-finishes"]], track);
   installTightCulling(root);
 
   // ---- collision world
@@ -1114,9 +1117,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
 }
 
 /** Merge static trim; instanced train finishes, gate leaves and fixtures stay independent. */
-function mergeRootFinishes(root: THREE.Group, materials: THREE.Material[], track: <T extends { dispose(): void }>(x: T) => T, includeLevelTrim = false) {
+function mergeRootFinishes(root: THREE.Group, materials: [THREE.Material, string][], track: <T extends { dispose(): void }>(x: T) => T, includeLevelTrim = false) {
   root.updateMatrixWorld(true);
-  for (const material of materials) {
+  for (const [material, name] of materials) {
     const meshes: THREE.Mesh[] = [];
     root.traverse((o) => {
       if (o instanceof THREE.Mesh && !(o instanceof THREE.InstancedMesh) && o.material === material &&
@@ -1126,8 +1129,8 @@ function mergeRootFinishes(root: THREE.Group, materials: THREE.Material[], track
     const geos = meshes.map((m) => m.geometry.clone().applyMatrix4(m.matrixWorld));
     const mesh = new THREE.Mesh(track(merged(geos)!), material);
     const portal = meshes.find((m) => m.name === "elevator-portal:finish");
-    mesh.name = portal ? portal.name : "static-metal-finishes";
-    if (portal) mesh.userData = portal.userData;
+    mesh.name = name;
+    if (portal) mesh.userData = portal.userData; // the lift portals' metadata rides on the batch that holds them
     for (const m of meshes) m.removeFromParent();
     root.add(mesh);
   }

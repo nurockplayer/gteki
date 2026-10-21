@@ -46,8 +46,10 @@ describe("station geometry lifetime", () => {
     expect(result.retained).toBe(0);
     expect(result.live).toBe(136);
     expect(result.bytes).toBe(13_288_866);
+    // #72 renamed the merged finish batches (names are in this hash); bytes, vertex data and the per-material
+    // triangle sets are unchanged (test/scene-digest.test.ts). Previously 2b3a94baf326….
     // Glazing over roofed (E27 roof = 2) exit runs open beyond the canopies; regenerated with
     // test/helpers/retained-geometry.ts. Retired arrays must still be collectible.
-    expect(result.geometryHash).toBe("2b3a94baf32629b9d6371d6f365c808fd67efcb924a7ae00dc27daebdecb48b4");
+    expect(result.geometryHash).toBe("80728a730ae6ce8fee8652e976b260255ade92198cd25d82e324ae91d4509c08");
   }, 60_000);
 });
