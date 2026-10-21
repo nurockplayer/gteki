@@ -1,0 +1,54 @@
+{
+  "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
+  "source_sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090",
+  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "station_ids": [
+    "shinjuku"
+  ],
+  "licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "scope": "Exact resource rights not established by acquired evidence."
+  },
+  "resource_licence": {
+    "value": null,
+    "status": "UNKNOWN"
+  },
+  "file_embedded_licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+  },
+  "declarations": [],
+  "evidence": [],
+  "input_sources": [
+    {
+      "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
+      "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090"
+    }
+  ],
+  "attribution": {
+    "required": "UNKNOWN",
+    "text_required": null,
+    "proposed_text": "出典：国土交通省「ほこナビDP」／加工して作成",
+    "status": "EXACT_RESOURCE_CREDIT_UNKNOWN"
+  },
+  "modification_notice": {
+    "required": "UNKNOWN",
+    "text": null,
+    "status": "UNKNOWN"
+  },
+  "caveats": [
+    "No inferred permission from availability, file type, absence of notices, or a legacy manifest label.",
+    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks."
+  ],
+  "publish_gate": "HOLD",
+  "clearance_required": [
+    "Acquired rights evidence explicitly covering hokonavi-oedo-shinjuku-stationmap-geojson, URL https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/9c5ecc7b-a6e4-4d92-978c-9b66ca642172/download/stationmap_oedo_shinjuku_geojson.zip, SHA-256 43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090, including the relevant member contents.",
+    "Resolve each third-party original and individual-law caveat, or exclude those contents.",
+    "Record required credit parties, source URL, licence link and actual modification notice for the proposed use."
+  ],
+  "file_rights_observations": [],
+  "verification": "UNVERIFIED",
+  "routable": false
+}

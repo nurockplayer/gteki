@@ -1,0 +1,28 @@
+{
+  "source_id": "toei-stores-shinjuku-csv",
+  "resolved_url": "https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku.csv",
+  "resolution_evidence": {
+    "source_id": "tokyo-toei-stores-package",
+    "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
+    "json_pointer": "/result/resources/9/url"
+  },
+  "requested_at": "2026-10-20T18:06:31.313Z",
+  "completed_at": "2026-10-20T18:06:31.409Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "text/csv",
+    "content-length": "694",
+    "etag": "\"2b6-65aa16e7c10f8\"",
+    "last-modified": "Fri, 04 Sep 2026 05:20:50 GMT",
+    "date": "Tue, 20 Oct 2026 18:06:31 GMT"
+  },
+  "bytes": 694,
+  "sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
+  "store_path": "raw/e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6/other_stores_shinjuku.csv",
+  "tool_version": "0.1.0",
+  "git_commit": "eeaf317775f3ecd3f84cbc07fc1e162c41e451a3",
+  "expected_bytes": 694,
+  "expected_url_match": true,
+  "size_check": "MATCH",
+  "mode": "online"
+}

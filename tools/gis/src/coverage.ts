@@ -1,8 +1,11 @@
 import { bboxMeshes,meshBounds } from './mesh.js';
 import { literalIdentifier,literalText,ownValue } from './values.js';
 
-export function catalogCoverage(catalog:any,catalogEvidence:{source_id:string;sha256:string},layers:Array<{layer_id:string;bbox_jgd2011_lon_lat:number[]|null;metric_status:string}>,acquired:Record<string,{source_id:string;source_sha256:string;bbox:number[]|null;envelope:number[]|null}>) {
-  const hokonavi=layers.map(layer=>({layer_id:layer.layer_id,metric_status:layer.metric_status,bbox:layer.bbox_jgd2011_lon_lat,third_meshes_touched:bboxMeshes(layer.bbox_jgd2011_lon_lat)}));
+export function catalogCoverage(catalog:any,catalogEvidence:{source_id:string;sha256:string},layers:Array<{layer_id:string;bbox_jgd2011_lon_lat:number[]|null;metric_status:string;bbox_status?:string}>,acquired:Record<string,{source_id:string;source_sha256:string;bbox:number[]|null;envelope:number[]|null}>) {
+  const hokonavi=layers.map(layer=>{
+    const bbox=layer.bbox_status==='INCOMPLETE_LIMIT_REACHED'?null:layer.bbox_jgd2011_lon_lat;
+    return {layer_id:layer.layer_id,metric_status:bbox?layer.metric_status:'UNKNOWN',bbox,third_meshes_touched:bboxMeshes(bbox)};
+  });
   const touched=new Set(hokonavi.flatMap(layer=>layer.third_meshes_touched));
   if(!Array.isArray(catalog.cities))throw new Error('Mesh catalog has no cities');
   const files=catalog.cities.flatMap((city:any)=>(city.files?.ubld??[]).map((file:any)=>{

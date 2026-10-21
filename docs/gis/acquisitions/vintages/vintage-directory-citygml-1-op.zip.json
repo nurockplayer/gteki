@@ -1,0 +1,65 @@
+{
+  "source_id": "vintage-directory-citygml-1-op.zip",
+  "acquisition_kind": "ZIP_CENTRAL_DIRECTORY",
+  "archive": "citygml_1_op.zip",
+  "resolved_url": "https://assets.cms.plateau.reearth.io/assets/d1/61cd6b-dfe4-4eab-873c-be4f512939be/13104_shinjuku-ku_pref_2023_citygml_1_op.zip",
+  "package_source": {
+    "source_id": "plateau-13104-package-2023",
+    "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
+    "json_pointer": "/result/resources/6/url"
+  },
+  "central_directory": {
+    "sha256": "ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5",
+    "bytes": 2880805,
+    "store_path": "raw/ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5/citygml_1_op.zip-central-directory.bin"
+  },
+  "member_inventory": {
+    "sha256": "c9718f37fad5a42b5f132078283cd5375501972e0705b19e6c170288c3491401",
+    "bytes": 5754638,
+    "store_path": "raw/c9718f37fad5a42b5f132078283cd5375501972e0705b19e6c170288c3491401/citygml_1_op.zip-member-inventory.json",
+    "entry_count": 23239
+  },
+  "total_archive_bytes": 790569445,
+  "etag": "\"a158ae80e80f39c3dc5e8c2f7042b498\"",
+  "last_modified": "Tue, 24 Jun 2025 09:24:29 GMT",
+  "ranges": [
+    {
+      "start": 0,
+      "end": 0,
+      "bytes": 1,
+      "requested_at": "2026-10-20T17:57:07.552Z",
+      "completed_at": "2026-10-20T17:57:07.739Z",
+      "sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
+      "store_path": "raw/5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2/range-0-0.bin"
+    },
+    {
+      "start": 790503888,
+      "end": 790569444,
+      "bytes": 65557,
+      "requested_at": "2026-10-20T17:57:07.739Z",
+      "completed_at": "2026-10-20T17:57:07.863Z",
+      "sha256": "ca5f8ee6267c3ff422f59e331511174156149df646e4ede8a26893c0f92404af",
+      "store_path": "raw/ca5f8ee6267c3ff422f59e331511174156149df646e4ede8a26893c0f92404af/range-790503888-790569444.bin"
+    },
+    {
+      "start": 787688618,
+      "end": 790569422,
+      "bytes": 2880805,
+      "requested_at": "2026-10-20T17:57:07.863Z",
+      "completed_at": "2026-10-20T17:57:08.223Z",
+      "sha256": "ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5",
+      "store_path": "raw/ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5/range-787688618-790569422.bin"
+    }
+  ],
+  "requested_at": "2026-10-20T17:57:07.552Z",
+  "completed_at": "2026-10-20T17:57:08.223Z",
+  "tool_version": "0.1.0",
+  "git_commit": "eeaf317775f3ecd3f84cbc07fc1e162c41e451a3",
+  "verification": "UNVERIFIED",
+  "routable": false,
+  "publish_gate": "HOLD",
+  "licence": {
+    "value": null,
+    "status": "UNKNOWN"
+  }
+}

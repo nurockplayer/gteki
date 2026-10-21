@@ -1,0 +1,47 @@
+{
+  "started_at": "2026-10-20T17:50:25.763Z",
+  "completed_at": "2026-10-20T17:52:08.994Z",
+  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "commands": [
+    {
+      "command": "pnpm --dir tools/gis install --frozen-lockfile",
+      "exit_code": 0,
+      "elapsed_ms": 439,
+      "tests_passed": null,
+      "log_store_path": "out/validation-logs/2026-10-20T17-50-25-763Z/install.log",
+      "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332"
+    },
+    {
+      "command": "pnpm --dir tools/gis typecheck",
+      "exit_code": 0,
+      "elapsed_ms": 1143,
+      "tests_passed": null,
+      "log_store_path": "out/validation-logs/2026-10-20T17-50-25-763Z/typecheck.log",
+      "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332"
+    },
+    {
+      "command": "pnpm --dir tools/gis test",
+      "exit_code": 0,
+      "elapsed_ms": 1900,
+      "tests_passed": 228,
+      "log_store_path": "out/validation-logs/2026-10-20T17-50-25-763Z/test.log",
+      "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332"
+    },
+    {
+      "command": "pnpm --dir tools/gis test:real",
+      "exit_code": 0,
+      "elapsed_ms": 97955,
+      "tests_passed": 6,
+      "log_store_path": "out/validation-logs/2026-10-20T17-50-25-763Z/test-real.log",
+      "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332"
+    },
+    {
+      "command": "pnpm --dir tools/gis gis acquire --all --offline",
+      "exit_code": 0,
+      "elapsed_ms": 1665,
+      "tests_passed": null,
+      "log_store_path": "out/validation-logs/2026-10-20T17-50-25-763Z/gis.log",
+      "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332"
+    }
+  ]
+}

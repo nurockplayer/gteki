@@ -1,0 +1,54 @@
+{
+  "source_id": "tokyo-shinjuku-facilities-landing",
+  "source_sha256": "c6ead52dc10fde3f5582fb1bbebbfab52a71b148faad770456a863086b50ab34",
+  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "station_ids": [
+    "shinjuku"
+  ],
+  "licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "scope": "Exact resource rights not established by acquired evidence."
+  },
+  "resource_licence": {
+    "value": null,
+    "status": "UNKNOWN"
+  },
+  "file_embedded_licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+  },
+  "declarations": [],
+  "evidence": [],
+  "input_sources": [
+    {
+      "source_id": "tokyo-shinjuku-facilities-landing",
+      "sha256": "c6ead52dc10fde3f5582fb1bbebbfab52a71b148faad770456a863086b50ab34"
+    }
+  ],
+  "attribution": {
+    "required": "UNKNOWN",
+    "text_required": null,
+    "proposed_text": "UNKNOWN; verify acquired evidence before publication",
+    "status": "EXACT_RESOURCE_CREDIT_UNKNOWN"
+  },
+  "modification_notice": {
+    "required": "UNKNOWN",
+    "text": null,
+    "status": "UNKNOWN"
+  },
+  "caveats": [
+    "No inferred permission from availability, file type, absence of notices, or a legacy manifest label.",
+    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks."
+  ],
+  "publish_gate": "HOLD",
+  "clearance_required": [
+    "Acquired rights evidence explicitly covering tokyo-shinjuku-facilities-landing, URL https://www.toshiseibi.metro.tokyo.lg.jp/kotsu_butsuryu/kotsuseisaku/kotsu_suishin/shinjuku_shisetsu, SHA-256 c6ead52dc10fde3f5582fb1bbebbfab52a71b148faad770456a863086b50ab34, including the relevant member contents.",
+    "Resolve each third-party original and individual-law caveat, or exclude those contents.",
+    "Record required credit parties, source URL, licence link and actual modification notice for the proposed use."
+  ],
+  "file_rights_observations": [],
+  "verification": "UNVERIFIED",
+  "routable": false
+}

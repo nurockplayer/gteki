@@ -1,0 +1,55 @@
+{
+  "source_id": "plateau-catalog-ubld-mesh-533945",
+  "source_sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e",
+  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "station_ids": [
+    "ikebukuro",
+    "shinjuku"
+  ],
+  "licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "scope": "Exact resource rights not established by acquired evidence."
+  },
+  "resource_licence": {
+    "value": null,
+    "status": "UNKNOWN"
+  },
+  "file_embedded_licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+  },
+  "declarations": [],
+  "evidence": [],
+  "input_sources": [
+    {
+      "source_id": "plateau-catalog-ubld-mesh-533945",
+      "sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e"
+    }
+  ],
+  "attribution": {
+    "required": "UNKNOWN",
+    "text_required": null,
+    "proposed_text": "出典：国土交通省／加工して作成",
+    "status": "EXACT_RESOURCE_CREDIT_UNKNOWN"
+  },
+  "modification_notice": {
+    "required": "UNKNOWN",
+    "text": null,
+    "status": "UNKNOWN"
+  },
+  "caveats": [
+    "No inferred permission from availability, file type, absence of notices, or a legacy manifest label.",
+    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks."
+  ],
+  "publish_gate": "HOLD",
+  "clearance_required": [
+    "Acquired rights evidence explicitly covering plateau-catalog-ubld-mesh-533945, URL https://api.plateauview.mlit.go.jp/datacatalog/citygml/m:533945?types=ubld, SHA-256 ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e, including the relevant member contents.",
+    "Resolve each third-party original and individual-law caveat, or exclude those contents.",
+    "Record required credit parties, source URL, licence link and actual modification notice for the proposed use."
+  ],
+  "file_rights_observations": [],
+  "verification": "UNVERIFIED",
+  "routable": false
+}

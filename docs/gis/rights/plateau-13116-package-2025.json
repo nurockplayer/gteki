@@ -1,0 +1,134 @@
+{
+  "source_id": "plateau-13116-package-2025",
+  "source_sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "station_ids": [
+    "ikebukuro"
+  ],
+  "licence": {
+    "value": "plateau",
+    "status": "PACKAGE_LEVEL_DECLARED",
+    "scope": "Package only; no resource or third-party scope inferred."
+  },
+  "resource_licence": {
+    "value": null,
+    "status": "UNKNOWN"
+  },
+  "file_embedded_licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+  },
+  "declarations": [
+    {
+      "value": "plateau",
+      "status": "PACKAGE_LEVEL_DECLARED",
+      "evidence": {
+        "source_id": "plateau-13116-package-2025",
+        "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+        "location": "/result/license_id",
+        "quote": "plateau",
+        "scope": "Package only; no resource or third-party scope inferred."
+      }
+    },
+    {
+      "value": "公共データ利用規約（第1.0版）; CC BY 4.0 compatible",
+      "status": "SITE_TERMS",
+      "evidence": {
+        "source_id": "plateau-site-policy",
+        "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+        "location": "HTML §3 コンテンツの利用",
+        "quote": "公共データ利用規約（第1.0版）",
+        "scope": "Site default, unless otherwise stated; package applicability is separate."
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "source_id": "plateau-13116-package-2025",
+      "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+      "location": "/result/license_id",
+      "quote": "plateau",
+      "scope": "Package only; no resource or third-party scope inferred."
+    },
+    {
+      "source_id": "plateau-site-policy",
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "location": "HTML §3 コンテンツの利用",
+      "quote": "公共データ利用規約（第1.0版）",
+      "scope": "Site default, unless otherwise stated; package applicability is separate."
+    },
+    {
+      "source_id": "plateau-site-policy",
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "location": "HTML §3(1)①",
+      "quote": "コンテンツを利用する際は出典を記載してください。",
+      "scope": "Source attribution obligation under site terms."
+    },
+    {
+      "source_id": "plateau-site-policy",
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "location": "HTML §3(1)②",
+      "quote": "編集・加工等を行ったことを記載してください。",
+      "scope": "Modification notice under site terms."
+    },
+    {
+      "source_id": "plateau-site-policy",
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "location": "HTML §3",
+      "quote": "各地方公共団体に帰属",
+      "scope": "Municipal copyright for G空間 3D city model open data."
+    },
+    {
+      "source_id": "plateau-site-policy",
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "location": "HTML §3(2)",
+      "quote": "測量法に基づく公共測量の測量成果の利用について",
+      "scope": "Individual-law caveat."
+    },
+    {
+      "source_id": "plateau-site-policy",
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "location": "HTML §3(3)",
+      "quote": "本利用ルールは、 クリエイティブ・コモンズ・ライセンスの表示4.0 国際ライセンス",
+      "scope": "CC BY compatibility, not a file-embedded licence."
+    }
+  ],
+  "input_sources": [
+    {
+      "source_id": "plateau-13116-package-2025",
+      "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b"
+    },
+    {
+      "source_id": "plateau-site-policy",
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f"
+    }
+  ],
+  "attribution": {
+    "required": "YES",
+    "text_required": "出典：国土交通省 PLATEAUウェブサイト（当該ページのURL）",
+    "proposed_text": "UNKNOWN; verify acquired evidence before publication",
+    "status": "SITE_EXAMPLE; verify exact resource credit"
+  },
+  "modification_notice": {
+    "required": "YES",
+    "text": "State the actual edits and identify the source; do not imply official authorship.",
+    "status": "REQUIRED_IF_TERMS_APPLY"
+  },
+  "caveats": [
+    "No inferred permission from availability, file type, absence of notices, or a legacy manifest label.",
+    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks.",
+    "G空間 3D city model copyright belongs to the municipality; this does not establish rights in related third-party originals.",
+    "測量法: public survey results may have separate statutory constraints.",
+    "Explicit alternate rights notices override site defaults."
+  ],
+  "publish_gate": "HOLD",
+  "clearance_required": [
+    "Acquired rights evidence explicitly covering plateau-13116-package-2025, URL https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13116-toshima-ku-2025, SHA-256 e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b, including the relevant member contents.",
+    "Resolve each third-party original and individual-law caveat, or exclude those contents.",
+    "Record required credit parties, source URL, licence link and actual modification notice for the proposed use."
+  ],
+  "file_rights_observations": [],
+  "verification": "UNVERIFIED",
+  "routable": false
+}

@@ -1,0 +1,700 @@
+{
+  "source_id": "plateau-13104-package-2023",
+  "verification": "UNVERIFIED",
+  "routable": false,
+  "rights": "HOLD",
+  "status": "INSPECTED",
+  "generated_at": "2026-10-20T17:56:58.142Z",
+  "package_sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
+  "archives": [
+    {
+      "archive": "citygml_2_op.zip",
+      "url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
+      "total_bytes": 776906633,
+      "etag": "\"bc3e22745a66aea5957644a705cf1734\"",
+      "last_modified": "Tue, 24 Jun 2025 09:24:51 GMT",
+      "directory_ranges": [
+        {
+          "start": 0,
+          "end": 0,
+          "bytes": 1,
+          "requested_at": "2026-10-20T17:56:58.183Z",
+          "completed_at": "2026-10-20T17:56:58.475Z",
+          "sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
+          "store_path": "raw/5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2/range-0-0.bin"
+        },
+        {
+          "start": 776841076,
+          "end": 776906632,
+          "bytes": 65557,
+          "requested_at": "2026-10-20T17:56:58.475Z",
+          "completed_at": "2026-10-20T17:56:58.509Z",
+          "sha256": "b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd",
+          "store_path": "raw/b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd/range-776841076-776906632.bin"
+        },
+        {
+          "start": 774065024,
+          "end": 776906610,
+          "bytes": 2841587,
+          "requested_at": "2026-10-20T17:56:58.509Z",
+          "completed_at": "2026-10-20T17:56:58.802Z",
+          "sha256": "ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6",
+          "store_path": "raw/ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6/range-774065024-776906610.bin"
+        }
+      ],
+      "members": [
+        {
+          "name": "udx/ubld/",
+          "name_bytes": 9,
+          "compressed_size": 0,
+          "size": 0,
+          "crc32": "00000000",
+          "method": 0,
+          "flags": 0,
+          "local_header_offset": 386355616,
+          "mesh": null,
+          "category": "ubld"
+        },
+        {
+          "name": "udx/ubld/53394536_ubld_6697_op.gml",
+          "name_bytes": 34,
+          "compressed_size": 4073265,
+          "size": 43830773,
+          "crc32": "3be2530f",
+          "method": 8,
+          "flags": 8,
+          "local_header_offset": 386355655,
+          "mesh": "53394536",
+          "category": "ubld"
+        }
+      ],
+      "total_entry_count": 22845,
+      "sha256": "ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6",
+      "central_directory_store_path": "raw/ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6/citygml_2_op.zip-central-directory.bin",
+      "central_directory_bytes": 2841587,
+      "member_inventory": {
+        "sha256": "67260e7b8e4e5a7d3f6b863eacd8a88f422aa55788e871f8a9583ac27a33b6b8",
+        "bytes": 5668156,
+        "store_path": "raw/67260e7b8e4e5a7d3f6b863eacd8a88f422aa55788e871f8a9583ac27a33b6b8/citygml_2_op.zip-member-inventory.json",
+        "entry_count": 22845
+      }
+    },
+    {
+      "archive": "citygml_1_op.zip",
+      "url": "https://assets.cms.plateau.reearth.io/assets/d1/61cd6b-dfe4-4eab-873c-be4f512939be/13104_shinjuku-ku_pref_2023_citygml_1_op.zip",
+      "total_bytes": 790569445,
+      "etag": "\"a158ae80e80f39c3dc5e8c2f7042b498\"",
+      "last_modified": "Tue, 24 Jun 2025 09:24:29 GMT",
+      "directory_ranges": [
+        {
+          "start": 0,
+          "end": 0,
+          "bytes": 1,
+          "requested_at": "2026-10-20T17:57:07.552Z",
+          "completed_at": "2026-10-20T17:57:07.739Z",
+          "sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
+          "store_path": "raw/5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2/range-0-0.bin"
+        },
+        {
+          "start": 790503888,
+          "end": 790569444,
+          "bytes": 65557,
+          "requested_at": "2026-10-20T17:57:07.739Z",
+          "completed_at": "2026-10-20T17:57:07.863Z",
+          "sha256": "ca5f8ee6267c3ff422f59e331511174156149df646e4ede8a26893c0f92404af",
+          "store_path": "raw/ca5f8ee6267c3ff422f59e331511174156149df646e4ede8a26893c0f92404af/range-790503888-790569444.bin"
+        },
+        {
+          "start": 787688618,
+          "end": 790569422,
+          "bytes": 2880805,
+          "requested_at": "2026-10-20T17:57:07.863Z",
+          "completed_at": "2026-10-20T17:57:08.223Z",
+          "sha256": "ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5",
+          "store_path": "raw/ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5/range-787688618-790569422.bin"
+        }
+      ],
+      "members": [
+        {
+          "name": "udx/ubld/",
+          "name_bytes": 9,
+          "compressed_size": 0,
+          "size": 0,
+          "crc32": "00000000",
+          "method": 0,
+          "flags": 0,
+          "local_header_offset": 642058860,
+          "mesh": null,
+          "category": "ubld"
+        },
+        {
+          "name": "udx/ubld/53394536_ubld_6697.gml",
+          "name_bytes": 31,
+          "compressed_size": 4073179,
+          "size": 43830139,
+          "crc32": "ddcc34e3",
+          "method": 8,
+          "flags": 8,
+          "local_header_offset": 642058899,
+          "mesh": "53394536",
+          "category": "ubld"
+        }
+      ],
+      "total_entry_count": 23239,
+      "sha256": "ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5",
+      "central_directory_store_path": "raw/ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5/citygml_1_op.zip-central-directory.bin",
+      "central_directory_bytes": 2880805,
+      "member_inventory": {
+        "sha256": "c9718f37fad5a42b5f132078283cd5375501972e0705b19e6c170288c3491401",
+        "bytes": 5754638,
+        "store_path": "raw/c9718f37fad5a42b5f132078283cd5375501972e0705b19e6c170288c3491401/citygml_1_op.zip-member-inventory.json",
+        "entry_count": 23239
+      }
+    }
+  ],
+  "selected_member_records": [
+    {
+      "archive": "citygml_2_op.zip",
+      "member": "udx/ubld/53394536_ubld_6697_op.gml",
+      "sha256": "37e91af3276c2ee8fc61369409c8d54f85af0e796458474da99abedaa8c9ae3a",
+      "bytes": 43830773,
+      "store_path": "raw/37e91af3276c2ee8fc61369409c8d54f85af0e796458474da99abedaa8c9ae3a/53394536_ubld_6697_op.gml",
+      "ranges": [
+        {
+          "start": 386355655,
+          "end": 386355684,
+          "bytes": 30,
+          "requested_at": "2026-10-20T17:56:59.141Z",
+          "completed_at": "2026-10-20T17:56:59.181Z",
+          "sha256": "4c7d0c7e0f88ec5ffa2fa7761396ec69b500d641a0eb0f7489a7583294357786",
+          "store_path": "raw/4c7d0c7e0f88ec5ffa2fa7761396ec69b500d641a0eb0f7489a7583294357786/range-386355655-386355684.bin"
+        },
+        {
+          "start": 386355685,
+          "end": 386355718,
+          "bytes": 34,
+          "requested_at": "2026-10-20T17:56:59.181Z",
+          "completed_at": "2026-10-20T17:56:59.201Z",
+          "sha256": "ecce9304404860495bcec4fcb33a49cb3035bbe9e81770e36d269111927a7bbc",
+          "store_path": "raw/ecce9304404860495bcec4fcb33a49cb3035bbe9e81770e36d269111927a7bbc/range-386355685-386355718.bin"
+        },
+        {
+          "start": 386355719,
+          "end": 390428983,
+          "bytes": 4073265,
+          "requested_at": "2026-10-20T17:56:59.201Z",
+          "completed_at": "2026-10-20T17:56:59.523Z",
+          "sha256": "b49d2234197406b355f635c9dc0e0902e2a45d78de36798aa909dbb3509ccb70",
+          "store_path": "raw/b49d2234197406b355f635c9dc0e0902e2a45d78de36798aa909dbb3509ccb70/range-386355719-390428983.bin"
+        }
+      ],
+      "etag": "\"bc3e22745a66aea5957644a705cf1734\"",
+      "last_modified": "Tue, 24 Jun 2025 09:24:51 GMT",
+      "crc32": "3be2530f",
+      "size": 43830773,
+      "inspection": {
+        "verification": "UNVERIFIED",
+        "feature_count": 30358,
+        "polygon_count": 79363,
+        "envelope": {
+          "lower": [
+            35.69069941674934,
+            139.69803124047718,
+            15.321
+          ],
+          "upper": [
+            35.69501377379006,
+            139.7036188035924,
+            45.493
+          ],
+          "raw_lower": "35.69069941674934 139.69803124047718 15.321",
+          "raw_upper": "35.69501377379006 139.7036188035924 45.493",
+          "srsName": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "axis_order": "latitude,longitude,height"
+        },
+        "bbox_lat_lon_height": {
+          "min": [
+            35.69069941674934,
+            139.69803124047718,
+            15.321
+          ],
+          "max": [
+            35.69501377379006,
+            139.7036188035924,
+            45.493
+          ]
+        },
+        "unknowns": [
+          "Vertical datum interpretation beyond declared EPSG:6697",
+          "Floor-to-elevation mapping",
+          "Operator and management boundaries",
+          "Paid/unpaid area boundaries unless explicit source elements exist",
+          "Currency versus the documented 2023 survey date",
+          "Current real-world condition and route connectivity"
+        ]
+      },
+      "inspection_error": null
+    },
+    {
+      "archive": "citygml_1_op.zip",
+      "member": "udx/ubld/53394536_ubld_6697.gml",
+      "sha256": "25c55437cff5a95ea81b450b1bc92b9f946c2d8c3e5657eda1174959c79a1fc9",
+      "bytes": 43830139,
+      "store_path": "raw/25c55437cff5a95ea81b450b1bc92b9f946c2d8c3e5657eda1174959c79a1fc9/53394536_ubld_6697.gml",
+      "ranges": [
+        {
+          "start": 642058899,
+          "end": 642058928,
+          "bytes": 30,
+          "requested_at": "2026-10-20T17:57:08.268Z",
+          "completed_at": "2026-10-20T17:57:08.365Z",
+          "sha256": "339921dc523830f5a4fc86ab3ef845f2a395803ded630e68907aca9ed4f0fc21",
+          "store_path": "raw/339921dc523830f5a4fc86ab3ef845f2a395803ded630e68907aca9ed4f0fc21/range-642058899-642058928.bin"
+        },
+        {
+          "start": 642058929,
+          "end": 642058959,
+          "bytes": 31,
+          "requested_at": "2026-10-20T17:57:08.365Z",
+          "completed_at": "2026-10-20T17:57:08.382Z",
+          "sha256": "01b558893400fe6a1a7d35e2afd0173daae7c4de89911453c555220cd8c76149",
+          "store_path": "raw/01b558893400fe6a1a7d35e2afd0173daae7c4de89911453c555220cd8c76149/range-642058929-642058959.bin"
+        },
+        {
+          "start": 642058960,
+          "end": 646132138,
+          "bytes": 4073179,
+          "requested_at": "2026-10-20T17:57:08.383Z",
+          "completed_at": "2026-10-20T17:57:08.612Z",
+          "sha256": "6d9aa1d7f43501243878dcb2a5ad17d11f219555060ba8077160b63709741cfe",
+          "store_path": "raw/6d9aa1d7f43501243878dcb2a5ad17d11f219555060ba8077160b63709741cfe/range-642058960-646132138.bin"
+        }
+      ],
+      "etag": "\"a158ae80e80f39c3dc5e8c2f7042b498\"",
+      "last_modified": "Tue, 24 Jun 2025 09:24:29 GMT",
+      "crc32": "ddcc34e3",
+      "size": 43830139,
+      "inspection": {
+        "verification": "UNVERIFIED",
+        "feature_count": 30358,
+        "polygon_count": 79363,
+        "envelope": {
+          "lower": [
+            35.69069941674934,
+            139.69803124047718,
+            15.321
+          ],
+          "upper": [
+            35.69501377379006,
+            139.7036188035924,
+            45.493
+          ],
+          "raw_lower": "35.69069941674934 139.69803124047718 15.321",
+          "raw_upper": "35.69501377379006 139.7036188035924 45.493",
+          "srsName": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "axis_order": "latitude,longitude,height"
+        },
+        "bbox_lat_lon_height": {
+          "min": [
+            35.69069941674934,
+            139.69803124047718,
+            15.321
+          ],
+          "max": [
+            35.69501377379006,
+            139.7036188035924,
+            45.493
+          ]
+        },
+        "unknowns": [
+          "Vertical datum interpretation beyond declared EPSG:6697",
+          "Floor-to-elevation mapping",
+          "Operator and management boundaries",
+          "Paid/unpaid area boundaries unless explicit source elements exist",
+          "Currency versus the documented 2023 survey date",
+          "Current real-world condition and route connectivity"
+        ]
+      },
+      "inspection_error": null
+    }
+  ],
+  "comparison": {
+    "current_catalog_source_id": "plateau-catalog-ubld-mesh-533945",
+    "target_mesh": "53394525",
+    "bbox_meshes": [
+      "53394525"
+    ],
+    "current_2025_ubld": [
+      {
+        "code": "53394536",
+        "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/ubld/53394536_ubld_6697_op.gml",
+        "file_size": 43830765
+      }
+    ],
+    "meshes_2023": [
+      "53394536"
+    ],
+    "meshes_2025": [
+      "53394536"
+    ],
+    "only_2023": [],
+    "only_2025": [],
+    "touching_target_2023": [
+      "udx/ubld/53394536_ubld_6697.gml",
+      "udx/ubld/53394536_ubld_6697_op.gml"
+    ],
+    "bbox_relations": [
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_2_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+        "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+        "layer_crs": "EPSG:6668",
+        "relation": "DISJOINT",
+        "intersection_bbox_lat_lon": null
+      }
+    ],
+    "note": "2023 geometry uses declared EPSG:6697 latitude,longitude axes; E27 network layers use declared EPSG:6668 longitude,latitude axes. Both are JGD2011 horizontal coordinates; intersections are bbox-only with no feature or routing claim."
+  },
+  "byte_totals": {
+    "directory_range_bytes": 5853508,
+    "member_range_bytes": 8146569,
+    "extracted_member_bytes": 87660912,
+    "requested_http_bytes": 14000077
+  },
+  "input_sources": [
+    {
+      "source_id": "plateau-13104-package-2023",
+      "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d"
+    },
+    {
+      "source_id": "plateau-catalog-ubld-mesh-533945",
+      "sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-network-geojson",
+      "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
+      "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090"
+    }
+  ],
+  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "limitations": [
+    "Rights remain HOLD pending rights review.",
+    "Every vintage finding is UNVERIFIED and routable:false.",
+    "Only ZIP directory ranges and explicitly selected member bytes may be acquired."
+  ]
+}

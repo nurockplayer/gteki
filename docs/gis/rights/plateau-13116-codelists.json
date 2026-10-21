@@ -1,0 +1,54 @@
+{
+  "source_id": "plateau-13116-codelists",
+  "source_sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "station_ids": [
+    "ikebukuro"
+  ],
+  "licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "scope": "Exact resource rights not established by acquired evidence."
+  },
+  "resource_licence": {
+    "value": null,
+    "status": "UNKNOWN"
+  },
+  "file_embedded_licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+  },
+  "declarations": [],
+  "evidence": [],
+  "input_sources": [
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600"
+    }
+  ],
+  "attribution": {
+    "required": "UNKNOWN",
+    "text_required": null,
+    "proposed_text": "unknown",
+    "status": "EXACT_RESOURCE_CREDIT_UNKNOWN"
+  },
+  "modification_notice": {
+    "required": "UNKNOWN",
+    "text": null,
+    "status": "UNKNOWN"
+  },
+  "caveats": [
+    "No inferred permission from availability, file type, absence of notices, or a legacy manifest label.",
+    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks."
+  ],
+  "publish_gate": "HOLD",
+  "clearance_required": [
+    "Acquired rights evidence explicitly covering plateau-13116-codelists, URL https://assets.cms.plateau.reearth.io/assets/82/77b46c-5983-448a-9d89-c0663ddc0652/13116_toshima-ku_pref_2025_citygml_1_op_codelists.zip, SHA-256 183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600, including the relevant member contents.",
+    "Resolve each third-party original and individual-law caveat, or exclude those contents.",
+    "Record required credit parties, source URL, licence link and actual modification notice for the proposed use."
+  ],
+  "file_rights_observations": [],
+  "verification": "UNVERIFIED",
+  "routable": false
+}

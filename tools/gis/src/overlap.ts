@@ -8,7 +8,7 @@ import { r1GeoEvidence } from './r1.js';
 
 export type BboxLayerInput = {
   layer_id: string;
-  layer_role: 'plateau_ubld' | 'hokonavi_network' | 'hokonavi_csv_pair' | 'station_map';
+  layer_role: 'plateau_ubld' | 'hokonavi_network' | 'hokonavi_csv_pair' | 'station_map' | 'poi_facility';
   source_id: string;
   source_ids?: string[];
   source_crs: string | null;
@@ -16,6 +16,7 @@ export type BboxLayerInput = {
   bbox_axis_order: 'latitude,longitude' | 'longitude,latitude' | 'unknown';
   feature_count?: number | null;
   crs_status?: string;
+  bbox_status?: string;
 };
 
 export type OverlapLayer = BboxLayerInput & {
@@ -43,6 +44,7 @@ export type OverlapPair = {
   minimum_separation_m: number | null;
   status: 'COMPUTED_BBOX_ONLY' | 'UNKNOWN_CRS_OR_BBOX';
   metric_status?: 'KNOWN' | 'UNKNOWN' | 'CONDITIONAL_ON_INFERRED_CRS';
+  conditional_bbox_comparison?: { relation: 'INTERSECTS' | 'DISJOINT'; status: 'CONDITIONAL_ON_CRS_ASSUMPTION'; assumption: string };
 };
 
 export type StationOverlapReport = {
@@ -56,6 +58,7 @@ export type StationOverlapReport = {
   input_sources?: Array<{source_id:string;sha256:string}>;
   mesh_coverage?: ReturnType<typeof catalogCoverage>;
   r1_bbox_containment?: ReturnType<typeof r1BboxContainment>;
+  bounded_vintage_research?: { report:string;status:string;comparison:unknown;byte_totals:unknown };
 };
 
 const LIMIT = 'BBox overlap only. It does not establish that features coincide, share a floor, or connect; it is not routing evidence.';
@@ -104,6 +107,7 @@ export function projectGeographicBbox(bbox: number[], axis: 'latitude,longitude'
 }
 
 function prepareLayer(layer: BboxLayerInput): PreparedOverlapLayer {
+  if (layer.bbox_status === 'INCOMPLETE_LIMIT_REACHED') return { ...layer, bbox_jgd2011_lon_lat: null, bbox_epsg_6677: null, projected_bbox_boundary_segments: null, metric_status: 'UNKNOWN', metric_note: 'Source bbox is incomplete because its coordinate visit limit was reached.' };
   if (!validBbox(layer.source_crs_bbox)) return { ...layer, bbox_jgd2011_lon_lat: null, bbox_epsg_6677: null, projected_bbox_boundary_segments: null, metric_status: 'UNKNOWN', metric_note: 'Source bbox missing or invalid.' };
   if (layer.bbox_axis_order === 'unknown' || !layer.source_crs) return { ...layer, bbox_jgd2011_lon_lat: null, bbox_epsg_6677: null, projected_bbox_boundary_segments: null, metric_status: 'UNKNOWN', metric_note: 'Source CRS or coordinate axis order is unknown; no metric projection was inferred.' };
   const crs = layer.source_crs.toUpperCase();
@@ -160,13 +164,27 @@ function compare(a: PreparedOverlapLayer, b: PreparedOverlapLayer): OverlapPair 
 export function buildOverlapReport(stationId: StationOverlapReport['station_id'], inputs: BboxLayerInput[]): StationOverlapReport {
   const layers = inputs.map(prepareLayer);
   const pairs: OverlapPair[] = [];
-  for (let i = 0; i < layers.length; i++) for (let j = i + 1; j < layers.length; j++) {const a=layers[i]!,b=layers[j]!;pairs.push({...compare(a,b),metric_status:[a,b].some(layer=>layer.metric_status==='UNKNOWN')?'UNKNOWN':[a,b].some(layer=>layer.metric_status==='CONDITIONAL_ON_INFERRED_CRS')?'CONDITIONAL_ON_INFERRED_CRS':'KNOWN'});}
+  for (let i = 0; i < layers.length; i++) for (let j = i + 1; j < layers.length; j++) {
+    const a=layers[i]!,b=layers[j]!,pair=compare(a,b);
+    // Keep unsupported/undeclared CRS comparisons separate from established JGD2011 results.
+    // This raw rectangle calculation has no metric projection or datum-identification claim.
+    if(pair.bbox_relation==='UNKNOWN'&&[a,b].some(l=>l.layer_role==='poi_facility')){
+      const raw=(l:OverlapLayer):number[]|null=>{
+        if(l.bbox_jgd2011_lon_lat)return l.bbox_jgd2011_lon_lat;
+        if(l.layer_role!=='poi_facility'||l.source_crs!==null||l.crs_status!=='UNDECLARED_RFC7946_ASSUMPTION'||l.bbox_status==='INCOMPLETE_LIMIT_REACHED'||l.bbox_axis_order!=='longitude,latitude'||!validBbox(l.source_crs_bbox))return null;
+        try{assertGeographicRanges(l.source_crs_bbox);return l.source_crs_bbox;}catch{return null;}
+      };
+      const x=raw(a),y=raw(b);
+      if(x&&y)pair.conditional_bbox_comparison={relation:Math.max(x[0]!,y[0]!)<=Math.min(x[2]!,y[2]!)&&Math.max(x[1]!,y[1]!)<=Math.min(x[3]!,y[3]!)?'INTERSECTS':'DISJOINT',status:'CONDITIONAL_ON_CRS_ASSUMPTION',assumption:'Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred.'};
+    }
+    pairs.push({...pair,metric_status:[a,b].some(layer=>layer.metric_status==='UNKNOWN')?'UNKNOWN':[a,b].some(layer=>layer.metric_status==='CONDITIONAL_ON_INFERRED_CRS')?'CONDITIONAL_ON_INFERRED_CRS':'KNOWN'});
+  }
   return { station_id: stationId, method: 'Pairwise bbox relation is computed on source bboxes normalized to JGD2011 longitude,latitude. Disjoint-bbox minimum separation is approximated by comparing projected EPSG:6677 boundary segments sampled at 32 segments per edge. Projected axis-aligned envelopes are retained as context only.',
     layers: layers.map(({projected_bbox_boundary_segments: _segments,...layer})=>layer), pairs, interpretation_limit: LIMIT, verification: 'UNVERIFIED' };
 }
 
 type CityReport = { source_id:string;source_sha256:string;totals?:{bbox_lat_lon_height:{min:number[];max:number[]}|null};envelope: { lower: number[]; upper: number[]; srsName: string | null } | null };
-type GeoMember = { file: string; crs: { properties?: { name?: string } } | null; bbox: number[] | null; feature_count: number };
+type GeoMember = { file: string; crs: { properties?: { name?: string } } | null; bbox: number[] | null; bbox_status?: string; feature_count: number };
 type GeoReport = { members: GeoMember[]; bbox?: number[] | null; crs?: { properties?: { name?: string } } | null };
 type CsvReport = { bbox: number[] | null; crs: { value: string | null; status: string }; files?: { node_source_id?: string; link_source_id?: string } };
 
@@ -176,9 +194,9 @@ function cityLayer(sourceId: string, report: CityReport): BboxLayerInput {
 }
 
 function geoLayers(sourceId: string, report: GeoReport): BboxLayerInput[] {
-  const members = report.members ?? [];
+  const members = (report.members ?? []).filter(m=>typeof m.feature_count==='number');
   if (!members.length && report.bbox) return [{ layer_id: `${sourceId}:all`, layer_role: sourceId.includes('stationmap') ? 'station_map' : 'hokonavi_network', source_id: sourceId, source_crs: report.crs?.properties?.name ?? null, source_crs_bbox: report.bbox, bbox_axis_order: 'longitude,latitude' }];
-  return members.map((m, index) => ({ layer_id: `${sourceId}:${m.file || `member-${index + 1}`}`, layer_role: sourceId.includes('stationmap') ? 'station_map' : 'hokonavi_network', source_id: sourceId, source_crs: m.crs?.properties?.name ?? null, source_crs_bbox: m.bbox, bbox_axis_order: m.bbox ? 'longitude,latitude' : 'unknown', feature_count: m.feature_count }));
+  return members.map((m, index) => ({ layer_id: `${sourceId}:${m.file || `member-${index + 1}`}`, layer_role: sourceId.includes('stationmap') ? 'station_map' : 'hokonavi_network', source_id: sourceId, source_crs: m.crs?.properties?.name ?? null, source_crs_bbox: m.bbox??null, bbox_axis_order: m.bbox ? 'longitude,latitude' : 'unknown', feature_count: m.feature_count, bbox_status: m.bbox_status }));
 }
 
 /** Read current generated reports and produce per-station bbox-only comparisons. */
@@ -199,17 +217,26 @@ export async function generateOverlapReports(): Promise<StationOverlapReport[]> 
   }];
   for(const [source,bbox,count] of [[r1.node,r1.node_bbox,r1.nodes.features.length],[r1.link,r1.link_bbox,r1.links.features.length]] as const)ikeLayers.push({layer_id:source.record.source_id,layer_role:'hokonavi_network',source_id:source.record.source_id,source_crs:r1.crs.value,crs_status:r1.crs.status,source_crs_bbox:bbox,bbox_axis_order:'longitude,latitude',feature_count:count});
   const shLayers: BboxLayerInput[] = [cityLayer('plateau-13104-ubld-53394536', shCity), ...geoLayers('hokonavi-oedo-shinjuku-network-geojson', s01Network), ...geoLayers('hokonavi-oedo-shinjuku-stationmap-geojson', stationMap)];
+  const poiIds=['tokyo-shinjuku-facilities-zip','plateau-13104-related-2025','plateau-13116-related-2025'];
+  for(const id of poiIds){
+    const poi=await readJson<GeoReport>(join(root,'poi',`${id}.json`));
+    const target=id.includes('13116')?ikeLayers:shLayers;
+    target.push(...geoLayers(id,poi).map(layer=>({...layer,layer_role:'poi_facility' as const,crs_status:layer.source_crs?'DECLARED':'UNDECLARED_RFC7946_ASSUMPTION'})));
+  }
   const reports = [buildOverlapReport('ikebukuro', ikeLayers), buildOverlapReport('shinjuku', shLayers)];
   const catalog=await getStoredSource('plateau-catalog-ubld-mesh-533945');
   const catalogData=await readJson<unknown>(catalog.path);
   const actualBbox=(city:CityReport):number[]|null=>{const b=city.totals?.bbox_lat_lon_height;return b?[b.min[1]!,b.min[0]!,b.max[1]!,b.max[0]!]:null;};
   const envelope=(city:CityReport):number[]|null=>{const e=city.envelope;return e?[e.lower[1]!,e.lower[0]!,e.upper[1]!,e.upper[0]!]:null;};
   const acquired=Object.fromEntries(([['13116:53394576',ikeCity],['13104:53394536',shCity]] as const).map(([key,city])=>[key,{source_id:city.source_id,source_sha256:city.source_sha256,bbox:actualBbox(city),envelope:envelope(city)}]));
-  for(const report of reports)report.mesh_coverage=catalogCoverage(catalogData,{source_id:catalog.record.source_id,sha256:catalog.record.sha256},report.layers.filter(layer=>layer.layer_role!=='plateau_ubld'),acquired);
+  for(const report of reports)report.mesh_coverage=catalogCoverage(catalogData,{source_id:catalog.record.source_id,sha256:catalog.record.sha256},report.layers.filter(layer=>layer.layer_role!=='plateau_ubld'&&layer.layer_role!=='poi_facility'),acquired);
+  const vintage=await readJson<any>(join(root,'vintages','shinjuku-2023.json'));
+  reports[1]!.bounded_vintage_research={report:'vintages/shinjuku-2023.json',status:vintage.status,comparison:vintage.comparison,byte_totals:vintage.byte_totals??null};
+  if(reports[1]!.mesh_coverage){reports[1]!.mesh_coverage!.older_vintages.note='This latest catalog endpoint does not enumerate earlier vintages. Separate bounded 2023 v4/v3 evidence is recorded under bounded_vintage_research.';reports[1]!.mesh_coverage!.hold=reports[1]!.mesh_coverage!.hold.replace('older vintages UNKNOWN.','see separate bounded 2023 v4/v3 evidence; other vintages UNKNOWN.');}
   reports[0]!.r1_bbox_containment=r1BboxContainment(r1.nodes.features,r1.links.features,actualBbox(ikeCity));
   const out = join(root, 'overlap');
   await mkdir(out, { recursive: true });
-  const inputs=await Promise.all(['plateau-13116-ubld-53394576','plateau-13104-ubld-53394536','hokonavi-ikebukuro-walk-node-csv','hokonavi-ikebukuro-walk-link-csv','hokonavi-ikebukuro-walk-node-geojson','hokonavi-ikebukuro-walk-link-geojson','hokonavi-oedo-shinjuku-network-geojson','hokonavi-oedo-shinjuku-stationmap-geojson','mlit-walk-network-spec-2018-03','mlit-walk-network-spec-2024-07','plateau-catalog-ubld-mesh-533945'].map(id=>getStoredSource(id)));
+  const inputs=await Promise.all(['plateau-13116-ubld-53394576','plateau-13104-ubld-53394536','hokonavi-ikebukuro-walk-node-csv','hokonavi-ikebukuro-walk-link-csv','hokonavi-ikebukuro-walk-node-geojson','hokonavi-ikebukuro-walk-link-geojson','hokonavi-oedo-shinjuku-network-geojson','hokonavi-oedo-shinjuku-stationmap-geojson','mlit-walk-network-spec-2018-03','mlit-walk-network-spec-2024-07','plateau-catalog-ubld-mesh-533945','plateau-13104-package-2023',...poiIds].map(id=>getStoredSource(id)));
   const fingerprint=await toolFingerprint();
   for (const report of reports) {
     report.tool_input_sha256=fingerprint;

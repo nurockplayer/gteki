@@ -1,0 +1,80 @@
+{
+  "source_id": "mlit-walk-network-spec-2024-07-diff",
+  "source_sha256": "1a0b007099ba03467b564b9daf74bc198efdbbecc874ae1a0eed36e450326773",
+  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "station_ids": [
+    "ikebukuro",
+    "shinjuku"
+  ],
+  "licence": {
+    "value": "PDL 1.0",
+    "status": "SITE_TERMS",
+    "scope": "Site default; PDF-specific and third-party scope not inferred."
+  },
+  "resource_licence": {
+    "value": null,
+    "status": "UNKNOWN"
+  },
+  "file_embedded_licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+  },
+  "declarations": [
+    {
+      "value": "PDL 1.0",
+      "status": "SITE_TERMS",
+      "evidence": {
+        "source_id": "mlit-walk-network-spec-2018-03",
+        "sha256": "8d73d659e9fa5f64a24499428e8a8599b160a954cb5ffb2aacac898ab19f200b",
+        "location": "supporting_documents/site-terms: 著作権について",
+        "quote": "公共データ利用規約（第1.0版）",
+        "scope": "Site default; PDF-specific and third-party scope not inferred."
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "source_id": "mlit-walk-network-spec-2018-03",
+      "sha256": "8d73d659e9fa5f64a24499428e8a8599b160a954cb5ffb2aacac898ab19f200b",
+      "location": "supporting_documents/site-terms: 著作権について",
+      "quote": "公共データ利用規約（第1.0版）",
+      "scope": "Site default; PDF-specific and third-party scope not inferred."
+    }
+  ],
+  "input_sources": [
+    {
+      "source_id": "mlit-walk-network-spec-2024-07-diff",
+      "sha256": "1a0b007099ba03467b564b9daf74bc198efdbbecc874ae1a0eed36e450326773"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2018-03",
+      "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974"
+    }
+  ],
+  "attribution": {
+    "required": "YES",
+    "text_required": "出典：国土交通省ウェブサイト（当該ページのURL）",
+    "proposed_text": "出典：国土交通省／加工して作成",
+    "status": "SITE_EXAMPLE; verify exact resource credit"
+  },
+  "modification_notice": {
+    "required": "YES",
+    "text": "State the actual edits and identify the source; do not imply official authorship.",
+    "status": "REQUIRED_IF_TERMS_APPLY"
+  },
+  "caveats": [
+    "No inferred permission from availability, file type, absence of notices, or a legacy manifest label.",
+    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks.",
+    "MLIT site terms exclude logos and explicit alternate terms and preserve Survey Act restrictions."
+  ],
+  "publish_gate": "HOLD",
+  "clearance_required": [
+    "Acquired rights evidence explicitly covering mlit-walk-network-spec-2024-07-diff, URL https://www.mlit.go.jp/sogoseisaku/soukou/content/001757260.pdf, SHA-256 1a0b007099ba03467b564b9daf74bc198efdbbecc874ae1a0eed36e450326773, including the relevant member contents.",
+    "Resolve each third-party original and individual-law caveat, or exclude those contents.",
+    "Record required credit parties, source URL, licence link and actual modification notice for the proposed use."
+  ],
+  "file_rights_observations": [],
+  "verification": "UNVERIFIED",
+  "routable": false
+}

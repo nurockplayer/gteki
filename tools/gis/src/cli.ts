@@ -9,6 +9,9 @@ import { parseBboxLocal } from './filters.js';
 import { generateOverlapReports } from './overlap.js';
 import { ensurePrivateStore } from './common.js';
 import { invalidateRealRunReceipt } from './history.js';
+import { inspectPoi } from './poi.js';
+import { inspectVintages } from './vintage.js';
+import { generateRights } from './rights.js';
 
 async function main() {
   ensurePrivateStore();
@@ -17,9 +20,9 @@ async function main() {
   for(let i=0;i<argv.length-1;i++)if(argv[i]==='--bbox-local'&&argv[i+1].startsWith('-')&&!argv[i+1].startsWith('--'))argv.splice(i,2,`--bbox-local=${argv[i+1]}`);
   const { values, positionals } = parseArgs({ args:argv,allowPositionals:true, options:{offline:{type:'boolean'},all:{type:'boolean'},frame:{type:'string'},'bbox-local':{type:'string'},ids:{type:'string'},'max-polygons':{type:'string'},help:{type:'boolean'}} });
   const [command,...args]=positionals;
-  if(values.help || !command){console.log('sources | acquire <source_id...> [--all] [--offline] | inspect-citygml <source_id> | frame-from-envelope <source_id> <frame_id> | crs-roundtrip <frame_id> | citygml-to-glb <source_id> --frame <frame_id> [--bbox-local minE,minN,maxE,maxN] [--ids id1,id2] [--max-polygons N] | inspect-network <source_id> | overlap | gap-packet');return;}
+  if(values.help || !command){console.log('sources | acquire <source_id...> [--all] [--offline] | inspect-citygml <source_id> | frame-from-envelope <source_id> <frame_id> | crs-roundtrip <frame_id> | citygml-to-glb <source_id> --frame <frame_id> [--bbox-local minE,minN,maxE,maxN] [--ids id1,id2] [--max-polygons N] | inspect-network <source_id> | inspect-poi <source_id> | inspect-vintages | rights | overlap | gap-packet');return;}
   const requireArg=(index:number):string=>{if(!args[index])throw new Error(`Missing argument ${index+1} for ${command}`);return args[index];};
-  const writesReports=['inspect-citygml','frame-from-envelope','crs-roundtrip','citygml-to-glb','inspect-network','overlap','gap-packet'].includes(command)||(command==='acquire'&&!values.offline);
+  const writesReports=['inspect-citygml','frame-from-envelope','crs-roundtrip','citygml-to-glb','inspect-network','inspect-poi','inspect-vintages','rights','overlap','gap-packet'].includes(command)||(command==='acquire'&&!values.offline);
   if(writesReports&&process.env.GTEKI_GIS_REAL_RUN!=='1')await invalidateRealRunReceipt(`gis ${positionals.join(' ')}`);
   let result:unknown;
   switch(command){
@@ -40,6 +43,9 @@ async function main() {
     }
     case 'inspect-network':{const report=await inspectNetwork(requireArg(0));result={source_id:args[0],report:`docs/gis/networks/${args[0]}.json`,verification:'UNVERIFIED'};break;}
     case 'overlap':result=await generateOverlapReports();break;
+    case 'inspect-poi':result=await inspectPoi(requireArg(0));break;
+    case 'inspect-vintages':result=await inspectVintages();break;
+    case 'rights':{const records=await generateRights();result={sources:records.length,publish_gate:'HOLD',report:'docs/gis/rights/README.md'};break;}
     case 'gap-packet':result=await gapPacket();break;
     default:throw new Error(`Unknown command: ${command}`);
   }

@@ -59,6 +59,9 @@ await run(['inspect-network','hokonavi-ikebukuro-walk-node-csv']);
 await run(['inspect-network','hokonavi-ikebukuro-walk-node-geojson']);
 await run(['inspect-network','hokonavi-oedo-shinjuku-network-geojson']);
 await run(['inspect-network','hokonavi-oedo-shinjuku-stationmap-geojson']);
+for(const id of ['toei-stores-shinjuku-csv','toei-stores-shinjuku-nishiguchi-csv','tokyo-shinjuku-facilities-zip','tokyo-shinjuku-facilities-spec-pdf','plateau-13104-related-2025','plateau-13116-related-2025'])await run(['inspect-poi',id]);
+await run(['inspect-vintages']);
+await run(['rights']);
 // Derived reports read every inventory/network report on disk; regenerate them only when all inputs were refreshed now.
 if(receipt.commands.every(command=>command.exit_code===0)){if(await run(['overlap']))await run(['gap-packet']);}
 else console.error('A prerequisite command failed; overlap and gap-packet were not regenerated to avoid mixed-vintage reports.');

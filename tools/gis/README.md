@@ -28,7 +28,7 @@ Default geometry/network tests use hand-written, clearly marked SYNTHETIC fixtur
 
 ## Store and source records
 
-`GTEKI_GIS_STORE` selects the external store; the default is `~/.gteki/gis-store`.
+`GTEKI_GIS_STORE` selects the external store; the default is `~/.gteki/gis-store`. In restricted worktrees, the verification commands can use `export npm_config_store_dir="${GTEKI_GIS_STORE:-$HOME/.gteki/gis-store}/pnpm-store"` to keep pnpm's cache in the external store. This was used for this lane's final verification; package pins and lockfiles are unchanged.
 
 ```text
 <store>/raw/<sha256>/<filename>          exact downloaded bytes, including catalog JSON
@@ -42,7 +42,7 @@ Default geometry/network tests use hand-written, clearly marked SYNTHETIC fixtur
 
 Acquisition records contain store-relative paths. A store hash is rechecked before inspection or conversion. The git commit field identifies the checkout base; this implementation is deliberately left uncommitted for the lead, so that commit alone is not a snapshot of the new tool. Current run and validation receipts record a digest of source code, manifest, codebooks, frames, tests/fixtures and package configuration. Conversion identity includes frame contents, filters, semantic dictionary inputs and tool identity; dictionary archive/member hashes are retained in inventories and sidecars. A different dictionary, tool or frame preserves a distinct conversion path.
 
-The checked-in manifest has exactly 19 bounded sources: the live PLATEAU catalog; each city's single underground GML, metadata, codelists and schemas; two Oedo-Shinjuku GeoJSON ZIPs; the Ikebukuro node/link CSV and GeoJSON pairs; three MLIT walking-network specification PDFs (2018-03, 2024-07, comparison); and the latest second-mesh 533945 ubld catalog. The spec landing page, MLIT site terms and R1 CKAN metadata are bounded supporting documents acquired by the same command and hashed inside the parent acquisition records. No full-city ZIP, related/misc ZIP, tiles, imagery, operator map or scraped graph is acquired. Catalog-dependent resources are resolved from a fresh catalog response at acquisition time. Both the response SHA and the exact JSON pointer are recorded. Expected dossier URLs are cross-checks, not resource-resolution authority. Downloads are sequential, with no more than two retries and bounded backoff. Size mismatch is recorded and causes non-zero exit. Offline mode makes no HTTP requests.
+The checked-in manifest has exactly 33 bounded sources: the original 19 entries remain unchanged, with 14 additions for S10 shops, S03 facilities/specification/reference/landing, five Tokyo/G空間 CKAN snapshots, two PLATEAU 2025 related ZIPs and PLATEAU site policy. Catalog-dependent resources resolve against freshly acquired JSON and record the snapshot hash and exact resource pointer. Raw files stay in the private external store. Expected sizes are actual previously acquired byte counts where known; catalog-declared sizes remain separate evidence. Redirected final URLs are recorded. Downloads are sequential with two retries, a global 128 MiB cap and smaller per-source caps for new inputs; size mismatch fails acquisition. Offline acquisition performs no HTTP requests. Whole city archives are never acquired. The separate vintage command reads bounded HTTP ranges only.
 
 The ignore file is a safety net, not a destination: never put downloaded bytes, real GLBs or raw archives anywhere in the repository. Only manual synthetic XML/CSV/GeoJSON fixtures belong in tests.
 
@@ -104,7 +104,7 @@ pnpm --dir tools/gis exec tsx src/validate.ts
 pnpm --dir tools/gis exec tsx src/summarize.ts
 ```
 
-The runner calls the public CLI in the requested order: acquisition; both GML inspections; frame creation/roundtrips; the smallest positive-polygon Room subtree and a full conversion for each city; R1 CSV and GeoJSON pair / S01 inspections; bbox overlap; gap packets. Each invocation records its command, exit code, elapsed time and external log pointer. Selection evidence is computed from the real feature tree. Any failed CLI invocation is recorded and stops the runner immediately; derived reports are not refreshed after failed prerequisites. Full-file memory/time evidence is emitted with each successful conversion. The current receipts are `docs/gis/real-run.json` and `docs/gis/validation.json`; superseded receipts are archived under `docs/gis/history/`.
+The runner calls the public CLI in the requested order: acquisition; both GML inspections; frame creation/roundtrips; the smallest positive-polygon Room subtree and a full conversion for each city; R1 CSV and GeoJSON pair / S01 inspections; POI/specification inspection; bounded 2023 vintage reads; rights/research generation; bbox overlap; gap packets. Each invocation records its command, exit code, elapsed time and external log pointer. Selection evidence is computed from the real feature tree. Any failed CLI invocation is recorded and stops the runner immediately; derived reports are not refreshed after failed prerequisites. Full-file memory/time evidence is emitted with each successful conversion. The current receipts are `docs/gis/real-run.json` and `docs/gis/validation.json`; superseded receipts are archived under `docs/gis/history/`.
 
 ## Rights, report size and handoff
 
@@ -136,3 +136,29 @@ The 2024 rank cross-check reads each `r_method` digit independently. Field surve
 R1 CSV/GeoJSON comparison joins unique IDs, compares all shared fields, and compares CSV lon/lat with GeoJSON Point coordinates. Numeric representation differences are compared numerically without changing either raw value; blank and null both mean absent. CSV links contain no polyline, so geometry equality is UNKNOWN. GRS80 Vincenty length sums only supplied segments and compares literal distance with a 0.05 m rounding threshold plus 0.000001 m floating tolerance. The exact R1 data have 30 links beyond that threshold; the result is `NO_VERDICT`. Low residuals support lon/lat-degree and metre consistency under the stated assumption but cannot identify the datum. EPSG:6668 remains `INFERRED_FROM_SPEC`, citing §2.2 (2018 p5; 2024 p4); RFC 7946 is an assumption only, not evidence for JGD2011.
 
 `overlap` also computes R1 node containment in the acquired PLATEAU geometry bbox by literal floor/in_out and intersection counts for supplied rt_struct 5/7 polylines. This is conditional bbox evidence only. JIS X 0410 codes use 40′×1° first meshes, 5′×7.5′ second meshes and 30″×45″ third meshes; tests include Tokyo Tower → 53393599 and nominal 53394536 bounds. The arithmetic follows the [Statistics Bureau regional-mesh explanation](https://www.stat.go.jp/data/mesh/gaiyou.html); this reference was not fetched in this lane under the network restriction. Closed bboxes include boundary-touching cells. Catalog coverage records latest files, nominal mesh bounds and computed geometry bboxes separately; nominal meshes never establish coverage. Older vintages remain UNKNOWN. See `docs/gis/research/network-codes-and-coverage.md` and generated gap packets for source hashes and findings.
+
+
+## POI and facility rights lane
+
+```sh
+pnpm --dir tools/gis gis acquire --all
+pnpm --dir tools/gis gis inspect-poi toei-stores-shinjuku-csv
+pnpm --dir tools/gis gis inspect-poi toei-stores-shinjuku-nishiguchi-csv
+pnpm --dir tools/gis gis inspect-poi tokyo-shinjuku-facilities-zip
+pnpm --dir tools/gis gis inspect-poi tokyo-shinjuku-facilities-spec-pdf
+pnpm --dir tools/gis gis inspect-poi plateau-13104-related-2025
+pnpm --dir tools/gis gis inspect-poi plateau-13116-related-2025
+pnpm --dir tools/gis gis inspect-vintages
+pnpm --dir tools/gis gis rights
+pnpm --dir tools/gis exec tsx src/real-run.ts
+pnpm --dir tools/gis exec tsx src/validate.ts
+pnpm --dir tools/gis exec tsx src/summarize.ts
+```
+
+The ordered real run regenerates these reports before overlap and gap packets. `summarize` refuses stale POI, rights or vintage fingerprints or acquisition lineage, failed/missing commands and invalidated receipts. Run summarize last. Report-writing CLI commands invalidate an earlier real-run receipt.
+
+`inspect-poi` records literal CSV headers, UTF-8/Shift_JIS detection, row/blank/distribution counts, explicit coordinate headers, bounded ZIP inventories, GeoJSON geometry/property/source fields and declared CRS. Undeclared CRS stays unknown; RFC 7946 is recorded only as an assumption. S03 PDF evidence uses local `pdftotext` (or `GTEKI_GIS_PDFTOTEXT`) with page references. 新宿 S01/E27 and 新宿西口 E01 stay separate. No text locations are geocoded and no missing IDs, coordinates, heights, floor levels or connectivity are invented. Literal route candidates remain UNVERIFIED / routable:false. GeoJSON Point observations preserve raw ordinates and their declared or assumed reference system. Geographic lon/lat and bboxes require a recognized geographic CRS or an explicit RFC 7946 assumption, plus valid longitude/latitude ranges; projected and S03 path local coordinates keep geographic fields null. Reaching the coordinate-visit limit yields a null bbox with `bbox_status: INCOMPLETE_LIMIT_REACHED` and visit/position counts. Overlap and coverage treat such a bbox as incomparable, including conditional comparisons.
+
+The vintage reader obtains 2023 v4/v3 archive URLs from the acquired G空間 package, requires a strong ETag on every response, verifies exact HTTP 206, Content-Range and the unchanged full archive length, and sends only that strong ETag in If-Range. Weak/missing/malformed ETags and Last-Modified alone fail closed before any acquisition record is written; no EOCD/central-directory re-read fallback is implemented. Each directory/member acquisition records `validator_type: STRONG_ETAG`. It parses EOCD/ZIP64 and bounded central directories, and lists nominal ubld meshes. Directory reads have a 16 MiB budget per archive; selected exact members have explicit compressed/uncompressed caps. Only members whose nominal meshes touch E27's mesh/bbox meshes are range acquired. Stored/deflate members must pass CRC32 and uncompressed-size checks and receive an uncompressed SHA-256. Every range, timestamp and validator is recorded; raw ranges and member bytes are content-addressed outside Git. The same CityGML scanner inventories selected members without borrowing 2025 dictionaries or producing GLB.
+
+`docs/gis/rights/README.md` and structured JSON per manifest source and acquired vintage member distinguish package declarations, exact resource declarations, site terms and file observations. Only integrity-checked, hashed acquired evidence can populate a licence. Package inheritance for catalog files requires an exact acquired resource URL/asset-folder match; municipality/year or matching filenames alone establish no relationship. Metadata XML rights statements keep their described-dataset scope. The E27 supporting CKAN snapshot supplies package licence and publication-period evidence for exact member resource URLs. Legacy licence labels remain historical inputs. Unknown stays unknown; every exact-resource publish gate defaults to HOLD, with required attribution/modification obligations, third-party-original and individual-law caveats, and explicit clearance requirements. The generated research packet is `docs/gis/research/poi-rights-and-vintages.md`.

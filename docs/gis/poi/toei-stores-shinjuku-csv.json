@@ -1,0 +1,275 @@
+{
+  "source_id": "toei-stores-shinjuku-csv",
+  "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
+  "source_bytes": 694,
+  "tool_input_sha256": "acb03b7ba35863fa51e8816613d777bab805755b78bb87e9b521048b523c67b6",
+  "input_sources": [
+    {
+      "source_id": "toei-stores-shinjuku-csv",
+      "sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6"
+    }
+  ],
+  "rights": {
+    "commercial_use": {
+      "status": "unknown",
+      "evidence": "docs/gis/rights/toei-stores-shinjuku-csv.json"
+    },
+    "modification_allowed": {
+      "status": "unknown",
+      "evidence": "docs/gis/rights/toei-stores-shinjuku-csv.json"
+    },
+    "redistribution_allowed": {
+      "status": "unknown",
+      "evidence": "docs/gis/rights/toei-stores-shinjuku-csv.json"
+    },
+    "attribution_text": "出典：東京都交通局「駅構内のお店」（当該リソースURL）"
+  },
+  "rights_observations": {
+    "manifest_attribution": "出典：東京都交通局「駅構内のお店」（当該リソースURL）",
+    "source_property_fields": [
+      "原典",
+      "出典",
+      "著作権",
+      "copyright",
+      "Copyright",
+      "source",
+      "Source",
+      "attribution"
+    ]
+  },
+  "station_ids": [
+    "shinjuku"
+  ],
+  "verification": "UNVERIFIED",
+  "routable": false,
+  "format": "CSV",
+  "encoding": "Shift_JIS",
+  "row_count": 5,
+  "headers": [
+    "配置",
+    "施設名",
+    "設置場所",
+    "営業時間・利用時間",
+    "サイズ・口数（コインロッカー）",
+    "座席",
+    "電話番号",
+    "ホームページ",
+    "PASMO対応",
+    "備考"
+  ],
+  "duplicate_headers": [],
+  "coordinate_fields": {
+    "latitude": null,
+    "longitude": null,
+    "status": "UNKNOWN"
+  },
+  "identifier_field": null,
+  "name_field": {
+    "field": "施設名",
+    "index": 1
+  },
+  "columns": [
+    {
+      "header": "配置",
+      "index": 0,
+      "blank_count": 0,
+      "distinct_count": 5,
+      "distinct_values": {
+        "distinct_count": 5,
+        "values": {
+          "A": 1,
+          "B": 1,
+          "C": 1,
+          "D": 1,
+          "E": 1
+        },
+        "truncated": false
+      }
+    },
+    {
+      "header": "施設名",
+      "index": 1,
+      "blank_count": 0,
+      "distinct_count": 4,
+      "distinct_values": {
+        "distinct_count": 4,
+        "values": {
+          "ATM（みずほ銀行）": 1,
+          "カレーショップC＆C": 1,
+          "コインロッカー": 2,
+          "証明写真機": 1
+        },
+        "truncated": false
+      }
+    },
+    {
+      "header": "設置場所",
+      "index": 2,
+      "blank_count": 0,
+      "distinct_count": 4,
+      "distinct_values": {
+        "distinct_count": 4,
+        "values": {
+          "B1階改札外コンコース（2出口付近）": 1,
+          "B1階改札外コンコース（4出口付近）": 2,
+          "B2階改札内コンコース（A1出口方駅務室横）": 1,
+          "B2階改札外コンコース（A1出口方改札付近）": 1
+        },
+        "truncated": false
+      }
+    },
+    {
+      "header": "営業時間・利用時間",
+      "index": 3,
+      "blank_count": 2,
+      "distinct_count": 3,
+      "distinct_values": {
+        "distinct_count": 3,
+        "values": {
+          "【大型】3口【中型】3口【標準】4口": 1,
+          "【平日】7時から22時30分まで【土曜・日曜・祝日】8時から21時まで": 1,
+          "【月曜】7時から23時まで【火曜～金曜】6時から23時まで【土曜】6時から22時まで【日曜】8時から21時まで【祝日】当該曜日営業時間": 1
+        },
+        "truncated": false
+      }
+    },
+    {
+      "header": "サイズ・口数（コインロッカー）",
+      "index": 4,
+      "blank_count": 4,
+      "distinct_count": 1,
+      "distinct_values": {
+        "distinct_count": 1,
+        "values": {
+          "【標準】20口": 1
+        },
+        "truncated": false
+      }
+    },
+    {
+      "header": "座席",
+      "index": 5,
+      "blank_count": 5,
+      "distinct_count": 0,
+      "distinct_values": {
+        "distinct_count": 0,
+        "values": {},
+        "truncated": false
+      }
+    },
+    {
+      "header": "電話番号",
+      "index": 6,
+      "blank_count": 4,
+      "distinct_count": 1,
+      "distinct_values": {
+        "distinct_count": 1,
+        "values": {
+          "03-5321-3300": 1
+        },
+        "truncated": false
+      }
+    },
+    {
+      "header": "ホームページ",
+      "index": 7,
+      "blank_count": 4,
+      "distinct_count": 1,
+      "distinct_values": {
+        "distinct_count": 1,
+        "values": {
+          "http://www.curry-cc.jp/": 1
+        },
+        "truncated": false
+      }
+    },
+    {
+      "header": "PASMO対応",
+      "index": 8,
+      "blank_count": 3,
+      "distinct_count": 1,
+      "distinct_values": {
+        "distinct_count": 1,
+        "values": {
+          "○": 2
+        },
+        "truncated": false
+      }
+    },
+    {
+      "header": "備考",
+      "index": 9,
+      "blank_count": 5,
+      "distinct_count": 0,
+      "distinct_values": {
+        "distinct_count": 0,
+        "values": {},
+        "truncated": false
+      }
+    }
+  ],
+  "literal_field_distributions": {
+    "station": [],
+    "landmark": [],
+    "operator": [],
+    "line": []
+  },
+  "observations": [
+    {
+      "source_id": "toei-stores-shinjuku-csv",
+      "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
+      "native_id": null,
+      "name": "カレーショップC＆C",
+      "latitude": null,
+      "longitude": null,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "toei-stores-shinjuku-csv",
+      "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
+      "native_id": null,
+      "name": "コインロッカー",
+      "latitude": null,
+      "longitude": null,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "toei-stores-shinjuku-csv",
+      "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
+      "native_id": null,
+      "name": "コインロッカー",
+      "latitude": null,
+      "longitude": null,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "toei-stores-shinjuku-csv",
+      "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
+      "native_id": null,
+      "name": "証明写真機",
+      "latitude": null,
+      "longitude": null,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "toei-stores-shinjuku-csv",
+      "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
+      "native_id": null,
+      "name": "ATM（みずほ銀行）",
+      "latitude": null,
+      "longitude": null,
+      "verification": "UNVERIFIED",
+      "routable": false
+    }
+  ],
+  "observations_total": 5,
+  "observations_truncated": false,
+  "topology": {
+    "status": "INVENTORY_ONLY",
+    "candidate_edges": []
+  }
+}

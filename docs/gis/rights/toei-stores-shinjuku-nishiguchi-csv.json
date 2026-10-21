@@ -1,0 +1,92 @@
+{
+  "source_id": "toei-stores-shinjuku-nishiguchi-csv",
+  "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
+  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "station_ids": [
+    "shinjuku-nishiguchi"
+  ],
+  "licence": {
+    "value": "CC-BY-4.0",
+    "status": "PACKAGE_LEVEL_DECLARED",
+    "scope": "Package only; no resource or third-party scope inferred."
+  },
+  "resource_licence": {
+    "value": null,
+    "status": "UNKNOWN"
+  },
+  "file_embedded_licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+  },
+  "declarations": [
+    {
+      "value": "CC-BY-4.0",
+      "status": "PACKAGE_LEVEL_DECLARED",
+      "evidence": {
+        "source_id": "tokyo-toei-stores-package",
+        "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
+        "location": "/result/license_id",
+        "quote": "CC-BY-4.0",
+        "scope": "Package only; no resource or third-party scope inferred."
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "source_id": "tokyo-toei-stores-package",
+      "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
+      "location": "/result/license_id",
+      "quote": "CC-BY-4.0",
+      "scope": "Package only; no resource or third-party scope inferred."
+    },
+    {
+      "source_id": "tokyo-toei-stores-package",
+      "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
+      "location": "/result/resources/11/url",
+      "quote": "other_stores_shinjuku-nishiguchi.csv",
+      "scope": "Exact catalog resource URL membership only."
+    },
+    {
+      "source_id": "tokyo-toei-stores-package",
+      "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
+      "location": "/result/resources/11",
+      "scope": "No own nonblank license/license_id/license_title/license_url field. This absence grants no permission."
+    }
+  ],
+  "input_sources": [
+    {
+      "source_id": "toei-stores-shinjuku-nishiguchi-csv",
+      "sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6"
+    },
+    {
+      "source_id": "tokyo-toei-stores-package",
+      "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea"
+    }
+  ],
+  "attribution": {
+    "required": "YES",
+    "text_required": null,
+    "proposed_text": "出典：東京都交通局「駅構内のお店」（https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku-nishiguchi.csv）",
+    "status": "EXACT_RESOURCE_CREDIT_UNKNOWN"
+  },
+  "modification_notice": {
+    "required": "YES",
+    "text": "State the actual edits and identify the source; do not imply official authorship.",
+    "status": "REQUIRED_IF_TERMS_APPLY"
+  },
+  "caveats": [
+    "No inferred permission from availability, file type, absence of notices, or a legacy manifest label.",
+    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks.",
+    "CC BY obligations are conditional on applicability; exact resource coverage and required credit parties remain UNKNOWN."
+  ],
+  "publish_gate": "HOLD",
+  "clearance_required": [
+    "Acquired rights evidence explicitly covering toei-stores-shinjuku-nishiguchi-csv, URL https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku-nishiguchi.csv, SHA-256 71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6, including the relevant member contents.",
+    "Resolve each third-party original and individual-law caveat, or exclude those contents.",
+    "Record required credit parties, source URL, licence link and actual modification notice for the proposed use."
+  ],
+  "file_rights_observations": [],
+  "verification": "UNVERIFIED",
+  "routable": false
+}

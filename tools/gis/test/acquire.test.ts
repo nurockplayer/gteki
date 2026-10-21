@@ -4,7 +4,7 @@ import { mkdtemp, readFile, rm, stat, symlink, writeFile } from 'node:fs/promise
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { acquisitionExitCode, acquisitionResultFromDownload, downloadUrl, loadSources } from '../src/acquire.js';
+import { acquisitionExitCode, acquisitionResultFromDownload, downloadUrl, loadSources, selectCkanResource } from '../src/acquire.js';
 import { getStoredSource, getStoreRoot, repoRoot, verifyStoredFile } from '../src/common.js';
 
 const servers: Server[] = [];
@@ -34,9 +34,9 @@ afterEach(async () => {
 });
 
 describe('source acquisition', () => {
-  it('loads exactly the bounded 19-source manifest with explicit unknown rights', () => {
+  it('loads exactly the bounded 33-source manifest with explicit unknown rights', () => {
     const sources = loadSources();
-    expect(sources).toHaveLength(19);
+    expect(sources).toHaveLength(33);
     expect(sources.find((source) => source.source_id === 'plateau-catalog-ubld-13116-13104')?.resolution.kind).toBe('direct');
     expect(sources.find((source) => source.source_id === 'plateau-13116-codelists')?.commercial_use.status).toBe('unknown');
   });
@@ -131,5 +131,22 @@ describe('source acquisition', () => {
       if (previous === undefined) delete process.env.GTEKI_GIS_STORE;
       else process.env.GTEKI_GIS_STORE = previous;
     }
+  });
+});
+
+
+describe('bounded CKAN resource resolution',()=>{
+  it('resolves one literal HTTPS resource and rejects duplicates, inherited URLs and other protocols',()=>{
+    const resource={url:'https://example.invalid/official/data.zip'};
+    const pkg=(resources:unknown[])=>({success:true,result:{resources}});
+    expect(selectCkanResource(pkg([resource]),'data.zip')).toEqual({...resource,index:0});
+    expect(()=>selectCkanResource(pkg([resource,resource]),'data.zip')).toThrow('found 2');
+    expect(()=>selectCkanResource(pkg([Object.create(resource)]),'data.zip')).toThrow('found 0');
+    expect(()=>selectCkanResource(pkg([{url:'file:///data.zip'}]),'data.zip')).toThrow('found 0');
+    expect(()=>selectCkanResource(Object.create({success:true,result:{resources:[resource]}}),'data.zip')).toThrow('Invalid CKAN');
+  });
+  it('enforces source caps while streaming without requiring Content-Length',async()=>{
+    const url=await serve(Buffer.alloc(200));
+    await expect(downloadUrl(url,{storeRoot:await tempStore(),maxBytes:100,backoffMs:0})).rejects.toThrow('100 byte limit');
   });
 });

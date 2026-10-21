@@ -13,7 +13,7 @@ import { citygmlToGlb } from '../src/convert.js';
 import { smallestRoom } from '../src/selection.js';
 const available=loadSources().every(s=>existsSync(join(docsRoot,'gis','acquisitions',`${s.source_id}.json`)))&&existsSync(join(getStoreRoot(),'raw'));
 describe.skipIf(!available)('real acquired sources (optional external store)',()=>{
-  it('verifies all 19 recorded SHA-256 values and byte counts',async()=>{
+  it('verifies all manifest recorded SHA-256 values and byte counts',async()=>{
     for(const source of loadSources()){const stored=await getStoredSource(source.source_id);expect(stored.record.sha256).toMatch(/^[a-f0-9]{64}$/);if(source.expected_bytes!==null)expect(stored.record.bytes).toBe(source.expected_bytes);}
   },120000);
   for(const book of codebooks)it(`checks every literal codebook label against acquired ${book.version} PDF text`,async()=>{

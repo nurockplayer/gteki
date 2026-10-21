@@ -29,9 +29,23 @@ This packet is generated from the current inventory and network report files. Mi
 - hokonavi-ikebukuro-walk-csv-pair: source CRS EPSG:6668, axis order longitude,latitude, bbox [139.69533618,35.724141027,139.722924068,35.733731143].
 - hokonavi-ikebukuro-walk-node-geojson: source CRS EPSG:6668, axis order longitude,latitude, bbox [139.69533618,35.724141027,139.722924068,35.733731143].
 - hokonavi-ikebukuro-walk-link-geojson: source CRS EPSG:6668, axis order longitude,latitude, bbox [139.69533618,35.724141027,139.722924068,35.733731143].
+- plateau-13116-related-2025:13116_toshima-ku_pref_2023_shelter.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [139.680022,35.716454,139.74348799,35.744312].
+- plateau-13116-related-2025:13116_toshima-ku_pref_2023_park.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [139.68017243,35.7131,139.7498,35.74576942].
+- plateau-13116-related-2025:13116_toshima-ku_pref_2025_landmark.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [139.67859707,35.714298848,139.74674529,35.74490964].
+- plateau-13116-related-2025:13116_toshima-ku_pref_2025_station.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [139.683010912,35.716569724,139.748127618,35.745291981].
+- plateau-13116-related-2025:13116_toshima-ku_pref_2025_railway.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [139.677425528,35.714544972,139.74909424,35.745580493].
+- plateau-13116-related-2025:13116_toshima-ku_pref_2025_emergency_route.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [139.67742621,35.714460811,139.748381664,35.744917506].
+- plateau-13116-related-2025:13116_toshima-ku_pref_2025_border.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [139.677344306,35.712265775,139.752760441,35.745792667].
 - plateau-13116-ubld-53394576 / hokonavi-ikebukuro-walk-csv-pair: INTERSECTS; projected bbox-boundary separation approximation 0 m.
 - plateau-13116-ubld-53394576 / hokonavi-ikebukuro-walk-node-geojson: INTERSECTS; projected bbox-boundary separation approximation 0 m.
 - plateau-13116-ubld-53394576 / hokonavi-ikebukuro-walk-link-geojson: INTERSECTS; projected bbox-boundary separation approximation 0 m.
+- plateau-13116-ubld-53394576 / plateau-13116-related-2025:13116_toshima-ku_pref_2023_shelter.geojson: UNKNOWN; projected bbox-boundary separation approximation UNKNOWN m.
+- plateau-13116-ubld-53394576 / plateau-13116-related-2025:13116_toshima-ku_pref_2023_park.geojson: UNKNOWN; projected bbox-boundary separation approximation UNKNOWN m.
+- plateau-13116-ubld-53394576 / plateau-13116-related-2025:13116_toshima-ku_pref_2025_landmark.geojson: UNKNOWN; projected bbox-boundary separation approximation UNKNOWN m.
+- plateau-13116-ubld-53394576 / plateau-13116-related-2025:13116_toshima-ku_pref_2025_station.geojson: UNKNOWN; projected bbox-boundary separation approximation UNKNOWN m.
+- plateau-13116-ubld-53394576 / plateau-13116-related-2025:13116_toshima-ku_pref_2025_railway.geojson: UNKNOWN; projected bbox-boundary separation approximation UNKNOWN m.
+- plateau-13116-ubld-53394576 / plateau-13116-related-2025:13116_toshima-ku_pref_2025_emergency_route.geojson: UNKNOWN; projected bbox-boundary separation approximation UNKNOWN m.
+- plateau-13116-ubld-53394576 / plateau-13116-related-2025:13116_toshima-ku_pref_2025_border.geojson: UNKNOWN; projected bbox-boundary separation approximation UNKNOWN m.
 - Complete computed layer-pair table: ../overlap/ikebukuro.json. Pairwise bbox relation is computed on source bboxes normalized to JGD2011 longitude,latitude. Disjoint-bbox minimum separation is approximated by comparing projected EPSG:6677 boundary segments sampled at 32 segments per edge. Projected axis-aligned envelopes are retained as context only.
 
 ## Literal codes and catalog coverage
@@ -49,7 +63,13 @@ This packet is generated from the current inventory and network report files. Mi
 - Do source geometries and network links match current conditions, and what survey date and tolerance support that claim?
 - Which operators and station areas are in scope? Keep each operator layer separate until an authorized mapping is evidenced.
 
+## POI, rights and vintage evidence
+- plateau-13116-related-2025: see member inventories rows/features; UNVERIFIED / routable:false.
+- Exact-resource rights: all HOLD. See ../rights/README.md for acquisition hashes, declaration scopes and clearance requirements.
+
 ## HOLD items
+- All exact-resource publication gates remain HOLD; package and site declarations do not clear third-party or individual-law scope.
+- POI, facility and source route availability does not establish current access, floor correspondence or navigable connectivity.
 - Paid/unpaid boundary is not evidenced as present in the available PLATEAU underground-building file; HOLD for routing across fare boundaries.
 - Explicit connectivity is not established by the available CityGML inventory; HOLD for route generation.
 - Floor-to-elevation mapping remains UNKNOWN even when literal floor labels are present; do not derive elevation from labels.

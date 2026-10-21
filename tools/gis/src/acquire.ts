@@ -24,6 +24,7 @@ export function loadSources(): SourceManifest[] {
     safeSourceId(item.source_id);
     if (ids.has(item.source_id)) throw new Error(`Duplicate source_id: ${item.source_id}`);
     ids.add(item.source_id);
+    if (item.max_bytes !== undefined && (!Number.isSafeInteger(item.max_bytes) || item.max_bytes < 1 || item.max_bytes > MAX_DOWNLOAD_BYTES)) throw new Error(`Invalid max_bytes in ${item.source_id}`);
     if (!['yes', 'no', 'conditional', 'unknown'].includes(item.commercial_use.status)
       || !['yes', 'no', 'conditional', 'unknown'].includes(item.modification_allowed.status)
       || !['yes', 'no', 'conditional', 'unknown'].includes(item.redistribution_allowed.status)) {
@@ -36,9 +37,11 @@ export function loadSources(): SourceManifest[] {
 // Exposed for deterministic local-server tests and other bounded acquisition clients.
 export async function downloadUrl(
   url: string,
-  options: { storeRoot?: string; expectedBytes?: number | null; userAgent?: string; retries?: number; backoffMs?: number } = {},
+  options: { storeRoot?: string; expectedBytes?: number | null; maxBytes?: number; userAgent?: string; retries?: number; backoffMs?: number } = {},
 ): Promise<{ finalUrl: string; httpStatus: number; headers: Record<string, string | null>; bytes: number; sha256: string; path: string; storePath: string; sizeCheck: AcquisitionRecord['size_check'] }> {
   const root = resolveStoreRoot(options.storeRoot ?? getStoreRoot());
+  const maxBytes = options.maxBytes ?? MAX_DOWNLOAD_BYTES;
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 1 || maxBytes > MAX_DOWNLOAD_BYTES) throw new RangeError('Invalid download byte cap');
   await mkdir(join(root, 'tmp'), { recursive: true, mode: 0o700 });
   await assertPathWithinStore(root, join(root, 'tmp'));
   const headers: Record<string, string | null> = { 'content-type': null, 'content-length': null, etag: null, 'last-modified': null, date: null };
@@ -53,13 +56,18 @@ export async function downloadUrl(
         await response.body?.cancel();
         throw new Error(`HTTP ${response.status} while downloading ${url}`);
       }
+      const declaredLength = response.headers.get('content-length');
+      if (declaredLength && /^\d+$/.test(declaredLength) && Number(declaredLength) > maxBytes) {
+        await response.body.cancel();
+        throw new RangeError(`Download exceeded ${maxBytes} byte limit: ${url}`);
+      }
       const hash = createHash('sha256');
       let bytes = 0;
       const meter = new Transform({
         transform(chunk: Buffer, _encoding, callback) {
           bytes += chunk.length;
-          if (bytes > MAX_DOWNLOAD_BYTES) {
-            callback(new RangeError(`Download exceeded ${MAX_DOWNLOAD_BYTES} byte limit: ${url}`));
+          if (bytes > maxBytes) {
+            callback(new RangeError(`Download exceeded ${maxBytes} byte limit: ${url}`));
             return;
           }
           hash.update(chunk);
@@ -96,6 +104,20 @@ export async function downloadUrl(
 }
 
 type Resolved = { url: string; evidence: ResolutionEvidence };
+export function selectCkanResource(payload: unknown, match: string): {url:string;index:number} {
+  const root = payload && typeof payload === 'object' ? payload as Record<string, unknown> : null;
+  const result = root && Object.hasOwn(root, 'result') && root.result && typeof root.result === 'object' ? root.result as Record<string, unknown> : null;
+  if (!root || !Object.hasOwn(root,'success') || root.success !== true || !result || !Object.hasOwn(result, 'resources') || !Array.isArray(result.resources)) throw new Error('Invalid CKAN package');
+  const matches = result.resources.flatMap((resource: unknown, index: number) => {
+    if (!resource || typeof resource !== 'object' || !Object.hasOwn(resource, 'url')) return [];
+    const url = (resource as Record<string, unknown>).url;
+    if (typeof url !== 'string') return [];
+    try { if (new URL(url).protocol === 'https:' && decodeURIComponent(new URL(url).pathname).split('/').at(-1) === match) return [{url,index}]; } catch { /* untrusted URL */ }
+    return [];
+  });
+  if (matches.length !== 1) throw new Error(`Expected one CKAN resource ${match}, found ${matches.length}`);
+  return matches[0]!;
+}
 function collectStrings(value: unknown, path = ''): Array<{ value: string; pointer: string }> {
   if (typeof value === 'string') return [{ value, pointer: path || '/' }];
   if (Array.isArray(value)) return value.flatMap((child, index) => collectStrings(child, `${path}/${index}`));
@@ -119,6 +141,11 @@ async function resolveCatalogSource(source: SourceManifest): Promise<Resolved> {
   }
   const payload = await readJson<unknown>(path);
   const match = resolution.match;
+  if (resolution.kind === 'ckan_resource') {
+    const selected=selectCkanResource(payload,match);
+    if(new URL(selected.url).origin!==new URL(source.expected_url).origin)throw new Error(`CKAN resource moved outside the expected official origin for ${source.source_id}`);
+    return {url:selected.url,evidence:{source_id:catalog.source_id,sha256:record.sha256,json_pointer:`/result/resources/${selected.index}/url`}};
+  }
   const cityCode = /^plateau-(13116|13104)-/.exec(source.source_id)?.[1];
   if (!cityCode || !payload || typeof payload !== 'object' || !Array.isArray((payload as { cities?: unknown }).cities)) {
     throw new Error(`Catalog response has no cities array or source city code for ${source.source_id}`);
@@ -172,7 +199,7 @@ async function performAcquisition(source: SourceManifest, options: { retryDelayM
   const requestedAt = new Date().toISOString();
   try {
     const resolved = await resolveCatalogSource(source);
-    const downloaded = await downloadUrl(resolved.url, { expectedBytes: source.expected_bytes, backoffMs: options.retryDelayMs });
+    const downloaded = await downloadUrl(resolved.url, { expectedBytes: source.expected_bytes, maxBytes: source.max_bytes, backoffMs: options.retryDelayMs });
     const record: AcquisitionRecord = {
       source_id: source.source_id,
       resolved_url: downloaded.finalUrl,
@@ -225,20 +252,21 @@ export async function acquireSources(ids: string[], options: { offline?: boolean
     return output;
   }
   const output: AcquisitionResult[] = [];
-  const catalogId = 'plateau-catalog-ubld-13116-13104';
-  const needsCatalog = ids.some((id) => byId.get(id)?.resolution.kind === 'plateau_catalog_api');
-  let catalogFreshResult: AcquisitionResult | null = null;
-  if (needsCatalog) {
-    // Every online resolution starts from a fresh API snapshot, even if a prior
-    // acquisition record exists. The snapshot is archived and hashed first.
-    catalogFreshResult = await performAcquisition(byId.get(catalogId)!);
-    if (ids.includes(catalogId)) output.push(catalogFreshResult);
+  const catalogIds = new Set(ids.flatMap(id => {const r=byId.get(id)!.resolution;return r.kind==='direct'?[]:[r.catalog_source_id];}));
+  const freshCatalogs = new Map<string,AcquisitionResult>();
+  for (const catalogId of catalogIds) {
+    const catalog = byId.get(catalogId);
+    if (!catalog || catalog.resolution.kind !== 'direct') throw new Error(`Catalog must be a bounded direct source: ${catalogId}`);
+    const fresh = await performAcquisition(catalog);
+    freshCatalogs.set(catalogId,fresh);
+    if (ids.includes(catalogId)) output.push(fresh);
   }
   for (const id of ids) {
-    if (needsCatalog && id === catalogId) continue;
+    if (catalogIds.has(id)) continue;
     const source = byId.get(id)!;
-    if (source.resolution.kind === 'plateau_catalog_api' && catalogFreshResult && !catalogFreshResult.ok) {
-      output.push({ source_id: id, ok: false, error: `Fresh catalog acquisition failed: ${catalogFreshResult.error ?? 'unknown error'}` });
+    const fresh = source.resolution.kind==='direct'?undefined:freshCatalogs.get(source.resolution.catalog_source_id);
+    if (fresh && !fresh.ok) {
+      output.push({ source_id: id, ok: false, error: `Fresh catalog acquisition failed: ${fresh.error ?? 'unknown error'}` });
       continue;
     }
     const result = await performAcquisition(source);

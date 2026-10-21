@@ -2,6 +2,8 @@ import path from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import { docsRoot, readJson, writeJson } from './common.js';
 import type { StationOverlapReport } from './overlap.js';
+import { loadSources } from './acquire.js';
+import { toolFingerprint } from './provenance.js';
 
 const STATIONS = [
   { id: 'ikebukuro', city: '13116', gml: 'plateau-13116-ubld-53394576', network: 'hokonavi-ikebukuro-walk-node-csv' },
@@ -82,7 +84,14 @@ function describeOverlap(report: StationOverlapReport | null): string[] {
 
 export async function gapPacket(): Promise<Record<string, unknown>> {
   const results: Record<string, unknown> = {};
+  const fingerprint=await toolFingerprint();
+  const rights=await Promise.all(loadSources().map(s=>readJson<any>(path.join(docsRoot,'gis','rights',`${s.source_id}.json`))));
+  const pois=await Promise.all(['toei-stores-shinjuku-csv','toei-stores-shinjuku-nishiguchi-csv','tokyo-shinjuku-facilities-zip','tokyo-shinjuku-facilities-spec-pdf','plateau-13104-related-2025','plateau-13116-related-2025'].map(id=>readJson<any>(path.join(docsRoot,'gis','poi',`${id}.json`))));
+  const vintage=await readJson<any>(path.join(docsRoot,'gis','vintages','shinjuku-2023.json'));
+  for(const r of [...rights,...pois,vintage])if(r.tool_input_sha256!==fingerprint)throw new Error('Gap packet input has a stale tool fingerprint');
   for (const station of STATIONS) {
+    const stationRights=rights.filter(r=>r.station_ids.includes(station.id)).map(r=>({source_id:r.source_id,source_sha256:r.source_sha256,licence:r.licence,resource_licence:r.resource_licence,publish_gate:r.publish_gate}));
+    const stationPois=pois.filter(r=>r.station_ids.includes(station.id)).map(r=>({source_id:r.source_id,source_sha256:r.source_sha256,format:r.format,row_count:r.row_count??null,members:r.members?.map((m:any)=>({file:m.file,feature_count:m.feature_count??null,geometry_type_counts:m.geometry_type_counts??null})),verification:'UNVERIFIED',routable:false}));
     const inventory = await maybeReport(`inventory/${station.gml}.inventory.json`);
     const network = await maybeReport(`networks/${station.network}.json`);
     const overlap = await maybeReport(`overlap/${station.id}.json`) as StationOverlapReport | null;
@@ -98,6 +107,8 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
       navigable_connectivity: summarizePresence(valuesForSemantic(inventory, ['navigable_connectivity'])),
     };
     const holds = [];
+    holds.push('All exact-resource publication gates remain HOLD; package and site declarations do not clear third-party or individual-law scope.');
+    holds.push('POI, facility and source route availability does not establish current access, floor correspondence or navigable connectivity.');
     if (!inventory) holds.push('CityGML inventory is unavailable; hold routing claims pending a file-based inventory.');
     else {
       if (relevant.paid_boundary === null || (relevant.paid_boundary?.answer ?? relevant.paid_boundary?.status) !== 'PRESENT') holds.push('Paid/unpaid boundary is not evidenced as present in the available PLATEAU underground-building file; HOLD for routing across fare boundaries.');
@@ -136,6 +147,11 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
       '- Do source geometries and network links match current conditions, and what survey date and tolerance support that claim?',
       '- Which operators and station areas are in scope? Keep each operator layer separate until an authorized mapping is evidenced.',
       '',
+      '## POI, rights and vintage evidence',
+      ...stationPois.map(p=>`- ${p.source_id}: ${p.row_count??'see member inventories'} rows/features; UNVERIFIED / routable:false.`),
+      '- Exact-resource rights: all HOLD. See ../rights/README.md for acquisition hashes, declaration scopes and clearance requirements.',
+      ...(station.id==='shinjuku'?['- 2023 v4/v3 directory and exact member evidence: ../vintages/shinjuku-2023.json. Nominal mesh tests and actual geometry bboxes are separate.','- 新宿 S01/E27 and 新宿西口 E01 remain separate station identities; no location-text geocoding or identity join.']:[]),
+      '',
       '## HOLD items',
       ...holds.map((h) => `- ${h}`),
       '- All normalized network and geometry records remain UNVERIFIED; no output from this lane establishes a passenger route.',
@@ -143,6 +159,9 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
     ].join('\n');
     const document = {
       station_id: station.id,
+      tool_input_sha256:fingerprint,
+      rights:stationRights,poi_availability:stationPois,
+      plateau_2023_vintage:station.id==='shinjuku'?vintage:null,
       source_ids: { citygml: station.gml, network: station.network },
       input_status: { citygml_inventory: inventory ? 'AVAILABLE' : 'UNKNOWN', network_report: network ? 'AVAILABLE' : 'UNKNOWN' },
       semantic_presence: relevant,
@@ -158,7 +177,7 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
         pair_relations: Object.fromEntries(['INTERSECTS','DISJOINT','UNKNOWN'].map(relation => [relation,overlap.pairs.filter(pair => pair.bbox_relation === relation).length])),
         interpretation_limit: overlap.interpretation_limit } : null,
       holds,
-      unknowns: ['vertical datum interpretation', 'floor-to-elevation mapping', 'operator boundaries', 'paid/unpaid status', 'currency with current station configuration', 'survey accuracy and date','applicable walking-network spec version','older PLATEAU vintages','feature correspondence','R1 datum verification'],
+      unknowns: ['vertical datum interpretation', 'floor-to-elevation mapping', 'operator boundaries', 'paid/unpaid status', 'currency with current station configuration', 'survey accuracy and date','applicable walking-network spec version','vintages outside the bounded 2023 v4/v3 inspection','feature correspondence','R1 datum verification','exact resource and third-party-original rights','undeclared GeoJSON CRS'],
     };
     await writeJson(path.join(docsRoot, 'gis', 'gaps', `${station.id}.json`), document);
     await writeFile(path.join(docsRoot, 'gis', 'gaps', `${station.id}.md`), markdown, 'utf8');

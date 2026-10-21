@@ -1,0 +1,24 @@
+{
+  "source_id": "tokyo-shinjuku-facilities-package",
+  "resolved_url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000008d0000000037",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-20T18:06:28.015Z",
+  "completed_at": "2026-10-20T18:06:28.073Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/json;charset=utf-8",
+    "content-length": null,
+    "etag": null,
+    "last-modified": null,
+    "date": "Tue, 20 Oct 2026 18:06:28 GMT"
+  },
+  "bytes": 4486,
+  "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
+  "store_path": "raw/f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96/package_show",
+  "tool_version": "0.1.0",
+  "git_commit": "eeaf317775f3ecd3f84cbc07fc1e162c41e451a3",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online"
+}

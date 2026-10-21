@@ -1,0 +1,24 @@
+{
+  "source_id": "plateau-13116-package-2025",
+  "resolved_url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13116-toshima-ku-2025",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-20T18:06:28.205Z",
+  "completed_at": "2026-10-20T18:06:28.259Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/json;charset=utf-8",
+    "content-length": null,
+    "etag": null,
+    "last-modified": null,
+    "date": "Tue, 20 Oct 2026 18:06:28 GMT"
+  },
+  "bytes": 112532,
+  "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+  "store_path": "raw/e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b/package_show",
+  "tool_version": "0.1.0",
+  "git_commit": "eeaf317775f3ecd3f84cbc07fc1e162c41e451a3",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online"
+}

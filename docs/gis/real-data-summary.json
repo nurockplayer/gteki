@@ -1,7 +1,2630 @@
 {
-  "tool_input_sha256": "3a59c536b3d0efee1964f814e9144dc501e4262488e750c1889831759354f6e5",
+  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
   "verification": "UNVERIFIED",
   "navigation_use": "NOT_FOR_ROUTING",
+  "poi": [
+    {
+      "source_id": "plateau-13104-related-2025",
+      "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
+      "station_ids": [
+        "shinjuku"
+      ],
+      "format": "ZIP",
+      "row_count": null,
+      "headers": null,
+      "coordinate_fields": null,
+      "members": [
+        {
+          "file": "13104_shinjuku-ku_pref_2023_shelter.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 110,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Point": 110
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.678522,
+            35.677806468,
+            139.742017,
+            35.727285
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "レベル",
+            "住所",
+            "収容人数",
+            "名称",
+            "対象とする災害の分類",
+            "施設の種類",
+            "施設規模",
+            "行政区域",
+            "高さ"
+          ]
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2023_park.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 168,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Point": 168
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.67365,
+            35.67548291,
+            139.74226,
+            35.7259
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "供用済面積",
+            "供用開始年",
+            "公園名",
+            "公園種別",
+            "所在地市区町村名",
+            "所在地都道府県名",
+            "管理市区町村",
+            "管理都道府県・整備局",
+            "都市計画決定"
+          ]
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_landmark.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 201,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Point": 201
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.678326236,
+            35.67966927,
+            139.74273124,
+            35.727351972
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "名称",
+            "種類",
+            "高さ"
+          ]
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_station.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 48,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Point": 48
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.683470344,
+            35.679904607,
+            139.745628981,
+            35.723363646
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "事業者種別",
+            "路線名",
+            "運営会社",
+            "鉄道区分",
+            "駅名",
+            "高さ"
+          ]
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_railway.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 108,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "LineString": 103,
+              "MultiLineString": 5
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.679152355,
+            35.678768507,
+            139.745770351,
+            35.723675633
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "事業者種別",
+            "行政区域",
+            "路線名",
+            "運営会社",
+            "鉄道区分"
+          ]
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 45,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "LineString": 39,
+              "MultiLineString": 6
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.675259079,
+            35.674004657,
+            139.745809259,
+            35.729300746
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "任意ID",
+            "区分",
+            "枝ID",
+            "行政区域",
+            "資料名称",
+            "資料年月",
+            "路線名称",
+            "道路種別"
+          ]
+        },
+        {
+          "file": "13104_shinjuku-ku_pref_2025_border.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 1,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "LineString": 1
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.673437782,
+            35.673433081,
+            139.745870441,
+            35.729519946
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "city_code",
+            "city_name",
+            "prefecture_code",
+            "prefecture_name"
+          ]
+        }
+      ],
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "station_ids": [
+        "ikebukuro"
+      ],
+      "format": "ZIP",
+      "row_count": null,
+      "headers": null,
+      "coordinate_fields": null,
+      "members": [
+        {
+          "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 42,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Point": 42
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.680022,
+            35.716454,
+            139.74348799,
+            35.744312
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "レベル",
+            "住所",
+            "収容人数",
+            "名称",
+            "対象とする災害の分類",
+            "施設の種類",
+            "施設規模",
+            "行政区域",
+            "高さ"
+          ]
+        },
+        {
+          "file": "13116_toshima-ku_pref_2023_park.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 62,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Point": 62
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.68017243,
+            35.7131,
+            139.7498,
+            35.74576942
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "供用済面積",
+            "供用開始年",
+            "公園名",
+            "公園種別",
+            "所在地市区町村名",
+            "所在地都道府県名",
+            "管理市区町村",
+            "管理都道府県・整備局",
+            "都市計画決定"
+          ]
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 143,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Point": 143
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.67859707,
+            35.714298848,
+            139.74674529,
+            35.74490964
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "名称",
+            "種類",
+            "高さ"
+          ]
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_station.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 35,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Point": 35
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.683010912,
+            35.716569724,
+            139.748127618,
+            35.745291981
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "事業者種別",
+            "路線名",
+            "運営会社",
+            "鉄道区分",
+            "駅名",
+            "高さ"
+          ]
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_railway.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 81,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "LineString": 79,
+              "MultiLineString": 2
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.677425528,
+            35.714544972,
+            139.74909424,
+            35.745580493
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "事業者種別",
+            "行政区域",
+            "路線名",
+            "運営会社",
+            "鉄道区分"
+          ]
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 26,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "LineString": 24,
+              "MultiLineString": 2
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.67742621,
+            35.714460811,
+            139.748381664,
+            35.744917506
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "任意ID",
+            "区分",
+            "枝ID",
+            "行政区域",
+            "資料名称",
+            "資料年月",
+            "路線名称",
+            "道路種別"
+          ]
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_border.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 1,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "LineString": 1
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.677344306,
+            35.712265775,
+            139.752760441,
+            35.745792667
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "city_code",
+            "city_name",
+            "prefecture_code",
+            "prefecture_name"
+          ]
+        }
+      ],
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "toei-stores-shinjuku-csv",
+      "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
+      "station_ids": [
+        "shinjuku"
+      ],
+      "format": "CSV",
+      "row_count": 5,
+      "headers": [
+        "配置",
+        "施設名",
+        "設置場所",
+        "営業時間・利用時間",
+        "サイズ・口数（コインロッカー）",
+        "座席",
+        "電話番号",
+        "ホームページ",
+        "PASMO対応",
+        "備考"
+      ],
+      "coordinate_fields": {
+        "latitude": null,
+        "longitude": null,
+        "status": "UNKNOWN"
+      },
+      "members": null,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "toei-stores-shinjuku-nishiguchi-csv",
+      "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
+      "station_ids": [
+        "shinjuku-nishiguchi"
+      ],
+      "format": "CSV",
+      "row_count": 17,
+      "headers": [
+        "配置",
+        "施設名",
+        "設置場所",
+        "営業時間・利用時間",
+        "サイズ・口数（コインロッカー）",
+        "座席",
+        "電話番号",
+        "ホームページ",
+        "PASMO対応",
+        "備考"
+      ],
+      "coordinate_fields": {
+        "latitude": null,
+        "longitude": null,
+        "status": "UNKNOWN"
+      },
+      "members": null,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-spec-pdf",
+      "source_sha256": "c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095",
+      "station_ids": [
+        "shinjuku"
+      ],
+      "format": "PDF",
+      "row_count": null,
+      "headers": null,
+      "coordinate_fields": null,
+      "members": null,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-zip",
+      "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+      "station_ids": [
+        "shinjuku"
+      ],
+      "format": "ZIP",
+      "row_count": null,
+      "headers": null,
+      "coordinate_fields": null,
+      "members": [
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/com-entity.geojson",
+          "kind": "JSON_METADATA",
+          "feature_count": null,
+          "geometry_type_counts": null,
+          "bbox": null,
+          "crs": null,
+          "crs_status": null,
+          "property_keys": null
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/com-map.geojson",
+          "kind": "JSON_METADATA",
+          "feature_count": null,
+          "geometry_type_counts": null,
+          "bbox": null,
+          "crs": null,
+          "crs_status": null,
+          "property_keys": null
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-1F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 13125,
+          "geometry_type_counts": {
+            "distinct_count": 3,
+            "values": {
+              "MultiPolygon": 1,
+              "Point": 3,
+              "Polygon": 13121
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.696606,
+            35.686519,
+            139.7034889,
+            35.694624
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "area",
+            "barrier",
+            "display_name",
+            "entities",
+            "facility",
+            "from",
+            "int_address",
+            "marker",
+            "nonphysical",
+            "object",
+            "openinghour",
+            "safety",
+            "service",
+            "structure",
+            "to",
+            "traffic",
+            "use",
+            "vegetation"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-2F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 309,
+          "geometry_type_counts": {
+            "distinct_count": 3,
+            "values": {
+              "MultiPolygon": 9,
+              "Point": 32,
+              "Polygon": 268
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.696746,
+            35.6877894,
+            139.7018733,
+            35.6953073
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "barrier",
+            "class",
+            "currency",
+            "disabledaccess",
+            "display_name",
+            "entities",
+            "facility",
+            "fixture",
+            "from",
+            "gender",
+            "int_address",
+            "openinghour",
+            "service",
+            "structure",
+            "to",
+            "use",
+            "vegetation"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-3F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 78,
+          "geometry_type_counts": {
+            "distinct_count": 3,
+            "values": {
+              "LineString": 4,
+              "Point": 6,
+              "Polygon": 68
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.6998346,
+            35.6879646,
+            139.7021531,
+            35.6892511
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "area",
+            "disabledaccess",
+            "display_name",
+            "entities",
+            "facility",
+            "gender",
+            "int_address",
+            "meta",
+            "object",
+            "structure",
+            "vegetation"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-4F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 142,
+          "geometry_type_counts": {
+            "distinct_count": 3,
+            "values": {
+              "LineString": 36,
+              "Point": 3,
+              "Polygon": 103
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.7002166,
+            35.6880144,
+            139.701729,
+            35.6889968
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "area",
+            "class",
+            "display_name",
+            "entities",
+            "facility",
+            "gender",
+            "int_address",
+            "object",
+            "service",
+            "structure",
+            "vegetation"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B1F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 1246,
+          "geometry_type_counts": {
+            "distinct_count": 4,
+            "values": {
+              "LineString": 43,
+              "MultiPolygon": 23,
+              "Point": 104,
+              "Polygon": 1076
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.6965262,
+            35.6873837,
+            139.7018188,
+            35.6942694
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "area",
+            "barrier",
+            "class",
+            "currency",
+            "disabledaccess",
+            "display_name",
+            "entities",
+            "facility",
+            "from",
+            "gender",
+            "int_address",
+            "openinghour",
+            "safety",
+            "service",
+            "structure",
+            "to",
+            "traffic",
+            "type",
+            "use",
+            "vegetation"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B2F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 183,
+          "geometry_type_counts": {
+            "distinct_count": 4,
+            "values": {
+              "LineString": 5,
+              "MultiPolygon": 5,
+              "Point": 47,
+              "Polygon": 126
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.697443,
+            35.6901852,
+            139.7033309,
+            35.6928155
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "area",
+            "barrier",
+            "currency",
+            "display_name",
+            "entities",
+            "facility",
+            "fixture",
+            "from",
+            "int_address",
+            "openinghour",
+            "safety",
+            "service",
+            "structure",
+            "to",
+            "type",
+            "use"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B3F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 338,
+          "geometry_type_counts": {
+            "distinct_count": 4,
+            "values": {
+              "LineString": 4,
+              "MultiPolygon": 2,
+              "Point": 57,
+              "Polygon": 275
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.6989283,
+            35.691889,
+            139.7037375,
+            35.6950028
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "area",
+            "barrier",
+            "class",
+            "currency",
+            "disabledaccess",
+            "display_name",
+            "entities",
+            "facility",
+            "fixture",
+            "from",
+            "gender",
+            "int_address",
+            "object",
+            "safety",
+            "service",
+            "structure",
+            "type",
+            "use"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B4F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 37,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Polygon": 37
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.6969636,
+            35.6876945,
+            139.6999335,
+            35.6938787
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "display_name",
+            "facility",
+            "structure"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B5F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 12,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Polygon": 12
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.6970956,
+            35.6877679,
+            139.699911,
+            35.6890039
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "display_name",
+            "facility"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-M1F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 53,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "Point": 3,
+              "Polygon": 50
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.699162,
+            35.6895269,
+            139.6998565,
+            35.6923585
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "display_name",
+            "entities",
+            "facility",
+            "from",
+            "gender",
+            "int_address",
+            "service",
+            "structure",
+            "to"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-MB2F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 33,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "Point": 5,
+              "Polygon": 28
+            },
+            "truncated": false
+          },
+          "bbox": [
+            139.6987976,
+            35.692418,
+            139.6994396,
+            35.6937079
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "currency",
+            "display_name",
+            "entities",
+            "facility",
+            "service",
+            "structure",
+            "to"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-1F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 13129,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "Path": 13126,
+              "Point": 3
+            },
+            "truncated": false
+          },
+          "bbox": [
+            2071.212,
+            1248.57,
+            2089.127,
+            1274.174
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "area",
+            "barrier",
+            "display_name",
+            "entities",
+            "facility",
+            "from",
+            "int_address",
+            "marker",
+            "nonphysical",
+            "object",
+            "opening hour",
+            "safety",
+            "service",
+            "structure",
+            "to",
+            "traffic",
+            "use",
+            "vegetation"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-2F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 309,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "Path": 277,
+              "Point": 32
+            },
+            "truncated": false
+          },
+          "bbox": [
+            779.619,
+            829.184,
+            2398.372,
+            1666.27
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "barrier",
+            "class",
+            "currency",
+            "disabled access",
+            "display_name",
+            "entities",
+            "facility",
+            "fixture",
+            "from",
+            "gender",
+            "int_address",
+            "opening hour",
+            "service",
+            "structure",
+            "to",
+            "use",
+            "vegetation"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-3F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 78,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "Path": 72,
+              "Point": 6
+            },
+            "truncated": false
+          },
+          "bbox": [
+            830.583,
+            1381.167,
+            1049.222,
+            1672.979
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "area",
+            "disabled access",
+            "display_name",
+            "entities",
+            "facility",
+            "gender",
+            "int_address",
+            "meta",
+            "object",
+            "structure",
+            "vegetation"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-4F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 142,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "Path": 139,
+              "Point": 3
+            },
+            "truncated": false
+          },
+          "bbox": [
+            846,
+            1440.083,
+            1055.333,
+            1669.708
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "area",
+            "class",
+            "display_name",
+            "entities",
+            "facility",
+            "gender",
+            "int_address",
+            "object",
+            "service",
+            "structure",
+            "vegetation"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B1F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 1248,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "Path": 1144,
+              "Point": 104
+            },
+            "truncated": false
+          },
+          "bbox": [
+            744.638,
+            152.206,
+            2599.562,
+            1910.894
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "area",
+            "barrier",
+            "class",
+            "currency",
+            "disabled access",
+            "display_name",
+            "entities",
+            "facility",
+            "from",
+            "gender",
+            "int_address",
+            "opening hour",
+            "safety",
+            "service",
+            "structure",
+            "to",
+            "traffic",
+            "type",
+            "use",
+            "vegetation"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B2F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 184,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "Path": 137,
+              "Point": 47
+            },
+            "truncated": false
+          },
+          "bbox": [
+            2051.816,
+            723.021,
+            2582.872,
+            2315.766
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "area",
+            "barrier",
+            "currency",
+            "display_name",
+            "entities",
+            "facility",
+            "fixture",
+            "from",
+            "int_address",
+            "opening hour",
+            "safety",
+            "service",
+            "structure",
+            "to",
+            "type",
+            "use"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B3F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 338,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "Path": 281,
+              "Point": 57
+            },
+            "truncated": false
+          },
+          "bbox": [
+            2254.372,
+            1204.646,
+            3225.83,
+            2495.89
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "area",
+            "barrier",
+            "class",
+            "currency",
+            "disabled access",
+            "display_name",
+            "entities",
+            "facility",
+            "fixture",
+            "from",
+            "gender",
+            "int_address",
+            "object",
+            "safety",
+            "service",
+            "structure",
+            "type",
+            "use"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B4F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 37,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Path": 37
+            },
+            "truncated": false
+          },
+          "bbox": null,
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "display_name",
+            "facility",
+            "structure"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B5F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 12,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Path": 12
+            },
+            "truncated": false
+          },
+          "bbox": null,
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "display_name",
+            "facility"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-M1F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 53,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "Path": 50,
+              "Point": 3
+            },
+            "truncated": false
+          },
+          "bbox": [
+            2250.663,
+            1329.796,
+            2298.306,
+            1331.24
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "display_name",
+            "entities",
+            "facility",
+            "from",
+            "gender",
+            "int_address",
+            "service",
+            "structure",
+            "to"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-MB2F.geojson",
+          "kind": "GEOJSON",
+          "feature_count": 33,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "Path": 28,
+              "Point": 5
+            },
+            "truncated": false
+          },
+          "bbox": [
+            2447.542,
+            1157.667,
+            2842.417,
+            1276.976
+          ],
+          "crs": {
+            "properties": {
+              "name": null
+            }
+          },
+          "crs_status": "UNKNOWN",
+          "property_keys": [
+            "currency",
+            "display_name",
+            "entities",
+            "facility",
+            "service",
+            "structure",
+            "to"
+          ]
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/v5_nav.json",
+          "kind": "JSON_METADATA",
+          "feature_count": null,
+          "geometry_type_counts": null,
+          "bbox": null,
+          "crs": null,
+          "crs_status": null,
+          "property_keys": null
+        }
+      ],
+      "verification": "UNVERIFIED",
+      "routable": false
+    }
+  ],
+  "rights": [
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-csv",
+      "source_sha256": "a0f8376556bc7c920be10c27181d8a4219745b55ec2bea6938d28dfeadde80d2",
+      "licence": {
+        "value": "pdl-jp-1.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package declaration; exact resource and third-party scope UNKNOWN."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-geojson",
+      "source_sha256": "f6b84c9c6d05559f04b4a4796b9286f6bfd1bdb4aea0b112666b3d7585b3eab6",
+      "licence": {
+        "value": "pdl-jp-1.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package declaration; exact resource and third-party scope UNKNOWN."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-csv",
+      "source_sha256": "2477e6f27d8be30b3e57ee6849a36b5d8c9f56e1d2ff34956fe5934b71f4920a",
+      "licence": {
+        "value": "pdl-jp-1.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package declaration; exact resource and third-party scope UNKNOWN."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "source_sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33",
+      "licence": {
+        "value": "pdl-jp-1.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package declaration; exact resource and third-party scope UNKNOWN."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-network-geojson",
+      "source_sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
+      "source_sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2018-03",
+      "source_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "licence": {
+        "value": "PDL 1.0",
+        "status": "SITE_TERMS",
+        "scope": "Site default; PDF-specific and third-party scope not inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2024-07-diff",
+      "source_sha256": "1a0b007099ba03467b564b9daf74bc198efdbbecc874ae1a0eed36e450326773",
+      "licence": {
+        "value": "PDL 1.0",
+        "status": "SITE_TERMS",
+        "scope": "Site default; PDF-specific and third-party scope not inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2024-07",
+      "source_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "licence": {
+        "value": "PDL 1.0",
+        "status": "SITE_TERMS",
+        "scope": "Site default; PDF-specific and third-party scope not inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13104-codelists",
+      "source_sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13104-metadata",
+      "source_sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13104-package-2023",
+      "source_sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
+      "licence": {
+        "value": "plateau",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13104-package-2025",
+      "source_sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+      "licence": {
+        "value": "plateau",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13104-related-2025",
+      "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
+      "licence": {
+        "value": "plateau",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13104-schemas",
+      "source_sha256": "28ca5c63686afac1487b84dd77a8778e24ec0af680cc71cd39bb3cb1beacb0a2",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13104-ubld-53394536",
+      "source_sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "source_sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13116-metadata",
+      "source_sha256": "9c75c7135d5b1693db5474c0756eeb5632496d9d1fbcfd8ca7882c4cbea7d624",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13116-package-2025",
+      "source_sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+      "licence": {
+        "value": "plateau",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "licence": {
+        "value": "plateau",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13116-schemas",
+      "source_sha256": "e1d3011989038e21fb07ffc5bc4bc5fc08b1506e8092ef5222b246a205354bde",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13116-ubld-53394576",
+      "source_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-catalog-ubld-13116-13104",
+      "source_sha256": "7e5abc031afa5ab9f4e0da1df9b7e3413d642c7cbdeb6de6f909b4a23a9737ad",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-catalog-ubld-mesh-533945",
+      "source_sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-site-policy",
+      "source_sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "licence": {
+        "value": "PDL 1.0",
+        "status": "SITE_TERMS",
+        "scope": "PLATEAU website default; exceptions preserved."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "toei-stores-shinjuku-csv",
+      "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
+      "licence": {
+        "value": "CC-BY-4.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "toei-stores-shinjuku-nishiguchi-csv",
+      "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
+      "licence": {
+        "value": "CC-BY-4.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-landing",
+      "source_sha256": "c6ead52dc10fde3f5582fb1bbebbfab52a71b148faad770456a863086b50ab34",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-package",
+      "source_sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
+      "licence": {
+        "value": "CC-BY-4.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-reference-pdf",
+      "source_sha256": "d661cd83fb1e914d65de71d354e86ee4aabfcca20e8060930adea5029fbf4f6a",
+      "licence": {
+        "value": "CC-BY-4.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-spec-pdf",
+      "source_sha256": "c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095",
+      "licence": {
+        "value": "CC-BY-4.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-zip",
+      "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+      "licence": {
+        "value": "CC-BY-4.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "tokyo-toei-stores-package",
+      "source_sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
+      "licence": {
+        "value": "CC-BY-4.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    }
+  ],
+  "plateau_2023_vintage": {
+    "source_id": "plateau-13104-package-2023",
+    "verification": "UNVERIFIED",
+    "routable": false,
+    "rights": "HOLD",
+    "status": "INSPECTED",
+    "generated_at": "2026-10-20T17:56:58.142Z",
+    "package_sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
+    "archives": [
+      {
+        "archive": "citygml_2_op.zip",
+        "url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
+        "total_bytes": 776906633,
+        "etag": "\"bc3e22745a66aea5957644a705cf1734\"",
+        "last_modified": "Tue, 24 Jun 2025 09:24:51 GMT",
+        "directory_ranges": [
+          {
+            "start": 0,
+            "end": 0,
+            "bytes": 1,
+            "requested_at": "2026-10-20T17:56:58.183Z",
+            "completed_at": "2026-10-20T17:56:58.475Z",
+            "sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
+            "store_path": "raw/5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2/range-0-0.bin"
+          },
+          {
+            "start": 776841076,
+            "end": 776906632,
+            "bytes": 65557,
+            "requested_at": "2026-10-20T17:56:58.475Z",
+            "completed_at": "2026-10-20T17:56:58.509Z",
+            "sha256": "b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd",
+            "store_path": "raw/b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd/range-776841076-776906632.bin"
+          },
+          {
+            "start": 774065024,
+            "end": 776906610,
+            "bytes": 2841587,
+            "requested_at": "2026-10-20T17:56:58.509Z",
+            "completed_at": "2026-10-20T17:56:58.802Z",
+            "sha256": "ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6",
+            "store_path": "raw/ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6/range-774065024-776906610.bin"
+          }
+        ],
+        "members": [
+          {
+            "name": "udx/ubld/",
+            "name_bytes": 9,
+            "compressed_size": 0,
+            "size": 0,
+            "crc32": "00000000",
+            "method": 0,
+            "flags": 0,
+            "local_header_offset": 386355616,
+            "mesh": null,
+            "category": "ubld"
+          },
+          {
+            "name": "udx/ubld/53394536_ubld_6697_op.gml",
+            "name_bytes": 34,
+            "compressed_size": 4073265,
+            "size": 43830773,
+            "crc32": "3be2530f",
+            "method": 8,
+            "flags": 8,
+            "local_header_offset": 386355655,
+            "mesh": "53394536",
+            "category": "ubld"
+          }
+        ],
+        "total_entry_count": 22845,
+        "sha256": "ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6",
+        "central_directory_store_path": "raw/ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6/citygml_2_op.zip-central-directory.bin",
+        "central_directory_bytes": 2841587,
+        "member_inventory": {
+          "sha256": "67260e7b8e4e5a7d3f6b863eacd8a88f422aa55788e871f8a9583ac27a33b6b8",
+          "bytes": 5668156,
+          "store_path": "raw/67260e7b8e4e5a7d3f6b863eacd8a88f422aa55788e871f8a9583ac27a33b6b8/citygml_2_op.zip-member-inventory.json",
+          "entry_count": 22845
+        }
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "url": "https://assets.cms.plateau.reearth.io/assets/d1/61cd6b-dfe4-4eab-873c-be4f512939be/13104_shinjuku-ku_pref_2023_citygml_1_op.zip",
+        "total_bytes": 790569445,
+        "etag": "\"a158ae80e80f39c3dc5e8c2f7042b498\"",
+        "last_modified": "Tue, 24 Jun 2025 09:24:29 GMT",
+        "directory_ranges": [
+          {
+            "start": 0,
+            "end": 0,
+            "bytes": 1,
+            "requested_at": "2026-10-20T17:57:07.552Z",
+            "completed_at": "2026-10-20T17:57:07.739Z",
+            "sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
+            "store_path": "raw/5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2/range-0-0.bin"
+          },
+          {
+            "start": 790503888,
+            "end": 790569444,
+            "bytes": 65557,
+            "requested_at": "2026-10-20T17:57:07.739Z",
+            "completed_at": "2026-10-20T17:57:07.863Z",
+            "sha256": "ca5f8ee6267c3ff422f59e331511174156149df646e4ede8a26893c0f92404af",
+            "store_path": "raw/ca5f8ee6267c3ff422f59e331511174156149df646e4ede8a26893c0f92404af/range-790503888-790569444.bin"
+          },
+          {
+            "start": 787688618,
+            "end": 790569422,
+            "bytes": 2880805,
+            "requested_at": "2026-10-20T17:57:07.863Z",
+            "completed_at": "2026-10-20T17:57:08.223Z",
+            "sha256": "ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5",
+            "store_path": "raw/ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5/range-787688618-790569422.bin"
+          }
+        ],
+        "members": [
+          {
+            "name": "udx/ubld/",
+            "name_bytes": 9,
+            "compressed_size": 0,
+            "size": 0,
+            "crc32": "00000000",
+            "method": 0,
+            "flags": 0,
+            "local_header_offset": 642058860,
+            "mesh": null,
+            "category": "ubld"
+          },
+          {
+            "name": "udx/ubld/53394536_ubld_6697.gml",
+            "name_bytes": 31,
+            "compressed_size": 4073179,
+            "size": 43830139,
+            "crc32": "ddcc34e3",
+            "method": 8,
+            "flags": 8,
+            "local_header_offset": 642058899,
+            "mesh": "53394536",
+            "category": "ubld"
+          }
+        ],
+        "total_entry_count": 23239,
+        "sha256": "ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5",
+        "central_directory_store_path": "raw/ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5/citygml_1_op.zip-central-directory.bin",
+        "central_directory_bytes": 2880805,
+        "member_inventory": {
+          "sha256": "c9718f37fad5a42b5f132078283cd5375501972e0705b19e6c170288c3491401",
+          "bytes": 5754638,
+          "store_path": "raw/c9718f37fad5a42b5f132078283cd5375501972e0705b19e6c170288c3491401/citygml_1_op.zip-member-inventory.json",
+          "entry_count": 23239
+        }
+      }
+    ],
+    "selected_member_records": [
+      {
+        "archive": "citygml_2_op.zip",
+        "member": "udx/ubld/53394536_ubld_6697_op.gml",
+        "sha256": "37e91af3276c2ee8fc61369409c8d54f85af0e796458474da99abedaa8c9ae3a",
+        "bytes": 43830773,
+        "store_path": "raw/37e91af3276c2ee8fc61369409c8d54f85af0e796458474da99abedaa8c9ae3a/53394536_ubld_6697_op.gml",
+        "ranges": [
+          {
+            "start": 386355655,
+            "end": 386355684,
+            "bytes": 30,
+            "requested_at": "2026-10-20T17:56:59.141Z",
+            "completed_at": "2026-10-20T17:56:59.181Z",
+            "sha256": "4c7d0c7e0f88ec5ffa2fa7761396ec69b500d641a0eb0f7489a7583294357786",
+            "store_path": "raw/4c7d0c7e0f88ec5ffa2fa7761396ec69b500d641a0eb0f7489a7583294357786/range-386355655-386355684.bin"
+          },
+          {
+            "start": 386355685,
+            "end": 386355718,
+            "bytes": 34,
+            "requested_at": "2026-10-20T17:56:59.181Z",
+            "completed_at": "2026-10-20T17:56:59.201Z",
+            "sha256": "ecce9304404860495bcec4fcb33a49cb3035bbe9e81770e36d269111927a7bbc",
+            "store_path": "raw/ecce9304404860495bcec4fcb33a49cb3035bbe9e81770e36d269111927a7bbc/range-386355685-386355718.bin"
+          },
+          {
+            "start": 386355719,
+            "end": 390428983,
+            "bytes": 4073265,
+            "requested_at": "2026-10-20T17:56:59.201Z",
+            "completed_at": "2026-10-20T17:56:59.523Z",
+            "sha256": "b49d2234197406b355f635c9dc0e0902e2a45d78de36798aa909dbb3509ccb70",
+            "store_path": "raw/b49d2234197406b355f635c9dc0e0902e2a45d78de36798aa909dbb3509ccb70/range-386355719-390428983.bin"
+          }
+        ],
+        "etag": "\"bc3e22745a66aea5957644a705cf1734\"",
+        "last_modified": "Tue, 24 Jun 2025 09:24:51 GMT",
+        "crc32": "3be2530f",
+        "size": 43830773,
+        "inspection": {
+          "verification": "UNVERIFIED",
+          "feature_count": 30358,
+          "polygon_count": 79363,
+          "envelope": {
+            "lower": [
+              35.69069941674934,
+              139.69803124047718,
+              15.321
+            ],
+            "upper": [
+              35.69501377379006,
+              139.7036188035924,
+              45.493
+            ],
+            "raw_lower": "35.69069941674934 139.69803124047718 15.321",
+            "raw_upper": "35.69501377379006 139.7036188035924 45.493",
+            "srsName": "http://www.opengis.net/def/crs/EPSG/0/6697",
+            "axis_order": "latitude,longitude,height"
+          },
+          "bbox_lat_lon_height": {
+            "min": [
+              35.69069941674934,
+              139.69803124047718,
+              15.321
+            ],
+            "max": [
+              35.69501377379006,
+              139.7036188035924,
+              45.493
+            ]
+          },
+          "unknowns": [
+            "Vertical datum interpretation beyond declared EPSG:6697",
+            "Floor-to-elevation mapping",
+            "Operator and management boundaries",
+            "Paid/unpaid area boundaries unless explicit source elements exist",
+            "Currency versus the documented 2023 survey date",
+            "Current real-world condition and route connectivity"
+          ]
+        },
+        "inspection_error": null
+      },
+      {
+        "archive": "citygml_1_op.zip",
+        "member": "udx/ubld/53394536_ubld_6697.gml",
+        "sha256": "25c55437cff5a95ea81b450b1bc92b9f946c2d8c3e5657eda1174959c79a1fc9",
+        "bytes": 43830139,
+        "store_path": "raw/25c55437cff5a95ea81b450b1bc92b9f946c2d8c3e5657eda1174959c79a1fc9/53394536_ubld_6697.gml",
+        "ranges": [
+          {
+            "start": 642058899,
+            "end": 642058928,
+            "bytes": 30,
+            "requested_at": "2026-10-20T17:57:08.268Z",
+            "completed_at": "2026-10-20T17:57:08.365Z",
+            "sha256": "339921dc523830f5a4fc86ab3ef845f2a395803ded630e68907aca9ed4f0fc21",
+            "store_path": "raw/339921dc523830f5a4fc86ab3ef845f2a395803ded630e68907aca9ed4f0fc21/range-642058899-642058928.bin"
+          },
+          {
+            "start": 642058929,
+            "end": 642058959,
+            "bytes": 31,
+            "requested_at": "2026-10-20T17:57:08.365Z",
+            "completed_at": "2026-10-20T17:57:08.382Z",
+            "sha256": "01b558893400fe6a1a7d35e2afd0173daae7c4de89911453c555220cd8c76149",
+            "store_path": "raw/01b558893400fe6a1a7d35e2afd0173daae7c4de89911453c555220cd8c76149/range-642058929-642058959.bin"
+          },
+          {
+            "start": 642058960,
+            "end": 646132138,
+            "bytes": 4073179,
+            "requested_at": "2026-10-20T17:57:08.383Z",
+            "completed_at": "2026-10-20T17:57:08.612Z",
+            "sha256": "6d9aa1d7f43501243878dcb2a5ad17d11f219555060ba8077160b63709741cfe",
+            "store_path": "raw/6d9aa1d7f43501243878dcb2a5ad17d11f219555060ba8077160b63709741cfe/range-642058960-646132138.bin"
+          }
+        ],
+        "etag": "\"a158ae80e80f39c3dc5e8c2f7042b498\"",
+        "last_modified": "Tue, 24 Jun 2025 09:24:29 GMT",
+        "crc32": "ddcc34e3",
+        "size": 43830139,
+        "inspection": {
+          "verification": "UNVERIFIED",
+          "feature_count": 30358,
+          "polygon_count": 79363,
+          "envelope": {
+            "lower": [
+              35.69069941674934,
+              139.69803124047718,
+              15.321
+            ],
+            "upper": [
+              35.69501377379006,
+              139.7036188035924,
+              45.493
+            ],
+            "raw_lower": "35.69069941674934 139.69803124047718 15.321",
+            "raw_upper": "35.69501377379006 139.7036188035924 45.493",
+            "srsName": "http://www.opengis.net/def/crs/EPSG/0/6697",
+            "axis_order": "latitude,longitude,height"
+          },
+          "bbox_lat_lon_height": {
+            "min": [
+              35.69069941674934,
+              139.69803124047718,
+              15.321
+            ],
+            "max": [
+              35.69501377379006,
+              139.7036188035924,
+              45.493
+            ]
+          },
+          "unknowns": [
+            "Vertical datum interpretation beyond declared EPSG:6697",
+            "Floor-to-elevation mapping",
+            "Operator and management boundaries",
+            "Paid/unpaid area boundaries unless explicit source elements exist",
+            "Currency versus the documented 2023 survey date",
+            "Current real-world condition and route connectivity"
+          ]
+        },
+        "inspection_error": null
+      }
+    ],
+    "comparison": {
+      "current_catalog_source_id": "plateau-catalog-ubld-mesh-533945",
+      "target_mesh": "53394525",
+      "bbox_meshes": [
+        "53394525"
+      ],
+      "current_2025_ubld": [
+        {
+          "code": "53394536",
+          "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/ubld/53394536_ubld_6697_op.gml",
+          "file_size": 43830765
+        }
+      ],
+      "meshes_2023": [
+        "53394536"
+      ],
+      "meshes_2025": [
+        "53394536"
+      ],
+      "only_2023": [],
+      "only_2025": [],
+      "touching_target_2023": [
+        "udx/ubld/53394536_ubld_6697.gml",
+        "udx/ubld/53394536_ubld_6697_op.gml"
+      ],
+      "bbox_relations": [
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_2_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        },
+        {
+          "archive": "citygml_1_op.zip",
+          "layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+          "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "layer_crs": "EPSG:6668",
+          "relation": "DISJOINT",
+          "intersection_bbox_lat_lon": null
+        }
+      ],
+      "note": "2023 geometry uses declared EPSG:6697 latitude,longitude axes; E27 network layers use declared EPSG:6668 longitude,latitude axes. Both are JGD2011 horizontal coordinates; intersections are bbox-only with no feature or routing claim."
+    },
+    "byte_totals": {
+      "directory_range_bytes": 5853508,
+      "member_range_bytes": 8146569,
+      "extracted_member_bytes": 87660912,
+      "requested_http_bytes": 14000077
+    },
+    "input_sources": [
+      {
+        "source_id": "plateau-13104-package-2023",
+        "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d"
+      },
+      {
+        "source_id": "plateau-catalog-ubld-mesh-533945",
+        "sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e"
+      },
+      {
+        "source_id": "hokonavi-oedo-shinjuku-network-geojson",
+        "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff"
+      },
+      {
+        "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
+        "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090"
+      }
+    ],
+    "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+    "limitations": [
+      "Rights remain HOLD pending rights review.",
+      "Every vintage finding is UNVERIFIED and routable:false.",
+      "Only ZIP directory ranges and explicitly selected member bytes may be acquired."
+    ]
+  },
   "acquisitions": [
     {
       "source_id": "hokonavi-ikebukuro-walk-link-csv",
@@ -70,6 +2693,24 @@
       "size_check": "NOT_SPECIFIED"
     },
     {
+      "source_id": "plateau-13104-package-2023",
+      "bytes": 1792735,
+      "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "plateau-13104-package-2025",
+      "bytes": 187935,
+      "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "plateau-13104-related-2025",
+      "bytes": 40290,
+      "sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
+      "size_check": "MATCH"
+    },
+    {
       "source_id": "plateau-13104-schemas",
       "bytes": 27952,
       "sha256": "28ca5c63686afac1487b84dd77a8778e24ec0af680cc71cd39bb3cb1beacb0a2",
@@ -94,6 +2735,18 @@
       "size_check": "NOT_SPECIFIED"
     },
     {
+      "source_id": "plateau-13116-package-2025",
+      "bytes": 112532,
+      "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "bytes": 28543,
+      "sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "size_check": "MATCH"
+    },
+    {
       "source_id": "plateau-13116-schemas",
       "bytes": 27934,
       "sha256": "e1d3011989038e21fb07ffc5bc4bc5fc08b1506e8092ef5222b246a205354bde",
@@ -115,6 +2768,60 @@
       "source_id": "plateau-catalog-ubld-mesh-533945",
       "bytes": 2540,
       "sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "plateau-site-policy",
+      "bytes": 31822,
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "toei-stores-shinjuku-csv",
+      "bytes": 694,
+      "sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "toei-stores-shinjuku-nishiguchi-csv",
+      "bytes": 1339,
+      "sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-landing",
+      "bytes": 515899,
+      "sha256": "c6ead52dc10fde3f5582fb1bbebbfab52a71b148faad770456a863086b50ab34",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-package",
+      "bytes": 4486,
+      "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-reference-pdf",
+      "bytes": 523219,
+      "sha256": "d661cd83fb1e914d65de71d354e86ee4aabfcca20e8060930adea5029fbf4f6a",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-spec-pdf",
+      "bytes": 499924,
+      "sha256": "c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-zip",
+      "bytes": 2317035,
+      "sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "tokyo-toei-stores-package",
+      "bytes": 38551,
+      "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
       "size_check": "NOT_SPECIFIED"
     }
   ],
@@ -991,7 +3698,7 @@
   ],
   "conversions": [
     {
-      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-15cf20f911843ce38da7",
+      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-20d19e2480674a6630b5",
       "source_id": "plateau-13104-ubld-53394536",
       "filters": {},
       "totals": {
@@ -1015,11 +3722,11 @@
         "tolerance_m": 0.001,
         "all_nodes_have_gml_id": true
       },
-      "elapsed_ms": 18379,
-      "peak_rss_bytes": 1738637312
+      "elapsed_ms": 20115,
+      "peak_rss_bytes": 1442283520
     },
     {
-      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-7d309a4ba9fa25a9ae64",
+      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-d4fc670f8b9c2a6e8981",
       "source_id": "plateau-13104-ubld-53394536",
       "filters": {
         "ids": [
@@ -1047,11 +3754,39 @@
         "tolerance_m": 0.001,
         "all_nodes_have_gml_id": true
       },
-      "elapsed_ms": 11151,
-      "peak_rss_bytes": 377012224
+      "elapsed_ms": 11754,
+      "peak_rss_bytes": 366510080
     },
     {
-      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-31375e717db26c653752",
+      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-7335b90b5cd7387b83f3",
+      "source_id": "plateau-13116-ubld-53394576",
+      "filters": {},
+      "totals": {
+        "objects_in_source": 32,
+        "objects_converted": 28,
+        "nodes": 32,
+        "polygons_in_source": 98173,
+        "polygon_definitions_in_source": 58761,
+        "polygons_converted": 58761,
+        "skipped_degenerate": 0,
+        "solid_uses_represented_by_selected_boundaries": 39412,
+        "triangles": 64811
+      },
+      "validation": {
+        "status": "PASS",
+        "node_count": 32,
+        "expected_node_count": 32,
+        "triangle_count": 64811,
+        "expected_triangle_count": 64811,
+        "bbox_max_error_m": 0.000003925928467651829,
+        "tolerance_m": 0.001,
+        "all_nodes_have_gml_id": true
+      },
+      "elapsed_ms": 28401,
+      "peak_rss_bytes": 407568384
+    },
+    {
+      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-84ba2f4d5f0cd3723fb3",
       "source_id": "plateau-13116-ubld-53394576",
       "filters": {
         "ids": [
@@ -1079,36 +3814,8 @@
         "tolerance_m": 0.001,
         "all_nodes_have_gml_id": true
       },
-      "elapsed_ms": 26591,
-      "peak_rss_bytes": 211288064
-    },
-    {
-      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-cd53d13464d76f1d1685",
-      "source_id": "plateau-13116-ubld-53394576",
-      "filters": {},
-      "totals": {
-        "objects_in_source": 32,
-        "objects_converted": 28,
-        "nodes": 32,
-        "polygons_in_source": 98173,
-        "polygon_definitions_in_source": 58761,
-        "polygons_converted": 58761,
-        "skipped_degenerate": 0,
-        "solid_uses_represented_by_selected_boundaries": 39412,
-        "triangles": 64811
-      },
-      "validation": {
-        "status": "PASS",
-        "node_count": 32,
-        "expected_node_count": 32,
-        "triangle_count": 64811,
-        "expected_triangle_count": 64811,
-        "bbox_max_error_m": 0.000003925928467651829,
-        "tolerance_m": 0.001,
-        "all_nodes_have_gml_id": true
-      },
-      "elapsed_ms": 26824,
-      "peak_rss_bytes": 432816128
+      "elapsed_ms": 33651,
+      "peak_rss_bytes": 194756608
     }
   ],
   "networks": [
@@ -4829,8 +7536,8 @@
   "overlap": [
     {
       "station_id": "ikebukuro",
-      "layer_count": 4,
-      "pair_count": 6,
+      "layer_count": 11,
+      "pair_count": 55,
       "method": "Pairwise bbox relation is computed on source bboxes normalized to JGD2011 longitude,latitude. Disjoint-bbox minimum separation is approximated by comparing projected EPSG:6677 boundary segments sampled at 32 segments per edge. Projected axis-aligned envelopes are retained as context only.",
       "interpretation_limit": "BBox overlap only. It does not establish that features coincide, share a floor, or connect; it is not routing evidence.",
       "mesh_coverage": {
@@ -5075,13 +7782,125 @@
           "minimum_separation_m": 0,
           "status": "COMPUTED_BBOX_ONLY",
           "metric_status": "CONDITIONAL_ON_INFERRED_CRS"
+        },
+        {
+          "layer_a": "plateau-13116-ubld-53394576",
+          "layer_b": "plateau-13116-related-2025:13116_toshima-ku_pref_2023_shelter.geojson",
+          "source_id_a": "plateau-13116-ubld-53394576",
+          "source_id_b": "plateau-13116-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13116-ubld-53394576",
+          "layer_b": "plateau-13116-related-2025:13116_toshima-ku_pref_2023_park.geojson",
+          "source_id_a": "plateau-13116-ubld-53394576",
+          "source_id_b": "plateau-13116-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13116-ubld-53394576",
+          "layer_b": "plateau-13116-related-2025:13116_toshima-ku_pref_2025_landmark.geojson",
+          "source_id_a": "plateau-13116-ubld-53394576",
+          "source_id_b": "plateau-13116-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13116-ubld-53394576",
+          "layer_b": "plateau-13116-related-2025:13116_toshima-ku_pref_2025_station.geojson",
+          "source_id_a": "plateau-13116-ubld-53394576",
+          "source_id_b": "plateau-13116-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13116-ubld-53394576",
+          "layer_b": "plateau-13116-related-2025:13116_toshima-ku_pref_2025_railway.geojson",
+          "source_id_a": "plateau-13116-ubld-53394576",
+          "source_id_b": "plateau-13116-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13116-ubld-53394576",
+          "layer_b": "plateau-13116-related-2025:13116_toshima-ku_pref_2025_emergency_route.geojson",
+          "source_id_a": "plateau-13116-ubld-53394576",
+          "source_id_b": "plateau-13116-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13116-ubld-53394576",
+          "layer_b": "plateau-13116-related-2025:13116_toshima-ku_pref_2025_border.geojson",
+          "source_id_a": "plateau-13116-ubld-53394576",
+          "source_id_b": "plateau-13116-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
         }
       ]
     },
     {
       "station_id": "shinjuku",
-      "layer_count": 21,
-      "pair_count": 210,
+      "layer_count": 50,
+      "pair_count": 1225,
       "method": "Pairwise bbox relation is computed on source bboxes normalized to JGD2011 longitude,latitude. Disjoint-bbox minimum separation is approximated by comparing projected EPSG:6677 boundary segments sampled at 32 segments per edge. Projected axis-aligned envelopes are retained as context only.",
       "interpretation_limit": "BBox overlap only. It does not establish that features coincide, share a floor, or connect; it is not routing evidence.",
       "mesh_coverage": {
@@ -5427,9 +8246,9 @@
         "older_vintages": {
           "value": null,
           "status": "UNKNOWN",
-          "note": "This endpoint returns latest catalog entries only; earlier vintages were not enumerated."
+          "note": "This latest catalog endpoint does not enumerate earlier vintages. Separate bounded 2023 v4/v3 evidence is recorded under bounded_vintage_research."
         },
-        "hold": "HOLD: no latest catalogued nominal ubld mesh is among the Hokonavi bbox meshes. Nominal mesh is not actual coverage; older vintages UNKNOWN.",
+        "hold": "HOLD: no latest catalogued nominal ubld mesh is among the Hokonavi bbox meshes. Nominal mesh is not actual coverage; see separate bounded 2023 v4/v3 evidence; other vintages UNKNOWN.",
         "note": "JIS X 0410 first/second/third mesh calculation; closed bboxes include cells touched at a boundary. File-name mesh is nominal. Actual geometry may extend outside it. No feature correspondence is inferred."
       },
       "r1_bbox_containment": null,
@@ -5653,6 +8472,415 @@
           "minimum_separation_m": 185.1275340932107,
           "status": "COMPUTED_BBOX_ONLY",
           "metric_status": "KNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-1F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-2F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-3F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "DISJOINT",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-4F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "DISJOINT",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B1F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B2F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B3F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B4F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B5F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "DISJOINT",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-M1F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-MB2F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-1F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-2F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-3F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-4F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B1F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B2F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B3F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B4F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B5F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-M1F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-MB2F.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "tokyo-shinjuku-facilities-zip",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "plateau-13104-related-2025:13104_shinjuku-ku_pref_2023_shelter.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "plateau-13104-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "plateau-13104-related-2025:13104_shinjuku-ku_pref_2023_park.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "plateau-13104-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "plateau-13104-related-2025:13104_shinjuku-ku_pref_2025_landmark.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "plateau-13104-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "plateau-13104-related-2025:13104_shinjuku-ku_pref_2025_station.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "plateau-13104-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "plateau-13104-related-2025:13104_shinjuku-ku_pref_2025_railway.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "plateau-13104-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "plateau-13104-related-2025:13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "plateau-13104-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
+        },
+        {
+          "layer_a": "plateau-13104-ubld-53394536",
+          "layer_b": "plateau-13104-related-2025:13104_shinjuku-ku_pref_2025_border.geojson",
+          "source_id_a": "plateau-13104-ubld-53394536",
+          "source_id_b": "plateau-13104-related-2025",
+          "bbox_relation": "UNKNOWN",
+          "intersection_bbox_jgd2011_lon_lat": null,
+          "minimum_separation_m": null,
+          "status": "UNKNOWN_CRS_OR_BBOX",
+          "conditional_bbox_comparison": {
+            "relation": "INTERSECTS",
+            "status": "CONDITIONAL_ON_CRS_ASSUMPTION",
+            "assumption": "Only if the POI serialized coordinates use longitude,latitude and are compatible with the other layer datum. Undeclared GeoJSON uses RFC 7946 as an assumption only; no datum transform or metric separation was inferred."
+          },
+          "metric_status": "UNKNOWN"
         }
       ]
     }

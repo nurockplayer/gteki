@@ -1,5 +1,324 @@
 {
   "station_id": "ikebukuro",
+  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "rights": [
+    {
+      "source_id": "plateau-catalog-ubld-13116-13104",
+      "source_sha256": "7e5abc031afa5ab9f4e0da1df9b7e3413d642c7cbdeb6de6f909b4a23a9737ad",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13116-ubld-53394576",
+      "source_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13116-metadata",
+      "source_sha256": "9c75c7135d5b1693db5474c0756eeb5632496d9d1fbcfd8ca7882c4cbea7d624",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "source_sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13116-schemas",
+      "source_sha256": "e1d3011989038e21fb07ffc5bc4bc5fc08b1506e8092ef5222b246a205354bde",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-csv",
+      "source_sha256": "2477e6f27d8be30b3e57ee6849a36b5d8c9f56e1d2ff34956fe5934b71f4920a",
+      "licence": {
+        "value": "pdl-jp-1.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package declaration; exact resource and third-party scope UNKNOWN."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-csv",
+      "source_sha256": "a0f8376556bc7c920be10c27181d8a4219745b55ec2bea6938d28dfeadde80d2",
+      "licence": {
+        "value": "pdl-jp-1.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package declaration; exact resource and third-party scope UNKNOWN."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "source_sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33",
+      "licence": {
+        "value": "pdl-jp-1.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package declaration; exact resource and third-party scope UNKNOWN."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-geojson",
+      "source_sha256": "f6b84c9c6d05559f04b4a4796b9286f6bfd1bdb4aea0b112666b3d7585b3eab6",
+      "licence": {
+        "value": "pdl-jp-1.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package declaration; exact resource and third-party scope UNKNOWN."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2018-03",
+      "source_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+      "licence": {
+        "value": "PDL 1.0",
+        "status": "SITE_TERMS",
+        "scope": "Site default; PDF-specific and third-party scope not inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2024-07",
+      "source_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "licence": {
+        "value": "PDL 1.0",
+        "status": "SITE_TERMS",
+        "scope": "Site default; PDF-specific and third-party scope not inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2024-07-diff",
+      "source_sha256": "1a0b007099ba03467b564b9daf74bc198efdbbecc874ae1a0eed36e450326773",
+      "licence": {
+        "value": "PDL 1.0",
+        "status": "SITE_TERMS",
+        "scope": "Site default; PDF-specific and third-party scope not inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-catalog-ubld-mesh-533945",
+      "source_sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e",
+      "licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "scope": "Exact resource rights not established by acquired evidence."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13116-package-2025",
+      "source_sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+      "licence": {
+        "value": "plateau",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-site-policy",
+      "source_sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "licence": {
+        "value": "PDL 1.0",
+        "status": "SITE_TERMS",
+        "scope": "PLATEAU website default; exceptions preserved."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "licence": {
+        "value": "plateau",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    }
+  ],
+  "poi_availability": [
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "format": "ZIP",
+      "row_count": null,
+      "members": [
+        {
+          "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+          "feature_count": 42,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Point": 42
+            },
+            "truncated": false
+          }
+        },
+        {
+          "file": "13116_toshima-ku_pref_2023_park.geojson",
+          "feature_count": 62,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Point": 62
+            },
+            "truncated": false
+          }
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+          "feature_count": 143,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Point": 143
+            },
+            "truncated": false
+          }
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_station.geojson",
+          "feature_count": 35,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "Point": 35
+            },
+            "truncated": false
+          }
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_railway.geojson",
+          "feature_count": 81,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "LineString": 79,
+              "MultiLineString": 2
+            },
+            "truncated": false
+          }
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+          "feature_count": 26,
+          "geometry_type_counts": {
+            "distinct_count": 2,
+            "values": {
+              "LineString": 24,
+              "MultiLineString": 2
+            },
+            "truncated": false
+          }
+        },
+        {
+          "file": "13116_toshima-ku_pref_2025_border.geojson",
+          "feature_count": 1,
+          "geometry_type_counts": {
+            "distinct_count": 1,
+            "values": {
+              "LineString": 1
+            },
+            "truncated": false
+          }
+        }
+      ],
+      "verification": "UNVERIFIED",
+      "routable": false
+    }
+  ],
+  "plateau_2023_vintage": null,
   "source_ids": {
     "citygml": "plateau-13116-ubld-53394576",
     "network": "hokonavi-ikebukuro-walk-node-csv"
@@ -1707,16 +2026,18 @@
   },
   "spatial_overlap": {
     "report": "overlap/ikebukuro.json",
-    "layer_count": 4,
-    "pair_count": 6,
+    "layer_count": 11,
+    "pair_count": 55,
     "pair_relations": {
       "INTERSECTS": 6,
       "DISJOINT": 0,
-      "UNKNOWN": 0
+      "UNKNOWN": 49
     },
     "interpretation_limit": "BBox overlap only. It does not establish that features coincide, share a floor, or connect; it is not routing evidence."
   },
   "holds": [
+    "All exact-resource publication gates remain HOLD; package and site declarations do not clear third-party or individual-law scope.",
+    "POI, facility and source route availability does not establish current access, floor correspondence or navigable connectivity.",
     "Paid/unpaid boundary is not evidenced as present in the available PLATEAU underground-building file; HOLD for routing across fare boundaries.",
     "Explicit connectivity is not established by the available CityGML inventory; HOLD for route generation.",
     "Floor-to-elevation mapping remains UNKNOWN even when literal floor labels are present; do not derive elevation from labels.",
@@ -1733,8 +2054,10 @@
     "currency with current station configuration",
     "survey accuracy and date",
     "applicable walking-network spec version",
-    "older PLATEAU vintages",
+    "vintages outside the bounded 2023 v4/v3 inspection",
     "feature correspondence",
-    "R1 datum verification"
+    "R1 datum verification",
+    "exact resource and third-party-original rights",
+    "undeclared GeoJSON CRS"
   ]
 }

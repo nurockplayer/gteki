@@ -1,0 +1,201 @@
+{
+  "source_id": "tokyo-shinjuku-facilities-zip",
+  "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "station_ids": [
+    "shinjuku"
+  ],
+  "licence": {
+    "value": "CC-BY-4.0",
+    "status": "PACKAGE_LEVEL_DECLARED",
+    "scope": "Package only; no resource or third-party scope inferred."
+  },
+  "resource_licence": {
+    "value": null,
+    "status": "UNKNOWN"
+  },
+  "file_embedded_licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+  },
+  "declarations": [
+    {
+      "value": "CC-BY-4.0",
+      "status": "PACKAGE_LEVEL_DECLARED",
+      "evidence": {
+        "source_id": "tokyo-shinjuku-facilities-package",
+        "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
+        "location": "/result/license_id",
+        "quote": "CC-BY-4.0",
+        "scope": "Package only; no resource or third-party scope inferred."
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "source_id": "tokyo-shinjuku-facilities-package",
+      "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
+      "location": "/result/license_id",
+      "quote": "CC-BY-4.0",
+      "scope": "Package only; no resource or third-party scope inferred."
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-package",
+      "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
+      "location": "/result/resources/0/url",
+      "quote": "shisetsu_root.zip",
+      "scope": "Exact catalog resource URL membership only."
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-package",
+      "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
+      "location": "/result/resources/0",
+      "scope": "No own nonblank license/license_id/license_title/license_url field. This absence grants no permission."
+    }
+  ],
+  "input_sources": [
+    {
+      "source_id": "tokyo-shinjuku-facilities-zip",
+      "sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-package",
+      "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96"
+    }
+  ],
+  "attribution": {
+    "required": "YES",
+    "text_required": null,
+    "proposed_text": "出典：東京都都市整備局「新宿駅周辺の施設情報等」（https://www.toshiseibi.metro.tokyo.lg.jp/kiban/shinjuku_terminal/pdf/shisetsu_root.zip）",
+    "status": "EXACT_RESOURCE_CREDIT_UNKNOWN"
+  },
+  "modification_notice": {
+    "required": "YES",
+    "text": "State the actual edits and identify the source; do not imply official authorship.",
+    "status": "REQUIRED_IF_TERMS_APPLY"
+  },
+  "caveats": [
+    "No inferred permission from availability, file type, absence of notices, or a legacy manifest label.",
+    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks.",
+    "CC BY obligations are conditional on applicability; exact resource coverage and required credit parties remain UNKNOWN.",
+    "Literal 原典/source properties and archive metadata are inventory evidence; they do not establish permission for originals."
+  ],
+  "publish_gate": "HOLD",
+  "clearance_required": [
+    "Acquired rights evidence explicitly covering tokyo-shinjuku-facilities-zip, URL https://www.toshiseibi.metro.tokyo.lg.jp/kiban/shinjuku_terminal/pdf/shisetsu_root.zip, SHA-256 fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31, including the relevant member contents.",
+    "Resolve each third-party original and individual-law caveat, or exclude those contents.",
+    "Record required credit parties, source URL, licence link and actual modification notice for the proposed use."
+  ],
+  "file_rights_observations": [
+    {
+      "report": "docs/gis/poi/tokyo-shinjuku-facilities-zip.json",
+      "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+      "source_attributions": [
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-1F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-2F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-3F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-4F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B1F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B2F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B3F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B4F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B5F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-M1F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-MB2F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-1F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-2F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-3F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-4F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B1F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B2F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B3F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B4F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B5F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-M1F.geojson",
+          "fields": {}
+        },
+        {
+          "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-MB2F.geojson",
+          "fields": {}
+        }
+      ],
+      "rights_observations": {
+        "manifest_attribution": "出典：東京都都市整備局「新宿駅周辺の施設情報等」（当該リソースURL）",
+        "source_property_fields": [
+          "原典",
+          "出典",
+          "著作権",
+          "copyright",
+          "Copyright",
+          "source",
+          "Source",
+          "attribution"
+        ]
+      }
+    }
+  ],
+  "verification": "UNVERIFIED",
+  "routable": false
+}

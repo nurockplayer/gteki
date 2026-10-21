@@ -19,9 +19,13 @@ export type SourceManifest = {
   station_ids: string[];
   publisher: string;
   official_url: string;
-  resolution: { kind: 'direct' } | { kind: 'plateau_catalog_api'; catalog_source_id: string; match: string };
+  resolution: { kind: 'direct' } | { kind: 'plateau_catalog_api' | 'ckan_resource'; catalog_source_id: string; match: string };
   expected_url: string;
   expected_bytes: number | null;
+  max_bytes?: number;
+  publication_date?: string | null;
+  content_date?: string | null;
+  date_evidence?: { source_id: string; sha256: string; pointer: string };
   expected_url_match: boolean | null;
   license_name: string;
   license_url: string | null;

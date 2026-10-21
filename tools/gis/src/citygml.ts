@@ -507,6 +507,11 @@ export async function loadCodelists(sourceId: string): Promise<CodelistData> {
   return Object.assign(map, { inputs: inputs.sort((a, b) => a.member.localeCompare(b.member)), status: 'LOADED' as const });
 }
 
+/** Exact extracted vintage members use the same scanner, without borrowing another vintage's dictionaries. */
+export async function inspectCityGmlPath(path: string, options: {source_id:string;source_sha256:string}): Promise<CityInventory> {
+  return scanCityGml(path, options);
+}
+
 export async function inspectCityGml(sourceId: string): Promise<CityInventory> {
   const stored = await getStoredSource(sourceId);
   const codelists = await loadCodelists(sourceId);

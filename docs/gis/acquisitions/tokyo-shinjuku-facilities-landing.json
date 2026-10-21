@@ -1,0 +1,24 @@
+{
+  "source_id": "tokyo-shinjuku-facilities-landing",
+  "resolved_url": "https://www.toshiseibi.metro.tokyo.lg.jp/kotsu_butsuryu/kotsuseisaku/kotsu_suishin/shinjuku_shisetsu",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-20T18:06:32.215Z",
+  "completed_at": "2026-10-20T18:06:32.563Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "text/html;charset=UTF-8",
+    "content-length": null,
+    "etag": null,
+    "last-modified": null,
+    "date": "Tue, 20 Oct 2026 18:06:32 GMT"
+  },
+  "bytes": 515919,
+  "sha256": "534c243d62e7dcabdc194bbdffb40517161ccfd01498aabe15d1e2df451870bf",
+  "store_path": "raw/534c243d62e7dcabdc194bbdffb40517161ccfd01498aabe15d1e2df451870bf/shinjuku_shisetsu",
+  "tool_version": "0.1.0",
+  "git_commit": "eeaf317775f3ecd3f84cbc07fc1e162c41e451a3",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online"
+}

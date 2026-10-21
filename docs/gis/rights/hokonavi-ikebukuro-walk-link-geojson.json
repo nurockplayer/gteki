@@ -1,0 +1,78 @@
+{
+  "source_id": "hokonavi-ikebukuro-walk-link-geojson",
+  "source_sha256": "f6b84c9c6d05559f04b4a4796b9286f6bfd1bdb4aea0b112666b3d7585b3eab6",
+  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "station_ids": [
+    "ikebukuro"
+  ],
+  "licence": {
+    "value": "pdl-jp-1.0",
+    "status": "PACKAGE_LEVEL_DECLARED",
+    "scope": "Package declaration; exact resource and third-party scope UNKNOWN."
+  },
+  "resource_licence": {
+    "value": null,
+    "status": "UNKNOWN"
+  },
+  "file_embedded_licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+  },
+  "declarations": [
+    {
+      "value": "pdl-jp-1.0",
+      "status": "PACKAGE_LEVEL_DECLARED",
+      "evidence": {
+        "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+        "sha256": "82c7ecca22de1c08b8c0ad4b0c1c362af032f80d745c74d5c9a06b4b8f5ff039",
+        "location": "supporting_documents/ckan-metadata:/result/license_id",
+        "quote": "pdl-jp-1.0",
+        "scope": "Package declaration; exact resource and third-party scope UNKNOWN."
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "sha256": "82c7ecca22de1c08b8c0ad4b0c1c362af032f80d745c74d5c9a06b4b8f5ff039",
+      "location": "supporting_documents/ckan-metadata:/result/license_id",
+      "quote": "pdl-jp-1.0",
+      "scope": "Package declaration; exact resource and third-party scope UNKNOWN."
+    }
+  ],
+  "input_sources": [
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-geojson",
+      "sha256": "f6b84c9c6d05559f04b4a4796b9286f6bfd1bdb4aea0b112666b3d7585b3eab6"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33"
+    }
+  ],
+  "attribution": {
+    "required": "UNKNOWN",
+    "text_required": null,
+    "proposed_text": "出典：国土交通省／加工して作成",
+    "status": "EXACT_RESOURCE_CREDIT_UNKNOWN"
+  },
+  "modification_notice": {
+    "required": "UNKNOWN",
+    "text": null,
+    "status": "UNKNOWN"
+  },
+  "caveats": [
+    "No inferred permission from availability, file type, absence of notices, or a legacy manifest label.",
+    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks."
+  ],
+  "publish_gate": "HOLD",
+  "clearance_required": [
+    "Acquired rights evidence explicitly covering hokonavi-ikebukuro-walk-link-geojson, URL https://ckan.hokonavi.go.jp/dataset/324ba112-3bc0-4b9c-8a36-7d30edf4cf92/resource/3a384823-0c28-4621-915f-4550537404a6/download/link.geojson, SHA-256 f6b84c9c6d05559f04b4a4796b9286f6bfd1bdb4aea0b112666b3d7585b3eab6, including the relevant member contents.",
+    "Resolve each third-party original and individual-law caveat, or exclude those contents.",
+    "Record required credit parties, source URL, licence link and actual modification notice for the proposed use."
+  ],
+  "file_rights_observations": [],
+  "verification": "UNVERIFIED",
+  "routable": false
+}

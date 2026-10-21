@@ -1,0 +1,3225 @@
+{
+  "source_id": "plateau-13116-related-2025",
+  "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+  "source_bytes": 28543,
+  "tool_input_sha256": "acb03b7ba35863fa51e8816613d777bab805755b78bb87e9b521048b523c67b6",
+  "input_sources": [
+    {
+      "source_id": "plateau-13116-related-2025",
+      "sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787"
+    }
+  ],
+  "rights": {
+    "commercial_use": {
+      "status": "unknown",
+      "evidence": "docs/gis/rights/plateau-13116-related-2025.json"
+    },
+    "modification_allowed": {
+      "status": "unknown",
+      "evidence": "docs/gis/rights/plateau-13116-related-2025.json"
+    },
+    "redistribution_allowed": {
+      "status": "unknown",
+      "evidence": "docs/gis/rights/plateau-13116-related-2025.json"
+    },
+    "attribution_text": "UNKNOWN exact original-data attribution; PLATEAU and municipality source credits pending resource scope"
+  },
+  "rights_observations": {
+    "manifest_attribution": "UNKNOWN exact original-data attribution; PLATEAU and municipality source credits pending resource scope",
+    "source_property_fields": [
+      "原典",
+      "出典",
+      "著作権",
+      "copyright",
+      "Copyright",
+      "source",
+      "Source",
+      "attribution"
+    ]
+  },
+  "station_ids": [
+    "ikebukuro"
+  ],
+  "verification": "UNVERIFIED",
+  "routable": false,
+  "format": "ZIP",
+  "archive_entry_count": 7,
+  "filename_encoding": {
+    "status": "UNKNOWN_OR_CP437_DECODED",
+    "raw_filename_bytes_available": false,
+    "note": "ZIP reader exposed decoded entry names only; names may be mojibake when the archive uses a legacy Japanese encoding. No alias was inferred."
+  },
+  "members": [
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "bytes": 14707,
+      "kind": "GEOJSON",
+      "feature_count": 42,
+      "bbox": [
+        139.680022,
+        35.716454,
+        139.74348799,
+        35.744312
+      ],
+      "bbox_status": "COMPUTED_GEOGRAPHIC",
+      "bbox_counts": {
+        "coordinate_visits": 42,
+        "coordinate_positions": 42,
+        "visit_limit": 1000000
+      },
+      "raw_coordinates_bbox": [
+        139.680022,
+        35.716454,
+        139.74348799,
+        35.744312
+      ],
+      "crs": {
+        "properties": {
+          "name": null
+        }
+      },
+      "crs_status": "UNKNOWN",
+      "declared_crs": null,
+      "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
+      "property_keys": [
+        "レベル",
+        "住所",
+        "収容人数",
+        "名称",
+        "対象とする災害の分類",
+        "施設の種類",
+        "施設規模",
+        "行政区域",
+        "高さ"
+      ],
+      "property_keys_truncated": false,
+      "geometry_type_counts": {
+        "distinct_count": 1,
+        "values": {
+          "Point": 42
+        },
+        "truncated": false
+      },
+      "literal_field_distributions": {
+        "レベル": {
+          "blank_count": 0,
+          "distinct_count": 2,
+          "distinct_values": {
+            "distinct_count": 2,
+            "values": {
+              "1": 33,
+              "3": 9
+            },
+            "truncated": false
+          }
+        },
+        "住所": {
+          "blank_count": 0,
+          "distinct_count": 38,
+          "distinct_values": {
+            "distinct_count": 38,
+            "values": {
+              "東京都北区": 1,
+              "東京都豊島区": 5,
+              "東京都豊島区上池袋1-18-24": 1,
+              "東京都豊島区上池袋4-28-1": 1,
+              "東京都豊島区千早2-39-3": 1,
+              "東京都豊島区千早3-33-5": 1,
+              "東京都豊島区南大塚1-24-10": 1,
+              "東京都豊島区南大塚3-18-1": 1,
+              "東京都豊島区南池袋3-18-12": 1,
+              "東京都豊島区南長崎1-10-5": 1,
+              "東京都豊島区南長崎4-30-5": 1,
+              "東京都豊島区巣鴨3-14-1": 1,
+              "東京都豊島区巣鴨5-33-1": 1,
+              "東京都豊島区東池袋4-40-1": 1,
+              "東京都豊島区池袋3-30-8": 1,
+              "東京都豊島区池袋4-23-8": 1,
+              "東京都豊島区池袋本町1-43-1": 1,
+              "東京都豊島区池袋本町4-36-1": 1,
+              "東京都豊島区池袋本町4-5-24": 1,
+              "東京都豊島区目白1-1-1": 1,
+              "東京都豊島区目白1-5-1": 1,
+              "東京都豊島区目白2-11-6": 1,
+              "東京都豊島区目白5-24-12": 1,
+              "東京都豊島区西巣鴨1-27-1": 1,
+              "東京都豊島区西巣鴨3-17-1": 1,
+              "東京都豊島区西池袋3-14-3": 1,
+              "東京都豊島区要町2-3-20": 1,
+              "東京都豊島区要町3-54-16": 1,
+              "東京都豊島区長崎2-6-3": 1,
+              "東京都豊島区長崎5-31-29": 1,
+              "東京都豊島区長崎6-16-1": 1,
+              "東京都豊島区雑司が谷2-12-1": 1,
+              "東京都豊島区駒込3-13-1": 1,
+              "東京都豊島区駒込4-5-1": 1,
+              "東京都豊島区駒込5-1-19": 1,
+              "東京都豊島区高松1-9-21": 1,
+              "東京都豊島区高松2-57-22": 1,
+              "東京都豊島区高田2-12-7": 1
+            },
+            "truncated": false
+          }
+        },
+        "収容人数": {
+          "blank_count": 37,
+          "distinct_count": 5,
+          "distinct_values": {
+            "distinct_count": 5,
+            "values": {
+              "18500": 1,
+              "45200": 1,
+              "56300": 1,
+              "70300": 1,
+              "86200": 1
+            },
+            "truncated": false
+          }
+        },
+        "名称": {
+          "blank_count": 0,
+          "distinct_count": 42,
+          "distinct_values": {
+            "distinct_count": 42,
+            "values": {
+              "（旧）千川小学校": 1,
+              "（旧）高田小学校": 1,
+              "さくら小学校": 1,
+              "みらい館大明": 1,
+              "仰高小学校": 1,
+              "千川中学校": 1,
+              "千早小学校": 1,
+              "千登世橋中学校": 1,
+              "南池袋小学校": 1,
+              "学習院大学": 1,
+              "富士見台小学校": 1,
+              "巣鴨北中学校": 1,
+              "巣鴨小学校": 1,
+              "文成小学校": 1,
+              "明豊中学校": 1,
+              "朋有小学校": 1,
+              "朝日小学校": 1,
+              "染井墓地": 1,
+              "染井墓地・駒込中学校一帯": 1,
+              "椎名町小学校": 1,
+              "池袋中学校": 1,
+              "池袋小学校": 1,
+              "池袋第一小学校": 1,
+              "池袋第三小学校": 1,
+              "池袋第二小学校": 1,
+              "清和小学校": 1,
+              "目白小学校": 1,
+              "立教大学": 1,
+              "西巣鴨中学校": 1,
+              "西巣鴨小学校": 1,
+              "西池袋中学校（仮校舎）": 1,
+              "西部区民事務所": 1,
+              "要小学校": 1,
+              "豊島区立総合体育場一帯": 1,
+              "豊成小学校": 1,
+              "長崎小学校": 1,
+              "雑司ヶ谷墓地": 1,
+              "駒込中学校": 1,
+              "駒込中学校一帯": 1,
+              "駒込小学校": 1
+            },
+            "truncated": true
+          }
+        },
+        "対象とする災害の分類": {
+          "blank_count": 0,
+          "distinct_count": 2,
+          "distinct_values": {
+            "distinct_count": 2,
+            "values": {
+              "地震災害": 1,
+              "指定なし": 41
+            },
+            "truncated": false
+          }
+        },
+        "施設の種類": {
+          "blank_count": 0,
+          "distinct_count": 2,
+          "distinct_values": {
+            "distinct_count": 2,
+            "values": {
+              "救援センター": 35,
+              "避難場所": 7
+            },
+            "truncated": false
+          }
+        },
+        "施設規模": {
+          "blank_count": 37,
+          "distinct_count": 5,
+          "distinct_values": {
+            "distinct_count": 5,
+            "values": {
+              "51900": 1,
+              "53000": 1,
+              "66800": 1,
+              "115000": 1,
+              "130800": 1
+            },
+            "truncated": false
+          }
+        },
+        "行政区域": {
+          "blank_count": 0,
+          "distinct_count": 2,
+          "distinct_values": {
+            "distinct_count": 2,
+            "values": {
+              "13116": 41,
+              "13117": 1
+            },
+            "truncated": false
+          }
+        },
+        "高さ": {
+          "blank_count": 6,
+          "distinct_count": 30,
+          "distinct_values": {
+            "distinct_count": 30,
+            "values": {
+              "17": 1,
+              "20": 1,
+              "11.4": 1,
+              "12.3": 1,
+              "14.2": 1,
+              "14.4": 1,
+              "15.5": 1,
+              "15.7": 1,
+              "15.8": 1,
+              "16.0": 2,
+              "16.5": 1,
+              "16.6": 3,
+              "16.9": 1,
+              "17.1": 1,
+              "17.5": 1,
+              "17.7": 1,
+              "17.9": 1,
+              "18.1": 1,
+              "18.2": 1,
+              "18.3": 2,
+              "19.1": 1,
+              "20.1": 2,
+              "21.2": 2,
+              "21.6": 1,
+              "22.1": 1,
+              "22.8": 1,
+              "23.2": 1,
+              "26.5": 1,
+              "4.3": 1,
+              "4.7": 1
+            },
+            "truncated": false
+          }
+        }
+      },
+      "source_attributions": {},
+      "line_feature_count": 0,
+      "endpoint_field_sets": {}
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "bytes": 23586,
+      "kind": "GEOJSON",
+      "feature_count": 62,
+      "bbox": [
+        139.68017243,
+        35.7131,
+        139.7498,
+        35.74576942
+      ],
+      "bbox_status": "COMPUTED_GEOGRAPHIC",
+      "bbox_counts": {
+        "coordinate_visits": 62,
+        "coordinate_positions": 62,
+        "visit_limit": 1000000
+      },
+      "raw_coordinates_bbox": [
+        139.68017243,
+        35.7131,
+        139.7498,
+        35.74576942
+      ],
+      "crs": {
+        "properties": {
+          "name": null
+        }
+      },
+      "crs_status": "UNKNOWN",
+      "declared_crs": null,
+      "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
+      "property_keys": [
+        "供用済面積",
+        "供用開始年",
+        "公園名",
+        "公園種別",
+        "所在地市区町村名",
+        "所在地都道府県名",
+        "管理市区町村",
+        "管理都道府県・整備局",
+        "都市計画決定"
+      ],
+      "property_keys_truncated": false,
+      "geometry_type_counts": {
+        "distinct_count": 1,
+        "values": {
+          "Point": 62
+        },
+        "truncated": false
+      },
+      "literal_field_distributions": {
+        "供用済面積": {
+          "blank_count": 0,
+          "distinct_count": 62,
+          "distinct_values": {
+            "distinct_count": 62,
+            "values": {
+              "168": 1,
+              "316": 1,
+              "420": 1,
+              "492": 1,
+              "547": 1,
+              "1013": 1,
+              "1021": 1,
+              "1057": 1,
+              "1071": 1,
+              "1084": 1,
+              "1096": 1,
+              "1112": 1,
+              "1132": 1,
+              "1172": 1,
+              "1186": 1,
+              "1321": 1,
+              "1346": 1,
+              "1368": 1,
+              "1501": 1,
+              "1533": 1,
+              "1616": 1,
+              "1693": 1,
+              "1786": 1,
+              "1831": 1,
+              "2197": 1,
+              "2337": 1,
+              "2516": 1,
+              "2706": 1,
+              "2767": 1,
+              "2966": 1,
+              "2983": 1,
+              "3123": 1,
+              "3199": 1,
+              "3222": 1,
+              "3547": 1,
+              "3643": 1,
+              "3701": 1,
+              "4046": 1,
+              "4992": 1,
+              "5113": 1
+            },
+            "truncated": true
+          }
+        },
+        "供用開始年": {
+          "blank_count": 0,
+          "distinct_count": 40,
+          "distinct_values": {
+            "distinct_count": 40,
+            "values": {
+              "1940": 1,
+              "1941": 1,
+              "1942": 1,
+              "1950": 1,
+              "1951": 2,
+              "1952": 1,
+              "1953": 1,
+              "1955": 1,
+              "1958": 1,
+              "1963": 1,
+              "1965": 1,
+              "1967": 1,
+              "1969": 1,
+              "1970": 1,
+              "1971": 1,
+              "1973": 1,
+              "1974": 1,
+              "1975": 1,
+              "1978": 1,
+              "1980": 2,
+              "1981": 2,
+              "1985": 1,
+              "1986": 2,
+              "1987": 4,
+              "1988": 3,
+              "1989": 3,
+              "1990": 1,
+              "1991": 4,
+              "1992": 2,
+              "1993": 4,
+              "1995": 2,
+              "1996": 1,
+              "1997": 4,
+              "1998": 1,
+              "1999": 1,
+              "2001": 1,
+              "2005": 1,
+              "2007": 1,
+              "2008": 1,
+              "2009": 1
+            },
+            "truncated": false
+          }
+        },
+        "公園名": {
+          "blank_count": 0,
+          "distinct_count": 62,
+          "distinct_values": {
+            "distinct_count": 62,
+            "values": {
+              "上り屋敷": 1,
+              "上池袋": 1,
+              "上池袋さくら": 1,
+              "上池袋中央": 1,
+              "上池袋東": 1,
+              "中池袋": 1,
+              "元池袋史跡": 1,
+              "北大塚": 1,
+              "千川上水": 1,
+              "千川彫刻": 1,
+              "千川親水": 1,
+              "千早": 1,
+              "千早フラワー": 1,
+              "千早第二": 1,
+              "千早緑地": 1,
+              "南大塚": 1,
+              "南大塚からたち": 1,
+              "南池袋": 1,
+              "南池袋みどり": 1,
+              "南池袋第二": 1,
+              "南長崎": 1,
+              "南長崎花咲": 1,
+              "堀之内": 1,
+              "大塚台": 1,
+              "宮仲": 1,
+              "小鳥がさえずる": 1,
+              "山吹の里": 1,
+              "巣鴨": 1,
+              "御嶽北": 1,
+              "日之出町": 1,
+              "日之出町第二": 1,
+              "東池袋": 1,
+              "東池袋中央": 1,
+              "染井よしの桜の里": 1,
+              "染井吉野桜記念": 1,
+              "椎名町": 1,
+              "江戸橋": 1,
+              "池袋": 1,
+              "池袋の森": 1,
+              "池袋ふれあい": 1
+            },
+            "truncated": true
+          }
+        },
+        "公園種別": {
+          "blank_count": 0,
+          "distinct_count": 5,
+          "distinct_values": {
+            "distinct_count": 5,
+            "values": {
+              "広場公園": 4,
+              "緑道": 2,
+              "街区公園": 47,
+              "近隣公園": 1,
+              "都市緑地": 8
+            },
+            "truncated": false
+          }
+        },
+        "所在地市区町村名": {
+          "blank_count": 0,
+          "distinct_count": 1,
+          "distinct_values": {
+            "distinct_count": 1,
+            "values": {
+              "豊島区": 62
+            },
+            "truncated": false
+          }
+        },
+        "所在地都道府県名": {
+          "blank_count": 0,
+          "distinct_count": 1,
+          "distinct_values": {
+            "distinct_count": 1,
+            "values": {
+              "東京都": 62
+            },
+            "truncated": false
+          }
+        },
+        "管理市区町村": {
+          "blank_count": 0,
+          "distinct_count": 1,
+          "distinct_values": {
+            "distinct_count": 1,
+            "values": {
+              "豊島区": 62
+            },
+            "truncated": false
+          }
+        },
+        "管理都道府県・整備局": {
+          "blank_count": 0,
+          "distinct_count": 1,
+          "distinct_values": {
+            "distinct_count": 1,
+            "values": {
+              "東京都": 62
+            },
+            "truncated": false
+          }
+        },
+        "都市計画決定": {
+          "blank_count": 0,
+          "distinct_count": 2,
+          "distinct_values": {
+            "distinct_count": 2,
+            "values": {
+              "1": 28,
+              "2": 34
+            },
+            "truncated": false
+          }
+        }
+      },
+      "source_attributions": {},
+      "line_feature_count": 0,
+      "endpoint_field_sets": {}
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "bytes": 25176,
+      "kind": "GEOJSON",
+      "feature_count": 143,
+      "bbox": [
+        139.67859707,
+        35.714298848,
+        139.74674529,
+        35.74490964
+      ],
+      "bbox_status": "COMPUTED_GEOGRAPHIC",
+      "bbox_counts": {
+        "coordinate_visits": 143,
+        "coordinate_positions": 143,
+        "visit_limit": 1000000
+      },
+      "raw_coordinates_bbox": [
+        139.67859707,
+        35.714298848,
+        139.74674529,
+        35.74490964
+      ],
+      "crs": {
+        "properties": {
+          "name": null
+        }
+      },
+      "crs_status": "UNKNOWN",
+      "declared_crs": null,
+      "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
+      "property_keys": [
+        "名称",
+        "種類",
+        "高さ"
+      ],
+      "property_keys_truncated": false,
+      "geometry_type_counts": {
+        "distinct_count": 1,
+        "values": {
+          "Point": 143
+        },
+        "truncated": false
+      },
+      "literal_field_distributions": {
+        "名称": {
+          "blank_count": 0,
+          "distinct_count": 143,
+          "distinct_values": {
+            "distinct_count": 143,
+            "values": {
+              "ヴァンガードタワー": 1,
+              "グランドミレーニア": 1,
+              "ザ・タワーグランディア": 1,
+              "サンシャインシティ": 1,
+              "としまエコミューゼタウン": 1,
+              "としま昭和病院": 1,
+              "上池袋郵便局": 1,
+              "区立さくら小学校": 1,
+              "区立仰高小学校": 1,
+              "区立千川中学校": 1,
+              "区立千早小学校": 1,
+              "区立千登世橋中学校": 1,
+              "区立南池袋小学校": 1,
+              "区立富士見台小学校": 1,
+              "区立巣鴨北中学校": 1,
+              "区立巣鴨小学校": 1,
+              "区立明豊中学校": 1,
+              "区立朋有小学校": 1,
+              "区立朝日小学校": 1,
+              "区立椎名町小学校": 1,
+              "区立池袋中学校": 1,
+              "区立池袋小学校": 1,
+              "区立池袋第一小学校": 1,
+              "区立池袋第三小学校": 1,
+              "区立清和小学校": 1,
+              "区立目白小学校": 1,
+              "区立西巣鴨中学校": 1,
+              "区立西巣鴨小学校": 1,
+              "区立西池袋中学校": 1,
+              "区立要小学校": 1,
+              "区立豊成小学校": 1,
+              "区立長崎小学校": 1,
+              "区立駒込中学校": 1,
+              "区立駒込小学校": 1,
+              "区立高南小学校": 1,
+              "区立高松小学校": 1,
+              "原整形外科病院": 1,
+              "大同病院": 1,
+              "大塚駅前郵便局": 1,
+              "大正大学(巣鴨校舎)": 1
+            },
+            "truncated": true
+          }
+        },
+        "種類": {
+          "blank_count": 0,
+          "distinct_count": 11,
+          "distinct_values": {
+            "distinct_count": 11,
+            "values": {
+              "ランドマーク": 5,
+              "保健所": 1,
+              "博物館・美術館": 1,
+              "国の機関": 4,
+              "地方の機関": 1,
+              "学校": 57,
+              "指定公共機関": 1,
+              "消防署": 6,
+              "病院": 11,
+              "警察署": 26,
+              "郵便局": 30
+            },
+            "truncated": false
+          }
+        },
+        "高さ": {
+          "blank_count": 0,
+          "distinct_count": 106,
+          "distinct_values": {
+            "distinct_count": 106,
+            "values": {
+              "10": 1,
+              "11": 1,
+              "14": 2,
+              "15": 1,
+              "16": 1,
+              "17": 2,
+              "18": 2,
+              "10.1": 1,
+              "10.4": 1,
+              "10.7": 3,
+              "105.9": 1,
+              "106.8": 1,
+              "11.1": 1,
+              "11.6": 1,
+              "114.7": 1,
+              "12.6": 1,
+              "13.3": 2,
+              "13.7": 1,
+              "14.4": 1,
+              "14.5": 1,
+              "14.6": 1,
+              "15.2": 2,
+              "15.3": 1,
+              "15.6": 2,
+              "15.7": 2,
+              "15.8": 1,
+              "159.9": 2,
+              "16.3": 1,
+              "16.6": 3,
+              "16.7": 1,
+              "16.9": 2,
+              "17.1": 1,
+              "17.2": 1,
+              "17.6": 1,
+              "17.7": 1,
+              "17.8": 2,
+              "17.9": 1,
+              "18.1": 2,
+              "18.2": 1,
+              "18.3": 3
+            },
+            "truncated": true
+          }
+        }
+      },
+      "source_attributions": {},
+      "line_feature_count": 0,
+      "endpoint_field_sets": {}
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "bytes": 9230,
+      "kind": "GEOJSON",
+      "feature_count": 35,
+      "bbox": [
+        139.683010912,
+        35.716569724,
+        139.748127618,
+        35.745291981
+      ],
+      "bbox_status": "COMPUTED_GEOGRAPHIC",
+      "bbox_counts": {
+        "coordinate_visits": 35,
+        "coordinate_positions": 35,
+        "visit_limit": 1000000
+      },
+      "raw_coordinates_bbox": [
+        139.683010912,
+        35.716569724,
+        139.748127618,
+        35.745291981
+      ],
+      "crs": {
+        "properties": {
+          "name": null
+        }
+      },
+      "crs_status": "UNKNOWN",
+      "declared_crs": null,
+      "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
+      "property_keys": [
+        "事業者種別",
+        "路線名",
+        "運営会社",
+        "鉄道区分",
+        "駅名",
+        "高さ"
+      ],
+      "property_keys_truncated": false,
+      "geometry_type_counts": {
+        "distinct_count": 1,
+        "values": {
+          "Point": 35
+        },
+        "truncated": false
+      },
+      "literal_field_distributions": {
+        "事業者種別": {
+          "blank_count": 0,
+          "distinct_count": 3,
+          "distinct_values": {
+            "distinct_count": 3,
+            "values": {
+              "JR在来線": 7,
+              "公営鉄道": 11,
+              "民営鉄道": 17
+            },
+            "truncated": false
+          }
+        },
+        "路線名": {
+          "blank_count": 0,
+          "distinct_count": 10,
+          "distinct_values": {
+            "distinct_count": 10,
+            "values": {
+              "13号線副都心線": 4,
+              "4号線丸ノ内線": 2,
+              "6号線三田線": 2,
+              "7号線南北線": 1,
+              "8号線有楽町線": 4,
+              "山手線": 5,
+              "東上本線": 3,
+              "池袋線": 3,
+              "荒川線": 9,
+              "赤羽線": 2
+            },
+            "truncated": false
+          }
+        },
+        "運営会社": {
+          "blank_count": 0,
+          "distinct_count": 5,
+          "distinct_values": {
+            "distinct_count": 5,
+            "values": {
+              "東京地下鉄": 11,
+              "東京都": 11,
+              "東日本旅客鉄道": 7,
+              "東武鉄道": 3,
+              "西武鉄道": 3
+            },
+            "truncated": false
+          }
+        },
+        "鉄道区分": {
+          "blank_count": 0,
+          "distinct_count": 3,
+          "distinct_values": {
+            "distinct_count": 3,
+            "values": {
+              "普通鉄道": 19,
+              "普通鉄道JR": 7,
+              "軌道": 9
+            },
+            "truncated": false
+          }
+        },
+        "駅名": {
+          "blank_count": 0,
+          "distinct_count": 25,
+          "distinct_values": {
+            "distinct_count": 25,
+            "values": {
+              "下板橋駅": 1,
+              "北池袋駅": 1,
+              "千川駅": 2,
+              "向原駅": 1,
+              "大塚駅": 1,
+              "大塚駅前駅": 1,
+              "学習院下駅": 1,
+              "巣鴨新田駅": 1,
+              "巣鴨駅": 2,
+              "庚申塚駅": 1,
+              "新大塚駅": 1,
+              "新庚申塚駅": 1,
+              "東池袋四丁目駅": 1,
+              "東池袋駅": 1,
+              "東長崎駅": 1,
+              "板橋駅": 1,
+              "椎名町駅": 1,
+              "池袋駅": 7,
+              "目白駅": 1,
+              "西巣鴨駅": 1,
+              "要町駅": 2,
+              "都電雑司ヶ谷駅": 1,
+              "雑司が谷駅": 1,
+              "駒込駅": 2,
+              "鬼子母神前駅": 1
+            },
+            "truncated": false
+          }
+        },
+        "高さ": {
+          "blank_count": 0,
+          "distinct_count": 22,
+          "distinct_values": {
+            "distinct_count": 22,
+            "values": {
+              "0": 11,
+              "7": 1,
+              "12": 1,
+              "10.2": 1,
+              "11.2": 1,
+              "11.4": 1,
+              "12.3": 1,
+              "12.4": 1,
+              "15.2": 1,
+              "15.7": 1,
+              "3.7": 1,
+              "3.8": 2,
+              "3.9": 1,
+              "4.4": 1,
+              "5.1": 1,
+              "5.3": 3,
+              "5.7": 1,
+              "6.6": 1,
+              "6.7": 1,
+              "7.7": 1,
+              "7.9": 1,
+              "8.8": 1
+            },
+            "truncated": false
+          }
+        }
+      },
+      "source_attributions": {},
+      "line_feature_count": 0,
+      "endpoint_field_sets": {}
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "bytes": 27636,
+      "kind": "GEOJSON",
+      "feature_count": 81,
+      "bbox": [
+        139.677425528,
+        35.714544972,
+        139.74909424,
+        35.745580493
+      ],
+      "bbox_status": "COMPUTED_GEOGRAPHIC",
+      "bbox_counts": {
+        "coordinate_visits": 512,
+        "coordinate_positions": 427,
+        "visit_limit": 1000000
+      },
+      "raw_coordinates_bbox": [
+        139.677425528,
+        35.714544972,
+        139.74909424,
+        35.745580493
+      ],
+      "crs": {
+        "properties": {
+          "name": null
+        }
+      },
+      "crs_status": "UNKNOWN",
+      "declared_crs": null,
+      "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
+      "property_keys": [
+        "事業者種別",
+        "行政区域",
+        "路線名",
+        "運営会社",
+        "鉄道区分"
+      ],
+      "property_keys_truncated": false,
+      "geometry_type_counts": {
+        "distinct_count": 2,
+        "values": {
+          "LineString": 79,
+          "MultiLineString": 2
+        },
+        "truncated": false
+      },
+      "literal_field_distributions": {
+        "事業者種別": {
+          "blank_count": 0,
+          "distinct_count": 3,
+          "distinct_values": {
+            "distinct_count": 3,
+            "values": {
+              "JR在来線": 15,
+              "公営鉄道": 26,
+              "民営鉄道": 40
+            },
+            "truncated": false
+          }
+        },
+        "行政区域": {
+          "blank_count": 0,
+          "distinct_count": 1,
+          "distinct_values": {
+            "distinct_count": 1,
+            "values": {
+              "13116": 81
+            },
+            "truncated": false
+          }
+        },
+        "路線名": {
+          "blank_count": 0,
+          "distinct_count": 12,
+          "distinct_values": {
+            "distinct_count": 12,
+            "values": {
+              "12号線大江戸線": 2,
+              "13号線副都心線": 10,
+              "4号線丸ノ内線": 4,
+              "6号線三田線": 5,
+              "7号線南北線": 3,
+              "8号線有楽町線": 10,
+              "山手線": 11,
+              "新宿線": 1,
+              "東上本線": 6,
+              "池袋線": 6,
+              "荒川線": 19,
+              "赤羽線": 4
+            },
+            "truncated": false
+          }
+        },
+        "運営会社": {
+          "blank_count": 0,
+          "distinct_count": 5,
+          "distinct_values": {
+            "distinct_count": 5,
+            "values": {
+              "東京地下鉄": 27,
+              "東京都": 26,
+              "東日本旅客鉄道": 15,
+              "東武鉄道": 6,
+              "西武鉄道": 7
+            },
+            "truncated": false
+          }
+        },
+        "鉄道区分": {
+          "blank_count": 0,
+          "distinct_count": 3,
+          "distinct_values": {
+            "distinct_count": 3,
+            "values": {
+              "普通鉄道": 47,
+              "普通鉄道JR": 15,
+              "軌道": 19
+            },
+            "truncated": false
+          }
+        }
+      },
+      "source_attributions": {},
+      "line_feature_count": 81,
+      "endpoint_field_sets": {
+        "(none)": 81
+      }
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "bytes": 23029,
+      "kind": "GEOJSON",
+      "feature_count": 26,
+      "bbox": [
+        139.67742621,
+        35.714460811,
+        139.748381664,
+        35.744917506
+      ],
+      "bbox_status": "COMPUTED_GEOGRAPHIC",
+      "bbox_counts": {
+        "coordinate_visits": 661,
+        "coordinate_positions": 630,
+        "visit_limit": 1000000
+      },
+      "raw_coordinates_bbox": [
+        139.67742621,
+        35.714460811,
+        139.748381664,
+        35.744917506
+      ],
+      "crs": {
+        "properties": {
+          "name": null
+        }
+      },
+      "crs_status": "UNKNOWN",
+      "declared_crs": null,
+      "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
+      "property_keys": [
+        "任意ID",
+        "区分",
+        "枝ID",
+        "行政区域",
+        "資料名称",
+        "資料年月",
+        "路線名称",
+        "道路種別"
+      ],
+      "property_keys_truncated": false,
+      "geometry_type_counts": {
+        "distinct_count": 2,
+        "values": {
+          "LineString": 24,
+          "MultiLineString": 2
+        },
+        "truncated": false
+      },
+      "literal_field_distributions": {
+        "任意ID": {
+          "blank_count": 0,
+          "distinct_count": 22,
+          "distinct_values": {
+            "distinct_count": 22,
+            "values": {
+              "10": 3,
+              "23": 1,
+              "35": 1,
+              "38": 1,
+              "41": 1,
+              "53": 2,
+              "97": 1,
+              "107": 1,
+              "175": 1,
+              "182": 1,
+              "183": 1,
+              "184": 1,
+              "188": 2,
+              "198": 1,
+              "307": 1,
+              "308": 1,
+              "309": 1,
+              "310": 1,
+              "311": 1,
+              "476": 1,
+              "593": 1,
+              "648": 1
+            },
+            "truncated": false
+          }
+        },
+        "区分": {
+          "blank_count": 0,
+          "distinct_count": 3,
+          "distinct_values": {
+            "distinct_count": 3,
+            "values": {
+              "第１次緊急輸送道路": 9,
+              "第２次緊急輸送道路": 12,
+              "第３次緊急輸送道路": 5
+            },
+            "truncated": false
+          }
+        },
+        "枝ID": {
+          "blank_count": 0,
+          "distinct_count": 5,
+          "distinct_values": {
+            "distinct_count": 5,
+            "values": {
+              "1": 18,
+              "2": 4,
+              "3": 1,
+              "4": 2,
+              "8": 1
+            },
+            "truncated": false
+          }
+        },
+        "行政区域": {
+          "blank_count": 0,
+          "distinct_count": 1,
+          "distinct_values": {
+            "distinct_count": 1,
+            "values": {
+              "13116": 26
+            },
+            "truncated": false
+          }
+        },
+        "資料名称": {
+          "blank_count": 0,
+          "distinct_count": 1,
+          "distinct_values": {
+            "distinct_count": 1,
+            "values": {
+              "東京都緊急輸送道路ネットワーク計": 26
+            },
+            "truncated": false
+          }
+        },
+        "資料年月": {
+          "blank_count": 0,
+          "distinct_count": 1,
+          "distinct_values": {
+            "distinct_count": 1,
+            "values": {
+              "2019": 26
+            },
+            "truncated": false
+          }
+        },
+        "路線名称": {
+          "blank_count": 0,
+          "distinct_count": 22,
+          "distinct_values": {
+            "distinct_count": 22,
+            "values": {
+              "中央環状新宿線": 1,
+              "千代田練馬田無線": 2,
+              "国道122号": 1,
+              "国道17号": 1,
+              "国道254号": 1,
+              "小石川西巣鴨線": 1,
+              "本郷赤羽線": 1,
+              "池袋谷原線": 2,
+              "環状六号線": 1,
+              "秋葉原雑司ヶ谷線": 1,
+              "芝新宿王子線": 1,
+              "豊11-430": 1,
+              "豊12-680": 1,
+              "豊12-730": 1,
+              "豊21-440": 1,
+              "豊31-1420": 1,
+              "豊41-21": 1,
+              "都道439号椎名町上石神井線": 1,
+              "都道首都高速5号線": 3,
+              "都道首都高速板橋足立線": 1,
+              "音羽池袋線": 1,
+              "鮫洲大山線": 1
+            },
+            "truncated": false
+          }
+        },
+        "道路種別": {
+          "blank_count": 0,
+          "distinct_count": 5,
+          "distinct_values": {
+            "distinct_count": 5,
+            "values": {
+              "一般国道": 3,
+              "一般都道府県道": 8,
+              "主要地方道（都道府県道）": 4,
+              "市町村道（認定道路）": 6,
+              "都市高速道路": 5
+            },
+            "truncated": false
+          }
+        }
+      },
+      "source_attributions": {},
+      "line_feature_count": 26,
+      "endpoint_field_sets": {
+        "(none)": 26
+      }
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "bytes": 37670,
+      "kind": "GEOJSON",
+      "feature_count": 1,
+      "bbox": [
+        139.677344306,
+        35.712265775,
+        139.752760441,
+        35.745792667
+      ],
+      "bbox_status": "COMPUTED_GEOGRAPHIC",
+      "bbox_counts": {
+        "coordinate_visits": 1306,
+        "coordinate_positions": 1305,
+        "visit_limit": 1000000
+      },
+      "raw_coordinates_bbox": [
+        139.677344306,
+        35.712265775,
+        139.752760441,
+        35.745792667
+      ],
+      "crs": {
+        "properties": {
+          "name": null
+        }
+      },
+      "crs_status": "UNKNOWN",
+      "declared_crs": null,
+      "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
+      "property_keys": [
+        "city_code",
+        "city_name",
+        "prefecture_code",
+        "prefecture_name"
+      ],
+      "property_keys_truncated": false,
+      "geometry_type_counts": {
+        "distinct_count": 1,
+        "values": {
+          "LineString": 1
+        },
+        "truncated": false
+      },
+      "literal_field_distributions": {
+        "city_code": {
+          "blank_count": 0,
+          "distinct_count": 1,
+          "distinct_values": {
+            "distinct_count": 1,
+            "values": {
+              "13116": 1
+            },
+            "truncated": false
+          }
+        },
+        "city_name": {
+          "blank_count": 0,
+          "distinct_count": 1,
+          "distinct_values": {
+            "distinct_count": 1,
+            "values": {
+              "豊島区": 1
+            },
+            "truncated": false
+          }
+        },
+        "prefecture_code": {
+          "blank_count": 0,
+          "distinct_count": 1,
+          "distinct_values": {
+            "distinct_count": 1,
+            "values": {
+              "13": 1
+            },
+            "truncated": false
+          }
+        },
+        "prefecture_name": {
+          "blank_count": 0,
+          "distinct_count": 1,
+          "distinct_values": {
+            "distinct_count": 1,
+            "values": {
+              "東京都": 1
+            },
+            "truncated": false
+          }
+        }
+      },
+      "source_attributions": {},
+      "line_feature_count": 1,
+      "endpoint_field_sets": {
+        "(none)": 1
+      }
+    }
+  ],
+  "observations": [
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "（旧）高田小学校",
+      "raw_coordinates": [
+        139.716499116,
+        35.7193586254
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.716499116,
+      "latitude": 35.7193586254,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "（旧）千川小学校",
+      "raw_coordinates": [
+        139.689072986,
+        35.7408063647
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.689072986,
+      "latitude": 35.7408063647,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "みらい館大明",
+      "raw_coordinates": [
+        139.704503,
+        35.735636
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.704503,
+      "latitude": 35.735636,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "学習院大学",
+      "raw_coordinates": [
+        139.708825,
+        35.718815
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.708825,
+      "latitude": 35.718815,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "仰高小学校",
+      "raw_coordinates": [
+        139.738628,
+        35.736508
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.738628,
+      "latitude": 35.736508,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "駒込小学校",
+      "raw_coordinates": [
+        139.742961,
+        35.738341
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.742961,
+      "latitude": 35.738341,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "高南小学校",
+      "raw_coordinates": [
+        139.713992,
+        35.716454
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.713992,
+      "latitude": 35.716454,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "西巣鴨小学校",
+      "raw_coordinates": [
+        139.726462,
+        35.738647
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.726462,
+      "latitude": 35.738647,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "西巣鴨中学校",
+      "raw_coordinates": [
+        139.727212,
+        35.728953
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.727212,
+      "latitude": 35.728953,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "西池袋中学校（仮校舎）",
+      "raw_coordinates": [
+        139.697007,
+        35.725445
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.697007,
+      "latitude": 35.725445,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "西部区民事務所",
+      "raw_coordinates": [
+        139.69096,
+        35.735804
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.69096,
+      "latitude": 35.735804,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "千川中学校",
+      "raw_coordinates": [
+        139.699964,
+        35.736091
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.699964,
+      "latitude": 35.736091,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "巣鴨小学校",
+      "raw_coordinates": [
+        139.734517,
+        35.728676
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.734517,
+      "latitude": 35.728676,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "池袋第一小学校",
+      "raw_coordinates": [
+        139.719101,
+        35.741591
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.719101,
+      "latitude": 35.741591,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "池袋第三小学校",
+      "raw_coordinates": [
+        139.702853,
+        35.72848
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.702853,
+      "latitude": 35.72848,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "池袋第二小学校",
+      "raw_coordinates": [
+        139.714657,
+        35.74084
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.714657,
+      "latitude": 35.74084,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "長崎小学校",
+      "raw_coordinates": [
+        139.690104,
+        35.728647
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.690104,
+      "latitude": 35.728647,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "椎名町小学校",
+      "raw_coordinates": [
+        139.685521,
+        35.726675
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.685521,
+      "latitude": 35.726675,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "富士見台小学校",
+      "raw_coordinates": [
+        139.693215,
+        35.724675
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.693215,
+      "latitude": 35.724675,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "文成小学校",
+      "raw_coordinates": [
+        139.714407,
+        35.744312
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.714407,
+      "latitude": 35.744312,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "朋有小学校",
+      "raw_coordinates": [
+        139.723601,
+        35.728953
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.723601,
+      "latitude": 35.728953,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "豊成小学校",
+      "raw_coordinates": [
+        139.722074,
+        35.734952
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.722074,
+      "latitude": 35.734952,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "明豊中学校",
+      "raw_coordinates": [
+        139.684382,
+        35.736007
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.684382,
+      "latitude": 35.736007,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "目白小学校",
+      "raw_coordinates": [
+        139.709409,
+        35.720954
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.709409,
+      "latitude": 35.720954,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "要小学校",
+      "raw_coordinates": [
+        139.693743,
+        35.734396
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.693743,
+      "latitude": 35.734396,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "立教大学",
+      "raw_coordinates": [
+        139.702298,
+        35.730119
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.702298,
+      "latitude": 35.730119,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "さくら小学校",
+      "raw_coordinates": [
+        139.680022,
+        35.736007
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.680022,
+      "latitude": 35.736007,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "駒込中学校",
+      "raw_coordinates": [
+        139.741988,
+        35.735953
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.741988,
+      "latitude": 35.735953,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "駒込中学校一帯",
+      "raw_coordinates": [
+        139.74348799,
+        35.7354557882
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.74348799,
+      "latitude": 35.7354557882,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "高松小学校",
+      "raw_coordinates": [
+        139.697159,
+        35.739535
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.697159,
+      "latitude": 35.739535,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "雑司ヶ谷墓地",
+      "raw_coordinates": [
+        139.71984,
+        35.722449
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71984,
+      "latitude": 35.722449,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "清和小学校",
+      "raw_coordinates": [
+        139.733045,
+        35.735897
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.733045,
+      "latitude": 35.735897,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "千早小学校",
+      "raw_coordinates": [
+        139.687347,
+        35.734957
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.687347,
+      "latitude": 35.734957,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "千登世橋中学校",
+      "raw_coordinates": [
+        139.711955,
+        35.717425
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.711955,
+      "latitude": 35.717425,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "染井墓地",
+      "raw_coordinates": [
+        139.737044,
+        35.73864
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.737044,
+      "latitude": 35.73864,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "巣鴨北中学校",
+      "raw_coordinates": [
+        139.728795,
+        35.741591
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.728795,
+      "latitude": 35.741591,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "池袋小学校",
+      "raw_coordinates": [
+        139.70938,
+        35.737813
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.70938,
+      "latitude": 35.737813,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "池袋中学校",
+      "raw_coordinates": [
+        139.714546,
+        35.741924
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.714546,
+      "latitude": 35.741924,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "朝日小学校",
+      "raw_coordinates": [
+        139.733239,
+        35.741035
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.733239,
+      "latitude": 35.741035,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "南池袋小学校",
+      "raw_coordinates": [
+        139.714689,
+        35.724151
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.714689,
+      "latitude": 35.724151,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "豊島区立総合体育場一帯",
+      "raw_coordinates": [
+        139.722101819,
+        35.7290273465
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.722101819,
+      "latitude": 35.7290273465,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "染井墓地・駒込中学校一帯",
+      "raw_coordinates": [
+        139.737918,
+        35.738327
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.737918,
+      "latitude": 35.738327,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "駒込東",
+      "raw_coordinates": [
+        139.7498,
+        35.73572
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.7498,
+      "latitude": 35.73572,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "染井吉野桜記念",
+      "raw_coordinates": [
+        139.74681,
+        35.73686
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.74681,
+      "latitude": 35.73686,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "駒込",
+      "raw_coordinates": [
+        139.74709,
+        35.73758
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.74709,
+      "latitude": 35.73758,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "駒込西",
+      "raw_coordinates": [
+        139.73907,
+        35.73806
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.73907,
+      "latitude": 35.73806,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "染井よしの桜の里",
+      "raw_coordinates": [
+        139.7415,
+        35.73848
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.7415,
+      "latitude": 35.73848,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "江戸橋",
+      "raw_coordinates": [
+        139.73669,
+        35.73183
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.73669,
+      "latitude": 35.73183,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "西巣鴨",
+      "raw_coordinates": [
+        139.72566,
+        35.73647
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.72566,
+      "latitude": 35.73647,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "千川上水",
+      "raw_coordinates": [
+        139.7265,
+        35.74178
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.7265,
+      "latitude": 35.74178,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "巣鴨",
+      "raw_coordinates": [
+        139.73225,
+        35.73215
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.73225,
+      "latitude": 35.73215,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "北大塚",
+      "raw_coordinates": [
+        139.72285,
+        35.73383
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.72285,
+      "latitude": 35.73383,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "南大塚からたち",
+      "raw_coordinates": [
+        139.73351,
+        35.72596
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.73351,
+      "latitude": 35.72596,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "南大塚",
+      "raw_coordinates": [
+        139.7312,
+        35.72768
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.7312,
+      "latitude": 35.72768,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "大塚台",
+      "raw_coordinates": [
+        139.72574,
+        35.73029
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.72574,
+      "latitude": 35.73029,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "上池袋中央",
+      "raw_coordinates": [
+        139.72162,
+        35.73697
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.72162,
+      "latitude": 35.73697,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "上池袋東",
+      "raw_coordinates": [
+        139.72244,
+        35.73619
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.72244,
+      "latitude": 35.73619,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "宮仲",
+      "raw_coordinates": [
+        139.72466,
+        35.73604
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.72466,
+      "latitude": 35.73604,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "上池袋",
+      "raw_coordinates": [
+        139.7164,
+        35.73616
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.7164,
+      "latitude": 35.73616,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "上池袋さくら",
+      "raw_coordinates": [
+        139.7162,
+        35.73798
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.7162,
+      "latitude": 35.73798,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "堀之内",
+      "raw_coordinates": [
+        139.71889,
+        35.73878
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71889,
+      "latitude": 35.73878,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "中池袋",
+      "raw_coordinates": [
+        139.71501,
+        35.7316
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71501,
+      "latitude": 35.7316,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "池袋駅前",
+      "raw_coordinates": [
+        139.71233,
+        35.73154
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71233,
+      "latitude": 35.73154,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "東池袋中央",
+      "raw_coordinates": [
+        139.71931,
+        35.72915
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71931,
+      "latitude": 35.72915,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "東池袋",
+      "raw_coordinates": [
+        139.71785,
+        35.73126
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71785,
+      "latitude": 35.73126,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "日之出町第二",
+      "raw_coordinates": [
+        139.71941,
+        35.72631
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71941,
+      "latitude": 35.72631,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "日之出町",
+      "raw_coordinates": [
+        139.7188,
+        35.72769
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.7188,
+      "latitude": 35.72769,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "南池袋",
+      "raw_coordinates": [
+        139.71432,
+        35.72754
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71432,
+      "latitude": 35.72754,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "南池袋みどり",
+      "raw_coordinates": [
+        139.71742,
+        35.72197
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71742,
+      "latitude": 35.72197,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "南池袋第二",
+      "raw_coordinates": [
+        139.7171,
+        35.72245
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.7171,
+      "latitude": 35.72245,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "池袋西口",
+      "raw_coordinates": [
+        139.7083,
+        35.72975
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.7083,
+      "latitude": 35.72975,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "元池袋史跡",
+      "raw_coordinates": [
+        139.7085,
+        35.72894
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.7085,
+      "latitude": 35.72894,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "上り屋敷",
+      "raw_coordinates": [
+        139.70506,
+        35.72645
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.70506,
+      "latitude": 35.72645,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "西池袋",
+      "raw_coordinates": [
+        139.70625,
+        35.72925
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.70625,
+      "latitude": 35.72925,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "谷端川南緑道",
+      "raw_coordinates": [
+        139.69954,
+        35.72671
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.69954,
+      "latitude": 35.72671,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "西池袋第二",
+      "raw_coordinates": [
+        139.69666,
+        35.72743
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.69666,
+      "latitude": 35.72743,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "谷端川第二親水",
+      "raw_coordinates": [
+        139.69989533,
+        35.73108608
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.69989533,
+      "latitude": 35.73108608,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "池袋ふれあい",
+      "raw_coordinates": [
+        139.71049,
+        35.73626
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71049,
+      "latitude": 35.73626,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "御嶽北",
+      "raw_coordinates": [
+        139.70615,
+        35.73747
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.70615,
+      "latitude": 35.73747,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "池袋第二",
+      "raw_coordinates": [
+        139.70592,
+        35.73573
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.70592,
+      "latitude": 35.73573,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "谷端川親水",
+      "raw_coordinates": [
+        139.70055,
+        35.73336
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.70055,
+      "latitude": 35.73336,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "池袋",
+      "raw_coordinates": [
+        139.70863,
+        35.73799
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.70863,
+      "latitude": 35.73799,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "池袋本町",
+      "raw_coordinates": [
+        139.71387,
+        35.73974
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71387,
+      "latitude": 35.73974,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "谷端川北緑道",
+      "raw_coordinates": [
+        139.71132757,
+        35.74576942
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71132757,
+      "latitude": 35.74576942,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "雑司が谷",
+      "raw_coordinates": [
+        139.71642,
+        35.71859
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71642,
+      "latitude": 35.71859,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "雑司が谷みみずく",
+      "raw_coordinates": [
+        139.71338,
+        35.72218
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71338,
+      "latitude": 35.72218,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "高田第二",
+      "raw_coordinates": [
+        139.72086,
+        35.7131
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.72086,
+      "latitude": 35.7131,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "山吹の里",
+      "raw_coordinates": [
+        139.7188,
+        35.71382
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.7188,
+      "latitude": 35.71382,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "高田",
+      "raw_coordinates": [
+        139.71535,
+        35.71537
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.71535,
+      "latitude": 35.71537,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "高田第三",
+      "raw_coordinates": [
+        139.70723,
+        35.71511
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.70723,
+      "latitude": 35.71511,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "椎名町",
+      "raw_coordinates": [
+        139.69336,
+        35.72585
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.69336,
+      "latitude": 35.72585,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "南長崎花咲",
+      "raw_coordinates": [
+        139.68623,
+        35.72398
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.68623,
+      "latitude": 35.72398,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "南長崎",
+      "raw_coordinates": [
+        139.68834,
+        35.72683
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.68834,
+      "latitude": 35.72683,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "西椎名町",
+      "raw_coordinates": [
+        139.68017243,
+        35.72844285
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.68017243,
+      "latitude": 35.72844285,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "長崎",
+      "raw_coordinates": [
+        139.68794,
+        35.73083
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.68794,
+      "latitude": 35.73083,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "千早フラワー",
+      "raw_coordinates": [
+        139.69353,
+        35.73128
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.69353,
+      "latitude": 35.73128,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "千早第二",
+      "raw_coordinates": [
+        139.69666,
+        35.73218
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.69666,
+      "latitude": 35.73218,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "千早",
+      "raw_coordinates": [
+        139.69044,
+        35.73489
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.69044,
+      "latitude": 35.73489,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "千早緑地",
+      "raw_coordinates": [
+        139.68881,
+        35.73447
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.68881,
+      "latitude": 35.73447,
+      "verification": "UNVERIFIED",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+      "native_id": null,
+      "name": "小鳥がさえずる",
+      "raw_coordinates": [
+        139.68629,
+        35.73308
+      ],
+      "coordinate_reference": {
+        "name": null,
+        "status": "RFC7946_ASSUMPTION"
+      },
+      "longitude": 139.68629,
+      "latitude": 35.73308,
+      "verification": "UNVERIFIED",
+      "routable": false
+    }
+  ],
+  "observations_total": 282,
+  "observations_truncated": true,
+  "source_attributions": [
+    {
+      "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+      "fields": {}
+    },
+    {
+      "file": "13116_toshima-ku_pref_2023_park.geojson",
+      "fields": {}
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+      "fields": {}
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_station.geojson",
+      "fields": {}
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_railway.geojson",
+      "fields": {}
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+      "fields": {}
+    },
+    {
+      "file": "13116_toshima-ku_pref_2025_border.geojson",
+      "fields": {}
+    }
+  ],
+  "metadata_members": [],
+  "topology": {
+    "status": "INVENTORY_ONLY",
+    "candidate_edges": [],
+    "candidate_edges_truncated": false
+  },
+  "literal_values_artifact": {
+    "store_path": "raw/0c0c2a0e3e74815793e9297c1c85c0227025f6d87f3a6a8318d552ed2c4cb096/plateau-13116-related-2025.literal-values.json",
+    "sha256": "0c0c2a0e3e74815793e9297c1c85c0227025f6d87f3a6a8318d552ed2c4cb096",
+    "bytes": 12936,
+    "tables": 10
+  }
+}
