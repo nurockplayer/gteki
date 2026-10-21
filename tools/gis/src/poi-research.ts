@@ -4,7 +4,7 @@ import { docsRoot, getStoredSource, readJson } from './common.js';
 import { htmlText, type RightsRecord } from './rights.js';
 
 /** Generate the lane packet from acquired evidence and current inspections, never from remembered source claims. */
-export async function generatePoiResearch(rights:RightsRecord[]):Promise<void> {
+export async function buildPoiResearch(rights:RightsRecord[]):Promise<{path:string;content:string}> {
   const root=join(docsRoot,'gis');
   const pois=await Promise.all(['toei-stores-shinjuku-csv','toei-stores-shinjuku-nishiguchi-csv','tokyo-shinjuku-facilities-zip','tokyo-shinjuku-facilities-spec-pdf','plateau-13104-related-2025','plateau-13116-related-2025'].map(id=>readJson<any>(join(root,'poi',`${id}.json`))));
   const vintage=await readJson<any>(join(root,'vintages','shinjuku-2023.json'));
@@ -17,7 +17,7 @@ export async function generatePoiResearch(rights:RightsRecord[]):Promise<void> {
     '', '## Scope and station identity','',
     '新宿 (S01/E27) and 新宿西口 (E01) are separate sources and identities. 新宿三丁目 is excluded. No text location was geocoded; no height, floor, accessibility, connectivity or feature correspondence was inferred.',
     '', '## Acquisition and rights decisions','',
-    'The original 19 manifest entries are preserved. Fourteen bounded sources add the two S10 CSVs, five CKAN package snapshots, S03 ZIP/specification/reference/landing, two 2025 related ZIPs, and PLATEAU site policy. CKAN resource selection records the acquired package hash and exact JSON pointer. S03 catalog sizes and redirected final URLs are observations, separate from the actual acquired byte counts.',
+    'The original 19 manifest entries are preserved. Fifteen bounded sources add the two S10 CSVs, six CKAN package snapshots, S03 ZIP/specification/reference/landing, two 2025 related ZIPs, and PLATEAU site policy. CKAN resource selection records the acquired package hash and exact JSON pointer. S03 catalog sizes and redirected final URLs are observations, separate from the actual acquired byte counts.',
     '', '| Source | Licence observation | Scope | Publish gate | Evidence |', '| --- | --- | --- | --- | --- |',
     ...rights.map(r=>`| ${r.source_id} | ${r.licence.value??'UNKNOWN'}${r.file_embedded_licence.value?`; embedded ${r.file_embedded_licence.value}`:''} | ${r.licence.scope} (${r.licence.status})${r.file_embedded_licence.scope?`; ${r.file_embedded_licence.scope}`:''} | ${r.publish_gate} | ${r.evidence.filter(e=>e.quote).slice(0,2).map(e=>`${e.source_id} SHA-256 ${e.sha256}, ${e.location}, “${e.quote}”`).join('; ')||'No acquired declaration establishes resource rights'} |`),
     '', 'Package licence declarations are not resource-level declarations. PLATEAU package value `plateau` points to site policy; the acquired §3 is titled “コンテンツの利用”. Site defaults preserve alternate rights and municipal copyright. CC BY compatibility is not a file-embedded licence. Related-data source/原典 fields are checked literally; absent fields do not establish the original data sources or their permissions. Every exact-resource publish gate is HOLD. Each rights JSON records attribution/modification obligations, caveats and the evidence needed to clear it.',
@@ -49,5 +49,11 @@ export async function generatePoiResearch(rights:RightsRecord[]):Promise<void> {
     '- Coverage of uninspected vintages or archive members; nominal mesh filenames do not prove actual geometry coverage.',
     '', 'Raw acquisitions, extracted text and detailed candidates remain in the external store; Git contains bounded receipts and inventories.',''
   ];
-  await mkdir(join(root,'research'),{recursive:true});await writeFile(join(root,'research','poi-rights-and-vintages.md'),lines.join('\n'));
+  return {path:join(root,'research','poi-rights-and-vintages.md'),content:lines.join('\n')};
+}
+
+export async function generatePoiResearch(rights:RightsRecord[]):Promise<void> {
+  const report=await buildPoiResearch(rights);
+  await mkdir(join(docsRoot,'gis','research'),{recursive:true});
+  await writeFile(report.path,report.content);
 }

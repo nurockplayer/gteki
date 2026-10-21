@@ -49,6 +49,7 @@ describe('bounded vintage ZIP inspection', () => {
     const archive = zip('udx/ubld/53394525.gml');
     const result = await inspectVintageZipArchive('https://example.invalid/archive.zip', 'v3', serverFor(archive), true);
     expect(result.members).toEqual([expect.objectContaining({ name: 'udx/ubld/53394525.gml', size: 14, mesh: '53394525', category: 'ubld' })]);
+    expect(result.validator_type).toBe('STRONG_ETAG');
     // The selected body is verified internally before the archive inspection resolves.
   });
 
@@ -97,6 +98,19 @@ describe('bounded vintage ZIP inspection', () => {
     let calls = 0;
     const changedEtag: RangeFetcher = async (_url, start, end) => ({ status: 206, headers: new Headers({ 'content-range': `bytes ${start}-${end}/${archive.length}`, etag: ++calls === 1 ? '"one"' : '"two"' }), bytes: archive.subarray(start, end + 1) });
     await expect(inspectVintageZipArchive('https://example.invalid/archive.zip', 'v3', changedEtag)).rejects.toThrow('ETag changed');
+  });
+
+  it.each([
+    ['weak', 'W/"weak"'],
+    ['missing', null],
+  ])('rejects a %s ETag before using ZIP range bytes', async (_kind, etag) => {
+    const archive = zip('udx/ubld/53394525.gml');
+    const fetcher: RangeFetcher = async (_url, start, end) => ({
+      status: 206,
+      headers: new Headers({ 'content-range': `bytes ${start}-${end}/${archive.length}`, ...(etag === null ? {} : { etag }) }),
+      bytes: archive.subarray(start, end + 1),
+    });
+    await expect(inspectVintageZipArchive('https://example.invalid/archive.zip', 'v3', fetcher)).rejects.toThrow('requires a strong ETag');
   });
 
   it('enforces the directory byte budget before issuing a range request', async () => {

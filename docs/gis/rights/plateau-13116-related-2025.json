@@ -1,7 +1,7 @@
 {
   "source_id": "plateau-13116-related-2025",
   "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
-  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
   "station_ids": [
     "ikebukuro"
   ],
@@ -54,9 +54,23 @@
     {
       "source_id": "plateau-13116-package-2025",
       "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+      "location": "/result/license_title",
+      "quote": "PLATEAU Site Policy 「３．著作権について」に拠る",
+      "scope": "Package licence title only."
+    },
+    {
+      "source_id": "plateau-13116-package-2025",
+      "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+      "location": "/result/license_url",
+      "exact_url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "scope": "Package licence link only."
+    },
+    {
+      "source_id": "plateau-13116-package-2025",
+      "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
       "location": "/result/resources/4/url",
-      "quote": "13116_toshima-ku_2025_related.zip",
-      "scope": "Exact catalog resource URL membership only."
+      "exact_url": "https://assets.cms.plateau.reearth.io/assets/52/274fe7-b16b-4c93-805f-9382c62ceaf0/13116_toshima-ku_2025_related.zip",
+      "scope": "Exact catalog resource URL matched acquisition resolved_url. Package membership only."
     },
     {
       "source_id": "plateau-13116-package-2025",

@@ -1,7 +1,7 @@
 {
   "source_id": "plateau-13104-package-2023",
   "source_sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
-  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
   "station_ids": [
     "shinjuku"
   ],
@@ -50,6 +50,20 @@
       "location": "/result/license_id",
       "quote": "plateau",
       "scope": "Package only; no resource or third-party scope inferred."
+    },
+    {
+      "source_id": "plateau-13104-package-2023",
+      "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
+      "location": "/result/license_title",
+      "quote": "PLATEAU Site Policy 「３．著作権について」に拠る",
+      "scope": "Package licence title only."
+    },
+    {
+      "source_id": "plateau-13104-package-2023",
+      "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
+      "location": "/result/license_url",
+      "exact_url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "scope": "Package licence link only."
     },
     {
       "source_id": "plateau-site-policy",

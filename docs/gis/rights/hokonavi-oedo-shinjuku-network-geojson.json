@@ -1,14 +1,14 @@
 {
   "source_id": "hokonavi-oedo-shinjuku-network-geojson",
   "source_sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff",
-  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
   "station_ids": [
     "shinjuku"
   ],
   "licence": {
-    "value": null,
-    "status": "UNKNOWN",
-    "scope": "Exact resource rights not established by acquired evidence."
+    "value": "pdl-jp-1.0",
+    "status": "PACKAGE_LEVEL_DECLARED",
+    "scope": "Package only; no resource or third-party scope inferred."
   },
   "resource_licence": {
     "value": null,
@@ -19,12 +19,63 @@
     "status": "UNKNOWN",
     "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
   },
-  "declarations": [],
-  "evidence": [],
+  "declarations": [
+    {
+      "value": "pdl-jp-1.0",
+      "status": "PACKAGE_LEVEL_DECLARED",
+      "evidence": {
+        "source_id": "hokonavi-oedo-shinjuku-package",
+        "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
+        "location": "/result/license_id",
+        "quote": "pdl-jp-1.0",
+        "scope": "Package only; no resource or third-party scope inferred."
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "source_id": "hokonavi-oedo-shinjuku-package",
+      "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
+      "location": "/result/license_id",
+      "quote": "pdl-jp-1.0",
+      "scope": "Package only; no resource or third-party scope inferred."
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-package",
+      "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
+      "location": "/result/license_title",
+      "quote": "公共データ利用規約(第1.0版）",
+      "scope": "Package licence title only."
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-package",
+      "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
+      "location": "/result/license_url",
+      "exact_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "scope": "Package licence link only."
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-package",
+      "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
+      "location": "/result/resources/1/url",
+      "exact_url": "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/d4519a9a-917a-4de8-9104-83e21246c04c/download/nwd_oedo_shinjuku_geojson.zip",
+      "scope": "Exact catalog resource URL matched acquisition resolved_url. Package membership only."
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-package",
+      "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
+      "location": "/result/resources/1",
+      "scope": "No own nonblank license/license_id/license_title/license_url field. This absence grants no permission."
+    }
+  ],
   "input_sources": [
     {
       "source_id": "hokonavi-oedo-shinjuku-network-geojson",
       "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-package",
+      "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88"
     }
   ],
   "attribution": {
@@ -40,7 +91,8 @@
   },
   "caveats": [
     "No inferred permission from availability, file type, absence of notices, or a legacy manifest label.",
-    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks."
+    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks.",
+    "Acquired publication/availability periods record source availability only; licence expiration or revocation is not inferred."
   ],
   "publish_gate": "HOLD",
   "clearance_required": [
@@ -50,5 +102,13 @@
   ],
   "file_rights_observations": [],
   "verification": "UNVERIFIED",
-  "routable": false
+  "routable": false,
+  "publication_period_notes": [
+    {
+      "source_id": "hokonavi-oedo-shinjuku-package",
+      "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
+      "location": "/result/notes",
+      "text": "※本データセットは、公共交通オープンデータチャレンジ2026 の期間中（2027年3月12日まで）のみの限定公開です。\r\n\r\n■概要\r\n\r\n# ■概要\r\n\r\n本データセットは、都営地下鉄大江戸線 新宿駅の構内図データをもとにして、国土交通省が整備した地理空間データです。\r\n\r\n歩行経路や空間構成を、「歩行空間ネットワークデータ」と「構内地図データ」として整備しました。\r\n\r\n*  歩行空間ネットワークデータ：\r\n    *  「[歩行空間ネットワークデータ整備仕様（国土交通省: 2024年7月）](https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf)」に準拠。\r\n    *  通路・階段・エレベータなどをリンク（線）とノード（点）で表現し、駅構内の歩行経路を構築しています。\r\n*  構内地図データ：\r\n    *   「[階層別屋内地理空間情報データ仕様書（国土地理院: 2019年3月）](https://www.gsi.go.jp/common/000212574.pdf)」に準拠。\r\n    *   駅構内の建物、空間、設備などを階層別に表現しています。\r\n* 確認用データ：\r\n    *  歩行空間ネットワークデータ、構内地図データを重ね合わせて表現したPDFデータです。\r\n    *  データ全体の見取り図、凡例、階層構造などをまとめています。\r\n\r\nこれらのデータを組み合わせることで、駅構内における歩行経路解析、バリアフリー経路探索、構内案内などに利用できます。\r\n\r\n# ■ 基本情報\r\n*  対象エリア: 都営地下鉄大江戸線 新宿駅\r\n*  座標参照系: JGD2011（世界測地系）\r\n*  データ形式: CSV／GeoJSON／Shapefile／PDF\r\n*  最終更新日: 2026/09/17\r\n\r\n# ■ 準拠仕様\r\n* [歩行空間ネットワークデータ整備仕様（国土交通省: 2024年7月）](https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf)\r\n* [階層別屋内地理空間情報データ仕様書（国土地理院: 2019年3月）](https://www.gsi.go.jp/common/000212574.pdf)\r\n"
+    }
+  ]
 }

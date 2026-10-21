@@ -1,7 +1,7 @@
 {
   "source_id": "plateau-13104-ubld-53394536",
   "source_sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
-  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
   "station_ids": [
     "shinjuku"
   ],
@@ -20,11 +20,23 @@
     "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
   },
   "declarations": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "source_id": "plateau-13104-package-2025",
+      "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+      "location": "/result/resources",
+      "exact_url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/ubld/53394536_ubld_6697_op.gml",
+      "scope": "No exact parent resource URL/asset-folder match in this acquired snapshot; package declaration is not inherited."
+    }
+  ],
   "input_sources": [
     {
       "source_id": "plateau-13104-ubld-53394536",
       "sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977"
+    },
+    {
+      "source_id": "plateau-13104-package-2025",
+      "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942"
     }
   ],
   "attribution": {
@@ -40,7 +52,8 @@
   },
   "caveats": [
     "No inferred permission from availability, file type, absence of notices, or a legacy manifest label.",
-    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks."
+    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks.",
+    "No exact package asset-folder match in acquired plateau-13104-package-2025; package-level declaration is not linked to this catalog-resolved file."
   ],
   "publish_gate": "HOLD",
   "clearance_required": [

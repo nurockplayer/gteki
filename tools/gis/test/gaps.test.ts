@@ -19,3 +19,16 @@ it('B keeps incomplete bbox evidence UNKNOWN and never turns an intersection int
   expect(overlapping.pairs[0].bbox_relation).toBe('INTERSECTS');
   expect(overlapHolds(overlapping)[0]).toContain('envelope overlap only');
 });
+
+it('keeps coordinate-limit-truncated POI evidence non-comparable in gap decisions', () => {
+  const incompletePoi: BboxLayerInput = {
+    source_id: 'synthetic-poi', layer_id: 'synthetic-poi', layer_role: 'poi_facility', source_crs: null,
+    source_crs_bbox: [139.7, 35.7, 139.71, 35.71], bbox_axis_order: 'longitude,latitude',
+    crs_status: 'UNDECLARED_RFC7946_ASSUMPTION', bbox_status: 'INCOMPLETE_LIMIT_REACHED',
+  };
+  const report = buildOverlapReport('shinjuku', [plateau, network, incompletePoi]);
+  expect(report.pairs.filter(pair => pair.layer_a === 'synthetic-plateau' || pair.layer_b === 'synthetic-plateau')
+    .map(pair => pair.bbox_relation)).toEqual(['DISJOINT', 'UNKNOWN']);
+  expect(overlapHolds(report)[0]).toContain('UNKNOWN');
+  expect(overlapHolds(report)[0]).not.toContain('every compared source-layer bbox is disjoint');
+});

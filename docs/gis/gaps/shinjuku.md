@@ -58,17 +58,17 @@ This packet is generated from the current inventory and network report files. Mi
 - tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B5F.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [139.6970956,35.6877679,139.699911,35.6890039].
 - tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-M1F.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [139.699162,35.6895269,139.6998565,35.6923585].
 - tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-MB2F.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [139.6987976,35.692418,139.6994396,35.6937079].
-- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-1F.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [2071.212,1248.57,2089.127,1274.174].
-- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-2F.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [779.619,829.184,2398.372,1666.27].
-- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-3F.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [830.583,1381.167,1049.222,1672.979].
-- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-4F.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [846,1440.083,1055.333,1669.708].
-- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B1F.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [744.638,152.206,2599.562,1910.894].
-- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B2F.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [2051.816,723.021,2582.872,2315.766].
-- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B3F.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [2254.372,1204.646,3225.83,2495.89].
+- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-1F.geojson: source CRS UNKNOWN, axis order unknown, bbox null.
+- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-2F.geojson: source CRS UNKNOWN, axis order unknown, bbox null.
+- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-3F.geojson: source CRS UNKNOWN, axis order unknown, bbox null.
+- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-4F.geojson: source CRS UNKNOWN, axis order unknown, bbox null.
+- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B1F.geojson: source CRS UNKNOWN, axis order unknown, bbox null.
+- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B2F.geojson: source CRS UNKNOWN, axis order unknown, bbox null.
+- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B3F.geojson: source CRS UNKNOWN, axis order unknown, bbox null.
 - tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B4F.geojson: source CRS UNKNOWN, axis order unknown, bbox null.
 - tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B5F.geojson: source CRS UNKNOWN, axis order unknown, bbox null.
-- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-M1F.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [2250.663,1329.796,2298.306,1331.24].
-- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-MB2F.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [2447.542,1157.667,2842.417,1276.976].
+- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-M1F.geojson: source CRS UNKNOWN, axis order unknown, bbox null.
+- tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-MB2F.geojson: source CRS UNKNOWN, axis order unknown, bbox null.
 - plateau-13104-related-2025:13104_shinjuku-ku_pref_2023_shelter.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [139.678522,35.677806468,139.742017,35.727285].
 - plateau-13104-related-2025:13104_shinjuku-ku_pref_2023_park.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [139.67365,35.67548291,139.74226,35.7259].
 - plateau-13104-related-2025:13104_shinjuku-ku_pref_2025_landmark.geojson: source CRS UNKNOWN, axis order longitude,latitude, bbox [139.678326236,35.67966927,139.74273124,35.727351972].
@@ -157,7 +157,7 @@ This packet is generated from the current inventory and network report files. Mi
 - Paid/unpaid boundary is not evidenced as present in the available PLATEAU underground-building file; HOLD for routing across fare boundaries.
 - Explicit connectivity is not established by the available CityGML inventory; HOLD for route generation.
 - Floor-to-elevation mapping remains UNKNOWN even when literal floor labels are present; do not derive elevation from labels.
-- The only acquired PLATEAU underground file does not spatially cover the acquired Hokonavi indoor network: every compared source-layer bbox is disjoint. HOLD for any geometry/graph pairing. Bbox evidence does not establish feature connectivity.
+- At least one source-layer bbox relationship is UNKNOWN because CRS or bbox evidence is incomplete; HOLD for any geometry/graph pairing.
 - HOLD: no latest catalogued nominal ubld mesh is among the Hokonavi bbox meshes. Nominal mesh is not actual coverage; see separate bounded 2023 v4/v3 evidence; other vintages UNKNOWN.
 - Applicable walking-network specification version remains UNKNOWN; decoded labels and rank checks are literal consistency evidence only.
 - All normalized network and geometry records remain UNVERIFIED; no output from this lane establishes a passenger route.

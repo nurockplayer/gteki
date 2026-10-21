@@ -64,9 +64,11 @@ export function overlapHolds(report: StationOverlapReport | null): string[] {
   const plateau = new Set(report.layers.filter(layer => layer.layer_role === 'plateau_ubld').map(layer => layer.layer_id));
   const network = new Set(report.layers.filter(layer => layer.layer_role === 'hokonavi_network' || layer.layer_role === 'hokonavi_csv_pair').map(layer => layer.layer_id));
   const pairs = report.pairs.filter(pair => (plateau.has(pair.layer_a) && network.has(pair.layer_b)) || (plateau.has(pair.layer_b) && network.has(pair.layer_a)));
+  if (report.pairs.some(pair => pair.bbox_relation === 'UNKNOWN'))
+    return ['At least one source-layer bbox relationship is UNKNOWN because CRS or bbox evidence is incomplete; HOLD for any geometry/graph pairing.'];
   if (plateau.size === 1 && network.size > 0 && pairs.length === network.size && pairs.every(pair => pair.bbox_relation === 'DISJOINT'))
     return ['The only acquired PLATEAU underground file does not spatially cover the acquired Hokonavi indoor network: every compared source-layer bbox is disjoint. HOLD for any geometry/graph pairing. Bbox evidence does not establish feature connectivity.'];
-  if (!pairs.length || pairs.some(pair => pair.bbox_relation === 'UNKNOWN'))
+  if (!pairs.length)
     return ['The PLATEAU/network bbox relationship is UNKNOWN because source CRS or bbox evidence is incomplete; HOLD for any geometry/graph pairing.'];
   return ['Any bbox intersection establishes envelope overlap only; HOLD for geometry/graph pairing until feature alignment, floor correspondence and operator evidence are established.'];
 }

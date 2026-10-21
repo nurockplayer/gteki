@@ -1,6 +1,6 @@
 {
   "station_id": "shinjuku",
-  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
   "rights": [
     {
       "source_id": "plateau-catalog-ubld-13116-13104",
@@ -76,9 +76,9 @@
       "source_id": "hokonavi-oedo-shinjuku-network-geojson",
       "source_sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff",
       "licence": {
-        "value": null,
-        "status": "UNKNOWN",
-        "scope": "Exact resource rights not established by acquired evidence."
+        "value": "pdl-jp-1.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
       },
       "resource_licence": {
         "value": null,
@@ -90,9 +90,9 @@
       "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
       "source_sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090",
       "licence": {
-        "value": null,
-        "status": "UNKNOWN",
-        "scope": "Exact resource rights not established by acquired evidence."
+        "value": "pdl-jp-1.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
       },
       "resource_licence": {
         "value": null,
@@ -284,7 +284,7 @@
     },
     {
       "source_id": "tokyo-shinjuku-facilities-landing",
-      "source_sha256": "c6ead52dc10fde3f5582fb1bbebbfab52a71b148faad770456a863086b50ab34",
+      "source_sha256": "73dfe0e0fffa1fa144829360d03d96595ab1b3b5df5cb9b674304c5b54404d3e",
       "licence": {
         "value": null,
         "status": "UNKNOWN",
@@ -301,6 +301,20 @@
       "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
       "licence": {
         "value": "plateau",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-package",
+      "source_sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
+      "licence": {
+        "value": "pdl-jp-1.0",
         "status": "PACKAGE_LEVEL_DECLARED",
         "scope": "Package only; no resource or third-party scope inferred."
       },
@@ -719,7 +733,7 @@
     "routable": false,
     "rights": "HOLD",
     "status": "INSPECTED",
-    "generated_at": "2026-10-20T17:56:58.142Z",
+    "generated_at": "2026-10-21T10:13:47.016Z",
     "package_sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
     "archives": [
       {
@@ -728,13 +742,14 @@
         "total_bytes": 776906633,
         "etag": "\"bc3e22745a66aea5957644a705cf1734\"",
         "last_modified": "Tue, 24 Jun 2025 09:24:51 GMT",
+        "validator_type": "STRONG_ETAG",
         "directory_ranges": [
           {
             "start": 0,
             "end": 0,
             "bytes": 1,
-            "requested_at": "2026-10-20T17:56:58.183Z",
-            "completed_at": "2026-10-20T17:56:58.475Z",
+            "requested_at": "2026-10-21T10:13:47.022Z",
+            "completed_at": "2026-10-21T10:13:47.199Z",
             "sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
             "store_path": "raw/5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2/range-0-0.bin"
           },
@@ -742,8 +757,8 @@
             "start": 776841076,
             "end": 776906632,
             "bytes": 65557,
-            "requested_at": "2026-10-20T17:56:58.475Z",
-            "completed_at": "2026-10-20T17:56:58.509Z",
+            "requested_at": "2026-10-21T10:13:47.199Z",
+            "completed_at": "2026-10-21T10:13:47.307Z",
             "sha256": "b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd",
             "store_path": "raw/b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd/range-776841076-776906632.bin"
           },
@@ -751,8 +766,8 @@
             "start": 774065024,
             "end": 776906610,
             "bytes": 2841587,
-            "requested_at": "2026-10-20T17:56:58.509Z",
-            "completed_at": "2026-10-20T17:56:58.802Z",
+            "requested_at": "2026-10-21T10:13:47.307Z",
+            "completed_at": "2026-10-21T10:13:47.436Z",
             "sha256": "ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6",
             "store_path": "raw/ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6/range-774065024-776906610.bin"
           }
@@ -800,13 +815,14 @@
         "total_bytes": 790569445,
         "etag": "\"a158ae80e80f39c3dc5e8c2f7042b498\"",
         "last_modified": "Tue, 24 Jun 2025 09:24:29 GMT",
+        "validator_type": "STRONG_ETAG",
         "directory_ranges": [
           {
             "start": 0,
             "end": 0,
             "bytes": 1,
-            "requested_at": "2026-10-20T17:57:07.552Z",
-            "completed_at": "2026-10-20T17:57:07.739Z",
+            "requested_at": "2026-10-21T10:13:56.539Z",
+            "completed_at": "2026-10-21T10:13:56.746Z",
             "sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
             "store_path": "raw/5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2/range-0-0.bin"
           },
@@ -814,8 +830,8 @@
             "start": 790503888,
             "end": 790569444,
             "bytes": 65557,
-            "requested_at": "2026-10-20T17:57:07.739Z",
-            "completed_at": "2026-10-20T17:57:07.863Z",
+            "requested_at": "2026-10-21T10:13:56.747Z",
+            "completed_at": "2026-10-21T10:13:56.923Z",
             "sha256": "ca5f8ee6267c3ff422f59e331511174156149df646e4ede8a26893c0f92404af",
             "store_path": "raw/ca5f8ee6267c3ff422f59e331511174156149df646e4ede8a26893c0f92404af/range-790503888-790569444.bin"
           },
@@ -823,8 +839,8 @@
             "start": 787688618,
             "end": 790569422,
             "bytes": 2880805,
-            "requested_at": "2026-10-20T17:57:07.863Z",
-            "completed_at": "2026-10-20T17:57:08.223Z",
+            "requested_at": "2026-10-21T10:13:56.923Z",
+            "completed_at": "2026-10-21T10:13:57.088Z",
             "sha256": "ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5",
             "store_path": "raw/ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5/range-787688618-790569422.bin"
           }
@@ -879,8 +895,8 @@
             "start": 386355655,
             "end": 386355684,
             "bytes": 30,
-            "requested_at": "2026-10-20T17:56:59.141Z",
-            "completed_at": "2026-10-20T17:56:59.181Z",
+            "requested_at": "2026-10-21T10:13:47.490Z",
+            "completed_at": "2026-10-21T10:13:47.501Z",
             "sha256": "4c7d0c7e0f88ec5ffa2fa7761396ec69b500d641a0eb0f7489a7583294357786",
             "store_path": "raw/4c7d0c7e0f88ec5ffa2fa7761396ec69b500d641a0eb0f7489a7583294357786/range-386355655-386355684.bin"
           },
@@ -888,8 +904,8 @@
             "start": 386355685,
             "end": 386355718,
             "bytes": 34,
-            "requested_at": "2026-10-20T17:56:59.181Z",
-            "completed_at": "2026-10-20T17:56:59.201Z",
+            "requested_at": "2026-10-21T10:13:47.501Z",
+            "completed_at": "2026-10-21T10:13:47.513Z",
             "sha256": "ecce9304404860495bcec4fcb33a49cb3035bbe9e81770e36d269111927a7bbc",
             "store_path": "raw/ecce9304404860495bcec4fcb33a49cb3035bbe9e81770e36d269111927a7bbc/range-386355685-386355718.bin"
           },
@@ -897,14 +913,15 @@
             "start": 386355719,
             "end": 390428983,
             "bytes": 4073265,
-            "requested_at": "2026-10-20T17:56:59.201Z",
-            "completed_at": "2026-10-20T17:56:59.523Z",
+            "requested_at": "2026-10-21T10:13:47.514Z",
+            "completed_at": "2026-10-21T10:13:47.639Z",
             "sha256": "b49d2234197406b355f635c9dc0e0902e2a45d78de36798aa909dbb3509ccb70",
             "store_path": "raw/b49d2234197406b355f635c9dc0e0902e2a45d78de36798aa909dbb3509ccb70/range-386355719-390428983.bin"
           }
         ],
         "etag": "\"bc3e22745a66aea5957644a705cf1734\"",
         "last_modified": "Tue, 24 Jun 2025 09:24:51 GMT",
+        "validator_type": "STRONG_ETAG",
         "crc32": "3be2530f",
         "size": 43830773,
         "inspection": {
@@ -961,8 +978,8 @@
             "start": 642058899,
             "end": 642058928,
             "bytes": 30,
-            "requested_at": "2026-10-20T17:57:08.268Z",
-            "completed_at": "2026-10-20T17:57:08.365Z",
+            "requested_at": "2026-10-21T10:13:57.141Z",
+            "completed_at": "2026-10-21T10:13:57.177Z",
             "sha256": "339921dc523830f5a4fc86ab3ef845f2a395803ded630e68907aca9ed4f0fc21",
             "store_path": "raw/339921dc523830f5a4fc86ab3ef845f2a395803ded630e68907aca9ed4f0fc21/range-642058899-642058928.bin"
           },
@@ -970,8 +987,8 @@
             "start": 642058929,
             "end": 642058959,
             "bytes": 31,
-            "requested_at": "2026-10-20T17:57:08.365Z",
-            "completed_at": "2026-10-20T17:57:08.382Z",
+            "requested_at": "2026-10-21T10:13:57.177Z",
+            "completed_at": "2026-10-21T10:13:57.233Z",
             "sha256": "01b558893400fe6a1a7d35e2afd0173daae7c4de89911453c555220cd8c76149",
             "store_path": "raw/01b558893400fe6a1a7d35e2afd0173daae7c4de89911453c555220cd8c76149/range-642058929-642058959.bin"
           },
@@ -979,14 +996,15 @@
             "start": 642058960,
             "end": 646132138,
             "bytes": 4073179,
-            "requested_at": "2026-10-20T17:57:08.383Z",
-            "completed_at": "2026-10-20T17:57:08.612Z",
+            "requested_at": "2026-10-21T10:13:57.233Z",
+            "completed_at": "2026-10-21T10:13:57.360Z",
             "sha256": "6d9aa1d7f43501243878dcb2a5ad17d11f219555060ba8077160b63709741cfe",
             "store_path": "raw/6d9aa1d7f43501243878dcb2a5ad17d11f219555060ba8077160b63709741cfe/range-642058960-646132138.bin"
           }
         ],
         "etag": "\"a158ae80e80f39c3dc5e8c2f7042b498\"",
         "last_modified": "Tue, 24 Jun 2025 09:24:29 GMT",
+        "validator_type": "STRONG_ETAG",
         "crc32": "ddcc34e3",
         "size": 43830139,
         "inspection": {
@@ -1406,7 +1424,7 @@
         "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090"
       }
     ],
-    "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+    "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
     "limitations": [
       "Rights remain HOLD pending rights review.",
       "Every vintage finding is UNVERIFIED and routable:false.",
@@ -2837,7 +2855,7 @@
     "Paid/unpaid boundary is not evidenced as present in the available PLATEAU underground-building file; HOLD for routing across fare boundaries.",
     "Explicit connectivity is not established by the available CityGML inventory; HOLD for route generation.",
     "Floor-to-elevation mapping remains UNKNOWN even when literal floor labels are present; do not derive elevation from labels.",
-    "The only acquired PLATEAU underground file does not spatially cover the acquired Hokonavi indoor network: every compared source-layer bbox is disjoint. HOLD for any geometry/graph pairing. Bbox evidence does not establish feature connectivity.",
+    "At least one source-layer bbox relationship is UNKNOWN because CRS or bbox evidence is incomplete; HOLD for any geometry/graph pairing.",
     "HOLD: no latest catalogued nominal ubld mesh is among the Hokonavi bbox meshes. Nominal mesh is not actual coverage; see separate bounded 2023 v4/v3 evidence; other vintages UNKNOWN.",
     "Applicable walking-network specification version remains UNKNOWN; decoded labels and rank checks are literal consistency evidence only."
   ],

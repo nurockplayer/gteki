@@ -1,7 +1,7 @@
 {
   "source_id": "mlit-walk-network-spec-2018-03",
   "source_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
-  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
   "station_ids": [
     "ikebukuro",
     "shinjuku"

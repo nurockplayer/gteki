@@ -326,9 +326,17 @@ async function resourcesFromPackageResult(): Promise<{ sha256: string; resources
     if (!url.startsWith('https://')) return [];
     let filename: string;
     try { filename = new URL(url).pathname.split('/').at(-1) ?? ''; } catch { return []; }
-    return /^13104_.*_2023_citygml_[12]_op\.zip$/i.test(filename) ? [{ name: filename.endsWith('_2_op.zip') ? 'citygml_2_op.zip' : 'citygml_1_op.zip', url, json_pointer: `/result/resources/${index}/url` }] : [];
+    return /^13104_.*_2023_citygml_[12]_op\.zip$/i.test(filename) ? [{ name: filename.toLowerCase().endsWith('_2_op.zip') ? 'citygml_2_op.zip' : 'citygml_1_op.zip', url, json_pointer: `/result/resources/${index}/url` }] : [];
   });
   return { sha256: record.sha256, resources };
+}
+
+function requireUniqueArchiveResources(resources: Array<{ name: string; url: string; json_pointer: string }>): Array<{ name: string; url: string; json_pointer: string }> {
+  return ['citygml_2_op.zip', 'citygml_1_op.zip'].map(name => {
+    const matches = resources.filter(resource => resource.name === name);
+    if (matches.length !== 1) throw new Error(`Package result.resources must contain exactly one acquired resource for ${name}; found ${matches.length}`);
+    return matches[0]!;
+  });
 }
 
 async function persistMember(archive: string, url: string, item: { member: VintageZipMember; bytes: Buffer; ranges: VintageRange[] }, identity: { etag: string | null; last_modified: string | null; validator_type: VintageValidatorType }, packageSource: { source_id: string; sha256: string; json_pointer: string }): Promise<VintageReport['selected_member_records'][number]> {
@@ -358,9 +366,12 @@ async function persistMember(archive: string, url: string, item: { member: Vinta
 
 /** Inspect 2023 CityGML archive ZIP directories using bounded HTTP ranges. No archive is downloaded whole. */
 export async function inspectVintages(options: { fetcher?: RangeFetcher; fetchMembers?: boolean; bbox?: [number, number, number, number] } = {}): Promise<VintageReport> {
-  ensurePrivateStore();
   const pkg = await resourcesFromPackageResult();
   if (!pkg.resources.length) throw new Error(`Acquisition result.resources contains no exact CityGML archive URLs for ${PACKAGE_ID}`);
+  // Resolve both archive identities before any range request or evidence write. Duplicate
+  // resource URLs remain ambiguous because their package pointers identify separate entries.
+  const resources = requireUniqueArchiveResources(pkg.resources);
+  ensurePrivateStore();
   const { record: catalogRecord, path: catalogPath } = await getStoredSource('plateau-catalog-ubld-mesh-533945');
   const catalog = await readJson<{ cities?: Array<{ cityCode?: string; year?: number; files?: { ubld?: Array<{ code?: string; url?: string; fileSize?: number }> } }> }>(catalogPath);
   const current2025 = (catalog.cities ?? []).filter(city => city.cityCode === '13104' && city.year === 2025).flatMap(city => city.files?.ubld ?? []).map(file => ({ code: file.code ?? 'unknown', url: file.url ?? '', file_size: file.fileSize ?? null }));
@@ -385,11 +396,6 @@ export async function inspectVintages(options: { fetcher?: RangeFetcher; fetchMe
     input_sources: [{ source_id: PACKAGE_ID, sha256: pkg.sha256 }, { source_id: 'plateau-catalog-ubld-mesh-533945', sha256: catalogRecord.sha256 }, ...e27Inputs],
     tool_input_sha256: await toolFingerprint(),
     limitations: ['Rights remain HOLD pending rights review.', 'Every vintage finding is UNVERIFIED and routable:false.', 'Only ZIP directory ranges and explicitly selected member bytes may be acquired.'] };
-  const resources = ['citygml_2_op.zip', 'citygml_1_op.zip'].map(filename => {
-    const resource = pkg.resources.find(item => new URL(item.url).pathname.toLowerCase().endsWith(filename));
-    return resource ? { name: filename, url: resource.url, json_pointer: resource.json_pointer } : undefined;
-  }).filter((v): v is { name: string; url: string; json_pointer: string } => Boolean(v));
-  if (resources.length !== 2) throw new Error('Package result.resources must contain exact URLs for both citygml_2_op.zip and citygml_1_op.zip');
   for (const resource of resources) {
     const bboxCodes = [...new Set([...networkBboxes, ...(options.bbox ? bboxMeshes(options.bbox) : [])])];
     const inspected = await inspectArchive(resource.name, resource.url, options.fetcher, options.fetchMembers !== false, bboxCodes);

@@ -171,5 +171,10 @@
       "log_store_path": "out/run-logs/2026-10-20T18-06-26-988Z/22-inspect-vintages-all.log",
       "tool_input_sha256": "acb03b7ba35863fa51e8816613d777bab805755b78bb87e9b521048b523c67b6"
     }
-  ]
+  ],
+  "invalidated": {
+    "at": "2026-10-21T10:14:10.531Z",
+    "by_command": "gis gap-packet",
+    "reason": "Report-writing command run outside real-run; rerun real-run before summarizing"
+  }
 }

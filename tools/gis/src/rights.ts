@@ -1,11 +1,12 @@
-import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { loadSources } from './acquire.js';
-import { assertPathWithinStore, docsRoot, getStoredSource, getStoreRoot, readJson, verifyStoredFile, writeJson, type SourceManifest } from './common.js';
+import { assertPathWithinStore, docsRoot, getStoredSource, getStoreRoot, readJson, verifyStoredFile, type SourceManifest } from './common.js';
 import { toolFingerprint } from './provenance.js';
 import { readZip } from './zip.js';
 import { verifyVintageEvidence, type VintageReport } from './vintage.js';
 import { SaxesParser } from 'saxes';
+import { commitReportFiles } from './report-transaction.js';
 
 export type LicenceStatus = 'PACKAGE_LEVEL_DECLARED' | 'RESOURCE_LEVEL_DECLARED' | 'FILE_EMBEDDED' | 'SITE_TERMS' | 'UNKNOWN';
 export type RightsEvidence = {source_id:string;sha256:string;location:string;quote?:string;exact_url?:string;scope:string};
@@ -45,6 +46,26 @@ export function exactResourceUrlIndex(resources:unknown, url:string):number|null
   const matches=resources.flatMap((resource:unknown,index:number)=>own(resource,'url')===url?[index]:[]);
   return matches.length===1?matches[0]!:null;
 }
+/** Match a resource against both observed final and exact acquisition-request URLs.
+ * Redirects do not change CKAN membership. Never select by filename/name/index alone.
+ */
+export function matchAcquiredResource(resources:unknown, acquisition:{resolved_url:string;resolution_evidence?:{source_id:string;sha256:string;json_pointer:string}|null}, source:SourceManifest, parent:{source_id:string;sha256:string}):{index:number;field:'resolved_url'|'expected_url';url:string} {
+  if(!Array.isArray(resources))throw new Error(`Missing CKAN resources: ${parent.source_id}`);
+  const matches=resources.flatMap<{index:number;field:'resolved_url'|'expected_url';url:string}>((resource:unknown,index:number)=>{
+    const url=own(resource,'url');
+    if(url===acquisition.resolved_url)return [{index,field:'resolved_url' as const,url:acquisition.resolved_url}];
+    if(url===source.expected_url)return [{index,field:'expected_url' as const,url:source.expected_url}];
+    return [];
+  });
+  if(matches.length!==1)throw new Error(`Rights package does not uniquely identify ${source.source_id}: ${matches.length} exact resource URL matches`);
+  const match=matches[0]!;
+  // A pre-redirect match is usable only with the exact hashed resolver receipt.
+  if(match.field==='expected_url') {
+    const evidence=acquisition.resolution_evidence;
+    if(evidence?.source_id!==parent.source_id||evidence.sha256!==parent.sha256||evidence.json_pointer!==`/result/resources/${match.index}/url`)throw new Error(`Unverified pre-redirect resource URL for ${source.source_id}`);
+  }
+  return match;
+}
 /** Match only a child catalog URL nested under the exact package ZIP asset folder. */
 export function exactPackageAssetFolderMatch(resources:unknown, childUrl:string):number|null {
   if(!Array.isArray(resources))return null;
@@ -53,7 +74,7 @@ export function exactPackageAssetFolderMatch(resources:unknown, childUrl:string)
     const url=own(resources[i],'url');
     if(typeof url!=='string'||!url.endsWith('.zip'))continue;
     const folder=url.slice(0,-4);
-    if(childUrl.startsWith(`${folder}/`)) {
+    if(childUrl===url||childUrl.startsWith(`${folder}/`)) {
       if(match!==null)return null;
       match=i;
     }
@@ -106,10 +127,11 @@ export function findPublicationPeriodNotes(payload:unknown):Array<{pointer:strin
 }
 const parentFor=(source:SourceManifest):string|null=>{
   if(source.resolution.kind==='ckan_resource')return source.resolution.catalog_source_id;
-  return /^(tokyo-.*-package|plateau-\d+-package-\d+)$/.test(source.source_id)?source.source_id:null;
+  if(/^hokonavi-oedo-shinjuku-(?:network|stationmap)-geojson$/.test(source.source_id))return 'hokonavi-oedo-shinjuku-package';
+  return /^(tokyo-.*-package|plateau-\d+-package-\d+|hokonavi-oedo-shinjuku-package)$/.test(source.source_id)?source.source_id:null;
 };
 export async function generateRights():Promise<RightsRecord[]> {
-  const out=join(docsRoot,'gis','rights');await mkdir(out,{recursive:true});
+  const out=join(docsRoot,'gis','rights');
   const fingerprint=await toolFingerprint(),records:RightsRecord[]=[];
   for(const source of loadSources()) {
     const stored=await getStoredSource(source.source_id),evidence:RightsEvidence[]=[],declarations:RightsRecord['declarations']=[];
@@ -126,31 +148,32 @@ export async function generateRights():Promise<RightsRecord[]> {
       if(decl.value){
         const ev=shortEvidence(parent,p.record.sha256,'/result/license_id',decl.value,'Package only; no resource or third-party scope inferred.');evidence.push(ev);
         licence={value:decl.value,status:'PACKAGE_LEVEL_DECLARED',scope:ev.scope};declarations.push({value:decl.value,status:'PACKAGE_LEVEL_DECLARED',evidence:ev});
+        const title=own(own(payload,'result'),'license_title'),url=own(own(payload,'result'),'license_url');
+        if(typeof title==='string'&&title.trim())evidence.push(shortEvidence(parent,p.record.sha256,'/result/license_title',title,'Package licence title only.'));
+        if(typeof url==='string'&&url.startsWith('https://'))evidence.push(urlEvidence(parent,p.record.sha256,'/result/license_url',url,'Package licence link only.'));
         if(decl.value==='CC-BY-4.0'){attributionRequired='YES';modificationRequired='YES';caveats.push('CC BY obligations are conditional on applicability; exact resource coverage and required credit parties remain UNKNOWN.');}
       }
-      if(source.resolution.kind==='ckan_resource'){
+      if(source.source_id!==parent){
         const resources=own(own(payload,'result'),'resources');if(!Array.isArray(resources))throw new Error(`Missing CKAN resources: ${parent}`);
-        const matches=resources.flatMap((r:unknown,i:number)=>own(r,'url')===stored.record.resolved_url?[{r,i}]:[]);
-        if(matches.length!==1)throw new Error(`Rights package does not uniquely identify ${source.source_id}`);
-        const {r,i}=matches[0]!;
-        evidence.push(urlEvidence(parent,p.record.sha256,`/result/resources/${i}/url`,stored.record.resolved_url,'Exact catalog resource URL membership only.'));
+        const matched=matchAcquiredResource(resources,stored.record,source,{source_id:parent,sha256:p.record.sha256});
+        const i=matched.index,r=resources[i];
+        evidence.push(urlEvidence(parent,p.record.sha256,`/result/resources/${i}/url`,matched.url,`Exact catalog resource URL matched acquisition ${matched.field}${matched.field==='expected_url'?'; resolved_url differs after HTTP redirect; verified hashed resolution_evidence pointer':''}. Package membership only.`));
         const values=decl.resource_fields.flatMap(key=>{const v=own(r,key);return typeof v==='string'&&v.trim()?[{key,value:v}]:[];});
         if(values.length){const declared=values[0]!;resourceLicence={value:declared.value,status:'RESOURCE_LEVEL_DECLARED'};const ev=shortEvidence(parent,p.record.sha256,`/result/resources/${i}/${declared.key}`,declared.value,'Exact resource declaration; third-party scope still requires checking.');evidence.push(ev);licence={value:declared.value,status:'RESOURCE_LEVEL_DECLARED',scope:ev.scope};declarations.push({value:declared.value,status:'RESOURCE_LEVEL_DECLARED',evidence:ev});}
         else evidence.push({source_id:parent,sha256:p.record.sha256,location:`/result/resources/${i}`,scope:'No own nonblank license/license_id/license_title/license_url field. This absence grants no permission.'});
       }
     }
     // Only already-acquired supporting evidence is used for the original sources.
-    if(source.source_id.startsWith('hokonavi-ikebukuro-walk-')||source.source_id.startsWith('hokonavi-oedo-shinjuku-')) {
-      const support=await getStoredSource(source.source_id.startsWith('hokonavi-oedo-shinjuku-')?'hokonavi-oedo-shinjuku-network-geojson':'hokonavi-ikebukuro-walk-node-geojson');
+    if(parent==='hokonavi-oedo-shinjuku-package') {
+      const p=await getStoredSource(parent),payload=await readJson<unknown>(p.path);
+      publicationPeriodNotes=findPublicationPeriodNotes(payload).map(note=>({source_id:parent,sha256:p.record.sha256,location:note.pointer,text:note.text}));
+      if(publicationPeriodNotes.length)caveats.push('Acquired publication/availability periods record source availability only; licence expiration or revocation is not inferred.');
+    }
+    if(source.source_id.startsWith('hokonavi-ikebukuro-walk-')) {
+      const support=await getStoredSource('hokonavi-ikebukuro-walk-node-geojson');
       const doc=support.record.supporting_documents?.find(d=>d.id==='ckan-metadata');
       if(doc){const payload=await readJson<unknown>(join(getStoreRoot(),doc.store_path));const decl=packageLicence(payload);if(decl.value){
         const result=own(payload,'result'),resources=own(result,'resources');
-        if(source.source_id.startsWith('hokonavi-oedo-shinjuku-')) {
-          if(!Array.isArray(resources))throw new Error('Missing Hokonavi CKAN resources');
-          const i=exactResourceUrlIndex(resources,stored.record.resolved_url);
-          if(i===null)throw new Error(`Hokonavi rights package does not uniquely identify ${source.source_id}`);
-          evidence.push(urlEvidence(support.record.source_id,doc.sha256,`supporting_documents/ckan-metadata:/result/resources/${i}/url`,stored.record.resolved_url,'Exact package resource URL membership only.'));
-        }
         const ev=shortEvidence(support.record.source_id,doc.sha256,'supporting_documents/ckan-metadata:/result/license_id',decl.value,'Package declaration; exact resource and third-party scope UNKNOWN.');evidence.push(ev);declarations.push({value:decl.value,status:'PACKAGE_LEVEL_DECLARED',evidence:ev});licence={value:decl.value,status:'PACKAGE_LEVEL_DECLARED',scope:ev.scope};
         const policyUrl=own(result,'license_url');if(typeof policyUrl==='string'&&policyUrl)evidence.push(shortEvidence(support.record.source_id,doc.sha256,'supporting_documents/ckan-metadata:/result/license_url',policyUrl,'Package licence URL; package scope only.'));
         publicationPeriodNotes=findPublicationPeriodNotes(payload).map(note=>({source_id:support.record.source_id,sha256:doc.sha256,location:`supporting_documents/ckan-metadata:${note.pointer}`,text:note.text}));
@@ -227,7 +250,7 @@ export async function generateRights():Promise<RightsRecord[]> {
     const inputs=new Map<string,string>([[source.source_id,stored.record.sha256]]);
     for(const e of evidence) {const actual=await getStoredSource(e.source_id);inputs.set(e.source_id,actual.record.sha256);if(e.sha256!==actual.record.sha256&&!actual.record.supporting_documents?.some(d=>d.sha256===e.sha256))throw new Error('Rights evidence hash lacks a verified acquisition');}
     const record:RightsRecord={source_id:source.source_id,source_sha256:stored.record.sha256,tool_input_sha256:fingerprint,station_ids:source.station_ids,licence,resource_licence:resourceLicence,file_embedded_licence:fileEmbedded,declarations,evidence,input_sources:[...inputs].map(([source_id,sha256])=>({source_id,sha256})),attribution:{required:attributionRequired,text_required:attributionText,proposed_text:source.attribution_text.replace('（当該リソースURL）',`（${stored.record.resolved_url}）`),status:attributionText?'SITE_EXAMPLE; verify exact resource credit':'EXACT_RESOURCE_CREDIT_UNKNOWN'},modification_notice:{required:modificationRequired,text:modificationRequired==='YES'?'State the actual edits and identify the source; do not imply official authorship.':null,status:modificationRequired==='YES'?'REQUIRED_IF_TERMS_APPLY':'UNKNOWN'},caveats,publish_gate:'HOLD',clearance_required:[`Acquired rights evidence explicitly covering ${source.source_id}, URL ${stored.record.resolved_url}, SHA-256 ${stored.record.sha256}, including the relevant member contents.`,'Resolve each third-party original and individual-law caveat, or exclude those contents.','Record required credit parties, source URL, licence link and actual modification notice for the proposed use.'],file_rights_observations:observations,verification:'UNVERIFIED',routable:false,...(publicationPeriodNotes.length?{publication_period_notes:publicationPeriodNotes}:{})};
-    await writeJson(join(out,`${source.source_id}.json`),record);records.push(record);
+    records.push(record);
   }
   // Range-extracted 2023 CityGML members keep their own rights records and point
   // back to the acquired package resource that supplied their exact bytes.
@@ -252,7 +275,8 @@ export async function generateRights():Promise<RightsRecord[]> {
       if(packageSource?.source_id!==packageId||packageSource.sha256!==pkg.record.sha256||!vintage.input_sources.some(input=>input.source_id===packageId&&input.sha256===pkg.record.sha256))throw new Error(`Vintage member package source is stale: ${sourceId}`);
       const memberPath=join(getStoreRoot(),member.store_path);
       await assertPathWithinStore(getStoreRoot(),memberPath);await verifyStoredFile(memberPath,member.sha256,member.bytes);
-      const matches=Array.isArray(resources)?resources.flatMap((r:unknown,i:number)=>own(r,'url')===archive.url&&packageSource.json_pointer===`/result/resources/${i}/url`?[i]:[]):[];
+      const index=exactResourceUrlIndex(resources,archive.url);
+      const matches=index!==null&&packageSource.json_pointer===`/result/resources/${index}/url`?[index]:[];
       const exact=matches.length===1,evidence:RightsEvidence[]=[],declarations:RightsRecord['declarations']=[];
       let licence:RightsRecord['licence']={value:null,status:'UNKNOWN',scope:'No exact package resource URL establishes the source archive relationship.'};
       if(exact) {
@@ -266,10 +290,25 @@ export async function generateRights():Promise<RightsRecord[]> {
         evidence.push(ev);declarations.push({value:'PLATEAU Site Policy §3',status:'SITE_TERMS',evidence:ev});
       }
       const record:RightsRecord={source_id:sourceId,source_sha256:member.sha256,tool_input_sha256:fingerprint,station_ids:['shinjuku'],licence,resource_licence:{value:null,status:'UNKNOWN'},file_embedded_licence:{value:null,status:'UNKNOWN',reason:'No exact file-embedded declaration was established for the extracted member.'},declarations,evidence,input_sources:[{source_id:sourceId,sha256:member.sha256},{source_id:packageId,sha256:pkg.record.sha256},...(exact?[{source_id:policy.record.source_id,sha256:policy.record.sha256}]:[])],attribution:{required:'YES',text_required:'出典：国土交通省 PLATEAUウェブサイト（当該ページのURL）',proposed_text:'出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成',status:'SITE_EXAMPLE; verify exact resource credit'},modification_notice:{required:'YES',text:'State the actual edits and identify the source; do not imply official authorship.',status:'REQUIRED_IF_TERMS_APPLY'},caveats:['Rights remain package-level only; resource and extracted-member scope remains unverified.','G空間 3D city model copyright belongs to the municipality; third-party originals require separate review.',...(exact?[]:[`No exact package resource URL or pointer matched member archive ${archive.url}; licence remains UNKNOWN.`])],publish_gate:'HOLD',clearance_required:[`Confirm rights covering exact archive ${archive.url} and member ${member.member} SHA-256 ${member.sha256}.`,'Resolve third-party original and individual-law caveats.','Record required credit parties and actual modification notice.'],file_rights_observations:[],verification:'UNVERIFIED',routable:false};
-      await writeJson(join(out,`${sourceId}.json`),record);records.push(record);
+      records.push(record);
     }
   }
-  await writeFile(join(out,'README.md'),['# Rights evidence register','','Generated only from integrity-checked acquisitions. A package declaration, site default and file-embedded rights are different scopes. Every exact-resource publish gate remains HOLD. Legacy manifest labels are preserved as historical inputs, not clearance.','','| Source | Licence observation | Scope | Resource licence | File-embedded rights | File-embedded scope | Publish gate |','| --- | --- | --- | --- | --- | --- | --- |',...records.map(r=>`| [${r.source_id}](${r.source_id}.json) | ${r.licence.value??'UNKNOWN'} | ${r.licence.scope} (${r.licence.status}) | ${r.resource_licence.value??'UNKNOWN'} (${r.resource_licence.status}) | ${r.file_embedded_licence.value??'UNKNOWN'} (${r.file_embedded_licence.status}) | ${r.file_embedded_licence.scope??r.file_embedded_licence.reason??'Not established'} | HOLD |`),'','All candidates are UNVERIFIED / routable:false. See each record for hashed evidence, obligations, caveats and exact clearance requirements.',''].join('\n'));
-  await (await import('./poi-research.js')).generatePoiResearch(records);
+  const register=['# Rights evidence register','','Generated only from integrity-checked acquisitions. A package declaration, site default and file-embedded rights are different scopes. Every exact-resource publish gate remains HOLD. Legacy manifest labels are preserved as historical inputs, not clearance.','','| Source | Licence observation | Scope | Resource licence | File-embedded rights | File-embedded scope | Publish gate |','| --- | --- | --- | --- | --- | --- | --- |',...records.map(r=>`| [${r.source_id}](${r.source_id}.json) | ${r.licence.value??'UNKNOWN'} | ${r.licence.scope} (${r.licence.status}) | ${r.resource_licence.value??'UNKNOWN'} (${r.resource_licence.status}) | ${r.file_embedded_licence.value??'UNKNOWN'} (${r.file_embedded_licence.status}) | ${r.file_embedded_licence.scope??r.file_embedded_licence.reason??'Not established'} | HOLD |`),'','All candidates are UNVERIFIED / routable:false. See each record for hashed evidence, obligations, caveats and exact clearance requirements.',''].join('\n');
+  // Research reads/validation are part of preparation, before any output mutation.
+  const research=await (await import('./poi-research.js')).buildPoiResearch(records);
+  const files=records.map(record=>({path:join(out,`${record.source_id}.json`),content:`${JSON.stringify(record,null,2)}\n`}));
+  files.push({path:join(out,'README.md'),content:register},research);
+  // Include receipt invalidation in the same transaction; failed rights never changes it.
+  if(process.env.GTEKI_GIS_REAL_RUN!=='1') {
+    const path=join(docsRoot,'gis','real-run.json');
+    let bytes:string|undefined;
+    try {bytes=await readFile(path,'utf8');} catch(error) {if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error;}
+    if(bytes!==undefined) {
+      const receipt=JSON.parse(bytes);
+      receipt.invalidated={at:new Date().toISOString(),by_command:'gis rights',reason:'Report-writing command run outside real-run; rerun real-run before summarizing'};
+      files.push({path,content:`${JSON.stringify(receipt,null,2)}\n`});
+    }
+  }
+  await commitReportFiles(files,join(docsRoot,'gis'));
   return records;
 }

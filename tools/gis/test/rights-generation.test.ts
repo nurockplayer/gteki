@@ -6,6 +6,7 @@ const fixture = vi.hoisted(() => ({
   sources: [] as unknown[],
   records: new Map<string, unknown>(),
   report: {} as any,
+  researchError: false,
   fingerprint: 'f'.repeat(64),
   archiveUrl: 'https://assets.example/assets/b5/dd5300/shinjuku_2023_citygml_2_op.zip',
 }));
@@ -13,7 +14,8 @@ const fixture = vi.hoisted(() => ({
 vi.mock('../src/acquire.js', () => ({ loadSources: () => fixture.sources }));
 vi.mock('../src/provenance.js', () => ({ toolFingerprint: async () => fixture.fingerprint }));
 vi.mock('../src/vintage.js', () => ({ verifyVintageEvidence: async () => ({ status: 'PASS', errors: [] }) }));
-vi.mock('../src/poi-research.js', () => ({ generatePoiResearch: async () => undefined }));
+vi.mock('../src/poi-research.js', () => ({ buildPoiResearch: async () => {if(fixture.researchError)throw new Error('Research preparation failed');return {path:'/virtual/docs/gis/research/poi-rights-and-vintages.md',content:'research'};} }));
+vi.mock('../src/report-transaction.js', () => ({ commitReportFiles: async (files: Array<{path:string;content:string}>) => {for(const file of files)fixture.writes.set(file.path,file.path.endsWith('.json')?JSON.parse(file.content):file.content);} }));
 vi.mock('../src/common.js', async importOriginal => {
   const actual = await importOriginal<typeof import('../src/common.js')>();
   return {
@@ -37,7 +39,7 @@ vi.mock('../src/common.js', async importOriginal => {
 });
 vi.mock('node:fs/promises', async importOriginal => {
   const actual = await importOriginal<typeof import('node:fs/promises')>();
-  return { ...actual, mkdir: async () => undefined, writeFile: async () => undefined, readFile: async () => '<html>公共データ利用規約（第1.0版） コンテンツを利用する際は出典を記載してください。 編集・加工等を行ったことを記載してください。</html>' };
+  return { ...actual, mkdir: async () => undefined, writeFile: async () => undefined, readFile: async (path:string) => {if(path.endsWith('/real-run.json'))throw Object.assign(new Error('missing'),{code:'ENOENT'});return '<html>公共データ利用規約（第1.0版） コンテンツを利用する際は出典を記載してください。 編集・加工等を行ったことを記載してください。</html>';} };
 });
 
 import { generateRights } from '../src/rights.js';
@@ -51,7 +53,7 @@ const acquisitionPath = `/virtual/docs/gis/acquisitions/vintages/${memberId}.jso
 const packagePath = '/virtual/source/plateau-13104-package-2023';
 
 function setup(exact = true) {
-  fixture.writes.clear();fixture.json.clear();fixture.sources=[];fixture.records.clear();
+  fixture.researchError=false;fixture.writes.clear();fixture.json.clear();fixture.sources=[];fixture.records.clear();
   const archiveUrl=fixture.archiveUrl;
   fixture.sources.push({source_id:'fixture-source',title:'Fixture',station_ids:['shinjuku'],publisher:'fixture',official_url:'https://example.invalid',resolution:{kind:'direct'},expected_url:'https://example.invalid/source',expected_bytes:null,expected_url_match:null,license_name:'unknown',license_url:null,attribution_text:'unknown',commercial_use:{status:'unknown',evidence:''},modification_allowed:{status:'unknown',evidence:''},redistribution_allowed:{status:'unknown',evidence:''},content_year:null,availability_deadline:null,notes:'',publish_gate:'HOLD'});
   fixture.records.set('fixture-source',{source_id:'fixture-source',sha256:'d'.repeat(64),resolved_url:'https://example.invalid/source'});
@@ -86,9 +88,11 @@ describe('rights generation for vintage members',()=>{
   it('fails closed when the derived acquisition hash or archive URL drifts from the vintage report',async()=>{
     fixture.json.set(acquisitionPath,Object.assign({},fixture.records.get(memberId),{sha256:'e'.repeat(64)}));
     await expect(generateRights()).rejects.toThrow('Vintage member acquisition does not match report entry');
+    expect(fixture.writes.size).toBe(0);
     setup();
     fixture.json.set(acquisitionPath,Object.assign({},fixture.records.get(memberId),{resolved_url:'https://assets.example/other.zip'}));
     await expect(generateRights()).rejects.toThrow('resolved URL does not match its archive');
+    expect(fixture.writes.size).toBe(0);
   });
   it.each([true,false])('inherits a 2025 package declaration only for an exact acquired asset folder (%s)',async exact=>{
     const id='plateau-13104-ubld-synthetic',pkgId='plateau-13104-package-2025';
@@ -106,20 +110,44 @@ describe('rights generation for vintage members',()=>{
     expect(record.resource_licence.status).toBe('UNKNOWN');
     expect(record.publish_gate).toBe('HOLD');
   });
-  it('derives both E27 licences and the actual period from the hashed supporting package snapshot',async()=>{
+  it('derives both E27 licences and the actual period from the dedicated hashed package snapshot',async()=>{
     const networkId='hokonavi-oedo-shinjuku-network-geojson',mapId='hokonavi-oedo-shinjuku-stationmap-geojson';
     const urls=['https://ckan.example/network.zip','https://ckan.example/stationmap.zip'];
     for(const [i,id] of [networkId,mapId].entries()){
       fixture.sources.push({...fixture.sources[0] as object,source_id:id,expected_url:'https://example.invalid/stale-manifest-url'});
-      fixture.records.set(id,{source_id:id,sha256:String(i+1).repeat(64),resolved_url:urls[i],...(i===0?{supporting_documents:[{id:'ckan-metadata',sha256:'e'.repeat(64),store_path:'raw/ckan.json'}]}:{})});
+      fixture.records.set(id,{source_id:id,sha256:String(i+1).repeat(64),resolved_url:urls[i],});
     }
-    fixture.json.set('/virtual/store/raw/ckan.json',{success:true,result:{license_id:'PDL-1.0',license_url:'https://example.invalid/pdl',notes:'公開期間は2027年3月12日まで',resources:urls.map(url=>({url}))}});
+    fixture.records.set('hokonavi-oedo-shinjuku-package',{source_id:'hokonavi-oedo-shinjuku-package',sha256:'e'.repeat(64)});
+    fixture.json.set('/virtual/source/hokonavi-oedo-shinjuku-package',{success:true,result:{license_id:'pdl-jp-1.0',license_url:'https://example.invalid/pdl',notes:'公開期間は2027年3月12日まで',resources:urls.map(url=>({url,license:null}))}});
     const records=await generateRights();
     for(const id of [networkId,mapId]){
       const record=records.find(r=>r.source_id===id)!;
-      expect(record.licence).toMatchObject({value:'PDL-1.0',status:'PACKAGE_LEVEL_DECLARED'});
-      expect(record.publication_period_notes).toEqual([{source_id:networkId,sha256:'e'.repeat(64),location:'supporting_documents/ckan-metadata:/result/notes',text:'公開期間は2027年3月12日まで'}]);
+      expect(record.licence).toMatchObject({value:'pdl-jp-1.0',status:'PACKAGE_LEVEL_DECLARED'});
+      expect(record.publication_period_notes).toEqual([{source_id:'hokonavi-oedo-shinjuku-package',sha256:'e'.repeat(64),location:'/result/notes',text:'公開期間は2027年3月12日まで'}]);
       expect(record.resource_licence.status).toBe('UNKNOWN');expect(record.publish_gate).toBe('HOLD');
     }
   });
+  it('writes nothing when research preparation fails after all rights records are computed',async()=>{
+    fixture.researchError=true;
+    await expect(generateRights()).rejects.toThrow('Research preparation failed');
+    expect(fixture.writes.size).toBe(0);
+  });
+  it('matches the exact pre-redirect S03 URL using its hashed acquisition pointer',async()=>{
+    const id='tokyo-shinjuku-facilities-reference-pdf',parent='tokyo-shinjuku-facilities-package';
+    const requested='https://www.toshiseibi.metro.tokyo.lg.jp/kiban/shinjuku_terminal/pdf/shisetsu_siryou.pdf';
+    const resolved='https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/pdf_siryou';
+    fixture.sources.push({...fixture.sources[0] as object,source_id:id,expected_url:requested,resolution:{kind:'ckan_resource',catalog_source_id:parent}});
+    fixture.records.set(id,{source_id:id,sha256:'1'.repeat(64),resolved_url:resolved,resolution_evidence:{source_id:parent,sha256:packageSha,json_pointer:'/result/resources/0/url'}});
+    fixture.records.set(parent,{source_id:parent,sha256:packageSha});
+    fixture.json.set(`/virtual/source/${parent}`,{success:true,result:{license_id:'CC-BY-4.0',resources:[{url:requested}]}});
+    const record=(await generateRights()).find(r=>r.source_id===id)!;
+    expect(record.evidence).toContainEqual(expect.objectContaining({location:'/result/resources/0/url',exact_url:requested,scope:expect.stringContaining('expected_url')}));
+    expect(record.licence.status).toBe('PACKAGE_LEVEL_DECLARED');
+    expect(record.resource_licence.status).toBe('UNKNOWN');
+    fixture.writes.clear();
+    (fixture.json.get(`/virtual/source/${parent}`) as any).result.resources.push({url:requested});
+    await expect(generateRights()).rejects.toThrow('2 exact resource URL matches');
+    expect(fixture.writes.size).toBe(0);
+  });
+
 });

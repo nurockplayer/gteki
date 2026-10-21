@@ -34,11 +34,12 @@ afterEach(async () => {
 });
 
 describe('source acquisition', () => {
-  it('loads exactly the bounded 33-source manifest with explicit unknown rights', () => {
+  it('loads exactly the bounded 34-source manifest with explicit unknown rights', () => {
     const sources = loadSources();
-    expect(sources).toHaveLength(33);
+    expect(sources).toHaveLength(34);
     expect(sources.find((source) => source.source_id === 'plateau-catalog-ubld-13116-13104')?.resolution.kind).toBe('direct');
     expect(sources.find((source) => source.source_id === 'plateau-13116-codelists')?.commercial_use.status).toBe('unknown');
+    expect(sources.find(source => source.source_id === 'hokonavi-oedo-shinjuku-package')).toMatchObject({resolution:{kind:'direct'},expected_url:'https://ckan.hokonavi.go.jp/api/3/action/package_show?id=station_oedo_shinjuku',expected_bytes:null,license_name:'unknown',publish_gate:'HOLD',max_bytes:8388608});
   });
 
   it('streams a local response into a content-addressed object with the computed SHA-256', async () => {

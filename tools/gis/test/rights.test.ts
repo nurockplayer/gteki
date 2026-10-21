@@ -1,5 +1,5 @@
 import { describe,it,expect } from 'vitest';
-import { embeddedMetadataRights, exactPackageAssetFolderMatch, exactResourceUrlIndex, findPublicationPeriodNotes, findTextValue, htmlText, packageLicence, shortEvidence, urlEvidence } from '../src/rights.js';
+import { matchAcquiredResource, embeddedMetadataRights, exactPackageAssetFolderMatch, exactResourceUrlIndex, findPublicationPeriodNotes, findTextValue, htmlText, packageLicence, shortEvidence, urlEvidence } from '../src/rights.js';
 describe('rights evidence scope',()=>{
   it('retains package scope without inventing resource coverage',()=>{
     expect(packageLicence({success:true,result:{license_id:'CC-BY-4.0',resources:[{url:'https://example.invalid/a'}]}}).value).toBe('CC-BY-4.0');
@@ -17,6 +17,7 @@ describe('rights evidence scope',()=>{
   it('matches a catalog file only under the exact acquired package asset folder',()=>{
     const resources=[{url:'https://assets.example/assets/84/48ebed/13104_shinjuku_2025_citygml_1_op.zip'}];
     expect(exactPackageAssetFolderMatch(resources,'https://assets.example/assets/84/48ebed/13104_shinjuku_2025_citygml_1_op/udx/ubld/a.gml')).toBe(0);
+    expect(exactPackageAssetFolderMatch(resources,resources[0]!.url)).toBe(0);
     expect(exactPackageAssetFolderMatch(resources,'https://assets.example/assets/cc/48ebed/13104_shinjuku_2025_citygml_1_op/udx/ubld/a.gml')).toBeNull();
     expect(exactPackageAssetFolderMatch(resources,'https://assets.example/assets/84/48ebed/13104_shinjuku_2025_citygml_1_op_other/udx/ubld/a.gml')).toBeNull();
     expect(exactPackageAssetFolderMatch([...resources,...resources],'https://assets.example/assets/84/48ebed/13104_shinjuku_2025_citygml_1_op/udx/a.gml')).toBeNull();
@@ -41,4 +42,18 @@ describe('rights evidence scope',()=>{
     expect(embeddedMetadataRights(xml('abstract','CC BY 4.0'))).toEqual([]);
     expect(()=>embeddedMetadataRights('<!DOCTYPE x [<!ENTITY e "x">]><x/>')).toThrow('DOCTYPE');
   });
+  it('rejects unverified pre-redirect matches and genuine ambiguity without filename inference',()=>{
+    const requested='https://example.invalid/original.zip',final='https://example.invalid/final-download';
+    const source={source_id:'s03',expected_url:requested} as any,parent={source_id:'package',sha256:'a'.repeat(64)};
+    const evidence={...parent,json_pointer:'/result/resources/0/url'};
+    expect(matchAcquiredResource([{url:final}],{resolved_url:final},source,parent)).toEqual({index:0,field:'resolved_url',url:final});
+    expect(matchAcquiredResource([{url:requested}],{resolved_url:final,resolution_evidence:evidence},source,parent)).toEqual({index:0,field:'expected_url',url:requested});
+    for(const bad of [undefined,{...evidence,sha256:'b'.repeat(64)},{...evidence,json_pointer:'/result/resources/1/url'}]) {
+      expect(()=>matchAcquiredResource([{url:requested}],{resolved_url:final,resolution_evidence:bad},source,parent)).toThrow('Unverified pre-redirect');
+    }
+    expect(()=>matchAcquiredResource([{url:requested},{url:final}],{resolved_url:final,resolution_evidence:evidence},source,parent)).toThrow('2 exact resource URL matches');
+    expect(()=>matchAcquiredResource([{url:'https://different.example/original.zip'}],{resolved_url:final,resolution_evidence:evidence},source,parent)).toThrow('0 exact resource URL matches');
+    expect(()=>matchAcquiredResource([Object.create({url:final})],{resolved_url:final},source,parent)).toThrow('0 exact resource URL matches');
+  });
+
 });

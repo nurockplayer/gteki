@@ -84,6 +84,17 @@ describe('POI source inspection', () => {
     expect(report.bbox).toBeNull();
   });
 
+  it('keeps recognized geographic CRS coordinates raw when either axis is outside its valid range', () => {
+    const report = inspectPoiGeoJson('declared-bad-range', 'd'.repeat(64), 'bad.geojson', {
+      type: 'FeatureCollection', crs: { type: 'name', properties: { name: 'EPSG:4326' } },
+      features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [139, 91] } }],
+    }) as any;
+    expect(report.observations[0]).toMatchObject({
+      raw_coordinates: [139, 91], coordinate_reference: { name: 'EPSG:4326', status: 'DECLARED' }, longitude: null, latitude: null,
+    });
+    expect(report.bbox).toBeNull();
+  });
+
   it('rejects literal-value artifact pointers that escape the report directory', async () => {
     const result = await verifyPoiEvidence({
       source_id: 'plateau-13104-related-2025', source_sha256: 'a'.repeat(64),

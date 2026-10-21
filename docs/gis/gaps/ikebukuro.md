@@ -73,7 +73,7 @@ This packet is generated from the current inventory and network report files. Mi
 - Paid/unpaid boundary is not evidenced as present in the available PLATEAU underground-building file; HOLD for routing across fare boundaries.
 - Explicit connectivity is not established by the available CityGML inventory; HOLD for route generation.
 - Floor-to-elevation mapping remains UNKNOWN even when literal floor labels are present; do not derive elevation from labels.
-- Any bbox intersection establishes envelope overlap only; HOLD for geometry/graph pairing until feature alignment, floor correspondence and operator evidence are established.
+- At least one source-layer bbox relationship is UNKNOWN because CRS or bbox evidence is incomplete; HOLD for any geometry/graph pairing.
 - HOLD: nominal mesh membership does not establish actual geometry coverage, feature correspondence or floor alignment.
 - Applicable walking-network specification version remains UNKNOWN; decoded labels and rank checks are literal consistency evidence only.
 - R1 CRS is INFERRED_FROM_SPEC; all endpoint and overlap metrics relying on it are CONDITIONAL_ON_INFERRED_CRS. Distance evidence cannot identify the datum.

@@ -1,0 +1,114 @@
+{
+  "source_id": "vintage-member-25c55437cff5a95e",
+  "source_sha256": "25c55437cff5a95ea81b450b1bc92b9f946c2d8c3e5657eda1174959c79a1fc9",
+  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
+  "station_ids": [
+    "shinjuku"
+  ],
+  "licence": {
+    "value": "plateau",
+    "status": "PACKAGE_LEVEL_DECLARED",
+    "scope": "PACKAGE_LEVEL_DECLARED_VIA_PARENT_RESOURCE"
+  },
+  "resource_licence": {
+    "value": null,
+    "status": "UNKNOWN"
+  },
+  "file_embedded_licence": {
+    "value": null,
+    "status": "UNKNOWN",
+    "reason": "No exact file-embedded declaration was established for the extracted member."
+  },
+  "declarations": [
+    {
+      "value": "plateau",
+      "status": "PACKAGE_LEVEL_DECLARED",
+      "evidence": {
+        "source_id": "plateau-13104-package-2023",
+        "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
+        "location": "/result/license_id",
+        "quote": "plateau",
+        "scope": "PACKAGE_LEVEL_DECLARED_VIA_PARENT_RESOURCE"
+      }
+    },
+    {
+      "value": "PLATEAU Site Policy §3",
+      "status": "SITE_TERMS",
+      "evidence": {
+        "source_id": "plateau-site-policy",
+        "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+        "location": "HTML §3 コンテンツの利用",
+        "quote": "公共データ利用規約（第1.0版）",
+        "scope": "PLATEAU Site Policy §3 referenced by the package declaration."
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "source_id": "plateau-13104-package-2023",
+      "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
+      "location": "/result/resources/6/url",
+      "exact_url": "https://assets.cms.plateau.reearth.io/assets/d1/61cd6b-dfe4-4eab-873c-be4f512939be/13104_shinjuku-ku_pref_2023_citygml_1_op.zip",
+      "scope": "Exact package resource URL for the archive containing this range-extracted member."
+    },
+    {
+      "source_id": "plateau-13104-package-2023",
+      "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
+      "location": "/result/license_id",
+      "quote": "plateau",
+      "scope": "PACKAGE_LEVEL_DECLARED_VIA_PARENT_RESOURCE"
+    },
+    {
+      "source_id": "plateau-13104-package-2023",
+      "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
+      "location": "/result/license_url",
+      "exact_url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "scope": "Package licence link points to PLATEAU Site Policy §3."
+    },
+    {
+      "source_id": "plateau-site-policy",
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "location": "HTML §3 コンテンツの利用",
+      "quote": "公共データ利用規約（第1.0版）",
+      "scope": "PLATEAU Site Policy §3 referenced by the package declaration."
+    }
+  ],
+  "input_sources": [
+    {
+      "source_id": "vintage-member-25c55437cff5a95e",
+      "sha256": "25c55437cff5a95ea81b450b1bc92b9f946c2d8c3e5657eda1174959c79a1fc9"
+    },
+    {
+      "source_id": "plateau-13104-package-2023",
+      "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d"
+    },
+    {
+      "source_id": "plateau-site-policy",
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f"
+    }
+  ],
+  "attribution": {
+    "required": "YES",
+    "text_required": "出典：国土交通省 PLATEAUウェブサイト（当該ページのURL）",
+    "proposed_text": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+    "status": "SITE_EXAMPLE; verify exact resource credit"
+  },
+  "modification_notice": {
+    "required": "YES",
+    "text": "State the actual edits and identify the source; do not imply official authorship.",
+    "status": "REQUIRED_IF_TERMS_APPLY"
+  },
+  "caveats": [
+    "Rights remain package-level only; resource and extracted-member scope remains unverified.",
+    "G空間 3D city model copyright belongs to the municipality; third-party originals require separate review."
+  ],
+  "publish_gate": "HOLD",
+  "clearance_required": [
+    "Confirm rights covering exact archive https://assets.cms.plateau.reearth.io/assets/d1/61cd6b-dfe4-4eab-873c-be4f512939be/13104_shinjuku-ku_pref_2023_citygml_1_op.zip and member udx/ubld/53394536_ubld_6697.gml SHA-256 25c55437cff5a95ea81b450b1bc92b9f946c2d8c3e5657eda1174959c79a1fc9.",
+    "Resolve third-party original and individual-law caveats.",
+    "Record required credit parties and actual modification notice."
+  ],
+  "file_rights_observations": [],
+  "verification": "UNVERIFIED",
+  "routable": false
+}

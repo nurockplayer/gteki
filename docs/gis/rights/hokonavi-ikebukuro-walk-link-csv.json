@@ -1,7 +1,7 @@
 {
   "source_id": "hokonavi-ikebukuro-walk-link-csv",
   "source_sha256": "a0f8376556bc7c920be10c27181d8a4219745b55ec2bea6938d28dfeadde80d2",
-  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
   "station_ids": [
     "ikebukuro"
   ],
@@ -39,6 +39,13 @@
       "location": "supporting_documents/ckan-metadata:/result/license_id",
       "quote": "pdl-jp-1.0",
       "scope": "Package declaration; exact resource and third-party scope UNKNOWN."
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "sha256": "82c7ecca22de1c08b8c0ad4b0c1c362af032f80d745c74d5c9a06b4b8f5ff039",
+      "location": "supporting_documents/ckan-metadata:/result/license_url",
+      "quote": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "scope": "Package licence URL; package scope only."
     }
   ],
   "input_sources": [

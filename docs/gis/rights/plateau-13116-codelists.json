@@ -1,7 +1,7 @@
 {
   "source_id": "plateau-13116-codelists",
   "source_sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
-  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
   "station_ids": [
     "ikebukuro"
   ],
@@ -20,11 +20,23 @@
     "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
   },
   "declarations": [],
-  "evidence": [],
+  "evidence": [
+    {
+      "source_id": "plateau-13116-package-2025",
+      "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+      "location": "/result/resources",
+      "exact_url": "https://assets.cms.plateau.reearth.io/assets/82/77b46c-5983-448a-9d89-c0663ddc0652/13116_toshima-ku_pref_2025_citygml_1_op_codelists.zip",
+      "scope": "No exact parent resource URL/asset-folder match in this acquired snapshot; package declaration is not inherited."
+    }
+  ],
   "input_sources": [
     {
       "source_id": "plateau-13116-codelists",
       "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600"
+    },
+    {
+      "source_id": "plateau-13116-package-2025",
+      "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b"
     }
   ],
   "attribution": {
@@ -40,7 +52,8 @@
   },
   "caveats": [
     "No inferred permission from availability, file type, absence of notices, or a legacy manifest label.",
-    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks."
+    "Third-party originals, trademarks, personal rights, and individual-law restrictions require separate scope checks.",
+    "No exact package asset-folder match in acquired plateau-13116-package-2025; package-level declaration is not linked to this catalog-resolved file."
   ],
   "publish_gate": "HOLD",
   "clearance_required": [

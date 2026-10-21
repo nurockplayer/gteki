@@ -1,7 +1,7 @@
 {
   "source_id": "plateau-13104-related-2025",
   "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
-  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
   "station_ids": [
     "shinjuku"
   ],
@@ -54,9 +54,23 @@
     {
       "source_id": "plateau-13104-package-2025",
       "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+      "location": "/result/license_title",
+      "quote": "PLATEAU Site Policy 「３．著作権について」に拠る",
+      "scope": "Package licence title only."
+    },
+    {
+      "source_id": "plateau-13104-package-2025",
+      "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+      "location": "/result/license_url",
+      "exact_url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "scope": "Package licence link only."
+    },
+    {
+      "source_id": "plateau-13104-package-2025",
+      "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
       "location": "/result/resources/4/url",
-      "quote": "13104_shinjuku-ku_2025_related.zip",
-      "scope": "Exact catalog resource URL membership only."
+      "exact_url": "https://assets.cms.plateau.reearth.io/assets/23/55e3ae-7f14-4e7e-b922-a4a09da0a714/13104_shinjuku-ku_2025_related.zip",
+      "scope": "Exact catalog resource URL matched acquisition resolved_url. Package membership only."
     },
     {
       "source_id": "plateau-13104-package-2025",

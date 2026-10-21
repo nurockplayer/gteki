@@ -6,21 +6,21 @@
     "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
     "json_pointer": "/result/resources/0/url"
   },
-  "requested_at": "2026-10-20T18:06:31.493Z",
-  "completed_at": "2026-10-20T18:06:31.856Z",
+  "requested_at": "2026-10-21T10:07:10.721Z",
+  "completed_at": "2026-10-21T10:07:11.105Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/zip",
     "content-length": "2317035",
     "etag": null,
     "last-modified": "Tue, 01 Oct 2024 07:52:20 GMT",
-    "date": "Tue, 20 Oct 2026 18:06:31 GMT"
+    "date": "Wed, 21 Oct 2026 10:07:10 GMT"
   },
   "bytes": 2317035,
   "sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
   "store_path": "raw/fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31/zip_kiban_shinjuku_terminal_pdf_shisetsu_root",
   "tool_version": "0.1.0",
-  "git_commit": "eeaf317775f3ecd3f84cbc07fc1e162c41e451a3",
+  "git_commit": "31c8d5e4bfe874d56dddce194127ad10b83b7771",
   "expected_bytes": 2317035,
   "expected_url_match": false,
   "size_check": "MATCH",

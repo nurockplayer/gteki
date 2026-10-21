@@ -1,7 +1,7 @@
 {
   "source_id": "tokyo-shinjuku-facilities-reference-pdf",
   "source_sha256": "d661cd83fb1e914d65de71d354e86ee4aabfcca20e8060930adea5029fbf4f6a",
-  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
   "station_ids": [
     "shinjuku"
   ],
@@ -43,9 +43,23 @@
     {
       "source_id": "tokyo-shinjuku-facilities-package",
       "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
+      "location": "/result/license_title",
+      "quote": "クリエイティブ・コモンズ 表示（CC BY）",
+      "scope": "Package licence title only."
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-package",
+      "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
+      "location": "/result/license_url",
+      "exact_url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+      "scope": "Package licence link only."
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-package",
+      "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
       "location": "/result/resources/2/url",
-      "quote": "shisetsu_siryou.pdf",
-      "scope": "Exact catalog resource URL membership only."
+      "exact_url": "https://www.toshiseibi.metro.tokyo.lg.jp/kiban/shinjuku_terminal/pdf/shisetsu_siryou.pdf",
+      "scope": "Exact catalog resource URL matched acquisition expected_url; resolved_url differs after HTTP redirect; verified hashed resolution_evidence pointer. Package membership only."
     },
     {
       "source_id": "tokyo-shinjuku-facilities-package",
@@ -67,7 +81,7 @@
   "attribution": {
     "required": "YES",
     "text_required": null,
-    "proposed_text": "出典：東京都都市整備局「新宿駅周辺の施設情報等」（https://www.toshiseibi.metro.tokyo.lg.jp/kiban/shinjuku_terminal/pdf/shisetsu_siryou.pdf）",
+    "proposed_text": "出典：東京都都市整備局「新宿駅周辺の施設情報等」（https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/pdf_kiban_shinjuku_terminal_pdf_shisetsu_siryou）",
     "status": "EXACT_RESOURCE_CREDIT_UNKNOWN"
   },
   "modification_notice": {
@@ -82,7 +96,7 @@
   ],
   "publish_gate": "HOLD",
   "clearance_required": [
-    "Acquired rights evidence explicitly covering tokyo-shinjuku-facilities-reference-pdf, URL https://www.toshiseibi.metro.tokyo.lg.jp/kiban/shinjuku_terminal/pdf/shisetsu_siryou.pdf, SHA-256 d661cd83fb1e914d65de71d354e86ee4aabfcca20e8060930adea5029fbf4f6a, including the relevant member contents.",
+    "Acquired rights evidence explicitly covering tokyo-shinjuku-facilities-reference-pdf, URL https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/pdf_kiban_shinjuku_terminal_pdf_shisetsu_siryou, SHA-256 d661cd83fb1e914d65de71d354e86ee4aabfcca20e8060930adea5029fbf4f6a, including the relevant member contents.",
     "Resolve each third-party original and individual-law caveat, or exclude those contents.",
     "Record required credit parties, source URL, licence link and actual modification notice for the proposed use."
   ],
