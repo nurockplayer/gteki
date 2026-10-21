@@ -56,13 +56,17 @@ const CHECKED = "2026-10-20";
 /**
  * Owner policy (option A, 2026-10-20): three statuses are tracked separately.
  * - Publication period: the dataset page says 「公共交通オープンデータチャレンジ2026 の期間中（2027年3月12日まで）のみの限定公開」.
- *   That is the provider's *publication* period, not a confirmed end of the PDL 1.0 licence, so it is NOT
+ *   That is the provider's *publication* period, not a confirmed end of any licence, so it is NOT
  *   written to Source.validUntil (which the router treats as data validity → stale).
- * - Reuse licence: PDL 1.0 as published; reuse of derived data after the period is unconfirmed (coverage gap).
+ * - Reuse licence: unconfirmed. The two E27 resources ship under the Owner's override at #16; the Owner decided at #39
+ *   (Q11 = No) that PDL 1.0 is NOT treated as covering them, so no output may claim it does. Reuse of derived data
+ *   after the period is unconfirmed (coverage gap).
  * - Navigation freshness: datasetDate (and link maint_date) with the router's staleAfterDays.
  */
 const PUBLICATION_PERIOD_END = "2027-03-12";
-const PERIOD_NOTE = `Publication period (公開提供期限): limited publication for 公共交通オープンデータチャレンジ2026 until ${PUBLICATION_PERIOD_END}, per the dataset page. This is not a confirmed end of the PDL 1.0 licence; reuse of derived data after that date is unconfirmed with the provider (see coverage gap:reuse-after-publication).`;
+const PERIOD_NOTE = `Publication period (公開提供期限): limited publication for 公共交通オープンデータチャレンジ2026 until ${PUBLICATION_PERIOD_END}, per the dataset page. This is the provider's publication period, not a confirmed end of any licence; reuse of derived data after that date is unconfirmed with the provider (see coverage gap:reuse-after-publication). Licence basis for this resource is unconfirmed: it ships under the Owner's override at the #16 merge, and PDL 1.0 is not treated as covering it (Owner decision #39, Q11 = No).`;
+/** Honest licence value for the E27 resources: validate.ts requires a data source to name a licence with an http(s) link, so link the provider's dataset page. */
+const E27_LICENSE = { name: "Licence unconfirmed — published under the Owner's override (#16)", url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45" };
 const SRC_NWD = "mlit-hokonavi-e27-nwd";
 const SRC_MAP = "mlit-hokonavi-e27-stationmap";
 const OP = "toei";
@@ -873,7 +877,7 @@ const sources: Source[] = [
     publisher: "国土交通省（ほこナビDP）",
     url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45",
     downloadUrls: ["https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/d4519a9a-917a-4de8-9104-83e21246c04c/download/nwd_oedo_shinjuku_geojson.zip"],
-    license: { name: "公共データ利用規約（第1.0版）PDL 1.0", url: "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0" },
+    license: E27_LICENSE,
     rights: "REUSABLE_WITH_CONDITIONS",
     attribution: "「歩行空間ネットワークデータ（都営地下鉄大江戸線 新宿駅）」（国土交通省）を加工して作成",
     modified: true,
@@ -889,7 +893,7 @@ const sources: Source[] = [
     publisher: "国土交通省（ほこナビDP）",
     url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45",
     downloadUrls: ["https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/9c5ecc7b-a6e4-4d92-978c-9b66ca642172/download/stationmap_oedo_shinjuku_geojson.zip"],
-    license: { name: "公共データ利用規約（第1.0版）PDL 1.0", url: "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0" },
+    license: E27_LICENSE,
     rights: "REUSABLE_WITH_CONDITIONS",
     attribution: "「構内地図データ（都営地下鉄大江戸線 新宿駅）」（国土交通省）を加工して作成",
     modified: true,
@@ -952,7 +956,7 @@ const gaps: CoverageGap[] = [
   { id: "gap:hours", floorId: null, zone: "All links", missingFact: "Operating hours (start_time/end_time) not published", sourceDate: null, fieldWorkNeeded: "Operator hours per exit/passage" },
   { id: "gap:escalator-direction", floorId: null, zone: "Escalators", missingFact: "Escalator directions are a 2025-09 snapshot; time-of-day reversals unknown", sourceDate: "2025-09-19", fieldWorkNeeded: "Field check at peak/off-peak" },
   { id: "gap:platform-sides", floorId: floorId(-6), zone: "Platform (地下6階)", missingFact: "Which side serves which direction (都庁前 / 両国・六本木)", sourceDate: null, fieldWorkNeeded: "Field check or licensed operator data" },
-  { id: "gap:reuse-after-publication", floorId: null, zone: "All E27-derived data (graph, geometry, POIs)", missingFact: `Provider confirmation that GTEki's derived Web 3D data may still be reused/distributed (incl. commercially) after the publication period ends ${PUBLICATION_PERIOD_END}. PDL 1.0 is the published licence; its expiry is not asserted.`, sourceDate: "2026-09-17", fieldWorkNeeded: "Written answer from MLIT ほこナビDP窓口; any public release relying on it stays HOLD until confirmed" },
+  { id: "gap:reuse-after-publication", floorId: null, zone: "All E27-derived data (graph, geometry, POIs)", missingFact: `Provider confirmation that GTEki's derived Web 3D data may still be reused/distributed (incl. commercially) after the publication period ends ${PUBLICATION_PERIOD_END}. The licence basis for the E27 resources is unconfirmed (published under the Owner's override at #16; PDL 1.0 is not treated as covering them, #39 Q11 = No).`, sourceDate: "2026-09-17", fieldWorkNeeded: "Written answer from MLIT ほこナビDP窓口; E27 itself ships under the Owner's #16 override; any other public release relying on it stays HOLD until confirmed" },
   { id: "gap:closures", floorId: null, zone: "Construction areas around 新宿駅西口・南口", missingFact: "Current closures (e.g. OSM notes exit 2 closed since 2024-03-30 for building demolition — outside E27 data)", sourceDate: null, fieldWorkNeeded: "Operator notices + field check before any real-world guidance" },
 ];
 const coverage = {
@@ -1000,7 +1004,7 @@ const bundle: StationBundle = {
 
 // ---------------------------------------------------------------- plan (render geometry)
 const plan = {
-  note: "Render-only geometry derived from GSI 構内地図データ (PDL 1.0). Not routing truth. Heights are symbolic.",
+  note: "Render-only geometry derived from 構内地図データ（都営地下鉄大江戸線 新宿駅）（国土交通省）, published under the Owner's #16 override; licence basis unconfirmed. Not routing truth. Heights are symbolic.",
   attribution: sources.map((s) => s.attribution),
   levels: mapLevels.map((ml) => {
     const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
