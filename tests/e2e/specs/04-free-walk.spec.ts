@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { distanceToNetwork, hooks, openStation, routeWaypoints, save, shotPath, stationData, STATIONS, type StationKey, type Vec3 } from "../lib/gteki.ts";
+import { distanceToNetwork, hooks, mappedSpaceAt, openStation, routeWaypoints, save, shotPath, stationData, STATIONS, type StationKey, type Vec3 } from "../lib/gteki.ts";
 
 /**
  * Collision-honest free walk. Unlike the guide (which plays the route polyline on rails), this
@@ -186,7 +186,7 @@ for (const key of STATIONS) {
     // World bounds come back in the renderer frame (x, z, −y); convert to station ENU.
     const w = (await hooks.sceneInfo(page)).world as number[];
     const bounds = { x0: w[0]!, x1: w[3]!, y0: -w[5]!, y1: -w[2]!, z0: w[1]!, z1: w[4]! };
-    const results: { spawn: string; dir: string; moved: number; z0: number; z1: number; end: Vec3; inBounds: boolean; networkM: number }[] = [];
+    const results: { spawn: string; dir: string; moved: number; z0: number; z1: number; end: Vec3; inBounds: boolean; networkM: number; space: ReturnType<typeof mappedSpaceAt> }[] = [];
     for (const spawn of spawns) {
       for (const [dir, keys] of [["forward", ["KeyW", "ShiftLeft"]], ["back", ["KeyS", "ShiftLeft"]], ["left", ["KeyA", "ShiftLeft"]], ["right", ["KeyD", "ShiftLeft"]]] as const) {
         expect(await hooks.walkFromNode(page, spawn), `spawn ${spawn} has ground`).toBe(true);
@@ -194,7 +194,13 @@ for (const key of STATIONS) {
         const b = await hooks.simulate(page, 30, [...keys]);
         const inBounds = b.x > bounds.x0 + 1 && b.x < bounds.x1 - 1 && b.y > bounds.y0 + 1 && b.y < bounds.y1 - 1 && b.z > bounds.z0 - 0.5 && b.z < bounds.z1 + 0.5;
         const networkM = Math.round(distanceToNetwork(key, b) * 10) / 10;
-        results.push({ spawn, dir, moved: Math.round(Math.hypot(b.x - a.x, b.y - a.y) * 10) / 10, z0: a.z, z1: b.z, end: b, inBounds, networkM });
+        const space = mappedSpaceAt(key, b);
+        results.push({ spawn, dir, moved: Math.round(Math.hypot(b.x - a.x, b.y - a.y) * 10) / 10, z0: a.z, z1: b.z, end: b, inBounds, networkM, space });
+        // Far from every edge: capture where the walker stopped, whether or not a mapped space contains it.
+        if (networkM >= MAX_OFF_NETWORK_M) {
+          const spawnShort = spawn.replace(/^n:/, "").replace(/[^\w-]/g, "_").slice(0, 8);
+          await page.screenshot({ path: shotPath(testInfo, `${key}-wall-probe-${spawnShort}-${dir}.png`) });
+        }
       }
     }
     await page.screenshot({ path: shotPath(testInfo, `${key}-wall-probe-end.png`) });
@@ -203,13 +209,15 @@ for (const key of STATIONS) {
     for (const spawn of spawns) expect.soft(Math.max(...results.filter((r) => r.spawn === spawn).map((r) => r.moved)), `${spawn}: walker moves at all`).toBeGreaterThan(2);
     // 30 s of running is ~100 m in open space; inside a passage a wall must stop it well before.
     // Distance alone cannot prove containment (a wall gap lets the walker out within 95 m), so the
-    // endpoint must also stay inside the scene bounds and near the walkable network on its own level:
-    // MAX_OFF_NETWORK_M is wider than the widest hall either station models around its centre lines.
+    // endpoint must also stay inside the scene bounds and be contained on its own level: either it ends
+    // inside a mapped, unrestricted space of the station plan (a hall can be wider than any centre-line
+    // reach), or, where no plan exists or no space matches, within MAX_OFF_NETWORK_M of a walkable edge
+    // (the graph distance is the fallback; 15 m is wider than the widest hall modelled around its lines).
     // Height change is recorded, not asserted: running straight may legitimately take a stair.
     for (const r of results) {
       expect.soft(r.moved, `${r.spawn} ${r.dir}: ran ${r.moved} m without hitting a wall`).toBeLessThan(95);
       expect.soft(r.inBounds, `${r.spawn} ${r.dir}: ended outside the station scene at (${r.end.x.toFixed(1)}, ${r.end.y.toFixed(1)}, ${r.end.z.toFixed(1)})`).toBe(true);
-      expect.soft(r.networkM, `${r.spawn} ${r.dir}: ended ${r.networkM} m from any walkable edge on its level`).toBeLessThan(MAX_OFF_NETWORK_M);
+      expect.soft(r.networkM < MAX_OFF_NETWORK_M || !!r.space, `${r.spawn} ${r.dir}: ended ${r.networkM} m from any walkable edge (limit ${MAX_OFF_NETWORK_M} m) and in no mapped unrestricted space on its level`).toBe(true);
     }
   });
 }

@@ -5,7 +5,7 @@ import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
 import { guideStops } from "../explorer/guideStops.ts";
-import { nextGuideSpeed } from "../explorer/walker.ts";
+import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, type GuideTierId } from "../explorer/guidePace.ts";
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
@@ -28,6 +28,19 @@ interface State {
   polyline: PolylinePoint[];
   instructions: Instruction[];
   activeInstruction: number;
+}
+
+const GUIDE_TIER_KEY = "gteki.guideTier";
+
+function readGuideTier(): GuideTierId {
+  try {
+    const v = localStorage.getItem(GUIDE_TIER_KEY);
+    return isGuideTier(v) ? v : DEFAULT_GUIDE_TIER;
+  } catch { return DEFAULT_GUIDE_TIER; }
+}
+
+function writeGuideTier(id: GuideTierId): void {
+  try { localStorage.setItem(GUIDE_TIER_KEY, id); } catch { /* storage unavailable: the choice lasts for the session */ }
 }
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string): HTMLElementTagNameMap[K] => {
@@ -83,6 +96,7 @@ export class App {
         if (poi) this.setDestination(poi);
       },
     });
+    this.explorer.setGuideTier(readGuideTier());
     this.exposeTestHooks();
     this.s.entries = await listStations();
     this.renderStationSelect();
@@ -538,13 +552,28 @@ export class App {
     if (mode === "guide" && ins) hud.append(el("div", "hud-instruction", ins.text));
     const row = el("div", "hud-row");
     if (mode === "guide") {
-      // The HUD is rebuilt on every instruction change: every control starts from the explorer's state.
-      let paused = this.explorer.guidePaused;
-      let mult = this.explorer.guideSpeed;
-      const pause = el("button", undefined, paused ? t.resume : t.pause);
-      pause.addEventListener("click", () => { paused = !paused; this.explorer.setGuidePaused(paused); pause.textContent = paused ? t.resume : t.pause; });
-      const speed = el("button", "ghost guide-speed", `${t.speed} ×${mult}`);
-      speed.addEventListener("click", () => { mult = nextGuideSpeed(mult); this.explorer.setGuideSpeed(mult); speed.textContent = `${t.speed} ×${mult}`; });
+      // Built from the explorer's state; instruction changes then go through updateGuideHud, so the controls stay put under the pointer.
+      const pause = el("button", "guide-pause", this.explorer.guidePaused ? t.resume : t.pause);
+      pause.addEventListener("click", () => {
+        const paused = !this.explorer.guidePaused;
+        this.explorer.setGuidePaused(paused);
+        pause.textContent = paused ? t.resume : t.pause;
+      });
+      const speed = el("button", "ghost guide-speed");
+      const showSpeed = (): void => {
+        const tier = this.explorer.guideTier;
+        const name = t.guideTier[tier];
+        speed.textContent = t.guideSpeedLabel(name, guideTierSpeed(tier));
+        speed.setAttribute("aria-label", t.guideSpeedAria(name));
+        speed.title = t.guideSpeedAria(name);
+      };
+      showSpeed();
+      speed.addEventListener("click", () => {
+        const next = nextGuideTier(this.explorer.guideTier);
+        this.explorer.setGuideTier(next);
+        writeGuideTier(next);
+        showSpeed();
+      });
       const stop = el("button", "ghost", t.exitGuide);
       stop.addEventListener("click", () => this.explorer.stopGuide());
       row.append(pause, speed, stop);
@@ -570,11 +599,30 @@ export class App {
     hud.append(row);
   }
 
+  /** Refresh the guide HUD's instruction and pause label in place (the buttons must not be replaced mid-click); full rebuild if it isn't a guide HUD. */
+  private updateGuideHud(): void {
+    const hud = this.ui.hud;
+    const pause = hud.querySelector<HTMLButtonElement>("button.guide-pause");
+    if (this.explorer.currentMode !== "guide" || !pause) { this.renderHud(); return; }
+    const ins = this.s.instructions[this.s.activeInstruction];
+    const cur = hud.querySelector(".hud-instruction");
+    if (!ins) cur?.remove();
+    else if (cur) cur.textContent = ins.text;
+    else hud.prepend(el("div", "hud-instruction", ins.text));
+    pause.textContent = this.explorer.guidePaused ? this.t.resume : this.t.pause;
+  }
+
   /** Guide along the route, stopping where each wait for an opening happens. */
   private startGuide(): void {
     const stops = guideStops(this.s.polyline, this.s.instructions);
     this.guideWaits = stops.map((x) => x.instruction);
-    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point));
+    const spans = this.s.route?.ok ? guidePaceSpans(this.s.polyline, this.s.route.steps, this.s.instructions) : [];
+    // The guide opens on the first move; "Start" carries no direction and would only flash.
+    if (this.s.instructions[0]?.kind === "start" && this.s.instructions.length > 1) {
+      this.s.activeInstruction = 1;
+      this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === 1));
+    }
+    this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans);
   }
 
   /** The guide reached a wait: it is paused there, and the wait stays the active instruction until resumed. */
@@ -582,7 +630,7 @@ export class App {
     const wait = this.guideWaits[index];
     if (wait === undefined) return;
     this.s.activeInstruction = wait;
-    this.renderHud();
+    this.updateGuideHud();
     this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === wait));
     this.toast(this.s.instructions[wait]!.text, 4000);
   }
@@ -594,7 +642,7 @@ export class App {
     const next = p.done ? this.s.instructions.length - 1 : idx;
     if (next >= 0 && next !== this.s.activeInstruction) {
       this.s.activeInstruction = next;
-      this.renderHud();
+      this.updateGuideHud();
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === next));
       if (p.done) {
         // A route ending on a stair/escalator/ramp connector has not reached the destination: say so.
@@ -686,7 +734,7 @@ export class App {
       instructions: () => this.s.instructions.map((i) => i.text),
       mode: () => this.explorer.currentMode,
       startGuide: () => this.startGuide(),
-      guideControls: () => ({ paused: this.explorer.guidePaused, speed: this.explorer.guideSpeed }),
+      guideControls: () => ({ paused: this.explorer.guidePaused, tier: this.explorer.guideTier, speed: guideTierSpeed(this.explorer.guideTier) }),
       hud: () => [...this.ui.hud.querySelectorAll("button")].map((b) => b.textContent),
       labels: () => this.explorer.labelInfo(),
       quality: () => this.explorer.qualityLevel,

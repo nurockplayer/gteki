@@ -99,11 +99,3 @@ export function cumulativeLengths(points: readonly { x: number; y: number; z: nu
 export function angleDelta(a: number, b: number): number {
   return Math.atan2(Math.sin(b - a), Math.cos(b - a));
 }
-
-/** Guide speed multipliers the HUD cycles through. */
-export const GUIDE_SPEEDS = [1, 2, 4] as const;
-
-export function nextGuideSpeed(current: number): number {
-  const i = GUIDE_SPEEDS.indexOf(current as (typeof GUIDE_SPEEDS)[number]);
-  return GUIDE_SPEEDS[(i + 1) % GUIDE_SPEEDS.length]!;
-}
