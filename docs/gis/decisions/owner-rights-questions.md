@@ -110,9 +110,9 @@ Open rights questions from Issues #39 and #26 and the committed rights records. 
 
 - **Question:** Do we treat the CKAN package's PDL 1.0 as covering both E27 resources, although each resource-level licence is `null`?
 - **Yes:** E27-derived candidate graphs have a licence basis, still needing attribution and a processing notice. They also stay `UNVERIFIED`.
-- **No:** the package PDL is not a licence basis for the resources. (The original wording here, "nothing ships either way", was wrong: E27 already ships under the Owner's #16 override.)
-- **Answered 2026-10-22: No.** E27 (walking network + station map) ships under the Owner's override at the #16 merge (https://github.com/nurockplayer/gteki/pull/16, Owner comment 2026-10-21T10:31:49Z), not on a licence finding. The CKAN package licence is PDL 1.0 (pdl-jp-1.0) and every resource-level licence is null; the Owner's Q11 answer (2026-10-22, #39 comment 6324726321) is No, so the package PDL is not taken to cover the two resources and the override, not PDL coverage, is the basis. Not a rights PASS. Open: gap:reuse-after-publication, the ほこナビDP inquiry about reuse after 2027-03-12.
-- **Evidence:** HANDOFF "Open question (rights, Hokonavi E27 scope)". The package snapshot is not acquired on this base; the cited SHA-256 comes from a reference run. No rights record exists. Source: HANDOFF; not raised in #39 or #26.
+- **No:** E27 data stays internal. Nothing ships either way today.
+- **Conflict, pending Owner confirmation (recorded 2026-10-22 JST).** The Owner answered Q11 **No** (#39 comment 6324726321, 2026-10-21T19:31:08Z) against the option text above. Earlier, the Owner had already merged PR #16 (Owner comment 2026-10-21T10:31:49Z), overriding its HOLD and accepting publication of the Shinjuku slice, which includes E27-derived data. A literal reading of "No" conflicts with E27 already shipping. **Lead's reading (not an Owner statement):** the #16 override stands as the shipping basis, and "No" means only that the package PDL 1.0 is not taken as a licence basis for the two resources. Not a rights PASS. Owner confirmation has been requested on #39. Open: `gap:reuse-after-publication` (ほこナビDP inquiry about reuse after 2027-03-12).
+- **Evidence:** HANDOFF "Open question (rights, Hokonavi E27 scope)". Answered in #39 comment 6324726321 (see the conflict note above).
 - **Default:** No.
 
 ### 12. Roads (b) and Shinjuku
