@@ -68,7 +68,9 @@ describe("BVH ray tests match three's brute-force Mesh.raycast", () => {
     back.scale.set(1.7, 0.6, 2.3);
     const both = new THREE.Mesh(new THREE.SphereGeometry(1.2, 48, 32), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
     both.position.set(-2.5, 1, -1);
-    const targets = prepared(knot, back, both);
+    const tiny = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial()); // tested triangle by triangle
+    tiny.position.set(1, 2.5, 0);
+    const targets = prepared(knot, back, both, tiny);
     for (const m of [knot, back, both]) expect(currentBvh(m.geometry)).not.toBeNull();
     const spy = vi.spyOn(TriangleBvh.prototype, "rayCandidates");
     const box = new THREE.Box3();

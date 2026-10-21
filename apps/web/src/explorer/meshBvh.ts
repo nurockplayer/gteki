@@ -8,29 +8,41 @@ import { TriangleBvh } from "./triangleBvh.ts";
  * be) and is ray-tested triangle by triangle again. A tree is in the geometry's own (local) space, so
  * moving, rotating or scaling a mesh never invalidates it.
  */
-const bvhCache = new WeakMap<THREE.BufferGeometry, { bvh: TriangleBvh; version: string; buffers: object[] }>();
+interface CachedTree {
+  bvh: TriangleBvh;
+  /** The buffers it was built from (identity, as attributes and interleaved data can be replaced) and their versions. */
+  position: THREE.BufferAttribute | THREE.InterleavedBufferAttribute;
+  data: THREE.InterleavedBuffer | null;
+  index: THREE.BufferAttribute | null;
+  positionVersion: number;
+  indexVersion: number;
+}
+const bvhCache = new WeakMap<THREE.BufferGeometry, CachedTree>();
 
-const attributeVersion = (a: THREE.BufferAttribute | THREE.InterleavedBufferAttribute) =>
-  (a as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute ? (a as THREE.InterleavedBufferAttribute).data.version : (a as THREE.BufferAttribute).version;
-const bufferVersion = (g: THREE.BufferGeometry) => `${attributeVersion(g.getAttribute("position"))}:${g.getIndex()?.version ?? -1}`;
-/** Every object whose replacement changes the triangles: position (and its interleaved data) and index. */
-const bufferIds = (g: THREE.BufferGeometry): object[] => {
-  const position = g.getAttribute("position");
-  const data = (position as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute ? (position as THREE.InterleavedBufferAttribute).data : null;
-  return [position, data ?? position, g.getIndex() ?? g];
-};
+const dataOf = (a: THREE.BufferAttribute | THREE.InterleavedBufferAttribute) =>
+  (a as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute ? (a as THREE.InterleavedBufferAttribute).data : null;
 
+/** Checked on every ray test, so it allocates nothing. */
 export function currentBvh(g: THREE.BufferGeometry): TriangleBvh | null {
   const entry = bvhCache.get(g);
   // A geometry that lost its positions has no triangles to test.
-  if (!entry || !g.getAttribute("position")) return null;
-  // Same buffers (identity, as attributes and interleaved data can be replaced) at the same versions as at build time.
-  return entry.version === bufferVersion(g) && bufferIds(g).every((b, i) => b === entry.buffers[i]) ? entry.bvh : null;
+  const position = g.attributes.position;
+  if (!entry || !position || position !== entry.position || g.index !== entry.index) return null;
+  const data = dataOf(position);
+  if (data !== entry.data || (data ? data.version : (position as THREE.BufferAttribute).version) !== entry.positionVersion) return null;
+  return (g.index?.version ?? -1) === entry.indexVersion ? entry.bvh : null;
 }
 
 export function cacheBvh(g: THREE.BufferGeometry): void {
   if (currentBvh(g)) return;
-  bvhCache.set(g, { bvh: TriangleBvh.build(g.getAttribute("position"), g.getIndex()), version: bufferVersion(g), buffers: bufferIds(g) });
+  const position = g.getAttribute("position");
+  const data = dataOf(position);
+  bvhCache.set(g, {
+    bvh: TriangleBvh.build(position, g.getIndex()),
+    position, data, index: g.getIndex(),
+    positionVersion: data ? data.version : (position as THREE.BufferAttribute).version,
+    indexVersion: g.getIndex()?.version ?? -1,
+  });
 }
 
 type ComputeIntersections = (this: THREE.Mesh, raycaster: THREE.Raycaster, intersects: THREE.Intersection[], rayLocalSpace: THREE.Ray) => void;
@@ -51,8 +63,6 @@ function treeable(object: THREE.Object3D): object is THREE.Mesh {
   if (total % 3 !== 0 || !whole(geometry.drawRange.start) || !whole(geometry.drawRange.count)) return false;
   return !Array.isArray(mesh.material) || geometry.groups.every((g) => whole(g.start) && whole(g.count));
 }
-
-const treeFor = (object: THREE.Object3D): TriangleBvh | null => (treeable(object) ? currentBvh(object.geometry) : null);
 
 /** Build the trees `objects` (castTargets) are ray-tested with. Returns what they cost. */
 export function prepareRayTrees(objects: readonly THREE.Object3D[]): { trees: number; triangles: number; bytes: number; buildMs: number } {
@@ -77,6 +87,9 @@ const linear = new THREE.Matrix3();
 const step = new THREE.Vector3();
 const candidates: number[] = [];
 
+/** Below this, three's loop over every triangle is cheaper than asking a tree. */
+const SMALL_MESH_TRIANGLES = 32;
+
 /**
  * `object.raycast(raycaster, intersects)`, with a static mesh's tree choosing which triangles three tests.
  * Up to the per-triangle loop this is three's Mesh.raycast verbatim (bounding sphere, local ray, bounding
@@ -85,12 +98,12 @@ const candidates: number[] = [];
  * only skips triangles the ray cannot touch.
  */
 export function raycastObject(object: THREE.Object3D, raycaster: THREE.Raycaster, intersects: THREE.Intersection[]): void {
-  const tree = treeFor(object);
-  if (!tree) {
+  const mesh = object as THREE.Mesh;
+  // Anything with its own raycast (instanced, batched, skinned, sprites, lines) runs it unchanged.
+  if (mesh.isMesh !== true || mesh.raycast !== THREE.Mesh.prototype.raycast) {
     object.raycast(raycaster, intersects);
     return;
   }
-  const mesh = object as THREE.Mesh;
   const { geometry, material, matrixWorld } = mesh;
   if (material === undefined) return;
   if (geometry.boundingSphere === null) geometry.computeBoundingSphere();
@@ -103,6 +116,11 @@ export function raycastObject(object: THREE.Object3D, raycaster: THREE.Raycaster
   inverse.copy(matrixWorld).invert();
   localRay.copy(raycaster.ray).applyMatrix4(inverse);
   if (geometry.boundingBox !== null && localRay.intersectsBox(geometry.boundingBox) === false) return;
+  const tree = treeable(mesh) ? currentBvh(geometry) : null;
+  if (!tree || tree.triangleCount <= SMALL_MESH_TRIANGLES) {
+    computeIntersections.call(mesh, raycaster, intersects, localRay);
+    return;
+  }
 
   // A hit's world distance is `scale` × its local ray parameter (the local direction is a unit vector).
   const scale = step.copy(localRay.direction).applyMatrix3(linear.setFromMatrix4(matrixWorld)).length();
