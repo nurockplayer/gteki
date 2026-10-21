@@ -9,6 +9,8 @@ const COLLIDER = ["wall", "walls", "barriers", "barrier", "transport", "collider
 ## (e.g. SpringArm3D with this mask) stops at them while walking bodies on layer 1 pass through.
 const CAMERA = ["camera_blocker"]
 const CAMERA_LAYER := 1 << 1
+## Extras key holding a GLB node's authored glTF name (see load_glb).
+const AUTHORED_NAME := "gteki_authored_name"
 ## Visual-only signage a follow camera may see through; tagged gteki_see_through, never collides.
 const SEE_THROUGH = ["sign", "signs", "signage"]
 
@@ -54,6 +56,14 @@ func load_glb(path: String, station_root: Node3D, asset_id: String = "asset", ma
 	if error != OK:
 		issues.append("Cannot load GLB %s: %s" % [path, error_string(error)])
 		return null
+	# Roles match a node's authored glTF name (as on the web), not the importer's unique one ("camera_blocker2").
+	# Carried in the node's extras, which the importer copies onto the generated node.
+	for gltf_node in state.get_nodes():
+		var extras: Variant = gltf_node.get_meta("extras", {})
+		if extras is Dictionary:
+			extras = extras.duplicate()
+			extras[AUTHORED_NAME] = gltf_node.original_name
+			gltf_node.set_meta("extras", extras)
 	var scene := document.generate_scene(state)
 	if scene == null:
 		issues.append("Cannot generate GLB scene: %s" % path)
@@ -197,7 +207,7 @@ static func _own_role(node: Node) -> String:
 	# Trimmed and lowercased; an empty role counts as absent (same normalisation as the web's roleOf).
 	if not role.is_empty():
 		return role
-	var name := str(node.name).to_lower()
+	var name := str(extras.get(AUTHORED_NAME, node.name) if extras is Dictionary else node.name).to_lower()
 	for candidate in WALKABLE + COLLIDER + CAMERA + SEE_THROUGH:
 		if name == candidate or name.begins_with(candidate + "_") or name.begins_with(candidate + "."):
 			return candidate

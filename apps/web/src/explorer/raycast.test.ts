@@ -380,7 +380,7 @@ describe("camera-only blockers", () => {
       asset: { version: "2.0" },
       scene: 0,
       // A second, disjoint scene: GLTFLoader prunes its associations per scene, the flag must not depend on them.
-      scenes: [{ nodes: [0, 1, 2, 4, 5, 6, 7, 9, 10] }, { nodes: [3] }],
+      scenes: [{ nodes: [0, 1, 2, 4, 5, 6, 7, 9, 10, 11, 16] }, { nodes: [3] }],
       nodes: [
         { name: "slab", mesh: 0, extras: { gteki_role: "camera_blocker" } },
         { name: "panel", mesh: 1 },
@@ -397,10 +397,18 @@ describe("camera-only blockers", () => {
         // Mesh-level extras never give a role (as in Godot); a node's own extras do.
         { name: "deck", mesh: 4 },
         { mesh: 4, extras: { gteki_role: "camera_blocker" } },
+        // Unnamed camera / light nodes take no role from their resources' names or extras.
+        { name: "camera_blocker_canopy", children: [12, 14] },
+        { camera: 1, children: [13] },
+        { name: "canopy_deck", mesh: 4 },
+        { extensions: { KHR_lights_punctual: { light: 1 } }, children: [15] },
+        { name: "lamp_deck", mesh: 4 },
+        // GLTFLoader sanitises this name to "camera_blocker_slab"; only the authored name counts (as in Godot).
+        { name: "camera blocker slab", mesh: 4 },
       ],
-      cameras: [{ type: "perspective", perspective: { yfov: 1, znear: 0.1 } }],
+      cameras: [{ type: "perspective", perspective: { yfov: 1, znear: 0.1 } }, { name: "sign_camera", type: "perspective", perspective: { yfov: 1, znear: 0.1 }, extras: { gteki_role: "floor" } }],
       extensionsUsed: ["KHR_lights_punctual"],
-      extensions: { KHR_lights_punctual: { lights: [{ type: "point" }] } },
+      extensions: { KHR_lights_punctual: { lights: [{ type: "point" }, { name: "sign_lamp", type: "point" }] } },
       meshes: [mesh("sign_panel"), mesh("floor_panel"), { name: "floor_single", primitives: [{ attributes: { POSITION: 0 } }] }, { name: "sign_one", primitives: [{ attributes: { POSITION: 0 } }] }, { name: "board", extras: { gteki_role: "floor" }, primitives: [{ attributes: { POSITION: 0 } }] }],
       buffers: [{ byteLength: positions.byteLength }],
       bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: positions.byteLength }],
@@ -421,9 +429,11 @@ describe("camera-only blockers", () => {
       expect(unnamed.name.startsWith("sign_one")).toBe(true);
       const deck = scene.getObjectByName("deck")!;
       const taggedNode = scene.children.find((o) => o !== deck && (o as THREE.Mesh).isMesh && o.userData.gteki_role === "camera_blocker")!;
+      const canopy = ["canopy_deck", "lamp_deck"].map((name) => scene.getObjectByName(name)!);
       const roles = sceneFromGlbRoles(scene);
-      expect(roles.cameraBlockers).toEqual([...parts, ...wrapped, unnamed, taggedNode]);
+      expect(roles.cameraBlockers).toEqual([...parts, ...wrapped, unnamed, taggedNode, ...canopy]);
       expect(roles.walkable).toEqual([plain]);
+      expect(scene.getObjectByName("camera_blocker_slab")!.visible).toBe(true);
       expect(seeThroughMeshes(scene)).toEqual([]);
     }
     expect(sceneFromGlbRoles(gltf.scenes[1]!).walkable).toEqual([]);
