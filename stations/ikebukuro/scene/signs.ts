@@ -9,8 +9,9 @@ type Arrow = "up" | "left" | "right";
 interface SignContent {
   /** Direction to take at the junction for everything in this block (default straight on). */
   arrow?: Arrow;
-  exits: { id: string; label: string; ja: string | null; en: string | null }[];
-  gates: { id: string; ja: string | null; en: string | null }[];
+  /** `distanceM`: walking distance still to go from this sign (graph lengths, rounded; repeater signs only). */
+  exits: { id: string; label: string; ja: string | null; en: string | null; distanceM?: number }[];
+  gates: { id: string; ja: string | null; en: string | null; distanceM?: number }[];
 }
 
 export interface SignSpec extends SignContent {
@@ -23,6 +24,10 @@ export interface SignSpec extends SignContent {
   maxWidthM?: number;
   /** Panel scale (< 1 only where a low ceiling leaves less than the full panel height). */
   scale?: number;
+  /** "repeat": a repeater along a long passage (not at a junction). Data only; it draws like any other sign. */
+  kind?: "repeat";
+  /** Where the content comes from (graph edge, POIs, access fact); data only. */
+  basis?: string[];
 }
 
 export const FONT = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans CJK JP","Yu Gothic",system-ui,sans-serif';
@@ -63,6 +68,9 @@ function drawArrow(g: CanvasRenderingContext2D, cx: number, cy: number, s: numbe
 }
 
 type Part = { w: number; draw: (g: CanvasRenderingContext2D, x: number) => void };
+
+/** "~140 m": the distance still to go, small type under an exit badge / after a gate's English name. */
+const distLabel = (m: number) => `~${m} m`;
 
 /** Draw one sign face (one or more arrow blocks); returns canvas and physical width in metres. */
 function paint(blocks: SignContent[]): { canvas: HTMLCanvasElement; widthM: number } {
@@ -129,17 +137,29 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
     });
     for (const e of spec.exits) {
       const bw = Math.max(badge, 30 + e.label.length * badge * 0.42);
+      const dText = e.distanceM != null ? distLabel(e.distanceM) : null;
+      let pw = bw;
+      if (dText) {
+        measure.font = `600 ${Math.round(h * 0.16)}px ${FONT}`;
+        pw = Math.max(bw, measure.measureText(dText).width + 8);
+      }
       parts.push({
-        w: bw + 12,
+        w: pw + 12,
         draw: (g, x) => {
+          const bx = x + (pw - bw) / 2;
           g.fillStyle = "#ffd200";
-          roundRect(g, x, (h - badge) / 2, bw, badge, 10);
+          roundRect(g, bx, (h - badge) / 2, bw, badge, 10);
           g.fill();
           g.fillStyle = "#151515";
           g.font = `700 ${Math.round(badge * 0.62)}px ${FONT}`;
           g.textAlign = "center";
           g.textBaseline = "middle";
-          g.fillText(e.label, x + bw / 2, h / 2 + 3);
+          g.fillText(e.label, bx + bw / 2, h / 2 + 3);
+          if (dText) {
+            g.fillStyle = "#d6dde6";
+            g.font = `600 ${Math.round(h * 0.16)}px ${FONT}`;
+            g.fillText(dText, x + pw / 2, h - 18);
+          }
           g.textAlign = "left";
         },
       });
@@ -154,7 +174,10 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
     const en = strip(gate.en ?? "");
     const cw = chip ? badge * 1.15 : 0;
     const off = chip ? cw + 12 : 0;
-    const tw = Math.max(measure.measureText(ja).width, (measure.measureText(en).width * 0.15) / 0.24) + 30 + off;
+    const dText = gate.distanceM != null ? distLabel(gate.distanceM) : null;
+    const enW = (measure.measureText(en).width * 0.15) / 0.24;
+    const dW = dText ? (measure.measureText(dText).width * 0.15) / 0.24 : 0;
+    const tw = Math.max(measure.measureText(ja).width, enW + (dText ? 14 + dW : 0)) + 30 + off;
     parts.push({
       w: tw,
       draw: (g, x) => {
@@ -176,6 +199,11 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
         g.font = `500 ${Math.round(h * 0.15)}px ${FONT}`;
         g.fillStyle = "#d6dde6";
         g.fillText(en, x + 16 + off, h * 0.72);
+        if (dText) {
+          g.fillStyle = "#ffd200";
+          g.font = `600 ${Math.round(h * 0.15)}px ${FONT}`;
+          g.fillText(dText, x + 16 + off + enW + 14, h * 0.72);
+        }
       },
     });
   }
@@ -318,6 +346,8 @@ export function buildSigns(
 
   return {
     group,
+    /** Atlas page sizes (px), for tests and the harness: the low tier should stay one 4096 x 2048 page. */
+    pages: pages.map((p) => ({ w: p.width, h: p.height })),
     dispose() {
       textures.forEach((t) => t.dispose());
       group.traverse((o) => {
