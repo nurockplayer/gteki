@@ -283,7 +283,7 @@ export function lazySurfaceGrid(patches: Patch[]) {
     cells.set(key, heights); return heights;
   } };
 }
-export function replayEnvironment(built: BuiltStation, scene: StationScene, plan: Plan, regions?: RestrictedRegion[], options: { shortcuts?: boolean } = {}) {
+export function replayEnvironment(built: BuiltStation, scene: StationScene, plan: Plan, regions?: RestrictedRegion[], options: { shortcuts?: boolean; memoCapacity?: number } = {}) {
   const shortcuts = options.shortcuts !== false;
   const explorer = new ExplorerReplay(scene), labels = publicLabels(built, plan, regions), laneWorld = laneReplayWorld(built);
   const verified = [...new Map((regions ?? derivedRestrictedAccess(built.layout)?.regions ?? []).flatMap(r => r.paths)
@@ -341,6 +341,8 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
   };
   const gateWorld = { propBands: laneBands(built.propWalls) } as WalkerAudit;
   const traceMemo = new Map<string, { leak: ReplayLeak | null; frames: number; position: XYZ }>();
+  const memoCapacity = Math.max(1, options.memoCapacity ?? 50000);
+  let eviction = traceMemo.keys();
   let lastPosition: XYZ | null = null;
   let frames = 0, integratedFrames = 0;
   const replay = (end: End, start: XYZ, approach: Approach, walker: Walker, fps: number, run: boolean): ReplayLeak | null => {
@@ -375,7 +377,11 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
     const finish = (leak: ReplayLeak | null) => {
       lastPosition = { ...pos };
       if (shortcuts) {
-        if (traceMemo.size >= 50000) traceMemo.delete(traceMemo.keys().next().value!);
+        if (traceMemo.size >= memoCapacity) {
+          let oldest = eviction.next();
+          if (oldest.done) { eviction = traceMemo.keys(); oldest = eviction.next(); }
+          if (!oldest.done) traceMemo.delete(oldest.value);
+        }
         traceMemo.set(key, { leak, frames: frames - before, position: { ...pos } });
       }
       return leak;

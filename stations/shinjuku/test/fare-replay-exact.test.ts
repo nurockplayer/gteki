@@ -7,7 +7,7 @@ describe("exact static-world replay shortcuts", () => {
     for (const returns of [true, false]) {
       const fixture = restrictedCorridorFixture(.32, 3, { oblique: true, returns });
       try {
-        const fast = replayEnvironment(fixture.built, fixture.scene, fixture.plan, fixture.canonical);
+        const fast = replayEnvironment(fixture.built, fixture.scene, fixture.plan, fixture.canonical, { memoCapacity: 3 });
         const full = replayEnvironment(fixture.built, fixture.scene, fixture.plan, fixture.canonical, { shortcuts: false });
         for (const walker of ["lane", "explorer"] as const) for (const fps of [30, 60]) for (const run of [false, true])
           for (const approach of APPROACHES) for (const y of [-.1, .1]) {
