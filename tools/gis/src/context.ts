@@ -270,7 +270,7 @@ export async function buildContextGlb(args: ContextBuildArgs) {
 
   // Emit meshes: per-feature nodes in file order; merged meshes sorted by name.
   const emitted = merged ? [...order].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)) : order;
-  const windowExtras = { r_origin_m: window.spec.r_origin_m, r_exit_m: window.spec.r_exit_m, disc_count: discs.length, node_rule: window.spec.node_rule, mesh_margin_m: window.spec.mesh_margin_m, graph_sha256: window.graph?.graph_sha256 ?? null };
+  const windowExtras = { r_origin_m: window.spec.r_origin_m, r_exit_m: window.spec.r_exit_m, disc_count: discs.length, node_rule: window.spec.node_rule, mesh_margin_m: window.spec.mesh_margin_m, graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null };
   let triangleCount = 0, drawCalls = 0;
   const meshReport: Array<Record<string, unknown>> = [];
   const trianglesByKind: Record<ContextKind, number> = { bldg: 0, tran: 0 };
@@ -279,7 +279,7 @@ export async function buildContextGlb(args: ContextBuildArgs) {
     const common = { gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, verification: 'UNVERIFIED', geometry_status: 'UNVERIFIED_RAW_CONVERSION', frame_id: frame.frame_id, station_id: frame.station_id, station_json_sha256: frame.station_json_sha256, attribution_text: [...bucket.attributions].join(' / '), height_basis: 'EPSG:6697 orthometric height as published (TP); station z = height - origin.hM; no ground height synthesised' };
     const extras = bucket.single
       ? { ...common, gml_id: bucket.single.gml_id, feature_type: bucket.single.type, source_id: bucket.single.source.sourceId, source_sha256: bucket.single.source.sourceSha256, lod_used: bucket.single.lod_used, lod_fallback: bucket.single.lod_fallback }
-      : { ...common, merged: true, merge: mergeLabel(merge), variant, kind: bucket.kind === 'bldg' ? 'building' : 'road', tile: bucket.tile, feature_count: bucket.features, source_ids: [...bucket.sources.keys()].sort(), source_sha256s: Object.fromEntries([...bucket.sources].sort(([a], [b]) => (a < b ? -1 : 1))), lod_used: Object.fromEntries(Object.entries(bucket.lodUsed).sort(([a], [b]) => (a < b ? -1 : 1))), graph_sha256: window.graph?.graph_sha256 ?? null, window: windowExtras, feature_table: 'sidecar and receipt: gml_id, source_id, lod, mesh, tri_start, tri_count' };
+      : { ...common, merged: true, merge: mergeLabel(merge), variant, kind: bucket.kind === 'bldg' ? 'building' : 'road', tile: bucket.tile, feature_count: bucket.features, source_ids: [...bucket.sources.keys()].sort(), source_sha256s: Object.fromEntries([...bucket.sources].sort(([a], [b]) => (a < b ? -1 : 1))), lod_used: Object.fromEntries(Object.entries(bucket.lodUsed).sort(([a], [b]) => (a < b ? -1 : 1))), graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null, window: windowExtras, feature_table: 'sidecar and receipt: gml_id, source_id, lod, mesh, tri_start, tri_count' };
     const node = document.createNode(bucket.name).setExtras(extras);
     const mesh = document.createMesh(bucket.name).setExtras(extras);
     for (const [material, group] of [...bucket.groups].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
@@ -302,7 +302,7 @@ export async function buildContextGlb(args: ContextBuildArgs) {
   const sceneWindow = { center_station_xy_m: [0, 0] as [number, number], radius_m: window.spec.r_origin_m, r_origin_m: window.spec.r_origin_m, r_exit_m: window.spec.r_exit_m, disc_count: discs.length, mesh_margin_m: window.spec.mesh_margin_m, node_rule: window.spec.node_rule, graph: window.graph, rule: WINDOW_RULE };
   scene.setExtras({
     gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, verification: 'UNVERIFIED', station_id: frame.station_id, frame_id: frame.frame_id,
-    station_json_sha256: frame.station_json_sha256, graph_sha256: window.graph?.graph_sha256 ?? null, window: windowExtras, merge: mergeLabel(merge), variant,
+    station_json_sha256: frame.station_json_sha256, graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null, window: windowExtras, merge: mergeLabel(merge), variant,
     selection_rule: SELECTION_RULE, lod_policy: variant === 'low' ? LOD_POLICY_LOW : LOD_POLICY, policy_version: CONTEXT_POLICY_VERSION, attribution_text: attribution,
   });
   await mkdir(dirname(outputPath), { recursive: true });
@@ -321,7 +321,7 @@ export async function buildContextGlb(args: ContextBuildArgs) {
     if (names.has(name)) throw new Error(`GLB validation: duplicate node name ${name}`);
     names.add(name);
     const provenanceOk = extras.merged === true
-      ? Array.isArray(extras.source_ids) && extras.source_ids.length > 0 && typeof extras.source_sha256s === 'object' && extras.source_sha256s !== null && typeof extras.lod_used === 'object' && extras.lod_used !== null && typeof extras.window === 'object' && extras.window !== null && (extras.graph_sha256 ?? null) === (window.graph?.graph_sha256 ?? null)
+      ? Array.isArray(extras.source_ids) && extras.source_ids.length > 0 && typeof extras.source_sha256s === 'object' && extras.source_sha256s !== null && typeof extras.lod_used === 'object' && extras.lod_used !== null && typeof extras.window === 'object' && extras.window !== null && (extras.graph_sha256 ?? null) === (window.graph?.graph_sha256 ?? null) && (extras.pois_sha256 ?? null) === (window.graph?.pois?.pois_sha256 ?? null)
       : !!extras.source_id && !!extras.source_sha256 && !!extras.lod_used;
     if (extras.gteki_role !== CONTEXT_ROLE || extras.navigation_use !== 'NOT_FOR_ROUTING' || extras.visual_only !== true || extras.frame_id !== frame.frame_id || extras.station_json_sha256 !== frame.station_json_sha256 || !provenanceOk || !extras.attribution_text) throw new Error(`GLB validation: node ${name} lacks required context tags`);
     for (const primitive of node.getMesh()?.listPrimitives() ?? []) {
@@ -399,7 +399,7 @@ export function assertMeshCoverage(station: string, window: ContextWindow, frame
 export interface ContextRunOptions {
   radiusM?: number; exitRadiusM?: number; sourceIds?: string[]; frameId?: string; merge?: string; variant?: ContextVariant;
   /** Test hook: read this file instead of the repo graph.json. */
-  graphPath?: string;
+  graphPath?: string; poisPath?: string;
 }
 /** CLI/store wrapper: validates the frame, resolves the window and the stored sources and writes the GLB, sidecar and receipt. */
 export async function contextGlb(station: string, options: ContextRunOptions = {}) {
@@ -413,7 +413,7 @@ export async function contextGlb(station: string, options: ContextRunOptions = {
   if (!isStationEnuFrame(frame) || frame.station_id !== station) throw new Error(`Frame ${options.frameId ?? config.frame_id} is not a station-enu frame for ${station}`);
   const window = await buildContextWindow(
     { r_origin_m: options.radiusM ?? config.window?.r_origin_m ?? config.radius_m, r_exit_m: options.exitRadiusM ?? config.window?.r_exit_m ?? 0, ...(config.window?.node_rule ? { node_rule: config.window.node_rule } : {}), ...(config.window?.mesh_margin_m !== undefined ? { mesh_margin_m: config.window.mesh_margin_m } : {}) },
-    { stationId: station, ...(options.graphPath ? { graphPath: options.graphPath } : {}) },
+    { stationId: station, ...(options.graphPath ? { graphPath: options.graphPath } : {}), ...(options.poisPath ? { poisPath: options.poisPath } : {}) },
   );
   const radiusM = window.spec.r_origin_m;
   // station.json is read-only input. The frame must still describe its origin; a changed hash with the same origin is recorded, not fatal.

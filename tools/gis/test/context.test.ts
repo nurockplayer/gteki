@@ -193,7 +193,7 @@ describe('context command wrapper', () => {
   it('ships a READY Ikebukuro config of manifest sources and a BLOCKED Shinjuku config that never converts', async () => {
     const sources = new Map(loadSources().map((s) => [s.source_id, s]));
     const ikebukuro = await loadContextConfig('ikebukuro');
-    expect(ikebukuro).toMatchObject({ status: 'READY', frame_id: 'ikebukuro-station-enu-v0', radius_m: 250, merge: 'kind', window: { r_origin_m: 250, r_exit_m: 120, node_rule: { graph: 'stations/ikebukuro/gteki/graph.json', exit_kinds: ['exit'], street_floor_ids: ['street'] } } });
+    expect(ikebukuro).toMatchObject({ status: 'READY', frame_id: 'ikebukuro-station-enu-v0', radius_m: 250, merge: 'kind', window: { r_origin_m: 250, r_exit_m: 120, node_rule: { graph: 'stations/ikebukuro/gteki/graph.json', exit_kinds: ['exit'], street_floor_ids: ['street'], exit_poi_connectors: true } } });
     expect(ikebukuro.sources).toHaveLength(4);
     for (const id of ikebukuro.sources) expect(sources.get(id)!.station_ids).toContain('ikebukuro');
     const shinjuku = await loadContextConfig('shinjuku');
@@ -256,16 +256,24 @@ const SYNTH_NODES = [
   node('j1', 'junction', 'b1', 410, 405), // underground junction next to tran_far_out: matches neither field, so no disc
   node('t1', 'ticket_gate', 'b1', -400, -400),
 ];
-async function buildWith(opts: { merge?: MergeSpec; variant?: ContextVariant; exitR?: number; inputsOverride?: ContextInput[]; nodes?: ReturnType<typeof node>[]; radius?: number } = {}) {
+async function buildWith(opts: { merge?: MergeSpec; variant?: ContextVariant; exitR?: number; inputsOverride?: ContextInput[]; nodes?: ReturnType<typeof node>[]; radius?: number; rule?: NodeRule; pois?: unknown[] } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'gteki-context-window-')); dirs.push(dir);
   const graphPath = await writeGraph(dir, opts.nodes ?? SYNTH_NODES);
+  const poisPath = opts.pois ? await writePois(dir, opts.pois) : undefined;
   const frame = await stationFrame();
-  const window = await buildContextWindow({ r_origin_m: opts.radius ?? 250, r_exit_m: opts.exitR ?? 120, node_rule: IKEBUKURO_RULE }, { stationId: 'ikebukuro', graphPath });
+  const window = await buildContextWindow({ r_origin_m: opts.radius ?? 250, r_exit_m: opts.exitR ?? 120, node_rule: opts.rule ?? IKEBUKURO_RULE }, { stationId: 'ikebukuro', graphPath, ...(poisPath ? { poisPath } : {}) });
   const outputPath = join(dir, 'context.glb');
   const report = await buildContextGlb({ frame, window, inputs: opts.inputsOverride ?? inputs, outputPath, ...(opts.merge ? { merge: opts.merge } : {}), ...(opts.variant ? { variant: opts.variant } : {}) });
   const document = await new NodeIO().readBinary(await readFile(outputPath));
   return { dir, outputPath, frame, window, report, document };
 }
+async function writePois(dir: string, pois: unknown[], stationId = 'ikebukuro'): Promise<string> {
+  const path = join(dir, 'pois.json');
+  await writeFile(path, JSON.stringify({ schema: 'gteki.station/0.1', stationId, pois }));
+  return path;
+}
+const poi = (id: string, category: string, connectorNodeIds: string[]) => ({ id, category, floorId: null, connectorNodeIds });
+const POI_RULE: NodeRule = { ...IKEBUKURO_RULE, exit_poi_connectors: true };
 const idsOf = (report: Awaited<ReturnType<typeof buildWith>>['report']): string[] => report.per_feature.map((f) => String(f.gml_id)).sort();
 
 describe('window = union of discs', () => {
@@ -342,6 +350,74 @@ describe('graph-derived exit / street-level rule', () => {
   });
 });
 
+describe('exit_poi_connectors: graph nodes that exit POIs name as connectors', () => {
+  const repoFile = (name: string): string => fileURLToPath(new URL(`../../../stations/ikebukuro/gteki/${name}`, import.meta.url));
+
+  it('Ikebukuro: exactly x36f, x4f and x13f join the 20 exit nodes (23 exit POIs with a connector), and pois.json sha256 is recorded', async () => {
+    const poisBytes = await readFile(repoFile('pois.json')).catch(() => null);
+    if (poisBytes === null) return; // standalone checkout without stations/
+    const base = await readGraphWindowNodes(IKEBUKURO_RULE, { stationId: 'ikebukuro' });
+    const { facts, nodes } = await readGraphWindowNodes(POI_RULE, { stationId: 'ikebukuro' });
+    expect(base.facts.pois).toBeNull(); // off unless configured
+    expect(facts.pois).toMatchObject({ pois_path: 'stations/ikebukuro/gteki/pois.json', categories: ['exit'], pois_total: 52, exit_pois: 38, exit_pois_with_connectors: 23, connector_nodes: 23, added_beyond_kind_and_floor: ['x13f', 'x36f', 'x4f'] });
+    expect(facts.pois!.pois_sha256).toBe(createHash('sha256').update(poisBytes).digest('hex'));
+    expect(facts.graph_sha256).toBe(base.facts.graph_sha256);
+    expect(facts).toMatchObject({ exit_connectors: 20, street_level_nodes: 20, selected_nodes: 23 }); // the kind/floor counts are unchanged
+    const added = nodes.filter((n) => !base.nodes.some((b) => b.id === n.id));
+    expect(added.map((n) => [n.id, n.kind, n.floor_id, n.matched_by, n.poi_ids]).sort()).toEqual([
+      ['x13f', 'stair_end', 'b1', ['exit_poi_connector'], ['exit-13']], ['x36f', 'stair_end', 'b1', ['exit_poi_connector'], ['exit-36']], ['x4f', 'stair_end', 'b1', ['exit_poi_connector'], ['exit-4']],
+    ]);
+    expect(Math.round(added.find((n) => n.id === 'x13f')!.distance_from_origin_m)).toBe(190);
+    // The 20 exit nodes are all named by an exit POI too, so they carry both reasons.
+    expect(nodes.find((n) => n.id === 'x39')!.matched_by).toEqual(['exit_kind', 'street_floor', 'exit_poi_connector']);
+    const window = await buildContextWindow({ r_origin_m: 250, r_exit_m: 120, node_rule: POI_RULE }, { stationId: 'ikebukuro' });
+    expect(window.discs).toHaveLength(24);
+  });
+
+  it('adds only connectors of exit POIs: other stair_end nodes, and connectors of non-exit POIs, get no disc', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-poi-')); dirs.push(dir);
+    const graphPath = await writeGraph(dir, [...SYNTH_NODES, node('sa', 'stair_end', 'b1', -200, 10), node('sb', 'stair_end', 'b1', -210, 20), node('sc', 'stair_end', 'b1', -220, 30), node('g1', 'ticket_gate', 'b1', 5, 5)]);
+    const poisPath = await writePois(dir, [poi('exit-9', 'exit', ['sa']), poi('exit-no-conn', 'exit', []), poi('gate-1', 'ticket_gate', ['sb', 'g1']), poi('shop', 'other', ['sc'])]);
+    const withRule = await readGraphWindowNodes(POI_RULE, { stationId: 'ikebukuro', graphPath, poisPath });
+    expect(withRule.nodes.map((n) => n.id)).toEqual(['e1', 's1', 'sa']);
+    expect(withRule.facts.pois).toMatchObject({ exit_pois: 2, exit_pois_with_connectors: 1, connector_nodes: 1, added_beyond_kind_and_floor: ['sa'] });
+    expect(withRule.facts.pois!.pois_sha256).toBe(createHash('sha256').update(await readFile(poisPath)).digest('hex'));
+    // Without the option pois.json is not even read.
+    const off = await readGraphWindowNodes(IKEBUKURO_RULE, { stationId: 'ikebukuro', graphPath, poisPath: join(dir, 'does-not-exist.json') });
+    expect(off.nodes.map((n) => n.id)).toEqual(['e1', 's1']);
+    // A configurable exit category.
+    const gates = await readGraphWindowNodes({ ...POI_RULE, exit_poi_categories: ['ticket_gate'] }, { stationId: 'ikebukuro', graphPath, poisPath });
+    expect(gates.nodes.map((n) => n.id)).toEqual(['e1', 's1', 'sb', 'g1']);
+  });
+
+  it('refuses to guess: unknown connector node, missing connectorNodeIds, wrong station, wrong path', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-poi-bad-')); dirs.push(dir);
+    const graphPath = await writeGraph(dir, SYNTH_NODES);
+    const run = async (pois: unknown[], station = 'ikebukuro') => readGraphWindowNodes(POI_RULE, { stationId: 'ikebukuro', graphPath, poisPath: await writePois(dir, pois, station) });
+    await expect(run([poi('exit-1', 'exit', ['nope'])])).rejects.toThrow(/connector node nope .*exit-1.*not in/);
+    await expect(run([{ id: 'exit-2', category: 'exit' }])).rejects.toThrow(/exit POI exit-2 has no connectorNodeIds/);
+    await expect(run([poi('exit-3', 'exit', [])], 'shinjuku')).rejects.toThrow(/does not match ikebukuro/);
+    await expect(readGraphWindowNodes({ ...POI_RULE, pois: 'stations/ikebukuro/gteki/other.json' }, { stationId: 'ikebukuro', graphPath })).rejects.toThrow(/node_rule.pois must be/);
+    await expect(readGraphWindowNodes({ ...POI_RULE, exit_poi_categories: [] }, { stationId: 'ikebukuro', graphPath, poisPath: await writePois(dir, []) })).rejects.toThrow(/must not be empty/);
+  });
+
+  it('a stair-foot exit disc selects features and the pois sha256 travels in the receipt and mesh extras', async () => {
+    const nodes = [node('e1', 'exit', 'street', 0, 600), node('sa', 'stair_end', 'b1', 300, 300), node('sx', 'stair_end', 'b1', 410, 405)];
+    const pois = [poi('exit-9', 'exit', ['sa']), poi('exit-1', 'exit', ['e1'])];
+    const without = await buildWith({ merge: { mode: 'kind' }, nodes, pois });
+    expect(idsOf(without.report)).not.toContain('bldg_far_out');
+    const { report, document, window, dir } = await buildWith({ merge: { mode: 'kind' }, nodes, pois, rule: POI_RULE });
+    expect(window.discs.map((d) => d.id)).toEqual(['origin', 'e1', 'sa']); // sx is a stair_end no exit POI names
+    expect(idsOf(report)).toContain('bldg_far_out');
+    expect(idsOf(report)).not.toContain('tran_far_out');
+    const sha = createHash('sha256').update(await readFile(join(dir, 'pois.json'))).digest('hex');
+    expect(report.window.graph!.pois!.pois_sha256).toBe(sha);
+    for (const n of document.getRoot().listNodes()) { expect(n.getExtras().pois_sha256).toBe(sha); expect((n.getExtras().window as Record<string, unknown>).pois_sha256).toBe(sha); expect(n.getMesh()!.getExtras().pois_sha256).toBe(sha); }
+    expect(document.getRoot().listScenes()[0]!.getExtras().pois_sha256).toBe(sha);
+    expect(without.document.getRoot().listNodes()[0]!.getExtras().pois_sha256).toBeNull();
+  });
+});
+
 describe('JIS X 0410 3rd-level mesh codes and window coverage', () => {
   it('maps known points to their codes', () => {
     expect(meshCode3(35.7297, 139.7114)).toBe('53394576'); // Ikebukuro station origin
@@ -396,6 +472,11 @@ describe('JIS X 0410 3rd-level mesh codes and window coverage', () => {
       expect(meshesTouchedByWindow(window.discs, frame, 0).meshes).toEqual(['53394576', '53394577']);
       expect(meshesTouchedByWindow(window.discs, frame, 50).meshes).toEqual(['53394576', '53394577']);
       expect(meshesTouchedByWindow(window.discs, frame, 110).meshes).toContain('53394586'); // 40 m of slack before the northern neighbour matters
+      // Adding the three stair-foot exit discs (x13f is 190 m out, its disc reaches 310 m) does not change the meshes.
+      const withPois = await buildContextWindow({ r_origin_m: 250, r_exit_m: 120, node_rule: { ...IKEBUKURO_RULE, exit_poi_connectors: true } }, { stationId: 'ikebukuro' });
+      expect(withPois.discs).toHaveLength(24);
+      for (const margin of [0, 50, 100]) expect(meshesTouchedByWindow(withPois.discs, frame, margin).meshes).toEqual(['53394576', '53394577']);
+      expect(meshesTouchedByWindow(withPois.discs, frame, 110).meshes).toContain('53394586');
     }
     // A disc 1 km west touches the western neighbour, a closed boundary counts, and a disc well inside one cell touches one cell.
     expect(meshesTouchedByWindow([{ x: -1000, y: 0, r: 120, origin: 'node', id: 'w' }], frame).meshes).toEqual(['53394575', '53394576']);
@@ -431,10 +512,11 @@ describe('fail closed on missing meshes', () => {
     const dir = await mkdtemp(join(tmpdir(), 'gteki-context-exit-')); dirs.push(dir);
     const { writes } = mockStore(dir, paths());
     const graphPath = await writeGraph(dir, [node('west_exit', 'exit', 'street', -1000, 0)]);
-    await expect(contextGlb('ikebukuro', { sourceIds: all4, graphPath })).rejects.toThrow(/needs 3rd-level meshes 53394575, 53394576, 53394577.*53394575 bldg \(not in the context config\), 53394575 tran \(not in the context config\)/s);
+    const poisPath = await writePois(dir, [poi('exit-w', 'exit', ['west_exit'])]);
+    await expect(contextGlb('ikebukuro', { sourceIds: all4, graphPath, poisPath })).rejects.toThrow(/needs 3rd-level meshes 53394575, 53394576, 53394577.*53394575 bldg \(not in the context config\), 53394575 tran \(not in the context config\)/s);
     expect(writes).not.toHaveBeenCalled();
     // The same window without the exit disc is complete.
-    await expect(contextGlb('ikebukuro', { sourceIds: all4, graphPath, exitRadiusM: 0 })).resolves.toMatchObject({ mesh_coverage: { needed_meshes: ['53394576', '53394577'] } });
+    await expect(contextGlb('ikebukuro', { sourceIds: all4, graphPath, poisPath, exitRadiusM: 0 })).resolves.toMatchObject({ mesh_coverage: { needed_meshes: ['53394576', '53394577'] } });
   });
 
   it('fails with the mesh and source named when a configured needed source is not acquired', async () => {
