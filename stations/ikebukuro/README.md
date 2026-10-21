@@ -63,6 +63,7 @@ bash pipeline/fetch_sources.sh    # PLATEAU GML + metadata (sha256-checked) into
 pnpm build:data                   # GML -> ENU JSON -> GLB -> verified graph -> signage -> walk bridges -> access fences
 pnpm bake:lighting                # 4096 Cycles lightmap (Metal GPU ~5 min; DEVICE=CPU works) -> WebP
 pnpm check:access                 # outline has no fence gap; walker flood never leaves routable floor
+pnpm check:godot                  # headless Godot: loader colliders + every verified edge traversable (see below)
 ```
 
 `build_station.py` exits non-zero if any edge fails geometry validation or if a POI points at a
@@ -71,6 +72,37 @@ missing node. An edge is `verified` only when **both** of these hold:
 - every 0.5 m sample lies on surveyed floor or stair treads, with no wall crossing at body
   height (geometry evidence);
 - the edge cites an official access fact (access evidence).
+
+## Godot proof path (collider check, issue #35)
+
+`pnpm check:godot` (`pipeline/godot_colliders.sh`, needs Godot 4.7; `GODOT_BIN` overrides
+`/opt/homebrew/bin/godot`) loads this station through the addon's own `gteki_station.gd` /
+`gteki_assets.gd` (the same classes `packages/godot/tests/run_tests.gd` uses), then lists every collider the
+loader created and casts the walker body along every verified edge (about 0.25 m steps: horizontal rays at
+0.2/0.6/1.0/1.4/1.7 m above the floor, plus a radius 0.3 m, 0.2-1.7 m capsule overlap). It runs in under a
+second. `pnpm check:godot --control` forces the old asset role `visual+collision` and must be detected (it
+reproduces `w_n__x18` at ENU (-100.5, 152.5) blocked by `doors`), which shows the check can see the bug.
+
+- **Colliders in Godot (role `visual`):** exactly three trimesh bodies, one per merged mesh: `wall`,
+  `barriers`, `transport`. `doors`, `portals`, `windows`, `ceiling` and `floor_elements` get none;
+  `floor` and `stairs_ramps` are tagged walkable but also get no physics body (the addon has no floor
+  collider). Door/portal/window colliders: 0.
+- **Verified routes:** all 63 verified edges (7140 samples) are clear of rays; 0 blocked. The stricter
+  capsule overlaps `barriers` / `transport` (stair and escalator rails) at 35 samples on `e_low__x35`,
+  `ne_e__x33` and `w_c__w_n` (ENU (-112.8, 130.8)): the centerline is clear, but a 0.3 m radius body would graze
+  those rails. This is not a door problem.
+- **Access fences are web-only:** `scene/access_fences.json` is built by `scene/scene.ts` and is not in
+  the GLB or the manifest, so Godot free walk is NOT access-fenced; it can reach surveyed floor the web scene
+  fences off as "access unverified".
+- **Door semantics:** with role `visual`, doors are simply non-colliding everywhere in Godot. Verified exit
+  routes pass, but so do shopfront doors and windows, which the web scene makes solid (`solidDoors`, leaving
+  open only panels that verified-route segments cross), and so do `portals`, which the web blocks as
+  `portal_beyond`. Godot free walk can therefore walk into unmodelled rooms and out through openings. That is
+  fine for the proof path and matches the verified-route contract. If Godot free walk must match the web, the
+  loader needs route-aware door/portal semantics: either a generic data-driven rule (`doors`/`windows`/`portals`
+  stay solid except near verified-edge segments), or the station ships pre-split solid door and `portal_beyond`
+  meshes tagged `wall`. Recommendation: not now; keep role `visual` and use `pnpm check:godot` as the
+  regression gate.
 
 ## Sources and rights
 
