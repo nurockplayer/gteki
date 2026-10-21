@@ -416,7 +416,7 @@ function makeGeometry(THREE: typeof THREE_NS, low: boolean) {
       Yring(-0.04, 0.062, 0.068, -0.036), Yring(-0.005, 0.075, 0.086, -0.027), Yring(0.03, 0.08, 0.098, -0.018), Yring(0.065, 0.088, 0.106, -0.01),
       Yring(0.095, 0.085, 0.108, -0.004), Yring(0.125, 0.068, 0.092, 0), Yring(0.15, 0.04, 0.055, 0),
     ];
-    const rs = low ? [all[0]!, all[2]!, all[4]!, all[5]!] : all;
+    const rs = low ? [all[0]!, all[2]!, all[4]!, all[5]!, all[6]!] : all; // keep the crown ring: it covers the skull top
     return loft(caps(rs, 0.012, 0.016, CS), SEG.hair);
   };
   const hairShade = (g: THREE_NS.BufferGeometry) => bake(g, (x, y, z) => (0.5 + 0.5 * smoothstep(-0.1, 0.15, y)) * (0.92 + 0.08 * Math.sin(x * 120 + z * 80 + y * 50)));
