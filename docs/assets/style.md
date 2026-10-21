@@ -175,16 +175,16 @@ blender -b --factory-startup -P tools/blender/render_preview.py -- \
 | | Ikebukuro | Shinjuku |
 | --- | --- | --- |
 | Lighting | baked only. Large static pieces go through the station's Blender bake with their own UV2; small props may be unlit or emissive | real time: hemisphere light, RoomEnvironment at 0.55, ≤ 8 point lights, ACES at exposure 0.92; GTAO and bloom on high. Pieces must work as plain glTF metal-rough with no lightmap |
-| Budget | low tier: ≤ 28 draws and ≤ 129k triangles per frame | phone, today 279 draws and 261k triangles; proposed kit total ≤ +30 draws, ≤ +60k triangles, ≤ +3 MB geometry, ≤ 8 MB GPU textures |
+| Budget | low tier: ≤ 28 draws and ≤ 129k triangles per frame | phone, today 279 draws and 261k triangles; proposed kit total ≤ +30 draws, ≤ +60k triangles, ≤ +3 MB geometry, ≤ 8 MB GPU textures, measured on the shipped (meshopt + KTX2) variant |
 | Batching | merge or instance per material | batch per material or instance, never one mesh per piece; compressed delivery (meshopt or Draco, KTX2) shared across instances |
 | Collision | solid props need a walker collider that blocks no verified edge | kit pieces are visual-only; collision stays the station's merged wall collider |
 | Textures | ≤ 1k on low, atlased, lazy-load anything big | within the 8 MB above |
-| Truth | placement follows surveyed geometry; unknown means not drawn; no invented gates, lifts, stairs or shops; decoration must not imply a route the graph lacks | dress source-backed geometry only; a floor-standing piece in walkable space is a station decision with a replay rerun; no columns where the data has none |
+| Truth | placement follows surveyed geometry; unknown means not drawn; no invented gates, lifts, stairs or shops; decoration must not imply a route the graph lacks | dress source-backed geometry only; a floor-standing piece in walkable space is a station decision with a replay rerun; no columns where the data has none; a generic piece of the matching category at a GSI facility point (`plan.json`, director ruling) is not invented structure, once its category and licence fields allow rendering |
 | Colour | | keep large surfaces out of near-black |
 
 The truth rule shapes the kit. In both stations most screen time is surfaces on source-backed geometry: walls, cladding, floor, ceiling, stairs, escalators, luminaires, gates, lift portals and (Shinjuku) the platform edge. So the kit must offer **finishes and dressing**, not only standalone props. That means panel, cladding, floor and ceiling materials, luminaire modules, and stair, escalator, gate and lift dressing fitted to geometry the station already has.
 
-The canonical kit GLB stays uncompressed (Draco and meshopt fail validation). A compressed web delivery variant (meshopt plus KTX2) is a derived build, not a change to the canonical file.
+The canonical kit GLB stays uncompressed (Draco and meshopt fail validation). A compressed web delivery variant (meshopt plus KTX2) is a derived build, not a change to the canonical file. Every piece in a batch is tagged with the station facility category it fits, so leads can map it to their placement sources.
 
 ## 9. Making a new piece
 
