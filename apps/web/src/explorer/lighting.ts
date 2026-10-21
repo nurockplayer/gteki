@@ -41,7 +41,8 @@ export interface LightingPlan {
  */
 export function resolveLighting(env?: LightingEnv): LightingPlan {
   const mode = env?.lighting === "scene" ? "scene" : "default";
-  const sceneEnvironment = mode === "default" || env?.envIntensity !== undefined;
+  // A scene-lit station opts in with a positive envIntensity; 0 there would leave the avatar unlit (no core lights, no own envMap).
+  const sceneEnvironment = mode === "default" || (env?.envIntensity ?? 0) > 0;
   return {
     mode,
     coreLights: mode === "default",

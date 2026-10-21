@@ -20,6 +20,7 @@ describe("core lighting plan", () => {
   });
 
   it("gives a scene-lit station the environment only when it sets envIntensity", () => {
+    expect(resolveLighting({ lighting: "scene", envIntensity: 0 })).toMatchObject({ sceneEnvironment: false, avatarEnvMap: true });
     const p = resolveLighting({ lighting: "scene", envIntensity: 0.25 });
     expect(p).toMatchObject({ coreLights: false, sceneEnvironment: true, environmentIntensity: 0.25, avatarEnvMap: false });
   });
