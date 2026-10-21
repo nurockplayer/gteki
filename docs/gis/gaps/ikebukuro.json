@@ -1,6 +1,6 @@
 {
   "station_id": "ikebukuro",
-  "tool_input_sha256": "ca9ef46e121b7da44432c6b39e75b87bfc5be56e7e661fdd04e6bfbaefcbf403",
+  "tool_input_sha256": "fe77015d421b031bd5e1dcd46dbb9908361bb2032c5460fc5b168a3501cb4f65",
   "poi_content": [
     {
       "source_id": "plateau-13104-related",
@@ -22,7 +22,7 @@
           "geometry_types": {
             "Point": 110
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -39,7 +39,7 @@
           "geometry_types": {
             "Point": 168
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -56,7 +56,7 @@
           "geometry_types": {
             "Point": 201
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -73,7 +73,7 @@
           "geometry_types": {
             "Point": 48
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -91,7 +91,7 @@
             "LineString": 103,
             "MultiLineString": 5
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -109,7 +109,7 @@
             "MultiLineString": 6,
             "LineString": 39
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -126,7 +126,7 @@
           "geometry_types": {
             "LineString": 1
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         }
       ],
@@ -410,7 +410,7 @@
           "geometry_types": {
             "Point": 42
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -427,7 +427,7 @@
           "geometry_types": {
             "Point": 62
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -444,7 +444,7 @@
           "geometry_types": {
             "Point": 143
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -461,7 +461,7 @@
           "geometry_types": {
             "Point": 35
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -479,7 +479,7 @@
             "LineString": 79,
             "MultiLineString": 2
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -497,7 +497,7 @@
             "LineString": 24,
             "MultiLineString": 2
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -514,7 +514,7 @@
           "geometry_types": {
             "LineString": 1
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         }
       ],

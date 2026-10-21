@@ -1,6 +1,6 @@
 {
   "station_id": "shinjuku",
-  "tool_input_sha256": "ca9ef46e121b7da44432c6b39e75b87bfc5be56e7e661fdd04e6bfbaefcbf403",
+  "tool_input_sha256": "fe77015d421b031bd5e1dcd46dbb9908361bb2032c5460fc5b168a3501cb4f65",
   "poi_content": [
     {
       "source_id": "tokyo-s10-shinjuku-csv",
@@ -15,7 +15,7 @@
           "crs": "UNKNOWN",
           "bbox": null,
           "geometry_types": {},
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "設置場所": {
               "blank_count": 0,
               "missing_count": 0,
@@ -23,21 +23,25 @@
                 "string"
               ],
               "distinct_count": 4,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "B1階改札外コンコース（4出口付近）",
+                  "value_sha256": "4581dc80e708b301f38a93e5aadc2477bc44525028f1cf29e69f272506391ede",
+                  "value_type": "string",
                   "count": 2
                 },
                 {
-                  "value": "B1階改札外コンコース（2出口付近）",
+                  "value_sha256": "4eb5c7e833351ab7858fbe8e811ce176d9e48ea54784e38be68435ce5b1c362e",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "B2階改札内コンコース（A1出口方駅務室横）",
+                  "value_sha256": "98b663ddf57fd637e6eb3cb1f79987fc5e6fa55d0ef9b419b5641c5ad9f6ce3f",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "B2階改札外コンコース（A1出口方改札付近）",
+                  "value_sha256": "b88a5baa8b6ca159345d21747b8d7a48f4fb35ae8d822909b248a9baa2d80e1c",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -50,17 +54,24 @@
                 "string"
               ],
               "distinct_count": 3,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "【大型】3口【中型】3口【標準】4口",
+                  "value_sha256": "267f866f46d6c91c304d5ebd8790ff9a39349814c9872ba329d8dbd4e49c7bc8",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "【平日】7時から22時30分まで【土曜・日曜・祝日】8時から21時まで",
+                  "value_sha256": "6d7bbddde043893915aa988a8e5b14ee8004974ef2d440cde9b6dd3e24c87594",
+                  "value_type": "string",
+                  "count": 1
+                },
+                {
+                  "value_sha256": "e3614b618d457122f48dcb48e5f6d451ac2cb6264a4fd49f57a36d7601ee8735",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
-              "omitted_distinct": 1
+              "omitted_distinct": 0
             }
           },
           "route_structure": []
@@ -276,7 +287,7 @@
           "crs": "UNKNOWN",
           "bbox": null,
           "geometry_types": {},
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "設置場所": {
               "blank_count": 7,
               "missing_count": 0,
@@ -284,25 +295,30 @@
                 "string"
               ],
               "distinct_count": 5,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "B1階改札外コンコース（D1出口付近）",
+                  "value_sha256": "3bfd7c021401a613ceb9598a61a58a236475c515c87cd06617cbe0cb0c79f89e",
+                  "value_type": "string",
                   "count": 4
                 },
                 {
-                  "value": "B3階改札外コンコース（駅務室横）",
+                  "value_sha256": "7fef71dbf7d639d6a47eb63e81d70ce9140a614434414a27b75c3fbe8d3a1300",
+                  "value_type": "string",
                   "count": 3
                 },
                 {
-                  "value": "B1階改札外コンコース（D2出口付近）",
+                  "value_sha256": "0403e91967432756d1595e2daef8d8dfd561e30e578f27b105bcc6207614dca5",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "B3階改札外コンコース（D5出口方）",
+                  "value_sha256": "d64f0187db1a1a910662e96026e1b02006be475dd86bc7238751459fa3711e67",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "B3階改札外コンコース（JR新宿駅方面改札付近）",
+                  "value_sha256": "f66acfa8cc782e7dbf049b5471dbc4e5104adca24840db31c28dd107db36cb40",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -315,25 +331,30 @@
                 "string"
               ],
               "distinct_count": 8,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "【全日】5時から24時まで",
+                  "value_sha256": "3eef2589041f25ee18401cca258d53675cbe879759e69fc65337ed4818808f98",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "【全日】7時から23時まで",
+                  "value_sha256": "6100bbd809e140ac8b670295f254595efea3861fbc7806c5f81ba76e7c8f145c",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "【全日】8時から21時まで",
+                  "value_sha256": "61074ff5aacf08179e450595c3db83d6437c0be75ae8ad899c9ef738318ab0a3",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "※1【中型】3口【標準】11口",
+                  "value_sha256": "61b488d7cdb65b2e0792d24e99dfbc0ee2ea94e396912a56c885da93a6305922",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "※1【標準】20口",
+                  "value_sha256": "b1b86e247c2b4fbe15058caced53b80fdc9a80cc120410db82013710ee1b8415",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -553,7 +574,7 @@
           "crs": "UNKNOWN",
           "bbox": null,
           "geometry_types": {},
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "hours": {
               "blank_count": 187,
               "missing_count": 187,
@@ -562,25 +583,30 @@
                 "undefined"
               ],
               "distinct_count": 106,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "10:30〜21:00",
+                  "value_sha256": "a00c65fabaaf4ccda547f9cd80aa0d6012560c8c0c0538e947a6c7c5b76a2d5e",
+                  "value_type": "string",
                   "count": 54
                 },
                 {
-                  "value": "10:00〜21:00",
+                  "value_sha256": "0830fce8d04003048325ded308eacd39c6e7b58520c8f29af7c25b8280e4a170",
+                  "value_type": "string",
                   "count": 39
                 },
                 {
-                  "value": "10:30〜20:30",
+                  "value_sha256": "4d0fe5e8411f91cc21cde42b9ac1ea7bae687c9cf007b7f15f9f72c43b6ef57a",
+                  "value_type": "string",
                   "count": 12
                 },
                 {
-                  "value": "11:00〜22:30 (ラストオーダー22:00)",
+                  "value_sha256": "cfee62616b2976044268184daa977e3199344c160fa34c28a5cde2968ce0f76f",
+                  "value_type": "string",
                   "count": 8
                 },
                 {
-                  "value": "7:00〜23:00",
+                  "value_sha256": "841d2c44a682e65495e0665e9ebd45a33481636d1f88222a788d71efdad6b12b",
+                  "value_type": "string",
                   "count": 6
                 }
               ],
@@ -593,36 +619,30 @@
                 "array"
               ],
               "distinct_count": 423,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": [
-                    "$id 28993090"
-                  ],
+                  "value_sha256": "00ae162bf6e25ed450cc5ae8ebbd3e92a17c098e5f9b959627c411c534a9db2f",
+                  "value_type": "array",
                   "count": 1
                 },
                 {
-                  "value": [
-                    "$id 28993091"
-                  ],
+                  "value_sha256": "014132fe534dacc91bf1cfebf9845dd1d126dc587da430fd7fbb36376244f30e",
+                  "value_type": "array",
                   "count": 1
                 },
                 {
-                  "value": [
-                    "$id 28993353",
-                    "$id 28993352"
-                  ],
+                  "value_sha256": "01b376b80406ca772b6c43ba25f4753f43b8f60bcca9b12afd693b65dad4951a",
+                  "value_type": "array",
                   "count": 1
                 },
                 {
-                  "value": [
-                    "$id 28993447"
-                  ],
+                  "value_sha256": "02a208a4e225113496d70cc925b5e848733b9c898714daed3433bcbe7ad5e3ce",
+                  "value_type": "array",
                   "count": 1
                 },
                 {
-                  "value": [
-                    "$id 28993451"
-                  ],
+                  "value_sha256": "02b037d818557bc2c0bcb8e87868bd4d466ea1f232aba8f506821dd66385af48",
+                  "value_type": "array",
                   "count": 1
                 }
               ],
@@ -638,7 +658,7 @@
           "crs": "UNKNOWN",
           "bbox": null,
           "geometry_types": {},
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -657,7 +677,7 @@
             "MultiPolygon": 1,
             "Point": 3
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "from": {
               "blank_count": 13120,
               "missing_count": 13120,
@@ -666,13 +686,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 3
                 },
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 2
                 }
               ],
@@ -686,25 +708,30 @@
                 "undefined"
               ],
               "distinct_count": 16,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "Unit1F-12",
+                  "value_sha256": "0d978707880fe61517c9f8af26999b6bf2f0d7904fda0b019a14517ecef9229d",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit1F-13",
+                  "value_sha256": "101d8b971353a3aa2b05db0141aaa9fc111ff0b617ec3e7043f9a27e41b92bfa",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit1F-16",
+                  "value_sha256": "105201344b6630e862a1aa7b4f5805a19db0bb2d6b7f83b0a95084ee65b38f71",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit1F-17",
+                  "value_sha256": "32d546b3cde0ccec3c633475c571627b002bd40c3caa0f8cf342227afac88c9f",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit1F-18",
+                  "value_sha256": "46ea63f25852076ba188064d741e689f7d4a763210f454cf4e69bfec539cdee6",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -718,9 +745,10 @@
                 "undefined"
               ],
               "distinct_count": 1,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "8:00〜21:30",
+                  "value_sha256": "ed8e00c2c2d17b3e48ff54ebc08785d384e00d09a4542c6183ec3e0bb9be6e4e",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -734,13 +762,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 8
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 4
                 }
               ],
@@ -765,7 +795,7 @@
             "MultiPolygon": 9,
             "Point": 32
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "from": {
               "blank_count": 304,
               "missing_count": 304,
@@ -774,9 +804,10 @@
                 "undefined"
               ],
               "distinct_count": 1,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 5
                 }
               ],
@@ -790,25 +821,30 @@
                 "undefined"
               ],
               "distinct_count": 40,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "Unit2F-1",
+                  "value_sha256": "17f6791c2fb4ae5d3354e070723f75c4fe9410f46c57b179744420b631111d76",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit2F-15",
+                  "value_sha256": "19018eec32838415a4ceaa179e44e97349eec3bf5ff46b31c5b4833b321ef794",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit2F-16",
+                  "value_sha256": "1d86d9e7e7d53cadbaca93863bef04f54d23c18274addab646402de827e14428",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit2F-17",
+                  "value_sha256": "1dbd4d4e75691fc21cc78dcba528210e58775178848e128756a82ddd9e9df8df",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit2F-19",
+                  "value_sha256": "2d4ee796f95f0c868d68342f0c2e7f167eb0121fc677a5a8312676ba33ed717f",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -822,9 +858,10 @@
                 "undefined"
               ],
               "distinct_count": 1,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "7:00〜23:00",
+                  "value_sha256": "841d2c44a682e65495e0665e9ebd45a33481636d1f88222a788d71efdad6b12b",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -838,13 +875,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 3
                 },
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -869,7 +908,7 @@
             "LineString": 4,
             "Point": 6
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "int_address": {
               "blank_count": 76,
               "missing_count": 76,
@@ -878,13 +917,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "Unit3F-42",
+                  "value_sha256": "1daf10643cb6ce0167905799a3bc6fcfcb05ae252c4260d4841f0fd2bc59f303",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit3F-43",
+                  "value_sha256": "a64c190e069676825dd19742a11fb70f0cd456149130b591ff3a6efb9ad9cd2e",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -909,7 +950,7 @@
             "LineString": 36,
             "Point": 3
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "int_address": {
               "blank_count": 137,
               "missing_count": 137,
@@ -918,25 +959,30 @@
                 "undefined"
               ],
               "distinct_count": 5,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "Unit 4F-52",
+                  "value_sha256": "0556c8a35a4bf71e13c762c7d042b27becf8150717357c26f4177cf0b9213f80",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 4F-53",
+                  "value_sha256": "21d572ffd88ac1488f120f28bb76967d0f36949eb8e570cb080e53af09db2af7",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 4F-55",
+                  "value_sha256": "36f9cf4f2bf6aa717573c0b8be8124f43f02a2f2d3a8038a34c496a6a15549d8",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 4F-56",
+                  "value_sha256": "3bd2d45573995cf2b3f8585b8d775c675a45e29cba14169ce4431d57682aefcf",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 4F-57",
+                  "value_sha256": "f3c81205858d38dde949d8f1cd56d479bc0a8b835ab42bc99ea745722546d8b4",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -962,7 +1008,7 @@
             "Point": 104,
             "LineString": 43
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "from": {
               "blank_count": 1239,
               "missing_count": 1239,
@@ -971,13 +1017,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 6
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -991,25 +1039,30 @@
                 "undefined"
               ],
               "distinct_count": 139,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "UnitB1F-10",
+                  "value_sha256": "0079b2954cd18c279ae09986c970c50c7d02182963797cae5d01ab426ce59a02",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "UnitB1F-100",
+                  "value_sha256": "00ca9ed0507f46fc71d19512f4b1e95b2015c143cc58110948d45f7e071c48a9",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "UnitB1F-11",
+                  "value_sha256": "01c9ec5413eb31cfb5b67da78839880f7fed300523a1077c52ff5e7b3a8e2b6a",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "UnitB1F-116",
+                  "value_sha256": "0299939d0fb838e9c47b7ccbb30e8779e210f8d6b165c3f7b0c9d12f829b20f9",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "UnitB1F-117",
+                  "value_sha256": "072604d4e922c8f6e61f9e53f04a4db24d5f473bd1b0484132bc9650c26b9121",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1023,13 +1076,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "6:00〜23:00",
+                  "value_sha256": "6177531cd6445aea641ec748bf3392e62d04b3daee7c1e87172e9086b8dcc32a",
+                  "value_type": "string",
                   "count": 2
                 },
                 {
-                  "value": "5:00〜24:00",
+                  "value_sha256": "ac9114c6961b93e533e1c6b5f9ca01066fa87013e06fac7d0f4c8c27699e5834",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1043,13 +1098,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 9
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 3
                 }
               ],
@@ -1075,7 +1132,7 @@
             "LineString": 5,
             "Point": 47
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "from": {
               "blank_count": 181,
               "missing_count": 181,
@@ -1084,13 +1141,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1104,25 +1163,30 @@
                 "undefined"
               ],
               "distinct_count": 42,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "UnitB2F-1",
+                  "value_sha256": "0c592dfc65a98fbc50e6dc286b42d09492220e9a9bb63dd59aa8e15e143c4e0e",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "UnitB2F-10",
+                  "value_sha256": "0f764ac4d3d59468d0c51cad06bd848d8b0b0213ac97551eaf03ff954f20a6e2",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "UnitB2F-11",
+                  "value_sha256": "13378174d64a5888e269c0fc41eb08c018822e2bad4b0d236700b292e42936c3",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "UnitB2F-12",
+                  "value_sha256": "1432a08d077145ea7c40965b2d0a8b6fd6082a006c2e2971ed5a74b6e0059b39",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "UnitB2F-13",
+                  "value_sha256": "197adb26b8938ba2d95a3cbbcbf14c3e5e755bb78949a281de743073cc7e0400",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1136,9 +1200,10 @@
                 "undefined"
               ],
               "distinct_count": 1,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "6:00〜23:00",
+                  "value_sha256": "6177531cd6445aea641ec748bf3392e62d04b3daee7c1e87172e9086b8dcc32a",
+                  "value_type": "string",
                   "count": 7
                 }
               ],
@@ -1152,13 +1217,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 2
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1184,7 +1251,7 @@
             "MultiPolygon": 2,
             "LineString": 4
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "from": {
               "blank_count": 329,
               "missing_count": 329,
@@ -1193,13 +1260,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 5
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 4
                 }
               ],
@@ -1213,25 +1282,30 @@
                 "undefined"
               ],
               "distinct_count": 123,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "UnitB3F-1",
+                  "value_sha256": "04ca6027e5b05bfdb23ac5d8719b9d83b9b88fd792e554dd5484e7fc698442ce",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "UnitB3F-10",
+                  "value_sha256": "08b4fc7fd8fbf8646a7d90931b355a047a99e1621a06fdadf61831defb1ba56c",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "UnitB3F-100",
+                  "value_sha256": "0982cdb56da6343151d0a6fd9a7a0706a7788a0696e69fc5dcda701ca32c7e89",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "UnitB3F-101",
+                  "value_sha256": "0a5891aaf6c3efc4ff0331df117a8f174fc92d4b7dd474111989b9448a758e37",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "UnitB3F-102",
+                  "value_sha256": "0aa1f53478ba66f6743ce0daa8bf65797c853afcab3cbb78201fee7ef7adee19",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1254,7 +1328,7 @@
           "geometry_types": {
             "Polygon": 37
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -1271,7 +1345,7 @@
           "geometry_types": {
             "Polygon": 12
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -1289,7 +1363,7 @@
             "Polygon": 50,
             "Point": 3
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "from": {
               "blank_count": 52,
               "missing_count": 52,
@@ -1298,9 +1372,10 @@
                 "undefined"
               ],
               "distinct_count": 1,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1314,25 +1389,30 @@
                 "undefined"
               ],
               "distinct_count": 18,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "Unit B1F-191",
+                  "value_sha256": "0169f4d366104849c3691af459205f010e73e063d079e6b78eed83e19230fadf",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B1F-192",
+                  "value_sha256": "195b1f2dea8c7197d9f881ae07ca4149f439f72e7f211cd902588afbb8d7d8e2",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B1F-193",
+                  "value_sha256": "371cbf11655e09b324f76d72cf3c8268f1f69ed4bd3d4f111967638af2c65381",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B1F-194",
+                  "value_sha256": "4b9ba7aa9afff6f4db7957a793830628f52aee13e7dbb513b8100d404e2f2ec9",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B1F-195",
+                  "value_sha256": "50e03cb01120186c4a6d2c76e47f6b46b4098d64b2362992ffe2bb3d42734566",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1346,13 +1426,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 2
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1376,7 +1458,7 @@
             "Polygon": 28,
             "Point": 5
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "to": {
               "blank_count": 27,
               "missing_count": 27,
@@ -1386,20 +1468,20 @@
                 "undefined"
               ],
               "distinct_count": 3,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 4
                 },
                 {
-                  "value": "above",
+                  "value_sha256": "55db1d346adf6d1d92595c905d369508002d479e860286a3fe5b5e93b4854380",
+                  "value_type": "array",
                   "count": 1
                 },
                 {
-                  "value": [
-                    "below",
-                    "below"
-                  ],
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1418,7 +1500,7 @@
             "Path": 13126,
             "Point": 3
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "from": {
               "blank_count": 13124,
               "missing_count": 13124,
@@ -1427,13 +1509,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 3
                 },
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 2
                 }
               ],
@@ -1447,25 +1531,30 @@
                 "undefined"
               ],
               "distinct_count": 16,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "Unit 1F-12",
+                  "value_sha256": "218e7bc17833226f93cd0ab2615e1456aa9d9a2d65badea9f7da3ef3a0b82250",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 1F-13",
+                  "value_sha256": "2282fc41aec1a9f64113c627ff7fdfd41685190dcb8ee09a9c99aa83ad8417ef",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 1F-16",
+                  "value_sha256": "3870b6127f558c3a5300aab4f94cdb809963595162abeeb066ff5d5c167402ed",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 1F-17",
+                  "value_sha256": "43152cb3364743e6146b24fc7ecc718e7461c4fce2bd4d25056d9fdd3765712b",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 1F-18",
+                  "value_sha256": "4dc152e5fe4c95c663db26ec01e5fc4b77e7ae679146f4055b225007eb633cc3",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1479,9 +1568,10 @@
                 "undefined"
               ],
               "distinct_count": 1,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "8:00〜21:30",
+                  "value_sha256": "ed8e00c2c2d17b3e48ff54ebc08785d384e00d09a4542c6183ec3e0bb9be6e4e",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1495,13 +1585,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 8
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 4
                 }
               ],
@@ -1520,7 +1612,7 @@
             "Path": 277,
             "Point": 32
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "from": {
               "blank_count": 304,
               "missing_count": 304,
@@ -1529,9 +1621,10 @@
                 "undefined"
               ],
               "distinct_count": 1,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 5
                 }
               ],
@@ -1545,25 +1638,30 @@
                 "undefined"
               ],
               "distinct_count": 40,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "Unit 2F-1",
+                  "value_sha256": "02f6a4b7bef1adfb067259c7da5f655a683107c2c2d505c35c7ba375df61e57b",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 2F-15",
+                  "value_sha256": "0d8a5f9a8611131f0c732f71dc804b10f26bad548512fc334d69f5e1c61543fb",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 2F-16",
+                  "value_sha256": "20e4f70d723040d8b3bfd44161a5a2ad70e359f810272b6a41a57c0aa8d8428f",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 2F-17",
+                  "value_sha256": "2c8e9f70e9409d4cd81b47cfb4660df2c0b9c756b1ba5ccf1cb8a337735a7c42",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 2F-19",
+                  "value_sha256": "2d757b22ad56a6d072641f7539e86f5d8ca289e2da5d8c2cf38b9be48fc8c6ce",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1577,9 +1675,10 @@
                 "undefined"
               ],
               "distinct_count": 1,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "7:00〜23:00",
+                  "value_sha256": "841d2c44a682e65495e0665e9ebd45a33481636d1f88222a788d71efdad6b12b",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1593,13 +1692,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 3
                 },
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1618,7 +1719,7 @@
             "Path": 72,
             "Point": 6
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "int_address": {
               "blank_count": 76,
               "missing_count": 76,
@@ -1627,13 +1728,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "Unit 3F-42",
+                  "value_sha256": "77456bff925145e970329b2288b2edcb5627274daea429bc8323df5aed7179c4",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 3F-43",
+                  "value_sha256": "aeeae0c4f8a3e2cb2c4c04e9262f0743b3aec9b65e922fe2c1fee6a75187ce69",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1652,7 +1755,7 @@
             "Path": 139,
             "Point": 3
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "int_address": {
               "blank_count": 137,
               "missing_count": 137,
@@ -1661,25 +1764,30 @@
                 "undefined"
               ],
               "distinct_count": 5,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "Unit 4F-52",
+                  "value_sha256": "0556c8a35a4bf71e13c762c7d042b27becf8150717357c26f4177cf0b9213f80",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 4F-53",
+                  "value_sha256": "21d572ffd88ac1488f120f28bb76967d0f36949eb8e570cb080e53af09db2af7",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 4F-55",
+                  "value_sha256": "36f9cf4f2bf6aa717573c0b8be8124f43f02a2f2d3a8038a34c496a6a15549d8",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 4F-56",
+                  "value_sha256": "3bd2d45573995cf2b3f8585b8d775c675a45e29cba14169ce4431d57682aefcf",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit 4F-57",
+                  "value_sha256": "f3c81205858d38dde949d8f1cd56d479bc0a8b835ab42bc99ea745722546d8b4",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1698,7 +1806,7 @@
             "Path": 1144,
             "Point": 104
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "from": {
               "blank_count": 1241,
               "missing_count": 1241,
@@ -1707,13 +1815,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 6
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1727,25 +1837,30 @@
                 "undefined"
               ],
               "distinct_count": 139,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "Unit B1F-10",
+                  "value_sha256": "02cfdd4a0a6062df3e82c53ad27283623765613d600207814a305179d78e7f00",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B1F-100",
+                  "value_sha256": "05de345b23f0904f7960d2338d6f20fa44c8b61cabb281fd66a7c4720e533c4b",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B1F-11",
+                  "value_sha256": "068cac3371330e9f099109bcee5e78eff49206d8e82a4abdbcfe6cc54bfee530",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B1F-116",
+                  "value_sha256": "07fbad3a51583e4470c88cab5260b86d8a20070bc7c3b260a1e348b2d362eb02",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B1F-117",
+                  "value_sha256": "0914f0aa04a931c683806623744b570d0d56160a5bf655c552d6eb538eb456bc",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1759,13 +1874,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "6:00〜23:00",
+                  "value_sha256": "6177531cd6445aea641ec748bf3392e62d04b3daee7c1e87172e9086b8dcc32a",
+                  "value_type": "string",
                   "count": 2
                 },
                 {
-                  "value": "5:00〜24:00",
+                  "value_sha256": "ac9114c6961b93e533e1c6b5f9ca01066fa87013e06fac7d0f4c8c27699e5834",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1779,13 +1896,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 9
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 3
                 }
               ],
@@ -1804,7 +1923,7 @@
             "Path": 137,
             "Point": 47
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "from": {
               "blank_count": 182,
               "missing_count": 182,
@@ -1813,13 +1932,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1833,25 +1954,30 @@
                 "undefined"
               ],
               "distinct_count": 42,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "Unit B2F-1",
+                  "value_sha256": "01fdda17462a8540a2c234f975697d61975ca4f207488a7678d0770dc374a786",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B2F-10",
+                  "value_sha256": "061e2ed3c518545b30414371ca577457c7320a87107ead6d49f089d86eb2622e",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B2F-11",
+                  "value_sha256": "0b850e33d259d7b2f7a37e3bffe2b80f1f1134d4a04262b98052c44b2b919e1d",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B2F-12",
+                  "value_sha256": "0d88c55db53ade12e57ca4829e9c906053fd16660866408987073bb1cf612d21",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B2F-13",
+                  "value_sha256": "13b860d56b99a9d7cf702bdbd764527e420143f42af6ce1229de68fb8d6273bc",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1865,9 +1991,10 @@
                 "undefined"
               ],
               "distinct_count": 1,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "6:00〜23:00",
+                  "value_sha256": "6177531cd6445aea641ec748bf3392e62d04b3daee7c1e87172e9086b8dcc32a",
+                  "value_type": "string",
                   "count": 7
                 }
               ],
@@ -1881,13 +2008,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 2
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1906,7 +2035,7 @@
             "Path": 281,
             "Point": 57
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "from": {
               "blank_count": 329,
               "missing_count": 329,
@@ -1915,13 +2044,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 5
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 4
                 }
               ],
@@ -1935,25 +2066,30 @@
                 "undefined"
               ],
               "distinct_count": 123,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "Unit B3F-1",
+                  "value_sha256": "0354aebbc7f76b8421a2e890e7bcd10f0623a2f475f7132a70a730de3bbd8831",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B3F-10",
+                  "value_sha256": "0b70f5154a5c2d3e9710e58b0f2e6f13bcd84bfc0f43bd4161c5145ea3d641f1",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B3F-100",
+                  "value_sha256": "0c7ff07720692a4a6ffbac04937835b02c46d2afa143d515296d975422f816a7",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B3F-101",
+                  "value_sha256": "0e138f7a5f74ba86257acc0cb671cc61eba4d89aab4ae276fc0c16fb9f40b83b",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B3F-102",
+                  "value_sha256": "0e87acc925bba0f44329cd702fa29828ad524ccc4934274458a72bdb8de98ff9",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -1971,7 +2107,7 @@
           "geometry_types": {
             "Path": 37
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -1983,7 +2119,7 @@
           "geometry_types": {
             "Path": 12
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -1996,7 +2132,7 @@
             "Path": 50,
             "Point": 3
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "from": {
               "blank_count": 52,
               "missing_count": 52,
@@ -2005,9 +2141,10 @@
                 "undefined"
               ],
               "distinct_count": 1,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -2021,25 +2158,30 @@
                 "undefined"
               ],
               "distinct_count": 18,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "Unit B1F-191",
+                  "value_sha256": "0169f4d366104849c3691af459205f010e73e063d079e6b78eed83e19230fadf",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B1F-192",
+                  "value_sha256": "195b1f2dea8c7197d9f881ae07ca4149f439f72e7f211cd902588afbb8d7d8e2",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B1F-193",
+                  "value_sha256": "371cbf11655e09b324f76d72cf3c8268f1f69ed4bd3d4f111967638af2c65381",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B1F-194",
+                  "value_sha256": "4b9ba7aa9afff6f4db7957a793830628f52aee13e7dbb513b8100d404e2f2ec9",
+                  "value_type": "string",
                   "count": 1
                 },
                 {
-                  "value": "Unit B1F-195",
+                  "value_sha256": "50e03cb01120186c4a6d2c76e47f6b46b4098d64b2362992ffe2bb3d42734566",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -2053,13 +2195,15 @@
                 "undefined"
               ],
               "distinct_count": 2,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "above",
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 2
                 },
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -2078,7 +2222,7 @@
             "Path": 28,
             "Point": 5
           },
-          "literal_location_time_fields": {
+          "location_time_fields": {
             "to": {
               "blank_count": 27,
               "missing_count": 27,
@@ -2088,20 +2232,20 @@
                 "undefined"
               ],
               "distinct_count": 3,
-              "literal_distribution": [
+              "value_hash_distribution": [
                 {
-                  "value": "below",
+                  "value_sha256": "8ada24bf6bf3139273899fed85010be710367bbd1f8a176f19da97a62bc3bc65",
+                  "value_type": "string",
                   "count": 4
                 },
                 {
-                  "value": "above",
+                  "value_sha256": "55db1d346adf6d1d92595c905d369508002d479e860286a3fe5b5e93b4854380",
+                  "value_type": "array",
                   "count": 1
                 },
                 {
-                  "value": [
-                    "below",
-                    "below"
-                  ],
+                  "value_sha256": "88c7f08d0be5407e361c165b1b84fdf5ae2f8cb7f76195c8d309330bd7b61527",
+                  "value_type": "string",
                   "count": 1
                 }
               ],
@@ -2117,7 +2261,7 @@
           "crs": "UNKNOWN",
           "bbox": null,
           "geometry_types": {},
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": [
             "n1",
             "n2"
@@ -6877,7 +7021,7 @@
           "geometry_types": {
             "Point": 110
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -6894,7 +7038,7 @@
           "geometry_types": {
             "Point": 168
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -6911,7 +7055,7 @@
           "geometry_types": {
             "Point": 201
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -6928,7 +7072,7 @@
           "geometry_types": {
             "Point": 48
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -6946,7 +7090,7 @@
             "LineString": 103,
             "MultiLineString": 5
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -6964,7 +7108,7 @@
             "MultiLineString": 6,
             "LineString": 39
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -6981,7 +7125,7 @@
           "geometry_types": {
             "LineString": 1
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         }
       ],
