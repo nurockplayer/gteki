@@ -87,7 +87,8 @@ const manifestPath = path.resolve(process.env.GTEKI_MANIFEST || path.join(librar
 let listed;
 try {
   const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
-  listed = manifest.assets.map(asset => path.basename(asset.file)).sort();
+  // compare resolved paths, so an entry such as `missing/foo.glb` cannot pass on `glb/foo.glb`
+  listed = manifest.assets.map(asset => path.relative(glbDir, path.resolve(libraryDir, asset.file))).sort();
 } catch (error) {
   console.error(`FAIL manifest ${manifestPath}: ${error.message}`);
   process.exit(1);

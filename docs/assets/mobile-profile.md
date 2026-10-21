@@ -155,6 +155,13 @@ A second fresh read-only Codex review, of `9c3c34a`, confirmed all eight fixes w
 
 A third review, of `a5fa9a9`, confirmed these and found one more P2: an out-of-range UV1 was reported but still entered the overlap grid, so a coordinate of 10⁶ could enumerate billions of grid cells. Out-of-range UV1 now stops at the FAIL, and the grid cell is never smaller than the largest triangle. Self-tests cover it, along with normalized UNORM16, VEC3 and count-mismatch UV1.
 
+A fourth review, of `c9cbdaa`, approved with one P3, which is fixed in `8727647`. Five later fixes came from the bot review on the PR. A fifth fresh read-only Codex review (GPT-6.1 Sol), covering `c9cbdaa..3b73cf1`, confirmed them, including byte-identical full GLBs and mobile GLBs that differ only by the sampler patch. It found two gaps in the checks, neither in the committed assets. Both are fixed:
+
+| # | Finding | Fix |
+| --- | --- | --- |
+| P1 | A manifest entry with no `textures` (or `null`) skipped the plan check, so a material sampling images passed | An absent plan counts as empty: any sampled material without a plan fails. A self-test and a real mobile entry with its plan removed both fail |
+| P2 | The Web load test compared manifest entries by basename, so `missing/foo.glb` passed on `glb/foo.glb` | Manifest paths are resolved against the library and compared with the GLBs in `glb/` |
+
 ## Commands
 
 ```sh

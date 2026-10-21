@@ -170,28 +170,26 @@ def check(glbs, manifest, budget, manifest_meta=None):
                 problems.append(f"{aid}: manifest entry has no {key}")
             elif manifest[aid][key] != glb[key]:
                 problems.append(f"{aid}: GLB {key} {glb[key]} differs from manifest {manifest[aid][key]}")
-        plan = manifest[aid].get("textures")
+        # an absent or null plan is an empty one: a sampled material still needs its plan
+        plan = manifest[aid].get("textures") or {}
         cap = (manifest_meta or {}).get("texture_resolution")
-        for name, entry in (plan or {}).items():
+        for name, entry in plan.items():
             if cap and entry["res"] > cap:
                 problems.append(f"{aid}: {name} plan res {entry['res']} exceeds texture_resolution {cap}")
-        if plan is not None:
-            # exactly the planned maps: an exporter that drops (or adds) an image must not pass,
-            # and the manifest digest cannot catch it because the manifest is written from the plan
-            sampled = glb.get("material_images", {})
-            for name in sorted(set(plan) | set(sampled)):
-                n = sampled.get(name, 0)
-                if name not in plan:
-                    problems.append(f"{aid}: {name} samples {n} images but has no texture plan")
-                elif n != len(plan[name]["maps"]):
-                    problems.append(f"{aid}: {name} samples {n} images but its plan keeps {plan[name]['maps']}")
+        # exactly the planned maps: an exporter that drops (or adds) an image must not pass,
+        # and the manifest digest cannot catch it because the manifest is written from the plan
+        sampled = glb.get("material_images", {})
+        for name in sorted(set(plan) | set(sampled)):
+            n = sampled.get(name, 0)
+            if name not in plan:
+                problems.append(f"{aid}: {name} samples {n} images but has no texture plan")
+            elif n != len(plan[name]["maps"]):
+                problems.append(f"{aid}: {name} samples {n} images but its plan keeps {plan[name]['maps']}")
         seen = {}
         for im in glb["images"]:
             if im["sha"] in seen:
                 problems.append(f"{aid}: image {im['index']} duplicates image {seen[im['sha']]} (same bytes)")
             seen[im["sha"]] = im["index"]
-            if plan is None:
-                continue
             for name in im["materials"]:
                 if name in plan and max(im["w"], im["h"]) > plan[name]["res"]:
                     problems.append(f"{aid}: {name} image {im['w']}x{im['h']} exceeds plan {plan[name]['res']}")
@@ -281,10 +279,12 @@ def self_test():
         glbs = {path.stem: scan_glb(path)}
         # file digest and size must match the manifest entry
         g = glbs[path.stem]
-        assert check(glbs, {path.stem: {"sha256": g["sha256"], "bytes": g["bytes"]}}, budget, meta) == []
-        assert check(glbs, {path.stem: {"bytes": g["bytes"]}}, budget, meta) == [f"{path.stem}: manifest entry has no sha256"]
+        unplanned = [f"{path.stem}: gteki_test samples 1 images but has no texture plan"]
+        for textures in ({}, {"textures": None}):  # no plan at all is not a pass
+            assert check(glbs, {path.stem: {"sha256": g["sha256"], "bytes": g["bytes"], **textures}}, budget, meta) == unplanned
+        assert check(glbs, {path.stem: {"bytes": g["bytes"]}}, budget, meta) == [f"{path.stem}: manifest entry has no sha256", *unplanned]
         stale = check(glbs, {path.stem: {"sha256": "0" * 64, "bytes": g["bytes"] + 1}}, budget, meta)
-        assert [p.split(":")[1].split()[1] for p in stale] == ["sha256", "bytes"], stale
+        assert [p.split(":")[1].split()[1] for p in stale if p not in unplanned] == ["sha256", "bytes"], stale
         both = {**rec(path, plan), "gteki_gone": {"textures": plan}}
         assert [p for p in check(glbs, both, budget, meta) if "gteki_gone" in p] == ["gteki_gone: in manifest.json but its GLB is missing"]
     for w, h in ((512, 256), (1024, 1024)):
