@@ -3,11 +3,24 @@
   "status": "READY",
   "frame_id": "ikebukuro-station-enu-v0",
   "radius_m": 250,
+  "window": {
+    "r_origin_m": 250,
+    "r_exit_m": 120,
+    "node_rule": {
+      "graph": "stations/ikebukuro/gteki/graph.json",
+      "exit_kinds": ["exit"],
+      "street_floor_ids": ["street"],
+      "exit_poi_connectors": true
+    },
+    "mesh_margin_m": 50
+  },
+  "merge": "kind",
+  "variant": "high",
   "sources": [
     "plateau-13116-bldg-53394576",
     "plateau-13116-bldg-53394577",
     "plateau-13116-tran-53394576",
     "plateau-13116-tran-53394577"
   ],
-  "notes": "A 250 m disc around the Ikebukuro station origin touches third-level meshes 53394576 and 53394577. Visual-only context (gteki_role context, NOT_FOR_ROUTING); textures are not converted."
+  "notes": "Window = union of a 250 m disc at the origin and a 120 m disc around every graph node whose kind is in exit_kinds (exit connector) or whose floorId is in street_floor_ids (street-level node); exit_poi_connectors adds the graph nodes that stations/ikebukuro/gteki/pois.json names in connectorNodeIds of POIs with category exit (x36f, x4f, x13f: exits whose connector is a b1 stair foot, not a street node). graph.json and pois.json are read-only and their sha256 go in the receipt. The window touches third-level meshes 53394576 and 53394577 only (plus 50 m mesh_margin_m for features that straddle a mesh edge; a third mesh, 53394586, first matters at roughly 100-110 m, with or without the stair-foot discs); a missing or unacquired mesh fails the run. Default merge kind = one building mesh and one road mesh. Visual-only context (gteki_role context, NOT_FOR_ROUTING); textures are not converted."
 }
