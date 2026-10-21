@@ -4,7 +4,7 @@ import { sceneFromGlbRoles, seeThroughMeshes } from "@gteki/scene-api";
 import { LightProbeGridHelperWebGL } from "three/addons/helpers/LightProbeGridHelperWebGL.js";
 import { LightProbeGridWebGL } from "three/addons/lighting/LightProbeGridWebGL.js";
 import { clampDistance, FOLLOW, followDistance, followPose } from "./followCamera.ts";
-import { castAll, castTargets, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
+import { castAll, castCamera, castTargets, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
 
 const plane = (y: number) => {
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial());
@@ -321,22 +321,29 @@ describe("camera-only blockers", () => {
     expect(castAll(new THREE.Raycaster(new THREE.Vector3(0.5, 0.5, 3), new THREE.Vector3(0, 0, -1)), t.camera)[0]?.object).toBe(slab);
   });
 
-  it("stop the camera from below a one-sided ceiling whose normals face up", () => {
+  it("stop the camera from below a one-sided ceiling whose normals face up, from a GLB role or a scene module", () => {
     const material = new THREE.MeshBasicMaterial({ side: THREE.FrontSide });
-    const slab = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), material);
-    slab.name = "camera_blocker_up";
-    slab.position.y = 2.6;
-    const shown = slab.clone();
-    shown.material = material;
-    const root = new THREE.Group().add(slab);
-    root.updateMatrixWorld(true);
+    const upward = () => {
+      const slab = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), material);
+      slab.position.y = 2.6;
+      slab.updateMatrixWorld(true);
+      return slab;
+    };
     const up = () => new THREE.Raycaster(new THREE.Vector3(1.3, 1.6, 2.1), new THREE.Vector3(0, 1, 0), 0, 5);
-    // Untagged, the one-sided plane is invisible to a ray from below.
-    shown.updateMatrixWorld(true);
-    expect(castAll(up(), [shown])).toHaveLength(0);
-    const roles = sceneFromGlbRoles(root);
-    expect(castAll(up(), explorerTargets([], [], roles.cameraBlockers).camera)[0]?.object).toBe(slab);
+    const glb = upward();
+    glb.name = "camera_blocker_up";
+    const roles = sceneFromGlbRoles(new THREE.Group().add(glb));
+    const direct = upward();
+    const wallOnly = upward();
+    for (const blockers of [roles.cameraBlockers, [direct]]) {
+      const t = explorerTargets([], [wallOnly], blockers);
+      // A one-sided wall is still tested as authored; only blockers are two-sided.
+      expect(castAll(up(), [wallOnly])).toHaveLength(0);
+      expect(castCamera(up(), t.camera, t.blockers).map((h) => h.object)).toEqual([blockers[0]]);
+      expect(keepBelowBlockers(new THREE.Vector3(1.3, 1.6, 2.1), new THREE.Vector3(1.3, 4, 2.1), [...t.blockers], FOLLOW.clearance).y).toBeLessThan(2.6);
+    }
+    // Materials are never changed.
+    expect([glb.material, direct.material]).toEqual([material, material]);
     expect(material.side).toBe(THREE.FrontSide);
   });
 });
-

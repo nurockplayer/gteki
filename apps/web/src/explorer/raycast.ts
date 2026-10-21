@@ -71,6 +71,30 @@ export function castAll(ray: THREE.Raycaster, targets: readonly THREE.Object3D[]
   return ray.intersectObjects(targets as THREE.Object3D[], false);
 }
 
+const TWO_SIDED = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+
+/**
+ * Ray-test `targets` like castAll, but meshes in `twoSided` (camera blockers) are hit from both sides
+ * whatever their material says, so a ceiling stops the camera from below however its normals face, whether
+ * it came from a GLB role or a scene module (Godot enables back-face collision to match). Their materials
+ * are swapped only for the duration of the test and never changed.
+ */
+export function castCamera(ray: THREE.Raycaster, targets: readonly THREE.Object3D[], twoSided: ReadonlySet<THREE.Object3D>): THREE.Intersection[] {
+  if (twoSided.size === 0) return castAll(ray, targets);
+  const saved = new Map<THREE.Mesh, THREE.Material | THREE.Material[]>();
+  for (const object of targets) {
+    if (!twoSided.has(object)) continue;
+    const mesh = object as THREE.Mesh;
+    saved.set(mesh, mesh.material);
+    mesh.material = Array.isArray(mesh.material) ? mesh.material.map(() => TWO_SIDED) : TWO_SIDED;
+  }
+  try {
+    return castAll(ray, targets);
+  } finally {
+    for (const [mesh, material] of saved) mesh.material = material;
+  }
+}
+
 /**
  * Keep a smoothed camera position on the pivot's side of every camera-only blocker: if the segment from
  * the pivot to `position` crosses one, `position` is pulled in to `clearance` in front of it (to the pivot
@@ -85,7 +109,7 @@ export function keepBelowBlockers(pivot: THREE.Vector3, position: THREE.Vector3,
   ray.set(pivot, offset.divideScalar(length));
   ray.near = 0;
   ray.far = length + clearance;
-  const hit = castAll(ray, blockers)[0];
+  const hit = castCamera(ray, blockers, new Set(blockers))[0];
   if (hit) position.copy(pivot).addScaledVector(offset, Math.min(length, Math.max(0, hit.distance - clearance)));
   return position;
 }

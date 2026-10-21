@@ -136,26 +136,21 @@ export function roleOf(object: THREE.Object3D): string | null {
 /**
  * Hide a mesh's own geometry. A leaf is simply made invisible; a mesh with meshes below it (which may carry
  * their own visible role, e.g. a sign under a ceiling slab) keeps its subtree drawn and gets invisible copies
- * of its materials instead. Ray tests ignore visibility either way. `twoSided` (camera blockers) also makes
- * the copies double-sided, so a ceiling stops the camera from below whatever way its normals face (Godot
- * enables back-face collision to match).
+ * of its materials instead. Ray tests ignore visibility either way.
  */
-/** THREE.DoubleSide; scene-api imports three as types only, so stations share the explorer's instance. */
-const DOUBLE_SIDE: THREE.Side = 2;
-
-function hideOwnGeometry(mesh: THREE.Mesh, twoSided = false): void {
+function hideOwnGeometry(mesh: THREE.Mesh): void {
   let meshBelow = false;
   for (const child of mesh.children) child.traverse((o) => { if ((o as THREE.Mesh).isMesh === true) meshBelow = true; });
-  if (!meshBelow) mesh.visible = false;
-  if (meshBelow || twoSided) {
-    const hidden = (material: THREE.Material) => {
-      const copy = material.clone();
-      if (meshBelow) copy.visible = false;
-      if (twoSided) copy.side = DOUBLE_SIDE;
-      return copy;
-    };
-    mesh.material = Array.isArray(mesh.material) ? mesh.material.map(hidden) : hidden(mesh.material);
+  if (!meshBelow) {
+    mesh.visible = false;
+    return;
   }
+  const hidden = (material: THREE.Material) => {
+    const copy = material.clone();
+    copy.visible = false;
+    return copy;
+  };
+  mesh.material = Array.isArray(mesh.material) ? mesh.material.map(hidden) : hidden(mesh.material);
 }
 
 /**
@@ -180,7 +175,7 @@ export function sceneFromGlbRoles(root: THREE.Object3D, opts: { showColliders?: 
         if (role === "collider" && !opts.showColliders) hideOwnGeometry(object as THREE.Mesh);
       } else if (CAMERA_ROLES.has(role)) {
         cameraBlockers.push(object);
-        if (!opts.showColliders) hideOwnGeometry(object as THREE.Mesh, true);
+        if (!opts.showColliders) hideOwnGeometry(object as THREE.Mesh);
       }
     }
     for (const child of object.children) visit(child, role);

@@ -15,7 +15,7 @@ import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene } from "./manifestScene.ts";
-import { castAll, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
+import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
 import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, followDistance, followPose } from "./followCamera.ts";
@@ -759,7 +759,7 @@ export class Explorer {
     if (this.cameraTargets.length) {
       this.ray.set(head, new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)));
       this.ray.far = FOLLOW.shoulder + 0.25;
-      const side = castAll(this.ray, this.cameraTargets)[0];
+      const side = castCamera(this.ray, this.cameraTargets, this.blockerTargets)[0];
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
     const pose = followPose(head, this.yaw, this.pitch, shoulder);
@@ -767,7 +767,7 @@ export class Explorer {
     if (this.cameraTargets.length) {
       this.ray.set(pose.pivot, pose.back);
       this.ray.far = dist + FOLLOW.clearance;
-      const hits = castAll(this.ray, this.cameraTargets).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+      const hits = castCamera(this.ray, this.cameraTargets, this.blockerTargets).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
       dist = followDistance(dist, hits);
     }
     const desired = pose.pivot.clone().addScaledVector(pose.back, dist);
