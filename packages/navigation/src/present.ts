@@ -218,8 +218,8 @@ const TEXT = {
       const via = { stair_end: "階段", escalator_end: "エスカレーター", ramp_end: "スロープ" }[kind];
       return ridden ? `${name ?? "目的地"}への${via}で経路終了` : `${name ?? "目的地"}への${via}はここから`;
     },
-    wait: (time: string, dayOffset: number, weekday: string) =>
-      `${dayOffset === 0 ? "" : dayOffset === 1 ? "翌日" : `${dayOffset < 7 ? "" : `${dayOffset}日後の`}${{ mon: "月", tue: "火", wed: "水", thu: "木", fri: "金", sat: "土", sun: "日" }[weekday]}曜日`}${time}まで待つ`,
+    wait: (time: string, dayOffset: number, weekday: string, zone: string | null) =>
+      `${dayOffset === 0 ? "" : dayOffset === 1 ? "翌日" : `${dayOffset < 7 ? "" : `${dayOffset}日後の`}${{ mon: "月", tue: "火", wed: "水", thu: "木", fri: "金", sat: "土", sun: "日" }[weekday]}曜日`}${time}${zone === null ? "" : `（${zone}）`}まで待つ`,
   },
   en: {
     start: () => "Start",
@@ -251,10 +251,14 @@ const TEXT = {
       if (ridden) return `Route ends at the ${via} for ${to}`;
       return kind === "stair_end" ? `Stairs to ${to} start here` : `${via.charAt(0).toUpperCase()}${via.slice(1)} to ${to} starts here`;
     },
-    wait: (time: string, dayOffset: number, weekday: string) =>
-      `Wait until ${time}${dayOffset === 0 ? "" : dayOffset === 1 ? " tomorrow" : ` on ${{ mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" }[weekday]}${dayOffset < 7 ? "" : `, ${dayOffset} days later`}`}`,
+    wait: (time: string, dayOffset: number, weekday: string, zone: string | null) =>
+      `Wait until ${time}${zone === null ? "" : zone.includes("/") ? ` (${zone})` : ` ${zone}`}${dayOffset === 0 ? "" : dayOffset === 1 ? " tomorrow" : ` on ${{ mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" }[weekday]}${dayOffset < 7 ? "" : `, ${dayOffset} days later`}`}`,
   },
 };
+
+/** How a wait names the station time zone: Asia/Tokyo reads "日本時間" / "JST", any other IANA id as itself; no zone, no label. */
+const zoneLabel = (timeZone: string | undefined, lang: "ja" | "en"): string | null =>
+  !timeZone ? null : timeZone === "Asia/Tokyo" ? (lang === "ja" ? "日本時間" : "JST") : timeZone;
 
 /** Span over which a step's entry/exit heading is measured, so short snapping hooks don't flip turns. */
 const HEADING_SPAN_M = 5;
@@ -306,6 +310,8 @@ function stepHeading(points: PolylinePoint[], stepIndex: number, end: "start" | 
 /** Signed heading change (degrees, + = right) from the end of step i-1 to the start of step i. */
 /** Steps shorter than this in plan (a co-located or offset gate line) carry no heading of their own. */
 const MIN_HEADING_STEP_M = 1;
+/** Sideways offset (m) that makes a short sidestep (a jog) off the walk's heading too real to call the walk straight. */
+const JOG_M = 0.75;
 
 function stepPlanLength(points: PolylinePoint[], stepIndex: number): number {
   let length = 0;
@@ -561,6 +567,8 @@ function poiDisplayName(poi: Poi, lang: "ja" | "en"): string | null {
  * one turn nor a zig-zag, e.g. +30° then −30°, exceeds TURN_DEG). Every segment of at
  * least MIN_HEADING_STEP_M in plan has a heading of its own; only consecutive shorter ones are joined into
  * runs (so centimetre jitter doesn't count, but a gradual curve does, and no short leg hides a bend).
+ * A sidestep also breaks it: a run of segments each more than TURN_DEG off the first heading that shifts the
+ * walker JOG_M or more sideways, however short its pieces (a 0.9 m jog between two long runs is not straight).
  */
 function straightInPlan(points: PolylinePoint[], stepIndexes: number[]): boolean {
   const steps = new Set(stepIndexes);
@@ -596,7 +604,23 @@ function straightInPlan(points: PolylinePoint[], stepIndexes: number[]): boolean
       runFrom = null;
     }
   }
-  return !bent;
+  const ref = first as number | null;
+  if (bent || ref === null) return !bent;
+  // Jog pass: sideways travel (perpendicular to the first heading) summed over consecutive off-heading segments.
+  const [sin, cos] = [Math.sin((ref * Math.PI) / 180), Math.cos((ref * Math.PI) / 180)];
+  let lateral = 0;
+  for (let k = 1; k < points.length; k++) {
+    const a = points[k - 1]!;
+    const b = points[k]!;
+    if (!steps.has(b.stepIndex)) { lateral = 0; continue; }
+    const [dx, dy] = [b.x - a.x, b.y - a.y];
+    if (dx === 0 && dy === 0) continue;
+    const off = Math.abs(((((Math.atan2(dx, dy) * 180) / Math.PI) - ref + 540) % 360) - 180);
+    if (off <= TURN_DEG) { lateral = 0; continue; }
+    lateral += dx * cos - dy * sin;
+    if (Math.abs(lateral) >= JOG_M) return false;
+  }
+  return true;
 }
 
 /**
@@ -646,7 +670,7 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
       flush();
       const { minutes, dayOffset, weekday } = step.waitUntil;
       const hhmm = `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(Math.floor(minutes % 60)).padStart(2, "0")}`;
-      out.push({ kind: "wait", stepIndexes: [], beforeStepIndex: i, distanceM: 0, vertical: null, toFloorId: step.fromFloorId, text: t.wait(hhmm, dayOffset, weekday), label: null });
+      out.push({ kind: "wait", stepIndexes: [], beforeStepIndex: i, distanceM: 0, vertical: null, toFloorId: step.fromFloorId, text: t.wait(hhmm, dayOffset, weekday, zoneLabel(route.profile.timeZone, lang)), label: null });
     }
     const vertical = VERTICAL[step.mode];
     if (vertical || step.mode === "gate") {

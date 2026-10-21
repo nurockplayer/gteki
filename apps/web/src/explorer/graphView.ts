@@ -2,6 +2,7 @@ import * as THREE from "three";
 import type { StationBundle } from "@gteki/schema";
 import type { Router } from "@gteki/navigation";
 import { DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
+import { occludedLineStyle } from "./occludedLine.ts";
 import { R, edgePoints, ribbonGeometry } from "./geometry.ts";
 
 /**
@@ -17,6 +18,8 @@ export interface GraphView {
   walkable: THREE.Object3D[];
   /** Thin always-on-top overlay for use over station-provided scenes. */
   overlay: THREE.Group;
+  /** Overview draws the overlay always on top; walk/guide depth-tests it (faint dashes where occluded). */
+  setXray(on: boolean): void;
   dispose(): void;
 }
 
@@ -37,9 +40,9 @@ export function buildGraphView(bundle: StationBundle, router: Router): GraphView
     blocked: new THREE.MeshStandardMaterial({ color: 0x5a2a2a, roughness: 0.9, transparent: true, opacity: 0.55, side: THREE.DoubleSide }),
     edge: new THREE.LineBasicMaterial({ color: 0x9fb3c8, transparent: true, opacity: 0.55 }),
     edgeBlocked: new THREE.LineDashedMaterial({ color: 0xff6b6b, dashSize: 0.8, gapSize: 0.6, transparent: true, opacity: 0.9 }),
-    overlayLine: new THREE.LineBasicMaterial({ color: 0x9fe7ff, transparent: true, opacity: 0.35, depthTest: false }),
   };
-  disposables.push(...Object.values(mats));
+  const overlayStyle = occludedLineStyle(0x9fe7ff, 0.35, 0.15);
+  disposables.push(...Object.values(mats), overlayStyle.visible, overlayStyle.occluded);
 
   for (const edge of bundle.edges) {
     const pts = edgePoints(bundle, edge, nodes, floors);
@@ -50,9 +53,7 @@ export function buildGraphView(bundle: StationBundle, router: Router): GraphView
     const line = new THREE.Line(lineGeo, traversable ? mats.edge : mats.edgeBlocked);
     if (!traversable) line.computeLineDistances();
     root.add(line);
-    const ov = new THREE.Line(lineGeo, mats.overlayLine);
-    ov.renderOrder = 10;
-    overlay.add(ov);
+    overlay.add(...overlayStyle.lines(lineGeo, 10));
     if (edge.mode === "elevator") continue; // a shaft is not a walk surface
     const geo = ribbonGeometry(pts, MODE_WIDTH[edge.mode] ?? 2);
     disposables.push(geo);
@@ -98,6 +99,7 @@ export function buildGraphView(bundle: StationBundle, router: Router): GraphView
     root,
     walkable,
     overlay,
+    setXray: (on) => overlayStyle.setXray(on),
     dispose() {
       for (const d of disposables) d.dispose();
     },

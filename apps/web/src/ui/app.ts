@@ -11,6 +11,9 @@ import { listStations, StationLoadError, type LoadedStation, type StationEntry }
 import { stationClock } from "../stationClock.ts";
 import { sourceCredit } from "../credits.ts";
 
+/** IANA time zone of the supported stations; routes are timed in it and waits name it. */
+const STATION_TIME_ZONE = "Asia/Tokyo";
+
 /** Where a route starts: a POI (via its verified entrances) or a graph node (spawn / avatar). */
 type Origin = { kind: "poi"; poi: Poi } | { kind: "node"; nodeId: string; label: string };
 
@@ -423,13 +426,14 @@ export class App {
 
   private profile(): RouteProfile {
     // Station-local time: both supported stations are in Asia/Tokyo.
-    const tokyo = stationClock(new Date(), "Asia/Tokyo");
+    const tokyo = stationClock(new Date(), STATION_TIME_ZONE);
     return {
       fare: this.s.profile.unpaidOnly ? "unpaid_only" : "ticketed",
       stepFree: this.s.profile.stepFree,
       hours: this.s.profile.strictHours ? "require_known" : "warn_unknown",
       at: { weekday: tokyo.weekday, minutes: tokyo.minutes },
       today: tokyo.date,
+      timeZone: STATION_TIME_ZONE,
     };
   }
 
@@ -546,7 +550,7 @@ export class App {
     const hud = this.ui.hud;
     hud.innerHTML = "";
     const mode = this.explorer.currentMode;
-    if (mode === "overview") return;
+    if (mode === "overview") { this.trackInstruction(); return; }
     const t = this.t;
     const ins = this.s.instructions[this.s.activeInstruction];
     if (mode === "guide" && ins) hud.append(el("div", "hud-instruction", ins.text));
@@ -597,6 +601,23 @@ export class App {
     });
     row.append(fp, net, ov, snd);
     hud.append(row);
+    this.trackInstruction();
+  }
+
+  private instructionEl: Element | null = null;
+  private instructionSize: ResizeObserver | null = null;
+
+  /** Keep `--hud-clear` (the guide instruction's bottom edge + 8 px) current for the toast, which sits below the instruction while one shows; unset otherwise. */
+  private trackInstruction(): void {
+    const cur = this.ui.hud.querySelector(".hud-instruction");
+    if (cur !== this.instructionEl) {
+      this.instructionSize?.disconnect();
+      this.instructionEl = cur;
+      if (cur && typeof ResizeObserver !== "undefined") (this.instructionSize ??= new ResizeObserver(() => this.trackInstruction())).observe(cur);
+    }
+    const r = cur?.getBoundingClientRect();
+    if (r) this.root.style.setProperty("--hud-clear", `${Math.round(r.bottom) + 8}px`);
+    else this.root.style.removeProperty("--hud-clear");
   }
 
   /** Refresh the guide HUD's instruction and pause label in place (the buttons must not be replaced mid-click); full rebuild if it isn't a guide HUD. */
@@ -610,6 +631,7 @@ export class App {
     else if (cur) cur.textContent = ins.text;
     else hud.prepend(el("div", "hud-instruction", ins.text));
     pause.textContent = this.explorer.guidePaused ? this.t.resume : this.t.pause;
+    this.trackInstruction();
   }
 
   /** Guide along the route, stopping where each wait for an opening happens. */

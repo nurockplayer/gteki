@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { chooseBySearch, hooks, textIf, toasts, imageStats, labelUiOverlaps, openStation, perfWindow, save, shotPath, stationData, STATIONS, type StationKey } from "../lib/gteki.ts";
 
+/** The HUD's "fast" guide tier (m/s), `GUIDE_TIERS` in apps/web/src/explorer/guidePace.ts. */
+const FAST_MPS = 6.8;
+
 /**
  * Recorded guided walkthrough driven only through visible UI (search fields, route card buttons,
  * HUD speed control), in real time. The video is the primary L2 evidence; frames are sampled
@@ -30,11 +33,13 @@ for (const key of STATIONS) {
       await page.locator(".sheet .card.route button.primary").click();
       await expect.poll(() => hooks.mode(page)).toBe("guide");
 
-      // ×4 playback keeps recordings reviewable; at ×1 the HUD shows the same instructions.
-      const speed = page.locator(".hud button", { hasText: /×/ });
-      await speed.click();
-      await speed.click();
-      await expect(speed).toContainText("×4");
+      // The fast tier (6.8 m/s, close to the old ×4 at 1.6 m/s) keeps recordings reviewable; other tiers narrate the same instructions.
+      // The tier persists across sessions, so read it and click (cycle order run, fast, walk) until it is "fast".
+      const speed = page.locator(".hud button.guide-speed");
+      for (let n = 0; n < 3 && (await hooks.guideControls(page)).tier !== "fast"; n++) await speed.click();
+      const guideTier = (await hooks.guideControls(page)).tier;
+      expect(guideTier, "guide speed tier").toBe("fast");
+      await expect(speed).toContainText(`${FAST_MPS} m/s`);
 
       const frames: { t: number; instruction: string | null; avatar: unknown; stats: unknown; overlaps: unknown }[] = [];
       const seen = new Set<string>();
@@ -44,7 +49,10 @@ for (const key of STATIONS) {
       // its last instruction, and the app toasts that line instead of "arrived" (#21).
       const finalLine = (await hooks.instructions(page)).at(-1) ?? "";
       const isArrival = (t: string) => /arriv|到着/i.test(t) || (finalLine !== "" && t === finalLine);
-      const budgetMs = Math.max(60_000, (route.totalLengthM / (1.6 * 4)) * 1000 * 1.6 + 20_000);
+      // A ceiling against a hung guide, not a pace check: the loop ends as soon as the avatar arrives or
+      // parks. Since #64 connectors keep believable speeds (escalators ~1.5 m/s even on fast) and every
+      // instruction stays up ≥ 1.8 s, so long Shinjuku descents average far below FAST_MPS; budget 1 m/s.
+      const budgetMs = Math.max(90_000, route.totalLengthM * 1000 + 30_000);
       let i = 0;
       let still = 0;
       let last = "";
@@ -70,7 +78,7 @@ for (const key of STATIONS) {
       const nodes = new Map(stationData(key).graph.nodes.map((n) => [n.id, n]));
       const goal = nodes.get(route.nodeIds.at(-1))!.position;
       const distToGoal = Math.hypot(end.x - goal.x, end.y - goal.y);
-      save(testInfo, `${key}-walk-${w.label}.json`, { route: { lengthM: route.totalLengthM, floorChanges: route.floorChanges, instructions: await hooks.instructions(page) }, instructionsSeenInHud: [...seen], toasts: await toasts(page), arrived, distToGoal, elapsedMs: Date.now() - t0, end, perf, frames });
+      save(testInfo, `${key}-walk-${w.label}.json`, { route: { lengthM: route.totalLengthM, floorChanges: route.floorChanges, instructions: await hooks.instructions(page) }, instructionsSeenInHud: [...seen], toasts: await toasts(page), arrived, guideTier, distToGoal, elapsedMs: Date.now() - t0, end, perf, frames });
       expect.soft(distToGoal, "guide ended at the destination").toBeLessThan(2);
       expect.soft(arrived, "arrival feedback (toast) shown to the user").toBe(true);
       expect.soft(seen.size, "HUD showed several instructions").toBeGreaterThan(1);

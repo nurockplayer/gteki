@@ -60,6 +60,8 @@ await run(['inspect-network','hokonavi-ikebukuro-walk-node-csv']);
 await run(['inspect-network','hokonavi-ikebukuro-walk-node-geojson']);
 await run(['inspect-network','hokonavi-oedo-shinjuku-network-geojson']);
 await run(['inspect-network','hokonavi-oedo-shinjuku-stationmap-geojson']);
+// Range-reads the 2023 archives; it needs the E27 network reports just regenerated above, so a cached replay skips it.
+if(process.env.GTEKI_GIS_OFFLINE!=='1')await run(['inspect-vintages']);
 // Derived reports read every inventory/network report on disk; regenerate them only when all inputs were refreshed now.
 if(receipt.commands.every(command=>command.exit_code===0)){
   await run(['overlap']);

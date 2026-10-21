@@ -27,6 +27,34 @@ describe("street backdrop", () => {
     expect(b.group.visible).toBe(false);
     b.dispose();
   });
+
+  it("snaps to the target on a teleport instead of easing daylight underground", () => {
+    const scene = new THREE.Scene();
+    const fog = new THREE.Fog(0x1b1915, 25, 180);
+    scene.fog = fog;
+    const camera = new THREE.PerspectiveCamera();
+    const top = new THREE.Vector3(0, 32, 0);
+    const under = new THREE.Vector3(0, 20, 0);
+    const b = new StreetBackdrop();
+    for (let i = 0; i < 120; i++) b.update(scene, camera, top, true, 1 / 60);
+    expect(b.active).toBe(true);
+    // Walking down eases: still daylight one frame later.
+    b.update(scene, camera, under, false, 1 / 60);
+    expect(b.active).toBe(true);
+    expect(b.group.visible).toBe(true);
+    // Back to full daylight, then teleport underground: hidden and fog restored on that very call.
+    for (let i = 0; i < 120; i++) b.update(scene, camera, top, true, 1 / 60);
+    b.update(scene, camera, under, false, 1 / 60, false, true);
+    expect(b.active).toBe(false);
+    expect(b.group.visible).toBe(false);
+    expect(scene.fog).toBe(fog);
+    // A snap to street level shows it fully at once.
+    b.update(scene, camera, top, true, 1 / 60, true, true);
+    expect(b.active).toBe(true);
+    expect(b.group.visible).toBe(true);
+    expect((scene.fog as THREE.Fog).far).toBe(240);
+    b.dispose();
+  });
 });
 
 describe("level footing", () => {

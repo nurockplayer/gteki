@@ -237,6 +237,20 @@ describe("walk wording follows the walked geometry", () => {
     expect(say(zig)[1]).toMatch(/^Continue/);
   });
 
+  it("says continue, not straight, over a sidestep jog (Shinjuku poi:toilet:3)", () => {
+    // Segments of the given lengths (m) at the given headings (deg, atan2(dx, dy)) from the origin.
+    const walk = (legs: [number, number][]) => legs.reduce((pts, [m, deg]) => {
+      const p = pts.at(-1)!;
+      return [...pts, { x: p.x + m * Math.sin((deg * Math.PI) / 180), y: p.y + m * Math.cos((deg * Math.PI) / 180), z: 0 }];
+    }, [{ x: 0, y: 0, z: 0 }]);
+    // 3 m / 0.9 m / 2.7 m at -106 / -19 / -107 deg: the 0.9 m piece is an ~87 deg sidestep, so the walker is offset 0.9 m.
+    expect(say(walk([[3, -106], [0.9, -19], [2.7, -107]]))).toEqual(["約7m 進む", "Continue ~7 m"]);
+    // The same walk with a 0.3 m sidestep stays under JOG_M and is still straight.
+    expect(say(walk([[3, -106], [0.3, -19], [2.7, -107]]))).toEqual(["約6m 直進", "Go straight ~6 m"]);
+    // A gentle curve drifting 10 deg per segment stays within the 35 deg range: no jog.
+    expect(say(walk([[5, 0], [5, 10], [5, 20], [5, 30], [5, 20], [5, 10]]))).toEqual(["約30m 直進", "Go straight ~30 m"]);
+  });
+
   it("still says straight for a straight edge, and ignores sub-metre jitter", () => {
     expect(say(undefined)).toEqual(["約20m 直進", "Go straight ~20 m"]);
     expect(say([{ x: 0, y: 0, z: 0 }, { x: 10, y: 0.3, z: 0 }, { x: 10.2, y: 0, z: 0 }, { x: 20, y: 0, z: 0 }])[0]).toBe("約20m 直進");
