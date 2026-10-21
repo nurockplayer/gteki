@@ -197,7 +197,7 @@
     "53394576_bldg_6697_op.gml": "29009b87ac7c7bf07f2bc8862362629d7c11fb81240b392b2c975ff04f6f7873"
    },
    "datasetDate": "2025",
-   "notes": "Visual-only street-level context (#39); never geometry for routing, walking or collision. GIS rights gate for this layer is CONDITIONAL (CC BY 4.0, attribution required; 加工 is the modification notice). Catalog package year 2025; the per-theme survey year is not asserted. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. Textures are not shipped. The tran (road) layer from the same meshes is on HOLD (GSI approval scope unconfirmed) and is not part of this station."
+   "notes": "Visual-only street-level context (#39); never geometry for routing, walking or collision. GIS rights gate for this layer is CONDITIONAL (CC BY 4.0, attribution required; 加工 is the modification notice). Catalog package year 2025; the per-theme survey year is not asserted. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. Textures are not shipped."
   },
   {
    "id": "plateau-13116-bldg-53394577",
@@ -219,7 +219,51 @@
     "53394577_bldg_6697_op.gml": "96b2c510ac44d955c0902612d0c702ee3594ca699993e0b187cbff86c2b82c37"
    },
    "datasetDate": "2025",
-   "notes": "Visual-only street-level context (#39); never geometry for routing, walking or collision. GIS rights gate for this layer is CONDITIONAL (CC BY 4.0, attribution required; 加工 is the modification notice). Catalog package year 2025; the per-theme survey year is not asserted. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. Textures are not shipped. The tran (road) layer from the same meshes is on HOLD (GSI approval scope unconfirmed) and is not part of this station."
+   "notes": "Visual-only street-level context (#39); never geometry for routing, walking or collision. GIS rights gate for this layer is CONDITIONAL (CC BY 4.0, attribution required; 加工 is the modification notice). Catalog package year 2025; the per-theme survey year is not asserted. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. Textures are not shipped."
+  },
+  {
+   "id": "plateau-13116-tran-53394576",
+   "title": "PLATEAU 豊島区 2025 道路モデル (tran) 53394576 — street-level context roads (visual only)",
+   "publisher": "国土交通省 Project PLATEAU",
+   "url": "https://www.mlit.go.jp/plateau/",
+   "downloadUrls": [
+    "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/tran/53394576_tran_6697_op.gml"
+   ],
+   "license": {
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+   "modified": true,
+   "retrievedAt": "2026-10-21T16:54:15Z",
+   "sha256": {
+    "53394576_tran_6697_op.gml": "6cc53f9c3ddfa90423ae1ae5c5741ceb004be2ddd6580b533644c449a7d068f7"
+   },
+   "datasetDate": "2025",
+   "notes": "Visual-only street-level context (#39); never geometry for routing, walking or collision. Road GEOMETRY only (triangulated LOD3 surfaces, POSITION and NORMAL): no tran attribute (function, usage, class or any code value) is shipped. GIS rights gate for this layer is CONDITIONAL (CC BY 4.0, attribution required; 加工 is the modification notice). The PLATEAU lineage cites a GSI approval (国土地理院長承認（使用）令7関公第296号) for tran:function and TrafficArea; its scope is unconfirmed, and the project treats it as covering the attributes only. That is an assumption the Owner accepted as a risk (option b), recorded in docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md; if the scope turns up and does not fit, roads go back to HOLD. Catalog package year 2025. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. Textures are not shipped."
+  },
+  {
+   "id": "plateau-13116-tran-53394577",
+   "title": "PLATEAU 豊島区 2025 道路モデル (tran) 53394577 — street-level context roads (visual only)",
+   "publisher": "国土交通省 Project PLATEAU",
+   "url": "https://www.mlit.go.jp/plateau/",
+   "downloadUrls": [
+    "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/tran/53394577_tran_6697_op.gml"
+   ],
+   "license": {
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+   "modified": true,
+   "retrievedAt": "2026-10-21T16:54:16Z",
+   "sha256": {
+    "53394577_tran_6697_op.gml": "052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2"
+   },
+   "datasetDate": "2025",
+   "notes": "Visual-only street-level context (#39); never geometry for routing, walking or collision. Road GEOMETRY only (triangulated LOD3 surfaces, POSITION and NORMAL): no tran attribute (function, usage, class or any code value) is shipped. GIS rights gate for this layer is CONDITIONAL (CC BY 4.0, attribution required; 加工 is the modification notice). The PLATEAU lineage cites a GSI approval (国土地理院長承認（使用）令7関公第296号) for tran:function and TrafficArea; its scope is unconfirmed, and the project treats it as covering the attributes only. That is an assumption the Owner accepted as a risk (option b), recorded in docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md; if the scope turns up and does not fit, roads go back to HOLD. Catalog package year 2025. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. Textures are not shipped."
   }
  ],
  "floors": [
@@ -4741,10 +4785,12 @@
    ],
    "sourceIds": [
     "plateau-13116-bldg-53394576",
-    "plateau-13116-bldg-53394577"
+    "plateau-13116-bldg-53394577",
+    "plateau-13116-tran-53394576",
+    "plateau-13116-tran-53394577"
    ],
    "role": "visual",
-   "derivation": "PLATEAU bldg LOD1 (low) / LOD2 (high), buildings only (roads on HOLD) -> tools/gis: `gis context-glb ikebukuro --variant low --merge kind --kinds bldg` (1 mesh ctx_bldg_all, 10,812 tris; receipt docs/gis/context/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-kind-bldg-b0f04191c8274060780e.json) and `gis context-glb ikebukuro --variant high --merge tiles:380 --kinds bldg` (assets/ikebukuro_context_high.glb, listed in files, not a second asset, so loaders that load every asset never stack both; receipt docs/gis/context/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-high-tiles380-bldg-f367036d78d5467cf792.json). Committed bytes equal the receipts: ikebukuro_context_low.glb sha256 293003f9eb1c681267fb4876271566673de02c7f50441e498419f42f35af86cc (593,688 B), ikebukuro_context_high.glb sha256 78c61a60063f313df25cb648cadc4bee70116908c86ba4a9c86e1b0d2ae97e2c (7,826,336 B). Station ENU frame, TP heights, whole features, no textures. Every node is gteki_role=context, named ctx_bldg_*, NOT_FOR_ROUTING, visual_only: never walkable, never a collider, never a camera blocker. scene/scene.ts loads the variant matching ctx.quality and shows it only when the camera is near street level",
+   "derivation": "PLATEAU bldg (LOD1 low / LOD2 high) and tran (road geometry only) -> tools/gis: `gis context-glb ikebukuro --variant low --merge tiles:380` (assets/ikebukuro_context_low.glb, 8 meshes, 30,418 tris; receipt docs/gis/context/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-tiles380-daebc9ca51cbeea3c90a.json) and `gis context-glb ikebukuro --variant high --merge tiles:380` (assets/ikebukuro_context_high.glb, 8 meshes, 139,525 tris; receipt docs/gis/context/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-high-tiles380-015891c342423501b9d1.json); the high file is listed in files, not a second asset, so loaders that load every asset never stack both. Committed bytes equal the receipts: ikebukuro_context_low.glb sha256 0629b00cf18a57f816d341c871052fd19f835e39ffdfc445058a216346d5487c (2,266,864 B), ikebukuro_context_high.glb sha256 ad55b6da91ae7c8960db789cc6e654043735736bbf5e813f904c15a6519dcdb6 (9,488,428 B). Station ENU frame, TP heights, whole features, no textures, no tran attributes. Roads ship as geometry only under the Owner's risk acceptance (docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md). Every node is gteki_role=context, named ctx_bldg_* or ctx_road_*, NOT_FOR_ROUTING, visual_only: never walkable, never a collider, never a camera blocker. scene/scene.ts loads the variant matching ctx.quality and shows it only when the camera is near street level",
    "files": [
     "assets/ikebukuro_context_high.glb"
    ]

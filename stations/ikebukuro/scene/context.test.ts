@@ -1,5 +1,6 @@
-// Street-level context layer (#39): the shipped GLBs are buildings only and visual only, the explorer's
-// collision world never sees them, and the visibility gate hides them underground and in overview.
+// Street-level context layer (#39): the shipped GLBs are PLATEAU buildings and road geometry (no tran
+// attributes), visual only; the explorer's collision world never sees them, and the visibility gate hides
+// them underground and in overview.
 import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
@@ -37,40 +38,54 @@ function triangles(j: GlbJson): number {
 }
 
 const BUDGET = {
-  low: { tris: 12_000, meshes: 1 },
-  high: { tris: 125_000, meshes: 4 },
+  low: { tris: 31_000, meshes: 8 },
+  high: { tris: 140_000, meshes: 8 },
 } as const;
 
-describe("ikebukuro context GLBs (buildings only, role context)", () => {
+/** Every key at any depth of a JSON value. */
+function keysDeep(v: unknown, out = new Set<string>()): Set<string> {
+  if (Array.isArray(v)) for (const x of v) keysDeep(x, out);
+  else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) { out.add(k); keysDeep(x, out); }
+  return out;
+}
+
+describe("ikebukuro context GLBs (buildings and road geometry, role context)", () => {
   for (const quality of ["low", "high"] as const) {
     describe(quality, () => {
       const { json } = readGlb(CONTEXT_GLB[quality]);
       const meshNodes = json.nodes.filter((n) => n.mesh !== undefined);
 
-      it("exists and every node is gteki_role=context, named ctx_bldg_*, NOT_FOR_ROUTING and visual_only", () => {
+      it("exists and every node is gteki_role=context, named ctx_bldg_* or ctx_road_*, NOT_FOR_ROUTING and visual_only", () => {
         expect(meshNodes.length).toBeGreaterThan(0);
         for (const n of json.nodes) {
           expect(n.extras?.gteki_role, n.name).toBe("context");
           expect(n.extras?.navigation_use, n.name).toBe("NOT_FOR_ROUTING");
           expect(n.extras?.visual_only, n.name).toBe(true);
         }
-        for (const n of meshNodes) expect(n.name, "node name").toMatch(/^ctx_bldg_/);
-        for (const m of json.meshes) expect(m.name ?? "").toMatch(/^ctx_bldg_/);
+        for (const n of meshNodes) expect(n.name, "node name").toMatch(/^ctx_(bldg|road)_/);
+        for (const m of json.meshes) expect(m.name ?? "").toMatch(/^ctx_(bldg|road)_/);
       });
 
-      it("carries no road geometry, road nodes or tran data (roads are on HOLD)", () => {
-        const names = [...json.nodes.map((n) => n.name ?? ""), ...json.meshes.map((m) => m.name ?? "")];
-        expect(names.filter((n) => /road|tran/i.test(n))).toEqual([]);
-        // The primitives use the building material only (the file lists an unused road_surface material entry).
-        const used = new Set(json.meshes.flatMap((m) => m.primitives.map((p) => json.materials?.[p.material ?? -1]?.name)));
-        expect([...used]).toEqual(["building"]);
+      it("has both buildings and roads, the kind matching the name and the material", () => {
+        const kinds = new Set<string>();
         for (const n of meshNodes) {
-          expect(n.extras?.kinds, n.name).toEqual(["bldg"]);
-          expect(n.extras?.kind, n.name).toBe("building");
+          const road = n.name!.startsWith("ctx_road_");
+          expect(n.extras?.kind, n.name).toBe(road ? "road" : "building");
+          kinds.add(n.extras!.kind as string);
+          const mats = json.meshes[n.mesh!]!.primitives.map((p) => json.materials?.[p.material ?? -1]?.name);
+          expect(mats, n.name).toEqual([road ? "road_surface" : "building"]);
         }
-        // Attributes: geometry and normals only, no textures.
+        expect([...kinds].sort()).toEqual(["building", "road"]);
+      });
+
+      it("carries road geometry only: no tran attribute (function, usage, class, ...) and no textures", () => {
+        // Per-vertex data: positions and normals, nothing custom (a tran attribute would be a _NAME attribute).
         for (const m of json.meshes) for (const p of m.primitives) expect(Object.keys(p.attributes).sort()).toEqual(["NORMAL", "POSITION"]);
         expect(json.images ?? []).toEqual([]);
+        // Extras are our own provenance only (role, flags, frame, source ids, counts), never PLATEAU attribute values.
+        const keys = [...keysDeep(json.nodes.map((n) => n.extras))];
+        expect(keys.filter((k) => /function|usage|class|traffic|surface_material|road_type|tran:/i.test(k))).toEqual([]);
+        for (const n of meshNodes) expect(Object.keys(n.extras ?? {})).toContain("source_ids");
       });
 
       it(`is within budget: at most ${BUDGET[quality].meshes} mesh(es) and ${BUDGET[quality].tris} triangles`, () => {
@@ -82,10 +97,13 @@ describe("ikebukuro context GLBs (buildings only, role context)", () => {
     });
   }
 
-  it("low is a single ctx_bldg_all mesh", () => {
-    const { json } = readGlb(CONTEXT_GLB.low);
-    expect(json.meshes.length).toBe(1);
-    expect(json.nodes.map((n) => n.name)).toEqual(["ctx_bldg_all"]);
+  it("low and high are 8 tiled meshes: 4 ctx_bldg_t* and 4 ctx_road_t*", () => {
+    for (const quality of ["low", "high"] as const) {
+      const names = readGlb(CONTEXT_GLB[quality]).json.nodes.map((n) => n.name!);
+      expect(names.filter((n) => n.startsWith("ctx_bldg_t")).length, quality).toBe(4);
+      expect(names.filter((n) => n.startsWith("ctx_road_t")).length, quality).toBe(4);
+      expect(names.length, quality).toBe(8);
+    }
   });
 });
 
@@ -101,13 +119,14 @@ describe("the context is not part of the collision world", () => {
   for (const quality of ["low", "high"] as const) {
     it(`${quality}: the explorer classifies no mesh as walkable, collider or camera blocker, and assembleCollision sees none`, async () => {
       const { scene } = await load(CONTEXT_GLB[quality]);
-      let meshes = 0;
+      const ctxMeshes: THREE.Object3D[] = [];
       scene.traverse((o) => {
         if (!(o as THREE.Mesh).isMesh) return;
-        meshes++;
+        ctxMeshes.push(o);
         expect(roleOf(o)).toBe("context");
+        expect(o.name).toMatch(/^ctx_(bldg|road)_/);
       });
-      expect(meshes).toBeGreaterThan(0);
+      expect(ctxMeshes.length).toBe(8);
       // The explorer's own classifier (manifest scenes) and the target builder.
       const roles = sceneFromGlbRoles(scene);
       expect(roles).toEqual({ walkable: [], colliders: [], cameraBlockers: [] });
@@ -120,6 +139,10 @@ describe("the context is not part of the collision world", () => {
       expect(parts.walkable.filter((o) => o !== parts.bridges)).toEqual([]);
       expect(parts.colliders).toEqual([fenceCollider]);
       expect([...parts.meshesByRole.keys()]).toEqual(["context"]);
+      // By name: no ctx_* mesh is, or is inside, any walkable, collider, extra or ray-test target the scene would hand the explorer.
+      const targets = explorerTargets(parts.walkable, parts.colliders, []);
+      const named = (list: THREE.Object3D[]) => list.filter((o) => /^ctx_/.test(o.name) || ctxMeshes.includes(o) || ctxMeshes.some((m) => m.parent === o));
+      for (const list of [parts.walkable, parts.colliders, parts.extra, targets.ground, targets.collider, targets.sky, targets.camera]) expect(named(list as THREE.Object3D[])).toEqual([]);
     });
   }
 
@@ -248,13 +271,14 @@ describe("station.json: street-context asset, sources and attribution", () => {
     sources: { id: string; attribution: string; modified: boolean; rights: string; license: { name: string } | null; sha256?: Record<string, string>; notes?: string }[];
     assets: { id: string; uri: string; role: string; floorIds: string[]; sourceIds: string[]; files?: string[]; derivation?: string }[];
   };
-  const SOURCE_IDS = ["plateau-13116-bldg-53394576", "plateau-13116-bldg-53394577"];
+  const SOURCE_IDS = ["plateau-13116-bldg-53394576", "plateau-13116-bldg-53394577", "plateau-13116-tran-53394576", "plateau-13116-tran-53394577"];
+  const DECISION = "docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md";
 
-  it("lists the two bldg sources with the exact PLATEAU attribution, modified: true, and no tran source", () => {
+  it("lists the two bldg and two tran sources with the exact PLATEAU attribution, CC BY 4.0, modified: true", () => {
     expect(station.station.datasetVersion).toBe("ikebukuro-b1-slice5.5");
-    const bldg = station.sources.filter((s) => SOURCE_IDS.includes(s.id));
-    expect(bldg.map((s) => s.id).sort()).toEqual(SOURCE_IDS);
-    for (const s of bldg) {
+    const mine = station.sources.filter((s) => SOURCE_IDS.includes(s.id));
+    expect(mine.map((s) => s.id).sort()).toEqual([...SOURCE_IDS].sort());
+    for (const s of mine) {
       expect(s.attribution).toBe(ATTRIBUTION);
       expect(s.modified).toBe(true);
       expect(s.license?.name).toBe("CC BY 4.0");
@@ -262,7 +286,13 @@ describe("station.json: street-context asset, sources and attribution", () => {
       expect(s.notes).toContain("CONDITIONAL");
       expect(Object.keys(s.sha256 ?? {})).toHaveLength(1);
     }
-    expect(station.sources.filter((s) => /tran|road/i.test(s.id))).toEqual([]);
+    for (const s of mine.filter((x) => x.id.includes("-tran-"))) {
+      expect(s.notes, s.id).toMatch(/geometry only/i);
+      expect(s.notes, s.id).toContain("no tran attribute");
+      expect(s.notes, s.id).toContain(DECISION);
+    }
+    // Only the four context sources are tran/bldg: nothing else sneaked in.
+    expect(station.sources.filter((s) => /tran|bldg/.test(s.id)).map((s) => s.id).sort()).toEqual([...SOURCE_IDS].sort());
   });
 
   it("has one visual street asset on the street floor, low as uri and high in files, pointing at existing files", () => {
@@ -274,16 +304,33 @@ describe("station.json: street-context asset, sources and attribution", () => {
     expect(a.uri).toBe(CONTEXT_GLB.low);
     expect(a.files).toEqual([CONTEXT_GLB.high]);
     for (const f of [a.uri, ...(a.files ?? [])]) expect(fs.existsSync(GTEKI + f), f).toBe(true);
-    expect(a.derivation).toContain("--kinds bldg");
+    expect(a.derivation).toContain("--merge tiles:380");
+    expect(a.derivation).toContain(DECISION);
+    expect(a.derivation).not.toMatch(/HOLD|--kinds bldg/);
     for (const quality of ["low", "high"] as const) expect(a.derivation).toContain(`ikebukuro_context_${quality}.glb`);
   });
 
-  it("records the sha256 of both committed GLBs in the derivation, and they match the bytes", async () => {
+  it("cites receipts that exist in the repo, and records the sha256 of both committed GLBs, matching the bytes and the receipts", async () => {
     const { createHash } = await import("node:crypto");
     const a = station.assets.find((x) => x.id === "street-context")!;
+    const repo = new URL("../../../", import.meta.url).pathname;
+    const receipts = a.derivation!.match(/docs\/gis\/context\/[A-Za-z0-9._-]+\.json/g) ?? [];
+    expect(receipts).toHaveLength(2);
+    const outputs = receipts.map((r) => (JSON.parse(fs.readFileSync(repo + r, "utf8")) as { output_sha256: string }).output_sha256);
     for (const quality of ["low", "high"] as const) {
       const sha = createHash("sha256").update(fs.readFileSync(GTEKI + CONTEXT_GLB[quality])).digest("hex");
       expect(a.derivation, quality).toContain(sha);
+      expect(outputs, quality).toContain(sha);
+    }
+  });
+
+  it("source hashes in station.json match the source_sha256s the GLB nodes carry", () => {
+    const want = Object.fromEntries(station.sources.filter((s) => SOURCE_IDS.includes(s.id)).map((s) => [s.id, Object.values(s.sha256!)[0]]));
+    for (const quality of ["low", "high"] as const) {
+      const { json } = readGlb(CONTEXT_GLB[quality]);
+      const seen: Record<string, string> = {};
+      for (const n of json.nodes) Object.assign(seen, n.extras?.source_sha256s as Record<string, string>);
+      expect(seen, quality).toEqual(want);
     }
   });
 });
