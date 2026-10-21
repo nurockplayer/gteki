@@ -64,9 +64,15 @@ export interface StationScene {
     /**
      * "default" (or omitted): the explorer adds its hemisphere + sun. "scene": the explorer adds no scene
      * lights (use for baked lightmaps / underground stations); the scene owns lighting and the explorer
-     * lights only its own avatar with a per-material environment map.
+     * lights only its own avatar with a per-material environment map (unless `envIntensity` is set).
      */
     lighting?: "default" | "scene";
+    /**
+     * Strength of the explorer's environment light (`scene.environment`, a neutral studio map). In "default"
+     * lighting it applies whether or not it is set (the explorer's default when omitted). In "scene" lighting
+     * there is no environment light unless this is set, so baked lightmaps are not double-lit.
+     */
+    envIntensity?: number;
   };
   /** Per-frame hook (animated signage, ambient props). */
   update?(dtSeconds: number, elapsedSeconds: number): void;

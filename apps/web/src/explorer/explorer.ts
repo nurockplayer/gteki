@@ -20,6 +20,7 @@ import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers 
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
+import { resolveLighting, type LightingEnv } from "./lighting.ts";
 import { FOLLOW, followBoom, followDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
@@ -177,7 +178,8 @@ export class Explorer {
   private readonly lastAvatarPos = new THREE.Vector3();
   /** Core hemisphere + sun; hidden when a scene declares `environment.lighting: "scene"`. */
   private readonly coreLights: THREE.Light[] = [];
-  /** Image-based light applied only to core-owned materials (avatar) when the scene owns lighting. */
+  private hemi: THREE.HemisphereLight | null = null;
+  /** PMREM of RoomEnvironment, built once on first use: `scene.environment` in default lighting, the avatar's envMap in scene lighting. */
   private coreEnvMap: THREE.Texture | null = null;
   private lighting: "default" | "scene" = "default";
   /** Host-owned WebAudio for station scenes; created lazily, resumed on the first user gesture. */
@@ -216,8 +218,9 @@ export class Explorer {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.0;
+    // Set before any material compiles. The high tier's OutputPass reads it; the low tier tone-maps in the material shaders.
+    this.renderer.toneMapping = THREE.AgXToneMapping;
+    this.renderer.toneMappingExposure = resolveLighting().toneMappingExposure;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.shadowMap.enabled = this.quality === "high";
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -236,6 +239,7 @@ export class Explorer {
     this.overlays.add(this.routeGroup, this.poiGroup);
     this.buildAvatar();
     this.defaultEnvironment();
+    this.applyLighting();
 
     new ResizeObserver(() => this.resize()).observe(host);
     this.resize();
@@ -251,7 +255,7 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; street: { active: boolean; opacity: number } } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environmentIntensity: number | null; exposure: number; street: { active: boolean; opacity: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
@@ -259,6 +263,7 @@ export class Explorer {
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
+      environmentIntensity: this.scene.environment ? this.scene.environmentIntensity : null, exposure: this.renderer.toneMappingExposure,
       street: { active: this.street.active, opacity: Math.round(this.street.opacity * 1000) / 1000 },
     };
   }
@@ -278,7 +283,8 @@ export class Explorer {
   private defaultEnvironment(): void {
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
-    const hemi = new THREE.HemisphereLight(0xcfe3ff, 0x1a1e26, 1.1);
+    const hemi = new THREE.HemisphereLight(0xcfe3ff, 0x1a1e26, resolveLighting().hemiIntensity);
+    this.hemi = hemi;
     const sun = new THREE.DirectionalLight(0xffffff, 1.4);
     sun.position.set(40, 120, 60);
     sun.castShadow = this.quality === "high";
@@ -289,21 +295,27 @@ export class Explorer {
   }
 
   /**
-   * "scene": the station's baked/own lights are the only scene lights (no double lighting of lightmaps).
-   * Three.js lights cannot be masked per object, so the avatar keeps a per-material environment map
-   * instead (scene.environment stays unset, so station materials are unaffected).
+   * Applies `resolveLighting(env)`. "scene": the station's baked/own lights are the only scene lights (no
+   * double lighting of lightmaps) and `scene.environment` stays unset unless the station sets `envIntensity`.
+   * Three.js lights cannot be masked per object, so the avatar then keeps a per-material environment map.
+   * Called with no env for the L0 graph view, which gets default lighting.
    */
-  private applyLighting(mode: "default" | "scene"): void {
-    this.lighting = mode;
-    for (const l of this.coreLights) l.visible = mode === "default";
-    if (mode === "scene" && !this.coreEnvMap) {
+  private applyLighting(env?: LightingEnv): void {
+    const plan = resolveLighting(env);
+    this.lighting = plan.mode;
+    for (const l of this.coreLights) l.visible = plan.coreLights;
+    if (this.hemi) this.hemi.intensity = plan.hemiIntensity;
+    this.renderer.toneMappingExposure = plan.toneMappingExposure;
+    if (!this.coreEnvMap) {
       const pmrem = new THREE.PMREMGenerator(this.renderer);
       this.coreEnvMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
       pmrem.dispose();
     }
+    this.scene.environment = plan.sceneEnvironment ? this.coreEnvMap : null;
+    this.scene.environmentIntensity = plan.environmentIntensity;
     this.avatar.traverse((o) => {
       const m = (o as THREE.Mesh).material;
-      if (m instanceof THREE.MeshStandardMaterial) { m.envMap = mode === "scene" ? this.coreEnvMap : null; m.needsUpdate = true; }
+      if (m instanceof THREE.MeshStandardMaterial) { m.envMap = plan.avatarEnvMap ? this.coreEnvMap : null; m.needsUpdate = true; }
     });
   }
 
@@ -419,8 +431,7 @@ export class Explorer {
       const env = this.stationScene.environment;
       if (env?.background !== undefined) this.scene.background = new THREE.Color(env.background);
       if (env?.fog) this.scene.fog = new THREE.Fog(env.fog.color, env.fog.near, env.fog.far);
-      if (env?.exposure !== undefined) this.renderer.toneMappingExposure = env.exposure;
-      this.applyLighting(env?.lighting === "scene" ? "scene" : "default");
+      this.applyLighting(env);
       const streets = station.bundle.floors.filter((f) => f.ordinal === 0 && !f.intermediate);
       this.streetY = env?.lighting === "scene" && streets.length ? Math.max(...streets.map((f) => f.renderElevationM)) : null;
       this.streetTops = station.bundle.nodes
@@ -492,8 +503,7 @@ export class Explorer {
     this.proxies.clear();
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
-    this.renderer.toneMappingExposure = 1;
-    this.applyLighting("default");
+    this.applyLighting();
   }
 
   setGraphOverlay(visible: boolean): void {

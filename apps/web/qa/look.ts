@@ -1,19 +1,23 @@
 /// <reference types="vite/client" />
-// DEV-ONLY look harness (Issue #94 Part B, step 1): Lane E kit layouts rendered through the game's real
-// explorer pipeline (renderer, default lighting, post-fx chain) at the exact Blender reference camera.
+// DEV-ONLY look harness (Issue #94 Part B): Lane E kit layouts rendered through the game's real explorer
+// pipeline (renderer, default lighting, post-fx chain) at the exact Blender reference camera.
 // Served by `pnpm dev` at /qa/look.html; never part of `pnpm build` (index.html is its only input).
-// Everything is read from URL params; with none, the output is the baseline in-game look. See PARAMS below.
+// Everything is read from URL params. With none, the output is the game's current look (AgX, environment
+// light, emitter-only bloom: step 2 of #94); every param below overrides one part of it, and `old=1` restores
+// the look before step 2 (ACES, no environment light, hemisphere 1.1, bloom threshold 1.0). See PARAMS.
 //
-//   /qa/look.html?layout=vertical_demo                      (camera hero, full tier, baseline)
+//   /qa/look.html?layout=vertical_demo                      (camera hero, full tier, the game's look)
 //   /qa/look.html?layout=concourse_demo&camera=gates_closed&tier=mobile
-//   /qa/look.html?layout=vertical_demo&env=room&tm=agx&exp=blender&shadows=1&sun=blender&sunI=3&hemi=0.3&bg=world
+//   /qa/look.html?layout=vertical_demo&old=1                (the look before step 2)
+//   /qa/look.html?layout=vertical_demo&env=room:0.6&exp=blender&shadows=1&sun=blender&sunI=3&hemi=0.3&bg=world
 //
-// PARAMS (all off by default = baseline)
+// PARAMS (all unset = the game's own value)
 //   layout=vertical_demo|concourse_demo   camera=<name in layout.cameras>   tier=full|mobile
 //   quality=low|high      force the explorer quality tier (patches matchMedia/screen before construction)
-//   env=room[:n]|n        scene.environment = PMREM(RoomEnvironment), intensity n (default 1)
-//   tm=agx|aces|neutral   tone mapping (baseline is the explorer's ACES)
-//   exp=<EV>|blender      exposure = 2^EV; "blender" = the layout's own exposure (-0.2 / -0.35)
+//   old=1                 preset: tm=aces exp=0 env=0 hemi=1.1 bloomT=1 bloomS=0.32 contrast=1.08 sat=1.06 (each still overridable)
+//   env=room[:n]|n|0      environment light intensity n (default 1 if given bare); 0 removes scene.environment
+//   tm=agx|aces|neutral   tone mapping (aces resets exposure to 1 unless exp is given)
+//   exp=<EV>|blender      exposure = 2^EV (replaces the explorer's); "blender" = the layout's own exposure (-0.2 / -0.35)
 //   shadows=1             kit meshes cast+receive; fit the explorer sun's shadow camera to the layout bbox
 //   sun=blender           sun travels along Blender's vertical_hero direction;  sunI=<n> sun intensity
 //   hemi=<n>              hemisphere intensity override
@@ -22,6 +26,7 @@
 //   ground=0|1            Blender studio ground plane (default: on for vertical_demo, i.e. mode "studio")
 //   ao=0|1                GTAO blend off/on (high quality only)
 //   refl=0 grade=0 bloom=0  disable floor reflections / grade+vignette / bloom (high quality only)
+//   bloomT=<n> bloomS=<n> contrast=<n> sat=<n> vig=<n>   bloom threshold / strength, grade contrast / saturation / vignette (high quality only)
 //   loop=0                render on demand only (default: rAF re-render of the static scene each frame)
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -180,15 +185,21 @@ const sun: THREE.DirectionalLight = ex.coreLights[1];
 const hemi: THREE.HemisphereLight = ex.coreLights[0];
 const applied: Record<string, unknown> = {};
 
+// `old=1` preset: the look before #94 step 2. Explicit params still win.
+const OLD: Record<string, string> = { tm: "aces", exp: "0", env: "0", hemi: "1.1", bloomT: "1", bloomS: "0.32", contrast: "1.08", sat: "1.06" };
+const param = (k: string): string | null => q.get(k) ?? (flag("old") === true ? OLD[k] ?? null : null);
+const paramNum = (k: string): number | null => { const v = param(k); if (v === null || v === "") return null; const n = Number(v); return Number.isFinite(n) ? n : null; };
+
 function applyLook(box: THREE.Box3): void {
   // Tone mapping / exposure (OutputPass reads renderer.toneMapping, so both quality paths follow it).
-  const tm = q.get("tm");
+  const tm = param("tm");
   if (tm) {
     if (!(tm in TONE)) fail(new Error(`tm must be agx|aces|neutral, got ${tm}`));
     renderer.toneMapping = TONE[tm]!;
+    if (tm !== "agx" && param("exp") === null) renderer.toneMappingExposure = 1;
     applied.tm = tm;
   }
-  const expRaw = q.get("exp");
+  const expRaw = param("exp");
   if (expRaw !== null) {
     const ev = expRaw === "blender" ? (layout.exposure ?? 0) : Number(expRaw);
     if (!Number.isFinite(ev)) fail(new Error(`bad exp ${expRaw}`));
@@ -197,19 +208,24 @@ function applyLook(box: THREE.Box3): void {
   }
 
   // Environment (image based light on top of the explorer's hemisphere + sun, exactly as a candidate would be).
-  const env = q.get("env");
-  if (env && env !== "0" && env !== "off") {
-    const n = env === "room" ? 1 : Number(env.replace(/^room:/, ""));
+  const env = param("env");
+  if (env !== null && env !== "") {
+    const n = env === "off" ? 0 : env === "room" ? 1 : Number(env.replace(/^room:/, ""));
     if (!Number.isFinite(n)) fail(new Error(`bad env ${env}`));
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-    pmrem.dispose();
-    (scene as any).environmentIntensity = n;
+    if (n === 0) scene.environment = null;
+    else {
+      if (!scene.environment) { // the explorer keeps its own map for station lighting; reuse it
+        const pmrem = new THREE.PMREMGenerator(renderer);
+        scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+        pmrem.dispose();
+      }
+      scene.environmentIntensity = n;
+    }
     applied.env = n;
   }
 
   // Lights.
-  const hemiI = num("hemi");
+  const hemiI = paramNum("hemi");
   if (hemiI !== null) { hemi.intensity = hemiI; applied.hemi = hemiI; }
   const sunI = num("sunI");
   if (sunI !== null) { sun.intensity = sunI; applied.sunI = sunI; }
@@ -264,10 +280,17 @@ function applyLook(box: THREE.Box3): void {
         // the pass when reflections are off as well.
         if (ao === false) { pass.blendIntensity = 0; if (flag("refl") === false) pass.enabled = false; applied.ao = 0; }
       } else if (pass instanceof UnrealBloomPass) {
+        const bt = paramNum("bloomT"), bs = paramNum("bloomS");
+        if (bt !== null) { pass.threshold = bt; applied.bloomT = bt; }
+        if (bs !== null) { pass.strength = bs; applied.bloomS = bs; }
         if (flag("bloom") === false) { pass.strength = 0; pass.enabled = false; applied.bloom = 0; }
       } else if (pass.constructor?.name === "FloorReflectionPass") {
         if (flag("refl") === false) { pass.enabled = false; applied.refl = 0; }
       } else if (pass.uniforms?.uContrast) {
+        const c = paramNum("contrast"), sa = paramNum("sat"), vg = paramNum("vig");
+        if (c !== null) { pass.uniforms.uContrast.value = c; applied.contrast = c; }
+        if (sa !== null) { pass.uniforms.uSaturation.value = sa; applied.sat = sa; }
+        if (vg !== null) { pass.uniforms.uVignette.value = vg; applied.vig = vg; }
         if (flag("grade") === false) { const u = pass.uniforms; u.uContrast.value = 1; u.uSaturation.value = 1; u.uVignette.value = 0; u.uLift.value = 0; applied.grade = 0; }
       }
     }
@@ -319,8 +342,9 @@ function info() {
     fov: camera.fov,
     size: [size.x, size.y], pixelRatio: renderer.getPixelRatio(),
     shadowMapEnabled: renderer.shadowMap.enabled, sunCastShadow: sun.castShadow,
-    hasEnvironment: !!scene.environment,
-    drawCalls: frame.drawCalls, triangles: frame.triangles,
+    hasEnvironment: !!scene.environment, environmentIntensity: scene.environmentIntensity, hemi: hemi.intensity,
+    post: ex.composer ? (() => { const ps = ex.composer.passes as any[]; const b = ps.find((p) => p instanceof UnrealBloomPass), g = ps.find((p) => p.uniforms?.uContrast); return { bloomThreshold: b?.threshold, bloomStrength: b?.strength, contrast: g?.uniforms.uContrast.value, saturation: g?.uniforms.uSaturation.value, vignette: g?.uniforms.uVignette.value }; })() : null,
+        drawCalls: frame.drawCalls, triangles: frame.triangles,
     programs: ri.programs?.length ?? 0,
     kitMeshes, kitTriangles,
     applied,
@@ -342,6 +366,37 @@ async function timeFrames(n: number): Promise<{ msMedian: number; msP90: number;
   return { msMedian: at(0.5), msP90: at(0.9), frames: ms.length };
 }
 
+// ---- HDR luma statistics (bloom threshold evidence) ---------------------------------------------------
+/** Linear scene luma (what UnrealBloom's high-pass sees) of one frame rendered to a float target, with or without emissive. */
+function lumaStats(emissive: boolean, thresholds = [1, 1.5, 2, 2.5, 3, 4, 6]) {
+  const size = renderer.getSize(new THREE.Vector2());
+  const w = Math.round(size.x * renderer.getPixelRatio()), h = Math.round(size.y * renderer.getPixelRatio());
+  const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.FloatType, depthBuffer: true });
+  const saved: [THREE.MeshStandardMaterial, number][] = [];
+  if (!emissive) scene.traverse((o) => {
+    const m = (o as THREE.Mesh).material;
+    for (const mat of Array.isArray(m) ? m : m ? [m] : []) if ((mat as THREE.MeshStandardMaterial).isMeshStandardMaterial) { saved.push([mat as THREE.MeshStandardMaterial, (mat as THREE.MeshStandardMaterial).emissiveIntensity]); (mat as THREE.MeshStandardMaterial).emissiveIntensity = 0; }
+  });
+  applyCamera();
+  const prev = renderer.getRenderTarget();
+  renderer.setRenderTarget(rt);
+  renderer.clear();
+  renderer.render(scene, camera);
+  const buf = new Float32Array(w * h * 4);
+  renderer.readRenderTargetPixels(rt, 0, 0, w, h, buf);
+  renderer.setRenderTarget(prev);
+  for (const [m, v] of saved) m.emissiveIntensity = v;
+  rt.dispose();
+  const lumas = new Float32Array(w * h);
+  let max = 0;
+  for (let i = 0; i < w * h; i++) { const l = 0.2126 * buf[i * 4]! + 0.7152 * buf[i * 4 + 1]! + 0.0722 * buf[i * 4 + 2]!; lumas[i] = l; if (l > max) max = l; }
+  const sorted = lumas.slice().sort();
+  const pct = (p: number) => sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))]!;
+  const over: Record<string, number> = {};
+  for (const t of thresholds) { let c = 0; for (let i = 0; i < lumas.length; i++) if (lumas[i]! > t) c++; over[`>${t}`] = +(100 * c / lumas.length).toFixed(4); }
+  return { emissive, max: +max.toFixed(3), p50: +pct(0.5).toFixed(3), p99: +pct(0.99).toFixed(3), p999: +pct(0.999).toFixed(3), p9999: +pct(0.9999).toFixed(3), pctOver: over };
+}
+
 // ---- boot --------------------------------------------------------------------------------------------
 const ready = (async () => {
   await loadKit();
@@ -357,4 +412,4 @@ const ready = (async () => {
   }
 })().catch(fail);
 
-(window as any).__look = { ready, info, renderOnce, timeFrames, explorer: ex, scene, kit };
+(window as any).__look = { ready, info, renderOnce, timeFrames, lumaStats, explorer: ex, scene, kit };
