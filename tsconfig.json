@@ -4,6 +4,7 @@
     "packages/*/src",
     "apps/*/src",
     "apps/*/*.ts",
+    "apps/*/qa",
     "stations/*/gteki",
     "vitest.config.ts"
   ]
