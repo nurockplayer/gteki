@@ -213,7 +213,7 @@ describe('context command wrapper', () => {
     const written: string[] = [];
     vi.spyOn(common, 'writeJson').mockImplementation(async (path, value) => { const target = path.startsWith(common.docsRoot) ? join(dir, 'docs', relative(common.docsRoot, path)) : path; written.push(relative(dir, target)); return originalWrite(target, value); });
     // Two bldg meshes carry the same fixture ids: the second copy must be excluded as duplicate, never emitted twice.
-    const summary = await contextGlb('ikebukuro', { sourceIds: ['plateau-13116-bldg-53394576', 'plateau-13116-bldg-53394577', 'plateau-13116-tran-53394576', 'plateau-13116-tran-53394577'], exitRadiusM: 0 });
+    const summary = await contextGlb('ikebukuro', { sourceIds: ['plateau-13116-bldg-53394576', 'plateau-13116-bldg-53394577', 'plateau-13116-tran-53394576', 'plateau-13116-tran-53394577'], exitRadiusM: 0, kinds: 'bldg,tran' });
     expect(summary).toMatchObject({ station_id: 'ikebukuro', verification: 'UNVERIFIED', navigation_use: 'NOT_FOR_ROUTING', visual_only: true, window: { center_station_xy_m: [0, 0], radius_m: 250 } });
     expect(summary.sources[1]!.excluded).toEqual({ duplicate_gml_id: 4, building_lod0_only_not_converted: 1 });
     expect(summary.sources[3]!.excluded).toMatchObject({ duplicate_gml_id: 1 });
@@ -502,8 +502,8 @@ describe('fail closed on missing meshes', () => {
   it('names the mesh whose bldg/tran source is not in the config and converts nothing', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'gteki-context-missing-')); dirs.push(dir);
     const { stored, writes } = mockStore(dir, paths());
-    await expect(contextGlb('ikebukuro', { sourceIds: all4.slice(0, 3), exitRadiusM: 0 })).rejects.toThrow(/53394577 tran \(not in the context config\)/);
-    await expect(contextGlb('ikebukuro', { sourceIds: [all4[0]!, all4[2]!], exitRadiusM: 0 })).rejects.toThrow(/53394577 bldg \(not in the context config\), 53394577 tran \(not in the context config\)/);
+    await expect(contextGlb('ikebukuro', { sourceIds: all4.slice(0, 3), exitRadiusM: 0, kinds: 'bldg,tran' })).rejects.toThrow(/53394577 tran \(not in the context config\)/);
+    await expect(contextGlb('ikebukuro', { sourceIds: [all4[0]!, all4[2]!], exitRadiusM: 0, kinds: 'bldg,tran' })).rejects.toThrow(/53394577 bldg \(not in the context config\), 53394577 tran \(not in the context config\)/);
     expect(stored).not.toHaveBeenCalled(); // coverage is checked before any source is read
     expect(writes).not.toHaveBeenCalled();
   });
@@ -513,7 +513,7 @@ describe('fail closed on missing meshes', () => {
     const { writes } = mockStore(dir, paths());
     const graphPath = await writeGraph(dir, [node('west_exit', 'exit', 'street', -1000, 0)]);
     const poisPath = await writePois(dir, [poi('exit-w', 'exit', ['west_exit'])]);
-    await expect(contextGlb('ikebukuro', { sourceIds: all4, graphPath, poisPath })).rejects.toThrow(/needs 3rd-level meshes 53394575, 53394576, 53394577.*53394575 bldg \(not in the context config\), 53394575 tran \(not in the context config\)/s);
+    await expect(contextGlb('ikebukuro', { sourceIds: all4, graphPath, poisPath, kinds: 'bldg,tran' })).rejects.toThrow(/needs 3rd-level meshes 53394575, 53394576, 53394577.*53394575 bldg \(not in the context config\), 53394575 tran \(not in the context config\)/s);
     expect(writes).not.toHaveBeenCalled();
     // The same window without the exit disc is complete.
     await expect(contextGlb('ikebukuro', { sourceIds: all4, graphPath, poisPath, exitRadiusM: 0 })).resolves.toMatchObject({ mesh_coverage: { needed_meshes: ['53394576', '53394577'] } });
@@ -523,7 +523,7 @@ describe('fail closed on missing meshes', () => {
     const dir = await mkdtemp(join(tmpdir(), 'gteki-context-unacquired-')); dirs.push(dir);
     const p = paths(); delete p[all4[3]!];
     const { writes } = mockStore(dir, p);
-    await expect(contextGlb('ikebukuro', { sourceIds: all4, exitRadiusM: 0 })).rejects.toThrow(/not acquired or not usable: meshes 53394577: plateau-13116-tran-53394577/);
+    await expect(contextGlb('ikebukuro', { sourceIds: all4, exitRadiusM: 0, kinds: 'bldg,tran' })).rejects.toThrow(/not acquired or not usable: meshes 53394577: plateau-13116-tran-53394577/);
     expect(writes).not.toHaveBeenCalled();
   });
 
@@ -709,6 +709,10 @@ describe('run-id digest', () => {
 });
 
 describe('--kinds (buildings-only context)', () => {
+  it('Ikebukuro defaults to buildings only while roads are on rights HOLD', async () => {
+    expect((await loadContextConfig('ikebukuro')).kinds).toEqual(['bldg']);
+  });
+
   const all4 = ['plateau-13116-bldg-53394576', 'plateau-13116-bldg-53394577', 'plateau-13116-tran-53394576', 'plateau-13116-tran-53394577'];
   function mockStore(dir: string) {
     const manifest = new Map(loadSources().map((s) => [s.source_id, s]));
@@ -722,7 +726,7 @@ describe('--kinds (buildings-only context)', () => {
   it('kinds=bldg: only ctx_bldg_* meshes, no tran source is read, kinds recorded in receipt, run id, window and extras', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'gteki-context-kinds-')); dirs.push(dir);
     const stored = mockStore(dir);
-    const full = await contextGlb('ikebukuro', { sourceIds: all4, exitRadiusM: 0 });
+    const full = await contextGlb('ikebukuro', { sourceIds: all4, exitRadiusM: 0, kinds: 'bldg,tran' });
     stored.mockClear();
     const bldg = await contextGlb('ikebukuro', { sourceIds: all4, exitRadiusM: 0, kinds: 'bldg' });
     expect(stored.mock.calls.map((c) => c[0]).sort()).toEqual([all4[0], all4[1]]); // tran sources are never opened
@@ -749,7 +753,7 @@ describe('--kinds (buildings-only context)', () => {
     const stored = mockStore(dir);
     // No tran source for mesh 53394577 is configured: fine for bldg, fatal for tran or both.
     const bldgOnly = [all4[0]!, all4[1]!, all4[2]!];
-    await expect(contextGlb('ikebukuro', { sourceIds: bldgOnly, exitRadiusM: 0 })).rejects.toThrow(/53394577 tran/);
+    await expect(contextGlb('ikebukuro', { sourceIds: bldgOnly, exitRadiusM: 0, kinds: 'bldg,tran' })).rejects.toThrow(/53394577 tran/);
     await expect(contextGlb('ikebukuro', { sourceIds: bldgOnly, exitRadiusM: 0, kinds: 'tran' })).rejects.toThrow(/no tran source is configured for: 53394577 tran/);
     await expect(contextGlb('ikebukuro', { sourceIds: [all4[0]!, all4[2]!, all4[3]!], exitRadiusM: 0, kinds: 'bldg' })).rejects.toThrow(/no bldg source is configured for: 53394577 bldg/);
     stored.mockClear();
@@ -761,7 +765,7 @@ describe('--kinds (buildings-only context)', () => {
     expect(tran.totals.triangles_by_kind).toEqual({ building: 0, road: 4 });
   });
 
-  it('refuses invalid kinds and keeps the Ikebukuro config default at both', async () => {
+  it('refuses invalid kinds; the Ikebukuro config defaults to buildings only (roads on rights HOLD)', async () => {
     expect(parseKinds('tran,bldg')).toEqual(['bldg', 'tran']); // canonical order, so the same run id either way
     expect(parseKinds('bldg,bldg')).toEqual(['bldg']);
     for (const bad of ['', 'ubld', 'bldg,road', 'all', ',']) expect(() => parseKinds(bad)).toThrow(/Invalid --kinds/);
@@ -771,7 +775,7 @@ describe('--kinds (buildings-only context)', () => {
     await expect(contextGlb('ikebukuro', { sourceIds: all4, kinds: 'road' })).rejects.toThrow(/Invalid --kinds "road"/);
     expect(stored).not.toHaveBeenCalled();
     const config = await loadContextConfig('ikebukuro');
-    expect(config.kinds === undefined || config.kinds.join() === 'bldg,tran').toBe(true);
+    expect(config.kinds).toEqual(['bldg']);
     await expect(buildContextGlb({ frame: await stationFrame(), radiusM: 250, inputs, outputPath: join(dir, 'x.glb'), kinds: ['bldg', 'x' as never] })).rejects.toThrow(/Invalid --kinds/);
     await expect(buildContextGlb({ frame: await stationFrame(), radiusM: 250, inputs: [inputs[0]!], outputPath: join(dir, 'y.glb'), kinds: ['tran'] })).rejects.toThrow(/at least one source of kind tran/);
   });
