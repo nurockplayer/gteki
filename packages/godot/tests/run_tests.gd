@@ -147,6 +147,24 @@ func test_generated_glb(station_root: Node3D) -> void:
 	empty_role.set_meta("extras", {"gteki_role": ""})
 	shouty.add_child(empty_role)
 	empty_role.owner = source
+	# Signage: a "sign_board" name prefix and a "signage" group's untagged child are see-through, never colliders.
+	var sign_board := MeshInstance3D.new()
+	sign_board.name = "sign_board"
+	sign_board.mesh = BoxMesh.new()
+	source.add_child(sign_board)
+	sign_board.owner = source
+	var signage := Node3D.new()
+	signage.name = "signage_group"
+	signage.set_meta("gteki_role", "signage")
+	signage.set_meta("extras", {"gteki_role": "signage"})
+	source.add_child(signage)
+	signage.owner = source
+	# A neutral name: the child is see-through only by inheriting the group's role.
+	var sign_face := MeshInstance3D.new()
+	sign_face.name = "face_panel"
+	sign_face.mesh = BoxMesh.new()
+	signage.add_child(sign_face)
+	sign_face.owner = source
 	var document := GLTFDocument.new()
 	var state := GLTFState.new()
 	var export_error := document.append_from_scene(source, state)
@@ -170,9 +188,9 @@ func test_generated_glb(station_root: Node3D) -> void:
 	]}
 	check(assets.load_assets(manifest, "user://", station_root), "generated GLBs reimport through manifest: %s" % str(assets.issues))
 	# Meshes per asset: walkable floor, stairs_ramps, floor_001 and the floor/" FLOOR " groups' children; colliding wall,
-	# barriers and the wall group's child. The collision asset also turns its untagged box into a collider.
+	# barriers and the wall group's child. The collision asset also turns its untagged box and both signs into colliders.
 	# Two camera blockers per asset (one by extras, one by name prefix); in the collision asset they stay camera-only.
-	check(assets.counts == {"assets": 3, "walkable": 15, "collider": 10, "camera_blocker": 6}, "GLB names/extras/prefixes/inherited roles classify like the web; manifest collision role covers untagged meshes: %s" % str(assets.counts))
+	check(assets.counts == {"assets": 3, "walkable": 15, "collider": 12, "camera_blocker": 6}, "GLB names/extras/prefixes/inherited roles classify like the web; manifest collision role covers untagged meshes: %s" % str(assets.counts))
 	var collision_only := station_root.get_node_or_null("collision_only") as Node3D
 	if collision_only != null:
 		var grouped_mesh := collision_only.find_child("grouped_mesh", true, false)
@@ -193,6 +211,11 @@ func test_generated_glb(station_root: Node3D) -> void:
 			check(blocker != null and blocker.has_meta("gteki_camera_blocker") and not blocker.visible and not blocker.has_meta("gteki_collider"), "%s is a hidden camera-only blocker" % name)
 	if identity != null:
 		check(identity.transform == Transform3D.IDENTITY, "omitted asset transform is identity")
+		var see_through := [identity.find_child("sign_board", true, false), identity.find_child("face_panel", true, false)]
+		check(see_through.all(func(m): return m != null and m.has_meta("gteki_see_through") and not m.has_meta("gteki_collider") and m.visible), "a sign_ name and a mesh inheriting a signage group are see-through and visible, never colliders")
+	if collision_only != null:
+		var solid_signs := [collision_only.find_child("sign_board", true, false), collision_only.find_child("face_panel", true, false)]
+		check(solid_signs.all(func(m): return m != null and m.has_meta("gteki_collider") and not m.has_meta("gteki_see_through")), "a collision asset's signs collide and are not see-through")
 	var rejected := Assets.new()
 	check(not rejected.load_assets({"assets": [{"uri": "../escape.glb", "format": "glb"}]}, "user://", station_root), "reject asset traversal")
 	for odd in ["assets/roof#west.glb", "assets/roof?west.glb"]:

@@ -1,0 +1,19 @@
+; Minimal Godot importer harness for GTEki kit GLBs.
+config_version=5
+
+[application]
+config/name="GTEki Kit Import Test"
+run/main_scene=""
+
+[rendering]
+renderer/rendering_method="forward_plus"
+renderer/rendering_method.mobile="mobile"
+textures/default_filters/use_nearest_mipmap_filter=false
+environment/defaults/default_clear_color=Color(0.055, 0.07, 0.09, 1)
+
+[display]
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/window_width_override=1920
+window/size/window_height_override=1080
+window/size/resizable=false

@@ -89,3 +89,12 @@ export function keepBelowBlockers(pivot: THREE.Vector3, position: THREE.Vector3,
   if (hit) position.copy(pivot).addScaledVector(offset, Math.min(length, Math.max(0, hit.distance - clearance)));
   return position;
 }
+
+/**
+ * The see-through (sign) meshes the camera cut may fade: never one that is walkable, a collider, a camera
+ * blocker or any camera target. A mesh that is both a sign and a camera blocker stops the camera and stays solid.
+ */
+export function cuttableSigns(signs: readonly THREE.Object3D[], solids: readonly (readonly THREE.Object3D[])[]): THREE.Object3D[] {
+  const solid = new Set(solids.flat());
+  return signs.filter((o) => !solid.has(o));
+}

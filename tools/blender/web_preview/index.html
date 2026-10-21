@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#11171d" />
+    <title>GTEki Kit Preview</title>
+  </head>
+  <body>
+    <aside id="sidebar">
+      <header>
+        <div class="eyebrow">GTEKI · LANE E</div>
+        <h1>Asset library</h1>
+        <p id="library-status">Reading manifest…</p>
+      </header>
+      <label class="search-label" for="filter">FILTER ASSETS</label>
+      <input id="filter" type="search" placeholder="Name or family" />
+      <nav id="asset-list" aria-label="Assets"></nav>
+      <footer>Generic procedural station kit · metres</footer>
+    </aside>
+    <main>
+      <section id="viewer"></section>
+      <div class="viewer-title"><span id="asset-name">Loading…</span><small id="asset-family"></small></div>
+      <div id="toolbar">
+        <label><input id="show-grid" type="checkbox" checked /> Grid</label>
+        <label><input id="show-collision" type="checkbox" /> Collision</label>
+        <label><input id="show-sockets" type="checkbox" checked /> Sockets</label>
+        <span id="stats">—</span>
+      </div>
+      <div id="message" role="status"></div>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -1,10 +1,10 @@
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { sceneFromGlbRoles } from "@gteki/scene-api";
+import { sceneFromGlbRoles, seeThroughMeshes } from "@gteki/scene-api";
 import { LightProbeGridHelperWebGL } from "three/addons/helpers/LightProbeGridHelperWebGL.js";
 import { LightProbeGridWebGL } from "three/addons/lighting/LightProbeGridWebGL.js";
 import { clampDistance, FOLLOW, followDistance, followPose } from "./followCamera.ts";
-import { castAll, castTargets, explorerTargets, keepBelowBlockers } from "./raycast.ts";
+import { castAll, castTargets, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
 
 const plane = (y: number) => {
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial());
@@ -258,4 +258,42 @@ describe("camera-only blockers", () => {
     sceneFromGlbRoles(new THREE.Group().add(shown), { showColliders: true });
     expect(shown.visible).toBe(true);
   });
+
+  it("win over the sign role: a mesh that is both is a camera stop and is never dithered", () => {
+    // A scene module lists a sign mesh as a camera blocker explicitly.
+    const root = new THREE.Group();
+    const signFace = ceiling(2.4);
+    signFace.name = "sign_face";
+    const plainSign = ceiling(2.3);
+    plainSign.name = "sign_hanging";
+    root.add(signFace, plainSign);
+    const t = explorerTargets([], [], [signFace]);
+    expect(seeThroughMeshes(root)).toEqual([signFace, plainSign]);
+    const cut = cuttableSigns(seeThroughMeshes(root), [[], [], [signFace], t.camera]);
+    expect(cut).toEqual([plainSign]);
+    expect(t.camera).toContain(signFace);
+    expect(t.camera).not.toContain(plainSign);
+    expect(t.sky).not.toContain(signFace);
+  });
+
+  it("follow a mesh's own GLB role over an inherited one, so a sign is never classified as a blocker", () => {
+    const root = new THREE.Group();
+    const blockerGroup = new THREE.Group();
+    blockerGroup.name = "camera_blocker_soffit";
+    const signUnder = plane(2.4);
+    signUnder.name = "sign_exit";
+    const slabUnder = plane(2.6);
+    blockerGroup.add(signUnder, slabUnder);
+    const signGroup = new THREE.Group();
+    signGroup.name = "signage";
+    const capInSigns = plane(2.7);
+    capInSigns.userData = { gteki_role: "camera_blocker" };
+    signGroup.add(capInSigns);
+    root.add(blockerGroup, signGroup);
+    const roles = sceneFromGlbRoles(root);
+    expect(roles.cameraBlockers).toEqual([slabUnder, capInSigns]);
+    expect(seeThroughMeshes(root)).toEqual([signUnder]);
+    expect(signUnder.visible).toBe(true);
+  });
 });
+

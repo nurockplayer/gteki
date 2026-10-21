@@ -500,6 +500,19 @@ function skyMaterial(THREE: ThreeNS) {
   return m;
 }
 
+/**
+ * Box-filtered periodic bar (period 1, half-width hw, centred on integers) averaged over a footprint of
+ * width w. Exact integral of the pulse train, so it converges to the duty cycle 2 * hw as w grows.
+ */
+const GLSL_PULSE = `
+float gtPulse(float x, float hw, float w) {
+  w = max(w, 1e-3);
+  float a = x - 0.5 * w, b = x + 0.5 * w;
+  float na = floor(a + 0.5), nb = floor(b + 0.5);
+  float ca = clamp(fract(a + 0.5) - 0.5, -hw, hw), cb = clamp(fract(b + 0.5) - 0.5, -hw, hw);
+  return ((nb - na) * 2.0 * hw + cb - ca) / w;
+}`;
+
 function beyondMaterial(THREE: ThreeNS) {
   const m = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
   m.onBeforeCompile = (sh) => {
@@ -507,38 +520,66 @@ function beyondMaterial(THREE: ThreeNS) {
       .replace("#include <common>", "#include <common>\nattribute vec2 band;\nvarying vec2 vBand;\nvarying vec3 vWorldP;")
       .replace("#include <project_vertex>", "#include <project_vertex>\nvBand = band;\nvWorldP = (modelMatrix * vec4(transformed, 1.0)).xyz;");
     sh.fragmentShader = sh.fragmentShader
-      .replace("#include <common>", "#include <common>\nvarying vec2 vBand;\nvarying vec3 vWorldP;")
+      .replace("#include <common>", `#include <common>\nvarying vec2 vBand;\nvarying vec3 vWorldP;\n${GLSL_PULSE}`)
       .replace(
         "vec4 diffuseColor = vec4( diffuse, opacity );",
         // cameraPosition is not uploaded for basic materials; recover the eye from the view matrix.
+        // All plane intersections and derivatives are computed unconditionally (uniform control flow);
+        // only the shaded results are selected.
         `vec3 eye = -transpose(mat3(viewMatrix)) * viewMatrix[3].xyz;
         vec3 rd = normalize(vWorldP - eye);
-        vec3 fogc = vec3(0.15, 0.145, 0.135); // lightmapped surfaces sit at ~0.1-0.25 linear before ACES
-        vec3 col = fogc;
-        float t = 1e3;
-        // Renderer y is TP height; x/z are metric, so the floor tile and fixture grids match the station's.
-        if (rd.y < -0.01) {
-          t = (vBand.x - vWorldP.y) / rd.y;
-          vec3 h = vWorldP + rd * t;
-          vec2 q = h.xz / 0.6, w = fwidth(q);
-          vec2 f = fract(q);
-          float grout = 1.0 - smoothstep(0.035, 0.035 + w.x, f.x) * smoothstep(0.035, 0.035 + w.y, f.y);
-          grout *= 1.0 - smoothstep(0.1, 0.4, max(w.x, w.y)); // no shimmer where tiles get sub-pixel
-          col = mix(vec3(0.27, 0.26, 0.245), vec3(0.17, 0.165, 0.155), grout * exp(-t / 5.0));
-        } else if (rd.y > 0.01) {
-          t = (vBand.y - vWorldP.y) / rd.y;
-          vec3 h = vWorldP + rd * t;
-          vec2 q = h.xz / vec2(2.4, 3.0), w = fwidth(q);
-          vec2 f = abs(fract(q) - 0.5);
-          float lamp = (1.0 - smoothstep(0.07, 0.07 + w.x, f.x)) * (1.0 - smoothstep(0.32, 0.32 + w.y, f.y));
-          lamp *= (1.0 - smoothstep(0.03, 0.12, max(w.x, w.y))) * exp(-t / 8.0); // grazing rays: fade, never streak
-          col = mix(vec3(0.06, 0.058, 0.055), vec3(1.6, 1.55, 1.45), lamp);
-        }
-        col = mix(col, fogc, 1.0 - exp(-max(t, 0.0) / 10.0));
+        float H = max(vBand.y - vBand.x, 0.5);
+        float ady = abs(rd.y);
+        bool down = rd.y < 0.0;
+        // Floor and ceiling hits (denominator-guarded) and the mirrored floor ray up to the ceiling.
+        float tF = max((vBand.x - vWorldP.y) / min(rd.y, -0.004), 0.0);
+        float tC = max((vBand.y - vWorldP.y) / max(rd.y, 0.004), 0.0);
+        vec2 hF = vWorldP.xz + rd.xz * tF;
+        vec2 hC = vWorldP.xz + rd.xz * tC;
+        float tc = H / max(ady, 0.004);
+        vec2 hR = hF + rd.xz * tc;
+        vec2 qF = hF / 0.6, qC = hC / 0.6;
+        vec2 qL = hC / vec2(2.4, 3.0), qR = hR / vec2(2.4, 3.0);
+        vec2 wF = max(fwidth(qF), 1e-3), wC = max(fwidth(qC), 1e-3);
+        vec2 wL = max(fwidth(qL), 1e-3), wRd = fwidth(qR);
+        float t = down ? tF : tC;
+        // Readable depth is short: legible for the first few metres, then it sinks into dim, featureless
+        // dark by about 18 m, so it reads as "the station continues" and not as a hall of any size.
+        float vis = smoothstep(1.0 / 18.0, 1.0 / 3.0, 1.0 / max(t, 0.01)); // even in screen space (~1/t)
+        vis *= smoothstep(0.004, 0.06, ady);
+        // Distant dark with a faint gradient (brighter toward the horizon line, darker at the extremes).
+        vec3 farc = vec3(0.026, 0.028, 0.031) + vec3(0.03, 0.029, 0.027) * exp(-ady * 22.0);
+        float hh = clamp((vWorldP.y - vBand.x) / H, 0.0, 1.0);
+        float vig = 1.0 - 0.3 * pow(abs(hh - 0.45) * 2.0, 2.0);
+        // Lamp dimensions in cell units (cells 2.4 m by 3.0 m): 0.34 m wide, 1.9 m long.
+        const float lampX = 0.07, lampY = 0.32;
+        // Floor: the station's own tile scale and brightness at the opening plane, then falloff.
+        vec2 fF = fract(qF);
+        float grout = 1.0 - smoothstep(0.035, 0.035 + wF.x, fF.x) * smoothstep(0.035, 0.035 + wF.y, fF.y);
+        grout *= 1.0 - smoothstep(0.1, 0.4, max(wF.x, wF.y));
+        vec3 floorC = mix(vec3(0.31, 0.30, 0.28), vec3(0.23, 0.222, 0.208), grout * exp(-tF / 5.0));
+        // Glossy reflection of the ceiling fixtures, blurred with path length, strongest at grazing.
+        vec2 wR = wRd * 0.75 + vec2(0.05 * (tF + tc) + 0.03) / vec2(2.4, 3.0);
+        float refl = gtPulse(qR.x, lampX, wR.x) * gtPulse(qR.y, lampY, wR.y);
+        float fres = 0.04 + 0.96 * pow(1.0 - ady, 5.0);
+        floorC += vec3(1.0, 0.97, 0.9) * refl * fres * 0.8 * (1.0 - smoothstep(2.0, 14.0, tF + 0.5 * tc));
+        // Ceiling: tile seams at the station's panel scale plus linear fixtures receding in rows.
+        vec2 fC = fract(qC);
+        float seam = 1.0 - smoothstep(0.02, 0.02 + wC.x, fC.x) * smoothstep(0.02, 0.02 + wC.y, fC.y);
+        seam *= 1.0 - smoothstep(0.1, 0.4, max(wC.x, wC.y));
+        vec3 ceilC = mix(vec3(0.13, 0.126, 0.118), vec3(0.07, 0.068, 0.064), seam * exp(-tC / 5.0));
+        float lamp = gtPulse(qL.x, lampX, wL.x) * gtPulse(qL.y, lampY, wL.y);
+        // Averaged (unresolved) fixtures stay under the bloom threshold (luminance 0.92); the extra core
+        // emission is gated by resolution, so only fixtures resolved on both axes exceed it.
+        float res = 1.0 - smoothstep(0.5, 1.0, max(wL.x / (2.0 * lampX), wL.y / (2.0 * lampY)));
+        const vec3 lampC = vec3(1.0, 0.97, 0.91);
+        ceilC = mix(ceilC, lampC * 0.95, lamp) + lampC * (0.75 * res * lamp);
+        vec3 near = down ? floorC : ceilC;
+        vec3 col = mix(farc * vig, near, vis);
         vec4 diffuseColor = vec4(col * diffuse, opacity);`,
       );
   };
-  m.customProgramCacheKey = () => "gteki-ikebukuro-beyond-4";
+  m.customProgramCacheKey = () => "gteki-ikebukuro-beyond-7";
   return m;
 }
 

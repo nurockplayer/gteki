@@ -1,3 +1,4 @@
+import { POI_SOURCES } from './poi.js';
 import { spawn } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -60,7 +61,12 @@ await run(['inspect-network','hokonavi-ikebukuro-walk-node-geojson']);
 await run(['inspect-network','hokonavi-oedo-shinjuku-network-geojson']);
 await run(['inspect-network','hokonavi-oedo-shinjuku-stationmap-geojson']);
 // Derived reports read every inventory/network report on disk; regenerate them only when all inputs were refreshed now.
-if(receipt.commands.every(command=>command.exit_code===0)){if(await run(['overlap']))await run(['gap-packet']);}
+if(receipt.commands.every(command=>command.exit_code===0)){
+  await run(['overlap']);
+  for(const source of POI_SOURCES)await run(['inspect-poi',source]);
+  await run(['rights-report']);
+  await run(['gap-packet']);
+}
 else console.error('A prerequisite command failed; overlap and gap-packet were not regenerated to avoid mixed-vintage reports.');
 receipt.completed_at=new Date().toISOString();await writeJson(join(docsRoot,'gis','real-run.json'),receipt);
 if(receipt.commands.some(command=>command.exit_code!==0))process.exitCode=1;

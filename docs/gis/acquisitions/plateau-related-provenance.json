@@ -1,0 +1,179 @@
+{
+  "source_id": "plateau-related-provenance",
+  "resolved_url": "https://api.plateauview.mlit.go.jp/datacatalog/graphql",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-21T00:14:00.229Z",
+  "completed_at": "2026-10-21T00:14:00.341Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/graphql-response+json",
+    "content-length": "1894",
+    "etag": null,
+    "last-modified": null,
+    "date": "Wed, 21 Oct 2026 00:14:00 GMT"
+  },
+  "bytes": 10851,
+  "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+  "store_path": "raw/ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d/graphql",
+  "tool_version": "0.1.0",
+  "git_commit": "df0365dea7dcc1d87005917ae4e38f02a5cc6a42",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "request": {
+    "method": "POST",
+    "content_type": "application/json",
+    "body": "{\"query\": \"{ datasets(input:{areaCodes:[\\\"13104\\\",\\\"13116\\\"],includeTypes:[\\\"related\\\"]}) { id name description year registerationYear typeCode openDataUrl ... on RelatedDataset { items { name url originalUrl } } } }\"}",
+    "body_sha256": "a3b6a8fe0c0c4f6c56f9775d183c4179462a4de994589eb3d230f70cd858c4bf"
+  },
+  "supporting_documents": [
+    {
+      "id": "api-docs",
+      "requested_url": "https://docs.plateauview.mlit.go.jp/api/",
+      "url": "https://docs.plateauview.mlit.go.jp/api/",
+      "http_status": 200,
+      "sha256": "a5e8a60e2f1aa596aed11415eea09efc6b5f759f37a0df4c91b0858c8cb7c2d8",
+      "bytes": 39834,
+      "store_path": "raw/a5e8a60e2f1aa596aed11415eea09efc6b5f759f37a0df4c91b0858c8cb7c2d8/api"
+    },
+    {
+      "id": "ksj-p20",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html",
+      "http_status": 200,
+      "sha256": "2816504ac3178241a4835c5bfb95ffe0f1d17592bae267b025fdcfc897b13f4f",
+      "bytes": 91991,
+      "store_path": "raw/2816504ac3178241a4835c5bfb95ffe0f1d17592bae267b025fdcfc897b13f4f/KsjTmplt-P20.html"
+    },
+    {
+      "id": "ksj-p13",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html",
+      "http_status": 200,
+      "sha256": "be4df70a744ab1fed239925db72287d83a0066568ef6b16a9c6cd0acf954d3d7",
+      "bytes": 91454,
+      "store_path": "raw/be4df70a744ab1fed239925db72287d83a0066568ef6b16a9c6cd0acf954d3d7/KsjTmplt-P13.html"
+    },
+    {
+      "id": "ksj-n02-2024",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+      "http_status": 200,
+      "sha256": "6c3e0f6a98872a0f1ba77675ecd74f38502a93681681a7e6a4da01ed65b47161",
+      "bytes": 54007,
+      "store_path": "raw/6c3e0f6a98872a0f1ba77675ecd74f38502a93681681a7e6a4da01ed65b47161/KsjTmplt-N02-2024.html"
+    },
+    {
+      "id": "ksj-n10-2024",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html",
+      "http_status": 200,
+      "sha256": "9a7a0fd249751279ab63dd23da0dd7d712e2c84ce95c320dab02ce83e141e7b7",
+      "bytes": 242194,
+      "store_path": "raw/9a7a0fd249751279ab63dd23da0dd7d712e2c84ce95c320dab02ce83e141e7b7/KsjTmplt-N10-2024.html"
+    },
+    {
+      "id": "ksj-n03-2025",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
+      "http_status": 200,
+      "sha256": "93a92aa8544c7a2b77fa95b3e1470805b6687d760293860288a0bd47641e18e0",
+      "bytes": 1832971,
+      "store_path": "raw/93a92aa8544c7a2b77fa95b3e1470805b6687d760293860288a0bd47641e18e0/KsjTmplt-N03-2025.html"
+    },
+    {
+      "id": "ksj-terms",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+      "http_status": 200,
+      "sha256": "c385a98f568b6875c1416843d7c1fd56a662c9f48851ca908c04d6f397f34c8e",
+      "bytes": 27978,
+      "store_path": "raw/c385a98f568b6875c1416843d7c1fd56a662c9f48851ca908c04d6f397f34c8e/agreement.html"
+    },
+    {
+      "id": "ksj-old-terms",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+      "http_status": 200,
+      "sha256": "33d99d1df15d6c98a507d550a7a579c1acd55d85d08af981eae41010e01deac8",
+      "bytes": 62499,
+      "store_path": "raw/33d99d1df15d6c98a507d550a7a579c1acd55d85d08af981eae41010e01deac8/agreement_02.html"
+    },
+    {
+      "id": "gsi-origin",
+      "requested_url": "https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html",
+      "url": "https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html",
+      "http_status": 200,
+      "transport": "curl",
+      "sha256": "0bbbae9566cb71c9059f252a8578812306fb6db4d0ef287ca5e6b49f405b78b2",
+      "bytes": 32237,
+      "store_path": "raw/0bbbae9566cb71c9059f252a8578812306fb6db4d0ef287ca5e6b49f405b78b2/kibanjoho40027.html"
+    },
+    {
+      "id": "gsi-terms",
+      "requested_url": "https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html",
+      "url": "https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html",
+      "http_status": 200,
+      "transport": "curl",
+      "sha256": "5388d2854a05f3e7b41cb980ecfb2de75b315de68e0d9c94b9334c11e580739e",
+      "bytes": 23271,
+      "store_path": "raw/5388d2854a05f3e7b41cb980ecfb2de75b315de68e0d9c94b9334c11e580739e/kikakuchousei40182.html"
+    },
+    {
+      "id": "gsi-survey",
+      "requested_url": "https://www.gsi.go.jp/LAW/2930-index.html",
+      "url": "https://www.gsi.go.jp/LAW/2930-index.html",
+      "http_status": 200,
+      "transport": "curl",
+      "sha256": "5888fbd6094d30574d056bfa26827cd8e11391a382a6a2f083a572fa15b08722",
+      "bytes": 40480,
+      "store_path": "raw/5888fbd6094d30574d056bfa26827cd8e11391a382a6a2f083a572fa15b08722/2930-index.html"
+    },
+    {
+      "id": "gsi-qa",
+      "requested_url": "https://www.gsi.go.jp/LAW/2930-qa.html",
+      "url": "https://www.gsi.go.jp/LAW/2930-qa.html",
+      "http_status": 200,
+      "transport": "curl",
+      "sha256": "325949a4c9053085311afd402b14a1d17ec27da093ff91dfca4d4362b99ae12b",
+      "bytes": 49660,
+      "store_path": "raw/325949a4c9053085311afd402b14a1d17ec27da093ff91dfca4d4362b99ae12b/2930-qa.html"
+    },
+    {
+      "id": "plateau-policy",
+      "requested_url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "http_status": 200,
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "bytes": 31822,
+      "store_path": "raw/3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f/site-policy"
+    },
+    {
+      "id": "pdl-1",
+      "requested_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "http_status": 200,
+      "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+      "bytes": 59216,
+      "store_path": "raw/e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c/public_data_license_v1.0"
+    },
+    {
+      "id": "cc-by-4-legal-ja",
+      "requested_url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+      "http_status": 200,
+      "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+      "bytes": 53871,
+      "store_path": "raw/bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548/legalcode.ja"
+    }
+  ],
+  "last_offline_check": {
+    "requested_at": "2026-10-21T00:18:39.313Z",
+    "completed_at": "2026-10-21T00:18:39.313Z",
+    "tool_version": "0.1.0",
+    "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d",
+    "bytes": 10851,
+    "status": "PASS"
+  }
+}

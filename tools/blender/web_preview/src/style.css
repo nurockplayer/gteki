@@ -1,0 +1,30 @@
+:root { font-family: Manrope, sans-serif; color: #e7edf1; background: #11171d; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; height: 100vh; display: grid; grid-template-columns: 292px 1fr; overflow: hidden; }
+#sidebar { display: flex; flex-direction: column; background: #171f27; border-right: 1px solid #29343d; min-height: 0; padding: 28px 18px 14px; }
+header { padding: 0 8px 22px; border-bottom: 1px solid #2a353e; }
+.eyebrow, .search-label { color: #91a4ae; letter-spacing: .13em; font: 500 10px 'DM Mono', monospace; }
+h1 { margin: 8px 0 4px; font-size: 21px; font-weight: 600; }
+header p { color: #91a4ae; font-size: 12px; margin: 0; }
+.search-label { margin: 22px 8px 8px; }
+#filter { margin: 0 4px 14px; padding: 10px 11px; background: #10161c; color: #e7edf1; border: 1px solid #303d47; border-radius: 5px; outline: none; font: 12px Manrope, sans-serif; }
+#filter:focus { border-color: #59baa8; }
+#asset-list { overflow: auto; min-height: 0; }
+.asset-button { display: block; width: 100%; text-align: left; cursor: pointer; color: #dbe4e9; background: none; border: 0; border-radius: 5px; padding: 10px 11px; }
+.asset-button:hover, .asset-button.active { background: #24353a; }
+.asset-button strong { display: block; font-size: 12px; font-weight: 600; }
+.asset-button small { color: #93a4ac; font: 10px 'DM Mono', monospace; }
+footer { color: #71828b; font: 9px 'DM Mono', monospace; padding: 13px 8px 0; }
+main { position: relative; min-width: 0; min-height: 0; background: #161d23; }
+#viewer { position: absolute; inset: 0; }
+#viewer canvas { display: block; width: 100%; height: 100%; }
+.viewer-title { position: absolute; top: 24px; left: 28px; display: grid; gap: 3px; pointer-events: none; text-shadow: 0 2px 8px #000; }
+.viewer-title span { font-size: 16px; font-weight: 600; }
+.viewer-title small { color: #a8bac3; font: 10px 'DM Mono', monospace; text-transform: uppercase; }
+#toolbar { position: absolute; right: 20px; top: 20px; display: flex; align-items: center; gap: 17px; padding: 10px 13px; color: #ced9de; background: #11171dcc; border: 1px solid #334049; border-radius: 5px; font: 11px 'DM Mono', monospace; }
+#toolbar label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+#toolbar input { accent-color: #55b7a4; }
+#stats { color: #94a8b2; border-left: 1px solid #39464e; padding-left: 14px; white-space: nowrap; }
+#message { position: absolute; left: 50%; bottom: 25px; transform: translateX(-50%); padding: 9px 14px; color: #dce7eb; background: #11171ddd; border: 1px solid #35434b; border-radius: 4px; font-size: 12px; pointer-events: none; opacity: 0; transition: opacity .2s; }
+#message.visible { opacity: 1; }
+@media (max-width: 700px) { body { grid-template-columns: 210px 1fr; } #toolbar { top: auto; bottom: 15px; left: 12px; right: 12px; justify-content: space-between; gap: 6px; padding: 8px; font-size: 9px; } #stats { padding-left: 8px; } }

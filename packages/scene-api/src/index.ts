@@ -110,6 +110,12 @@ const WALKABLE_ROLES = new Set(["floor", "stairs_ramps", "walkable", "ramp", "st
 const COLLIDER_ROLES = new Set(["wall", "walls", "barriers", "barrier", "transport", "collider"]);
 /** Camera-only: hidden like "collider" unless showColliders. Opt-in by role or name, never inferred from "ceiling". */
 const CAMERA_ROLES = new Set(["camera_blocker"]);
+/**
+ * Visual-only meshes the follow camera may see through (hanging signs). They never block the walker or the
+ * camera; the explorer fades them where they come between the camera and the avatar or within its near
+ * distance. A mesh that is also walkable or a collider is never faded.
+ */
+const SEE_THROUGH_ROLES = new Set(["sign", "signs", "signage"]);
 
 /**
  * glTF extras arrive as userData; also accept "<role>" or "<role>_<n>" object names. A role is trimmed and
@@ -122,7 +128,7 @@ export function roleOf(object: THREE.Object3D): string | null {
   const authored = typeof object.userData?.name === "string" ? (object.userData.name as string) : null;
   for (const raw of authored === null ? [object.name] : [authored, object.name]) {
     const name = raw.toLowerCase();
-    for (const role of [...WALKABLE_ROLES, ...COLLIDER_ROLES, ...CAMERA_ROLES]) if (name === role || name.startsWith(`${role}_`) || name.startsWith(`${role}.`)) return role;
+    for (const role of [...WALKABLE_ROLES, ...COLLIDER_ROLES, ...CAMERA_ROLES, ...SEE_THROUGH_ROLES]) if (name === role || name.startsWith(`${role}_`) || name.startsWith(`${role}.`)) return role;
   }
   return null;
 }
@@ -164,4 +170,19 @@ export function sceneFromGlbRoles(root: THREE.Object3D, opts: { showColliders?: 
     });
   }
   return { walkable, colliders, cameraBlockers };
+}
+
+/**
+ * Meshes under `root` whose own or inherited role is a see-through role (see SEE_THROUGH_ROLES). Works on any
+ * scene root, including scene modules that tag a whole group (e.g. merged signage) with `gteki_role: "sign"`.
+ */
+export function seeThroughMeshes(root: THREE.Object3D): THREE.Object3D[] {
+  const found: THREE.Object3D[] = [];
+  const visit = (object: THREE.Object3D, inherited: string | null) => {
+    const role = roleOf(object) ?? inherited;
+    if ((object as THREE.Mesh).isMesh === true && role !== null && SEE_THROUGH_ROLES.has(role)) found.push(object);
+    for (const child of object.children) visit(child, role);
+  };
+  visit(root, null);
+  return found;
 }
