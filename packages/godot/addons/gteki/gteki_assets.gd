@@ -219,12 +219,12 @@ func _tag_roles(node: Node, inherited: String = "") -> void:
 		if is_mesh:
 			counts.collider += 1
 			if role == "collider":
-				node.visible = false
+				_hide_own_geometry(node)
 	elif role in CAMERA:
 		node.set_meta("gteki_camera_blocker", true)
 		if is_mesh:
 			counts.camera_blocker += 1
-			node.visible = false
+			_hide_own_geometry(node)
 	elif role in SEE_THROUGH and is_mesh:
 		node.set_meta("gteki_see_through", true)
 	# Snapshot children first: collision creation adds a StaticBody3D child that needs no tagging.
@@ -239,3 +239,13 @@ func _tag_roles(node: Node, inherited: String = "") -> void:
 				body.collision_mask = 0
 	for child in children:
 		_tag_roles(child, role)
+
+
+## Hide a mesh's own geometry (as on the web): a leaf is made invisible; a mesh with meshes below it (which
+## may carry their own visible role, e.g. a sign under a ceiling slab) leaves no render layer instead, so its
+## subtree stays drawn.
+func _hide_own_geometry(mesh: MeshInstance3D) -> void:
+	if mesh.find_children("*", "MeshInstance3D", true, false).is_empty():
+		mesh.visible = false
+	else:
+		mesh.layers = 0

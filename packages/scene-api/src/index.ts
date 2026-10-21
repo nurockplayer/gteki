@@ -134,6 +134,26 @@ export function roleOf(object: THREE.Object3D): string | null {
 }
 
 /**
+ * Hide a mesh's own geometry. A leaf is simply made invisible; a mesh with meshes below it (which may carry
+ * their own visible role, e.g. a sign under a ceiling slab) keeps its subtree drawn and gets invisible copies
+ * of its materials instead. Ray tests ignore visibility either way.
+ */
+function hideOwnGeometry(mesh: THREE.Mesh): void {
+  let meshBelow = false;
+  for (const child of mesh.children) child.traverse((o) => { if ((o as THREE.Mesh).isMesh === true) meshBelow = true; });
+  if (!meshBelow) {
+    mesh.visible = false;
+    return;
+  }
+  const hidden = (material: THREE.Material) => {
+    const copy = material.clone();
+    copy.visible = false;
+    return copy;
+  };
+  mesh.material = Array.isArray(mesh.material) ? mesh.material.map(hidden) : hidden(mesh.material);
+}
+
+/**
  * Classify a GLB scene by `gteki_role`: floor/stairs_ramps → walkable, wall/barriers → colliders,
  * camera_blocker → cameraBlockers (hidden, camera only).
  * Collider-only meshes are hidden unless `showColliders`. Children inherit their parent's role.
@@ -152,10 +172,10 @@ export function sceneFromGlbRoles(root: THREE.Object3D, opts: { showColliders?: 
       if (WALKABLE_ROLES.has(role)) walkable.push(object);
       else if (COLLIDER_ROLES.has(role)) {
         colliders.push(object);
-        if (role === "collider" && !opts.showColliders) object.visible = false;
+        if (role === "collider" && !opts.showColliders) hideOwnGeometry(object as THREE.Mesh);
       } else if (CAMERA_ROLES.has(role)) {
         cameraBlockers.push(object);
-        if (!opts.showColliders) object.visible = false;
+        if (!opts.showColliders) hideOwnGeometry(object as THREE.Mesh);
       }
     }
     for (const child of object.children) visit(child, role);

@@ -165,6 +165,17 @@ func test_generated_glb(station_root: Node3D) -> void:
 	sign_face.mesh = BoxMesh.new()
 	signage.add_child(sign_face)
 	sign_face.owner = source
+	# A camera blocker slab parenting a sign: the slab is hidden, the sign under it stays drawn and see-through.
+	var soffit := MeshInstance3D.new()
+	soffit.name = "camera_blocker_soffit"
+	soffit.mesh = BoxMesh.new()
+	source.add_child(soffit)
+	soffit.owner = source
+	var soffit_sign := MeshInstance3D.new()
+	soffit_sign.name = "sign_under_soffit"
+	soffit_sign.mesh = BoxMesh.new()
+	soffit.add_child(soffit_sign)
+	soffit_sign.owner = source
 	var document := GLTFDocument.new()
 	var state := GLTFState.new()
 	var export_error := document.append_from_scene(source, state)
@@ -189,8 +200,9 @@ func test_generated_glb(station_root: Node3D) -> void:
 	check(assets.load_assets(manifest, "user://", station_root), "generated GLBs reimport through manifest: %s" % str(assets.issues))
 	# Meshes per asset: walkable floor, stairs_ramps, floor_001 and the floor/" FLOOR " groups' children; colliding wall,
 	# barriers and the wall group's child. The collision asset also turns its untagged box and both signs into colliders.
-	# Two camera blockers per asset (one by extras, one by name prefix); in the collision asset they stay camera-only.
-	check(assets.counts == {"assets": 3, "walkable": 15, "collider": 12, "camera_blocker": 6}, "GLB names/extras/prefixes/inherited roles classify like the web; manifest collision role covers untagged meshes: %s" % str(assets.counts))
+	# Three camera blockers per asset (extras, name prefix, a soffit parenting a sign); in the collision asset they stay camera-only.
+	# The collision asset also turns the sign under the soffit into a collider.
+	check(assets.counts == {"assets": 3, "walkable": 15, "collider": 13, "camera_blocker": 9}, "GLB names/extras/prefixes/inherited roles classify like the web; manifest collision role covers untagged meshes: %s" % str(assets.counts))
 	var collision_only := station_root.get_node_or_null("collision_only") as Node3D
 	if collision_only != null:
 		var grouped_mesh := collision_only.find_child("grouped_mesh", true, false)
@@ -205,7 +217,7 @@ func test_generated_glb(station_root: Node3D) -> void:
 		var bodies := transformed.find_children("*", "StaticBody3D", true, false)
 		check(bodies.filter(func(b): return b.collision_layer == 1).size() == 3, "wall/barrier meshes, including an inherited wall child, create colliders")
 		var camera_bodies := bodies.filter(func(b): return b.collision_layer == Assets.CAMERA_LAYER and b.collision_mask == 0)
-		check(camera_bodies.size() == 2, "camera blockers collide on the camera layer only, never with walking bodies")
+		check(camera_bodies.size() == 3, "camera blockers collide on the camera layer only, never with walking bodies")
 		for name in ["slab_cap", "camera_blocker_b1"]:
 			var blocker := transformed.find_child(name, true, false) as MeshInstance3D
 			check(blocker != null and blocker.has_meta("gteki_camera_blocker") and not blocker.visible and not blocker.has_meta("gteki_collider"), "%s is a hidden camera-only blocker" % name)
@@ -213,6 +225,10 @@ func test_generated_glb(station_root: Node3D) -> void:
 		check(identity.transform == Transform3D.IDENTITY, "omitted asset transform is identity")
 		var see_through := [identity.find_child("sign_board", true, false), identity.find_child("face_panel", true, false)]
 		check(see_through.all(func(m): return m != null and m.has_meta("gteki_see_through") and not m.has_meta("gteki_collider") and m.visible), "a sign_ name and a mesh inheriting a signage group are see-through and visible, never colliders")
+		var soffit_mesh := identity.find_child("camera_blocker_soffit", true, false) as MeshInstance3D
+		var under := identity.find_child("sign_under_soffit", true, false) as MeshInstance3D
+		check(soffit_mesh != null and soffit_mesh.layers == 0 and soffit_mesh.has_meta("gteki_camera_blocker"), "a camera blocker parenting a mesh hides its own geometry only")
+		check(under != null and under.is_visible_in_tree() and under.layers != 0 and under.has_meta("gteki_see_through") and not under.has_meta("gteki_camera_blocker"), "a sign under a camera blocker keeps its own role and stays drawn")
 	if collision_only != null:
 		var solid_signs := [collision_only.find_child("sign_board", true, false), collision_only.find_child("face_panel", true, false)]
 		check(solid_signs.all(func(m): return m != null and m.has_meta("gteki_collider") and not m.has_meta("gteki_see_through")), "a collision asset's signs collide and are not see-through")

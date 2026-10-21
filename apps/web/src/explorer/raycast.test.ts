@@ -295,5 +295,30 @@ describe("camera-only blockers", () => {
     expect(seeThroughMeshes(root)).toEqual([signUnder]);
     expect(signUnder.visible).toBe(true);
   });
+
+  it("hide only their own geometry, so a sign mesh below a blocker mesh stays drawn", () => {
+    const material = new THREE.MeshBasicMaterial();
+    const slab = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), material);
+    slab.name = "camera_blocker_slab";
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), material);
+    sign.name = "sign_exit";
+    slab.add(sign);
+    const leaf = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), material);
+    leaf.name = "camera_blocker_leaf";
+    const root = new THREE.Group().add(slab, leaf);
+    const roles = sceneFromGlbRoles(root);
+    expect(roles.cameraBlockers).toEqual([slab, leaf]);
+    expect(seeThroughMeshes(root)).toEqual([sign]);
+    expect(slab.visible).toBe(true);
+    expect((slab.material as THREE.Material).visible).toBe(false);
+    // The shared material is copied, never changed, so the sign still draws.
+    expect(material.visible).toBe(true);
+    expect(sign.visible && (sign.material as THREE.Material).visible).toBe(true);
+    expect(leaf.visible).toBe(false);
+    // A hidden blocker still stops the camera.
+    root.updateMatrixWorld(true);
+    const t = explorerTargets([], [], roles.cameraBlockers);
+    expect(castAll(new THREE.Raycaster(new THREE.Vector3(0.5, 0.5, 3), new THREE.Vector3(0, 0, -1)), t.camera)[0]?.object).toBe(slab);
+  });
 });
 
