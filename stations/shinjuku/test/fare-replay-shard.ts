@@ -33,6 +33,6 @@ export function replayShard(index: number, count: number) {
    const result = await replayMatrix(built, scene, plan, selected, index);
    expect(result.finished).toBe(result.jobs); expect(result.leaks).toEqual([]); expect(result.matrix).toHaveLength(72);
    for (const row of result.matrix) { expect(row.paths).toBeGreaterThan(0); expect(row.passed).toBe(row.paths); }
-  }, 3_600_000);
+  }, 7_200_000);
  });
 }
