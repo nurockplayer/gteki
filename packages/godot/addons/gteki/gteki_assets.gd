@@ -2,19 +2,23 @@ extends RefCounted
 ## Runtime glTF loading; geometry roles are display/physics hints, never routing evidence.
 
 const Station = preload("res://addons/gteki/gteki_station.gd")
-# Same role vocabulary as @gteki/scene-api (WALKABLE_ROLES / COLLIDER_ROLES / SEE_THROUGH_ROLES).
+# Same role vocabulary as @gteki/scene-api (WALKABLE_ROLES / COLLIDER_ROLES / CAMERA_ROLES / SEE_THROUGH_ROLES).
 const WALKABLE = ["floor", "stairs_ramps", "walkable", "ramp", "stairs"]
 const COLLIDER = ["wall", "walls", "barriers", "barrier", "transport", "collider"]
+## Camera-only (ceilings, slab undersides): hidden, and they collide on CAMERA_LAYER only, so a camera arm
+## (e.g. SpringArm3D with this mask) stops at them while walking bodies on layer 1 pass through.
+const CAMERA = ["camera_blocker"]
+const CAMERA_LAYER := 1 << 1
 ## Visual-only signage a follow camera may see through; tagged gteki_see_through, never collides.
 const SEE_THROUGH = ["sign", "signs", "signage"]
 
 var issues: Array[String] = []
-var counts: Dictionary = {"assets": 0, "walkable": 0, "collider": 0}
+var counts: Dictionary = {"assets": 0, "walkable": 0, "collider": 0, "camera_blocker": 0}
 
 
 func load_assets(manifest: Dictionary, gteki_dir: String, station_root: Node3D) -> bool:
 	issues.clear()
-	counts = {"assets": 0, "walkable": 0, "collider": 0}
+	counts = {"assets": 0, "walkable": 0, "collider": 0, "camera_blocker": 0}
 	for asset in manifest.get("assets", []):
 		if not asset is Dictionary or asset.get("format") != "glb" or not asset.get("uri") is String:
 			issues.append("Expected a manifest GLB asset")
@@ -36,7 +40,7 @@ func load_assets(manifest: Dictionary, gteki_dir: String, station_root: Node3D) 
 			issues.append("GLB references external buffers/images; only self-contained GLBs load: %s" % uri)
 			continue
 		load_glb(resolved, station_root, asset.get("id", "asset"), matrix, str(asset.get("role", "visual")))
-	print("GLB assets=%d walkable=%d collider=%d" % [counts.assets, counts.walkable, counts.collider])
+	print("GLB assets=%d walkable=%d collider=%d camera_blocker=%d" % [counts.assets, counts.walkable, counts.collider, counts.camera_blocker])
 	return issues.is_empty()
 
 
@@ -71,7 +75,7 @@ func load_glb(path: String, station_root: Node3D, asset_id: String = "asset", ma
 func _apply_asset_role(node: Node, asset_role: String) -> void:
 	if node is MeshInstance3D:
 		# Inherited roles are already tagged on the mesh itself by _tag_roles.
-		if not node.has_meta("gteki_walkable") and not node.has_meta("gteki_collider"):
+		if not node.has_meta("gteki_walkable") and not node.has_meta("gteki_collider") and not node.has_meta("gteki_camera_blocker"):
 			node.set_meta("gteki_collider", true)
 			# A collider is never see-through (as on the web).
 			node.remove_meta("gteki_see_through")
@@ -194,7 +198,7 @@ static func _own_role(node: Node) -> String:
 	if not role.is_empty():
 		return role
 	var name := str(node.name).to_lower()
-	for candidate in WALKABLE + COLLIDER + SEE_THROUGH:
+	for candidate in WALKABLE + COLLIDER + CAMERA + SEE_THROUGH:
 		if name == candidate or name.begins_with(candidate + "_") or name.begins_with(candidate + "."):
 			return candidate
 	return ""
@@ -215,12 +219,37 @@ func _tag_roles(node: Node, inherited: String = "") -> void:
 		if is_mesh:
 			counts.collider += 1
 			if role == "collider":
-				node.visible = false
+				_hide_own_geometry(node)
+	elif role in CAMERA:
+		node.set_meta("gteki_camera_blocker", true)
+		if is_mesh:
+			counts.camera_blocker += 1
+			_hide_own_geometry(node)
 	elif role in SEE_THROUGH and is_mesh:
 		node.set_meta("gteki_see_through", true)
 	# Snapshot children first: collision creation adds a StaticBody3D child that needs no tagging.
 	var children := node.get_children()
 	if is_mesh and role in COLLIDER and node.mesh != null:
 		node.create_trimesh_collision()
+	if is_mesh and role in CAMERA and node.mesh != null:
+		node.create_trimesh_collision()
+		for body in node.get_children():
+			if body is StaticBody3D and not body in children:
+				body.collision_layer = CAMERA_LAYER
+				body.collision_mask = 0
+				# A ceiling stops the camera from below whatever way its normals face (as the web's double-sided test).
+				for shape_node in body.get_children():
+					if shape_node is CollisionShape3D and shape_node.shape is ConcavePolygonShape3D:
+						shape_node.shape.backface_collision = true
 	for child in children:
 		_tag_roles(child, role)
+
+
+## Hide a mesh's own geometry (as on the web): a leaf is made invisible; a mesh with meshes below it (which
+## may carry their own visible role, e.g. a sign under a ceiling slab) leaves no render layer instead, so its
+## subtree stays drawn.
+func _hide_own_geometry(mesh: MeshInstance3D) -> void:
+	if mesh.find_children("*", "MeshInstance3D", true, false).is_empty():
+		mesh.visible = false
+	else:
+		mesh.layers = 0

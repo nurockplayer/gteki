@@ -46,8 +46,25 @@ export function followPose(head: THREE.Vector3, yaw: number, pitch: number, shou
   return { pivot, back, target };
 }
 
-/** Camera distance along `back` given the first obstruction (if any) at `hitDistance`. */
-export function clampDistance(wanted: number, hitDistance: number | null): number {
+/**
+ * Camera distance along `back` given the first obstruction (if any) at `hitDistance`. A camera-only
+ * blocker (a ceiling) may pull the camera in past the usual minimum, down to the pivot, so a low ceiling
+ * at a steep pitch never pushes it through.
+ */
+export function clampDistance(wanted: number, hitDistance: number | null, cameraOnly = false): number {
   if (hitDistance === null) return wanted;
-  return Math.max(FOLLOW.minDistance, Math.min(wanted, hitDistance - FOLLOW.clearance));
+  return Math.max(cameraOnly ? 0 : FOLLOW.minDistance, Math.min(wanted, hitDistance - FOLLOW.clearance));
+}
+
+/**
+ * Camera distance for the ray's hits (nearest first). The nearest obstruction clamps as usual; a
+ * camera-only blocker (a ceiling) then bounds the distance on its own, even behind a nearer wall whose
+ * minimum would otherwise hold the camera past it.
+ */
+export function followDistance(wanted: number, hits: readonly { distance: number; cameraOnly: boolean }[]): number {
+  const first = hits[0];
+  let distance = clampDistance(wanted, first?.distance ?? null, first?.cameraOnly ?? false);
+  const blocker = hits.find((h) => h.cameraOnly);
+  if (blocker) distance = Math.min(distance, Math.max(0, blocker.distance - FOLLOW.clearance));
+  return distance;
 }
