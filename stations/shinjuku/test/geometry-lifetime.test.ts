@@ -45,10 +45,9 @@ describe("station geometry lifetime", () => {
     expect(result.retired).toBeGreaterThan(30_000); // exercise the real PLATEAU and station merges
     expect(result.retained).toBe(0);
     expect(result.live).toBe(136);
-    expect(result.bytes).toBe(11_570_910);
-    // Round 5 splits access signs into source-restricted and generic closed wording.
-    // Local clipping changes one fence endpoint by 0.000017 m and reorders one ring;
-    // a second sign material group adds one live geometry. Regenerated with retained-geometry.ts.
-    expect(result.geometryHash).toBe("7df7512b3866ea13e98883dfcbfb213c25f17e4cf0f31284b98c8ba45bba917d");
+    expect(result.bytes).toBe(13_280_466);
+    // Round 7 fences the restricted remainder around verified corridors; regenerated with
+    // test/helpers/retained-geometry.ts. Retired arrays must still be collectible.
+    expect(result.geometryHash).toBe("38112954136b01e85bc28db2976a2ba2c3171b214b14d43db3eff285e8768b70");
   }, 60_000);
 });
