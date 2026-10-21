@@ -178,6 +178,8 @@ Evidence stills:
   the connector is a `stair_end` node on surveyed B1 floor at the PLATEAU wall opening the
   official map places the exit at. The climb itself is not modelled or claimed, and the opening
   renders as haze.
+  The POI keeps its plain name ("Exit 4"); at a `stair_end` connector the shared narration says
+  "Stairs to Exit 4 start here" (core #21).
 - **Free walking stays on verified floor.** Surveyed floor outside the routable areas, such as
   the JR–Tobu passage (`gap-tobu-jr-link`), the Yurakucho gate area (`gap-south-west`) or the
   passage west from slice 3, stays visible but cannot be entered. `pipeline/build_access.py`
