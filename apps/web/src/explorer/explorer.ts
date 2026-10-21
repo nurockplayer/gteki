@@ -31,6 +31,7 @@ import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWal
 import { OcclusionSweep, labelState, onFocusFloor, type LabelState } from "./labelVisibility.ts";
 import { TriangleBvh, segmentHitsBox, type Cull } from "./triangleBvh.ts";
 import { cacheBvh, currentBvh, prepareRayTrees } from "./meshBvh.ts";
+import { occludedLineStyle, type OccludedLineStyle } from "./occludedLine.ts";
 
 export type ExplorerMode = "overview" | "walk" | "guide";
 
@@ -125,6 +126,8 @@ export class Explorer {
   private readonly street = new StreetBackdrop();
   /** Render height of the station's street floor when it is an underground (scene-lit) station, else null. */
   private streetY: number | null = null;
+  /** Set by each discrete placement (walkFrom, startGuide); consumed by the next frame outside overview. */
+  private teleported = false;
   private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
   private readonly probeDown = new THREE.Vector3(0, -1, 0);
   private readonly probeNormal = new THREE.Vector3();
@@ -162,6 +165,7 @@ export class Explorer {
   private seeThrough: THREE.Object3D[] = [];
   private readonly cameraCut = new CameraCut();
   private routeTexture: THREE.CanvasTexture | null = null;
+  private routeLines: OccludedLineStyle | null = null;
 
   private readonly avatar = new THREE.Group();
   private avatarRig: AvatarRig | null = null;
@@ -244,7 +248,7 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; street: { active: boolean; opacity: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
@@ -252,6 +256,7 @@ export class Explorer {
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
+      street: { active: this.street.active, opacity: Math.round(this.street.opacity * 1000) / 1000 },
     };
   }
 
@@ -403,6 +408,7 @@ export class Explorer {
       this.world.add(this.stationScene.root);
       this.overlays.add(this.graph.overlay);
       this.graph.overlay.visible = false;
+      this.graph.setXray(this.mode === "overview");
       this.walkable = this.stationScene.walkable;
       this.colliders = this.stationScene.colliders ?? [];
       this.cameraBlockers = this.stationScene.cameraBlockers ?? [];
@@ -519,6 +525,8 @@ export class Explorer {
     if (mode === "overview") this.orbit.target.copy(this.pos);
     const xray = this.routeGroup.getObjectByName("route-xray");
     if (xray) xray.visible = mode === "overview";
+    this.routeLines?.setXray(mode === "overview");
+    this.graph?.setXray(mode === "overview");
     if (mode === "overview") this.street.restore(this.scene);
     this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
@@ -540,6 +548,7 @@ export class Explorer {
     const ground = this.groundAt(p.x, p.y + 1.5, p.z, 4);
     if (ground === null) return false;
     this.pos.set(p.x, ground, p.z);
+    this.teleported = true;
     this.yaw = (-headingDeg * Math.PI) / 180;
     this.stopGuide();
     this.setMode("walk");
@@ -586,9 +595,10 @@ export class Explorer {
     const mat = new THREE.MeshBasicMaterial({ map: this.routeTexture, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
     const ribbon = new THREE.Mesh(ribbonGeometry(pts, 1.1, 0.07), mat);
     ribbon.renderOrder = 5;
-    const glowMat = new THREE.LineBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.9, depthTest: false, toneMapped: false });
-    const glow = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map((p) => p.clone().add(new THREE.Vector3(0, 0.12, 0)))), glowMat);
-    glow.renderOrder = 6;
+    // Depth-tested glow plus a faint dashed pass where a wall hides it; overview keeps the always-on-top look.
+    this.routeLines = occludedLineStyle(0x5ef0ff, 0.9);
+    this.routeLines.setXray(this.mode === "overview");
+    const glow = this.routeLines.lines(new THREE.BufferGeometry().setFromPoints(pts.map((p) => p.clone().add(new THREE.Vector3(0, 0.12, 0)))), 6);
     // Symbolic (unknown) heights are drawn dashed above the ribbon so they read as approximate.
     const symbolic = polyline.some((p) => !p.zKnown);
     // X-ray copy so the route stays readable through ceilings/slabs in overview.
@@ -597,7 +607,7 @@ export class Explorer {
     xray.renderOrder = 20;
     xray.name = "route-xray";
     xray.visible = this.mode === "overview";
-    this.routeGroup.add(ribbon, glow, xray);
+    this.routeGroup.add(ribbon, ...glow, xray);
     this.routeGroup.add(this.beacon(pts[0]!, 0x7dffa0, 2.2), this.beacon(pts[pts.length - 1]!, 0xffc857, 5));
     this.routeGroup.userData = { symbolicHeights: symbolic };
   }
@@ -623,6 +633,7 @@ export class Explorer {
     }
     this.routeTexture?.dispose();
     this.routeTexture = null;
+    this.routeLines = null;
   }
 
   /** Floating labels at each POI's verified entrance (or display position when search-only). */
@@ -855,6 +866,7 @@ export class Explorer {
     this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
+    this.teleported = true;
     if (first.tx || first.tz) this.yaw = Math.atan2(-first.tx, -first.tz);
     this.setMode("guide");
   }
@@ -950,8 +962,12 @@ export class Explorer {
 
     if (this.mode !== "overview") {
       this.placeCamera(dt);
+      // A teleport re-probes at once and snaps the backdrop to its target (no daylight carried underground).
+      const snap = this.teleported;
+      this.teleported = false;
+      if (snap) this.streetProbe.at.set(Infinity, 0, 0);
       this.updateStreetProbe(dt);
-      this.street.update(this.scene, this.camera, this.pos, this.streetProbe.outdoors, dt, this.streetProbe.level);
+      this.street.update(this.scene, this.camera, this.pos, this.streetProbe.outdoors, dt, this.streetProbe.level, snap);
     }
     // Signs between the follow camera and the avatar (or inside its near distance) are cut, never collided with.
     this.camera.updateMatrixWorld();

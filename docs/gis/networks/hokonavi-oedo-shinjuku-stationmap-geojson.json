@@ -24,6 +24,7 @@
         139.69941646785284,
         35.68890725467192
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -178,6 +179,7 @@
         139.69942685661496,
         35.68890888471321
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -329,6 +331,7 @@
         139.69942685661493,
         35.68890888471321
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -491,6 +494,7 @@
         139.6994982570718,
         35.68892650608127
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -643,6 +647,7 @@
         139.69956007354568,
         35.689036892457274
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -794,6 +799,7 @@
         139.69956007354565,
         35.689036892457274
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -954,6 +960,7 @@
         139.69957489954618,
         35.688561766073896
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -1106,6 +1113,7 @@
         139.6996556695029,
         35.68859084464786
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -1257,6 +1265,7 @@
         139.69965566950293,
         35.68859084464783
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -1417,6 +1426,7 @@
         139.69932328880526,
         35.68880846669198
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -1569,6 +1579,7 @@
         139.69933683874092,
         35.688864827641275
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -1720,6 +1731,7 @@
         139.69933683874092,
         35.68886482764128
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -1880,6 +1892,7 @@
         139.6989314341892,
         35.688948306820954
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -2031,6 +2044,7 @@
         139.69894806200864,
         35.68903059209285
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -2182,6 +2196,7 @@
         139.69894806200864,
         35.68903059209284
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -2341,6 +2356,7 @@
         139.69932331972637,
         35.6888971587508
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -2492,6 +2508,7 @@
         139.69938490951193,
         35.689030734734104
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -2643,6 +2660,7 @@
         139.69938490951193,
         35.68903073473409
       ],
+      "bbox_status": "COMPUTED",
       "headers": [
         "FID",
         "category",
@@ -2787,7 +2805,7 @@
     "files": 18,
     "features": 465
   },
-  "tool_input_sha256": "7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad049a2",
+  "tool_input_sha256": "fa67960baf2d610307b5452d7a16bfa613558f97326b347eb2fd12af98ee4f73",
   "input_sources": [
     {
       "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
