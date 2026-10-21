@@ -39,6 +39,7 @@ pnpm typecheck
   guided walk and free walk run there.
 - **Capture tooling** (dev only): `gt.capture(name)` and `gt.walkCapture(...)` write frames to
   `build/captures/`.
+- **Repeater-sign screenshots and atlas-size probe** (opt-in, needs a real GPU and a built `apps/web`; run from `tests/e2e`): `GTEKI_REPEATERS=1 GTEKI_ROOT=<checkout> pnpm exec playwright test specs/11-ikebukuro-repeater-signs.spec.ts --project=desktop-chromium` (or `--project=phone-chromium` for the low tier); writes `.qa/ikebukuro-repeaters/`.
 
 ## Layout
 
