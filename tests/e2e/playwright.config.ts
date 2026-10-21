@@ -12,8 +12,11 @@ const port = Number(process.env.GTEKI_PORT ?? 5270);
 const baseURL = process.env.GTEKI_BASE_URL ?? `http://127.0.0.1:${port}`;
 const root = process.env.GTEKI_ROOT;
 
-// Real GPU where the host has one; the probe records which renderer was actually used.
-const gpuArgs = ["--enable-gpu", "--ignore-gpu-blocklist", "--use-angle=metal", "--enable-unsafe-webgpu"];
+// Real GPU where the host has one; the probe records which renderer was actually used. CI runners have
+// none, so CI=1 selects software WebGL (SwiftShader): fine for DOM/HUD smoke, never valid for perf or visuals.
+const gpuArgs = process.env.CI
+  ? ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"]
+  : ["--enable-gpu", "--ignore-gpu-blocklist", "--use-angle=metal", "--enable-unsafe-webgpu"];
 // Chromium projects drive Brave on the dev Mac (machine policy: never Chrome); GTEKI_BROWSER overrides
 // the executable. Without either, Playwright's bundled Chromium is used (e.g. a Linux CI runner).
 const brave = "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser";

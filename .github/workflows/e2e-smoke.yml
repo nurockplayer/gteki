@@ -1,0 +1,67 @@
+name: E2E smoke
+
+on:
+  # No path filter on PRs: this will become a required check, and a path-filtered required
+  # check never reports on PRs outside its paths, leaving them blocked. Non-required for now.
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-smoke:
+    name: e2e-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # pnpm version comes from the root package.json packageManager.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: |
+            pnpm-lock.yaml
+            tests/e2e/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      # The harness never builds product code: it serves this built apps/web via vite preview.
+      - run: pnpm build
+
+      # The harness is not a workspace member, so it installs on its own.
+      - name: Install Playwright harness
+        working-directory: tests/e2e
+        run: |
+          pnpm install --ignore-workspace --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+
+      # Software WebGL (SwiftShader, picked by CI=1 in the config) is enough here: these two specs assert
+      # DOM/HUD state and the instruction flow, not visuals or performance. 05-performance and the visual
+      # specs stay local on a real GPU. Single worker comes from the config (workers: 1).
+      - name: Run smoke specs
+        timeout-minutes: 10
+        working-directory: tests/e2e
+        env:
+          GTEKI_ROOT: ${{ github.workspace }}
+        run: pnpm exec playwright test specs/01-smoke.spec.ts specs/03-guided-walkthrough.spec.ts --project=desktop-chromium --trace=off
+
+      # Failure only, and small: screenshots, error context and videos; no HTML report, no traces.
+      - name: Upload failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-smoke-results
+          path: |
+            tests/e2e/artifacts/results.json
+            tests/e2e/artifacts/test-results
+          retention-days: 7
+          if-no-files-found: ignore
