@@ -683,8 +683,8 @@ export class Explorer {
   /**
    * Candidate occluders, fixed at load (trees are never built mid-frame): every station mesh plus the
    * walkable/collider meshes. Whether and how each one blocks is decided per sweep frame:
-   * - proxies (the meshes the walker and follow camera ray-test, see castTargets) block even when
-   *   hidden or detached, from either side;
+   * - proxies (the walkable/collider meshes the walker ray-tests, see explorerTargets; never camera-only
+   *   blockers) block even when hidden or detached, from either side;
    * - other meshes block while drawn under this scene with an opaque, filled material;
    * - deforming meshes (skinned, morphed, batched) never block, since a static BVH cannot follow them;
    * - instanced crowds (DynamicDrawUsage) and instance sets above MAX_OCCLUDER_INSTANCES block only as
@@ -706,7 +706,9 @@ export class Explorer {
       });
     };
     root.traverse(add);
-    this.proxies = new Set(this.cameraTargets);
+    // Walls and floors only: a camera-only blocker is hidden geometry and never hides a label (a drawn one
+    // still occludes as a visual mesh above).
+    this.proxies = new Set(this.skyTargets);
     for (const p of this.proxies) add(p);
     this.labelSweepDoneAt = -Infinity;
   }

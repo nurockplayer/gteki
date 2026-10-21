@@ -117,30 +117,34 @@ const CAMERA_ROLES = new Set(["camera_blocker"]);
  */
 const SEE_THROUGH_ROLES = new Set(["sign", "signs", "signage"]);
 
-/** userData flag on objects GLTFLoader names after a mesh resource rather than a node (see glbPrimitivePlugin). */
-const GLB_PRIMITIVE = "gteki_glb_primitive";
+/** userData flags set by glbPrimitivePlugin: the object was loaded from a GLB / it is a glTF node itself. */
+const GLB_OBJECT = "gteki_glb";
+const GLB_NODE = "gteki_glb_node";
 
 /**
- * A GLTFLoader plugin (`loader.register(glbPrimitivePlugin)`) that flags the objects GLTFLoader builds for a
- * glTF mesh but that are not the node itself: the meshes of a multi-primitive mesh, and a mesh wrapped in a
- * Group because its node also carries a camera or light. They are named after the mesh resource, so their
- * names (and mesh-level extras) never give them a role: they inherit the node's, as in Godot, which keeps one
- * node with its surfaces. Every mesh object is flagged on load and the node object is unflagged once built.
- * The flag is in userData, so it holds in every scene of a file and survives `clone()`. The explorer's
- * `loadGlb` registers it.
+ * A GLTFLoader plugin (`loader.register(glbPrimitivePlugin)`) that keeps GLB roles on what each glTF node
+ * authored, as in Godot: its own `extras.gteki_role` and its authored name (never the loader's sanitised
+ * runtime name). Objects GLTFLoader builds for a node's resources (the meshes of a multi-primitive mesh, a
+ * mesh, camera or light wrapped in the node's Group) and resource-level extras (mesh, camera, light) never
+ * give a role; such objects inherit their node's. An unnamed node takes a role from its extras only. The flags
+ * are in userData, so they hold in every scene of a file and survive `clone()`. The explorer's `loadGlb`
+ * registers it.
  */
 export function glbPrimitivePlugin(parser: GLTFParser): GLTFLoaderPlugin {
+  const nodes = (parser.json as { nodes?: { extras?: { gteki_role?: unknown } }[] }).nodes ?? [];
   return {
     name: "gteki_glb_primitives",
-    loadMesh: async (meshIndex: number) => {
-      const mesh = await parser.loadMesh(meshIndex);
-      mesh.traverse((object) => { object.userData[GLB_PRIMITIVE] = true; });
-      return mesh;
-    },
     loadNode: async (nodeIndex: number) => {
       const node = await parser.loadNode(nodeIndex);
-      delete node.userData[GLB_PRIMITIVE];
+      node.userData[GLB_NODE] = true;
+      // Extras merged in from the node's mesh / camera / light resource never count; the node's own do.
+      const own = nodes[nodeIndex]?.extras?.gteki_role;
+      if (own === undefined) delete node.userData.gteki_role;
+      else node.userData.gteki_role = own;
       return node;
+    },
+    afterRoot: async (gltf: GLTF) => {
+      for (const scene of gltf.scenes) scene.traverse((object) => { object.userData[GLB_OBJECT] = true; });
     },
   };
 }
@@ -150,12 +154,15 @@ export function glbPrimitivePlugin(parser: GLTFParser): GLTFLoaderPlugin {
  * lowercased, and an empty one counts as absent (same normalisation as the Godot loader).
  */
 export function roleOf(object: THREE.Object3D): string | null {
-  if (object.userData?.[GLB_PRIMITIVE] === true) return null;
+  const glb = object.userData?.[GLB_OBJECT] === true;
+  // A GLB object that is not a glTF node (see glbPrimitivePlugin) has no role of its own.
+  if (glb && object.userData?.[GLB_NODE] !== true) return null;
   const extra = object.userData?.gteki_role;
   if (typeof extra === "string" && extra.trim() !== "") return extra.trim().toLowerCase();
-  // GLTFLoader sanitises node names ("floor.001" → "floor001") and keeps the authored one in userData.name.
+  // GLTFLoader sanitises node names ("floor.001" → "floor001") and keeps the authored one in userData.name;
+  // a GLB node matches its authored name only (an unnamed one has none).
   const authored = typeof object.userData?.name === "string" ? (object.userData.name as string) : null;
-  for (const raw of authored === null ? [object.name] : [authored, object.name]) {
+  for (const raw of glb ? (authored === null ? [] : [authored]) : authored === null ? [object.name] : [authored, object.name]) {
     const name = raw.toLowerCase();
     for (const role of [...WALKABLE_ROLES, ...COLLIDER_ROLES, ...CAMERA_ROLES, ...SEE_THROUGH_ROLES]) if (name === role || name.startsWith(`${role}_`) || name.startsWith(`${role}.`)) return role;
   }
@@ -163,14 +170,12 @@ export function roleOf(object: THREE.Object3D): string | null {
 }
 
 /**
- * Hide a mesh's own geometry. A leaf is simply made invisible; a mesh with meshes below it (which may carry
- * their own visible role, e.g. a sign under a ceiling slab) keeps its subtree drawn and gets invisible copies
+ * Hide a mesh's own geometry. A leaf is simply made invisible; a mesh with anything below it (a mesh with its
+ * own visible role, e.g. a sign under a ceiling slab, or a light) keeps its subtree and gets invisible copies
  * of its materials instead. Ray tests ignore visibility either way.
  */
 function hideOwnGeometry(mesh: THREE.Mesh): void {
-  let meshBelow = false;
-  for (const child of mesh.children) child.traverse((o) => { if ((o as THREE.Mesh).isMesh === true) meshBelow = true; });
-  if (!meshBelow) {
+  if (mesh.children.length === 0) {
     mesh.visible = false;
     return;
   }
