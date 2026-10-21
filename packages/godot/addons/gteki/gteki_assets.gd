@@ -245,11 +245,11 @@ func _tag_roles(node: Node, inherited: String = "") -> void:
 		_tag_roles(child, role)
 
 
-## Hide a mesh's own geometry (as on the web): a leaf is made invisible; a mesh with meshes below it (which
-## may carry their own visible role, e.g. a sign under a ceiling slab) leaves no render layer instead, so its
-## subtree stays drawn.
+## Hide a mesh's own geometry (as on the web): a leaf is made invisible; a mesh with anything below it (a mesh
+## with its own visible role, e.g. a sign under a ceiling slab, or a light) leaves no render layer instead, so
+## its subtree stays drawn and lit.
 func _hide_own_geometry(mesh: MeshInstance3D) -> void:
-	if mesh.find_children("*", "MeshInstance3D", true, false).is_empty():
+	if mesh.get_child_count() == 0:
 		mesh.visible = false
 	else:
 		mesh.layers = 0

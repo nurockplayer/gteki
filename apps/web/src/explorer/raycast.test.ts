@@ -423,5 +423,16 @@ describe("camera-only blockers", () => {
     // A single-primitive mesh is the node itself and keeps its node name ("single", no role).
     expect(node("single").type).toBe("Mesh");
   });
+
+  it("hide only their own geometry when a light hangs below them", () => {
+    const slab = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.MeshBasicMaterial());
+    slab.name = "camera_blocker_lit";
+    const lamp = new THREE.PointLight();
+    slab.add(lamp);
+    sceneFromGlbRoles(new THREE.Group().add(slab));
+    expect(slab.visible).toBe(true);
+    expect((slab.material as THREE.Material).visible).toBe(false);
+    expect(lamp.visible).toBe(true);
+  });
 });
 

@@ -163,14 +163,12 @@ export function roleOf(object: THREE.Object3D): string | null {
 }
 
 /**
- * Hide a mesh's own geometry. A leaf is simply made invisible; a mesh with meshes below it (which may carry
- * their own visible role, e.g. a sign under a ceiling slab) keeps its subtree drawn and gets invisible copies
+ * Hide a mesh's own geometry. A leaf is simply made invisible; a mesh with anything below it (a mesh with its
+ * own visible role, e.g. a sign under a ceiling slab, or a light) keeps its subtree and gets invisible copies
  * of its materials instead. Ray tests ignore visibility either way.
  */
 function hideOwnGeometry(mesh: THREE.Mesh): void {
-  let meshBelow = false;
-  for (const child of mesh.children) child.traverse((o) => { if ((o as THREE.Mesh).isMesh === true) meshBelow = true; });
-  if (!meshBelow) {
+  if (mesh.children.length === 0) {
     mesh.visible = false;
     return;
   }
