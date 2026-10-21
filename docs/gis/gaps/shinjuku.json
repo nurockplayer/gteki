@@ -1,6 +1,6 @@
 {
   "station_id": "shinjuku",
-  "tool_input_sha256": "d4016a37d52926e3d2949a1b18065bb446be16d3601ba47645df6ca5b399575f",
+  "tool_input_sha256": "83fd7ac8caa689ecae6899516d471d0427ac76672f73ba0143fee6339ba9f2d0",
   "poi_content": [
     {
       "source_id": "tokyo-s10-shinjuku-csv",

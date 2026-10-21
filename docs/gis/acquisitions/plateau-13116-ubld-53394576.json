@@ -6,8 +6,8 @@
     "sha256": "7e5abc031afa5ab9f4e0da1df9b7e3413d642c7cbdeb6de6f909b4a23a9737ad",
     "json_pointer": "/cities/0/files/ubld/0/url"
   },
-  "requested_at": "2026-10-20T23:49:04.645Z",
-  "completed_at": "2026-10-20T23:49:04.966Z",
+  "requested_at": "2026-10-21T00:03:16.981Z",
+  "completed_at": "2026-10-21T00:03:17.685Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "text/xml; charset=utf-8",
@@ -20,14 +20,14 @@
   "sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
   "store_path": "raw/38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09/53394576_ubld_6697_op.gml",
   "tool_version": "0.1.0",
-  "git_commit": "1edc408eae2b971714ff9a25ebe9abac788c36ee",
+  "git_commit": "9106749653bcce2d2ce1270a71a07d0d09ce2c52",
   "expected_bytes": 35427963,
   "expected_url_match": true,
   "size_check": "MATCH",
   "mode": "online",
   "last_offline_check": {
-    "requested_at": "2026-10-20T23:52:46.763Z",
-    "completed_at": "2026-10-20T23:52:46.763Z",
+    "requested_at": "2026-10-21T00:06:55.117Z",
+    "completed_at": "2026-10-21T00:06:55.117Z",
     "tool_version": "0.1.0",
     "sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
     "bytes": 35427963,

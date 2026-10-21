@@ -2,21 +2,21 @@
   "source_id": "tokyo-s10-catalog",
   "resolved_url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000039",
   "resolution_evidence": null,
-  "requested_at": "2026-10-20T23:49:06.843Z",
-  "completed_at": "2026-10-20T23:49:06.909Z",
+  "requested_at": "2026-10-21T00:03:20.117Z",
+  "completed_at": "2026-10-21T00:03:20.197Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/json;charset=utf-8",
     "content-length": null,
     "etag": null,
     "last-modified": null,
-    "date": "Tue, 20 Oct 2026 23:49:06 GMT"
+    "date": "Wed, 21 Oct 2026 00:03:20 GMT"
   },
   "bytes": 38551,
   "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
   "store_path": "raw/c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea/package_show",
   "tool_version": "0.1.0",
-  "git_commit": "1edc408eae2b971714ff9a25ebe9abac788c36ee",
+  "git_commit": "9106749653bcce2d2ce1270a71a07d0d09ce2c52",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
@@ -36,9 +36,9 @@
       "requested_url": "https://catalog.data.metro.tokyo.lg.jp/terms",
       "url": "https://catalog.data.metro.tokyo.lg.jp/terms",
       "http_status": 403,
-      "sha256": "8c680c9ca58cca2dfc3bbba2b05a5454e92c046fbb247c0ca67a6c6c3fa000e1",
+      "sha256": "f45dae6e81929ed54329a242f1ca962c85c5b236aad98c2a6a326ca210b01e93",
       "bytes": 919,
-      "store_path": "raw/8c680c9ca58cca2dfc3bbba2b05a5454e92c046fbb247c0ca67a6c6c3fa000e1/terms"
+      "store_path": "raw/f45dae6e81929ed54329a242f1ca962c85c5b236aad98c2a6a326ca210b01e93/terms"
     },
     {
       "id": "tokyo-site-terms",
@@ -96,8 +96,8 @@
     }
   ],
   "last_offline_check": {
-    "requested_at": "2026-10-20T23:52:47.101Z",
-    "completed_at": "2026-10-20T23:52:47.101Z",
+    "requested_at": "2026-10-21T00:06:55.407Z",
+    "completed_at": "2026-10-21T00:06:55.407Z",
     "tool_version": "0.1.0",
     "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
     "bytes": 38551,

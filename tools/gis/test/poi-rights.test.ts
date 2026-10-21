@@ -3,7 +3,7 @@ import { decodeText, fieldStatistics, inventoryCsv, inventoryJson, bboxRelation 
 import { compareFeatureCollections, attachVerifiedOrigin } from '../src/related.js';
 import { evaluateRights, evaluateRightsRecords, snapshotText } from '../src/rights.js';
 import { projectRights, rightsScopeMarkdown } from '../src/rights-view.js';
-import { missingEvidenceHolds, projectPoiContent } from '../src/gaps.js';
+import { missingEvidenceHolds, projectPoiContent, rightsRelevant } from '../src/gaps.js';
 import { legacyFetchStatement, termsFetchStatement } from '../src/poi-research.js';
 
 // SYNTHETIC rights and content fixtures; no real station data or legal text.
@@ -185,5 +185,16 @@ describe('opening times and gap POI projection', () => {
       station_relevance: [{ station_id: 'ikebukuro', relation: 'DISJOINT' }] };
     expect(projectPoiContent(report, 'shinjuku')).toMatchObject({ source_id: 'poi-a', routable: false, station_relevance: [] });
     expect(projectPoiContent(report, 'ikebukuro')).toBeNull();
+  });
+});
+
+describe('gap rights follow admitted POI sources', () => {
+  it('includes rights for a bbox-admitted source and holds it when missing', () => {
+    const admitted = new Set(['related-a']);
+    expect(rightsRelevant({ source_id: 'related-a', station_ids: ['shinjuku'] }, 'ikebukuro', admitted)).toBe(true);
+    expect(rightsRelevant({ source_id: 'related-b', station_ids: ['shinjuku'] }, 'ikebukuro', admitted)).toBe(false);
+    expect(rightsRelevant({ source_id: 'related-b', station_ids: ['ikebukuro'] }, 'ikebukuro', new Set())).toBe(true);
+    expect(missingEvidenceHolds('ikebukuro', {}, { 'related-a': null }, { 'related-a': ['shinjuku'] }, admitted)).toEqual(['related-a: rights evidence UNKNOWN; report missing.']);
+    expect(missingEvidenceHolds('ikebukuro', {}, { 'related-a': null }, { 'related-a': ['shinjuku'] })).toEqual([]);
   });
 });

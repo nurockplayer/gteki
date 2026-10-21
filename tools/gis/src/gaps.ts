@@ -25,15 +25,20 @@ export function projectPoiContent(report: any, stationId: string): any | null {
   };
 }
 
+/** Rights belong in a packet for the stations the manifest names and for every POI source the packet admits. */
+export function rightsRelevant(report: any, stationId: string, admittedPoiIds: ReadonlySet<string>): boolean {
+  return Boolean(report?.station_ids?.includes(stationId) || admittedPoiIds.has(report?.source_id));
+}
+
 /**
  * Each expected report that is absent is its own HOLD. A missing POI report leaves
  * its station relevance uncomputable, so it is held for every station; a missing
  * rights report is held for the stations its manifest entry names (all, if unnamed).
  */
-export function missingEvidenceHolds(stationId: string, poi: Record<string, unknown>, rights: Record<string, unknown>, manifestStations: Record<string, readonly string[] | undefined>): string[] {
+export function missingEvidenceHolds(stationId: string, poi: Record<string, unknown>, rights: Record<string, unknown>, manifestStations: Record<string, readonly string[] | undefined>, admittedPoiIds: ReadonlySet<string> = new Set()): string[] {
   return [
     ...Object.entries(poi).filter(([, report]) => !report).map(([id]) => `${id}: POI content evidence UNKNOWN; report missing, so station relevance cannot be computed.`),
-    ...Object.entries(rights).filter(([id, report]) => !report && (manifestStations[id]?.includes(stationId) ?? true)).map(([id]) => `${id}: rights evidence UNKNOWN; report missing.`),
+    ...Object.entries(rights).filter(([id, report]) => !report && ((manifestStations[id]?.includes(stationId) ?? true) || admittedPoiIds.has(id))).map(([id]) => `${id}: rights evidence UNKNOWN; report missing.`),
   ];
 }
 
@@ -119,8 +124,9 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
     const network = await maybeReport(`networks/${station.network}.json`);
     const overlap = await maybeReport(`overlap/${station.id}.json`) as StationOverlapReport | null;
     const poiReports = Object.values(poiById).filter(Boolean);
-    const rightsReports = Object.values(rightsById).filter(report => report?.station_ids?.includes(station.id));
     const poiContent = poiReports.map(report => projectPoiContent(report, station.id)).filter(Boolean);
+    const admittedPoiIds = new Set<string>(poiContent.map(report => report.source_id));
+    const rightsReports = Object.values(rightsById).filter(report => rightsRelevant(report, station.id, admittedPoiIds));
     const rightsContent = rightsReports.flatMap(report => report.records.map((row: any) => projectRights(report, row)));
     const semanticFacts = literalFacts(inventory);
     const relevant = {
@@ -147,7 +153,7 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
     if(station.id==='ikebukuro')holds.push('R1 CRS is INFERRED_FROM_SPEC; all endpoint and overlap metrics relying on it are CONDITIONAL_ON_INFERRED_CRS. Distance evidence cannot identify the datum.');
     holds.push('POI, S03 and related-layer publish gates remain HOLD. Rights clearance never establishes navigability.');
     for (const row of rightsContent) if(row.verdict !== 'CLEARED_WITH_CONDITIONS') holds.push(`${row.source_id}${row.layer ? ` / ${row.layer}` : ''}: ${row.verdict}; ${row.reason}; ${rightsScopeMarkdown(row)}`);
-    holds.push(...missingEvidenceHolds(station.id, poiById, rightsById, manifestStations));
+    holds.push(...missingEvidenceHolds(station.id, poiById, rightsById, manifestStations, admittedPoiIds));
     const markdown = [
       `# ${station.id[0]!.toUpperCase()}${station.id.slice(1)} evidence-gap packet`,
       '',

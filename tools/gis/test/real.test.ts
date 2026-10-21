@@ -1,6 +1,7 @@
 import { relatedIdentity } from '../src/related.js';
 import { createHash } from 'node:crypto';
-import { RIGHTS_SOURCES } from '../src/poi.js';
+import { POI_SOURCES, RIGHTS_SOURCES } from '../src/poi.js';
+import { projectPoiContent, rightsRelevant } from '../src/gaps.js';
 import { verifyEvidence, evaluateRightsRecords } from '../src/rights.js';
 import { projectRights, rightsScopeMarkdown } from '../src/rights-view.js';
 import { readJson } from '../src/common.js';
@@ -68,7 +69,10 @@ describe.skipIf(!available)('real acquired sources (optional external store)',()
     for(const station of ['shinjuku','ikebukuro']){
       const gap=await readJson<any>(join(docsRoot,'gis','gaps',`${station}.json`));
       const markdown=await readFile(join(docsRoot,'gis','gaps',`${station}.md`),'utf8');
-      const expected=reports.filter(report=>report.station_ids.includes(station)).flatMap(report=>report.records.map((row:any)=>projectRights(report,row)));
+      const poiReports=await Promise.all(POI_SOURCES.map(id=>readJson<any>(join(docsRoot,'gis','poi',`${id}.json`))));
+      const admitted=new Set<string>(poiReports.map(report=>projectPoiContent(report,station)).filter(Boolean).map((report:any)=>report.source_id));
+      expect(gap.poi_content.map((report:any)=>report.source_id)).toEqual([...admitted]);
+      const expected=reports.filter(report=>rightsRelevant(report,station,admitted)).flatMap(report=>report.records.map((row:any)=>projectRights(report,row)));
       expect(gap.resource_rights).toEqual(expected);
       for(const row of expected)expect(markdown).toContain(rightsScopeMarkdown(row));
     }

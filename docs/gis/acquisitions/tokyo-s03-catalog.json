@@ -2,21 +2,21 @@
   "source_id": "tokyo-s03-catalog",
   "resolved_url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000008d0000000037",
   "resolution_evidence": null,
-  "requested_at": "2026-10-20T23:49:08.119Z",
-  "completed_at": "2026-10-20T23:49:08.176Z",
+  "requested_at": "2026-10-21T00:03:21.466Z",
+  "completed_at": "2026-10-21T00:03:21.525Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/json;charset=utf-8",
     "content-length": null,
     "etag": null,
     "last-modified": null,
-    "date": "Tue, 20 Oct 2026 23:49:08 GMT"
+    "date": "Wed, 21 Oct 2026 00:03:21 GMT"
   },
   "bytes": 4486,
   "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
   "store_path": "raw/f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96/package_show",
   "tool_version": "0.1.0",
-  "git_commit": "1edc408eae2b971714ff9a25ebe9abac788c36ee",
+  "git_commit": "9106749653bcce2d2ce1270a71a07d0d09ce2c52",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
@@ -36,23 +36,23 @@
       "requested_url": "https://www.toshiseibi.metro.tokyo.lg.jp/kotsu_butsuryu/kotsuseisaku/kotsu_suishin/shinjuku_shisetsu",
       "url": "https://www.toshiseibi.metro.tokyo.lg.jp/kotsu_butsuryu/kotsuseisaku/kotsu_suishin/shinjuku_shisetsu",
       "http_status": 200,
-      "sha256": "d8949b4eb24f8235a07d340ee1bd15fa4091afc0151dcf78173226a8d5cdc6c1",
-      "bytes": 517456,
-      "store_path": "raw/d8949b4eb24f8235a07d340ee1bd15fa4091afc0151dcf78173226a8d5cdc6c1/shinjuku_shisetsu"
+      "sha256": "18f258cb87e90aeff7d0fdca675aa3fcee67e9b79a6ea7f3d600f5714330ed9f",
+      "bytes": 515899,
+      "store_path": "raw/18f258cb87e90aeff7d0fdca675aa3fcee67e9b79a6ea7f3d600f5714330ed9f/shinjuku_shisetsu"
     },
     {
       "id": "tokyo-bureau-policy",
       "requested_url": "https://www.toshiseibi.metro.tokyo.lg.jp/policy",
       "url": "https://www.toshiseibi.metro.tokyo.lg.jp/policy",
       "http_status": 200,
-      "sha256": "03f4c64b35af69b47722e3bb72314ef2dd5506c1946947805dffd0db725d2e88",
+      "sha256": "0ea3c8db1ca5417577d4f32d0ab26e577f17c5e4521a4a12cf27a8022e660514",
       "bytes": 602216,
-      "store_path": "raw/03f4c64b35af69b47722e3bb72314ef2dd5506c1946947805dffd0db725d2e88/policy"
+      "store_path": "raw/0ea3c8db1ca5417577d4f32d0ab26e577f17c5e4521a4a12cf27a8022e660514/policy"
     }
   ],
   "last_offline_check": {
-    "requested_at": "2026-10-20T23:52:47.163Z",
-    "completed_at": "2026-10-20T23:52:47.163Z",
+    "requested_at": "2026-10-21T00:06:55.462Z",
+    "completed_at": "2026-10-21T00:06:55.462Z",
     "tool_version": "0.1.0",
     "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
     "bytes": 4486,

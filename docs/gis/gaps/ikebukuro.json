@@ -1,6 +1,6 @@
 {
   "station_id": "ikebukuro",
-  "tool_input_sha256": "d4016a37d52926e3d2949a1b18065bb446be16d3601ba47645df6ca5b399575f",
+  "tool_input_sha256": "83fd7ac8caa689ecae6899516d471d0427ac76672f73ba0143fee6339ba9f2d0",
   "poi_content": [
     {
       "source_id": "plateau-13104-related",
@@ -780,6 +780,372 @@
     }
   ],
   "resource_rights": [
+    {
+      "source_id": "plateau-13104-related",
+      "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
+      "layer": null,
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": "UNKNOWN",
+        "assessment": "Mixed origin terms; assess individual layers after verified identity."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "UNKNOWN",
+      "reason": "Explicit coverage of the exact resource; Archive contains mixed origin terms; split and apply the individual layer records.; Third-party permission or exclusion-free product subset; Established commercial_use permission; Established redistribution permission; Established modification_allowed permission; Explicit resource- or dataset-level licence; site/origin terms alone do not cover this derivative",
+      "evidence_ids": [
+        "plateau-13104-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13104-related-catalog#resource",
+        "plateau-13104-related-catalog#policy-link"
+      ],
+      "missing_evidence": [
+        "Explicit coverage of the exact resource",
+        "Archive contains mixed origin terms; split and apply the individual layer records.",
+        "Third-party permission or exclusion-free product subset",
+        "Established commercial_use permission",
+        "Established redistribution permission",
+        "Established modification_allowed permission",
+        "Explicit resource- or dataset-level licence; site/origin terms alone do not cover this derivative"
+      ],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13104-related",
+      "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
+      "layer": "13104_shinjuku-ku_pref_2023_shelter.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "RESTRICTED",
+      "reason": "Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.",
+      "evidence_ids": [
+        "plateau-13104-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13104-related-catalog#resource",
+        "plateau-13104-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13104-related-shelter-asset-origin",
+        "plateau-related-provenance#plateau-13104-related-shelter-asset-date",
+        "plateau-related-provenance#plateau-13104-related-shelter-asset-creator",
+        "plateau-related-provenance#ksj-p20",
+        "plateau-related-provenance#ksj-exception-heading",
+        "plateau-related-provenance#ksj-old-rule",
+        "plateau-related-provenance#non-commercial",
+        "plateau-related-provenance#no-copy-redistribution",
+        "plateau-related-provenance#non-database-exception"
+      ],
+      "missing_evidence": [],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13104-related",
+      "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
+      "layer": "13104_shinjuku-ku_pref_2023_park.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "RESTRICTED",
+      "reason": "Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.",
+      "evidence_ids": [
+        "plateau-13104-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13104-related-catalog#resource",
+        "plateau-13104-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13104-related-park-asset-origin",
+        "plateau-related-provenance#plateau-13104-related-park-asset-date",
+        "plateau-related-provenance#plateau-13104-related-park-asset-creator",
+        "plateau-related-provenance#ksj-p13",
+        "plateau-related-provenance#ksj-exception-heading",
+        "plateau-related-provenance#ksj-old-rule",
+        "plateau-related-provenance#non-commercial",
+        "plateau-related-provenance#no-copy-redistribution",
+        "plateau-related-provenance#non-database-exception"
+      ],
+      "missing_evidence": [],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13104-related",
+      "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
+      "layer": "13104_shinjuku-ku_pref_2025_landmark.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": "UNKNOWN",
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "UNKNOWN",
+      "reason": "Published downstream scope and required wording of 令7関公第296号; an approval number alone is not permission.; Downstream survey approval scope and required approval wording are unpublished; Third-party permission or exclusion-free product subset; Established commercial_use permission; Established redistribution permission; Established modification_allowed permission; Verified derivative grant and CC BY 4.0 origin permission",
+      "evidence_ids": [
+        "plateau-13104-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13104-related-catalog#resource",
+        "plateau-13104-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13104-related-landmark-asset-origin",
+        "plateau-related-provenance#plateau-13104-related-landmark-asset-date",
+        "plateau-related-provenance#plateau-13104-related-landmark-asset-creator",
+        "plateau-related-provenance#plateau-13104-related-landmark-asset-converter",
+        "plateau-related-provenance#plateau-13104-related-landmark-asset-approval",
+        "plateau-related-provenance#gsi-origin",
+        "plateau-related-provenance#gsi-terms",
+        "plateau-related-provenance#gsi-survey",
+        "plateau-related-provenance#approval-distinction",
+        "plateau-related-provenance#approval-wording"
+      ],
+      "missing_evidence": [
+        "Published downstream scope and required wording of 令7関公第296号; an approval number alone is not permission.",
+        "Downstream survey approval scope and required approval wording are unpublished",
+        "Third-party permission or exclusion-free product subset",
+        "Established commercial_use permission",
+        "Established redistribution permission",
+        "Established modification_allowed permission",
+        "Verified derivative grant and CC BY 4.0 origin permission"
+      ],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13104-related",
+      "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
+      "layer": "13104_shinjuku-ku_pref_2025_station.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "CLEARED_WITH_CONDITIONS",
+      "reason": "Verified CC BY 4.0 origin plus PLATEAU PDL 1.0/CC BY alternative; retain TP+TN attribution, modifications and supplied survey notices.",
+      "evidence_ids": [
+        "plateau-13104-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13104-related-catalog#resource",
+        "plateau-13104-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13104-related-station-asset-origin",
+        "plateau-related-provenance#plateau-13104-related-station-asset-date",
+        "plateau-related-provenance#plateau-13104-related-station-asset-creator",
+        "plateau-related-provenance#plateau-13104-related-station-asset-converter",
+        "plateau-related-provenance#ksj-n02-2024",
+        "plateau-related-provenance#railway-year-range"
+      ],
+      "missing_evidence": [],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13104-related",
+      "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
+      "layer": "13104_shinjuku-ku_pref_2025_railway.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "CLEARED_WITH_CONDITIONS",
+      "reason": "Verified CC BY 4.0 origin plus PLATEAU PDL 1.0/CC BY alternative; retain TP+TN attribution, modifications and supplied survey notices.",
+      "evidence_ids": [
+        "plateau-13104-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13104-related-catalog#resource",
+        "plateau-13104-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13104-related-railway-asset-origin",
+        "plateau-related-provenance#plateau-13104-related-railway-asset-date",
+        "plateau-related-provenance#plateau-13104-related-railway-asset-creator",
+        "plateau-related-provenance#ksj-n02-2024",
+        "plateau-related-provenance#railway-year-range"
+      ],
+      "missing_evidence": [],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13104-related",
+      "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
+      "layer": "13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "RESTRICTED",
+      "reason": "Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.",
+      "evidence_ids": [
+        "plateau-13104-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13104-related-catalog#resource",
+        "plateau-13104-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13104-related-emergency-route-asset-origin",
+        "plateau-related-provenance#plateau-13104-related-emergency-route-asset-date",
+        "plateau-related-provenance#plateau-13104-related-emergency-route-asset-creator",
+        "plateau-related-provenance#ksj-n10-2024",
+        "plateau-related-provenance#ksj-exception-heading",
+        "plateau-related-provenance#ksj-old-rule",
+        "plateau-related-provenance#non-commercial",
+        "plateau-related-provenance#no-copy-redistribution",
+        "plateau-related-provenance#non-database-exception"
+      ],
+      "missing_evidence": [],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
+    {
+      "source_id": "plateau-13104-related",
+      "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
+      "layer": "13104_shinjuku-ku_pref_2025_border.geojson",
+      "scope": "Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "verdict": "CLEARED_WITH_CONDITIONS",
+      "reason": "Verified CC BY 4.0 origin plus PLATEAU PDL 1.0/CC BY alternative; retain TP+TN attribution, modifications and supplied survey notices.",
+      "evidence_ids": [
+        "plateau-13104-related-catalog#licence",
+        "plateau-related-provenance#policy-scope",
+        "plateau-related-provenance#plateau-credit",
+        "plateau-related-provenance#plateau-cc-alternative",
+        "plateau-related-provenance#pdl-commercial",
+        "plateau-related-provenance#pdl-third-party",
+        "plateau-related-provenance#trademarks-excluded",
+        "plateau-related-provenance#legal-modifications",
+        "plateau-13104-related-catalog#resource",
+        "plateau-13104-related-catalog#policy-link",
+        "plateau-related-provenance#plateau-13104-related-border-asset-origin",
+        "plateau-related-provenance#plateau-13104-related-border-asset-date",
+        "plateau-related-provenance#plateau-13104-related-border-asset-creator",
+        "plateau-related-provenance#plateau-13104-related-border-asset-converter",
+        "plateau-related-provenance#ksj-n03-2025",
+        "plateau-related-provenance#border-approval"
+      ],
+      "missing_evidence": [],
+      "publish_gate": "HOLD",
+      "routable": false
+    },
     {
       "source_id": "plateau-13116-related",
       "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
@@ -2916,6 +3282,11 @@
     "Applicable walking-network specification version remains UNKNOWN; decoded labels and rank checks are literal consistency evidence only.",
     "R1 CRS is INFERRED_FROM_SPEC; all endpoint and overlap metrics relying on it are CONDITIONAL_ON_INFERRED_CRS. Distance evidence cannot identify the datum.",
     "POI, S03 and related-layer publish gates remain HOLD. Rights clearance never establishes navigability.",
+    "plateau-13104-related: UNKNOWN; Explicit coverage of the exact resource; Archive contains mixed origin terms; split and apply the individual layer records.; Third-party permission or exclusion-free product subset; Established commercial_use permission; Established redistribution permission; Established modification_allowed permission; Explicit resource- or dataset-level licence; site/origin terms alone do not cover this derivative; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":\"UNKNOWN\",\"assessment\":\"Mixed origin terms; assess individual layers after verified identity.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"].",
+    "plateau-13104-related / 13104_shinjuku-ku_pref_2023_shelter.geojson: RESTRICTED; Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":false,\"assessment\":\"Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"].",
+    "plateau-13104-related / 13104_shinjuku-ku_pref_2023_park.geojson: RESTRICTED; Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":false,\"assessment\":\"Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"].",
+    "plateau-13104-related / 13104_shinjuku-ku_pref_2025_landmark.geojson: UNKNOWN; Published downstream scope and required wording of 令7関公第296号; an approval number alone is not permission.; Downstream survey approval scope and required approval wording are unpublished; Third-party permission or exclusion-free product subset; Established commercial_use permission; Established redistribution permission; Established modification_allowed permission; Verified derivative grant and CC BY 4.0 origin permission; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":\"UNKNOWN\",\"assessment\":\"Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"].",
+    "plateau-13104-related / 13104_shinjuku-ku_pref_2025_emergency_route.geojson: RESTRICTED; Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":false,\"assessment\":\"Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"].",
     "plateau-13116-related: UNKNOWN; Explicit coverage of the exact resource; Archive contains mixed origin terms; split and apply the individual layer records.; Third-party permission or exclusion-free product subset; Established commercial_use permission; Established redistribution permission; Established modification_allowed permission; Explicit resource- or dataset-level licence; site/origin terms alone do not cover this derivative; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":\"UNKNOWN\",\"assessment\":\"Mixed origin terms; assess individual layers after verified identity.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"].",
     "plateau-13116-related / 13116_toshima-ku_pref_2023_shelter.geojson: RESTRICTED; Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":false,\"assessment\":\"Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"].",
     "plateau-13116-related / 13116_toshima-ku_pref_2023_park.geojson: RESTRICTED; Verified origin product is non-commercial; old KSJ terms exclude redistribution of copies. Requested commercial/derived-data redistribution is restricted.; Scope: Commercial public Web3D/product reuse, modification and redistribution of this exact related layer, its factual labels/geometry and upstream data. Whole ZIP requires splitting.. Third-party exclusions: {\"items\":[\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"],\"applies_to_scope\":false,\"assessment\":\"Exact origin and PLATEAU grant assessed jointly for neutral geometry/factual labels only; excluded branding and expressive content are outside scope.\"}. Not covered: [\"Logos, photographs, artwork and linked websites are outside the assessed data scope.\",\"Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.\",\"Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established.\"].",

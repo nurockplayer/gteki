@@ -8,7 +8,7 @@ import { readdir,writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { docsRoot,readJson,writeJson } from './common.js';
 import { toolFingerprint } from './provenance.js';
-import { GAP_STATION_IDS, projectPoiContent } from './gaps.js';
+import { GAP_STATION_IDS, projectPoiContent, rightsRelevant } from './gaps.js';
 const root=join(docsRoot,'gis');
 function networkSourceHashes(report:any):Array<[string,string]>{
   const pairs:Array<[string,string]>=[];
@@ -79,12 +79,13 @@ for(const id of gapStations)if(!GAP_STATION_IDS.includes(id))summaryProblems.pus
 for(const gap of gaps){
   if(gap.tool_input_sha256!==snapshot)summaryProblems.push(`Gap ${gap.station_id} has stale fingerprint`);
   // Match gap-packet's manifest order, independent of the filesystem's sorted report names.
+  const expectedPoi=POI_SOURCES.map(id=>poi.find(report=>report.source_id===id)).filter(Boolean).map(report=>projectPoiContent(report,gap.station_id)).filter(Boolean);
+  const admittedPoiIds=new Set<string>(expectedPoi.map((report:any)=>report.source_id));
   const expectedRights=RIGHTS_SOURCES.flatMap(id=>{
     const report=rights.find(report=>report.source_id===id);
-    return report?.station_ids.includes(gap.station_id)?report.records.map((row:any)=>projectRights(report,row)):[];
+    return report&&rightsRelevant(report,gap.station_id,admittedPoiIds)?report.records.map((row:any)=>projectRights(report,row)):[];
   });
   if(!isDeepStrictEqual(gap.resource_rights,expectedRights))summaryProblems.push(`Gap ${gap.station_id} drops or changes rights scope/exclusions`);
-  const expectedPoi=POI_SOURCES.map(id=>poi.find(report=>report.source_id===id)).filter(Boolean).map(report=>projectPoiContent(report,gap.station_id)).filter(Boolean);
   if(!isDeepStrictEqual(gap.poi_content,expectedPoi))summaryProblems.push(`Gap ${gap.station_id} drops or changes POI content`);
   for(const row of gap.resource_rights??[])if(acquiredSha.get(row.source_id)!==row.source_sha256)summaryProblems.push(`Gap ${gap.station_id} has stale rights input ${row.source_id}`);
   for(const row of gap.poi_content??[])if(acquiredSha.get(row.source_id)!==row.source_sha256)summaryProblems.push(`Gap ${gap.station_id} has stale POI input ${row.source_id}`);
