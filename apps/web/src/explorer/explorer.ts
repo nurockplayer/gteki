@@ -128,6 +128,8 @@ export class Explorer {
   private streetY: number | null = null;
   /** Set by each discrete placement (walkFrom, startGuide); consumed by the next frame outside overview. */
   private teleported = false;
+  /** A teleport made while already walking/guiding: the follow camera jumps with the walker instead of gliding. */
+  private snapCamera = false;
   private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
   private readonly probeDown = new THREE.Vector3(0, -1, 0);
   private readonly probeNormal = new THREE.Vector3();
@@ -527,7 +529,7 @@ export class Explorer {
     if (xray) xray.visible = mode === "overview";
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
-    if (mode === "overview") this.street.restore(this.scene);
+    if (mode === "overview") { this.street.restore(this.scene); this.snapCamera = false; }
     this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
   }
@@ -549,7 +551,11 @@ export class Explorer {
     if (ground === null) return false;
     this.pos.set(p.x, ground, p.z);
     this.teleported = true;
+    this.snapCamera = this.mode !== "overview";
     this.yaw = (-headingDeg * Math.PI) / 180;
+    // The avatar appears at the new spot facing the new heading (no run blend from the old one).
+    this.lastAvatarPos.copy(this.pos);
+    this.bodyYaw = this.yaw;
     this.stopGuide();
     this.setMode("walk");
     return true;
@@ -867,7 +873,10 @@ export class Explorer {
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
     this.teleported = true;
+    this.snapCamera = this.mode !== "overview";
     if (first.tx || first.tz) this.yaw = Math.atan2(-first.tx, -first.tz);
+    this.lastAvatarPos.copy(this.pos);
+    this.bodyYaw = this.yaw;
     this.setMode("guide");
   }
 
@@ -961,7 +970,8 @@ export class Explorer {
     else this.orbit.update();
 
     if (this.mode !== "overview") {
-      this.placeCamera(dt);
+      this.placeCamera(dt, this.snapCamera);
+      this.snapCamera = false;
       // A teleport re-probes at once and snaps the backdrop to its target (no daylight carried underground).
       const snap = this.teleported;
       this.teleported = false;
@@ -1065,7 +1075,7 @@ export class Explorer {
     p.level = atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
   }
 
-  private placeCamera(dt: number): void {
+  private placeCamera(dt: number, snap = false): void {
     const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
     if (this.firstPerson) {
@@ -1095,7 +1105,7 @@ export class Explorer {
       ({ back, distance: dist } = this.blockerTargets.size ? followBoom(this.camDistance, pose.back, cast) : { back: pose.back, distance: followDistance(this.camDistance, cast(pose.back)) });
     }
     const desired = pose.pivot.clone().addScaledVector(back, dist);
-    this.camera.position.lerp(desired, 1 - Math.exp(-dt * 10));
+    this.camera.position.lerp(desired, snap ? 1 : 1 - Math.exp(-dt * 10));
     // The smoothed position, not only the target, stays below camera-only blockers.
     if (this.blockerTargets.size) keepBelowBlockers(pose.pivot, this.camera.position, [...this.blockerTargets], FOLLOW.clearance, this.ray);
     this.camera.lookAt(pose.target);
