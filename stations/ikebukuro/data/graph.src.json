@@ -140,7 +140,7 @@
     "url": "https://creativecommons.org/licenses/by/4.0/"
    },
    "rights": "REUSABLE_WITH_CONDITIONS",
-   "attribution": "Contains PLATEAU data (MLIT), CC BY 4.0. Modified: reprojected to a local ENU frame, triangulated and re-encoded by GTEki.",
+   "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
    "modified": true,
    "retrievedAt": "2026-10-20T10:44:13Z",
    "sha256": {
