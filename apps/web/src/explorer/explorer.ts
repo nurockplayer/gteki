@@ -10,9 +10,10 @@ import type { Router, PolylinePoint } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
-import { WALKER_BODY } from "@gteki/scene-api";
+import { WALKER_BODY, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
+import { CameraCut } from "./cameraCut.ts";
 import { manifestScene } from "./manifestScene.ts";
 import { castAll, castTargets } from "./raycast.ts";
 import { advanceGuide } from "./guideStops.ts";
@@ -80,6 +81,9 @@ export class Explorer {
   private cameraTargets: THREE.Object3D[] = [];
   private colliders: THREE.Object3D[] = [];
   private walls: Segment2[] = [];
+  /** Visual-only signage the follow camera sees through (never walkable or a collider), as actually cut. */
+  private seeThrough: THREE.Object3D[] = [];
+  private readonly cameraCut = new CameraCut();
   private routeTexture: THREE.CanvasTexture | null = null;
 
   private readonly avatar = new THREE.Group();
@@ -152,11 +156,11 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; seeThrough: number; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
-      walkable: this.walkable.length, colliders: this.colliders.length,
+      walkable: this.walkable.length, colliders: this.colliders.length, seeThrough: this.seeThrough.length,
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
     };
@@ -325,6 +329,11 @@ export class Explorer {
     this.groundTargets = castTargets(this.walkable, this.colliders);
     this.colliderTargets = castTargets(this.colliders, this.walkable);
     this.cameraTargets = [...new Set([...this.colliderTargets, ...this.groundTargets])];
+    if (this.stationScene) {
+      // A sign that stands, or sits under a listed group, among the walkable/collider targets is never cut.
+      const solid = new Set([...this.walkable, ...this.colliders, ...this.cameraTargets]);
+      this.seeThrough = this.cameraCut.apply(this.stationScene.root, seeThroughMeshes(this.stationScene.root).filter((o) => !solid.has(o)));
+    }
     this.phase = "composer";
     this.setupComposer();
     this.frameAll();
@@ -360,6 +369,8 @@ export class Explorer {
     this.colliderTargets = [];
     this.cameraTargets = [];
     this.walls = [];
+    this.seeThrough = [];
+    this.cameraCut.clear();
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
     this.renderer.toneMappingExposure = 1;
@@ -625,6 +636,9 @@ export class Explorer {
       this.updateStreetProbe(dt);
       this.street.update(this.scene, this.camera, this.pos, this.streetProbe.outdoors, dt, this.streetProbe.level);
     }
+    // Signs between the follow camera and the avatar (or inside its near distance) are cut, never collided with.
+    this.camera.updateMatrixWorld();
+    this.cameraCut.update(this.camera, this.pos.clone().add(new THREE.Vector3(0, EYE, 0)), this.mode !== "overview");
     const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw);
     this.bodyYaw = motion.yaw;
     this.lastAvatarPos.copy(this.pos);
@@ -727,6 +741,7 @@ export class Explorer {
       return;
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
+    // Signs (visual-only) are never camera targets and never pull the camera in; cameraCut sees through them instead.
     let shoulder: number = FOLLOW.shoulder;
     if (this.cameraTargets.length) {
       this.ray.set(head, new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)));

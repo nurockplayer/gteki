@@ -81,13 +81,13 @@ stations/<id>/gteki/
 
 ## Scene hook (`gteki.scene/0.1`)
 
-`buildScene(ctx) → { root, walkable, colliders?, walls?, spawnPoints?, environment?, update?, dispose }`. Use `ctx.THREE` (one Three instance), `ctx.loadGlb`, `ctx.loadTexture` (keeps `uv1` for lightmaps; geometry is never merged). Without a scene module the explorer loads `assets[]` and classifies by `gteki_role` (`floor`/`stairs_ramps` → walkable; `wall`/`barriers`/`transport` → colliders). If the scene throws, the explorer shows the L0 graph view; routing is unaffected.
+`buildScene(ctx) → { root, walkable, colliders?, walls?, spawnPoints?, environment?, update?, dispose }`. Use `ctx.THREE` (one Three instance), `ctx.loadGlb`, `ctx.loadTexture` (keeps `uv1` for lightmaps; geometry is never merged). Without a scene module the explorer loads `assets[]` and classifies by `gteki_role` (`floor`/`stairs_ramps` → walkable; `wall`/`barriers`/`transport` → colliders). Meshes whose own or inherited role is `sign`/`signs`/`signage` (any scene, module or manifest) stay visual-only: they never block the walker or pull the follow camera in; the explorer instead dithers them away inside a tapered capsule from the camera to the avatar's head, so a sign in between or within the near distance never cuts through the view (Godot tags them `gteki_see_through`). A see-through mesh that is also walkable or a collider is never faded, and only built-in materials used by signs alone are cut (a material shared with a wall, or a custom `ShaderMaterial`, stays solid). If the scene throws, the explorer shows the L0 graph view; routing is unaffected.
 
 `environment: { background?, fog?, exposure?, lighting? }`. `lighting: "scene"` turns off the explorer's hemisphere + sun (for baked lightmaps / underground stations); the explorer then lights only its own avatar through a per-material environment map, never `scene.environment`. `WALKER_BODY` (radius 0.3 m, body band feet+0.2 … feet+1.7 m, eye 1.62 m, step up 0.45 / down 0.9 m) is part of the contract: a `WallSegment` blocks only when its `zMin…zMax` overlaps the body band, so scenes can author railings above stair runs without blocking them. Changing it requires both leads' check. Scene modules may import `three`, `three/addons/*` or `three/examples/jsm/*`; all resolve to the explorer's single copy through three's `exports` map.
 
 ## Web explorer
 
-`pnpm dev` (or `GTEKI_STATION_ROOTS=<other worktree>/stations pnpm dev` for read-only cross-worktree integration). QA hooks on `window.__gteki`: `stations, openStation, setOrigin, setDestination, setProfile, route, instructions, mode, startGuide, quality, avatar, walkFromNode, simulate(seconds, keys), sceneInfo, phase`.
+`pnpm dev` (or `GTEKI_STATION_ROOTS=<other worktree>/stations pnpm dev` for read-only cross-worktree integration). QA hooks on `window.__gteki`: `stations, openStation, setOrigin, setDestination, setProfile, route, instructions, mode, startGuide, quality, avatar, walkFromNode, simulate(seconds, keys), sceneInfo, phase`; `sceneInfo().seeThrough` counts the faded sign meshes.
 
 ## Godot
 
