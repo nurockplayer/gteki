@@ -31,19 +31,51 @@ export function floorLabel(f: Floor | undefined): { ja: string; en: string; shor
   return { ja: `地下${-o}階`, en: `B${-o}`, short: `B${-o}` };
 }
 
+/** A bend sharper than this (60°) is spoken as a turn at any node, and breaks a "straight" claim. */
+const TURN_RAD = Math.PI / 3;
+const turnAngle = (from: number, to: number) => Math.atan2(Math.sin(to - from), Math.cos(to - from));
+
+/** True when every heading stays within TURN_RAD of the first and their whole swing does too. */
+export function staysStraight(headings: readonly number[]) {
+  if (headings.length < 2) return true;
+  let rel = 0, lo = 0, hi = 0;
+  for (let k = 1; k < headings.length; k++) {
+    rel += turnAngle(headings[k - 1]!, headings[k]!);
+    lo = Math.min(lo, rel);
+    hi = Math.max(hi, rel);
+    if (Math.abs(rel) > TURN_RAD || hi - lo > TURN_RAD) return false;
+  }
+  return true;
+}
+
+/** Walk wording: 直進 / "Go straight" only over a walk that actually stays straight, else 進む / "Continue". */
+function walkText(m: Maneuver, turn: "left" | "right" | null, headings: readonly number[]) {
+  const d = Math.max(1, Math.round(m.lengthM));
+  const [ja, en] = turn === "left" ? ["左へ曲がり", "Turn left and continue"] : turn === "right" ? ["右へ曲がり", "Turn right and continue"] : staysStraight(headings) ? ["直進", "Go straight"] : ["進む", "Continue"];
+  m.ja = `${ja} ${d} m`;
+  m.en = `${en} ${d} m`;
+}
+
 export function narrate(bundle: StationBundle, route: RouteResult): Maneuver[] {
   const nodes = new Map<string, Node>(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map<string, Floor>(bundle.floors.map((f) => [f.id, f]));
   const out: Maneuver[] = [];
-  const neighbors = new Map<string, Set<string>>();
-  for (const edge of bundle.edges) {
-    const fromNeighbors = neighbors.get(edge.from) ?? new Set<string>();
-    const toNeighbors = neighbors.get(edge.to) ?? new Set<string>();
-    fromNeighbors.add(edge.to);
-    toNeighbors.add(edge.from);
-    neighbors.set(edge.from, fromNeighbors);
-    neighbors.set(edge.to, toNeighbors);
-  }
+  const edges = new Map(bundle.edges.map((e) => [e.id, e]));
+  /** Plan headings of each walk maneuver, in travel order, for the straightness check. */
+  const headingsOf = new Map<Maneuver, number[]>();
+  /** Plan headings along one step: its edge polyline where there is one, else the node chord. */
+  const stepHeadings = (step: (typeof route.steps)[number]) => {
+    const edge = edges.get(step.edgeId);
+    const from = nodes.get(step.fromNodeId)!.position, to = nodes.get(step.toNodeId)!.position;
+    const line = edge?.geometry && edge.geometry.length > 2 ? edge.geometry.map((p) => ({ x: p.x, y: p.y })) : null;
+    const pts = line ? (edge!.from === step.fromNodeId ? line : [...line].reverse()) : [from, to];
+    const hs: number[] = [];
+    for (let k = 1; k < pts.length; k++) {
+      const a = pts[k - 1]!, b = pts[k]!;
+      if (Math.hypot(b.x - a.x, b.y - a.y) > 1e-6) hs.push(Math.atan2(b.x - a.x, b.y - a.y));
+    }
+    return hs;
+  };
   let pendingTurn: "left" | "right" | null = null;
   let i = 0;
   const steps = route.steps;
@@ -78,30 +110,31 @@ export function narrate(bundle: StationBundle, route: RouteResult): Maneuver[] {
       i++;
       continue;
     }
-    // walk: merge straight-ish segments, emit turn at significant heading change
+    // walk: merge segments until a significant bend at any node (whatever its degree), and name it
     let j = i;
     let len = 0;
     let heading: number | null = null;
+    const headings: number[] = [];
     const turn = pendingTurn;
     pendingTurn = null;
     while (j < steps.length && steps[j]!.mode === "walk") {
-      const a = nodes.get(steps[j]!.fromNodeId)!.position;
-      const b = nodes.get(steps[j]!.toNodeId)!.position;
-      const h = Math.atan2(b.x - a.x, b.y - a.y);
-      const segLen = steps[j]!.lengthM;
-      if (heading !== null && (neighbors.get(steps[j]!.fromNodeId)?.size ?? 0) >= 3) {
-        const d = Math.atan2(Math.sin(h - heading), Math.cos(h - heading));
-        if (Math.abs(d) > 1.05) {
+      const hs = stepHeadings(steps[j]!);
+      if (heading !== null && hs.length) {
+        const d = turnAngle(heading, hs[0]!);
+        if (Math.abs(d) > TURN_RAD) {
           pendingTurn = d > 0 ? "right" : "left";
           break;
         }
       }
-      heading = h;
-      len += segLen;
+      if (hs.length) heading = hs[hs.length - 1]!;
+      headings.push(...hs);
+      len += steps[j]!.lengthM;
       j++;
     }
-    const verb = turn === "left" ? ["左へ曲がり", "Turn left and continue"] : turn === "right" ? ["右へ曲がり", "Turn right and continue"] : ["直進", "Go straight"];
-    out.push({ kind: turn ? "turn" : "walk", ja: `${verb[0]} ${Math.max(1, Math.round(len))} m`, en: `${verb[1]} ${Math.max(1, Math.round(len))} m`, lengthM: len, startIndex: i });
+    const m: Maneuver = { kind: turn ? "turn" : "walk", ja: "", en: "", lengthM: len, startIndex: i };
+    headingsOf.set(m, headings);
+    walkText(m, turn, headings);
+    out.push(m);
     // A tiny walk edge that changes floors still needs an explicit, honest floor cue.
     const changedSteps = steps.slice(i, j).filter((step) => step.fromFloorId !== step.toFloorId);
     const floorChanges = changedSteps.map((step) => ({ from: floorLabel(floors.get(step.fromFloorId)).short, to: floorLabel(floors.get(step.toFloorId)).short }));
@@ -124,9 +157,15 @@ export function narrate(bundle: StationBundle, route: RouteResult): Maneuver[] {
     const neighbor = out[neighborIndex]!;
     neighbor.lengthM += current.lengthM;
     if (neighbor.kind === "walk" || neighbor.kind === "turn") {
-      const distance = Math.max(1, Math.round(neighbor.lengthM));
-      neighbor.ja = neighbor.ja.replace(/\d+ m/, `${distance} m`);
-      neighbor.en = neighbor.en.replace(/\d+ m/, `${distance} m`);
+      // The merged leg's bends count too: "straight" must hold over the whole spoken distance.
+      const own = headingsOf.get(neighbor) ?? [], added = headingsOf.get(current) ?? [];
+      const headings = neighborIndex < k ? [...own, ...added] : [...added, ...own];
+      headingsOf.set(neighbor, headings);
+      const cue = (text: string) => text.split(" · ").slice(1);
+      const cues = { ja: cue(neighbor.ja), en: cue(neighbor.en) };
+      walkText(neighbor, neighbor.kind === "turn" ? (neighbor.en.startsWith("Turn left") ? "left" : "right") : null, headings);
+      if (cues.ja.length) neighbor.ja += ` · ${cues.ja.join(" · ")}`;
+      if (cues.en.length) neighbor.en += ` · ${cues.en.join(" · ")}`;
     }
     if (current.floorChanges?.length) {
       const cueJa = current.ja.split(" · ").slice(1).join(" · ");

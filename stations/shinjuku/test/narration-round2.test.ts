@@ -14,9 +14,10 @@ function route(fromPoi: string, toPoi: string): RouteResult {
 
 describe("round-two route narration", () => {
   it.each([
-    ["platform to exit 1", "poi:platform:oedo", "poi:exit:1", 16],
-    ["platform to exit 2", "poi:platform:oedo", "poi:exit:2", 17],
-    ["exit 1 to exit 3", "poi:exit:1", "poi:exit:3", 29],
+    // Counts rose when bends > 60° at degree-2 nodes became spoken turns (narration-bends.test.ts).
+    ["platform to exit 1", "poi:platform:oedo", "poi:exit:1", 17],
+    ["platform to exit 2", "poi:platform:oedo", "poi:exit:2", 22],
+    ["exit 1 to exit 3", "poi:exit:1", "poi:exit:3", 33],
   ] as const)("keeps the consolidated instruction count stable for %s", (_label, from, to, count) => {
     const maneuvers = narrate(bundle, route(from, to));
     expect(maneuvers).toHaveLength(count);
