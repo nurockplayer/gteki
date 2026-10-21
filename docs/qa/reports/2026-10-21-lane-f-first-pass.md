@@ -26,7 +26,7 @@ Sections 1–10 are the first pass and are kept as written. This section superse
 | C3 camera (Shinjuku) | **GAP** P2 | On the exit:2 street stair the camera presses against the avatar (`platform-exit2-10`) |
 | C6 route line x-ray | **GAP** P2 | Unchanged |
 | C8 toast over HUD pill | **GAP** P3, tracked as [#66](https://github.com/nurockplayer/gteki/issues/66) | Every arrival frame |
-| Label fade (`09`, new) | **PASS** (spot-checked) | FADED anchors sit behind signs and walls; one ambiguous at the far colonnade |
+| Label fade (`09`, new) | **PASS** (spot-checked) | FADED anchors sit behind signs and walls; one ambiguous at the far colonnade. After the #67 Codex review, `09` separates selected endpoints faded for being off-floor (8 of the 20 fades on a Shinjuku desktop rerun) and draws the anchor at the rect centre, the true CSS2D anchor. The red occlusion fades still sit behind drawn geometry |
 | Exit-top daylight | **PASS** | Only at the exit:2 and exit:4 street tops |
 | Perf | **PASS / watch** | 60 fps desktop and Pixel 7. iPhone 15 emulation, Shinjuku walk: 40.2 fps (main 59.4) with the replay running; to be rerun on an idle host |
 
