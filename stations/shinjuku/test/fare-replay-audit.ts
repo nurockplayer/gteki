@@ -9,6 +9,13 @@ import { resolveWalls, acceptGround, wallToRenderer, DEFAULT_GROUND, type Segmen
 import { castAll, castTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { accelerateRaycasts, nearbyTargets } from "./fare-replay-rays.ts";
 import { Player } from "../app/src/player.ts";
+
+/** Fence/return pieces span [floor − 0.05, floor + 1.15]. A seed can only be stopped by one while the
+ * walker's body band still meets it: the lane filters walls by feet + 0.3, the explorer by feet +
+ * WALKER_BODY.bodyBottomM (0.2). Enumerate up to the higher of the two so ramp seeds the explorer
+ * still collides with are replayed. */
+export const FENCE_TOP_M = 1.15;
+export const SEED_TOP_M = FENCE_TOP_M - Math.min(.3, WALKER_BODY.bodyBottomM);
 import { renderedFootprint, type FringeCertificate } from "./fare-replay-footprint.ts";
 
 export function closest(p: XY, a: XY, b: XY): XY {
@@ -316,7 +323,7 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
         const p = { x: (ix + .5) * .25, y: (iy + .5) * .25 };
         if (distance(p, end.p) > 3) continue;
         for (const z of grid.get(`${ix},${iy}`) ?? []) {
-          if (z < end.p.z - 1.75 || z > end.p.z + .85) continue;
+          if (z < end.p.z - 1.75 || z > end.p.z + SEED_TOP_M) continue;
           const key = `${ix},${iy},${z}`;
           let row = seedCache.get(key);
           if (!row) {

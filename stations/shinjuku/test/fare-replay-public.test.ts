@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import { deriveRestrictedAccess } from "../scene/fare-fence.ts";
 import { accessFixture } from "./fare-replay-fixture.ts";
-import { publicLabels, replayEnvironment, mutateFence } from "./fare-replay-audit.ts";
+import { publicLabels, replayEnvironment, mutateFence, FENCE_TOP_M, SEED_TOP_M } from "./fare-replay-audit.ts";
+import { resolveWalls, wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
+import { pointInRings, WalkWorld } from "../scene/layout.ts";
 import { renderedFootprint } from "./fare-replay-footprint.ts";
-import { pointInRings } from "../scene/layout.ts";
 
 describe("public replay seeds and certified proxy rounding", () => {
   it("does not seed tolerated internal borders between restricted source polygons", () => {
@@ -21,6 +22,20 @@ describe("public replay seeds and certified proxy rounding", () => {
       expect(labels(p, true).mapped).toBe(false); // restricted fill is not public
       expect(labels({ x: -.5, y: 0, z: 0 }, true).mapped).toBe(true);
     } finally { f.dispose(); }
+  });
+  it("seeds every height at which either actual walker still collides with a fence piece", () => {
+    // A fence on a floor at 0 spans [−0.05, 1.15]; a ramp seed's feet sit above that floor.
+    const fence = { a: { x: -1, y: 0 }, b: { x: 1, y: 0 }, zMin: -.05, zMax: FENCE_TOP_M, side: 1 as const, kind: "wall" as const };
+    const explorerBlocks = (feet: number) => {
+      const p = resolveWalls(0, -.1, .3, feet, 1.7, [wallToRenderer(fence)]);
+      return Math.abs(p.z + .1) > 1e-6;
+    };
+    const world = new WalkWorld({ levels: [], pads: [], linkStrips: [], streetPads: [], runs: [], runWalls: [] } as never);
+    world.addWalls([fence]);
+    const laneBlocks = (feet: number) => Math.abs(world.resolveWalls({ x: 0, y: .1 }, feet, .3).y - .1) > 1e-6;
+    expect(explorerBlocks(SEED_TOP_M - 1e-3) || laneBlocks(SEED_TOP_M - 1e-3)).toBe(true);
+    expect(explorerBlocks(SEED_TOP_M + 1e-3) || laneBlocks(SEED_TOP_M + 1e-3)).toBe(false);
+    expect(explorerBlocks(.9)).toBe(true); // the band the old 0.85 m seed cut-off skipped
   });
   it("certifies only the exact Float32 fringe with an exhibited public point", () => {
     const rings = [[{ x: -47.29, y: 205.13 }, { x: -45.8, y: 205.32 }, { x: -45.8, y: 200 }, { x: -47.29, y: 200 }]];
