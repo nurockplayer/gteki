@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { raycastObject } from "./meshBvh.ts";
 
 /**
  * The meshes a list of scene objects stands for when ray-tested. A scene's `walkable` / `colliders` are
@@ -67,8 +68,14 @@ export function explorerTargets(walkable: readonly THREE.Object3D[], colliders: 
   return { ground, collider, sky, camera, blockers: new Set(blockers) };
 }
 
+/**
+ * `ray.intersectObjects(targets, false)`, with each static mesh's tree (prepareRayTrees, built at load) picking
+ * the triangles three tests: the same hits in the same order, without testing every triangle of a merged mesh.
+ */
 export function castAll(ray: THREE.Raycaster, targets: readonly THREE.Object3D[]): THREE.Intersection[] {
-  return ray.intersectObjects(targets as THREE.Object3D[], false);
+  const hits: THREE.Intersection[] = [];
+  for (const object of targets) if (object.layers.test(ray.layers)) raycastObject(object, ray, hits);
+  return hits.sort((a, b) => a.distance - b.distance);
 }
 
 const TWO_SIDED = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });

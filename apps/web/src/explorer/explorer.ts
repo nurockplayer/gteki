@@ -30,6 +30,7 @@ import { Input } from "./input.ts";
 import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer, type Segment2 } from "./walker.ts";
 import { OcclusionSweep, labelState, onFocusFloor, type LabelState } from "./labelVisibility.ts";
 import { TriangleBvh, segmentHitsBox, type Cull } from "./triangleBvh.ts";
+import { cacheBvh, currentBvh, prepareRayTrees } from "./meshBvh.ts";
 
 export type ExplorerMode = "overview" | "walk" | "guide";
 
@@ -73,36 +74,6 @@ interface Occluder {
   /** Instance buffer, its version and the count the bounds were computed for. */
   seenInstanceMatrix: THREE.InstancedBufferAttribute | null;
   seenInstances: string;
-}
-
-/**
- * One tree per geometry, shared by every mesh that uses it; dropped with the geometry. Built only at
- * load, with the buffer versions it was built from: a geometry edited in place since then (or swapped
- * in later) has no current tree and does not occlude, rather than occluding where it used to be.
- */
-const bvhCache = new WeakMap<THREE.BufferGeometry, { bvh: TriangleBvh; version: string; buffers: object[] }>();
-
-const attributeVersion = (a: THREE.BufferAttribute | THREE.InterleavedBufferAttribute) =>
-  (a as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute ? (a as THREE.InterleavedBufferAttribute).data.version : (a as THREE.BufferAttribute).version;
-const bufferVersion = (g: THREE.BufferGeometry) => `${attributeVersion(g.getAttribute("position"))}:${g.getIndex()?.version ?? -1}`;
-/** Every object whose replacement changes the triangles: position (and its interleaved data) and index. */
-const bufferIds = (g: THREE.BufferGeometry): object[] => {
-  const position = g.getAttribute("position");
-  const data = (position as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute ? (position as THREE.InterleavedBufferAttribute).data : null;
-  return [position, data ?? position, g.getIndex() ?? g];
-};
-
-function currentBvh(g: THREE.BufferGeometry): TriangleBvh | null {
-  const entry = bvhCache.get(g);
-  // A geometry that lost its positions has no triangles to test.
-  if (!entry || !g.getAttribute("position")) return null;
-  // Same buffers (identity, as attributes and interleaved data can be replaced) at the same versions as at build time.
-  return entry.version === bufferVersion(g) && bufferIds(g).every((b, i) => b === entry.buffers[i]) ? entry.bvh : null;
-}
-
-function cacheBvh(g: THREE.BufferGeometry): void {
-  if (currentBvh(g)) return;
-  bvhCache.set(g, { bvh: TriangleBvh.build(g.getAttribute("position"), g.getIndex()), version: bufferVersion(g), buffers: bufferIds(g) });
 }
 
 /** A drawn part of a mesh: its material and the index (or vertex) range it draws. */
@@ -181,6 +152,8 @@ export class Explorer {
   /** Walls and floors only: the street probe's sky test (camera-only blockers such as signs never hide the sky). */
   private skyTargets: THREE.Object3D[] = [];
   private blockerTargets: ReadonlySet<THREE.Object3D> = new Set();
+  /** What the ray targets' trees cost to build at load (see prepareRayTrees). */
+  private rayTrees = { trees: 0, triangles: 0, bytes: 0, buildMs: 0 };
   private colliders: THREE.Object3D[] = [];
   /** Camera-only blockers (ceilings): stop the follow camera, never the walker. */
   private cameraBlockers: THREE.Object3D[] = [];
@@ -271,11 +244,12 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
+      rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
     };
@@ -455,6 +429,8 @@ export class Explorer {
     this.skyTargets = targets.sky;
     this.cameraTargets = targets.camera;
     this.blockerTargets = targets.blockers;
+    // Every ray target is in the camera set (walls, floors, blockers); trees are built here, never mid-frame.
+    this.rayTrees = prepareRayTrees(targets.camera);
     if (this.stationScene) {
       // A sign that stands, or sits under a listed group, among the walkable/collider/camera targets is never cut:
       // a mesh that is both a sign and a camera blocker stops the camera and stays solid.
@@ -499,6 +475,7 @@ export class Explorer {
     this.cameraTargets = [];
     this.skyTargets = [];
     this.blockerTargets = new Set();
+    this.rayTrees = { trees: 0, triangles: 0, bytes: 0, buildMs: 0 };
     this.walls = [];
     this.seeThrough = [];
     this.cameraCut.clear();
