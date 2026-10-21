@@ -1,0 +1,309 @@
+{
+ "title": "SYNTHETIC KIT DEMO \u2014 generic concourse, not a station layout",
+ "mode": "interior",
+ "exposure": -0.35,
+ "items": [
+  {
+   "glb": "assets/library/glb/gteki_passage_end_w8.glb",
+   "pos": [
+    0,
+    0,
+    0
+   ],
+   "yaw": 180
+  },
+  {
+   "glb": "assets/library/glb/gteki_passage_straight_w8_l6.glb",
+   "pos": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "glb": "assets/library/glb/gteki_passage_straight_w8_l6.glb",
+   "pos": [
+    0,
+    6,
+    0
+   ]
+  },
+  {
+   "glb": "assets/library/glb/gteki_passage_straight_w8_l6.glb",
+   "pos": [
+    0,
+    12,
+    0
+   ]
+  },
+  {
+   "glb": "assets/library/glb/gteki_passage_straight_w8_l6.glb",
+   "pos": [
+    0,
+    18,
+    0
+   ]
+  },
+  {
+   "glb": "assets/library/glb/gteki_passage_end_w8.glb",
+   "pos": [
+    0,
+    24,
+    0
+   ]
+  },
+  {
+   "glb": "assets/library/glb/gteki_gate_array_6w1.glb",
+   "pos": [
+    -0.9,
+    8,
+    0
+   ]
+  },
+  {
+   "glb": "assets/library/glb/gteki_gate_array_2.glb",
+   "pos": [
+    2.95,
+    8,
+    0
+   ],
+   "close_flaps": true
+  },
+  {
+   "glb": "assets/library/glb/gteki_sign_hanging_navy_left.glb",
+   "pos": [
+    -1.6,
+    6.2,
+    0
+   ]
+  },
+  {
+   "glb": "assets/library/glb/gteki_sign_hanging_exit_yellow_up.glb",
+   "pos": [
+    1.9,
+    6.2,
+    0
+   ]
+  },
+  {
+   "glb": "assets/library/glb/gteki_sign_hanging_black_right.glb",
+   "pos": [
+    0.0,
+    15.0,
+    0
+   ]
+  },
+  {
+   "glb": "assets/library/glb/gteki_poster_lightbox_01.glb",
+   "pos": [
+    4.0,
+    1.4,
+    0
+   ],
+   "yaw": -90
+  },
+  {
+   "glb": "assets/library/glb/gteki_poster_lightbox_04.glb",
+   "pos": [
+    4.0,
+    2.6,
+    0
+   ],
+   "yaw": -90
+  },
+  {
+   "glb": "assets/library/glb/gteki_poster_lightbox_08.glb",
+   "pos": [
+    4.0,
+    3.8,
+    0
+   ],
+   "yaw": -90
+  },
+  {
+   "glb": "assets/library/glb/gteki_poster_lightbox_01.glb",
+   "pos": [
+    4.0,
+    13.4,
+    0
+   ],
+   "yaw": -90
+  },
+  {
+   "glb": "assets/library/glb/gteki_poster_lightbox_04.glb",
+   "pos": [
+    4.0,
+    14.6,
+    0
+   ],
+   "yaw": -90
+  },
+  {
+   "glb": "assets/library/glb/gteki_vending_machine.glb",
+   "pos": [
+    -4.0,
+    1.6,
+    0
+   ],
+   "yaw": 90
+  },
+  {
+   "glb": "assets/library/glb/gteki_vending_machine_sand.glb",
+   "pos": [
+    -4.0,
+    2.7,
+    0
+   ],
+   "yaw": 90
+  },
+  {
+   "glb": "assets/library/glb/gteki_bin_trio.glb",
+   "pos": [
+    -4.0,
+    3.9,
+    0
+   ],
+   "yaw": 90
+  },
+  {
+   "glb": "assets/library/glb/gteki_ticket_kiosk.glb",
+   "pos": [
+    -4.0,
+    5.6,
+    0
+   ],
+   "yaw": 90
+  },
+  {
+   "glb": "assets/library/glb/gteki_ticket_kiosk.glb",
+   "pos": [
+    -4.0,
+    6.4,
+    0
+   ],
+   "yaw": 90
+  },
+  {
+   "glb": "assets/library/glb/gteki_sign_totem.glb",
+   "pos": [
+    2.3,
+    3.6,
+    0
+   ],
+   "yaw": 0
+  },
+  {
+   "glb": "assets/library/glb/gteki_tactile_strip_bars_3m.glb",
+   "pos": [
+    -1.765,
+    1.0,
+    0
+   ]
+  },
+  {
+   "glb": "assets/library/glb/gteki_tactile_strip_bars_3m.glb",
+   "pos": [
+    -1.765,
+    4.0,
+    0
+   ]
+  },
+  {
+   "glb": "assets/library/glb/gteki_column_round_d600_h3200.glb",
+   "pos": [
+    -1.6,
+    14.0,
+    0
+   ]
+  },
+  {
+   "glb": "assets/library/glb/gteki_column_round_d600_h3200.glb",
+   "pos": [
+    1.6,
+    20.0,
+    0
+   ]
+  },
+  {
+   "glb": "assets/library/glb/gteki_bench_4seat.glb",
+   "pos": [
+    -3.35,
+    17.0,
+    0
+   ],
+   "yaw": 90
+  },
+  {
+   "glb": "assets/library/glb/gteki_lift_portal_w1000.glb",
+   "pos": [
+    -3.97,
+    21.5,
+    0
+   ],
+   "yaw": 90
+  },
+  {
+   "glb": "assets/library/glb/gteki_sign_blade_navy.glb",
+   "pos": [
+    4.0,
+    18.0,
+    0
+   ],
+   "yaw": -90
+  }
+ ],
+ "cameras": {
+  "approach": {
+   "pos": [
+    -1.2,
+    0.4,
+    1.62
+   ],
+   "look_at": [
+    0.9,
+    10.0,
+    1.25
+   ],
+   "lens": 18
+  },
+  "gates": {
+   "pos": [
+    1.4,
+    5.0,
+    1.62
+   ],
+   "look_at": [
+    -0.6,
+    9.0,
+    0.8
+   ],
+   "lens": 22
+  },
+  "paid_side": {
+   "pos": [
+    2.6,
+    26.5,
+    1.62
+   ],
+   "look_at": [
+    -0.8,
+    12.0,
+    1.2
+   ],
+   "lens": 20
+  },
+  "gates_closed": {
+   "pos": [
+    3.55,
+    6.6,
+    1.45
+   ],
+   "look_at": [
+    2.75,
+    9.0,
+    0.6
+   ],
+   "lens": 26
+  }
+ }
+}

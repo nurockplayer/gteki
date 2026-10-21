@@ -2,9 +2,11 @@ extends RefCounted
 ## Runtime glTF loading; geometry roles are display/physics hints, never routing evidence.
 
 const Station = preload("res://addons/gteki/gteki_station.gd")
-# Same role vocabulary as @gteki/scene-api (WALKABLE_ROLES / COLLIDER_ROLES).
+# Same role vocabulary as @gteki/scene-api (WALKABLE_ROLES / COLLIDER_ROLES / SEE_THROUGH_ROLES).
 const WALKABLE = ["floor", "stairs_ramps", "walkable", "ramp", "stairs"]
 const COLLIDER = ["wall", "walls", "barriers", "barrier", "transport", "collider"]
+## Visual-only signage a follow camera may see through; tagged gteki_see_through, never collides.
+const SEE_THROUGH = ["sign", "signs", "signage"]
 
 var issues: Array[String] = []
 var counts: Dictionary = {"assets": 0, "walkable": 0, "collider": 0}
@@ -71,6 +73,8 @@ func _apply_asset_role(node: Node, asset_role: String) -> void:
 		# Inherited roles are already tagged on the mesh itself by _tag_roles.
 		if not node.has_meta("gteki_walkable") and not node.has_meta("gteki_collider"):
 			node.set_meta("gteki_collider", true)
+			# A collider is never see-through (as on the web).
+			node.remove_meta("gteki_see_through")
 			counts.collider += 1
 			if node.mesh != null:
 				node.create_trimesh_collision()
@@ -190,7 +194,7 @@ static func _own_role(node: Node) -> String:
 	if not role.is_empty():
 		return role
 	var name := str(node.name).to_lower()
-	for candidate in WALKABLE + COLLIDER:
+	for candidate in WALKABLE + COLLIDER + SEE_THROUGH:
 		if name == candidate or name.begins_with(candidate + "_") or name.begins_with(candidate + "."):
 			return candidate
 	return ""
@@ -212,6 +216,8 @@ func _tag_roles(node: Node, inherited: String = "") -> void:
 			counts.collider += 1
 			if role == "collider":
 				node.visible = false
+	elif role in SEE_THROUGH and is_mesh:
+		node.set_meta("gteki_see_through", true)
 	# Snapshot children first: collision creation adds a StaticBody3D child that needs no tagging.
 	var children := node.get_children()
 	if is_mesh and role in COLLIDER and node.mesh != null:

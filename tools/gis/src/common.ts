@@ -13,6 +13,8 @@ export const docsRoot = join(repoRoot, 'docs');
 export const TOOL_VERSION = '0.1.0';
 
 export type RightsStatus = 'yes' | 'no' | 'conditional' | 'unknown';
+export type FixedPost = { method: 'POST'; content_type: 'application/json'; body: string };
+export type RecordedRequest = FixedPost & { body_sha256: string };
 export type SourceManifest = {
   source_id: string;
   title: string;
@@ -21,6 +23,8 @@ export type SourceManifest = {
   official_url: string;
   resolution: { kind: 'direct' } | { kind: 'plateau_catalog_api'; catalog_source_id: string; match: string };
   expected_url: string;
+  catalog_resource_url?: string;
+  catalog_resource_sha256?: string;
   expected_bytes: number | null;
   expected_url_match: boolean | null;
   license_name: string;
@@ -33,7 +37,8 @@ export type SourceManifest = {
   availability_deadline: string | null;
   notes: string;
   publish_gate: string;
-  supporting_documents?: Array<{ id: string; url: string }>;
+  request?: FixedPost;
+  supporting_documents?: Array<{ id: string; url: string; capture_http_errors?: boolean; transport?: 'curl' }>;
 };
 
 export type ResolutionEvidence = null | { source_id: string; sha256: string; json_pointer: string };
@@ -54,7 +59,8 @@ export type AcquisitionRecord = {
   expected_url_match: boolean | null;
   size_check: 'MATCH' | 'MISMATCH' | 'NOT_SPECIFIED';
   mode: 'online' | 'offline';
-  supporting_documents?: Array<{ id: string; url: string; sha256: string; bytes: number; store_path: string }>;
+  request?: RecordedRequest;
+  supporting_documents?: Array<{ id: string; url: string; requested_url?: string; http_status?: number; transport?: 'curl'; sha256: string; bytes: number; store_path: string }>;
   last_offline_check?: { requested_at: string; completed_at: string; tool_version: string; sha256: string; bytes: number; status: 'PASS' };
 };
 
@@ -146,6 +152,9 @@ export async function getStoredSource(sourceId: string, options: { ignoreRecorde
   if (record.size_check === 'MISMATCH' && !options.ignoreRecordedSizeCheck) throw new Error(`Acquisition size mismatch recorded for ${sourceId}`);
   const source = (await import('./acquire.js')).loadSources().find((item) => item.source_id === sourceId);
   if (!source) throw new Error(`Unknown source_id: ${sourceId}`);
+  const expectedRequest = (await import('./acquire.js')).recordRequest(source.request);
+  if (JSON.stringify(record.request) !== JSON.stringify(expectedRequest)) throw new Error(`Acquisition request mismatch for ${sourceId}`);
+  await assertRecordMatchesManifest(record, source);
   const path = safeStorePath(getStoreRoot(), record.store_path);
   await assertPathWithinStore(getStoreRoot(), dirname(path));
   await assertPathWithinStore(getStoreRoot(), path);
@@ -156,6 +165,29 @@ export async function getStoredSource(sourceId: string, options: { ignoreRecorde
     await verifyStoredFile(documentPath, document.sha256, document.bytes);
   }
   return { record, source, path };
+}
+
+/**
+ * A cached acquisition is accepted only while it still answers the current manifest: the same
+ * direct URL, or the current catalog snapshot and selector result for catalog-resolved sources, and the
+ * same supporting-document IDs and requested URLs in order.
+ */
+export async function assertRecordMatchesManifest(record: AcquisitionRecord, source: SourceManifest): Promise<void> {
+  const id = source.source_id;
+  if (source.resolution.kind === 'direct') {
+    if (record.resolved_url !== source.expected_url) throw new Error(`Acquisition URL for ${id} no longer matches the manifest; re-acquire it`);
+  } else {
+    const evidence = record.resolution_evidence;
+    if (!evidence || evidence.source_id !== source.resolution.catalog_source_id) throw new Error(`Acquisition for ${id} was not resolved from catalog ${source.resolution.catalog_source_id}; re-acquire it`);
+    const catalog = await getStoredSource(evidence.source_id);
+    if (catalog.record.sha256 !== evidence.sha256) throw new Error(`Acquisition for ${id} was resolved from an older ${evidence.source_id} snapshot; re-acquire it`);
+    // Re-run the current selector, so a changed resolution.match cannot reuse the old resource.
+    const selected = (await import('./acquire.js')).selectCatalogResource(source, await readJson<unknown>(catalog.path));
+    if (selected.pointer !== evidence.json_pointer || selected.value !== record.resolved_url) throw new Error(`Acquisition URL for ${id} is not the current catalog selection (${evidence.source_id}${selected.pointer}); re-acquire it`);
+  }
+  const expected = (source.supporting_documents ?? []).map((document) => [document.id, document.url]);
+  const recorded = (record.supporting_documents ?? []).map((document) => [document.id, document.requested_url ?? document.url]);
+  if (JSON.stringify(recorded) !== JSON.stringify(expected)) throw new Error(`Supporting documents for ${id} no longer match the manifest; re-acquire it`);
 }
 
 export async function verifyStoredFile(path: string, expectedSha256: string, expectedBytes: number): Promise<void> {

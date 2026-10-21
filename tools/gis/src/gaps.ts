@@ -1,12 +1,46 @@
+import { projectRights, rightsScopeMarkdown } from './rights-view.js';
+import { POI_SOURCES, RIGHTS_SOURCES } from './poi.js';
+import { toolFingerprint } from './provenance.js';
 import path from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import { docsRoot, readJson, writeJson } from './common.js';
+import { loadSources } from './acquire.js';
 import type { StationOverlapReport } from './overlap.js';
 
 const STATIONS = [
   { id: 'ikebukuro', city: '13116', gml: 'plateau-13116-ubld-53394576', network: 'hokonavi-ikebukuro-walk-node-csv' },
   { id: 'shinjuku', city: '13104', gml: 'plateau-13104-ubld-53394536', network: 'hokonavi-oedo-shinjuku-network-geojson' },
 ] as const;
+/** Every gap-packet run writes one packet per station; summarize requires all of them. */
+export const GAP_STATION_IDS: readonly string[] = STATIONS.map(station => station.id);
+
+/** The gap-packet view of one POI report, or null when the report is not relevant to the station. */
+export function projectPoiContent(report: any, stationId: string): any | null {
+  if (!report.station_ids?.includes(stationId) && !report.station_relevance?.some((item: any) => item.station_id === stationId && item.relation === 'INTERSECTS')) return null;
+  return {
+    source_id: report.source_id, source_sha256: report.source_sha256, routable: false, coordinates: report.coordinates,
+    members: report.members.map((member: any) => ({ file: member.file, populated_row_count: member.populated_row_count ?? null, feature_count: member.feature_count ?? null, crs: member.crs, bbox: member.bbox,
+      geometry_types: member.geometry_types, literal_location_time_fields: member.literal_location_time_fields ?? {}, route_structure: member.route_structure?.start_end_fields ?? [] })),
+    station_relevance: report.station_relevance.filter((item: any) => item.station_id === stationId), detail: report.detail,
+  };
+}
+
+/** Rights belong in a packet for the stations the manifest names and for every POI source the packet admits. */
+export function rightsRelevant(report: any, stationId: string, admittedPoiIds: ReadonlySet<string>): boolean {
+  return Boolean(report?.station_ids?.includes(stationId) || admittedPoiIds.has(report?.source_id));
+}
+
+/**
+ * Each expected report that is absent is its own HOLD. A missing POI report leaves
+ * its station relevance uncomputable, so it is held for every station; a missing
+ * rights report is held for the stations its manifest entry names (all, if unnamed).
+ */
+export function missingEvidenceHolds(stationId: string, poi: Record<string, unknown>, rights: Record<string, unknown>, manifestStations: Record<string, readonly string[] | undefined>, admittedPoiIds: ReadonlySet<string> = new Set()): string[] {
+  return [
+    ...Object.entries(poi).filter(([, report]) => !report).map(([id]) => `${id}: POI content evidence UNKNOWN; report missing, so station relevance cannot be computed.`),
+    ...Object.entries(rights).filter(([id, report]) => !report && ((manifestStations[id]?.includes(stationId) ?? true) || admittedPoiIds.has(id))).map(([id]) => `${id}: rights evidence UNKNOWN; report missing.`),
+  ];
+}
 
 async function maybeReport(relative: string): Promise<any | null> {
   try { return await readJson(path.join(docsRoot, 'gis', relative)); } catch { return null; }
@@ -82,10 +116,18 @@ function describeOverlap(report: StationOverlapReport | null): string[] {
 
 export async function gapPacket(): Promise<Record<string, unknown>> {
   const results: Record<string, unknown> = {};
+  const manifestStations = Object.fromEntries(loadSources().map(source => [source.source_id, source.station_ids]));
+  const poiById = Object.fromEntries(await Promise.all(POI_SOURCES.map(async id => [id, await maybeReport(`poi/${id}.json`)] as const)));
+  const rightsById = Object.fromEntries(await Promise.all(RIGHTS_SOURCES.map(async id => [id, await maybeReport(`rights/${id}.json`)] as const)));
   for (const station of STATIONS) {
     const inventory = await maybeReport(`inventory/${station.gml}.inventory.json`);
     const network = await maybeReport(`networks/${station.network}.json`);
     const overlap = await maybeReport(`overlap/${station.id}.json`) as StationOverlapReport | null;
+    const poiReports = Object.values(poiById).filter(Boolean);
+    const poiContent = poiReports.map(report => projectPoiContent(report, station.id)).filter(Boolean);
+    const admittedPoiIds = new Set<string>(poiContent.map(report => report.source_id));
+    const rightsReports = Object.values(rightsById).filter(report => rightsRelevant(report, station.id, admittedPoiIds));
+    const rightsContent = rightsReports.flatMap(report => report.records.map((row: any) => projectRights(report, row)));
     const semanticFacts = literalFacts(inventory);
     const relevant = {
       floors: summarizePresence(valuesForSemantic(inventory, ['floors'])),
@@ -109,6 +151,9 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
     holds.push(overlap?.mesh_coverage?.hold??'Mesh-catalog coverage UNKNOWN; HOLD for geometry/network pairing.');
     if(network?.attribute_decoding)holds.push('Applicable walking-network specification version remains UNKNOWN; decoded labels and rank checks are literal consistency evidence only.');
     if(station.id==='ikebukuro')holds.push('R1 CRS is INFERRED_FROM_SPEC; all endpoint and overlap metrics relying on it are CONDITIONAL_ON_INFERRED_CRS. Distance evidence cannot identify the datum.');
+    holds.push('POI, S03 and related-layer publish gates remain HOLD. Rights clearance never establishes navigability.');
+    for (const row of rightsContent) if(row.verdict !== 'CLEARED_WITH_CONDITIONS') holds.push(`${row.source_id}${row.layer ? ` / ${row.layer}` : ''}: ${row.verdict}; ${row.reason}; ${rightsScopeMarkdown(row)}`);
+    holds.push(...missingEvidenceHolds(station.id, poiById, rightsById, manifestStations, admittedPoiIds));
     const markdown = [
       `# ${station.id[0]!.toUpperCase()}${station.id.slice(1)} evidence-gap packet`,
       '',
@@ -129,6 +174,10 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
       `- Mesh coverage: ${JSON.stringify(overlap?.mesh_coverage??null)}.`,
       `- Conditional R1 bbox containment: ${JSON.stringify(overlap?.r1_bbox_containment??null)}.`,
       '',
+      '## POI content and resource rights',
+      ...poiContent.map(report => `- ${report.source_id}: ${report.members.length} inspected members; coordinates ${report.coordinates}; non-routable. Bbox comparison is conditional numeric envelope evidence only.`),
+      ...rightsContent.map(row => `- ${row.source_id}${row.layer ? ` / ${row.layer}` : ''}: ${row.verdict}; ${row.reason}. ${rightsScopeMarkdown(row)} Evidence: ${row.evidence_ids.join(', ')}. Publish HOLD.`),
+      '',
       '## UNKNOWN and survey questions',
       '- What are the operator-specific floor names and their surveyed elevations? Obtain a source or field survey; labels alone do not establish height.',
       '- Where do paid-area boundaries, ticket gates, and permitted transfers lie in the current station configuration?',
@@ -143,6 +192,9 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
     ].join('\n');
     const document = {
       station_id: station.id,
+      tool_input_sha256: await toolFingerprint(),
+      poi_content: poiContent,
+      resource_rights: rightsContent,
       source_ids: { citygml: station.gml, network: station.network },
       input_status: { citygml_inventory: inventory ? 'AVAILABLE' : 'UNKNOWN', network_report: network ? 'AVAILABLE' : 'UNKNOWN' },
       semantic_presence: relevant,
