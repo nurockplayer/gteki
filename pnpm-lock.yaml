@@ -251,6 +251,34 @@ importers:
         specifier: workspace:*
         version: link:../schema
 
+  stations/ikebukuro:
+    dependencies:
+      three:
+        specifier: ^0.186.1
+        version: 0.186.1
+      three-mesh-bvh:
+        specifier: ^0.9.16
+        version: 0.9.16(three@0.186.1)
+    devDependencies:
+      '@gteki/scene-api':
+        specifier: workspace:*
+        version: link:../../packages/scene-api
+      '@gteki/schema':
+        specifier: workspace:*
+        version: link:../../packages/schema
+      '@types/node':
+        specifier: ^24.19.2
+        version: 24.19.2
+      '@types/three':
+        specifier: ^0.186.0
+        version: 0.186.0
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vite:
+        specifier: ^8.3.4
+        version: 8.3.4(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)
+
   stations/shinjuku:
     dependencies:
       '@gteki/geo':
@@ -879,6 +907,11 @@ packages:
   std-env@4.3.0:
     resolution: {integrity: sha512-OtU/EgQ1kIm5KwqQpBC6ZEMXrZRui11w8zgfTWp8cdO9B8OaPsbA8bTHO2P+HNo1VlUTGMVBwPhydu6poeXiag==}
 
+  three-mesh-bvh@0.9.16:
+    resolution: {integrity: sha512-2RK+5MJOaiHJhopURn2CUkOHiF3tFloD0uZBfhebV0CKB7mgVLpWUWaDpOyhNJRDkKKe7x4rRfTHZ32GwpXdkw==}
+    peerDependencies:
+      three: '>= 0.159.0'
+
   three@0.186.1:
     resolution: {integrity: sha512-blFeqb49wRCSGUGj7gtpfnSGHy2lwDk94RhUmS1c/hTby70kvChbWpkJ4Pm1390LqzzvTmzgXKHPEafJwCb8jA==}
 
@@ -1389,6 +1422,10 @@ snapshots:
   splaytree@3.2.3: {}
 
   std-env@4.3.0: {}
+
+  three-mesh-bvh@0.9.16(three@0.186.1):
+    dependencies:
+      three: 0.186.1
 
   three@0.186.1: {}
 
