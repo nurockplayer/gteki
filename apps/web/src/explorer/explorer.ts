@@ -19,7 +19,7 @@ import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers 
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
-import { FOLLOW, followDistance, followPose } from "./followCamera.ts";
+import { FOLLOW, followBoom, followDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
@@ -1083,14 +1083,18 @@ export class Explorer {
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
     const pose = followPose(head, this.yaw, this.pitch, shoulder);
+    let back = pose.back;
     let dist = this.camDistance;
     if (this.cameraTargets.length) {
-      this.ray.set(pose.pivot, pose.back);
-      this.ray.far = dist + FOLLOW.clearance;
-      const hits = castCamera(this.ray, this.cameraTargets, this.blockerTargets).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
-      dist = followDistance(dist, hits);
+      const cast = (b: THREE.Vector3) => {
+        this.ray.set(pose.pivot, b);
+        this.ray.far = this.camDistance + FOLLOW.clearance;
+        return castCamera(this.ray, this.cameraTargets, this.blockerTargets).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+      };
+      // Under a camera-only blocker (a hanging sign box, a low cap) the boom slides lower before the camera is pulled in.
+      ({ back, distance: dist } = this.blockerTargets.size ? followBoom(this.camDistance, pose.back, cast) : { back: pose.back, distance: followDistance(this.camDistance, cast(pose.back)) });
     }
-    const desired = pose.pivot.clone().addScaledVector(pose.back, dist);
+    const desired = pose.pivot.clone().addScaledVector(back, dist);
     this.camera.position.lerp(desired, 1 - Math.exp(-dt * 10));
     // The smoothed position, not only the target, stays below camera-only blockers.
     if (this.blockerTargets.size) keepBelowBlockers(pose.pivot, this.camera.position, [...this.blockerTargets], FOLLOW.clearance, this.ray);
