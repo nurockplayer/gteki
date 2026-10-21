@@ -6,6 +6,7 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
+    "test:heavy": "vitest run --mode heavy --maxWorkers=1 --passWithNoTests",
     "check": "pnpm typecheck && pnpm test",
     "dev": "pnpm --filter @gteki/web dev",
     "build": "pnpm --filter @gteki/web build"
