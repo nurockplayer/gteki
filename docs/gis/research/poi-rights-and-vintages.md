@@ -1,6 +1,6 @@
 # POI, facility rights and PLATEAU vintage evidence
 
-Tool-input SHA-256: `dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf`. Generated from integrity-checked acquisitions and current inspection reports. All candidates remain UNVERIFIED / routable:false.
+Tool-input SHA-256: `75edaa1d42f71d2574f24a8f8c0a1be1e6c2f9f6afa2ee52982a3c39156c5401`. Generated from integrity-checked acquisitions and current inspection reports. All candidates remain UNVERIFIED / routable:false.
 
 ## Scope and station identity
 
@@ -118,7 +118,7 @@ Package licence declarations are not resource-level declarations. PLATEAU packag
 
 S03 specification fields/code tables are transcribed with physical PDF page references in ../poi/tokyo-shinjuku-facilities-spec-pdf.json. These are literal definitions; they do not establish current-world access or a graph join.
 
-S03 landing source tokyo-shinjuku-facilities-landing, SHA-256 de86addadda2cf8a382ac1ff7b5c1996a7cb2c4cc7d785020069f7b22ae5e093, introduction: “令和２年３月に公開したデータをもとに”; publication section: “令和５年２月２８日（火曜日）”. This establishes a March 2020 published-data basis and publication on 2023-02-28, not a complete survey date.
+S03 landing source tokyo-shinjuku-facilities-landing, SHA-256 8b3b2e64b749daebcb4551ef0518846b4d8eb8f03dd37593c9a330a739d27988, introduction: “令和２年３月に公開したデータをもとに”; publication section: “令和５年２月２８日（火曜日）”. This establishes a March 2020 published-data basis and publication on 2023-02-28, not a complete survey date.
 
 ## Bbox overlap and 2023 vintage
 

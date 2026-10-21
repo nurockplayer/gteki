@@ -1,0 +1,47 @@
+
+ RUN  v5.0.5 /Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-gis-poi-rights/tools/gis
+
+ ❯ test/vintage-boundaries.test.ts (18 tests | 6 failed) 27ms
+   ❯ ZIP64 and archive identity boundaries (18)
+     × rejects a changed redirect target with the same ETag and length before retaining bytes 15ms
+     × pins the final URL through directory responses 3ms
+     × pins the final URL through member responses 1ms
+     × rejects missing or malformed final URL undefined before retaining bytes 1ms
+     × rejects missing or malformed final URL  before retaining bytes 0ms
+     × rejects missing or malformed final URL not a URL before retaining bytes 0ms
+ ❯ test/poi.test.ts (22 tests | 6 failed) 60ms
+   ❯ POI source inspection (22)
+     × withholds geographic fields for linked or malformed CRS: {"type":"link","properties":{"name":"EPSG:6668","href":"https://example.invalid/projected.crs"}} 6ms
+     × withholds geographic fields for linked or malformed CRS: {"properties":{"name":"EPSG:6668"}} 0ms
+     × withholds geographic fields for linked or malformed CRS: {"type":"other","properties":{"name":"EPSG:6668"}} 0ms
+     × withholds geographic fields for linked or malformed CRS: {"type":"name","properties":{"name":"EPSG:6668","href":"https://example.invalid/projected.crs"}} 0ms
+     × withholds geographic fields for linked or malformed CRS: {"type":"name","properties":{"name":["EPSG:6668"]}} 1ms
+     × withholds geographic fields for conflicting root and geometry CRS declarations 0ms
+ ❯ test/vintage-transaction.test.ts (5 tests | 5 failed) 110ms
+   ❯ vintage bundle transaction (5)
+     × leaves all active receipts and reports unchanged on CityGML inspection failure 34ms
+     × leaves all active receipts and reports unchanged when the second archive fails 12ms
+     × restores the complete active bundle after a staging failure 26ms
+     × restores the complete active bundle after a promotion failure 18ms
+     × publishes both validated archives with final URLs in all receipts and reports 18ms
+ ❯ test/report-consumers.test.ts (12 tests | 11 failed) 42ms
+   ❯ overlap inspection freshness (6)
+     × rejects stale POI acquisition tokyo-shinjuku-facilities-zip before writing 13ms
+     × rejects stale POI acquisition plateau-13104-related-2025 before writing 6ms
+     × rejects stale POI acquisition plateau-13116-related-2025 before writing 4ms
+     × rejects stale vintage package before writing 4ms
+     × rejects stale POI specification lineage before writing 4ms
+   ❯ gap packet inspection freshness (6)
+     × rejects stale POI acquisition tokyo-shinjuku-facilities-zip before writing 3ms
+     × rejects stale POI acquisition plateau-13104-related-2025 before writing 1ms
+     × rejects stale POI acquisition plateau-13116-related-2025 before writing 1ms
+     × rejects stale vintage package before writing 1ms
+     × rejects stale POI specification lineage before writing 0ms
+     × accepts validated current reports 1ms
+
+
+ Test Files  4 failed (4)
+      Tests  28 failed | 29 passed (57)
+   Start at  19:41:31
+   Duration  849ms (tests 57%, import 23%, transform 18%, worker 3%)
+

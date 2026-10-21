@@ -1,0 +1,20 @@
+
+ RUN  v5.0.5 /Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-gis-poi-rights/tools/gis
+
+ ❯ test/vintage-transaction.test.ts (6 tests | 1 failed) 382ms
+   ❯ vintage bundle transaction (6)
+     × rejects colliding content identities from distinct archive resources before promotion 114ms
+ ❯ test/report-consumers.test.ts (18 tests | 6 failed) 67ms
+   × rejects a stale second-station overlap fingerprint before any gap output 12ms
+   × rejects a stale second-station overlap input hash before any gap output 2ms
+   × retains validated acquisition lineage in gap documents 3ms
+   × does not promote a residual POI CRS name with UNKNOWN status to KNOWN 14ms
+   × does not promote a residual POI CRS name with MIXED status to KNOWN 9ms
+   × does not promote a residual POI CRS name with UNSUPPORTED_DECLARED_CRS status to KNOWN 8ms
+
+⎯
+ Test Files  2 failed (2)
+      Tests  7 failed | 17 passed (24)
+   Start at  19:48:48
+   Duration  933ms (tests 71%, transform 17%, import 10%, worker 1%)
+

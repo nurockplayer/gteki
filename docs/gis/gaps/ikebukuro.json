@@ -1,6 +1,144 @@
 {
   "station_id": "ikebukuro",
-  "tool_input_sha256": "dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf",
+  "tool_input_sha256": "75edaa1d42f71d2574f24a8f8c0a1be1e6c2f9f6afa2ee52982a3c39156c5401",
+  "input_sources": [
+    {
+      "source_id": "plateau-catalog-ubld-13116-13104",
+      "sha256": "7e5abc031afa5ab9f4e0da1df9b7e3413d642c7cbdeb6de6f909b4a23a9737ad"
+    },
+    {
+      "source_id": "plateau-13116-ubld-53394576",
+      "sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09"
+    },
+    {
+      "source_id": "plateau-13116-package-2025",
+      "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b"
+    },
+    {
+      "source_id": "plateau-13116-metadata",
+      "sha256": "9c75c7135d5b1693db5474c0756eeb5632496d9d1fbcfd8ca7882c4cbea7d624"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600"
+    },
+    {
+      "source_id": "plateau-13116-schemas",
+      "sha256": "e1d3011989038e21fb07ffc5bc4bc5fc08b1506e8092ef5222b246a205354bde"
+    },
+    {
+      "source_id": "plateau-13104-ubld-53394536",
+      "sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977"
+    },
+    {
+      "source_id": "plateau-13104-package-2025",
+      "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942"
+    },
+    {
+      "source_id": "plateau-13104-metadata",
+      "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da"
+    },
+    {
+      "source_id": "plateau-13104-codelists",
+      "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4"
+    },
+    {
+      "source_id": "plateau-13104-schemas",
+      "sha256": "28ca5c63686afac1487b84dd77a8778e24ec0af680cc71cd39bb3cb1beacb0a2"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-network-geojson",
+      "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-package",
+      "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
+      "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-csv",
+      "sha256": "2477e6f27d8be30b3e57ee6849a36b5d8c9f56e1d2ff34956fe5934b71f4920a"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-csv",
+      "sha256": "a0f8376556bc7c920be10c27181d8a4219745b55ec2bea6938d28dfeadde80d2"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-geojson",
+      "sha256": "f6b84c9c6d05559f04b4a4796b9286f6bfd1bdb4aea0b112666b3d7585b3eab6"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2018-03",
+      "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2024-07",
+      "sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2024-07-diff",
+      "sha256": "1a0b007099ba03467b564b9daf74bc198efdbbecc874ae1a0eed36e450326773"
+    },
+    {
+      "source_id": "plateau-catalog-ubld-mesh-533945",
+      "sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e"
+    },
+    {
+      "source_id": "tokyo-toei-stores-package",
+      "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-package",
+      "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96"
+    },
+    {
+      "source_id": "plateau-site-policy",
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f"
+    },
+    {
+      "source_id": "plateau-13104-package-2023",
+      "sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d"
+    },
+    {
+      "source_id": "toei-stores-shinjuku-csv",
+      "sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6"
+    },
+    {
+      "source_id": "toei-stores-shinjuku-nishiguchi-csv",
+      "sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-zip",
+      "sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-spec-pdf",
+      "sha256": "c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-reference-pdf",
+      "sha256": "d661cd83fb1e914d65de71d354e86ee4aabfcca20e8060930adea5029fbf4f6a"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-landing",
+      "sha256": "8b3b2e64b749daebcb4551ef0518846b4d8eb8f03dd37593c9a330a739d27988"
+    },
+    {
+      "source_id": "plateau-13104-related-2025",
+      "sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9"
+    },
+    {
+      "source_id": "plateau-13116-related-2025",
+      "sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787"
+    }
+  ],
   "rights": [
     {
       "source_id": "plateau-catalog-ubld-13116-13104",

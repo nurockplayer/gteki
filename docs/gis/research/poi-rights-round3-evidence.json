@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "tool_input_sha256": "75edaa1d42f71d2574f24a8f8c0a1be1e6c2f9f6afa2ee52982a3c39156c5401",
+  "poi_reports": 6,
+  "archives": 2,
+  "selected_members": 2,
+  "rights_records": 36,
+  "overlap_reports": 2,
+  "gap_packets": 2,
+  "all_publish_gates": "HOLD",
+  "verification": "UNVERIFIED",
+  "routable": false,
+  "store": "/Users/tachikoma/.gteki/gis-store",
+  "real_run_invalidated": true
+}

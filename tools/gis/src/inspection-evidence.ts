@@ -15,6 +15,21 @@ const FACILITIES_ZIP = 'tokyo-shinjuku-facilities-zip';
 const FACILITIES_SPEC = 'tokyo-shinjuku-facilities-spec-pdf';
 const VINTAGE_PACKAGE = 'plateau-13104-package-2023';
 
+/** Gap packets may use a persisted overlap only with current tool/acquisition lineage. */
+export async function assertOverlapReportCurrent(report: unknown, stationId: string, options: { fingerprint?: string } = {}): Promise<void> {
+  if (!report || typeof report !== 'object' || Array.isArray(report)) throw new Error('Malformed overlap report');
+  const value = report as { station_id?: unknown; tool_input_sha256?: unknown; input_sources?: unknown };
+  if (value.station_id !== stationId) throw new Error('Overlap station identity mismatch');
+  if (value.tool_input_sha256 !== (options.fingerprint ?? await toolFingerprint())) throw new Error('Stale overlap tool fingerprint');
+  if (!Array.isArray(value.input_sources) || !value.input_sources.length) throw new Error('Overlap report lacks acquisition lineage');
+  const seen = new Set<string>();
+  for (const input of value.input_sources) {
+    if (!input || typeof input.source_id !== 'string' || typeof input.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(input.sha256) || seen.has(input.source_id)) throw new Error('Malformed overlap acquisition lineage');
+    seen.add(input.source_id);
+    if ((await getStoredSource(input.source_id)).record.sha256 !== input.sha256) throw new Error(`Stale overlap input SHA-256: ${input.source_id}`);
+  }
+}
+
 /** Validate a saved POI receipt against its live acquisition and current tool inputs. */
 export async function assertPoiInspectionCurrent(
   report: unknown,

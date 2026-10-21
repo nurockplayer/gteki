@@ -41,7 +41,7 @@ function zip64(name: string, contents = Buffer.from('zip64 member')): Buffer {
 }
 
 function serverFor(archive: Buffer, overrides: Partial<RangeResponse> = {}): RangeFetcher {
-  return async (_url, start, end) => ({ status: 206, headers: new Headers({ 'content-range': `bytes ${start}-${end}/${archive.length}`, etag: '"stable"' }), bytes: archive.subarray(start, end + 1), ...overrides });
+  return async (_url, start, end) => ({ status: 206, final_url: 'https://example.invalid/archive.zip', headers: new Headers({ 'content-range': `bytes ${start}-${end}/${archive.length}`, etag: '"stable"' }), bytes: archive.subarray(start, end + 1), ...overrides });
 }
 
 describe('bounded vintage ZIP inspection', () => {
@@ -91,12 +91,12 @@ describe('bounded vintage ZIP inspection', () => {
 
   it('rejects non-206 responses, wrong Content-Range identity, and changed validators', async () => {
     const archive = zip('udx/ubld/53394525.gml');
-    const non206: RangeFetcher = async (_url, start, end) => ({ status: 200, headers: new Headers(), bytes: archive.subarray(start, end + 1) });
+    const non206: RangeFetcher = async (_url, start, end) => ({ status: 200, final_url: 'https://example.invalid/archive.zip', headers: new Headers(), bytes: archive.subarray(start, end + 1) });
     await expect(inspectVintageZipArchive('https://example.invalid/archive.zip', 'v3', non206)).rejects.toThrow('Expected HTTP 206');
-    const badRange: RangeFetcher = async (_url, start, end) => ({ status: 206, headers: new Headers({ 'content-range': `bytes ${start + 1}-${end + 1}/${archive.length}`, etag: '"stable"' }), bytes: archive.subarray(start, end + 1) });
+    const badRange: RangeFetcher = async (_url, start, end) => ({ status: 206, final_url: 'https://example.invalid/archive.zip', headers: new Headers({ 'content-range': `bytes ${start + 1}-${end + 1}/${archive.length}`, etag: '"stable"' }), bytes: archive.subarray(start, end + 1) });
     await expect(inspectVintageZipArchive('https://example.invalid/archive.zip', 'v3', badRange)).rejects.toThrow('does not match requested range');
     let calls = 0;
-    const changedEtag: RangeFetcher = async (_url, start, end) => ({ status: 206, headers: new Headers({ 'content-range': `bytes ${start}-${end}/${archive.length}`, etag: ++calls === 1 ? '"one"' : '"two"' }), bytes: archive.subarray(start, end + 1) });
+    const changedEtag: RangeFetcher = async (_url, start, end) => ({ status: 206, final_url: 'https://example.invalid/archive.zip', headers: new Headers({ 'content-range': `bytes ${start}-${end}/${archive.length}`, etag: ++calls === 1 ? '"one"' : '"two"' }), bytes: archive.subarray(start, end + 1) });
     await expect(inspectVintageZipArchive('https://example.invalid/archive.zip', 'v3', changedEtag)).rejects.toThrow('ETag changed');
   });
 
@@ -106,7 +106,7 @@ describe('bounded vintage ZIP inspection', () => {
   ])('rejects a %s ETag before using ZIP range bytes', async (_kind, etag) => {
     const archive = zip('udx/ubld/53394525.gml');
     const fetcher: RangeFetcher = async (_url, start, end) => ({
-      status: 206,
+      status: 206, final_url: 'https://example.invalid/archive.zip',
       headers: new Headers({ 'content-range': `bytes ${start}-${end}/${archive.length}`, ...(etag === null ? {} : { etag }) }),
       bytes: archive.subarray(start, end + 1),
     });
@@ -115,7 +115,7 @@ describe('bounded vintage ZIP inspection', () => {
 
   it('enforces the directory byte budget before issuing a range request', async () => {
     let called = false;
-    const fetcher: RangeFetcher = async () => { called = true; return { status: 206, headers: new Headers(), bytes: Buffer.alloc(0) }; };
+    const fetcher: RangeFetcher = async () => { called = true; return { status: 206, final_url: 'https://example.invalid/archive.zip', headers: new Headers(), bytes: Buffer.alloc(0) }; };
     const reader = new BoundedZipReader('https://example.invalid/archive.zip', fetcher, 2);
     await expect(reader.read(0, 2)).rejects.toThrow('budget exceeded');
     expect(called).toBe(false);
@@ -123,10 +123,10 @@ describe('bounded vintage ZIP inspection', () => {
 
   it('rejects changed Last-Modified and archive total identities', async () => {
     const archive = zip('udx/ubld/53394525.gml'); let call = 0;
-    const changedModified: RangeFetcher = async (_url, start, end) => ({ status: 206, headers: new Headers({ 'content-range': `bytes ${start}-${end}/${archive.length}`, etag: '"stable"', 'last-modified': ++call === 1 ? 'Mon, 01 Jan 2024 00:00:00 GMT' : 'Tue, 02 Jan 2024 00:00:00 GMT' }), bytes: archive.subarray(start, end + 1) });
+    const changedModified: RangeFetcher = async (_url, start, end) => ({ status: 206, final_url: 'https://example.invalid/archive.zip', headers: new Headers({ 'content-range': `bytes ${start}-${end}/${archive.length}`, etag: '"stable"', 'last-modified': ++call === 1 ? 'Mon, 01 Jan 2024 00:00:00 GMT' : 'Tue, 02 Jan 2024 00:00:00 GMT' }), bytes: archive.subarray(start, end + 1) });
     await expect(inspectVintageZipArchive('https://example.invalid/a.zip', 'v3', changedModified)).rejects.toThrow('Last-Modified changed');
     let totalCall = 0;
-    const changedTotal: RangeFetcher = async (_url, start, end) => ({ status: 206, headers: new Headers({ 'content-range': `bytes ${start}-${end}/${archive.length + (totalCall++ ? 1 : 0)}`, etag: '"stable"' }), bytes: archive.subarray(start, end + 1) });
+    const changedTotal: RangeFetcher = async (_url, start, end) => ({ status: 206, final_url: 'https://example.invalid/archive.zip', headers: new Headers({ 'content-range': `bytes ${start}-${end}/${archive.length + (totalCall++ ? 1 : 0)}`, etag: '"stable"' }), bytes: archive.subarray(start, end + 1) });
     await expect(inspectVintageZipArchive('https://example.invalid/a.zip', 'v3', changedTotal)).rejects.toThrow('total size changed');
   });
 

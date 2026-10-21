@@ -1,0 +1,12 @@
+
+ RUN  v5.0.5 /Users/tachikoma/Developer/gteki/.claude/worktrees/gteki-gis-poi-rights/tools/gis
+
+
+ Test Files  26 passed (26)
+      Tests  331 passed (331)
+   Start at  19:49:31
+   Duration  6.54s (tests 58%, import 30%, transform 8%, worker 3%)
+
+    Isolate  26 workers spawned · ~125ms startup each (spawn + environment, per file)
+             at least ~3.13s faster with isolate: false — reuses workers across files instead of one per file
+

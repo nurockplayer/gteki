@@ -182,9 +182,9 @@ function geographicCrs(name: unknown): boolean {
 }
 
 function crsName(declaration: unknown): unknown {
-  if (!declaration || typeof declaration !== 'object' || Array.isArray(declaration) || !Object.hasOwn(declaration, 'properties')) return null;
+  if (!declaration || typeof declaration !== 'object' || Array.isArray(declaration) || !Object.hasOwn(declaration, 'type') || (declaration as Record<string, unknown>).type !== 'name' || !Object.hasOwn(declaration, 'properties')) return null;
   const properties = (declaration as Record<string, unknown>).properties;
-  return properties && typeof properties === 'object' && !Array.isArray(properties) && Object.hasOwn(properties, 'name')
+  return properties && typeof properties === 'object' && !Array.isArray(properties) && !Object.hasOwn(properties, 'href') && !Object.hasOwn(properties, 'type') && Object.hasOwn(properties, 'name') && typeof (properties as Record<string, unknown>).name === 'string'
     ? (properties as Record<string, unknown>).name : null;
 }
 
@@ -221,16 +221,20 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
   const crsReference = (present: boolean, declaration: unknown): EffectiveCrs => {
     const name = present ? crsName(declaration) : null;
     const status = !present ? localCoordinates ? 'LOCAL_COORDINATES' as const : 'RFC7946_ASSUMPTION' as const
-      : declaration === null ? 'UNKNOWN' as const
+      : name === null ? 'UNKNOWN' as const
         : geographicCrs(name) ? 'DECLARED' as const : 'UNSUPPORTED_DECLARED_CRS' as const;
     const key = !present ? status : declaration === null ? 'UNKNOWN:null' : `${status}:${JSON.stringify(name)}`;
     return { present, declaration, name, status, key };
   };
   const effectiveCrsFor = (feature: Record<string, unknown>, geometry: Record<string, unknown>, inherited?: EffectiveCrs): EffectiveCrs => {
-    if (Object.hasOwn(geometry, 'crs')) return crsReference(true, geometry.crs);
-    if (inherited) return inherited;
-    if (Object.hasOwn(feature, 'crs')) return crsReference(true, feature.crs);
-    return crsReference(rootCrsPresent, declaredCrs);
+    const declarations = [crsReference(rootCrsPresent, declaredCrs)];
+    if (Object.hasOwn(feature, 'crs') && feature !== root) declarations.push(crsReference(true, feature.crs));
+    if (inherited) declarations.push(inherited);
+    if (Object.hasOwn(geometry, 'crs')) declarations.push(crsReference(true, geometry.crs));
+    const present = declarations.filter(record => record.present);
+    if (present.some(record => record.status === 'UNKNOWN') || new Set(present.map(record => record.key)).size > 1)
+      return { present: true, declaration: present.map(record => record.declaration), name: null, status: 'UNKNOWN', key: 'UNKNOWN:conflicting-declarations' };
+    return present.at(-1) ?? declarations[0]!;
   };
   const visitCoordinates = (value: unknown, depth = 0): void => {
     if (coordinateVisitCount >= 1_000_000) { coordinateTraversalIncomplete = true; return; }
@@ -334,11 +338,12 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
   const rawBbox = bboxComplete && coordinateBounds[0] !== Infinity ? coordinateBounds : null;
   const bbox = !mixedCrs && effectiveCrsRecords.every((record) => record.status === 'DECLARED' || record.status === 'RFC7946_ASSUMPTION') && geographicBoundsValid ? rawBbox : null;
   const commonCrsName = mixedCrs ? null : effectiveCrsRecords.length ? effectiveCrsRecords[0]!.name : rootCrsName;
-  const layerCrsStatus = mixedCrs ? 'MIXED' : effectiveCrsRecords[0]?.status ?? (rootCrsPresent ? declaredCrs === null ? 'UNKNOWN' : geographicCrs(rootCrsName) ? 'DECLARED' : 'UNSUPPORTED_DECLARED_CRS' : localCoordinates ? 'LOCAL_COORDINATES' : 'RFC7946_ASSUMPTION');
+  const layerCrsStatus = mixedCrs ? 'MIXED' : effectiveCrsRecords[0]?.status ?? crsReference(rootCrsPresent, declaredCrs).status;
   return {
     file, format: 'GeoJSON', feature_count: features.length, bbox, raw_coordinates_bbox: rawBbox, bbox_status: !bboxComplete ? 'INCOMPLETE_LIMIT_REACHED' : bbox ? 'COMPUTED_GEOGRAPHIC' : 'UNKNOWN', bbox_counts: { coordinate_visits: coordinateVisitCount, coordinate_positions: coordinatePositionCount, geometry_visits: geometryVisitCount, geometry_visit_limit: geometryVisitLimit, visit_limit: 1_000_000 }, property_keys: [...propertyCounts.keys()].sort(), property_keys_truncated: propertyCounts.size >= 200, geometry_type_counts: distribution(geometryCounts),
     line_feature_count: (geometryCounts.get('LineString') ?? 0) + (geometryCounts.get('MultiLineString') ?? 0), endpoint_field_sets: Object.fromEntries([...endpointFieldSets].sort(([a], [b]) => a.localeCompare(b))),
     crs: { properties: { name: commonCrsName } }, crs_status: layerCrsStatus, declared_crs: declaredCrs,
+    effective_crs_declarations: [...new Map(effectiveCrsRecords.filter(record=>record.present).map(record=>[JSON.stringify(record.declaration),record.declaration])).values()],
     crs_interpretation: mixedCrs ? 'Features declare or imply mixed coordinate reference systems; layer metrics are withheld' : layerCrsStatus === 'UNKNOWN' ? 'CRS explicitly unknown; no coordinate reference is assumed' : layerCrsStatus === 'DECLARED' || layerCrsStatus === 'UNSUPPORTED_DECLARED_CRS' ? 'Declared CRS retained verbatim; no reprojection performed' : layerCrsStatus === 'LOCAL_COORDINATES' ? 'Path coordinates are local per source format specification; no CRS declared or inferred' : 'RFC7946 longitude-latitude assumption; source declaration absent',
     bbox_property_keys: bboxPropertyKeys, literal_field_distributions: literalDistributions, literal_value_tables: literalValueTables, source_attributions: sourceAttributions, observations, observations_total: observationsTotal, observations_truncated: observationsTotal > MAX_OBSERVATIONS, candidate_edges: candidateEdges,
   };

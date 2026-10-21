@@ -1,11 +1,12 @@
 import { createHash } from 'node:crypto';
 import { inflateRawSync } from 'node:zlib';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import { dirname, isAbsolute, join } from 'node:path';
-import { assertPathWithinStore, docsRoot, ensurePrivateStore, getGitCommit, getStoredSource, getStoreRoot, readJson, storeRelativePath, verifyStoredFile, writeJson, TOOL_VERSION } from './common.js';
+import { assertPathWithinStore, docsRoot, ensurePrivateStore, getGitCommit, getStoredSource, getStoreRoot, readJson, storeRelativePath, verifyStoredFile, TOOL_VERSION } from './common.js';
 import { bboxMeshes, meshBounds } from './mesh.js';
 import { toolFingerprint } from './provenance.js';
 import { inspectCityGmlPath } from './citygml.js';
+import { commitReportFiles, type ReportFile } from './report-transaction.js';
 
 const PACKAGE_ID = 'plateau-13104-package-2023';
 const DIR_BUDGET = 16 * 1024 * 1024;
@@ -20,10 +21,10 @@ export type VintageZipMember = {
   name: string; name_bytes: number; compressed_size: number; size: number; crc32: string; method: number; flags: number;
   local_header_offset: number; mesh: string | null; category: 'udx' | 'ubld' | null;
 };
-export type VintageRange = { start: number; end: number; bytes: number; requested_at: string; completed_at: string; sha256?: string; store_path?: string };
+export type VintageRange = { start: number; end: number; bytes: number; final_url: string; requested_at: string; completed_at: string; sha256?: string; store_path?: string };
 export type VintageValidatorType = 'STRONG_ETAG';
 export type VintageArchiveInspection = {
-  archive: string; url: string; total_bytes: number; etag: string | null; last_modified: string | null; validator_type: VintageValidatorType;
+  archive: string; url: string; final_url: string; total_bytes: number; etag: string | null; last_modified: string | null; validator_type: VintageValidatorType;
   directory_ranges: VintageRange[]; members: VintageZipMember[]; total_entry_count: number; sha256: string;
   central_directory_store_path?: string; central_directory_bytes?: number;
   member_inventory?: { sha256: string; bytes: number; store_path: string; entry_count: number };
@@ -34,13 +35,13 @@ export type VintageReport = {
   generated_at: string; package_sha256: string | null; archives: VintageArchiveInspection[];
   input_sources: Array<{ source_id: string; sha256: string }>;
   tool_input_sha256: string;
-  selected_member_records: Array<{ archive: string; member: string; sha256: string; bytes: number; store_path: string; ranges: VintageRange[]; etag: string | null; last_modified: string | null; validator_type: VintageValidatorType; crc32: string; size: number; inspection: { verification: 'UNVERIFIED'; feature_count: number; polygon_count: number; envelope: { lower: number[]; upper: number[]; srsName: string | null; axis_order: 'latitude,longitude,height' } | null; bbox_lat_lon_height: unknown; unknowns: string[] } | null; inspection_error: string | null }>;
+  selected_member_records: Array<{ archive: string; final_url: string; member: string; sha256: string; bytes: number; store_path: string; ranges: VintageRange[]; etag: string | null; last_modified: string | null; validator_type: VintageValidatorType; crc32: string; size: number; inspection: { verification: 'UNVERIFIED'; feature_count: number; polygon_count: number; envelope: { lower: number[]; upper: number[]; srsName: string | null; axis_order: 'latitude,longitude,height' } | null; bbox_lat_lon_height: unknown; unknowns: string[] } | null; inspection_error: string | null }>;
   comparison: { current_catalog_source_id: string; target_mesh: string; bbox_meshes: string[]; current_2025_ubld: Array<{ code: string; url: string; file_size: number | null }>; meshes_2023: string[]; meshes_2025: string[]; only_2023: string[]; only_2025: string[]; touching_target_2023: string[]; bbox_relations: Array<{ archive: string; layer: string; source_crs: string | null; layer_crs: string | null; relation: 'INTERSECTS' | 'DISJOINT' | 'UNKNOWN'; intersection_bbox_lat_lon: number[] | null }>; note: string };
   byte_totals: { directory_range_bytes: number; member_range_bytes: number; extracted_member_bytes: number; requested_http_bytes: number };
   limitations: string[];
 };
 
-export type RangeResponse = { status: number; headers: Headers; bytes: Buffer };
+export type RangeResponse = { status: number; final_url: string; headers: Headers; bytes: Buffer };
 export type RangeFetcher = (url: string, start: number, end: number, ifRange: string | null) => Promise<RangeResponse>;
 const fetchRange: RangeFetcher = async (url, start, end, ifRange) => {
   const headers: Record<string, string> = { Range: `bytes=${start}-${end}`, 'Accept-Encoding': 'identity' };
@@ -57,7 +58,7 @@ const fetchRange: RangeFetcher = async (url, start, end, ifRange) => {
     chunks.push(bytes);
   }
   const bytes = Buffer.concat(chunks, received);
-  return { status: response.status, headers: response.headers, bytes };
+  return { status: response.status, final_url: response.url, headers: response.headers, bytes };
 };
 
 function parseContentRange(value: string | null): { start: number; end: number; total: number } {
@@ -72,11 +73,17 @@ function isStrongEtag(value: string | null): value is string {
   return value !== null && /^"[\x21\x23-\x7e\x80-\xff]*"$/.test(value);
 }
 
+function isHttpUrl(value: unknown): value is string {
+  if (typeof value !== 'string' || !value) return false;
+  try { const url = new URL(value); return url.protocol === 'https:' || url.protocol === 'http:'; } catch { return false; }
+}
+
 /** Only strong ETags establish byte identity. No Last-Modified or unvalidated fallback is used. */
 export class BoundedZipReader {
   private total: number | null = null;
   private etag: string | null = null;
   private lastModified: string | null = null;
+  private finalUrl: string | null = null;
   private directoryBytes = 0;
   readonly ranges: VintageRange[] = [];
   readonly directoryRanges: VintageRange[] = [];
@@ -104,16 +111,19 @@ export class BoundedZipReader {
     if (!isStrongEtag(etag)) throw new Error('ZIP range identity requires a strong ETag; weak, missing or malformed ETags cannot combine ranges (no re-read fallback implemented)');
     if (this.etag !== null && etag !== this.etag) throw new Error('ZIP ETag changed between ranges');
     if (this.lastModified !== null && lastModified !== this.lastModified) throw new Error('ZIP Last-Modified changed between ranges');
+    if (!isHttpUrl(response.final_url)) throw new Error('ZIP range identity requires a valid final URL');
+    if (this.finalUrl !== null && response.final_url !== this.finalUrl) throw new Error('ZIP final URL changed between ranges');
     this.total = contentRange.total;
+    this.finalUrl = response.final_url;
     if (this.etag === null) this.etag = etag;
     if (this.lastModified === null && lastModified !== null) this.lastModified = lastModified;
-    this.ranges.push({ start, end, bytes: response.bytes.length, requested_at: requestedAt, completed_at: completedAt });
+    this.ranges.push({ start, end, bytes: response.bytes.length, final_url: response.final_url, requested_at: requestedAt, completed_at: completedAt });
     this.rangePayloads.push(response.bytes);
     if (purpose === 'directory') { this.directoryBytes += size; this.directoryRanges.push(this.ranges.at(-1)!); }
     return response.bytes;
   }
   get totalBytes(): number { if (this.total === null) throw new Error('ZIP length is not known'); return this.total; }
-  get identity(): { etag: string | null; lastModified: string | null; validator_type: VintageValidatorType } { return { etag: this.etag, lastModified: this.lastModified, validator_type: 'STRONG_ETAG' }; }
+  get identity(): { etag: string | null; lastModified: string | null; final_url: string | null; validator_type: VintageValidatorType } { return { etag: this.etag, lastModified: this.lastModified, final_url: this.finalUrl, validator_type: 'STRONG_ETAG' }; }
   async readSuffix(length: number): Promise<Buffer> {
     if (this.total === null) await this.read(0, 0);
     const size = Math.min(length, this.totalBytes);
@@ -258,7 +268,7 @@ async function inspectArchive(archive: string, url: string, fetcher = fetchRange
     downloaded.push({ member, bytes: contents, ranges: reader.ranges.slice(rangeStart) });
   }
   const ranges = [...reader.directoryRanges];
-  return { result: { archive, url, total_bytes: reader.totalBytes, etag: reader.identity.etag, last_modified: reader.identity.lastModified, validator_type: reader.identity.validator_type, directory_ranges: ranges, members: members.filter(member => member.category === 'ubld'), total_entry_count: members.length, sha256: createHash('sha256').update(directory).digest('hex') }, selected: downloaded, allMembers: members, centralDirectory: directory, ranges: reader.ranges, rangePayloads: reader.rangePayloads };
+  return { result: { archive, url, final_url: reader.identity.final_url!, total_bytes: reader.totalBytes, etag: reader.identity.etag, last_modified: reader.identity.lastModified, validator_type: reader.identity.validator_type, directory_ranges: ranges, members: members.filter(member => member.category === 'ubld'), total_entry_count: members.length, sha256: createHash('sha256').update(directory).digest('hex') }, selected: downloaded, allMembers: members, centralDirectory: directory, ranges: reader.ranges, rangePayloads: reader.rangePayloads };
 }
 
 async function persistRangeEvidence(ranges: VintageRange[], payloads: Buffer[]): Promise<void> {
@@ -292,7 +302,7 @@ async function persistHashedBlob(bytes: Buffer, filename: string): Promise<{ sha
   return { sha256, bytes: bytes.length, store_path: storePath };
 }
 
-async function persistDirectoryEvidence(archive: VintageArchiveInspection, allMembers: VintageZipMember[], centralDirectory: Buffer, packageSource: { source_id: string; sha256: string; json_pointer: string }): Promise<void> {
+async function prepareDirectoryEvidence(archive: VintageArchiveInspection, allMembers: VintageZipMember[], centralDirectory: Buffer, packageSource: { source_id: string; sha256: string; json_pointer: string }): Promise<ReportFile> {
   const central = await persistHashedBlob(centralDirectory, `${archive.archive}-central-directory.bin`);
   if (central.sha256 !== archive.sha256) throw new Error(`${archive.archive} central directory SHA-256 changed during evidence storage`);
   archive.central_directory_store_path = central.store_path; archive.central_directory_bytes = central.bytes;
@@ -300,8 +310,8 @@ async function persistDirectoryEvidence(archive: VintageArchiveInspection, allMe
   const inventory = await persistHashedBlob(inventoryBytes, `${archive.archive}-member-inventory.json`);
   archive.member_inventory = { ...inventory, entry_count: allMembers.length };
   const sourceId = `vintage-directory-${archive.archive.replaceAll('_', '-')}`;
-  await writeJson(join(docsRoot, 'gis', 'acquisitions', 'vintages', `${sourceId}.json`), {
-    source_id: sourceId, acquisition_kind: 'ZIP_CENTRAL_DIRECTORY', archive: archive.archive, resolved_url: archive.url,
+  return jsonReport(join(docsRoot, 'gis', 'acquisitions', 'vintages', `${sourceId}.json`), {
+    source_id: sourceId, acquisition_kind: 'ZIP_CENTRAL_DIRECTORY', archive: archive.archive, resolved_url: archive.url, final_url: archive.final_url,
     package_source: packageSource, central_directory: central, member_inventory: { ...inventory, entry_count: allMembers.length },
     total_archive_bytes: archive.total_bytes, etag: archive.etag, last_modified: archive.last_modified, validator_type: archive.validator_type,
     ranges: archive.directory_ranges, requested_at: archive.directory_ranges[0]?.requested_at, completed_at: archive.directory_ranges.at(-1)?.completed_at,
@@ -339,7 +349,7 @@ function requireUniqueArchiveResources(resources: Array<{ name: string; url: str
   });
 }
 
-async function persistMember(archive: string, url: string, item: { member: VintageZipMember; bytes: Buffer; ranges: VintageRange[] }, identity: { etag: string | null; last_modified: string | null; validator_type: VintageValidatorType }, packageSource: { source_id: string; sha256: string; json_pointer: string }): Promise<VintageReport['selected_member_records'][number]> {
+async function prepareMember(archive: string, url: string, item: { member: VintageZipMember; bytes: Buffer; ranges: VintageRange[] }, identity: { etag: string | null; last_modified: string | null; final_url: string; validator_type: VintageValidatorType }, packageSource: { source_id: string; sha256: string; json_pointer: string }): Promise<{ member: VintageReport['selected_member_records'][number]; receipt: ReportFile }> {
   const sha256 = createHash('sha256').update(item.bytes).digest('hex');
   const storePath = storeRelativePath(sha256, item.member.name.split('/').at(-1) || 'member.bin');
   const root = getStoreRoot(); const full = join(root, storePath); await mkdir(dirname(full), { recursive: true, mode: 0o700 });
@@ -352,16 +362,15 @@ async function persistMember(archive: string, url: string, item: { member: Vinta
   }
   const record = { source_id: `vintage-member-${sha256.slice(0, 16)}`, archive, member: item.member.name, sha256, bytes: item.bytes.length, store_path: storePath,
     ranges: item.ranges, etag: identity.etag, last_modified: identity.last_modified, validator_type: identity.validator_type, crc32: item.member.crc32, size: item.member.size, requested_at: item.ranges[0]?.requested_at ?? new Date().toISOString(), completed_at: new Date().toISOString(),
-    acquisition_kind: 'DERIVED_EXACT_ARCHIVE_MEMBER', resolved_url: url, package_source: { source_id: packageSource.source_id, sha256: packageSource.sha256, json_pointer: packageSource.json_pointer },
+    acquisition_kind: 'DERIVED_EXACT_ARCHIVE_MEMBER', resolved_url: url, final_url: identity.final_url, package_source: { source_id: packageSource.source_id, sha256: packageSource.sha256, json_pointer: packageSource.json_pointer },
     tool_version: TOOL_VERSION, git_commit: await getGitCommit(), verification: 'UNVERIFIED', routable: false, publish_gate: 'HOLD', licence: { value: null, status: 'UNKNOWN' } };
-  await writeJson(join(docsRoot, 'gis', 'acquisitions', 'vintages', `${record.source_id}.json`), record);
   let inspection: VintageReport['selected_member_records'][number]['inspection'] = null;
   let inspectionError: string | null = null;
   try {
     const inventory = await inspectCityGmlPath(full, { source_id: `vintage-member-${sha256.slice(0, 16)}`, source_sha256: sha256 });
     inspection = { verification: 'UNVERIFIED', feature_count: inventory.totals.feature_count, polygon_count: inventory.totals.polygon_count, envelope: inventory.envelope, bbox_lat_lon_height: inventory.totals.bbox_lat_lon_height, unknowns: inventory.unknowns };
   } catch (error) { throw new Error(`Unable to inspect acquired CityGML member ${item.member.name}: ${error instanceof Error ? error.message : String(error)}`); }
-  return { archive, member: item.member.name, sha256, bytes: item.bytes.length, store_path: storePath, ranges: item.ranges, etag: identity.etag, last_modified: identity.last_modified, validator_type: identity.validator_type, crc32: item.member.crc32, size: item.member.size, inspection, inspection_error: inspectionError };
+  return { receipt: jsonReport(join(docsRoot, 'gis', 'acquisitions', 'vintages', `${record.source_id}.json`), record), member: { archive, final_url: identity.final_url, member: item.member.name, sha256, bytes: item.bytes.length, store_path: storePath, ranges: item.ranges, etag: identity.etag, last_modified: identity.last_modified, validator_type: identity.validator_type, crc32: item.member.crc32, size: item.member.size, inspection, inspection_error: inspectionError } };
 }
 
 /** Inspect 2023 CityGML archive ZIP directories using bounded HTTP ranges. No archive is downloaded whole. */
@@ -396,13 +405,22 @@ export async function inspectVintages(options: { fetcher?: RangeFetcher; fetchMe
     input_sources: [{ source_id: PACKAGE_ID, sha256: pkg.sha256 }, { source_id: 'plateau-catalog-ubld-mesh-533945', sha256: catalogRecord.sha256 }, ...e27Inputs],
     tool_input_sha256: await toolFingerprint(),
     limitations: ['Rights remain HOLD pending rights review.', 'Every vintage finding is UNVERIFIED and routable:false.', 'Only ZIP directory ranges and explicitly selected member bytes may be acquired.'] };
+  const files = new Map<string, ReportFile>();
   for (const resource of resources) {
     const bboxCodes = [...new Set([...networkBboxes, ...(options.bbox ? bboxMeshes(options.bbox) : [])])];
     const inspected = await inspectArchive(resource.name, resource.url, options.fetcher, options.fetchMembers !== false, bboxCodes);
     await persistRangeEvidence(inspected.ranges, inspected.rangePayloads);
-    await persistDirectoryEvidence(inspected.result, inspected.allMembers, inspected.centralDirectory, { source_id: PACKAGE_ID, sha256: pkg.sha256, json_pointer: resource.json_pointer });
+    const directory = await prepareDirectoryEvidence(inspected.result, inspected.allMembers, inspected.centralDirectory, { source_id: PACKAGE_ID, sha256: pkg.sha256, json_pointer: resource.json_pointer });
+    files.set(directory.path, directory);
     report.archives.push(inspected.result);
-    for (const member of inspected.selected) report.selected_member_records.push(await persistMember(resource.name, resource.url, member, { etag: inspected.result.etag, last_modified: inspected.result.last_modified, validator_type: inspected.result.validator_type }, { source_id: PACKAGE_ID, sha256: pkg.sha256, json_pointer: resource.json_pointer }));
+    for (const member of inspected.selected) {
+      const prepared = await prepareMember(resource.name, resource.url, member, inspected.result, { source_id: PACKAGE_ID, sha256: pkg.sha256, json_pointer: resource.json_pointer });
+      report.selected_member_records.push(prepared.member);
+      // The legacy content-addressed source ID cannot distinguish two resource origins.
+      // Fail the entire preparation rather than discard either archive's provenance.
+      if (files.has(prepared.receipt.path)) throw new Error(`Ambiguous vintage member receipt identity across archive resources: ${prepared.member.sha256}`);
+      files.set(prepared.receipt.path, prepared.receipt);
+    }
   }
   const all2023 = report.archives.flatMap(archive => archive.members).filter(member => member.category === 'ubld');
   report.comparison.meshes_2023 = [...new Set(all2023.map(member => member.mesh).filter((mesh): mesh is string => Boolean(mesh)))].sort();
@@ -428,7 +446,18 @@ export async function inspectVintages(options: { fetcher?: RangeFetcher; fetchMe
   if (report.archives.length) report.status = 'INSPECTED';
   const evidenceCheck = await verifyVintageEvidence(report);
   if (evidenceCheck.status !== 'PASS') throw new Error(`Vintage evidence failed offline verification: ${evidenceCheck.errors.join('; ')}`);
-  await writeReport(report);
+  for (const file of prepareReport(report)) files.set(file.path, file);
+  if (process.env.GTEKI_GIS_REAL_RUN !== '1') {
+    const path = join(docsRoot, 'gis', 'real-run.json');
+    let content: string | undefined;
+    try { content = await readFile(path, 'utf8'); } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+    if (content !== undefined) {
+      const receipt = JSON.parse(content);
+      receipt.invalidated = { at: new Date().toISOString(), by_command: 'gis inspect-vintages', reason: 'Report-writing command run outside real-run; rerun real-run before summarizing' };
+      files.set(path, jsonReport(path, receipt));
+    }
+  }
+  await commitReportFiles([...files.values()], join(docsRoot, 'gis'));
   return report;
 }
 
@@ -442,6 +471,7 @@ export async function verifyVintageEvidence(report: VintageReport): Promise<{ st
     else artifacts.push({ label: `${archive.archive} range ${range.start}-${range.end}`, bytes: range.bytes, sha256: range.sha256, store_path: range.store_path });
   }
   for (const archive of report.archives) {
+    if (!isHttpUrl(archive.final_url) || archive.directory_ranges.some(range => range.final_url !== archive.final_url)) errors.push(`${archive.archive} lacks matching final URL range identity`);
     if (archive.validator_type !== 'STRONG_ETAG' || !isStrongEtag(archive.etag)) errors.push(`${archive.archive} lacks a strong ETag identity validator`);
     if (!archive.central_directory_store_path || !archive.central_directory_bytes) errors.push(`${archive.archive} central directory lacks a hashed store artifact`);
     else artifacts.push({ label: `${archive.archive} central directory`, bytes: archive.central_directory_bytes, sha256: archive.sha256, store_path: archive.central_directory_store_path });
@@ -450,6 +480,7 @@ export async function verifyVintageEvidence(report: VintageReport): Promise<{ st
   }
   for (const member of report.selected_member_records) {
     const archive = report.archives.find(a => a.archive === member.archive);
+    if (!isHttpUrl(member.final_url) || member.final_url !== archive?.final_url || member.ranges.some(range => range.final_url !== member.final_url)) errors.push(`${member.member} lacks matching final URL archive identity`);
     if (member.validator_type !== 'STRONG_ETAG' || !isStrongEtag(member.etag) || member.etag !== archive?.etag) errors.push(`${member.member} lacks matching strong ETag archive identity`);
     for (const range of member.ranges) {
       if (!range.sha256 || !range.store_path) errors.push(`${member.member} range ${range.start}-${range.end} lacks a hashed store artifact`);
@@ -472,12 +503,12 @@ export async function verifyVintageEvidence(report: VintageReport): Promise<{ st
   return { status: errors.length ? 'FAIL' : 'PASS', errors };
 }
 
-async function writeReport(report: VintageReport): Promise<void> {
-  await mkdir(REPORT_DIR, { recursive: true });
-  await writeJson(join(REPORT_DIR, 'shinjuku-2023.json'), report);
+function jsonReport(path: string, value: unknown): ReportFile { return { path, content: `${JSON.stringify(value, null, 2)}\n` }; }
+
+function prepareReport(report: VintageReport): ReportFile[] {
   const rows = report.archives.flatMap(archive => archive.members.filter(member => member.category).map(member => `| ${archive.archive} | ${member.name} | ${member.size} | ${member.crc32} | ${member.mesh ?? 'unknown'} | ${member.category} |`));
   const inspected = report.selected_member_records.map(member => `- ${member.archive} ${member.member}: ${member.bytes} bytes, SHA-256 ${member.sha256}; CityGML features ${member.inspection?.feature_count ?? 'unavailable'}, polygons ${member.inspection?.polygon_count ?? 'unavailable'}.`);
   const markdown = `# PLATEAU 2023 vintage inspection\n\nStatus: ${report.status}. Verification: UNVERIFIED. Routable: false. Rights: HOLD.\n\nPackage source: ${PACKAGE_ID}; package SHA-256: ${report.package_sha256 ?? 'pending'}.\n\nZIP directory requests are capped at ${DIR_BUDGET} bytes total per archive. Optional member acquisition has ${MEMBER_COMPRESSED_BUDGET} byte compressed-range and ${MEMBER_UNCOMPRESSED_BUDGET} byte uncompressed caps per entry.\n\n| Archive | Member | Uncompressed bytes | CRC-32 | Mesh | Type |\n|---|---|---:|---|---|---|\n${rows.join('\n')}\n\nSelected member inspections:\n\n${inspected.join('\n')}\n\n${report.limitations.map(note => `- ${note}`).join('\n')}\n`;
-  const { writeFile } = await import('node:fs/promises'); await writeFile(join(REPORT_DIR, 'shinjuku-2023.md'), markdown);
+  return [jsonReport(join(REPORT_DIR, 'shinjuku-2023.json'), report), { path: join(REPORT_DIR, 'shinjuku-2023.md'), content: markdown }];
 }
 

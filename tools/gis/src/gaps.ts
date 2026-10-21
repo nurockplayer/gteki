@@ -1,9 +1,10 @@
 import path from 'node:path';
 import { writeFile } from 'node:fs/promises';
-import { docsRoot, readJson, writeJson } from './common.js';
+import { docsRoot, getStoredSource, readJson, writeJson } from './common.js';
 import type { StationOverlapReport } from './overlap.js';
 import { loadSources } from './acquire.js';
 import { toolFingerprint } from './provenance.js';
+import { assertOverlapReportCurrent, assertPoiInspectionCurrent, assertVintageResearchCurrent } from './inspection-evidence.js';
 
 const STATIONS = [
   { id: 'ikebukuro', city: '13116', gml: 'plateau-13116-ubld-53394576', network: 'hokonavi-ikebukuro-walk-node-csv' },
@@ -88,15 +89,38 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
   const results: Record<string, unknown> = {};
   const fingerprint=await toolFingerprint();
   const rights=await Promise.all(loadSources().map(s=>readJson<any>(path.join(docsRoot,'gis','rights',`${s.source_id}.json`))));
-  const pois=await Promise.all(['toei-stores-shinjuku-csv','toei-stores-shinjuku-nishiguchi-csv','tokyo-shinjuku-facilities-zip','tokyo-shinjuku-facilities-spec-pdf','plateau-13104-related-2025','plateau-13116-related-2025'].map(id=>readJson<any>(path.join(docsRoot,'gis','poi',`${id}.json`))));
+  const poiIds=['toei-stores-shinjuku-csv','toei-stores-shinjuku-nishiguchi-csv','tokyo-shinjuku-facilities-zip','tokyo-shinjuku-facilities-spec-pdf','plateau-13104-related-2025','plateau-13116-related-2025'];
+  const pois=await Promise.all(poiIds.map(id=>readJson<any>(path.join(docsRoot,'gis','poi',`${id}.json`))));
   const vintage=await readJson<any>(path.join(docsRoot,'gis','vintages','shinjuku-2023.json'));
+  for(const [index,poi] of pois.entries())await assertPoiInspectionCurrent(poi,poiIds[index]!,{fingerprint});
+  await assertVintageResearchCurrent(vintage,{fingerprint});
   for(const r of [...rights,...pois,vintage])if(r.tool_input_sha256!==fingerprint)throw new Error('Gap packet input has a stale tool fingerprint');
+  const overlaps = new Map<string, StationOverlapReport | null>();
+  for (const station of STATIONS) {
+    const overlap = await maybeReport(`overlap/${station.id}.json`) as StationOverlapReport | null;
+    if (overlap) await assertOverlapReportCurrent(overlap, station.id, { fingerprint });
+    overlaps.set(station.id, overlap);
+  }
+  const inputs = new Map<string, string>();
+  for (const report of [...rights, ...pois, vintage, ...overlaps.values()].filter(Boolean)) {
+    for (const input of report.input_sources ?? []) {
+      if ((await getStoredSource(input.source_id)).record.sha256 !== input.sha256) throw new Error(`Stale gap packet input SHA-256: ${input.source_id}`);
+      inputs.set(input.source_id, input.sha256);
+    }
+    if (report.source_id && report.source_sha256) {
+      if ((await getStoredSource(report.source_id)).record.sha256 !== report.source_sha256) throw new Error(`Stale gap packet source SHA-256: ${report.source_id}`);
+      inputs.set(report.source_id, report.source_sha256);
+    }
+  }
+  for (const station of STATIONS) for (const id of [station.gml, station.network]) {
+    const source = await getStoredSource(id); inputs.set(id, source.record.sha256);
+  }
   for (const station of STATIONS) {
     const stationRights=rights.filter(r=>r.station_ids.includes(station.id)).map(r=>({source_id:r.source_id,source_sha256:r.source_sha256,licence:r.licence,resource_licence:r.resource_licence,publish_gate:r.publish_gate}));
     const stationPois=pois.filter(r=>r.station_ids.includes(station.id)).map(r=>({source_id:r.source_id,source_sha256:r.source_sha256,format:r.format,row_count:r.row_count??null,members:r.members?.map((m:any)=>({file:m.file,feature_count:m.feature_count??null,geometry_type_counts:m.geometry_type_counts??null})),verification:'UNVERIFIED',routable:false}));
     const inventory = await maybeReport(`inventory/${station.gml}.inventory.json`);
     const network = await maybeReport(`networks/${station.network}.json`);
-    const overlap = await maybeReport(`overlap/${station.id}.json`) as StationOverlapReport | null;
+    const overlap = overlaps.get(station.id)!;
     const semanticFacts = literalFacts(inventory);
     const relevant = {
       floors: summarizePresence(valuesForSemantic(inventory, ['floors'])),
@@ -162,6 +186,7 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
     const document = {
       station_id: station.id,
       tool_input_sha256:fingerprint,
+      input_sources:[...inputs].map(([source_id,sha256])=>({source_id,sha256})),
       rights:stationRights,poi_availability:stationPois,
       plateau_2023_vintage:station.id==='shinjuku'?vintage:null,
       source_ids: { citygml: station.gml, network: station.network },

@@ -124,6 +124,7 @@
       "layer_role": "poi_facility",
       "source_id": "plateau-13116-related-2025",
       "source_crs": null,
+      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "source_crs_bbox": [
         139.680022,
         35.716454,
@@ -133,7 +134,6 @@
       "bbox_axis_order": "longitude,latitude",
       "feature_count": 42,
       "bbox_status": "COMPUTED_GEOGRAPHIC",
-      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
@@ -144,6 +144,7 @@
       "layer_role": "poi_facility",
       "source_id": "plateau-13116-related-2025",
       "source_crs": null,
+      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "source_crs_bbox": [
         139.68017243,
         35.7131,
@@ -153,7 +154,6 @@
       "bbox_axis_order": "longitude,latitude",
       "feature_count": 62,
       "bbox_status": "COMPUTED_GEOGRAPHIC",
-      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
@@ -164,6 +164,7 @@
       "layer_role": "poi_facility",
       "source_id": "plateau-13116-related-2025",
       "source_crs": null,
+      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "source_crs_bbox": [
         139.67859707,
         35.714298848,
@@ -173,7 +174,6 @@
       "bbox_axis_order": "longitude,latitude",
       "feature_count": 143,
       "bbox_status": "COMPUTED_GEOGRAPHIC",
-      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
@@ -184,6 +184,7 @@
       "layer_role": "poi_facility",
       "source_id": "plateau-13116-related-2025",
       "source_crs": null,
+      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "source_crs_bbox": [
         139.683010912,
         35.716569724,
@@ -193,7 +194,6 @@
       "bbox_axis_order": "longitude,latitude",
       "feature_count": 35,
       "bbox_status": "COMPUTED_GEOGRAPHIC",
-      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
@@ -204,6 +204,7 @@
       "layer_role": "poi_facility",
       "source_id": "plateau-13116-related-2025",
       "source_crs": null,
+      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "source_crs_bbox": [
         139.677425528,
         35.714544972,
@@ -213,7 +214,6 @@
       "bbox_axis_order": "longitude,latitude",
       "feature_count": 81,
       "bbox_status": "COMPUTED_GEOGRAPHIC",
-      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
@@ -224,6 +224,7 @@
       "layer_role": "poi_facility",
       "source_id": "plateau-13116-related-2025",
       "source_crs": null,
+      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "source_crs_bbox": [
         139.67742621,
         35.714460811,
@@ -233,7 +234,6 @@
       "bbox_axis_order": "longitude,latitude",
       "feature_count": 26,
       "bbox_status": "COMPUTED_GEOGRAPHIC",
-      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
@@ -244,6 +244,7 @@
       "layer_role": "poi_facility",
       "source_id": "plateau-13116-related-2025",
       "source_crs": null,
+      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "source_crs_bbox": [
         139.677344306,
         35.712265775,
@@ -253,7 +254,6 @@
       "bbox_axis_order": "longitude,latitude",
       "feature_count": 1,
       "bbox_status": "COMPUTED_GEOGRAPHIC",
-      "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
@@ -1338,7 +1338,7 @@
     ],
     "note": "Conditional on R1 inferred EPSG:6668. Node containment and supplied polyline intersection with the PLATEAU geometry bbox only. No feature correspondence, floor match or route is established."
   },
-  "tool_input_sha256": "dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf",
+  "tool_input_sha256": "75edaa1d42f71d2574f24a8f8c0a1be1e6c2f9f6afa2ee52982a3c39156c5401",
   "input_sources": [
     {
       "source_id": "plateau-13116-ubld-53394576",
@@ -1399,6 +1399,10 @@
     {
       "source_id": "plateau-13116-related-2025",
       "sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787"
+    },
+    {
+      "source_id": "tokyo-shinjuku-facilities-spec-pdf",
+      "sha256": "c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095"
     }
   ]
 }

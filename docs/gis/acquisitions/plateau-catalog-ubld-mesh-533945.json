@@ -2,31 +2,23 @@
   "source_id": "plateau-catalog-ubld-mesh-533945",
   "resolved_url": "https://api.plateauview.mlit.go.jp/datacatalog/citygml/m:533945?types=ubld",
   "resolution_evidence": null,
-  "requested_at": "2026-10-21T10:34:04.734Z",
-  "completed_at": "2026-10-21T10:34:05.191Z",
+  "requested_at": "2026-10-21T10:43:43.683Z",
+  "completed_at": "2026-10-21T10:43:43.869Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/json",
-    "content-length": "770",
+    "content-length": null,
     "etag": null,
     "last-modified": null,
-    "date": "Wed, 21 Oct 2026 10:34:05 GMT"
+    "date": "Wed, 21 Oct 2026 10:43:43 GMT"
   },
   "bytes": 2540,
   "sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e",
   "store_path": "raw/ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e/m_533945",
   "tool_version": "0.1.0",
-  "git_commit": "5965fdca51421e3a1f8be340bcffc94b72e31e5f",
+  "git_commit": "df75b560913ed833daeaf18b03d1cb638baf7ecb",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
-  "mode": "online",
-  "last_offline_check": {
-    "requested_at": "2026-10-21T10:38:51.582Z",
-    "completed_at": "2026-10-21T10:38:51.582Z",
-    "tool_version": "0.1.0",
-    "sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e",
-    "bytes": 2540,
-    "status": "PASS"
-  }
+  "mode": "online"
 }

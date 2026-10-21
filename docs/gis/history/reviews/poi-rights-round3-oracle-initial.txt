@@ -1,0 +1,321 @@
+[p1 "程式碼審查請求ոփոխ" | space "GTEki Lane D round 3 review 20261021"(12): 1 managed, 0 untracked — p1* "程式碼審查請求ոփոխ"]
+root
+  container
+    anchor [ref=67, loc=href:/c/6ad89800-ff48-83e8-94cf-224e4b2baba9#_r_3e_, url=https://chatgpt.com/c/6ad89800-ff48-83e8-94cf-224e4b2baba9#_r_3e_]
+      text "跳至內容"
+    container
+      container
+        container "應用程式導覽"
+          container
+            button [ref=1]
+              container
+                svg_root
+                text "首頁"
+            button [ref=2]
+              container
+                svg_root
+                text "空間"
+            button [ref=3]
+              container
+                svg_root
+                text "已排程"
+            button [ref=4]
+              container
+                svg_root
+                text "外掛程式"
+            button [ref=5]
+              container
+                svg_root
+                text "探索"
+            button [ref=6]
+              container
+                svg_root
+                text "網站"
+          button "開啟個人檔案選單" [ref=7, loc=css:button[aria-label="開啟個人檔案選單"]]
+            image
+        navigation "首頁"
+      container [ref=52]
+        container
+          button "新對話" [ref=53]
+            svg_root
+          button "更多" [ref=54, loc=css:button[aria-label="更多"]]
+            svg_root
+          button "分享" [ref=55]
+            svg_root
+            text "分享"
+        region "對話" [ref=56, loc=role:region[name="對話"]]
+          container
+            container
+              container
+                heading
+                  text "你說："
+                container
+                  button "gteki-round3-review.txt" [ref=68, loc=css:button[aria-label="gteki-round3-review.txt"]]
+                  svg_root
+                  text "gteki-round3-review.txt"
+                  text "文件"
+                  container
+                    container
+                      container
+                        text "Independent final code review for GTEki Lane D round 3. This is a TypeScript GIS provenance tool using pnpm, Vitest, Node fs and bounded HTTP Range ZIP reads. Review the exact supplied source and test..."
+                        text "…"
+                      button [ref=57]
+                        text "顯示較多"
+                        svg_root
+                    container
+                      button "複製訊息" [ref=58, loc=css:button[aria-label="複製訊息"]]
+                        svg_root
+                      button "分享提示詞" [ref=59, loc=css:button[aria-label="分享提示詞"]]
+                        svg_root
+                      button "編輯訊息" [ref=69, loc=css:button[aria-label="編輯訊息"]]
+                        svg_root
+                button [ref=70]
+                  text "處理時間為 45s"
+                  svg_root
+                container
+                  heading [ref=71]
+                    text "ChatGPT 說："
+                  container
+                    ordered_list
+                      list_item
+                        paragraph
+                          text "Range final-URL identity — PASS."
+                          text "BoundedZipReader.read()"
+                          text "validates"
+                          text "response.final_url"
+                          text "as HTTP(S), rejects any change from the first pinned final URL, and does so before mutating"
+                          text "total"
+                          text ","
+                          text "finalUrl"
+                          text ","
+                          text "ranges"
+                          text ", or"
+                          text "rangePayloads"
+                          text "("
+                          text "tools/gis/src/vintage.ts:103-123"
+                          text "). The pinned URL is retained in archive inspection, individual ranges, directory receipts, member receipts, and selected-member records ("
+                          text "vintage.ts:24-40, 271, 313-319, 363-373"
+                          text "). The regression explicitly checks same ETag/length with target A→B and verifies only the first payload remains retained ("
+                          text "vintage-boundaries.test.ts:24-36"
+                          text ")."
+                          button "開啟 gteki-round3-review.txt 預覽" [ref=72]
+                            svg_root
+                            text "gteki-round3-review"
+                      list_item
+                        paragraph
+                          text "Stale POI/vintage report freshness and lineage — REQUEST_CHANGES."
+                          text "The direct stale-receipt hole is fixed: overlap invokes"
+                          text "assertPoiInspectionCurrent()"
+                          text "and"
+                          text "assertVintageResearchCurrent()"
+                          text "before comparisons, and gap does likewise before producing output ("
+                          text "overlap.ts:204-211"
+                          text ";"
+                          text "gaps.ts:88-97"
+                          text "). Overlap also records current"
+                          text "input_sources"
+                          text "("
+                          text "overlap.ts:244-249"
+                          text ")."
+                          button "開啟 gteki-round3-review.txt 預覽" [ref=73]
+                            svg_root
+                            text "gteki-round3-review"
+                          button "開啟 gteki-round3-review.txt 預覽" [ref=74]
+                            svg_root
+                            text "gteki-round3-review"
+                        paragraph
+                          text "Two scoped gaps remain. First,"
+                          text "gapPacket()"
+                          text "consumes the persisted overlap report at"
+                          text "gaps.ts:103,125-126,146-147,179-184"
+                          text "without validating that overlap report's"
+                          text "tool_input_sha256"
+                          text "or"
+                          text "input_sources"
+                          text ". A stale overlap generated from an earlier POI/vintage state can therefore still supply"
+                          text "mesh_coverage"
+                          text ", bbox relations, containment and HOLD text even though the separately loaded POI/vintage receipts are current. Second, the resulting gap document has"
+                          text "tool_input_sha256"
+                          text "but"
+                          text "no"
+                          text "input_sources"
+                          text "lineage at all"
+                          text "("
+                          text "gaps.ts:166-187"
+                          text "), contrary to the requested lineage propagation. The current consumer regression deliberately makes overlap unavailable, so it does not exercise this path ("
+                          text "report-consumers.test.ts:7-11,42-62"
+                          text ")."
+                          button "開啟 gteki-round3-review.txt 預覽" [ref=75]
+                            svg_root
+                            text "gteki-round3-review"
+                        paragraph
+                          text "Minimal remedy:"
+                          text "validate the persisted overlap receipt before using any of its derived fields—current fingerprint plus every declared input SHA—or compute those values directly from already-current inputs. Add"
+                          text "input_sources"
+                          text "to each gap document from the actual validated dependencies. Add one regression with a stale overlap receipt and assert zero writes."
+                      list_item
+                        paragraph
+                          text "CRS declaration ambiguity — REQUEST_CHANGES."
+                          text "The producer-side parser is corrected:"
+                          text "crsName()"
+                          text "requires an own"
+                          text "type === 'name'"
+                          text ", an object"
+                          text "properties"
+                          text ", a string"
+                          text "name"
+                          text ", and rejects link-like"
+                          text "href"
+                          text "/"
+                          text "type"
+                          text "properties ("
+                          text "poi.ts:184-189"
+                          text "). Conflicting or malformed effective declarations become"
+                          text "UNKNOWN"
+                          text ", geographic bbox/lat/lon are withheld, and the original raw declaration is retained ("
+                          text "poi.ts:221-238,315-347"
+                          text "). The focused malformed/conflicting tests cover this well."
+                          button "開啟 gteki-round3-review.txt 預覽" [ref=76]
+                            svg_root
+                            text "gteki-round3-review"
+                        paragraph
+                          text "However, the warned-about downstream reconstruction remains."
+                          text "overlap.ts"
+                          text "defines"
+                          text "GeoMember"
+                          text "without"
+                          text "crs_status"
+                          text ", and"
+                          text "geoLayers()"
+                          text "reconstructs"
+                          text "source_crs"
+                          text "directly from"
+                          text "m.crs?.properties?.name"
+                          text "("
+                          text "overlap.ts:188-200"
+                          text "). For POI layers it then synthesizes"
+                          text "crs_status"
+                          text "as"
+                          text "DECLARED"
+                          text "merely because"
+                          text "source_crs"
+                          text "is non-null ("
+                          text "overlap.ts:227-230"
+                          text "). Thus an input report carrying"
+                          text "{ crs_status: 'UNKNOWN', crs: {properties:{name:'EPSG:6668'}} }"
+                          text "is promoted back to DECLARED/KNOWN evidence by the consumer. The report-level fallback has the same status-loss problem."
+                        paragraph
+                          text "Minimal remedy:"
+                          text "carry"
+                          text "crs_status"
+                          text "through"
+                          text "GeoMember"
+                          text "/"
+                          text "GeoReport"
+                          text "and make"
+                          text "geoLayers()"
+                          text "gate"
+                          text "source_crs"
+                          text "/axis interpretation on the producer status rather than"
+                          text "properties.name"
+                          text "alone. UNKNOWN/MIXED/malformed must remain non-metric regardless of a residual name string. Add the explicit UNKNOWN+"
+                          text "EPSG:6668"
+                          text "consumer regression."
+                      list_item
+                        paragraph
+                          text "Vintage multi-archive preparation/rollback — REQUEST_CHANGES."
+                          text "The main transactional ordering is fixed: both archives are inspected and members validated before"
+                          text "verifyVintageEvidence()"
+                          text ", report JSON/Markdown and real-run invalidation are staged into one"
+                          text "files"
+                          text "bundle, and only then is"
+                          text "commitReportFiles()"
+                          text "called ("
+                          text "vintage.ts:409-458"
+                          text ")."
+                          text "commitReportFiles()"
+                          text "stages before promotion and restores already-promoted destinations on ordinary I/O failure ("
+                          text "report-transaction.ts:13-47"
+                          text "). The supplied regressions exercise inspection failure, second-archive failure, staging failure and promotion failure."
+                          button "開啟 gteki-round3-review.txt 預覽" [ref=77]
+                            svg_root
+                            text "gteki-round3-review"
+                          button "開啟 gteki-round3-review.txt 預覽" [ref=78]
+                            svg_root
+                            text "gteki-round3-review"
+                        paragraph
+                          text "One multi-archive provenance defect remains: member receipt identity is only"
+                          text "vintage-member-${sha256.slice(0,16)}"
+                          text "("
+                          text "vintage.ts:363-373"
+                          text "). If both archives contain byte-identical selected members, their receipt paths collide in the"
+                          text "Map"
+                          text "; the later"
+                          text "files.set(prepared.receipt.path, ...)"
+                          text "replaces the earlier receipt ("
+                          text "vintage.ts:417-419"
+                          text "). The transaction test actually uses identical synthetic member bytes for both archives but pre-creates/expects only one member receipt, so it does not detect the lost first-archive"
+                          text "archive"
+                          text ","
+                          text "final_url"
+                          text ", and"
+                          text "package_source.json_pointer"
+                          text "provenance ("
+                          text "vintage-transaction.test.ts:41-53,63-70,93-101"
+                          text ")."
+                          button "開啟 gteki-round3-review.txt 預覽" [ref=79]
+                            svg_root
+                            text "gteki-round3-review"
+                          button "開啟 gteki-round3-review.txt 預覽" [ref=80]
+                            svg_root
+                            text "gteki-round3-review"
+                        paragraph
+                          text "Minimal remedy:"
+                          text "make acquisition-receipt identity include archive/package-resource identity in addition to content hash, so identical content from the two package resources produces two distinct provenance receipts. ..."
+                    paragraph
+                      text "Final disposition: REQUEST_CHANGES."
+                      text "Finding"
+                      text "1 PASS"
+                      text ". Findings"
+                      text "2, 3, and 4 REQUEST_CHANGES"
+                      text "for the concrete remaining issues above. I did not execute typecheck, tests, conversions, or any real-run."
+              button "複製" [ref=81, loc=css:button[aria-label="複製"]]
+                svg_root
+              button "評價回覆" [ref=82, loc=css:button[aria-label="評價回覆"]]
+                svg_root
+              button "分享" [ref=83]
+                svg_root
+              button "朗讀" [ref=84, loc=css:button[aria-label="朗讀"]]
+                svg_root
+              button "重新產生回覆" [ref=85, loc=css:button[aria-label="重新產生回覆"]]
+                svg_root
+              button "更多操作" [ref=86, loc=css:button[aria-label="更多操作"]]
+                svg_root
+              button "來源" [ref=87, loc=css:button[aria-label="來源"]]
+                svg_root
+            text "ChatGPT 可能會出錯。請查證重要資訊。"
+          button "捲動至底部" [ref=61, loc=css:button[aria-label="捲動至底部"]]
+            svg_root
+          heading [ref=88]
+            text "最新回覆"
+          form
+            button "新增檔案和更多內容" [ref=62]
+              svg_root
+            textfield "問問 ChatGPT" [ref=63]
+              paragraph
+                text "問問 ChatGPT"
+            container
+              button "選取 ChatGPT 模型" [ref=89]
+                container
+                  text "5.6"
+                  text "Medium"
+                svg_root
+              container
+                button "聽寫" [ref=65]
+                  svg_root
+                button "開始語音對話" [ref=90, loc=css:button[aria-label="開始語音對話"]]
+                  svg_root
+      status
+  status
+  status
+    text "回覆完畢"

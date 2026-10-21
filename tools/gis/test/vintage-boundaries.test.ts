@@ -18,16 +18,51 @@ function fixture(localName='udx/ubld/53394525.gml'):{bytes:Buffer;eocd:number;lo
   const eocd=Buffer.alloc(22);eocd.writeUInt32LE(0x06054b50,0);eocd.writeUInt16LE(0xffff,8);eocd.writeUInt16LE(0xffff,10);eocd.writeUInt32LE(0xffffffff,12);eocd.writeUInt32LE(0xffffffff,16);
   return {bytes:Buffer.concat([local,central,z64,locator,eocd]),central:local.length,locator:local.length+central.length+z64.length,eocd:local.length+central.length+z64.length+locator.length};
 }
-const serve=(bytes:Buffer):RangeFetcher=>async(_url,start,end)=>({status:206,headers:new Headers({'content-range':`bytes ${start}-${end}/${bytes.length}`,etag:'"fixture"','last-modified':'Tue, 20 Oct 2026 00:00:00 GMT'}),bytes:bytes.subarray(start,end+1)});
+const serve=(bytes:Buffer):RangeFetcher=>async(_url,start,end)=>({status:206,final_url:'https://example.invalid/fixture.zip',headers:new Headers({'content-range':`bytes ${start}-${end}/${bytes.length}`,etag:'"fixture"','last-modified':'Tue, 20 Oct 2026 00:00:00 GMT'}),bytes:bytes.subarray(start,end+1)});
 
 describe('ZIP64 and archive identity boundaries',()=>{
+  it('rejects a changed redirect target with the same ETag and length before retaining bytes', async () => {
+    let calls = 0;
+    const reader = new BoundedZipReader('https://example.invalid/redirect', async (_url, start, end) => ({
+      status: 206, final_url: `https://example.invalid/${++calls === 1 ? 'a' : 'b'}.zip`,
+      headers: new Headers({ 'content-range': `bytes ${start}-${end}/10`, etag: '"shared"' }),
+      bytes: Buffer.alloc(end - start + 1, calls),
+    }));
+    await reader.read(0, 3);
+    await expect(reader.read(2, 5)).rejects.toThrow('final URL changed');
+    expect(reader.ranges).toHaveLength(1);
+    expect(reader.rangePayloads).toEqual([Buffer.alloc(4, 1)]);
+    expect(reader.identity).toMatchObject({ final_url: 'https://example.invalid/a.zip' });
+  });
+
+  it.each(['directory', 'member'] as const)('pins the final URL through %s responses', async purpose => {
+    const { bytes } = fixture(); let calls = 0;
+    const reader = new BoundedZipReader('https://example.invalid/redirect', async (url, start, end, validator) => ({
+      ...await serve(bytes)(url, start, end, validator),
+      final_url: `https://example.invalid/${++calls < 3 ? 'a' : 'b'}.zip`,
+    }));
+    await reader.readSuffix(bytes.length);
+    await expect(reader.read(30, 33, purpose)).rejects.toThrow('final URL changed');
+    expect(reader.ranges).toHaveLength(2);
+  });
+
+  it.each([undefined, '', 'not a URL'])('rejects missing or malformed final URL %s before retaining bytes', async final_url => {
+    const reader = new BoundedZipReader('https://example.invalid/redirect', async () => ({
+      status: 206, final_url: final_url as string,
+      headers: new Headers({ 'content-range': 'bytes 0-0/10', etag: '"stable"' }), bytes: Buffer.alloc(1),
+    }));
+    await expect(reader.read(0, 0)).rejects.toThrow('final URL');
+    expect(reader.ranges).toEqual([]);
+    expect(reader.rangePayloads).toEqual([]);
+  });
+
   it.each(['W/"fixture"', null, 'unquoted'])('rejects weak, missing or malformed ETag %s before retaining any range',async(etag)=>{
     let calls=0;
     const reader=new BoundedZipReader('https://example.invalid/fixture.zip',async()=>{
       calls++;
       const headers=new Headers({'content-range':'bytes 0-0/10','last-modified':'Tue, 20 Oct 2026 00:00:00 GMT'});
       if(etag!==null)headers.set('etag',etag);
-      return {status:206,headers,bytes:Buffer.alloc(1)};
+      return {status:206,final_url:'https://example.invalid/fixture.zip',headers,bytes:Buffer.alloc(1)};
     });
     await expect(reader.readSuffix(10)).rejects.toThrow('requires a strong ETag');
     expect(calls).toBe(1);
@@ -91,7 +126,7 @@ describe('ZIP64 and archive identity boundaries',()=>{
   it('rejects total-length or Last-Modified changes between ranges',async()=>{
     for(const field of ['length','date']){
       let calls=0;
-      const reader=new BoundedZipReader('https://example.invalid/fixture.zip',async(_url,start,end)=>({status:206,headers:new Headers({'content-range':`bytes ${start}-${end}/${field==='length'&&calls++?11:10}`,etag:'"fixture"','last-modified':field==='date'&&calls++?'Wed, 21 Oct 2026 00:00:00 GMT':'Tue, 20 Oct 2026 00:00:00 GMT'}),bytes:Buffer.alloc(end-start+1)}));
+      const reader=new BoundedZipReader('https://example.invalid/fixture.zip',async(_url,start,end)=>({status:206,final_url:'https://example.invalid/fixture.zip',headers:new Headers({'content-range':`bytes ${start}-${end}/${field==='length'&&calls++?11:10}`,etag:'"fixture"','last-modified':field==='date'&&calls++?'Wed, 21 Oct 2026 00:00:00 GMT':'Tue, 20 Oct 2026 00:00:00 GMT'}),bytes:Buffer.alloc(end-start+1)}));
       await reader.read(0,0);await expect(reader.read(1,1)).rejects.toThrow(/changed/i);
     }
   });

@@ -1,7 +1,7 @@
 # POI inventory: plateau-13104-related-2025
 
 - Source SHA-256: `d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9`
-- Tool-input SHA-256: `dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf`
+- Tool-input SHA-256: `75edaa1d42f71d2574f24a8f8c0a1be1e6c2f9f6afa2ee52982a3c39156c5401`
 - Station IDs: ["shinjuku"]
 - Verification: UNVERIFIED; routable: false
 - Rights observations: {"manifest_attribution":"UNKNOWN exact original-data attribution; PLATEAU and municipality source credits pending resource scope","source_property_fields":["原典","出典","著作権","copyright","Copyright","source","Source","attribution"]}

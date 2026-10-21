@@ -2,21 +2,21 @@
   "source_id": "mlit-walk-network-spec-2018-03",
   "resolved_url": "https://www.mlit.go.jp/common/001244374.pdf",
   "resolution_evidence": null,
-  "requested_at": "2026-10-21T10:34:03.923Z",
-  "completed_at": "2026-10-21T10:34:04.257Z",
+  "requested_at": "2026-10-21T10:43:43.230Z",
+  "completed_at": "2026-10-21T10:43:43.420Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/pdf",
     "content-length": null,
     "etag": "W/\"9212b6b967d31e5947940f041b9712da\"",
     "last-modified": "Wed, 11 Sep 2024 12:17:44 GMT",
-    "date": "Wed, 21 Oct 2026 10:34:04 GMT"
+    "date": "Wed, 21 Oct 2026 10:43:44 GMT"
   },
   "bytes": 2440666,
   "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
   "store_path": "raw/9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974/001244374.pdf",
   "tool_version": "0.1.0",
-  "git_commit": "5965fdca51421e3a1f8be340bcffc94b72e31e5f",
+  "git_commit": "df75b560913ed833daeaf18b03d1cb638baf7ecb",
   "expected_bytes": 2440666,
   "expected_url_match": true,
   "size_check": "MATCH",
@@ -36,13 +36,5 @@
       "bytes": 8781,
       "store_path": "raw/6db0d9b2ef922856549d2459323efe534b838cc73be6f01826f656e0fee42838/sogoseisaku_soukou_tk_000056.html"
     }
-  ],
-  "last_offline_check": {
-    "requested_at": "2026-10-21T10:38:51.545Z",
-    "completed_at": "2026-10-21T10:38:51.545Z",
-    "tool_version": "0.1.0",
-    "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
-    "bytes": 2440666,
-    "status": "PASS"
-  }
+  ]
 }

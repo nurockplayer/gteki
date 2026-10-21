@@ -6,31 +6,23 @@
     "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
     "json_pointer": "/result/resources/4/url"
   },
-  "requested_at": "2026-10-21T10:34:07.148Z",
-  "completed_at": "2026-10-21T10:34:07.358Z",
+  "requested_at": "2026-10-21T10:43:45.960Z",
+  "completed_at": "2026-10-21T10:43:46.071Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/zip",
     "content-length": "40290",
     "etag": "\"b7dc6968f0fbf2a1248c6b9954d5e8de\"",
     "last-modified": "Fri, 13 Feb 2026 02:44:36 GMT",
-    "date": "Wed, 21 Oct 2026 10:34:07 GMT"
+    "date": "Wed, 21 Oct 2026 10:43:46 GMT"
   },
   "bytes": 40290,
   "sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
   "store_path": "raw/d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9/13104_shinjuku-ku_2025_related.zip",
   "tool_version": "0.1.0",
-  "git_commit": "5965fdca51421e3a1f8be340bcffc94b72e31e5f",
+  "git_commit": "df75b560913ed833daeaf18b03d1cb638baf7ecb",
   "expected_bytes": 40290,
   "expected_url_match": true,
   "size_check": "MATCH",
-  "mode": "online",
-  "last_offline_check": {
-    "requested_at": "2026-10-21T10:38:51.763Z",
-    "completed_at": "2026-10-21T10:38:51.763Z",
-    "tool_version": "0.1.0",
-    "sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
-    "bytes": 40290,
-    "status": "PASS"
-  }
+  "mode": "online"
 }

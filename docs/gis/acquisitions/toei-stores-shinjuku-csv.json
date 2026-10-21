@@ -6,31 +6,23 @@
     "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
     "json_pointer": "/result/resources/9/url"
   },
-  "requested_at": "2026-10-21T10:34:05.588Z",
-  "completed_at": "2026-10-21T10:34:05.758Z",
+  "requested_at": "2026-10-21T10:43:44.069Z",
+  "completed_at": "2026-10-21T10:43:44.184Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "text/csv",
     "content-length": "694",
     "etag": "\"2b6-65aa16e7c10f8\"",
     "last-modified": "Fri, 04 Sep 2026 05:20:50 GMT",
-    "date": "Wed, 21 Oct 2026 10:34:05 GMT"
+    "date": "Wed, 21 Oct 2026 10:43:44 GMT"
   },
   "bytes": 694,
   "sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
   "store_path": "raw/e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6/other_stores_shinjuku.csv",
   "tool_version": "0.1.0",
-  "git_commit": "5965fdca51421e3a1f8be340bcffc94b72e31e5f",
+  "git_commit": "df75b560913ed833daeaf18b03d1cb638baf7ecb",
   "expected_bytes": 694,
   "expected_url_match": true,
   "size_check": "MATCH",
-  "mode": "online",
-  "last_offline_check": {
-    "requested_at": "2026-10-21T10:38:51.673Z",
-    "completed_at": "2026-10-21T10:38:51.673Z",
-    "tool_version": "0.1.0",
-    "sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
-    "bytes": 694,
-    "status": "PASS"
-  }
+  "mode": "online"
 }

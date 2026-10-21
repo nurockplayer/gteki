@@ -5,6 +5,7 @@ import { projectLonLat } from './crs.js';
 import { catalogCoverage,r1BboxContainment } from './coverage.js';
 import { toolFingerprint } from './provenance.js';
 import { r1GeoEvidence } from './r1.js';
+import { assertPoiInspectionCurrent, assertVintageResearchCurrent } from './inspection-evidence.js';
 
 export type BboxLayerInput = {
   layer_id: string;
@@ -184,8 +185,8 @@ export function buildOverlapReport(stationId: StationOverlapReport['station_id']
 }
 
 type CityReport = { source_id:string;source_sha256:string;totals?:{bbox_lat_lon_height:{min:number[];max:number[]}|null};envelope: { lower: number[]; upper: number[]; srsName: string | null } | null };
-type GeoMember = { file: string; crs: { properties?: { name?: string } } | null; bbox: number[] | null; bbox_status?: string; feature_count: number };
-type GeoReport = { members: GeoMember[]; bbox?: number[] | null; crs?: { properties?: { name?: string } } | null };
+type GeoMember = { file: string; crs: { properties?: { name?: string } } | null; crs_status?: string; bbox: number[] | null; bbox_status?: string; feature_count: number };
+type GeoReport = { members: GeoMember[]; bbox?: number[] | null; crs?: { properties?: { name?: string } } | null; crs_status?: string; bbox_status?: string };
 type CsvReport = { bbox: number[] | null; crs: { value: string | null; status: string }; files?: { node_source_id?: string; link_source_id?: string } };
 
 function cityLayer(sourceId: string, report: CityReport): BboxLayerInput {
@@ -194,14 +195,23 @@ function cityLayer(sourceId: string, report: CityReport): BboxLayerInput {
 }
 
 function geoLayers(sourceId: string, report: GeoReport): BboxLayerInput[] {
+  const poi = ['tokyo-shinjuku-facilities-zip', 'plateau-13104-related-2025', 'plateau-13116-related-2025'].includes(sourceId);
+  const crs = (value: Pick<GeoReport, 'crs' | 'crs_status'>): string | null => poi && value.crs_status !== 'DECLARED' ? null : value.crs?.properties?.name ?? null;
+  const status = (value: Pick<GeoReport, 'crs_status'>): string | undefined => poi && value.crs_status === 'RFC7946_ASSUMPTION' ? 'UNDECLARED_RFC7946_ASSUMPTION' : value.crs_status;
   const members = (report.members ?? []).filter(m=>typeof m.feature_count==='number');
-  if (!members.length && report.bbox) return [{ layer_id: `${sourceId}:all`, layer_role: sourceId.includes('stationmap') ? 'station_map' : 'hokonavi_network', source_id: sourceId, source_crs: report.crs?.properties?.name ?? null, source_crs_bbox: report.bbox, bbox_axis_order: 'longitude,latitude' }];
-  return members.map((m, index) => ({ layer_id: `${sourceId}:${m.file || `member-${index + 1}`}`, layer_role: sourceId.includes('stationmap') ? 'station_map' : 'hokonavi_network', source_id: sourceId, source_crs: m.crs?.properties?.name ?? null, source_crs_bbox: m.bbox??null, bbox_axis_order: m.bbox ? 'longitude,latitude' : 'unknown', feature_count: m.feature_count, bbox_status: m.bbox_status }));
+  if (!members.length && report.bbox) return [{ layer_id: `${sourceId}:all`, layer_role: sourceId.includes('stationmap') ? 'station_map' : 'hokonavi_network', source_id: sourceId, source_crs: crs(report), crs_status: status(report), source_crs_bbox: report.bbox, bbox_axis_order: crs(report) || status(report) === 'UNDECLARED_RFC7946_ASSUMPTION' ? 'longitude,latitude' : 'unknown', bbox_status: report.bbox_status }];
+  return members.map((m, index) => ({ layer_id: `${sourceId}:${m.file || `member-${index + 1}`}`, layer_role: sourceId.includes('stationmap') ? 'station_map' : 'hokonavi_network', source_id: sourceId, source_crs: crs(m), crs_status: status(m), source_crs_bbox: m.bbox??null, bbox_axis_order: m.bbox && (crs(m) || status(m) === 'UNDECLARED_RFC7946_ASSUMPTION') ? 'longitude,latitude' : 'unknown', feature_count: m.feature_count, bbox_status: m.bbox_status }));
 }
 
 /** Read current generated reports and produce per-station bbox-only comparisons. */
 export async function generateOverlapReports(): Promise<StationOverlapReport[]> {
   const root = join(docsRoot, 'gis');
+  const fingerprint = await toolFingerprint();
+  const poiIds = ['tokyo-shinjuku-facilities-zip', 'plateau-13104-related-2025', 'plateau-13116-related-2025'];
+  const pois = await Promise.all(poiIds.map(id => readJson<GeoReport & { input_sources: Array<{ source_id: string; sha256: string }> }>(join(root, 'poi', `${id}.json`))));
+  for (const [index, poi] of pois.entries()) await assertPoiInspectionCurrent(poi, poiIds[index]!, { fingerprint });
+  const vintage = await readJson<any>(join(root, 'vintages', 'shinjuku-2023.json'));
+  await assertVintageResearchCurrent(vintage, { fingerprint });
   const [ikeCity, shCity, r1Nodes, s01Network, stationMap] = await Promise.all([
     readJson<CityReport>(join(root, 'inventory', 'plateau-13116-ubld-53394576.inventory.json')),
     readJson<CityReport>(join(root, 'inventory', 'plateau-13104-ubld-53394536.inventory.json')),
@@ -217,11 +227,10 @@ export async function generateOverlapReports(): Promise<StationOverlapReport[]> 
   }];
   for(const [source,bbox,count] of [[r1.node,r1.node_bbox,r1.nodes.features.length],[r1.link,r1.link_bbox,r1.links.features.length]] as const)ikeLayers.push({layer_id:source.record.source_id,layer_role:'hokonavi_network',source_id:source.record.source_id,source_crs:r1.crs.value,crs_status:r1.crs.status,source_crs_bbox:bbox,bbox_axis_order:'longitude,latitude',feature_count:count});
   const shLayers: BboxLayerInput[] = [cityLayer('plateau-13104-ubld-53394536', shCity), ...geoLayers('hokonavi-oedo-shinjuku-network-geojson', s01Network), ...geoLayers('hokonavi-oedo-shinjuku-stationmap-geojson', stationMap)];
-  const poiIds=['tokyo-shinjuku-facilities-zip','plateau-13104-related-2025','plateau-13116-related-2025'];
-  for(const id of poiIds){
-    const poi=await readJson<GeoReport>(join(root,'poi',`${id}.json`));
+  for(const [index,id] of poiIds.entries()){
+    const poi=pois[index]!;
     const target=id.includes('13116')?ikeLayers:shLayers;
-    target.push(...geoLayers(id,poi).map(layer=>({...layer,layer_role:'poi_facility' as const,crs_status:layer.source_crs?'DECLARED':'UNDECLARED_RFC7946_ASSUMPTION'})));
+    target.push(...geoLayers(id,poi).map(layer=>({...layer,layer_role:'poi_facility' as const})));
   }
   const reports = [buildOverlapReport('ikebukuro', ikeLayers), buildOverlapReport('shinjuku', shLayers)];
   const catalog=await getStoredSource('plateau-catalog-ubld-mesh-533945');
@@ -230,14 +239,13 @@ export async function generateOverlapReports(): Promise<StationOverlapReport[]> 
   const envelope=(city:CityReport):number[]|null=>{const e=city.envelope;return e?[e.lower[1]!,e.lower[0]!,e.upper[1]!,e.upper[0]!]:null;};
   const acquired=Object.fromEntries(([['13116:53394576',ikeCity],['13104:53394536',shCity]] as const).map(([key,city])=>[key,{source_id:city.source_id,source_sha256:city.source_sha256,bbox:actualBbox(city),envelope:envelope(city)}]));
   for(const report of reports)report.mesh_coverage=catalogCoverage(catalogData,{source_id:catalog.record.source_id,sha256:catalog.record.sha256},report.layers.filter(layer=>layer.layer_role!=='plateau_ubld'&&layer.layer_role!=='poi_facility'),acquired);
-  const vintage=await readJson<any>(join(root,'vintages','shinjuku-2023.json'));
   reports[1]!.bounded_vintage_research={report:'vintages/shinjuku-2023.json',status:vintage.status,comparison:vintage.comparison,byte_totals:vintage.byte_totals??null};
   if(reports[1]!.mesh_coverage){reports[1]!.mesh_coverage!.older_vintages.note='This latest catalog endpoint does not enumerate earlier vintages. Separate bounded 2023 v4/v3 evidence is recorded under bounded_vintage_research.';reports[1]!.mesh_coverage!.hold=reports[1]!.mesh_coverage!.hold.replace('older vintages UNKNOWN.','see separate bounded 2023 v4/v3 evidence; other vintages UNKNOWN.');}
   reports[0]!.r1_bbox_containment=r1BboxContainment(r1.nodes.features,r1.links.features,actualBbox(ikeCity));
   const out = join(root, 'overlap');
   await mkdir(out, { recursive: true });
-  const inputs=await Promise.all(['plateau-13116-ubld-53394576','plateau-13104-ubld-53394536','hokonavi-ikebukuro-walk-node-csv','hokonavi-ikebukuro-walk-link-csv','hokonavi-ikebukuro-walk-node-geojson','hokonavi-ikebukuro-walk-link-geojson','hokonavi-oedo-shinjuku-network-geojson','hokonavi-oedo-shinjuku-stationmap-geojson','mlit-walk-network-spec-2018-03','mlit-walk-network-spec-2024-07','plateau-catalog-ubld-mesh-533945','plateau-13104-package-2023',...poiIds].map(id=>getStoredSource(id)));
-  const fingerprint=await toolFingerprint();
+  const inputIds = new Set(['plateau-13116-ubld-53394576','plateau-13104-ubld-53394536','hokonavi-ikebukuro-walk-node-csv','hokonavi-ikebukuro-walk-link-csv','hokonavi-ikebukuro-walk-node-geojson','hokonavi-ikebukuro-walk-link-geojson','hokonavi-oedo-shinjuku-network-geojson','hokonavi-oedo-shinjuku-stationmap-geojson','mlit-walk-network-spec-2018-03','mlit-walk-network-spec-2024-07','plateau-catalog-ubld-mesh-533945','plateau-13104-package-2023',...poiIds,...pois.flatMap(poi=>poi.input_sources.map(input=>input.source_id)),...vintage.input_sources.map((input:{source_id:string})=>input.source_id)]);
+  const inputs=await Promise.all([...inputIds].map(id=>getStoredSource(id)));
   for (const report of reports) {
     report.tool_input_sha256=fingerprint;
     report.input_sources=inputs.map(({record})=>({source_id:record.source_id,sha256:record.sha256}));

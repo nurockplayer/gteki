@@ -192,5 +192,10 @@
       "log_store_path": "out/run-logs/2026-10-21T10-33-57-888Z/25-gap-packet-all.log",
       "tool_input_sha256": "dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf"
     }
-  ]
+  ],
+  "invalidated": {
+    "at": "2026-10-21T10:50:29.521Z",
+    "by_command": "gis gap-packet",
+    "reason": "Report-writing command run outside real-run; rerun real-run before summarizing"
+  }
 }

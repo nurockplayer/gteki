@@ -27,7 +27,7 @@ describe('vintage acquisition publication boundary', () => {
   it('writes no acquisition record when a weak ETag cannot establish archive identity', async () => {
     state.writes.mockClear();
     const fetcher = vi.fn(async () => ({
-      status: 206,
+      status: 206, final_url: 'https://example.invalid/archive.zip',
       headers: new Headers({ 'content-range': 'bytes 0-0/100', etag: 'W/"synthetic"' }),
       bytes: Buffer.alloc(1),
     }));

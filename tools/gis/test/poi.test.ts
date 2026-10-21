@@ -2,6 +2,32 @@ import { describe, expect, it } from 'vitest';
 import { inspectPoiCsv, inspectPoiGeoJson, poiGeoJsonMember, verifyPoiEvidence } from '../src/poi.js';
 
 describe('POI source inspection', () => {
+  it.each([
+    { type: 'link', properties: { name: 'EPSG:6668', href: 'https://example.invalid/projected.crs' } },
+    { properties: { name: 'EPSG:6668' } },
+    { type: 'other', properties: { name: 'EPSG:6668' } },
+    { type: 'name', properties: { name: 'EPSG:6668', href: 'https://example.invalid/projected.crs' } },
+    { type: 'name', properties: { name: ['EPSG:6668'] } },
+  ])('withholds geographic fields for linked or malformed CRS: %j', crs => {
+    const report = inspectPoiGeoJson('synthetic', 'a'.repeat(64), 'layer.geojson', {
+      type: 'FeatureCollection', crs, features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [139.7, 35.7] } }],
+    }) as any;
+    expect(report.crs_status).toBe('UNKNOWN');
+    expect(report.declared_crs).toEqual(crs);
+    expect(report.bbox).toBeNull();
+    expect(report.observations[0]).toMatchObject({ longitude: null, latitude: null, raw_coordinates: [139.7, 35.7] });
+  });
+
+  it('withholds geographic fields for conflicting root and geometry CRS declarations', () => {
+    const report = inspectPoiGeoJson('synthetic', 'a'.repeat(64), 'layer.geojson', {
+      type: 'FeatureCollection', crs: { type: 'name', properties: { name: 'EPSG:6677' } },
+      features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', crs: { type: 'name', properties: { name: 'EPSG:6668' } }, coordinates: [139.7, 35.7] } }],
+    }) as any;
+    expect(report.crs_status).toBe('UNKNOWN');
+    expect(report.bbox).toBeNull();
+    expect(report.observations[0]).toMatchObject({ longitude: null, latitude: null });
+  });
+
   it('uses only recognized literal CSV coordinate headers and keeps source identities separate', () => {
     const csv = Buffer.from('店舗ID,店舗名,緯度,経度,score\nE27,新宿店,35.69,139.70,99\nE01,西口店,35.69,139.69,100\n');
     const central = inspectPoiCsv('toei-stores-shinjuku-csv', 'a'.repeat(64), csv) as any;
