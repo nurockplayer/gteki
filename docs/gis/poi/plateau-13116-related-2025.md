@@ -1,7 +1,7 @@
 # POI inventory: plateau-13116-related-2025
 
 - Source SHA-256: `df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787`
-- Tool-input SHA-256: `8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c`
+- Tool-input SHA-256: `dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf`
 - Station IDs: ["ikebukuro"]
 - Verification: UNVERIFIED; routable: false
 - Rights observations: {"manifest_attribution":"UNKNOWN exact original-data attribution; PLATEAU and municipality source credits pending resource scope","source_property_fields":["原典","出典","著作権","copyright","Copyright","source","Source","attribution"]}

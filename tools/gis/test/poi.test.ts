@@ -72,6 +72,106 @@ describe('POI source inspection', () => {
     expect(report.observations[0]).toMatchObject({ coordinate_reference: { status: 'DECLARED' }, longitude: 1, latitude: 2 });
   });
 
+  it('honors GeoJSON 2008 feature CRS and treats an explicit null CRS as unknown', () => {
+    const projected = inspectPoiGeoJson('crs', 'a'.repeat(64), 'layer.geojson', {
+      type: 'FeatureCollection',
+      features: [{
+        type: 'Feature', properties: {},
+        geometry: { type: 'Point', crs: { type: 'name', properties: { name: 'EPSG:6677' } }, coordinates: [1, 2] },
+      }],
+    }) as any;
+    expect(projected.observations[0]).toMatchObject({
+      raw_coordinates: [1, 2], coordinate_reference: { name: 'EPSG:6677', status: 'UNSUPPORTED_DECLARED_CRS' }, longitude: null, latitude: null,
+    });
+    expect(projected.bbox).toBeNull();
+
+    const unknown = inspectPoiGeoJson('crs', 'b'.repeat(64), 'layer.geojson', {
+      type: 'FeatureCollection', crs: null,
+      features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [1, 2] } }],
+    }) as any;
+    expect(unknown.observations[0]).toMatchObject({ coordinate_reference: { name: null }, longitude: null, latitude: null });
+    expect(unknown.observations[0].coordinate_reference.status).toBe('UNKNOWN');
+    expect(unknown.bbox).toBeNull();
+    expect(unknown.crs_status).toBe('UNKNOWN');
+  });
+
+  it('marks mixed effective feature CRSs and withholds a layer bbox', () => {
+    const report = inspectPoiGeoJson('crs', 'c'.repeat(64), 'layer.geojson', {
+      type: 'FeatureCollection',
+      features: [
+        { type: 'Feature', crs: { type: 'name', properties: { name: 'EPSG:4326' } }, properties: {}, geometry: { type: 'Point', coordinates: [139.7, 35.7] } },
+        { type: 'Feature', crs: { type: 'name', properties: { name: 'EPSG:6677' } }, properties: {}, geometry: { type: 'Point', coordinates: [1, 2] } },
+      ],
+    }) as any;
+    expect(report.observations.map((row: any) => row.coordinate_reference.status)).toEqual(['DECLARED', 'UNSUPPORTED_DECLARED_CRS']);
+    expect(report.observations.every((row: any) => row.longitude === null && row.latitude === null)).toBe(true);
+    expect(report.crs_status).toBe('MIXED');
+    expect(report.bbox).toBeNull();
+  });
+
+  it('resolves nested geometry CRS overrides and withholds lon/lat for mixed geographic CRS', () => {
+    const nested = inspectPoiGeoJson('nested-crs', 'f'.repeat(64), 'nested.geojson', {
+      type: 'FeatureCollection',
+      features: [{ type: 'Feature', properties: {}, geometry: {
+        type: 'GeometryCollection', geometries: [
+          { type: 'Point', crs: { type: 'name', properties: { name: 'EPSG:6668' } }, coordinates: [139, 35] },
+          { type: 'Point', crs: { type: 'name', properties: { name: 'EPSG:6677' } }, coordinates: [1, 2] },
+        ],
+      } }],
+    }) as any;
+    expect(nested.crs_status).toBe('MIXED');
+    expect(nested.bbox).toBeNull();
+
+    const geographic = inspectPoiGeoJson('mixed-geographic', 'a'.repeat(64), 'mixed.geojson', {
+      type: 'FeatureCollection', features: [
+        { type: 'Feature', crs: { type: 'name', properties: { name: 'EPSG:6668' } }, properties: {}, geometry: { type: 'Point', coordinates: [139, 35] } },
+        { type: 'Feature', crs: { type: 'name', properties: { name: 'EPSG:4326' } }, properties: {}, geometry: { type: 'Point', coordinates: [140, 36] } },
+      ],
+    }) as any;
+    expect(geographic.crs_status).toBe('MIXED');
+    expect(geographic.bbox).toBeNull();
+    expect(geographic.observations.every((row: any) => row.longitude === null && row.latitude === null)).toBe(true);
+  });
+
+  it('treats invalid feature geometry as incomplete while allowing null geometry', () => {
+    const invalid = inspectPoiGeoJson('invalid-geometry', 'b'.repeat(64), 'invalid.geojson', {
+      type: 'FeatureCollection', features: [
+        { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [139.7, 35.7] } },
+        { type: 'Feature', properties: {} },
+      ],
+    }) as any;
+    expect(invalid.bbox).toBeNull();
+    expect(invalid.bbox_status).toBe('INCOMPLETE_LIMIT_REACHED');
+
+    const absent = inspectPoiGeoJson('null-geometry', 'c'.repeat(64), 'null.geojson', {
+      type: 'FeatureCollection', features: [
+        { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [139.7, 35.7] } },
+        { type: 'Feature', properties: {}, geometry: null },
+      ],
+    }) as any;
+    expect(absent.bbox).toEqual([139.7, 35.7, 139.7, 35.7]);
+    expect(absent.bbox_status).toBe('COMPUTED_GEOGRAPHIC');
+  });
+
+  it('marks depth and unsupported geometry traversal as incomplete for bbox purposes', () => {
+    let nested: unknown = [139.7, 35.7];
+    for (let index = 0; index < 14; index++) nested = [nested];
+    const deep = inspectPoiGeoJson('depth', 'd'.repeat(64), 'deep.geojson', {
+      type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: nested } }],
+    }) as any;
+    expect(deep.bbox).toBeNull();
+    expect(deep.bbox_status).toBe('INCOMPLETE_LIMIT_REACHED');
+
+    const unsupported = inspectPoiGeoJson('unsupported', 'e'.repeat(64), 'unsupported.geojson', {
+      type: 'FeatureCollection', features: [
+        { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [139.7, 35.7] } },
+        { type: 'Feature', properties: {}, geometry: { type: 'CircularString', coordinates: [[139.6, 35.6], [139.8, 35.8]] } },
+      ],
+    }) as any;
+    expect(unsupported.bbox).toBeNull();
+    expect(unsupported.bbox_status).toBe('INCOMPLETE_LIMIT_REACHED');
+  });
+
   it('preserves bbox counts in a ZIP GeoJSON member summary', () => {
     const geo = inspectPoiGeoJson('member', 'e'.repeat(64), 'member.geojson', { type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [139.7, 35.7] } }] }) as any;
     const member = poiGeoJsonMember('member.geojson', 42, geo) as any;

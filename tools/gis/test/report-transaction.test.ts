@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const state = vi.hoisted(() => ({ failPromotion: false, failStage: false }));
+const state = vi.hoisted(() => ({ failPromotion: false, failStage: false, promotionIndex: 1 }));
 vi.mock('node:fs/promises', async importOriginal => {
   const actual = await importOriginal<typeof import('node:fs/promises')>();
   return {
@@ -13,7 +13,7 @@ vi.mock('node:fs/promises', async importOriginal => {
       return actual.writeFile(...args);
     },
     rename: async (from: string, to: string) => {
-      if (state.failPromotion && from.endsWith('1.new')) throw new Error('promotion failure');
+      if (state.failPromotion && from.endsWith(`${state.promotionIndex}.new`)) throw new Error('promotion failure');
       return actual.rename(from, to);
     },
   };
@@ -23,7 +23,7 @@ import { commitReportFiles } from '../src/report-transaction.js';
 
 let root: string;
 afterEach(async () => {
-  state.failPromotion = false; state.failStage = false;
+  state.failPromotion = false; state.failStage = false; state.promotionIndex = 1;
   if (root) await rm(root, { recursive: true, force: true });
 });
 async function setup() {
@@ -50,6 +50,21 @@ describe('rights report transaction', () => {
     await expect(commitReportFiles(files, root)).rejects.toThrow('promotion failure');
     expect(await readFile(join(root, 'old.json'), 'utf8')).toBe('previous');
     expect(await readdir(root)).toEqual(['old.json']);
+  });
+  it('archives and removes superseded records atomically with replacements', async () => {
+    const files=await setup();
+    await commitReportFiles([{path:join(root,'history','obsolete.json'),content:'previous'},{path:join(root,'old.json'),content:null},files[1]!],root);
+    expect(await readFile(join(root,'history','obsolete.json'),'utf8')).toBe('previous');
+    await expect(readFile(join(root,'old.json'))).rejects.toMatchObject({code:'ENOENT'});
+    expect(await readFile(join(root,'new.json'),'utf8')).toBe('new report');
+  });
+  it('restores a removed superseded record and removes its archive on later promotion failure', async () => {
+    await setup();state.failPromotion=true;state.promotionIndex=2;
+    await expect(commitReportFiles([{path:join(root,'history','obsolete.json'),content:'previous'},{path:join(root,'old.json'),content:null},{path:join(root,'new.json'),content:'new report'}],root)).rejects.toThrow('promotion failure');
+    expect(await readFile(join(root,'old.json'),'utf8')).toBe('previous');
+    await expect(readFile(join(root,'history','obsolete.json'))).rejects.toMatchObject({code:'ENOENT'});
+    await expect(readFile(join(root,'new.json'))).rejects.toMatchObject({code:'ENOENT'});
+    expect(await readdir(join(root,'history'))).toEqual([]);
   });
   it('removes newly created outputs during rollback', async () => {
     const files = await setup(); state.failPromotion = true;

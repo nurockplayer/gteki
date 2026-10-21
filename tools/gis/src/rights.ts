@@ -1,12 +1,14 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { loadSources } from './acquire.js';
 import { assertPathWithinStore, docsRoot, getStoredSource, getStoreRoot, readJson, verifyStoredFile, type SourceManifest } from './common.js';
 import { toolFingerprint } from './provenance.js';
 import { readZip } from './zip.js';
-import { verifyVintageEvidence, type VintageReport } from './vintage.js';
+import { type VintageReport } from './vintage.js';
 import { SaxesParser } from 'saxes';
-import { commitReportFiles } from './report-transaction.js';
+import { commitReportFiles, type ReportFile } from './report-transaction.js';
+import { assertPoiInspectionCurrent, assertVintageResearchCurrent } from './inspection-evidence.js';
 
 export type LicenceStatus = 'PACKAGE_LEVEL_DECLARED' | 'RESOURCE_LEVEL_DECLARED' | 'FILE_EMBEDDED' | 'SITE_TERMS' | 'UNKNOWN';
 export type RightsEvidence = {source_id:string;sha256:string;location:string;quote?:string;exact_url?:string;scope:string};
@@ -81,11 +83,11 @@ export function exactPackageAssetFolderMatch(resources:unknown, childUrl:string)
   }
   return match;
 }
-export function embeddedMetadataRights(xml:string):Array<{value:string;quote:string;element:string}> {
+export function embeddedMetadataRights(xml:string):Array<{value:string|null;quote:string;element:string}> {
   // Parse XML structure and collect only explicit rights fields. DOCTYPE is rejected,
   // matching the downloaded CityGML/XML parser boundary.
   const parser=new SaxesParser({xmlns:true});
-  const stack:Array<{element:string;text:string;capture:boolean}>=[],found:Array<{value:string;quote:string;element:string}>=[];
+  const stack:Array<{element:string;text:string;capture:boolean}>=[],found:Array<{value:string|null;quote:string;element:string}>=[];
   const keys=new Set(['useLimitation','otherConstraints','accessConstraints','useConstraints','license','licence']);
   parser.on('doctype',()=>{throw new Error('DOCTYPE declarations are forbidden in metadata XML');});
   parser.on('opentag',tag=>{const element=tag.local;stack.push({element,text:'',capture:keys.has(element)});});
@@ -94,9 +96,13 @@ export function embeddedMetadataRights(xml:string):Array<{value:string;quote:str
   parser.on('closetag',()=>{
     const frame=stack.pop();if(!frame?.capture)return;
     const text=frame.text.replace(/\s+/g,' ').trim();
-    if(!text||/\b(?:not|no|without)\s+(?:licensed|licence|license|CC\s*BY)\b/i.test(text))return;
-    const known=text.match(/\bCC\s*BY\s*4\.0\b/i)?.[0]??text.match(/\bPDL\s*1\.0\b/i)?.[0]??null;
-    if(known||/license|licence|right|著作権|利用規約|利用条件|利用制限/i.test(text))found.push({value:known?known.toUpperCase().replace(/\s+/g,' '):text,quote:text,element:frame.element});
+    if(!text)return;
+    // A rights-field mention is evidence, not a grant. Match the entire supported
+    // affirmative declaration so suffixes, negations and conditions stay UNKNOWN.
+    const english=text.match(/^(?:this (?:dataset|data|work|content) is )?licensed under (CC\s*BY\s*4\.0|PDL\s*1\.0)[.!。]?$/i);
+    const japanese=text.match(/^(?:本データ|本作品|本コンテンツ)は\s*(CC\s*BY\s*4\.0|PDL\s*1\.0)\s*に基づき提供されています[。.]?$/);
+    const known=english?.[1]??japanese?.[1]??null;
+    found.push({value:known?known.toUpperCase().replace(/\s+/g,' '):null,quote:text,element:frame.element});
   });
   parser.write(xml).close();
   return found;
@@ -228,11 +234,21 @@ export async function generateRights():Promise<RightsRecord[]> {
       if(source.source_id.endsWith('-metadata')&&/^plateau-131(?:04|16)-metadata$/.test(source.source_id)) {
         const entries=await readZip(stored.path),xmlRights=entries.flatMap(entry=>entry.name.toLowerCase().endsWith('.xml')?embeddedMetadataRights(entry.data.toString('utf8')).map(found=>({entry,found})):[]);
         if(xmlRights.length) {
-          for(const {entry,found} of xmlRights)evidence.push(shortEvidence(source.source_id,stored.record.sha256,`ZIP:${entry.name}:${found.element}`,found.quote,'FILE_EMBEDDED metadata XML rights statement applies to the described dataset; ZIP-wide applicability is not inferred.'));
-          const values=[...new Set(xmlRights.map(item=>item.found.value))];
-          const embeddedValue=values.join('; ');
-          fileEmbedded={value:embeddedValue,status:'FILE_EMBEDDED',scope:'Metadata XML rights statement for the described dataset; no ZIP-wide or sibling-resource scope inferred.'};
-          declarations.push({value:embeddedValue,status:'FILE_EMBEDDED',evidence:evidence.find(e=>e.source_id===source.source_id&&e.location.startsWith('ZIP:'))!});
+          const affirmative: Array<{value:string;evidence:RightsEvidence}>=[];
+          for(const {entry,found} of xmlRights) {
+            const scope=found.value===null?'Metadata XML rights-field evidence only; no supported unambiguous affirmative licence declaration. Licence UNKNOWN.':'FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred.';
+            const ev=shortEvidence(source.source_id,stored.record.sha256,`ZIP:${entry.name}:${found.element}`,found.quote,scope);
+            evidence.push(ev);
+            if(found.value!==null)affirmative.push({value:found.value,evidence:ev});
+          }
+          if(affirmative.length===xmlRights.length) {
+            const embeddedValue=[...new Set(affirmative.map(item=>item.value))].join('; ');
+            fileEmbedded={value:embeddedValue,status:'FILE_EMBEDDED',scope:'Metadata XML rights statement for the described dataset; no ZIP-wide or sibling-resource scope inferred.'};
+            for(const item of affirmative)declarations.push({value:item.value,status:'FILE_EMBEDDED',evidence:item.evidence});
+          } else {
+            fileEmbedded={value:null,status:'UNKNOWN',reason:'Metadata rights fields include unsupported, ambiguous, conditional or negated statements; exact quotes are preserved as evidence.'};
+            caveats.push('Metadata XML rights-field mentions do not establish an affirmative licence; embedded rights remain UNKNOWN.');
+          }
         } else caveats.push('Inspected acquired metadata XML in the metadata ZIP; no explicit affirmative rights field was found.');
       }
     }
@@ -243,7 +259,7 @@ export async function generateRights():Promise<RightsRecord[]> {
     let observations:unknown[]=[];
     if(source.source_id.includes('related-2025')||source.source_id==='tokyo-shinjuku-facilities-zip'){
       const poi=await readJson<Record<string,unknown>>(join(docsRoot,'gis','poi',`${source.source_id}.json`));
-      if(poi.source_sha256!==stored.record.sha256||poi.tool_input_sha256!==fingerprint)throw new Error(`Stale POI rights inspection ${source.source_id}`);
+      await assertPoiInspectionCurrent(poi,source.source_id,{fingerprint});
       observations=[{report:`docs/gis/poi/${source.source_id}.json`,source_sha256:stored.record.sha256,source_attributions:poi.source_attributions??null,rights_observations:poi.rights_observations??null}];
       caveats.push('Literal 原典/source properties and archive metadata are inventory evidence; they do not establish permission for originals.');
     }
@@ -255,9 +271,7 @@ export async function generateRights():Promise<RightsRecord[]> {
   // Range-extracted 2023 CityGML members keep their own rights records and point
   // back to the acquired package resource that supplied their exact bytes.
   const vintage=await readJson<VintageReport>(join(docsRoot,'gis','vintages','shinjuku-2023.json'));
-  if(vintage.tool_input_sha256!==fingerprint)throw new Error('Stale 2023 vintage report cannot establish member rights');
-  const vintageCheck=await verifyVintageEvidence(vintage);
-  if(vintageCheck.status!=='PASS')throw new Error(`2023 vintage evidence failed verification: ${vintageCheck.errors.join('; ')}`);
+  await assertVintageResearchCurrent(vintage,{fingerprint});
   if(!Array.isArray(vintage.selected_member_records))throw new Error('2023 vintage report has no selected_member_records array');
   if(vintage.selected_member_records.length) {
     const packageId='plateau-13104-package-2023',pkg=await getStoredSource(packageId),payload=await readJson<unknown>(pkg.path),result=own(payload,'result'),resources=own(result,'resources');
@@ -296,8 +310,22 @@ export async function generateRights():Promise<RightsRecord[]> {
   const register=['# Rights evidence register','','Generated only from integrity-checked acquisitions. A package declaration, site default and file-embedded rights are different scopes. Every exact-resource publish gate remains HOLD. Legacy manifest labels are preserved as historical inputs, not clearance.','','| Source | Licence observation | Scope | Resource licence | File-embedded rights | File-embedded scope | Publish gate |','| --- | --- | --- | --- | --- | --- | --- |',...records.map(r=>`| [${r.source_id}](${r.source_id}.json) | ${r.licence.value??'UNKNOWN'} | ${r.licence.scope} (${r.licence.status}) | ${r.resource_licence.value??'UNKNOWN'} (${r.resource_licence.status}) | ${r.file_embedded_licence.value??'UNKNOWN'} (${r.file_embedded_licence.status}) | ${r.file_embedded_licence.scope??r.file_embedded_licence.reason??'Not established'} | HOLD |`),'','All candidates are UNVERIFIED / routable:false. See each record for hashed evidence, obligations, caveats and exact clearance requirements.',''].join('\n');
   // Research reads/validation are part of preparation, before any output mutation.
   const research=await (await import('./poi-research.js')).buildPoiResearch(records);
-  const files=records.map(record=>({path:join(out,`${record.source_id}.json`),content:`${JSON.stringify(record,null,2)}\n`}));
+  const files:ReportFile[]=records.map(record=>({path:join(out,`${record.source_id}.json`),content:`${JSON.stringify(record,null,2)}\n`}));
   files.push({path:join(out,'README.md'),content:register},research);
+  // Hash-named vintage records from prior acquisitions must not remain active.
+  // Archive exact bytes and retire them in the same rollback-capable transaction.
+  const currentMembers=new Set(records.filter(record=>record.source_id.startsWith('vintage-member-')).map(record=>`${record.source_id}.json`));
+  for(const directory of ['rights','acquisitions/vintages']) {
+    const active=join(docsRoot,'gis',directory);
+    let names:string[];
+    try {names=await readdir(active);}catch(error){if((error as NodeJS.ErrnoException).code!=='ENOENT')throw error;names=[];}
+    for(const name of names.sort()) {
+      if(!/^vintage-member-[a-f0-9]{16}\.json$/.test(name)||currentMembers.has(name))continue;
+      const obsolete=join(active,name),content=await readFile(obsolete,'utf8');
+      const hash=createHash('sha256').update(content).digest('hex');
+      files.push({path:join(docsRoot,'gis','history',directory,`${hash}-${name}`),content},{path:obsolete,content:null});
+    }
+  }
   // Include receipt invalidation in the same transaction; failed rights never changes it.
   if(process.env.GTEKI_GIS_REAL_RUN!=='1') {
     const path=join(docsRoot,'gis','real-run.json');

@@ -2,7 +2,7 @@
   "source_id": "plateau-13104-related-2025",
   "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
   "source_bytes": 40290,
-  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
+  "tool_input_sha256": "dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf",
   "input_sources": [
     {
       "source_id": "plateau-13104-related-2025",
@@ -65,6 +65,8 @@
       "bbox_counts": {
         "coordinate_visits": 110,
         "coordinate_positions": 110,
+        "geometry_visits": 110,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -78,7 +80,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -347,6 +349,8 @@
       "bbox_counts": {
         "coordinate_visits": 168,
         "coordinate_positions": 168,
+        "geometry_visits": 168,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -360,7 +364,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -624,6 +628,8 @@
       "bbox_counts": {
         "coordinate_visits": 201,
         "coordinate_positions": 201,
+        "geometry_visits": 201,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -637,7 +643,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -794,6 +800,8 @@
       "bbox_counts": {
         "coordinate_visits": 48,
         "coordinate_positions": 48,
+        "geometry_visits": 48,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -807,7 +815,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -976,6 +984,8 @@
       "bbox_counts": {
         "coordinate_visits": 837,
         "coordinate_positions": 718,
+        "geometry_visits": 108,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -989,7 +999,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -1107,6 +1117,8 @@
       "bbox_counts": {
         "coordinate_visits": 1181,
         "coordinate_positions": 1122,
+        "geometry_visits": 45,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -1120,7 +1132,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -1334,6 +1346,8 @@
       "bbox_counts": {
         "coordinate_visits": 1278,
         "coordinate_positions": 1277,
+        "geometry_visits": 1,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -1347,7 +1361,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [

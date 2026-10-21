@@ -1,0 +1,394 @@
+[p1 "Oracle code review verdict" | space "GTEki Lane D POI rights round 2 review"(9): 1 managed, 0 untracked — p1* "Oracle code review verdict"]
+root
+  container
+    anchor [ref=68, loc=href:/c/6ad89333-ac68-83e8-bfee-0c1592d104f5#_r_37_, url=https://chatgpt.com/c/6ad89333-ac68-83e8-bfee-0c1592d104f5#_r_37_]
+      text "跳至內容"
+    container
+      container
+        container "應用程式導覽"
+          container
+            button [ref=1]
+              container
+                svg_root
+                text "首頁"
+            button [ref=2]
+              container
+                svg_root
+                text "空間"
+            button [ref=3]
+              container
+                svg_root
+                text "已排程"
+            button [ref=4]
+              container
+                svg_root
+                text "外掛程式"
+            button [ref=5]
+              container
+                svg_root
+                text "探索"
+            button [ref=6]
+              container
+                svg_root
+                text "網站"
+          button "開啟個人檔案選單" [ref=7, loc=css:button[aria-label="開啟個人檔案選單"]]
+            image
+        navigation "首頁"
+      container [ref=52]
+        container
+          button "新對話" [ref=53]
+            svg_root
+          button "更多" [ref=65, loc=css:button[aria-label="更多"]]
+            svg_root
+          button "分享" [ref=55]
+            svg_root
+            text "分享"
+        region "對話" [ref=56, loc=role:region[name="對話"]]
+          container
+            container
+              container
+                heading
+                  text "你說："
+                container
+                  container
+                    button "gteki-round2-oracle-bundle.txt" [ref=57, loc=css:button[aria-label="gteki-round2-oracle-bundle.txt"]]
+                    svg_root
+                    text "gteki-round2-oracle-bundle.txt"
+                    text "文件"
+                  container
+                    text "Please perform the independent Oracle code review described in the attached bundle. Read the complete source and regression tests; return a concise PASS or REQUEST_CHANGES for the five scoped defects...."
+                    container
+                      button "複製訊息" [ref=58, loc=css:button[aria-label="複製訊息"]]
+                        svg_root
+                      button "分享提示詞" [ref=66, loc=css:button[aria-label="分享提示詞"]]
+                        svg_root
+                      button "編輯訊息" [ref=67, loc=css:button[aria-label="編輯訊息"]]
+                        svg_root
+                container
+                  heading [ref=69]
+                    text "ChatGPT 說："
+                  container
+                    text "REQUEST_CHANGES"
+                    paragraph
+                      text "Independent"
+                      text "Oracle"
+                      text "review"
+                      text "—"
+                      text "GTEki"
+                      text "Lane"
+                      text "D,"
+                      text "POI-rights"
+                      text "Round"
+                      text "2"
+                    paragraph
+                      text "Base"
+                      text "HEAD:"
+                      text "0f4b3c2"
+                    paragraph
+                      container
+                        text "1"
+                        text "P2"
+                        text "blocking"
+                        text "finding."
+                      text "The"
+                      text "other"
+                      text "four"
+                      text "scoped"
+                      text "defects"
+                      text "have"
+                      text "no"
+                      text "blocking"
+                      text "findings"
+                      text "from"
+                      text "static"
+                      text "review."
+                    heading
+                      text "P2"
+                      text "—"
+                      text "Bare"
+                      text "licence"
+                      text "identifiers"
+                      text "incorrectly"
+                      text "become"
+                      text "affirmative"
+                      text "declarations"
+                    paragraph
+                      text "Location:"
+                      container
+                        text "tools/gis/src/rights.ts:102–105,"
+                        text "244–247"
+                    paragraph
+                      text "Reproduction:"
+                      text "Supply"
+                      text "metadata"
+                      text "XML"
+                      text "containing:"
+                    container
+                      container
+                        svg_root
+                        text "XML"
+                        container
+                          button "啟用自動換行" [ref=70, loc=css:button[aria-label="啟用自動換行"]]
+                            svg_root
+                          button "複製代碼" [ref=71, loc=css:button[aria-label="複製代碼"]]
+                            svg_root
+                      container
+                        container
+                          text "<useLimitation>"
+                          text "CC BY 4.0"
+                          text "</useLimitation>"
+                        button "捲動至底部" [ref=72]
+                          svg_root
+                    paragraph
+                      text "The"
+                      text "English"
+                      text "regular"
+                      text "expression"
+                      text "makes"
+                      text "licensed"
+                      text "under"
+                      text "optional."
+                      text "Consequently:"
+                    ordered_list
+                      list_item
+                        paragraph
+                          text "embeddedMetadataRights()"
+                          text "returns"
+                          text "value:"
+                          text "'CC"
+                          text "BY"
+                          text "4.0'"
+                          text "."
+                      list_item
+                        paragraph
+                          text "generateRights()"
+                          text "promotes"
+                          text "the"
+                          text "observation"
+                          text "to"
+                          text "FILE_EMBEDDED"
+                          text "."
+                      list_item
+                        paragraph
+                          text "An"
+                          text "isolated"
+                          text "licence"
+                          text "identifier"
+                          text "is"
+                          text "treated"
+                          text "as"
+                          text "an"
+                          text "affirmative"
+                          text "grant,"
+                          text "despite"
+                          text "lacking"
+                          text "an"
+                          text "explicit"
+                          text "licensing"
+                          text "statement."
+                    paragraph
+                      text "The"
+                      text "same"
+                      text "issue"
+                      text "affects"
+                      text "bare"
+                      text "PDL"
+                      text "1.0"
+                      text "."
+                    paragraph
+                      text "Expected:"
+                      text "Preserve"
+                      text "the"
+                      text "exact"
+                      text "quote,"
+                      text "but"
+                      text "return"
+                      text "value:"
+                      text "null"
+                      text "and"
+                      text "file_embedded_licence.status:"
+                      text "'UNKNOWN'"
+                      text "."
+                    paragraph
+                      text "Missing"
+                      text "regression:"
+                      text "tools/gis/test/rights.test.ts:45–56"
+                      text "covers"
+                      text "negations"
+                      text "and"
+                      text "affirmative"
+                      text "sentences,"
+                      text "but"
+                      text "not"
+                      text "standalone"
+                      text "licence"
+                      text "identifiers."
+                    heading
+                      text "Remaining"
+                      text "scoped"
+                      text "findings"
+                    table
+                      table_row
+                        table_cell
+                          paragraph
+                            text "Defect"
+                        table_cell
+                          paragraph
+                            text "Disposition"
+                      table_row
+                        table_cell
+                          paragraph
+                            text "1."
+                            text "Metadata"
+                            text "rights"
+                            text "classification"
+                        table_cell
+                          paragraph
+                            text "P2"
+                            text "blocker"
+                      table_row
+                        table_cell
+                          paragraph
+                            text "2."
+                            text "CRS"
+                            text "inheritance"
+                            text "and"
+                            text "mixed-CRS"
+                            text "handling"
+                        table_cell
+                          paragraph
+                            text "No"
+                            text "blocking"
+                            text "finding"
+                      table_row
+                        table_cell
+                          paragraph
+                            text "3."
+                            text "Incomplete"
+                            text "geometry"
+                            text "traversal"
+                            text "and"
+                            text "bbox"
+                        table_cell
+                          paragraph
+                            text "No"
+                            text "blocking"
+                            text "finding"
+                      table_row
+                        table_cell
+                          paragraph
+                            text "4."
+                            text "POI/vintage"
+                            text "freshness"
+                            text "validation"
+                        table_cell
+                          paragraph
+                            text "No"
+                            text "blocking"
+                            text "finding"
+                      table_row
+                        table_cell
+                          paragraph
+                            text "5."
+                            text "Superseded"
+                            text "vintage"
+                            text "archival"
+                            text "and"
+                            text "rollback"
+                        table_cell
+                          paragraph
+                            text "No"
+                            text "blocking"
+                            text "finding"
+                    paragraph
+                      text "Residual"
+                      text "limitations:"
+                      text "Transaction"
+                      text "rollback"
+                      text "is"
+                      text "tested"
+                      text "for"
+                      text "ordinary"
+                      text "I/O"
+                      text "failures,"
+                      text "not"
+                      text "process"
+                      text "crashes."
+                      text "Real-data"
+                      text "regeneration"
+                      text "and"
+                      text "the"
+                      text "reported"
+                      text "293"
+                      text "passing"
+                      text "tests"
+                      text "were"
+                      text "not"
+                      text "independently"
+                      text "executed."
+                    paragraph
+                      text "Final"
+                      text "disposition:"
+                      text "REQUEST"
+                      text "_"
+                      text "CHANGES."
+                    paragraph
+                      text "Require"
+                      text "affirmative"
+                      text "wording"
+                      text "for"
+                      text "FILE_EMBEDDED"
+                      text "classification"
+                      text "and"
+                      text "add"
+                      text "a"
+                      text "regression"
+                      text "covering"
+                      text "bare"
+                      text "licence"
+                      text "identifiers."
+                      text "No"
+                      text "other"
+                      text "P1/P2"
+                      text "changes"
+                      text "identified"
+                      text "within"
+                      text "the"
+                      text "requested"
+                      text "scope."
+              button "複製" [ref=73, loc=css:button[aria-label="複製"]]
+                svg_root
+              button "評價回覆" [ref=74, loc=css:button[aria-label="評價回覆"]]
+                svg_root
+              button "分享" [ref=75]
+                svg_root
+              button "朗讀" [ref=76, loc=css:button[aria-label="朗讀"]]
+                svg_root
+              button "重新產生回覆" [ref=77, loc=css:button[aria-label="重新產生回覆"]]
+                svg_root
+              button "更多操作" [ref=78, loc=css:button[aria-label="更多操作"]]
+                svg_root
+            text "ChatGPT 可能會出錯。請查證重要資訊。"
+          button "捲動至底部" [ref=59]
+            svg_root
+          heading [ref=79]
+            text "最新回覆"
+          form
+            button "新增檔案和更多內容" [ref=60]
+              svg_root
+            textfield "問問 ChatGPT" [ref=61]
+              paragraph
+                text "問問 ChatGPT"
+            container
+              button "選取 ChatGPT 模型" [ref=80]
+                text "Medium"
+                svg_root
+              container
+                button "聽寫" [ref=63]
+                  svg_root
+                button "開始語音對話" [ref=81, loc=css:button[aria-label="開始語音對話"]]
+                  svg_root
+      status
+  status
+  status
+    text "回覆完畢"

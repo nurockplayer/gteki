@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { docsRoot, getStoredSource, readJson } from './common.js';
+import { assertPoiInspectionCurrent, assertVintageResearchCurrent } from './inspection-evidence.js';
+import { toolFingerprint } from './provenance.js';
 import { htmlText, type RightsRecord } from './rights.js';
 
 /** Generate the lane packet from acquired evidence and current inspections, never from remembered source claims. */
@@ -8,12 +10,16 @@ export async function buildPoiResearch(rights:RightsRecord[]):Promise<{path:stri
   const root=join(docsRoot,'gis');
   const pois=await Promise.all(['toei-stores-shinjuku-csv','toei-stores-shinjuku-nishiguchi-csv','tokyo-shinjuku-facilities-zip','tokyo-shinjuku-facilities-spec-pdf','plateau-13104-related-2025','plateau-13116-related-2025'].map(id=>readJson<any>(join(root,'poi',`${id}.json`))));
   const vintage=await readJson<any>(join(root,'vintages','shinjuku-2023.json'));
+  const fingerprint=await toolFingerprint();
+  const poiIds=['toei-stores-shinjuku-csv','toei-stores-shinjuku-nishiguchi-csv','tokyo-shinjuku-facilities-zip','tokyo-shinjuku-facilities-spec-pdf','plateau-13104-related-2025','plateau-13116-related-2025'];
+  for(let index=0;index<pois.length;index++) await assertPoiInspectionCurrent(pois[index],poiIds[index]!,{fingerprint});
+  await assertVintageResearchCurrent(vintage,{fingerprint});
   const landing=await getStoredSource('tokyo-shinjuku-facilities-landing'),text=htmlText(await readFile(landing.path,'utf8'));
   const basis='令和２年３月に公開したデータをもとに',publication='令和５年２月２８日（火曜日）';
   if(!text.includes(basis)||!text.includes(publication))throw new Error('S03 landing date evidence changed');
   const lines=[
     '# POI, facility rights and PLATEAU vintage evidence','',
-    `Tool-input SHA-256: \`${rights[0]?.tool_input_sha256}\`. Generated from integrity-checked acquisitions and current inspection reports. All candidates remain UNVERIFIED / routable:false.`,
+    `Tool-input SHA-256: \`${fingerprint}\`. Generated from integrity-checked acquisitions and current inspection reports. All candidates remain UNVERIFIED / routable:false.`,
     '', '## Scope and station identity','',
     '新宿 (S01/E27) and 新宿西口 (E01) are separate sources and identities. 新宿三丁目 is excluded. No text location was geocoded; no height, floor, accessibility, connectivity or feature correspondence was inferred.',
     '', '## Acquisition and rights decisions','',

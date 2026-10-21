@@ -2,7 +2,7 @@
   "source_id": "tokyo-shinjuku-facilities-zip",
   "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
   "source_bytes": 2317035,
-  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
+  "tool_input_sha256": "dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf",
   "input_sources": [
     {
       "source_id": "tokyo-shinjuku-facilities-zip",
@@ -150,6 +150,8 @@
       "bbox_counts": {
         "coordinate_visits": 93700,
         "coordinate_positions": 67431,
+        "geometry_visits": 13125,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -163,7 +165,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -478,6 +480,8 @@
       "bbox_counts": {
         "coordinate_visits": 4196,
         "coordinate_positions": 3537,
+        "geometry_visits": 309,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -491,7 +495,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -824,6 +828,8 @@
       "bbox_counts": {
         "coordinate_visits": 1907,
         "coordinate_positions": 1762,
+        "geometry_visits": 78,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -837,7 +843,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -1025,6 +1031,8 @@
       "bbox_counts": {
         "coordinate_visits": 1628,
         "coordinate_positions": 1386,
+        "geometry_visits": 142,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -1038,7 +1046,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -1248,6 +1256,8 @@
       "bbox_counts": {
         "coordinate_visits": 13021,
         "coordinate_positions": 10425,
+        "geometry_visits": 1246,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -1261,7 +1271,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -1643,6 +1653,8 @@
       "bbox_counts": {
         "coordinate_visits": 2357,
         "coordinate_positions": 2002,
+        "geometry_visits": 183,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -1656,7 +1668,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -1980,6 +1992,8 @@
       "bbox_counts": {
         "coordinate_visits": 3563,
         "coordinate_positions": 2967,
+        "geometry_visits": 338,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -1993,7 +2007,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -2341,6 +2355,8 @@
       "bbox_counts": {
         "coordinate_visits": 414,
         "coordinate_positions": 336,
+        "geometry_visits": 37,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -2354,7 +2370,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -2429,6 +2445,8 @@
       "bbox_counts": {
         "coordinate_visits": 85,
         "coordinate_positions": 61,
+        "geometry_visits": 12,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -2442,7 +2460,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -2505,6 +2523,8 @@
       "bbox_counts": {
         "coordinate_visits": 589,
         "coordinate_positions": 487,
+        "geometry_visits": 53,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -2518,7 +2538,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -2711,6 +2731,8 @@
       "bbox_counts": {
         "coordinate_visits": 446,
         "coordinate_positions": 390,
+        "geometry_visits": 33,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -2724,7 +2746,7 @@
           "name": null
         }
       },
-      "crs_status": "UNKNOWN",
+      "crs_status": "RFC7946_ASSUMPTION",
       "declared_crs": null,
       "crs_interpretation": "RFC7946 longitude-latitude assumption; source declaration absent",
       "property_keys": [
@@ -2852,18 +2874,15 @@
       "kind": "GEOJSON",
       "feature_count": 13129,
       "bbox": null,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "bbox_counts": {
         "coordinate_visits": 3,
         "coordinate_positions": 3,
+        "geometry_visits": 13129,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
-      "raw_coordinates_bbox": [
-        2071.212,
-        1248.57,
-        2089.127,
-        1274.174
-      ],
+      "raw_coordinates_bbox": null,
       "crs": {
         "properties": {
           "name": null
@@ -2871,7 +2890,7 @@
       },
       "crs_status": "UNKNOWN",
       "declared_crs": null,
-      "crs_interpretation": "Path coordinates are local per source format specification; no CRS declared or inferred",
+      "crs_interpretation": "CRS explicitly unknown; no coordinate reference is assumed",
       "property_keys": [
         "area",
         "barrier",
@@ -3174,18 +3193,15 @@
       "kind": "GEOJSON",
       "feature_count": 309,
       "bbox": null,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "bbox_counts": {
         "coordinate_visits": 32,
         "coordinate_positions": 32,
+        "geometry_visits": 309,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
-      "raw_coordinates_bbox": [
-        779.619,
-        829.184,
-        2398.372,
-        1666.27
-      ],
+      "raw_coordinates_bbox": null,
       "crs": {
         "properties": {
           "name": null
@@ -3193,7 +3209,7 @@
       },
       "crs_status": "UNKNOWN",
       "declared_crs": null,
-      "crs_interpretation": "Path coordinates are local per source format specification; no CRS declared or inferred",
+      "crs_interpretation": "CRS explicitly unknown; no coordinate reference is assumed",
       "property_keys": [
         "barrier",
         "class",
@@ -3514,18 +3530,15 @@
       "kind": "GEOJSON",
       "feature_count": 78,
       "bbox": null,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "bbox_counts": {
         "coordinate_visits": 6,
         "coordinate_positions": 6,
+        "geometry_visits": 78,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
-      "raw_coordinates_bbox": [
-        830.583,
-        1381.167,
-        1049.222,
-        1672.979
-      ],
+      "raw_coordinates_bbox": null,
       "crs": {
         "properties": {
           "name": null
@@ -3533,7 +3546,7 @@
       },
       "crs_status": "UNKNOWN",
       "declared_crs": null,
-      "crs_interpretation": "Path coordinates are local per source format specification; no CRS declared or inferred",
+      "crs_interpretation": "CRS explicitly unknown; no coordinate reference is assumed",
       "property_keys": [
         "area",
         "disabled access",
@@ -3707,18 +3720,15 @@
       "kind": "GEOJSON",
       "feature_count": 142,
       "bbox": null,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "bbox_counts": {
         "coordinate_visits": 3,
         "coordinate_positions": 3,
+        "geometry_visits": 142,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
-      "raw_coordinates_bbox": [
-        846,
-        1440.083,
-        1055.333,
-        1669.708
-      ],
+      "raw_coordinates_bbox": null,
       "crs": {
         "properties": {
           "name": null
@@ -3726,7 +3736,7 @@
       },
       "crs_status": "UNKNOWN",
       "declared_crs": null,
-      "crs_interpretation": "Path coordinates are local per source format specification; no CRS declared or inferred",
+      "crs_interpretation": "CRS explicitly unknown; no coordinate reference is assumed",
       "property_keys": [
         "area",
         "class",
@@ -3922,18 +3932,15 @@
       "kind": "GEOJSON",
       "feature_count": 1248,
       "bbox": null,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "bbox_counts": {
         "coordinate_visits": 104,
         "coordinate_positions": 104,
+        "geometry_visits": 1248,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
-      "raw_coordinates_bbox": [
-        744.638,
-        152.206,
-        2599.562,
-        1910.894
-      ],
+      "raw_coordinates_bbox": null,
       "crs": {
         "properties": {
           "name": null
@@ -3941,7 +3948,7 @@
       },
       "crs_status": "UNKNOWN",
       "declared_crs": null,
-      "crs_interpretation": "Path coordinates are local per source format specification; no CRS declared or inferred",
+      "crs_interpretation": "CRS explicitly unknown; no coordinate reference is assumed",
       "property_keys": [
         "area",
         "barrier",
@@ -4308,18 +4315,15 @@
       "kind": "GEOJSON",
       "feature_count": 184,
       "bbox": null,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "bbox_counts": {
         "coordinate_visits": 47,
         "coordinate_positions": 47,
+        "geometry_visits": 184,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
-      "raw_coordinates_bbox": [
-        2051.816,
-        723.021,
-        2582.872,
-        2315.766
-      ],
+      "raw_coordinates_bbox": null,
       "crs": {
         "properties": {
           "name": null
@@ -4327,7 +4331,7 @@
       },
       "crs_status": "UNKNOWN",
       "declared_crs": null,
-      "crs_interpretation": "Path coordinates are local per source format specification; no CRS declared or inferred",
+      "crs_interpretation": "CRS explicitly unknown; no coordinate reference is assumed",
       "property_keys": [
         "area",
         "barrier",
@@ -4636,18 +4640,15 @@
       "kind": "GEOJSON",
       "feature_count": 338,
       "bbox": null,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "bbox_counts": {
         "coordinate_visits": 57,
         "coordinate_positions": 57,
+        "geometry_visits": 338,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
-      "raw_coordinates_bbox": [
-        2254.372,
-        1204.646,
-        3225.83,
-        2495.89
-      ],
+      "raw_coordinates_bbox": null,
       "crs": {
         "properties": {
           "name": null
@@ -4655,7 +4656,7 @@
       },
       "crs_status": "UNKNOWN",
       "declared_crs": null,
-      "crs_interpretation": "Path coordinates are local per source format specification; no CRS declared or inferred",
+      "crs_interpretation": "CRS explicitly unknown; no coordinate reference is assumed",
       "property_keys": [
         "area",
         "barrier",
@@ -4988,10 +4989,12 @@
       "kind": "GEOJSON",
       "feature_count": 37,
       "bbox": null,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "bbox_counts": {
         "coordinate_visits": 0,
         "coordinate_positions": 0,
+        "geometry_visits": 37,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": null,
@@ -5002,7 +5005,7 @@
       },
       "crs_status": "UNKNOWN",
       "declared_crs": null,
-      "crs_interpretation": "Path coordinates are local per source format specification; no CRS declared or inferred",
+      "crs_interpretation": "CRS explicitly unknown; no coordinate reference is assumed",
       "property_keys": [
         "display_name",
         "facility",
@@ -5066,10 +5069,12 @@
       "kind": "GEOJSON",
       "feature_count": 12,
       "bbox": null,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "bbox_counts": {
         "coordinate_visits": 0,
         "coordinate_positions": 0,
+        "geometry_visits": 12,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": null,
@@ -5080,7 +5085,7 @@
       },
       "crs_status": "UNKNOWN",
       "declared_crs": null,
-      "crs_interpretation": "Path coordinates are local per source format specification; no CRS declared or inferred",
+      "crs_interpretation": "CRS explicitly unknown; no coordinate reference is assumed",
       "property_keys": [
         "display_name",
         "facility"
@@ -5132,18 +5137,15 @@
       "kind": "GEOJSON",
       "feature_count": 53,
       "bbox": null,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "bbox_counts": {
         "coordinate_visits": 3,
         "coordinate_positions": 3,
+        "geometry_visits": 53,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
-      "raw_coordinates_bbox": [
-        2250.663,
-        1329.796,
-        2298.306,
-        1331.24
-      ],
+      "raw_coordinates_bbox": null,
       "crs": {
         "properties": {
           "name": null
@@ -5151,7 +5153,7 @@
       },
       "crs_status": "UNKNOWN",
       "declared_crs": null,
-      "crs_interpretation": "Path coordinates are local per source format specification; no CRS declared or inferred",
+      "crs_interpretation": "CRS explicitly unknown; no coordinate reference is assumed",
       "property_keys": [
         "display_name",
         "entities",
@@ -5333,18 +5335,15 @@
       "kind": "GEOJSON",
       "feature_count": 33,
       "bbox": null,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "bbox_counts": {
         "coordinate_visits": 5,
         "coordinate_positions": 5,
+        "geometry_visits": 33,
+        "geometry_visit_limit": 1000000,
         "visit_limit": 1000000
       },
-      "raw_coordinates_bbox": [
-        2447.542,
-        1157.667,
-        2842.417,
-        1276.976
-      ],
+      "raw_coordinates_bbox": null,
       "crs": {
         "properties": {
           "name": null
@@ -5352,7 +5351,7 @@
       },
       "crs_status": "UNKNOWN",
       "declared_crs": null,
-      "crs_interpretation": "Path coordinates are local per source format specification; no CRS declared or inferred",
+      "crs_interpretation": "CRS explicitly unknown; no coordinate reference is assumed",
       "property_keys": [
         "currency",
         "display_name",

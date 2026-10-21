@@ -1,7 +1,7 @@
 {
   "source_id": "plateau-13104-metadata",
   "source_sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
-  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
+  "tool_input_sha256": "dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf",
   "station_ids": [
     "shinjuku"
   ],
@@ -28,7 +28,40 @@
         "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
         "location": "ZIP:metadata/udx_13104_pref_2025_fld_op.xml:useLimitation",
         "quote": "Licensed under CC BY 4.0",
-        "scope": "FILE_EMBEDDED metadata XML rights statement applies to the described dataset; ZIP-wide applicability is not inferred."
+        "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
+      }
+    },
+    {
+      "value": "CC BY 4.0",
+      "status": "FILE_EMBEDDED",
+      "evidence": {
+        "source_id": "plateau-13104-metadata",
+        "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
+        "location": "ZIP:metadata/udx_13104_pref_2025_htd_op.xml:useLimitation",
+        "quote": "Licensed under CC BY 4.0",
+        "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
+      }
+    },
+    {
+      "value": "CC BY 4.0",
+      "status": "FILE_EMBEDDED",
+      "evidence": {
+        "source_id": "plateau-13104-metadata",
+        "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
+        "location": "ZIP:metadata/udx_13104_pref_2025_lsld_op.xml:useLimitation",
+        "quote": "Licensed under CC BY 4.0",
+        "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
+      }
+    },
+    {
+      "value": "CC BY 4.0",
+      "status": "FILE_EMBEDDED",
+      "evidence": {
+        "source_id": "plateau-13104-metadata",
+        "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
+        "location": "ZIP:metadata/udx_13104_pref_2025_op.xml:useLimitation",
+        "quote": "Licensed under CC BY 4.0",
+        "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
       }
     }
   ],
@@ -45,28 +78,28 @@
       "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
       "location": "ZIP:metadata/udx_13104_pref_2025_fld_op.xml:useLimitation",
       "quote": "Licensed under CC BY 4.0",
-      "scope": "FILE_EMBEDDED metadata XML rights statement applies to the described dataset; ZIP-wide applicability is not inferred."
+      "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
     },
     {
       "source_id": "plateau-13104-metadata",
       "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
       "location": "ZIP:metadata/udx_13104_pref_2025_htd_op.xml:useLimitation",
       "quote": "Licensed under CC BY 4.0",
-      "scope": "FILE_EMBEDDED metadata XML rights statement applies to the described dataset; ZIP-wide applicability is not inferred."
+      "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
     },
     {
       "source_id": "plateau-13104-metadata",
       "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
       "location": "ZIP:metadata/udx_13104_pref_2025_lsld_op.xml:useLimitation",
       "quote": "Licensed under CC BY 4.0",
-      "scope": "FILE_EMBEDDED metadata XML rights statement applies to the described dataset; ZIP-wide applicability is not inferred."
+      "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
     },
     {
       "source_id": "plateau-13104-metadata",
       "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
       "location": "ZIP:metadata/udx_13104_pref_2025_op.xml:useLimitation",
       "quote": "Licensed under CC BY 4.0",
-      "scope": "FILE_EMBEDDED metadata XML rights statement applies to the described dataset; ZIP-wide applicability is not inferred."
+      "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
     }
   ],
   "input_sources": [

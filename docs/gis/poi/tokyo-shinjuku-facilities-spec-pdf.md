@@ -1,7 +1,7 @@
 # POI inventory: tokyo-shinjuku-facilities-spec-pdf
 
 - Source SHA-256: `c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095`
-- Tool-input SHA-256: `8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c`
+- Tool-input SHA-256: `dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf`
 - Station IDs: ["shinjuku"]
 - Verification: UNVERIFIED; routable: false
 - Rights observations: {"manifest_attribution":"出典：東京都都市整備局「新宿駅周辺の施設情報等」（当該リソースURL）","source_property_fields":["原典","出典","著作権","copyright","Copyright","source","Source","attribution"]}

@@ -37,10 +37,22 @@ describe('rights evidence scope',()=>{
   it('records only explicit metadata XML rights and leaves absent rights unknown',()=>{
     const xml=(element:string,text:string)=>`<gmd:${element} xmlns:gmd="http://www.isotc211.org/2005/gmd">${text}</gmd:${element}>`;
     expect(embeddedMetadataRights(xml('useLimitation','Licensed under CC BY 4.0'))).toEqual([{value:'CC BY 4.0',quote:'Licensed under CC BY 4.0',element:'useLimitation'}]);
-    expect(embeddedMetadataRights(xml('useLimitation','See the publisher'))).toEqual([]);
-    expect(embeddedMetadataRights(xml('useLimitation','Not licensed under CC BY 4.0'))).toEqual([]);
+    expect(embeddedMetadataRights(xml('useLimitation','See the publisher'))).toEqual([{value:null,quote:'See the publisher',element:'useLimitation'}]);
+    expect(embeddedMetadataRights(xml('useLimitation','Not licensed under CC BY 4.0'))).toEqual([{value:null,quote:'Not licensed under CC BY 4.0',element:'useLimitation'}]);
     expect(embeddedMetadataRights(xml('abstract','CC BY 4.0'))).toEqual([]);
     expect(()=>embeddedMetadataRights('<!DOCTYPE x [<!ENTITY e "x">]><x/>')).toThrow('DOCTYPE');
+  });
+  it.each([
+    'CC BY 4.0', 'PDL 1.0', 'CC BY 4.0 does not apply.', 'CC BY 4.0 は適用されません。',
+    'CC BY 4.0 を除く。', 'CC BY 4.0 ではありません。',
+    'If approved, licensed under CC BY 4.0.', 'CC BY 4.0 may apply.',
+    'Licensed under CC BY 4.0 except third-party content.',
+    'CC BY 4.0 の適用には許諾が必要です。', 'Copyright reserved.',
+  ])('preserves ambiguous or negated metadata as UNKNOWN evidence: %s',text=>{
+    expect(embeddedMetadataRights(`<useLimitation>${text}</useLimitation>`)).toEqual([{value:null,quote:text,element:'useLimitation'}]);
+  });
+  it.each(['Licensed under CC BY 4.0','This dataset is licensed under CC BY 4.0.','本データはCC BY 4.0に基づき提供されています。'])('recognizes only supported complete affirmative metadata declarations: %s',text=>{
+    expect(embeddedMetadataRights(`<useLimitation>${text}</useLimitation>`)).toEqual([{value:'CC BY 4.0',quote:text,element:'useLimitation'}]);
   });
   it('rejects unverified pre-redirect matches and genuine ambiguity without filename inference',()=>{
     const requested='https://example.invalid/original.zip',final='https://example.invalid/final-download';

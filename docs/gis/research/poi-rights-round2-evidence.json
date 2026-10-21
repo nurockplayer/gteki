@@ -1,0 +1,100 @@
+{
+  "tool_input_sha256": "dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf",
+  "acquisitions": 34,
+  "poi_reports": [
+    {
+      "id": "toei-stores-shinjuku-csv",
+      "rows": 5,
+      "members": null,
+      "bbox_statuses": null
+    },
+    {
+      "id": "toei-stores-shinjuku-nishiguchi-csv",
+      "rows": 17,
+      "members": null,
+      "bbox_statuses": null
+    },
+    {
+      "id": "tokyo-shinjuku-facilities-zip",
+      "rows": null,
+      "members": 25,
+      "bbox_statuses": {
+        "n/a:n/a": 3,
+        "RFC7946_ASSUMPTION:COMPUTED_GEOGRAPHIC": 11,
+        "UNKNOWN:INCOMPLETE_LIMIT_REACHED": 11
+      }
+    },
+    {
+      "id": "tokyo-shinjuku-facilities-spec-pdf",
+      "rows": null,
+      "members": null,
+      "bbox_statuses": null
+    },
+    {
+      "id": "plateau-13104-related-2025",
+      "rows": null,
+      "members": 7,
+      "bbox_statuses": {
+        "RFC7946_ASSUMPTION:COMPUTED_GEOGRAPHIC": 7
+      }
+    },
+    {
+      "id": "plateau-13116-related-2025",
+      "rows": null,
+      "members": 7,
+      "bbox_statuses": {
+        "RFC7946_ASSUMPTION:COMPUTED_GEOGRAPHIC": 7
+      }
+    }
+  ],
+  "vintage_verification": {
+    "status": "PASS",
+    "errors": []
+  },
+  "archive_count": 2,
+  "vintage_members": 2,
+  "rights": 36,
+  "all_gates": "HOLD",
+  "metadata": [
+    {
+      "id": "plateau-13104-metadata",
+      "embedded": {
+        "value": "CC BY 4.0",
+        "status": "FILE_EMBEDDED",
+        "scope": "Metadata XML rights statement for the described dataset; no ZIP-wide or sibling-resource scope inferred."
+      },
+      "quotes": [
+        "Licensed under CC BY 4.0",
+        "Licensed under CC BY 4.0",
+        "Licensed under CC BY 4.0",
+        "Licensed under CC BY 4.0"
+      ]
+    },
+    {
+      "id": "plateau-13116-metadata",
+      "embedded": {
+        "value": "CC BY 4.0",
+        "status": "FILE_EMBEDDED",
+        "scope": "Metadata XML rights statement for the described dataset; no ZIP-wide or sibling-resource scope inferred."
+      },
+      "quotes": [
+        "Licensed under CC BY 4.0",
+        "Licensed under CC BY 4.0",
+        "Licensed under CC BY 4.0"
+      ]
+    }
+  ],
+  "validation": {
+    "install_frozen_lockfile": "PASS",
+    "typecheck": "PASS",
+    "unit_files_passed": 24,
+    "unit_tests_passed": 295,
+    "unit_tests_failed": 0,
+    "vitest_options": "--exclude test/real.test.ts --no-file-parallelism --maxWorkers=1",
+    "independent_static_review": "PASS",
+    "rights_table_changed_rows": []
+  },
+  "verification": "UNVERIFIED",
+  "routable": false,
+  "publish_gate": "HOLD"
+}

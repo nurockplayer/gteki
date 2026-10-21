@@ -1,7 +1,8 @@
 import { lstat, mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, join, relative } from 'node:path';
 
-export type ReportFile = { path: string; content: string };
+/** Null content retires an existing generated record as part of the same bundle. */
+export type ReportFile = { path: string; content: string | null };
 
 /** Prepare every output before promotion; restore the previous bundle on an I/O error.
  * Multi-file visibility is not a filesystem transaction across process/host crashes.
@@ -26,12 +27,13 @@ export async function commitReportFiles(files: ReportFile[], root: string): Prom
   const promoted: number[] = [];
   try {
     for (const [i, file] of files.entries()) {
-      await writeFile(join(stage, `${i}.new`), file.content, { flag: 'wx' });
+      if (file.content !== null) await writeFile(join(stage, `${i}.new`), file.content, { flag: 'wx' });
       if (previous[i] !== null) await writeFile(join(stage, `${i}.old`), previous[i]!, { flag: 'wx' });
     }
     for (const [i, file] of files.entries()) {
       await mkdir(dirname(file.path), { recursive: true });
-      await rename(join(stage, `${i}.new`), file.path);
+      if (file.content === null) await rm(file.path, { force: true });
+      else await rename(join(stage, `${i}.new`), file.path);
       promoted.push(i);
     }
   } catch (error) {
