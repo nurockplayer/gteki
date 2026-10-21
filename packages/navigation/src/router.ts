@@ -1,7 +1,7 @@
 import type { Edge, EvidenceRef, LocalTime, StationBundle, Vec3N, Weekday } from "@gteki/schema";
 import { isOpenAt, parseHm } from "@gteki/schema";
 import { DEFAULT_PROFILE, DEFAULT_STALE_AFTER_DAYS } from "./index.ts";
-import type { Router, RouteProfile, RouteResult, RouteStep, RouteUnknown } from "./index.ts";
+import type { Router, RouteFailure, RouteProfile, RouteResult, RouteStep, RouteUnknown } from "./index.ts";
 
 const WALK_SPEED = 1.2;
 const ELEVATOR_SECONDS = 45;
@@ -10,7 +10,10 @@ const SLOPED_MODES = new Set(["stairs", "escalator", "ramp"]);
 const NOT_STEP_FREE_MODES = new Set(["stairs", "escalator"]);
 /** Minutes of slack around a traversal when sampling hours (well under the router's timing precision). */
 const CLOCK_EPSILON = 1e-6;
-/** Latest arrival (clock minutes from the departure day) whose hours are checked. */
+/**
+ * Latest arrival (clock minutes from the departure day) whose hours are checked. Past it a traversal fails
+ * closed, which is not proof that no route exists: a search that dropped one is `search_limit`, not `no_path`.
+ */
 const MAX_CLOCK_MINUTES = 366 * 1440;
 const WEEK_MINUTES = 7 * 1440;
 const WEEK: Weekday[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
@@ -181,6 +184,27 @@ const WAIT_COST_PER_SECOND = 0.75;
 const WORK_BUDGET = 2_000_000;
 /** Relative cost slack in label dominance (far below any real cost difference). */
 const COST_TOLERANCE = 1e-9;
+/**
+ * Relative slack of the lower-bound pruning, in the safe direction: a label is dropped only when even its
+ * cheapest possible completion is dearer than the best known route by more than this, i.e. by far more than the
+ * rounding of summed costs (~1e-15) and of every dominance tolerance chain (COST_TOLERANCE per hop), and
+ * still far below any real cost difference. So only labels that cannot equal or beat the incumbent go.
+ */
+const PRUNE_SLACK = 1e-6;
+/** Share of WORK_BUDGET the guided (A*) pass that finds the incumbent may use; the exact pass keeps the full budget. */
+const GUIDE_BUDGET = WORK_BUDGET / 4;
+
+/**
+ * How one pass of the search ended: at a goal label, out of its work budget (`limited`), or with the queue
+ * empty. `horizon`: some traversal from a node that can still reach a goal was dropped at MAX_CLOCK_MINUTES.
+ * `bound`: cost of the best goal label pushed so far (Infinity if none).
+ */
+interface SearchEnd {
+  goal: Label | null;
+  limited: boolean;
+  horizon: boolean;
+  bound: number;
+}
 
 const DAY_MS = 86_400_000;
 
@@ -203,6 +227,18 @@ function dateInterval(date: string): { first: number; last: number } | null {
 }
 
 export function createRouter(bundle: StationBundle): Router {
+  return buildRouter(bundle, false);
+}
+
+/**
+ * @internal Test-only: the same router, optionally without the lower-bound pruning of the clock-dependent search,
+ * as the exact reference the pruned search is checked against. Not part of the package's public API.
+ */
+export function createRouterForTest(bundle: StationBundle, options: { unpruned: boolean }): Router {
+  return buildRouter(bundle, options.unpruned);
+}
+
+function buildRouter(bundle: StationBundle, unpruned: boolean): Router {
   const nodes = new Map(bundle.nodes.map((node) => [node.id, node]));
   const floors = new Map(bundle.floors.map((floor) => [floor.id, floor]));
   const sourceDates = new Map(bundle.sources.map((source) => [source.id, source.datasetDate]));
@@ -228,6 +264,10 @@ export function createRouter(bundle: StationBundle): Router {
   for (const traversals of adjacency.values()) {
     traversals.sort((a, b) => compareIds(a.toNodeId, b.toNodeId) || compareIds(a.edge.id, b.edge.id));
   }
+  /** Every traversal indexed by the node it enters, for the backward lower-bound pass. */
+  const incoming = new Map<string, { fromNodeId: string; traversal: Traversal }[]>();
+  for (const nodeId of nodes.keys()) incoming.set(nodeId, []);
+  for (const [fromNodeId, traversals] of adjacency) for (const traversal of traversals) incoming.get(traversal.toNodeId)!.push({ fromNodeId, traversal });
 
   /** Access facts only count when evidenced: without accessEvidence every flag is UNKNOWN. */
   const accessOf = (edge: Edge): Pick<Edge, "paid" | "crossesFareBoundary" | "wheelchair" | "steps"> =>
@@ -259,12 +299,17 @@ export function createRouter(bundle: StationBundle): Router {
   // Per-query search state: work spent (see WORK_BUDGET) and each window edge's weekly openings.
   let work = 0;
   let openingCache = new Map<Edge, number[]>();
+  /** Set when a check failed only because the traversal would end past MAX_CLOCK_MINUTES (see there). */
+  let horizonCut = false;
 
   function openThroughout(edge: Edge, profile: RouteProfile, enter: number, edgeSec: number, exact: boolean): boolean {
     if (!profile.at || edge.hours === null) return true;
     const leave = enter + edgeSec / 60;
-    // Past a year the hours can't be meaningfully checked: fail closed.
-    if (!(leave <= MAX_CLOCK_MINUTES)) return false;
+    // Past a year the hours can't be meaningfully checked: fail closed (and note it was the horizon, not the hours).
+    if (!(leave <= MAX_CLOCK_MINUTES)) {
+      if (leave > MAX_CLOCK_MINUTES) horizonCut = true;
+      return false;
+    }
     const drift = timeDrift * leave;
     const samples = [enter, leave];
     work += 2 + Math.min(Math.max(0, leave - enter), WEEK_MINUTES);
@@ -300,7 +345,11 @@ export function createRouter(bundle: StationBundle): Router {
       for (const o of weekly) {
         const m = base + o;
         if (m < from) continue;
-        if (m >= from + WEEK_MINUTES || m > MAX_CLOCK_MINUTES) return null;
+        if (m >= from + WEEK_MINUTES) return null;
+        if (m > MAX_CLOCK_MINUTES) {
+          horizonCut = true;
+          return null;
+        }
         // Entering at max(m, enter) stays inside [m, m + the edge's time + how far enter is past m].
         if (openThroughout(edge, profile, m, edgeSec + Math.max(0, enter - m) * 60, true)) return Math.max(m, enter);
       }
@@ -332,6 +381,36 @@ export function createRouter(bundle: StationBundle): Router {
     }
     openingCache.set(edge, out);
     return out;
+  }
+
+  /**
+   * Admissible remaining cost: for each node, the cheapest way to any goal over exactly the edges the
+   * search may use (direction, verification, closures, avoided modes, step-free, fare and unknown-hours
+   * policy: `allowed`), ignoring opening hours and waits. A label's cost only ever adds measured edge costs
+   * (never negative) and waiting (WAIT_COST_PER_SECOND ≥ 0), and hours only remove options, so no route from
+   * a node costs less: a lower bound, and consistent (a Dijkstra distance), so cost + bound never drops
+   * along a route. Nodes that can't reach a goal are absent (Infinity). One pass over the bundle's edges,
+   * like building the adjacency, so unlike the search it is not counted against WORK_BUDGET (counting
+   * it would change what finishes within budget).
+   */
+  function lowerBounds(goals: ReadonlySet<string>, profile: RouteProfile, avoided: Set<string>, closed: Set<string>): Map<string, number> {
+    const bound = new Map<string, number>();
+    const queue = new MinHeap();
+    let seq = 0;
+    const push = (nodeId: string, cost: number) => {
+      bound.set(nodeId, cost);
+      queue.push({ nodeId, cost, seq: seq++, label: { nodeId, cost, clock: 0, exact: true, parent: null, via: null } });
+    };
+    for (const id of goals) push(id, 0);
+    for (let entry = queue.pop(); entry; entry = queue.pop()) {
+      if (entry.cost > bound.get(entry.nodeId)!) continue;
+      for (const { fromNodeId, traversal } of incoming.get(entry.nodeId)!) {
+        if (!allowed(traversal.edge, profile, avoided, closed)) continue;
+        const cost = entry.cost + traversal.measurement.cost;
+        if (cost < (bound.get(fromNodeId) ?? Infinity)) push(fromNodeId, cost);
+      }
+    }
+    return bound;
   }
 
   function result(goal: Label, profile: RouteProfile, endpointEvidence: readonly EvidenceRef[]): RouteResult {
@@ -500,67 +579,123 @@ export function createRouter(bundle: StationBundle): Router {
       // dominates (a Pareto set over cost and arrival); a loop is always dominated by waiting it out
       // (WAIT_COST_PER_SECOND), so the search is complete and ends. Its work is still budgeted: past
       // WORK_BUDGET the answer is `search_limit`, never a false `no_path`.
+      //
+      // Pruning (clock-dependent search only). `lowerOf(n)` bounds the cost still to pay from n: the cheapest
+      // way to a goal over exactly the edges this search may use, ignoring hours and waits (lowerBounds).
+      // Waits only add cost and hours only remove options, so no label at n can finish for less. A first,
+      // guided pass (A*: queue ordered by cost + lowerOf) finds the best goal cost it can within a quarter of the
+      // budget. The exact pass then runs the unchanged search, in its unchanged order, and only skips labels whose
+      // cheapest completion is dearer than that incumbent by more than PRUNE_SLACK: such a label can neither be
+      // the answer nor (being at least as dear as what it would dominate, within tolerance) change which label is.
+      // So whenever the unpruned search finishes within budget, the pruned one returns the same route.
       const timed = profile.at !== undefined && bundle.edges.some((e) => e.hours?.kind === "window");
       const departure = profile.at?.minutes ?? 0;
       // Escalators cost exactly what waiting does, so a loop ties its ancestor: compare with a relative
       // tolerance, or rounding (18 vs 18.000000000004) keeps every loop alive until the budget runs out.
       const dominates = (x: Label, y: Label) =>
         x.clock <= y.clock && x.cost + WAIT_COST_PER_SECOND * (y.clock - x.clock) * 60 <= y.cost + COST_TOLERANCE * Math.max(1, Math.abs(y.cost));
-      const settled = new Map<string, Label[]>();
-      work = 0;
+      // Also computed unpruned: it tells which dropped horizon traversals could still have led to a goal.
+      const lower = timed ? lowerBounds(goals, profile, avoided, closed) : null;
+      const lowerOf = (nodeId: string) => lower?.get(nodeId) ?? Infinity;
+      const prune = timed && !unpruned;
       openingCache = new Map();
-      const dominated = (label: Label) => {
-        const done = settled.get(label.nodeId) ?? [];
-        work += done.length;
-        return done.some((l) => dominates(l, label));
-      };
-      const best = new Map<string, number>();
-      const queue = new MinHeap();
-      let seq = 0;
-      const push = (label: Label) => queue.push({ nodeId: label.nodeId, cost: label.cost, seq: seq++, label });
-      for (const id of starts) push({ nodeId: id, cost: 0, clock: departure, exact: true, parent: null, via: null });
-      for (let entry = queue.pop(); entry; entry = queue.pop()) {
-        const current = entry.label;
-        if (timed && work > WORK_BUDGET)
-          return { ok: false, reason: "search_limit", message: "The route search hit its work limit; whether a route exists is UNKNOWN." };
-        const done = settled.get(current.nodeId) ?? [];
-        // Popped in cost order, so a settled label is never dearer.
-        if (timed ? dominated(current) : done.length > 0) continue;
-        done.push(current);
-        settled.set(current.nodeId, done);
-        if (goals.has(current.nodeId)) return result(current, profile, endpointEvidence);
-        for (const traversal of adjacency.get(current.nodeId)!) {
-          // The budget is checked per edge tried, so one wide node can't overrun it.
-          if (timed && ++work > WORK_BUDGET)
-            return { ok: false, reason: "search_limit", message: "The route search hit its work limit; whether a route exists is UNKNOWN." };
-          const to = traversal.toNodeId;
-          if (!timed && settled.has(to)) continue;
-          if (!allowed(traversal.edge, profile, avoided, closed)) continue;
-          const seconds = edgeSeconds(traversal.edge.mode, traversal.measurement.lengthM);
-          const start = timed
-            ? earliestStart(traversal.edge, profile, current.clock, seconds, current.exact)
-            : openThroughout(traversal.edge, profile, current.clock, seconds, current.exact) ? current.clock : null;
-          if (start === null) continue;
-          const waitSeconds = (start - current.clock) * 60;
-          const cost = current.cost + traversal.measurement.cost + WAIT_COST_PER_SECOND * waitSeconds;
-          if (!Number.isFinite(cost)) continue;
-          // Untimed, only a strictly cheaper path to a node is worth queueing (as before).
-          if (!timed) {
-            if (cost >= (best.get(to) ?? Infinity)) continue;
-            best.set(to, cost);
+
+      const search = (guided: boolean, budget: number, upper: number): SearchEnd => {
+        const settled = new Map<string, Label[]>();
+        work = 0;
+        // Cost of the best goal label known (pushed): an upper bound on the answer's cost.
+        let bound = upper;
+        let horizon = false;
+        // `cost` is a lower bound on a label's final cost; hopeless: it can't finish within the incumbent.
+        const hopeless = (cost: number, nodeId: string) => {
+          if (!prune) return false;
+          const rest = lowerOf(nodeId);
+          return rest === Infinity || cost + rest > bound + PRUNE_SLACK * Math.max(1, bound);
+        };
+        const dominated = (label: Label) => {
+          const done = settled.get(label.nodeId) ?? [];
+          work += done.length;
+          return done.some((l) => dominates(l, label));
+        };
+        const best = new Map<string, number>();
+        const queue = new MinHeap();
+        let seq = 0;
+        const push = (label: Label) => queue.push({ nodeId: label.nodeId, cost: guided ? label.cost + lowerOf(label.nodeId) : label.cost, seq: seq++, label });
+        for (const id of starts) if (!hopeless(0, id)) push({ nodeId: id, cost: 0, clock: departure, exact: true, parent: null, via: null });
+        for (let entry = queue.pop(); entry; entry = queue.pop()) {
+          const current = entry.label;
+          if (timed && work > budget) return { goal: null, limited: true, horizon, bound };
+          // Queued under a looser incumbent than the one known now.
+          if (hopeless(current.cost, current.nodeId)) continue;
+          const done = settled.get(current.nodeId) ?? [];
+          // Popped in cost order, so a settled label is never dearer.
+          if (timed ? dominated(current) : done.length > 0) continue;
+          done.push(current);
+          settled.set(current.nodeId, done);
+          if (goals.has(current.nodeId)) return { goal: current, limited: false, horizon, bound };
+          for (const traversal of adjacency.get(current.nodeId)!) {
+            // The budget is checked per edge tried, so one wide node can't overrun it.
+            if (timed && ++work > budget) return { goal: null, limited: true, horizon, bound };
+            const to = traversal.toNodeId;
+            if (!timed && settled.has(to)) continue;
+            if (!allowed(traversal.edge, profile, avoided, closed)) continue;
+            // Before the (costly) hours check: the edge's own cost alone already rules the label out.
+            if (hopeless(current.cost + traversal.measurement.cost, to)) continue;
+            const seconds = edgeSeconds(traversal.edge.mode, traversal.measurement.lengthM);
+            horizonCut = false;
+            const start = timed
+              ? earliestStart(traversal.edge, profile, current.clock, seconds, current.exact)
+              : openThroughout(traversal.edge, profile, current.clock, seconds, current.exact) ? current.clock : null;
+            if (start === null) {
+              // Dropped at the clock horizon, and a goal is reachable from there: not proof of anything.
+              if (horizonCut && lowerOf(to) < Infinity) horizon = true;
+              continue;
+            }
+            const waitSeconds = (start - current.clock) * 60;
+            const cost = current.cost + traversal.measurement.cost + WAIT_COST_PER_SECOND * waitSeconds;
+            if (!Number.isFinite(cost)) continue;
+            // Untimed, only a strictly cheaper path to a node is worth queueing (as before).
+            if (!timed) {
+              if (cost >= (best.get(to) ?? Infinity)) continue;
+              best.set(to, cost);
+            }
+            if (hopeless(cost, to)) continue;
+            const label: Label = {
+              nodeId: to, cost, clock: start + seconds / 60,
+              // A wait ends on an exact whole minute; a zero-length step keeps it exact.
+              exact: (waitSeconds > 0 || current.exact) && seconds === 0,
+              parent: current,
+              via: { fromNodeId: current.nodeId, traversal, ...(profile.at ? { startClock: start } : {}), ...(waitSeconds > 0 ? { waitSeconds } : {}) },
+            };
+            if (timed && dominated(label)) continue;
+            push(label);
+            if (timed && goals.has(to) && cost < bound) bound = cost;
           }
-          const label: Label = {
-            nodeId: to, cost, clock: start + seconds / 60,
-            // A wait ends on an exact whole minute; a zero-length step keeps it exact.
-            exact: (waitSeconds > 0 || current.exact) && seconds === 0,
-            parent: current,
-            via: { fromNodeId: current.nodeId, traversal, ...(profile.at ? { startClock: start } : {}), ...(waitSeconds > 0 ? { waitSeconds } : {}) },
-          };
-          if (timed && dominated(label)) continue;
-          push(label);
         }
+        return { goal: null, limited: false, horizon, bound };
+      };
+
+      const workLimit = (): RouteFailure => ({ ok: false, reason: "search_limit", message: "The route search hit its work limit; whether a route exists is UNKNOWN." });
+      // A queue that ran dry proves "no path" only if no traversal was dropped at the clock horizon.
+      const exhausted = (horizon: boolean): RouteFailure => horizon
+        ? { ok: false, reason: "search_limit", message: `The route search stopped at its ${MAX_CLOCK_MINUTES / 1440}-day clock horizon with routes still possible beyond it; whether a route exists is UNKNOWN.` }
+        : { ok: false, reason: "no_path", message: "No traversable path connects the start to a goal." };
+
+      let upper = Infinity;
+      if (prune) {
+        const guide = search(true, GUIDE_BUDGET, Infinity);
+        // The guided pass is itself complete (only goal-less nodes are pruned until it has an incumbent).
+        if (!guide.goal && !guide.limited) return exhausted(guide.horizon);
+        upper = guide.bound;
       }
-      return { ok: false, reason: "no_path", message: "No traversable path connects the start to a goal." };
+      const end = search(false, WORK_BUDGET, upper);
+      if (end.goal) {
+        // A traversal dropped at the horizon would end after MAX_CLOCK_MINUTES, so cost at least this
+        // (every mode costs ≥ WAIT_COST_PER_SECOND per second): a dearer answer can't be called optimal.
+        const horizonFloor = WAIT_COST_PER_SECOND * 60 * (MAX_CLOCK_MINUTES - departure) * (1 - PRUNE_SLACK);
+        return end.horizon && end.goal.cost >= horizonFloor ? exhausted(true) : result(end.goal, profile, endpointEvidence);
+      }
+      return end.limited ? workLimit() : exhausted(end.horizon);
     },
   };
 }
