@@ -12,17 +12,19 @@ import { parseBboxLocal } from './filters.js';
 import { generateOverlapReports } from './overlap.js';
 import { ensurePrivateStore } from './common.js';
 import { invalidateRealRunReceipt } from './history.js';
+import { createStationEnuFrame } from './station-enu.js';
+import { contextGlb } from './context.js';
 
 async function main() {
   ensurePrivateStore();
   const argv=process.argv.slice(2);
   // A negative EN bbox is one explicit string value, rather than another CLI option.
   for(let i=0;i<argv.length-1;i++)if(argv[i]==='--bbox-local'&&argv[i+1].startsWith('-')&&!argv[i+1].startsWith('--'))argv.splice(i,2,`--bbox-local=${argv[i+1]}`);
-  const { values, positionals } = parseArgs({ args:argv,allowPositionals:true, options:{offline:{type:'boolean'},all:{type:'boolean'},frame:{type:'string'},'bbox-local':{type:'string'},ids:{type:'string'},'max-polygons':{type:'string'},help:{type:'boolean'}} });
+  const { values, positionals } = parseArgs({ args:argv,allowPositionals:true, options:{offline:{type:'boolean'},all:{type:'boolean'},frame:{type:'string'},'bbox-local':{type:'string'},ids:{type:'string'},'max-polygons':{type:'string'},radius:{type:'string'},sources:{type:'string'},help:{type:'boolean'}} });
   const [command,...args]=positionals;
-  if(values.help || !command){console.log('sources | acquire <source_id...> [--all] [--offline] | inspect-citygml <source_id> | frame-from-envelope <source_id> <frame_id> | crs-roundtrip <frame_id> | citygml-to-glb <source_id> --frame <frame_id> [--bbox-local minE,minN,maxE,maxN] [--ids id1,id2] [--max-polygons N] | inspect-network <source_id> | inspect-poi <source_id> | inspect-vintages | rights-report | overlap | gap-packet');return;}
+  if(values.help || !command){console.log('sources | acquire <source_id...> [--all] [--offline] | inspect-citygml <source_id> | frame-from-envelope <source_id> <frame_id> | crs-roundtrip <frame_id> | citygml-to-glb <source_id> --frame <frame_id> [--bbox-local minE,minN,maxE,maxN] [--ids id1,id2] [--max-polygons N] | station-frame <station> [frame_id] | context-glb <station> [--radius M] [--sources id1,id2] | inspect-network <source_id> | inspect-poi <source_id> | inspect-vintages | rights-report | overlap | gap-packet');return;}
   const requireArg=(index:number):string=>{if(!args[index])throw new Error(`Missing argument ${index+1} for ${command}`);return args[index];};
-  const writesReports=['inspect-citygml','frame-from-envelope','crs-roundtrip','citygml-to-glb','inspect-network','inspect-poi','inspect-vintages','rights-report','overlap','gap-packet'].includes(command)||(command==='acquire'&&!values.offline);
+  const writesReports=['inspect-citygml','frame-from-envelope','station-frame','crs-roundtrip','citygml-to-glb','inspect-network','inspect-poi','inspect-vintages','rights-report','overlap','gap-packet'].includes(command)||(command==='acquire'&&!values.offline);
   if(writesReports&&process.env.GTEKI_GIS_REAL_RUN!=='1')await invalidateRealRunReceipt(`gis ${positionals.join(' ')}`);
   let result:unknown;
   switch(command){
@@ -35,6 +37,12 @@ async function main() {
     }
     case 'inspect-citygml':{const inv=await inspectCityGml(requireArg(0));result={source_id:inv.source_id,source_sha256:inv.source_sha256,totals:inv.totals,report:`docs/gis/inventory/${inv.source_id}.inventory.json`};break;}
     case 'frame-from-envelope': result=await frameFromEnvelope(requireArg(0),requireArg(1));break;
+    case 'station-frame': result=await createStationEnuFrame(requireArg(0),args[1]);break;
+    case 'context-glb': {
+      const radius=values.radius===undefined?undefined:Number(values.radius);
+      if(radius!==undefined&&(!Number.isFinite(radius)||radius<=0))throw new Error('--radius must be a positive number of metres');
+      result=await contextGlb(requireArg(0),{...(radius!==undefined?{radiusM:radius}:{}),...(values.sources?{sourceIds:values.sources.split(',').filter(Boolean)}:{})});break;
+    }
     case 'crs-roundtrip': result=await crsRoundtrip(requireArg(0));break;
     case 'citygml-to-glb': {
       if(!values.frame)throw new Error('--frame is required');

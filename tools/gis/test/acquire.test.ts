@@ -1,10 +1,10 @@
 import { createServer, type Server } from 'node:http';
 import { createHash } from 'node:crypto';
-import { mkdtemp, readFile, rm, stat, symlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, stat, symlink, unlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { acquisitionExitCode, acquisitionResultFromDownload, downloadUrl, loadSources, recordRequest } from '../src/acquire.js';
+import { acquisitionExitCode, acquisitionResultFromDownload, downloadCap, downloadUrl, loadSources, recordRequest, selectCatalogResource } from '../src/acquire.js';
 import { getStoredSource, getStoreRoot, repoRoot, verifyStoredFile } from '../src/common.js';
 
 const servers: Server[] = [];
@@ -34,9 +34,9 @@ afterEach(async () => {
 });
 
 describe('source acquisition', () => {
-  it('loads exactly the bounded 46-source manifest with explicit unknown rights', () => {
+  it('loads exactly the bounded 55-source manifest with explicit unknown rights', () => {
     const sources = loadSources();
-    expect(sources).toHaveLength(46);
+    expect(sources).toHaveLength(55);
     for (const id of ['tokyo-s03-zip', 'tokyo-s03-spec', 'tokyo-s03-reference']) {
       const moved = sources.find(source => source.source_id === id)!;
       expect(moved.expected_url).toContain('/documents/d/toshiseibi/');
@@ -100,6 +100,86 @@ describe('source acquisition', () => {
     expect(await readFile(result.path)).toEqual(bytes);
     expect(result.sha256).toBe(createHash('sha256').update(bytes).digest('hex'));
   });
+
+  it('declares the street-level context sources (#39) with catalog resolution, exact byte counts and conditional gates', () => {
+    const sources = loadSources();
+    const catalog = sources.find((source) => source.source_id === 'plateau-catalog-bldg-tran-13116-13104')!;
+    expect(catalog).toMatchObject({ resolution: { kind: 'direct' }, expected_bytes: null, license_name: 'unknown', publish_gate: 'HOLD' });
+    expect(catalog.expected_url).toBe('https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran');
+    const meshes = [['13116', '53394576', 'ikebukuro'], ['13116', '53394577', 'ikebukuro'], ['13104', '53394525', 'shinjuku'], ['13104', '53394526', 'shinjuku']] as const;
+    for (const [city, mesh, station] of meshes) for (const type of ['bldg', 'tran'] as const) {
+      const source = sources.find((item) => item.source_id === `plateau-${city}-${type}-${mesh}`)!;
+      expect(source, `${city}-${type}-${mesh}`).toBeDefined();
+      expect(source).toMatchObject({ resolution: { kind: 'plateau_catalog_api', catalog_source_id: catalog.source_id, match: `${mesh}_${type}_6697_op.gml` }, license_name: 'CC BY 4.0', publish_gate: 'CONDITIONAL', station_ids: [station] });
+      expect(source.expected_url).toMatch(new RegExp(`/udx/${type}/${mesh}_${type}_6697_op\\.gml$`));
+      expect(Number.isSafeInteger(source.expected_bytes)).toBe(true);
+    }
+    // Only the two Ikebukuro bldg meshes exceed the 128 MiB default cap; each is capped at exactly its declared size.
+    expect(sources.filter((source) => (source.expected_bytes ?? 0) > 128 * 1024 * 1024).map((source) => source.source_id).sort()).toEqual(['plateau-13116-bldg-53394576', 'plateau-13116-bldg-53394577']);
+    // The 2025 metadata ZIPs (lineage evidence) already exist on main and are not duplicated.
+    expect(sources.filter((source) => /^plateau-(13116|13104)-metadata$/.test(source.source_id))).toHaveLength(2);
+  });
+
+  it('resolves bldg and tran mesh files from the catalog files.<type> list, leaving ubld resolution unchanged', () => {
+    const payload = { cities: [{ cityCode: '13116', files: {
+      ubld: [{ code: '53394576', url: 'https://example.invalid/udx/ubld/53394576_ubld_6697_op.gml' }],
+      bldg: [{ code: '53394577', url: 'https://example.invalid/udx/bldg/53394577_bldg_6697_op.gml' }, { code: '53394576', url: 'https://example.invalid/udx/bldg/53394576_bldg_6697_op.gml', fileSize: 1 }],
+      tran: [{ code: '53394576', url: 'https://example.invalid/udx/tran/53394576_tran_6697_op.gml' }],
+    }, metadataZipUrls: ['https://example.invalid/x_metadata.zip'] }] };
+    const byId = new Map(loadSources().map((source) => [source.source_id, source]));
+    expect(selectCatalogResource(byId.get('plateau-13116-bldg-53394576')!, payload)).toEqual({ value: 'https://example.invalid/udx/bldg/53394576_bldg_6697_op.gml', pointer: '/cities/0/files/bldg/1/url' });
+    expect(selectCatalogResource(byId.get('plateau-13116-tran-53394576')!, payload).pointer).toBe('/cities/0/files/tran/0/url');
+    expect(selectCatalogResource(byId.get('plateau-13116-ubld-53394576')!, payload).pointer).toBe('/cities/0/files/ubld/0/url');
+    expect(selectCatalogResource(byId.get('plateau-13116-metadata')!, payload).pointer).toBe('/cities/0/metadataZipUrls/0');
+    // A bldg mesh is never satisfied from the tran list.
+    expect(() => selectCatalogResource(byId.get('plateau-13116-bldg-53394577')!, { cities: [{ cityCode: '13116', files: { tran: payload.cities[0]!.files.tran } }] })).toThrow(/files\.bldg/);
+  });
+
+  it('keeps the 128 MiB cap by default and raises it only to a source\'s own declared expected_bytes', () => {
+    const MIB = 1024 * 1024;
+    expect(downloadCap()).toBe(128 * MIB);
+    expect(downloadCap(null)).toBe(128 * MIB);
+    expect(downloadCap(35_427_963)).toBe(128 * MIB); // a small declared size does not lower the default
+    expect(downloadCap(128 * MIB)).toBe(128 * MIB);
+    expect(downloadCap(153_213_705)).toBe(153_213_705); // cap = expected_bytes, exactly
+    expect(downloadCap(168_102_762)).toBe(168_102_762);
+    expect(() => downloadCap(512 * MIB + 1)).toThrow(RangeError); // a typo cannot open an unbounded download
+    expect(() => downloadCap(1.5 * 200 * MIB + 0.5)).toThrow(RangeError);
+  });
+
+  it('streams a decoded body above 128 MiB only when expected_bytes declares it, and stops at exactly that size', async () => {
+    const MIB = 1024 * 1024, declared = 129 * MIB;
+    const serveZeros = async (total: number): Promise<string> => {
+      const server = createServer((_request, response) => {
+        response.writeHead(200, { 'content-type': 'application/octet-stream', 'content-length': String(total) });
+        const chunk = Buffer.alloc(MIB);
+        let sent = 0;
+        const pump = (): void => {
+          while (sent < total) {
+            const size = Math.min(MIB, total - sent);
+            sent += size;
+            if (!response.write(size === MIB ? chunk : chunk.subarray(0, size))) { response.once('drain', pump); return; }
+          }
+          response.end();
+        };
+        pump();
+      });
+      servers.push(server);
+      await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+      const address = server.address();
+      if (!address || typeof address === 'string') throw new Error('Expected a TCP server address');
+      return `http://127.0.0.1:${address.port}/big.gml`;
+    };
+    const storeRoot = join(await tempStore(), 'store');
+    // Without a declaration the default cap refuses the body.
+    await expect(downloadUrl(await serveZeros(declared), { storeRoot, backoffMs: 0 })).rejects.toThrow(/exceeded 134217728 byte limit/);
+    // Declared exactly: accepted and size-checked.
+    const ok = await downloadUrl(await serveZeros(declared), { storeRoot, expectedBytes: declared, backoffMs: 0 });
+    expect(ok.bytes).toBe(declared); expect(ok.sizeCheck).toBe('MATCH');
+    await unlink(ok.path);
+    // One byte more than declared is a hard failure, not a quiet size mismatch.
+    await expect(downloadUrl(await serveZeros(declared + 1), { storeRoot, expectedBytes: declared, backoffMs: 0 })).rejects.toThrow(new RegExp(`exceeded ${declared} byte limit`));
+  }, 60_000);
 
   it('marks an expected-size mismatch so the acquisition command can fail the source', async () => {
     const url = await serve(Buffer.from('short'));

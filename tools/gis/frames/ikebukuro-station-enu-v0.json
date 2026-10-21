@@ -1,0 +1,22 @@
+{
+  "frame_id": "ikebukuro-station-enu-v0",
+  "frame_kind": "station-enu",
+  "station_id": "ikebukuro",
+  "station_json_path": "stations/ikebukuro/gteki/station.json",
+  "station_json_sha256": "59fa599565a38c1baee71af3b0757768cb893874ff106f615027dec11dc75535",
+  "verification": "UNVERIFIED",
+  "origin": {
+    "lat": 35.7297,
+    "lon": 139.7114,
+    "hM": 0,
+    "datum": "JGD2011",
+    "crs": "EPSG:6697"
+  },
+  "source_crs": "EPSG:6697",
+  "ellipsoid": "GRS80",
+  "horizontal": "ENU tangent plane at the origin on GRS80 (geodetic -> ECEF -> ENU, evaluated at the origin height); x east, y north; no curvature term",
+  "vertical": "z = source height - origin.hM, unchanged otherwise; PLATEAU EPSG:6697 heights are orthometric (TP), so z stays a TP height when hM is 0; no geoid or ellipsoid conversion",
+  "axis_order": "source latitude,longitude,height; station x east, y north, z up; glTF (renderer) x east, y up, z -north",
+  "navigation_use": "NOT_FOR_ROUTING",
+  "purpose": "Station reference frame (docs/core/contract.md Frames) for visual-only context geometry; NOT an envelope processing origin and NOT a routing frame"
+}

@@ -1,0 +1,24 @@
+{
+  "source_id": "plateau-catalog-bldg-tran-13116-13104",
+  "resolved_url": "https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-21T16:54:53.573Z",
+  "completed_at": "2026-10-21T16:54:53.865Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/json",
+    "content-length": null,
+    "etag": null,
+    "last-modified": null,
+    "date": "Wed, 21 Oct 2026 16:54:53 GMT"
+  },
+  "bytes": 34932,
+  "sha256": "cff24d7b1e50a4561188118e6dcff5c57f945f87d4aaa8b1cf3e8ae7efbf5668",
+  "store_path": "raw/cff24d7b1e50a4561188118e6dcff5c57f945f87d4aaa8b1cf3e8ae7efbf5668/13116_13104",
+  "tool_version": "0.1.0",
+  "git_commit": "e244d206a546f42259d903d8a91a2d75ac8825f7",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online"
+}

@@ -1,0 +1,196 @@
+{
+  "produced_by": "tools/gis/scripts/make-station-enu-vectors.mts running packages/geo/src/index.ts StationFrame.toLocal via tsx (commit e244d20); expected x/y/z are that code's outputs for the stored lat/lon/h",
+  "tolerance_m": 0.001,
+  "origins": [
+    {
+      "id": "ikebukuro",
+      "note": "stations/ikebukuro/gteki/station.json origin (hM 0, EPSG:6697)",
+      "origin": {
+        "lat": 35.7297,
+        "lon": 139.7114,
+        "hM": 0
+      },
+      "points": [
+        {
+          "distance_m": 0,
+          "bearing_deg": 0,
+          "lat": 35.7297,
+          "lon": 139.7114,
+          "h": 32.5,
+          "expected": {
+            "x": 0,
+            "y": 0,
+            "z": 32.5
+          }
+        },
+        {
+          "distance_m": 250,
+          "bearing_deg": 0,
+          "lat": 35.73195318562541,
+          "lon": 139.7114,
+          "h": 31.9,
+          "expected": {
+            "x": 2.0011725609947462e-10,
+            "y": 249.99999999890088,
+            "z": 31.9
+          }
+        },
+        {
+          "distance_m": 250,
+          "bearing_deg": 90,
+          "lat": 35.72969996827054,
+          "lon": 139.71416333582812,
+          "h": 33.1,
+          "expected": {
+            "x": 249.99999999888183,
+            "y": 5.590654271990514e-10,
+            "z": 33.1
+          }
+        },
+        {
+          "distance_m": 250,
+          "bearing_deg": 225,
+          "lat": 35.728106740790466,
+          "lon": 139.7094460654091,
+          "h": 27.9,
+          "expected": {
+            "x": -176.77669529682615,
+            "y": -176.7766952969292,
+            "z": 27.9
+          }
+        },
+        {
+          "distance_m": 435,
+          "bearing_deg": 45,
+          "lat": 35.732472194379746,
+          "lon": 139.7148000317171,
+          "h": 45.12,
+          "expected": {
+            "x": 307.5914498150666,
+            "y": 307.59144981660313,
+            "z": 45.12
+          }
+        },
+        {
+          "distance_m": 435,
+          "bearing_deg": 180,
+          "lat": 35.7257794549942,
+          "lon": 139.7114,
+          "h": 0,
+          "expected": {
+            "x": 2.08515871236159e-10,
+            "y": -434.9999999999451,
+            "z": 0
+          }
+        },
+        {
+          "distance_m": 435,
+          "bearing_deg": 300,
+          "lat": 35.73166019949197,
+          "lon": 139.70723587085914,
+          "h": -18.25,
+          "expected": {
+            "x": -376.72105064527193,
+            "y": 217.50000000002183,
+            "z": -18.25
+          }
+        }
+      ]
+    },
+    {
+      "id": "synthetic-hM5",
+      "note": "SYNTHETIC non-zero hM to pin z = h - hM and the height-independent horizontal part; Shinjuku coordinates, hM invented for the test only",
+      "origin": {
+        "lat": 35.687,
+        "lon": 139.6994,
+        "hM": 5
+      },
+      "points": [
+        {
+          "distance_m": 0,
+          "bearing_deg": 0,
+          "lat": 35.68699999999999,
+          "lon": 139.6994,
+          "h": 32.5,
+          "expected": {
+            "x": 2.472353986236252e-10,
+            "y": -1.3464845739530523e-9,
+            "z": 27.5
+          }
+        },
+        {
+          "distance_m": 250,
+          "bearing_deg": 0,
+          "lat": 35.689253199872674,
+          "lon": 139.6994,
+          "h": 31.9,
+          "expected": {
+            "x": 1.8204104890173767e-10,
+            "y": 249.99999999864417,
+            "z": 26.9
+          }
+        },
+        {
+          "distance_m": 250,
+          "bearing_deg": 90,
+          "lat": 35.68699996832013,
+          "lon": 139.70216186032897,
+          "h": 33.1,
+          "expected": {
+            "x": 249.9999999999874,
+            "y": -3.070490788709135e-10,
+            "z": 28.1
+          }
+        },
+        {
+          "distance_m": 250,
+          "bearing_deg": 225,
+          "lat": 35.68540673074118,
+          "lon": 139.69744710866274,
+          "h": 27.9,
+          "expected": {
+            "x": -176.77669529928346,
+            "y": -176.77669529629358,
+            "z": 22.9
+          }
+        },
+        {
+          "distance_m": 435,
+          "bearing_deg": 45,
+          "lat": 35.68977221198424,
+          "lon": 139.70279821606564,
+          "h": 45.12,
+          "expected": {
+            "x": 307.5914498155986,
+            "y": 307.59144981580323,
+            "z": 40.12
+          }
+        },
+        {
+          "distance_m": 435,
+          "bearing_deg": 180,
+          "lat": 35.683079430204955,
+          "lon": 139.6994,
+          "h": 0,
+          "expected": {
+            "x": 1.582094455443439e-10,
+            "y": -435.0000000006203,
+            "z": -5
+          }
+        },
+        {
+          "distance_m": 435,
+          "bearing_deg": 300,
+          "lat": 35.6889602119997,
+          "lon": 139.69523809448006,
+          "h": -18.25,
+          "expected": {
+            "x": -376.7210506480253,
+            "y": 217.49999999896437,
+            "z": -23.25
+          }
+        }
+      ]
+    }
+  ]
+}

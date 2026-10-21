@@ -4,7 +4,8 @@ import { dirname, join } from 'node:path';
 import { Document, NodeIO } from '@gltf-transform/core';
 import { scanCityGml, loadCodelists, isCitySemantic, type CityInventory, type CityFeature, type CodelistInput } from './citygml.js';
 import { docsRoot, getStoredSource, getStoreRoot, writeJson, TOOL_VERSION } from './common.js';
-import { loadFrame, toLocal, toGltf, fromGltf, type Frame, type Point3 } from './crs.js';
+import { loadFrame, toLocal, toGltf, fromGltf, type AnyFrame, type Point3 } from './crs.js';
+import { isStationEnuFrame } from './station-enu.js';
 import { triangulate } from './triangulate.js';
 import { assertBboxLocal } from './filters.js';
 import { toolFingerprint } from './provenance.js';
@@ -19,7 +20,7 @@ export async function conversionSemanticInputs(codelists:Map<string,string>):Pro
   return {tool_version:TOOL_VERSION,tool_input_sha256:await toolFingerprint(),dictionary_sha256:createHash('sha256').update(JSON.stringify(entries)).digest('hex'),
     codelist_inputs:[...inputs].sort((a,b)=>JSON.stringify(a)<JSON.stringify(b)?-1:JSON.stringify(a)>JSON.stringify(b)?1:0)};
 }
-export function conversionRunId(sourceId:string,sourceSha256:string,frame:Frame,filters:ConversionOptions,semanticInputs:SemanticInputs):string {
+export function conversionRunId(sourceId:string,sourceSha256:string,frame:AnyFrame,filters:ConversionOptions,semanticInputs:SemanticInputs):string {
   const digest=createHash('sha256').update(JSON.stringify({frame,ids:filters.ids??null,bboxLocal:filters.bboxLocal??null,maxPolygons:filters.maxPolygons??null,semanticInputs})).digest('hex').slice(0,20);
   return `${sourceId}-${sourceSha256.slice(0,8)}-${frame.frame_id}-${digest}`;
 }
@@ -35,11 +36,13 @@ function surfaceClass(type:string):string {
 }
 
 export async function convertCityGmlFile(args: {
-  path:string; sourceId:string; sourceSha256:string; frame:Frame; outputPath:string; attributionText:string;
+  path:string; sourceId:string; sourceSha256:string; frame:AnyFrame; outputPath:string; attributionText:string;
   options?:ConversionOptions; inventory?:CityInventory; codelists?:Map<string,string>; semanticInputs?:SemanticInputs;
 }) {
   const {path,sourceId,sourceSha256,frame,outputPath}=args, filters=args.options??{};
-  if (frame.source_id !== sourceId || frame.source_sha256 !== sourceSha256) throw new Error('Frame provenance does not match source bytes');
+  // Envelope frames are derived from one source's bytes. A station-enu frame is derived from station.json, not from a
+  // CityGML file, so it carries no source provenance and may be used with any EPSG:6697 source (the scanner rejects other CRSs).
+  if (!isStationEnuFrame(frame) && (frame.source_id !== sourceId || frame.source_sha256 !== sourceSha256)) throw new Error('Frame provenance does not match source bytes');
   if (filters.maxPolygons !== undefined && (!Number.isSafeInteger(filters.maxPolygons) || filters.maxPolygons<1))throw new Error('max-polygons must be a positive integer');
   if(filters.bboxLocal!==undefined)assertBboxLocal(filters.bboxLocal);
   const semanticInputs=args.semanticInputs??await conversionSemanticInputs(args.codelists??new Map());
