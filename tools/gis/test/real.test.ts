@@ -41,7 +41,8 @@ describe.skipIf(!available)('real acquired sources (optional external store)',()
     expect(r1.distance.comparable_links).toBe(r1.links.features.length);expect(r1.distance.above_threshold).toBe(30);expect(r1.distance.result).toBe('NO_VERDICT');
     expect(r1.crs.status).toBe('INFERRED_FROM_SPEC');
   });
-  for(const [source,frame] of [['plateau-13116-ubld-53394576','ikebukuro-plateau-ubld-v0'],['plateau-13104-ubld-53394536','shinjuku-plateau-ubld-v0']]){
+  // Ikebukuro's double inventory pass runs >120s in a 2-CPU OrbStack container; Shinjuku takes ~75s.
+  for(const [source,frame,timeout] of [['plateau-13116-ubld-53394576','ikebukuro-plateau-ubld-v0',300000],['plateau-13104-ubld-53394536','shinjuku-plateau-ubld-v0',120000]] as const){
     it(`generates identical inventory bytes twice and converts a bounded Room for ${source}`,async()=>{
       await inspectCityGml(source);const file=join(docsRoot,'gis','inventory',`${source}.inventory.json`),first=await readFile(file);
       const inventory=await inspectCityGml(source);expect(await readFile(file)).toEqual(first);
@@ -50,6 +51,6 @@ describe.skipIf(!available)('real acquired sources (optional external store)',()
       // This bounded check is not a real-run step: drop its docs receipt so it never mixes with real-run receipts.
       await rm(join(docsRoot,'gis','conversions',`${conversion.run_id}.json`),{force:true});
       expect(conversion.validation.status).toBe('PASS');expect(conversion.validation.bbox_max_error_m).toBeLessThanOrEqual(0.001);expect(conversion.totals.polygons_converted).toBeGreaterThan(0);expect(conversion.totals.polygons_converted).toBeLessThanOrEqual(50);
-    },120000);
+    },timeout);
   }
 });
