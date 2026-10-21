@@ -1,0 +1,5 @@
+# SYNTHETIC fixture; hand-authored and contains no real station data.
+link_id,start_node_id,end_node_id,start_lon,start_lat,end_lon,end_lat,route_type,direction
+L1,A,B,139.700000,35.680000,139.700100,35.680000,walk,forward
+L2,A,A,139.700000,35.680000,139.700000,35.680000,stairs,both
+L3,B,MISSING,139.700100,35.680000,139.702000,35.680000,walk,forward

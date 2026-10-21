@@ -1,0 +1,22 @@
+{
+  "checked_at": "2026-10-20T11:52:36.883Z",
+  "status": "PASS",
+  "candidate_tool_input_sha256": "3b6f085efcc168fac3ad688e5108393625cc94176fe963ce278a0d7ea3594745",
+  "tool_input_files": 34,
+  "authored_files_before_this_receipt": {
+    "tools": 36,
+    "docs": 56
+  },
+  "scope": [
+    "tools/gis/**",
+    "docs/gis/**"
+  ],
+  "tracked_modifications": 0,
+  "unexpected_new_files": [],
+  "preexisting_untracked_directory_left_untouched": ".serena/",
+  "raw_or_binary_authored_files": 0,
+  "acquisitions_with_relative_store_path": 13,
+  "independent_review": "PASS",
+  "review_response_sha256": "5bec13c46bd86d6405f1c8623d5d700ffa066c63cea1ab0295fdd9a2820f679b",
+  "command_exit_code": 0
+}

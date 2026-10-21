@@ -1,0 +1,965 @@
+{
+  "version": "2024-07",
+  "spec_source_id": "mlit-walk-network-spec-2024-07",
+  "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+  "status": "LITERAL_LABEL_LOOKUP_ONLY",
+  "link": {
+    "rt_struct": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 13,
+      "codes": {
+        "1": {
+          "label": "車道と歩道の物理的な分離あり",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "車道と歩道の物理的な分離なし",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "横断歩道",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "横断歩道の路面標示の無い道路の横断部",
+          "transcription_check": "TEXT"
+        },
+        "5": {
+          "label": "地下通路",
+          "transcription_check": "TEXT"
+        },
+        "6": {
+          "label": "歩道橋",
+          "transcription_check": "TEXT"
+        },
+        "7": {
+          "label": "施設内通路",
+          "transcription_check": "TEXT"
+        },
+        "8": {
+          "label": "その他の経路の構造",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "route_type": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 13,
+      "codes": {
+        "1": {
+          "label": "対応する属性情報なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "動く歩道",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "踏切",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "エレベーター",
+          "transcription_check": "TEXT"
+        },
+        "5": {
+          "label": "エスカレーター",
+          "transcription_check": "TEXT"
+        },
+        "6": {
+          "label": "階段",
+          "transcription_check": "TEXT"
+        },
+        "7": {
+          "label": "スロープ",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "direction": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 13,
+      "codes": {
+        "1": {
+          "label": "両方向",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "起点より終点方向",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "終点より起点方向",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "width": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 13,
+      "codes": {
+        "1": {
+          "label": "1.0m 未満",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "1.0m 以上～2.0m 未満",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "2.0m 以上～3.0m 未満",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "3.0m 以上",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "tfc_signal": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 13,
+      "codes": {
+        "1": {
+          "label": "歩行者用信号機なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "歩車分離式信号機あり",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "押しボタン式信号機あり",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "これら以外の信号機",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "tfc_s_type": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 13,
+      "codes": {
+        "1": {
+          "label": "音響設備なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "音響設備あり（音響用押しボタンなし）",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "音響設備あり（音響用押しボタンあり）",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "brail_tile": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 13,
+      "codes": {
+        "1": {
+          "label": "視覚障害者誘導用ブロック等なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "視覚障害者誘導用ブロック等あり",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "roof": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "あり",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "tfc_restr": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "自由に通行できる",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "通り抜けが好ましくない（プライベート空間）通路",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "料金の支払いが必要",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "handrail": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 15,
+      "codes": {
+        "1": {
+          "label": "なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "右側にあり",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "左側にあり",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "両側にあり",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "waterway": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 15,
+      "codes": {
+        "1": {
+          "label": "なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "あり",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "bus_stop": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 15,
+      "codes": {
+        "1": {
+          "label": "なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "あり",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "door_type": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 15,
+      "codes": {
+        "1": {
+          "label": "なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "自動ドア",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "自動ドア（押しボタン式）",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "手動式引戸",
+          "transcription_check": "TEXT"
+        },
+        "5": {
+          "label": "手動式開戸",
+          "transcription_check": "TEXT"
+        },
+        "6": {
+          "label": "回転ドア",
+          "transcription_check": "TEXT"
+        },
+        "7": {
+          "label": "その他のドア",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "main_user": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 15,
+      "codes": {
+        "1": {
+          "label": "歩行者",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "車両",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "elevator": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "エレベーターなし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "エレベーターあり（バリアフリー対応なし）",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "エレベーターあり（車椅子使用者対応）",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "エレベーターあり（視覚障害者対応）",
+          "transcription_check": "TEXT"
+        },
+        "5": {
+          "label": "エレベーターあり（車椅子使用者、視覚障害者対応）",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "condition": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "車椅子の通行に支障なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "車椅子の通行に支障あり",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "facility": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 15,
+      "codes": {
+        "1": {
+          "label": "なし",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "車椅子ステップ付きエスカレーター",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "階段昇降機",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "段差解消機",
+          "transcription_check": "TEXT"
+        },
+        "5": {
+          "label": "音声案内装置",
+          "transcription_check": "TEXT"
+        },
+        "6": {
+          "label": "その他の補助施設",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "vtcl_slope": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 13,
+      "codes": {
+        "1": {
+          "label": "0％",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "0％より大きい～5％以下",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "5％より大きい～8％以下（起点より終点が高い）",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "5％より大きい～8％以下（起点より終点が低い）",
+          "transcription_check": "TEXT"
+        },
+        "5": {
+          "label": "8％より大きい～18％以下（起点より終点が高い）",
+          "transcription_check": "TEXT"
+        },
+        "6": {
+          "label": "8％より大きい～18％以下（起点より終点が低い）",
+          "transcription_check": "TEXT"
+        },
+        "7": {
+          "label": "18％より大きい（起点より終点が高い）",
+          "transcription_check": "TEXT"
+        },
+        "8": {
+          "label": "18％より大きい（起点より終点が低い）",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "lev_diff": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 13,
+      "codes": {
+        "1": {
+          "label": "0cm",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "0cm より大きい～2 ㎝以下",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "2cm より大きい～5cm 以下",
+          "transcription_check": "TEXT"
+        },
+        "4": {
+          "label": "5cm より大きい～10cm 以下",
+          "transcription_check": "TEXT"
+        },
+        "5": {
+          "label": "10cm より大きい",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "no_serv_d": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 14,
+      "codes": {
+        "1": {
+          "label": "月曜日",
+          "transcription_check": "TEXT"
+        },
+        "7": {
+          "label": "日曜日",
+          "transcription_check": "TEXT"
+        },
+        "99": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      },
+      "encoding": "weekday_digits",
+      "note": "1 through 7 in increasing order, or 99. Only endpoint weekday labels are printed; intermediate weekday labels remain UNKNOWN."
+    },
+    "rank": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 13,
+      "codes": {
+        "S": {
+          "label": "S",
+          "transcription_check": "TEXT"
+        },
+        "A": {
+          "label": "A",
+          "transcription_check": "TEXT"
+        },
+        "B": {
+          "label": "B",
+          "transcription_check": "TEXT"
+        },
+        "C": {
+          "label": "C",
+          "transcription_check": "TEXT"
+        },
+        "Z": {
+          "label": "Z",
+          "transcription_check": "TEXT"
+        },
+        "X": {
+          "label": "X",
+          "transcription_check": "TEXT"
+        }
+      },
+      "encoding": "rank_triplet",
+      "note": "Three component letters in width, longitudinal slope, step order; literal lookup only."
+    },
+    "r_method": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.2",
+      "printed_page": 13,
+      "codes": {
+        "1": {
+          "label": "現地調査",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "走行軌跡",
+          "transcription_check": "TEXT"
+        }
+      },
+      "encoding": "method_triplet"
+    }
+  },
+  "node": {
+    "in_out": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.8",
+      "printed_page": 33,
+      "codes": {
+        "1": {
+          "label": "施設外",
+          "transcription_check": "TEXT"
+        },
+        "2": {
+          "label": "施設内外の境界",
+          "transcription_check": "TEXT"
+        },
+        "3": {
+          "label": "施設内",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "floor": {
+      "spec_source_id": "mlit-walk-network-spec-2024-07",
+      "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+      "table": "3.8",
+      "printed_page": 33,
+      "codes": {},
+      "encoding": "numeric_floor",
+      "numeric_rule": {
+        "label": "階層数",
+        "outdoor_ground": 0,
+        "indoor_first": 1,
+        "indoor_basement_first": -1,
+        "default_intermediate_increment": 0.5,
+        "permitted_intermediate_increment": 0.1,
+        "location_code_increment": 0.5,
+        "explanation_printed_page": 35,
+        "note": "Ordinal floor number only; never height, accessibility or operator floor equivalence."
+      },
+      "rule_labels": [
+        "屋外は基本的に地上部分の階層数を「0」とする。",
+        "地下 1 階の場合は「-1」とする。",
+        "0.5 刻みで設定することを基本とするが、0.1 刻みで設定しても良いこととする。"
+      ]
+    }
+  },
+  "rank_cross_check": {
+    "spec_source_id": "mlit-walk-network-spec-2024-07",
+    "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+    "table": "3.3",
+    "printed_page": 21,
+    "components": {
+      "width": {
+        "S": {
+          "label": "2m以上",
+          "transcription_check": "TEXT"
+        },
+        "A": {
+          "label": "1m以上～2m未満",
+          "transcription_check": "TEXT"
+        },
+        "B": {
+          "label": "－",
+          "transcription_check": "TEXT"
+        },
+        "C": {
+          "label": "1m未満",
+          "transcription_check": "TEXT"
+        },
+        "Z": {
+          "label": "1m未満",
+          "transcription_check": "TEXT"
+        },
+        "X": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      },
+      "vtcl_slope": {
+        "S": {
+          "label": "0％",
+          "transcription_check": "TEXT"
+        },
+        "A": {
+          "label": "0％～5％以下",
+          "transcription_check": "TEXT"
+        },
+        "B": {
+          "label": "5％～8％以下",
+          "transcription_check": "TEXT"
+        },
+        "C": {
+          "label": "8％～18％以下",
+          "transcription_check": "TEXT"
+        },
+        "Z": {
+          "label": "18％より大きい",
+          "transcription_check": "TEXT"
+        },
+        "X": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      },
+      "lev_diff": {
+        "S": {
+          "label": "0cm",
+          "transcription_check": "TEXT"
+        },
+        "A": {
+          "label": "0cm～2cm以下",
+          "transcription_check": "TEXT"
+        },
+        "B": {
+          "label": "2cm～5cm以下",
+          "transcription_check": "TEXT"
+        },
+        "C": {
+          "label": "5cm～10cm以下",
+          "transcription_check": "TEXT"
+        },
+        "Z": {
+          "label": "10cmより大きい",
+          "transcription_check": "TEXT"
+        },
+        "X": {
+          "label": "不明",
+          "transcription_check": "TEXT"
+        }
+      }
+    },
+    "note": "Report only, never correct. Read r_method digits independently in width/slope/step order (p22). Survey uses full table 3.3 intervals; trace uses only red-underlined readings (p20-21; figure 3.3 p22). Only observed width code 1 -> C is supported for trace; all other trace width codes and S/A/Z/X width readings are not_checkable because only width C is red-underlined on p21. Slope/step A/B/C use upper thresholds including zero; their Z bounds remain supported. Slope/step S (0 percent / 0cm) is black, not red-underlined on p21, so S and X are not_checkable for trace. Survey S stays supported. Missing/blank/other method digits use the union of supported readings only: width codes 2/3/4/99 retain only their survey reading; slope/step code 1 retains S from survey plus A/B/C from trace. Accepted membership is method_unknown, never plain consistent. Link precedence: not_checkable, inconsistent, method_unknown, consistent. Source link_id lists retain input order, capped at 100 per state/component with truncation and unavailable-ID counts. No source values, applicable-version UNKNOWN, verification or routability are changed.",
+    "rule_labels": [
+      "現地調査の結果が 1m 未満の場合は「Z」とする。",
+      "モビリティで通行可能な幅員が確保されているため「C」とする。"
+    ],
+    "method_digit_order": [
+      "width",
+      "vtcl_slope",
+      "lev_diff"
+    ],
+    "method_rules": {
+      "1": {
+        "method": "field_survey",
+        "evidence": {
+          "spec_source_id": "mlit-walk-network-spec-2024-07",
+          "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+          "section": "3.3.2 2) / 3)",
+          "table": "3.3",
+          "figure": "3.3",
+          "printed_pages": [
+            20,
+            21,
+            22
+          ],
+          "attribute_interval_table": "3.2",
+          "attribute_interval_printed_page": 13
+        },
+        "code_to_letters": {
+          "width": {
+            "1": [
+              "Z"
+            ],
+            "2": [
+              "A"
+            ],
+            "3": [
+              "S"
+            ],
+            "4": [
+              "S"
+            ],
+            "99": [
+              "X"
+            ]
+          },
+          "vtcl_slope": {
+            "1": [
+              "S"
+            ],
+            "2": [
+              "A"
+            ],
+            "3": [
+              "B"
+            ],
+            "4": [
+              "B"
+            ],
+            "5": [
+              "C"
+            ],
+            "6": [
+              "C"
+            ],
+            "7": [
+              "Z"
+            ],
+            "8": [
+              "Z"
+            ],
+            "99": [
+              "X"
+            ]
+          },
+          "lev_diff": {
+            "1": [
+              "S"
+            ],
+            "2": [
+              "A"
+            ],
+            "3": [
+              "B"
+            ],
+            "4": [
+              "C"
+            ],
+            "5": [
+              "Z"
+            ],
+            "99": [
+              "X"
+            ]
+          }
+        },
+        "not_checkable_letters": {},
+        "reading_note": "Use all interval thresholds in table 3.3 (p20). Width below 1m is Z for survey, as required by the p21 footnote. Code 99 is the printed unknown category X."
+      },
+      "2": {
+        "method": "mobility_trace",
+        "evidence": {
+          "spec_source_id": "mlit-walk-network-spec-2024-07",
+          "spec_sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+          "section": "3.3.2 2) / 3)",
+          "table": "3.3",
+          "figure": "3.3",
+          "printed_pages": [
+            20,
+            21,
+            22
+          ],
+          "attribute_interval_table": "3.2",
+          "attribute_interval_printed_page": 13
+        },
+        "code_to_letters": {
+          "width": {
+            "1": [
+              "C"
+            ]
+          },
+          "vtcl_slope": {
+            "1": [
+              "A",
+              "B",
+              "C"
+            ],
+            "2": [
+              "A",
+              "B",
+              "C"
+            ],
+            "3": [
+              "B",
+              "C"
+            ],
+            "4": [
+              "B",
+              "C"
+            ],
+            "5": [
+              "C"
+            ],
+            "6": [
+              "C"
+            ],
+            "7": [
+              "Z"
+            ],
+            "8": [
+              "Z"
+            ],
+            "99": []
+          },
+          "lev_diff": {
+            "1": [
+              "A",
+              "B",
+              "C"
+            ],
+            "2": [
+              "A",
+              "B",
+              "C"
+            ],
+            "3": [
+              "B",
+              "C"
+            ],
+            "4": [
+              "C"
+            ],
+            "5": [
+              "Z"
+            ],
+            "99": []
+          }
+        },
+        "not_checkable_letters": {
+          "width": [
+            "S",
+            "A",
+            "Z",
+            "X"
+          ],
+          "vtcl_slope": [
+            "S",
+            "X"
+          ],
+          "lev_diff": [
+            "S",
+            "X"
+          ]
+        },
+        "reading_note": "P20 requires only the red-underlined readings in p21 table 3.3. Width C (<1m) is the only red-underlined width reading and its trace footnote supports observed width code 1 -> C. Width S/A are not red-underlined; neither has an explicit trace reading. Every other width code is not_checkable for trace; width S/A/Z/X letters are also not_checkable regardless of code. Slope S (0 percent) and step S (0cm) are printed in black without red underlining on p21, so S is not_checkable for both trace components regardless of observed code; the exact-zero S survey readings remain unchanged. Slope A/B/C mean <=5/8/18 percent and step A/B/C mean <=2/5/10cm, including zero; p22 figure 3.3 explicitly assigns B to a 2cm step. Slope Z (>18 percent) and step Z (>10cm) are themselves red-underlined and retain those bounds. X has no numeric trace threshold for any component; unknown observed code 99 and unsupported codes are not_checkable, never guessed."
+      }
+    },
+    "unknown_method_rule": {
+      "method_digits": "missing, blank or other, independently per component",
+      "allowed_set": "Union of supported method_rules.1 and method_rules.2 code_to_letters for the observed component/code. For width codes other than 1 only the survey reading is available. For slope/step code 1, S comes only from survey and A/B/C from trace; S has no supported trace reading for any code. Unsupported trace readings never supply acceptance.",
+      "accepted_state": "method_unknown",
+      "outside_union_state": "inconsistent",
+      "unavailable_code_or_rank_state": "not_checkable",
+      "printed_pages": [
+        20,
+        21,
+        22
+      ]
+    }
+  }
+}
