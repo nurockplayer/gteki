@@ -141,8 +141,13 @@ const nodeFare = new Map(bundle.nodes.map((n) => {
 const levelFloors = bundle.floors.filter((f) => !f.intermediate).sort((a, b) => b.renderElevationM - a.renderElevationM);
 function floorAtZ(z: number): Floor {
   let best = levelFloors[0]!;
-  for (const f of levelFloors) if (Math.abs(f.renderElevationM - z) < Math.abs(best.renderElevationM - z)) best = f;
-  // between levels on stairs: report the nearer
+  // Between levels on stairs: report the nearer. Symbolic heights pin 1F and street level both at 0 m;
+  // on a tie prefer the floor nearest street level, so the street exits do not read "1F".
+  const better = (f: Floor) => {
+    const d = Math.abs(f.renderElevationM - z) - Math.abs(best.renderElevationM - z);
+    return d < -1e-6 || (Math.abs(d) <= 1e-6 && Math.abs(f.ordinal ?? 0) < Math.abs(best.ordinal ?? 0));
+  };
+  for (const f of levelFloors) if (better(f)) best = f;
   return best;
 }
 /**

@@ -1,0 +1,1036 @@
+{
+ "schema": "gteki.station/0.1",
+ "station": {
+  "id": "ikebukuro",
+  "names": [
+   {
+    "lang": "ja",
+    "text": "池袋駅"
+   },
+   {
+    "lang": "ja-Hrkt",
+    "text": "いけぶくろえき"
+   },
+   {
+    "lang": "ja-Latn",
+    "text": "Ikebukuro"
+   },
+   {
+    "lang": "en",
+    "text": "Ikebukuro Station"
+   },
+   {
+    "lang": "zh-Hant",
+    "text": "池袋站"
+   }
+  ],
+  "codes": [
+   {
+    "operatorId": "tokyometro",
+    "code": "M25"
+   },
+   {
+    "operatorId": "tokyometro",
+    "code": "Y09"
+   },
+   {
+    "operatorId": "tokyometro",
+    "code": "F09"
+   },
+   {
+    "operatorId": "jreast",
+    "code": "JY13"
+   }
+  ],
+  "operators": [
+   {
+    "id": "public",
+    "names": [
+     {
+      "lang": "ja",
+      "text": "公共地下通路"
+     },
+     {
+      "lang": "en",
+      "text": "Public underground passages"
+     }
+    ]
+   },
+   {
+    "id": "jreast",
+    "names": [
+     {
+      "lang": "ja",
+      "text": "JR東日本"
+     },
+     {
+      "lang": "en",
+      "text": "JR East"
+     }
+    ]
+   },
+   {
+    "id": "tokyometro",
+    "names": [
+     {
+      "lang": "ja",
+      "text": "東京メトロ"
+     },
+     {
+      "lang": "en",
+      "text": "Tokyo Metro"
+     }
+    ]
+   },
+   {
+    "id": "tobu",
+    "names": [
+     {
+      "lang": "ja",
+      "text": "東武鉄道"
+     },
+     {
+      "lang": "en",
+      "text": "Tobu Railway"
+     }
+    ]
+   },
+   {
+    "id": "seibu",
+    "names": [
+     {
+      "lang": "ja",
+      "text": "西武鉄道"
+     },
+     {
+      "lang": "en",
+      "text": "Seibu Railway"
+     }
+    ]
+   }
+  ],
+  "origin": {
+   "lat": 35.7297,
+   "lon": 139.7114,
+   "hM": 0,
+   "datum": "JGD2011",
+   "crs": "EPSG:6697"
+  },
+  "frame": "ENU",
+  "datasetVersion": "ikebukuro-b1-slice5.2",
+  "synthetic": false,
+  "generatedAt": "2026-10-20T15:00:00+00:00"
+ },
+ "sources": [
+  {
+   "id": "plateau-ubld-13116",
+   "title": "PLATEAU 豊島区 2025 地下街モデル (ubld) 53394576 — 池袋駅_B1地下通路",
+   "publisher": "国土交通省 Project PLATEAU (source survey: 東京都 2023 LidarSLAM)",
+   "url": "https://www.mlit.go.jp/plateau/",
+   "downloadUrls": [
+    "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/ubld/53394576_ubld_6697_op.gml"
+   ],
+   "license": {
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "attribution": "Contains PLATEAU data (MLIT), CC BY 4.0. Modified: reprojected to a local ENU frame, triangulated and re-encoded by GTEki.",
+   "modified": true,
+   "retrievedAt": "2026-10-20T10:44:13Z",
+   "sha256": {
+    "53394576_ubld_6697_op.gml": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09"
+   },
+   "datasetDate": "2023",
+   "notes": "creationDate 2024-03-15; LOD4.1; map information level 500 (scale class, not RMS). Free B1 passages only; fare-paid concourses are not modelled."
+  },
+  {
+   "id": "toshima-underground-guide-2022",
+   "title": "池袋駅地下空間案内図 (2022年1月版)",
+   "publisher": "豊島区",
+   "url": "https://www.city.toshima.lg.jp/405/1705251510.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "attribution": "豊島区「池袋駅地下空間案内図」(facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-20T10:52:00Z",
+   "datasetDate": "2022-01",
+   "notes": "Used only to identify which PLATEAU openings are which named passage, exit or gate. No image, layout or pictogram is reproduced.",
+   "usage": "facts-only"
+  },
+  {
+   "id": "tokyometro-ikebukuro-yardmap-2026-03",
+   "title": "東京メトロ 池袋駅構内立体図 (2026.3現在)",
+   "publisher": "東京地下鉄",
+   "url": "https://www.tokyometro.jp/station/ikebukuro/yardmap/index.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "attribution": "東京メトロ 池袋駅構内図 (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-20T10:49:00Z",
+   "datasetDate": "2026-03",
+   "notes": "Exit numbers and the public status of B1 passages were read from the official map. Nothing is reproduced.",
+   "usage": "facts-only"
+  }
+ ],
+ "floors": [
+  {
+   "id": "b1",
+   "operatorId": "public",
+   "sourceLabels": [
+    {
+     "operatorId": "public",
+     "label": "池袋駅_B1地下通路",
+     "sourceId": "plateau-ubld-13116"
+    },
+    {
+     "operatorId": "tokyometro",
+     "label": "B1F",
+     "sourceId": "tokyometro-ikebukuro-yardmap-2026-03"
+    }
+   ],
+   "ordinal": -1,
+   "intermediate": false,
+   "elevationM": null,
+   "elevationSource": "source-derived",
+   "renderElevationM": 27.9,
+   "_note": "One continuous public B1 passage level whose surveyed walking height varies 25.9-29.1 m TP; per-node z carries the real height.",
+   "displayNames": [
+    {
+     "lang": "ja",
+     "text": "地下1階 通路"
+    },
+    {
+     "lang": "en",
+     "text": "B1 passages"
+    }
+   ]
+  },
+  {
+   "id": "street",
+   "operatorId": "public",
+   "sourceLabels": [
+    {
+     "operatorId": "public",
+     "label": "地上",
+     "sourceId": "plateau-ubld-13116"
+    }
+   ],
+   "ordinal": 0,
+   "intermediate": false,
+   "elevationM": null,
+   "elevationSource": "unknown",
+   "renderElevationM": 32.5,
+   "displayNames": [
+    {
+     "lang": "ja",
+     "text": "地上"
+    },
+    {
+     "lang": "en",
+     "text": "street level"
+    }
+   ],
+   "_note": "No source names this level; it is the open ground where exit stairs end (PLATEAU closure surfaces at the stair tops)."
+  }
+ ],
+ "coverage": {
+  "summary": [
+   {
+    "lang": "en",
+    "text": "Routable (desk-verified against the PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown): slice 1, the B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43; slice 2, the passage along the JR east side to the South Passage east end and the south-east corridor to Exits 38/39/40/41; slice 3, the passage along the JR east side north to the North Passage (Exit 22, 東口（北）) and the passage between the Ikebukuro Shopping Park blocks to Exits 26/28/32/33; slice 4, the Central Passage west to the West Exit (西口) underground hall and its passages to Exits 10/11/15/17/18; slice 5, the South Passage west past the JR South Gate to the West Exit (South) hall (Exit 4, routed to the foot of its stairs, which are outside the survey) and the passage north to the West Exit hall. The rest of the PLATEAU B1 passage network is explorable but not routable yet. Fare-paid concourses and platforms are not modelled."
+   },
+   {
+    "lang": "ja",
+    "text": "ルート案内対象（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）：第1区画 中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43；第2区画 JR東側通路から南通路東端、南東通路の出口38・39・40・41；第3区画 JR東側通路から北通路（出口22・東口（北））、池袋ショッピングパーク間の通路の出口26・28・32・33；第4区画 中央通路（西）から西口地下広場、出口10・11・15・17・18；第5区画 南通路（西）・JR南改札から西口（南）地下広場（出口4は計測範囲外の階段の下まで案内）、西口地下広場への通路。その他のB1地下通路は探索のみ。改札内・ホームは未モデル化。"
+   }
+  ],
+  "areas": [
+   {
+    "id": "slice1",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "Central Passage (east) and east exits"
+     }
+    ],
+    "polygon": [
+     {
+      "x": -65,
+      "y": 95
+     },
+     {
+      "x": 45,
+      "y": 62
+     },
+     {
+      "x": 160,
+      "y": 60
+     },
+     {
+      "x": 160,
+      "y": 10
+     },
+     {
+      "x": 115,
+      "y": -40
+     },
+     {
+      "x": 80,
+      "y": -40
+     },
+     {
+      "x": 40,
+      "y": 15
+     },
+     {
+      "x": -65,
+      "y": 55
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "slice2",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "JR east-side passage, South Passage (east) and south-east exits"
+     },
+     {
+      "lang": "ja",
+      "text": "JR東側通路・南通路（東）・南東出口"
+     }
+    ],
+    "polygon": [
+     {
+      "x": 12,
+      "y": 28
+     },
+     {
+      "x": 40,
+      "y": 24
+     },
+     {
+      "x": 14,
+      "y": -40
+     },
+     {
+      "x": 18,
+      "y": -58
+     },
+     {
+      "x": 50,
+      "y": -58
+     },
+     {
+      "x": 50,
+      "y": -50
+     },
+     {
+      "x": 56,
+      "y": -50
+     },
+     {
+      "x": 56,
+      "y": -60
+     },
+     {
+      "x": 70,
+      "y": -60
+     },
+     {
+      "x": 70,
+      "y": -48
+     },
+     {
+      "x": 82,
+      "y": -36
+     },
+     {
+      "x": 88,
+      "y": -40
+     },
+     {
+      "x": 78,
+      "y": -62
+     },
+     {
+      "x": 80,
+      "y": -90
+     },
+     {
+      "x": 126,
+      "y": -122
+     },
+     {
+      "x": 140,
+      "y": -114
+     },
+     {
+      "x": 142,
+      "y": -128
+     },
+     {
+      "x": 180,
+      "y": -165
+     },
+     {
+      "x": 176,
+      "y": -184
+     },
+     {
+      "x": 166,
+      "y": -184
+     },
+     {
+      "x": 120,
+      "y": -150
+     },
+     {
+      "x": 66,
+      "y": -100
+     },
+     {
+      "x": 66,
+      "y": -74
+     },
+     {
+      "x": 10,
+      "y": -74
+     },
+     {
+      "x": -14,
+      "y": -60
+     },
+     {
+      "x": -14,
+      "y": -38
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "slice3",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "JR east-side passage (north), North Passage (east) and north-east exits"
+     },
+     {
+      "lang": "ja",
+      "text": "JR東側通路（北）・北通路（東）・北東出口"
+     }
+    ],
+    "polygon": [
+     {
+      "x": 36,
+      "y": 40
+     },
+     {
+      "x": 56,
+      "y": 40
+     },
+     {
+      "x": 66,
+      "y": 100
+     },
+     {
+      "x": 100,
+      "y": 104
+     },
+     {
+      "x": 98,
+      "y": 90
+     },
+     {
+      "x": 104,
+      "y": 88
+     },
+     {
+      "x": 112,
+      "y": 88
+     },
+     {
+      "x": 114,
+      "y": 98
+     },
+     {
+      "x": 124,
+      "y": 86
+     },
+     {
+      "x": 136,
+      "y": 86
+     },
+     {
+      "x": 140,
+      "y": 90
+     },
+     {
+      "x": 146,
+      "y": 70
+     },
+     {
+      "x": 155,
+      "y": 70
+     },
+     {
+      "x": 156,
+      "y": 88
+     },
+     {
+      "x": 162,
+      "y": 96
+     },
+     {
+      "x": 160,
+      "y": 120
+     },
+     {
+      "x": 152,
+      "y": 120
+     },
+     {
+      "x": 150,
+      "y": 104
+     },
+     {
+      "x": 112,
+      "y": 116
+     },
+     {
+      "x": 100,
+      "y": 120
+     },
+     {
+      "x": 64,
+      "y": 126
+     },
+     {
+      "x": 58,
+      "y": 120
+     },
+     {
+      "x": 44,
+      "y": 72
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "slice4",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "Central Passage (west), West Exit hall and Exits 15/17/18"
+     },
+     {
+      "lang": "ja",
+      "text": "中央通路（西）・西口地下広場・出口15・17・18"
+     }
+    ],
+    "polygon": [
+     {
+      "x": -56,
+      "y": 79
+     },
+     {
+      "x": -68,
+      "y": 83
+     },
+     {
+      "x": -82,
+      "y": 95
+     },
+     {
+      "x": -92,
+      "y": 100
+     },
+     {
+      "x": -104,
+      "y": 112
+     },
+     {
+      "x": -110,
+      "y": 117
+     },
+     {
+      "x": -124,
+      "y": 117
+     },
+     {
+      "x": -124,
+      "y": 125
+     },
+     {
+      "x": -117,
+      "y": 128
+     },
+     {
+      "x": -121,
+      "y": 134
+     },
+     {
+      "x": -121,
+      "y": 141
+     },
+     {
+      "x": -116,
+      "y": 149
+     },
+     {
+      "x": -114,
+      "y": 156
+     },
+     {
+      "x": -111,
+      "y": 166
+     },
+     {
+      "x": -104,
+      "y": 166
+     },
+     {
+      "x": -103,
+      "y": 160
+     },
+     {
+      "x": -92,
+      "y": 160
+     },
+     {
+      "x": -90,
+      "y": 153
+     },
+     {
+      "x": -96,
+      "y": 150
+     },
+     {
+      "x": -104,
+      "y": 148
+     },
+     {
+      "x": -104,
+      "y": 131
+     },
+     {
+      "x": -104,
+      "y": 124
+     },
+     {
+      "x": -100,
+      "y": 118
+     },
+     {
+      "x": -90,
+      "y": 108
+     },
+     {
+      "x": -80,
+      "y": 101
+     },
+     {
+      "x": -66,
+      "y": 90
+     },
+     {
+      "x": -56,
+      "y": 88
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "slice4-west",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "West Exit passages to Exits 10/11"
+     },
+     {
+      "lang": "ja",
+      "text": "西口地下通路・出口10・11"
+     }
+    ],
+    "polygon": [
+     {
+      "x": -124,
+      "y": 117
+     },
+     {
+      "x": -153,
+      "y": 121
+     },
+     {
+      "x": -158,
+      "y": 124
+     },
+     {
+      "x": -159,
+      "y": 150
+     },
+     {
+      "x": -159,
+      "y": 158
+     },
+     {
+      "x": -156,
+      "y": 166
+     },
+     {
+      "x": -153,
+      "y": 171
+     },
+     {
+      "x": -149,
+      "y": 183
+     },
+     {
+      "x": -142,
+      "y": 182
+     },
+     {
+      "x": -143,
+      "y": 172
+     },
+     {
+      "x": -108,
+      "y": 157
+     },
+     {
+      "x": -105,
+      "y": 152
+     },
+     {
+      "x": -110,
+      "y": 148
+     },
+     {
+      "x": -145,
+      "y": 160
+     },
+     {
+      "x": -148,
+      "y": 140
+     },
+     {
+      "x": -148,
+      "y": 131
+     },
+     {
+      "x": -122,
+      "y": 128
+     },
+     {
+      "x": -122,
+      "y": 125
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "slice5",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "South Passage (west), West Exit (South) hall and the passage north to the West Exit hall"
+     },
+     {
+      "lang": "ja",
+      "text": "南通路（西）・西口（南）地下広場・西口地下広場への通路"
+     }
+    ],
+    "polygon": [
+     {
+      "x": -2,
+      "y": -40
+     },
+     {
+      "x": -50,
+      "y": -40
+     },
+     {
+      "x": -60,
+      "y": -35.5
+     },
+     {
+      "x": -72,
+      "y": -29
+     },
+     {
+      "x": -88,
+      "y": -22.5
+     },
+     {
+      "x": -100,
+      "y": -14
+     },
+     {
+      "x": -116,
+      "y": -8
+     },
+     {
+      "x": -119,
+      "y": 8
+     },
+     {
+      "x": -121,
+      "y": 60
+     },
+     {
+      "x": -121,
+      "y": 118
+     },
+     {
+      "x": -124,
+      "y": 123
+     },
+     {
+      "x": -131,
+      "y": 123
+     },
+     {
+      "x": -134,
+      "y": 118
+     },
+     {
+      "x": -134,
+      "y": 60
+     },
+     {
+      "x": -133,
+      "y": 10
+     },
+     {
+      "x": -135,
+      "y": 0
+     },
+     {
+      "x": -137,
+      "y": -30
+     },
+     {
+      "x": -134,
+      "y": -38
+     },
+     {
+      "x": -121,
+      "y": -46
+     },
+     {
+      "x": -100,
+      "y": -45
+     },
+     {
+      "x": -70,
+      "y": -46
+     },
+     {
+      "x": -48,
+      "y": -50
+     },
+     {
+      "x": -20,
+      "y": -53
+     },
+     {
+      "x": -6,
+      "y": -50
+     },
+     {
+      "x": -2,
+      "y": -47
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "plateau-b1-rest",
+    "floorId": "b1",
+    "status": "visual_only",
+    "label": [
+     {
+      "lang": "en",
+      "text": "Other PLATEAU B1 passages (explore only)"
+     }
+    ],
+    "polygon": [
+     {
+      "x": -190,
+      "y": 200
+     },
+     {
+      "x": 180,
+      "y": 200
+     },
+     {
+      "x": 180,
+      "y": -200
+     },
+     {
+      "x": -190,
+      "y": -200
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "note": "Geometry present; graph and access facts not yet authored."
+   },
+   {
+    "id": "fare-areas",
+    "floorId": null,
+    "status": "excluded",
+    "label": [
+     {
+      "lang": "en",
+      "text": "Fare-paid concourses and platforms (JR, Tobu, Seibu, Tokyo Metro)"
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "note": "Not present in open geometry."
+   }
+  ],
+  "gaps": [
+   {
+    "id": "gap-hours",
+    "floorId": "b1",
+    "zone": "all passages and exits",
+    "missingFact": "Opening hours of the B1 passages and each exit stair",
+    "fieldWorkNeeded": "Official hours statement per exit, or dated on-site photographs of posted hours",
+    "sourceDate": null
+   },
+   {
+    "id": "gap-metro-tobu-gates",
+    "floorId": "b1",
+    "zone": "Central Passage, west and central parts",
+    "missingFact": "Exact openings of the Marunouchi west/central/east gates and the Tobu central gates 1/2 in the PLATEAU geometry (two floor-level openings near the projected Marunouchi gates look like stairwells)",
+    "fieldWorkNeeded": "On-site check of gate lines relative to columns; photos where permitted"
+   },
+   {
+    "id": "gap-step-free",
+    "floorId": "b1",
+    "zone": "east hall to east corridor (z 27.8 -> 26.9) and all exits",
+    "missingFact": "Step-free alternatives: elevators (EF_80 transport elements exist but their type, served levels and hours are unknown) and ramps",
+    "fieldWorkNeeded": "Verify lifts/escalators near Exits 34/35 against the Tokyo Metro accessibility page and on site"
+   },
+   {
+    "id": "gap-freshness",
+    "floorId": null,
+    "zone": "whole slice",
+    "missingFact": "Geometry is from a 2023 survey; construction changes since then are unknown",
+    "fieldWorkNeeded": "Dated walk-through comparing columns, exits and openings"
+   },
+   {
+    "id": "gap-south-west",
+    "floorId": "b1",
+    "zone": "South Passage, south side between the JR South Gate and the West Exit (South) hall",
+    "missingFact": "Which PLATEAU features are the Yurakucho Line South Passage East and West Gates: the gate machines on the official map sit inside surveyed floor with no gate-line opening, so their exact lines and the paid side are not established",
+    "fieldWorkNeeded": "on-site check of both Yurakucho gate lines against column positions"
+   },
+   {
+    "id": "gap-ne-north",
+    "floorId": "b1",
+    "zone": "North-east, north of the Ikebukuro Shopping Park passage",
+    "missingFact": "Exits 23, 24, 25, 29, 30 and 31: the official map shows two stairs (24, 25) where PLATEAU has one stair top, and 23/29/30/31 lie outside the surveyed geometry",
+    "fieldWorkNeeded": "On-site check of which stair is 24 and which is 25; a survey source for the passage north of it"
+   },
+   {
+    "id": "gap-west-stairs",
+    "floorId": "b1",
+    "zone": "West Exit area: Exits 8, 9, 14, 16, 19 and two unmatched stairwells",
+    "missingFact": "PLATEAU models only the lower flights of Exit 9 and of two stairwells near (-181, 126) and (-165, 113) (to TP ~30 m, street ~33 m). Exit 9's flight lies ~9 m from its map position; the (-181, 126) flight sits beside the wide stair to the Fukutoshin Line West Passage, and the (-165, 113) flight runs into the Hope Center block towards Exit 7's map position, so neither is matched. Exit 8's stairs lie at the west end of the passage, ~12 m beyond the surveyed floor. Exits 14, 16 and 19 (西口（中央）) have no stair in the survey. (Exit 13's lower flight matches its map position and is routed to its foot.)",
+    "fieldWorkNeeded": "a survey source for the upper flights and the passage west to Exit 8 (or a later PLATEAU release); on-site check of which stairwell is which exit",
+    "sourceDate": null
+   },
+   {
+    "id": "gap-west-corridor-exits",
+    "floorId": "b1",
+    "zone": "Passage north from the West Exit (South) hall; Hope Center block",
+    "missingFact": "Exits 5, 6a, 6b and 7: their stairs are outside the PLATEAU survey, and their feet cannot be matched one-to-one to PLATEAU openings (Exit 5 has two candidate openings 6 and 13 m from the map position, Exit 6b's nearest is 11 m away and raised; 6a and 7 lie inside the Hope Center block, whose interior is not surveyed)",
+    "fieldWorkNeeded": "on-site note of where each exit stair leaves the passage, counted against column positions",
+    "sourceDate": null
+   },
+   {
+    "id": "gap-tobu-jr-link",
+    "floorId": "b1",
+    "zone": "Passage along the west side of the JR block, between the South Passage and the Central Passage (west)",
+    "missingFact": "Whether this surveyed passage is public (outside fare gates) or a JR-Tobu transfer concourse: the official map shows gate machines along its JR side and Tobu Central Gate 1 at its north end",
+    "fieldWorkNeeded": "on-site check of both ends for gate lines and posted signage",
+    "sourceDate": null
+   }
+  ],
+  "freshness": "2023"
+ },
+ "spawnNodeIds": [
+  "c_mid",
+  "c_e2",
+  "n_h",
+  "sp_e",
+  "w_c",
+  "sw_h"
+ ],
+ "assets": [
+  {
+   "id": "b1",
+   "uri": "assets/ikebukuro_b1.glb",
+   "format": "glb",
+   "floorIds": [
+    "b1",
+    "street"
+   ],
+   "sourceIds": [
+    "plateau-ubld-13116"
+   ],
+   "role": "visual",
+   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform; collision comes from per-mesh gteki_role tags (floor/stairs_ramps walkable; wall/barriers/transport collide), not from the asset role, because verified exit routes pass through door and portal panels; runtime variant assets/ikebukuro_b1_lit.glb (listed in files, not a second asset, so loaders that load every asset never stack both): the same geometry + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap (assets/ikebukuro_b1_lightmap.webp / _2k.webp, gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json). scene/scene.ts loads the lit variant and falls back to this GLB",
+   "files": [
+    "assets/ikebukuro_b1.meta.json",
+    "assets/ikebukuro_b1_lit.glb",
+    "assets/ikebukuro_b1_lit.meta.json",
+    "assets/ikebukuro_b1_lightmap.webp",
+    "assets/ikebukuro_b1_lightmap_2k.webp"
+   ]
+  }
+ ]
+}
