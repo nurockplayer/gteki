@@ -51,6 +51,16 @@ function quad(a: XY, b: XY, bottom: number, top: number, inset = 0) {
   g.setIndex([0, 1, 2, 0, 2, 3]); g.computeVertexNormals();
   return g;
 }
+/**
+ * One horizontal glazing sheet (a single polygon, not a thin box): the glass material is translucent, double
+ * sided and non-depth-writing, so a 28 mm box showed its top and bottom faces stacked, a ghosted double
+ * exposure from the follow camera below. A lone double-sided sheet composites exactly once from either side.
+ */
+function glazingSheet(center: XY, u: XY, halfWidth: number, halfLength: number, z: number) {
+  const g = new THREE.PlaneGeometry(halfWidth * 2, halfLength * 2);
+  g.rotateX(-Math.PI / 2); g.rotateY(Math.atan2(u.x, -u.y)); g.translate(center.x, z, -center.y);
+  return g;
+}
 function beam(a: THREE.Vector3, b: THREE.Vector3, width: number, depth: number) {
   const d = b.clone().sub(a), g = new THREE.BoxGeometry(width, d.length(), depth);
   g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()));
@@ -127,8 +137,7 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
     ctx.fillStyle="#b6007a";ctx.fillRect(38,y+74,184,184);
     ctx.fillStyle="#ffffff";ctx.font='600 80px sans-serif';ctx.fillText("E27",53,y+193);
     const at=(along:number,across:number,z:number)=>new THREE.Vector3(e.center.x+e.u.x*along-e.u.y*across,z,-(e.center.y+e.u.y*along+e.u.x*across));
-    const glassRoof=new THREE.BoxGeometry(e.halfWidth*2,.028,e.halfLength*2);
-    glassRoof.rotateY(Math.atan2(e.u.x,-e.u.y));glassRoof.translate(e.center.x,3.08,-e.center.y);add("glass",glassRoof,mats.glass);
+    add("glass",glazingSheet(e.center,e.u,e.halfWidth,e.halfLength,3.08),mats.glass);
     for(const side of [-1,1]){
       add("steel",beam(at(-e.halfLength,side*e.halfWidth,2.99),at(e.halfLength,side*e.halfWidth,2.99),.075,.09),mats.steel);
       add("steel",beam(at(side*e.halfLength,-e.halfWidth,2.99),at(side*e.halfLength,e.halfWidth,2.99),.075,.09),mats.steel);
@@ -153,8 +162,7 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   // Roofed (E27 roof = 2) runs open to the street beyond the canopies: plain glazing just under canopy height.
   for(const r of surfaceRoofs(layout,opts.bundle,entrances)){
     const at=(along:number,across:number,z:number)=>new THREE.Vector3(r.center.x+r.u.x*along-r.u.y*across,z,-(r.center.y+r.u.y*along+r.u.x*across));
-    const roof=new THREE.BoxGeometry(r.halfWidth*2,.028,r.halfLength*2);
-    roof.rotateY(Math.atan2(r.u.x,-r.u.y));roof.translate(r.center.x,3.05,-r.center.y);add("glass",roof,mats.glass);
+    add("glass",glazingSheet(r.center,r.u,r.halfWidth,r.halfLength,3.05),mats.glass);
     for(const side of [-1,1]){
       add("steel",beam(at(-r.halfLength,side*r.halfWidth,2.97),at(r.halfLength,side*r.halfWidth,2.97),.075,.09),mats.steel);
       add("steel",beam(at(side*r.halfLength,-r.halfWidth,2.97),at(side*r.halfLength,r.halfWidth,2.97),.075,.09),mats.steel);
