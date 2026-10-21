@@ -9,6 +9,7 @@ import { buildSigns, type SignSpec } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { createAmbience } from "./ambience.ts";
+import { CONTEXT_GLB, contextVisibleAt, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
 import crowdLanes from "./crowd_lanes.json";
 import signage from "./signage.json";
 import walkBridges from "./walk_bridges.json";
@@ -392,6 +393,34 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // concourse) has no verified access: it stays visible, but their outline is fenced and labelled.
   root.add(fences.visual, fences.collider);
 
+  // Street-level context buildings (#39): visual only, so they never join walkable, colliders or cameraBlockers
+  // (and assembleCollision never sees them). The explorer has no context slot, so the gate is station-side: the
+  // group is in the scene only while the camera is at street height and the scene is fogged (see context.ts),
+  // which keeps underground draws exactly as before and keeps it out of the overview's framing box. Fails soft:
+  // no file, no layer.
+  const streetY = streetRenderY(ctx.bundle.floors);
+  let context: THREE_NS.Object3D | null = null;
+  let contextMaterial: THREE_NS.Material | null = null;
+  try {
+    const loaded = await ctx.loadGlb(CONTEXT_GLB[ctx.quality]);
+    contextMaterial = createContextMaterial(THREE);
+    dressContext(loaded.scene, contextMaterial);
+    loaded.scene.name = "street-context";
+    loaded.scene.visible = false;
+    context = loaded.scene;
+  } catch {
+    context = null;
+  }
+  // The camera is read from a mesh drawn every frame anyway (the floor), so the gate costs no draw call.
+  const probe = context ? (meshesByRole.get("floor")?.[0] ?? [...meshesByRole.values()].flat()[0] ?? null) : null;
+  const cameraTrack = probe ? trackCamera(probe) : null;
+  const setContext = (show: boolean) => {
+    if (!context) return;
+    if (show && context.parent !== root) root.add(context);
+    else if (!show && context.parent === root) root.remove(context);
+    context.visible = show;
+  };
+
   // Lightmap (baked by pipeline/blender_bake_lighting.py, TEXCOORD_1). Falls back to a hemisphere rig.
   let lightmap: THREE_NS.Texture | null = null;
   if (baked) {
@@ -448,9 +477,19 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     update: (dt, elapsed) => {
       crowd.update(dt, elapsed);
       ambience?.update({ nearby: crowd.nearby(), openness: 0.8 });
+      if (context && cameraTrack) {
+        const seen = cameraTrack.read();
+        setContext(seen !== null && contextVisibleAt(seen.y, streetY, seen.fogged));
+      }
     },
     dispose() {
       ambience?.dispose();
+      cameraTrack?.dispose();
+      if (context) {
+        setContext(false);
+        context.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
+        contextMaterial?.dispose();
+      }
       crowd.dispose();
       mats.dispose();
       signs.dispose();

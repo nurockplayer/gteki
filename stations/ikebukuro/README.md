@@ -234,6 +234,21 @@ Evidence stills:
   is the dense version, `pnpm test:heavy`). Negative controls: removing the longest panel, and removing
   every fence. Fences block the walker only; the graph, routing and gridnav are unchanged.
 
+## Street-level context (#39)
+
+`assets/ikebukuro_context_low.glb` (1 mesh, 10,812 triangles) and `_high.glb` (4 tiles, 119,919 triangles) are
+visual-only PLATEAU surface **buildings** around the exits, built by `tools/gis` (`gis context-glb ikebukuro`
+with `--kinds bldg`; commands and receipts are on the `street-context` asset in `station.json`). Every node is
+`gteki_role=context`, `ctx_bldg_*`, `NOT_FOR_ROUTING`: never walkable, never a collider, never a camera blocker, and
+`assembleCollision` never sees them. `scene/scene.ts` loads the file for `ctx.quality` (fails soft) with a cheap
+daylight material that takes the explorer's street fog, and keeps the group **out of the scene** unless the camera
+is at street height: renderer y within [street - 1 m, street + 25 m] (street = 32.5 m) and the scene is fogged
+(`scene/context.ts`, read from an `onBeforeRender` on the B1 floor mesh, so one frame late and no extra draw call).
+Underground and in overview (camera about 301 m up, no fog) the context costs nothing and does not change the
+overview framing. The 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成 credit is each building
+source's `attribution`, which the app's coverage dialog lists. **Roads (`tran`) are on HOLD**: the GSI approval
+scope (令7関公第296号) is unconfirmed, so no road geometry or `tran` source ships.
+
 ## Next
 
 1. Field visit with the [on-site checklist](docs/field-checklist.md).

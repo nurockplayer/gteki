@@ -117,9 +117,9 @@
    "crs": "EPSG:6697"
   },
   "frame": "ENU",
-  "datasetVersion": "ikebukuro-b1-slice5.4",
+  "datasetVersion": "ikebukuro-b1-slice5.5",
   "synthetic": false,
-  "generatedAt": "2026-10-20T15:00:00+00:00"
+  "generatedAt": "2026-10-21T16:54:54+00:00"
  },
  "sources": [
   {
@@ -171,6 +171,50 @@
    "datasetDate": "2026-03",
    "notes": "Exit numbers and the public status of B1 passages were read from the official map. Nothing is reproduced.",
    "usage": "facts-only"
+  },
+  {
+   "id": "plateau-13116-bldg-53394576",
+   "title": "PLATEAU 豊島区 2025 建築物モデル (bldg) 53394576 — street-level context buildings (visual only)",
+   "publisher": "国土交通省 Project PLATEAU",
+   "url": "https://www.mlit.go.jp/plateau/",
+   "downloadUrls": [
+    "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/bldg/53394576_bldg_6697_op.gml"
+   ],
+   "license": {
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+   "modified": true,
+   "retrievedAt": "2026-10-21T16:54:53Z",
+   "sha256": {
+    "53394576_bldg_6697_op.gml": "29009b87ac7c7bf07f2bc8862362629d7c11fb81240b392b2c975ff04f6f7873"
+   },
+   "datasetDate": "2025",
+   "notes": "Visual-only street-level context (#39); never geometry for routing, walking or collision. GIS rights gate for this layer is CONDITIONAL (CC BY 4.0, attribution required; 加工 is the modification notice). Catalog package year 2025; the per-theme survey year is not asserted. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. Textures are not shipped. The tran (road) layer from the same meshes is on HOLD (GSI approval scope unconfirmed) and is not part of this station."
+  },
+  {
+   "id": "plateau-13116-bldg-53394577",
+   "title": "PLATEAU 豊島区 2025 建築物モデル (bldg) 53394577 — street-level context buildings (visual only)",
+   "publisher": "国土交通省 Project PLATEAU",
+   "url": "https://www.mlit.go.jp/plateau/",
+   "downloadUrls": [
+    "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/bldg/53394577_bldg_6697_op.gml"
+   ],
+   "license": {
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+   "modified": true,
+   "retrievedAt": "2026-10-21T16:54:54Z",
+   "sha256": {
+    "53394577_bldg_6697_op.gml": "96b2c510ac44d955c0902612d0c702ee3594ca699993e0b187cbff86c2b82c37"
+   },
+   "datasetDate": "2025",
+   "notes": "Visual-only street-level context (#39); never geometry for routing, walking or collision. GIS rights gate for this layer is CONDITIONAL (CC BY 4.0, attribution required; 加工 is the modification notice). Catalog package year 2025; the per-theme survey year is not asserted. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. Textures are not shipped. The tran (road) layer from the same meshes is on HOLD (GSI approval scope unconfirmed) and is not part of this station."
   }
  ],
  "floors": [
@@ -1030,6 +1074,23 @@
     "assets/ikebukuro_b1_lit.meta.json",
     "assets/ikebukuro_b1_lightmap.webp",
     "assets/ikebukuro_b1_lightmap_2k.webp"
+   ]
+  },
+  {
+   "id": "street-context",
+   "uri": "assets/ikebukuro_context_low.glb",
+   "format": "glb",
+   "floorIds": [
+    "street"
+   ],
+   "sourceIds": [
+    "plateau-13116-bldg-53394576",
+    "plateau-13116-bldg-53394577"
+   ],
+   "role": "visual",
+   "derivation": "PLATEAU bldg LOD1 (low) / LOD2 (high), buildings only (roads on HOLD) -> tools/gis: `gis context-glb ikebukuro --variant low --merge kind --kinds bldg` (1 mesh ctx_bldg_all, 10,812 tris; receipt docs/gis/context/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-kind-bldg-b0f04191c8274060780e.json) and `gis context-glb ikebukuro --variant high --merge tiles:380 --kinds bldg` (assets/ikebukuro_context_high.glb, listed in files, not a second asset, so loaders that load every asset never stack both; receipt docs/gis/context/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-high-tiles380-bldg-f367036d78d5467cf792.json). Committed bytes equal the receipts: ikebukuro_context_low.glb sha256 293003f9eb1c681267fb4876271566673de02c7f50441e498419f42f35af86cc (593,688 B), ikebukuro_context_high.glb sha256 78c61a60063f313df25cb648cadc4bee70116908c86ba4a9c86e1b0d2ae97e2c (7,826,336 B). Station ENU frame, TP heights, whole features, no textures. Every node is gteki_role=context, named ctx_bldg_*, NOT_FOR_ROUTING, visual_only: never walkable, never a collider, never a camera blocker. scene/scene.ts loads the variant matching ctx.quality and shows it only when the camera is near street level",
+   "files": [
+    "assets/ikebukuro_context_high.glb"
    ]
   }
  ]
