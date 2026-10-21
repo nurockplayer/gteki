@@ -20,6 +20,8 @@
 //   exp=<EV>|blender      exposure = 2^EV (replaces the explorer's); "blender" = the layout's own exposure (-0.2 / -0.35)
 //   shadows=1             the explorer's own sun shadow (shadows.ts policy + followShadow frustum), focused on the camera's
 //                         look_at point as if the walker stood there; one explorer update runs before the first render
+//   shadowFloor=<y>       floor height (three Y) for the caster rule, which only lets geometry starting below floor + CAST_HEADROOM_M
+//                         cast (default 0, the layouts' ground; look_at is not a floor height)
 //   shadowR=<n>           shadow blur radius in PCF texels (default SHADOW_RADIUS);  shadowH=<m> frustum half-extent (default SHADOW_HALF_EXTENT_M)
 //   sun=blender           sun travels along Blender's vertical_hero direction;  sunI=<n> sun intensity
 //   hemi=<n>              hemisphere intensity override
@@ -250,7 +252,7 @@ function applyLook(box: THREE.Box3): void {
     // (Blender (x, y, z) -> three (x, z, -y)), then its own per-frame update once. A no-op on low quality.
     const focus = new THREE.Vector3(cam!.look_at[0]!, cam!.look_at[2]!, -cam!.look_at[1]!);
     const half = num("shadowH") ?? undefined;
-    const counts = ex.devShadows(ex.world, focus, half);
+    const counts = ex.devShadows(ex.world, focus, half, num("shadowFloor") ?? 0);
     ex.updateShadows();
     applied.shadows = { ...counts, ...ex.sceneInfo().shadows, radius: sun.shadow.radius, normalBias: sun.shadow.normalBias, mapSize: sun.shadow.mapSize.x, sunCastShadow: sun.castShadow, shadowMapEnabled: renderer.shadowMap.enabled };
   }

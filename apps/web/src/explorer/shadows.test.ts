@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_OVERVIEW_MAX_HALF_M, SHADOW_RADIUS, SHADOW_Y_PAD_M, applyStationShadows, meshShadowFlags, overviewHalfExtent, shadowYRange, shadowsActive } from "./shadows.ts";
+import { CAST_HEADROOM_M, SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_OVERVIEW_MAX_HALF_M, SHADOW_RADIUS, SHADOW_Y_PAD_M, applyStationShadows, meshShadowFlags, overviewHalfExtent, setCasters, shadowYRange, shadowsActive } from "./shadows.ts";
 
 const box = (mat: THREE.Material | THREE.Material[] = new THREE.MeshStandardMaterial(), at: [number, number, number] = [0, 0, 0]) => {
   const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat);
@@ -151,5 +151,58 @@ describe("fit helpers", () => {
     expect(overviewHalfExtent(b(100, 10, 100))).toBeGreaterThanOrEqual(0.5 * Math.hypot(100, 100));
     expect(overviewHalfExtent(b(4, 3, 4))).toBe(SHADOW_HALF_EXTENT_M);
     expect(overviewHalfExtent(b(5000, 10, 5000))).toBe(SHADOW_OVERVIEW_MAX_HALF_M);
+  });
+});
+
+describe("setCasters (only geometry starting below the walker's head casts)", () => {
+  /** A level: floor slab, a prop on it, a ceiling 3 m up (a thin double-sided plane), and the next level's slab above. */
+  const level = () => {
+    const prop = box(undefined, [0, 0.5, 0]);                                  // y 0 … 1
+    const gate = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 1), new THREE.MeshStandardMaterial()); // y -1 … 1
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(40, 40).rotateX(Math.PI / 2), new THREE.MeshStandardMaterial({ side: THREE.DoubleSide }));
+    ceiling.position.y = 3;
+    const slabUp = new THREE.Mesh(new THREE.BoxGeometry(40, 0.4, 40), new THREE.MeshStandardMaterial());
+    slabUp.position.y = 6.3;                                                   // y 6.1 … 6.5
+    const upperProp = box(undefined, [0, 6.8, 0]);                             // the level above: y 6.3 … 7.3
+    const r = apply(rootOf(prop, gate, ceiling, slabUp, upperProp));
+    return { prop, gate, ceiling, slabUp, upperProp, r };
+  };
+
+  it("keeps every policy-accepted mesh as a candidate with its world-box min Y", () => {
+    const { r } = level();
+    expect(r.candidates.map((c) => +c.minY.toFixed(2))).toEqual([0, -1, 3, 6.1, 6.3]);
+  });
+
+  it("lets a prop on the floor cast and not the ceiling 3 m above or the slab one level up", () => {
+    const { prop, gate, ceiling, slabUp, upperProp, r } = level();
+    expect(setCasters(r.candidates, 0)).toBe(2);
+    expect([prop.castShadow, gate.castShadow, ceiling.castShadow, slabUp.castShadow, upperProp.castShadow]).toEqual([true, true, false, false, false]);
+  });
+
+  it("uses the headroom as the cut: 2.2 m by default", () => {
+    const { ceiling, r } = level();
+    expect(CAST_HEADROOM_M).toBe(2.2);
+    setCasters(r.candidates, 0.9); // limit 3.1 > ceiling minY 3
+    expect(ceiling.castShadow).toBe(true);
+    setCasters(r.candidates, 0.7); // limit 2.9
+    expect(ceiling.castShadow).toBe(false);
+    expect(setCasters(r.candidates, 0, 10)).toBe(5);
+  });
+
+  it("flips with the walker's level: upstairs the lower level's ceiling and props cast (out of view), the upper level casts onto its own floor", () => {
+    const { prop, ceiling, slabUp, upperProp, r } = level();
+    setCasters(r.candidates, 6.3); // limit 8.5: everything starts below it
+    expect([prop.castShadow, ceiling.castShadow, slabUp.castShadow, upperProp.castShadow]).toEqual([true, true, true, true]);
+    setCasters(r.candidates, 0);
+    expect([ceiling.castShadow, slabUp.castShadow, upperProp.castShadow]).toEqual([false, false, false]);
+  });
+
+  it("never touches receiveShadow or a mesh outside the candidates", () => {
+    const { prop, r } = level();
+    const other = box();
+    other.castShadow = true;
+    setCasters(r.candidates, 100);
+    expect(prop.receiveShadow).toBe(true);
+    expect(other.castShadow).toBe(true);
   });
 });

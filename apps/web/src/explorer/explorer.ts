@@ -28,7 +28,7 @@ import { createAvatar, type AvatarRig } from "./avatar.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
-import { SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, overviewHalfExtent, shadowYRange } from "./shadows.ts";
+import { CAST_RETUNE_M, SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, overviewHalfExtent, setCasters, shadowYRange, type ShadowCandidate } from "./shadows.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
 import { Input } from "./input.ts";
 import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer, type Segment2 } from "./walker.ts";
@@ -49,11 +49,15 @@ interface ShadowFit {
   /** Walking half-extent, and the one the frustum holds now. */
   walkHalf: number;
   half: number;
+  /** Casting candidates (fixed at attach), how many cast now, and the floor Y that mask was computed at (NaN: never). */
+  candidates: ShadowCandidate[];
   casters: number;
+  castFloorY: number;
   receivers: number;
   fitted: "follow" | "overview" | null;
-  /** Pinned focus (QA harness) instead of the walker. */
+  /** Pinned focus and floor Y (QA harness) instead of the walker's position and feet. */
   focus: THREE.Vector3 | null;
+  floorY: number | null;
 }
 
 export interface ExplorerEvents {
@@ -282,7 +286,7 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environmentIntensity: number | null; exposure: number; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "overview" | null; texelM: number; halfExtent: number; casters: number; receivers: number } } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environmentIntensity: number | null; exposure: number; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "overview" | null; texelM: number; halfExtent: number; casters: number; candidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
@@ -292,7 +296,7 @@ export class Explorer {
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
       environmentIntensity: this.scene.environment ? this.scene.environmentIntensity : null, exposure: this.renderer.toneMappingExposure,
       street: { active: this.street.active, opacity: Math.round(this.street.opacity * 1000) / 1000 },
-      shadows: { following: this.shadowFit !== null, fit: this.shadowFit?.fitted ?? null, texelM: this.shadowFit?.fitted ? this.shadowOut.texelM : 0, halfExtent: this.shadowFit?.half ?? 0, casters: this.shadowFit?.casters ?? 0, receivers: this.shadowFit?.receivers ?? 0 },
+      shadows: { following: this.shadowFit !== null, fit: this.shadowFit?.fitted ?? null, texelM: this.shadowFit?.fitted ? this.shadowOut.texelM : 0, halfExtent: this.shadowFit?.half ?? 0, casters: this.shadowFit?.casters ?? 0, candidates: this.shadowFit?.candidates.length ?? 0, receivers: this.shadowFit?.receivers ?? 0 },
     };
   }
 
@@ -339,13 +343,13 @@ export class Explorer {
   /**
    * Sets cast/receive on the station's drawn meshes (shadows.ts) and, if any take part, starts the sun's shadow
    * following the walker over the station's floor-to-roof height. Once per attach; `updateShadows` does the per-frame fit.
-   * `focus` pins the frustum to a point instead of the walker (the QA harness has none).
+   * `focus` and `floorY` pin the frustum and the caster floor to a point instead of the walker (the QA harness has none).
    */
-  private attachShadows(root: THREE.Object3D, focus: THREE.Vector3 | null = null, halfExtentM = SHADOW_HALF_EXTENT_M): { casters: number; receivers: number } {
+  private attachShadows(root: THREE.Object3D, focus: THREE.Vector3 | null = null, halfExtentM = SHADOW_HALF_EXTENT_M, floorY: number | null = focus ? focus.y : null): { casters: number; receivers: number } {
     this.shadowFit = null;
     const r = applyStationShadows(root, this.quality, this.lighting);
     if (r.bounds.isEmpty()) return r;
-    this.shadowFit = { yRange: shadowYRange(r.bounds), centre: r.bounds.getCenter(new THREE.Vector3()), overviewHalf: overviewHalfExtent(r.bounds), casters: r.casters, receivers: r.receivers, fitted: null, walkHalf: halfExtentM, half: halfExtentM, focus };
+    this.shadowFit = { yRange: shadowYRange(r.bounds), centre: r.bounds.getCenter(new THREE.Vector3()), overviewHalf: overviewHalfExtent(r.bounds), candidates: r.candidates, casters: 0, castFloorY: NaN, receivers: r.receivers, fitted: null, walkHalf: halfExtentM, half: halfExtentM, focus, floorY };
     return r;
   }
 
@@ -353,8 +357,8 @@ export class Explorer {
    * QA harness only (apps/web/qa/look.ts): shadows for `root` outside any loaded station, framed on `focus`
    * in place of the walker. Same policy and frustum as a station; returns the cast/receive counts.
    */
-  devShadows(root: THREE.Object3D, focus: THREE.Vector3, halfExtentM = SHADOW_HALF_EXTENT_M): { casters: number; receivers: number } {
-    return this.attachShadows(root, focus.clone(), halfExtentM);
+  devShadows(root: THREE.Object3D, focus: THREE.Vector3, halfExtentM = SHADOW_HALF_EXTENT_M, floorY = focus.y): { casters: number; receivers: number } {
+    return this.attachShadows(root, focus.clone(), halfExtentM, floorY);
   }
 
   /**
@@ -364,6 +368,10 @@ export class Explorer {
   private updateShadows(): void {
     const f = this.shadowFit;
     if (!f || !this.sun) return;
+    // Only geometry starting below the walker's head casts (shadows.ts). Recomputed on a floor change, not per frame.
+    // The overview uses the walker's floor too, to stay consistent; its cutaway (OverviewLook) decides what is drawn anyway.
+    const floorY = f.floorY ?? this.pos.y; // pos is the feet
+    if (!(Math.abs(floorY - f.castFloorY) <= CAST_RETUNE_M)) { f.castFloorY = floorY; f.casters = setCasters(f.candidates, floorY); }
     if (this.mode === "overview" && !f.focus) {
       if (f.fitted === "overview") return;
       f.fitted = "overview";

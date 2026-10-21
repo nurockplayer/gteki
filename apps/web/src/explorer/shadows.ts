@@ -12,6 +12,14 @@ export const SHADOW_RADIUS = 3;
 export const SHADOW_NORMAL_BIAS = 0.02;
 /** Slack (m) added below the lowest and above the highest drawn mesh when fitting the frustum's depth range. */
 export const SHADOW_Y_PAD_M = 0.5;
+/**
+ * Only geometry that starts below the walker's head casts: a mesh whose lowest point is under feet + this (m).
+ * Ceilings, upper-level slabs and walls of the levels above sit higher, so a sun from above never darkens an
+ * interior that is lit by its own fixtures; props, walls and gates on the walker's floor cast onto it.
+ */
+export const CAST_HEADROOM_M = 2.2;
+/** The caster set is recomputed only when the walker's floor Y moves more than this (m): a level change, stairs or an escalator. */
+export const CAST_RETUNE_M = 0.5;
 /** Largest half-width (m) the overview fit may use; a station wider than this gets coarser shadows rather than none. */
 export const SHADOW_OVERVIEW_MAX_HALF_M = 300;
 
@@ -44,10 +52,18 @@ export function meshShadowFlags(mesh: THREE.Object3D): MeshShadowFlags {
   return { cast: drawn, receive: drawn && mats.every(isLit) };
 }
 
+/** A mesh the policy accepted as a caster, with the lowest Y of its world box. */
+export interface ShadowCandidate {
+  mesh: THREE.Mesh;
+  minY: number;
+}
+
 export interface StationShadows {
-  /** Meshes that now cast / receive. */
+  /** Meshes that now cast / receive. After applyStationShadows `casters` is every candidate; `setCasters` narrows it. */
   casters: number;
   receivers: number;
+  /** The casting candidates, fixed at attach. */
+  candidates: ShadowCandidate[];
   /** World box of those meshes (empty when there are none): its Y span is the frustum's depth range. */
   bounds: THREE.Box3;
 }
@@ -60,7 +76,7 @@ export interface StationShadows {
  * a `receiveShadow = true` the station set is always kept.
  */
 export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high", lighting: "default" | "scene"): StationShadows {
-  const out: StationShadows = { casters: 0, receivers: 0, bounds: new THREE.Box3() };
+  const out: StationShadows = { casters: 0, receivers: 0, candidates: [], bounds: new THREE.Box3() };
   if (!shadowsActive(quality, lighting)) return out;
   root.updateMatrixWorld(true);
   const box = new THREE.Box3();
@@ -73,12 +89,31 @@ export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high
       if (f.receive) m.receiveShadow = true;
       if (m.castShadow) out.casters++;
       if (m.receiveShadow) out.receivers++;
-      if ((m.castShadow || m.receiveShadow) && meshWorldBox(m, box)) out.bounds.union(box);
+      const hasBox = (m.castShadow || m.receiveShadow) && meshWorldBox(m, box);
+      if (hasBox) out.bounds.union(box);
+      if (m.castShadow) out.candidates.push({ mesh: m, minY: hasBox ? box.min.y : -Infinity });
     }
     for (const c of o.children) visit(c);
   };
   visit(root);
   return out;
+}
+
+/**
+ * Narrows the candidates to those that start below `floorY + headroom` (see CAST_HEADROOM_M) and sets each mesh's
+ * castShadow; returns how many cast. Allocation-free. A candidate on a level above the walker does not cast; one on a
+ * level below does (its ceiling is under the walker's feet, so it only shades the level out of view).
+ */
+export function setCasters(candidates: readonly ShadowCandidate[], floorY: number, headroom = CAST_HEADROOM_M): number {
+  const limit = floorY + headroom;
+  let n = 0;
+  for (let i = 0; i < candidates.length; i++) {
+    const c = candidates[i]!;
+    const on = c.minY < limit;
+    c.mesh.castShadow = on;
+    if (on) n++;
+  }
+  return n;
 }
 
 /** World box of one mesh from its geometry (or instance) box; false when it has none. */
