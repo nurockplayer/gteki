@@ -1,0 +1,143 @@
+GTEki
+Copyright 2026 GTEki contributors
+
+This repository mixes four kinds of material. Each path's licence is mapped in
+REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
+(2026-10-22).
+
+1. CODE (repository default) - Apache-2.0
+   Source code, scripts, configuration and documentation text are licensed under
+   the Apache License, Version 2.0. See LICENSE.
+   Copyright 2026 GTEki contributors.
+
+2. ORIGINAL ASSETS AND ART - CC BY 4.0
+   The Lane E procedural assets (Blender-built GLB files in assets/library/,
+   including the textures embedded in them, the manifests, the contact sheets
+   and renders in docs/assets/img/) and other original art made by this project
+   are licensed under Creative Commons Attribution 4.0 International
+   (CC-BY-4.0). Attribution line:
+
+     GTEki contributors, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+
+3. AI-GENERATED 2D IMAGES - CC0 1.0
+   The AI-generated poster images in assets/library/source/posters/ (and any
+   future AI-generated 2D image) are dedicated to the public domain under
+   CC0 1.0 Universal (CC0-1.0). They were generated with OpenAI image
+   generation through Codex; each is labelled AI-generated, keeps its
+   provenance sidecar (assets/library/source/posters/provenance.json), and shows
+   no real brands, logos or trademarks. Attribution is not required.
+
+4. THIRD-PARTY DATA AND DERIVED FILES - their own terms
+   DRAFT FOR GIS REVIEW: Lane D (GIS) owns the final entries and the path
+   mapping (GIS inventory for Issue #123, Parts A and B). Third-party material
+   is NOT relicensed under Apache-2.0, CC BY 4.0 or CC0 above. Facts-only and
+   no-release sources are never relicensed. The LICENSES/LicenseRef-*.txt files
+   are pointers (URL and recorded snapshot hash), not licence texts. Credits
+   below are the exact strings recorded in the repository.
+
+   4.1 MLIT Project PLATEAU (ubld, bldg, tran) - LicenseRef-PLATEAU-site-policy
+       Ships: Ikebukuro ubld 53394576 geometry (stations/ikebukuro/gteki/assets/,
+       scene JSON, graph coordinates). Pending #110: Ikebukuro bldg and tran
+       context GLBs. Pending #115: Shinjuku bldg (and tran) context.
+       Publisher: 国土交通省 Project PLATEAU (Ikebukuro source survey: 東京都 2023
+       LidarSLAM). Recorded licence: CC BY 4.0
+       (https://creativecommons.org/licenses/by/4.0/); the label is still being
+       confirmed (docs/gis/HANDOFF.md).
+       Credit (Ikebukuro, and the default):
+         出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+       Credit (Shinjuku context only, where building bases are flattened to
+       street level; Ikebukuro keeps real heights and must not carry it):
+         出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成（建物の基部を地表面の高さにそろえて表示）
+       English line in the station record and GLB metadata: "Contains PLATEAU
+       data (MLIT), CC BY 4.0. Modified: reprojected to a local ENU frame,
+       triangulated and re-encoded by GTEki."
+       Modification notice: 「加工」 above. Modifications: reprojected to a
+       station-local ENU frame, triangulated and re-encoded as glTF; GTEki
+       lighting fixtures and lightmap added (Ikebukuro ubld); context meshes
+       merged, textures not converted, roads as geometry only (no tran
+       attribute).
+       Project-made screenshots in docs/visual/evidence/ that show the Ikebukuro
+       ubld-derived geometry (all but crowd-lineup.jpg) are CC BY 4.0 (GTEki
+       contributors) and carry the Ikebukuro PLATEAU credit above, with the
+       PLATEAU terms as a second licence entry.
+       Roads (tran): Owner risk acceptance, not a licence finding
+       (docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md).
+       Not relicensed. Textures are not shipped. PLATEAU codelists, schemas,
+       metadata and catalog responses have rights "unknown" and are not shipped.
+
+   4.2 PLATEAU "related" layers (13104, 13116) - not shipped
+       Shelter (P20), park (P13) and emergency route (N10) are RESTRICTED (KSJ
+       old terms, non-commercial; LicenseRef-KSJ-old-terms-noncommercial) with
+       no release permission. The landmark layer is UNKNOWN (GSI origin). The
+       station, railway and border layers are cleared with conditions but do
+       not ship. Only inventories with literal values are committed; they are
+       scheduled for removal (#124). No credit entry is needed unless a layer
+       ships; shelter, park, emergency route and landmark never get one.
+
+   4.3 Hokonavi E27, Toei Oedo Line Shinjuku station
+       LicenseRef-Hokonavi-E27-Owner-override (a marker, not a licence)
+       Ships: stations/shinjuku/gteki/graph.json, pois.json,
+       stations/shinjuku/data/plan.json. Pending #61: more E27-derived data.
+       Publisher: 国土交通省（ほこナビDP）,
+       https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45
+       The package page says 公共データ利用規約（第1.0版）PDL 1.0
+       (https://www.digital.go.jp/resources/open_data/public_data_license_v1.0),
+       but the resource-level licences are null and the package PDL 1.0 is not
+       inherited. Basis: the Owner's override at the PR #16 merge, not a licence
+       finding; Owner answer Q11 = No and option (a) (#39 comment 6325100917):
+       resource licence unconfirmed. Not a rights PASS. Not relicensed.
+       Publication period ends 2027-03-12; reuse after that date is unconfirmed.
+       Credits (station record, as shipped):
+         「歩行空間ネットワークデータ（都営地下鉄大江戸線 新宿駅）」（国土交通省）を加工して作成
+         「構内地図データ（都営地下鉄大江戸線 新宿駅）」（国土交通省）を加工して作成
+       App credit line (stations/shinjuku/app/index.html):
+         出典: 国土交通省「歩行空間ネットワークデータ／構内地図データ（都営地下鉄大江戸線 新宿駅）」を加工して作成 (PDL 1.0)
+       The registry (tools/gis/sources/sources.yaml) carries a different wording,
+       「出典：国土交通省「ほこナビDP」／加工して作成」; the Owner has not chosen one.
+       The source's own drawings, symbols and styling do not ship.
+
+   4.4 Hokonavi Ikebukuro walking network (historic) - nothing ships
+       Only inventories are committed (LicenseRef-PDL-1.0-JP for the CSV records,
+       LicenseRef-MLIT-site-terms for the GeoJSON records). Credits as recorded:
+       CSV 「出典：国土交通省「ほこナビDP」／加工して作成」; GeoJSON
+       「出典：国土交通省／加工して作成」. Not used for the indoor graph.
+
+   4.5 MLIT walking-network specifications (2018-03, 2024-07) - LicenseRef-MLIT-site-terms
+       Literal code-label transcriptions in tools/gis/codebooks/. Recorded
+       basis: PDL 1.0 under https://www.mlit.go.jp/link.html; applicability
+       UNKNOWN. Credit: 「出典：国土交通省／加工して作成」. Not relicensed.
+
+   4.6 Tokyo Metropolitan Bureau of Transportation, S10 「駅構内のお店」
+       Nothing ships in station data; literal values sit in docs/gis/poi/ and
+       are marked "no licence grant" until #124 is applied (GIS PR #128).
+       Recorded licence: CC BY 4.0 at dataset level
+       (https://creativecommons.org/licenses/by/4.0/legalcode.ja). Owner credit
+       (#39 comment 6324726321): 出典：東京都交通局「駅構内のお店」. Plain names,
+       times and locations only; no logos, photos, trademarks or promotional
+       prose. The modification notice text is a placeholder in the records
+       (「GTEki が［実際の編集・加工内容］」): UNKNOWN until written.
+
+   4.7 Tokyo Bureau of Urban Development, S03 「新宿駅周辺の施設情報等」
+       Nothing ships in station data; same status as 4.6. Recorded licence: CC BY
+       4.0 at dataset level, for the geometry and factual-fields subset only.
+       Owner credit: 出典：東京都都市整備局「新宿駅周辺の施設情報等」.
+       Promotional prose, linked content and the reference-PDF illustration are
+       UNKNOWN and excluded. Modification notice: placeholder, UNKNOWN.
+
+   4.8 GSI (国土地理院) items - LicenseRef-GSI-terms
+       Two Survey Calculation Site bl2xy control responses
+       (tools/gis/test/fixtures/gsi-bl2xy-controls.json; also quoted in
+       docs/gis/crs/*.md). No licence or approved wording is recorded: do not
+       invent one. If the PLATEAU border layer ever ships, keep 「測量法に基づく国土地理院長承認（複製）R 6JHf 503」.
+
+   4.9 Facts-only sources - LicenseRef-facts-only-no-licence
+       豊島区「池袋駅地下空間案内図」 and 東京地下鉄 池袋駅構内図: facts (exit
+       numbers, gate names, which passage is public) in GTEki's own words in the
+       Ikebukuro graph and POIs. No licence exists to relicense; no image,
+       layout, tracing, pictogram or logo is copied. Credit as recorded:
+       「豊島区「池袋駅地下空間案内図」(facts only; not reproduced)」 and
+       「東京メトロ 池袋駅構内図 (facts only; not reproduced)」.
+
+   4.10 OpenStreetMap - nothing committed or shipped
+       Cross-check only. No ODbL entry. If OSM-derived data is ever committed,
+       an ODbL entry and a share-alike assessment are required first.

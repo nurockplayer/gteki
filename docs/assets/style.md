@@ -199,7 +199,8 @@ Checklist for every piece in a batch PR:
 
 **AI-generated images** (Owner rule, [#94](https://github.com/nurockplayer/gteki/issues/94)):
 - **Where:** only where procedural synthesis is weak, such as poster and ad-lightbox art, or a concept board.
-- **Provenance:** each image has a provenance sidecar, as the existing posters do (`assets/library/source/posters/provenance.json`).
+- **Provenance:** each image has a provenance sidecar, as the existing posters do (`assets/library/source/posters/provenance.json`). Each sidecar entry carries the prompt, generator, date, size and SHA-256, plus the rights fields `license_spdx` (`CC0-1.0`), `ai_generated` (`true`) and `brands` (`none (fictional only)`).
+- **Licence:** AI-generated 2D images are CC0 1.0 (Owner decision, Issue #123). Label them AI-generated in the sidecar, and never show a real brand, logo or trademark. New images are mapped to CC0-1.0 in `REUSE.toml`.
 - **Brands:** fictional only.
 - **Trial first:** the Owner sees a style batch of about 10 images before any mass run.
 - **Not for:** never for geometry, and never for anything that imitates a real operator.

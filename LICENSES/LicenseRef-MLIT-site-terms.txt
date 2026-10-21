@@ -1,0 +1,14 @@
+国土交通省 (MLIT) site terms
+
+URL: https://www.mlit.go.jp/link.html
+Snapshot SHA-256: UNKNOWN (no snapshot hash recorded for this URL in the repo;
+  check docs/gis/acquisitions/mlit-walk-network-spec-2018-03.json)
+
+Recorded as the licence URL for the Ikebukuro Hokonavi GeoJSON and the MLIT
+walking-network specifications, with "PDL 1.0" as the stated basis
+(tools/gis/sources/sources.yaml). Applicability is UNKNOWN. Stands for the
+code-table labels in tools/gis/codebooks/. Not relicensed.
+
+Pointer only: terms as published by the licensor. GTEki does not author or
+paraphrase the official wording. Source of the URL and hash: GIS (Lane D)
+inventory for Issue #123 and docs/gis/acquisitions/plateau-related-provenance.json.

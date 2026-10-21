@@ -1,0 +1,18 @@
+国土地理院 (GSI) site terms and 測量法 sections 29/30 approval regime
+
+URLs:
+  https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html
+    SHA-256 5388d2854a05f3e7b41cb980ecfb2de75b315de68e0d9c94b9334c11e580739e (id "gsi-terms")
+  https://www.gsi.go.jp/LAW/2930-index.html
+    SHA-256 5888fbd6094d30574d056bfa26827cd8e11391a382a6a2f083a572fa15b08722 (id "gsi-survey")
+  https://www.gsi.go.jp/LAW/2930-qa.html
+    SHA-256 325949a4c9053085311afd402b14a1d17ec27da093ff91dfca4d4362b99ae12b (id "gsi-qa")
+  (all in docs/gis/acquisitions/plateau-related-provenance.json)
+
+Stands for GSI-origin content: the Survey Calculation Site bl2xy control
+values in tools/gis/test/fixtures/gsi-bl2xy-controls.json. No licence is
+recorded for those values. Not relicensed.
+
+Pointer only: terms as published by the licensor. GTEki does not author or
+paraphrase the official wording. Source of the URL and hash: GIS (Lane D)
+inventory for Issue #123 and docs/gis/acquisitions/plateau-related-provenance.json.
