@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { setTimeout } from "node:timers/promises";
 import { promisify } from "node:util";
+import { blockingContainers, parseIgnoreList } from "./box-idle.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const name = `gteki-box-${randomUUID().replaceAll("-", "").slice(0, 12)}`;
@@ -35,6 +36,25 @@ cd /w
 pnpm install --frozen-lockfile
 exec pnpm exec vitest run --mode heavy --maxWorkers=1 --passWithNoTests "$@"
 `;
+
+// Best effort and never throws: the test result's exit code always wins.
+// OrbStack's VM keeps freed guest memory, so only stopping it gives RAM back.
+async function stopIdleVm() {
+  if (process.env.GTEKI_BOX_STOP_VM === "0") return;
+  try {
+    const { stdout } = await docker(["ps", "--format", "{{.Names}}"]);
+    const running = stdout.split("\n").map((line) => line.trim()).filter(Boolean);
+    const blocking = blockingContainers(running, parseIgnoreList(process.env.GTEKI_BOX_IDLE_IGNORE));
+    if (blocking.length) {
+      console.log(`test:heavy:box: other containers running (${blocking.join(", ")}); leaving VM up`);
+      return;
+    }
+    console.log("test:heavy:box: VM idle, stopping OrbStack to release memory");
+    await docker(["run", "--rm", "--privileged", "--memory", "32m", "alpine", "sh", "-c",
+      "sync; echo 3 > /proc/sys/vm/drop_caches"]).catch(() => {});
+    await promisify(execFile)("orbctl", ["stop"]).catch(() => {}); // absent on plain Docker/Linux CI
+  } catch {}
+}
 
 async function main() {
   const info = spawnSync("docker", ["info"], { encoding: "utf8" });
@@ -127,6 +147,8 @@ async function main() {
       if (id) console.error(`test:heavy:box: container cleanup failed: ${error.stderr?.trim() || error.message}`);
     }
     for (const [signal, handler] of handlers) process.off(signal, handler);
+    // Handlers are gone, so a further signal terminates the process at once.
+    await stopIdleVm();
   }
   return interrupted ? signals[interrupted] : code;
 }
