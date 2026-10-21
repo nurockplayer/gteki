@@ -1,16 +1,15 @@
-// "Access unverified" fences from scene/access_fences.json (pipeline/build_access.py). They close
-// the ends of surveyed passages that would link routable areas by a way the graph never verified,
-// so free walking can't present them as public shortcuts. Collision plus a label; no route data.
+// "Access unverified" fences from scene/access_fences.json (pipeline/build_access.py). They run along
+// the outline of the routable areas, so free walking stays on floor whose access is verified. Invisible
+// collision all round, plus a labelled panel where floor carries on outside. No route data.
 import type * as THREE_NS from "three";
 import { FONT } from "./signs.ts";
 
-export interface FenceSpec {
-  /** Ends in ENU x, y (m). */
-  a: number[];
-  b: number[];
-  /** Bottom and top of the collision panel (ENU z, m). */
-  z0: number;
-  z1: number;
+export interface AccessFences {
+  label: { ja: string; en: string };
+  /** Collision panels: ends in ENU x, y (m), bottom and top in ENU z (m). */
+  fences: { a: number[]; b: number[]; z0: number; z1: number }[];
+  /** Labelled stretches where floor carries on outside: ends in ENU x, y, floor height z (m). */
+  marks: { a: number[]; b: number[]; z: number }[];
 }
 
 const TILE_W = 2.4; // m of fence per label repeat
@@ -52,28 +51,24 @@ function paintLabel(label: { ja: string; en: string }): HTMLCanvasElement {
 
 export function buildAccessFences(
   THREE: typeof THREE_NS,
-  fences: FenceSpec[],
-  label: { ja: string; en: string },
+  data: AccessFences,
   toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3,
 ) {
   const vis: number[] = [], uv: number[] = [], col: number[] = [];
-  for (const f of fences) {
-    const [ax, ay] = f.a as [number, number], [bx, by] = f.b as [number, number];
-    const u = Math.hypot(bx - ax, by - ay) / TILE_W;
-    const top = f.z0 + 0.05 + PANEL_H;
-    const quad = (out: number[], z0: number, z1: number, flip = false) => {
-      const [p, q] = flip ? [[bx, by], [ax, ay]] : [[ax, ay], [bx, by]];
-      const v = [toRenderer(p[0]!, p[1]!, z0), toRenderer(q[0]!, q[1]!, z0), toRenderer(q[0]!, q[1]!, z1), toRenderer(p[0]!, p[1]!, z1)];
-      for (const k of [0, 1, 2, 0, 2, 3]) out.push(v[k]!.x, v[k]!.y, v[k]!.z);
-    };
+  const quad = (out: number[], a: number[], b: number[], z0: number, z1: number) => {
+    const v = [toRenderer(a[0]!, a[1]!, z0), toRenderer(b[0]!, b[1]!, z0), toRenderer(b[0]!, b[1]!, z1), toRenderer(a[0]!, a[1]!, z1)];
+    for (const k of [0, 1, 2, 0, 2, 3]) out.push(v[k]!.x, v[k]!.y, v[k]!.z);
+  };
+  for (const f of data.fences) quad(col, f.a, f.b, f.z0, f.z1);
+  for (const m of data.marks) {
+    const u = Math.hypot(m.b[0]! - m.a[0]!, m.b[1]! - m.a[1]!) / TILE_W;
     // One single-sided face per side, each with its own UVs, so the label never reads mirrored.
-    for (const flip of [false, true]) {
-      quad(vis, f.z0 + 0.05, top, flip);
+    for (const [a, b] of [[m.a, m.b], [m.b, m.a]] as const) {
+      quad(vis, a, b, m.z + 0.05, m.z + 0.05 + PANEL_H);
       uv.push(0, 0, u, 0, u, 1, 0, 0, u, 1, 0, 1);
     }
-    quad(col, f.z0, f.z1);
   }
-  const tex = new THREE.CanvasTexture(paintLabel(label));
+  const tex = new THREE.CanvasTexture(paintLabel(data.label));
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.wrapS = THREE.RepeatWrapping;
   tex.anisotropy = 4;

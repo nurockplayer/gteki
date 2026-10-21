@@ -5,7 +5,7 @@ import type * as THREE_NS from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { createMaterials } from "./materials.ts";
 import { buildSigns, type SignSpec } from "./signs.ts";
-import { buildAccessFences, type FenceSpec } from "./fences.ts";
+import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { createAmbience } from "./ambience.ts";
 import crowdLanes from "./crowd_lanes.json";
@@ -307,10 +307,9 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     walkable.push(bridges);
   }
 
-  // Surveyed passages that would link routable areas by an unverified way (e.g. the JR-Tobu passage,
-  // possibly a fare-paid transfer concourse) are fenced off: visible, labelled, not walkable.
-  const fenceData = accessFences as { label: { ja: string; en: string }; fences: FenceSpec[] };
-  const fences = buildAccessFences(THREE, fenceData.fences, fenceData.label, toRenderer);
+  // Surveyed floor outside the routable areas (e.g. the JR-Tobu passage, possibly a fare-paid transfer
+  // concourse) has no verified access: it stays visible, but their outline is fenced and labelled.
+  const fences = buildAccessFences(THREE, accessFences as AccessFences, toRenderer);
   root.add(fences.visual, fences.collider);
   colliders.push(fences.collider);
 

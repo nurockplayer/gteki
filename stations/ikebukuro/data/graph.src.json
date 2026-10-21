@@ -769,10 +769,10 @@
    "kind": "exit",
    "floor": "street",
    "xy": [
-    82.5,
-    44.5
+    83.0,
+    47.0
    ],
-   "zHint": 31.15
+   "zHint": 32.27
   },
   {
    "id": "x34",
@@ -780,59 +780,59 @@
    "floor": "street",
    "xy": [
     139.5,
-    53.0
+    53.5
    ],
-   "zHint": 31.7
+   "zHint": 31.89
   },
   {
    "id": "x35",
    "kind": "exit",
    "floor": "street",
    "xy": [
-    152.0,
-    19.0
+    153.5,
+    18.0
    ],
-   "zHint": 30.4
+   "zHint": 31.27
   },
   {
-   "id": "x36",
-   "kind": "exit",
-   "floor": "street",
+   "id": "x36f",
+   "kind": "stair_end",
+   "floor": "b1",
    "xy": [
     61.5,
-    23.5
+    26.0
    ],
-   "zHint": 29.7
+   "zHint": 28.49
   },
   {
    "id": "x37",
    "kind": "exit",
    "floor": "street",
    "xy": [
-    37.5,
-    19.5
+    38.0,
+    19.0
    ],
-   "zHint": 32.0
+   "zHint": 32.35
   },
   {
    "id": "x42",
    "kind": "exit",
    "floor": "street",
    "xy": [
-    91.5,
-    -29.5
+    91.0,
+    -30.5
    ],
-   "zHint": 31.47
+   "zHint": 31.97
   },
   {
    "id": "x43",
    "kind": "exit",
    "floor": "street",
    "xy": [
-    107.5,
-    -9.0
+    108.5,
+    -7.5
    ],
-   "zHint": 30.96
+   "zHint": 31.79
   },
   {
    "id": "sp_j",
@@ -1065,7 +1065,7 @@
   },
   {
    "from": "c_e2",
-   "to": "x36",
+   "to": "x36f",
    "access": "af-east-exits"
   },
   {
@@ -1787,14 +1787,22 @@
    "names": [
     {
      "lang": "ja",
+     "text": "36番出口（階段下・B1）"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 36 (stair foot, B1)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
      "text": "36番出口"
     },
     {
      "lang": "en",
      "text": "Exit 36"
-    }
-   ],
-   "aliases": [
+    },
     {
      "lang": "ja",
      "text": "出口36"
@@ -1816,10 +1824,10 @@
      "text": "36號出口"
     }
    ],
-   "floorId": "street",
+   "floorId": "b1",
    "displayPosition": null,
    "connectorNodeIds": [
-    "x36"
+    "x36f"
    ],
    "paid": false,
    "evidence": {
@@ -1828,8 +1836,8 @@
      "tokyometro-ikebukuro-yardmap-2026-03",
      "plateau-ubld-13116"
     ],
-    "method": "exit number from official maps; location = PLATEAU stair-top closure",
-    "checkedDate": "2026-10-20"
+    "method": "exit number from official maps; connector = B1 foot of the exit stairs; PLATEAU surveys only their lower flight (to TP 29.7 m, ending at a vertical closure)",
+    "checkedDate": "2026-10-21"
    }
   },
   {

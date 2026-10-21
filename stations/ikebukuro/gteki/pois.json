@@ -424,14 +424,22 @@
    "names": [
     {
      "lang": "ja",
+     "text": "36番出口（階段下・B1）"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 36 (stair foot, B1)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
      "text": "36番出口"
     },
     {
      "lang": "en",
      "text": "Exit 36"
-    }
-   ],
-   "aliases": [
+    },
     {
      "lang": "ja",
      "text": "出口36"
@@ -453,10 +461,10 @@
      "text": "36號出口"
     }
    ],
-   "floorId": "street",
+   "floorId": "b1",
    "displayPosition": null,
    "connectorNodeIds": [
-    "x36"
+    "x36f"
    ],
    "paid": false,
    "evidence": {
@@ -465,8 +473,8 @@
      "tokyometro-ikebukuro-yardmap-2026-03",
      "plateau-ubld-13116"
     ],
-    "method": "exit number from official maps; location = PLATEAU stair-top closure",
-    "checkedDate": "2026-10-20"
+    "method": "exit number from official maps; connector = B1 foot of the exit stairs; PLATEAU surveys only their lower flight (to TP 29.7 m, ending at a vertical closure)",
+    "checkedDate": "2026-10-21"
    }
   },
   {

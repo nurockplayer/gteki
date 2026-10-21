@@ -62,7 +62,7 @@ Tools: Homebrew `blender` (5.2 LTS), `webp`, `imagemagick`, `godot` (optional); 
 bash pipeline/fetch_sources.sh    # PLATEAU GML + metadata (sha256-checked) into data-cache/
 pnpm build:data                   # GML -> ENU JSON -> GLB -> verified graph -> signage -> walk bridges -> access fences
 pnpm bake:lighting                # 4096 Cycles lightmap (Metal GPU ~5 min; DEVICE=CPU works) -> WebP
-pnpm check:access                 # walker flood: every unknown-access link stays closed
+pnpm check:access                 # outline has no fence gap; walker flood never leaves routable floor
 ```
 
 `build_station.py` exits non-zero if any edge fails geometry validation or if a POI points at a
@@ -91,7 +91,7 @@ missing node. An edge is `verified` only when **both** of these hold:
 |---|---|---|
 | **G0** evidence / rights | **PASS (desk)**, **HOLD (field)** | [G0 audit](docs/G0-source-audit.md); rights chain above. Owner decision 2026-10-21: facts and works are separated, so facts from the reference-only maps may be published; JR East maps were traced and not used. Field visit pending ([survey brief](docs/coverage-gaps.md)). |
 | **G1** geometry | **PASS** for slices 1–5 | Real-scale PLATEAU geometry, identity transform, z = TP height. Walker stays on floor, climbs Exit 35 stairs (TP 27.0 → 30.1 m), is blocked by walls and by openings into unmodelled space. No verified edge crosses a wall or opening at 1 m. Slice 2 follows the surveyed level changes: South Passage TP 27.6 → 29.1 m (up) → 25.9 m (down), with exit stairs to TP 32.2–32.6 m. Slice 3: North Passage TP 28.5 m, down to TP 26.2 m between the shopping-park blocks, U-shaped Exit 28 stair via a TP 29.0 m landing. Slice 4: West Exit hall TP 27.9 m, exit stairs to TP 33.15 m; Exit 18 is a three-flight stair (landings TP 29.1 and 30.5 m) whose top flight passes over the bottom one. Sloped wall faces (stair side walls) are split into ≤0.5 m pieces with their own height band, so a flight passing under another is not falsely blocked. Slice 5: South Passage west and West Exit (South) hall TP 27.6 m, rising to TP 27.9 m along the passage north. Godot 4.7 headless import keeps roles and UV2 (`pipeline/godot_probe.gd`). Playability sweep: the preview walker, steered only by keyboard input, walks every verified edge in both directions (126/126 pass). Hairline cracks between adjacent PLATEAU floor polygons, which had stalled it on the Exit 18 stair landing, are bridged by invisible walking strips (`pipeline/build_walkfix.py`). |
-| **G2** routing | **PASS (desk)** | 63/63 edges verified, 1738 m. Shared-core `parseStationFiles` returns ok; the only warnings are 20 deliberately search-only POIs (5 Metro/Tobu gates and 15 exit numbers on the official maps that are not yet routable, so a search for them says so instead of finding nothing). From JR Central Gate 2: Exit 35 = 197 m, Exit 38 = 242 m, Exit 41 = 291 m, Exit 40 = 369 m, Exit 39 = 425 m, Exit 22 = 173 m, Exit 26 = 223 m, Exit 28 = 244 m, Exit 33 = 269 m, Exit 32 = 278 m, Exit 17 = 166 m, Exit 15 = 169 m, Exit 18 = 176 m, Exit 10 = 211 m, Exit 11 = 212 m, JR South Gate = 234 m, Exit 4 (stair foot) = 287 m, Exit 13 (stair foot) = 159 m. Junction nodes sit at real decision points (e.g. just outside each JR gate), so narration reads "Go straight ~7 m / Turn left…" ([explorer](docs/evidence/explorer-route-jrc2-exit35.jpg)). Negative case: the step-free profile fails safely (`no_path`). |
+| **G2** routing | **PASS (desk)** | 63/63 edges verified, 1744 m. Shared-core `parseStationFiles` returns ok; the only warnings are 20 deliberately search-only POIs (5 Metro/Tobu gates and 15 exit numbers on the official maps that are not yet routable, so a search for them says so instead of finding nothing). From JR Central Gate 2: Exit 35 = 199 m, Exit 38 = 242 m, Exit 41 = 291 m, Exit 40 = 369 m, Exit 39 = 425 m, Exit 22 = 173 m, Exit 26 = 223 m, Exit 28 = 244 m, Exit 33 = 269 m, Exit 32 = 278 m, Exit 17 = 166 m, Exit 15 = 169 m, Exit 18 = 176 m, Exit 10 = 211 m, Exit 11 = 212 m, JR South Gate = 234 m, Exit 4 (stair foot) = 287 m, Exit 13 (stair foot) = 159 m. Junction nodes sit at real decision points (e.g. just outside each JR gate), so narration reads "Go straight ~7 m / Turn left…" ([explorer](docs/evidence/explorer-route-jrc2-exit35.jpg)). Negative case: the step-free profile fails safely (`no_path`). |
 | **G3** quality (L2) | **GAP**: candidate, not yet claimed | See "G3 detail" below. |
 | **G4** delivery | **PASS (Owner, 2026-10-21)** | Public release cleared ("ship directly") once the rights check, deployment isolation, Codex review and integration regression pass. The UI states that the data is desk-verified, not field-verified, and that hours are unknown. |
 
@@ -171,21 +171,27 @@ Evidence stills:
 - **Single risers** modelled as two floor levels (e.g. a 0.19 m step between landings on the
   Exit 39 stair) are passable on stair edges only, so walk-only and step-free routing stay
   strict.
-- **Exits whose stairs are outside the survey** (Exit 4; for Exit 13 only the lower flight is surveyed) are routed to the foot of the stairs:
+- **An exit node is the top of its surveyed stairs**, under the stairwell's street-level closure;
+  `build_station.py` and `scene/access.test.ts` fail if surveyed treads rise above an exit node or
+  no closure is just overhead.
+- **Exits whose stairs are outside the survey** (Exit 4; for Exits 13 and 36 only the lower flight is surveyed) are routed to the foot of the stairs:
   the connector is a `stair_end` node on surveyed B1 floor at the PLATEAU wall opening the
   official map places the exit at. The climb itself is not modelled or claimed, and the opening
   renders as haze.
-- **Surveyed floor whose access is unknown** stays visible but cannot be walked through where
-  it would link two routable areas by a shortcut (more than 20 m shorter than the verified way
-  round): the JR–Tobu passage (`gap-tobu-jr-link`) and the passage running west from slice 3 to
-  the West Exit area, whose graph is not yet authored. `pipeline/build_access.py` finds such
-  links on the walkable grid, places fences on a minimum cut near each mouth, carries their ends
-  on to a wall, a floor edge or a routable area, and fails the build if a fence comes within
-  0.75 m of a verified edge or a link is still open on that grid; `pnpm check:access` then floods
-  the same areas with the explorer's own walker rules and fails on any leak. Fences block the
-  explorer's walker only; the graph, routing and gridnav are unchanged. Dead ends of unknown
-  access (e.g. the Yurakucho gate area, `gap-south-west`) stay explorable, since they lead
-  nowhere.
+- **Free walking stays on verified floor.** Surveyed floor outside the routable areas, such as
+  the JR–Tobu passage (`gap-tobu-jr-link`), the Yurakucho gate area (`gap-south-west`) or the
+  passage west from slice 3, stays visible but cannot be entered. `pipeline/build_access.py`
+  fences the whole outline of the routable areas wherever surveyed floor lies within 0.6 m of
+  it: invisible full-height colliders that overlap at their ends, with a 「通行可否 未確認」/
+  "Access unverified" panel where floor carries on outside. It fails if a fence comes within
+  0.35 m of a verified edge (except within 0.6 m of a dead end such as a ticket gate on its gate
+  line). `scene/access.test.ts` (in `pnpm test`) checks two things against the lit GLB's floor.
+  The outline: wherever floor lies next to it, panels holding both of the walker's collision
+  rays cover it as an exact interval union, so a gap of any width fails (negative controls: a
+  1 cm cut, a short panel). The walker: a lattice flood from every graph node with the
+  explorer's own rules, keeping each floor level separate, never reaches floor outside the
+  routable areas (negative control: no fences). `pnpm check:access` runs both, the flood at
+  0.1 m. Fences block the walker only; the graph, routing and gridnav are unchanged.
 
 ## Next
 

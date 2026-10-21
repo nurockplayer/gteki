@@ -18,7 +18,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from floorquery import Surfaces  # noqa: E402
-from gridnav import RES, Grid  # noqa: E402
+from gridnav import RES, Grid, _seg_dist  # noqa: E402
 
 ROOT = os.path.dirname(HERE)
 SRC = os.path.join(ROOT, "data", "graph.src.json")
@@ -141,6 +141,41 @@ def _in_poly(x, y, poly):
     return inside
 
 
+def closures(enu):
+    """Near-horizontal PLATEAU closure surfaces (stairwell tops at street level): (z, outer ring)."""
+    out = []
+    for r in json.load(open(enu))["rooms"]:
+        for s in r["surfaces"]:
+            if s["type"] != "ClosureSurface":
+                continue
+            for p in s["polygons"]:
+                zs = [q[2] for q in p["outer"]]
+                if len(p["outer"]) >= 3 and max(zs) - min(zs) < 0.3:
+                    out.append((sum(zs) / len(zs), p["outer"]))
+    return out
+
+
+def exits_at_top(nodes, surf, caps, reach=4.0):
+    """An `exit` node is the street end of its stairs: no surveyed tread within `reach` m rises above it,
+    and a horizontal closure (the stairwell's street-level top) is just above it. A route that stops
+    lower is a `stair_end` (Exits 4, 13, 36) and is named for where it stops."""
+    bad = []
+    for n in nodes.values():
+        if n["kind"] != "exit":
+            continue
+        (x, y), z = n["xy"], n["z"]
+        top = max((h for i in range(-40, 41) for j in range(-40, 41) if math.hypot(i, j) * 0.1 <= reach
+                   for h, k in surf.heights(x + i * 0.1, y + j * 0.1) if k == "stairs" and z - 1.5 < h), default=z)
+        if top > z + 0.05:
+            bad.append(f"exit node {n['id']}: surveyed treads within {reach} m rise to {top:.2f} m, above the node at {z:.2f} m")
+        near = [cz for cz, ring in caps if -0.05 <= cz - z <= 0.3
+                and (_in_poly(x, y, [{"x": q[0], "y": q[1]} for q in ring])
+                     or min(_seg_dist(x, y, a[0], a[1], b[0], b[1]) for a, b in zip(ring, ring[1:] + ring[:1])) <= 1.0)]
+        if not near:
+            bad.append(f"exit node {n['id']}: no street-level closure within 0.3 m above it")
+    return bad
+
+
 def outside_coverage(edges, areas):
     """Verified edges with samples outside every routable coverage area (coverage must not under-claim)."""
     polys = [a["polygon"] for a in areas if a.get("status") == "routable" and a.get("polygon")]
@@ -252,6 +287,7 @@ def main():
         z, how = grid.cells[(cell[0], cell[1])][cell[2]]
         nodes[n["id"]] = {**n, "xy": [round(cx, 2), round(cy, 2)], "z": z, "zHow": how, "cell": cell,
                           "snapM": round(math.hypot(cx - x, cy - y), 2)}
+    problems += exits_at_top(nodes, surf, closures(ENU))
 
     access = {a["id"]: a for a in src["accessFacts"]}
     edges_out = []

@@ -18,11 +18,11 @@ for facts only and never published).
 | `gap-west-stairs` | West Exit area | PLATEAU models only the lower flights of Exit 9 and of two stairwells near (-181, 126) and (-165, 113) (to TP ~30 m; street ~33 m). Exit 9's flight is ~9 m from its map position; the (-181, 126) flight sits beside the wide stair to the Fukutoshin Line West Passage, and the (-165, 113) flight runs into the Hope Center block towards Exit 7's map position, so neither is matched. Exit 8's stairs are ~12 m beyond the surveyed floor at the passage's west end. Exits 14, 16 and 19 (西口（中央）) have no stair in the survey. (Exit 13's lower flight matches its map position within ~3 m and is routed to its foot.) | a survey source for the upper flights and the passage west to Exit 8 (or a later PLATEAU release); on-site check of which stairwell is which exit | routing to Exits 7, 8, 9 and the upper flight of 13 |
 | `gap-freshness` | whole slice | geometry is a 2023 survey; later construction unknown | dated walk-through comparing columns, exits and openings with the GLB | lifts the stale flag for slice 1 |
 
-Where surveyed floor of unknown access would let the explorer's walker shortcut between routable
-areas (`gap-tobu-jr-link`, and the passage west from slice 3 to the West Exit area, not yet
-authored), the scene closes it with fences marked 「通行可否 未確認」/"Access unverified"
-(`scene/access_fences.json`, built by `pipeline/build_access.py`, checked by `pnpm check:access`).
-Once such an area becomes routable, the next build drops its fences.
+Surveyed floor outside the routable areas, including every area above, has no verified access:
+the scene fences the outline of the routable areas with panels marked 「通行可否 未確認」/"Access
+unverified" (`scene/access_fences.json`, built by `pipeline/build_access.py`, checked by
+`scene/access.test.ts`). Once an area becomes routable, the next build moves the fence to its new
+outline.
 
 ## Next slices (geometry already present, desk work first)
 
@@ -34,7 +34,7 @@ Once such an area becomes routable, the next build drops its fences.
    ~~Passage south to the West Exit (South) hall~~ (done, slice 5). Exits 5–7 wait on
    `gap-west-corridor-exits`; ~~13 (stair foot)~~ (done, slice 5.1); 8, 9, 14, 16 and 19 on `gap-west-stairs`.
 4. **Passage west from slice 3** (x ≈ 61) to the West Exit area: geometry present, graph and
-   access not yet authored; fenced at both ends until then.
+   access not yet authored; fenced off until then.
 5. **Street level**: exit stair tops are modelled as daylight portals. A street-level GLB (PLATEAU
    bldg/tran LOD1–2 around the station) is needed before exits can be walked out of.
 

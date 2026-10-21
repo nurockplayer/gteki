@@ -652,9 +652,9 @@
    "id": "x27",
    "floorId": "street",
    "position": {
-    "x": 82.5,
-    "y": 44.5,
-    "z": 31.154
+    "x": 83.0,
+    "y": 47.0,
+    "z": 32.267
    },
    "kind": "exit",
    "inOut": "boundary",
@@ -670,8 +670,8 @@
    "floorId": "street",
    "position": {
     "x": 139.5,
-    "y": 53.0,
-    "z": 31.727
+    "y": 53.5,
+    "z": 31.891
    },
    "kind": "exit",
    "inOut": "boundary",
@@ -686,9 +686,9 @@
    "id": "x35",
    "floorId": "street",
    "position": {
-    "x": 152.0,
-    "y": 19.0,
-    "z": 30.427
+    "x": 153.5,
+    "y": 18.0,
+    "z": 31.268
    },
    "kind": "exit",
    "inOut": "boundary",
@@ -700,15 +700,15 @@
    ]
   },
   {
-   "id": "x36",
-   "floorId": "street",
+   "id": "x36f",
+   "floorId": "b1",
    "position": {
     "x": 61.5,
-    "y": 23.5,
-    "z": 29.688
+    "y": 26.0,
+    "z": 28.49
    },
-   "kind": "exit",
-   "inOut": "boundary",
+   "kind": "stair_end",
+   "inOut": "inside",
    "sourceRefs": [
     {
      "sourceId": "plateau-ubld-13116",
@@ -720,9 +720,9 @@
    "id": "x37",
    "floorId": "street",
    "position": {
-    "x": 37.5,
-    "y": 19.5,
-    "z": 32.016
+    "x": 38.0,
+    "y": 19.0,
+    "z": 32.345
    },
    "kind": "exit",
    "inOut": "boundary",
@@ -737,9 +737,9 @@
    "id": "x42",
    "floorId": "street",
    "position": {
-    "x": 91.5,
-    "y": -29.5,
-    "z": 31.465
+    "x": 91.0,
+    "y": -30.5,
+    "z": 31.969
    },
    "kind": "exit",
    "inOut": "boundary",
@@ -754,9 +754,9 @@
    "id": "x43",
    "floorId": "street",
    "position": {
-    "x": 107.5,
-    "y": -9.0,
-    "z": 30.96
+    "x": 108.5,
+    "y": -7.5,
+    "z": 31.791
    },
    "kind": "exit",
    "inOut": "boundary",
@@ -1538,7 +1538,7 @@
    "to": "x37",
    "direction": "both",
    "mode": "stairs",
-   "lengthM": 17.8,
+   "lengthM": 18.6,
    "geometry": [
     {
      "x": 26.0,
@@ -1551,9 +1551,9 @@
      "z": 28.37
     },
     {
-     "x": 37.5,
-     "y": 19.5,
-     "z": 32.016
+     "x": 38.0,
+     "y": 19.0,
+     "z": 32.345
     }
    ],
    "paid": false,
@@ -1582,12 +1582,12 @@
    "attributes": {}
   },
   {
-   "id": "c_e2__x36",
+   "id": "c_e2__x36f",
    "from": "c_e2",
-   "to": "x36",
+   "to": "x36f",
    "direction": "both",
-   "mode": "stairs",
-   "lengthM": 10.9,
+   "mode": "walk",
+   "lengthM": 8.1,
    "geometry": [
     {
      "x": 60.0,
@@ -1598,17 +1598,12 @@
      "x": 61.5,
      "y": 26.0,
      "z": 28.49
-    },
-    {
-     "x": 61.5,
-     "y": 23.5,
-     "z": 29.688
     }
    ],
    "paid": false,
    "crossesFareBoundary": false,
    "wheelchair": null,
-   "steps": true,
+   "steps": false,
    "hours": null,
    "closed": false,
    "verification": "verified",
@@ -1616,7 +1611,7 @@
     "sourceIds": [
      "plateau-ubld-13116"
     ],
-    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
     "checkedDate": "2026-10-21"
    },
    "accessEvidence": {
@@ -1739,7 +1734,7 @@
    "to": "x27",
    "direction": "both",
    "mode": "stairs",
-   "lengthM": 13.4,
+   "lengthM": 16.1,
    "geometry": [
     {
      "x": 79.0,
@@ -1753,13 +1748,13 @@
     },
     {
      "x": 82.0,
-     "y": 43.5,
-     "z": 30.518
+     "y": 44.5,
+     "z": 30.995
     },
     {
-     "x": 82.5,
-     "y": 44.5,
-     "z": 31.154
+     "x": 83.0,
+     "y": 47.0,
+     "z": 32.267
     }
    ],
    "paid": false,
@@ -1857,7 +1852,7 @@
    "to": "x34",
    "direction": "both",
    "mode": "stairs",
-   "lengthM": 24.9,
+   "lengthM": 25.4,
    "geometry": [
     {
      "x": 128.0,
@@ -1886,8 +1881,8 @@
     },
     {
      "x": 139.5,
-     "y": 53.0,
-     "z": 31.727
+     "y": 53.5,
+     "z": 31.891
     }
    ],
    "paid": false,
@@ -1921,7 +1916,7 @@
    "to": "x35",
    "direction": "both",
    "mode": "stairs",
-   "lengthM": 30.0,
+   "lengthM": 31.9,
    "geometry": [
     {
      "x": 128.0,
@@ -1944,9 +1939,9 @@
      "z": 27.049
     },
     {
-     "x": 152.0,
-     "y": 19.0,
-     "z": 30.427
+     "x": 153.5,
+     "y": 18.0,
+     "z": 31.268
     }
    ],
    "paid": false,
@@ -2088,7 +2083,7 @@
    "to": "x43",
    "direction": "both",
    "mode": "stairs",
-   "lengthM": 14.0,
+   "lengthM": 16.0,
    "geometry": [
     {
      "x": 99.0,
@@ -2106,9 +2101,9 @@
      "z": 27.08
     },
     {
-     "x": 107.5,
-     "y": -9.0,
-     "z": 30.96
+     "x": 108.5,
+     "y": -7.5,
+     "z": 31.791
     }
    ],
    "paid": false,
@@ -2142,7 +2137,7 @@
    "to": "x42",
    "direction": "both",
    "mode": "stairs",
-   "lengthM": 16.8,
+   "lengthM": 18.0,
    "geometry": [
     {
      "x": 99.0,
@@ -2160,9 +2155,9 @@
      "z": 27.25
     },
     {
-     "x": 91.5,
-     "y": -29.5,
-     "z": 31.465
+     "x": 91.0,
+     "y": -30.5,
+     "z": 31.969
     }
    ],
    "paid": false,
