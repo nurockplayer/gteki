@@ -3,6 +3,7 @@ import { isOpenAt } from "@gteki/schema";
 import { createRouter, describeRoute, instructionPoints, routePolyline } from "./index.ts";
 import type { RouteProfile, RouteResult } from "./index.ts";
 import { createSyntheticBundle, syntheticEdge as edge } from "./fixtures.ts";
+import { createRouterForTest } from "./router.ts";
 
 /** Regressions from the independent read-only review of the shared core. */
 const base: RouteProfile = { fare: "ticketed", stepFree: false };
@@ -793,14 +794,20 @@ describe("opening hours are checked when the route reaches each edge", () => {
     const reads = { count: 0 };
     const always = counting(hours("00:00", "24:00"), "open", reads);
     const b = createSyntheticBundle(Array.from({ length: 2000 }, (_, i) => edge(`p${i}`, "start", "goal", { lengthM: 725_760 + i, hours: always })));
-    expect(createRouter(b).route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } })).toMatchObject({ ok: false, reason: "search_limit" });
+    const at = { weekday: "mon" as const, minutes: 0 };
+    // The budget itself, on the search without lower-bound pruning (which skips the dearer passages unsampled).
+    expect(createRouterForTest(b, { unpruned: true }).route("start", "goal", { ...base, at })).toMatchObject({ ok: false, reason: "search_limit" });
     // Each opening-hours sample (and each edge's weekly openings) reads `open` once, so the budget bounds
     // the work done however fast the host is. It is checked per edge: at most one edge's week may overrun it.
     expect(reads.count).toBeGreaterThan(0);
     expect(reads.count).toBeLessThanOrEqual(WORK_BUDGET + 7 * 1440 + 8);
+    // The router proper takes the cheapest passage after sampling only a few.
+    reads.count = 0;
+    expect(ok(createRouter(b).route("start", "goal", { ...base, at })).steps.map((st) => st.edgeId)).toEqual(["p0"]);
+    expect(reads.count).toBeLessThan(10 * 7 * 1440);
   }, 60_000);
 
-  it("reports an exhausted search as UNKNOWN, never as no path", () => {
+  it("reports an exhausted search as UNKNOWN, never as no path (unpruned); pruning solves it", () => {
     // 18 diamonds, each a short escalator (slower, cheaper) or a 1.4× longer walk (faster, dearer), scaled
     // by powers of two: 2^18 arrival/cost trade-offs, none dominating another.
     const n = 18;
@@ -821,10 +828,15 @@ describe("opening hours are checked when the route reaches each edge", () => {
     const tried = { count: 0 };
     b.edges = b.edges.map((e) => counting(e, "verification", tried));
     const router = createRouter(b);
-    expect(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 0 } })).toMatchObject({ ok: false, reason: "search_limit" });
+    const at = { weekday: "mon" as const, minutes: 0 };
+    // Without lower-bound pruning the trade-offs exhaust the budget (timed-search.test.ts keeps a graph that
+    // exhausts it with pruning too).
+    expect(createRouterForTest(b, { unpruned: true }).route("start", "goal", { ...base, at })).toMatchObject({ ok: false, reason: "search_limit" });
     // The budget bounds the work done, not just the labels kept: every edge tried is one unit of it.
     expect(tried.count).toBeGreaterThan(0);
     expect(tried.count).toBeLessThanOrEqual(WORK_BUDGET);
+    // With pruning the cheapest route (every escalator) is found.
+    expect(ok(router.route("start", "goal", { ...base, at })).steps.filter((st) => st.edgeId.startsWith("esc-")).length).toBe(n);
     // Without clock-dependent hours the same graph is plain Dijkstra.
     expect(ok(router.route("start", "goal", base)).steps.at(-1)!.edgeId).toBe("gate");
   }, 60_000);
