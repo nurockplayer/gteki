@@ -283,7 +283,8 @@ export function lazySurfaceGrid(patches: Patch[]) {
     cells.set(key, heights); return heights;
   } };
 }
-export function replayEnvironment(built: BuiltStation, scene: StationScene, plan: Plan, regions?: RestrictedRegion[]) {
+export function replayEnvironment(built: BuiltStation, scene: StationScene, plan: Plan, regions?: RestrictedRegion[], options: { shortcuts?: boolean } = {}) {
+  const shortcuts = options.shortcuts !== false;
   const explorer = new ExplorerReplay(scene), labels = publicLabels(built, plan, regions), laneWorld = laneReplayWorld(built);
   const verified = [...new Map((regions ?? derivedRestrictedAccess(built.layout)?.regions ?? []).flatMap(r => r.paths)
     .map(p => [`${p.edgeId}:${p.floor}:${p.a.x},${p.a.y},${p.b.x},${p.b.y}`, p])).values()];
@@ -339,7 +340,8 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
     return result;
   };
   const gateWorld = { propBands: laneBands(built.propWalls) } as WalkerAudit;
-  const traceMemo = new Map<string, { leak: ReplayLeak | null; frames: number }>();
+  const traceMemo = new Map<string, { leak: ReplayLeak | null; frames: number; position: XYZ }>();
+  let lastPosition: XYZ | null = null;
   let frames = 0, integratedFrames = 0;
   const replay = (end: End, start: XYZ, approach: Approach, walker: Walker, fps: number, run: boolean): ReplayLeak | null => {
     const tangent = { x: end.p.x - end.other.x, y: end.p.y - end.other.y }, len = Math.hypot(tangent.x, tangent.y) || 1;
@@ -367,18 +369,23 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
     }
     const encode = (n: number) => Object.is(n, -0) ? "-0" : String(n);
     const key = [walker, fps, run, ...[start.x, start.y, start.z].map(encode), ...phases.flatMap(p => [encode(p.dir.x), encode(p.dir.y), Math.ceil(p.length / speed * fps)])].join(":");
-    const known = traceMemo.get(key);
-    if (known) { frames += known.frames; traceMemo.delete(key); traceMemo.set(key, known); return known.leak ? { ...known.leak, end: end.id, approach } : null; }
+    const known = shortcuts ? traceMemo.get(key) : undefined;
+    if (known) { frames += known.frames; lastPosition = { ...known.position }; traceMemo.delete(key); traceMemo.set(key, known); return known.leak ? { ...known.leak, end: end.id, approach } : null; }
     const before = frames;
     const finish = (leak: ReplayLeak | null) => {
-      if (traceMemo.size >= 50000) traceMemo.delete(traceMemo.keys().next().value!);
-      traceMemo.set(key, { leak, frames: frames - before }); return leak;
+      lastPosition = { ...pos };
+      if (shortcuts) {
+        if (traceMemo.size >= 50000) traceMemo.delete(traceMemo.keys().next().value!);
+        traceMemo.set(key, { leak, frames: frames - before, position: { ...pos } });
+      }
+      return leak;
     };
     // Cruise-speed starts are physically attainable and expose the longest per-frame step.
     if (player) { const yaw = Math.atan2(phases[0]!.dir.x, phases[0]!.dir.y); player.vx = Math.sin(yaw) * speed; player.vy = Math.cos(yaw) * speed; }
     for (const phase of phases) {
       const yaw = Math.atan2(phase.dir.x, phase.dir.y);
-      for (let i = 0; i < Math.ceil(phase.length / speed * fps); i++) {
+      const count = Math.ceil(phase.length / speed * fps), recent: { at: number; state: number[] }[] = [];
+      for (let i = 0; i < count; i++) {
         const from = pos, vx = player?.vx, vy = player?.vy;
         if (player) { player.update(1 / fps, { forward: 1, strafe: 0, run }, yaw); pos = { x: player.x, y: player.y, z: player.z }; }
         else pos = explorer.step(pos, phase.dir, speed, 1 / fps);
@@ -389,15 +396,24 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
         if (next.fare && last && next.fare !== last && !gateCrossing(lastKnown, supported, built.layout, plan, gateWorld))
           return finish({ end: end.id, approach, walker, fps, run, from, to: pos, kind: `${last} → ${next.fare}` });
         if (next.fare) { last = next.fare; lastKnown = supported; }
-        // For fixed input, an unchanged explorer position is a fixed point. A lane
-        // fixed point also needs settled velocity (otherwise acceleration could escape).
-        if (distance(from, pos) < 1e-10 && Math.abs(from.z - pos.z) < 1e-10 &&
-          (!player || (player.vx === vx && player.vy === vy))) break;
+        // No near-equality stopping rule: tiny drift can cross a resolver branch.
+        // Exact fixed points or cycles preserve the static-world transition. Keep
+        // the cycle remainder so the next input phase starts at the identical pose.
+        if (shortcuts && Object.is(from.x, pos.x) && Object.is(from.y, pos.y) && Object.is(from.z, pos.z) &&
+          (!player || (Object.is(player.vx, vx) && Object.is(player.vy, vy)))) { frames += count - i - 1; break; }
+        const expectedX = (player?.vx ?? phase.dir.x * speed) / fps, expectedY = (player?.vy ?? phase.dir.y * speed) / fps;
+        if (shortcuts && (Math.abs(pos.x - from.x - expectedX) > 1e-10 || Math.abs(pos.y - from.y - expectedY) > 1e-10)) {
+          const state = [pos.x, pos.y, pos.z, player?.vx ?? 0, player?.vy ?? 0, explorer.support ?? 0,
+            last === "paid" ? 1 : last === "free" ? 2 : 0, lastKnown.x, lastKnown.y, lastKnown.z];
+          const previous = recent.find(r => r.state.every((v, k) => Object.is(v, state[k])));
+          if (previous) { const period = i - previous.at, skip = Math.floor((count - i - 1) / period) * period; frames += skip; i += skip; recent.length = 0; }
+          else { if (recent.length === 8) recent.shift(); recent.push({ at: i, state }); }
+        } else recent.length = 0;
       }
     }
     return finish(null);
   };
-  return { explorer, seeds, replay, labels, frames: () => frames, integratedFrames: () => integratedFrames };
+  return { explorer, seeds, replay, labels, position: () => lastPosition, frames: () => frames, integratedFrames: () => integratedFrames };
 }
 
 /** Delete/shorten exactly one shipped piece in BOTH physical representations. */
