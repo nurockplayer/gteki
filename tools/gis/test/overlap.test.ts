@@ -100,6 +100,19 @@ it('keeps missing, incomplete, and projected POI bboxes incomparable instead of 
   expect(report.layers[3]).toMatchObject({bbox_jgd2011_lon_lat:null,bbox_epsg_6677:null,metric_status:'UNKNOWN'});
 });
 
+it('propagates a malformed-coordinate POI through overlap and coverage as UNKNOWN, never DISJOINT',()=>{
+  // Regression: LineString coordinates [139.7,35.7,[140,36]] used to yield the complete bbox [139.7,35.7,139.7,35.7].
+  const poi=inspectPoiGeoJson('malformed','a'.repeat(64),'malformed.geojson',{type:'FeatureCollection',features:[{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:[139.7,35.7,[140,36]]}}]}) as any;
+  expect(poi).toMatchObject({bbox:null,bbox_status:'INCOMPLETE_MALFORMED_GEOMETRY'});
+  const city={source_id:'city',layer_id:'city',layer_role:'plateau_ubld' as const,source_crs:'EPSG:6697',source_crs_bbox:[35.7,139.7,35.71,139.71],bbox_axis_order:'latitude,longitude' as const};
+  // Even if a consumer wrongly carried a bbox forward, the incomplete status withholds the metric.
+  const report=buildOverlapReport('shinjuku',[city,{source_id:'poi',layer_id:'poi',layer_role:'poi_facility' as const,source_crs:null,source_crs_bbox:[139.7,35.7,139.7,35.7],bbox_axis_order:'longitude,latitude' as const,crs_status:'UNDECLARED_RFC7946_ASSUMPTION',bbox_status:poi.bbox_status}]);
+  expect(report.pairs[0]).toMatchObject({bbox_relation:'UNKNOWN',minimum_separation_m:null});
+  expect(report.pairs[0]?.conditional_bbox_comparison).toBeUndefined();
+  expect(report.layers[1]).toMatchObject({bbox_jgd2011_lon_lat:null,metric_status:'UNKNOWN'});
+  const coverage=catalogCoverage({cities:[]},{source_id:'synthetic',sha256:'synthetic'},[{layer_id:'partial',bbox_jgd2011_lon_lat:[139.7,35.7,139.71,35.71],metric_status:'KNOWN',bbox_status:'INCOMPLETE_MALFORMED_GEOMETRY'}],{});
+  expect(coverage).toMatchObject({status:'UNKNOWN',hokonavi_layers:[{bbox:null}]});
+});
 it('propagates an inspected limit-truncated POI through overlap and coverage as UNKNOWN',()=>{
   const coordinates=Array.from({length:1_000_001},(_,index)=>[139+index/10_000_000,35]);
   const poi=inspectPoiGeoJson('large','a'.repeat(64),'large.geojson',{type:'FeatureCollection',features:[{type:'Feature',properties:{},geometry:{type:'MultiPoint',coordinates}}]}) as any;

@@ -66,6 +66,13 @@ export function matchAcquiredResource(resources:unknown, acquisition:{resolved_u
     const evidence=acquisition.resolution_evidence;
     if(evidence?.source_id!==parent.source_id||evidence.sha256!==parent.sha256||evidence.json_pointer!==`/result/resources/${match.index}/url`)throw new Error(`Unverified pre-redirect resource URL for ${source.source_id}`);
   }
+  // A hashed resolution pointer is authoritative acquisition provenance. A final-URL
+  // match that disagrees with it (for example a redirect landing on another catalog
+  // resource) must fail closed instead of attributing a different resource's licence.
+  const pointer=acquisition.resolution_evidence;
+  if(pointer) {
+    if(pointer.source_id!==parent.source_id||pointer.sha256!==parent.sha256||pointer.json_pointer!==`/result/resources/${match.index}/url`)throw new Error(`Resource URL match conflicts with hashed resolution pointer for ${source.source_id}: matched resources/${match.index} by ${match.field}, pointer ${pointer.source_id}@${pointer.sha256.slice(0,12)}${pointer.json_pointer}`);
+  }
   return match;
 }
 /** Match only a child catalog URL nested under the exact package ZIP asset folder. */
@@ -83,17 +90,32 @@ export function exactPackageAssetFolderMatch(resources:unknown, childUrl:string)
   }
   return match;
 }
-export function embeddedMetadataRights(xml:string):Array<{value:string|null;quote:string;element:string}> {
+export type MetadataRightsScope = 'DATASET_RESOURCE_CONSTRAINTS' | 'METADATA_RECORD_ONLY' | 'UNKNOWN';
+export type MetadataRightsFinding = {value:string|null;quote:string;element:string;path:string;scope:MetadataRightsScope};
+/** Scope of a rights statement from its namespace-qualified ancestor chain (Clark names).
+ * Only identificationInfo/<Identification>/resourceConstraints/... describes the dataset;
+ * metadataConstraints constrain the metadata record itself. Anything else stays UNKNOWN.
+ */
+export function classifyMetadataRightsScope(ancestors:Array<{uri:string;local:string}>):MetadataRightsScope {
+  const locals=ancestors.map(a=>a.local);
+  const hasMetadata=locals.includes('metadataConstraints'),hasResource=locals.includes('resourceConstraints');
+  if(hasMetadata&&hasResource)return 'UNKNOWN';
+  if(hasMetadata&&locals[0]==='MD_Metadata'&&locals[1]==='metadataConstraints'&&ancestors.every(a=>a.uri===ancestors[0]!.uri))return 'METADATA_RECORD_ONLY';
+  if(locals[0]==='MD_Metadata'&&locals[1]==='identificationInfo'&&locals[2]?.endsWith('Identification')&&locals[3]==='resourceConstraints'&&locals.length>=6&&ancestors.every(a=>a.uri===ancestors[0]!.uri))return 'DATASET_RESOURCE_CONSTRAINTS';
+  return 'UNKNOWN';
+}
+export function embeddedMetadataRights(xml:string):MetadataRightsFinding[] {
   // Parse XML structure and collect only explicit rights fields. DOCTYPE is rejected,
   // matching the downloaded CityGML/XML parser boundary.
   const parser=new SaxesParser({xmlns:true});
-  const stack:Array<{element:string;text:string;capture:boolean}>=[],found:Array<{value:string|null;quote:string;element:string}>=[];
+  const stack:Array<{element:string;uri:string;text:string;capture:boolean}>=[],found:MetadataRightsFinding[]=[];
   const keys=new Set(['useLimitation','otherConstraints','accessConstraints','useConstraints','license','licence']);
   parser.on('doctype',()=>{throw new Error('DOCTYPE declarations are forbidden in metadata XML');});
-  parser.on('opentag',tag=>{const element=tag.local;stack.push({element,text:'',capture:keys.has(element)});});
+  parser.on('opentag',tag=>{const element=tag.local;stack.push({element,uri:tag.uri,text:'',capture:keys.has(element)});});
   parser.on('text',text=>{for(const frame of stack)if(frame.capture)frame.text+=text;});
   parser.on('cdata',text=>{for(const frame of stack)if(frame.capture)frame.text+=text;});
   parser.on('closetag',()=>{
+    const ancestors=stack.map(frame=>({uri:frame.uri,local:frame.element}));
     const frame=stack.pop();if(!frame?.capture)return;
     const text=frame.text.replace(/\s+/g,' ').trim();
     if(!text)return;
@@ -102,7 +124,7 @@ export function embeddedMetadataRights(xml:string):Array<{value:string|null;quot
     const english=text.match(/^(?:this (?:dataset|data|work|content) is )?licensed under (CC\s*BY\s*4\.0|PDL\s*1\.0)[.!。]?$/i);
     const japanese=text.match(/^(?:本データ|本作品|本コンテンツ)は\s*(CC\s*BY\s*4\.0|PDL\s*1\.0)\s*に基づき提供されています[。.]?$/);
     const known=english?.[1]??japanese?.[1]??null;
-    found.push({value:known?known.toUpperCase().replace(/\s+/g,' '):null,quote:text,element:frame.element});
+    found.push({value:known?known.toUpperCase().replace(/\s+/g,' '):null,quote:text,element:frame.element,path:ancestors.map(a=>a.uri?`{${a.uri}}${a.local}`:a.local).join('/'),scope:classifyMetadataRightsScope(ancestors)});
   });
   parser.write(xml).close();
   return found;
@@ -236,17 +258,23 @@ export async function generateRights():Promise<RightsRecord[]> {
         if(xmlRights.length) {
           const affirmative: Array<{value:string;evidence:RightsEvidence}>=[];
           for(const {entry,found} of xmlRights) {
-            const scope=found.value===null?'Metadata XML rights-field evidence only; no supported unambiguous affirmative licence declaration. Licence UNKNOWN.':'FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred.';
-            const ev=shortEvidence(source.source_id,stored.record.sha256,`ZIP:${entry.name}:${found.element}`,found.quote,scope);
+            const scope=found.scope==='METADATA_RECORD_ONLY'?'METADATA_RECORD_ONLY: statement under metadataConstraints constrains the metadata record itself, not the described dataset; never a dataset licence.'
+              :found.scope==='UNKNOWN'?'Metadata XML rights-field evidence outside identificationInfo/*/resourceConstraints; scope UNKNOWN. Licence UNKNOWN.'
+              :found.value===null?'Metadata XML rights-field evidence only; no supported unambiguous affirmative licence declaration. Licence UNKNOWN.':'FILE_EMBEDDED affirmative metadata XML declaration under identificationInfo/*/resourceConstraints for the described dataset; ZIP-wide applicability is not inferred.';
+            const ev=shortEvidence(source.source_id,stored.record.sha256,`ZIP:${entry.name}:${found.path}`,found.quote,scope);
             evidence.push(ev);
-            if(found.value!==null)affirmative.push({value:found.value,evidence:ev});
+            if(found.value!==null&&found.scope==='DATASET_RESOURCE_CONSTRAINTS')affirmative.push({value:found.value,evidence:ev});
           }
-          if(affirmative.length===xmlRights.length) {
+          const relevant=xmlRights.filter(({found})=>found.scope!=='METADATA_RECORD_ONLY');
+          if(!relevant.length) {
+            fileEmbedded={value:null,status:'UNKNOWN',reason:'Only metadataConstraints (metadata-record) rights statements were found; they do not describe the dataset. Embedded dataset rights remain UNKNOWN.'};
+            caveats.push('Metadata-record constraints (METADATA_RECORD_ONLY) are preserved as evidence but never promoted to a dataset licence.');
+          } else if(affirmative.length===relevant.length) {
             const embeddedValue=[...new Set(affirmative.map(item=>item.value))].join('; ');
-            fileEmbedded={value:embeddedValue,status:'FILE_EMBEDDED',scope:'Metadata XML rights statement for the described dataset; no ZIP-wide or sibling-resource scope inferred.'};
+            fileEmbedded={value:embeddedValue,status:'FILE_EMBEDDED',scope:'Metadata XML rights statement under identificationInfo/*/resourceConstraints for the described dataset; no ZIP-wide or sibling-resource scope inferred.'};
             for(const item of affirmative)declarations.push({value:item.value,status:'FILE_EMBEDDED',evidence:item.evidence});
           } else {
-            fileEmbedded={value:null,status:'UNKNOWN',reason:'Metadata rights fields include unsupported, ambiguous, conditional or negated statements; exact quotes are preserved as evidence.'};
+            fileEmbedded={value:null,status:'UNKNOWN',reason:'Metadata rights fields include unsupported, ambiguous, conditional, negated or unscoped statements; exact quotes are preserved as evidence.'};
             caveats.push('Metadata XML rights-field mentions do not establish an affirmative licence; embedded rights remain UNKNOWN.');
           }
         } else caveats.push('Inspected acquired metadata XML in the metadata ZIP; no explicit affirmative rights field was found.');

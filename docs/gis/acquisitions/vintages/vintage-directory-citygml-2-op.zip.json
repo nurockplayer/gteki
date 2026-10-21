@@ -15,9 +15,9 @@
     "store_path": "raw/ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6/citygml_2_op.zip-central-directory.bin"
   },
   "member_inventory": {
-    "sha256": "67260e7b8e4e5a7d3f6b863eacd8a88f422aa55788e871f8a9583ac27a33b6b8",
-    "bytes": 5668156,
-    "store_path": "raw/67260e7b8e4e5a7d3f6b863eacd8a88f422aa55788e871f8a9583ac27a33b6b8/citygml_2_op.zip-member-inventory.json",
+    "sha256": "5430038441a005ede41afa2bc45edf04180d19328149a44aad9b6bff8f47e68a",
+    "bytes": 14238607,
+    "store_path": "raw/5430038441a005ede41afa2bc45edf04180d19328149a44aad9b6bff8f47e68a/citygml_2_op.zip-member-inventory.json",
     "entry_count": 22845
   },
   "total_archive_bytes": 776906633,
@@ -30,8 +30,8 @@
       "end": 0,
       "bytes": 1,
       "final_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
-      "requested_at": "2026-10-21T10:55:43.546Z",
-      "completed_at": "2026-10-21T10:55:43.800Z",
+      "requested_at": "2026-10-21T11:16:53.854Z",
+      "completed_at": "2026-10-21T11:16:54.130Z",
       "sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
       "store_path": "raw/5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2/range-0-0.bin"
     },
@@ -40,8 +40,8 @@
       "end": 776906632,
       "bytes": 65557,
       "final_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
-      "requested_at": "2026-10-21T10:55:43.800Z",
-      "completed_at": "2026-10-21T10:55:43.831Z",
+      "requested_at": "2026-10-21T11:16:54.131Z",
+      "completed_at": "2026-10-21T11:16:54.251Z",
       "sha256": "b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd",
       "store_path": "raw/b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd/range-776841076-776906632.bin"
     },
@@ -50,16 +50,16 @@
       "end": 776906610,
       "bytes": 2841587,
       "final_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
-      "requested_at": "2026-10-21T10:55:43.831Z",
-      "completed_at": "2026-10-21T10:55:44.089Z",
+      "requested_at": "2026-10-21T11:16:54.251Z",
+      "completed_at": "2026-10-21T11:16:54.383Z",
       "sha256": "ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6",
       "store_path": "raw/ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6/range-774065024-776906610.bin"
     }
   ],
-  "requested_at": "2026-10-21T10:55:43.546Z",
-  "completed_at": "2026-10-21T10:55:44.089Z",
+  "requested_at": "2026-10-21T11:16:53.854Z",
+  "completed_at": "2026-10-21T11:16:54.383Z",
   "tool_version": "0.1.0",
-  "git_commit": "a577d90e15a7c29958e665cf79141c773e6bf7de",
+  "git_commit": "1750f1c672c4fc5162b543a3a90df3fd12f15a4d",
   "verification": "UNVERIFIED",
   "routable": false,
   "publish_gate": "HOLD",

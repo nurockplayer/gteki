@@ -30,12 +30,22 @@ import { generateOverlapReports } from '../src/overlap.js';
 import { gapPacket } from '../src/gaps.js';
 
 const poiIds = ['toei-stores-shinjuku-csv', 'toei-stores-shinjuku-nishiguchi-csv', 'tokyo-shinjuku-facilities-zip', 'tokyo-shinjuku-facilities-spec-pdf', 'plateau-13104-related-2025', 'plateau-13116-related-2025'];
+// Network report file -> report identity (the CSV pair report has a combined node+link identity).
+const networkReports: Record<string, string> = {
+  'hokonavi-ikebukuro-walk-node-csv': 'hokonavi-ikebukuro-walk-node-csv+hokonavi-ikebukuro-walk-link-csv',
+  'hokonavi-oedo-shinjuku-network-geojson': 'hokonavi-oedo-shinjuku-network-geojson',
+  'hokonavi-oedo-shinjuku-stationmap-geojson': 'hokonavi-oedo-shinjuku-stationmap-geojson',
+};
 beforeEach(() => {
   fixture.writes.mockClear(); fixture.reports.clear();
   for (const id of poiIds) fixture.reports.set(id, {
     source_id: id, source_sha256: 'b'.repeat(64), tool_input_sha256: fixture.fingerprint,
     input_sources: [id, ...(id === 'tokyo-shinjuku-facilities-zip' ? ['tokyo-shinjuku-facilities-spec-pdf'] : [])].map(source_id => ({ source_id, sha256: 'b'.repeat(64) })),
     station_ids: ['shinjuku'], members: [{ file: 'point', feature_count: 1, bbox: [139.7, 35.7, 139.7, 35.7], crs_status: 'DECLARED', crs: { properties: { name: 'EPSG:6668' } } }],
+  });
+  for (const [file, source_id] of Object.entries(networkReports)) fixture.reports.set(file, {
+    source_id, source_sha256: source_id.includes('+') ? `${'b'.repeat(64)}+${'b'.repeat(64)}` : 'b'.repeat(64), tool_input_sha256: fixture.fingerprint,
+    input_sources: [file, ...(source_id.includes('+') ? ['hokonavi-ikebukuro-walk-link-csv'] : [])].map(id => ({ source_id: id, sha256: 'b'.repeat(64) })), envelope: null, crs: { status: 'UNKNOWN', value: null }, members: [], bbox: null,
   });
   fixture.reports.set('shinjuku-2023', {
     source_id: 'plateau-13104-package-2023', package_sha256: 'b'.repeat(64), tool_input_sha256: fixture.fingerprint,
@@ -83,6 +93,26 @@ describe.each([['overlap', generateOverlapReports], ['gap packet', gapPacket]] a
     fixture.reports.get('tokyo-shinjuku-facilities-zip').input_sources[1].sha256 = 'a'.repeat(64);
     await expect(generate()).rejects.toThrow('Stale POI inspection input source SHA-256');
     expect(fixture.writes).not.toHaveBeenCalled();
+  });
+  it.each([
+    ['hokonavi-ikebukuro-walk-node-csv', 'old tool fingerprint', (r: any) => { r.tool_input_sha256 = 'a'.repeat(64); }, 'Stale network inspection tool fingerprint'],
+    ['hokonavi-ikebukuro-walk-node-csv', 'changed link acquisition inside the pair hash', (r: any) => { r.source_sha256 = `${'b'.repeat(64)}+${'a'.repeat(64)}`; }, 'Stale network inspection source SHA-256'],
+    ['hokonavi-oedo-shinjuku-network-geojson', 'old tool fingerprint', (r: any) => { r.tool_input_sha256 = 'a'.repeat(64); }, 'Stale network inspection tool fingerprint'],
+    ['hokonavi-oedo-shinjuku-network-geojson', 'stale lineage hash', (r: any) => { r.input_sources[0].sha256 = 'a'.repeat(64); }, 'Stale network inspection input source SHA-256'],
+    ['hokonavi-ikebukuro-walk-node-csv', 'different report identity', (r: any) => { r.source_id = 'hokonavi-oedo-shinjuku-network-geojson'; }, 'Network inspection source_id mismatch'],
+  ] as const)('rejects stale network report %s (%s) with an unchanged acquisition SHA before writing', async (file, _label, mutate, message) => {
+    // Only the report's own tool/lineage/identity change; the acquisition itself is unchanged.
+    expect(fixture.reports.get(file).source_sha256).toMatch(/^b{64}(\+b{64})?$/);
+    mutate(fixture.reports.get(file));
+    await expect(generate()).rejects.toThrow(message);
+    expect(fixture.writes).not.toHaveBeenCalled();
+  });
+  it('rejects a stale station-map network report before overlap writes', async () => {
+    fixture.reports.get('hokonavi-oedo-shinjuku-stationmap-geojson').tool_input_sha256 = 'a'.repeat(64);
+    if (_name === 'overlap') {
+      await expect(generate()).rejects.toThrow('Stale network inspection tool fingerprint');
+      expect(fixture.writes).not.toHaveBeenCalled();
+    } else await expect(generate()).resolves.toBeDefined(); // the gap packet does not consume the station-map report
   });
   it('accepts validated current reports', async () => {
     await generate();

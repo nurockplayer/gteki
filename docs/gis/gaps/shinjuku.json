@@ -1,6 +1,6 @@
 {
   "station_id": "shinjuku",
-  "tool_input_sha256": "75edaa1d42f71d2574f24a8f8c0a1be1e6c2f9f6afa2ee52982a3c39156c5401",
+  "tool_input_sha256": "c0db4d9e1479b6503ca84aa81ac4156b0f0b71f1d5a84644b2f5e22c824acef0",
   "input_sources": [
     {
       "source_id": "plateau-catalog-ubld-13116-13104",
@@ -128,7 +128,7 @@
     },
     {
       "source_id": "tokyo-shinjuku-facilities-landing",
-      "sha256": "f168d6d921d384cad139069766b8946b1c0f1982c56e17fece61fc3c777b203d"
+      "sha256": "ff768790b1dd0ea7ce6bf5bbc1e77f6d88ba12b95702e845c00fd4fb819afac0"
     },
     {
       "source_id": "plateau-13104-related-2025",
@@ -422,7 +422,7 @@
     },
     {
       "source_id": "tokyo-shinjuku-facilities-landing",
-      "source_sha256": "f168d6d921d384cad139069766b8946b1c0f1982c56e17fece61fc3c777b203d",
+      "source_sha256": "ff768790b1dd0ea7ce6bf5bbc1e77f6d88ba12b95702e845c00fd4fb819afac0",
       "licence": {
         "value": null,
         "status": "UNKNOWN",
@@ -480,16 +480,25 @@
       "members": [
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/com-entity.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f636f6d2d656e746974792e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/com-entity.geojson",
           "feature_count": null,
           "geometry_type_counts": null
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/com-map.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f636f6d2d6d61702e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/com-map.geojson",
           "feature_count": null,
           "geometry_type_counts": null
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-1F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d31462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-1F.geojson",
           "feature_count": 13125,
           "geometry_type_counts": {
             "distinct_count": 3,
@@ -503,6 +512,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-2F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d32462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-2F.geojson",
           "feature_count": 309,
           "geometry_type_counts": {
             "distinct_count": 3,
@@ -516,6 +528,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-3F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d33462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-3F.geojson",
           "feature_count": 78,
           "geometry_type_counts": {
             "distinct_count": 3,
@@ -529,6 +544,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-4F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d34462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-4F.geojson",
           "feature_count": 142,
           "geometry_type_counts": {
             "distinct_count": 3,
@@ -542,6 +560,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B1F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4231462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-B1F.geojson",
           "feature_count": 1246,
           "geometry_type_counts": {
             "distinct_count": 4,
@@ -556,6 +577,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B2F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4232462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-B2F.geojson",
           "feature_count": 183,
           "geometry_type_counts": {
             "distinct_count": 4,
@@ -570,6 +594,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B3F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4233462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-B3F.geojson",
           "feature_count": 338,
           "geometry_type_counts": {
             "distinct_count": 4,
@@ -584,6 +611,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B4F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4234462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-B4F.geojson",
           "feature_count": 37,
           "geometry_type_counts": {
             "distinct_count": 1,
@@ -595,6 +625,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B5F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4235462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-B5F.geojson",
           "feature_count": 12,
           "geometry_type_counts": {
             "distinct_count": 1,
@@ -606,6 +639,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-M1F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4d31462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-M1F.geojson",
           "feature_count": 53,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -618,6 +654,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-MB2F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4d4232462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-MB2F.geojson",
           "feature_count": 33,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -630,6 +669,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-1F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d31462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-1F.geojson",
           "feature_count": 13129,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -642,6 +684,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-2F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d32462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-2F.geojson",
           "feature_count": 309,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -654,6 +699,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-3F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d33462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-3F.geojson",
           "feature_count": 78,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -666,6 +714,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-4F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d34462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-4F.geojson",
           "feature_count": 142,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -678,6 +729,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B1F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4231462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-B1F.geojson",
           "feature_count": 1248,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -690,6 +744,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B2F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4232462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-B2F.geojson",
           "feature_count": 184,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -702,6 +759,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B3F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4233462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-B3F.geojson",
           "feature_count": 338,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -714,6 +774,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B4F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4234462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-B4F.geojson",
           "feature_count": 37,
           "geometry_type_counts": {
             "distinct_count": 1,
@@ -725,6 +788,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B5F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4235462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-B5F.geojson",
           "feature_count": 12,
           "geometry_type_counts": {
             "distinct_count": 1,
@@ -736,6 +802,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-M1F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4d31462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-M1F.geojson",
           "feature_count": 53,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -748,6 +817,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-MB2F.geojson",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4d4232462e67656f6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-MB2F.geojson",
           "feature_count": 33,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -760,6 +832,9 @@
         },
         {
           "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/v5_nav.json",
+          "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f76355f6e61762e6a736f6e",
+          "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+          "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/v5_nav.json",
           "feature_count": null,
           "geometry_type_counts": null
         }
@@ -783,6 +858,9 @@
       "members": [
         {
           "file": "13104_shinjuku-ku_pref_2023_shelter.geojson",
+          "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032335f7368656c7465722e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 110,
           "geometry_type_counts": {
             "distinct_count": 1,
@@ -794,6 +872,9 @@
         },
         {
           "file": "13104_shinjuku-ku_pref_2023_park.geojson",
+          "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032335f7061726b2e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 168,
           "geometry_type_counts": {
             "distinct_count": 1,
@@ -805,6 +886,9 @@
         },
         {
           "file": "13104_shinjuku-ku_pref_2025_landmark.geojson",
+          "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032355f6c616e646d61726b2e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 201,
           "geometry_type_counts": {
             "distinct_count": 1,
@@ -816,6 +900,9 @@
         },
         {
           "file": "13104_shinjuku-ku_pref_2025_station.geojson",
+          "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032355f73746174696f6e2e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 48,
           "geometry_type_counts": {
             "distinct_count": 1,
@@ -827,6 +914,9 @@
         },
         {
           "file": "13104_shinjuku-ku_pref_2025_railway.geojson",
+          "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032355f7261696c7761792e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 108,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -839,6 +929,9 @@
         },
         {
           "file": "13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+          "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032355f656d657267656e63795f726f7574652e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 45,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -851,6 +944,9 @@
         },
         {
           "file": "13104_shinjuku-ku_pref_2025_border.geojson",
+          "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032355f626f726465722e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 1,
           "geometry_type_counts": {
             "distinct_count": 1,
@@ -871,7 +967,7 @@
     "routable": false,
     "rights": "HOLD",
     "status": "INSPECTED",
-    "generated_at": "2026-10-21T10:55:43.465Z",
+    "generated_at": "2026-10-21T11:16:53.821Z",
     "package_sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
     "archives": [
       {
@@ -888,8 +984,8 @@
             "end": 0,
             "bytes": 1,
             "final_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
-            "requested_at": "2026-10-21T10:55:43.546Z",
-            "completed_at": "2026-10-21T10:55:43.800Z",
+            "requested_at": "2026-10-21T11:16:53.854Z",
+            "completed_at": "2026-10-21T11:16:54.130Z",
             "sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
             "store_path": "raw/5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2/range-0-0.bin"
           },
@@ -898,8 +994,8 @@
             "end": 776906632,
             "bytes": 65557,
             "final_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
-            "requested_at": "2026-10-21T10:55:43.800Z",
-            "completed_at": "2026-10-21T10:55:43.831Z",
+            "requested_at": "2026-10-21T11:16:54.131Z",
+            "completed_at": "2026-10-21T11:16:54.251Z",
             "sha256": "b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd",
             "store_path": "raw/b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd/range-776841076-776906632.bin"
           },
@@ -908,8 +1004,8 @@
             "end": 776906610,
             "bytes": 2841587,
             "final_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
-            "requested_at": "2026-10-21T10:55:43.831Z",
-            "completed_at": "2026-10-21T10:55:44.089Z",
+            "requested_at": "2026-10-21T11:16:54.251Z",
+            "completed_at": "2026-10-21T11:16:54.383Z",
             "sha256": "ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6",
             "store_path": "raw/ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6/range-774065024-776906610.bin"
           }
@@ -917,6 +1013,12 @@
         "members": [
           {
             "name": "udx/ubld/",
+            "name_bytes_hex": "7564782f75626c642f",
+            "name_utf8_flag": false,
+            "name_encoding_status": "ASCII_ONLY",
+            "name_cp437": "udx/ubld/",
+            "name_utf8": null,
+            "name_cp932_candidate": null,
             "name_bytes": 9,
             "compressed_size": 0,
             "size": 0,
@@ -929,6 +1031,12 @@
           },
           {
             "name": "udx/ubld/53394536_ubld_6697_op.gml",
+            "name_bytes_hex": "7564782f75626c642f35333339343533365f75626c645f363639375f6f702e676d6c",
+            "name_utf8_flag": false,
+            "name_encoding_status": "ASCII_ONLY",
+            "name_cp437": "udx/ubld/53394536_ubld_6697_op.gml",
+            "name_utf8": null,
+            "name_cp932_candidate": null,
             "name_bytes": 34,
             "compressed_size": 4073265,
             "size": 43830773,
@@ -945,9 +1053,9 @@
         "central_directory_store_path": "raw/ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6/citygml_2_op.zip-central-directory.bin",
         "central_directory_bytes": 2841587,
         "member_inventory": {
-          "sha256": "67260e7b8e4e5a7d3f6b863eacd8a88f422aa55788e871f8a9583ac27a33b6b8",
-          "bytes": 5668156,
-          "store_path": "raw/67260e7b8e4e5a7d3f6b863eacd8a88f422aa55788e871f8a9583ac27a33b6b8/citygml_2_op.zip-member-inventory.json",
+          "sha256": "5430038441a005ede41afa2bc45edf04180d19328149a44aad9b6bff8f47e68a",
+          "bytes": 14238607,
+          "store_path": "raw/5430038441a005ede41afa2bc45edf04180d19328149a44aad9b6bff8f47e68a/citygml_2_op.zip-member-inventory.json",
           "entry_count": 22845
         }
       },
@@ -965,8 +1073,8 @@
             "end": 0,
             "bytes": 1,
             "final_url": "https://assets.cms.plateau.reearth.io/assets/d1/61cd6b-dfe4-4eab-873c-be4f512939be/13104_shinjuku-ku_pref_2023_citygml_1_op.zip",
-            "requested_at": "2026-10-21T10:55:53.883Z",
-            "completed_at": "2026-10-21T10:55:54.011Z",
+            "requested_at": "2026-10-21T11:17:13.663Z",
+            "completed_at": "2026-10-21T11:17:13.785Z",
             "sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
             "store_path": "raw/5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2/range-0-0.bin"
           },
@@ -975,8 +1083,8 @@
             "end": 790569444,
             "bytes": 65557,
             "final_url": "https://assets.cms.plateau.reearth.io/assets/d1/61cd6b-dfe4-4eab-873c-be4f512939be/13104_shinjuku-ku_pref_2023_citygml_1_op.zip",
-            "requested_at": "2026-10-21T10:55:54.011Z",
-            "completed_at": "2026-10-21T10:55:54.047Z",
+            "requested_at": "2026-10-21T11:17:13.786Z",
+            "completed_at": "2026-10-21T11:17:13.907Z",
             "sha256": "ca5f8ee6267c3ff422f59e331511174156149df646e4ede8a26893c0f92404af",
             "store_path": "raw/ca5f8ee6267c3ff422f59e331511174156149df646e4ede8a26893c0f92404af/range-790503888-790569444.bin"
           },
@@ -985,8 +1093,8 @@
             "end": 790569422,
             "bytes": 2880805,
             "final_url": "https://assets.cms.plateau.reearth.io/assets/d1/61cd6b-dfe4-4eab-873c-be4f512939be/13104_shinjuku-ku_pref_2023_citygml_1_op.zip",
-            "requested_at": "2026-10-21T10:55:54.047Z",
-            "completed_at": "2026-10-21T10:55:54.301Z",
+            "requested_at": "2026-10-21T11:17:13.908Z",
+            "completed_at": "2026-10-21T11:17:14.044Z",
             "sha256": "ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5",
             "store_path": "raw/ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5/range-787688618-790569422.bin"
           }
@@ -994,6 +1102,12 @@
         "members": [
           {
             "name": "udx/ubld/",
+            "name_bytes_hex": "7564782f75626c642f",
+            "name_utf8_flag": false,
+            "name_encoding_status": "ASCII_ONLY",
+            "name_cp437": "udx/ubld/",
+            "name_utf8": null,
+            "name_cp932_candidate": null,
             "name_bytes": 9,
             "compressed_size": 0,
             "size": 0,
@@ -1006,6 +1120,12 @@
           },
           {
             "name": "udx/ubld/53394536_ubld_6697.gml",
+            "name_bytes_hex": "7564782f75626c642f35333339343533365f75626c645f363639372e676d6c",
+            "name_utf8_flag": false,
+            "name_encoding_status": "ASCII_ONLY",
+            "name_cp437": "udx/ubld/53394536_ubld_6697.gml",
+            "name_utf8": null,
+            "name_cp932_candidate": null,
             "name_bytes": 31,
             "compressed_size": 4073179,
             "size": 43830139,
@@ -1022,9 +1142,9 @@
         "central_directory_store_path": "raw/ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5/citygml_1_op.zip-central-directory.bin",
         "central_directory_bytes": 2880805,
         "member_inventory": {
-          "sha256": "c9718f37fad5a42b5f132078283cd5375501972e0705b19e6c170288c3491401",
-          "bytes": 5754638,
-          "store_path": "raw/c9718f37fad5a42b5f132078283cd5375501972e0705b19e6c170288c3491401/citygml_1_op.zip-member-inventory.json",
+          "sha256": "e08c4fd506c20b73b8b1b4756d50b63235674cfe866b9d4a93950ebeb2845f67",
+          "bytes": 14443531,
+          "store_path": "raw/e08c4fd506c20b73b8b1b4756d50b63235674cfe866b9d4a93950ebeb2845f67/citygml_1_op.zip-member-inventory.json",
           "entry_count": 23239
         }
       }
@@ -1043,8 +1163,8 @@
             "end": 386355684,
             "bytes": 30,
             "final_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
-            "requested_at": "2026-10-21T10:55:44.165Z",
-            "completed_at": "2026-10-21T10:55:44.181Z",
+            "requested_at": "2026-10-21T11:16:54.714Z",
+            "completed_at": "2026-10-21T11:16:54.738Z",
             "sha256": "4c7d0c7e0f88ec5ffa2fa7761396ec69b500d641a0eb0f7489a7583294357786",
             "store_path": "raw/4c7d0c7e0f88ec5ffa2fa7761396ec69b500d641a0eb0f7489a7583294357786/range-386355655-386355684.bin"
           },
@@ -1053,8 +1173,8 @@
             "end": 386355718,
             "bytes": 34,
             "final_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
-            "requested_at": "2026-10-21T10:55:44.181Z",
-            "completed_at": "2026-10-21T10:55:44.196Z",
+            "requested_at": "2026-10-21T11:16:54.738Z",
+            "completed_at": "2026-10-21T11:16:54.756Z",
             "sha256": "ecce9304404860495bcec4fcb33a49cb3035bbe9e81770e36d269111927a7bbc",
             "store_path": "raw/ecce9304404860495bcec4fcb33a49cb3035bbe9e81770e36d269111927a7bbc/range-386355685-386355718.bin"
           },
@@ -1063,8 +1183,8 @@
             "end": 390428983,
             "bytes": 4073265,
             "final_url": "https://assets.cms.plateau.reearth.io/assets/b5/dd5300-732c-4585-b4c6-d90415832a11/13104_shinjuku-ku_pref_2023_citygml_2_op.zip",
-            "requested_at": "2026-10-21T10:55:44.196Z",
-            "completed_at": "2026-10-21T10:55:44.522Z",
+            "requested_at": "2026-10-21T11:16:54.756Z",
+            "completed_at": "2026-10-21T11:16:54.960Z",
             "sha256": "b49d2234197406b355f635c9dc0e0902e2a45d78de36798aa909dbb3509ccb70",
             "store_path": "raw/b49d2234197406b355f635c9dc0e0902e2a45d78de36798aa909dbb3509ccb70/range-386355719-390428983.bin"
           }
@@ -1130,8 +1250,8 @@
             "end": 642058928,
             "bytes": 30,
             "final_url": "https://assets.cms.plateau.reearth.io/assets/d1/61cd6b-dfe4-4eab-873c-be4f512939be/13104_shinjuku-ku_pref_2023_citygml_1_op.zip",
-            "requested_at": "2026-10-21T10:55:54.354Z",
-            "completed_at": "2026-10-21T10:55:54.373Z",
+            "requested_at": "2026-10-21T11:17:14.280Z",
+            "completed_at": "2026-10-21T11:17:14.309Z",
             "sha256": "339921dc523830f5a4fc86ab3ef845f2a395803ded630e68907aca9ed4f0fc21",
             "store_path": "raw/339921dc523830f5a4fc86ab3ef845f2a395803ded630e68907aca9ed4f0fc21/range-642058899-642058928.bin"
           },
@@ -1140,8 +1260,8 @@
             "end": 642058959,
             "bytes": 31,
             "final_url": "https://assets.cms.plateau.reearth.io/assets/d1/61cd6b-dfe4-4eab-873c-be4f512939be/13104_shinjuku-ku_pref_2023_citygml_1_op.zip",
-            "requested_at": "2026-10-21T10:55:54.373Z",
-            "completed_at": "2026-10-21T10:55:54.388Z",
+            "requested_at": "2026-10-21T11:17:14.309Z",
+            "completed_at": "2026-10-21T11:17:14.324Z",
             "sha256": "01b558893400fe6a1a7d35e2afd0173daae7c4de89911453c555220cd8c76149",
             "store_path": "raw/01b558893400fe6a1a7d35e2afd0173daae7c4de89911453c555220cd8c76149/range-642058929-642058959.bin"
           },
@@ -1150,8 +1270,8 @@
             "end": 646132138,
             "bytes": 4073179,
             "final_url": "https://assets.cms.plateau.reearth.io/assets/d1/61cd6b-dfe4-4eab-873c-be4f512939be/13104_shinjuku-ku_pref_2023_citygml_1_op.zip",
-            "requested_at": "2026-10-21T10:55:54.388Z",
-            "completed_at": "2026-10-21T10:55:54.612Z",
+            "requested_at": "2026-10-21T11:17:14.324Z",
+            "completed_at": "2026-10-21T11:17:14.466Z",
             "sha256": "6d9aa1d7f43501243878dcb2a5ad17d11f219555060ba8077160b63709741cfe",
             "store_path": "raw/6d9aa1d7f43501243878dcb2a5ad17d11f219555060ba8077160b63709741cfe/range-642058960-646132138.bin"
           }
@@ -1578,7 +1698,7 @@
         "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090"
       }
     ],
-    "tool_input_sha256": "75edaa1d42f71d2574f24a8f8c0a1be1e6c2f9f6afa2ee52982a3c39156c5401",
+    "tool_input_sha256": "c0db4d9e1479b6503ca84aa81ac4156b0f0b71f1d5a84644b2f5e22c824acef0",
     "limitations": [
       "Rights remain HOLD pending rights review.",
       "Every vintage finding is UNVERIFIED and routable:false.",

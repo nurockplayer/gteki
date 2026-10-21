@@ -8,13 +8,19 @@ const fixture = vi.hoisted(() => ({
   report: {} as any,
   researchError: false,
   metadataText: '',
+  metadataKind: 'dataset' as 'dataset'|'metadata'|'both',
   priorFiles: new Map<string,string>(),
   fingerprint: 'f'.repeat(64),
   archiveUrl: 'https://assets.example/assets/b5/dd5300/shinjuku_2023_citygml_2_op.zip',
 }));
 
 vi.mock('../src/acquire.js', () => ({ loadSources: () => fixture.sources }));
-vi.mock('../src/zip.js', () => ({ readZip: async () => [{name:'metadata.xml',data:Buffer.from(`<useLimitation>${fixture.metadataText}</useLimitation>`)}] }));
+vi.mock('../src/zip.js', () => ({ readZip: async () => {
+  const dataset = `<identificationInfo><MD_DataIdentification><resourceConstraints><MD_Constraints><useLimitation>${fixture.metadataText}</useLimitation></MD_Constraints></resourceConstraints></MD_DataIdentification></identificationInfo>`;
+  const record = `<metadataConstraints><MD_LegalConstraints><useLimitation>${fixture.metadataText}</useLimitation></MD_LegalConstraints></metadataConstraints>`;
+  const inner = fixture.metadataKind === 'dataset' ? dataset : fixture.metadataKind === 'metadata' ? record : record + dataset.replace(fixture.metadataText, 'Copyright reserved.');
+  return [{name:'metadata.xml',data:Buffer.from(`<MD_Metadata xmlns="http://zgate.gsi.go.jp/ch/jmp/">${inner}</MD_Metadata>`)}];
+} }));
 vi.mock('../src/provenance.js', () => ({ toolFingerprint: async () => fixture.fingerprint }));
 vi.mock('../src/vintage.js', () => ({ verifyVintageEvidence: async () => ({ status: 'PASS', errors: [] }) }));
 vi.mock('../src/poi-research.js', () => ({ buildPoiResearch: async () => {if(fixture.researchError)throw new Error('Research preparation failed');return {path:'/virtual/docs/gis/research/poi-rights-and-vintages.md',content:'research'};} }));
@@ -57,7 +63,7 @@ const acquisitionPath = `/virtual/docs/gis/acquisitions/vintages/${memberId}.jso
 const packagePath = '/virtual/source/plateau-13104-package-2023';
 
 function setup(exact = true) {
-  fixture.researchError=false;fixture.metadataText='';fixture.priorFiles.clear();fixture.writes.clear();fixture.json.clear();fixture.sources=[];fixture.records.clear();
+  fixture.researchError=false;fixture.metadataText='';fixture.metadataKind='dataset';fixture.priorFiles.clear();fixture.writes.clear();fixture.json.clear();fixture.sources=[];fixture.records.clear();
   const archiveUrl=fixture.archiveUrl;
   fixture.sources.push({source_id:'fixture-source',title:'Fixture',station_ids:['shinjuku'],publisher:'fixture',official_url:'https://example.invalid',resolution:{kind:'direct'},expected_url:'https://example.invalid/source',expected_bytes:null,expected_url_match:null,license_name:'unknown',license_url:null,attribution_text:'unknown',commercial_use:{status:'unknown',evidence:''},modification_allowed:{status:'unknown',evidence:''},redistribution_allowed:{status:'unknown',evidence:''},content_year:null,availability_deadline:null,notes:'',publish_gate:'HOLD'});
   fixture.records.set('fixture-source',{source_id:'fixture-source',sha256:'d'.repeat(64),resolved_url:'https://example.invalid/source'});
@@ -164,8 +170,22 @@ describe('rights generation for vintage members',()=>{
     const record=(await generateRights()).find(r=>r.source_id===id)!;
     const affirmative=text==='Licensed under CC BY 4.0';
     expect(record.file_embedded_licence).toMatchObject({value:affirmative?'CC BY 4.0':null,status:affirmative?'FILE_EMBEDDED':'UNKNOWN'});
-    expect(record.evidence).toContainEqual(expect.objectContaining({quote:text,location:'ZIP:metadata.xml:useLimitation'}));
+    expect(record.evidence).toContainEqual(expect.objectContaining({quote:text,location:expect.stringMatching(/^ZIP:metadata\.xml:.*identificationInfo.*resourceConstraints.*useLimitation$/)}));
     expect(record.declarations.some(d=>d.status==='FILE_EMBEDDED')).toBe(affirmative);
+    expect(record.publish_gate).toBe('HOLD');
+  });
+  it.each(['metadata','both'] as const)('never promotes a metadataConstraints grant to a dataset licence (%s)',async kind=>{
+    const id='plateau-13104-metadata',pkgId='plateau-13104-package-2025';
+    fixture.metadataText='Licensed under CC BY 4.0';fixture.metadataKind=kind;
+    fixture.sources.push({...fixture.sources[0] as object,source_id:id,resolution:{kind:'plateau_catalog_api'}});
+    fixture.records.set(id,{source_id:id,sha256:'1'.repeat(64),resolved_url:'https://assets.example/metadata.zip'});
+    fixture.records.set(pkgId,{source_id:pkgId,sha256:packageSha});
+    fixture.json.set(`/virtual/source/${pkgId}`,{success:true,result:{license_id:'plateau',resources:[]}});
+    const record=(await generateRights()).find(r=>r.source_id===id)!;
+    expect(record.file_embedded_licence.status).toBe('UNKNOWN');
+    expect(record.file_embedded_licence.value).toBeNull();
+    expect(record.declarations.some(d=>d.status==='FILE_EMBEDDED')).toBe(false);
+    expect(record.evidence).toContainEqual(expect.objectContaining({location:expect.stringContaining('metadataConstraints'),scope:expect.stringContaining('METADATA_RECORD_ONLY')}));
     expect(record.publish_gate).toBe('HOLD');
   });
   it('archives superseded vintage rights and acquisitions in the same prepared bundle',async()=>{

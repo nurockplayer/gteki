@@ -2,7 +2,7 @@
   "source_id": "tokyo-shinjuku-facilities-zip",
   "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
   "source_bytes": 2317035,
-  "tool_input_sha256": "75edaa1d42f71d2574f24a8f8c0a1be1e6c2f9f6afa2ee52982a3c39156c5401",
+  "tool_input_sha256": "c0db4d9e1479b6503ca84aa81ac4156b0f0b71f1d5a84644b2f5e22c824acef0",
   "input_sources": [
     {
       "source_id": "tokyo-shinjuku-facilities-zip",
@@ -49,15 +49,24 @@
   "format": "ZIP",
   "archive_entry_count": 25,
   "filename_encoding": {
-    "status": "UNKNOWN_OR_CP437_DECODED",
-    "raw_filename_bytes_available": false,
-    "note": "ZIP reader exposed decoded entry names only; names may be mojibake when the archive uses a legacy Japanese encoding. No alias was inferred."
+    "status": "UNDECLARED_LEGACY_NAMES_PRESENT",
+    "raw_filename_bytes_available": true,
+    "status_counts": {
+      "CANDIDATE_CP932_UNDECLARED": 25
+    },
+    "note": "Member names without the ZIP UTF-8 flag are decoded per specification as CP437 (name_cp437 / file). Names that decode as valid CP932 are recorded only as name_cp932_candidate; the encoding is not declared by the archive. The raw name bytes (name_bytes_hex) are the member identity; no alias was adopted."
   },
   "members": [
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/com-entity.geojson",
       "bytes": 177047,
       "kind": "JSON_METADATA",
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f636f6d2d656e746974792e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/com-entity.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/com-entity.geojson",
       "metadata": {
         "root_keys": [
           "entities",
@@ -92,6 +101,12 @@
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/com-map.geojson",
       "bytes": 1826,
       "kind": "JSON_METADATA",
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f636f6d2d6d61702e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/com-map.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/com-map.geojson",
       "metadata": {
         "root_keys": [
           "default_lang",
@@ -152,6 +167,7 @@
         "coordinate_positions": 67431,
         "geometry_visits": 13125,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -463,7 +479,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d31462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-1F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-1F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-2F.geojson",
@@ -482,6 +504,7 @@
         "coordinate_positions": 3537,
         "geometry_visits": 309,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -811,7 +834,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d32462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-2F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-2F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-3F.geojson",
@@ -830,6 +859,7 @@
         "coordinate_positions": 1762,
         "geometry_visits": 78,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -1014,7 +1044,13 @@
       "line_feature_count": 4,
       "endpoint_field_sets": {
         "(none)": 4
-      }
+      },
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d33462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-3F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-3F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-4F.geojson",
@@ -1033,6 +1069,7 @@
         "coordinate_positions": 1386,
         "geometry_visits": 142,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -1239,7 +1276,13 @@
       "line_feature_count": 36,
       "endpoint_field_sets": {
         "(none)": 36
-      }
+      },
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d34462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-4F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-4F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B1F.geojson",
@@ -1258,6 +1301,7 @@
         "coordinate_positions": 10425,
         "geometry_visits": 1246,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -1636,7 +1680,13 @@
       "line_feature_count": 43,
       "endpoint_field_sets": {
         "(none)": 43
-      }
+      },
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4231462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B1F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-B1F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B2F.geojson",
@@ -1655,6 +1705,7 @@
         "coordinate_positions": 2002,
         "geometry_visits": 183,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -1975,7 +2026,13 @@
       "line_feature_count": 5,
       "endpoint_field_sets": {
         "(none)": 5
-      }
+      },
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4232462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B2F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-B2F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B3F.geojson",
@@ -1994,6 +2051,7 @@
         "coordinate_positions": 2967,
         "geometry_visits": 338,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -2338,7 +2396,13 @@
       "line_feature_count": 4,
       "endpoint_field_sets": {
         "(none)": 4
-      }
+      },
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4233462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B3F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-B3F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B4F.geojson",
@@ -2357,6 +2421,7 @@
         "coordinate_positions": 336,
         "geometry_visits": 37,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -2428,7 +2493,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4234462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B4F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-B4F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B5F.geojson",
@@ -2447,6 +2518,7 @@
         "coordinate_positions": 61,
         "geometry_visits": 12,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -2506,7 +2578,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4235462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-B5F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-B5F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-M1F.geojson",
@@ -2525,6 +2603,7 @@
         "coordinate_positions": 487,
         "geometry_visits": 53,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -2714,7 +2793,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4d31462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-M1F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-M1F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-MB2F.geojson",
@@ -2733,6 +2818,7 @@
         "coordinate_positions": 390,
         "geometry_visits": 33,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -2866,7 +2952,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f67656f6a736f6e2d6c6576656c2d67656f6d2d4d4232462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/geojson-level-geom-MB2F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/geojson-level-geom-MB2F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-1F.geojson",
@@ -2880,6 +2972,7 @@
         "coordinate_positions": 3,
         "geometry_visits": 13129,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": null,
@@ -3185,7 +3278,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d31462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-1F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-1F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-2F.geojson",
@@ -3199,6 +3298,7 @@
         "coordinate_positions": 32,
         "geometry_visits": 309,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": null,
@@ -3522,7 +3622,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d32462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-2F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-2F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-3F.geojson",
@@ -3536,6 +3642,7 @@
         "coordinate_positions": 6,
         "geometry_visits": 78,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": null,
@@ -3712,7 +3819,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d33462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-3F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-3F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-4F.geojson",
@@ -3726,6 +3839,7 @@
         "coordinate_positions": 3,
         "geometry_visits": 142,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": null,
@@ -3924,7 +4038,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d34462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-4F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-4F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B1F.geojson",
@@ -3938,6 +4058,7 @@
         "coordinate_positions": 104,
         "geometry_visits": 1248,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": null,
@@ -4307,7 +4428,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4231462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B1F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-B1F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B2F.geojson",
@@ -4321,6 +4448,7 @@
         "coordinate_positions": 47,
         "geometry_visits": 184,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": null,
@@ -4632,7 +4760,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4232462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B2F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-B2F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B3F.geojson",
@@ -4646,6 +4780,7 @@
         "coordinate_positions": 57,
         "geometry_visits": 338,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": null,
@@ -4981,7 +5116,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4233462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B3F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-B3F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B4F.geojson",
@@ -4995,6 +5136,7 @@
         "coordinate_positions": 0,
         "geometry_visits": 37,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": null,
@@ -5061,7 +5203,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4234462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B4F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-B4F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B5F.geojson",
@@ -5075,6 +5223,7 @@
         "coordinate_positions": 0,
         "geometry_visits": 12,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": null,
@@ -5129,7 +5278,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4235462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B5F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-B5F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-M1F.geojson",
@@ -5143,6 +5298,7 @@
         "coordinate_positions": 3,
         "geometry_visits": 53,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": null,
@@ -5327,7 +5483,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4d31462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-M1F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-M1F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-MB2F.geojson",
@@ -5341,6 +5503,7 @@
         "coordinate_positions": 5,
         "geometry_visits": 33,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": null,
@@ -5469,12 +5632,24 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f706174682d6c6576656c2d67656f6d2d4d4232462e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-MB2F.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/path-level-geom-MB2F.geojson"
     },
     {
       "file": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/v5_nav.json",
       "bytes": 453618,
       "kind": "JSON_METADATA",
+      "name_bytes_hex": "90568f6889778efc95d382cc8e7b90dd8fee95f18b7982d18e7b90dd82a982e796da9349926e82d682cc88da93ae838b815b83678fee95f12f76355f6e61762e6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "CANDIDATE_CP932_UNDECLARED",
+      "name_cp437": "ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/v5_nav.json",
+      "name_utf8": null,
+      "name_cp932_candidate": "新宿駅周辺の施設情報及び施設から目的地への移動ルート情報/v5_nav.json",
       "metadata": {
         "root_keys": [
           "d",

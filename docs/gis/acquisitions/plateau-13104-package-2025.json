@@ -2,31 +2,23 @@
   "source_id": "plateau-13104-package-2025",
   "resolved_url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
   "resolution_evidence": null,
-  "requested_at": "2026-10-21T10:53:21.536Z",
-  "completed_at": "2026-10-21T10:53:21.675Z",
+  "requested_at": "2026-10-21T11:09:51.616Z",
+  "completed_at": "2026-10-21T11:09:51.775Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/json;charset=utf-8",
     "content-length": null,
     "etag": null,
     "last-modified": null,
-    "date": "Wed, 21 Oct 2026 10:53:21 GMT"
+    "date": "Wed, 21 Oct 2026 11:09:51 GMT"
   },
   "bytes": 187935,
   "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
   "store_path": "raw/6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942/package_show",
   "tool_version": "0.1.0",
-  "git_commit": "a577d90e15a7c29958e665cf79141c773e6bf7de",
+  "git_commit": "1750f1c672c4fc5162b543a3a90df3fd12f15a4d",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
-  "mode": "online",
-  "last_offline_check": {
-    "requested_at": "2026-10-21T10:57:35.589Z",
-    "completed_at": "2026-10-21T10:57:35.589Z",
-    "tool_version": "0.1.0",
-    "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
-    "bytes": 187935,
-    "status": "PASS"
-  }
+  "mode": "online"
 }

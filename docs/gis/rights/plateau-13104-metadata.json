@@ -1,7 +1,7 @@
 {
   "source_id": "plateau-13104-metadata",
   "source_sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
-  "tool_input_sha256": "75edaa1d42f71d2574f24a8f8c0a1be1e6c2f9f6afa2ee52982a3c39156c5401",
+  "tool_input_sha256": "c0db4d9e1479b6503ca84aa81ac4156b0f0b71f1d5a84644b2f5e22c824acef0",
   "station_ids": [
     "shinjuku"
   ],
@@ -17,7 +17,7 @@
   "file_embedded_licence": {
     "value": "CC BY 4.0",
     "status": "FILE_EMBEDDED",
-    "scope": "Metadata XML rights statement for the described dataset; no ZIP-wide or sibling-resource scope inferred."
+    "scope": "Metadata XML rights statement under identificationInfo/*/resourceConstraints for the described dataset; no ZIP-wide or sibling-resource scope inferred."
   },
   "declarations": [
     {
@@ -26,9 +26,9 @@
       "evidence": {
         "source_id": "plateau-13104-metadata",
         "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
-        "location": "ZIP:metadata/udx_13104_pref_2025_fld_op.xml:useLimitation",
+        "location": "ZIP:metadata/udx_13104_pref_2025_fld_op.xml:{http://zgate.gsi.go.jp/ch/jmp/}MD_Metadata/{http://zgate.gsi.go.jp/ch/jmp/}identificationInfo/{http://zgate.gsi.go.jp/ch/jmp/}MD_DataIdentification/{http://zgate.gsi.go.jp/ch/jmp/}resourceConstraints/{http://zgate.gsi.go.jp/ch/jmp/}MD_Constraints/{http://zgate.gsi.go.jp/ch/jmp/}useLimitation",
         "quote": "Licensed under CC BY 4.0",
-        "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
+        "scope": "FILE_EMBEDDED affirmative metadata XML declaration under identificationInfo/*/resourceConstraints for the described dataset; ZIP-wide applicability is not inferred."
       }
     },
     {
@@ -37,9 +37,9 @@
       "evidence": {
         "source_id": "plateau-13104-metadata",
         "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
-        "location": "ZIP:metadata/udx_13104_pref_2025_htd_op.xml:useLimitation",
+        "location": "ZIP:metadata/udx_13104_pref_2025_htd_op.xml:{http://zgate.gsi.go.jp/ch/jmp/}MD_Metadata/{http://zgate.gsi.go.jp/ch/jmp/}identificationInfo/{http://zgate.gsi.go.jp/ch/jmp/}MD_DataIdentification/{http://zgate.gsi.go.jp/ch/jmp/}resourceConstraints/{http://zgate.gsi.go.jp/ch/jmp/}MD_Constraints/{http://zgate.gsi.go.jp/ch/jmp/}useLimitation",
         "quote": "Licensed under CC BY 4.0",
-        "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
+        "scope": "FILE_EMBEDDED affirmative metadata XML declaration under identificationInfo/*/resourceConstraints for the described dataset; ZIP-wide applicability is not inferred."
       }
     },
     {
@@ -48,9 +48,9 @@
       "evidence": {
         "source_id": "plateau-13104-metadata",
         "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
-        "location": "ZIP:metadata/udx_13104_pref_2025_lsld_op.xml:useLimitation",
+        "location": "ZIP:metadata/udx_13104_pref_2025_lsld_op.xml:{http://zgate.gsi.go.jp/ch/jmp/}MD_Metadata/{http://zgate.gsi.go.jp/ch/jmp/}identificationInfo/{http://zgate.gsi.go.jp/ch/jmp/}MD_DataIdentification/{http://zgate.gsi.go.jp/ch/jmp/}resourceConstraints/{http://zgate.gsi.go.jp/ch/jmp/}MD_Constraints/{http://zgate.gsi.go.jp/ch/jmp/}useLimitation",
         "quote": "Licensed under CC BY 4.0",
-        "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
+        "scope": "FILE_EMBEDDED affirmative metadata XML declaration under identificationInfo/*/resourceConstraints for the described dataset; ZIP-wide applicability is not inferred."
       }
     },
     {
@@ -59,9 +59,9 @@
       "evidence": {
         "source_id": "plateau-13104-metadata",
         "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
-        "location": "ZIP:metadata/udx_13104_pref_2025_op.xml:useLimitation",
+        "location": "ZIP:metadata/udx_13104_pref_2025_op.xml:{http://zgate.gsi.go.jp/ch/jmp/}MD_Metadata/{http://zgate.gsi.go.jp/ch/jmp/}identificationInfo/{http://zgate.gsi.go.jp/ch/jmp/}MD_DataIdentification/{http://zgate.gsi.go.jp/ch/jmp/}resourceConstraints/{http://zgate.gsi.go.jp/ch/jmp/}MD_Constraints/{http://zgate.gsi.go.jp/ch/jmp/}useLimitation",
         "quote": "Licensed under CC BY 4.0",
-        "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
+        "scope": "FILE_EMBEDDED affirmative metadata XML declaration under identificationInfo/*/resourceConstraints for the described dataset; ZIP-wide applicability is not inferred."
       }
     }
   ],
@@ -76,30 +76,30 @@
     {
       "source_id": "plateau-13104-metadata",
       "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
-      "location": "ZIP:metadata/udx_13104_pref_2025_fld_op.xml:useLimitation",
+      "location": "ZIP:metadata/udx_13104_pref_2025_fld_op.xml:{http://zgate.gsi.go.jp/ch/jmp/}MD_Metadata/{http://zgate.gsi.go.jp/ch/jmp/}identificationInfo/{http://zgate.gsi.go.jp/ch/jmp/}MD_DataIdentification/{http://zgate.gsi.go.jp/ch/jmp/}resourceConstraints/{http://zgate.gsi.go.jp/ch/jmp/}MD_Constraints/{http://zgate.gsi.go.jp/ch/jmp/}useLimitation",
       "quote": "Licensed under CC BY 4.0",
-      "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
+      "scope": "FILE_EMBEDDED affirmative metadata XML declaration under identificationInfo/*/resourceConstraints for the described dataset; ZIP-wide applicability is not inferred."
     },
     {
       "source_id": "plateau-13104-metadata",
       "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
-      "location": "ZIP:metadata/udx_13104_pref_2025_htd_op.xml:useLimitation",
+      "location": "ZIP:metadata/udx_13104_pref_2025_htd_op.xml:{http://zgate.gsi.go.jp/ch/jmp/}MD_Metadata/{http://zgate.gsi.go.jp/ch/jmp/}identificationInfo/{http://zgate.gsi.go.jp/ch/jmp/}MD_DataIdentification/{http://zgate.gsi.go.jp/ch/jmp/}resourceConstraints/{http://zgate.gsi.go.jp/ch/jmp/}MD_Constraints/{http://zgate.gsi.go.jp/ch/jmp/}useLimitation",
       "quote": "Licensed under CC BY 4.0",
-      "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
+      "scope": "FILE_EMBEDDED affirmative metadata XML declaration under identificationInfo/*/resourceConstraints for the described dataset; ZIP-wide applicability is not inferred."
     },
     {
       "source_id": "plateau-13104-metadata",
       "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
-      "location": "ZIP:metadata/udx_13104_pref_2025_lsld_op.xml:useLimitation",
+      "location": "ZIP:metadata/udx_13104_pref_2025_lsld_op.xml:{http://zgate.gsi.go.jp/ch/jmp/}MD_Metadata/{http://zgate.gsi.go.jp/ch/jmp/}identificationInfo/{http://zgate.gsi.go.jp/ch/jmp/}MD_DataIdentification/{http://zgate.gsi.go.jp/ch/jmp/}resourceConstraints/{http://zgate.gsi.go.jp/ch/jmp/}MD_Constraints/{http://zgate.gsi.go.jp/ch/jmp/}useLimitation",
       "quote": "Licensed under CC BY 4.0",
-      "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
+      "scope": "FILE_EMBEDDED affirmative metadata XML declaration under identificationInfo/*/resourceConstraints for the described dataset; ZIP-wide applicability is not inferred."
     },
     {
       "source_id": "plateau-13104-metadata",
       "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
-      "location": "ZIP:metadata/udx_13104_pref_2025_op.xml:useLimitation",
+      "location": "ZIP:metadata/udx_13104_pref_2025_op.xml:{http://zgate.gsi.go.jp/ch/jmp/}MD_Metadata/{http://zgate.gsi.go.jp/ch/jmp/}identificationInfo/{http://zgate.gsi.go.jp/ch/jmp/}MD_DataIdentification/{http://zgate.gsi.go.jp/ch/jmp/}resourceConstraints/{http://zgate.gsi.go.jp/ch/jmp/}MD_Constraints/{http://zgate.gsi.go.jp/ch/jmp/}useLimitation",
       "quote": "Licensed under CC BY 4.0",
-      "scope": "FILE_EMBEDDED affirmative metadata XML declaration for the described dataset; ZIP-wide applicability is not inferred."
+      "scope": "FILE_EMBEDDED affirmative metadata XML declaration under identificationInfo/*/resourceConstraints for the described dataset; ZIP-wide applicability is not inferred."
     }
   ],
   "input_sources": [

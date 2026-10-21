@@ -1,7 +1,9 @@
 import { posix } from 'node:path';
 import yauzl from 'yauzl';
+import { describeZipName, type ZipNameInfo } from './zip-names.js';
 
-export type ZipEntry = { name: string; data: Buffer };
+/** `name` is the specification decoding (stable lookup key); `name_bytes_hex` is the raw identity. */
+export type ZipEntry = { name: string; data: Buffer } & ZipNameInfo;
 export type ZipReadOptions = { maxEntryBytes?: number; maxTotalBytes?: number };
 const DEFAULT_ENTRY_LIMIT = 128 * 1024 * 1024;
 const DEFAULT_TOTAL_LIMIT = 512 * 1024 * 1024;
@@ -68,7 +70,7 @@ export async function readZip(path: string, options: ZipReadOptions = {}): Promi
         stream.on('end', () => {
           if (settled) return;
           totalBytes += entryBytes;
-          entries.push({ name: entry.fileName, data: Buffer.concat(chunks, entryBytes) });
+          entries.push({ name: entry.fileName, data: Buffer.concat(chunks, entryBytes), ...describeZipName(entry.fileNameRaw, (entry.generalPurposeBitFlag & 0x800) !== 0, entry.fileName) });
           zip.readEntry();
         });
       });

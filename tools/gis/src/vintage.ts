@@ -5,6 +5,8 @@ import { dirname, isAbsolute, join } from 'node:path';
 import { assertPathWithinStore, docsRoot, ensurePrivateStore, getGitCommit, getStoredSource, getStoreRoot, readJson, storeRelativePath, verifyStoredFile, TOOL_VERSION } from './common.js';
 import { bboxMeshes, meshBounds } from './mesh.js';
 import { toolFingerprint } from './provenance.js';
+import { assertNetworkInspectionCurrent } from './network-evidence.js';
+import { describeZipName, type ZipNameInfo } from './zip-names.js';
 import { inspectCityGmlPath } from './citygml.js';
 import { commitReportFiles, type ReportFile } from './report-transaction.js';
 
@@ -20,7 +22,7 @@ const REPORT_DIR = join(docsRoot, 'gis', 'vintages');
 export type VintageZipMember = {
   name: string; name_bytes: number; compressed_size: number; size: number; crc32: string; method: number; flags: number;
   local_header_offset: number; mesh: string | null; category: 'udx' | 'ubld' | null;
-};
+} & ZipNameInfo;
 export type VintageRange = { start: number; end: number; bytes: number; final_url: string; requested_at: string; completed_at: string; sha256?: string; store_path?: string };
 export type VintageValidatorType = 'STRONG_ETAG';
 export type VintageArchiveInspection = {
@@ -188,7 +190,7 @@ function zipMembers(directory: Buffer, total: number, centralOffset: number): Vi
     if (method !== 0 && method !== 8) throw new Error(`Unsupported ZIP compression method ${method}: ${name}`);
     const match = /(?:^|[^0-9])(\d{8})(?:[^0-9]|$)/.exec(name);
     const category = /(?:^|\/)ubld(?:\/|$)/i.test(name) ? 'ubld' : /(?:^|\/)udx(?:\/|$)/i.test(name) ? 'udx' : null;
-    result.push({ name, name_bytes: nameLength, compressed_size: compressed, size, crc32: crc.toString(16).padStart(8, '0'), method, flags, local_header_offset: offset, mesh: match?.[1] ?? null, category });
+    result.push({ name, ...describeZipName(directory.subarray(p + 46, p + 46 + nameLength), Boolean(flags & 0x800)), name_bytes: nameLength, compressed_size: compressed, size, crc32: crc.toString(16).padStart(8, '0'), method, flags, local_header_offset: offset, mesh: match?.[1] ?? null, category });
     p = end;
   }
   return result;
@@ -388,12 +390,15 @@ export async function inspectVintages(options: { fetcher?: RangeFetcher; fetchMe
     { source_id: 'hokonavi-oedo-shinjuku-network-geojson', path: join(docsRoot, 'gis', 'networks', 'hokonavi-oedo-shinjuku-network-geojson.json') },
     { source_id: 'hokonavi-oedo-shinjuku-stationmap-geojson', path: join(docsRoot, 'gis', 'networks', 'hokonavi-oedo-shinjuku-stationmap-geojson.json') },
   ];
+  const e27Fingerprint = await toolFingerprint();
   const e27Layers: Array<{ layer: string; bbox: number[] | null; crs: string | null }> = [];
   const e27Inputs: Array<{ source_id: string; sha256: string }> = [];
   for (const spec of e27Specs) {
     const stored = await getStoredSource(spec.source_id);
-    const network = await readJson<{ source_sha256?: string; members?: Array<{ file: string; bbox: number[] | null; crs?: { properties?: { name?: string } } | null }> }>(spec.path);
+    const network = await readJson<{ source_id?: string; source_sha256?: string; tool_input_sha256?: string; input_sources?: unknown; members?: Array<{ file: string; bbox: number[] | null; crs?: { properties?: { name?: string } } | null }> }>(spec.path);
     if (network.source_sha256 !== stored.record.sha256) throw new Error(`E27 network report source SHA mismatch: ${spec.source_id}`);
+    // Source SHA alone accepts a report produced by older tools or lineage: require full currency.
+    await assertNetworkInspectionCurrent(network, spec.source_id, { fingerprint: e27Fingerprint });
     e27Inputs.push({ source_id: spec.source_id, sha256: stored.record.sha256 });
     for (const member of network.members ?? []) e27Layers.push({ layer: `${spec.source_id}:${member.file}`, bbox: member.bbox, crs: member.crs?.properties?.name ?? null });
   }

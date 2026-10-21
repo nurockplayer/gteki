@@ -2,7 +2,7 @@
   "source_id": "plateau-13104-related-2025",
   "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
   "source_bytes": 40290,
-  "tool_input_sha256": "75edaa1d42f71d2574f24a8f8c0a1be1e6c2f9f6afa2ee52982a3c39156c5401",
+  "tool_input_sha256": "c0db4d9e1479b6503ca84aa81ac4156b0f0b71f1d5a84644b2f5e22c824acef0",
   "input_sources": [
     {
       "source_id": "plateau-13104-related-2025",
@@ -45,9 +45,12 @@
   "format": "ZIP",
   "archive_entry_count": 7,
   "filename_encoding": {
-    "status": "UNKNOWN_OR_CP437_DECODED",
-    "raw_filename_bytes_available": false,
-    "note": "ZIP reader exposed decoded entry names only; names may be mojibake when the archive uses a legacy Japanese encoding. No alias was inferred."
+    "status": "DECLARED_OR_ASCII",
+    "raw_filename_bytes_available": true,
+    "status_counts": {
+      "ASCII_ONLY": 7
+    },
+    "note": "All member names are ASCII or declare their encoding."
   },
   "members": [
     {
@@ -67,6 +70,7 @@
         "coordinate_positions": 110,
         "geometry_visits": 110,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -332,7 +336,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032335f7368656c7465722e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "ASCII_ONLY",
+      "name_cp437": "13104_shinjuku-ku_pref_2023_shelter.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": null
     },
     {
       "file": "13104_shinjuku-ku_pref_2023_park.geojson",
@@ -351,6 +361,7 @@
         "coordinate_positions": 168,
         "geometry_visits": 168,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -611,7 +622,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032335f7061726b2e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "ASCII_ONLY",
+      "name_cp437": "13104_shinjuku-ku_pref_2023_park.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": null
     },
     {
       "file": "13104_shinjuku-ku_pref_2025_landmark.geojson",
@@ -630,6 +647,7 @@
         "coordinate_positions": 201,
         "geometry_visits": 201,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -783,7 +801,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032355f6c616e646d61726b2e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "ASCII_ONLY",
+      "name_cp437": "13104_shinjuku-ku_pref_2025_landmark.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": null
     },
     {
       "file": "13104_shinjuku-ku_pref_2025_station.geojson",
@@ -802,6 +826,7 @@
         "coordinate_positions": 48,
         "geometry_visits": 48,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -967,7 +992,13 @@
       },
       "source_attributions": {},
       "line_feature_count": 0,
-      "endpoint_field_sets": {}
+      "endpoint_field_sets": {},
+      "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032355f73746174696f6e2e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "ASCII_ONLY",
+      "name_cp437": "13104_shinjuku-ku_pref_2025_station.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": null
     },
     {
       "file": "13104_shinjuku-ku_pref_2025_railway.geojson",
@@ -986,6 +1017,7 @@
         "coordinate_positions": 718,
         "geometry_visits": 108,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -1100,7 +1132,13 @@
       "line_feature_count": 108,
       "endpoint_field_sets": {
         "(none)": 108
-      }
+      },
+      "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032355f7261696c7761792e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "ASCII_ONLY",
+      "name_cp437": "13104_shinjuku-ku_pref_2025_railway.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": null
     },
     {
       "file": "13104_shinjuku-ku_pref_2025_emergency_route.geojson",
@@ -1119,6 +1157,7 @@
         "coordinate_positions": 1122,
         "geometry_visits": 45,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -1329,7 +1368,13 @@
       "line_feature_count": 45,
       "endpoint_field_sets": {
         "(none)": 45
-      }
+      },
+      "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032355f656d657267656e63795f726f7574652e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "ASCII_ONLY",
+      "name_cp437": "13104_shinjuku-ku_pref_2025_emergency_route.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": null
     },
     {
       "file": "13104_shinjuku-ku_pref_2025_border.geojson",
@@ -1348,6 +1393,7 @@
         "coordinate_positions": 1277,
         "geometry_visits": 1,
         "geometry_visit_limit": 1000000,
+        "malformed_geometries": 0,
         "visit_limit": 1000000
       },
       "raw_coordinates_bbox": [
@@ -1428,7 +1474,13 @@
       "line_feature_count": 1,
       "endpoint_field_sets": {
         "(none)": 1
-      }
+      },
+      "name_bytes_hex": "31333130345f7368696e6a756b752d6b755f707265665f323032355f626f726465722e67656f6a736f6e",
+      "name_utf8_flag": false,
+      "name_encoding_status": "ASCII_ONLY",
+      "name_cp437": "13104_shinjuku-ku_pref_2025_border.geojson",
+      "name_utf8": null,
+      "name_cp932_candidate": null
     }
   ],
   "observations": [

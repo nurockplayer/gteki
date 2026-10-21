@@ -6,31 +6,23 @@
     "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
     "json_pointer": "/result/resources/11/url"
   },
-  "requested_at": "2026-10-21T10:53:25.765Z",
-  "completed_at": "2026-10-21T10:53:25.833Z",
+  "requested_at": "2026-10-21T11:09:55.466Z",
+  "completed_at": "2026-10-21T11:09:55.520Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "text/csv",
     "content-length": null,
     "etag": "W/\"53b-65aa16e7b8070\"",
     "last-modified": "Fri, 04 Sep 2026 05:20:50 GMT",
-    "date": "Wed, 21 Oct 2026 10:53:25 GMT"
+    "date": "Wed, 21 Oct 2026 11:09:55 GMT"
   },
   "bytes": 1339,
   "sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
   "store_path": "raw/71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6/other_stores_shinjuku-nishiguchi.csv",
   "tool_version": "0.1.0",
-  "git_commit": "a577d90e15a7c29958e665cf79141c773e6bf7de",
+  "git_commit": "1750f1c672c4fc5162b543a3a90df3fd12f15a4d",
   "expected_bytes": 1339,
   "expected_url_match": true,
   "size_check": "MATCH",
-  "mode": "online",
-  "last_offline_check": {
-    "requested_at": "2026-10-21T10:57:35.635Z",
-    "completed_at": "2026-10-21T10:57:35.635Z",
-    "tool_version": "0.1.0",
-    "sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
-    "bytes": 1339,
-    "status": "PASS"
-  }
+  "mode": "online"
 }

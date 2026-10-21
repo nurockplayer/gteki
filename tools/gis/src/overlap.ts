@@ -5,6 +5,7 @@ import { projectLonLat } from './crs.js';
 import { catalogCoverage,r1BboxContainment } from './coverage.js';
 import { toolFingerprint } from './provenance.js';
 import { r1GeoEvidence } from './r1.js';
+import { assertNetworkInspectionCurrent } from './network-evidence.js';
 import { assertPoiInspectionCurrent, assertVintageResearchCurrent } from './inspection-evidence.js';
 
 export type BboxLayerInput = {
@@ -107,8 +108,11 @@ export function projectGeographicBbox(bbox: number[], axis: 'latitude,longitude'
   return [Math.min(...projected.map(p => p[0])), Math.min(...projected.map(p => p[1])), Math.max(...projected.map(p => p[0])), Math.max(...projected.map(p => p[1]))];
 }
 
+/** Any INCOMPLETE_* bbox status (limit reached, malformed coordinates) withholds the metric. */
+export function isIncompleteBboxStatus(status: string | undefined | null): boolean { return typeof status === 'string' && status.startsWith('INCOMPLETE_'); }
+
 function prepareLayer(layer: BboxLayerInput): PreparedOverlapLayer {
-  if (layer.bbox_status === 'INCOMPLETE_LIMIT_REACHED') return { ...layer, bbox_jgd2011_lon_lat: null, bbox_epsg_6677: null, projected_bbox_boundary_segments: null, metric_status: 'UNKNOWN', metric_note: 'Source bbox is incomplete because its coordinate visit limit was reached.' };
+  if (isIncompleteBboxStatus(layer.bbox_status)) return { ...layer, bbox_jgd2011_lon_lat: null, bbox_epsg_6677: null, projected_bbox_boundary_segments: null, metric_status: 'UNKNOWN', metric_note: 'Source bbox is incomplete because its coordinate visit limit was reached or its coordinates were malformed.' };
   if (!validBbox(layer.source_crs_bbox)) return { ...layer, bbox_jgd2011_lon_lat: null, bbox_epsg_6677: null, projected_bbox_boundary_segments: null, metric_status: 'UNKNOWN', metric_note: 'Source bbox missing or invalid.' };
   if (layer.bbox_axis_order === 'unknown' || !layer.source_crs) return { ...layer, bbox_jgd2011_lon_lat: null, bbox_epsg_6677: null, projected_bbox_boundary_segments: null, metric_status: 'UNKNOWN', metric_note: 'Source CRS or coordinate axis order is unknown; no metric projection was inferred.' };
   const crs = layer.source_crs.toUpperCase();
@@ -172,7 +176,7 @@ export function buildOverlapReport(stationId: StationOverlapReport['station_id']
     if(pair.bbox_relation==='UNKNOWN'&&[a,b].some(l=>l.layer_role==='poi_facility')){
       const raw=(l:OverlapLayer):number[]|null=>{
         if(l.bbox_jgd2011_lon_lat)return l.bbox_jgd2011_lon_lat;
-        if(l.layer_role!=='poi_facility'||l.source_crs!==null||l.crs_status!=='UNDECLARED_RFC7946_ASSUMPTION'||l.bbox_status==='INCOMPLETE_LIMIT_REACHED'||l.bbox_axis_order!=='longitude,latitude'||!validBbox(l.source_crs_bbox))return null;
+        if(l.layer_role!=='poi_facility'||l.source_crs!==null||l.crs_status!=='UNDECLARED_RFC7946_ASSUMPTION'||isIncompleteBboxStatus(l.bbox_status)||l.bbox_axis_order!=='longitude,latitude'||!validBbox(l.source_crs_bbox))return null;
         try{assertGeographicRanges(l.source_crs_bbox);return l.source_crs_bbox;}catch{return null;}
       };
       const x=raw(a),y=raw(b);
@@ -219,6 +223,11 @@ export async function generateOverlapReports(): Promise<StationOverlapReport[]> 
     readJson<GeoReport>(join(root, 'networks', 'hokonavi-oedo-shinjuku-network-geojson.json')),
     readJson<GeoReport>(join(root, 'networks', 'hokonavi-oedo-shinjuku-stationmap-geojson.json')),
   ]);
+  // Every consumed network inspection must match current acquisitions, tool inputs and lineage
+  // before any comparison or write; a matching acquisition SHA alone is not enough.
+  await assertNetworkInspectionCurrent(r1Nodes, 'hokonavi-ikebukuro-walk-node-csv', { fingerprint, linkSourceId: 'hokonavi-ikebukuro-walk-link-csv' });
+  await assertNetworkInspectionCurrent(s01Network, 'hokonavi-oedo-shinjuku-network-geojson', { fingerprint });
+  await assertNetworkInspectionCurrent(stationMap, 'hokonavi-oedo-shinjuku-stationmap-geojson', { fingerprint });
   const r1=await r1GeoEvidence();
   const ikeCsvBbox = r1Nodes.bbox ?? null;
   const ikeCsvSource = ['KNOWN','INFERRED_FROM_SPEC'].includes(r1Nodes.crs.status) ? r1Nodes.crs.value : null;

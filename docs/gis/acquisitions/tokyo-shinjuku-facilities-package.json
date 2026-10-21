@@ -2,31 +2,23 @@
   "source_id": "tokyo-shinjuku-facilities-package",
   "resolved_url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000008d0000000037",
   "resolution_evidence": null,
-  "requested_at": "2026-10-21T10:53:21.483Z",
-  "completed_at": "2026-10-21T10:53:21.531Z",
+  "requested_at": "2026-10-21T11:09:51.559Z",
+  "completed_at": "2026-10-21T11:09:51.602Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/json;charset=utf-8",
     "content-length": null,
     "etag": null,
     "last-modified": null,
-    "date": "Wed, 21 Oct 2026 10:53:21 GMT"
+    "date": "Wed, 21 Oct 2026 11:09:51 GMT"
   },
   "bytes": 4486,
   "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
   "store_path": "raw/f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96/package_show",
   "tool_version": "0.1.0",
-  "git_commit": "a577d90e15a7c29958e665cf79141c773e6bf7de",
+  "git_commit": "1750f1c672c4fc5162b543a3a90df3fd12f15a4d",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
-  "mode": "online",
-  "last_offline_check": {
-    "requested_at": "2026-10-21T10:57:35.580Z",
-    "completed_at": "2026-10-21T10:57:35.580Z",
-    "tool_version": "0.1.0",
-    "sha256": "f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96",
-    "bytes": 4486,
-    "status": "PASS"
-  }
+  "mode": "online"
 }

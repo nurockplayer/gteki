@@ -186,7 +186,7 @@ describe('POI source inspection', () => {
       type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: nested } }],
     }) as any;
     expect(deep.bbox).toBeNull();
-    expect(deep.bbox_status).toBe('INCOMPLETE_LIMIT_REACHED');
+    expect(deep.bbox_status).toBe('INCOMPLETE_MALFORMED_GEOMETRY');
 
     const unsupported = inspectPoiGeoJson('unsupported', 'e'.repeat(64), 'unsupported.geojson', {
       type: 'FeatureCollection', features: [
@@ -196,6 +196,44 @@ describe('POI source inspection', () => {
     }) as any;
     expect(unsupported.bbox).toBeNull();
     expect(unsupported.bbox_status).toBe('INCOMPLETE_LIMIT_REACHED');
+  });
+
+  it.each([
+    ['LineString with a nested position among scalars', 'LineString', [139.7, 35.7, [140, 36]]],
+    ['LineString that is a bare position', 'LineString', 35.7],
+    ['LineString holding a bare scalar pair', 'LineString', [139.7, 35.7]],
+    ['Point holding a position array', 'Point', [[139.7, 35.7]]],
+    ['Point with a non-numeric member', 'Point', [139.7, 35.7, 'x']],
+    ['Polygon with ring depth missing', 'Polygon', [[139.7, 35.7], [139.8, 35.8]]],
+    ['MultiLineString with too little nesting', 'MultiLineString', [[139.7, 35.7], [139.8, 35.8]]],
+    ['MultiPolygon with too little nesting', 'MultiPolygon', [[[139.7, 35.7], [139.8, 35.8]]]],
+    ['MultiPoint with too much nesting', 'MultiPoint', [[[139.7, 35.7]]]],
+    ['LineString with a non-finite coordinate', 'LineString', [[139.7, null], [139.8, 35.8]]],
+  ])('never reports a complete bbox for malformed coordinate nesting: %s', (_label, type, coordinates) => {
+    const report = inspectPoiGeoJson('malformed', 'f'.repeat(64), 'malformed.geojson', {
+      type: 'FeatureCollection', features: [
+        { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [139.6, 35.6] } },
+        { type: 'Feature', properties: {}, geometry: { type, coordinates } },
+      ],
+    }) as any;
+    expect(report.bbox).toBeNull();
+    expect(report.raw_coordinates_bbox).toBeNull();
+    expect(report.bbox_status).toBe('INCOMPLETE_MALFORMED_GEOMETRY');
+    expect(report.bbox_counts.malformed_geometries).toBe(1);
+  });
+
+  it('accepts exactly-nested valid coordinates for every supported geometry type', () => {
+    const position = [139.7, 35.7, 12];
+    const report = inspectPoiGeoJson('valid', 'f'.repeat(64), 'valid.geojson', {
+      type: 'FeatureCollection', features: [
+        ['Point', position], ['MultiPoint', [position, [139.8, 35.8]]], ['LineString', [position, [139.8, 35.8]]],
+        ['Polygon', [[position, [139.8, 35.8], [139.8, 35.7], position]]], ['MultiLineString', [[position, [139.8, 35.8]]]],
+        ['MultiPolygon', [[[position, [139.8, 35.8], [139.8, 35.7], position]]]],
+      ].map(([type, coordinates]) => ({ type: 'Feature', properties: {}, geometry: { type, coordinates } })),
+    }) as any;
+    expect(report.bbox_status).toBe('COMPUTED_GEOGRAPHIC');
+    expect(report.bbox).toEqual([139.7, 35.7, 139.8, 35.8]);
+    expect(report.bbox_counts.malformed_geometries).toBe(0);
   });
 
   it('preserves bbox counts in a ZIP GeoJSON member summary', () => {

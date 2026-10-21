@@ -1,3 +1,4 @@
+import { displayZipMemberName } from './zip-names.js';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { docsRoot, getStoredSource, readJson } from './common.js';
@@ -32,7 +33,7 @@ export async function buildPoiResearch(rights:RightsRecord[]):Promise<{path:stri
     ...pois.map(p=>`| ${p.source_id} | ${p.format} | ${p.row_count??'n/a'} | ${p.members?.length??'n/a'} | ${JSON.stringify(p.coordinate_fields??'See member geometry and declared/assumed CRS')} |`),
     '', ...pois.filter(p=>p.members).flatMap(p=>[
       `### ${p.source_id}`,'',
-      ...p.members.map((m:any)=>`- ${m.file}: ${m.feature_count??'metadata'} features; geometry ${JSON.stringify(m.geometry_type_counts??null)}; bbox ${JSON.stringify(m.bbox??null)}; CRS ${JSON.stringify(m.crs??null)} (${m.crs_status??'UNKNOWN'}).`),
+      ...p.members.map((m:any)=>`- ${displayZipMemberName(m)}: ${m.feature_count??'metadata'} features; geometry ${JSON.stringify(m.geometry_type_counts??null)}; bbox ${JSON.stringify(m.bbox??null)}; CRS ${JSON.stringify(m.crs??null)} (${m.crs_status??'UNKNOWN'}).`),
       `- Matched original-data fields: ${p.source_attributions?.flatMap((a:any)=>Object.keys(a.fields??{})).join(', ')||'none found in inspected property/metadata fields; original sources UNKNOWN'}. Full inventory: ../poi/${p.source_id}.json.`,
       `- Source route inspection: ${JSON.stringify(p.topology?.status??'INVENTORY_ONLY')}; exact candidate details, if any, remain outside the routing graph.`,''
     ]),

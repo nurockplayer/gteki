@@ -1,6 +1,6 @@
 {
   "station_id": "ikebukuro",
-  "tool_input_sha256": "75edaa1d42f71d2574f24a8f8c0a1be1e6c2f9f6afa2ee52982a3c39156c5401",
+  "tool_input_sha256": "c0db4d9e1479b6503ca84aa81ac4156b0f0b71f1d5a84644b2f5e22c824acef0",
   "input_sources": [
     {
       "source_id": "plateau-catalog-ubld-13116-13104",
@@ -128,7 +128,7 @@
     },
     {
       "source_id": "tokyo-shinjuku-facilities-landing",
-      "sha256": "f168d6d921d384cad139069766b8946b1c0f1982c56e17fece61fc3c777b203d"
+      "sha256": "ff768790b1dd0ea7ce6bf5bbc1e77f6d88ba12b95702e845c00fd4fb819afac0"
     },
     {
       "source_id": "plateau-13104-related-2025",
@@ -374,6 +374,9 @@
       "members": [
         {
           "file": "13116_toshima-ku_pref_2023_shelter.geojson",
+          "name_bytes_hex": "31333131365f746f7368696d612d6b755f707265665f323032335f7368656c7465722e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 42,
           "geometry_type_counts": {
             "distinct_count": 1,
@@ -385,6 +388,9 @@
         },
         {
           "file": "13116_toshima-ku_pref_2023_park.geojson",
+          "name_bytes_hex": "31333131365f746f7368696d612d6b755f707265665f323032335f7061726b2e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 62,
           "geometry_type_counts": {
             "distinct_count": 1,
@@ -396,6 +402,9 @@
         },
         {
           "file": "13116_toshima-ku_pref_2025_landmark.geojson",
+          "name_bytes_hex": "31333131365f746f7368696d612d6b755f707265665f323032355f6c616e646d61726b2e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 143,
           "geometry_type_counts": {
             "distinct_count": 1,
@@ -407,6 +416,9 @@
         },
         {
           "file": "13116_toshima-ku_pref_2025_station.geojson",
+          "name_bytes_hex": "31333131365f746f7368696d612d6b755f707265665f323032355f73746174696f6e2e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 35,
           "geometry_type_counts": {
             "distinct_count": 1,
@@ -418,6 +430,9 @@
         },
         {
           "file": "13116_toshima-ku_pref_2025_railway.geojson",
+          "name_bytes_hex": "31333131365f746f7368696d612d6b755f707265665f323032355f7261696c7761792e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 81,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -430,6 +445,9 @@
         },
         {
           "file": "13116_toshima-ku_pref_2025_emergency_route.geojson",
+          "name_bytes_hex": "31333131365f746f7368696d612d6b755f707265665f323032355f656d657267656e63795f726f7574652e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 26,
           "geometry_type_counts": {
             "distinct_count": 2,
@@ -442,6 +460,9 @@
         },
         {
           "file": "13116_toshima-ku_pref_2025_border.geojson",
+          "name_bytes_hex": "31333131365f746f7368696d612d6b755f707265665f323032355f626f726465722e67656f6a736f6e",
+          "name_encoding_status": "ASCII_ONLY",
+          "name_cp932_candidate": null,
           "feature_count": 1,
           "geometry_type_counts": {
             "distinct_count": 1,

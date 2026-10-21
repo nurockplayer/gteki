@@ -13,7 +13,7 @@ vi.mock('../src/common.js', async original => ({
   getGitCommit: async () => null,
   getStoredSource: async (id: string) => ({ path: id, record: { source_id: id, sha256: 'a'.repeat(64) } }),
   readJson: async (path: string) => path === 'plateau-13104-package-2023' ? { success: true, result: { resources: [1, 2].map(n => ({ url: `https://example.invalid/13104_synthetic_2023_citygml_${n}_op.zip` })) } }
-    : path.includes('/networks/') ? { source_sha256: 'a'.repeat(64), members: [] } : { cities: [] },
+    : path.includes('/networks/') ? (() => { const source_id = path.split('/').pop()!.replace(/\.json$/, ''); return { source_id, source_sha256: 'a'.repeat(64), tool_input_sha256: 'b'.repeat(64), input_sources: [{ source_id, sha256: 'a'.repeat(64) }], members: [] }; })() : { cities: [] },
 }));
 vi.mock('../src/provenance.js', () => ({ toolFingerprint: async () => 'b'.repeat(64) }));
 vi.mock('../src/citygml.js', () => ({ inspectCityGmlPath: async () => {

@@ -6,7 +6,8 @@ import { promisify } from 'node:util';
 import path from 'node:path';
 import { assertPathWithinStore, docsRoot, ensurePrivateStore, getStoredSource, getStoreRoot, storeRelativePath, writeJson } from './common.js';
 import { toolFingerprint } from './provenance.js';
-import { readZip } from './zip.js';
+import { readZip, type ZipEntry } from './zip.js';
+import { displayZipMemberName } from './zip-names.js';
 
 const execFileAsync = promisify(execFile);
 const MAX_CSV_BYTES = 64 * 1024 * 1024;
@@ -169,7 +170,7 @@ function pointCoordinates(geometry: unknown): unknown[] | null {
   if (!geometry || typeof geometry !== 'object' || !Object.hasOwn(geometry, 'type') || !Object.hasOwn(geometry, 'coordinates')) return null;
   const geo = geometry as { type?: unknown; coordinates?: unknown };
   if (geo.type !== 'Point' || !Array.isArray(geo.coordinates) || geo.coordinates.length < 2) return null;
-  if (geo.coordinates.slice(0, 2).some(value => typeof value !== 'number' || !Number.isFinite(value))) return null;
+  if (geo.coordinates.some(value => typeof value !== 'number' || !Number.isFinite(value))) return null;
   return geo.coordinates;
 }
 
@@ -236,18 +237,23 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
       return { present: true, declaration: present.map(record => record.declaration), name: null, status: 'UNKNOWN', key: 'UNKNOWN:conflicting-declarations' };
     return present.at(-1) ?? declarations[0]!;
   };
-  const visitCoordinates = (value: unknown, depth = 0): void => {
+  // GeoJSON nesting depth above a position, per geometry type. Anything else is malformed
+  // and must never contribute to a "complete" bbox.
+  const COORDINATE_LEVELS: Record<string, number> = { Point: 0, MultiPoint: 1, LineString: 1, Polygon: 2, MultiLineString: 2, MultiPolygon: 3 };
+  let geometryMalformed = false;
+  let malformedGeometryCount = 0;
+  const visitCoordinates = (value: unknown, level: number): void => {
     if (coordinateVisitCount >= 1_000_000) { coordinateTraversalIncomplete = true; return; }
     coordinateVisitCount++;
-    if (depth > 12) { coordinateTraversalIncomplete = true; return; }
-    if (!Array.isArray(value)) { coordinateTraversalIncomplete = true; return; }
-    if (value.length >= 2 && typeof value[0] === 'number' && Number.isFinite(value[0]) && typeof value[1] === 'number' && Number.isFinite(value[1])) {
+    if (level === 0) {
+      if (!Array.isArray(value) || value.length < 2 || !value.every((item) => typeof item === 'number' && Number.isFinite(item))) { geometryMalformed = true; return; }
       coordinatePositionCount++;
       if (value[0] < -180 || value[0] > 180 || value[1] < -90 || value[1] > 90) geographicBoundsValid = false;
       coordinateBounds[0] = Math.min(coordinateBounds[0]!, value[0]); coordinateBounds[1] = Math.min(coordinateBounds[1]!, value[1]);
       coordinateBounds[2] = Math.max(coordinateBounds[2]!, value[0]); coordinateBounds[3] = Math.max(coordinateBounds[3]!, value[1]); return;
     }
-    for (const child of value) visitCoordinates(child, depth + 1);
+    if (!Array.isArray(value)) { geometryMalformed = true; return; }
+    for (const child of value) visitCoordinates(child, level - 1);
   };
   const visitGeometry = (feature: Record<string, unknown>, geometry: unknown, depth = 0, inherited?: EffectiveCrs): EffectiveCrs | undefined => {
     if (geometryVisitCount >= geometryVisitLimit) { coordinateTraversalIncomplete = true; return; }
@@ -269,8 +275,11 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
     if (object.type === 'Point' || object.type === 'MultiPoint' || object.type === 'LineString' || object.type === 'MultiLineString' || object.type === 'Polygon' || object.type === 'MultiPolygon') {
       effectiveCrsRecords.push(effectiveCrs);
       effectiveCrsKeys.add(effectiveCrs.key);
-      if (Object.hasOwn(object, 'coordinates')) visitCoordinates(object.coordinates);
-      else coordinateTraversalIncomplete = true;
+      if (Object.hasOwn(object, 'coordinates')) {
+        geometryMalformed = false;
+        visitCoordinates(object.coordinates, COORDINATE_LEVELS[object.type]!);
+        if (geometryMalformed) { malformedGeometryCount++; geometryMalformed = false; }
+      } else coordinateTraversalIncomplete = true;
       return effectiveCrs;
     }
     effectiveCrsRecords.push(effectiveCrs);
@@ -334,13 +343,13 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
   });
   const mixedCrs = effectiveCrsKeys.size > 1;
   if (mixedCrs) for (const observation of observations) { observation.longitude = null; observation.latitude = null; }
-  const bboxComplete = !coordinateTraversalIncomplete;
+  const bboxComplete = !coordinateTraversalIncomplete && malformedGeometryCount === 0;
   const rawBbox = bboxComplete && coordinateBounds[0] !== Infinity ? coordinateBounds : null;
   const bbox = !mixedCrs && effectiveCrsRecords.every((record) => record.status === 'DECLARED' || record.status === 'RFC7946_ASSUMPTION') && geographicBoundsValid ? rawBbox : null;
   const commonCrsName = mixedCrs ? null : effectiveCrsRecords.length ? effectiveCrsRecords[0]!.name : rootCrsName;
   const layerCrsStatus = mixedCrs ? 'MIXED' : effectiveCrsRecords[0]?.status ?? crsReference(rootCrsPresent, declaredCrs).status;
   return {
-    file, format: 'GeoJSON', feature_count: features.length, bbox, raw_coordinates_bbox: rawBbox, bbox_status: !bboxComplete ? 'INCOMPLETE_LIMIT_REACHED' : bbox ? 'COMPUTED_GEOGRAPHIC' : 'UNKNOWN', bbox_counts: { coordinate_visits: coordinateVisitCount, coordinate_positions: coordinatePositionCount, geometry_visits: geometryVisitCount, geometry_visit_limit: geometryVisitLimit, visit_limit: 1_000_000 }, property_keys: [...propertyCounts.keys()].sort(), property_keys_truncated: propertyCounts.size >= 200, geometry_type_counts: distribution(geometryCounts),
+    file, format: 'GeoJSON', feature_count: features.length, bbox, raw_coordinates_bbox: rawBbox, bbox_status: coordinateTraversalIncomplete ? 'INCOMPLETE_LIMIT_REACHED' : malformedGeometryCount > 0 ? 'INCOMPLETE_MALFORMED_GEOMETRY' : bbox ? 'COMPUTED_GEOGRAPHIC' : 'UNKNOWN', bbox_counts: { coordinate_visits: coordinateVisitCount, coordinate_positions: coordinatePositionCount, geometry_visits: geometryVisitCount, geometry_visit_limit: geometryVisitLimit, malformed_geometries: malformedGeometryCount, visit_limit: 1_000_000 }, property_keys: [...propertyCounts.keys()].sort(), property_keys_truncated: propertyCounts.size >= 200, geometry_type_counts: distribution(geometryCounts),
     line_feature_count: (geometryCounts.get('LineString') ?? 0) + (geometryCounts.get('MultiLineString') ?? 0), endpoint_field_sets: Object.fromEntries([...endpointFieldSets].sort(([a], [b]) => a.localeCompare(b))),
     crs: { properties: { name: commonCrsName } }, crs_status: layerCrsStatus, declared_crs: declaredCrs,
     effective_crs_declarations: [...new Map(effectiveCrsRecords.filter(record=>record.present).map(record=>[JSON.stringify(record.declaration),record.declaration])).values()],
@@ -356,7 +365,8 @@ export function poiGeoJsonMember(file: string, bytes: number, geo: Record<string
 
 async function zipReport(sourceId: string, sha256: string, filePath: string): Promise<Record<string, unknown>> {
   const entries = await readZip(filePath, { maxEntryBytes: 64 * 1024 * 1024, maxTotalBytes: 256 * 1024 * 1024 });
-  const members: Array<{ file: string; bytes: number; kind: string; excerpt?: string; metadata?: Record<string, unknown>; feature_count?: unknown; bbox?: unknown; bbox_status?: unknown; bbox_counts?: unknown; raw_coordinates_bbox?: unknown; crs?: unknown; crs_status?: unknown; declared_crs?:unknown; crs_interpretation?:unknown; property_keys?:unknown; property_keys_truncated?:unknown; geometry_type_counts?: unknown; literal_field_distributions?: unknown; source_attributions?: unknown; line_feature_count?: unknown; endpoint_field_sets?: unknown }> = [];
+  const members: Array<{ file: string; bytes: number; kind: string; name_bytes_hex?: string; name_utf8_flag?: boolean; name_encoding_status?: string; name_cp437?: string | null; name_utf8?: string | null; name_cp932_candidate?: string | null; excerpt?: string; metadata?: Record<string, unknown>; feature_count?: unknown; bbox?: unknown; bbox_status?: unknown; bbox_counts?: unknown; raw_coordinates_bbox?: unknown; crs?: unknown; crs_status?: unknown; declared_crs?:unknown; crs_interpretation?:unknown; property_keys?:unknown; property_keys_truncated?:unknown; geometry_type_counts?: unknown; literal_field_distributions?: unknown; source_attributions?: unknown; line_feature_count?: unknown; endpoint_field_sets?: unknown }> = [];
+  const nameFields = (entry: ZipEntry) => ({ name_bytes_hex: entry.name_bytes_hex, name_utf8_flag: entry.name_utf8_flag, name_encoding_status: entry.name_encoding_status, name_cp437: entry.name_cp437, name_utf8: entry.name_utf8, name_cp932_candidate: entry.name_cp932_candidate });
   const allObservations: Observation[] = [];
   const candidateEdges: unknown[] = [];
   const literalValueTables: unknown[] = [];
@@ -368,7 +378,7 @@ async function zipReport(sourceId: string, sha256: string, filePath: string): Pr
         const parsed = JSON.parse(entry.data.toString('utf8')) as unknown;
         const geo = inspectPoiGeoJson(sourceId, sha256, entry.name, parsed);
         if (geo) {
-          members.push(poiGeoJsonMember(entry.name, entry.data.length, geo));
+          members.push({ ...poiGeoJsonMember(entry.name, entry.data.length, geo), ...nameFields(entry) });
           if (Array.isArray(geo.observations)) {
             observationsTotal += Number(geo.observations_total ?? geo.observations.length);
             const remaining = Math.max(0, MAX_OBSERVATIONS - allObservations.length);
@@ -376,9 +386,9 @@ async function zipReport(sourceId: string, sha256: string, filePath: string): Pr
           }
           if (Array.isArray(geo.candidate_edges)) candidateEdges.push(...geo.candidate_edges);
           if (Array.isArray(geo.literal_value_tables)) literalValueTables.push(...geo.literal_value_tables);
-        } else members.push({ file: entry.name, bytes: entry.data.length, kind: 'JSON_METADATA', metadata: metadataInventory(parsed) });
+        } else members.push({ file: entry.name, bytes: entry.data.length, kind: 'JSON_METADATA', ...nameFields(entry), metadata: metadataInventory(parsed) });
       } catch (error) {
-        members.push({ file: entry.name, bytes: entry.data.length, kind: 'JSON_UNPARSED', });
+        members.push({ file: entry.name, bytes: entry.data.length, kind: 'JSON_UNPARSED', ...nameFields(entry) });
         if (lower.endsWith('.geojson')) throw new Error(`Invalid GeoJSON member ${entry.name}: ${String(error)}`);
       }
     } else {
@@ -386,13 +396,17 @@ async function zipReport(sourceId: string, sha256: string, filePath: string): Pr
       if (isText) {
         const lines = entry.data.toString('utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
         const noticeLines = lines.filter((line) => /(?:原典|出典|著作権|copyright|attribution|license|licence|ライセンス|利用条件)/i.test(line)).slice(0, 20);
-        members.push({ file: entry.name, bytes: entry.data.length, kind: 'README_OR_TEXT', metadata: { line_count: lines.length, notice_excerpts: noticeLines.map(excerpt) } });
-      } else members.push({ file: entry.name, bytes: entry.data.length, kind: 'OTHER' });
+        members.push({ file: entry.name, bytes: entry.data.length, kind: 'README_OR_TEXT', ...nameFields(entry), metadata: { line_count: lines.length, notice_excerpts: noticeLines.map(excerpt) } });
+      } else members.push({ file: entry.name, bytes: entry.data.length, kind: 'OTHER', ...nameFields(entry) });
     }
   }
   const sourceAttributions = members.flatMap((member) => member.source_attributions ? [{ file: member.file, fields: member.source_attributions }] : member.metadata && Object.keys((member.metadata as Record<string, unknown>).source_attributions as object ?? {}).length ? [{ file: member.file, fields: (member.metadata as Record<string, unknown>).source_attributions }] : []);
   const metadataMembers = members.filter((member) => member.kind === 'README_OR_TEXT' || member.kind === 'JSON_METADATA').map(({ file, bytes, kind, metadata }) => ({ file, bytes, kind, metadata }));
-  const filenameEncoding = { status: 'UNKNOWN_OR_CP437_DECODED', raw_filename_bytes_available: false, note: 'ZIP reader exposed decoded entry names only; names may be mojibake when the archive uses a legacy Japanese encoding. No alias was inferred.' };
+  const nameStatusCounts: Record<string, number> = {};
+  for (const entry of entries) nameStatusCounts[entry.name_encoding_status] = (nameStatusCounts[entry.name_encoding_status] ?? 0) + 1;
+  const undeclared = (nameStatusCounts.CANDIDATE_CP932_UNDECLARED ?? 0) + (nameStatusCounts.UNDECLARED_UNRESOLVED ?? 0);
+  const filenameEncoding = { status: undeclared ? 'UNDECLARED_LEGACY_NAMES_PRESENT' : 'DECLARED_OR_ASCII', raw_filename_bytes_available: true, status_counts: nameStatusCounts,
+    note: undeclared ? 'Member names without the ZIP UTF-8 flag are decoded per specification as CP437 (name_cp437 / file). Names that decode as valid CP932 are recorded only as name_cp932_candidate; the encoding is not declared by the archive. The raw name bytes (name_bytes_hex) are the member identity; no alias was adopted.' : 'All member names are ASCII or declare their encoding.' };
   return { format: 'ZIP', archive_entry_count: entries.length, filename_encoding: filenameEncoding, members, observations: allObservations, observations_total: observationsTotal, observations_truncated: observationsTotal > allObservations.length, literal_value_tables: literalValueTables, source_attributions: sourceAttributions, metadata_members: metadataMembers, topology: { status: candidateEdges.length ? 'EXPLICIT_LITERAL_ENDPOINT_IDS_ONLY' : 'INVENTORY_ONLY', candidate_edges: candidateEdges.slice(0, MAX_OBSERVATIONS), candidate_edges_truncated: candidateEdges.length > MAX_OBSERVATIONS } };
 }
 
@@ -484,7 +498,7 @@ export async function inspectPoi(sourceId: string): Promise<Record<string, unkno
 }
 
 function renderPoiMarkdown(report: Record<string, any>): string {
-  const memberSummary = Array.isArray(report.members) ? report.members.map((member: any) => `| ${member.file} | ${member.feature_count ?? 'UNKNOWN'} | ${JSON.stringify(member.bbox ?? null)} | ${JSON.stringify(member.crs ?? null)} |`).join('\n') : '';
+  const memberSummary = Array.isArray(report.members) ? report.members.map((member: any) => `| ${displayZipMemberName(member)} | ${member.feature_count ?? 'UNKNOWN'} | ${JSON.stringify(member.bbox ?? null)} | ${JSON.stringify(member.crs ?? null)} |`).join('\n') : '';
   return `# POI inventory: ${report.source_id}\n\n- Source SHA-256: \`${report.source_sha256}\`\n- Tool-input SHA-256: \`${report.tool_input_sha256}\`\n- Station IDs: ${JSON.stringify(report.station_ids)}\n- Verification: ${report.verification}; routable: ${report.routable}\n- Rights observations: ${JSON.stringify(report.rights_observations)}\n${report.literal_values_artifact ? `- Literal-value artifact store path: \`${report.literal_values_artifact.store_path}\` (SHA-256 \`${report.literal_values_artifact.sha256}\`, ${report.literal_values_artifact.tables} tables)\n` : ''}${memberSummary ? `\n| Member | Features | Bbox | CRS |\n| --- | ---: | --- | --- |\n${memberSummary}\n` : ''}\nAll source observations remain unverified. This inventory makes no current-world verification, rights determination, routing, or coverage claim.\n`;
 }
 

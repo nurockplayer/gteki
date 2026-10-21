@@ -4,6 +4,7 @@ import { docsRoot, getStoredSource, readJson, writeJson } from './common.js';
 import type { StationOverlapReport } from './overlap.js';
 import { loadSources } from './acquire.js';
 import { toolFingerprint } from './provenance.js';
+import { assertNetworkInspectionCurrent } from './network-evidence.js';
 import { assertOverlapReportCurrent, assertPoiInspectionCurrent, assertVintageResearchCurrent } from './inspection-evidence.js';
 
 const STATIONS = [
@@ -101,6 +102,8 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
     if (overlap) await assertOverlapReportCurrent(overlap, station.id, { fingerprint });
     overlaps.set(station.id, overlap);
   }
+  // Network reports are consumed directly below: require current identity, fingerprint and lineage first.
+  for (const station of STATIONS) await assertNetworkInspectionCurrent(await readJson(path.join(docsRoot, 'gis', 'networks', `${station.network}.json`)), station.network, { fingerprint, ...(station.id === 'ikebukuro' ? { linkSourceId: 'hokonavi-ikebukuro-walk-link-csv' } : {}) });
   const inputs = new Map<string, string>();
   for (const report of [...rights, ...pois, vintage, ...overlaps.values()].filter(Boolean)) {
     for (const input of report.input_sources ?? []) {
@@ -117,7 +120,7 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
   }
   for (const station of STATIONS) {
     const stationRights=rights.filter(r=>r.station_ids.includes(station.id)).map(r=>({source_id:r.source_id,source_sha256:r.source_sha256,licence:r.licence,resource_licence:r.resource_licence,publish_gate:r.publish_gate}));
-    const stationPois=pois.filter(r=>r.station_ids.includes(station.id)).map(r=>({source_id:r.source_id,source_sha256:r.source_sha256,format:r.format,row_count:r.row_count??null,members:r.members?.map((m:any)=>({file:m.file,feature_count:m.feature_count??null,geometry_type_counts:m.geometry_type_counts??null})),verification:'UNVERIFIED',routable:false}));
+    const stationPois=pois.filter(r=>r.station_ids.includes(station.id)).map(r=>({source_id:r.source_id,source_sha256:r.source_sha256,format:r.format,row_count:r.row_count??null,members:r.members?.map((m:any)=>({file:m.file,name_bytes_hex:m.name_bytes_hex??null,name_encoding_status:m.name_encoding_status??null,name_cp932_candidate:m.name_cp932_candidate??null,feature_count:m.feature_count??null,geometry_type_counts:m.geometry_type_counts??null})),verification:'UNVERIFIED',routable:false}));
     const inventory = await maybeReport(`inventory/${station.gml}.inventory.json`);
     const network = await maybeReport(`networks/${station.network}.json`);
     const overlap = overlaps.get(station.id)!;
