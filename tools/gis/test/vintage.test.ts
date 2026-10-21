@@ -141,3 +141,29 @@ describe('bounded vintage ZIP inspection', () => {
     } finally { if (previous === undefined) delete process.env.GTEKI_GIS_STORE; else process.env.GTEKI_GIS_STORE = previous; await rm(root, { recursive: true, force: true }); await rm(outside, { recursive: true, force: true }); }
   });
 });
+
+describe('vintage evidence currency and geometry coverage', () => {
+  it('reports incomplete geometry coverage for a real scanned fixture with unresolved references', async () => {
+    const { scanCityGml } = await import('../src/citygml.js');
+    const { fileURLToPath } = await import('node:url');
+    const { geometryCoverage, coverageUnknownReason } = await import('../src/vintage.js');
+    const inventory = await scanCityGml(fileURLToPath(new URL('./fixtures/ownership-namespace-xlink.xml', import.meta.url)), { source_id: 'synthetic-ownership', source_sha256: 'b'.repeat(64) });
+    // The fixture yields a numeric bbox while some geometry references stay unresolved.
+    expect(inventory.totals.bbox_lat_lon_height).not.toBeNull();
+    const coverage = geometryCoverage(inventory);
+    expect(coverage.unresolved + coverage.unsupported_external + coverage.unsupported_reference_records).toBeGreaterThan(0);
+    expect(coverage.complete).toBe(false);
+    expect(coverageUnknownReason({ geometry_coverage: coverage })).toMatch(/incomplete/);
+    expect(coverageUnknownReason({})).toMatch(/missing/);
+    expect(coverageUnknownReason(null)).toMatch(/missing/);
+  });
+
+  it('fails offline verification for a missing or stale tool fingerprint', async () => {
+    const base = { input_sources: [], archives: [], selected_member_records: [] } as unknown as VintageReport;
+    for (const value of [undefined, '0'.repeat(64)]) {
+      const result = await verifyVintageEvidence({ ...base, tool_input_sha256: value } as unknown as VintageReport);
+      expect(result.status).toBe('FAIL');
+      expect(result.errors.join(' ')).toMatch(/tool_input_sha256|tool fingerprint/);
+    }
+  });
+});

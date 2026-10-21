@@ -180,7 +180,7 @@
     }
   ],
   "invalidated": {
-    "at": "2026-10-21T15:01:07.324Z",
+    "at": "2026-10-21T16:19:41.619Z",
     "by_command": "gis gap-packet",
     "reason": "Report-writing command run outside real-run; rerun real-run before summarizing"
   }

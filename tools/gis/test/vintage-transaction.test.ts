@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const state = vi.hoisted(() => ({
   root: `${process.env.TMPDIR ?? '/tmp'}/gis-vintage-transaction-${process.pid}`,
   failInspection: false, failStage: false, failPromotion: false, identicalMembers: false, inspections: 0,
-  rich: false, networkCrs: undefined as unknown, networkBboxStatus: 'COMPUTED' as string | undefined, networkBbox: [139.69, 35.68, 139.71, 35.70] as unknown, combinedCrs: undefined as unknown, secondMember: false, vintageBbox: true,
+  rich: false, networkCrs: undefined as unknown, networkBboxStatus: 'COMPUTED' as string | undefined, networkBbox: [139.69, 35.68, 139.71, 35.70] as unknown, combinedCrs: undefined as unknown, secondMember: false, vintageBbox: true, unresolved: 0, unsupportedExternal: 0, unsupportedRecords: 0, secondMemberCrs: 'EPSG:4326' as unknown,
 }));
 vi.mock('../src/common.js', async original => ({
   ...await original<typeof import('../src/common.js')>(),
@@ -14,13 +14,15 @@ vi.mock('../src/common.js', async original => ({
   getGitCommit: async () => null,
   getStoredSource: async (id: string) => ({ path: id, record: { source_id: id, sha256: 'a'.repeat(64) } }),
   readJson: async (path: string) => path === 'plateau-13104-package-2023' ? { success: true, result: { resources: [1, 2].map(n => ({ url: `https://example.invalid/13104_synthetic_2023_citygml_${n}_op.zip` })) } }
-    : path.includes('/networks/') ? (() => { const source_id = path.split('/').pop()!.replace(/\.json$/, ''); return { source_id, source_sha256: 'a'.repeat(64), tool_input_sha256: 'b'.repeat(64), input_sources: [{ source_id, sha256: 'a'.repeat(64) }], ...(state.combinedCrs === undefined ? {} : { network_inventory: { crs: state.combinedCrs } }), members: state.rich ? [{ file: 'synthetic.geojson', bbox: state.networkBbox, bbox_status: state.networkBboxStatus, crs: state.networkCrs }, ...(state.secondMember ? [{ file: 'second.geojson', bbox: state.networkBbox, bbox_status: state.networkBboxStatus, crs: { type: 'name', properties: { name: 'EPSG:4326' } } }] : [])] : [] }; })() : { cities: [] },
+    : path.includes('/networks/') ? (() => { const source_id = path.split('/').pop()!.replace(/\.json$/, ''); return { source_id, source_sha256: 'a'.repeat(64), tool_input_sha256: 'b'.repeat(64), input_sources: [{ source_id, sha256: 'a'.repeat(64) }], ...(state.combinedCrs === undefined ? {} : { network_inventory: { crs: state.combinedCrs } }), members: state.rich ? [{ file: 'synthetic.geojson', bbox: state.networkBbox, bbox_status: state.networkBboxStatus, crs: state.networkCrs }, ...(state.secondMember ? [{ file: 'second.geojson', bbox: state.networkBbox, bbox_status: state.networkBboxStatus, crs: { type: 'name', properties: { name: state.secondMemberCrs } } }] : [])] : [] }; })() : { cities: [] },
 }));
 vi.mock('../src/provenance.js', () => ({ toolFingerprint: async () => 'b'.repeat(64) }));
 vi.mock('../src/citygml.js', () => ({ inspectCityGmlPath: async () => {
   state.inspections++;
   if (state.failInspection) throw new Error('injected CityGML failure');
-  return { totals: { feature_count: 0, polygon_count: 0, bbox_lat_lon_height: state.rich && state.vintageBbox ? { min: [35.68, 139.69, 0], max: [35.70, 139.71, 10] } : null }, envelope: state.rich ? { srsName: 'EPSG:6697' } : null, unknowns: [] };
+  return { totals: { feature_count: 0, polygon_count: 0, bbox_lat_lon_height: state.rich && state.vintageBbox ? { min: [35.68, 139.69, 0], max: [35.70, 139.71, 10] } : null }, envelope: state.rich ? { srsName: 'EPSG:6697' } : null, unknowns: [],
+    geometry_reference_summary: { total: 10, resolved: 10 - state.unresolved - state.unsupportedExternal, unresolved: state.unresolved, unsupported_external: state.unsupportedExternal, signed_reverse: 0, by_context: {} },
+    unsupported_geometry_references: Array.from({ length: state.unsupportedRecords }, () => ({ target: '#x', owner_gml_id: null, context: 'boundary', reason: 'synthetic' })) };
 } }));
 vi.mock('node:fs/promises', async original => {
   const actual = await original<typeof import('node:fs/promises')>();
@@ -62,7 +64,7 @@ async function snapshot(directory = `${state.root}/docs/gis`): Promise<Record<st
   return result;
 }
 beforeEach(async () => {
-  state.rich = false; state.networkCrs = undefined; state.networkBboxStatus = 'COMPUTED'; state.networkBbox = [139.69, 35.68, 139.71, 35.70]; state.combinedCrs = undefined; state.secondMember = false; state.vintageBbox = true; state.failInspection = false; state.failStage = false; state.failPromotion = false; state.identicalMembers = false; state.inspections = 0;
+  state.rich = false; state.networkCrs = undefined; state.networkBboxStatus = 'COMPUTED'; state.networkBbox = [139.69, 35.68, 139.71, 35.70]; state.combinedCrs = undefined; state.secondMember = false; state.vintageBbox = true; state.unresolved = 0; state.unsupportedExternal = 0; state.unsupportedRecords = 0; state.secondMemberCrs = 'EPSG:4326'; state.failInspection = false; state.failStage = false; state.failPromotion = false; state.identicalMembers = false; state.inspections = 0;
   await rm(state.root, { recursive: true, force: true });
   const memberId = createHash('sha256').update(plain).digest('hex').slice(0, 16);
   for (const file of ['vintages/shinjuku-2023.json', 'vintages/shinjuku-2023.md', 'acquisitions/vintages/vintage-directory-citygml-2-op.zip.json', `acquisitions/vintages/vintage-member-${memberId}.json`]) {
@@ -163,6 +165,28 @@ describe('vintage bundle transaction', () => {
       state.secondMember = false; state.combinedCrs = { value: null, status: 'UNKNOWN', note: 'GeoJSON member layers declare different CRS values.' };
       unknownEverywhere(await inspectVintages({ fetcher }));
       state.combinedCrs = { value: null, status: 'UNKNOWN', note: 'Explicit "crs": null declares no CRS.' };
+      unknownEverywhere(await inspectVintages({ fetcher }));
+    });
+    it.each([
+      ['unresolved geometry references', { unresolved: 2 }],
+      ['unsupported external geometry references', { unsupportedExternal: 1 }],
+      ['unsupported reference records', { unsupportedRecords: 1 }],
+    ])('keeps every relation UNKNOWN, with a reason, when the CityGML member has %s', async (_label, partial) => {
+      state.rich = true; state.networkCrs = name('EPSG:6668'); Object.assign(state, partial);
+      const report = await inspectVintages({ fetcher });
+      expect(report.comparison.bbox_relations.length).toBeGreaterThan(0);
+      expect(report.comparison.bbox_relations.every(r => r.relation === 'UNKNOWN' && r.intersection_bbox_lat_lon === null)).toBe(true);
+      expect(report.comparison.bbox_relations.every(r => /geometry coverage is incomplete/.test(r.unknown_reason ?? ''))).toBe(true);
+      expect(report.selected_member_records.every(m => m.inspection?.geometry_coverage?.complete === false)).toBe(true);
+    });
+    it('records complete geometry coverage and compares when every reference resolved', async () => {
+      state.rich = true; state.networkCrs = name('EPSG:6668');
+      const report = await inspectVintages({ fetcher });
+      expect(report.selected_member_records.every(m => m.inspection?.geometry_coverage?.complete === true)).toBe(true);
+      expect(report.comparison.bbox_relations.every(r => r.relation === 'INTERSECTS' && r.unknown_reason === null)).toBe(true);
+    });
+    it.each(['EPSG:6677', 'EPSG:9999'])('keeps a geographic EPSG:6668 layer UNKNOWN when another member declares %s (no combined declaration)', async other => {
+      state.rich = true; state.networkCrs = name('EPSG:6668'); state.secondMember = true; state.secondMemberCrs = other;
       unknownEverywhere(await inspectVintages({ fetcher }));
     });
     it('keeps a relation UNKNOWN when the vintage CityGML bbox is missing', async () => {

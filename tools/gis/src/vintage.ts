@@ -9,7 +9,7 @@ import { crsName, geographicCrs } from './crs-declaration.js';
 import { isIncompleteBboxStatus } from './geo-bbox.js';
 import { assertNetworkInspectionCurrent } from './network-evidence.js';
 import { describeZipName, type ZipNameInfo } from './zip-names.js';
-import { inspectCityGmlPath } from './citygml.js';
+import { inspectCityGmlPath, type CityInventory } from './citygml.js';
 import { commitReportFiles, type ReportFile } from './report-transaction.js';
 
 const PACKAGE_ID = 'plateau-13104-package-2023';
@@ -27,6 +27,21 @@ export type VintageZipMember = {
   name: string; name_bytes: number; compressed_size: number; size: number; crc32: string; method: number; flags: number;
   local_header_offset: number; mesh: string | null; category: 'udx' | 'ubld' | null;
 } & ZipNameInfo;
+/** Geometry-reference completeness of one inspected CityGML member; a bbox from partial geometry is not a coverage claim. */
+export type GeometryCoverage = { total_references: number; resolved: number; unresolved: number; unsupported_external: number; unsupported_reference_records: number; complete: boolean };
+export function geometryCoverage(inventory: Pick<CityInventory, 'geometry_reference_summary' | 'unsupported_geometry_references' | 'totals'>): GeometryCoverage {
+  const summary = inventory.geometry_reference_summary, records = inventory.unsupported_geometry_references.length;
+  return { total_references: summary.total, resolved: summary.resolved, unresolved: summary.unresolved, unsupported_external: summary.unsupported_external, unsupported_reference_records: records,
+    complete: summary.unresolved === 0 && summary.unsupported_external === 0 && records === 0 && summary.total === summary.resolved && inventory.totals.bbox_lat_lon_height !== null };
+}
+/** Why a member's bbox cannot support INTERSECTS/DISJOINT, or null when geometry coverage is complete. */
+export function coverageUnknownReason(inspection: { geometry_coverage?: GeometryCoverage } | null): string | null {
+  const coverage = inspection?.geometry_coverage;
+  if (!coverage) return 'CityGML geometry coverage evidence is missing';
+  if (coverage.complete) return null;
+  return `CityGML geometry coverage is incomplete (${coverage.unresolved} unresolved, ${coverage.unsupported_external} unsupported external, ${coverage.unsupported_reference_records} unsupported reference records of ${coverage.total_references} references); the bbox covers only the geometry that resolved`;
+}
+
 export type VintageRange = { start: number; end: number; bytes: number; final_url: string; requested_at: string; completed_at: string; sha256?: string; store_path?: string };
 export type VintageValidatorType = 'STRONG_ETAG';
 export type VintageArchiveInspection = {
@@ -41,8 +56,8 @@ export type VintageReport = {
   generated_at: string; package_sha256: string | null; archives: VintageArchiveInspection[];
   input_sources: Array<{ source_id: string; sha256: string }>;
   tool_input_sha256: string;
-  selected_member_records: Array<{ archive: string; final_url: string; member: string; sha256: string; bytes: number; store_path: string; ranges: VintageRange[]; etag: string | null; last_modified: string | null; validator_type: VintageValidatorType; crc32: string; size: number; inspection: { verification: 'UNVERIFIED'; feature_count: number; polygon_count: number; envelope: { lower: number[]; upper: number[]; srsName: string | null; axis_order: 'latitude,longitude,height' } | null; bbox_lat_lon_height: unknown; unknowns: string[] } | null; inspection_error: string | null }>;
-  comparison: { current_catalog_source_id: string; target_mesh: string; bbox_meshes: string[]; current_2025_ubld: Array<{ code: string; url: string; file_size: number | null }>; meshes_2023: string[]; meshes_2025: string[]; only_2023: string[]; only_2025: string[]; touching_target_2023: string[]; bbox_relations: Array<{ archive: string; layer: string; source_crs: string | null; layer_crs: string | null; layer_crs_status: 'DECLARED_NAME' | 'UNKNOWN'; layer_bbox_status: string | null; relation: 'INTERSECTS' | 'DISJOINT' | 'UNKNOWN'; intersection_bbox_lat_lon: number[] | null }>; note: string };
+  selected_member_records: Array<{ archive: string; final_url: string; member: string; sha256: string; bytes: number; store_path: string; ranges: VintageRange[]; etag: string | null; last_modified: string | null; validator_type: VintageValidatorType; crc32: string; size: number; inspection: { verification: 'UNVERIFIED'; feature_count: number; polygon_count: number; envelope: { lower: number[]; upper: number[]; srsName: string | null; axis_order: 'latitude,longitude,height' } | null; bbox_lat_lon_height: unknown; unknowns: string[]; geometry_coverage?: GeometryCoverage } | null; inspection_error: string | null }>;
+  comparison: { current_catalog_source_id: string; target_mesh: string; bbox_meshes: string[]; current_2025_ubld: Array<{ code: string; url: string; file_size: number | null }>; meshes_2023: string[]; meshes_2025: string[]; only_2023: string[]; only_2025: string[]; touching_target_2023: string[]; bbox_relations: Array<{ archive: string; layer: string; source_crs: string | null; layer_crs: string | null; layer_crs_status: 'DECLARED_NAME' | 'UNKNOWN'; layer_bbox_status: string | null; unknown_reason: string | null; relation: 'INTERSECTS' | 'DISJOINT' | 'UNKNOWN'; intersection_bbox_lat_lon: number[] | null }>; note: string };
   byte_totals: { directory_range_bytes: number; member_range_bytes: number; extracted_member_bytes: number; requested_http_bytes: number };
   limitations: string[];
 };
@@ -380,7 +395,7 @@ async function prepareMember(archive: string, url: string, item: { member: Vinta
   let inspectionError: string | null = null;
   try {
     const inventory = await inspectCityGmlPath(full, { source_id: `vintage-member-${sha256.slice(0, 16)}`, source_sha256: sha256 });
-    inspection = { verification: 'UNVERIFIED', feature_count: inventory.totals.feature_count, polygon_count: inventory.totals.polygon_count, envelope: inventory.envelope, bbox_lat_lon_height: inventory.totals.bbox_lat_lon_height, unknowns: inventory.unknowns };
+    inspection = { verification: 'UNVERIFIED', feature_count: inventory.totals.feature_count, polygon_count: inventory.totals.polygon_count, envelope: inventory.envelope, bbox_lat_lon_height: inventory.totals.bbox_lat_lon_height, unknowns: inventory.unknowns, geometry_coverage: geometryCoverage(inventory) };
   } catch (error) { throw new Error(`Unable to inspect acquired CityGML member ${item.member.name}: ${error instanceof Error ? error.message : String(error)}`); }
   return { receipt: jsonReport(join(docsRoot, 'gis', 'acquisitions', 'vintages', `${record.source_id}.json`), record), member: { archive, final_url: identity.final_url, member: item.member.name, sha256, bytes: item.bytes.length, store_path: storePath, ranges: item.ranges, etag: identity.etag, last_modified: identity.last_modified, validator_type: identity.validator_type, crc32: item.member.crc32, size: item.member.size, inspection, inspection_error: inspectionError } };
 }
@@ -402,11 +417,12 @@ function validLonLatBbox(bbox: unknown): bbox is [number, number, number, number
 export function effectiveNetworkLayers(sourceId: string, network: NetworkInspection): E27Layer[] {
   const members = network.members ?? [];
   const names = members.map(member => crsName(member.crs));
-  const geographic = names.filter((name): name is string => typeof name === 'string' && geographicCrs(name)).map(name => name.trim().toUpperCase());
   // A combined declaration which the inspector marked UNKNOWN (members disagree, or an explicit "crs": null) taints every layer.
   const combined = network.network_inventory?.crs;
   const combinedUnknown = combined !== undefined && combined !== null && typeof combined === 'object' && (combined as { status?: unknown }).status === 'UNKNOWN';
-  const conflicting = new Set(geographic).size > 1 || combinedUnknown;
+  // Every declared name counts, geographic or not: a station-map report has no combined declaration to expose a EPSG:6668 vs EPSG:6677 disagreement.
+  const declared = names.filter((name): name is string => typeof name === 'string').map(name => name.trim().toUpperCase());
+  const conflicting = new Set(declared).size > 1 || combinedUnknown;
   return members.map((member, index) => {
     const name = names[index];
     const bboxStatus = typeof member.bbox_status === 'string' ? member.bbox_status : null;
@@ -481,12 +497,13 @@ export async function inspectVintages(options: { fetcher?: RangeFetcher; fetchMe
     const isCode=(value:unknown,code:string):boolean=>typeof value==='string'&&[`EPSG:${code}`,`HTTP://WWW.OPENGIS.NET/DEF/CRS/EPSG/0/${code}`,`URN:OGC:DEF:CRS:EPSG::${code}`].includes(value.toUpperCase());
     const isJgd2011 = isCode(sourceCrs,'6697') && isCode(layer.crs,'6668');
     const finitePair = (value: unknown): boolean => Array.isArray(value) && value.length >= 2 && value.slice(0, 2).every(item => typeof item === 'number' && Number.isFinite(item));
-    if (!vintage || !finitePair(vintage.min) || !finitePair(vintage.max) || !layer.bbox || !isJgd2011) return { archive: member.archive, layer: layer.layer, source_crs: sourceCrs, layer_crs: layer.crs, layer_crs_status: layer.crs_status, layer_bbox_status: layer.bbox_status, relation: 'UNKNOWN' as const, intersection_bbox_lat_lon: null };
+    const coverageReason = coverageUnknownReason(member.inspection);
+    if (coverageReason !== null || !vintage || !finitePair(vintage.min) || !finitePair(vintage.max) || !layer.bbox || !isJgd2011) return { archive: member.archive, layer: layer.layer, source_crs: sourceCrs, layer_crs: layer.crs, layer_crs_status: layer.crs_status, layer_bbox_status: layer.bbox_status, unknown_reason: coverageReason ?? 'CRS or bbox of a compared layer is not usable', relation: 'UNKNOWN' as const, intersection_bbox_lat_lon: null };
     const networkLonLat = layer.bbox;
     const vMin = vintage.min!, vMax = vintage.max!;
     const intersection: [number, number, number, number] = [Math.max(vMin[0]!, networkLonLat[1]!), Math.max(vMin[1]!, networkLonLat[0]!), Math.min(vMax[0]!, networkLonLat[3]!), Math.min(vMax[1]!, networkLonLat[2]!)];
     const intersects = intersection[0] <= intersection[2] && intersection[1] <= intersection[3];
-    return { archive: member.archive, layer: layer.layer, source_crs: sourceCrs, layer_crs: layer.crs, layer_crs_status: layer.crs_status, layer_bbox_status: layer.bbox_status, relation: intersects ? 'INTERSECTS' as const : 'DISJOINT' as const, intersection_bbox_lat_lon: intersects ? intersection : null };
+    return { archive: member.archive, layer: layer.layer, source_crs: sourceCrs, layer_crs: layer.crs, layer_crs_status: layer.crs_status, layer_bbox_status: layer.bbox_status, unknown_reason: null, relation: intersects ? 'INTERSECTS' as const : 'DISJOINT' as const, intersection_bbox_lat_lon: intersects ? intersection : null };
   }));
   report.byte_totals.directory_range_bytes = report.archives.flatMap(archive => archive.directory_ranges).reduce((sum, range) => sum + range.bytes, 0);
   report.byte_totals.member_range_bytes = report.selected_member_records.flatMap(member => member.ranges).reduce((sum, range) => sum + range.bytes, 0);
@@ -504,6 +521,11 @@ export async function inspectVintages(options: { fetcher?: RangeFetcher; fetchMe
 export async function verifyVintageEvidence(report: VintageReport): Promise<{ status: 'PASS' | 'FAIL'; errors: string[] }> {
   const errors: string[] = [];
   const root = getStoreRoot();
+  try {
+    const current = await toolFingerprint();
+    if (typeof report.tool_input_sha256 !== 'string' || !report.tool_input_sha256) errors.push('vintage report lacks tool_input_sha256');
+    else if (report.tool_input_sha256 !== current) errors.push(`vintage report tool fingerprint ${report.tool_input_sha256} differs from current ${current}`);
+  } catch (error) { errors.push(`tool fingerprint unavailable: ${error instanceof Error ? error.message : String(error)}`); }
   const artifacts: Array<{ label: string; bytes: number; sha256: string; store_path: string }> = [];
   for (const archive of report.archives) for (const range of archive.directory_ranges) {
     if (!range.sha256 || !range.store_path) errors.push(`${archive.archive} range ${range.start}-${range.end} lacks a hashed store artifact`);
