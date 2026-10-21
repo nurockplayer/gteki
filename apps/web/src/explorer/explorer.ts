@@ -27,6 +27,8 @@ import { contactShadow } from "./contactShadow.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
 import { Input } from "./input.ts";
 import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer, type Segment2 } from "./walker.ts";
+import { OcclusionSweep, labelState, onFocusFloor, type LabelState } from "./labelVisibility.ts";
+import { TriangleBvh, segmentHitsBox, type Cull } from "./triangleBvh.ts";
 
 export type ExplorerMode = "overview" | "walk" | "guide";
 
@@ -43,6 +45,103 @@ const RADIUS = WALKER_BODY.radiusM;
 const WALK = 1.45;
 const RUN = 3.4;
 const GUIDE_SPEED = 1.6;
+/** POI labels float this high above their entrance. */
+const LABEL_LIFT = 2.4;
+
+/** Per-frame occlusion budget: at most this many label rays, and stop once this time (ms) is spent. */
+const LABEL_RAYS = { low: { count: 6, ms: 0.6 }, high: { count: 16, ms: 1.5 } } as const;
+/**
+ * Labels are re-checked this often (ms) even with a still camera, so moving parts (doors, escalator
+ * steps) and render-state changes (hidden, faded or relayered meshes) are followed.
+ */
+const LABEL_RECHECK_MS = 1000;
+/** Instanced meshes with more instances than this occlude only as registered proxies. */
+const MAX_OCCLUDER_INSTANCES = 1024;
+
+/** A mesh that can hide labels behind it. */
+interface Occluder {
+  mesh: THREE.Mesh;
+  /** The geometry at load; the mesh stops occluding while it shows any other one. */
+  geometry: THREE.BufferGeometry;
+  /** World bounds (all instances), recomputed before each sweep frame when the mesh or its instances moved. */
+  box: THREE.Box3;
+  /** Mesh-space bounds (all instances). */
+  localBox: THREE.Box3;
+  /** Instanced meshes: each instance's mesh-space bounds (min xyz, max xyz). */
+  instanceBoxes: Float32Array | null;
+  seenMatrix: THREE.Matrix4;
+  /** Instance buffer, its version and the count the bounds were computed for. */
+  seenInstanceMatrix: THREE.InstancedBufferAttribute | null;
+  seenInstances: string;
+}
+
+/**
+ * One tree per geometry, shared by every mesh that uses it; dropped with the geometry. Built only at
+ * load, with the buffer versions it was built from: a geometry edited in place since then (or swapped
+ * in later) has no current tree and does not occlude, rather than occluding where it used to be.
+ */
+const bvhCache = new WeakMap<THREE.BufferGeometry, { bvh: TriangleBvh; version: string; buffers: object[] }>();
+
+const attributeVersion = (a: THREE.BufferAttribute | THREE.InterleavedBufferAttribute) =>
+  (a as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute ? (a as THREE.InterleavedBufferAttribute).data.version : (a as THREE.BufferAttribute).version;
+const bufferVersion = (g: THREE.BufferGeometry) => `${attributeVersion(g.getAttribute("position"))}:${g.getIndex()?.version ?? -1}`;
+/** Every object whose replacement changes the triangles: position (and its interleaved data) and index. */
+const bufferIds = (g: THREE.BufferGeometry): object[] => {
+  const position = g.getAttribute("position");
+  const data = (position as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute ? (position as THREE.InterleavedBufferAttribute).data : null;
+  return [position, data ?? position, g.getIndex() ?? g];
+};
+
+function currentBvh(g: THREE.BufferGeometry): TriangleBvh | null {
+  const entry = bvhCache.get(g);
+  // A geometry that lost its positions has no triangles to test.
+  if (!entry || !g.getAttribute("position")) return null;
+  // Same buffers (identity, as attributes and interleaved data can be replaced) at the same versions as at build time.
+  return entry.version === bufferVersion(g) && bufferIds(g).every((b, i) => b === entry.buffers[i]) ? entry.bvh : null;
+}
+
+function cacheBvh(g: THREE.BufferGeometry): void {
+  if (currentBvh(g)) return;
+  bvhCache.set(g, { bvh: TriangleBvh.build(g.getAttribute("position"), g.getIndex()), version: bufferVersion(g), buffers: bufferIds(g) });
+}
+
+/** A drawn part of a mesh: its material and the index (or vertex) range it draws. */
+interface MeshPart { material: THREE.Material; start: number; count: number }
+
+/**
+ * The triangles each material draws, as three's renderer picks them (groups only with a material
+ * array). Resolved per query, so swapped materials and changed draw ranges count; BVHs stay cached.
+ */
+function meshParts(mesh: THREE.Mesh): MeshPart[] {
+  const range = mesh.geometry.drawRange;
+  const clip = (material: THREE.Material, start: number, count: number): MeshPart => {
+    const s = Math.max(start, range.start);
+    return { material, start: s, count: Math.max(0, Math.min(start + count, range.start + range.count) - s) };
+  };
+  if (!Array.isArray(mesh.material)) return [clip(mesh.material, 0, Infinity)];
+  const parts: MeshPart[] = [];
+  for (const group of mesh.geometry.groups) {
+    const material = mesh.material[group.materialIndex ?? 0];
+    if (material) parts.push(clip(material, group.start, group.count));
+  }
+  return parts;
+}
+
+/** Geometry the GPU deforms or assembles per draw, which a static triangle BVH cannot follow. */
+function deforming(mesh: THREE.Mesh): boolean {
+  return Boolean((mesh as THREE.SkinnedMesh).isSkinnedMesh || (mesh as THREE.BatchedMesh).isBatchedMesh
+    || mesh.morphTargetInfluences?.length || (mesh as THREE.InstancedMesh).morphTexture);
+}
+
+interface PoiLabel {
+  poiId: string;
+  obj: CSS2DObject;
+  /** Floor height under the label (renderer Y). */
+  groundY: number;
+  selected: boolean;
+  occluded: boolean;
+  state: LabelState;
+}
 
 export class Explorer {
   readonly renderer: THREE.WebGLRenderer;
@@ -111,7 +210,18 @@ export class Explorer {
   private camDistance: number = FOLLOW.defaultDistance;
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
-  private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; speed: number; stops: { s: number; index: number }[]; holding: boolean } | null = null;
+  private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean } | null = null;
+  /** The user's guide speed multiplier; kept across instruction changes and later guides. */
+  private guideMultiplier = 1;
+  private poiLabels: PoiLabel[] = [];
+  private readonly labelSweep = new OcclusionSweep();
+  private occluders: Occluder[] = [];
+  /** The walker's and follow camera's ray targets (castTargets), fixed at load like them. */
+  private proxies = new Set<THREE.Object3D>();
+  private labelSweepDoneAt = -Infinity;
+  /** Camera pose at the last occlusion sweep. */
+  private readonly labelCamPos = new THREE.Vector3(Infinity, 0, 0);
+  private readonly labelCamQuat = new THREE.Quaternion();
   private quality: "low" | "high";
   /** Why the station's own scene could not be shown (L0 fallback is in use), if any. */
   sceneError: string | null = null;
@@ -164,6 +274,13 @@ export class Explorer {
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
     };
+  }
+
+  /** POI label states for automated visual checks. */
+  labelInfo(): { shown: number; faded: number; hidden: number } {
+    const n = { shown: 0, faded: 0, hidden: 0 };
+    for (const l of this.poiLabels) n[l.state]++;
+    return n;
   }
 
   /** Avatar position in station ENU (a virtual position, never the user's real location). */
@@ -334,6 +451,7 @@ export class Explorer {
       const solid = new Set([...this.walkable, ...this.colliders, ...this.cameraTargets]);
       this.seeThrough = this.cameraCut.apply(this.stationScene.root, seeThroughMeshes(this.stationScene.root).filter((o) => !solid.has(o)));
     }
+    this.buildOccluders(this.stationScene?.root ?? this.graph.root);
     this.phase = "composer";
     this.setupComposer();
     this.frameAll();
@@ -371,6 +489,8 @@ export class Explorer {
     this.walls = [];
     this.seeThrough = [];
     this.cameraCut.clear();
+    this.occluders = [];
+    this.proxies.clear();
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
     this.renderer.toneMappingExposure = 1;
@@ -379,6 +499,10 @@ export class Explorer {
 
   setGraphOverlay(visible: boolean): void {
     if (this.graph && this.stationScene) this.graph.overlay.visible = visible;
+  }
+
+  get graphOverlayOn(): boolean {
+    return Boolean(this.graph && this.stationScene && this.graph.overlay.visible);
   }
 
   /** Frame the whole station (or a box) from above in overview mode. */
@@ -408,6 +532,10 @@ export class Explorer {
     if (mode === "overview") this.street.restore(this.scene);
     this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
+  }
+
+  get firstPersonOn(): boolean {
+    return this.firstPerson;
   }
 
   toggleFirstPerson(): boolean {
@@ -509,6 +637,8 @@ export class Explorer {
 
   /** Floating labels at each POI's verified entrance (or display position when search-only). */
   showPois(bundle: StationBundle, label: (poi: Poi) => string, selected: string[] = []): void {
+    // Rebuilt labels keep their last occlusion result until re-checked, so they do not flash.
+    const wasOccluded = new Set(this.poiLabels.filter((l) => l.occluded).map((l) => l.poiId));
     this.clearPois();
     const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
     const floors = new Map(bundle.floors.map((f) => [f.id, f]));
@@ -518,18 +648,204 @@ export class Explorer {
       if (node) at = R(node.position.x, node.position.y, nodeDisplayZ(node, floors.get(node.floorId)).z);
       else if (poi.displayPosition) at = R(poi.displayPosition.x, poi.displayPosition.y, poi.displayPosition.z ?? floors.get(poi.floorId ?? "")?.renderElevationM ?? 0);
       if (!at) continue;
+      const isSelected = selected.includes(poi.id);
       const el = document.createElement("button");
-      el.className = `poi-label cat-${poi.category}${selected.includes(poi.id) ? " selected" : ""}${node ? "" : " search-only"}`;
+      el.className = `poi-label cat-${poi.category}${isSelected ? " selected" : ""}${node ? "" : " search-only"}`;
       el.textContent = label(poi);
       el.addEventListener("click", (ev) => { ev.stopPropagation(); this.events.onPoiClick?.(poi.id); });
       const obj = new CSS2DObject(el);
-      obj.position.copy(at).add(new THREE.Vector3(0, 2.4, 0));
+      obj.position.copy(at).add(new THREE.Vector3(0, LABEL_LIFT, 0));
       this.poiGroup.add(obj);
+      this.poiLabels.push({ poiId: poi.id, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.has(poi.id), state: "shown" });
     }
+    this.poiGroup.updateMatrixWorld(true);
+    this.labelSweep.invalidate(this.poiLabels.length);
   }
 
   clearPois(): void {
     for (const c of [...this.poiGroup.children]) { this.poiGroup.remove(c); (c as CSS2DObject).element?.remove(); }
+    this.poiLabels = [];
+  }
+
+  /**
+   * Candidate occluders, fixed at load (trees are never built mid-frame): every station mesh plus the
+   * walkable/collider meshes. Whether and how each one blocks is decided per sweep frame:
+   * - proxies (the meshes the walker and follow camera ray-test, see castTargets) block even when
+   *   hidden or detached, from either side;
+   * - other meshes block while drawn under this scene with an opaque, filled material;
+   * - deforming meshes (skinned, morphed, batched) never block, since a static BVH cannot follow them;
+   * - instanced crowds (DynamicDrawUsage) and instance sets above MAX_OCCLUDER_INSTANCES block only as
+   *   proxies. Nothing outside the station root (route, avatar) is a candidate.
+   */
+  private buildOccluders(root: THREE.Object3D): void {
+    const seen = new Set<THREE.Object3D>();
+    const add = (o: THREE.Object3D) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh || seen.has(mesh) || !mesh.geometry?.getAttribute("position") || deforming(mesh)) return;
+      seen.add(mesh);
+      if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
+      cacheBvh(mesh.geometry);
+      this.occluders.push({
+        mesh, geometry: mesh.geometry,
+        box: new THREE.Box3(), localBox: new THREE.Box3(), instanceBoxes: null,
+        seenMatrix: new THREE.Matrix4().set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        seenInstanceMatrix: null, seenInstances: "",
+      });
+    };
+    root.traverse(add);
+    this.proxies = new Set(this.cameraTargets);
+    for (const p of this.proxies) add(p);
+    this.labelSweepDoneAt = -Infinity;
+  }
+
+  /** Bring occluder bounds up to date with mesh and instance transforms. */
+  private refreshOccluders(): void {
+    const m = new THREE.Matrix4();
+    const box = new THREE.Box3();
+    for (const o of this.occluders) {
+      const proxy = this.proxies.has(o.mesh);
+      // The renderer only updates attached objects; a detached proxy keeps its own transform current here.
+      if (proxy && !inScene(o.mesh, this.scene)) o.mesh.updateWorldMatrix(true, false);
+      const inst = o.mesh as THREE.InstancedMesh;
+      const instancedOut = inst.isInstancedMesh && !proxy && (inst.count > MAX_OCCLUDER_INSTANCES || inst.instanceMatrix.usage === THREE.DynamicDrawUsage);
+      if (o.mesh.geometry !== o.geometry || !currentBvh(o.geometry) || !o.geometry.boundingBox || instancedOut) {
+        // Not an occluder now (geometry swapped or edited after load, a crowd, too many instances): an
+        // empty box keeps every ray, and any further bounds work, away.
+        o.box.makeEmpty();
+        o.localBox.makeEmpty();
+        o.instanceBoxes = null;
+        o.seenInstanceMatrix = null;
+        o.seenInstances = "";
+        continue;
+      }
+      const instances = inst.isInstancedMesh ? `${inst.instanceMatrix.version}:${inst.count}` : "";
+      const instancesMoved = inst.isInstancedMesh &&
+        (o.seenInstanceMatrix !== inst.instanceMatrix || o.seenInstances !== instances || !o.instanceBoxes);
+      if (o.seenMatrix.equals(o.mesh.matrixWorld) && !instancesMoved && !o.localBox.isEmpty()) continue;
+      if (!inst.isInstancedMesh) o.localBox.copy(o.geometry.boundingBox!);
+      else if (instancesMoved || o.localBox.isEmpty()) {
+        o.instanceBoxes = new Float32Array(inst.count * 6);
+        o.localBox.makeEmpty();
+        for (let i = 0; i < inst.count; i++) {
+          inst.getMatrixAt(i, m);
+          box.copy(o.geometry.boundingBox!).applyMatrix4(m);
+          box.min.toArray(o.instanceBoxes, i * 6);
+          box.max.toArray(o.instanceBoxes, i * 6 + 3);
+          o.localBox.union(box);
+        }
+      }
+      o.seenMatrix.copy(o.mesh.matrixWorld);
+      o.seenInstanceMatrix = inst.isInstancedMesh ? inst.instanceMatrix : null;
+      o.seenInstances = instances;
+      o.box.copy(o.localBox).applyMatrix4(o.mesh.matrixWorld);
+    }
+  }
+
+  /**
+   * Fade labels behind floors/walls and, while walking or guided, hide labels on other floors. Rays
+   * are budgeted per frame (count and time): a sweep runs when the camera moves, and otherwise once
+   * every LABEL_RECHECK_MS.
+   */
+  private updateLabels(): void {
+    const labels = this.poiLabels;
+    if (labels.length === 0) return;
+    const cam = this.camera;
+    const camMoved = cam.position.distanceToSquared(this.labelCamPos) > 1e-4 || cam.quaternion.angleTo(this.labelCamQuat) > 1e-3;
+    if (camMoved) {
+      this.labelCamPos.copy(cam.position);
+      this.labelCamQuat.copy(cam.quaternion);
+    }
+    const now = performance.now();
+    // The periodic re-check waits LABEL_RECHECK_MS after the previous sweep completed.
+    if (camMoved || (!this.labelSweep.pending && now - this.labelSweepDoneAt >= LABEL_RECHECK_MS)) this.labelSweep.invalidate(labels.length);
+    if (this.labelSweep.pending) {
+      this.refreshOccluders();
+      const budget = LABEL_RAYS[this.quality];
+      const deadline = now + budget.ms;
+      cam.updateMatrixWorld();
+      for (let k = 0; k < budget.count && this.labelSweep.pending; k++) {
+        const l = labels[this.labelSweep.take(labels.length)]!;
+        l.occluded = !l.selected && this.labelOccluded(l);
+        if (performance.now() > deadline) break;
+      }
+      if (!this.labelSweep.pending) this.labelSweepDoneAt = performance.now();
+    }
+    const focusY = this.mode === "overview" ? null : this.pos.y;
+    for (const l of labels) {
+      const state = labelState({ occluded: l.occluded, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected });
+      if (state === l.state) continue;
+      l.state = state;
+      l.obj.visible = state !== "hidden";
+      l.obj.element.classList.toggle("occluded", state === "faded");
+    }
+  }
+
+  private labelOccluded(label: PoiLabel): boolean {
+    if (this.occluders.length === 0) return false;
+    const at = label.obj.getWorldPosition(new THREE.Vector3());
+    // Labels behind the camera or past its far plane are hidden by the CSS2D renderer; keep their last
+    // result. One whose anchor is just off the screen's side can still show part of its text, so it counts.
+    if (Math.abs(at.clone().project(this.camera).z) > 1) return label.occluded;
+    const from = this.camera.getWorldPosition(new THREE.Vector3());
+    const dist = from.distanceTo(at);
+    if (dist < 0.5) return false;
+    // End just short of the label, so the surface right at its anchor does not count.
+    const to = at.lerp(from, 0.3 / dist);
+    const ray = new THREE.Ray(from, to.clone().sub(from).normalize());
+    const far = dist - 0.3;
+    const entry = new THREE.Vector3();
+    const toLocal = new THREE.Matrix4();
+    const instance = new THREE.Matrix4();
+    const a = new THREE.Vector3();
+    const d = new THREE.Vector3();
+    const p0 = new THREE.Vector3();
+    const p1 = new THREE.Vector3();
+    /** Puts the part t0..t1 of the segment into the space `m` maps world points to, as a (start) and d (direction). */
+    const segmentIn = (m: THREE.Matrix4, t0 = 0, t1 = 1) => {
+      a.copy(p0.lerpVectors(from, to, t0)).applyMatrix4(m);
+      d.copy(p1.lerpVectors(from, to, t1)).applyMatrix4(m).sub(a);
+    };
+    // Sign materials the follow camera cuts open (cameraCut) only block where they are still drawn.
+    const whole: [number, number][] = [[0, 1]];
+    const drawn = this.cameraCut.drawnSpans(from, to);
+    const blocks = (proxy: boolean, bvh: TriangleBvh, parts: MeshPart[], m: THREE.Matrix4, mirrored = false) =>
+      parts.some((p) => (proxy || blocksView(p.material)) && (proxy || !this.cameraCut.cuts(p.material) ? whole : drawn).some(([t0, t1]) => {
+        segmentIn(m, t0, t1);
+        return bvh.anyHit(a.x, a.y, a.z, d.x, d.y, d.z, proxy ? "both" : cullOf(p.material, mirrored), p.start, p.count);
+      }));
+    for (const o of this.occluders) {
+      // World-box prefilter: skip meshes the segment does not reach.
+      if (!o.box.containsPoint(from) && !(ray.intersectBox(o.box, entry) && entry.distanceTo(from) <= far)) continue;
+      // Proxies always count, as for the walker (they need not hang under the station root); visual meshes only
+      // while drawn under this scene.
+      const proxy = this.proxies.has(o.mesh);
+      if (deforming(o.mesh) || (!proxy && (!inScene(o.mesh, this.scene) || !meshDrawn(o.mesh, this.camera)))) continue;
+      const inst = o.mesh as THREE.InstancedMesh;
+      if (o.mesh.geometry !== o.geometry || (inst.isInstancedMesh && !o.instanceBoxes)) continue;
+      // No tree is ever built mid-frame (see bvhCache).
+      const bvh = currentBvh(o.geometry);
+      if (!bvh) continue;
+      const parts = meshParts(o.mesh);
+      toLocal.copy(o.mesh.matrixWorld).invert();
+      segmentIn(toLocal);
+      if (!inst.isInstancedMesh) {
+        if (blocks(proxy, bvh, parts, toLocal)) return true;
+        continue;
+      }
+      // Per-instance mesh-space bounds first: only instances the segment reaches pay for a BVH query.
+      const boxes = o.instanceBoxes!;
+      const n = Math.min(inst.count, boxes.length / 6);
+      const ax = a.x, ay = a.y, az = a.z, dx = d.x, dy = d.y, dz = d.z;
+      for (let i = 0; i < n; i++) {
+        if (!segmentHitsBox(ax, ay, az, dx, dy, dz, boxes, i * 6)) continue;
+        inst.getMatrixAt(i, instance);
+        // The renderer offsets a mirrored matrixWorld (gl.frontFace) but not a mirrored instance matrix,
+        // whose local back faces are then drawn as front faces.
+        const mirrored = instance.determinant() < 0;
+        if (blocks(proxy, bvh, parts, instance.invert().multiply(toLocal), mirrored)) return true;
+      }
+    }
+    return false;
   }
 
   // ---- Guide ---------------------------------------------------------------------
@@ -543,7 +859,7 @@ export class Explorer {
     if (pts.length < 2) return;
     const cum = cumulativeLengths(pts);
     const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
-    this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, speed: GUIDE_SPEED, stops, holding: false };
+    this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false };
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
     if (first.tx || first.tz) this.yaw = Math.atan2(-first.tx, -first.tz);
@@ -561,7 +877,12 @@ export class Explorer {
   }
 
   setGuideSpeed(multiplier: number): void {
-    if (this.guide) this.guide.speed = GUIDE_SPEED * multiplier;
+    this.guideMultiplier = multiplier;
+  }
+
+  /** The user's guide speed multiplier, so a re-rendered HUD shows the real state. */
+  get guideSpeed(): number {
+    return this.guideMultiplier;
   }
 
   stopGuide(): void {
@@ -588,6 +909,8 @@ export class Explorer {
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.composer?.setSize(w, h);
+    // A new aspect brings other labels on screen without the camera moving.
+    this.labelSweep.invalidate(this.poiLabels.length);
   }
 
   /**
@@ -616,6 +939,7 @@ export class Explorer {
   private render(dt: number): void {
     if (this.composer) this.composer.render(dt);
     else this.renderer.render(this.scene, this.camera);
+    this.updateLabels();
     this.labels.render(this.scene, this.camera);
   }
 
@@ -683,7 +1007,7 @@ export class Explorer {
     }
     const total = g.cum[g.cum.length - 1]!;
     // Arrive at a stop, never beyond it, and wait there until resumed.
-    const stopped = g.paused ? null : advanceGuide(g, g.speed * dt, total);
+    const stopped = g.paused ? null : advanceGuide(g, GUIDE_SPEED * this.guideMultiplier * dt, total);
     if (stopped !== null) g.paused = g.holding = true;
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
@@ -846,4 +1170,34 @@ const AUDIO_UNLOCK_EVENTS = ["pointerdown", "keydown", "touchend"] as const;
 
 function readMuted(): boolean {
   try { return localStorage.getItem("gteki.muted") === "1"; } catch { return false; }
+}
+
+/**
+ * The faces a label ray can hit in mesh-local space, as three's material.side. The renderer flips
+ * gl.frontFace for a mirrored matrixWorld, so local winding decides the side there; `mirrored` swaps
+ * the sides for a mirrored transform it does not offset (an instance matrix).
+ */
+function cullOf(material: THREE.Material, mirrored = false): Cull {
+  if (material.side === THREE.DoubleSide) return "both";
+  return (material.side === THREE.BackSide) !== mirrored ? "back-only" : "front-only";
+}
+
+/** Still attached under `scene` (a mesh removed from the station no longer occludes). */
+function inScene(mesh: THREE.Object3D, scene: THREE.Scene): boolean {
+  let o: THREE.Object3D = mesh;
+  while (o.parent) o = o.parent;
+  return o === scene;
+}
+
+/** Rendered at all for this camera (the mesh and its ancestors visible, on a camera layer). */
+function meshDrawn(mesh: THREE.Mesh, camera: THREE.Camera): boolean {
+  if (!mesh.layers.test(camera.layers)) return false;
+  for (let o: THREE.Object3D | null = mesh; o; o = o.parent) if (!o.visible) return false;
+  return true;
+}
+
+/** Drawn as filled, opaque enough surfaces (clear or transmissive glass and wireframes are not). */
+function blocksView(material: THREE.Material): boolean {
+  const m = material as THREE.MeshPhysicalMaterial;
+  return m.visible && m.colorWrite && !m.wireframe && !(m.transparent && m.opacity < 0.5) && (m.transmission ?? 0) < 0.5;
 }

@@ -110,4 +110,40 @@ describe("camera see-through cut", () => {
     cut.update(camera, new THREE.Vector3(0, 1.6, 0), false);
     expect(r.toArray()).toEqual([0, 0, 0, 0]);
   });
+
+  it("reports which parts of a world segment cut materials still draw", () => {
+    const cut = new CameraCut();
+    const camera = new THREE.PerspectiveCamera();
+    camera.position.set(0, 2, 4);
+    camera.lookAt(0, 1.6, 0);
+    camera.updateMatrixWorld();
+    const head = new THREE.Vector3(0, 1.6, 0);
+    const from = camera.position.clone();
+    // Off: everything draws.
+    expect(cut.drawnSpans(from, new THREE.Vector3(0, 1.6, -20))).toEqual([[0, 1]]);
+    cut.update(camera, head, true);
+    // Straight through the avatar's head and on: the capsule core (camera → head) is cut, the rest draws.
+    const through = cut.drawnSpans(from, new THREE.Vector3(0, 1.6 - 0.4 * 5, -20));
+    expect(through).toHaveLength(1);
+    const len = from.distanceTo(new THREE.Vector3(0, -0.4, -20));
+    const axisLen = from.distanceTo(head);
+    expect(through[0]![0] * len).toBeGreaterThan(axisLen);
+    expect(through[0]![0] * len).toBeLessThan(axisLen + 0.35 + 0.1);
+    expect(through[0]![1]).toBe(1);
+    // Sideways away from the avatar: only the first ~0.6 m (the core at the lens) is cut.
+    const side = cut.drawnSpans(from, new THREE.Vector3(20, 2, 4));
+    expect(side).toHaveLength(1);
+    expect(side[0]![0] * 20).toBeGreaterThan(0.5);
+    expect(side[0]![0] * 20).toBeLessThan(0.7);
+    // Far from the capsule: everything draws.
+    expect(cut.drawnSpans(new THREE.Vector3(30, 2, 30), new THREE.Vector3(40, 2, 30))).toEqual([[0, 1]]);
+    // A material is cut only once patched.
+    const sign = new THREE.MeshStandardMaterial();
+    expect(cut.cuts(sign)).toBe(false);
+    const signMesh = mesh(sign);
+    cut.apply(new THREE.Group().add(signMesh), [signMesh]);
+    expect(cut.cuts(sign)).toBe(true);
+    cut.update(camera, head, false);
+    expect(cut.drawnSpans(from, new THREE.Vector3(0, 1.6, -20))).toEqual([[0, 1]]);
+  });
 });
