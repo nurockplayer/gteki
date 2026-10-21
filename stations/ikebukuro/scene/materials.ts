@@ -270,8 +270,20 @@ vec2 gtSeam(float c, float P, float w, float depth, float fw) {
 }
 `;
 
-const glslReliefEnd = (relief: number) => /* glsl */ `
+/** Boosted baked diffuse is capped here (linear), below the explorer's bloom threshold of 1.0. */
+const BALANCE_KNEE = 0.85;
+const glslReliefEnd = (relief: number, gain = 1) => /* glsl */ `
 #include <lights_fragment_end>
+${gain === 1 ? "" : `#ifdef USE_LIGHTMAP
+{
+  // Lightmap balance with a soft knee: dark baked light gets the full gain, which tapers so the boost never
+  // lifts diffuse past the knee; anything the bake already made brighter keeps its own value.
+  const float G = ${gain.toFixed(3)}, K = ${BALANCE_KNEE.toFixed(3)};
+  float gtL0 = dot(reflectedLight.indirectDiffuse, vec3(0.2126, 0.7152, 0.0722));
+  float gtL1 = max(gtL0, G * gtL0 / (1.0 + (G - 1.0) * gtL0 / K));
+  reflectedLight.indirectDiffuse *= gtL1 / max(gtL0, 1e-5);
+}
+#endif`}
 {
   vec3 gtUp = normalize(viewMatrix[1].xyz);
   vec3 gtL = normalize(gtUp * 0.75 + vec3(0.25, 0.0, 0.65));
@@ -411,6 +423,7 @@ type Kind = "floor" | "wall" | "column" | "ceiling" | "stairs";
 
 function patchLit(m: THREE_NS.MeshStandardMaterial, kind: Kind, relief: number, clad?: CladSpec) {
   const isClad = kind === "wall" || kind === "column";
+  const gain = LIGHTMAP_BALANCE[kind === "column" ? "barriers" : kind] ?? 1;
   const isStair = kind === "stairs";
   const vHead = `varying vec3 vWP;
 ${isClad ? "attribute float aFloorY;\nvarying vec2 vPanelUv;\nvarying float vFloorOk;\nvarying float vVert;" : ""}
@@ -431,9 +444,9 @@ ${isStair ? "vNose = aNose;\nvVert = 1.0 - step(0.5, abs(normal.y));" : ""}`;
     sh.fragmentShader = sh.fragmentShader
       .replace("#include <common>", `#include <common>\n${fHead}`)
       .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>\n${fBody}`)
-      .replace("#include <lights_fragment_end>", glslReliefEnd(relief));
+      .replace("#include <lights_fragment_end>", glslReliefEnd(relief, gain));
   };
-  m.customProgramCacheKey = () => `gteki-ikebukuro-${kind}-1`;
+  m.customProgramCacheKey = () => `gteki-ikebukuro-${kind}-2`;
 }
 
 const WALL_CLAD: CladSpec = {
@@ -451,7 +464,8 @@ const COLUMN_CLAD: CladSpec = {
 /**
  * Baked-light balance per role (multiplies the lightmap intensity). The bake lights mostly the floor under
  * the downlights; real passages read bright because enamel walls, cladding and ceiling panels get wall-wash
- * and floor bounce the bake underestimates. Presentation only; the floor (and with it exposure) is unchanged.
+ * and floor bounce the bake underestimates. Applied in the lit shader with a soft knee (BALANCE_KNEE), so no
+ * boosted surface crosses the bloom threshold. Presentation only; the floor (and with it exposure) is unchanged.
  */
 export const LIGHTMAP_BALANCE: Record<string, number> = { wall: 2.0, barriers: 1.9, ceiling: 2.0 };
 
@@ -622,7 +636,6 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
   const ceiling = std({ map: ceilMap, normalMap: ceilNormal, roughness: 0.95, side: THREE.DoubleSide });
   const stairs = std({ map: stairMap, normalMap: stairNormal, roughness: 0.7 });
   const barriers = std({ color: 0xc6cacf, roughness: 0.3, metalness: 0, side: THREE.DoubleSide });
-  for (const [m, role] of [[wall, "wall"], [barriers, "barriers"], [ceiling, "ceiling"]] as const) m.userData.lightmapBalance = LIGHTMAP_BALANCE[role];
   patchLit(floor, "floor", 0.9);
   patchLit(wall, "wall", 0.9, WALL_CLAD);
   patchLit(ceiling, "ceiling", 0.6);
@@ -653,7 +666,7 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     setLightmap(t, intensity) {
       for (const m of lit) {
         m.lightMap = t;
-        m.lightMapIntensity = intensity * ((m.userData.lightmapBalance as number | undefined) ?? 1);
+        m.lightMapIntensity = intensity;
         m.needsUpdate = true;
       }
     },
