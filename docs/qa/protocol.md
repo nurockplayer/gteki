@@ -50,6 +50,10 @@ Outputs go to `tests/e2e/artifacts/`, which is git-ignored:
 | `08-step-probe` | Real drags + `W`, opt-in via `GTEKI_PROBE=<station>:<from>><to>` | Re-walks each routed step alone from its from-node along the exact edge geometry, with no nudges. Separates autopilot steering from scene geometry before a free-walk block is filed. | Steps ending > 1 m short | Per-step end position, screenshots of short steps |
 | `09-label-fade` | Real drags + `simulate()`, 8 poses per walking route | POI label fade evidence for human review. Per pose: live frame (a), same frame with labels hidden (b), and (b) annotated with a box per visible label, red = faded by occlusion, amber = a selected route endpoint faded only for being on another floor (not occlusion evidence), green = shown, + at the CSS2D anchor (the rect's centre) (c). A red label with no drawn geometry in its sight line in (b) is the defect (e.g. a hidden camera-only cap). | Soft only: at least half the poses show a visible label | Per-pose label list (text, rect, anchor, occluded, selected, opacity), `__gteki.labels()` counts, avatar, camera, total faded / off-floor / shown |
 
+### CI smoke
+
+The `e2e-smoke` workflow runs `01-smoke` and `03-guided-walkthrough` on `desktop-chromium` for every PR, on a GitHub runner with software WebGL (SwiftShader, selected by `CI=1` in the config, at 960×600 on the explorer's low-quality path). There, `03` runs flow-only (`GTEKI_GUIDE_FLOW_ONLY=1`): it checks that the guide starts, the fast tier is selected and the HUD instructions advance, then stops. At about 7 fps, with the explorer's 0.05 s frame cap, no walk can arrive within the job, so arrival and distance are judged only on GPU runs. It starts as a non-required check and becomes required after about a week of stable runs ([#76](https://github.com/nurockplayer/gteki/issues/76)). It catches regressions in scene loading and the guide flow. Visual and performance verdicts still come only from GPU runs on the dev Mac: a SwiftShader run is never evidence for them.
+
 ### Real vs simulated, stated per run
 
 - Search, clicks, HUD buttons and keyboard are real browser input.
