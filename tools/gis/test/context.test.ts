@@ -709,8 +709,18 @@ describe('run-id digest', () => {
 });
 
 describe('--kinds (buildings-only context)', () => {
-  it('Ikebukuro defaults to buildings only while roads are on rights HOLD', async () => {
-    expect((await loadContextConfig('ikebukuro')).kinds).toEqual(['bldg']);
+  it('road meshes are geometry only: no tran attribute value or name reaches the GLB (Owner risk acceptance, #39)', async () => {
+    for (const merge of [{ mode: 'none' }, { mode: 'kind' }, { mode: 'tiles', sizeM: 380 }] as MergeSpec[]) {
+      const { document } = await buildWith({ merge });
+      const roads = document.getRoot().listMeshes().filter((m) => m.getName().startsWith('ctx_road'));
+      expect(roads.length).toBeGreaterThan(0);
+      for (const mesh of roads) {
+        for (const prim of mesh.listPrimitives()) expect(prim.listSemantics().sort()).toEqual(['NORMAL', 'POSITION']);
+        const nodes = document.getRoot().listNodes().filter((n) => n.getMesh() === mesh);
+        const text = JSON.stringify([mesh.getExtras(), ...nodes.map((n) => n.getExtras())]);
+        expect(text).not.toMatch(/tran:|"function"|"usage"|"class"|TrafficArea_function|codeSpace/);
+      }
+    }
   });
 
   const all4 = ['plateau-13116-bldg-53394576', 'plateau-13116-bldg-53394577', 'plateau-13116-tran-53394576', 'plateau-13116-tran-53394577'];
@@ -765,7 +775,7 @@ describe('--kinds (buildings-only context)', () => {
     expect(tran.totals.triangles_by_kind).toEqual({ building: 0, road: 4 });
   });
 
-  it('refuses invalid kinds; the Ikebukuro config defaults to buildings only (roads on rights HOLD)', async () => {
+  it('refuses invalid kinds; the Ikebukuro config defaults to both kinds (roads: Owner risk acceptance, geometry only)', async () => {
     expect(parseKinds('tran,bldg')).toEqual(['bldg', 'tran']); // canonical order, so the same run id either way
     expect(parseKinds('bldg,bldg')).toEqual(['bldg']);
     for (const bad of ['', 'ubld', 'bldg,road', 'all', ',']) expect(() => parseKinds(bad)).toThrow(/Invalid --kinds/);
@@ -775,7 +785,7 @@ describe('--kinds (buildings-only context)', () => {
     await expect(contextGlb('ikebukuro', { sourceIds: all4, kinds: 'road' })).rejects.toThrow(/Invalid --kinds "road"/);
     expect(stored).not.toHaveBeenCalled();
     const config = await loadContextConfig('ikebukuro');
-    expect(config.kinds).toEqual(['bldg']);
+    expect(config.kinds).toBeUndefined();
     await expect(buildContextGlb({ frame: await stationFrame(), radiusM: 250, inputs, outputPath: join(dir, 'x.glb'), kinds: ['bldg', 'x' as never] })).rejects.toThrow(/Invalid --kinds/);
     await expect(buildContextGlb({ frame: await stationFrame(), radiusM: 250, inputs: [inputs[0]!], outputPath: join(dir, 'y.glb'), kinds: ['tran'] })).rejects.toThrow(/at least one source of kind tran/);
   });
