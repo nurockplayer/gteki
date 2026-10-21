@@ -28,6 +28,16 @@ The accepted plan deliberately has **no clock-based deadline**; progress is trac
 - **pnpm or Homebrew only** for installs; no npm/npx/yarn.
 - Station-specific files and model inputs stay isolated; shared core has one accountable writer at a time.
 
+## Tests
+
+`pnpm test` excludes `*.heavy.test.ts` files.
+Put long replay, matrix, and brute-force suites in `*.heavy.test.ts` files.
+Run them with `pnpm test:heavy` (single worker).
+Each worker's V8 heap is capped at 3072 MB; override with `GTEKI_TEST_HEAP_MB`.
+`pnpm test:heavy:box [vitest args]` runs heavy tests in Docker/OrbStack with hard memory/CPU limits; reports under `.qa/` are saved on the host.
+Defaults: `GTEKI_BOX_MEMORY=2g`, `GTEKI_BOX_CPUS=2`, `GTEKI_BOX_IMAGE=node:24-bookworm-slim`; `GTEKI_TEST_HEAP_MB` defaults to 75% of the container memory.
+GPU/WebGL work stays on the host.
+
 ## Research and rights
 
 - [Full public-source dossier](docs/research/GTEki_Public_Data_Research_2026-10-20.md)

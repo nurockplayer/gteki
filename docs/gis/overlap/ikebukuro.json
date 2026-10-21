@@ -1,0 +1,464 @@
+{
+  "station_id": "ikebukuro",
+  "method": "Pairwise bbox relation is computed on source bboxes normalized to JGD2011 longitude,latitude. Disjoint-bbox minimum separation is approximated by comparing projected EPSG:6677 boundary segments sampled at 32 segments per edge. Projected axis-aligned envelopes are retained as context only.",
+  "layers": [
+    {
+      "layer_id": "plateau-13116-ubld-53394576",
+      "layer_role": "plateau_ubld",
+      "source_id": "plateau-13116-ubld-53394576",
+      "source_crs": "http://www.opengis.net/def/crs/EPSG/0/6697",
+      "source_crs_bbox": [
+        35.728049254734366,
+        139.70938689983566,
+        35.731371787356984,
+        139.7133659340391
+      ],
+      "bbox_axis_order": "latitude,longitude",
+      "bbox_jgd2011_lon_lat": [
+        139.70938689983566,
+        35.728049254734366,
+        139.7133659340391,
+        35.731371787356984
+      ],
+      "bbox_epsg_6677": [
+        -11212.591842153019,
+        -30165.046109413684,
+        -10852.18476879648,
+        -29795.987013402348
+      ],
+      "metric_status": "KNOWN",
+      "metric_note": "Source geographic bbox normalized to JGD2011 lon,lat; edges sampled at 32 segments per edge and projected to EPSG:6677."
+    },
+    {
+      "layer_id": "hokonavi-ikebukuro-walk-csv-pair",
+      "layer_role": "hokonavi_csv_pair",
+      "source_id": "hokonavi-ikebukuro-walk-node-csv",
+      "source_ids": [
+        "hokonavi-ikebukuro-walk-node-csv",
+        "hokonavi-ikebukuro-walk-link-csv"
+      ],
+      "crs_status": "INFERRED_FROM_SPEC",
+      "source_crs": "EPSG:6668",
+      "source_crs_bbox": [
+        139.69533618,
+        35.724141027,
+        139.722924068,
+        35.733731143
+      ],
+      "bbox_axis_order": "longitude,latitude",
+      "bbox_jgd2011_lon_lat": [
+        139.69533618,
+        35.724141027,
+        139.722924068,
+        35.733731143
+      ],
+      "bbox_epsg_6677": [
+        -12484.275546537887,
+        -30599.65131299971,
+        -9987.26631246824,
+        -29532.53615946322
+      ],
+      "metric_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "metric_note": "CONDITIONAL on inferred CRS. Source geographic bbox normalized to JGD2011 lon,lat; edges sampled at 32 segments per edge and projected to EPSG:6677."
+    },
+    {
+      "layer_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "layer_role": "hokonavi_network",
+      "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "source_crs": "EPSG:6668",
+      "crs_status": "INFERRED_FROM_SPEC",
+      "source_crs_bbox": [
+        139.69533618,
+        35.724141027,
+        139.722924068,
+        35.733731143
+      ],
+      "bbox_axis_order": "longitude,latitude",
+      "feature_count": 1887,
+      "bbox_jgd2011_lon_lat": [
+        139.69533618,
+        35.724141027,
+        139.722924068,
+        35.733731143
+      ],
+      "bbox_epsg_6677": [
+        -12484.275546537887,
+        -30599.65131299971,
+        -9987.26631246824,
+        -29532.53615946322
+      ],
+      "metric_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "metric_note": "CONDITIONAL on inferred CRS. Source geographic bbox normalized to JGD2011 lon,lat; edges sampled at 32 segments per edge and projected to EPSG:6677."
+    },
+    {
+      "layer_id": "hokonavi-ikebukuro-walk-link-geojson",
+      "layer_role": "hokonavi_network",
+      "source_id": "hokonavi-ikebukuro-walk-link-geojson",
+      "source_crs": "EPSG:6668",
+      "crs_status": "INFERRED_FROM_SPEC",
+      "source_crs_bbox": [
+        139.69533618,
+        35.724141027,
+        139.722924068,
+        35.733731143
+      ],
+      "bbox_axis_order": "longitude,latitude",
+      "feature_count": 2196,
+      "bbox_jgd2011_lon_lat": [
+        139.69533618,
+        35.724141027,
+        139.722924068,
+        35.733731143
+      ],
+      "bbox_epsg_6677": [
+        -12484.275546537887,
+        -30599.65131299971,
+        -9987.26631246824,
+        -29532.53615946322
+      ],
+      "metric_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "metric_note": "CONDITIONAL on inferred CRS. Source geographic bbox normalized to JGD2011 lon,lat; edges sampled at 32 segments per edge and projected to EPSG:6677."
+    }
+  ],
+  "pairs": [
+    {
+      "layer_a": "plateau-13116-ubld-53394576",
+      "layer_b": "hokonavi-ikebukuro-walk-csv-pair",
+      "source_id_a": "plateau-13116-ubld-53394576",
+      "source_id_b": "hokonavi-ikebukuro-walk-node-csv",
+      "bbox_relation": "INTERSECTS",
+      "intersection_bbox_jgd2011_lon_lat": [
+        139.70938689983566,
+        35.728049254734366,
+        139.7133659340391,
+        35.731371787356984
+      ],
+      "minimum_separation_m": 0,
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "CONDITIONAL_ON_INFERRED_CRS"
+    },
+    {
+      "layer_a": "plateau-13116-ubld-53394576",
+      "layer_b": "hokonavi-ikebukuro-walk-node-geojson",
+      "source_id_a": "plateau-13116-ubld-53394576",
+      "source_id_b": "hokonavi-ikebukuro-walk-node-geojson",
+      "bbox_relation": "INTERSECTS",
+      "intersection_bbox_jgd2011_lon_lat": [
+        139.70938689983566,
+        35.728049254734366,
+        139.7133659340391,
+        35.731371787356984
+      ],
+      "minimum_separation_m": 0,
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "CONDITIONAL_ON_INFERRED_CRS"
+    },
+    {
+      "layer_a": "plateau-13116-ubld-53394576",
+      "layer_b": "hokonavi-ikebukuro-walk-link-geojson",
+      "source_id_a": "plateau-13116-ubld-53394576",
+      "source_id_b": "hokonavi-ikebukuro-walk-link-geojson",
+      "bbox_relation": "INTERSECTS",
+      "intersection_bbox_jgd2011_lon_lat": [
+        139.70938689983566,
+        35.728049254734366,
+        139.7133659340391,
+        35.731371787356984
+      ],
+      "minimum_separation_m": 0,
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "CONDITIONAL_ON_INFERRED_CRS"
+    },
+    {
+      "layer_a": "hokonavi-ikebukuro-walk-csv-pair",
+      "layer_b": "hokonavi-ikebukuro-walk-node-geojson",
+      "source_id_a": "hokonavi-ikebukuro-walk-node-csv",
+      "source_id_b": "hokonavi-ikebukuro-walk-node-geojson",
+      "bbox_relation": "INTERSECTS",
+      "intersection_bbox_jgd2011_lon_lat": [
+        139.69533618,
+        35.724141027,
+        139.722924068,
+        35.733731143
+      ],
+      "minimum_separation_m": 0,
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "CONDITIONAL_ON_INFERRED_CRS"
+    },
+    {
+      "layer_a": "hokonavi-ikebukuro-walk-csv-pair",
+      "layer_b": "hokonavi-ikebukuro-walk-link-geojson",
+      "source_id_a": "hokonavi-ikebukuro-walk-node-csv",
+      "source_id_b": "hokonavi-ikebukuro-walk-link-geojson",
+      "bbox_relation": "INTERSECTS",
+      "intersection_bbox_jgd2011_lon_lat": [
+        139.69533618,
+        35.724141027,
+        139.722924068,
+        35.733731143
+      ],
+      "minimum_separation_m": 0,
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "CONDITIONAL_ON_INFERRED_CRS"
+    },
+    {
+      "layer_a": "hokonavi-ikebukuro-walk-node-geojson",
+      "layer_b": "hokonavi-ikebukuro-walk-link-geojson",
+      "source_id_a": "hokonavi-ikebukuro-walk-node-geojson",
+      "source_id_b": "hokonavi-ikebukuro-walk-link-geojson",
+      "bbox_relation": "INTERSECTS",
+      "intersection_bbox_jgd2011_lon_lat": [
+        139.69533618,
+        35.724141027,
+        139.722924068,
+        35.733731143
+      ],
+      "minimum_separation_m": 0,
+      "status": "COMPUTED_BBOX_ONLY",
+      "metric_status": "CONDITIONAL_ON_INFERRED_CRS"
+    }
+  ],
+  "interpretation_limit": "BBox overlap only. It does not establish that features coincide, share a floor, or connect; it is not routing evidence.",
+  "verification": "UNVERIFIED",
+  "mesh_coverage": {
+    "catalog": {
+      "source_id": "plateau-catalog-ubld-mesh-533945",
+      "sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e"
+    },
+    "query_second_mesh": "533945",
+    "hokonavi_layers": [
+      {
+        "layer_id": "hokonavi-ikebukuro-walk-csv-pair",
+        "metric_status": "CONDITIONAL_ON_INFERRED_CRS",
+        "bbox": [
+          139.69533618,
+          35.724141027,
+          139.722924068,
+          35.733731143
+        ],
+        "third_meshes_touched": [
+          "53394565",
+          "53394566",
+          "53394567",
+          "53394575",
+          "53394576",
+          "53394577",
+          "53394585",
+          "53394586",
+          "53394587"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-ikebukuro-walk-node-geojson",
+        "metric_status": "CONDITIONAL_ON_INFERRED_CRS",
+        "bbox": [
+          139.69533618,
+          35.724141027,
+          139.722924068,
+          35.733731143
+        ],
+        "third_meshes_touched": [
+          "53394565",
+          "53394566",
+          "53394567",
+          "53394575",
+          "53394576",
+          "53394577",
+          "53394585",
+          "53394586",
+          "53394587"
+        ]
+      },
+      {
+        "layer_id": "hokonavi-ikebukuro-walk-link-geojson",
+        "metric_status": "CONDITIONAL_ON_INFERRED_CRS",
+        "bbox": [
+          139.69533618,
+          35.724141027,
+          139.722924068,
+          35.733731143
+        ],
+        "third_meshes_touched": [
+          "53394565",
+          "53394566",
+          "53394567",
+          "53394575",
+          "53394576",
+          "53394577",
+          "53394585",
+          "53394586",
+          "53394587"
+        ]
+      }
+    ],
+    "catalogued_ubld_files": [
+      {
+        "city_code": "13104",
+        "catalog_year": 2025,
+        "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/ubld/53394536_ubld_6697_op.gml",
+        "nominal_mesh": "53394536",
+        "nominal_mesh_bounds_lon_lat": [
+          139.7,
+          35.69166666666667,
+          139.71249999999998,
+          35.7
+        ],
+        "nominal_mesh_in_hokonavi_bbox_meshes": false,
+        "acquired_source_id": "plateau-13104-ubld-53394536",
+        "acquired_sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
+        "actual_acquired_geometry_bbox_lon_lat": [
+          139.69803124047718,
+          35.69069941674934,
+          139.7036188035924,
+          35.69501377379006
+        ],
+        "declared_envelope_lon_lat": [
+          139.69803124047718,
+          35.69069941674934,
+          139.7036188035924,
+          35.69501377379006
+        ],
+        "actual_bbox_status": "COMPUTED_FROM_ACQUIRED_GEOMETRY",
+        "actual_bbox_within_nominal_mesh": false,
+        "actual_bbox_meshes_touched": [
+          "53394525",
+          "53394526",
+          "53394535",
+          "53394536"
+        ]
+      },
+      {
+        "city_code": "13116",
+        "catalog_year": 2025,
+        "url": "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/ubld/53394576_ubld_6697_op.gml",
+        "nominal_mesh": "53394576",
+        "nominal_mesh_bounds_lon_lat": [
+          139.7,
+          35.725,
+          139.71249999999998,
+          35.733333333333334
+        ],
+        "nominal_mesh_in_hokonavi_bbox_meshes": true,
+        "acquired_source_id": "plateau-13116-ubld-53394576",
+        "acquired_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+        "actual_acquired_geometry_bbox_lon_lat": [
+          139.70938689983566,
+          35.728049254734366,
+          139.7133659340391,
+          35.731371787356984
+        ],
+        "declared_envelope_lon_lat": [
+          139.70938689983566,
+          35.728049254734366,
+          139.7133659340391,
+          35.731371787356984
+        ],
+        "actual_bbox_status": "COMPUTED_FROM_ACQUIRED_GEOMETRY",
+        "actual_bbox_within_nominal_mesh": false,
+        "actual_bbox_meshes_touched": [
+          "53394576",
+          "53394577"
+        ]
+      }
+    ],
+    "any_catalogued_nominal_mesh_touches_hokonavi_bbox_meshes": true,
+    "status": "COMPUTED_NOMINAL_MESH_ONLY",
+    "older_vintages": {
+      "value": null,
+      "status": "UNKNOWN",
+      "note": "This endpoint returns latest catalog entries only; earlier vintages were not enumerated."
+    },
+    "hold": "HOLD: nominal mesh membership does not establish actual geometry coverage, feature correspondence or floor alignment.",
+    "note": "JIS X 0410 first/second/third mesh calculation; closed bboxes include cells touched at a boundary. File-name mesh is nominal. Actual geometry may extend outside it. No feature correspondence is inferred."
+  },
+  "r1_bbox_containment": {
+    "status": "BBOX_EVIDENCE_ONLY",
+    "metric_status": "CONDITIONAL_ON_INFERRED_CRS",
+    "bbox_lon_lat": [
+      139.70938689983566,
+      35.728049254734366,
+      139.7133659340391,
+      35.731371787356984
+    ],
+    "nodes_inside": 176,
+    "total_nodes": 1887,
+    "comparable_nodes": 1887,
+    "skipped_nodes": 0,
+    "nodes_inside_by_literal_floor_and_in_out": [
+      {
+        "floor": "0",
+        "in_out": "1",
+        "count": 174
+      },
+      {
+        "floor": "0.5",
+        "in_out": "1",
+        "count": 2
+      }
+    ],
+    "links_rt_struct_5_7": [
+      {
+        "rt_struct": "5",
+        "total_links": 8,
+        "comparable_links": 8,
+        "intersecting_bbox": 0,
+        "skipped_links": 0
+      },
+      {
+        "rt_struct": "7",
+        "total_links": 83,
+        "comparable_links": 83,
+        "intersecting_bbox": 45,
+        "skipped_links": 0
+      }
+    ],
+    "note": "Conditional on R1 inferred EPSG:6668. Node containment and supplied polyline intersection with the PLATEAU geometry bbox only. No feature correspondence, floor match or route is established."
+  },
+  "tool_input_sha256": "7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad049a2",
+  "input_sources": [
+    {
+      "source_id": "plateau-13116-ubld-53394576",
+      "sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09"
+    },
+    {
+      "source_id": "plateau-13104-ubld-53394536",
+      "sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-csv",
+      "sha256": "2477e6f27d8be30b3e57ee6849a36b5d8c9f56e1d2ff34956fe5934b71f4920a"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-csv",
+      "sha256": "a0f8376556bc7c920be10c27181d8a4219745b55ec2bea6938d28dfeadde80d2"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-geojson",
+      "sha256": "f6b84c9c6d05559f04b4a4796b9286f6bfd1bdb4aea0b112666b3d7585b3eab6"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-network-geojson",
+      "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
+      "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2018-03",
+      "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2024-07",
+      "sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4"
+    },
+    {
+      "source_id": "plateau-catalog-ubld-mesh-533945",
+      "sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e"
+    }
+  ]
+}

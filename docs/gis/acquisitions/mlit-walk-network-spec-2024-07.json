@@ -1,0 +1,32 @@
+{
+  "source_id": "mlit-walk-network-spec-2024-07",
+  "resolved_url": "https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-21T00:13:53.738Z",
+  "completed_at": "2026-10-21T00:13:53.873Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/pdf",
+    "content-length": null,
+    "etag": "W/\"719c4370540d07dcc5bfd1fab8902a23\"",
+    "last-modified": "Wed, 11 Sep 2024 11:44:11 GMT",
+    "date": "Wed, 21 Oct 2026 00:13:38 GMT"
+  },
+  "bytes": 2174437,
+  "sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+  "store_path": "raw/963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4/001757259.pdf",
+  "tool_version": "0.1.0",
+  "git_commit": "df0365dea7dcc1d87005917ae4e38f02a5cc6a42",
+  "expected_bytes": 2174437,
+  "expected_url_match": true,
+  "size_check": "MATCH",
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-21T00:18:39.035Z",
+    "completed_at": "2026-10-21T00:18:39.035Z",
+    "tool_version": "0.1.0",
+    "sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4",
+    "bytes": 2174437,
+    "status": "PASS"
+  }
+}

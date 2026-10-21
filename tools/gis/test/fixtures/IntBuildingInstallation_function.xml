@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SYNTHETIC codelist fixture; invented code and label, not copied from public data. -->
+<gml:Dictionary xmlns:gml="http://www.opengis.net/gml">
+  <gml:dictionaryEntry><gml:Definition gml:id="synthetic-function-1"><gml:description>synthetic installation</gml:description><gml:name>EF_25</gml:name></gml:Definition></gml:dictionaryEntry>
+</gml:Dictionary>

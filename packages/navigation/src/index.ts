@@ -1,0 +1,133 @@
+import type { Edge, EdgeMode, EvidenceRef, LocalTime, StationBundle, Weekday } from "@gteki/schema";
+
+/**
+ * Renderer-neutral router over the verified directed station graph.
+ * Truth rules: only `verified` edges (plus `synthetic` in synthetic bundles) are traversable;
+ * UNKNOWN facts never silently become permissive when a profile asks to avoid them.
+ */
+
+export type FarePolicy =
+  /** Traveller has a ticket: may enter the paid area via fare-boundary edges. Unknown-paid edges allowed but reported. */
+  | "ticketed"
+  /** Traveller must stay outside the paid area: edges with paid !== false or crossesFareBoundary !== false are excluded. */
+  | "unpaid_only";
+
+export interface RouteProfile {
+  fare: FarePolicy;
+  /** Wheelchair/step-free routing: edges need wheelchair === true (unknown excluded). */
+  stepFree: boolean;
+  /** Avoid these modes entirely (e.g. ["escalator"]). */
+  avoidModes?: EdgeMode[];
+  /** Edge ids closed for this query in addition to edge.closed. */
+  extraClosedEdgeIds?: string[];
+  /**
+   * Unknown opening hours (hours === null):
+   * - "warn_unknown" (default): routable, reported in `unknowns` as kind "hours"; the UI must
+   *   show "hours unverified". No open dataset for either station publishes passage hours.
+   * - "require_known": excluded (strict, fail-closed).
+   * Nothing is ever asserted to be open 24h without an `always` hours record.
+   */
+  hours?: "warn_unknown" | "require_known";
+  /** Station-local departure time. When given, edges whose known hours are closed are excluded. */
+  at?: LocalTime;
+  /** Station-local calendar day "YYYY-MM-DD" used to flag stale sources; omit (or pass a partial/invalid date) for no staleness verdict. */
+  today?: string;
+  /** Source datasetDate older than this (days before `today`) marks the route stale. Default 730. */
+  staleAfterDays?: number;
+}
+
+export const DEFAULT_PROFILE: RouteProfile = { fare: "ticketed", stepFree: false };
+export const DEFAULT_STALE_AFTER_DAYS = 730;
+
+export interface RouteStep {
+  edgeId: string;
+  fromNodeId: string;
+  toNodeId: string;
+  /** Traversal direction relative to the stored edge. */
+  reversed: boolean;
+  mode: EdgeMode;
+  lengthM: number;
+  fromFloorId: string;
+  toFloorId: string;
+  /** Seconds to wait at `fromNodeId` before this step, for a known opening window (only with `profile.at`). */
+  waitSeconds?: number;
+  /** When that wait ends: station-local weekday and minute, `dayOffset` days after the departure day. */
+  waitUntil?: { weekday: Weekday; minutes: number; dayOffset: number };
+}
+
+export type RouteUnknown = "hours" | "paid" | "fare_boundary" | "wheelchair" | "steps" | "length" | "access_evidence";
+
+export interface RouteResult {
+  ok: true;
+  /** A copy of the profile this route was computed under, so presentation applies the same closures and hours. */
+  profile: RouteProfile;
+  nodeIds: string[];
+  steps: RouteStep[];
+  /** Walking distance in metres (stairs/ramps include the climb; lift rides add time, not length). */
+  totalLengthM: number;
+  /** Estimated time (s): walk 1.2 m/s, stairs 0.5 m/s along length, escalator 0.75 m/s, lift 45 s per ride, plus any waits. */
+  estimatedSeconds: number;
+  /** Seconds of that spent waiting for opening windows (see RouteStep.waitSeconds); 0 when none. */
+  waitSeconds: number;
+  floorChanges: number;
+  /** true if any edge crosses the fare boundary; null when none is known to but some crossing state is UNKNOWN. */
+  crossesFareBoundary: boolean | null;
+  /** Facts along the route that are UNKNOWN; UI must show them. */
+  unknowns: { kind: RouteUnknown; edgeIds: string[] }[];
+  /** Sources the route depends on: edge geometry/access/hours evidence and traversed nodes' sourceRefs. */
+  sourceIds: string[];
+  /** Latest checkedDate across the route's evidence (geometry, access and hours). */
+  evidenceCheckedDate: string | null;
+  /** Oldest known source datasetDate the route depends on (the weakest dated link); null = no dated source. */
+  oldestSourceDate: string | null;
+  /** Sources the route depends on that have no datasetDate. */
+  undatedSourceIds: string[];
+  /** Sources whose declared validity (`validUntil`) ended before profile.today; any makes the route stale. */
+  expiredSourceIds: string[];
+  /**
+   * true when some source is older than staleAfterDays before profile.today even at the latest day its
+   * date allows ("2024" may mean 31 Dec 2024), or its validUntil has passed; false only when every source is recent even at its earliest
+   * day; null when not evaluable (no `today`, an undated dependency, or a year/month date straddling the cutoff).
+   */
+  stale: boolean | null;
+  /** True when the route uses synthetic data: never present it as real directions. */
+  synthetic: boolean;
+  /** Edges with known opening windows used without a departure time (`profile.at`); UI must show the window. */
+  timeRestricted: { edgeId: string; open: string; close: string; days?: string[] }[];
+  /** Operators whose floors the route touches, in order of first appearance. */
+  operatorIds: string[];
+}
+
+export type RouteFailureReason =
+  | "unknown_start"
+  | "unknown_goal"
+  | "no_path"
+  | "start_equals_goal"
+  /** The search ran out of budget: a route may or may not exist (UNKNOWN), never a claimed no_path. */
+  | "search_limit";
+
+export interface RouteFailure {
+  ok: false;
+  reason: RouteFailureReason;
+  message: string;
+}
+
+export interface Router {
+  /**
+   * Cheapest route from any start to any goal, ranked by the router's cost (not walking length).
+   * Unknown ids are ignored; `start_equals_goal` when any start already is a goal.
+   * `endpointEvidence` is what ties the caller's origin/destination to these nodes (e.g. both POIs'
+   * `evidence`); it joins the route's sources, freshness and checked date.
+   */
+  route(fromNodeIds: string | string[], toNodeIds: string | string[], profile?: RouteProfile, endpointEvidence?: readonly EvidenceRef[]): RouteResult | RouteFailure;
+  /** True when this edge may be used under the profile (exposed for UI/debug overlays). */
+  isTraversable(edge: Edge, profile: RouteProfile): boolean;
+}
+
+/**
+ * `createRouter(bundle)` expects a bundle that passed `parseStationFiles` (as the web app and CLI do):
+ * the router keeps its own fail-closed edge rules but does not re-run contract validation.
+ */
+export { createRouter } from "./router.ts";
+export { routeBetween, type RouteEndpoint } from "./poi.ts";
+export { describeRoute, floorDisplayName, instructionPoints, nodeDisplayZ, routePolyline, type Instruction, type InstructionKind, type JunctionHint, type PolylinePoint, type Turn } from "./present.ts";

@@ -1,0 +1,32 @@
+{
+  "source_id": "tokyo-s03-zip",
+  "resolved_url": "https://www.toshiseibi.metro.tokyo.lg.jp/documents/d/toshiseibi/zip_kiban_shinjuku_terminal_pdf_shisetsu_root",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-21T00:13:55.097Z",
+  "completed_at": "2026-10-21T00:13:55.368Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/zip",
+    "content-length": "2317035",
+    "etag": null,
+    "last-modified": "Tue, 01 Oct 2024 07:52:20 GMT",
+    "date": "Wed, 21 Oct 2026 00:13:55 GMT"
+  },
+  "bytes": 2317035,
+  "sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+  "store_path": "raw/fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31/zip_kiban_shinjuku_terminal_pdf_shisetsu_root",
+  "tool_version": "0.1.0",
+  "git_commit": "df0365dea7dcc1d87005917ae4e38f02a5cc6a42",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-21T00:18:39.151Z",
+    "completed_at": "2026-10-21T00:18:39.151Z",
+    "tool_version": "0.1.0",
+    "sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+    "bytes": 2317035,
+    "status": "PASS"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+  "resolved_url": "https://ckan.hokonavi.go.jp/dataset/324ba112-3bc0-4b9c-8a36-7d30edf4cf92/resource/f5d9a6e5-fd54-4b77-acd3-6f73e77676ff/download/node.geojson",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-21T00:13:53.207Z",
+  "completed_at": "2026-10-21T00:13:53.284Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/geo+json",
+    "content-length": "926326",
+    "etag": "\"1757298652.8895652-926326-2284524345\"",
+    "last-modified": "Mon, 08 Sep 2025 02:30:52 GMT",
+    "date": "Wed, 21 Oct 2026 00:13:53 GMT"
+  },
+  "bytes": 926326,
+  "sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33",
+  "store_path": "raw/4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33/node.geojson",
+  "tool_version": "0.1.0",
+  "git_commit": "df0365dea7dcc1d87005917ae4e38f02a5cc6a42",
+  "expected_bytes": 926326,
+  "expected_url_match": true,
+  "size_check": "MATCH",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "ckan-metadata",
+      "requested_url": "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=nwd_ikebukuro",
+      "url": "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=nwd_ikebukuro",
+      "http_status": 200,
+      "sha256": "82c7ecca22de1c08b8c0ad4b0c1c362af032f80d745c74d5c9a06b4b8f5ff039",
+      "bytes": 5618,
+      "store_path": "raw/82c7ecca22de1c08b8c0ad4b0c1c362af032f80d745c74d5c9a06b4b8f5ff039/package_show"
+    }
+  ],
+  "last_offline_check": {
+    "requested_at": "2026-10-21T00:18:38.956Z",
+    "completed_at": "2026-10-21T00:18:38.956Z",
+    "tool_version": "0.1.0",
+    "sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33",
+    "bytes": 926326,
+    "status": "PASS"
+  }
+}

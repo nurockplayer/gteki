@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.vite/
+*.log
+.DS_Store
+/raw/
+coverage/
+.claude/
+.serena/
+data-cache/
+stations/*/build/
+__pycache__/
+/.qa/

@@ -1,0 +1,664 @@
+{
+  "tool_input_sha256": "3b6f085efcc168fac3ad688e5108393625cc94176fe963ce278a0d7ea3594745",
+  "verification": "UNVERIFIED",
+  "navigation_use": "NOT_FOR_ROUTING",
+  "acquisitions": [
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-csv",
+      "bytes": 370498,
+      "sha256": "a0f8376556bc7c920be10c27181d8a4219745b55ec2bea6938d28dfeadde80d2",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-csv",
+      "bytes": 279843,
+      "sha256": "2477e6f27d8be30b3e57ee6849a36b5d8c9f56e1d2ff34956fe5934b71f4920a",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-network-geojson",
+      "bytes": 42909,
+      "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
+      "bytes": 74513,
+      "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "plateau-13104-codelists",
+      "bytes": 806577,
+      "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "plateau-13104-metadata",
+      "bytes": 26786,
+      "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "plateau-13104-schemas",
+      "bytes": 27952,
+      "sha256": "28ca5c63686afac1487b84dd77a8778e24ec0af680cc71cd39bb3cb1beacb0a2",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "plateau-13104-ubld-53394536",
+      "bytes": 43830765,
+      "sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "plateau-13116-codelists",
+      "bytes": 805989,
+      "sha256": "183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "plateau-13116-metadata",
+      "bytes": 21755,
+      "sha256": "9c75c7135d5b1693db5474c0756eeb5632496d9d1fbcfd8ca7882c4cbea7d624",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "plateau-13116-schemas",
+      "bytes": 27934,
+      "sha256": "e1d3011989038e21fb07ffc5bc4bc5fc08b1506e8092ef5222b246a205354bde",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "plateau-13116-ubld-53394576",
+      "bytes": 35427963,
+      "sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+      "size_check": "MATCH"
+    },
+    {
+      "source_id": "plateau-catalog-ubld-13116-13104",
+      "bytes": 2540,
+      "sha256": "7e5abc031afa5ab9f4e0da1df9b7e3413d642c7cbdeb6de6f909b4a23a9737ad",
+      "size_check": "NOT_SPECIFIED"
+    }
+  ],
+  "inventories": [
+    {
+      "source_id": "plateau-13104-ubld-53394536",
+      "source_sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
+      "totals": {
+        "feature_count": 30358,
+        "polygon_count": 65013,
+        "ring_count": 65081,
+        "interior_ring_count": 68,
+        "vertex_count": 343921,
+        "degenerate_polygon_count": 0,
+        "degenerate_polygon_reasons": {
+          "fewer_than_3_distinct_vertices": 0,
+          "projected_zero_area": 0
+        },
+        "unclosed_ring_count": 0,
+        "bbox_lat_lon_height": {
+          "min": [
+            35.69069941674934,
+            139.69803124047718,
+            15.321
+          ],
+          "max": [
+            35.69501377379006,
+            139.7036188035924,
+            45.493
+          ]
+        },
+        "height_range": [
+          15.321,
+          45.493
+        ]
+      },
+      "feature_type_counts": {
+        "uro:UndergroundBuilding": 1,
+        "bldg:IntBuildingInstallation": 1,
+        "bldg:CeilingSurface": 7387,
+        "bldg:ClosureSurface": 425,
+        "bldg:FloorSurface": 1911,
+        "bldg:InteriorWallSurface": 5476,
+        "bldg:Door": 1364,
+        "bldg:GroundSurface": 1648,
+        "bldg:Window": 62,
+        "bldg:RoofSurface": 4783,
+        "bldg:WallSurface": 7146,
+        "bldg:Room": 153,
+        "grp:CityObjectGroup": 1
+      },
+      "semantic_presence": {
+        "floors": {
+          "status": "PRESENT",
+          "count": 1911,
+          "observed_count": 1911
+        },
+        "doors": {
+          "status": "PRESENT",
+          "count": 1364,
+          "observed_count": 1364
+        },
+        "windows": {
+          "status": "PRESENT",
+          "count": 62,
+          "observed_count": 62
+        },
+        "door_representation": {
+          "status": "UNKNOWN",
+          "count": null,
+          "observed_count": 1364
+        },
+        "stairs": {
+          "status": "UNKNOWN",
+          "count": null,
+          "observed_count": 0
+        },
+        "escalators": {
+          "status": "UNKNOWN",
+          "count": null,
+          "observed_count": 0
+        },
+        "elevators": {
+          "status": "UNKNOWN",
+          "count": null,
+          "observed_count": 0
+        },
+        "ramps": {
+          "status": "UNKNOWN",
+          "count": null,
+          "observed_count": 0
+        },
+        "stairs_or_ramps_category": {
+          "status": "ABSENT_IN_FILE",
+          "count": 0,
+          "observed_count": 0
+        },
+        "ticket_gates_paid_area_boundary": {
+          "status": "UNKNOWN",
+          "count": null,
+          "observed_count": 0
+        },
+        "connectivity_topology": {
+          "status": "ABSENT_IN_FILE",
+          "count": 0,
+          "observed_count": 0
+        },
+        "floor_labels": {
+          "status": "UNKNOWN",
+          "count": null,
+          "observed_count": 0
+        },
+        "installations": {
+          "status": "PRESENT",
+          "count": 1,
+          "observed_count": 1
+        }
+      },
+      "codelist_resolution": [],
+      "feature_tree": {
+        "store_path": "out/plateau-13104-ubld-53394536.inventory-detail.json",
+        "sha256": "d9310a5fbaa8204e0f118c799bceb543970e4875e7d4757cfdea2112e70346f1",
+        "bytes": 48813914,
+        "feature_count": 30358
+      }
+    },
+    {
+      "source_id": "plateau-13116-ubld-53394576",
+      "source_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+      "totals": {
+        "feature_count": 32,
+        "polygon_count": 58761,
+        "ring_count": 58795,
+        "interior_ring_count": 34,
+        "vertex_count": 241060,
+        "degenerate_polygon_count": 0,
+        "degenerate_polygon_reasons": {
+          "fewer_than_3_distinct_vertices": 0,
+          "projected_zero_area": 0
+        },
+        "unclosed_ring_count": 0,
+        "bbox_lat_lon_height": {
+          "min": [
+            35.728049254734366,
+            139.70938689983566,
+            25.498283
+          ],
+          "max": [
+            35.731371787356984,
+            139.7133659340391,
+            33.16767
+          ]
+        },
+        "height_range": [
+          25.498283,
+          33.16767
+        ]
+      },
+      "feature_type_counts": {
+        "grp:CityObjectGroup": 1,
+        "uro:UndergroundBuilding": 1,
+        "bldg:IntBuildingInstallation": 7,
+        "bldg:ClosureSurface": 4,
+        "bldg:RoofSurface": 1,
+        "bldg:WallSurface": 1,
+        "bldg:GroundSurface": 1,
+        "bldg:Room": 3,
+        "bldg:CeilingSurface": 3,
+        "bldg:FloorSurface": 3,
+        "bldg:InteriorWallSurface": 3,
+        "bldg:Window": 1,
+        "bldg:Door": 3
+      },
+      "semantic_presence": {
+        "floors": {
+          "status": "PRESENT",
+          "count": 3,
+          "observed_count": 3
+        },
+        "doors": {
+          "status": "PRESENT",
+          "count": 3,
+          "observed_count": 3
+        },
+        "windows": {
+          "status": "PRESENT",
+          "count": 1,
+          "observed_count": 1
+        },
+        "door_representation": {
+          "status": "UNKNOWN",
+          "count": null,
+          "observed_count": 3
+        },
+        "stairs": {
+          "status": "UNKNOWN",
+          "count": null,
+          "observed_count": 0
+        },
+        "escalators": {
+          "status": "UNKNOWN",
+          "count": null,
+          "observed_count": 0
+        },
+        "elevators": {
+          "status": "UNKNOWN",
+          "count": null,
+          "observed_count": 0
+        },
+        "ramps": {
+          "status": "UNKNOWN",
+          "count": null,
+          "observed_count": 0
+        },
+        "stairs_or_ramps_category": {
+          "status": "PRESENT",
+          "count": 2,
+          "observed_count": 2
+        },
+        "ticket_gates_paid_area_boundary": {
+          "status": "UNKNOWN",
+          "count": null,
+          "observed_count": 0
+        },
+        "connectivity_topology": {
+          "status": "ABSENT_IN_FILE",
+          "count": 0,
+          "observed_count": 0
+        },
+        "floor_labels": {
+          "status": "PRESENT",
+          "count": 1,
+          "observed_count": 1
+        },
+        "installations": {
+          "status": "PRESENT",
+          "count": 7,
+          "observed_count": 7
+        }
+      },
+      "codelist_resolution": [
+        {
+          "code": "EF_25",
+          "code_space": "../../codelists/IntBuildingInstallation_function.xml",
+          "label": "壁およびバリア（バリケード）エレメント",
+          "status": "RESOLVED"
+        },
+        {
+          "code": "EF_30",
+          "code_space": "../../codelists/IntBuildingInstallation_function.xml",
+          "label": "屋根、床、舗装エレメント",
+          "status": "RESOLVED"
+        },
+        {
+          "code": "EF_35",
+          "code_space": "../../codelists/IntBuildingInstallation_function.xml",
+          "label": "階段および傾斜路（スロープ）エレメント",
+          "status": "RESOLVED"
+        },
+        {
+          "code": "EF_80",
+          "code_space": "../../codelists/IntBuildingInstallation_function.xml",
+          "label": "輸送機能",
+          "status": "RESOLVED"
+        }
+      ],
+      "feature_tree": {
+        "store_path": "out/plateau-13116-ubld-53394576.inventory-detail.json",
+        "sha256": "b2176f4ae02541d2a0dab4307c2d226b9f53108bfac4656c8d9c24e883a3e086",
+        "bytes": 64005,
+        "feature_count": 32
+      }
+    }
+  ],
+  "conversions": [
+    {
+      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-1b025a90ae21ab09",
+      "source_id": "plateau-13104-ubld-53394536",
+      "filters": {
+        "ids": [
+          "room_d4dc60ab-50c3-4480-9957-069e31c641ad"
+        ]
+      },
+      "totals": {
+        "objects_in_source": 30358,
+        "objects_converted": 1,
+        "nodes": 1,
+        "polygons_in_source": 65013,
+        "polygons_converted": 6,
+        "skipped_degenerate": 0,
+        "triangles": 12
+      },
+      "validation": {
+        "status": "PASS",
+        "node_count": 1,
+        "expected_node_count": 1,
+        "triangle_count": 12,
+        "expected_triangle_count": 12,
+        "bbox_max_error_m": 0.00000452290078101214,
+        "tolerance_m": 0.001,
+        "all_nodes_have_gml_id": true
+      },
+      "elapsed_ms": 6436,
+      "peak_rss_bytes": 346030080
+    },
+    {
+      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-b9f1954bd40df5b6",
+      "source_id": "plateau-13104-ubld-53394536",
+      "filters": {},
+      "totals": {
+        "objects_in_source": 30358,
+        "objects_converted": 30357,
+        "nodes": 30358,
+        "polygons_in_source": 65013,
+        "polygons_converted": 65013,
+        "skipped_degenerate": 0,
+        "triangles": 148950
+      },
+      "validation": {
+        "status": "PASS",
+        "node_count": 30358,
+        "expected_node_count": 30358,
+        "triangle_count": 148950,
+        "expected_triangle_count": 148950,
+        "bbox_max_error_m": 0.0000054997890401864424,
+        "tolerance_m": 0.001,
+        "all_nodes_have_gml_id": true
+      },
+      "elapsed_ms": 19063,
+      "peak_rss_bytes": 1100627968
+    },
+    {
+      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-eba97abb1c84b8f3",
+      "source_id": "plateau-13104-ubld-53394536",
+      "filters": {
+        "ids": [
+          "room_d4dc60ab-50c3-4480-9957-069e31c641ad"
+        ],
+        "maxPolygons": 50
+      },
+      "totals": {
+        "objects_in_source": 30358,
+        "objects_converted": 1,
+        "nodes": 1,
+        "polygons_in_source": 65013,
+        "polygons_converted": 6,
+        "skipped_degenerate": 0,
+        "triangles": 12
+      },
+      "validation": {
+        "status": "PASS",
+        "node_count": 1,
+        "expected_node_count": 1,
+        "triangle_count": 12,
+        "expected_triangle_count": 12,
+        "bbox_max_error_m": 0.00000452290078101214,
+        "tolerance_m": 0.001,
+        "all_nodes_have_gml_id": true
+      },
+      "elapsed_ms": 5641,
+      "peak_rss_bytes": 741933056
+    },
+    {
+      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-109e241011a0a4ab",
+      "source_id": "plateau-13116-ubld-53394576",
+      "filters": {
+        "ids": [
+          "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2"
+        ]
+      },
+      "totals": {
+        "objects_in_source": 32,
+        "objects_converted": 5,
+        "nodes": 6,
+        "polygons_in_source": 58761,
+        "polygons_converted": 184,
+        "skipped_degenerate": 0,
+        "triangles": 184
+      },
+      "validation": {
+        "status": "PASS",
+        "node_count": 6,
+        "expected_node_count": 6,
+        "triangle_count": 184,
+        "expected_triangle_count": 184,
+        "bbox_max_error_m": 0.0000046096065489109606,
+        "tolerance_m": 0.001,
+        "all_nodes_have_gml_id": true
+      },
+      "elapsed_ms": 4793,
+      "peak_rss_bytes": 261406720
+    },
+    {
+      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-5d0392ea7bb289ac",
+      "source_id": "plateau-13116-ubld-53394576",
+      "filters": {
+        "bboxLocal": [
+          -1000,
+          -1000,
+          1000,
+          1000
+        ],
+        "maxPolygons": 10
+      },
+      "totals": {
+        "objects_in_source": 32,
+        "objects_converted": 1,
+        "nodes": 1,
+        "polygons_in_source": 58761,
+        "polygons_converted": 10,
+        "skipped_degenerate": 0,
+        "triangles": 2046
+      },
+      "validation": {
+        "status": "PASS",
+        "node_count": 1,
+        "expected_node_count": 1,
+        "triangle_count": 2046,
+        "expected_triangle_count": 2046,
+        "bbox_max_error_m": 0.000003925928467651829,
+        "tolerance_m": 0.001,
+        "all_nodes_have_gml_id": true
+      },
+      "elapsed_ms": 17113,
+      "peak_rss_bytes": 214728704
+    },
+    {
+      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-5d2638fcd4e0ff93",
+      "source_id": "plateau-13116-ubld-53394576",
+      "filters": {},
+      "totals": {
+        "objects_in_source": 32,
+        "objects_converted": 28,
+        "nodes": 32,
+        "polygons_in_source": 58761,
+        "polygons_converted": 58761,
+        "skipped_degenerate": 0,
+        "triangles": 64811
+      },
+      "validation": {
+        "status": "PASS",
+        "node_count": 32,
+        "expected_node_count": 32,
+        "triangle_count": 64811,
+        "expected_triangle_count": 64811,
+        "bbox_max_error_m": 0.000003925928467651829,
+        "tolerance_m": 0.001,
+        "all_nodes_have_gml_id": true
+      },
+      "elapsed_ms": 6120,
+      "peak_rss_bytes": 269762560
+    },
+    {
+      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-b9663c719c89bc0c",
+      "source_id": "plateau-13116-ubld-53394576",
+      "filters": {
+        "ids": [
+          "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2"
+        ],
+        "maxPolygons": 50
+      },
+      "totals": {
+        "objects_in_source": 32,
+        "objects_converted": 1,
+        "nodes": 6,
+        "polygons_in_source": 58761,
+        "polygons_converted": 50,
+        "skipped_degenerate": 0,
+        "triangles": 50
+      },
+      "validation": {
+        "status": "PASS",
+        "node_count": 6,
+        "expected_node_count": 6,
+        "triangle_count": 50,
+        "expected_triangle_count": 50,
+        "bbox_max_error_m": 0.0000046096065489109606,
+        "tolerance_m": 0.001,
+        "all_nodes_have_gml_id": true
+      },
+      "elapsed_ms": 4334,
+      "peak_rss_bytes": 250265600
+    }
+  ],
+  "networks": [
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-csv+hokonavi-ikebukuro-walk-link-csv",
+      "counts": {
+        "nodes": 1887,
+        "links": 2196
+      },
+      "duplicate_node_ids": 0,
+      "duplicate_link_ids": 0,
+      "dangling_links": 0,
+      "self_loops": 0,
+      "weak_components": 1,
+      "endpoint_mismatches": null,
+      "endpoint_check_status": "UNKNOWN_CRS_FOR_CSV",
+      "endpoint_coverage": {
+        "checked_links": 0,
+        "skipped_links": 2196,
+        "total_links": 2196,
+        "complete": false
+      },
+      "floor_labels": [
+        "-0.5",
+        "-1.0",
+        "0.0",
+        "0.5",
+        "1.0"
+      ],
+      "csv_in_out": {
+        "blank_count": 0,
+        "distinct_count": 1,
+        "distinct_values": {
+          "1": 1887
+        }
+      },
+      "csv_elevation": {
+        "blank_count": 1887,
+        "distinct_count": 0
+      }
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-network-geojson",
+      "counts": {
+        "features": 496,
+        "layers": 2
+      },
+      "duplicate_node_ids": 0,
+      "duplicate_link_ids": 0,
+      "dangling_links": 0,
+      "self_loops": 0,
+      "weak_components": 1,
+      "endpoint_mismatches": 0,
+      "endpoint_check_status": "CHECKED_IN_METRES",
+      "endpoint_coverage": {
+        "checked_links": 263,
+        "skipped_links": 0,
+        "total_links": 263,
+        "complete": true
+      },
+      "floor_labels": [
+        "-0.5",
+        "-1",
+        "-2",
+        "-2.5",
+        "-3",
+        "-4.5",
+        "-6",
+        "0",
+        "1"
+      ],
+      "csv_in_out": null,
+      "csv_elevation": null
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
+      "counts": {
+        "features": 465,
+        "layers": 18
+      },
+      "duplicate_node_ids": null,
+      "duplicate_link_ids": null,
+      "dangling_links": null,
+      "self_loops": null,
+      "weak_components": null,
+      "endpoint_mismatches": null,
+      "endpoint_check_status": "UNKNOWN",
+      "endpoint_coverage": null,
+      "floor_labels": [
+        "1階",
+        "地下1階",
+        "地下2階",
+        "地下3階",
+        "地下5階",
+        "地下6階"
+      ],
+      "csv_in_out": null,
+      "csv_elevation": null
+    }
+  ]
+}
