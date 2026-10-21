@@ -60,7 +60,10 @@ export async function replayMatrix(built: BuiltStation, scene: StationScene, pla
     fringeContacts: results.reduce((n, r) => n + r.fringeContacts, 0), maxFringeM: Math.max(0, ...results.map(r => r.maxFringeM)),
     matrix: [...matrix.values()], zeroSeedJobs: results.filter(r => !r.seeds).map(r => jobs[r.id]!.end.id), leaks: results.flatMap(r => r.leak ? [r.leak] : []) });
   const save = () => { if (process.env.FARE_REPLAY_REPORT) writeFileSync(process.env.FARE_REPLAY_REPORT.replace(/\.json$/, shard === undefined ? ".json" : `-${shard + 1}.json`), JSON.stringify(report(), null, 2)); };
-  const tasks = Array.from({ length: Math.min(6, Math.max(1, Math.floor(availableParallelism() / 2)), groups.length) }, () => new Promise<void>((resolve, reject) => {
+  // Each thread holds its own copy of the scene geometry (~0.8 GB); keep the default to two so a
+  // 16 GB host stays responsive (issue #40). GTEKI_REPLAY_THREADS raises it on larger machines.
+  const threads = Math.max(1, Math.min(Number(process.env.GTEKI_REPLAY_THREADS) || 2, availableParallelism()));
+  const tasks = Array.from({ length: Math.min(threads, groups.length) }, () => new Promise<void>((resolve, reject) => {
     const worker = new Worker(new URL("./fare-replay-worker.ts", import.meta.url), { workerData: fixture, execArgv: ["--import", "tsx"] }); workers.push(worker);
     worker.on("error", reject);
     worker.on("message", (result: Result | "ready") => {
