@@ -1,2 +1,2 @@
 import { replayShard } from "./fare-replay-shard.ts";
-replayShard(0, 4);
+replayShard(0, 8);
