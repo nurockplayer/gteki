@@ -705,6 +705,24 @@ describe("opening hours are checked when the route reaches each edge", () => {
     expect(say(createRouter(monday), monday, at("mon", 23 * 60 + 30))).toEqual(["7日後の月曜日05:00まで待つ", "Wait until 05:00 on Monday, 7 days later"]);
   });
 
+  it("names the station time zone in a wait when the profile has one", () => {
+    const say = (b: ReturnType<typeof createSyntheticBundle>, profile: RouteProfile) => {
+      const r = ok(createRouter(b).route("start", "goal", profile));
+      expect(r.profile.timeZone).toBe(profile.timeZone);
+      return (["ja", "en"] as const).map((lang) => describeRoute(b, r, lang).find((i) => i.kind === "wait")?.text);
+    };
+    const gate = (days?: ("wed")[]) => createSyntheticBundle([edge("gate", "start", "goal", { mode: "gate", lengthM: 0, hours: hours("05:00", "23:00", days) })]);
+    const mon = (timeZone?: string) => ({ ...base, at: { weekday: "mon" as const, minutes: 4 * 60 }, ...(timeZone ? { timeZone } : {}) });
+    const late = (timeZone?: string) => ({ ...base, at: { weekday: "mon" as const, minutes: 23 * 60 + 30 }, ...(timeZone ? { timeZone } : {}) });
+    expect(say(gate(), mon("Asia/Tokyo"))).toEqual(["05:00（日本時間）まで待つ", "Wait until 05:00 JST"]);
+    expect(say(gate(), late("Asia/Tokyo"))).toEqual(["翌日05:00（日本時間）まで待つ", "Wait until 05:00 JST tomorrow"]);
+    expect(say(gate(["wed"]), late("Asia/Tokyo"))).toEqual(["水曜日05:00（日本時間）まで待つ", "Wait until 05:00 JST on Wednesday"]);
+    // Any other zone is named by its IANA id; no zone, no label.
+    expect(say(gate(), mon("Europe/London"))).toEqual(["05:00（Europe/London）まで待つ", "Wait until 05:00 (Europe/London)"]);
+    expect(say(gate(), late("Europe/London"))).toEqual(["翌日05:00（Europe/London）まで待つ", "Wait until 05:00 (Europe/London) tomorrow"]);
+    expect(say(gate(), mon())).toEqual(["05:00まで待つ", "Wait until 05:00"]);
+  });
+
   it("waits exactly until the first minute a brute-force scan finds the edge open throughout", () => {
     // Random windows (overnight, over 24 h, some weekdays, empty spans) against an independent minute scan.
     let seed = 11;
