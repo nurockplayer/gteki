@@ -103,6 +103,13 @@ export interface ContextBuildArgs {
   groundHeightAttributes?: readonly string[];
   /** per_feature_ground frames only: radius (m, horizontal station frame, footprint bbox to connector) of the exit-neighbour ground-height statistics per poi_ids POI. Absent = not computed. */
   exitNeighbourRadiusM?: number;
+  /**
+   * Credit text that replaces the source-derived attribution string in the GLB (asset copyright, scene, node and mesh extras) and the
+   * report. It must start with the exact attribution of every converted source, so the PLATEAU credit can never be dropped. Absent = the source attribution(s), unchanged.
+   */
+  attributionText?: string;
+  /** URL of the decision that fixed `attributionText`; recorded in the report and the scene extras. */
+  attributionDecision?: string;
 }
 export type ExclusionReason =
   | 'missing_gml_id' | 'duplicate_gml_id' | 'no_polygon_geometry'
@@ -131,10 +138,10 @@ export function bboxIntersectsDisc(box: { minX: number; minY: number; maxX: numb
   return Math.hypot(dx, dy) <= radiusM;
 }
 /** Run-id digest: every provenance input embedded in the GLB must be here, or two different builds would share one artifact path. */
-export function contextRunDigest(input: { frame: unknown; windowSpec: unknown; discs: unknown; graphSha256: string | null; poisSha256: string | null; merge: string; variant: string; kinds: readonly string[]; sources: [string, string][]; fingerprint: string; groundHeightAttributes?: readonly string[]; exitNeighbourRadiusM?: number }): string {
-  const { frame, windowSpec, discs, graphSha256, poisSha256, merge, variant, kinds, sources, fingerprint, groundHeightAttributes, exitNeighbourRadiusM } = input;
+export function contextRunDigest(input: { frame: unknown; windowSpec: unknown; discs: unknown; graphSha256: string | null; poisSha256: string | null; merge: string; variant: string; kinds: readonly string[]; sources: [string, string][]; fingerprint: string; groundHeightAttributes?: readonly string[]; exitNeighbourRadiusM?: number; attributionText?: string }): string {
+  const { frame, windowSpec, discs, graphSha256, poisSha256, merge, variant, kinds, sources, fingerprint, groundHeightAttributes, exitNeighbourRadiusM, attributionText } = input;
   // groundHeightAttributes is undefined (and so absent from the JSON) for every TP-basis frame: Ikebukuro digests are unchanged by it.
-  return createHash('sha256').update(JSON.stringify({ frame, window: windowSpec, discs, graph: graphSha256, pois: poisSha256, merge, variant, kinds, sources, policy: CONTEXT_POLICY_VERSION, fingerprint, groundHeightAttributes, exitNeighbourRadiusM })).digest('hex').slice(0, 20);
+  return createHash('sha256').update(JSON.stringify({ frame, window: windowSpec, discs, graph: graphSha256, pois: poisSha256, merge, variant, kinds, sources, policy: CONTEXT_POLICY_VERSION, fingerprint, groundHeightAttributes, exitNeighbourRadiusM, attributionText })).digest('hex').slice(0, 20);
 }
 export function contextNodeName(kind: ContextKind, gmlId: string): string { return kind === 'bldg' ? `ctx_bldg_${gmlId}` : `ctx_road_${gmlId}`; }
 const pad = (n: number, width: number): string => String(n).padStart(width, '0');
@@ -260,7 +267,14 @@ export async function buildContextGlb(args: ContextBuildArgs) {
   };
 
   const document = new Document(), buffer = document.createBuffer();
-  const attribution = [...new Set(inputs.map((i) => i.attributionText))].join(' / ');
+  const sourceAttribution = [...new Set(inputs.map((i) => i.attributionText))].join(' / ');
+  const attributionOverride = args.attributionText;
+  if (attributionOverride !== undefined) {
+    // Fail closed: the override may add wording but must begin with every source's own credit.
+    for (const credit of new Set(inputs.map((i) => i.attributionText))) if (!attributionOverride.startsWith(credit)) throw new Error(`attribution_text ${JSON.stringify(attributionOverride)} does not start with the exact source attribution ${JSON.stringify(credit)}; the source credit must never be dropped`);
+    if (!args.attributionDecision) throw new Error('attribution_text needs attribution_decision (the URL of the decision that fixed it)');
+  }
+  const attribution = attributionOverride ?? sourceAttribution;
   document.getRoot().getAsset().copyright = attribution;
   const scene = document.createScene('UNVERIFIED NOT_FOR_ROUTING street-level context (visual only)');
   const materials = Object.fromEntries((merged ? MERGED_MATERIALS : PER_FEATURE_MATERIALS).map((name) => [name, document.createMaterial(name).setBaseColorFactor(MATERIALS[name]!).setMetallicFactor(0).setRoughnessFactor(1).setDoubleSided(true)]));
@@ -371,7 +385,7 @@ export async function buildContextGlb(args: ContextBuildArgs) {
   const trianglesByKind: Record<ContextKind, number> = { bldg: 0, tran: 0 };
   let localBBox: { min: Point3; max: Point3 } | null = null;
   for (const bucket of emitted) {
-    const common = { gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, verification: 'UNVERIFIED', geometry_status: 'UNVERIFIED_RAW_CONVERSION', frame_id: frame.frame_id, station_id: frame.station_id, station_json_sha256: frame.station_json_sha256, attribution_text: [...bucket.attributions].join(' / '), height_basis: flatten ? HEIGHT_BASIS_FLATTENED : HEIGHT_BASIS_TP, ...verticalExtras };
+    const common = { gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, verification: 'UNVERIFIED', geometry_status: 'UNVERIFIED_RAW_CONVERSION', frame_id: frame.frame_id, station_id: frame.station_id, station_json_sha256: frame.station_json_sha256, attribution_text: attributionOverride ?? [...bucket.attributions].join(' / '), height_basis: flatten ? HEIGHT_BASIS_FLATTENED : HEIGHT_BASIS_TP, ...verticalExtras };
     const extras = bucket.single
       ? { ...common, kinds, gml_id: bucket.single.gml_id, feature_type: bucket.single.type, source_id: bucket.single.source.sourceId, source_sha256: bucket.single.source.sourceSha256, lod_used: bucket.single.lod_used, lod_fallback: bucket.single.lod_fallback, ...(flatten ? { ground_height_m: bucket.single.ground_height_m, ground_basis: bucket.single.ground_basis, ground_surface_spread_m: bucket.single.ground_surface_spread_m } : {}) }
       : { ...common, merged: true, merge: mergeLabel(merge), variant, kinds, kind: bucket.kind === 'bldg' ? 'building' : 'road', tile: bucket.tile, feature_count: bucket.features, source_ids: [...bucket.sources.keys()].sort(), source_sha256s: Object.fromEntries([...bucket.sources].sort(([a], [b]) => (a < b ? -1 : 1))), lod_used: Object.fromEntries(Object.entries(bucket.lodUsed).sort(([a], [b]) => (a < b ? -1 : 1))), graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null, window: windowExtras, feature_table: flatten ? 'sidecar and receipt: gml_id, source_id, lod, mesh, tri_start, tri_count, ground_offset_m, ground_basis, ground_surface_spread_m' : 'sidecar and receipt: gml_id, source_id, lod, mesh, tri_start, tri_count' };
@@ -399,6 +413,7 @@ export async function buildContextGlb(args: ContextBuildArgs) {
     gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, verification: 'UNVERIFIED', station_id: frame.station_id, frame_id: frame.frame_id,
     station_json_sha256: frame.station_json_sha256, graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null, window: windowExtras, kinds, merge: mergeLabel(merge), variant,
     selection_rule: selectionRuleFor(window), lod_policy: variant === 'low' ? LOD_POLICY_LOW : LOD_POLICY, policy_version: CONTEXT_POLICY_VERSION, attribution_text: attribution,
+    ...(attributionOverride !== undefined ? { attribution_decision: args.attributionDecision } : {}),
     ...(flatten ? { height_basis: HEIGHT_BASIS_FLATTENED, ...verticalExtras, ground_offsets: groundOffsets } : {}),
   });
   await mkdir(dirname(outputPath), { recursive: true });
@@ -453,7 +468,7 @@ export async function buildContextGlb(args: ContextBuildArgs) {
     layout: { merge: mergeLabel(merge), mesh_count: nodeCount, draw_calls: drawCalls, tile_size_m: tileSize || null, tiles_used: tilesUsed, tile_grid_origin_station_xy_m: tileSize ? [gridX0, gridY0] : null, tile_centres_clamped_to_grid: tilesClamped, materials: merged ? MERGED_MATERIALS : PER_FEATURE_MATERIALS, meshes: meshReport },
     bbox_local_ENU: localBBox as { min: Point3; max: Point3 } | null, textures: 'not converted: PLATEAU texture lineage is aerial photography and its licence is unassessed',
     ...(flatten ? { vertical_mode: 'per_feature_ground', height_basis: HEIGHT_BASIS_FLATTENED, modifications: modifications!, modification_notice: verticalExtras.modification_notice, ground_offsets: groundOffsets!, ...(exitNeighbours ? { exit_neighbours: exitNeighbours } : {}) } : {}),
-    attribution_text: attribution, selected_gml_ids_sha256: createHash('sha256').update([...selectedIds].sort().join('\n')).digest('hex'), per_feature: perFeature, validation,
+    attribution_text: attribution, ...(attributionOverride !== undefined ? { attribution_decision: args.attributionDecision! } : {}), selected_gml_ids_sha256: createHash('sha256').update([...selectedIds].sort().join('\n')).digest('hex'), per_feature: perFeature, validation,
   };
 }
 
@@ -465,6 +480,10 @@ export interface StationContextConfig {
   ground_height_attributes?: string[];
   /** per_feature_ground frames only: radius (m) for the exit-neighbour ground-height statistics per poi_ids POI (Shinjuku 30). */
   exit_neighbour_radius_m?: number;
+  /** Optional credit that replaces the source attribution in the outputs; must start with every selected source's exact attribution (checked at run time). Needs attribution_decision. */
+  attribution_text?: string;
+  /** https URL of the decision that fixed attribution_text (recorded in the receipt). */
+  attribution_decision?: string;
 }
 export async function loadContextConfig(station: string): Promise<StationContextConfig> {
   if (!STATION_ENU_FRAME_ID_PATTERN.test(station)) throw new Error(`Invalid station id: ${station}`);
@@ -478,6 +497,8 @@ export async function loadContextConfig(station: string): Promise<StationContext
   if (config.kinds !== undefined) parseKinds(config.kinds);
   if (config.ground_height_attributes !== undefined && (!Array.isArray(config.ground_height_attributes) || config.ground_height_attributes.some((n) => typeof n !== 'string' || n === ''))) throw new Error(`Context config for ${station}: ground_height_attributes must be an array of attribute names`);
   if (config.exit_neighbour_radius_m !== undefined && (typeof config.exit_neighbour_radius_m !== 'number' || !Number.isFinite(config.exit_neighbour_radius_m) || config.exit_neighbour_radius_m <= 0 || config.exit_neighbour_radius_m > 500)) throw new Error(`Context config for ${station}: exit_neighbour_radius_m must be a number of metres in (0, 500]`);
+  if ((config.attribution_text === undefined) !== (config.attribution_decision === undefined)) throw new Error(`Context config for ${station}: attribution_text and attribution_decision must be given together`);
+  if (config.attribution_text !== undefined && (typeof config.attribution_text !== 'string' || !config.attribution_text.trim() || typeof config.attribution_decision !== 'string' || !/^https:\/\/\S+$/.test(config.attribution_decision))) throw new Error(`Context config for ${station}: attribution_text must be a non-empty string and attribution_decision an https URL`);
   return config;
 }
 
@@ -549,12 +570,13 @@ export async function contextGlb(station: string, options: ContextRunOptions = {
   const fingerprint = await toolFingerprint();
   const flatten = isPerFeatureGround(frame), groundHeightAttributes = flatten ? config.ground_height_attributes ?? [] : undefined;
   const exitNeighbourRadiusM = flatten ? config.exit_neighbour_radius_m : undefined;
-  const digest = contextRunDigest({ frame, windowSpec: window.spec, discs: window.discs.map((d) => [d.id, d.x, d.y, d.r]), graphSha256: window.graph?.graph_sha256 ?? null, poisSha256: window.graph?.pois?.pois_sha256 ?? null, merge: mergeLabel(merge), variant, kinds, sources: inputs.map((i) => [i.sourceId, i.sourceSha256]), fingerprint, groundHeightAttributes, exitNeighbourRadiusM });
+  const attributionText = config.attribution_text;
+  const digest = contextRunDigest({ frame, windowSpec: window.spec, discs: window.discs.map((d) => [d.id, d.x, d.y, d.r]), graphSha256: window.graph?.graph_sha256 ?? null, poisSha256: window.graph?.pois?.pois_sha256 ?? null, merge: mergeLabel(merge), variant, kinds, sources: inputs.map((i) => [i.sourceId, i.sourceSha256]), fingerprint, groundHeightAttributes, exitNeighbourRadiusM, ...(attributionText !== undefined ? { attributionText } : {}) });
   const exitPart = window.spec.r_exit_m > 0 ? `-x${window.spec.r_exit_m}` : '';
   const kindsPart = kinds.length === ALL_KINDS.length ? '' : `-${kinds.join('-')}`; // full (bldg+tran) runs keep the old id shape; a subset is visible in the id
   const runId = `context-${station}-r${radiusM}${exitPart}-${frame.frame_id}-${variant}-${mergeLabel(merge).replace(':', '')}${kindsPart}-${digest}`;
   const relativeOutput = `out/${runId}.glb`, outputPath = join(getStoreRoot(), relativeOutput);
-  const report = await buildContextGlb({ frame, window, inputs, outputPath, merge, variant, kinds, ...(groundHeightAttributes ? { groundHeightAttributes } : {}), ...(exitNeighbourRadiusM !== undefined ? { exitNeighbourRadiusM } : {}) });
+  const report = await buildContextGlb({ frame, window, inputs, outputPath, merge, variant, kinds, ...(groundHeightAttributes ? { groundHeightAttributes } : {}), ...(exitNeighbourRadiusM !== undefined ? { exitNeighbourRadiusM } : {}), ...(attributionText !== undefined ? { attributionText, attributionDecision: config.attribution_decision! } : {}) });
   const outputBytes = await readFile(outputPath), outputSha256 = createHash('sha256').update(outputBytes).digest('hex');
   const { per_feature, ...summaryBody } = report;
   // The feature table (gml_id -> mesh and triangle range) travels in the sidecar and, compactly, in the receipt.

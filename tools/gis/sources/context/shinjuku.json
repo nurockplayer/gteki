@@ -19,6 +19,8 @@
   "kinds": ["bldg"],
   "ground_height_attributes": [],
   "exit_neighbour_radius_m": 30,
+  "attribution_text": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成（建物の基部を地表面の高さにそろえて表示）",
+  "attribution_decision": "https://github.com/nurockplayer/gteki/issues/39#issuecomment-6324813261",
   "sources": [
     "plateau-13104-bldg-53394525",
     "plateau-13104-bldg-53394526",

@@ -811,14 +811,14 @@ async function shinjukuFrame(): Promise<StationEnuFrame> {
   if (!isStationEnuFrame(frame)) throw new Error('expected a station-enu frame');
   return frame;
 }
-async function buildSj(opts: { kinds?: ContextKind[]; groundAttrs?: string[]; merge?: MergeSpec; nodes?: ReturnType<typeof node>[]; pois?: unknown[]; rule?: NodeRule; exitR?: number; neighbourR?: number } = {}) {
+async function buildSj(opts: { kinds?: ContextKind[]; groundAttrs?: string[]; merge?: MergeSpec; nodes?: ReturnType<typeof node>[]; pois?: unknown[]; rule?: NodeRule; exitR?: number; neighbourR?: number; attributionText?: string; attributionDecision?: string } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-')); dirs.push(dir);
   const graphPath = await writeGraph(dir, opts.nodes ?? SJ_NODES, 'shinjuku');
   const poisPath = await writePois(dir, opts.pois ?? SJ_POIS, 'shinjuku');
   const window = await buildContextWindow({ r_origin_m: 0, r_exit_m: opts.exitR ?? 300, node_rule: opts.rule ?? SJ_RULE }, { stationId: 'shinjuku', graphPath, poisPath });
   const frame = await shinjukuFrame();
   const outputPath = join(dir, 'context.glb');
-  const report = await buildContextGlb({ frame, window, inputs: sjInputs, outputPath, merge: opts.merge ?? { mode: 'none' }, kinds: opts.kinds ?? ['bldg'], ...(opts.groundAttrs ? { groundHeightAttributes: opts.groundAttrs } : {}), ...(opts.neighbourR !== undefined ? { exitNeighbourRadiusM: opts.neighbourR } : {}) });
+  const report = await buildContextGlb({ frame, window, inputs: sjInputs, outputPath, merge: opts.merge ?? { mode: 'none' }, kinds: opts.kinds ?? ['bldg'], ...(opts.groundAttrs ? { groundHeightAttributes: opts.groundAttrs } : {}), ...(opts.neighbourR !== undefined ? { exitNeighbourRadiusM: opts.neighbourR } : {}), ...(opts.attributionText !== undefined ? { attributionText: opts.attributionText } : {}), ...(opts.attributionDecision !== undefined ? { attributionDecision: opts.attributionDecision } : {}) });
   const document = await new NodeIO().readBinary(await readFile(outputPath));
   return { dir, outputPath, frame, window, report, document, graphPath, poisPath };
 }
@@ -1109,6 +1109,15 @@ describe('Shinjuku: config, sources and the full command wrapper', () => {
     expect(sidecar.per_feature.map((f: Record<string, unknown>) => [f.gml_id, f.ground_height_m, f.ground_basis, f.ground_surface_spread_m])).toEqual(summary.feature_table.rows.map((r) => [r[0], r[6], r[7], r[8]]));
     // The other three bldg sources hold the same ids in this fixture-backed run: excluded as duplicates, never emitted twice.
     expect(summary.sources.map((src) => src.converted)).toEqual([7, 0, 0, 0]);
+    // Owner decision Q10 Option A (#39 comment 6324813261): the Shinjuku credit wording replaces the source credit in every output, the per-source credit stays.
+    expect(summary).toMatchObject({ attribution_text: SJ_CREDIT, attribution_decision: SJ_CREDIT_DECISION });
+    expect(receipt).toMatchObject({ attribution_text: SJ_CREDIT, attribution_decision: SJ_CREDIT_DECISION });
+    expect(sidecar).toMatchObject({ attribution_text: SJ_CREDIT, attribution_decision: SJ_CREDIT_DECISION });
+    expect(sidecar.source_manifests.map((m: { attribution_text: string }) => m.attribution_text)).toEqual(bldgIds.map(() => SJ_ATTRIBUTION));
+    const written = await new NodeIO().readBinary(await readFile(join(dir, summary.store_path)));
+    expect(written.getRoot().getAsset().copyright).toBe(SJ_CREDIT);
+    expect(written.getRoot().listScenes()[0]!.getExtras()).toMatchObject({ attribution_text: SJ_CREDIT, attribution_decision: SJ_CREDIT_DECISION });
+    for (const n of written.getRoot().listNodes()) { expect(n.getExtras().attribution_text).toBe(SJ_CREDIT); expect(n.getMesh()!.getExtras().attribution_text).toBe(SJ_CREDIT); }
     // exit_neighbour_radius_m 30 from the config: one entry per window POI; no fixture building lies within 30 m of the real connectors.
     expect(receipt.exit_neighbours).toMatchObject({ radius_m: 30 });
     expect(receipt.exit_neighbours.pois.map((p: { poi_id: string; count: number }) => [p.poi_id, p.count])).toEqual(SJ_EXIT_IDS.map((id) => [id, 0]));
@@ -1120,6 +1129,62 @@ describe('Shinjuku: config, sources and the full command wrapper', () => {
     const stored = vi.spyOn(common, 'getStoredSource');
     await expect(contextGlb('shinjuku', { sourceIds: ['plateau-13104-bldg-53394525', 'plateau-13104-bldg-53394526'] })).rejects.toThrow(/53394535 bldg \(not in the context config\), 53394536 bldg/);
     expect(stored).not.toHaveBeenCalled();
+  });
+});
+
+const SJ_CREDIT = '出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成（建物の基部を地表面の高さにそろえて表示）';
+const SJ_CREDIT_DECISION = 'https://github.com/nurockplayer/gteki/issues/39#issuecomment-6324813261';
+describe('Shinjuku credit wording (Owner decision Q10 Option A, #39 comment 6324813261)', () => {
+  it('the Shinjuku config carries the exact credit and its decision URL, and the credit starts with every Shinjuku source attribution', async () => {
+    const config = await loadContextConfig('shinjuku');
+    expect(config.attribution_text).toBe(SJ_CREDIT);
+    expect(config.attribution_decision).toBe(SJ_CREDIT_DECISION);
+    const sources = new Map(loadSources().map((src) => [src.source_id, src]));
+    for (const id of config.sources) expect(config.attribution_text!.startsWith(sources.get(id)!.attribution_text)).toBe(true);
+  });
+
+  it('an override replaces the credit in the GLB copyright, scene, node and mesh extras and the report, and the decision is recorded', async () => {
+    const { report, document } = await buildSj({ attributionText: SJ_CREDIT, attributionDecision: SJ_CREDIT_DECISION, merge: { mode: 'kind' } });
+    expect(report).toMatchObject({ attribution_text: SJ_CREDIT, attribution_decision: SJ_CREDIT_DECISION });
+    expect(document.getRoot().getAsset().copyright).toBe(SJ_CREDIT);
+    expect(document.getRoot().listScenes()[0]!.getExtras()).toMatchObject({ attribution_text: SJ_CREDIT, attribution_decision: SJ_CREDIT_DECISION });
+    for (const n of document.getRoot().listNodes()) { expect(n.getExtras().attribution_text).toBe(SJ_CREDIT); expect(n.getMesh()!.getExtras().attribution_text).toBe(SJ_CREDIT); }
+    expect(report.sources.every((src) => src.source_id.startsWith('synthetic-sj'))).toBe(true); // the per-source list is untouched
+  });
+
+  it('fails closed when the credit does not start with the exact source attribution, or has no decision URL', async () => {
+    await expect(buildSj({ attributionText: '出典：Project PLATEAU（建物の基部を地表面の高さにそろえて表示）', attributionDecision: SJ_CREDIT_DECISION })).rejects.toThrow(/does not start with the exact source attribution/);
+    await expect(buildSj({ attributionText: `（建物の基部を地表面の高さにそろえて表示）${SJ_ATTRIBUTION}`, attributionDecision: SJ_CREDIT_DECISION })).rejects.toThrow(/does not start with the exact source attribution/);
+    await expect(buildSj({ attributionText: SJ_CREDIT })).rejects.toThrow(/needs attribution_decision/);
+    // Config level: text and decision travel together and the decision is an https URL.
+    const base = JSON.parse(await readFile(fileURLToPath(new URL('../sources/context/shinjuku.json', import.meta.url)), 'utf8'));
+    for (const [change, pattern] of [[{ attribution_decision: undefined }, /must be given together/], [{ attribution_text: undefined }, /must be given together/], [{ attribution_decision: 'issue 39' }, /https URL/], [{ attribution_text: '  ' }, /non-empty string/]] as const) {
+      vi.spyOn(common, 'readJson').mockResolvedValueOnce({ ...base, ...change });
+      await expect(loadContextConfig('shinjuku')).rejects.toThrow(pattern);
+    }
+  });
+
+  it('through contextGlb, a source whose attribution the configured credit does not start with fails the run before anything is written', async () => {
+    const dirOf = fileURLToPath(new URL('../../../stations/shinjuku/gteki/', import.meta.url));
+    if (await readFile(join(dirOf, 'graph.json')).catch(() => null) === null) return;
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-credit-')); dirs.push(dir);
+    const manifest = new Map(loadSources().map((src) => [src.source_id, src]));
+    vi.spyOn(common, 'getStoredSource').mockImplementation(async (id: string) => ({ path: fixture('context-bldg-shinjuku.xml'), record: { source_id: id, sha256: createHash('sha256').update(id).digest('hex') }, source: { ...manifest.get(id)!, attribution_text: '出典：別の出典' } }) as Awaited<ReturnType<typeof common.getStoredSource>>);
+    vi.spyOn(common, 'getStoreRoot').mockReturnValue(dir);
+    const writes = vi.spyOn(common, 'writeJson').mockResolvedValue(undefined);
+    await expect(contextGlb('shinjuku')).rejects.toThrow(/does not start with the exact source attribution "出典：別の出典"/);
+    expect(writes).not.toHaveBeenCalled();
+  });
+
+  it('Ikebukuro keeps the plain source credit: no decision key anywhere and no override in its config', async () => {
+    const { report, document } = await build();
+    expect(report.attribution_text).toBe('出典：SYNTHETIC attribution');
+    expect('attribution_decision' in report).toBe(false);
+    expect(document.getRoot().getAsset().copyright).toBe('出典：SYNTHETIC attribution');
+    expect('attribution_decision' in document.getRoot().listScenes()[0]!.getExtras()).toBe(false);
+    for (const n of document.getRoot().listNodes()) expect(n.getExtras().attribution_text).toBe('出典：SYNTHETIC attribution');
+    const config = await loadContextConfig('ikebukuro');
+    expect(config.attribution_text).toBeUndefined(); expect(config.attribution_decision).toBeUndefined();
   });
 });
 
