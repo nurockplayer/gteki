@@ -1,48 +1,80 @@
 import * as THREE from "three";
 import { TriangleBvh } from "./triangleBvh.ts";
 
+type Position = THREE.BufferAttribute | THREE.InterleavedBufferAttribute;
+
+/**
+ * Everything the triangles are read from. Identity alone is not enough: `BufferAttribute.copy()` (and
+ * assigning `array`, `itemSize`, `offset`, ...) changes the data under the same attribute without
+ * bumping its version.
+ */
+interface Source {
+  position: Position;
+  data: THREE.InterleavedBuffer | null;
+  positionArray: THREE.TypedArray;
+  positionVersion: number;
+  itemSize: number;
+  offset: number;
+  stride: number;
+  count: number;
+  normalized: boolean;
+  index: THREE.BufferAttribute | null;
+  indexArray: THREE.TypedArray | null;
+  indexVersion: number;
+  indexCount: number;
+  indexNormalized: boolean;
+}
+interface CachedTree extends Source { bvh: TriangleBvh }
 /**
  * One tree per geometry, shared by every mesh that uses it; dropped with the geometry. Built only at
- * load, with the buffer versions it was built from: a geometry edited in place since then (or swapped
+ * load, with the buffers it was built from (see Source): a geometry edited in place since then (or swapped
  * in later) has no current tree, so it does not occlude labels (rather than occluding where it used to
  * be) and is ray-tested triangle by triangle again. A tree is in the geometry's own (local) space, so
  * moving, rotating or scaling a mesh never invalidates it.
  */
-interface CachedTree {
-  bvh: TriangleBvh;
-  /** The buffers it was built from (identity, as attributes and interleaved data can be replaced) and their versions. */
-  position: THREE.BufferAttribute | THREE.InterleavedBufferAttribute;
-  data: THREE.InterleavedBuffer | null;
-  index: THREE.BufferAttribute | null;
-  positionVersion: number;
-  indexVersion: number;
-}
 const bvhCache = new WeakMap<THREE.BufferGeometry, CachedTree>();
 
-const dataOf = (a: THREE.BufferAttribute | THREE.InterleavedBufferAttribute) =>
-  (a as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute ? (a as THREE.InterleavedBufferAttribute).data : null;
+const dataOf = (a: Position) => ((a as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute ? (a as THREE.InterleavedBufferAttribute).data : null);
+
+function sourceOf(position: Position, index: THREE.BufferAttribute | null): Source {
+  const data = dataOf(position);
+  const interleaved = position as THREE.InterleavedBufferAttribute;
+  return {
+    position, data,
+    positionArray: data ? data.array : (position as THREE.BufferAttribute).array,
+    positionVersion: data ? data.version : (position as THREE.BufferAttribute).version,
+    itemSize: position.itemSize, offset: data ? interleaved.offset : 0, stride: data ? data.stride : position.itemSize,
+    count: position.count, normalized: position.normalized,
+    index, indexArray: index?.array ?? null, indexVersion: index?.version ?? -1, indexCount: index?.count ?? -1, indexNormalized: index?.normalized ?? false,
+  };
+}
 
 /** Checked on every ray test, so it allocates nothing. */
+function unchanged(e: Source, position: Position, index: THREE.BufferAttribute | null): boolean {
+  if (position !== e.position || index !== e.index) return false;
+  const data = dataOf(position);
+  if (data !== e.data) return false;
+  if (data) {
+    if (data.array !== e.positionArray || data.version !== e.positionVersion || data.stride !== e.stride || (position as THREE.InterleavedBufferAttribute).offset !== e.offset) return false;
+  } else {
+    const plain = position as THREE.BufferAttribute;
+    if (plain.array !== e.positionArray || plain.version !== e.positionVersion) return false;
+  }
+  if (position.itemSize !== e.itemSize || position.count !== e.count || position.normalized !== e.normalized) return false;
+  return index === null || (index.array === e.indexArray && index.version === e.indexVersion && index.count === e.indexCount && index.normalized === e.indexNormalized);
+}
+
 export function currentBvh(g: THREE.BufferGeometry): TriangleBvh | null {
   const entry = bvhCache.get(g);
   // A geometry that lost its positions has no triangles to test.
   const position = g.attributes.position;
-  if (!entry || !position || position !== entry.position || g.index !== entry.index) return null;
-  const data = dataOf(position);
-  if (data !== entry.data || (data ? data.version : (position as THREE.BufferAttribute).version) !== entry.positionVersion) return null;
-  return (g.index?.version ?? -1) === entry.indexVersion ? entry.bvh : null;
+  return entry && position && unchanged(entry, position, g.index) ? entry.bvh : null;
 }
 
 export function cacheBvh(g: THREE.BufferGeometry): void {
   if (currentBvh(g)) return;
   const position = g.getAttribute("position");
-  const data = dataOf(position);
-  bvhCache.set(g, {
-    bvh: TriangleBvh.build(position, g.getIndex()),
-    position, data, index: g.getIndex(),
-    positionVersion: data ? data.version : (position as THREE.BufferAttribute).version,
-    indexVersion: g.getIndex()?.version ?? -1,
-  });
+  bvhCache.set(g, { ...sourceOf(position, g.getIndex()), bvh: TriangleBvh.build(position, g.getIndex()) });
 }
 
 type ComputeIntersections = (this: THREE.Mesh, raycaster: THREE.Raycaster, intersects: THREE.Intersection[], rayLocalSpace: THREE.Ray) => void;

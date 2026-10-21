@@ -163,6 +163,51 @@ describe("BVH ray tests match three's brute-force Mesh.raycast", () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
+  it("data replaced under the same attribute (copy, new arrays, interleaved, index) is never tested with a stale tree", () => {
+    const ray = new THREE.Raycaster();
+    const check = (mesh: THREE.Mesh, edit: () => void, from: THREE.Vector3) => {
+      prepared(mesh);
+      expect(currentBvh(mesh.geometry)).not.toBeNull();
+      edit();
+      mesh.geometry.computeBoundingSphere();
+      mesh.geometry.computeBoundingBox();
+      expect(currentBvh(mesh.geometry)).toBeNull();
+      ray.set(from, new THREE.Vector3(0, 0, -1));
+      const want = brute(ray, [mesh]);
+      expect(want.length).toBeGreaterThan(0);
+      expectSame(castAll(ray, [mesh]), want);
+    };
+    const plane = () => new THREE.Mesh(new THREE.PlaneGeometry(8, 8, 8, 8), new THREE.MeshBasicMaterial());
+    const moved = (g: THREE.BufferGeometry) => g.clone().translate(100, 0, 0);
+
+    // BufferAttribute.copy() swaps the array without bumping the version.
+    const copied = plane();
+    check(copied, () => (copied.geometry.getAttribute("position") as THREE.BufferAttribute).copy(moved(copied.geometry).getAttribute("position") as THREE.BufferAttribute), new THREE.Vector3(100.2, 0.3, 5));
+    const assigned = plane();
+    check(assigned, () => { (assigned.geometry.getAttribute("position") as THREE.BufferAttribute).array = (moved(assigned.geometry).getAttribute("position") as THREE.BufferAttribute).array; }, new THREE.Vector3(100.2, 0.3, 5));
+
+    // Interleaved: a new backing array, and a different offset into the same one.
+    const interleaved = (shift: number) => {
+      const src = new THREE.PlaneGeometry(8, 8, 8, 8);
+      const p = src.getAttribute("position");
+      const data = new Float32Array(p.count * 6);
+      for (let i = 0; i < p.count; i++) data.set([p.getX(i), p.getY(i), p.getZ(i), p.getX(i) + shift, p.getY(i), p.getZ(i)], i * 6);
+      const g = new THREE.BufferGeometry().setAttribute("position", new THREE.InterleavedBufferAttribute(new THREE.InterleavedBuffer(data, 6), 3, 0));
+      g.setIndex(src.getIndex());
+      return new THREE.Mesh(g, new THREE.MeshBasicMaterial());
+    };
+    const swapped = interleaved(0);
+    check(swapped, () => { (swapped.geometry.getAttribute("position") as THREE.InterleavedBufferAttribute).data.copy((interleaved(0).geometry.getAttribute("position") as THREE.InterleavedBufferAttribute).data); (swapped.geometry.getAttribute("position") as THREE.InterleavedBufferAttribute).data.array.forEach((v, i, a) => { if (i % 3 === 0) a[i] = v + 100; }); }, new THREE.Vector3(100.2, 0.3, 5));
+    const shifted = interleaved(100);
+    check(shifted, () => { (shifted.geometry.getAttribute("position") as THREE.InterleavedBufferAttribute).offset = 3; }, new THREE.Vector3(100.2, 0.3, 5));
+
+    // Index: copy() from another triangulation (only the right half drawn before, the whole plane after).
+    const half = plane();
+    const full = half.geometry.getIndex()!.clone();
+    half.geometry.setIndex(new THREE.BufferAttribute(full.array.slice(full.count / 2), 1));
+    check(half, () => half.geometry.getIndex()!.copy(full), new THREE.Vector3(-3.7, 0.3, 5));
+  });
+
   it("deforming, instanced and partial-triangle meshes keep three's own raycast", () => {
     const skinGeometry = new THREE.BoxGeometry(1, 1, 1, 4, 4, 4);
     const vertices = skinGeometry.getAttribute("position").count;
