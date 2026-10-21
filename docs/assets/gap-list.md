@@ -103,6 +103,25 @@ Each batch is one PR with 5–10 pieces, a contact sheet and both tiers passing 
 
 **Parametric fit.** Dressing pieces (runs, escalator and stair dressing, cladding) take their length, rise, width and path as catalog params. That way a station gets a piece that fits its geometry rather than a fixed module, while the kit itself stays generic: no station measurements live in the kit catalog.
 
+## D1 status
+
+**Status:** generators and catalog entries written 2026-10-22; not built yet. The Blender slot builds both tiers, then the batch PR carries the contact sheet. Generic defaults only: the catalog holds no station measurement, and stations pass their own `*_mm` params.
+
+| Piece | Catalog id | Default params | Fit |
+| --- | --- | --- | --- |
+| Linear LED 1.2 m | `gteki_luminaire_linear_1200` | 1200 × 130 mm, 40 mm deep, mounting plane at 2800 mm | Shinjuku linear luminaires (~3.2 m pitch), Ikebukuro fixtures. Instanced; `start`/`end` sockets chain rows |
+| Recessed panel 600 × 600 | `gteki_luminaire_panel_600` | 600 × 600 mm, 12 mm lip | panel-grid ceiling (F1) |
+| Round downlight | `gteki_luminaire_downlight_d150` | Ø150 mm trim, Ø100 mm aperture, 12 mm lip | small recessed fixtures (Ikebukuro's 2,616 emissive boxes) |
+| Chair rail | `gteki_trim_chair_rail_3000_steel` | 3000 mm run, 40 × 20 mm bullnose, `steel_brushed`, lower edge at 1100 mm | wainscot change in the enamel wall (F1) |
+| Skirting | `gteki_trim_skirting_3000_steel`, `gteki_trim_skirting_3000_granite` | 3000 mm run, 120 mm high; 12 mm flat in steel, 16 mm stepped in granite | wall foot |
+| Column sleeve | `gteki_column_sleeve_600x600_h2800`, `gteki_column_sleeve_900x600_h3200_accent` | 600 × 600 × 2800 mm with stainless corner guards; 900 × 600 × 3200 mm in accent panel, no guards | only where the station has a column |
+
+- **Ceiling mounting.** Luminaires use the contract's `ceiling` placement. Each has a `SOCKET_ceiling` on the mounting plane, and the origin is on the floor under the fixture. A station with a different ceiling height lifts the instance by the difference, so one mesh serves every fixture of a kind. A flush lip of 12 mm means the station's ceiling needs no opening.
+- **Lighting.** Every luminaire has one `LIGHTHINT_*` (`linear_led`, `panel`, `downlight`) that `render_preview.py` turns into a matching light; the diffuser is the palette's `light_diffuser`. Ikebukuro bakes those lights itself; Shinjuku adds its own point lights.
+- **Collision.** None. Luminaires hang overhead, trim is a few centimetres proud of the wall, and a column sleeve dresses a column that already has the station's collider. This keeps Shinjuku's kit pieces visual-only and adds no walker blocker at Ikebukuro. Each piece therefore shows the validator's "no collision node" WARN.
+- **Materials and budgets.** Palette materials only (`steel_brushed`, `wall_panel_enamel`, `wall_panel_accent`, `floor_granite_dark`, `aluminium_anodised`, `stainless_polished`, `reveal_dark`, `plastic_dark`, `light_diffuser`), so the mobile palette and its 64 × 64 atlas do not change. The three luminaires carry no textures; the others reuse existing images.
+- **Not done in D1.** Mitred ends exist as params (`miter_start`, `miter_end`) but no catalog entry uses them. Trim has no inside or outside corner pieces. Light distribution (IES) is not modelled.
+
 ## Station answers that bind the batches
 
 **Ikebukuro:**

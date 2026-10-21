@@ -1,6 +1,6 @@
 # GTEki Blender asset factory (Lane E)
 
-Reproducible, parametric generators for a **generic, reusable station kit** (passages, junctions, fare-gate arrays, stairs, escalators, lift portals, wayfinding signs, props). Output is contract GLB (`docs/assets/asset-contract.md`) for the Three.js Web client and Godot 4. The kit carries no navigation truth and does not replicate any operator's equipment or any specific Ikebukuro/Shinjuku location; station leads decide placement and art direction.
+Reproducible, parametric generators for a **generic, reusable station kit** (passages, junctions, fare-gate arrays, stairs, escalators, lift portals, wayfinding signs, props, ceiling luminaires, wall trim, column cladding). Output is contract GLB (`docs/assets/asset-contract.md`) for the Three.js Web client and Godot 4. The kit carries no navigation truth and does not replicate any operator's equipment or any specific Ikebukuro/Shinjuku location; station leads decide placement and art direction.
 
 ## Requirements
 
@@ -49,13 +49,31 @@ Editable sources: add `--save-blend <dir>` to `build.py` to save a `.blend` per 
 | `gteki_assets/asset.py` | Asset assembly: parts → bevel + weighted normals → joined `VIS_*`, `*-colonly` collision, sockets, light hints, extras, GLB export |
 | `gteki_assets/texsynth.py` | Seeded **tileable** numpy textures (terrazzo, tiles, metals, tactile blocks, treads, …) |
 | `gteki_assets/materials.py` | Stable `gteki_*` PBR material library |
-| `gteki_assets/families/*.py` | Generators by family |
+| `gteki_assets/families/*.py` | Generators by family (`passage`, `gates`, `vertical`, `signage`, `props`, `fixtures`) |
 | `render_preview.py` | GLB round-trip renders |
 | `validate_glb.py` | Stdlib contract validator (`--self-test` included) |
 | `texture_budget.py` | Download / GPU texture report, before-after compare, layout costing, budget check (`catalog/budget.json`) |
 | `bundle_kit.py` | `gteki-kit-bundle/0.1`: pack assets into one GLB with shared images/materials; extract; info |
 | `godot_import/` | Godot 4 project: headless import report + screenshot mode |
 | `web_preview/` | Three.js viewer, load-strategy bench (`bench.html`), Node GLTFLoader load test |
+
+## Fixtures (batch D1)
+
+`families/fixtures.py` holds the finishes-and-dressing generators that stations fit to geometry they already have. Their params are in millimetres (`*_mm`) and live in the catalog entry, so a station catalog passes its own length, width, depth or height; the kit itself carries no station measurement. All materials come from the style palette, so the mobile palette is unchanged. None of the pieces has a `COL_*-colonly` node (validate reports one WARN each, as for tactile strips): luminaires hang from the ceiling, trim is centimetres proud of a wall, and a column sleeve dresses a column whose collider stays the station's.
+
+| Generator | Placement | Params (defaults) | Catalog ids |
+| --- | --- | --- | --- |
+| `luminaire_linear` | ceiling | `length_mm` 1200, `width_mm` 130, `depth_mm` 40, `cap_mm` 20, `rail_mm` 16, `recess_mm` 4, `ceiling_height_mm` 2800 | `gteki_luminaire_linear_1200` |
+| `luminaire_panel` | ceiling | `width_mm` 600, `length_mm` 600, `frame_mm` 22, `lip_mm` 12, `gasket_mm` 6, `recess_mm` 3, `ceiling_height_mm` 2800 | `gteki_luminaire_panel_600` |
+| `luminaire_downlight` | ceiling | `diameter_mm` 150, `aperture_mm` 100, `lip_mm` 12, `gasket_mm` 6, `recess_mm` 4, `segments` 24, `ceiling_height_mm` 2800 | `gteki_luminaire_downlight_d150` |
+| `trim_run` | wall | `length_mm` 3000, `height_mm` 120, `depth_mm` 12, `bottom_mm` 0, `profile` flat / stepped / bullnose, `material` steel_brushed / wall_panel_accent / floor_granite_dark, `miter_start`, `miter_end` none / inside / outside | `gteki_trim_chair_rail_3000_steel`, `gteki_trim_skirting_3000_steel`, `gteki_trim_skirting_3000_granite` |
+| `column_sleeve` | free | `width_mm` 600, `depth_mm` 600, `height_mm` 2800, `plinth_mm` 120, `ceiling_gap_mm` 30, `panel` enamel / accent, `corner_guard` true, `guard_height_mm` 1500, `module_mm` 1200 | `gteki_column_sleeve_600x600_h2800`, `gteki_column_sleeve_900x600_h3200_accent` |
+
+- **Luminaires** have a `SOCKET_ceiling` on the mounting plane (extras `mount: "ceiling"`; `width` is the plan width, `height` how far the fixture hangs). The origin is on the floor under the fixture (contract `ceiling`), so a station with another ceiling height lifts the instance instead of asking for a variant, and every fixture of a kind shares one mesh. The linear module also has `start`/`end` sockets for rows. Each carries one `LIGHTHINT_*` (`linear_led`, `panel`, `downlight`) that `render_preview.py` turns into a matching light. The diffuser is `gteki_light_diffuser`, flush or 3-4 mm recessed in a dark gasket; the frame is a 12 mm lip, so the station's ceiling needs no opening.
+- **Trim runs** extrude one profile along X, centred, with the wall plane at y = 0. `length_mm` is measured on the wall face; a mitre (45 degrees) is cut on the profile depth, `outside` leaving the front edge longer. The bevel follows style.md section 5: 2.5 mm / 1 segment ("Trim and small") for `flat` and `stepped`, 1 mm for the already rounded `bullnose`. `start`/`end` sockets chain runs. Texture runs along the trim.
+- **Column sleeves** are enamel panels (18 mm) split on `module_mm` with 8 mm shadow gaps over a `gteki_reveal_dark` backing, a brushed kick plate with a 12 mm gap, a gap under the ceiling and 10 mm corner joints. With `corner_guard` four stainless L-guards (40 mm legs, 3 mm sheet) sit on the corners.
+
+Build just these pieces (add `PROFILE=mobile` for the mobile tier): `ONLY=gteki_luminaire_linear_1200,gteki_luminaire_panel_600,gteki_luminaire_downlight_d150,gteki_trim_chair_rail_3000_steel,gteki_trim_skirting_3000_steel,gteki_trim_skirting_3000_granite,gteki_column_sleeve_600x600_h2800,gteki_column_sleeve_900x600_h3200_accent sh tools/blender/build.sh build`.
 
 ## Writing a generator
 
