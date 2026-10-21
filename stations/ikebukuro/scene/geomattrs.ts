@@ -82,12 +82,82 @@ export function floorYFor(index: FloorIndex, x: number, y: number, z: number, to
 }
 
 /**
- * Height-above-floor attribute for a wall/column geometry. `pos`: world xyz per vertex.
+ * Supporting-floor attribute for a wall/column geometry (world xyz per vertex, triangle list or null).
+ *
+ * The floor a wall stands on is the one under the *lower boundary* of its vertical edges: the vertices of a
+ * vertical edge (same x/z, chained through triangle edges) all take the floor under the lowest of them, so a
+ * wall spanning stacked floors (26.2 to 32.2 m) is measured from its base and not from each vertex's own
+ * elevation. Separate wall patches (not chained) each get their own base, so skirting reappears where a
+ * patch starts on another floor.
+ *
+ * Vertices whose base finds no floor are then filled from resolved neighbours (breadth-first over triangle
+ * edges), so every connected patch ends up wholly resolved or wholly NO_FLOOR and no triangle mixes the
+ * floor-relative and absolute bases in one interpolation.
  */
-export function floorYAttribute(pos: ArrayLike<number>, index: FloorIndex): Float32Array {
-  const n = Math.floor(pos.length / 3);
-  const out = new Float32Array(n);
-  for (let i = 0; i < n; i++) out[i] = floorYFor(index, pos[i * 3]!, pos[i * 3 + 1]!, pos[i * 3 + 2]!);
+export function wallFloorAttribute(pos: ArrayLike<number>, index: ArrayLike<number> | null, floors: FloorIndex): Float32Array {
+  const nv = Math.floor(pos.length / 3);
+  const ntri = index ? Math.floor(index.length / 3) : Math.floor(nv / 3);
+  const vi = (t: number, k: number) => (index ? index[t * 3 + k]! : t * 3 + k);
+  // weld coincident positions (indexed data may split vertices per face)
+  const ids = new Map<string, number>();
+  const wid = new Int32Array(nv);
+  const wv: number[] = []; // welded id -> first vertex
+  for (let v = 0; v < nv; v++) {
+    const k = `${Math.round(pos[v * 3]! * 1000)},${Math.round(pos[v * 3 + 1]! * 1000)},${Math.round(pos[v * 3 + 2]! * 1000)}`;
+    let id = ids.get(k);
+    if (id === undefined) {
+      id = wv.length;
+      ids.set(k, id);
+      wv.push(v);
+    }
+    wid[v] = id;
+  }
+  const nw = wv.length;
+  const parent = Int32Array.from({ length: nw }, (_, i) => i);
+  const find = (i: number): number => {
+    while (parent[i] !== i) i = parent[i] = parent[parent[i]!]!;
+    return i;
+  };
+  const nbr: number[][] = Array.from({ length: nw }, () => []);
+  for (let t = 0; t < ntri; t++)
+    for (let k = 0; k < 3; k++) {
+      const a = vi(t, k), b = vi(t, (k + 1) % 3);
+      const wa = wid[a]!, wb = wid[b]!;
+      if (wa === wb) continue;
+      nbr[wa]!.push(wb);
+      nbr[wb]!.push(wa);
+      if (Math.abs(pos[a * 3]! - pos[b * 3]!) < 1e-3 && Math.abs(pos[a * 3 + 2]! - pos[b * 3 + 2]!) < 1e-3) parent[find(wa)] = find(wb);
+    }
+  const base = new Int32Array(nw).fill(-1); // per root: welded id of the lowest vertex
+  for (let w = 0; w < nw; w++) {
+    const r = find(w);
+    if (base[r]! < 0 || pos[wv[w]! * 3 + 1]! < pos[wv[base[r]!]! * 3 + 1]!) base[r] = w;
+  }
+  const wf = new Float32Array(nw).fill(NO_FLOOR);
+  const rootFloor = new Map<number, number>();
+  for (let w = 0; w < nw; w++) {
+    const r = find(w);
+    let f = rootFloor.get(r);
+    if (f === undefined) {
+      const b = wv[base[r]!]! * 3;
+      f = floorYFor(floors, pos[b]!, pos[b + 1]!, pos[b + 2]!);
+      rootFloor.set(r, f);
+    }
+    wf[w] = f;
+  }
+  // fill unresolved from resolved neighbours, nearest first
+  const queue: number[] = [];
+  for (let w = 0; w < nw; w++) if (wf[w] !== NO_FLOOR) queue.push(w);
+  for (let h = 0; h < queue.length; h++) {
+    const w = queue[h]!;
+    for (const n of nbr[w]!)
+      if (wf[n] === NO_FLOOR) {
+        wf[n] = wf[w]!;
+        queue.push(n);
+      }
+  }
+  const out = new Float32Array(nv);
+  for (let v = 0; v < nv; v++) out[v] = wf[wid[v]!]!;
   return out;
 }
 
@@ -98,7 +168,7 @@ export function floorYAttribute(pos: ArrayLike<number>, index: FloorIndex): Floa
  */
 export function noseDistances(pos: ArrayLike<number>, index: ArrayLike<number> | null): Float32Array {
   const nv = Math.floor(pos.length / 3);
-  const out = new Float32Array(nv).fill(NO_NOSE);
+  const out = new Float32Array(nv).fill(Infinity); // uncapped while accumulating, so a 1.5 m landing interpolates true distances
   const ntri = index ? Math.floor(index.length / 3) : Math.floor(nv / 3);
   const vi = (t: number, k: number) => (index ? index[t * 3 + k]! : t * 3 + k);
   const Q = 0.004;
@@ -162,8 +232,9 @@ export function noseDistances(pos: ArrayLike<number>, index: ArrayLike<number> |
         continue;
       }
       const d = Math.abs((L[2] - L[0]) * (L[1] - pos[p + 2]!) - (L[0] - pos[p]!) * (L[3] - L[1])) / L[4];
-      out[p / 3] = Math.min(out[p / 3]!, Math.min(d, NO_NOSE));
+      out[p / 3] = Math.min(out[p / 3]!, d);
     }
   }
+  for (let i = 0; i < nv; i++) if (out[i] === Infinity) out[i] = NO_NOSE;
   return out;
 }

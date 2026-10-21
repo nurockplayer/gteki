@@ -4,7 +4,7 @@
 import type * as THREE_NS from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { ENV_INTENSITY, createMaterials } from "./materials.ts";
-import { buildFloorIndex, floorYAttribute, noseDistances } from "./geomattrs.ts";
+import { buildFloorIndex, noseDistances, wallFloorAttribute } from "./geomattrs.ts";
 import { buildSigns, type SignSpec } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
@@ -235,7 +235,7 @@ function attachSurfaceData(THREE: ThreeNS, byRole: Map<string, THREE_NS.Mesh[]>)
   const floors = buildFloorIndex(floorTris);
   for (const role of ["wall", "barriers"])
     for (const m of byRole.get(role) ?? [])
-      m.geometry.setAttribute("aFloorY", new THREE.BufferAttribute(floorYAttribute(worldPositions(THREE, m), floors), 1));
+      m.geometry.setAttribute("aFloorY", new THREE.BufferAttribute(wallFloorAttribute(worldPositions(THREE, m), m.geometry.index?.array ?? null, floors), 1));
   for (const m of byRole.get("stairs_ramps") ?? []) {
     const idx = m.geometry.index;
     m.geometry.setAttribute("aNose", new THREE.BufferAttribute(noseDistances(worldPositions(THREE, m), idx ? idx.array : null), 1));
