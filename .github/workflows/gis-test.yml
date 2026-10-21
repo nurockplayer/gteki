@@ -1,10 +1,9 @@
 name: GIS tools tests
 
 on:
+  # No path filter on PRs: `test` is a required check for auto-merge, and a path-filtered
+  # required check never reports on PRs outside tools/gis, leaving them blocked.
   pull_request:
-    paths:
-      - 'tools/gis/**'
-      - '.github/workflows/gis-test.yml'
   push:
     branches: [main]
     paths:
