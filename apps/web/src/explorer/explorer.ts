@@ -3,11 +3,6 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { CSS2DObject, CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer.js";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
-import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
-import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
-import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { ASSET_SCHEME, fencedUrlResolver, stationDir } from "./assetFence.ts";
 import { enuToRenderer } from "@gteki/geo";
@@ -22,6 +17,12 @@ import { CameraCut } from "./cameraCut.ts";
 import { manifestScene } from "./manifestScene.ts";
 import { castAll, castTargets } from "./raycast.ts";
 import { advanceGuide } from "./guideStops.ts";
+import { PostFx } from "./postfx.ts";
+import { FOLLOW, clampDistance, followPose } from "./followCamera.ts";
+import { OverviewLook } from "./overviewLook.ts";
+import { createAvatar, type AvatarRig } from "./avatar.ts";
+import { avatarMotion } from "./avatarMotion.ts";
+import { contactShadow } from "./contactShadow.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
 import { Input } from "./input.ts";
 import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer, type Segment2 } from "./walker.ts";
@@ -48,7 +49,8 @@ export class Explorer {
   readonly camera = new THREE.PerspectiveCamera(60, 1, 0.05, 2000);
   private readonly labels = new CSS2DRenderer();
   private readonly orbit: OrbitControls;
-  private composer: EffectComposer | null = null;
+  private composer: PostFx | null = null;
+  private readonly overviewLook = new OverviewLook();
   private readonly timer = new THREE.Timer();
   private readonly input: Input;
   private readonly ray = new THREE.Raycaster();
@@ -73,6 +75,10 @@ export class Explorer {
   private routeTexture: THREE.CanvasTexture | null = null;
 
   private readonly avatar = new THREE.Group();
+  private avatarRig: AvatarRig | null = null;
+  /** Where the body faces (it turns toward travel; the camera keeps `yaw`). */
+  private bodyYaw = 0;
+  private readonly lastAvatarPos = new THREE.Vector3();
   /** Core hemisphere + sun; hidden when a scene declares `environment.lighting: "scene"`. */
   private readonly coreLights: THREE.Light[] = [];
   /** Image-based light applied only to core-owned materials (avatar) when the scene owns lighting. */
@@ -90,7 +96,7 @@ export class Explorer {
   private readonly pos = new THREE.Vector3();
   private yaw = 0; // radians; 0 = facing north (-Z)
   private pitch = -0.12;
-  private camDistance = 4.2;
+  private camDistance: number = FOLLOW.defaultDistance;
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; speed: number; stops: { s: number; index: number }[]; holding: boolean } | null = null;
@@ -185,41 +191,23 @@ export class Explorer {
     });
   }
 
-  /** EffectComposer.dispose() frees only its own targets; each pass owns targets/materials too. */
   private disposeComposer(): void {
-    if (!this.composer) return;
-    for (const pass of this.composer.passes) {
-      pass.dispose();
-      // three's GTAOPass.dispose() leaves these two shader materials allocated.
-      if (pass instanceof GTAOPass) { pass.gtaoMaterial.dispose(); pass.blendMaterial.dispose(); }
-    }
-    this.composer.dispose();
+    this.composer?.dispose();
     this.composer = null;
   }
 
   /** Built once: the composer only references this explorer's scene and camera, so stations reuse it. */
   private setupComposer(): void {
     if (this.composer || this.quality !== "high") return;
-    const size = this.renderer.getSize(new THREE.Vector2());
-    const composer = new EffectComposer(this.renderer);
-    composer.addPass(new RenderPass(this.scene, this.camera));
-    const gtao = new GTAOPass(this.scene, this.camera, size.x, size.y);
-    gtao.blendIntensity = 0.8;
-    composer.addPass(gtao);
-    composer.addPass(new UnrealBloomPass(size, 0.35, 0.6, 0.85));
-    composer.addPass(new OutputPass());
-    this.composer = composer;
+    this.composer = new PostFx(this.renderer, this.scene, this.camera);
   }
 
   private buildAvatar(): void {
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.26, 1.05, 6, 14), new THREE.MeshStandardMaterial({ color: 0xf2f5f8, roughness: 0.45, metalness: 0.1 }));
-    body.position.y = 0.8;
-    body.castShadow = true;
-    const visor = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.1, 0.12), new THREE.MeshStandardMaterial({ color: 0x5ef0ff, emissive: 0x5ef0ff, emissiveIntensity: 1.4 }));
-    visor.position.set(0, 1.45, -0.22);
-    const ring = new THREE.Mesh(new THREE.RingGeometry(0.42, 0.52, 32).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.6 }));
-    ring.position.y = 0.03;
-    this.avatar.add(body, visor, ring);
+    this.avatarRig = createAvatar({ quality: this.quality });
+    // A slim marker ring keeps "this is you" readable without outshining the character.
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.46, 0.5, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
+    ring.position.y = 0.02;
+    this.avatar.add(this.avatarRig.root, contactShadow(0.42), ring);
     this.avatar.visible = false;
   }
 
@@ -299,6 +287,9 @@ export class Explorer {
     this.stationScene = built;
     this.sceneError = sceneError;
 
+    // Overview may have been entered while loading (against an empty world): restore first, so the new
+    // scene's fog and materials are the ones saved, then re-apply once the scene is attached.
+    this.overviewLook.set(this.scene, this.world, false);
     if (this.stationScene) {
       this.world.add(this.stationScene.root);
       this.overlays.add(this.graph.overlay);
@@ -328,6 +319,7 @@ export class Explorer {
     this.phase = "composer";
     this.setupComposer();
     this.frameAll();
+    this.overviewLook.set(this.scene, this.world, this.mode === "overview");
     this.phase = "ready";
     return true;
   }
@@ -342,6 +334,7 @@ export class Explorer {
   }
 
   private clearStation(): void {
+    this.overviewLook.set(this.scene, this.world, false);
     this.disconnectStationAudio();
     this.stopGuide();
     this.clearRoute();
@@ -390,6 +383,7 @@ export class Explorer {
     if (mode === "overview") this.orbit.target.copy(this.pos);
     const xray = this.routeGroup.getObjectByName("route-xray");
     if (xray) xray.visible = mode === "overview";
+    this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
   }
 
@@ -618,8 +612,12 @@ export class Explorer {
     // Signs between the follow camera and the avatar (or inside its near distance) are cut, never collided with.
     this.camera.updateMatrixWorld();
     this.cameraCut.update(this.camera, this.pos.clone().add(new THREE.Vector3(0, EYE, 0)), this.mode !== "overview");
+    const motion = avatarMotion(this.lastAvatarPos, this.pos, dt, this.bodyYaw, this.yaw);
+    this.bodyYaw = motion.yaw;
+    this.lastAvatarPos.copy(this.pos);
+    this.avatarRig?.update(dt, this.mode === "overview" ? 0 : motion.speed);
     this.avatar.position.copy(this.pos);
-    this.avatar.rotation.y = this.yaw;
+    this.avatar.rotation.y = this.bodyYaw;
   }
 
   private stepWalk(dt: number): void {
@@ -680,18 +678,25 @@ export class Explorer {
       this.camera.lookAt(head.clone().add(dir));
       return;
     }
-    let dist = this.camDistance;
-    const back = dir.clone().negate().add(new THREE.Vector3(0, 0.35, 0)).normalize();
-    // Signs (visual-only) never pull the camera in; cameraCut sees through them instead.
+    // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
+    // Signs (visual-only) are never camera targets and never pull the camera in; cameraCut sees through them instead.
+    let shoulder: number = FOLLOW.shoulder;
     if (this.cameraTargets.length) {
-      this.ray.set(head, back);
-      this.ray.far = dist;
-      const hit = castAll(this.ray, this.cameraTargets)[0];
-      if (hit) dist = Math.max(0.6, hit.distance - 0.25);
+      this.ray.set(head, new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)));
+      this.ray.far = FOLLOW.shoulder + 0.25;
+      const side = castAll(this.ray, this.cameraTargets)[0];
+      if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
-    const desired = head.clone().add(back.multiplyScalar(dist));
+    const pose = followPose(head, this.yaw, this.pitch, shoulder);
+    let dist = this.camDistance;
+    if (this.cameraTargets.length) {
+      this.ray.set(pose.pivot, pose.back);
+      this.ray.far = dist + FOLLOW.clearance;
+      dist = clampDistance(dist, castAll(this.ray, this.cameraTargets)[0]?.distance ?? null);
+    }
+    const desired = pose.pivot.clone().addScaledVector(pose.back, dist);
     this.camera.position.lerp(desired, 1 - Math.exp(-dt * 10));
-    this.camera.lookAt(head.clone().add(dir.multiplyScalar(2)));
+    this.camera.lookAt(pose.target);
   }
 
   private ensureAudio(): boolean {
@@ -760,6 +765,15 @@ export class Explorer {
     this.clearStation();
     this.input.dispose();
     this.disposeComposer();
+    this.avatarRig?.dispose();
+    this.avatar.traverse((o) => {
+      // The rig disposed its own parts; the shadow and marker ring are explorer-owned.
+      const m = o as THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>;
+      if (!m.isMesh || !(m.material instanceof THREE.MeshBasicMaterial)) return;
+      m.geometry.dispose();
+      m.material.map?.dispose();
+      m.material.dispose();
+    });
     this.coreEnvMap?.dispose();
     this.renderer.dispose();
   }
