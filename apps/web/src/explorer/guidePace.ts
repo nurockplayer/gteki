@@ -79,3 +79,24 @@ export function guideSpeedAt(s: number, tier: GuideTierId, spans: readonly PaceS
   }
   return Math.max(MIN_GUIDE_MPS, mps);
 }
+
+/**
+ * Distance (m) the guide covers in `dt` seconds from `s`, integrating the speed piecewise so a frame that crosses a
+ * span edge uses each side's own speed (a short instruction's dwell cap is never skipped by a big step).
+ */
+export function pacedDistance(s: number, dt: number, tier: GuideTierId, spans: readonly PaceSpan[]): number {
+  let at = s;
+  let remaining = dt;
+  for (let i = 0; i < 64 && remaining > 0; i++) {
+    const v = guideSpeedAt(at, tier, spans);
+    let edge = Infinity;
+    for (const sp of spans) {
+      if (sp.fromS > at && sp.fromS < edge) edge = sp.fromS;
+      if (sp.toS > at && sp.toS < edge) edge = sp.toS;
+    }
+    if (v * remaining <= edge - at) return at + v * remaining - s;
+    remaining -= (edge - at) / v;
+    at = edge;
+  }
+  return at + guideSpeedAt(at, tier, spans) * Math.max(0, remaining) - s;
+}

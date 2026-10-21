@@ -16,7 +16,7 @@ import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene } from "./manifestScene.ts";
 import { castAll, castTargets } from "./raycast.ts";
-import { DEFAULT_GUIDE_TIER, guideSpeedAt, type GuideTierId, type PaceSpan } from "./guidePace.ts";
+import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, clampDistance, followPose } from "./followCamera.ts";
@@ -1008,7 +1008,7 @@ export class Explorer {
     }
     const total = g.cum[g.cum.length - 1]!;
     // Arrive at a stop, never beyond it, and wait there until resumed.
-    const stopped = g.paused ? null : advanceGuide(g, guideSpeedAt(g.s, this.tier, g.spans) * dt, total);
+    const stopped = g.paused ? null : advanceGuide(g, pacedDistance(g.s, dt, this.tier, g.spans), total);
     if (stopped !== null) g.paused = g.holding = true;
     const p = samplePolyline(g.pts, g.cum, g.s);
     this.pos.set(p.x, p.y, p.z);
