@@ -1,10 +1,22 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import { accelerateRaycasts } from "./fare-replay-rays.ts";
-import { conservativeWalls } from "./fare-replay-audit.ts";
+import { conservativeWalls, lazySurfaceGrid } from "./fare-replay-audit.ts";
+import { surfaceGrid, type Patch } from "./fare-boundary-audit.ts";
 import { resolveWalls, type Segment2 } from "../../../apps/web/src/explorer/walker.ts";
 
 describe("replay broad phases preserve the native operations", () => {
+  it("enumerates the identical lattice heights without rasterising distant street cells", () => {
+    const patches: Patch[] = [0, .00001, 2].map(z => ({
+      rings: [[{ x: -2.1, y: -1 }, { x: 3.2, y: -1 }, { x: 2.7, y: 3.1 }, { x: -1, y: 2 }]],
+      height: p => z + p.x * .1,
+    }));
+    const eager = surfaceGrid(patches), lazy = lazySurfaceGrid(patches);
+    for (let x = -15; x < 15; x++) for (let y = -15; y < 15; y++) {
+      const key = `${x},${y}`;
+      expect(lazy.get(key)).toEqual(eager.get(key) ?? []);
+    }
+  });
   it("keeps Three hit points, clipping and material sides under static transforms", () => {
     for (const side of [THREE.FrontSide, THREE.BackSide, THREE.DoubleSide]) {
       const geometry = new THREE.BoxGeometry(2, 3, 4); geometry.clearGroups();

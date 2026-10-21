@@ -4,7 +4,7 @@ import { WALKER_BODY, type StationScene } from "@gteki/scene-api";
 import type { BuiltStation } from "../scene/build.ts";
 import { pointInRings, railingWalls, WalkWorld, type XY, type XYZ, type Plan, type WallSeg } from "../scene/layout.ts";
 import { gateMachines, containsPolygons, derivedRestrictedAccess, restrictionAt, type RestrictedRegion, type Fence } from "../scene/fare-fence.ts";
-import { laneBands, explorerBands, segmentDistance2, surfaceGrid, lanePatches, proxyPatches, gateCrossing, type WalkerAudit } from "./fare-boundary-audit.ts";
+import { laneBands, explorerBands, segmentDistance2, lanePatches, proxyPatches, gateCrossing, type WalkerAudit, type Patch } from "./fare-boundary-audit.ts";
 import { resolveWalls, acceptGround, wallToRenderer, DEFAULT_GROUND, type Segment2 } from "../../../apps/web/src/explorer/walker.ts";
 import { castAll, castTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { accelerateRaycasts, nearbyTargets } from "./fare-replay-rays.ts";
@@ -263,12 +263,32 @@ export const APPROACHES = ["toward", "oblique-30", "oblique+30", "oblique-60", "
 export type Approach = typeof APPROACHES[number];
 export type Walker = "lane" | "explorer";
 export interface ReplayLeak { end: string; approach: Approach; walker: Walker; fps: number; run: boolean; from: XYZ; to: XYZ; kind: string }
+/** Same lattice, membership and height deduplication as surfaceGrid. Only materialise
+ * cells requested by an endpoint's 3 m neighbourhood, rather than the whole street. */
+export function lazySurfaceGrid(patches: Patch[]) {
+  const bins = new Map<string, Patch[]>(), cells = new Map<string, number[]>();
+  for (const p of patches) {
+    const ring = p.rings[0]!;
+    for (let x = Math.floor(Math.min(...ring.map(p => p.x)) / 4); x <= Math.floor(Math.max(...ring.map(p => p.x)) / 4); x++)
+      for (let y = Math.floor(Math.min(...ring.map(p => p.y)) / 4); y <= Math.floor(Math.max(...ring.map(p => p.y)) / 4); y++) {
+        const key = `${x},${y}`, rows = bins.get(key) ?? []; rows.push(p); bins.set(key, rows);
+      }
+  }
+  return { get(key: string) {
+    const known = cells.get(key); if (known) return known;
+    const [ix, iy] = key.split(",").map(Number), p = { x: (ix! + .5) * .25, y: (iy! + .5) * .25 }, heights: number[] = [];
+    for (const patch of bins.get(`${Math.floor(p.x / 4)},${Math.floor(p.y / 4)}`) ?? []) if (pointInRings(p, patch.rings)) {
+      const z = patch.height(p); if (!heights.some(h => Math.abs(h - z) < 1e-4)) heights.push(z);
+    }
+    cells.set(key, heights); return heights;
+  } };
+}
 export function replayEnvironment(built: BuiltStation, scene: StationScene, plan: Plan, regions?: RestrictedRegion[]) {
   const explorer = new ExplorerReplay(scene), labels = publicLabels(built, plan, regions), laneWorld = laneReplayWorld(built);
-  let grid: ReturnType<typeof surfaceGrid> | undefined;
+  let grid: ReturnType<typeof lazySurfaceGrid> | undefined;
   const seedCache = new Map<string, { lane?: XYZ; explorer?: XYZ }>();
   const seeds = (end: End, resolution = .25) => {
-    grid ??= surfaceGrid([...lanePatches(built.layout), ...proxyPatches(scene.walkable)]);
+    grid ??= lazySurfaceGrid([...lanePatches(built.layout), ...proxyPatches(scene.walkable)]);
     const result: { lane?: XYZ; explorer?: XYZ }[] = [];
     const stride = Math.max(1, Math.round(resolution / .25));
     for (let ix = Math.floor((end.p.x - 3) / .25); ix <= Math.ceil((end.p.x + 3) / .25); ix++)

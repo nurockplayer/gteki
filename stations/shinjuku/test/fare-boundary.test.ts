@@ -229,6 +229,6 @@ describe("fare and access integrity at 0.25 m with a swept 0.3 m body", () => {
             );
         }
     expect(walked).toBeGreaterThan(100);
-    expect(stuck).toEqual([]);
+    expect(stuck, JSON.stringify(stuck)).toEqual([]);
   }, 60_000);
 });
