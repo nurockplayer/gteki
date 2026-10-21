@@ -16,8 +16,8 @@ const dirs: string[] = [];
 afterEach(async () => { vi.restoreAllMocks(); for (const dir of dirs.splice(0)) await rm(dir, { recursive: true, force: true }); });
 const fixture = (name: string): string => fileURLToPath(new URL(`fixtures/${name}`, import.meta.url));
 const inputs: ContextInput[] = [
-  { sourceId: 'synthetic-bldg', sourceSha256: 'a'.repeat(64), kind: 'bldg', path: fixture('context-bldg.gml'), attributionText: '出典：SYNTHETIC attribution' },
-  { sourceId: 'synthetic-tran', sourceSha256: 'b'.repeat(64), kind: 'tran', path: fixture('context-tran.gml'), attributionText: '出典：SYNTHETIC attribution' },
+  { sourceId: 'synthetic-bldg', sourceSha256: 'a'.repeat(64), kind: 'bldg', path: fixture('context-bldg.xml'), attributionText: '出典：SYNTHETIC attribution' },
+  { sourceId: 'synthetic-tran', sourceSha256: 'b'.repeat(64), kind: 'tran', path: fixture('context-tran.xml'), attributionText: '出典：SYNTHETIC attribution' },
 ];
 async function stationFrame(): Promise<StationEnuFrame> {
   const frame = await loadFrame('ikebukuro-station-enu-v0');
@@ -84,7 +84,7 @@ describe('context selection and LOD policy (synthetic PLATEAU-shaped fixture)', 
     expect(document.getRoot().listTextures()).toHaveLength(0);
     expect(report.textures).toMatch(/not converted/);
     expect(report.sources[0]!.footprint_scan.polygons_without_lod).toBe(0);
-    expect((await readFile(fixture('context-bldg.gml')))[0]).toBe(0xef); // fixture starts with a BOM
+    expect((await readFile(fixture('context-bldg.xml')))[0]).toBe(0xef); // fixture starts with a BOM
   });
 
   it('shrinking the radius shrinks the selection; the same inputs give identical bytes', async () => {
@@ -150,7 +150,7 @@ describe('bounded streaming scanner', () => {
     const frame = await stationFrame();
     const { stationEnuProjector } = await import('../src/station-enu.js');
     const records: ContextFeatureRecord[] = [];
-    await scanContextFeatures(fixture('context-bldg.gml'), { kind: 'bldg', mode: 'footprint', project: stationEnuProjector(frame.origin), onFeature: (r) => records.push(r) });
+    await scanContextFeatures(fixture('context-bldg.xml'), { kind: 'bldg', mode: 'footprint', project: stationEnuProjector(frame.origin), onFeature: (r) => records.push(r) });
     expect(records).toHaveLength(7);
     expect(records.every((r) => r.polygons === undefined)).toBe(true);
     const lod12 = records.find((r) => r.gml_id === 'bldg_lod12')!;
@@ -159,7 +159,7 @@ describe('bounded streaming scanner', () => {
     expect(lod12.bbox!.minX).toBeCloseTo(-90, 3); expect(lod12.bbox!.maxY).toBeCloseTo(40, 3);
     expect(lod12.height_range_by_lod[0]).toEqual([0, 0]);
     const collected: ContextFeatureRecord[] = [];
-    await scanContextFeatures(fixture('context-bldg.gml'), { kind: 'bldg', mode: 'collect', retain: (id) => id === 'bldg_lod1only', onFeature: (r) => collected.push(r) });
+    await scanContextFeatures(fixture('context-bldg.xml'), { kind: 'bldg', mode: 'collect', retain: (id) => id === 'bldg_lod1only', onFeature: (r) => collected.push(r) });
     expect(collected.filter((r) => r.polygons !== undefined).map((r) => r.gml_id)).toEqual(['bldg_lod1only']);
     expect(collected.find((r) => r.gml_id === 'bldg_lod1only')!.polygons).toHaveLength(7); // LOD0 footprint + 6 LOD1 faces are retained; the converter picks the LOD
     expect(collected.find((r) => r.gml_id === 'bldg_edge')!.bbox).toBeNull(); // collect mode does not even parse unselected coordinates
@@ -167,7 +167,7 @@ describe('bounded streaming scanner', () => {
 
   it('refuses a non-6697 or undeclared CRS and DOCTYPE declarations rather than guessing', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'gteki-context-bad-')); dirs.push(dir);
-    const xml = await readFile(fixture('context-tran.gml'), 'utf8');
+    const xml = await readFile(fixture('context-tran.xml'), 'utf8');
     const common = { kind: 'tran' as const, mode: 'collect' as const, retain: () => false, onFeature: () => undefined };
     await writeFile(join(dir, 'wrong.gml'), xml.replace('EPSG/0/6697', 'EPSG/0/4326'));
     await expect(scanContextFeatures(join(dir, 'wrong.gml'), common)).rejects.toThrow(/expected EPSG:6697/);
@@ -205,7 +205,7 @@ describe('context command wrapper', () => {
   it('writes the GLB, sidecar and a receipt under docs/gis/context (not conversions) with window, rule, counts, sha and RSS', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'gteki-context-run-')); dirs.push(dir);
     const manifest = new Map(loadSources().map((s) => [s.source_id, s]));
-    const paths: Record<string, string> = { 'plateau-13116-bldg-53394576': fixture('context-bldg.gml'), 'plateau-13116-bldg-53394577': fixture('context-bldg.gml'), 'plateau-13116-tran-53394576': fixture('context-tran.gml') };
+    const paths: Record<string, string> = { 'plateau-13116-bldg-53394576': fixture('context-bldg.xml'), 'plateau-13116-bldg-53394577': fixture('context-bldg.xml'), 'plateau-13116-tran-53394576': fixture('context-tran.xml') };
     vi.spyOn(common, 'getStoredSource').mockImplementation(async (id: string) => ({ path: paths[id]!, record: { source_id: id, sha256: createHash('sha256').update(id).digest('hex') }, source: manifest.get(id)! }) as Awaited<ReturnType<typeof common.getStoredSource>>);
     vi.spyOn(common, 'getStoreRoot').mockReturnValue(dir);
     const originalWrite = common.writeJson;

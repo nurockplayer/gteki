@@ -1,4 +1,4 @@
-// Regenerates test/fixtures/context-bldg.gml and context-tran.gml: SYNTHETIC PLATEAU-shaped CityGML 2.0 around the
+// Regenerates test/fixtures/context-bldg.xml and context-tran.xml: SYNTHETIC PLATEAU-shaped CityGML 2.0 around the
 // Ikebukuro station origin (35.7297, 139.7114, hM 0). Invented geometry and ids, not copied from PLATEAU data.
 // Local station-frame offsets are turned into lat/lon with packages/geo's StationFrame (read-only reference use):
 //   pnpm exec tsx scripts/make-context-fixtures.mts
@@ -84,6 +84,6 @@ const roadFlat3 = wrap('tran_lod3_flat', 'tran:Road', area('tran_lod3_flat-a3', 
 const tran = header('tran', false) + road123 + road12 + roadOut + roadFlat3 + '</core:CityModel>\n';
 
 const dir = fileURLToPath(new URL('../test/fixtures/', import.meta.url));
-writeFileSync(`${dir}context-bldg.gml`, bldg);
-writeFileSync(`${dir}context-tran.gml`, tran);
-console.error('wrote context-bldg.gml and context-tran.gml');
+writeFileSync(`${dir}context-bldg.xml`, bldg);
+writeFileSync(`${dir}context-tran.xml`, tran);
+console.error('wrote context-bldg.xml and context-tran.xml');
