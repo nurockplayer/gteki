@@ -90,9 +90,10 @@ export function floorYFor(index: FloorIndex, x: number, y: number, z: number, to
  * elevation. Separate wall patches (not chained) each get their own base, so skirting reappears where a
  * patch starts on another floor.
  *
- * Vertices whose base finds no floor are then filled from resolved neighbours (breadth-first over triangle
- * edges), so every connected patch ends up wholly resolved or wholly NO_FLOOR and no triangle mixes the
- * floor-relative and absolute bases in one interpolation.
+ * Vertical chains whose base finds no floor are then filled from resolved neighbouring chains (breadth-first
+ * over triangle edges lifted to chains), so every vertex of a chain shares one height, every connected patch
+ * ends up wholly resolved or wholly NO_FLOOR, and no triangle mixes the floor-relative and absolute bases in
+ * one interpolation.
  */
 export function wallFloorAttribute(pos: ArrayLike<number>, index: ArrayLike<number> | null, floors: FloorIndex): Float32Array {
   const nv = Math.floor(pos.length / 3);
@@ -133,29 +134,39 @@ export function wallFloorAttribute(pos: ArrayLike<number>, index: ArrayLike<numb
     const r = find(w);
     if (base[r]! < 0 || pos[wv[w]! * 3 + 1]! < pos[wv[base[r]!]! * 3 + 1]!) base[r] = w;
   }
-  const wf = new Float32Array(nw).fill(NO_FLOOR);
-  const rootFloor = new Map<number, number>();
+  // floor per vertical-chain root; the fallback below also works per root, so a chain never gets two heights
+  const rf = new Float32Array(nw).fill(NO_FLOOR);
+  const roots: number[] = [];
   for (let w = 0; w < nw; w++) {
     const r = find(w);
-    let f = rootFloor.get(r);
-    if (f === undefined) {
-      const b = wv[base[r]!]! * 3;
-      f = floorYFor(floors, pos[b]!, pos[b + 1]!, pos[b + 2]!);
-      rootFloor.set(r, f);
-    }
-    wf[w] = f;
+    if (r !== w) continue;
+    roots.push(r);
+    const b = wv[base[r]!]! * 3;
+    rf[r] = floorYFor(floors, pos[b]!, pos[b + 1]!, pos[b + 2]!);
   }
-  // fill unresolved from resolved neighbours, nearest first
+  // chain-level adjacency: a root touches the roots of every neighbour of any of its members
+  const rnbr: number[][] = Array.from({ length: nw }, () => []);
+  for (let w = 0; w < nw; w++) {
+    const r = find(w);
+    for (const n of nbr[w]!) {
+      const rn = find(n);
+      if (rn !== r) rnbr[r]!.push(rn);
+    }
+  }
+  // fill unresolved chains from resolved neighbouring chains, nearest first (breadth-first over chains, in
+  // ascending root id, so the result is deterministic and a chain takes the value of the first chain to reach it)
   const queue: number[] = [];
-  for (let w = 0; w < nw; w++) if (wf[w] !== NO_FLOOR) queue.push(w);
+  for (const r of roots) if (rf[r] !== NO_FLOOR) queue.push(r);
   for (let h = 0; h < queue.length; h++) {
-    const w = queue[h]!;
-    for (const n of nbr[w]!)
-      if (wf[n] === NO_FLOOR) {
-        wf[n] = wf[w]!;
+    const r = queue[h]!;
+    for (const n of rnbr[r]!)
+      if (rf[n] === NO_FLOOR) {
+        rf[n] = rf[r]!;
         queue.push(n);
       }
   }
+  const wf = new Float32Array(nw);
+  for (let w = 0; w < nw; w++) wf[w] = rf[find(w)]!;
   const out = new Float32Array(nv);
   for (let v = 0; v < nv; v++) out[v] = wf[wid[v]!]!;
   return out;

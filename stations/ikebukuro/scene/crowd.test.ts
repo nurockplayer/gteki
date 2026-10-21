@@ -1,7 +1,10 @@
 // The ambient crowd keeps its route logic and draw budget while being drawn as articulated commuters.
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { LOW_QUALITY_MAX_COUNT, buildCrowd } from "./crowd.ts";
+import { LOW_QUALITY_MAX_COUNT, buildCrowd, type Lane } from "./crowd.ts";
+import crowdLanes from "./crowd_lanes.json";
+import graph from "../gteki/graph.json";
+import station from "../gteki/station.json";
 
 const edges = [
   { id: "e1", from: "a", to: "j", verification: "verified", geometry: [{ x: 0, y: 0, z: 0 }, { x: 30, y: 0, z: 0 }] },
@@ -317,6 +320,76 @@ describe("ikebukuro crowd near-camera hiding", () => {
     }
     expect(windows).toBeGreaterThan(100);
     expect(shown).toBeGreaterThan(100);
+    c.dispose();
+  });
+});
+
+// The access fences stand on the outline of the routable coverage areas, so a pedestrian beyond it would be
+// standing where the player cannot follow. crowd.ts keeps shoulders this far inside the lane (m).
+describe("ikebukuro crowd stays on the routable floor", () => {
+  type XY = { x: number; y: number };
+  const polys = (station.coverage.areas as { status: string; polygon?: XY[] }[]).filter((a) => a.status === "routable" && a.polygon).map((a) => a.polygon!);
+  const inPoly = (x: number, y: number, poly: XY[]) => {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const a = poly[i]!, b = poly[j]!;
+      if ((a.y > y) !== (b.y > y) && x < ((b.x - a.x) * (y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
+    }
+    return inside;
+  };
+  const routable = (x: number, y: number) => polys.some((p) => inPoly(x, y, p));
+  const lanes = (crowdLanes as { lanes: Record<string, Lane> }).lanes;
+  type RealEdge = Parameters<typeof buildCrowd>[1][number];
+  const edges = (graph as { edges: RealEdge[] }).edges;
+
+  it("clamps every lane's extreme offsets (both sides, every interval, every polyline vertex) inside the routable union", () => {
+    let samples = 0;
+    const outside: string[] = [];
+    for (const e of edges) {
+      const lane = lanes[e.id];
+      if (e.verification !== "verified" || !lane) continue;
+      const g = e.geometry;
+      let acc = 0;
+      for (let i = 1; i < g.length; i++) {
+        const a = g[i - 1]!, b = g[i]!, len = Math.hypot(b.x - a.x, b.y - a.y);
+        if (len < 1e-9) continue;
+        const ux = (b.x - a.x) / len, uy = (b.y - a.y) / len; // to the right of from->to: (uy, -ux)
+        for (let t = 0; t <= len + 1e-9; t += 0.05) {
+          const d = acc + Math.min(t, len);
+          const k = Math.min(lane.left.length - 1, Math.floor(d / lane.stepM));
+          const x = a.x + ux * Math.min(t, len), y = a.y + uy * Math.min(t, len);
+          // the extremes crowd.ts allows: the lane less the 0.2 m shoulder margin, and everything between
+          for (const off of [-Math.max(0, lane.left[k]! - 0.2), 0, Math.max(0, lane.right[k]! - 0.2)]) {
+            samples++;
+            if (!routable(x + uy * off, y - ux * off)) outside.push(`${e.id} @${d.toFixed(2)} m, offset ${off.toFixed(2)}`);
+          }
+        }
+        acc += len;
+      }
+    }
+    expect(samples).toBeGreaterThan(10000);
+    expect(outside).toEqual([]);
+  });
+
+  it("keeps every sampled pedestrian of the real crowd inside the routable union", () => {
+    const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y); // ENU -> renderer frame
+    const c = buildCrowd(THREE, edges, toRenderer, 150, new THREE.Texture(), lanes);
+    const torso = named(c, "torso");
+    const m = new THREE.Matrix4(), v = new THREE.Vector3();
+    let samples = 0, outside = 0;
+    for (let k = 0; k < 9000; k++) {
+      c.update(1 / 30, k / 30);
+      if (k % 10) continue;
+      for (let i = 0; i < torso.count; i++) {
+        torso.getMatrixAt(i, m);
+        if (m.elements[0] === 0) continue; // hidden (relocating / too near the camera)
+        v.setFromMatrixPosition(m);
+        samples++;
+        if (!routable(v.x, -v.z)) outside++;
+      }
+    }
+    expect(samples).toBeGreaterThan(7000);
+    expect(outside).toBe(0);
     c.dispose();
   });
 });
