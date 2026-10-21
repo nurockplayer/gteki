@@ -178,5 +178,10 @@
       "log_store_path": "out/run-logs/2026-10-21T17-33-59-833Z/23-gap-packet-all.log",
       "tool_input_sha256": "ca9ef46e121b7da44432c6b39e75b87bfc5be56e7e661fdd04e6bfbaefcbf403"
     }
-  ]
+  ],
+  "invalidated": {
+    "at": "2026-10-21T19:24:32.055Z",
+    "by_command": "gis acquire plateau-13104-bldg-53394536",
+    "reason": "Report-writing command run outside real-run; rerun real-run before summarizing"
+  }
 }
