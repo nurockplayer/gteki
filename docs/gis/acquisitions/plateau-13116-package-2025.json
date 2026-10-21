@@ -2,23 +2,31 @@
   "source_id": "plateau-13116-package-2025",
   "resolved_url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13116-toshima-ku-2025",
   "resolution_evidence": null,
-  "requested_at": "2026-10-21T11:20:07.013Z",
-  "completed_at": "2026-10-21T11:20:07.125Z",
+  "requested_at": "2026-10-21T12:01:02.898Z",
+  "completed_at": "2026-10-21T12:01:02.989Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/json;charset=utf-8",
     "content-length": null,
     "etag": null,
     "last-modified": null,
-    "date": "Wed, 21 Oct 2026 11:20:07 GMT"
+    "date": "Wed, 21 Oct 2026 12:01:02 GMT"
   },
   "bytes": 112532,
   "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
   "store_path": "raw/e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b/package_show",
   "tool_version": "0.1.0",
-  "git_commit": "a74c6d49dc2370501cf529c9c58cedd62d1a6470",
+  "git_commit": "8feeb80ce3237814f40f6f517c3ce1c787fd6f97",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
-  "mode": "online"
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-21T12:06:19.224Z",
+    "completed_at": "2026-10-21T12:06:19.224Z",
+    "tool_version": "0.1.0",
+    "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+    "bytes": 112532,
+    "status": "PASS"
+  }
 }

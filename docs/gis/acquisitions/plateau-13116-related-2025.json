@@ -6,23 +6,31 @@
     "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
     "json_pointer": "/result/resources/4/url"
   },
-  "requested_at": "2026-10-21T11:20:40.738Z",
-  "completed_at": "2026-10-21T11:20:40.915Z",
+  "requested_at": "2026-10-21T12:01:10.112Z",
+  "completed_at": "2026-10-21T12:01:10.344Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/zip",
     "content-length": "28543",
     "etag": "\"38572b5a79b47f0834e8d2233f1499c1\"",
     "last-modified": "Fri, 13 Feb 2026 02:40:45 GMT",
-    "date": "Wed, 21 Oct 2026 11:20:40 GMT"
+    "date": "Wed, 21 Oct 2026 12:01:10 GMT"
   },
   "bytes": 28543,
   "sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
   "store_path": "raw/df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787/13116_toshima-ku_2025_related.zip",
   "tool_version": "0.1.0",
-  "git_commit": "a74c6d49dc2370501cf529c9c58cedd62d1a6470",
+  "git_commit": "8feeb80ce3237814f40f6f517c3ce1c787fd6f97",
   "expected_bytes": 28543,
   "expected_url_match": true,
   "size_check": "MATCH",
-  "mode": "online"
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-21T12:06:19.432Z",
+    "completed_at": "2026-10-21T12:06:19.432Z",
+    "tool_version": "0.1.0",
+    "sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
+    "bytes": 28543,
+    "status": "PASS"
+  }
 }

@@ -2,23 +2,31 @@
   "source_id": "tokyo-shinjuku-facilities-landing",
   "resolved_url": "https://www.toshiseibi.metro.tokyo.lg.jp/kotsu_butsuryu/kotsuseisaku/kotsu_suishin/shinjuku_shisetsu",
   "resolution_evidence": null,
-  "requested_at": "2026-10-21T11:20:40.122Z",
-  "completed_at": "2026-10-21T11:20:40.404Z",
+  "requested_at": "2026-10-21T12:01:09.408Z",
+  "completed_at": "2026-10-21T12:01:09.893Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "text/html;charset=UTF-8",
     "content-length": null,
     "etag": null,
     "last-modified": null,
-    "date": "Wed, 21 Oct 2026 11:20:40 GMT"
+    "date": "Wed, 21 Oct 2026 12:01:09 GMT"
   },
-  "bytes": 517476,
-  "sha256": "de23bcdcd34c54304ec2cbf51639fde2582e4e357e2ec4a062663482ed9a0e84",
-  "store_path": "raw/de23bcdcd34c54304ec2cbf51639fde2582e4e357e2ec4a062663482ed9a0e84/shinjuku_shisetsu",
+  "bytes": 517456,
+  "sha256": "74c1d1d95ba91699768ec87c27e625fec5c93c1edb8dc8ac582bec85309c9bf2",
+  "store_path": "raw/74c1d1d95ba91699768ec87c27e625fec5c93c1edb8dc8ac582bec85309c9bf2/shinjuku_shisetsu",
   "tool_version": "0.1.0",
-  "git_commit": "a74c6d49dc2370501cf529c9c58cedd62d1a6470",
+  "git_commit": "8feeb80ce3237814f40f6f517c3ce1c787fd6f97",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
-  "mode": "online"
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-21T12:06:19.408Z",
+    "completed_at": "2026-10-21T12:06:19.408Z",
+    "tool_version": "0.1.0",
+    "sha256": "74c1d1d95ba91699768ec87c27e625fec5c93c1edb8dc8ac582bec85309c9bf2",
+    "bytes": 517456,
+    "status": "PASS"
+  }
 }

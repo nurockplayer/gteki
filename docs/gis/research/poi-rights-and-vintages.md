@@ -118,7 +118,7 @@ Package licence declarations are not resource-level declarations. PLATEAU packag
 
 S03 specification fields/code tables are transcribed with physical PDF page references in ../poi/tokyo-shinjuku-facilities-spec-pdf.json. These are literal definitions; they do not establish current-world access or a graph join.
 
-S03 landing source tokyo-shinjuku-facilities-landing, SHA-256 de23bcdcd34c54304ec2cbf51639fde2582e4e357e2ec4a062663482ed9a0e84, introduction: “令和２年３月に公開したデータをもとに”; publication section: “令和５年２月２８日（火曜日）”. This establishes a March 2020 published-data basis and publication on 2023-02-28, not a complete survey date.
+S03 landing source tokyo-shinjuku-facilities-landing, SHA-256 74c1d1d95ba91699768ec87c27e625fec5c93c1edb8dc8ac582bec85309c9bf2, introduction: “令和２年３月に公開したデータをもとに”; publication section: “令和５年２月２８日（火曜日）”. This establishes a March 2020 published-data basis and publication on 2023-02-28, not a complete survey date.
 
 ## Bbox overlap and 2023 vintage
 

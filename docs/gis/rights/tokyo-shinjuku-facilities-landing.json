@@ -1,6 +1,6 @@
 {
   "source_id": "tokyo-shinjuku-facilities-landing",
-  "source_sha256": "de23bcdcd34c54304ec2cbf51639fde2582e4e357e2ec4a062663482ed9a0e84",
+  "source_sha256": "74c1d1d95ba91699768ec87c27e625fec5c93c1edb8dc8ac582bec85309c9bf2",
   "tool_input_sha256": "3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0",
   "station_ids": [
     "shinjuku"
@@ -24,7 +24,7 @@
   "input_sources": [
     {
       "source_id": "tokyo-shinjuku-facilities-landing",
-      "sha256": "de23bcdcd34c54304ec2cbf51639fde2582e4e357e2ec4a062663482ed9a0e84"
+      "sha256": "74c1d1d95ba91699768ec87c27e625fec5c93c1edb8dc8ac582bec85309c9bf2"
     }
   ],
   "attribution": {
@@ -44,7 +44,7 @@
   ],
   "publish_gate": "HOLD",
   "clearance_required": [
-    "Acquired rights evidence explicitly covering tokyo-shinjuku-facilities-landing, URL https://www.toshiseibi.metro.tokyo.lg.jp/kotsu_butsuryu/kotsuseisaku/kotsu_suishin/shinjuku_shisetsu, SHA-256 de23bcdcd34c54304ec2cbf51639fde2582e4e357e2ec4a062663482ed9a0e84, including the relevant member contents.",
+    "Acquired rights evidence explicitly covering tokyo-shinjuku-facilities-landing, URL https://www.toshiseibi.metro.tokyo.lg.jp/kotsu_butsuryu/kotsuseisaku/kotsu_suishin/shinjuku_shisetsu, SHA-256 74c1d1d95ba91699768ec87c27e625fec5c93c1edb8dc8ac582bec85309c9bf2, including the relevant member contents.",
     "Resolve each third-party original and individual-law caveat, or exclude those contents.",
     "Record required credit parties, source URL, licence link and actual modification notice for the proposed use."
   ],
