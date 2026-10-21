@@ -11,6 +11,9 @@ import { listStations, StationLoadError, type LoadedStation, type StationEntry }
 import { stationClock } from "../stationClock.ts";
 import { sourceCredit } from "../credits.ts";
 
+/** IANA time zone of the supported stations; routes are timed in it and waits name it. */
+const STATION_TIME_ZONE = "Asia/Tokyo";
+
 /** Where a route starts: a POI (via its verified entrances) or a graph node (spawn / avatar). */
 type Origin = { kind: "poi"; poi: Poi } | { kind: "node"; nodeId: string; label: string };
 
@@ -423,13 +426,14 @@ export class App {
 
   private profile(): RouteProfile {
     // Station-local time: both supported stations are in Asia/Tokyo.
-    const tokyo = stationClock(new Date(), "Asia/Tokyo");
+    const tokyo = stationClock(new Date(), STATION_TIME_ZONE);
     return {
       fare: this.s.profile.unpaidOnly ? "unpaid_only" : "ticketed",
       stepFree: this.s.profile.stepFree,
       hours: this.s.profile.strictHours ? "require_known" : "warn_unknown",
       at: { weekday: tokyo.weekday, minutes: tokyo.minutes },
       today: tokyo.date,
+      timeZone: STATION_TIME_ZONE,
     };
   }
 
