@@ -27,6 +27,8 @@ export class CameraCut {
    * reused material compiled under an earlier key would keep that program's stale uniform bindings.
    */
   private generation = 0;
+  /** World camera position and avatar head at the last update; null while the cut is off. */
+  private axis: { camera: THREE.Vector3; head: THREE.Vector3 } | null = null;
 
   /**
    * Patch the materials of `meshes` in place and return the meshes that are now cut. A material also drawn by a
@@ -50,6 +52,58 @@ export class CameraCut {
     this.uniforms.gtekiCutEnd.value.copy(head).applyMatrix4(camera.matrixWorldInverse);
     if (enabled) this.uniforms.gtekiCutRadii.value.set(...CUT_AT_CAMERA, ...CUT_AT_HEAD);
     else this.uniforms.gtekiCutRadii.value.set(0, 0, 0, 0);
+    if (!enabled) this.axis = null;
+    else {
+      this.axis ??= { camera: new THREE.Vector3(), head: new THREE.Vector3() };
+      camera.getWorldPosition(this.axis.camera);
+      this.axis.head.copy(head);
+    }
+  }
+
+  /** Is `material` patched, i.e. drawn with the cut? */
+  cuts(material: THREE.Material): boolean {
+    return this.patched.has(material);
+  }
+
+  /**
+   * The parts of the world segment `from` → `to` that a cut material still draws, as [t0, t1] fractions of
+   * its length: all of it except where it runs through the capsule's fully cut core (inside the inner radius;
+   * the dithered rim still draws some fragments, so it counts as drawn). Sampled every CUT_SAMPLE_M metres,
+   * which is fine for this purpose (label occlusion).
+   */
+  drawnSpans(from: THREE.Vector3, to: THREE.Vector3): [number, number][] {
+    const axis = this.axis;
+    const len = from.distanceTo(to);
+    if (!axis || len === 0) return [[0, 1]];
+    const e = new THREE.Vector3().subVectors(axis.head, axis.camera);
+    const ee = Math.max(e.lengthSq(), 1e-12);
+    const f = new THREE.Vector3().subVectors(from, axis.camera);
+    const dir = new THREE.Vector3().subVectors(to, from).divideScalar(len);
+    // Only points within the axis length plus the widest inner radius of the camera can be cut.
+    const reach = Math.sqrt(ee) + Math.max(CUT_AT_CAMERA[0], CUT_AT_HEAD[0]);
+    const b = f.dot(dir), disc = b * b - (f.lengthSq() - reach * reach);
+    if (disc <= 0) return [[0, 1]];
+    const s0 = Math.max(0, -b - Math.sqrt(disc)), s1 = Math.min(len, -b + Math.sqrt(disc));
+    if (s0 >= s1) return [[0, 1]];
+    const steps = Math.min(MAX_CUT_SAMPLES, Math.max(1, Math.ceil((s1 - s0) / CUT_SAMPLE_M)));
+    const p = new THREE.Vector3();
+    const spans: [number, number][] = [];
+    let start = 0, inCut = false, prev = s0;
+    for (let k = 0; k <= steps; k++) {
+      const s = s0 + ((s1 - s0) * k) / steps;
+      p.copy(dir).multiplyScalar(s).add(f);
+      // As the shader: distance to the camera → head segment against the inner radius at that point.
+      const t = Math.min(1, Math.max(0, p.dot(e) / ee));
+      const inner = CUT_AT_CAMERA[0] + (CUT_AT_HEAD[0] - CUT_AT_CAMERA[0]) * t;
+      const cut = p.distanceTo(e.clone().multiplyScalar(t)) < inner;
+      // Boundaries snap outward by one sample, so the drawn spans err on the side of drawn.
+      if (cut && !inCut) { if (s > start) spans.push([start / len, s / len]); inCut = true; }
+      else if (!cut && inCut) { start = prev; inCut = false; }
+      prev = s;
+    }
+    if (!inCut) spans.push([start / len, 1]);
+    else if (s1 < len) spans.push([s1 / len, 1]);
+    return spans;
   }
 
   /**
@@ -85,6 +139,9 @@ export class CameraCut {
 /** Anything this close to the lens fills the view; near the avatar the hole stays head-sized. */
 const CUT_AT_CAMERA = [0.6, 1.0] as const;
 const CUT_AT_HEAD = [0.35, 0.6] as const;
+/** drawnSpans' sampling step (m) and its cap per segment. */
+const CUT_SAMPLE_M = 0.05;
+const MAX_CUT_SAMPLES = 400;
 
 /** Own or inherited hook functions, captured to be restored. */
 type Hooks = Pick<THREE.Material, "onBeforeCompile" | "customProgramCacheKey">;

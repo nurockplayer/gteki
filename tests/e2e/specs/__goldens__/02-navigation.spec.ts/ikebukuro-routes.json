@@ -1,0 +1,408 @@
+{
+  "I1": {
+    "id": "I1",
+    "from": "jr-central-gate-2",
+    "to": "exit-35",
+    "expect": "ok",
+    "walk": true,
+    "note": "Central Passage east, PR #14 evidence route",
+    "result": {
+      "ok": true,
+      "lengthM": 196.7,
+      "seconds": 242,
+      "floorChanges": 1,
+      "crossesFareBoundary": false,
+      "synthetic": false,
+      "unknowns": [
+        "hours×9",
+        "wheelchair×9"
+      ],
+      "stale": true,
+      "sources": 3,
+      "nodes": 10,
+      "modes": [
+        "walk",
+        "stairs"
+      ],
+      "instructions": [
+        "Start",
+        "Go straight ~7 m",
+        "Turn left, ~72 m",
+        "Turn right, ~16 m",
+        "Turn left, ~34 m",
+        "Take the stairs down",
+        "Take the stairs up to street level",
+        "Arrive at destination"
+      ],
+      "steps": [
+        ">g_jr_c2__c_g2",
+        ">c_g2__c_c",
+        ">c_c__c_e1",
+        ">c_e1__c_n",
+        ">c_n__c_e2",
+        ">c_e2__e_27j",
+        ">e_27j__e_hall",
+        ">e_hall__e_low",
+        ">e_low__x35"
+      ]
+    }
+  },
+  "I2": {
+    "id": "I2",
+    "from": "west-exit-b1",
+    "to": "exit-4",
+    "expect": "ok",
+    "walk": true,
+    "note": "West Exit hall to Exit 4 stair foot (PR #14 recorded walk)",
+    "result": {
+      "ok": true,
+      "lengthM": 186.8,
+      "seconds": 156,
+      "floorChanges": 0,
+      "crossesFareBoundary": false,
+      "synthetic": false,
+      "unknowns": [
+        "hours×3",
+        "wheelchair×3"
+      ],
+      "stale": true,
+      "sources": 3,
+      "nodes": 4,
+      "modes": [
+        "walk"
+      ],
+      "instructions": [
+        "Start",
+        "Go straight ~20 m",
+        "Turn left, ~152 m",
+        "Turn right, ~14 m",
+        "Arrive at destination"
+      ],
+      "steps": [
+        ">w_c__w_cj",
+        "<sw_h__w_cj",
+        ">sw_h__x4f"
+      ]
+    }
+  },
+  "I3": {
+    "id": "I3",
+    "from": "jr-central-gate-1",
+    "to": "exit-22",
+    "expect": "ok",
+    "walk": true,
+    "note": "JR east side to North Passage",
+    "result": {
+      "ok": true,
+      "lengthM": 187.4,
+      "seconds": 169,
+      "floorChanges": 1,
+      "crossesFareBoundary": false,
+      "synthetic": false,
+      "unknowns": [
+        "hours×8",
+        "wheelchair×8"
+      ],
+      "stale": true,
+      "sources": 3,
+      "nodes": 9,
+      "modes": [
+        "walk",
+        "stairs"
+      ],
+      "instructions": [
+        "Start",
+        "Go straight ~11 m",
+        "Turn right, ~11 m",
+        "Turn right, ~72 m",
+        "Turn left, ~82 m",
+        "Take the stairs up to street level",
+        "Arrive at destination"
+      ],
+      "steps": [
+        "<c_mid__g_jr_c1",
+        ">c_mid__c_g2",
+        ">c_g2__c_c",
+        ">c_c__c_e1",
+        ">c_e1__c_n",
+        ">c_n__n_h",
+        ">n_h__n_c",
+        ">n_c__x22"
+      ]
+    }
+  },
+  "I4": {
+    "id": "I4",
+    "from": "jr-south-gate",
+    "to": "exit-18",
+    "expect": "ok",
+    "walk": true,
+    "note": "South Gate to West Exit hall U-stair",
+    "result": {
+      "ok": true,
+      "lengthM": 287.7,
+      "seconds": 269,
+      "floorChanges": 1,
+      "crossesFareBoundary": false,
+      "synthetic": false,
+      "unknowns": [
+        "hours×6",
+        "wheelchair×6"
+      ],
+      "stale": true,
+      "sources": 3,
+      "nodes": 7,
+      "modes": [
+        "walk",
+        "stairs"
+      ],
+      "instructions": [
+        "Start",
+        "Go straight ~10 m",
+        "Turn right, ~49 m",
+        "Turn right, ~152 m",
+        "Turn right, ~20 m",
+        "Turn left, ~31 m",
+        "Turn right, then take the stairs up to street level",
+        "Arrive at destination"
+      ],
+      "steps": [
+        "<sp_m__g_jr_s",
+        ">sp_m__sw_h",
+        ">sw_h__w_cj",
+        "<w_c__w_cj",
+        ">w_c__w_n",
+        ">w_n__x18"
+      ]
+    }
+  },
+  "I5": {
+    "id": "I5",
+    "from": "central-passage",
+    "to": "exit-40",
+    "expect": "ok",
+    "walk": true,
+    "note": "South-east corridor",
+    "result": {
+      "ok": true,
+      "lengthM": 373.4,
+      "seconds": 383,
+      "floorChanges": 1,
+      "crossesFareBoundary": false,
+      "synthetic": false,
+      "unknowns": [
+        "hours×11",
+        "wheelchair×11"
+      ],
+      "stale": true,
+      "sources": 3,
+      "nodes": 12,
+      "modes": [
+        "walk",
+        "stairs"
+      ],
+      "instructions": [
+        "Start",
+        "Go straight ~11 m",
+        "Turn right, ~54 m",
+        "Turn right, ~125 m",
+        "Take the stairs up",
+        "Go straight ~31 m",
+        "Turn right, then take the stairs down",
+        "Turn right, ~90 m",
+        "Turn left, then take the stairs up to street level",
+        "Arrive at destination"
+      ],
+      "steps": [
+        ">c_mid__c_g2",
+        ">c_g2__c_c",
+        ">c_c__c_e1",
+        ">c_e1__c_s",
+        ">c_s__sp_j",
+        ">sp_j__sp_e",
+        ">sp_e__s38_w",
+        ">s38_w__s38_j",
+        ">s38_j__s41_j",
+        ">s41_j__s40_j",
+        ">s40_j__x40"
+      ]
+    }
+  },
+  "I6": {
+    "id": "I6",
+    "from": "exit-13",
+    "to": "exit-43",
+    "expect": "ok",
+    "walk": true,
+    "note": "West stair foot across the station to the east",
+    "result": {
+      "ok": true,
+      "lengthM": 343.3,
+      "seconds": 302,
+      "floorChanges": 1,
+      "crossesFareBoundary": false,
+      "synthetic": false,
+      "unknowns": [
+        "hours×15",
+        "wheelchair×15"
+      ],
+      "stale": true,
+      "sources": 3,
+      "nodes": 16,
+      "modes": [
+        "walk",
+        "stairs"
+      ],
+      "instructions": [
+        "Start",
+        "Go straight ~7 m",
+        "Turn left, ~33 m",
+        "Turn right, ~112 m",
+        "Turn right, ~72 m",
+        "Turn right, ~16 m",
+        "Turn left, ~34 m",
+        "Turn right, ~55 m",
+        "Turn left, then take the stairs up to street level",
+        "Arrive at destination"
+      ],
+      "steps": [
+        "<w_13j__x13f",
+        "<w_cj__w_13j",
+        "<w_c__w_cj",
+        "<c_w__w_c",
+        ">c_w__c_mid",
+        ">c_mid__c_g2",
+        ">c_g2__c_c",
+        ">c_c__c_e1",
+        ">c_e1__c_n",
+        ">c_n__c_e2",
+        ">c_e2__e_27j",
+        ">e_27j__e_hall",
+        ">e_hall__se_1",
+        ">se_1__se_j",
+        ">se_j__x43"
+      ]
+    }
+  },
+  "I7": {
+    "id": "I7",
+    "from": "exit-26",
+    "to": "exit-10",
+    "expect": "ok",
+    "walk": false,
+    "note": "North-east to north-west, longest cross-station",
+    "result": {
+      "ok": true,
+      "lengthM": 420.6,
+      "seconds": 408,
+      "floorChanges": 2,
+      "crossesFareBoundary": false,
+      "synthetic": false,
+      "unknowns": [
+        "hours×14",
+        "wheelchair×14"
+      ],
+      "stale": true,
+      "sources": 3,
+      "nodes": 15,
+      "modes": [
+        "stairs",
+        "walk"
+      ],
+      "instructions": [
+        "Start",
+        "Take the stairs down to B1 passages",
+        "Turn left, then take the stairs up",
+        "Go straight ~28 m",
+        "Turn left, ~82 m",
+        "Turn right, ~72 m",
+        "Turn left, ~143 m",
+        "Turn left, ~46 m",
+        "Turn left, then take the stairs up to street level",
+        "Arrive at destination"
+      ],
+      "steps": [
+        "<ne_j__x26",
+        "<n_e__ne_j",
+        "<n_c__n_e",
+        "<n_h__n_c",
+        "<c_n__n_h",
+        "<c_e1__c_n",
+        "<c_c__c_e1",
+        "<c_g2__c_c",
+        "<c_mid__c_g2",
+        "<c_w__c_mid",
+        ">c_w__w_c",
+        ">w_c__w_n",
+        "<w_nw__w_n",
+        ">w_nw__x10"
+      ]
+    }
+  },
+  "IN1": {
+    "id": "IN1",
+    "from": "jr-central-gate-2",
+    "to": "exit-8",
+    "expect": "fail",
+    "note": "Search-only exit (no verified entrance) must not route",
+    "result": {
+      "ok": false,
+      "reason": "unknown_goal",
+      "uiCard": "No verified route to showThe destination has no verified entrance."
+    }
+  },
+  "IN2": {
+    "id": "IN2",
+    "from": "jr-central-gate-2",
+    "to": "exit-35",
+    "profile": {
+      "strictHours": true
+    },
+    "expect": "fail",
+    "note": "Hours unknown everywhere: require_known must refuse",
+    "result": {
+      "ok": false,
+      "reason": "no_path",
+      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+    }
+  },
+  "IN3": {
+    "id": "IN3",
+    "from": "jr-central-gate-2",
+    "to": "exit-35",
+    "profile": {
+      "stepFree": true
+    },
+    "expect": "fail",
+    "note": "Step-free unknown/stairs: must refuse",
+    "result": {
+      "ok": false,
+      "reason": "no_path",
+      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+    }
+  },
+  "IN4": {
+    "id": "IN4",
+    "from": "exit-35",
+    "to": "exit-35",
+    "expect": "record",
+    "note": "start = goal",
+    "result": {
+      "ok": false,
+      "reason": "start_equals_goal",
+      "uiCard": "No verified route to showStart and destination are the same."
+    }
+  },
+  "IN5": {
+    "id": "IN5",
+    "from": "tobu-central-gate-1",
+    "to": "exit-35",
+    "expect": "fail",
+    "note": "Search-only origin must not route",
+    "result": {
+      "ok": false,
+      "reason": "unknown_start",
+      "uiCard": "No verified route to showThe start is not on the network."
+    }
+  }
+}
