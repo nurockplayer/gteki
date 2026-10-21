@@ -26,7 +26,11 @@ COLORS = {
     "ceiling": (0.72, 0.74, 0.75, 1), "stairs_ramps": (0.40, 0.42, 0.44, 1),
     "transport": (0.18, 0.20, 0.23, 1), "barriers": (0.65, 0.67, 0.69, 1),
     "floor_elements": (0.52, 0.50, 0.46, 1), "doors": (0.45, 0.40, 0.34, 1),
-    "windows": (0.45, 0.63, 0.70, 1), "portals": (1, 0, 1, 0.5),
+    "windows": (0.45, 0.63, 0.70, 1),
+    # ClosureSurfaces are PLATEAU's virtual lids on openings, not built surfaces: fully transparent, so
+    # a generic glTF viewer or loader (Godot's gteki_assets.gd) draws nothing there. scene/scene.ts
+    # replaces them by role with daylight caps and fogged continuations.
+    "portals": (1, 0, 1, 0),
 }
 AREA_EPS = 1e-10  # square metres; substantially below a 1 mm square
 ATTRIBUTION = ("Contains PLATEAU data (MLIT), CC BY 4.0. Modified: reprojected "
@@ -205,7 +209,7 @@ def build_mesh(role, polygons):
     bpy.context.collection.objects.link(obj)
     obj["gteki_role"] = role
     if role in ("portals", "doors", "windows"):
-        obj["gteki_render"] = False
+        obj["gteki_render"] = False  # left out of the lightmap bake (blender_bake_lighting.py), still drawn
     mat = bpy.data.materials.new("mat_" + role)
     mat.diffuse_color = COLORS[role]
     if mat.node_tree is None:
