@@ -77,11 +77,11 @@ def main(argv):
     os.makedirs(outdir, exist_ok=True)
     fonts = {"B": os.path.join(font_dir, "NotoSansJP-Bold.otf"),
              "R": os.path.join(font_dir, "NotoSansJP-Regular.otf")}
+    missing = [name for name in copy if not os.path.exists(os.path.join(indir, name))]
+    if missing:  # an incomplete set must not look like a successful run
+        sys.exit("missing plates: " + ", ".join(missing))
     for name, spec in copy.items():
         src = os.path.join(indir, name)
-        if not os.path.exists(src):
-            print("missing", name)
-            continue
         cmd, w, h = build_command(src, spec, fonts)
         prefix = "REJECTED_" if spec.get("rejected") else ""
         out = os.path.join(outdir, f"{prefix}{os.path.splitext(name)[0]}.jpg")

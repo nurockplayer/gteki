@@ -230,4 +230,4 @@ Batch 1 is in `assets/library/source/art2d/` (31 images, [contact sheet](img/art
 - Characters are original and must not resemble existing ones: Capoo/咖波, 臭跩貓, Pusheen, Sanrio, Chiikawa and so on.
 - No photorealistic people.
 - Tileable surfaces stay procedural, because the AI seamless test failed.
-- Batches of at most 30, each with provenance and a reject log.
+- Batches of at most 30, each with provenance and a reject log (batch 1: `assets/library/source/art2d/rejects.json`).
