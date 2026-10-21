@@ -141,6 +141,13 @@ describe("street geometry and collision", () => {
     expect(roofs.map((r) => r.edgeId).sort()).toEqual(["e:636c6fc9d3ca4ba19cb9c690274a7943", "e:c3fe6342f158400ab602dd610f636329"]);
     for (const r of roofs) expect(bundle.edges.find((e) => e.id === r.edgeId)!.attributes?.roof).toBe(2);
   });
+  it("adds nothing for a run whose roof is unknown (99) or absent (1)", () => {
+    const roofed = new Set(surfaceRoofs(layout, bundle).map((r) => r.edgeId));
+    for (const roof of [99, 1]) {
+      const edges = bundle.edges.map((e) => roofed.has(e.id) ? { ...e, attributes: { ...e.attributes, roof } } : e);
+      expect(surfaceRoofs(layout, { ...bundle, edges })).toEqual([]);
+    }
+  });
   it("keeps surface rendering near street level and above an exit's first landing", () => {
     const exit = surfaceEntrances(layout, bundle).find((e) => e.id === "poi:exit:4")!;
     // The north-exit follow camera can sit beside the street opening while still

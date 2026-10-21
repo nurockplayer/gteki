@@ -117,8 +117,9 @@ if (exits) {
   mkdirSync(dir, { recursive: true });
   const ids = loadShinjukuBundle().bundle.pois.filter((p) => p.id.startsWith("poi:exit:")).map((p) => ({ id: p.id, node: p.connectorNodeIds[0]! }));
   const frame = (dt: number) => page.evaluate((dt) => {
-    const g = (window as any).__gteki, a = g.simulate(dt);
-    return { z: Math.round(a.z * 100) / 100, street: (window as any).__street() as Street };
+    const g = (window as any).__gteki, a = g.simulate(dt), cam = g.sceneInfo().camera[1] as number;
+    // camAboveFeet: the follow camera's height over the walker (a camera pinned under paving would show ~0).
+    return { z: Math.round(a.z * 100) / 100, camAboveFeet: Math.round((cam - a.z) * 100) / 100, street: (window as any).__street() as Street };
   }, dt);
   const shot = (id: string, tag: string) => page.screenshot({ path: join(dir, `${id.replace(/\W+/g, "-")}-${tag}.jpg`), type: "jpeg", quality: 80 });
   for (const { id, node } of ids) {
