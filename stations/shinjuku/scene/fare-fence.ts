@@ -112,8 +112,7 @@ export function verifiedFloorSegments(layout: Layout, plan: Plan, bundle: Statio
   for (const edge of bundle.edges) {
     if (edge.verification !== "verified") continue;
     const from = nodes.get(edge.from)!, to = nodes.get(edge.to)!;
-    const points = edge.geometry?.length ? edge.geometry : [from.position, to.position];
-    const lengths = [0];
+    const points = edge.geometry?.length ? edge.geometry : [from.position, to.position], lengths = [0];
     for (let i = 1; i < points.length; i++) lengths.push(lengths[i - 1]! + Math.hypot(points[i]!.x - points[i - 1]!.x, points[i]!.y - points[i - 1]!.y));
     const za = layout.nodeZ.get(from.id)!, zb = layout.nodeZ.get(to.id)!;
     for (const level of plan.levels) {
@@ -121,16 +120,18 @@ export function verifiedFloorSegments(layout: Layout, plan: Plan, bundle: Statio
       for (let i = 1; i < points.length; i++) {
         const a = points[i - 1]!, b = points[i]!, dz = zb - za, total = lengths.at(-1) || 1;
         const z0 = za + dz * lengths[i - 1]! / total, z1 = za + dz * lengths[i]! / total;
+        // A floor return spans [floor-.05, floor+1.15]. Retain the verified
+        // polyline wherever either walker's body overlaps it, including stair/lift
+        // approaches. This is collision clearance, not a network-strip exception.
+        const bottom = level.renderElevationM - 1.75, top = level.renderElevationM + .95;
         let lo = 0, hi = 1;
-        if (Math.abs(z1 - z0) < 1e-9) { if (Math.abs(z0 - level.renderElevationM) > .02) continue; }
+        if (Math.abs(z1 - z0) < 1e-9) { if (z0 < bottom || z0 > top) continue; }
         else {
-          const t0 = (level.renderElevationM - .02 - z0) / (z1 - z0), t1 = (level.renderElevationM + .02 - z0) / (z1 - z0);
-          lo = Math.max(0, Math.min(t0, t1)); hi = Math.min(1, Math.max(t0, t1));
-          if (lo > hi) continue;
+          const t0 = (bottom - z0) / (z1 - z0), t1 = (top - z0) / (z1 - z0);
+          lo = Math.max(0, Math.min(t0, t1)); hi = Math.min(1, Math.max(t0, t1)); if (lo > hi) continue;
         }
         out.push({ edgeId: edge.id, floor: level.label, z: level.renderElevationM,
-          a: { x: a.x + (b.x - a.x) * lo, y: a.y + (b.y - a.y) * lo },
-          b: { x: a.x + (b.x - a.x) * hi, y: a.y + (b.y - a.y) * hi } });
+          a: { x: a.x + (b.x - a.x) * lo, y: a.y + (b.y - a.y) * lo }, b: { x: a.x + (b.x - a.x) * hi, y: a.y + (b.y - a.y) * hi } });
       }
     }
   }
@@ -230,7 +231,7 @@ export function restrictionDigest(input: string) {
 export function restrictedInputKey(layout: Layout, plan: Plan, bundle: StationBundle, base: Fence[]) {
   // Digest the complete source/graph/layout input; CI compares the fresh derivation
   // and separately requires review of every change to the conflict table.
-  return restrictionDigest(JSON.stringify(["restricted-boundary-v6", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
+  return restrictionDigest(JSON.stringify(["restricted-boundary-v13", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
     plan.levels.map(l => [l.label, l.renderElevationM, l.spaces.filter(s => s.restricted)]),
     bundle.edges.filter(e => e.verification === "verified"),
     bundle.nodes.map(n => [n.id, n.position]), [...layout.nodeZ], layout.gates,
@@ -531,7 +532,16 @@ export function deriveRestrictedFences(layout: Layout, restricted: RestrictedAcc
     if (!blocked.length || !floor.length) continue;
     const blockers = [...level.walls, ...layout.runWalls, ...railingWalls(layout), ...base.filter(f => f.level === level.label)].filter(w => level.z + 1.7 >= w.zMin && level.z + .3 <= w.zMax &&
       (w.bodyMin === undefined || level.z >= w.bodyMin) && (w.bodyMax === undefined || level.z <= w.bodyMax));
-    const privateFloor = polygonClipping.difference(polygonClipping.intersection(blocked, union(floor.map(s => poly(s.rings)))), union(blockers.map(w => capsule(w.a, w.b, .01, 8)))).map(rings);
+    const wallCaps = union(blockers.map(w => capsule(w.a, w.b, .01, 8))).map(rings);
+    const floorRings = floor.map(s => s.rings), onFloor = containsPolygons(floorRings), inWall = containsPolygons(wallCaps);
+    const floorEdges = floorRings.flat();
+    const closeToFloor = (a: XY, b: XY) => onFloor(a) || onFloor(b) || floorEdges.some(r => r.some((p, i) => {
+      const q = r[(i + 1) % r.length]!;
+      // A body centre can stand at a floor edge while its radius extends beyond it.
+      // Retain the WHOLE boundary interval if any part is within one body radius;
+      // this conservative selection never opens a short/sliver access exception.
+      return Math.min(distance(a, p, q), distance(b, p, q), distance(p, a, b), distance(q, a, b)) <= VERIFIED_CORRIDOR_M || cuts(a, b, [[p, q]]).length > 2;
+    }));
     const simplify = (ring: XY[]) => {
       const points = ring.slice(0, -1);
       if (points.length < 4) return ring;
@@ -544,19 +554,19 @@ export function deriveRestrictedFences(layout: Layout, restricted: RestrictedAcc
       const anchor = points.reduce((best, p, i) => Math.hypot(p.x - points[0]!.x, p.y - points[0]!.y) > Math.hypot(points[best]!.x - points[0]!.x, points[best]!.y - points[0]!.y) ? i : best, 1);
       return [...reduce(points.slice(0, anchor + 1)).slice(0, -1), ...reduce([...points.slice(anchor), points[0]!])];
     };
-    const floorEdges = privateFloor.flat();
+    const cutEdges = wallCaps.flat();
     for (const rs of blocked.map(rings)) for (const raw of rs) {
       const ring = simplify(raw);
       boundaries.push({ level: level.label, z: level.z, points: ring });
       for (let i = 1; i < ring.length; i++) {
         const a = ring[i - 1]!, b = ring[i]!, dx = b.x - a.x, dy = b.y - a.y, length = Math.hypot(dx, dy);
         if (length < 1e-8) continue;
-        const divisions = cuts(a, b, floorEdges);
+        const divisions = cuts(a, b, cutEdges);
         for (let j = 1; j < divisions.length; j++) {
           const lo = divisions[j - 1]!, hi = divisions[j]!, middle = (lo + hi) / 2;
           const mid = { x: a.x + dx * middle, y: a.y + dy * middle };
-          if (!privateFloor.some(rs => pointInRings(mid, rs) || [-.005, .005].some(d => pointInRings({ x: mid.x - dy / length * d, y: mid.y + dx / length * d }, rs)))) continue;
           const from = { x: a.x + dx * lo, y: a.y + dy * lo }, to = { x: a.x + dx * hi, y: a.y + dy * hi };
+          if (inWall(mid) || !closeToFloor(from, to)) continue;
           if (Math.hypot(to.x - from.x, to.y - from.y) < 1e-8) continue;
           const candidates = [-.01, .01, -.001, .001, -.00001, .00001].map(d => ({ x: mid.x - dy / length * d, y: mid.y + dx / length * d }));
           const source = regions.map(r => ({ r, p: candidates.find(p => pointInRings(p, r.source)) })).find(v => v.p);

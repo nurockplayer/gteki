@@ -21,6 +21,13 @@
     "maxEdgeDepthM": 0
   },
   {
+    "spaceId": "2053c8d0f3c143efb2390e33d51be7af",
+    "edgeId": "e:904c66c36c1440ea8c6261ec2356bf72",
+    "floor": "B1",
+    "overlapLengthM": 0,
+    "maxEdgeDepthM": 0
+  },
+  {
     "spaceId": "2502bd9868ca49459088984c6ac6316f",
     "edgeId": "e:02f4e95f96b745f586ce2fa10929f40e",
     "floor": "B1",

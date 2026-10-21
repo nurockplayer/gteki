@@ -61,4 +61,16 @@ describe("source restriction and verified centreline authority", () => {
       }
     } finally { proper.dispose(); widened.dispose(); }
   });
+  it("keeps a containment panel just beyond a walkable floor edge within body reach", () => {
+    // R' starts at x=.22, while the backing floor ends at .19. Clipping fences to
+    // the floor would delete this panel and permit standing 19 cm inside R.
+    const fixture = restrictedCorridorFixture(.32, .19);
+    try {
+      const env = replayEnvironment(fixture.built, fixture.scene, fixture.plan, fixture.canonical);
+      const end = { id: "floor-overhang", p: { x: .21, y: 0, z: 0 }, other: { x: .21, y: -3 } };
+      expect(fixture.built.propWalls.some(w => Math.abs(w.a.x - .21) < .001 && Math.abs(w.b.x - .21) < .001)).toBe(true);
+      for (const walker of ["lane", "explorer"] as const) for (const fps of [30, 60]) for (const run of [false, true])
+        expect(env.replay(end, { x: -1, y: 0, z: 0 }, "toward", walker, fps, run)).toBeNull();
+    } finally { fixture.dispose(); }
+  });
 });

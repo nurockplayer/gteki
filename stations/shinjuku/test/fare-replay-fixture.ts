@@ -4,7 +4,7 @@ import type { StationScene } from "@gteki/scene-api";
 import { slabGeometry, type BuiltStation } from "../scene/build.ts";
 import { WalkWorld, type Layout, type Plan, type XY } from "../scene/layout.ts";
 import { loadShinjukuBundle } from "../data/bundle.ts";
-import { deriveRestrictedAccess } from "../scene/fare-fence.ts";
+import { deriveRestrictedAccess, deriveRestrictedFences } from "../scene/fare-fence.ts";
 import type { Fence } from "../scene/fare-fence.ts";
 export function accessFixture(width: number, publicBeyond: boolean, restricted = false) {
   const rect = (x0: number, x1: number): XY[][] => [[{ x: x0, y: -3 }, { x: x1, y: -3 }, { x: x1, y: 3 }, { x: x0, y: 3 }]];
@@ -36,8 +36,14 @@ export function accessFixture(width: number, publicBeyond: boolean, restricted =
 }
 
 /** Same actual walkers/meshes; only the generic derivation's corridor radius is mutated. */
-export function restrictedCorridorFixture(radius: number) {
+export function restrictedCorridorFixture(radius: number, floorRight = 3) {
   const base = accessFixture(3, false, true), { built, scene, plan } = base;
+  if (floorRight !== 3) {
+    const rs = [[{ x: -3, y: -3 }, { x: floorRight, y: -3 }, { x: floorRight, y: 3 }, { x: -3, y: 3 }]];
+    built.layout.levels[0]!.slabs[0]!.rings = rs;
+    const floor = scene.walkable[0] as THREE.Mesh;
+    floor.geometry.dispose(); floor.geometry = slabGeometry(rs, 0, 1);
+  }
   const template = loadShinjukuBundle().bundle, a = "fixture:verified-a", b = "fixture:verified-b";
   const nodes = [a, b].map((id, i) => ({ ...template.nodes[0]!, id, floorId: "fixture", position: { x: -.1, y: i ? 3 : -3, z: 0 } }));
   const bundle = { ...template, nodes, pois: [], edges: [{ ...template.edges[0]!, id: "fixture:verified-edge", from: a, to: b,
@@ -45,9 +51,7 @@ export function restrictedCorridorFixture(radius: number) {
   built.layout.nodeZ.set(a, 0); built.layout.nodeZ.set(b, 0);
   const canonical = deriveRestrictedAccess(built.layout, plan, bundle).regions;
   const derived = deriveRestrictedAccess(built.layout, plan, bundle, radius);
-  const props: Fence[] = derived.regions.flatMap(r => r.barrier.flatMap(rs => rs.flatMap(ring => ring.slice(1).map((p, i) => ({
-    id: `fixture:restricted:${i}`, reason: "access" as const, level: "fixture", a: ring[i]!, b: p, zMin: -.05, zMax: 1.15, side: 1 as const, kind: "wall" as const,
-  })))));
+  const props = deriveRestrictedFences(built.layout, derived, []);
   const walls = [...built.layout.levels.flatMap(l => l.walls), ...props], positions: number[] = [], indices: number[] = [];
   for (const w of walls) { const i = positions.length / 3; positions.push(w.a.x, w.zMin, -w.a.y, w.b.x, w.zMin, -w.b.y, w.b.x, w.zMax, -w.b.y, w.a.x, w.zMax, -w.a.y); indices.push(i, i + 1, i + 2, i, i + 2, i + 3); }
   const geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3)); geometry.setIndex(indices);

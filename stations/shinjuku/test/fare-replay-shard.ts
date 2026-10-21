@@ -8,6 +8,7 @@ import { buildScene } from "../gteki/scene.ts";
 import type { Plan } from "../scene/layout.ts";
 import type { StationScene } from "@gteki/scene-api";
 import { replayEnds } from "./fare-replay-audit.ts";
+import { derivedRestrictedAccess } from "../scene/fare-fence.ts";
 import { replayMatrix } from "./fare-replay-worker.ts";
 export function replayShard(index: number, count: number) {
  const { bundle } = loadShinjukuBundle(), plan = planJson as Plan;
@@ -22,7 +23,10 @@ export function replayShard(index: number, count: number) {
   it("replays every public seed, all nine approaches, both fps, speeds and walkers", async () => {
    const ends = replayEnds(built), key = (p: { x: number; y: number; z: number }) => `${p.x},${p.y},${p.z}`;
    const groups = new Map([...new Set(ends.map(e => key(e.p)))].map((k, i) => [k, i % count]));
-   const selected = ends.filter(e => groups.get(key(e.p)) === index);
+   const conflicts = new Set(derivedRestrictedAccess(built.layout)!.conflicts.map(c => c.spaceId));
+   // Exercise source/route conflicts first so regressions fail early. No cases are removed.
+   const selected = ends.filter(e => groups.get(key(e.p)) === index).sort((a, b) =>
+     Number(conflicts.has(b.fence?.restrictedSpaceId ?? "")) - Number(conflicts.has(a.fence?.restrictedSpaceId ?? "")) || b.p.z - a.p.z);
    const result = await replayMatrix(built, scene, plan, selected, index);
    expect(result.finished).toBe(result.jobs); expect(result.leaks).toEqual([]); expect(result.matrix).toHaveLength(72);
    for (const row of result.matrix) { expect(row.paths).toBeGreaterThan(0); expect(row.passed).toBe(row.paths); }
