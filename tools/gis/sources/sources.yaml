@@ -1029,3 +1029,29 @@
   availability_deadline: null
   notes: Bounded identity input, linked only by our hash-verified catalog response. No standalone clearance or graph export.
   publish_gate: HOLD
+- source_id: plateau-13104-package-2023
+  title: PLATEAU 13104 2023 G空間 package_show
+  station_ids:
+    - shinjuku
+  publisher: G空間情報センター / MLIT Project PLATEAU
+  official_url: https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2023
+  resolution:
+    kind: direct
+  expected_url: https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2023
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use:
+    status: unknown
+    evidence: docs/gis/vintages/shinjuku-2023.json
+  modification_allowed:
+    status: unknown
+    evidence: docs/gis/vintages/shinjuku-2023.json
+  redistribution_allowed:
+    status: unknown
+    evidence: docs/gis/vintages/shinjuku-2023.json
+  content_year: 2023
+  availability_deadline: null
+  notes: Vintage research only. Listing of the 2023 CityGML archive URLs; the archives are read by HTTP range (EOCD, central directory, selected ubld members), never downloaded whole, and are not licence evidence. Unknown stays UNKNOWN.
+  publish_gate: HOLD

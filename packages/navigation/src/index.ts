@@ -30,6 +30,8 @@ export interface RouteProfile {
   hours?: "warn_unknown" | "require_known";
   /** Station-local departure time. When given, edges whose known hours are closed are excluded. */
   at?: LocalTime;
+  /** IANA time zone `at` is given in (the station-local wall clock); when set, wait instructions name it ("Wait until 12:01 JST"). Never guessed when absent. */
+  timeZone?: string;
   /** Station-local calendar day "YYYY-MM-DD" used to flag stale sources; omit (or pass a partial/invalid date) for no staleness verdict. */
   today?: string;
   /** Source datasetDate older than this (days before `today`) marks the route stale. Default 730. */

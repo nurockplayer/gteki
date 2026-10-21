@@ -6,6 +6,7 @@ import { docsRoot, getStoreRoot, getStoredSource, readJson, writeJson } from './
 import { readZip } from './zip.js';
 import { toolFingerprint } from './provenance.js';
 import { ownValue } from './values.js';
+import { geometriesBbox, hasOverridingCrs, MAX_GEOMETRY_COLLECTION_DEPTH } from './geo-bbox.js';
 
 /** Opening-time field names seen in the sources: `openinghour`, `opening hour` (S03 level files) and `hours` (S03 HERE entities). */
 export const OPENING_TIME_FIELD = /opening.?hours?|^hours$/iu;
@@ -49,27 +50,25 @@ export function inventoryCsv(bytes: Buffer) {
     blank_row_count: all.length - rows.length, fields: fieldStatistics(all, headers), coordinates: 'UNKNOWN', coordinate_fields: coordinateFields,
     crs: 'UNKNOWN', bbox: null, geometry_types: {}, literal_location_time_fields: Object.fromEntries(headers.filter(key => OPENING_TIME_FIELD.test(key) || /場所|階|位置|location|floor|時間/iu.test(key)).map(key => [key, fieldStatistics(all, headers)[key]])), routable: false }, detail: all };
 }
-function coordinates(value: unknown, output: number[][]): void {
-  if (!Array.isArray(value)) return;
-  if (value.length >= 2 && value.every(v => typeof v === 'number' && Number.isFinite(v))) output.push(value as number[]);
-  else for (const child of value) coordinates(child, output);
-}
-export function geometryInventory(geometries: unknown[]) {
-  const types = new Map<string, number>(), points: number[][] = [];
+export function geometryInventory(geometries: unknown[], options: { overridingCrs?: boolean } = {}) {
+  const types = new Map<string, number>();
   let unsupported = 0;
-  const visit = (value: unknown): void => {
+  const visit = (value: unknown, level: number): void => {
     const geometry = object(value), name = ownValue(geometry, 'type');
     if (typeof name !== 'string') { types.set('null_or_unknown', (types.get('null_or_unknown') ?? 0) + 1); return; }
     types.set(name, (types.get(name) ?? 0) + 1);
-    if (name === 'GeometryCollection') { for (const child of Array.isArray(geometry.geometries) ? geometry.geometries : []) visit(child); }
-    else if (['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'].includes(name)) coordinates(ownValue(geometry, 'coordinates'), points);
-    else unsupported++;
+    // Nesting beyond the bound is left uncounted here; the strict bbox below reports it as INCOMPLETE_LIMIT_REACHED.
+    if (name === 'GeometryCollection') { if (level < MAX_GEOMETRY_COLLECTION_DEPTH) for (const child of Array.isArray(geometry.geometries) ? geometry.geometries : []) visit(child, level + 1); }
+    else if (!['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'].includes(name)) unsupported++;
   };
-  for (const value of geometries) visit(value);
-  const bounds = points.length ? points.reduce((b, p) => [Math.min(b[0], p[0]), Math.min(b[1], p[1]), Math.max(b[2], p[0]), Math.max(b[3], p[1])], [Infinity, Infinity, -Infinity, -Infinity]) : null;
-  return { geometry_types: Object.fromEntries(types), coordinate_tuple_count: points.length, unsupported_geometry_count: unsupported,
+  for (const value of geometries) visit(value, 0);
+  // Coordinates are validated by geometry type and traversal is bounded: malformed nesting, a depth/visit cutoff or a
+  // CRS override at feature/geometry level withholds the bbox (INCOMPLETE_*), so no comparison can then claim DISJOINT.
+  const extent = geometriesBbox(geometries, options);
+  return { geometry_types: Object.fromEntries(types), coordinate_tuple_count: extent.positions, unsupported_geometry_count: unsupported,
     // Path command tuples are not GeoJSON coordinates and must never enter a geographic bbox.
-    bbox: unsupported ? null : bounds, bbox_status: unsupported ? 'UNKNOWN_UNSUPPORTED_GEOMETRY' : bounds ? 'COMPUTED_NATIVE_XY' : 'UNKNOWN' };
+    bbox: unsupported ? null : extent.bbox,
+    bbox_status: unsupported ? 'UNKNOWN_UNSUPPORTED_GEOMETRY' : extent.status === 'COMPUTED' ? 'COMPUTED_NATIVE_XY' : extent.status === 'EMPTY' ? 'UNKNOWN' : extent.status };
 }
 export function inventoryJson(value: unknown, file: string) {
   const root = object(value), features = Array.isArray(root.features) ? root.features : null;
@@ -83,7 +82,7 @@ export function inventoryJson(value: unknown, file: string) {
     root_keys: Object.keys(root).sort(), feature_count: features?.length ?? null, entity_count: Array.isArray(root.entities) ? root.entities.length : null,
     fields, root_properties: rootProperties, crs: ownValue(root, 'crs') ?? 'UNKNOWN', crs_declared: Object.hasOwn(root, 'crs'),
     crs_note: Object.hasOwn(root, 'crs') && root.crs === null ? 'Explicit null; coordinates cannot be inferred (S03 specification p8).' : 'No datum inferred from coordinates or file name.',
-    ...geometryInventory(features?.map(feature => ownValue(object(feature), 'geometry')) ?? []),
+    ...geometryInventory(features?.map(feature => ownValue(object(feature), 'geometry')) ?? [], { overridingCrs: features ? hasOverridingCrs(features) : false }),
     origin_attribution_fields: Object.fromEntries(originKeys.map(key => [key, fields[key]])),
     origin_dataset: 'UNKNOWN', origin_note: 'Property names and generic CityGML metadata do not identify the exact origin/vintage/licence of this related layer.',
     literal_location_time_fields: Object.fromEntries(literalKeys.map(key => [key, fields[key]])),

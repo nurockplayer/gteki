@@ -34,9 +34,9 @@ afterEach(async () => {
 });
 
 describe('source acquisition', () => {
-  it('loads exactly the bounded 45-source manifest with explicit unknown rights', () => {
+  it('loads exactly the bounded 46-source manifest with explicit unknown rights', () => {
     const sources = loadSources();
-    expect(sources).toHaveLength(45);
+    expect(sources).toHaveLength(46);
     for (const id of ['tokyo-s03-zip', 'tokyo-s03-spec', 'tokyo-s03-reference']) {
       const moved = sources.find(source => source.source_id === id)!;
       expect(moved.expected_url).toContain('/documents/d/toshiseibi/');
@@ -45,6 +45,9 @@ describe('source acquisition', () => {
     }
     expect(sources.find((source) => source.source_id === 'plateau-catalog-ubld-13116-13104')?.resolution.kind).toBe('direct');
     expect(sources.find((source) => source.source_id === 'plateau-13116-codelists')?.commercial_use.status).toBe('unknown');
+    const vintage = sources.find(source => source.source_id === 'plateau-13104-package-2023')!;
+    expect(vintage).toMatchObject({ resolution: { kind: 'direct' }, content_year: 2023, publish_gate: 'HOLD', commercial_use: { status: 'unknown' }, modification_allowed: { status: 'unknown' }, redistribution_allowed: { status: 'unknown' }, license_name: 'unknown' });
+    expect(vintage.expected_url).toBe(vintage.official_url);
   });
 
   it('streams a local response into a content-addressed object with the computed SHA-256', async () => {

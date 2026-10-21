@@ -166,12 +166,18 @@ export class StreetBackdrop {
     return this.saved !== null;
   }
 
+  /** The sky's current opacity (0 while hidden), for automated checks. */
+  get opacity(): number {
+    return this.group.visible ? this.blend : 0;
+  }
+
   /**
    * Per frame, outside overview (see isOutdoors). The station's own walking fog is blended toward
-   * daylight haze, and restored exactly once the walker is back under cover.
+   * daylight haze, and restored exactly once the walker is back under cover. `teleport` jumps
+   * straight to the target instead of easing, so a walker placed underground never sees daylight.
    */
-  update(scene: THREE.Scene, camera: THREE.Camera, walker: THREE.Vector3, outdoors: boolean, dt: number, level = true): void {
-    this.blend = THREE.MathUtils.damp(this.blend, outdoors ? 1 : 0, 4, dt);
+  update(scene: THREE.Scene, camera: THREE.Camera, walker: THREE.Vector3, outdoors: boolean, dt: number, level = true, teleport = false): void {
+    this.blend = teleport ? (outdoors ? 1 : 0) : THREE.MathUtils.damp(this.blend, outdoors ? 1 : 0, 4, dt);
     if (this.blend < 0.002) {
       this.restore(scene);
       return;
@@ -193,7 +199,7 @@ export class StreetBackdrop {
     // stairwell) it would cut across the flight below, so there the stair geometry stays visible.
     const up = outdoors && level;
     // Fades in on arrival; clears at once when footing stops being level, so it never covers a stair going down.
-    this.groundBlend = up ? THREE.MathUtils.damp(this.groundBlend, 1, 8, dt) : 0;
+    this.groundBlend = up ? (teleport ? 1 : THREE.MathUtils.damp(this.groundBlend, 1, 8, dt)) : 0;
     this.ground.visible = this.groundBlend > 0.01;
     // Follow the camera in whole tiles so the pavement pattern stays put in the world.
     const snap = (v: number) => Math.round(v / 1.2) * 1.2;
