@@ -341,7 +341,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   }
 
   // Low quality paints signs at ~160 px/m instead of 300: a quarter of the texture memory, still legible at phone size.
-  const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy(), low ? 0.54 : 1);
+  const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy(), low ? 0.54 : 1, ctx.renderer.capabilities.maxTextureSize);
   root.add(signs.group);
 
   const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes);

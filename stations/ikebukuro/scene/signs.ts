@@ -28,7 +28,7 @@ export interface SignSpec extends SignContent {
 export const FONT = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans CJK JP","Yu Gothic",system-ui,sans-serif';
 const PX_PER_M = 300;
 const H = 0.42;
-const ATLAS_W = 4096;
+const ATLAS_W = 4096; // atlas page side (px), lowered to the GPU's MAX_TEXTURE_SIZE where that is smaller
 const GUTTER = 8; // px between faces; the gutter is panel colour so mip filtering never bleeds a foreign colour
 /** Operator chips before gate names, keyed by POI id prefix: plain lettering on a line-colour square
  *  (GTEki style, no operator logo). Only operators with routable gates need an entry. */
@@ -182,17 +182,18 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
   return parts;
 }
 
-/** Shelf-pack face canvases (all the same height) into as few atlas pages as fit, drawn at `scale`
- *  (< 1 on low quality: same layout, fewer texels). Slots carry the drawn size for the UVs. */
-function packAtlas(faces: HTMLCanvasElement[], scale: number) {
-  const dims = faces.map((c) => ({ w: Math.ceil(c.width * scale), h: Math.round(c.height * scale) }));
+/** Shelf-pack face canvases (all the same height) into as few atlas pages of side `side` px as fit, drawn
+ *  at `scale` (< 1 on low quality: same layout, fewer texels). A face wider than a page is drawn narrower
+ *  (fewer texels across, same size in the scene). Slots carry the drawn size for the UVs. */
+function packAtlas(faces: HTMLCanvasElement[], scale: number, side: number) {
+  const dims = faces.map((c) => ({ w: Math.min(side - 2 * GUTTER, Math.ceil(c.width * scale)), h: Math.round(c.height * scale) }));
   const rowH = dims[0] ? dims[0].h + GUTTER : 0;
-  const rowsPerPage = Math.max(1, Math.floor(ATLAS_W / Math.max(1, rowH)));
+  const rowsPerPage = Math.max(1, Math.floor(side / Math.max(1, rowH)));
   const slots: { page: number; x: number; y: number; w: number; h: number }[] = [];
   let page = 0, row = 0, x = GUTTER;
   const pageRows: number[] = [0];
   for (const d of dims) {
-    if (x + d.w + GUTTER > ATLAS_W) {
+    if (x + d.w + GUTTER > side) {
       row++;
       x = GUTTER;
       if (row >= rowsPerPage) {
@@ -208,8 +209,8 @@ function packAtlas(faces: HTMLCanvasElement[], scale: number) {
   const pages = pageRows.map((rows, pi) => {
     const c = document.createElement("canvas");
     // Power-of-two sides keep mipmapping cheap on every GPU; a short last page also narrows.
-    c.height = Math.min(ATLAS_W, 2 ** Math.ceil(Math.log2(GUTTER + rows * rowH)));
-    c.width = rows > 1 ? ATLAS_W : 2 ** Math.ceil(Math.log2(Math.max(64, ...slots.filter((s) => s.page === pi).map((s) => s.x + s.w + GUTTER))));
+    c.height = Math.min(side, 2 ** Math.ceil(Math.log2(GUTTER + rows * rowH)));
+    c.width = rows > 1 ? side : 2 ** Math.ceil(Math.log2(Math.max(64, ...slots.filter((s) => s.page === pi).map((s) => s.x + s.w + GUTTER))));
     const g = c.getContext("2d")!;
     g.fillStyle = "#1c222b";
     g.fillRect(0, 0, c.width, c.height);
@@ -250,7 +251,14 @@ function merge(THREE: typeof THREE_NS, parts: { geo: THREE_NS.BufferGeometry; ma
  * Build all signs as one group, positioned in the renderer frame via toRenderer.
  * Faces share atlas textures and all geometry is merged, so ~100 signs cost about three draw calls.
  */
-export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3, anisotropy: number, texelScale = 1) {
+export function buildSigns(
+  THREE: typeof THREE_NS,
+  specs: SignSpec[],
+  toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3,
+  anisotropy: number,
+  texelScale = 1,
+  maxTextureSize = ATLAS_W,
+) {
   const group = new THREE.Group();
   group.name = "ikebukuro_signs";
   type Face = { canvas: HTMLCanvasElement; widthM: number; h: number; local: THREE_NS.Matrix4; sign: THREE_NS.Matrix4 };
@@ -284,7 +292,7 @@ export function buildSigns(THREE: typeof THREE_NS, specs: SignSpec[], toRenderer
   const housing = new THREE.MeshBasicMaterial({ color: 0x4f565f });
   group.add(new THREE.Mesh(merge(THREE, boxes, false), housing));
 
-  const { pages, slots } = packAtlas(faces.map((x) => x.canvas), texelScale);
+  const { pages, slots } = packAtlas(faces.map((x) => x.canvas), texelScale, Math.min(ATLAS_W, maxTextureSize));
   const textures: THREE_NS.Texture[] = [];
   pages.forEach((page, pi) => {
     const tex = new THREE.CanvasTexture(page);
