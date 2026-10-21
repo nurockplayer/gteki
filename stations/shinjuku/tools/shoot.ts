@@ -7,6 +7,7 @@
  * Writes <out>/<vantage>.png plus <out>/report.json (fps is not meaningful headless; calls/tris/void are).
  */
 import { chromium } from "playwright-core";
+import { browserTarget } from "./browser.ts";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -37,7 +38,7 @@ const { vantages } = JSON.parse(readFileSync(resolve(arg("vantages", join(here, 
 
 mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({
-  channel: "chrome",
+  ...browserTarget(),
   headless: true,
   args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist", "--enable-unsafe-swiftshader"],
 });

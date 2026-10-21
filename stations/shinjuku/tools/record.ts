@@ -10,6 +10,7 @@
  * server, Google Chrome and Homebrew ffmpeg. Writes <out>/<from>__<to>.mp4 and a JSON sidecar.
  */
 import { chromium } from "playwright-core";
+import { browserTarget } from "./browser.ts";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -36,7 +37,7 @@ rmSync(frames, { recursive: true, force: true });
 mkdirSync(frames, { recursive: true });
 
 const browser = await chromium.launch({
-  channel: "chrome",
+  ...browserTarget(),
   headless: true,
   args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist", "--autoplay-policy=no-user-gesture-required"],
 });

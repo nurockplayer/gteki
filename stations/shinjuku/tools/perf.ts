@@ -13,6 +13,7 @@
  * the machine's load average and free memory are recorded alongside, since this is not a quiet bench.
  */
 import { chromium, type Page } from "playwright-core";
+import { browserTarget } from "./browser.ts";
 import { writeFileSync } from "node:fs";
 import { cpus, freemem, loadavg, totalmem } from "node:os";
 import { performance } from "node:perf_hooks";
@@ -40,7 +41,7 @@ for (let i = 0; i < runs; i++) {
   layoutMs.push(Math.round(performance.now() - t));
 }
 
-const browser = await chromium.launch({ channel: "chrome", headless: true, args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist", "--enable-precise-memory-info", "--js-flags=--expose-gc"] });
+const browser = await chromium.launch({ ...browserTarget(), headless: true, args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist", "--enable-precise-memory-info", "--js-flags=--expose-gc"] });
 const heapMB = (page: Page) => page.evaluate(() => { (globalThis as { gc?: () => void }).gc?.(); return Math.round(((performance as unknown as { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize ?? 0) / 1e5) / 10; });
 const newPage = async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });

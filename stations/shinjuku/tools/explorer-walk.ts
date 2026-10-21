@@ -10,6 +10,7 @@
  * Writes <out>/<route>/NNN.jpg, <out>/report.json and a contact sheet per route (needs ffmpeg).
  */
 import { chromium } from "playwright-core";
+import { browserTarget } from "./browser.ts";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -26,7 +27,7 @@ const every = Number(arg("every", "3"));
 const w = Number(arg("w", "1280")), h = Number(arg("h", "720"));
 const routes = (arg("route") ? [arg("route")!] : ["poi:exit:1,poi:platform:oedo", "poi:platform:oedo,poi:exit:2", "poi:platform:oedo,poi:exit:1"]).map((r) => r.split(","));
 
-const browser = await chromium.launch({ channel: "chrome", headless: true, args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"] });
+const browser = await chromium.launch({ ...browserTarget(), headless: true, args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"] });
 const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
 const errors: string[] = [];
 page.on("pageerror", (e) => errors.push(String(e)));

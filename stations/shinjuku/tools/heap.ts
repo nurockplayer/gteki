@@ -6,8 +6,9 @@
  *   pnpm --filter @gteki/station-shinjuku heap "http://localhost:5291/?station=shinjuku"
  */
 import { chromium } from "playwright-core";
+import { browserTarget } from "./browser.ts";
 const url = process.argv[2] ?? "http://localhost:5275/?q=high&crowd=24";
-const browser = await chromium.launch({ channel: "chrome", headless: true, args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"] });
+const browser = await chromium.launch({ ...browserTarget(), headless: true, args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"] });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 await page.goto(url);
 await page.waitForFunction(() => (window as any).__gteki?.timings?.().timeToInteractiveMs != null || ((window as any).__gteki?.sceneInfo?.().walkable ?? 0) > 0, null, { timeout: 120000 });

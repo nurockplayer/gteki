@@ -14,7 +14,7 @@ pnpm --filter @gteki/station-shinjuku import:e27 --check   # data reproducibilit
 pnpm --filter @gteki/station-shinjuku import:surface --check   # street context (needs PLATEAU raw inputs)
 ```
 
-Visual QA (needs Google Chrome; the lane dev server on :5274, the shared explorer on :5290; ffmpeg for video):
+Visual QA (needs Brave, or the browser named by `GTEKI_BROWSER`; the lane dev server on :5274, the shared explorer on :5290; ffmpeg for video):
 
 ```bash
 pnpm --filter @gteki/station-shinjuku shoot           # fixed vantages → .qa/shots (PNG + calls/tris/voidFraction)
