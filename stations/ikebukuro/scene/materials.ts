@@ -448,6 +448,13 @@ const COLUMN_CLAD: CladSpec = {
 };
 
 /** Environment-reflection strength per role (scene.ts assigns the shared envMap). */
+/**
+ * Baked-light balance per role (multiplies the lightmap intensity). The bake lights mostly the floor under
+ * the downlights; real passages read bright because enamel walls, cladding and ceiling panels get wall-wash
+ * and floor bounce the bake underestimates. Presentation only; the floor (and with it exposure) is unchanged.
+ */
+export const LIGHTMAP_BALANCE: Record<string, number> = { wall: 2.0, barriers: 1.9, ceiling: 2.0 };
+
 export const ENV_INTENSITY: Record<string, number> = { floor: 0.35, ceiling: 0.05, transport: 0.9, wall: 0.2, barriers: 0.2, stairs_ramps: 0.2, floor_elements: 0.2 };
 
 /** Generic lit shopfront: mullions and a warm interior gradient (no brands). */
@@ -611,10 +618,11 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     return m;
   };
   const floor = std({ map: floorMap, roughnessMap: floorRough, roughness: 1, metalness: 0, normalMap: floorNormal, envMapIntensity: ENV_INTENSITY.floor });
-  const wall = std({ color: 0xe2e0da, roughness: 0.42, metalness: 0, side: THREE.DoubleSide });
+  const wall = std({ color: 0xdfe2e4, roughness: 0.42, metalness: 0, side: THREE.DoubleSide });
   const ceiling = std({ map: ceilMap, normalMap: ceilNormal, roughness: 0.95, side: THREE.DoubleSide });
   const stairs = std({ map: stairMap, normalMap: stairNormal, roughness: 0.7 });
-  const barriers = std({ color: 0xc9cacc, roughness: 0.3, metalness: 0, side: THREE.DoubleSide });
+  const barriers = std({ color: 0xc6cacf, roughness: 0.3, metalness: 0, side: THREE.DoubleSide });
+  for (const [m, role] of [[wall, "wall"], [barriers, "barriers"], [ceiling, "ceiling"]] as const) m.userData.lightmapBalance = LIGHTMAP_BALANCE[role];
   patchLit(floor, "floor", 0.9);
   patchLit(wall, "wall", 0.9, WALL_CLAD);
   patchLit(ceiling, "ceiling", 0.6);
@@ -645,7 +653,7 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     setLightmap(t, intensity) {
       for (const m of lit) {
         m.lightMap = t;
-        m.lightMapIntensity = intensity;
+        m.lightMapIntensity = intensity * ((m.userData.lightmapBalance as number | undefined) ?? 1);
         m.needsUpdate = true;
       }
     },
