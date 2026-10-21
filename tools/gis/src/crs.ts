@@ -2,6 +2,7 @@ import proj4 from 'proj4';
 import { join } from 'node:path';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { docsRoot, packageRoot, readJson, writeJson, safeSourceId } from './common.js';
+import { assertStationEnuFrame, isStationEnuFrame, stationLocal, type StationEnuFrame } from './station-enu.js';
 
 export const CRS_6697 = 'http://www.opengis.net/def/crs/EPSG/0/6697';
 export const IX_PROJ = '+proj=tmerc +lat_0=36 +lon_0=139.833333333333333 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs';
@@ -41,7 +42,10 @@ export function unproject(point: Point3): Point3 {
   const [lon, lat] = proj4(IX_PROJ, GEOGRAPHIC, [point[0], point[1]]);
   return [lat, lon, point[2]];
 }
-export function toLocal(point: number[], frame: Frame): Point3 {
+/** Either an envelope processing frame (EPSG:6677 offset, arbitrary origin) or a station-enu frame (the station reference frame). */
+export type AnyFrame = Frame | StationEnuFrame;
+export function toLocal(point: number[], frame: AnyFrame): Point3 {
+  if (isStationEnuFrame(frame)) { assertAxis(point); return stationLocal(point, frame); }
   const [E, N, H] = project(point);
   return [E - frame.origin_E, N - frame.origin_N, H - frame.origin_H];
 }
@@ -54,8 +58,10 @@ export function framePath(frameId: string): string {
   if (!/^[a-z0-9-]+$/.test(frameId)) throw new Error('Invalid frame id');
   return join(packageRoot, 'frames', `${frameId}.json`);
 }
-export async function loadFrame(frameId: string): Promise<Frame> {
-  const frame = await readJson<Frame>(framePath(frameId));
+export async function loadFrame(frameId: string): Promise<AnyFrame> {
+  const raw = await readJson<Frame | StationEnuFrame>(framePath(frameId));
+  if (isStationEnuFrame(raw)) { assertStationEnuFrame(raw, frameId); return raw; }
+  const frame = raw as Frame;
   if (frame.frame_id !== frameId || frame.projection !== IX_PROJ || ![frame.origin_E, frame.origin_N, frame.origin_H].every(Number.isFinite)) throw new Error('Invalid frame');
   return frame;
 }
@@ -78,6 +84,7 @@ export async function frameFromEnvelope(sourceId: string, frameId: string): Prom
 }
 export async function crsRoundtrip(frameId: string) {
   const frame = await loadFrame(frameId);
+  if (isStationEnuFrame(frame)) throw new Error('crs-roundtrip checks envelope frames (EPSG:6677 projection); a station-enu frame is pinned by test/fixtures/station-enu-vectors.json instead');
   const samples: number[][] = [];
   for (const lat of [frame.source_envelope.lower[0], frame.source_envelope.upper[0]])
     for (const lon of [frame.source_envelope.lower[1], frame.source_envelope.upper[1]])

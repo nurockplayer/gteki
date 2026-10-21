@@ -1,0 +1,28 @@
+{
+  "source_id": "plateau-13104-bldg-53394525",
+  "resolved_url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/bldg/53394525_bldg_6697_op.gml",
+  "resolution_evidence": {
+    "source_id": "plateau-catalog-bldg-tran-13116-13104",
+    "sha256": "cff24d7b1e50a4561188118e6dcff5c57f945f87d4aaa8b1cf3e8ae7efbf5668",
+    "json_pointer": "/cities/1/files/bldg/5/url"
+  },
+  "requested_at": "2026-10-21T16:54:56.133Z",
+  "completed_at": "2026-10-21T16:54:57.595Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "text/plain; charset=utf-8",
+    "content-length": "9836369",
+    "etag": "\"401f36f4f3fb6bc6a4ac78c32470f228\"",
+    "last-modified": "Fri, 27 Mar 2026 00:29:32 GMT",
+    "date": "Wed, 21 Oct 2026 16:54:17 GMT"
+  },
+  "bytes": 94275150,
+  "sha256": "6ee3ab2254dd634b437ebc2afbb5dbb430acb9cc5c2f7cfe687ca637f403d327",
+  "store_path": "raw/6ee3ab2254dd634b437ebc2afbb5dbb430acb9cc5c2f7cfe687ca637f403d327/53394525_bldg_6697_op.gml",
+  "tool_version": "0.1.0",
+  "git_commit": "e244d206a546f42259d903d8a91a2d75ac8825f7",
+  "expected_bytes": 94275150,
+  "expected_url_match": true,
+  "size_check": "MATCH",
+  "mode": "online"
+}

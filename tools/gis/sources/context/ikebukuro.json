@@ -1,0 +1,13 @@
+{
+  "station": "ikebukuro",
+  "status": "READY",
+  "frame_id": "ikebukuro-station-enu-v0",
+  "radius_m": 250,
+  "sources": [
+    "plateau-13116-bldg-53394576",
+    "plateau-13116-bldg-53394577",
+    "plateau-13116-tran-53394576",
+    "plateau-13116-tran-53394577"
+  ],
+  "notes": "A 250 m disc around the Ikebukuro station origin touches third-level meshes 53394576 and 53394577. Visual-only context (gteki_role context, NOT_FOR_ROUTING); textures are not converted."
+}

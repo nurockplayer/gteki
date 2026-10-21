@@ -1,0 +1,14 @@
+{
+  "station": "shinjuku",
+  "status": "BLOCKED",
+  "frame_id": "shinjuku-station-enu-v0",
+  "radius_m": 250,
+  "sources": [
+    "plateau-13104-bldg-53394525",
+    "plateau-13104-bldg-53394526",
+    "plateau-13104-tran-53394525",
+    "plateau-13104-tran-53394526"
+  ],
+  "blocked_reason": "stations/shinjuku/gteki/station.json has origin.hM null, origin.crs EPSG:6668 and symbolic floors (street = 0, elevationSource symbolic). PLATEAU heights are real TP (street is roughly 32 m), so the vertical anchor and reference origin are a station-lead decision. No station-enu frame is created and nothing is converted until that decision is recorded.",
+  "notes": "Sources are acquired (hash-recorded) and the config shape is final; only the anchor decision is missing."
+}
