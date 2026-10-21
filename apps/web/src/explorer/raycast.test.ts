@@ -380,7 +380,7 @@ describe("camera-only blockers", () => {
       asset: { version: "2.0" },
       scene: 0,
       // A second, disjoint scene: GLTFLoader prunes its associations per scene, the flag must not depend on them.
-      scenes: [{ nodes: [0, 1, 2, 4, 5, 6] }, { nodes: [3] }],
+      scenes: [{ nodes: [0, 1, 2, 4, 5, 6, 7, 9, 10] }, { nodes: [3] }],
       nodes: [
         { name: "slab", mesh: 0, extras: { gteki_role: "camera_blocker" } },
         { name: "panel", mesh: 1 },
@@ -391,11 +391,17 @@ describe("camera-only blockers", () => {
         { name: "lamp_slab", mesh: 3, extensions: { KHR_lights_punctual: { light: 0 } }, extras: { gteki_role: "camera_blocker" } },
         // A plain single-primitive node keeps its own name and extras.
         { name: "floor_plain", mesh: 3 },
+        // An unnamed single-primitive node under a blocker never takes a role from its mesh resource's name.
+        { name: "camera_blocker_parent", children: [8] },
+        { mesh: 3 },
+        // Mesh-level extras never give a role (as in Godot); a node's own extras do.
+        { name: "deck", mesh: 4 },
+        { mesh: 4, extras: { gteki_role: "camera_blocker" } },
       ],
       cameras: [{ type: "perspective", perspective: { yfov: 1, znear: 0.1 } }],
       extensionsUsed: ["KHR_lights_punctual"],
       extensions: { KHR_lights_punctual: { lights: [{ type: "point" }] } },
-      meshes: [mesh("sign_panel"), mesh("floor_panel"), { name: "floor_single", primitives: [{ attributes: { POSITION: 0 } }] }, { name: "sign_one", primitives: [{ attributes: { POSITION: 0 } }] }],
+      meshes: [mesh("sign_panel"), mesh("floor_panel"), { name: "floor_single", primitives: [{ attributes: { POSITION: 0 } }] }, { name: "sign_one", primitives: [{ attributes: { POSITION: 0 } }] }, { name: "board", extras: { gteki_role: "floor" }, primitives: [{ attributes: { POSITION: 0 } }] }],
       buffers: [{ byteLength: positions.byteLength }],
       bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: positions.byteLength }],
       accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [0, 0, 0], max: [1, 0, 1] }],
@@ -411,8 +417,12 @@ describe("camera-only blockers", () => {
       expect(wrapped.every((o) => o.name.startsWith("sign_one"))).toBe(true);
       const plain = scene.getObjectByName("floor_plain")!;
       expect((plain as THREE.Mesh).isMesh).toBe(true);
+      const unnamed = scene.getObjectByName("camera_blocker_parent")!.children[0]!;
+      expect(unnamed.name.startsWith("sign_one")).toBe(true);
+      const deck = scene.getObjectByName("deck")!;
+      const taggedNode = scene.children.find((o) => o !== deck && (o as THREE.Mesh).isMesh && o.userData.gteki_role === "camera_blocker")!;
       const roles = sceneFromGlbRoles(scene);
-      expect(roles.cameraBlockers).toEqual([...parts, ...wrapped]);
+      expect(roles.cameraBlockers).toEqual([...parts, ...wrapped, unnamed, taggedNode]);
       expect(roles.walkable).toEqual([plain]);
       expect(seeThroughMeshes(scene)).toEqual([]);
     }

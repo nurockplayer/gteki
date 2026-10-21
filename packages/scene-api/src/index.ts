@@ -117,15 +117,17 @@ const CAMERA_ROLES = new Set(["camera_blocker"]);
  */
 const SEE_THROUGH_ROLES = new Set(["sign", "signs", "signage"]);
 
-/** userData flag on objects GLTFLoader names after a mesh resource rather than a node (see glbPrimitivePlugin). */
-const GLB_PRIMITIVE = "gteki_glb_primitive";
+/** userData flag: the object's name comes from a glTF mesh resource, not an authored node name (see glbPrimitivePlugin). */
+const GLB_MESH_NAMED = "gteki_glb_mesh_named";
 
 /**
- * A GLTFLoader plugin (`loader.register(glbPrimitivePlugin)`) that flags the objects GLTFLoader builds for a
- * glTF mesh but that are not the node itself: the meshes of a multi-primitive mesh, and a mesh wrapped in a
- * Group because its node also carries a camera or light. They are named after the mesh resource, so their
- * names (and mesh-level extras) never give them a role: they inherit the node's, as in Godot, which keeps one
- * node with its surfaces. Every mesh object is flagged on load and the node object is unflagged once built.
+ * A GLTFLoader plugin (`loader.register(glbPrimitivePlugin)`) that keeps roles on glTF nodes, as in Godot,
+ * which keeps one node with its surfaces and ignores mesh resources for roles:
+ * - mesh-level extras never give a role (a `gteki_role` from a mesh resource is dropped on load; the node's
+ *   own extras are applied after and still count);
+ * - a name taken from a mesh resource never gives a role: the meshes of a multi-primitive mesh, a mesh
+ *   wrapped in a Group because its node also carries a camera or light, and an unnamed node's mesh. They
+ *   inherit their node's role instead. Only a node with an authored name may take a role from it.
  * The flag is in userData, so it holds in every scene of a file and survives `clone()`. The explorer's
  * `loadGlb` registers it.
  */
@@ -134,12 +136,16 @@ export function glbPrimitivePlugin(parser: GLTFParser): GLTFLoaderPlugin {
     name: "gteki_glb_primitives",
     loadMesh: async (meshIndex: number) => {
       const mesh = await parser.loadMesh(meshIndex);
-      mesh.traverse((object) => { object.userData[GLB_PRIMITIVE] = true; });
+      mesh.traverse((object) => {
+        delete object.userData.gteki_role;
+        object.userData[GLB_MESH_NAMED] = true;
+      });
       return mesh;
     },
     loadNode: async (nodeIndex: number) => {
       const node = await parser.loadNode(nodeIndex);
-      delete node.userData[GLB_PRIMITIVE];
+      const authored = (parser.json as { nodes?: { name?: unknown }[] }).nodes?.[nodeIndex]?.name;
+      if (typeof authored === "string" && authored !== "") delete node.userData[GLB_MESH_NAMED];
       return node;
     },
   };
@@ -150,9 +156,9 @@ export function glbPrimitivePlugin(parser: GLTFParser): GLTFLoaderPlugin {
  * lowercased, and an empty one counts as absent (same normalisation as the Godot loader).
  */
 export function roleOf(object: THREE.Object3D): string | null {
-  if (object.userData?.[GLB_PRIMITIVE] === true) return null;
   const extra = object.userData?.gteki_role;
   if (typeof extra === "string" && extra.trim() !== "") return extra.trim().toLowerCase();
+  if (object.userData?.[GLB_MESH_NAMED] === true) return null;
   // GLTFLoader sanitises node names ("floor.001" → "floor001") and keeps the authored one in userData.name.
   const authored = typeof object.userData?.name === "string" ? (object.userData.name as string) : null;
   for (const raw of authored === null ? [object.name] : [authored, object.name]) {
