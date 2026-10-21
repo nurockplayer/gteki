@@ -1,5 +1,5 @@
 {
-  "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+  "tool_input_sha256": "dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf",
   "verification": "UNVERIFIED",
   "navigation_use": "NOT_FOR_ROUTING",
   "poi": [
@@ -31,12 +31,26 @@
             139.742017,
             35.727285
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 110,
+            "coordinate_positions": 110,
+            "geometry_visits": 110,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.678522,
+            35.677806468,
+            139.742017,
+            35.727285
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "レベル",
             "住所",
@@ -66,12 +80,26 @@
             139.74226,
             35.7259
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 168,
+            "coordinate_positions": 168,
+            "geometry_visits": 168,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.67365,
+            35.67548291,
+            139.74226,
+            35.7259
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "供用済面積",
             "供用開始年",
@@ -101,12 +129,26 @@
             139.74273124,
             35.727351972
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 201,
+            "coordinate_positions": 201,
+            "geometry_visits": 201,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.678326236,
+            35.67966927,
+            139.74273124,
+            35.727351972
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "名称",
             "種類",
@@ -130,12 +172,26 @@
             139.745628981,
             35.723363646
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 48,
+            "coordinate_positions": 48,
+            "geometry_visits": 48,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.683470344,
+            35.679904607,
+            139.745628981,
+            35.723363646
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "事業者種別",
             "路線名",
@@ -163,12 +219,26 @@
             139.745770351,
             35.723675633
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 837,
+            "coordinate_positions": 718,
+            "geometry_visits": 108,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.679152355,
+            35.678768507,
+            139.745770351,
+            35.723675633
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "事業者種別",
             "行政区域",
@@ -195,12 +265,26 @@
             139.745809259,
             35.729300746
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 1181,
+            "coordinate_positions": 1122,
+            "geometry_visits": 45,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.675259079,
+            35.674004657,
+            139.745809259,
+            35.729300746
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "任意ID",
             "区分",
@@ -229,12 +313,26 @@
             139.745870441,
             35.729519946
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 1278,
+            "coordinate_positions": 1277,
+            "geometry_visits": 1,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.673437782,
+            35.673433081,
+            139.745870441,
+            35.729519946
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "city_code",
             "city_name",
@@ -274,12 +372,26 @@
             139.74348799,
             35.744312
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 42,
+            "coordinate_positions": 42,
+            "geometry_visits": 42,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.680022,
+            35.716454,
+            139.74348799,
+            35.744312
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "レベル",
             "住所",
@@ -309,12 +421,26 @@
             139.7498,
             35.74576942
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 62,
+            "coordinate_positions": 62,
+            "geometry_visits": 62,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.68017243,
+            35.7131,
+            139.7498,
+            35.74576942
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "供用済面積",
             "供用開始年",
@@ -344,12 +470,26 @@
             139.74674529,
             35.74490964
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 143,
+            "coordinate_positions": 143,
+            "geometry_visits": 143,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.67859707,
+            35.714298848,
+            139.74674529,
+            35.74490964
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "名称",
             "種類",
@@ -373,12 +513,26 @@
             139.748127618,
             35.745291981
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 35,
+            "coordinate_positions": 35,
+            "geometry_visits": 35,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.683010912,
+            35.716569724,
+            139.748127618,
+            35.745291981
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "事業者種別",
             "路線名",
@@ -406,12 +560,26 @@
             139.74909424,
             35.745580493
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 512,
+            "coordinate_positions": 427,
+            "geometry_visits": 81,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.677425528,
+            35.714544972,
+            139.74909424,
+            35.745580493
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "事業者種別",
             "行政区域",
@@ -438,12 +606,26 @@
             139.748381664,
             35.744917506
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 661,
+            "coordinate_positions": 630,
+            "geometry_visits": 26,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.67742621,
+            35.714460811,
+            139.748381664,
+            35.744917506
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "任意ID",
             "区分",
@@ -472,12 +654,26 @@
             139.752760441,
             35.745792667
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 1306,
+            "coordinate_positions": 1305,
+            "geometry_visits": 1,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.677344306,
+            35.712265775,
+            139.752760441,
+            35.745792667
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "city_code",
             "city_name",
@@ -578,6 +774,9 @@
           "feature_count": null,
           "geometry_type_counts": null,
           "bbox": null,
+          "bbox_status": null,
+          "bbox_counts": null,
+          "raw_coordinates_bbox": null,
           "crs": null,
           "crs_status": null,
           "property_keys": null
@@ -588,6 +787,9 @@
           "feature_count": null,
           "geometry_type_counts": null,
           "bbox": null,
+          "bbox_status": null,
+          "bbox_counts": null,
+          "raw_coordinates_bbox": null,
           "crs": null,
           "crs_status": null,
           "property_keys": null
@@ -611,12 +813,26 @@
             139.7034889,
             35.694624
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 93700,
+            "coordinate_positions": 67431,
+            "geometry_visits": 13125,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.696606,
+            35.686519,
+            139.7034889,
+            35.694624
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "area",
             "barrier",
@@ -657,12 +873,26 @@
             139.7018733,
             35.6953073
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 4196,
+            "coordinate_positions": 3537,
+            "geometry_visits": 309,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.696746,
+            35.6877894,
+            139.7018733,
+            35.6953073
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "barrier",
             "class",
@@ -702,12 +932,26 @@
             139.7021531,
             35.6892511
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 1907,
+            "coordinate_positions": 1762,
+            "geometry_visits": 78,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.6998346,
+            35.6879646,
+            139.7021531,
+            35.6892511
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "area",
             "disabledaccess",
@@ -741,12 +985,26 @@
             139.701729,
             35.6889968
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 1628,
+            "coordinate_positions": 1386,
+            "geometry_visits": 142,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.7002166,
+            35.6880144,
+            139.701729,
+            35.6889968
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "area",
             "class",
@@ -781,12 +1039,26 @@
             139.7018188,
             35.6942694
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 13021,
+            "coordinate_positions": 10425,
+            "geometry_visits": 1246,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.6965262,
+            35.6873837,
+            139.7018188,
+            35.6942694
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "area",
             "barrier",
@@ -830,12 +1102,26 @@
             139.7033309,
             35.6928155
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 2357,
+            "coordinate_positions": 2002,
+            "geometry_visits": 183,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.697443,
+            35.6901852,
+            139.7033309,
+            35.6928155
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "area",
             "barrier",
@@ -875,12 +1161,26 @@
             139.7037375,
             35.6950028
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 3563,
+            "coordinate_positions": 2967,
+            "geometry_visits": 338,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.6989283,
+            35.691889,
+            139.7037375,
+            35.6950028
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "area",
             "barrier",
@@ -919,12 +1219,26 @@
             139.6999335,
             35.6938787
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 414,
+            "coordinate_positions": 336,
+            "geometry_visits": 37,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.6969636,
+            35.6876945,
+            139.6999335,
+            35.6938787
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "display_name",
             "facility",
@@ -948,12 +1262,26 @@
             139.699911,
             35.6890039
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 85,
+            "coordinate_positions": 61,
+            "geometry_visits": 12,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.6970956,
+            35.6877679,
+            139.699911,
+            35.6890039
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "display_name",
             "facility"
@@ -977,12 +1305,26 @@
             139.6998565,
             35.6923585
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 589,
+            "coordinate_positions": 487,
+            "geometry_visits": 53,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.699162,
+            35.6895269,
+            139.6998565,
+            35.6923585
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "display_name",
             "entities",
@@ -1013,12 +1355,26 @@
             139.6994396,
             35.6937079
           ],
+          "bbox_status": "COMPUTED_GEOGRAPHIC",
+          "bbox_counts": {
+            "coordinate_visits": 446,
+            "coordinate_positions": 390,
+            "geometry_visits": 33,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": [
+            139.6987976,
+            35.692418,
+            139.6994396,
+            35.6937079
+          ],
           "crs": {
             "properties": {
               "name": null
             }
           },
-          "crs_status": "UNKNOWN",
+          "crs_status": "RFC7946_ASSUMPTION",
           "property_keys": [
             "currency",
             "display_name",
@@ -1041,12 +1397,16 @@
             },
             "truncated": false
           },
-          "bbox": [
-            2071.212,
-            1248.57,
-            2089.127,
-            1274.174
-          ],
+          "bbox": null,
+          "bbox_status": "INCOMPLETE_LIMIT_REACHED",
+          "bbox_counts": {
+            "coordinate_visits": 3,
+            "coordinate_positions": 3,
+            "geometry_visits": 13129,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": null,
           "crs": {
             "properties": {
               "name": null
@@ -1086,12 +1446,16 @@
             },
             "truncated": false
           },
-          "bbox": [
-            779.619,
-            829.184,
-            2398.372,
-            1666.27
-          ],
+          "bbox": null,
+          "bbox_status": "INCOMPLETE_LIMIT_REACHED",
+          "bbox_counts": {
+            "coordinate_visits": 32,
+            "coordinate_positions": 32,
+            "geometry_visits": 309,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": null,
           "crs": {
             "properties": {
               "name": null
@@ -1130,12 +1494,16 @@
             },
             "truncated": false
           },
-          "bbox": [
-            830.583,
-            1381.167,
-            1049.222,
-            1672.979
-          ],
+          "bbox": null,
+          "bbox_status": "INCOMPLETE_LIMIT_REACHED",
+          "bbox_counts": {
+            "coordinate_visits": 6,
+            "coordinate_positions": 6,
+            "geometry_visits": 78,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": null,
           "crs": {
             "properties": {
               "name": null
@@ -1168,12 +1536,16 @@
             },
             "truncated": false
           },
-          "bbox": [
-            846,
-            1440.083,
-            1055.333,
-            1669.708
-          ],
+          "bbox": null,
+          "bbox_status": "INCOMPLETE_LIMIT_REACHED",
+          "bbox_counts": {
+            "coordinate_visits": 3,
+            "coordinate_positions": 3,
+            "geometry_visits": 142,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": null,
           "crs": {
             "properties": {
               "name": null
@@ -1206,12 +1578,16 @@
             },
             "truncated": false
           },
-          "bbox": [
-            744.638,
-            152.206,
-            2599.562,
-            1910.894
-          ],
+          "bbox": null,
+          "bbox_status": "INCOMPLETE_LIMIT_REACHED",
+          "bbox_counts": {
+            "coordinate_visits": 104,
+            "coordinate_positions": 104,
+            "geometry_visits": 1248,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": null,
           "crs": {
             "properties": {
               "name": null
@@ -1253,12 +1629,16 @@
             },
             "truncated": false
           },
-          "bbox": [
-            2051.816,
-            723.021,
-            2582.872,
-            2315.766
-          ],
+          "bbox": null,
+          "bbox_status": "INCOMPLETE_LIMIT_REACHED",
+          "bbox_counts": {
+            "coordinate_visits": 47,
+            "coordinate_positions": 47,
+            "geometry_visits": 184,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": null,
           "crs": {
             "properties": {
               "name": null
@@ -1296,12 +1676,16 @@
             },
             "truncated": false
           },
-          "bbox": [
-            2254.372,
-            1204.646,
-            3225.83,
-            2495.89
-          ],
+          "bbox": null,
+          "bbox_status": "INCOMPLETE_LIMIT_REACHED",
+          "bbox_counts": {
+            "coordinate_visits": 57,
+            "coordinate_positions": 57,
+            "geometry_visits": 338,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": null,
           "crs": {
             "properties": {
               "name": null
@@ -1341,6 +1725,15 @@
             "truncated": false
           },
           "bbox": null,
+          "bbox_status": "INCOMPLETE_LIMIT_REACHED",
+          "bbox_counts": {
+            "coordinate_visits": 0,
+            "coordinate_positions": 0,
+            "geometry_visits": 37,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": null,
           "crs": {
             "properties": {
               "name": null
@@ -1365,6 +1758,15 @@
             "truncated": false
           },
           "bbox": null,
+          "bbox_status": "INCOMPLETE_LIMIT_REACHED",
+          "bbox_counts": {
+            "coordinate_visits": 0,
+            "coordinate_positions": 0,
+            "geometry_visits": 12,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": null,
           "crs": {
             "properties": {
               "name": null
@@ -1388,12 +1790,16 @@
             },
             "truncated": false
           },
-          "bbox": [
-            2250.663,
-            1329.796,
-            2298.306,
-            1331.24
-          ],
+          "bbox": null,
+          "bbox_status": "INCOMPLETE_LIMIT_REACHED",
+          "bbox_counts": {
+            "coordinate_visits": 3,
+            "coordinate_positions": 3,
+            "geometry_visits": 53,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": null,
           "crs": {
             "properties": {
               "name": null
@@ -1424,12 +1830,16 @@
             },
             "truncated": false
           },
-          "bbox": [
-            2447.542,
-            1157.667,
-            2842.417,
-            1276.976
-          ],
+          "bbox": null,
+          "bbox_status": "INCOMPLETE_LIMIT_REACHED",
+          "bbox_counts": {
+            "coordinate_visits": 5,
+            "coordinate_positions": 5,
+            "geometry_visits": 33,
+            "geometry_visit_limit": 1000000,
+            "visit_limit": 1000000
+          },
+          "raw_coordinates_bbox": null,
           "crs": {
             "properties": {
               "name": null
@@ -1452,6 +1862,9 @@
           "feature_count": null,
           "geometry_type_counts": null,
           "bbox": null,
+          "bbox_status": null,
+          "bbox_counts": null,
+          "raw_coordinates_bbox": null,
           "crs": null,
           "crs_status": null,
           "property_keys": null
@@ -1474,6 +1887,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1487,6 +1905,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1502,6 +1925,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1516,19 +1944,48 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
       "source_id": "hokonavi-oedo-shinjuku-network-geojson",
       "source_sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff",
       "licence": {
-        "value": null,
-        "status": "UNKNOWN",
-        "scope": "Exact resource rights not established by acquired evidence."
+        "value": "pdl-jp-1.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
       },
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-package",
+      "source_sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
+      "licence": {
+        "value": "pdl-jp-1.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1536,13 +1993,18 @@
       "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
       "source_sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090",
       "licence": {
-        "value": null,
-        "status": "UNKNOWN",
-        "scope": "Exact resource rights not established by acquired evidence."
+        "value": "pdl-jp-1.0",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "Package only; no resource or third-party scope inferred."
       },
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1558,6 +2020,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1571,6 +2038,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1586,6 +2058,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1599,6 +2076,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1614,6 +2096,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": "CC BY 4.0",
+        "status": "FILE_EMBEDDED",
+        "scope": "Metadata XML rights statement for the described dataset; no ZIP-wide or sibling-resource scope inferred."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1627,6 +2114,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1642,6 +2134,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1655,6 +2152,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1670,6 +2172,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1683,6 +2190,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1698,6 +2210,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1711,6 +2228,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": "CC BY 4.0",
+        "status": "FILE_EMBEDDED",
+        "scope": "Metadata XML rights statement for the described dataset; no ZIP-wide or sibling-resource scope inferred."
       },
       "publish_gate": "HOLD"
     },
@@ -1726,6 +2248,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1739,6 +2266,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1754,6 +2286,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1767,6 +2304,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1782,6 +2324,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1795,6 +2342,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1810,6 +2362,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1823,6 +2380,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1838,11 +2400,16 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
       "source_id": "tokyo-shinjuku-facilities-landing",
-      "source_sha256": "c6ead52dc10fde3f5582fb1bbebbfab52a71b148faad770456a863086b50ab34",
+      "source_sha256": "de86addadda2cf8a382ac1ff7b5c1996a7cb2c4cc7d785020069f7b22ae5e093",
       "licence": {
         "value": null,
         "status": "UNKNOWN",
@@ -1851,6 +2418,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1866,6 +2438,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1879,6 +2456,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1894,6 +2476,11 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
       "publish_gate": "HOLD"
     },
     {
@@ -1907,6 +2494,11 @@
       "resource_licence": {
         "value": null,
         "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
       },
       "publish_gate": "HOLD"
     },
@@ -1922,6 +2514,49 @@
         "value": null,
         "status": "UNKNOWN"
       },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded licence was established; inventory observations do not grant permission."
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "vintage-member-25c55437cff5a95e",
+      "source_sha256": "25c55437cff5a95ea81b450b1bc92b9f946c2d8c3e5657eda1174959c79a1fc9",
+      "licence": {
+        "value": "plateau",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "PACKAGE_LEVEL_DECLARED_VIA_PARENT_RESOURCE"
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded declaration was established for the extracted member."
+      },
+      "publish_gate": "HOLD"
+    },
+    {
+      "source_id": "vintage-member-37e91af3276c2ee8",
+      "source_sha256": "37e91af3276c2ee8fc61369409c8d54f85af0e796458474da99abedaa8c9ae3a",
+      "licence": {
+        "value": "plateau",
+        "status": "PACKAGE_LEVEL_DECLARED",
+        "scope": "PACKAGE_LEVEL_DECLARED_VIA_PARENT_RESOURCE"
+      },
+      "resource_licence": {
+        "value": null,
+        "status": "UNKNOWN"
+      },
+      "file_embedded_licence": {
+        "value": null,
+        "status": "UNKNOWN",
+        "reason": "No exact file-embedded declaration was established for the extracted member."
+      },
       "publish_gate": "HOLD"
     }
   ],
@@ -1931,7 +2566,7 @@
     "routable": false,
     "rights": "HOLD",
     "status": "INSPECTED",
-    "generated_at": "2026-10-20T17:56:58.142Z",
+    "generated_at": "2026-10-21T10:36:42.201Z",
     "package_sha256": "e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d",
     "archives": [
       {
@@ -1940,13 +2575,14 @@
         "total_bytes": 776906633,
         "etag": "\"bc3e22745a66aea5957644a705cf1734\"",
         "last_modified": "Tue, 24 Jun 2025 09:24:51 GMT",
+        "validator_type": "STRONG_ETAG",
         "directory_ranges": [
           {
             "start": 0,
             "end": 0,
             "bytes": 1,
-            "requested_at": "2026-10-20T17:56:58.183Z",
-            "completed_at": "2026-10-20T17:56:58.475Z",
+            "requested_at": "2026-10-21T10:36:42.269Z",
+            "completed_at": "2026-10-21T10:36:42.502Z",
             "sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
             "store_path": "raw/5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2/range-0-0.bin"
           },
@@ -1954,8 +2590,8 @@
             "start": 776841076,
             "end": 776906632,
             "bytes": 65557,
-            "requested_at": "2026-10-20T17:56:58.475Z",
-            "completed_at": "2026-10-20T17:56:58.509Z",
+            "requested_at": "2026-10-21T10:36:42.502Z",
+            "completed_at": "2026-10-21T10:36:42.537Z",
             "sha256": "b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd",
             "store_path": "raw/b32f658f1668f246183a37e5488b8aed1ac6759c54a1ace9dcfe83ba1ce5fffd/range-776841076-776906632.bin"
           },
@@ -1963,8 +2599,8 @@
             "start": 774065024,
             "end": 776906610,
             "bytes": 2841587,
-            "requested_at": "2026-10-20T17:56:58.509Z",
-            "completed_at": "2026-10-20T17:56:58.802Z",
+            "requested_at": "2026-10-21T10:36:42.537Z",
+            "completed_at": "2026-10-21T10:36:42.782Z",
             "sha256": "ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6",
             "store_path": "raw/ef55ea1a17daac8036ac2f3038433213c99cc5cd5cb82d56eab42ef4107e3de6/range-774065024-776906610.bin"
           }
@@ -2012,13 +2648,14 @@
         "total_bytes": 790569445,
         "etag": "\"a158ae80e80f39c3dc5e8c2f7042b498\"",
         "last_modified": "Tue, 24 Jun 2025 09:24:29 GMT",
+        "validator_type": "STRONG_ETAG",
         "directory_ranges": [
           {
             "start": 0,
             "end": 0,
             "bytes": 1,
-            "requested_at": "2026-10-20T17:57:07.552Z",
-            "completed_at": "2026-10-20T17:57:07.739Z",
+            "requested_at": "2026-10-21T10:36:53.333Z",
+            "completed_at": "2026-10-21T10:36:53.432Z",
             "sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
             "store_path": "raw/5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2/range-0-0.bin"
           },
@@ -2026,8 +2663,8 @@
             "start": 790503888,
             "end": 790569444,
             "bytes": 65557,
-            "requested_at": "2026-10-20T17:57:07.739Z",
-            "completed_at": "2026-10-20T17:57:07.863Z",
+            "requested_at": "2026-10-21T10:36:53.433Z",
+            "completed_at": "2026-10-21T10:36:53.467Z",
             "sha256": "ca5f8ee6267c3ff422f59e331511174156149df646e4ede8a26893c0f92404af",
             "store_path": "raw/ca5f8ee6267c3ff422f59e331511174156149df646e4ede8a26893c0f92404af/range-790503888-790569444.bin"
           },
@@ -2035,8 +2672,8 @@
             "start": 787688618,
             "end": 790569422,
             "bytes": 2880805,
-            "requested_at": "2026-10-20T17:57:07.863Z",
-            "completed_at": "2026-10-20T17:57:08.223Z",
+            "requested_at": "2026-10-21T10:36:53.467Z",
+            "completed_at": "2026-10-21T10:36:53.722Z",
             "sha256": "ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5",
             "store_path": "raw/ce0a9cb761e1a5ed130726ee0893ffbe8a331424dddf0b1c5918e28b0519fba5/range-787688618-790569422.bin"
           }
@@ -2091,8 +2728,8 @@
             "start": 386355655,
             "end": 386355684,
             "bytes": 30,
-            "requested_at": "2026-10-20T17:56:59.141Z",
-            "completed_at": "2026-10-20T17:56:59.181Z",
+            "requested_at": "2026-10-21T10:36:42.850Z",
+            "completed_at": "2026-10-21T10:36:42.892Z",
             "sha256": "4c7d0c7e0f88ec5ffa2fa7761396ec69b500d641a0eb0f7489a7583294357786",
             "store_path": "raw/4c7d0c7e0f88ec5ffa2fa7761396ec69b500d641a0eb0f7489a7583294357786/range-386355655-386355684.bin"
           },
@@ -2100,8 +2737,8 @@
             "start": 386355685,
             "end": 386355718,
             "bytes": 34,
-            "requested_at": "2026-10-20T17:56:59.181Z",
-            "completed_at": "2026-10-20T17:56:59.201Z",
+            "requested_at": "2026-10-21T10:36:42.892Z",
+            "completed_at": "2026-10-21T10:36:42.906Z",
             "sha256": "ecce9304404860495bcec4fcb33a49cb3035bbe9e81770e36d269111927a7bbc",
             "store_path": "raw/ecce9304404860495bcec4fcb33a49cb3035bbe9e81770e36d269111927a7bbc/range-386355685-386355718.bin"
           },
@@ -2109,14 +2746,15 @@
             "start": 386355719,
             "end": 390428983,
             "bytes": 4073265,
-            "requested_at": "2026-10-20T17:56:59.201Z",
-            "completed_at": "2026-10-20T17:56:59.523Z",
+            "requested_at": "2026-10-21T10:36:42.906Z",
+            "completed_at": "2026-10-21T10:36:43.226Z",
             "sha256": "b49d2234197406b355f635c9dc0e0902e2a45d78de36798aa909dbb3509ccb70",
             "store_path": "raw/b49d2234197406b355f635c9dc0e0902e2a45d78de36798aa909dbb3509ccb70/range-386355719-390428983.bin"
           }
         ],
         "etag": "\"bc3e22745a66aea5957644a705cf1734\"",
         "last_modified": "Tue, 24 Jun 2025 09:24:51 GMT",
+        "validator_type": "STRONG_ETAG",
         "crc32": "3be2530f",
         "size": 43830773,
         "inspection": {
@@ -2173,8 +2811,8 @@
             "start": 642058899,
             "end": 642058928,
             "bytes": 30,
-            "requested_at": "2026-10-20T17:57:08.268Z",
-            "completed_at": "2026-10-20T17:57:08.365Z",
+            "requested_at": "2026-10-21T10:36:53.769Z",
+            "completed_at": "2026-10-21T10:36:53.785Z",
             "sha256": "339921dc523830f5a4fc86ab3ef845f2a395803ded630e68907aca9ed4f0fc21",
             "store_path": "raw/339921dc523830f5a4fc86ab3ef845f2a395803ded630e68907aca9ed4f0fc21/range-642058899-642058928.bin"
           },
@@ -2182,8 +2820,8 @@
             "start": 642058929,
             "end": 642058959,
             "bytes": 31,
-            "requested_at": "2026-10-20T17:57:08.365Z",
-            "completed_at": "2026-10-20T17:57:08.382Z",
+            "requested_at": "2026-10-21T10:36:53.785Z",
+            "completed_at": "2026-10-21T10:36:53.797Z",
             "sha256": "01b558893400fe6a1a7d35e2afd0173daae7c4de89911453c555220cd8c76149",
             "store_path": "raw/01b558893400fe6a1a7d35e2afd0173daae7c4de89911453c555220cd8c76149/range-642058929-642058959.bin"
           },
@@ -2191,14 +2829,15 @@
             "start": 642058960,
             "end": 646132138,
             "bytes": 4073179,
-            "requested_at": "2026-10-20T17:57:08.383Z",
-            "completed_at": "2026-10-20T17:57:08.612Z",
+            "requested_at": "2026-10-21T10:36:53.797Z",
+            "completed_at": "2026-10-21T10:36:54.005Z",
             "sha256": "6d9aa1d7f43501243878dcb2a5ad17d11f219555060ba8077160b63709741cfe",
             "store_path": "raw/6d9aa1d7f43501243878dcb2a5ad17d11f219555060ba8077160b63709741cfe/range-642058960-646132138.bin"
           }
         ],
         "etag": "\"a158ae80e80f39c3dc5e8c2f7042b498\"",
         "last_modified": "Tue, 24 Jun 2025 09:24:29 GMT",
+        "validator_type": "STRONG_ETAG",
         "crc32": "ddcc34e3",
         "size": 43830139,
         "inspection": {
@@ -2618,7 +3257,7 @@
         "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090"
       }
     ],
-    "tool_input_sha256": "4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332",
+    "tool_input_sha256": "dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf",
     "limitations": [
       "Rights remain HOLD pending rights review.",
       "Every vintage finding is UNVERIFIED and routable:false.",
@@ -2654,6 +3293,12 @@
       "source_id": "hokonavi-oedo-shinjuku-network-geojson",
       "bytes": 42909,
       "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff",
+      "size_check": "NOT_SPECIFIED"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-package",
+      "bytes": 17954,
+      "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
       "size_check": "NOT_SPECIFIED"
     },
     {
@@ -2790,8 +3435,8 @@
     },
     {
       "source_id": "tokyo-shinjuku-facilities-landing",
-      "bytes": 515899,
-      "sha256": "c6ead52dc10fde3f5582fb1bbebbfab52a71b148faad770456a863086b50ab34",
+      "bytes": 517476,
+      "sha256": "de86addadda2cf8a382ac1ff7b5c1996a7cb2c4cc7d785020069f7b22ae5e093",
       "size_check": "NOT_SPECIFIED"
     },
     {
@@ -3698,35 +4343,7 @@
   ],
   "conversions": [
     {
-      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-20d19e2480674a6630b5",
-      "source_id": "plateau-13104-ubld-53394536",
-      "filters": {},
-      "totals": {
-        "objects_in_source": 30358,
-        "objects_converted": 30357,
-        "nodes": 30358,
-        "polygons_in_source": 79363,
-        "polygon_definitions_in_source": 65013,
-        "polygons_converted": 65013,
-        "skipped_degenerate": 0,
-        "solid_uses_represented_by_selected_boundaries": 14350,
-        "triangles": 148950
-      },
-      "validation": {
-        "status": "PASS",
-        "node_count": 30358,
-        "expected_node_count": 30358,
-        "triangle_count": 148950,
-        "expected_triangle_count": 148950,
-        "bbox_max_error_m": 0.0000054997890401864424,
-        "tolerance_m": 0.001,
-        "all_nodes_have_gml_id": true
-      },
-      "elapsed_ms": 20115,
-      "peak_rss_bytes": 1442283520
-    },
-    {
-      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-d4fc670f8b9c2a6e8981",
+      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-1757dfde12aea90f912c",
       "source_id": "plateau-13104-ubld-53394536",
       "filters": {
         "ids": [
@@ -3754,11 +4371,39 @@
         "tolerance_m": 0.001,
         "all_nodes_have_gml_id": true
       },
-      "elapsed_ms": 11754,
-      "peak_rss_bytes": 366510080
+      "elapsed_ms": 13631,
+      "peak_rss_bytes": 420605952
     },
     {
-      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-7335b90b5cd7387b83f3",
+      "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-e79742afe7dea86823a4",
+      "source_id": "plateau-13104-ubld-53394536",
+      "filters": {},
+      "totals": {
+        "objects_in_source": 30358,
+        "objects_converted": 30357,
+        "nodes": 30358,
+        "polygons_in_source": 79363,
+        "polygon_definitions_in_source": 65013,
+        "polygons_converted": 65013,
+        "skipped_degenerate": 0,
+        "solid_uses_represented_by_selected_boundaries": 14350,
+        "triangles": 148950
+      },
+      "validation": {
+        "status": "PASS",
+        "node_count": 30358,
+        "expected_node_count": 30358,
+        "triangle_count": 148950,
+        "expected_triangle_count": 148950,
+        "bbox_max_error_m": 0.0000054997890401864424,
+        "tolerance_m": 0.001,
+        "all_nodes_have_gml_id": true
+      },
+      "elapsed_ms": 24812,
+      "peak_rss_bytes": 1486278656
+    },
+    {
+      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-4b0fe7793a1a64c158e3",
       "source_id": "plateau-13116-ubld-53394576",
       "filters": {},
       "totals": {
@@ -3782,11 +4427,11 @@
         "tolerance_m": 0.001,
         "all_nodes_have_gml_id": true
       },
-      "elapsed_ms": 28401,
-      "peak_rss_bytes": 407568384
+      "elapsed_ms": 31283,
+      "peak_rss_bytes": 428371968
     },
     {
-      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-84ba2f4d5f0cd3723fb3",
+      "run_id": "plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-c0d83807384457f5214f",
       "source_id": "plateau-13116-ubld-53394576",
       "filters": {
         "ids": [
@@ -3814,8 +4459,8 @@
         "tolerance_m": 0.001,
         "all_nodes_have_gml_id": true
       },
-      "elapsed_ms": 33651,
-      "peak_rss_bytes": 194756608
+      "elapsed_ms": 30046,
+      "peak_rss_bytes": 259194880
     }
   ],
   "networks": [

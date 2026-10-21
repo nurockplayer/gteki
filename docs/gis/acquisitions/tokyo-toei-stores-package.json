@@ -2,23 +2,31 @@
   "source_id": "tokyo-toei-stores-package",
   "resolved_url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000039",
   "resolution_evidence": null,
-  "requested_at": "2026-10-21T10:24:46.843Z",
-  "completed_at": "2026-10-21T10:24:46.962Z",
+  "requested_at": "2026-10-21T10:33:58.996Z",
+  "completed_at": "2026-10-21T10:33:59.224Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/json;charset=utf-8",
     "content-length": null,
     "etag": null,
     "last-modified": null,
-    "date": "Wed, 21 Oct 2026 10:24:46 GMT"
+    "date": "Wed, 21 Oct 2026 10:33:59 GMT"
   },
   "bytes": 38551,
   "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
   "store_path": "raw/c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea/package_show",
   "tool_version": "0.1.0",
-  "git_commit": "0f4b3c282087f317dbcb60e24788777c596bafd0",
+  "git_commit": "5965fdca51421e3a1f8be340bcffc94b72e31e5f",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
-  "mode": "online"
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-21T10:38:51.594Z",
+    "completed_at": "2026-10-21T10:38:51.594Z",
+    "tool_version": "0.1.0",
+    "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
+    "bytes": 38551,
+    "status": "PASS"
+  }
 }

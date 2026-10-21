@@ -2,23 +2,31 @@
   "source_id": "hokonavi-oedo-shinjuku-package",
   "resolved_url": "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=station_oedo_shinjuku",
   "resolution_evidence": null,
-  "requested_at": "2026-10-21T10:24:51.423Z",
-  "completed_at": "2026-10-21T10:24:51.482Z",
+  "requested_at": "2026-10-21T10:34:07.486Z",
+  "completed_at": "2026-10-21T10:34:07.550Z",
   "http_status": 200,
   "response_headers": {
     "content-type": "application/json;charset=utf-8",
     "content-length": "17954",
     "etag": null,
     "last-modified": null,
-    "date": "Wed, 21 Oct 2026 10:24:51 GMT"
+    "date": "Wed, 21 Oct 2026 10:34:07 GMT"
   },
   "bytes": 17954,
   "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
   "store_path": "raw/d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88/package_show",
   "tool_version": "0.1.0",
-  "git_commit": "0f4b3c282087f317dbcb60e24788777c596bafd0",
+  "git_commit": "5965fdca51421e3a1f8be340bcffc94b72e31e5f",
   "expected_bytes": null,
   "expected_url_match": true,
   "size_check": "NOT_SPECIFIED",
-  "mode": "online"
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-21T10:38:51.788Z",
+    "completed_at": "2026-10-21T10:38:51.788Z",
+    "tool_version": "0.1.0",
+    "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
+    "bytes": 17954,
+    "status": "PASS"
+  }
 }

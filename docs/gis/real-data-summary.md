@@ -2,7 +2,7 @@
 
 Generated from acquisition, inventory, conversion and network JSON; no counts are manually maintained. All results are UNVERIFIED and NOT_FOR_ROUTING.
 
-Tool-input SHA-256: `4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf700351332` (src, source manifest, codebooks, frames, synthetic tests/fixtures, package/lock/workspace/TypeScript configuration; sorted relative names plus exact bytes).
+Tool-input SHA-256: `dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf` (src, source manifest, codebooks, frames, synthetic tests/fixtures, package/lock/workspace/TypeScript configuration; sorted relative names plus exact bytes).
 
 ## Acquisitions
 
@@ -13,6 +13,7 @@ Tool-input SHA-256: `4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf7003
 | hokonavi-ikebukuro-walk-node-csv | 279843 | 2477e6f27d8be30b3e57ee6849a36b5d8c9f56e1d2ff34956fe5934b71f4920a | MATCH |
 | hokonavi-ikebukuro-walk-node-geojson | 926326 | 4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33 | MATCH |
 | hokonavi-oedo-shinjuku-network-geojson | 42909 | f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff | NOT_SPECIFIED |
+| hokonavi-oedo-shinjuku-package | 17954 | d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88 | NOT_SPECIFIED |
 | hokonavi-oedo-shinjuku-stationmap-geojson | 74513 | 43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090 | NOT_SPECIFIED |
 | mlit-walk-network-spec-2018-03 | 2440666 | 9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974 | MATCH |
 | mlit-walk-network-spec-2024-07-diff | 306273 | 1a0b007099ba03467b564b9daf74bc198efdbbecc874ae1a0eed36e450326773 | MATCH |
@@ -35,7 +36,7 @@ Tool-input SHA-256: `4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf7003
 | plateau-site-policy | 31822 | 3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f | NOT_SPECIFIED |
 | toei-stores-shinjuku-csv | 694 | e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6 | MATCH |
 | toei-stores-shinjuku-nishiguchi-csv | 1339 | 71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6 | MATCH |
-| tokyo-shinjuku-facilities-landing | 515899 | c6ead52dc10fde3f5582fb1bbebbfab52a71b148faad770456a863086b50ab34 | NOT_SPECIFIED |
+| tokyo-shinjuku-facilities-landing | 517476 | de86addadda2cf8a382ac1ff7b5c1996a7cb2c4cc7d785020069f7b22ae5e093 | NOT_SPECIFIED |
 | tokyo-shinjuku-facilities-package | 4486 | f05bd144e88c5ba63a6072ce0887f3976cf2a1113597e63851138a4301e47e96 | NOT_SPECIFIED |
 | tokyo-shinjuku-facilities-reference-pdf | 523219 | d661cd83fb1e914d65de71d354e86ee4aabfcca20e8060930adea5029fbf4f6a | MATCH |
 | tokyo-shinjuku-facilities-spec-pdf | 499924 | c9258624d2eeacb3759f9c5c8e84c757c3caef1274574153206509ed55273095 | MATCH |
@@ -53,10 +54,10 @@ Tool-input SHA-256: `4e1c154782272952284bd9fd1f533f5da7d26e26365e433435e1dbf7003
 
 | Run | Polygons | Triangles | Nodes | Bbox error m | Time ms | Peak RSS bytes |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-20d19e2480674a6630b5 | 65013 | 148950 | 30358 | 0.0000054997890401864424 | 20115 | 1442283520 |
-| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-d4fc670f8b9c2a6e8981 | 6 | 12 | 1 | 0.00000452290078101214 | 11754 | 366510080 |
-| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-7335b90b5cd7387b83f3 | 58761 | 64811 | 32 | 0.000003925928467651829 | 28401 | 407568384 |
-| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-84ba2f4d5f0cd3723fb3 | 184 | 184 | 6 | 0.0000046096065489109606 | 33651 | 194756608 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-1757dfde12aea90f912c | 6 | 12 | 1 | 0.00000452290078101214 | 13631 | 420605952 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-e79742afe7dea86823a4 | 65013 | 148950 | 30358 | 0.0000054997890401864424 | 24812 | 1486278656 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-4b0fe7793a1a64c158e3 | 58761 | 64811 | 32 | 0.000003925928467651829 | 31283 | 428371968 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-c0d83807384457f5214f | 184 | 184 | 6 | 0.0000046096065489109606 | 30046 | 259194880 |
 
 ## Network observations
 

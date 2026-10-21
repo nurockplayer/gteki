@@ -817,12 +817,12 @@
       "source_crs_bbox": null,
       "bbox_axis_order": "unknown",
       "feature_count": 13129,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
-      "metric_note": "Source bbox missing or invalid."
+      "metric_note": "Source bbox is incomplete because its coordinate visit limit was reached."
     },
     {
       "layer_id": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-2F.geojson",
@@ -832,12 +832,12 @@
       "source_crs_bbox": null,
       "bbox_axis_order": "unknown",
       "feature_count": 309,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
-      "metric_note": "Source bbox missing or invalid."
+      "metric_note": "Source bbox is incomplete because its coordinate visit limit was reached."
     },
     {
       "layer_id": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-3F.geojson",
@@ -847,12 +847,12 @@
       "source_crs_bbox": null,
       "bbox_axis_order": "unknown",
       "feature_count": 78,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
-      "metric_note": "Source bbox missing or invalid."
+      "metric_note": "Source bbox is incomplete because its coordinate visit limit was reached."
     },
     {
       "layer_id": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-4F.geojson",
@@ -862,12 +862,12 @@
       "source_crs_bbox": null,
       "bbox_axis_order": "unknown",
       "feature_count": 142,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
-      "metric_note": "Source bbox missing or invalid."
+      "metric_note": "Source bbox is incomplete because its coordinate visit limit was reached."
     },
     {
       "layer_id": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B1F.geojson",
@@ -877,12 +877,12 @@
       "source_crs_bbox": null,
       "bbox_axis_order": "unknown",
       "feature_count": 1248,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
-      "metric_note": "Source bbox missing or invalid."
+      "metric_note": "Source bbox is incomplete because its coordinate visit limit was reached."
     },
     {
       "layer_id": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B2F.geojson",
@@ -892,12 +892,12 @@
       "source_crs_bbox": null,
       "bbox_axis_order": "unknown",
       "feature_count": 184,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
-      "metric_note": "Source bbox missing or invalid."
+      "metric_note": "Source bbox is incomplete because its coordinate visit limit was reached."
     },
     {
       "layer_id": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B3F.geojson",
@@ -907,12 +907,12 @@
       "source_crs_bbox": null,
       "bbox_axis_order": "unknown",
       "feature_count": 338,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
-      "metric_note": "Source bbox missing or invalid."
+      "metric_note": "Source bbox is incomplete because its coordinate visit limit was reached."
     },
     {
       "layer_id": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B4F.geojson",
@@ -922,12 +922,12 @@
       "source_crs_bbox": null,
       "bbox_axis_order": "unknown",
       "feature_count": 37,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
-      "metric_note": "Source bbox missing or invalid."
+      "metric_note": "Source bbox is incomplete because its coordinate visit limit was reached."
     },
     {
       "layer_id": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-B5F.geojson",
@@ -937,12 +937,12 @@
       "source_crs_bbox": null,
       "bbox_axis_order": "unknown",
       "feature_count": 12,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
-      "metric_note": "Source bbox missing or invalid."
+      "metric_note": "Source bbox is incomplete because its coordinate visit limit was reached."
     },
     {
       "layer_id": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-M1F.geojson",
@@ -952,12 +952,12 @@
       "source_crs_bbox": null,
       "bbox_axis_order": "unknown",
       "feature_count": 53,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
-      "metric_note": "Source bbox missing or invalid."
+      "metric_note": "Source bbox is incomplete because its coordinate visit limit was reached."
     },
     {
       "layer_id": "tokyo-shinjuku-facilities-zip:ÉVÅhëwÄⁿò╙é╠Ä{É▌Åεò±ïyé╤Ä{É▌é⌐éτû┌ôIÆné╓é╠ê┌ô«âïü[âgÅεò±/path-level-geom-MB2F.geojson",
@@ -967,12 +967,12 @@
       "source_crs_bbox": null,
       "bbox_axis_order": "unknown",
       "feature_count": 33,
-      "bbox_status": "UNKNOWN",
+      "bbox_status": "INCOMPLETE_LIMIT_REACHED",
       "crs_status": "UNDECLARED_RFC7946_ASSUMPTION",
       "bbox_jgd2011_lon_lat": null,
       "bbox_epsg_6677": null,
       "metric_status": "UNKNOWN",
-      "metric_note": "Source bbox missing or invalid."
+      "metric_note": "Source bbox is incomplete because its coordinate visit limit was reached."
     },
     {
       "layer_id": "plateau-13104-related-2025:13104_shinjuku-ku_pref_2023_shelter.geojson",
@@ -18791,7 +18791,7 @@
       "requested_http_bytes": 14000077
     }
   },
-  "tool_input_sha256": "8c96756d9a2979fb509e3978842f1dcd079be13cc90693d17eaa5f7f85fe394c",
+  "tool_input_sha256": "dc579f74b291b6ee6bcef22a05db1dd08ac2b3d8469a12edbbb5f974e21b0fbf",
   "input_sources": [
     {
       "source_id": "plateau-13116-ubld-53394576",

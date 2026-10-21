@@ -10,8 +10,8 @@
       "start": 642058899,
       "end": 642058928,
       "bytes": 30,
-      "requested_at": "2026-10-21T10:27:59.892Z",
-      "completed_at": "2026-10-21T10:27:59.935Z",
+      "requested_at": "2026-10-21T10:36:53.769Z",
+      "completed_at": "2026-10-21T10:36:53.785Z",
       "sha256": "339921dc523830f5a4fc86ab3ef845f2a395803ded630e68907aca9ed4f0fc21",
       "store_path": "raw/339921dc523830f5a4fc86ab3ef845f2a395803ded630e68907aca9ed4f0fc21/range-642058899-642058928.bin"
     },
@@ -19,8 +19,8 @@
       "start": 642058929,
       "end": 642058959,
       "bytes": 31,
-      "requested_at": "2026-10-21T10:27:59.935Z",
-      "completed_at": "2026-10-21T10:27:59.950Z",
+      "requested_at": "2026-10-21T10:36:53.785Z",
+      "completed_at": "2026-10-21T10:36:53.797Z",
       "sha256": "01b558893400fe6a1a7d35e2afd0173daae7c4de89911453c555220cd8c76149",
       "store_path": "raw/01b558893400fe6a1a7d35e2afd0173daae7c4de89911453c555220cd8c76149/range-642058929-642058959.bin"
     },
@@ -28,8 +28,8 @@
       "start": 642058960,
       "end": 646132138,
       "bytes": 4073179,
-      "requested_at": "2026-10-21T10:27:59.950Z",
-      "completed_at": "2026-10-21T10:28:00.068Z",
+      "requested_at": "2026-10-21T10:36:53.797Z",
+      "completed_at": "2026-10-21T10:36:54.005Z",
       "sha256": "6d9aa1d7f43501243878dcb2a5ad17d11f219555060ba8077160b63709741cfe",
       "store_path": "raw/6d9aa1d7f43501243878dcb2a5ad17d11f219555060ba8077160b63709741cfe/range-642058960-646132138.bin"
     }
@@ -39,8 +39,8 @@
   "validator_type": "STRONG_ETAG",
   "crc32": "ddcc34e3",
   "size": 43830139,
-  "requested_at": "2026-10-21T10:27:59.892Z",
-  "completed_at": "2026-10-21T10:28:01.811Z",
+  "requested_at": "2026-10-21T10:36:53.769Z",
+  "completed_at": "2026-10-21T10:36:55.823Z",
   "acquisition_kind": "DERIVED_EXACT_ARCHIVE_MEMBER",
   "resolved_url": "https://assets.cms.plateau.reearth.io/assets/d1/61cd6b-dfe4-4eab-873c-be4f512939be/13104_shinjuku-ku_pref_2023_citygml_1_op.zip",
   "package_source": {
@@ -49,7 +49,7 @@
     "json_pointer": "/result/resources/6/url"
   },
   "tool_version": "0.1.0",
-  "git_commit": "0f4b3c282087f317dbcb60e24788777c596bafd0",
+  "git_commit": "5965fdca51421e3a1f8be340bcffc94b72e31e5f",
   "verification": "UNVERIFIED",
   "routable": false,
   "publish_gate": "HOLD",
