@@ -18,6 +18,11 @@ strategies are costed:
 --check fails (exit 1) when a library exceeds the budget file or breaks a rule:
   * an image's size exceeds the manifest's texture plan for its material
   * the same image bytes are embedded twice in one GLB
+
+A finish pack (`<library>/finishes/`, docs/assets/asset-contract.md section 9) is reported on its own
+rows: the loose map files stations load (bytes and estimated GPU memory, each unique file once). Its
+sample GLBs get the same per-image rules as any library, and `limits.finishes_mib` /
+`limits.finishes_gpu_mib` cap the maps when the budget file has them.
 """
 
 import argparse
@@ -109,6 +114,41 @@ def scan_library(root):
     manifest = json.loads((root / "manifest.json").read_text())
     meta = {k: v for k, v in manifest.items() if k != "assets"}
     return glbs, {a["id"]: a for a in manifest["assets"]}, meta
+
+
+def scan_finishes(root):
+    """Cost of the loose finish maps under `<root>/finishes` (None when the library has no pack)."""
+    pack = Path(root) / "finishes"
+    if not (pack / "manifest.json").is_file():
+        return None
+    manifest = json.loads((pack / "manifest.json").read_text())
+    seen = {}
+    for rec in manifest.get("finishes", []):
+        for entry in rec.get("files", {}).values():
+            raw = (pack / entry["file"]).read_bytes()
+            w, h, kind = image_size(raw)
+            seen[hashlib.sha256(raw).hexdigest()] = dict(bytes=len(raw), gpu=gpu_bytes(w, h, kind), w=w, h=h)
+    tier = manifest.get("profile", "full")
+    return dict(tier=tier, finishes=len(manifest.get("finishes", [])), maps=len(seen),
+                bytes=sum(v["bytes"] for v in seen.values()), gpu=sum(v["gpu"] for v in seen.values()),
+                gpu_ktx2=sum(v["w"] * v["h"] * 4 / 3 for v in seen.values()),
+                max_side=max((max(v["w"], v["h"]) for v in seen.values()), default=0))
+
+
+def check_finishes(root, budget):
+    """Problems of the finish pack: per-image rules on its sample GLBs, then the budget's finish limits."""
+    pack = Path(root) / "finishes"
+    if not (pack / "manifest.json").is_file():
+        return []
+    glbs, manifest, meta = scan_library(pack)
+    problems = [f"finishes: {p}" for p in check(glbs, manifest, {}, meta)]
+    fin = scan_finishes(root)
+    if budget_applies(budget, json.loads((Path(root) / "manifest.json").read_text())):
+        limits = budget.get("limits", {})
+        for key, value in (("finishes_mib", fin["bytes"] / MIB), ("finishes_gpu_mib", fin["gpu"] / MIB)):
+            if key in limits and value > limits[key]:
+                problems.append(f"budget {key}: {value:.2f} > {limits[key]}")
+    return problems
 
 
 def summarize(glbs, ids=None, counts=None):
@@ -287,6 +327,25 @@ def self_test():
         assert [p.split(":")[1].split()[1] for p in stale if p not in unplanned] == ["sha256", "bytes"], stale
         both = {**rec(path, plan), "gteki_gone": {"textures": plan}}
         assert [p for p in check(glbs, both, budget, meta) if "gteki_gone" in p] == ["gteki_gone: in manifest.json but its GLB is missing"]
+    # finish pack: loose maps counted once per unique file, limits from the budget file
+    with tempfile.TemporaryDirectory() as tmp:
+        lib = Path(tmp)
+        (lib / "finishes" / "gteki_finish_a").mkdir(parents=True)
+        files = {"albedo": _png_header(512, 512, b"a"), "orm": _png_header(512, 256, b"b")}
+        rec = {"id": "gteki_finish_a", "files": {}}
+        for key, raw in files.items():
+            (lib / "finishes" / "gteki_finish_a" / f"{key}.jpg").write_bytes(raw)
+            rec["files"][key] = {"file": f"gteki_finish_a/{key}.jpg"}
+        (lib / "finishes" / "glb").mkdir()
+        (lib / "finishes" / "manifest.json").write_text(json.dumps({"finishes": [rec], "assets": [], "texture_resolution": 512}))
+        (lib / "manifest.json").write_text(json.dumps(meta))
+        fin = scan_finishes(lib)
+        assert (fin["finishes"], fin["maps"], fin["max_side"]) == (1, 2, 512), fin
+        assert abs(fin["gpu"] - (512 * 512 + 512 * 256) * 4 * 4 / 3) < 1, fin
+        assert check_finishes(lib, {"applies_to": {"catalog": "kit.json", "texture_resolution": 1024}, "limits": {"finishes_mib": 1.0}}) == []
+        tight = {"applies_to": {"catalog": "kit.json", "texture_resolution": 1024}, "limits": {"finishes_gpu_mib": 0.001}}
+        assert any("finishes_gpu_mib" in p for p in check_finishes(lib, tight))
+        assert scan_finishes(lib / "finishes") is None
     for w, h in ((512, 256), (1024, 1024)):
         assert image_size(_png_header(w, h)) == (w, h, "png")
     print("texture_budget self-test: PASS")
@@ -333,6 +392,11 @@ def main():
     for label in report:
         s = report[label]["summary"]
         print(f"{label}: {s['image_instances']} image instances, {s['unique_images']} unique")
+    fin = scan_finishes(args.library)
+    if fin:
+        report["current"]["finishes"] = fin
+        print(f"{'finishes':>34} {fin['finishes']} finishes, {fin['maps']} maps, {fin['bytes'] / MIB:.2f} MiB download, "
+              f"{fin['gpu'] / MIB:.1f} MiB GPU est. ({fin['gpu_ktx2'] / MIB:.1f} MiB as KTX2), largest {fin['max_side']} px")
     for i, layout in enumerate(args.layout):
         print(f"\nlayout {layout}")
         for strategy in ("per_instance", "per_asset", "bundle"):
@@ -346,7 +410,7 @@ def main():
     if args.check:
         glbs, manifest, meta = current
         budget = json.loads(Path(args.check).read_text())
-        problems = check(glbs, manifest, budget, meta)
+        problems = check(glbs, manifest, budget, meta) + check_finishes(args.library, budget)
         if not budget_applies(budget, meta):
             print(f"budget limits skipped: library is not {budget.get('applies_to')} (per-image rules still checked)")
         for p in problems:

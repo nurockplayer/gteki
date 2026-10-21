@@ -80,6 +80,7 @@ No hard FPS numbers are asserted here (see acceptance.md). The manifest records 
 - `assets/library/glb/<id>.glb` — canonical exports.
 - `assets/library/manifest.json` — id → file, sha256, bytes, triangles, materials, bounds, params, sockets.
 - `assets/library/PROVENANCE.md` — inputs and rights for every asset and texture.
+- `assets/library/finishes/` — the finish pack (§9); `assets/library/mobile/finishes/` — its mobile tier.
 - Regenerate with `tools/blender/build.sh` (see `tools/blender/README.md`).
 
 ## 7. Kit bundles — `gteki-kit-bundle/0.1` (derived, optional)
@@ -111,3 +112,103 @@ python3 tools/blender/bundle_kit.py info --bundle kit.glb
   - Geometry: visual parts use about half the segments and no bevels. Collision is byte-identical to `full`: the build generates a full-detail twin of each asset and keeps its colliders.
 - Byte limits are per profile: `tools/blender/catalog/budget.json` for `full`, `budget_mobile.json` for `mobile`, each with `applies_to.profile`. The per-image rules, the texCoord check (core and extension slots, `KHR_texture_transform` overrides; `extras` are not texture slots) and the lightmap checks apply to every library; only `mobile` requires UV1.
 
+## 9. Finish packs — `gteki-finish/0.1`
+
+A **finish** is a surface material a station applies to its own geometry (floor, wall, ceiling, band, trim) instead of placing a kit module. It is a tileable texture set whose repeat is given in metres, plus a flat sample GLB. Stations that paint floors and walls with runtime canvas textures swap them for a finish by name. Finishes are visual only: they carry no collision, no navigation truth and no station measurements.
+
+### Layout
+
+Each tier has its own pack, a library root of its own:
+
+```text
+assets/library/finishes/                  full tier   (mobile: assets/library/mobile/finishes/)
+  manifest.json                           pack manifest (below)
+  glb/gteki_finish_<name>.glb             sample GLB, one per finish
+  gteki_finish_<name>/
+    albedo.jpg  orm.jpg  normal.jpg       the maps that are not flat (any subset)
+    finish.json                           everything a station needs to apply the finish
+```
+
+- **The pack is separate from the kit manifest** so the kit's 48 records, its catalog and its budget stay as they are. `catalog/finishes_v0_1.json` defines the pack; `kind: "finish-pack"` makes `build.py` write the directories and the `finishes` section.
+- **Sample GLBs sit in a flat `glb/` directory** because the existing tools take a library root with `glb/` and `manifest.json`: `validate_glb.py`, `build.sh godot`, `build.sh web`, `texture_budget.py` and `bundle_kit.py` all work on the pack unchanged. A `<id>/sample.glb` layout would need a change in every one of them.
+- The sample GLB embeds the **same JPEG bytes** as the loose maps, and `validate_finish.py` checks that. So the pipeline that loads the sample GLB is loading the finish.
+
+### `manifest.json`
+
+The same fields as the kit manifest (`contract`, `kit_version`, `catalog`, `texture_resolution`, `license`, `profile` for the mobile tier, `assets` with one record per sample GLB: sha256, bytes, triangles, `textures` plan, bounds), plus:
+
+| Field | Meaning |
+| --- | --- |
+| `finish_pack` | `"gteki-finish/0.1"` |
+| `finishes[]` | per finish: `id`, `role`, `gteki_role`, `tint`, `repeat_m`, `dir`, `finish_json` and `files.<map>` (`file`, `bytes`, `sha256`, relative to the pack), `sample_glb`, `texture_bytes` |
+
+### `finish.json`
+
+| Field | Meaning |
+| --- | --- |
+| `format`, `id`, `kit_version`, `tier` | `gteki-finish/0.1`; the id equals the directory name, the sample GLB name and the **material name** inside the sample (`gteki_finish_*`, so a runtime can also swap by name); `full` or `mobile` |
+| `role` | one of `floor`, `wall`, `ceiling`, `band`, `trim`: what the finish is for |
+| `gteki_role` | hint for stations that key materials by their own surface role (Ikebukuro's `scene/materials.ts`): `floor`, `wall` or `ceiling`. Bands and trims dress walls, so they say `wall`. A hint only; the station decides |
+| `facility` | station facility types the finish fits: `concourse`, `passage`, `paid_area`, `gate_surround`, `platform`, `back_of_house`. `use` says it in words and `pattern` describes the look |
+| `source_material` | the kit material it derives from (`null` for the tint base) |
+| `repeat_m` | `[u, v]`: the size in metres of one texture repeat |
+| `uv` | orientation (below) |
+| `maps.albedo`, `maps.orm`, `maps.normal` | `file`, `size` `[w, h]`, `bytes`, `sha256`. A map is listed only if it ships |
+| `factors` | `baseColorFactor` (linear RGBA), `roughnessFactor`, `metallicFactor`: exactly what the sample GLB's material carries. A shipped map has a neutral factor (`[1,1,1,1]`, 1, 1); an omitted map is replaced by its value here |
+| `omitted_maps` | the maps replaced by a factor |
+| `texel_density_px_per_m` | `size / repeat_m` |
+| `tint`, `tint_info` | `true` for a finish the station multiplies by a colour at runtime (below) |
+| `sample_glb`, `sample` | relative path (`../glb/<id>.glb`); the swatch's plane (`floor` or `wall`), repeats per side and size in metres |
+| `dimension_basis`, `generator`, `license`, `provenance` | `synthetic`; the code that makes it; the kit's licence and provenance claim (original procedural work, no external image) |
+
+### Maps
+
+- `albedo.jpg` is sRGB. `orm.jpg` is linear: R = 1 (no baked AO), G = roughness, B = metallic. `normal.jpg` is linear, tangent space, **OpenGL (+Y up)**, as in the kit.
+- JPEG quality 88, square, power-of-two sizes, tileable on both axes. They are the kit generators (`texsynth.py`) with the kit's seeds, so a finish looks like the same kit material.
+- **Flat maps become factors**, by the kit rule ([§4](#4-materials-and-textures)): a finish may ship any subset of the three. Terrazzo has no normal map; the tint base's ORM is a roughness of 0.30.
+- **Size follows the repeat**: the smallest power of two giving at least `repeat_m` x 1024 px per repeat, at most 1024, at least 128. The mobile tier halves the density (`--tex-res 512`): at most 512, at least 128. The mobile palette fold does **not** apply: finishes are textures by nature and keep their own material.
+
+### Repeat and orientation
+
+A texture repeat is `repeat_m` metres. On a surface whose UVs are in metres, scale them by `1 / repeat_m` (three.js `texture.repeat.set(1 / ru, 1 / rv)` with `RepeatWrapping`; Godot `uv1_scale = Vector3(1 / ru, 1 / rv, 1)`).
+
+| Role | u | v |
+| --- | --- | --- |
+| `floor` | east, in the surface plane | north |
+| `wall`, `band`, `trim` | along the wall | up |
+| `ceiling` | east | south (the kit's box UV, so the image reads un-mirrored from below) |
+
+Image rows run from v high (top) to v low, as in glTF once the exporter's V flip is applied (three.js `TextureLoader` with its default `flipY` is equivalent). Patterns line up with the repeat edges, so joints and tile lines stay in phase as long as the surface UV starts at a multiple of `repeat_m`:
+- Panel finishes (`wall_enamel_panel`, `wall_wainscot_blue`) carry the kit's 1.2 m module joint (8 mm, dark `#0D0D0E`, rough) **centred on the repeat's u edges**, so adjacent repeats close it. Vertical joints only, like the kit's wall panels: there is no horizontal joint, so the finish also fits a 1.1 m wainscot and a full-height wall.
+- `wall_kick_plate` has brushed streaks along u. `ceiling_spandrel` has 100 mm strips along u.
+- Tile finishes carry their grout: granite 600 x 300 mm (u x v), tile 600 x 600 mm.
+
+### Tint finishes
+
+`tint: true` marks a finish whose **texture stays neutral** and whose colour the station sets at runtime, such as the line-colour stripe (`gteki_finish_band_line_accent`; Shinjuku's `line_accent` slot, for example Ōedo `#b6007a`). The base is near-white painted metal (`#F2F2F0`, roughness 0.30, faint orange peel) and its albedo is a shipped map, so the formula is the same in every engine:
+
+```text
+rendered base colour = albedo texture (linear) x baseColorFactor        per channel, in linear light
+set baseColorFactor = the line colour as linear RGB                     (three.js material.color.set("#b6007a"), Godot albedo_color)
+```
+
+The base is about 0.89 in linear light, so the stripe renders about 11 % darker than its hex. Multiply the factor by 1.12 (clamped to 1) to match the hex. The colour is never baked into any texture, so one set of files serves every line. Clone the material per colour; they share the textures.
+
+### Validation
+
+- `tools/blender/validate_finish.py <pack>` (stdlib only; `build.sh validate` runs it) checks, per finish: the manifest and `finish.json` schema; every listed file exists with the sha256 and bytes in `finish.json` and in the manifest; sizes are powers of two, match the JPEG headers and stay within the pack's `texture_resolution`; factors are neutral where a map ships; directories, manifest and sample GLBs list the same ids; the sample GLB has exactly one material named like the finish and embeds exactly the loose maps; **tiling** and **tint base**.
+- **Tiling** compares opposite edges of the albedo and normal maps. For each axis it divides the mean absolute difference across the wrap by the mean difference between neighbouring rows at the edges (never less than 8 levels). A seamless texture scores about 1 (0.1 to 1.0 on the pack); more than 2 fails. It catches cropped or unwrapped textures, not subtle mismatches.
+- **Tint base:** a tint finish's mean albedo must be at least 225 in every sRGB channel and within 8 levels across channels.
+- The sample GLBs go through `validate_glb.py` like any asset. They have no collision, so each gets the same `no collision node` WARN as the signs and tactile strips.
+- `texture_budget.py` reports the pack on its own rows (loose map bytes and estimated GPU memory) and caps them with `limits.finishes_mib` and `limits.finishes_gpu_mib` in `budget.json` / `budget_mobile.json` ([texture-budget.md](texture-budget.md)).
+- Output is byte-reproducible: `build.sh repro-finishes` (part of `repro`) builds the pack twice from clean caches and compares every file, then compares with the committed pack.
+
+### Sample GLB
+
+`glb/<id>.glb` is one quad of 2 x 2 repeats (4 x 4 for the 0.25 m tint base, so that it is at least 1 m), with exactly the finish's material and metric UVs: `[0, n]`. Floors lie flat at `y = 0` facing up (`placement` `free`, centred on the origin). Every other role stands on the wall plane `z = 0` facing +Z, from `y = 0` up (`placement` `wall`); that includes ceilings, which a swatch cannot show any better. The root has the usual `extras.gteki` (`family` `finish`, `params` with the role, facility and `repeat_m`).
+
+### Station use
+
+- **Ikebukuro:** pick the finish by `gteki_role` (and `facility`) for the matching surface in `scene/materials.ts`, set the UV scale from `repeat_m`, and use the mobile tier (at most 512 px) on the low tier.
+- **Shinjuku:** the tint finish is the separate `line_accent` slot. Everything else is a plain glTF metal-rough material, so it needs no lightmap and no baked AO.
+- Which finish goes where, and whether the wall is dressed at all, is the station lead's decision.

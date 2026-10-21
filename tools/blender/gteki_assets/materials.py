@@ -193,7 +193,7 @@ def texture_plan(name, tex_res):
         return None
     st = tex["stats"]
     plan = {"res": texture_res(name, tex_res), "maps": {}, "factors": {}}
-    if _flat(st, "albedo", (0, 1, 2)):
+    if _flat(st, "albedo", (0, 1, 2)) and "albedo" not in SPECS[name].get("keep_maps", ()):
         plan["factors"]["color"] = tuple(st["albedo"]["mean"])
     else:
         plan["maps"]["albedo"] = tex["albedo"]
@@ -254,6 +254,7 @@ def get(name, tex_res, jpeg=False):
     if mat is not None:
         return mat
     spec = SPECS[name]
+    jpeg = jpeg or bool(spec.get("finish"))  # finish packs ship their JPEG files unchanged
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     nt = mat.node_tree
@@ -353,9 +354,9 @@ PALETTE_EMIT_STRENGTH = 4.0  # palette emission strength; swatches store emit * 
 
 
 def palette_eligible(name):
-    """Runtime-swapped content (sign faces, supplied images) keeps its own material."""
+    """Runtime-swapped content (sign faces, supplied images) and finish packs keep their own material."""
     spec = SPECS[name]
-    return not ("image" in spec or spec.get("emit_from_albedo"))
+    return not ("image" in spec or spec.get("emit_from_albedo") or spec.get("finish"))
 
 
 def palette_names():

@@ -19,7 +19,7 @@ TEXSYNTH_VERSION = 4  # bump when output pixels change, invalidates caches
 # scale noise relief with it so HQ builds keep the canonical look. The value is
 # a cache salt for non-canonical sizes: cache file names become glTF image
 # names, so bumping TEXSYNTH_VERSION would rename every embedded image.
-HQ_AWARE = {"concrete": 1, "brushed_metal": 1, "painted_metal": 1}  # 1: relief scales with hq
+HQ_AWARE = {"concrete": 1, "brushed_metal": 1, "painted_metal": 1, "panel_field": 1}  # 1: relief scales with hq
 
 
 # --------------------------------------------------------------------------- noise
@@ -265,6 +265,30 @@ def painted_metal(res, seed, base, rough=0.38, orange_peel=0.25, hq=1.0):
     return _out(albedo, normal, r.astype(np.float32), np.zeros_like(r))
 
 
+def panel_field(res, seed, base, rough=0.30, repeat_m=1.2, joint_mm=8.0, bevel_mm=4.0, orange_peel=0.25, hq=1.0, reveal=(0.05, 0.05, 0.055)):
+    """Enamel panel field: `painted_metal` with the kit's dark panel joint baked in.
+
+    One repeat is one panel module wide (`repeat_m`); the joint is centred on the repeat
+    edge, so it wraps and neighbouring repeats close it into one `joint_mm` reveal.
+    Vertical joints only: like the kit's wall panels, the field has no horizontal joint."""
+    out = painted_metal(res, seed, base, rough, orange_peel, hq)
+    px = res / repeat_m / 1000.0  # texels per mm
+    d = np.minimum(np.arange(res) + 0.5, res - np.arange(res) - 0.5).astype(np.float32)[None, :]  # distance to the repeat edge
+    half = joint_mm * 0.5 * px
+    bevel = max(1.0, bevel_mm * px)
+    cover = np.clip(half - d + 0.5, 0.0, 1.0)  # 1 inside the joint
+    shoulder = np.clip((d - half) / bevel, 0.0, 1.0)
+    shoulder = shoulder * shoulder * (3 - 2 * shoulder)
+    groove = np.broadcast_to(shoulder, (res, res))
+    cover = np.broadcast_to(cover, (res, res))
+    peel = band_noise(res, seed, freq=180 * res / 1024, width=0.5)
+    height = peel * orange_peel * hq ** 0.5 + groove * (2.5 * res / 1024.0)
+    normal = normal_from_height(height, strength=1.0)
+    albedo = lerp(out["albedo"], srgb(reveal)[None, None, :], cover)
+    r = np.where(cover > 0.5, 0.7, out["orm"][..., 1]).astype(np.float32)
+    return _out(albedo, normal, r, np.zeros_like(r))
+
+
 def concrete(res, seed, base=(0.56, 0.56, 0.55), rough=0.82, hq=1.0):
     rng = np.random.default_rng(seed)
     cloud = spectral_noise(res, seed, beta=2.2)
@@ -370,6 +394,7 @@ GENERATORS = {
     "tile_grid": tile_grid,
     "brushed_metal": brushed_metal,
     "painted_metal": painted_metal,
+    "panel_field": panel_field,
     "concrete": concrete,
     "linear_spandrel": linear_spandrel,
     "tactile": tactile,
