@@ -270,26 +270,32 @@ vec2 gtSeam(float c, float P, float w, float depth, float fw) {
 }
 `;
 
-/** Boosted baked diffuse is capped here (linear), below the explorer's bloom threshold of 1.0. */
-const BALANCE_KNEE = 0.85;
+/** The lightmap balance never lifts a surface's final linear luminance past this (bloom threshold is 1.0). */
+const BALANCE_KNEE = 0.9;
 const glslReliefEnd = (relief: number, gain = 1) => /* glsl */ `
 #include <lights_fragment_end>
-${gain === 1 ? "" : `#ifdef USE_LIGHTMAP
-{
-  // Lightmap balance with a soft knee: dark baked light gets the full gain, which tapers so the boost never
-  // lifts diffuse past the knee; anything the bake already made brighter keeps its own value.
-  const float G = ${gain.toFixed(3)}, K = ${BALANCE_KNEE.toFixed(3)};
-  float gtL0 = dot(reflectedLight.indirectDiffuse, vec3(0.2126, 0.7152, 0.0722));
-  float gtL1 = max(gtL0, G * gtL0 / (1.0 + (G - 1.0) * gtL0 / K));
-  reflectedLight.indirectDiffuse *= gtL1 / max(gtL0, 1e-5);
-}
-#endif`}
 {
   vec3 gtUp = normalize(viewMatrix[1].xyz);
   vec3 gtL = normalize(gtUp * 0.75 + vec3(0.25, 0.0, 0.65));
   reflectedLight.indirectDiffuse *= max(1.0 + ${relief.toFixed(3)} * dot(normal - nonPerturbedNormal, gtL), 0.0);
   reflectedLight.indirectSpecular *= gtEnvBoost;
 }
+${gain === 1 ? "" : `#ifdef USE_LIGHTMAP
+{
+  // Lightmap balance with a soft knee, applied last: dark baked diffuse gets the full gain, tapering so the
+  // boost only fills headroom up to the knee in the FINAL sum (after relief and every other term); a surface
+  // already brighter than the knee keeps its own value.
+  const float G = ${gain.toFixed(3)}, K = ${BALANCE_KNEE.toFixed(3)};
+  const vec3 Y = vec3(0.2126, 0.7152, 0.0722);
+  float gtD = dot(reflectedLight.indirectDiffuse, Y);
+  float gtS = dot(reflectedLight.directDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance, Y);
+  float gtK = K - gtS;
+  if (gtK > 0.0 && gtD > 1e-5) {
+    float gtD1 = max(gtD, G * gtD / (1.0 + (G - 1.0) * gtD / gtK));
+    reflectedLight.indirectDiffuse *= gtD1 / gtD;
+  }
+}
+#endif`}
 `;
 
 interface CladSpec {
@@ -446,7 +452,7 @@ ${isStair ? "vNose = aNose;\nvVert = 1.0 - step(0.5, abs(normal.y));" : ""}`;
       .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>\n${fBody}`)
       .replace("#include <lights_fragment_end>", glslReliefEnd(relief, gain));
   };
-  m.customProgramCacheKey = () => `gteki-ikebukuro-${kind}-2`;
+  m.customProgramCacheKey = () => `gteki-ikebukuro-${kind}-3`;
 }
 
 const WALL_CLAD: CladSpec = {
