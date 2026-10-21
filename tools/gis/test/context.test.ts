@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NodeIO } from '@gltf-transform/core';
 import * as common from '../src/common.js';
-import { assertMeshCoverage, bboxIntersectsDisc, HEIGHT_BASIS_FLATTENED, HEIGHT_BASIS_TP, groundOffsetStats, buildContextGlb, contextGlb, contextMergedName, contextRunDigest, contextNodeName, EXPLORER_ROLE_WORDS, explorerRoleFromName, loadContextConfig, parseKinds, parseMergeSpec, type ContextInput, type ContextVariant, type MergeSpec } from '../src/context.js';
+import { assertMeshCoverage, bboxIntersectsDisc, HEIGHT_BASIS_FLATTENED, HEIGHT_BASIS_TP, GROUND_BASES, groundOffsetStats, spreadStats, buildContextGlb, contextGlb, contextMergedName, contextRunDigest, contextNodeName, EXPLORER_ROLE_WORDS, explorerRoleFromName, loadContextConfig, parseKinds, parseMergeSpec, type ContextInput, type ContextVariant, type MergeSpec } from '../src/context.js';
 import { bboxIntersectsAnyDisc, buildContextWindow, meshCellBounds, meshCode3, meshesTouchedByWindow, readGraphWindowNodes, type NodeRule } from '../src/context-window.js';
 import { scanContextFeatures, type ContextFeatureRecord, type ContextKind } from '../src/context-scan.js';
 import { loadFrame } from '../src/crs.js';
@@ -811,14 +811,14 @@ async function shinjukuFrame(): Promise<StationEnuFrame> {
   if (!isStationEnuFrame(frame)) throw new Error('expected a station-enu frame');
   return frame;
 }
-async function buildSj(opts: { kinds?: ContextKind[]; groundAttrs?: string[]; merge?: MergeSpec; nodes?: ReturnType<typeof node>[]; pois?: unknown[]; rule?: NodeRule; exitR?: number } = {}) {
+async function buildSj(opts: { kinds?: ContextKind[]; groundAttrs?: string[]; merge?: MergeSpec; nodes?: ReturnType<typeof node>[]; pois?: unknown[]; rule?: NodeRule; exitR?: number; neighbourR?: number } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-')); dirs.push(dir);
   const graphPath = await writeGraph(dir, opts.nodes ?? SJ_NODES, 'shinjuku');
   const poisPath = await writePois(dir, opts.pois ?? SJ_POIS, 'shinjuku');
   const window = await buildContextWindow({ r_origin_m: 0, r_exit_m: opts.exitR ?? 300, node_rule: opts.rule ?? SJ_RULE }, { stationId: 'shinjuku', graphPath, poisPath });
   const frame = await shinjukuFrame();
   const outputPath = join(dir, 'context.glb');
-  const report = await buildContextGlb({ frame, window, inputs: sjInputs, outputPath, merge: opts.merge ?? { mode: 'none' }, kinds: opts.kinds ?? ['bldg'], ...(opts.groundAttrs ? { groundHeightAttributes: opts.groundAttrs } : {}) });
+  const report = await buildContextGlb({ frame, window, inputs: sjInputs, outputPath, merge: opts.merge ?? { mode: 'none' }, kinds: opts.kinds ?? ['bldg'], ...(opts.groundAttrs ? { groundHeightAttributes: opts.groundAttrs } : {}), ...(opts.neighbourR !== undefined ? { exitNeighbourRadiusM: opts.neighbourR } : {}) });
   const document = await new NodeIO().readBinary(await readFile(outputPath));
   return { dir, outputPath, frame, window, report, document, graphPath, poisPath };
 }
@@ -836,7 +836,7 @@ const sjIds = (report: Awaited<ReturnType<typeof buildSj>>['report']): string[] 
 describe('Shinjuku: each building is flattened to symbolic street z = 0 by its own ground height', () => {
   it('two buildings at different ground heights both end with base z = 0 and keep their relative roof heights', async () => {
     const { report, document } = await buildSj();
-    expect(sjIds(report)).toEqual(['sj_a', 'sj_b', 'sj_c', 'sj_d', 'sj_lod2']);
+    expect(sjIds(report)).toEqual(['sj_a', 'sj_b', 'sj_c', 'sj_d', 'sj_gs', 'sj_lod2', 'sj_lod2only']);
     const a = zRange(document, 'ctx_bldg_sj_a'), b = zRange(document, 'ctx_bldg_sj_b'), d = zRange(document, 'ctx_bldg_sj_d');
     // sj_a: TP 30..45, sj_b: TP 40..52, sj_d: TP 36..60 -> base 0, roof = the building's own height.
     near(a[0], 0); near(a[1], 15);
@@ -846,31 +846,63 @@ describe('Shinjuku: each building is flattened to symbolic street z = 0 by its o
     expect(new Set(report.per_feature.map((f) => f.ground_height_m)).size).toBeGreaterThan(3);
   });
 
-  it('the ground height of a building is the min z of the LOD actually drawn, not of another LOD', async () => {
+  it('LOD2 drawn with bldg:GroundSurface: the ground is the GroundSurface minimum (not the lower wall bottom of a sunken entrance), with the spread recorded', async () => {
     const { report, document } = await buildSj();
-    const row = report.per_feature.find((f) => f.gml_id === 'sj_lod2')!;
-    expect(row).toMatchObject({ lod_used: 'LOD2', ground_height_m: 31, ground_basis: 'min_z_of_drawn_lod' }); // LOD1 of this building starts at 29
-    const [lo, hi] = zRange(document, 'ctx_bldg_sj_lod2');
-    near(lo, 0); near(hi, 13);
+    // sj_gs: LOD1 base 35, GroundSurface polygons at 36.0 and 36.5, walls down to 34.0, roof 50.
+    expect(report.per_feature.find((f) => f.gml_id === 'sj_gs')).toMatchObject({ lod_used: 'LOD2', ground_height_m: 36, ground_basis: 'ground_surface_lod2', ground_surface_spread_m: 0.5 });
+    const [lo, hi] = zRange(document, 'ctx_bldg_sj_gs');
+    near(lo, -2); near(hi, 14); // the wall bottom sits 2 m below the street, it does not drag the base down
+    // Buildings that do not use that basis carry no spread.
+    expect(report.per_feature.filter((f) => f.ground_basis !== 'ground_surface_lod2').every((f) => f.ground_surface_spread_m === null)).toBe(true);
+    expect(report.ground_offsets!.ground_surface_spread).toEqual({ count: 1, min_m: 0.5, median_m: 0.5, max_m: 0.5 });
   });
 
-  it('uses the building\'s own CityGML ground-height attribute when it carries a configured one, else the min-z fallback; counts each basis', async () => {
+  it('LOD2 drawn without a GroundSurface falls back to the bottom of the lod1Solid, not the LOD2 minimum', async () => {
+    const { report, document } = await buildSj();
+    expect(report.per_feature.find((f) => f.gml_id === 'sj_lod2')).toMatchObject({ lod_used: 'LOD2', ground_height_m: 29, ground_basis: 'lod1_solid_bottom', ground_surface_spread_m: null }); // LOD2 starts at 31
+    const [lo, hi] = zRange(document, 'ctx_bldg_sj_lod2');
+    near(lo, 2); near(hi, 15);
+    // A LOD1-drawn building uses its own lod1Solid bottom too.
+    expect(report.per_feature.find((f) => f.gml_id === 'sj_a')).toMatchObject({ lod_used: 'LOD1', ground_height_m: 30, ground_basis: 'lod1_solid_bottom' });
+  });
+
+  it('last resort: a LOD2-only building without GroundSurface or lod1Solid uses the min z of the drawn LOD', async () => {
+    const { report, document } = await buildSj();
+    expect(report.per_feature.find((f) => f.gml_id === 'sj_lod2only')).toMatchObject({ lod_used: 'LOD2', ground_height_m: 32, ground_basis: 'min_z_of_drawn_lod' });
+    const [lo, hi] = zRange(document, 'ctx_bldg_sj_lod2only');
+    near(lo, 0); near(hi, 12);
+  });
+
+  it('priority: the configured ground-height attribute beats every other basis, then GroundSurface, lod1Solid, drawn-LOD min; counts per basis in priority order', async () => {
     const without = await buildSj();
-    expect(without.report.ground_offsets!.buildings).toEqual({ count: 5, min_m: 30, median_m: 35, max_m: 40, basis_counts: { ground_height_attribute: 0, min_z_of_drawn_lod: 5 } });
-    expect(without.report.per_feature.find((f) => f.gml_id === 'sj_c')).toMatchObject({ ground_height_m: 35, ground_basis: 'min_z_of_drawn_lod' });
+    expect(without.report.ground_offsets!.buildings).toEqual({ count: 7, min_m: 29, median_m: 35, max_m: 40, basis_counts: { ground_height_attribute: 0, ground_surface_lod2: 1, lod1_solid_bottom: 5, min_z_of_drawn_lod: 1 } });
+    expect(Object.keys(without.report.ground_offsets!.buildings!.basis_counts)).toEqual(['ground_height_attribute', 'ground_surface_lod2', 'lod1_solid_bottom', 'min_z_of_drawn_lod']);
+    expect(without.report.per_feature.find((f) => f.gml_id === 'sj_c')).toMatchObject({ ground_height_m: 35, ground_basis: 'lod1_solid_bottom' });
     const withAttr = await buildSj({ groundAttrs: ['groundHeight'] });
     expect(withAttr.report.per_feature.find((f) => f.gml_id === 'sj_c')).toMatchObject({ ground_height_m: 33.5, ground_basis: 'ground_height_attribute' });
-    for (const id of ['sj_a', 'sj_b', 'sj_d', 'sj_lod2']) expect(withAttr.report.per_feature.find((f) => f.gml_id === id)).toMatchObject({ ground_basis: 'min_z_of_drawn_lod' });
+    expect(withAttr.report.per_feature.map((f) => [f.gml_id, f.ground_basis])).toEqual([['sj_a', 'lod1_solid_bottom'], ['sj_b', 'lod1_solid_bottom'], ['sj_c', 'ground_height_attribute'], ['sj_d', 'lod1_solid_bottom'], ['sj_lod2', 'lod1_solid_bottom'], ['sj_gs', 'ground_surface_lod2'], ['sj_lod2only', 'min_z_of_drawn_lod']]);
     // The attribute (33.5) sits 1.5 m below the building's own LOD1 base (35): the base is not forced to 0, the offset is the attribute.
     const [lo, hi] = zRange(withAttr.document, 'ctx_bldg_sj_c');
     near(lo, 1.5); near(hi, 13.5);
-    expect(withAttr.report.ground_offsets!.buildings).toEqual({ count: 5, min_m: 30, median_m: 33.5, max_m: 40, basis_counts: { ground_height_attribute: 1, min_z_of_drawn_lod: 4 } });
+    expect(withAttr.report.ground_offsets!.buildings).toEqual({ count: 7, min_m: 29, median_m: 33.5, max_m: 40, basis_counts: { ground_height_attribute: 1, ground_surface_lod2: 1, lod1_solid_bottom: 4, min_z_of_drawn_lod: 1 } });
   });
 
-  it('records min, median and max of the subtracted ground heights and the count per basis (median of an even count = mean of the middle two)', () => {
+  it('the low variant draws LOD1, so every building with a lod1Solid uses its bottom; the LOD2-only building is excluded there', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-low-')); dirs.push(dir);
+    const window = await buildContextWindow({ r_origin_m: 0, r_exit_m: 300, node_rule: SJ_RULE }, { stationId: 'shinjuku', graphPath: await writeGraph(dir, SJ_NODES, 'shinjuku'), poisPath: await writePois(dir, SJ_POIS, 'shinjuku') });
+    const report = await buildContextGlb({ frame: await shinjukuFrame(), window, inputs: [sjInputs[0]!], outputPath: join(dir, 'low.glb'), variant: 'low', kinds: ['bldg'] });
+    expect(report.ground_offsets!.buildings!.basis_counts).toEqual({ ground_height_attribute: 0, ground_surface_lod2: 0, lod1_solid_bottom: 6, min_z_of_drawn_lod: 0 });
+    expect(report.per_feature.find((f) => f.gml_id === 'sj_gs')).toMatchObject({ lod_used: 'LOD1', ground_height_m: 35, ground_basis: 'lod1_solid_bottom' });
+    expect(report.sources[0]!.excluded).toMatchObject({ building_no_lod1_excluded_in_low_variant: 1 });
+  });
+
+  it('records min, median and max of the subtracted ground heights and the count per basis, keys in priority order (median of an even count = mean of the middle two)', () => {
     expect(groundOffsetStats([])).toBeNull();
-    expect(groundOffsetStats([{ offset: 30, basis: 'min_z_of_drawn_lod' }, { offset: 41, basis: 'ground_height_attribute' }, { offset: 32, basis: 'min_z_of_drawn_lod' }, { offset: 35.1234, basis: 'min_z_of_drawn_lod' }]))
-      .toEqual({ count: 4, min_m: 30, median_m: 33.562, max_m: 41, basis_counts: { ground_height_attribute: 1, min_z_of_drawn_lod: 3 } });
+    const stats = groundOffsetStats([{ offset: 30, basis: 'min_z_of_drawn_lod' }, { offset: 41, basis: 'ground_height_attribute' }, { offset: 32, basis: 'lod1_solid_bottom' }, { offset: 35.1234, basis: 'ground_surface_lod2' }])!;
+    expect(stats).toEqual({ count: 4, min_m: 30, median_m: 33.562, max_m: 41, basis_counts: { ground_height_attribute: 1, ground_surface_lod2: 1, lod1_solid_bottom: 1, min_z_of_drawn_lod: 1 } });
+    expect(Object.keys(stats.basis_counts)).toEqual([...GROUND_BASES]);
+    expect(spreadStats([])).toBeNull();
+    expect(spreadStats([0.4, 0.1, 0.25, 0.8])).toEqual({ count: 4, min_m: 0.1, median_m: 0.325, max_m: 0.8 });
   });
 
   it('refuses a configured ground-height attribute that is not a number or has a non-metre unit, rather than guessing', async () => {
@@ -895,7 +927,7 @@ describe('Shinjuku: each building is flattened to symbolic street z = 0 by its o
     expect(report.per_feature.map((f) => [f.gml_id, f.ground_height_m])).toEqual([['sj_road1', 31], ['sj_road2', 41.5]]);
     const r1 = zRange(document, 'ctx_road_sj_road1'), r2 = zRange(document, 'ctx_road_sj_road2');
     near(r1[0], 0); near(r1[1], 2); near(r2[0], 0); near(r2[1], 0.3);
-    expect(report.ground_offsets).toMatchObject({ buildings: null, roads: { count: 2, min_m: 31, median_m: 36.25, max_m: 41.5 } });
+    expect(report.ground_offsets).toMatchObject({ buildings: null, ground_surface_spread: null, roads: { count: 2, min_m: 31, median_m: 36.25, max_m: 41.5, basis_counts: { ground_height_attribute: 0, ground_surface_lod2: 0, lod1_solid_bottom: 0, min_z_of_drawn_lod: 2 } } }); // roads keep the drawn-LOD min
     expect(report.modifications).toEqual(['road surfaces flattened to street level']);
   });
 
@@ -909,7 +941,7 @@ describe('Shinjuku: each building is flattened to symbolic street z = 0 by its o
     const scene = document.getRoot().listScenes()[0]!.getExtras();
     expect(scene).toMatchObject({ gteki_role: 'context', navigation_use: 'NOT_FOR_ROUTING', visual_only: true, vertical_mode: 'per_feature_ground', height_basis: HEIGHT_BASIS_FLATTENED, modifications: [notice], attribution_text: SJ_ATTRIBUTION });
     expect(String(scene.modification_notice)).toContain(notice);
-    expect((scene.ground_offsets as { buildings: GroundOffsetStats }).buildings.count).toBe(5);
+    expect((scene.ground_offsets as { buildings: GroundOffsetStats }).buildings.count).toBe(7);
     expect(scene.selection_rule).toMatch(/node_rule\.poi_ids/);
     for (const n of document.getRoot().listNodes()) for (const extras of [n.getExtras(), n.getMesh()!.getExtras()]) {
       expect(extras).toMatchObject({ gteki_role: 'context', navigation_use: 'NOT_FOR_ROUTING', visual_only: true, vertical_mode: 'per_feature_ground', height_basis: HEIGHT_BASIS_FLATTENED, modifications: [notice], attribution_text: SJ_ATTRIBUTION });
@@ -923,6 +955,38 @@ describe('Shinjuku: each building is flattened to symbolic street z = 0 by its o
   it('adds the road notice only when roads are converted', async () => {
     const { report } = await buildSj({ kinds: ['bldg', 'tran'], merge: { mode: 'kind' } });
     expect(report.modifications).toEqual(['building bases flattened to street level', 'road surfaces flattened to street level']);
+  });
+});
+
+describe('Shinjuku: exit-neighbour ground-height spread (exit_neighbour_radius_m)', () => {
+  // Exits 1-3 sit next to fixture buildings; exit 4 is far from everything; exit 5 (B1, not a window POI) sits inside sj_a.
+  const NODES = [node('x1', 'exit', 'toei-nwd-0', 30, 50), node('x2', 'exit', 'toei-nwd-0', 110, 80), node('x3', 'exit', 'toei-nwd-1', -80, 50), node('x4', 'exit', 'toei-nwd-0', 500, -500), node('x5', 'exit', 'toei-nwd-m1', 45, 45), node('x6', 'exit', 'toei-nwd-m1', -500, -500)];
+
+  it('per window POI: count, min/median/max of the subtracted ground height, basis counts and gml_ids of buildings within the radius of its connector', async () => {
+    const { report } = await buildSj({ nodes: NODES, neighbourR: 30 });
+    const n = report.exit_neighbours!;
+    expect(n.radius_m).toBe(30);
+    expect(n.pois.map((p) => p.poi_id)).toEqual(SJ_EXIT_IDS); // exits 5 and 6 are not window POIs: no entry
+    expect(n.pois[0]).toEqual({ poi_id: 'poi:exit:1', connector_node_ids: ['x1'], count: 1, ground_height_m: { count: 1, min_m: 30, median_m: 30, max_m: 30 }, basis_counts: { ground_height_attribute: 0, ground_surface_lod2: 0, lod1_solid_bottom: 1, min_z_of_drawn_lod: 0 }, gml_ids: ['sj_a'] });
+    expect(n.pois[1]).toMatchObject({ poi_id: 'poi:exit:2', count: 2, ground_height_m: { count: 2, min_m: 36, median_m: 38, max_m: 40 }, gml_ids: ['sj_b', 'sj_d'] });
+    expect(n.pois[2]).toMatchObject({ poi_id: 'poi:exit:3', count: 2, ground_height_m: { count: 2, min_m: 29, median_m: 32.5, max_m: 36 }, basis_counts: { ground_surface_lod2: 1, lod1_solid_bottom: 1 }, gml_ids: ['sj_gs', 'sj_lod2'] });
+    expect(n.pois[3]).toMatchObject({ poi_id: 'poi:exit:4', count: 0, ground_height_m: null, gml_ids: [] });
+    expect(n.rule).toMatch(/footprint bbox/);
+  });
+
+  it('the radius is the config value: a smaller one drops the buildings, and without it (or on a TP frame) nothing is computed', async () => {
+    const small = await buildSj({ nodes: NODES, neighbourR: 5 });
+    expect(small.report.exit_neighbours!.pois.map((p) => p.count)).toEqual([0, 0, 0, 0]);
+    const wide = await buildSj({ nodes: NODES, neighbourR: 60 });
+    expect(wide.report.exit_neighbours!.pois[0]!.gml_ids).toEqual(['sj_a', 'sj_c']); // sj_c (40..60, 100..120) is 51 m from (30, 50)
+    expect((await buildSj({ nodes: NODES })).report.exit_neighbours).toBeUndefined();
+    expect('exit_neighbours' in (await build()).report).toBe(false);
+    for (const bad of [0, -3, 501, Number.NaN]) await expect(buildSj({ nodes: NODES, neighbourR: bad })).rejects.toThrow(/exit_neighbour_radius_m/);
+  });
+
+  it('ships exit_neighbour_radius_m 30 in the Shinjuku config and not in Ikebukuro\'s', async () => {
+    expect((await loadContextConfig('shinjuku')).exit_neighbour_radius_m).toBe(30);
+    expect((await loadContextConfig('ikebukuro')).exit_neighbour_radius_m).toBeUndefined();
   });
 });
 
@@ -1033,18 +1097,21 @@ describe('Shinjuku: config, sources and the full command wrapper', () => {
     expect(summary.run_id).toMatch(/^context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-kind-bldg-[a-f0-9]{20}$/);
     expect(summary.mesh_coverage).toMatchObject({ needed_meshes: ['53394525', '53394526', '53394535', '53394536'], kinds: ['bldg'], needed_sources: bldgIds });
     expect(summary).toMatchObject({ kinds: ['bldg'], merge: 'kind', vertical_mode: 'per_feature_ground', height_basis: HEIGHT_BASIS_FLATTENED, modifications: ['building bases flattened to street level'], window: { r_origin_m: 0, r_exit_m: 300, disc_count: 4 } });
-    expect(summary.ground_offsets!.buildings).toEqual({ count: 5, min_m: 30, median_m: 35, max_m: 40, basis_counts: { ground_height_attribute: 0, min_z_of_drawn_lod: 5 } });
-    expect(summary.feature_table.columns).toEqual(['gml_id', 'source_id', 'lod', 'mesh', 'tri_start', 'tri_count', 'ground_offset_m', 'ground_basis']);
-    expect(summary.feature_table.rows.map((r) => [r[0], r[6], r[7]])).toEqual([['sj_a', 30, 'min_z_of_drawn_lod'], ['sj_b', 40, 'min_z_of_drawn_lod'], ['sj_c', 35, 'min_z_of_drawn_lod'], ['sj_d', 36, 'min_z_of_drawn_lod'], ['sj_lod2', 31, 'min_z_of_drawn_lod']]);
+    expect(summary.ground_offsets!.buildings).toEqual({ count: 7, min_m: 29, median_m: 35, max_m: 40, basis_counts: { ground_height_attribute: 0, ground_surface_lod2: 1, lod1_solid_bottom: 5, min_z_of_drawn_lod: 1 } });
+    expect(summary.feature_table.columns).toEqual(['gml_id', 'source_id', 'lod', 'mesh', 'tri_start', 'tri_count', 'ground_offset_m', 'ground_basis', 'ground_surface_spread_m']);
+    expect(summary.feature_table.rows.map((r) => [r[0], r[6], r[7], r[8]])).toEqual([['sj_a', 30, 'lod1_solid_bottom', null], ['sj_b', 40, 'lod1_solid_bottom', null], ['sj_c', 35, 'lod1_solid_bottom', null], ['sj_d', 36, 'lod1_solid_bottom', null], ['sj_lod2', 29, 'lod1_solid_bottom', null], ['sj_gs', 36, 'ground_surface_lod2', 0.5], ['sj_lod2only', 32, 'min_z_of_drawn_lod', null]]);
     const receipt = JSON.parse(await readFile(join(dir, 'docs', 'gis', 'context', `${summary.run_id}.json`), 'utf8'));
-    expect(receipt).toMatchObject({ run_id: summary.run_id, vertical_mode: 'per_feature_ground', ground_offsets: { buildings: { count: 5 } }, modifications: ['building bases flattened to street level'] });
+    expect(receipt).toMatchObject({ run_id: summary.run_id, vertical_mode: 'per_feature_ground', ground_offsets: { buildings: { count: 7 } }, modifications: ['building bases flattened to street level'] });
     expect(receipt.modification_notice).toContain('building bases flattened to street level');
     expect(receipt.window.graph.pois.poi_ids).toEqual(SJ_EXIT_IDS);
     expect(JSON.stringify(receipt)).not.toMatch(/"(?:cleared|clearance)"/);
     const sidecar = JSON.parse(await readFile(join(dir, summary.sidecar_path), 'utf8'));
-    expect(sidecar.per_feature.map((f: Record<string, unknown>) => [f.gml_id, f.ground_height_m, f.ground_basis])).toEqual(summary.feature_table.rows.map((r) => [r[0], r[6], r[7]]));
+    expect(sidecar.per_feature.map((f: Record<string, unknown>) => [f.gml_id, f.ground_height_m, f.ground_basis, f.ground_surface_spread_m])).toEqual(summary.feature_table.rows.map((r) => [r[0], r[6], r[7], r[8]]));
     // The other three bldg sources hold the same ids in this fixture-backed run: excluded as duplicates, never emitted twice.
-    expect(summary.sources.map((src) => src.converted)).toEqual([5, 0, 0, 0]);
+    expect(summary.sources.map((src) => src.converted)).toEqual([7, 0, 0, 0]);
+    // exit_neighbour_radius_m 30 from the config: one entry per window POI; no fixture building lies within 30 m of the real connectors.
+    expect(receipt.exit_neighbours).toMatchObject({ radius_m: 30 });
+    expect(receipt.exit_neighbours.pois.map((p: { poi_id: string; count: number }) => [p.poi_id, p.count])).toEqual(SJ_EXIT_IDS.map((id) => [id, 0]));
   });
 
   it('fails closed before reading any source when a needed Shinjuku mesh source is missing from the run', async () => {
