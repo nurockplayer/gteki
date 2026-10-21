@@ -1,0 +1,355 @@
+{
+  "run_id": "plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-78f804600c032c72a30c",
+  "source_id": "plateau-13104-ubld-53394536",
+  "source_sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977",
+  "verification": "UNVERIFIED",
+  "frame_id": "shinjuku-plateau-ubld-v0",
+  "filters": {},
+  "store_path": "out/plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-78f804600c032c72a30c.glb",
+  "sidecar_path": "out/plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-78f804600c032c72a30c.provenance.json",
+  "totals": {
+    "objects_in_source": 30358,
+    "objects_converted": 30357,
+    "nodes": 30358,
+    "polygons_in_source": 79363,
+    "polygon_definitions_in_source": 65013,
+    "polygons_converted": 65013,
+    "skipped_degenerate": 0,
+    "solid_uses_represented_by_selected_boundaries": 14350,
+    "triangles": 148950
+  },
+  "semantic_inputs": {
+    "tool_version": "0.1.0",
+    "tool_input_sha256": "2056fdef58537e09f18a84e47e3a5cf102f34ea4c8bbe93b6aad5ea85fcb0f52",
+    "dictionary_sha256": "e543815e7442ad158f59e511e14d76866f7bf525a541e66e7b95a57bf4371743",
+    "codelist_inputs": [
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/AuxiliaryTrafficArea_function.xml",
+        "member_sha256": "c8cf2bf1df65840dddad9e609d832e7d1800848dc570d2e31d1aa2f314cd4122"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/Boundary_function.xml",
+        "member_sha256": "79070d5527970370043b3989787285fda540c6280fd2a3adb9ebb2db7844d4b8"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/BridgeConstructionElement_function.xml",
+        "member_sha256": "b46342599f739cb93110e19b8a0d68122d7d82108b9f3b9c0877ee6b41196ee1"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/BridgeFunctionalAttribute_userType.xml",
+        "member_sha256": "3cd005ab2580a3fac901805293655ff511ac102d8bb3f0aa3437e246157af931"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/BridgeInstallation_function.xml",
+        "member_sha256": "25537fdf5cf31bb80f69ff7f538bcdb25ec29362fec46f7afe67046b164be9b5"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/Bridge_function.xml",
+        "member_sha256": "20ce7ec4ee4513207eacbfbb7768cfbfc25f62f475baf5f38981e9c0379a27b4"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/BuildingFurniture_function.xml",
+        "member_sha256": "5574735ffdb531a0af5bf7cc9dac723bfe100324710132342d4922c4ad5258e0"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/BuildingInstallation_function.xml",
+        "member_sha256": "f253587ac727f67aa39811194de03925ea1520ecbc2559337434e84729af8eb1"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/C0901_function.xml",
+        "member_sha256": "cd5cc9ecdbe40702f57ca40b778963583729cd2ead0450cc52af1784dfcd7f21"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/C0902_function.xml",
+        "member_sha256": "9a9057c1d851331b679126a1e51286d0e6c9282205894036eee7b584b17cf20d"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/C1003_function.xml",
+        "member_sha256": "cc80d5f963bf883686c7d541a3b9be95b0eac6c4dd55dc9e74cfc3ab150bb5e6"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/C1004_function.xml",
+        "member_sha256": "2d81f2dcd091c17466323d29c1856880a18238c88d73e6e81c2b3d7a7e3a079e"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/CityFurniture_function.xml",
+        "member_sha256": "f51e27a079aced5fe89b87c9b3a54d3cfb466ef1ca1601ac07079d2ca57a00ca"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/CityObjectGroup_function.xml",
+        "member_sha256": "11951a3f018db1adada53ba1e612d6895799f201022e53322fd7e96709517b29"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/ConstructionFunctionalAttribute_directionType.xml",
+        "member_sha256": "c4fe3fde876ee1db80f0e33d1d9dd26ba410e2ab665d064195b5fab17f72d9b6"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/ConstructionInstallation_function.xml",
+        "member_sha256": "503726fa51c1359a546dae67814a36b5595c25caa0576bae2379126e0f95db83"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/ControlPoint_function.xml",
+        "member_sha256": "4cce0d9f0dd3f738829303657f6a26179ddf4a443b68eef086a689bdded48de4"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/DevelopmentProject_function.xml",
+        "member_sha256": "f5ea8717fd44114d98273eb47afed0ddf48d68da334f7aa362ec28f78063634b"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/DisasterDamage_function.xml",
+        "member_sha256": "281136fb94009537616cb7b25ad179353d8c89a2ef2aa1386bcb0c5373e1db56"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/DistrictDevelopmentPlan_function.xml",
+        "member_sha256": "8323840a00941ba674951b77540b47afcf3e84e3422248c44eefda5bf738ac9e"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/DistrictPlan_function.xml",
+        "member_sha256": "de061f7c19cc4d26bb32cf019410a0b7e464c7303a7cfafbaa559e3b5735dfd3"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/District_function.xml",
+        "member_sha256": "fb82f2b086c2c8c160a097ddbe8804284c493aff75257e048ac6351da1cc2d75"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/FacilityTypeAttribute_function.xml",
+        "member_sha256": "201251db0fba92ae03f625bba32bca3d254cf8a48d51dedde69d3d357a95bd9f"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/GreenSpace_function.xml",
+        "member_sha256": "9188b380ea4ced1a654e489008c9f0490ed4b32a6ffcff2f3d522181d6bb295a"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/IntBuildingInstallation_function.xml",
+        "member_sha256": "d484146838e2b411d75c8f3d07d4f0d27da5aee639ada8c2caf26992864f3bd6"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/OtherConstruction_function.xml",
+        "member_sha256": "c4c85ec0b2cdcb2475dc4fece28887fc1af778d102e24ef36ab17c70826a4cbb"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/PointCloudSpecAttribute_function.xml",
+        "member_sha256": "022282e535b86aadc19cb49748802c2dede490c0ed97668f7e7ad79cb9dbf8c8"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/ProjectPromotionArea_function.xml",
+        "member_sha256": "4ccc64cae575e71c0b97e9f231f5438314fcfe0a4b052e32abd2aad494c80425"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/PromotionArea_function.xml",
+        "member_sha256": "e8ae08c2f64878fb3c8e59c41740152bb8d9f455ab2ab6153c47d20a9b525185"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/Railway_function.xml",
+        "member_sha256": "8dad350428e6c5574aed1dcb8259915436353081d500a43abe0e1f8e3b3ebb89"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/Road_function.xml",
+        "member_sha256": "01720a0a651d2f9cd94bc67d12c7051cd9f950c8529830f47fe2d67d375b3109"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/Room_function.xml",
+        "member_sha256": "9231464e7ef211909cb019eff09a5c02b4d6fa6b8367ed518d5fc5cb96fed16a"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/ScenicResource_function.xml",
+        "member_sha256": "6d5254189944f4d0a0fd3b2aa83b62f29cd19249bdbea79d93286d0a8617515e"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/ScheduledAreaForUrbanDevelopment_function.xml",
+        "member_sha256": "a1e6ada2394c6a47de04b8a84200401b52d2a484e8bfa5abe4f06c1595f6c61f"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/SolitaryVegetationObject_function.xml",
+        "member_sha256": "850617a205fad0ea15cc6063943e76478a3593bf1d39233e7932ad4b60f5dd53"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/Square_function.xml",
+        "member_sha256": "d499cb8dc7444fa5ce73028254883c33e925083092d73aad759ed9fd8fd0833c"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/Track_function.xml",
+        "member_sha256": "a2c5f4c509c749983263109fdfc46cc948d5c36bf2f510d22cd44b8b511d9c2c"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/TrafficArea_function.xml",
+        "member_sha256": "696b55f34bfdf15bc3d35135f76db324a51516df17f6c59b6f61ea9f282e009b"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/TunnelFunctionalAttribute_userType.xml",
+        "member_sha256": "d712511d60f222a4a0ec3eaf243c19560044c682ffc80b82649518f79e75ad36"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/TunnelInstallation_function.xml",
+        "member_sha256": "292bfa7e677d9f3e8de0caa1a625c3a6d9ec76212db6717d2f2db33318c2c779"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/Tunnel_function.xml",
+        "member_sha256": "502a8528be2df7cc40661021e37f48982a73581de3d3e8e18e7a56a869f3e0dd"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/UrbanDevelopmentProject_function.xml",
+        "member_sha256": "c41dcc782108c5e173918dee58aac5be068d894f8f844896062471b9f9eb231a"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/UrbanFacility_function.xml",
+        "member_sha256": "3fea400fb4e2c65590f2ebc9c6e3eeefaa934f6df5357dfea61f25bda28d1c66"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/WaterBody_function.xml",
+        "member_sha256": "19f6670c57e3c79e6f54136583e61a573bb68356ad41ac322c75ab31c4f04687"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/Waterway_function.xml",
+        "member_sha256": "39704a32b93879a25ef096691c017d3a78e1ff9632dff5d569ceedca2897866c"
+      },
+      {
+        "source_id": "plateau-13104-codelists",
+        "sha256": "f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4",
+        "member": "13104_shinjuku-ku_pref_2025_citygml_1_op_codelists/codelists/Zone_function.xml",
+        "member_sha256": "4c1981bbfd558b2f1955e974fa40606ac657170847485c65e95fbbe0409893d7"
+      }
+    ]
+  },
+  "geometry_reference_summary": {
+    "total": 14350,
+    "resolved": 14350,
+    "unresolved": 0,
+    "unsupported_external": 0,
+    "signed_reverse": 0,
+    "by_context": {
+      "solid": 14350
+    }
+  },
+  "geometry_policy": "Boundary/opening representations retain their source orientation. Coincident solid reference uses are retained in inventory/sidecar and not drawn again when the referenced definition is already represented by a selected boundary/opening object. Other solid uses are converted with their own orientation.",
+  "bbox_source_lat_lon_height": {
+    "min": [
+      35.69069941674934,
+      139.69803124047718,
+      15.321
+    ],
+    "max": [
+      35.69501377379006,
+      139.7036188035924,
+      45.493
+    ]
+  },
+  "bbox_local_ENU": {
+    "min": [
+      -253.3920000068374,
+      -239.29800017461093,
+      -14.679
+    ],
+    "max": [
+      252.48999999337502,
+      239.445999824944,
+      15.493000000000002
+    ]
+  },
+  "validation": {
+    "status": "PASS",
+    "node_count": 30358,
+    "expected_node_count": 30358,
+    "triangle_count": 148950,
+    "expected_triangle_count": 148950,
+    "bbox_max_error_m": 0.0000054997890401864424,
+    "tolerance_m": 0.001,
+    "all_nodes_have_gml_id": true
+  },
+  "output_sha256": "c917f7cc2acd3b99e1fbb01eedfe4019b3a633ba186309feb884adcf02c0f29b",
+  "output_bytes": 53955156,
+  "navigation_use": "NOT_FOR_ROUTING",
+  "geometry_status": "UNVERIFIED_RAW_CONVERSION",
+  "elapsed_ms": 18225,
+  "peak_rss_bytes": 1407762432
+}
