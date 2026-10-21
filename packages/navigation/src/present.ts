@@ -1,5 +1,8 @@
-import type { EdgeMode, Floor, Node, StationBundle } from "@gteki/schema";
-import type { RouteResult } from "./index.ts";
+import { isOpenAt } from "@gteki/schema";
+import type { Edge, EdgeMode, Floor, LocalTime, Node, StationBundle, Weekday } from "@gteki/schema";
+import { DEFAULT_PROFILE } from "./index.ts";
+import { createRouter } from "./router.ts";
+import type { RouteProfile, RouteResult } from "./index.ts";
 
 /**
  * Renderer-neutral presentation of a computed route: a station-ENU polyline for drawing and
@@ -95,8 +98,26 @@ export interface Instruction {
   /** Turn (> 45°, measured over ~5 m) to take before this stair/escalator/lift/ramp/gate; null = none. */
   turn?: "left" | "right" | "back" | null;
   toFloorId: string;
+  /** Choice points this walk passes through without a turn, in walking order; absent when none. */
+  junctions?: JunctionHint[];
   /** Plain text in the requested language. */
   text: string;
+}
+
+/**
+ * A node inside a merged walk where another traversable branch leaves (degree ≥ 3 counting the
+ * route's own in/out edges): which branch to take there, since no turn instruction marks it.
+ */
+export interface JunctionHint {
+  nodeId: string;
+  /** Index into route.steps of the step that leaves the junction. */
+  stepIndex: number;
+  /** Walking distance from the start of the instruction to the junction. */
+  atM: number;
+  /** "straight": the chosen branch is clearly the straightest (or the middle of a fork). */
+  action: "straight" | "keep_left" | "keep_right";
+  /** Name of a POI reached from this node, in the requested language when available; null = none (never invented). */
+  name: string | null;
 }
 
 const VERTICAL: Partial<Record<EdgeMode, InstructionKind>> = { stairs: "stairs", escalator: "escalator", elevator: "elevator", ramp: "ramp" };
@@ -139,6 +160,9 @@ const TEXT = {
       if (floor === null) return dir ? `${via}で${dir}` : `${via}を利用`;
       return `${via}で${dir ? `${dir}・` : ""}${floor}へ`;
     },
+    junction: (atM: number, action: JunctionHint["action"], name: string | null) =>
+      `約${atM}m先${name === null ? "" : `、${name}`}の分岐は${{ straight: "そのまま直進", keep_left: "左寄りに進む", keep_right: "右寄りに進む" }[action]}`,
+    withJunctions: (text: string, hints: string[]) => [text, ...hints].join("。"),
     arrive: () => "目的地に到着",
     wait: (time: string, dayOffset: number, weekday: string) =>
       `${dayOffset === 0 ? "" : dayOffset === 1 ? "翌日" : `${dayOffset < 7 ? "" : `${dayOffset}日後の`}${{ mon: "月", tue: "火", wed: "水", thu: "木", fri: "金", sat: "土", sun: "日" }[weekday]}曜日`}${time}まで待つ`,
@@ -155,6 +179,11 @@ const TEXT = {
     moving_walkway: (m: number) => `Moving walkway ~${m} m`,
     vertical: (kind: string, sense: string | null, floor: string | null) =>
       `Take the ${kind}${sense ? ` ${sense}` : ""}${floor === null ? "" : ` to ${floor}`}`,
+    junction: (atM: number, action: JunctionHint["action"], name: string | null) =>
+      `After ~${atM} m, ${action === "straight"
+        ? name === null ? "continue straight through the junction" : `continue straight past ${name}`
+        : `keep ${action === "keep_left" ? "left" : "right"} at ${name ?? "the junction"}`}`,
+    withJunctions: (text: string, hints: string[]) => `${[text, ...hints].join(". ")}.`,
     arrive: () => "Arrive at destination",
     wait: (time: string, dayOffset: number, weekday: string) =>
       `Wait until ${time}${dayOffset === 0 ? "" : dayOffset === 1 ? " tomorrow" : ` on ${{ mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday", sat: "Saturday", sun: "Sunday" }[weekday]}${dayOffset < 7 ? "" : `, ${dayOffset} days later`}`}`,
@@ -165,38 +194,47 @@ const TEXT = {
 const HEADING_SPAN_M = 5;
 
 /**
+ * The point HEADING_SPAN_M along a plan path from its first point, interpolating inside the last
+ * segment, so a long sparse segment cannot stretch the chord and invent a turn (or the path's end
+ * when it is shorter).
+ */
+function chordEnd(path: readonly { x: number; y: number }[]): { x: number; y: number } {
+  let far = { x: path[0]!.x, y: path[0]!.y };
+  let walked = 0;
+  for (let k = 0; k + 1 < path.length; k++) {
+    const p = path[k]!;
+    const q = path[k + 1]!;
+    const seg = Math.hypot(q.x - p.x, q.y - p.y);
+    if (walked + seg >= HEADING_SPAN_M) {
+      const f = seg === 0 ? 0 : (HEADING_SPAN_M - walked) / seg;
+      return { x: p.x + (q.x - p.x) * f, y: p.y + (q.y - p.y) * f };
+    }
+    walked += seg;
+    far = { x: q.x, y: q.y };
+  }
+  return far;
+}
+
+/** Heading (degrees, clockwise from north) from a to b; null when they coincide in plan. */
+function heading(a: { x: number; y: number }, b: { x: number; y: number }): number | null {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  if (Math.hypot(dx, dy) < 1e-6) return null;
+  return (Math.atan2(dx, dy) * 180) / Math.PI;
+}
+
+/**
  * Heading (degrees, clockwise from north) of a step where it starts or ends, measured as the chord
  * over its first/last ~5 m (or the whole step if shorter) rather than its first/last segment.
  */
 function stepHeading(points: PolylinePoint[], stepIndex: number, end: "start" | "end"): number | null {
   const own = points.map((p, i) => ({ p, i })).filter(({ p }) => p.stepIndex === stepIndex);
   if (own.length === 0) return null;
-  const firstIdx = own[0]!.i - 1;
-  const lastIdx = own[own.length - 1]!.i;
-  const anchor = end === "start" ? firstIdx : lastIdx;
-  const dir = end === "start" ? 1 : -1;
-  const at = points[anchor]!;
-  // Walk along the step from the junction and stop exactly HEADING_SPAN_M away (interpolating inside
-  // the last segment), so a long sparse segment cannot stretch the chord and invent a turn.
-  let far = { x: at.x, y: at.y };
-  let walked = 0;
-  for (let k = anchor; k + dir >= firstIdx && k + dir <= lastIdx; k += dir) {
-    const p = points[k]!;
-    const q = points[k + dir]!;
-    const seg = Math.hypot(q.x - p.x, q.y - p.y);
-    if (walked + seg >= HEADING_SPAN_M) {
-      const f = seg === 0 ? 0 : (HEADING_SPAN_M - walked) / seg;
-      far = { x: p.x + (q.x - p.x) * f, y: p.y + (q.y - p.y) * f };
-      break;
-    }
-    walked += seg;
-    far = { x: q.x, y: q.y };
-  }
-  const [a, b] = end === "start" ? [at, far] : [far, at];
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  if (Math.hypot(dx, dy) < 1e-6) return null;
-  return (Math.atan2(dx, dy) * 180) / Math.PI;
+  const path = points.slice(own[0]!.i - 1, own[own.length - 1]!.i + 1);
+  if (end === "end") path.reverse();
+  const at = path[0]!;
+  const far = chordEnd(path);
+  return end === "start" ? heading(at, far) : heading(far, at);
 }
 
 /** Signed heading change (degrees, + = right) from the end of step i-1 to the start of step i. */
@@ -218,16 +256,150 @@ function stepPlanLength(points: PolylinePoint[], stepIndex: number): number {
  * offset, nor repeats one. A lift ride is never looked through: its doors may face anywhere.
  */
 function turnDelta(points: PolylinePoint[], steps: RouteResult["steps"], i: number): number | null {
-  // A lift's plan displacement is motion through the shaft, not which way its doors face: never a heading.
-  const hasHeading = (k: number) => steps[k]!.mode !== "elevator" && stepPlanLength(points, k) >= MIN_HEADING_STEP_M;
-  if (!hasHeading(i)) return null;
-  let h0: number | null = null;
-  for (let k = i - 1; k >= 0; k--) {
-    if (steps[k]!.mode === "elevator") break;
-    if (hasHeading(k)) { h0 = stepHeading(points, k, "end"); break; }
-  }
+  if (!stepHasHeading(points, steps, i)) return null;
+  const h0 = arrivalHeading(points, steps, i);
   const h1 = stepHeading(points, i, "start");
-  return h0 === null || h1 === null ? null : ((h1 - h0 + 540) % 360) - 180;
+  return h0 === null || h1 === null ? null : signedDelta(h0, h1);
+}
+
+/** A lift's plan displacement is motion through the shaft, not which way its doors face: never a heading. */
+function stepHasHeading(points: PolylinePoint[], steps: RouteResult["steps"], k: number): boolean {
+  return steps[k]!.mode !== "elevator" && stepPlanLength(points, k) >= MIN_HEADING_STEP_M;
+}
+
+/** Heading on arrival at the junction before step i: the end of the nearest earlier step that has one. */
+function arrivalHeading(points: PolylinePoint[], steps: RouteResult["steps"], i: number): number | null {
+  for (let k = i - 1; k >= 0; k--) {
+    if (steps[k]!.mode === "elevator") return null;
+    if (stepHasHeading(points, steps, k)) return stepHeading(points, k, "end");
+  }
+  return null;
+}
+
+/** Signed change (degrees in [-180, 180), + = right) from heading h0 to heading h1. */
+function signedDelta(h0: number, h1: number): number {
+  return ((h1 - h0 + 540) % 360) - 180;
+}
+
+/** A branch competes with the chosen one unless it bends at least this much more sharply. */
+const STRAIGHT_MARGIN_DEG = 30;
+/** Branches bending more than this lie behind the traveller: they do not make "keep left/right" ambiguous. */
+const AHEAD_DEG = 90;
+/** Branches leaving within this angle of each other cannot be told apart by "left/right/straight". */
+const SAME_BRANCH_DEG = 1;
+
+/** Plan heading of an edge leaving `node` (its first ~5 m, endpoints snapped as drawn); null = none. */
+function departureHeading(edge: Edge, node: Node, other: Node): number | null {
+  const drawn = edge.geometry && edge.geometry.length >= 2 ? [...edge.geometry] : [node.position, other.position];
+  if (edge.from !== node.id) drawn.reverse();
+  const path = [node.position, ...drawn.slice(1, -1), other.position];
+  let length = 0;
+  for (let k = 1; k < path.length; k++) length += Math.hypot(path[k]!.x - path[k - 1]!.x, path[k]!.y - path[k - 1]!.y);
+  return length < MIN_HEADING_STEP_M ? null : heading(path[0]!, chordEnd(path));
+}
+
+/**
+ * Which way to go at the pass-through node before step i, given the other traversable branches that
+ * leave it; null when there is no other branch or the choice cannot be stated without guessing: no
+ * heading in or out, a branch (other than a lift door) too short to have a heading, two branches on the
+ * same line, or a fork where the route is neither clearly the straightest, nor the straightest of its
+ * competitors, nor to one side of every branch ahead.
+ */
+function junctionAction(
+  points: PolylinePoint[], steps: RouteResult["steps"], i: number, branches: readonly Edge[],
+  nodes: ReadonlyMap<string, Node>, edges: ReadonlyMap<string, Edge>, openDuringRoute: (e: Edge) => boolean,
+): JunctionHint["action"] | null {
+  const node = nodes.get(steps[i]!.fromNodeId)!;
+  const otherEnd = (e: Edge) => nodes.get(e.from === node.id ? e.to : e.from)!;
+  // The route's own passages leaving this node: back the way the walk came, and on the way it goes.
+  const own = [steps[i - 1]!, steps[i]!].map((s) => edges.get(s.edgeId)!);
+  const ownHeadings = own.map((e) => ({ end: otherEnd(e).id, h: departureHeading(e, node, otherEnd(e)) }));
+  // A separately stored edge between the same nodes that leaves along the same line (a reciprocal
+  // one-way pair, a duplicated corridor) is that passage again; a parallel corridor drawn elsewhere is a choice.
+  const samePassage = (e: Edge, h: number | null) => ownHeadings.some((o) =>
+    o.end === otherEnd(e).id && o.h !== null && h !== null && Math.abs(signedDelta(o.h, h)) < SAME_BRANCH_DEG);
+  // Hours are the costly check, so they are scanned last and only for real alternatives.
+  const others = branches.filter((e) => !own.includes(e) && !samePassage(e, departureHeading(e, node, otherEnd(e))) && openDuringRoute(e));
+  if (others.length === 0) return null;
+  const chosen = turnDelta(points, steps, i);
+  const h0 = arrivalHeading(points, steps, i);
+  if (chosen === null || h0 === null) return null;
+  const ahead: number[] = [];
+  for (const e of others) {
+    // A lift's doors may face anywhere: it is a choice, but never a competing direction.
+    if (e.mode === "elevator") continue;
+    const h = departureHeading(e, node, otherEnd(e));
+    // A walkable branch with no heading of its own (a sub-metre connector) may lead anywhere: no guess.
+    if (h === null) return null;
+    const d = signedDelta(h0, h);
+    if (Math.abs(d - chosen) < SAME_BRANCH_DEG) return null;
+    if (Math.abs(d) <= AHEAD_DEG) ahead.push(d);
+  }
+  const rivals = ahead.filter((d) => Math.abs(d) < Math.abs(chosen) + STRAIGHT_MARGIN_DEG);
+  if (rivals.length === 0) return "straight";
+  // Keeping to a side is only unambiguous when every branch ahead lies on the other side.
+  if (ahead.every((d) => d > chosen)) return "keep_left";
+  if (ahead.every((d) => d < chosen)) return "keep_right";
+  return rivals.every((d) => Math.abs(d) > Math.abs(chosen)) ? "straight" : null;
+}
+
+const WEEK: Weekday[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+
+/**
+ * True when a branch's known hours keep it shut at every whole minute the route spans (departure to arrival,
+ * waits included), or, under `require_known`, never show it open. Openness is not judged at the departure
+ * minute alone: the traveller reaches a junction later, and dropping a branch that is open by then could
+ * turn "keep right" into a wrong instruction, while counting a shut one can only withhold a hint.
+ */
+function shutForWholeRoute(edge: Edge, at: LocalTime, spanSeconds: number, strict: boolean): boolean {
+  if (edge.hours === null || edge.hours.kind === "always") return false;
+  // A malformed departure (unknown weekday, minutes outside 0–1439) is an UNKNOWN time: never roll it into a known one.
+  if (!WEEK.includes(at.weekday) || !(at.minutes >= 0 && at.minutes < 1440) || !Number.isFinite(spanSeconds)) return false;
+  const from = Math.floor(at.minutes);
+  const to = Math.min(Math.ceil(at.minutes + spanSeconds / 60), from + 7 * 1440);
+  for (let c = from; c <= to; c++) {
+    const days = Math.floor(c / 1440);
+    const open = isOpenAt(edge.hours, { weekday: WEEK[(((WEEK.indexOf(at.weekday) + days) % 7) + 7) % 7]!, minutes: c - days * 1440 });
+    if (open === true || (open === null && !strict)) return false;
+  }
+  return true;
+}
+
+/**
+ * Branches that may be walked away from each node: the station's traversable graph under the query's
+ * operational restrictions (closures, strict hours), but not the traveller's own preferences — a stair
+ * or a ticket gate the traveller avoids is still a visible branch. Known hours are checked separately,
+ * and only for branches at the route's junctions (see shutForWholeRoute).
+ */
+function departuresByNode(bundle: StationBundle, route: RouteResult): Map<string, Edge[]> {
+  const router = createRouter(bundle);
+  const { profile } = route;
+  const operational: RouteProfile = {
+    ...DEFAULT_PROFILE,
+    ...(profile.extraClosedEdgeIds ? { extraClosedEdgeIds: profile.extraClosedEdgeIds } : {}),
+    ...(profile.hours ? { hours: profile.hours } : {}),
+  };
+  const out = new Map<string, Edge[]>();
+  for (const edge of bundle.edges) {
+    if (edge.from === edge.to || !router.isTraversable(edge, operational)) continue;
+    for (const nodeId of edge.direction === "both" ? [edge.from, edge.to] : [edge.from]) {
+      const list = out.get(nodeId);
+      if (list) list.push(edge);
+      else out.set(nodeId, [edge]);
+    }
+  }
+  return out;
+}
+
+/** Display name of the first POI (bundle order) reached from each node: requested language, then ja, then any. */
+function junctionNames(bundle: StationBundle, lang: "ja" | "en"): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const poi of bundle.pois) {
+    const named = poi.names.find((t) => t.lang === lang) ?? poi.names.find((t) => t.lang === "ja") ?? poi.names[0];
+    if (!named || named.text.trim() === "") continue;
+    for (const nodeId of poi.connectorNodeIds) if (!out.has(nodeId)) out.set(nodeId, named.text);
+  }
+  return out;
 }
 
 /**
@@ -273,11 +445,25 @@ function straightInPlan(points: PolylinePoint[], stepIndexes: number[]): boolean
   return !bent;
 }
 
+/**
+ * Grouped instructions for a route. Junction hints count only branches open under the route's own
+ * closures and hours (`route.profile`), never hiding one for the traveller's preferences.
+ */
 export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja"): Instruction[] {
   const t = TEXT[lang];
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const points = routePolyline(bundle, route);
+  const edges = new Map(bundle.edges.map((e) => [e.id, e]));
+  const departures = departuresByNode(bundle, route);
+  const shut = new Map<Edge, boolean>();
+  const { at } = route.profile;
+  const openDuringRoute = (e: Edge): boolean => {
+    if (!at) return true;
+    if (!shut.has(e)) shut.set(e, shutForWholeRoute(e, at, route.estimatedSeconds, route.profile.hours === "require_known"));
+    return !shut.get(e);
+  };
+  const names = junctionNames(bundle, lang);
   const firstFloor = nodes.get(route.nodeIds[0]!)!.floorId;
   const out: Instruction[] = [{ kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, text: t.start() }];
   let current: Instruction | null = null;
@@ -288,8 +474,11 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
   const flush = () => {
     if (!current) return;
     const m = Math.max(1, Math.round(current.distanceM));
-    if (current.kind === "walk") current.text = straightInPlan(points, current.stepIndexes) ? t.walk(m) : t.continue(m);
-    else if (current.kind === "turn_left" || current.kind === "turn_right" || current.kind === "u_turn") current.text = t[current.kind](m);
+    if (current.kind === "walk" || current.kind === "turn_left" || current.kind === "turn_right" || current.kind === "u_turn") {
+      const main = current.kind === "walk" ? (straightInPlan(points, current.stepIndexes) ? t.walk(m) : t.continue(m)) : t[current.kind](m);
+      const hints = (current.junctions ?? []).map((j) => t.junction(j.atM, j.action, j.name));
+      current.text = hints.length > 0 ? t.withJunctions(main, hints) : main;
+    }
     else if (current.kind === "moving_walkway") current.text = current.turn ? t.turnPrefix(current.turn, t.moving_walkway(m)) : t.moving_walkway(m);
     out.push(current);
     current = null;
@@ -365,6 +554,13 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
       }
     }
     if (current && turn === "walk") {
+      // Passing a choice point without turning: say which branch to keep to, since no turn marks it.
+      const action = junctionAction(points, route.steps, i, departures.get(step.fromNodeId) ?? [], nodes, edges, openDuringRoute);
+      if (action) {
+        (current.junctions ??= []).push({
+          nodeId: step.fromNodeId, stepIndex: i, atM: Math.max(1, Math.round(current.distanceM)), action, name: names.get(step.fromNodeId) ?? null,
+        });
+      }
       current.stepIndexes.push(i);
       current.distanceM += step.lengthM;
       current.toFloorId = step.toFloorId;
