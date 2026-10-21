@@ -3,7 +3,8 @@
 // Uses ctx.THREE so it shares the explorer's three instance.
 import type * as THREE_NS from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { createMaterials } from "./materials.ts";
+import { ENV_INTENSITY, createMaterials } from "./materials.ts";
+import { buildFloorIndex, noseDistances, wallFloorAttribute } from "./geomattrs.ts";
 import { buildSigns, type SignSpec } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
@@ -125,11 +126,12 @@ function solidDoors(THREE: ThreeNS, mesh: THREE_NS.Mesh, routes: [THREE_NS.Vecto
 }
 
 /** Raycast-only copies of `meshes` in world space, bucketed into TILE m squares (by triangle centroid)
- * per face side, so a ray only scans the tiles its bounding spheres say it can reach. */
+ * per face side (and, with `byRole`, per source role), so a ray only scans the tiles its bounding spheres say
+ * it can reach. Walkable tiles keep their role (`userData.gteki_role`) so a hit tells a stair tread from floor. */
 const TILE = 8;
-function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[]): THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial>[] {
+function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[], byRole = false): THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial>[] {
   const sides = new Map<number, THREE_NS.MeshBasicMaterial>();
-  const buckets = new Map<string, { side: number; pos: number[] }>();
+  const buckets = new Map<string, { side: number; role: string; pos: number[] }>();
   const v = new THREE.Vector3();
   for (const o of meshes) {
     const m = o as THREE_NS.Mesh;
@@ -137,6 +139,7 @@ function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[]): THREE_NS.Mes
     m.updateWorldMatrix(true, false);
     const mat = m.material as THREE_NS.Material | THREE_NS.Material[];
     const side = Array.isArray(mat) ? THREE.DoubleSide : mat.side;
+    const role = byRole ? ((m.userData.gteki_role as string | undefined) ?? m.name) : "";
     const g = m.geometry;
     const src = g.attributes.position!;
     const idx = g.index;
@@ -147,9 +150,9 @@ function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[]): THREE_NS.Mes
         v.fromBufferAttribute(src, idx ? idx.getX(i + k) : i + k).applyMatrix4(m.matrixWorld);
         tri[k * 3] = v.x; tri[k * 3 + 1] = v.y; tri[k * 3 + 2] = v.z;
       }
-      const key = `${side}:${Math.floor((tri[0]! + tri[3]! + tri[6]!) / 3 / TILE)}:${Math.floor((tri[2]! + tri[5]! + tri[8]!) / 3 / TILE)}`;
+      const key = `${side}:${role}:${Math.floor((tri[0]! + tri[3]! + tri[6]!) / 3 / TILE)}:${Math.floor((tri[2]! + tri[5]! + tri[8]!) / 3 / TILE)}`;
       let b = buckets.get(key);
-      if (!b) buckets.set(key, (b = { side, pos: [] }));
+      if (!b) buckets.set(key, (b = { side, role, pos: [] }));
       b.pos.push(...tri);
     }
   }
@@ -162,6 +165,7 @@ function raycastTiles(THREE: ThreeNS, meshes: THREE_NS.Object3D[]): THREE_NS.Mes
     geo.computeBoundingSphere();
     geo.computeBoundingBox();
     const t = new THREE.Mesh(geo, mat);
+    if (b.role) t.userData.gteki_role = b.role;
     t.visible = false;
     t.matrixAutoUpdate = false;
     t.updateMatrixWorld(true);
@@ -200,6 +204,45 @@ function openingBands(arr: number[]): number[] {
     for (let k = 0; k < 3; k++) out.push(lo.get(r)!, hi.get(r)!);
   }
   return out;
+}
+
+
+/** Vertex positions of a mesh in world space (xyz per vertex). */
+function worldPositions(THREE: ThreeNS, m: THREE_NS.Mesh): Float32Array {
+  const src = m.geometry.attributes.position!;
+  const out = new Float32Array(src.count * 3);
+  const v = new THREE.Vector3();
+  for (let i = 0; i < src.count; i++) {
+    v.fromBufferAttribute(src, i).applyMatrix4(m.matrixWorld);
+    out.set([v.x, v.y, v.z], i * 3);
+  }
+  return out;
+}
+
+/**
+ * Shading data derived from the GLB's own surfaces (no geometry is changed): for walls and columns the walking
+ * surface under every vertex (skirting and kick plates sit at a fixed height above the local floor), for stair
+ * surfaces each vertex's distance from its tread's front edge (non-slip nosing). See geomattrs.ts.
+ */
+function attachSurfaceData(THREE: ThreeNS, byRole: Map<string, THREE_NS.Mesh[]>) {
+  const floorTris: number[] = [];
+  for (const m of [...(byRole.get("floor") ?? []), ...(byRole.get("stairs_ramps") ?? [])]) {
+    const pos = worldPositions(THREE, m);
+    const idx = m.geometry.index;
+    const n = idx ? idx.count : pos.length / 3;
+    for (let i = 0; i < n; i++) {
+      const k = (idx ? idx.getX(i) : i) * 3;
+      floorTris.push(pos[k]!, pos[k + 1]!, pos[k + 2]!);
+    }
+  }
+  const floors = buildFloorIndex(floorTris);
+  for (const role of ["wall", "barriers"])
+    for (const m of byRole.get(role) ?? [])
+      m.geometry.setAttribute("aFloorY", new THREE.BufferAttribute(wallFloorAttribute(worldPositions(THREE, m), m.geometry.index?.array ?? null, floors), 1));
+  for (const m of byRole.get("stairs_ramps") ?? []) {
+    const idx = m.geometry.index;
+    m.geometry.setAttribute("aNose", new THREE.BufferAttribute(noseDistances(worldPositions(THREE, m), idx ? idx.array : null), 1));
+  }
 }
 
 /** Small studio-like environment for reflections, built with ctx.THREE (no example imports). */
@@ -250,10 +293,12 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const routeSegments = (graph as { edges: { verification: string; geometry: { x: number; y: number; z: number }[] }[] }).edges
     .filter((e) => e.verification === "verified")
     .flatMap((e) => e.geometry.slice(1).map((b, i): [THREE_NS.Vector3, THREE_NS.Vector3] => [toRenderer(e.geometry[i]!.x, e.geometry[i]!.y, e.geometry[i]!.z), toRenderer(b.x, b.y, b.z)]));
+  const meshesByRole = new Map<string, THREE_NS.Mesh[]>();
   gltf.scene.traverse((o) => {
     const m = o as THREE_NS.Mesh;
     if (!m.isMesh) return;
     const role = (m.userData.gteki_role as string) ?? m.name;
+    meshesByRole.set(role, [...(meshesByRole.get(role) ?? []), m]);
     if (role === "portals") {
       const { sky, beyond } = splitPortals(THREE, m);
       const beyondMesh = new THREE.Mesh(beyond, mats.byRole.portal_beyond);
@@ -280,6 +325,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     }
     m.matrixAutoUpdate = false;
   });
+  attachSurfaceData(THREE, meshesByRole);
   root.add(gltf.scene, ...extra);
 
   // Invisible strips over hairline cracks between PLATEAU floor polygons (pipeline/build_walkfix.py):
@@ -337,7 +383,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     const m = mats.byRole[role] as THREE_NS.MeshStandardMaterial;
     m.envMap = env;
     // Brushed-steel escalators need visible reflections: the baked lightmap only lights the diffuse part.
-    m.envMapIntensity = role === "floor" ? 0.35 : role === "ceiling" ? 0.05 : role === "transport" ? 0.9 : 0.2;
+    m.envMapIntensity = ENV_INTENSITY[role] ?? 0.2;
   }
 
   // Low quality paints signs at ~160 px/m instead of 300: a quarter of the texture memory, still legible at phone size.
@@ -358,7 +404,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
 
   // The explorer raycasts walkable and colliders several times a frame. Whole-station meshes cost a
   // full triangle scan per ray; ~8 m tiles let three.js skip every tile out of a short ray's reach.
-  const walkTiles = raycastTiles(THREE, walkable), colliderTiles = raycastTiles(THREE, colliders);
+  const walkTiles = raycastTiles(THREE, walkable, true), colliderTiles = raycastTiles(THREE, colliders);
   const rayTiles = [...walkTiles, ...colliderTiles];
   return {
     root,

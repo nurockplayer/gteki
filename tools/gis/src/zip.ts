@@ -2,7 +2,7 @@ import { posix } from 'node:path';
 import yauzl from 'yauzl';
 
 export type ZipEntry = { name: string; data: Buffer };
-export type ZipReadOptions = { maxEntryBytes?: number; maxTotalBytes?: number };
+export type ZipReadOptions = { maxEntryBytes?: number; maxTotalBytes?: number; legacyFileNameEncoding?: 'shift_jis' };
 const DEFAULT_ENTRY_LIMIT = 128 * 1024 * 1024;
 const DEFAULT_TOTAL_LIMIT = 512 * 1024 * 1024;
 
@@ -23,7 +23,7 @@ export async function readZip(path: string, options: ZipReadOptions = {}): Promi
     throw new Error('ZIP size limits must be non-negative safe integers');
   }
   const zip = await new Promise<yauzl.ZipFile>((resolve, reject) => {
-    yauzl.open(path, { lazyEntries: true, decodeStrings: true, validateEntrySizes: true }, (error, opened) => {
+    yauzl.open(path, { lazyEntries: true, decodeStrings: !options.legacyFileNameEncoding, validateEntrySizes: true }, (error, opened) => {
       if (error || !opened) reject(error ?? new Error(`Unable to open ZIP: ${path}`));
       else resolve(opened);
     });
@@ -46,6 +46,12 @@ export async function readZip(path: string, options: ZipReadOptions = {}): Promi
       resolve(entries);
     });
     zip.on('entry', (entry: yauzl.Entry) => {
+      try {
+        if (options.legacyFileNameEncoding) {
+          const raw = entry.fileName as unknown as Buffer;
+          entry.fileName = new TextDecoder(entry.generalPurposeBitFlag & 0x800 ? 'utf-8' : options.legacyFileNameEncoding, { fatal: true }).decode(raw);
+        }
+      } catch (error) { fail(error instanceof Error ? error : new Error(String(error))); return; }
       try { validateEntryName(entry.fileName); }
       catch (error) { fail(error instanceof Error ? error : new Error(String(error))); return; }
       if (entry.isEncrypted()) { fail(new Error(`Encrypted ZIP entry is not accepted: ${entry.fileName}`)); return; }
