@@ -320,5 +320,23 @@ describe("camera-only blockers", () => {
     const t = explorerTargets([], [], roles.cameraBlockers);
     expect(castAll(new THREE.Raycaster(new THREE.Vector3(0.5, 0.5, 3), new THREE.Vector3(0, 0, -1)), t.camera)[0]?.object).toBe(slab);
   });
+
+  it("stop the camera from below a one-sided ceiling whose normals face up", () => {
+    const material = new THREE.MeshBasicMaterial({ side: THREE.FrontSide });
+    const slab = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), material);
+    slab.name = "camera_blocker_up";
+    slab.position.y = 2.6;
+    const shown = slab.clone();
+    shown.material = material;
+    const root = new THREE.Group().add(slab);
+    root.updateMatrixWorld(true);
+    const up = () => new THREE.Raycaster(new THREE.Vector3(1.3, 1.6, 2.1), new THREE.Vector3(0, 1, 0), 0, 5);
+    // Untagged, the one-sided plane is invisible to a ray from below.
+    shown.updateMatrixWorld(true);
+    expect(castAll(up(), [shown])).toHaveLength(0);
+    const roles = sceneFromGlbRoles(root);
+    expect(castAll(up(), explorerTargets([], [], roles.cameraBlockers).camera)[0]?.object).toBe(slab);
+    expect(material.side).toBe(THREE.FrontSide);
+  });
 });
 

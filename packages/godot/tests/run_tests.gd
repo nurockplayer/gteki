@@ -218,6 +218,8 @@ func test_generated_glb(station_root: Node3D) -> void:
 		check(bodies.filter(func(b): return b.collision_layer == 1).size() == 3, "wall/barrier meshes, including an inherited wall child, create colliders")
 		var camera_bodies := bodies.filter(func(b): return b.collision_layer == Assets.CAMERA_LAYER and b.collision_mask == 0)
 		check(camera_bodies.size() == 3, "camera blockers collide on the camera layer only, never with walking bodies")
+		var two_sided := camera_bodies.all(func(b): return b.get_children().any(func(c): return c is CollisionShape3D and c.shape is ConcavePolygonShape3D and c.shape.backface_collision))
+		check(two_sided, "camera blocker shapes collide from both sides (as the web's double-sided ray test)")
 		for name in ["slab_cap", "camera_blocker_b1"]:
 			var blocker := transformed.find_child(name, true, false) as MeshInstance3D
 			check(blocker != null and blocker.has_meta("gteki_camera_blocker") and not blocker.visible and not blocker.has_meta("gteki_collider"), "%s is a hidden camera-only blocker" % name)

@@ -237,6 +237,10 @@ func _tag_roles(node: Node, inherited: String = "") -> void:
 			if body is StaticBody3D and not body in children:
 				body.collision_layer = CAMERA_LAYER
 				body.collision_mask = 0
+				# A ceiling stops the camera from below whatever way its normals face (as the web's double-sided test).
+				for shape_node in body.get_children():
+					if shape_node is CollisionShape3D and shape_node.shape is ConcavePolygonShape3D:
+						shape_node.shape.backface_collision = true
 	for child in children:
 		_tag_roles(child, role)
 
