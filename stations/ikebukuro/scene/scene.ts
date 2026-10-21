@@ -3,7 +3,8 @@
 // Uses ctx.THREE so it shares the explorer's three instance.
 import type * as THREE_NS from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { createMaterials } from "./materials.ts";
+import { ENV_INTENSITY, createMaterials } from "./materials.ts";
+import { buildFloorIndex, floorYAttribute, noseDistances } from "./geomattrs.ts";
 import { buildSigns, type SignSpec } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
@@ -202,6 +203,45 @@ function openingBands(arr: number[]): number[] {
   return out;
 }
 
+
+/** Vertex positions of a mesh in world space (xyz per vertex). */
+function worldPositions(THREE: ThreeNS, m: THREE_NS.Mesh): Float32Array {
+  const src = m.geometry.attributes.position!;
+  const out = new Float32Array(src.count * 3);
+  const v = new THREE.Vector3();
+  for (let i = 0; i < src.count; i++) {
+    v.fromBufferAttribute(src, i).applyMatrix4(m.matrixWorld);
+    out.set([v.x, v.y, v.z], i * 3);
+  }
+  return out;
+}
+
+/**
+ * Shading data derived from the GLB's own surfaces (no geometry is changed): for walls and columns the walking
+ * surface under every vertex (skirting and kick plates sit at a fixed height above the local floor), for stair
+ * surfaces each vertex's distance from its tread's front edge (non-slip nosing). See geomattrs.ts.
+ */
+function attachSurfaceData(THREE: ThreeNS, byRole: Map<string, THREE_NS.Mesh[]>) {
+  const floorTris: number[] = [];
+  for (const m of [...(byRole.get("floor") ?? []), ...(byRole.get("stairs_ramps") ?? [])]) {
+    const pos = worldPositions(THREE, m);
+    const idx = m.geometry.index;
+    const n = idx ? idx.count : pos.length / 3;
+    for (let i = 0; i < n; i++) {
+      const k = (idx ? idx.getX(i) : i) * 3;
+      floorTris.push(pos[k]!, pos[k + 1]!, pos[k + 2]!);
+    }
+  }
+  const floors = buildFloorIndex(floorTris);
+  for (const role of ["wall", "barriers"])
+    for (const m of byRole.get(role) ?? [])
+      m.geometry.setAttribute("aFloorY", new THREE.BufferAttribute(floorYAttribute(worldPositions(THREE, m), floors), 1));
+  for (const m of byRole.get("stairs_ramps") ?? []) {
+    const idx = m.geometry.index;
+    m.geometry.setAttribute("aNose", new THREE.BufferAttribute(noseDistances(worldPositions(THREE, m), idx ? idx.array : null), 1));
+  }
+}
+
 /** Small studio-like environment for reflections, built with ctx.THREE (no example imports). */
 function makeEnvironment(THREE: ThreeNS, renderer: THREE_NS.WebGLRenderer) {
   const env = new THREE.Scene();
@@ -250,10 +290,12 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const routeSegments = (graph as { edges: { verification: string; geometry: { x: number; y: number; z: number }[] }[] }).edges
     .filter((e) => e.verification === "verified")
     .flatMap((e) => e.geometry.slice(1).map((b, i): [THREE_NS.Vector3, THREE_NS.Vector3] => [toRenderer(e.geometry[i]!.x, e.geometry[i]!.y, e.geometry[i]!.z), toRenderer(b.x, b.y, b.z)]));
+  const meshesByRole = new Map<string, THREE_NS.Mesh[]>();
   gltf.scene.traverse((o) => {
     const m = o as THREE_NS.Mesh;
     if (!m.isMesh) return;
     const role = (m.userData.gteki_role as string) ?? m.name;
+    meshesByRole.set(role, [...(meshesByRole.get(role) ?? []), m]);
     if (role === "portals") {
       const { sky, beyond } = splitPortals(THREE, m);
       const beyondMesh = new THREE.Mesh(beyond, mats.byRole.portal_beyond);
@@ -280,6 +322,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     }
     m.matrixAutoUpdate = false;
   });
+  attachSurfaceData(THREE, meshesByRole);
   root.add(gltf.scene, ...extra);
 
   // Invisible strips over hairline cracks between PLATEAU floor polygons (pipeline/build_walkfix.py):
@@ -337,7 +380,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     const m = mats.byRole[role] as THREE_NS.MeshStandardMaterial;
     m.envMap = env;
     // Brushed-steel escalators need visible reflections: the baked lightmap only lights the diffuse part.
-    m.envMapIntensity = role === "floor" ? 0.35 : role === "ceiling" ? 0.05 : role === "transport" ? 0.9 : 0.2;
+    m.envMapIntensity = ENV_INTENSITY[role] ?? 0.2;
   }
 
   // Low quality paints signs at ~160 px/m instead of 300: a quarter of the texture memory, still legible at phone size.
