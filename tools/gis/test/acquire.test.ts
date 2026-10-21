@@ -106,7 +106,7 @@ describe('source acquisition', () => {
     const catalog = sources.find((source) => source.source_id === 'plateau-catalog-bldg-tran-13116-13104')!;
     expect(catalog).toMatchObject({ resolution: { kind: 'direct' }, expected_bytes: null, license_name: 'unknown', publish_gate: 'HOLD' });
     expect(catalog.expected_url).toBe('https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran');
-    const meshes = [['13116', '53394576', 'ikebukuro'], ['13116', '53394577', 'ikebukuro'], ['13104', '53394525', 'shinjuku'], ['13104', '53394526', 'shinjuku']] as const;
+    const meshes = [['13116', '53394576', 'ikebukuro'], ['13116', '53394577', 'ikebukuro'], ['13104', '53394525', 'shinjuku'], ['13104', '53394526', 'shinjuku'], ['13104', '53394535', 'shinjuku'], ['13104', '53394536', 'shinjuku']] as const;
     for (const [city, mesh, station] of meshes) for (const type of ['bldg', 'tran'] as const) {
       const source = sources.find((item) => item.source_id === `plateau-${city}-${type}-${mesh}`)!;
       expect(source, `${city}-${type}-${mesh}`).toBeDefined();
@@ -114,8 +114,8 @@ describe('source acquisition', () => {
       expect(source.expected_url).toMatch(new RegExp(`/udx/${type}/${mesh}_${type}_6697_op\\.gml$`));
       expect(Number.isSafeInteger(source.expected_bytes)).toBe(true);
     }
-    // Only the two Ikebukuro bldg meshes exceed the 128 MiB default cap; each is capped at exactly its declared size.
-    expect(sources.filter((source) => (source.expected_bytes ?? 0) > 128 * 1024 * 1024).map((source) => source.source_id).sort()).toEqual(['plateau-13116-bldg-53394576', 'plateau-13116-bldg-53394577']);
+    // The two Ikebukuro bldg meshes and Shinjuku bldg 53394536 exceed the 128 MiB default cap; each is capped at exactly its declared size.
+    expect(sources.filter((source) => (source.expected_bytes ?? 0) > 128 * 1024 * 1024).map((source) => source.source_id).sort()).toEqual(['plateau-13104-bldg-53394536', 'plateau-13116-bldg-53394576', 'plateau-13116-bldg-53394577']);
     // The 2025 metadata ZIPs (lineage evidence) already exist on main and are not duplicated.
     expect(sources.filter((source) => /^plateau-(13116|13104)-metadata$/.test(source.source_id))).toHaveLength(2);
   });

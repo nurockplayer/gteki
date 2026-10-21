@@ -1003,7 +1003,7 @@ describe('Shinjuku: config, sources and the full command wrapper', () => {
     expect(frame).toMatchObject({ vertical_mode: 'per_feature_ground', horizontal_origin_height_m: 0, origin: { lat: 35.687, lon: 139.6994, hM: null, crs: 'EPSG:6668', datum: 'JGD2011' }, source_crs: 'EPSG:6697', navigation_use: 'NOT_FOR_ROUTING', verification: 'UNVERIFIED' });
   });
 
-  it('lists 53394535 and 53394536 (bldg and tran) in sources.yaml like 53394525/26, not yet acquired: expected_bytes null, URL from the same package directory', async () => {
+  it('lists 53394535 and 53394536 (bldg and tran) in sources.yaml like 53394525/26, with the decoded sizes measured on the host and the catalog URL in the same package directory', async () => {
     const sources = new Map(loadSources().map((s) => [s.source_id, s]));
     const reference = sources.get('plateau-13104-bldg-53394525')!;
     const catalog = JSON.parse(await readFile(fixture('plateau-catalog-meshes-13116-13104.json'), 'utf8')) as { meshes: Record<string, string[]> };
@@ -1011,9 +1011,9 @@ describe('Shinjuku: config, sources and the full command wrapper', () => {
       const entry = sources.get(`plateau-13104-${kind}-${mesh}`)!;
       expect(entry, `${kind} ${mesh}`).toBeDefined();
       expect(catalog.meshes[`13104-${kind}`]).toContain(mesh); // the catalog lists this mesh for this kind
-      expect(entry).toMatchObject({ station_ids: ['shinjuku'], publisher: 'MLIT Project PLATEAU', official_url: reference.official_url, license_name: 'CC BY 4.0', attribution_text: SJ_ATTRIBUTION, expected_bytes: null, publish_gate: 'CONDITIONAL', resolution: { kind: 'plateau_catalog_api', catalog_source_id: 'plateau-catalog-bldg-tran-13116-13104', match: `${mesh}_${kind}_6697_op.gml` } });
+      expect(entry).toMatchObject({ station_ids: ['shinjuku'], publisher: 'MLIT Project PLATEAU', official_url: reference.official_url, license_name: 'CC BY 4.0', attribution_text: SJ_ATTRIBUTION, expected_bytes: ({ 'bldg-53394535': 124173341, 'bldg-53394536': 138190372, 'tran-53394535': 31785752, 'tran-53394536': 25412513 } as Record<string, number>)[`${kind}-${mesh}`], publish_gate: 'CONDITIONAL', resolution: { kind: 'plateau_catalog_api', catalog_source_id: 'plateau-catalog-bldg-tran-13116-13104', match: `${mesh}_${kind}_6697_op.gml` } });
       expect(entry.expected_url).toBe(`https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/${kind}/${mesh}_${kind}_6697_op.gml`);
-      expect(entry.notes).toMatch(/NOT YET ACQUIRED/);
+      expect(entry.notes).toMatch(/decoded size served on 2026-10-22/);
     }
     expect(reference.expected_url.startsWith('https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/')).toBe(true);
   });
