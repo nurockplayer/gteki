@@ -11,3 +11,4 @@ coverage/
 data-cache/
 stations/*/build/
 __pycache__/
+/.qa/
