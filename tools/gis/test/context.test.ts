@@ -6,12 +6,13 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NodeIO } from '@gltf-transform/core';
 import * as common from '../src/common.js';
-import { assertMeshCoverage, bboxIntersectsDisc, buildContextGlb, contextGlb, contextMergedName, contextRunDigest, contextNodeName, EXPLORER_ROLE_WORDS, explorerRoleFromName, loadContextConfig, parseKinds, parseMergeSpec, type ContextInput, type ContextVariant, type MergeSpec } from '../src/context.js';
+import { assertMeshCoverage, bboxIntersectsDisc, HEIGHT_BASIS_FLATTENED, HEIGHT_BASIS_TP, groundOffsetStats, buildContextGlb, contextGlb, contextMergedName, contextRunDigest, contextNodeName, EXPLORER_ROLE_WORDS, explorerRoleFromName, loadContextConfig, parseKinds, parseMergeSpec, type ContextInput, type ContextVariant, type MergeSpec } from '../src/context.js';
 import { bboxIntersectsAnyDisc, buildContextWindow, meshCellBounds, meshCode3, meshesTouchedByWindow, readGraphWindowNodes, type NodeRule } from '../src/context-window.js';
-import { scanContextFeatures, type ContextFeatureRecord } from '../src/context-scan.js';
+import { scanContextFeatures, type ContextFeatureRecord, type ContextKind } from '../src/context-scan.js';
 import { loadFrame } from '../src/crs.js';
 import { loadSources } from '../src/acquire.js';
 import { isStationEnuFrame, type StationEnuFrame } from '../src/station-enu.js';
+import type { GroundOffsetStats } from '../src/context.js';
 
 const dirs: string[] = [];
 afterEach(async () => { vi.restoreAllMocks(); for (const dir of dirs.splice(0)) await rm(dir, { recursive: true, force: true }); });
@@ -190,16 +191,17 @@ describe('bounded streaming scanner', () => {
 });
 
 describe('context command wrapper', () => {
-  it('ships a READY Ikebukuro config of manifest sources and a BLOCKED Shinjuku config that never converts', async () => {
+  it('ships READY Ikebukuro and Shinjuku configs of manifest sources (the Shinjuku decision is #39 comment 6324045059)', async () => {
     const sources = new Map(loadSources().map((s) => [s.source_id, s]));
     const ikebukuro = await loadContextConfig('ikebukuro');
     expect(ikebukuro).toMatchObject({ status: 'READY', frame_id: 'ikebukuro-station-enu-v0', radius_m: 250, merge: 'kind', window: { r_origin_m: 250, r_exit_m: 120, node_rule: { graph: 'stations/ikebukuro/gteki/graph.json', exit_kinds: ['exit'], street_floor_ids: ['street'], exit_poi_connectors: true } } });
     expect(ikebukuro.sources).toHaveLength(4);
     for (const id of ikebukuro.sources) expect(sources.get(id)!.station_ids).toContain('ikebukuro');
     const shinjuku = await loadContextConfig('shinjuku');
-    expect(shinjuku.status).toBe('BLOCKED');
+    expect(shinjuku.status).toBe('READY');
+    expect(shinjuku.blocked_reason).toBeUndefined();
+    expect(shinjuku.notes).toMatch(/6324045059/);
     for (const id of shinjuku.sources) expect(sources.get(id)!.station_ids).toContain('shinjuku');
-    await expect(contextGlb('shinjuku')).rejects.toThrow(/blocked.*vertical anchor/s);
     await expect(loadContextConfig('nowhere')).rejects.toThrow(/No context config/);
   });
 
@@ -778,5 +780,295 @@ describe('--kinds (buildings-only context)', () => {
     expect(config.kinds).toEqual(['bldg']);
     await expect(buildContextGlb({ frame: await stationFrame(), radiusM: 250, inputs, outputPath: join(dir, 'x.glb'), kinds: ['bldg', 'x' as never] })).rejects.toThrow(/Invalid --kinds/);
     await expect(buildContextGlb({ frame: await stationFrame(), radiusM: 250, inputs: [inputs[0]!], outputPath: join(dir, 'y.glb'), kinds: ['tran'] })).rejects.toThrow(/at least one source of kind tran/);
+  });
+});
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Shinjuku (decision: GitHub #39 comment 6324045059): per-feature ground flattening, poi_ids window, r_origin_m 0.
+
+const SJ_ATTRIBUTION = '出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成';
+const sjInputs: ContextInput[] = [
+  { sourceId: 'synthetic-sj-bldg', sourceSha256: 'c'.repeat(64), kind: 'bldg', path: fixture('context-bldg-shinjuku.xml'), attributionText: SJ_ATTRIBUTION },
+  { sourceId: 'synthetic-sj-tran', sourceSha256: 'd'.repeat(64), kind: 'tran', path: fixture('context-tran-shinjuku.xml'), attributionText: SJ_ATTRIBUTION },
+];
+const SJ_EXIT_IDS = ['poi:exit:1', 'poi:exit:2', 'poi:exit:3', 'poi:exit:4'];
+const SJ_RULE: NodeRule = { graph: 'stations/shinjuku/gteki/graph.json', exit_kinds: [], street_floor_ids: [], poi_ids: SJ_EXIT_IDS };
+/** Shinjuku-like graph: exits 1-4 near the origin on toei-nwd floors, exits 5 and 6 on B1 far away (only exit 5 reaches the fixture building sj_only_exit5). */
+const SJ_NODES = [node('x1', 'exit', 'toei-nwd-0', 0, 0), node('x2', 'exit', 'toei-nwd-0', 10, 0), node('x3', 'exit', 'toei-nwd-1', 0, 10), node('x4', 'exit', 'toei-nwd-0', 10, 10), node('x5', 'exit', 'toei-nwd-m1', 500, 500), node('x6', 'exit', 'toei-nwd-m1', -500, -500)];
+const SJ_POIS = [1, 2, 3, 4, 5, 6].map((n) => poi(`poi:exit:${n}`, 'exit', [`x${n}`]));
+async function shinjukuFrame(): Promise<StationEnuFrame> {
+  const frame = await loadFrame('shinjuku-station-enu-v0');
+  if (!isStationEnuFrame(frame)) throw new Error('expected a station-enu frame');
+  return frame;
+}
+async function buildSj(opts: { kinds?: ContextKind[]; groundAttrs?: string[]; merge?: MergeSpec; nodes?: ReturnType<typeof node>[]; pois?: unknown[]; rule?: NodeRule; exitR?: number } = {}) {
+  const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-')); dirs.push(dir);
+  const graphPath = await writeGraph(dir, opts.nodes ?? SJ_NODES, 'shinjuku');
+  const poisPath = await writePois(dir, opts.pois ?? SJ_POIS, 'shinjuku');
+  const window = await buildContextWindow({ r_origin_m: 0, r_exit_m: opts.exitR ?? 300, node_rule: opts.rule ?? SJ_RULE }, { stationId: 'shinjuku', graphPath, poisPath });
+  const frame = await shinjukuFrame();
+  const outputPath = join(dir, 'context.glb');
+  const report = await buildContextGlb({ frame, window, inputs: sjInputs, outputPath, merge: opts.merge ?? { mode: 'none' }, kinds: opts.kinds ?? ['bldg'], ...(opts.groundAttrs ? { groundHeightAttributes: opts.groundAttrs } : {}) });
+  const document = await new NodeIO().readBinary(await readFile(outputPath));
+  return { dir, outputPath, frame, window, report, document, graphPath, poisPath };
+}
+/** Min and max station z (glTF y) of one node's mesh. */
+function zRange(document: Awaited<ReturnType<typeof buildSj>>['document'], name: string): [number, number] {
+  const node = document.getRoot().listNodes().find((n) => n.getName() === name);
+  if (!node) throw new Error(`no node ${name}`);
+  let lo = Infinity, hi = -Infinity;
+  for (const primitive of node.getMesh()!.listPrimitives()) { const acc = primitive.getAttribute('POSITION')!; for (let i = 0; i < acc.getCount(); i++) { const y = acc.getElement(i, [0, 0, 0])[1]!; lo = Math.min(lo, y); hi = Math.max(hi, y); } }
+  return [lo, hi];
+}
+const near = (actual: number, expected: number): void => { expect(Math.abs(actual - expected)).toBeLessThan(2e-3); };
+const sjIds = (report: Awaited<ReturnType<typeof buildSj>>['report']): string[] => report.per_feature.map((f) => String(f.gml_id)).sort();
+
+describe('Shinjuku: each building is flattened to symbolic street z = 0 by its own ground height', () => {
+  it('two buildings at different ground heights both end with base z = 0 and keep their relative roof heights', async () => {
+    const { report, document } = await buildSj();
+    expect(sjIds(report)).toEqual(['sj_a', 'sj_b', 'sj_c', 'sj_d', 'sj_lod2']);
+    const a = zRange(document, 'ctx_bldg_sj_a'), b = zRange(document, 'ctx_bldg_sj_b'), d = zRange(document, 'ctx_bldg_sj_d');
+    // sj_a: TP 30..45, sj_b: TP 40..52, sj_d: TP 36..60 -> base 0, roof = the building's own height.
+    near(a[0], 0); near(a[1], 15);
+    near(b[0], 0); near(b[1], 12);
+    near(d[0], 0); near(d[1], 24);
+    // One constant for all buildings would have left at least one base off zero.
+    expect(new Set(report.per_feature.map((f) => f.ground_height_m)).size).toBeGreaterThan(3);
+  });
+
+  it('the ground height of a building is the min z of the LOD actually drawn, not of another LOD', async () => {
+    const { report, document } = await buildSj();
+    const row = report.per_feature.find((f) => f.gml_id === 'sj_lod2')!;
+    expect(row).toMatchObject({ lod_used: 'LOD2', ground_height_m: 31, ground_basis: 'min_z_of_drawn_lod' }); // LOD1 of this building starts at 29
+    const [lo, hi] = zRange(document, 'ctx_bldg_sj_lod2');
+    near(lo, 0); near(hi, 13);
+  });
+
+  it('uses the building\'s own CityGML ground-height attribute when it carries a configured one, else the min-z fallback; counts each basis', async () => {
+    const without = await buildSj();
+    expect(without.report.ground_offsets!.buildings).toEqual({ count: 5, min_m: 30, median_m: 35, max_m: 40, basis_counts: { ground_height_attribute: 0, min_z_of_drawn_lod: 5 } });
+    expect(without.report.per_feature.find((f) => f.gml_id === 'sj_c')).toMatchObject({ ground_height_m: 35, ground_basis: 'min_z_of_drawn_lod' });
+    const withAttr = await buildSj({ groundAttrs: ['groundHeight'] });
+    expect(withAttr.report.per_feature.find((f) => f.gml_id === 'sj_c')).toMatchObject({ ground_height_m: 33.5, ground_basis: 'ground_height_attribute' });
+    for (const id of ['sj_a', 'sj_b', 'sj_d', 'sj_lod2']) expect(withAttr.report.per_feature.find((f) => f.gml_id === id)).toMatchObject({ ground_basis: 'min_z_of_drawn_lod' });
+    // The attribute (33.5) sits 1.5 m below the building's own LOD1 base (35): the base is not forced to 0, the offset is the attribute.
+    const [lo, hi] = zRange(withAttr.document, 'ctx_bldg_sj_c');
+    near(lo, 1.5); near(hi, 13.5);
+    expect(withAttr.report.ground_offsets!.buildings).toEqual({ count: 5, min_m: 30, median_m: 33.5, max_m: 40, basis_counts: { ground_height_attribute: 1, min_z_of_drawn_lod: 4 } });
+  });
+
+  it('records min, median and max of the subtracted ground heights and the count per basis (median of an even count = mean of the middle two)', () => {
+    expect(groundOffsetStats([])).toBeNull();
+    expect(groundOffsetStats([{ offset: 30, basis: 'min_z_of_drawn_lod' }, { offset: 41, basis: 'ground_height_attribute' }, { offset: 32, basis: 'min_z_of_drawn_lod' }, { offset: 35.1234, basis: 'min_z_of_drawn_lod' }]))
+      .toEqual({ count: 4, min_m: 30, median_m: 33.562, max_m: 41, basis_counts: { ground_height_attribute: 1, min_z_of_drawn_lod: 3 } });
+  });
+
+  it('refuses a configured ground-height attribute that is not a number or has a non-metre unit, rather than guessing', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-bad-')); dirs.push(dir);
+    const xml = await readFile(fixture('context-bldg-shinjuku.xml'), 'utf8');
+    for (const [name, bad, pattern] of [['nan', xml.replace('uom="m">33.5<', 'uom="m">high<'), /not a finite number/], ['feet', xml.replace('uom="m">33.5<', 'uom="ft">33.5<'), /only metres are supported/]] as const) {
+      const path = join(dir, `${name}.xml`); await writeFile(path, bad);
+      await expect(scanContextFeatures(path, { kind: 'bldg', mode: 'collect', retain: () => true, groundHeightAttributes: ['groundHeight'], onFeature: () => undefined })).rejects.toThrow(pattern);
+    }
+    // Unconfigured: the attribute is ignored entirely (no ground_height on any record).
+    const records: ContextFeatureRecord[] = [];
+    await scanContextFeatures(fixture('context-bldg-shinjuku.xml'), { kind: 'bldg', mode: 'collect', retain: () => true, onFeature: (r) => records.push(r) });
+    expect(records.some((r) => r.ground_height !== undefined)).toBe(false);
+    const configured: ContextFeatureRecord[] = [];
+    await scanContextFeatures(fixture('context-bldg-shinjuku.xml'), { kind: 'bldg', mode: 'collect', retain: () => true, groundHeightAttributes: ['groundHeight'], onFeature: (r) => configured.push(r) });
+    expect(configured.filter((r) => r.ground_height !== undefined).map((r) => [r.gml_id, r.ground_height])).toEqual([['sj_c', { attribute: 'groundHeight', value_m: 33.5 }]]);
+  });
+
+  it('flattens roads per feature the same way when tran is requested', async () => {
+    const { report, document } = await buildSj({ kinds: ['tran'] });
+    expect(sjIds(report)).toEqual(['sj_road1', 'sj_road2']);
+    expect(report.per_feature.map((f) => [f.gml_id, f.ground_height_m])).toEqual([['sj_road1', 31], ['sj_road2', 41.5]]);
+    const r1 = zRange(document, 'ctx_road_sj_road1'), r2 = zRange(document, 'ctx_road_sj_road2');
+    near(r1[0], 0); near(r1[1], 2); near(r2[0], 0); near(r2[1], 0.3);
+    expect(report.ground_offsets).toMatchObject({ buildings: null, roads: { count: 2, min_m: 31, median_m: 36.25, max_m: 41.5 } });
+    expect(report.modifications).toEqual(['road surfaces flattened to street level']);
+  });
+
+  it('carries the modification notice and the vertical mode in the receipt, scene extras and every node and mesh extras', async () => {
+    const { report, document } = await buildSj({ merge: { mode: 'kind' } });
+    const notice = 'building bases flattened to street level';
+    expect(report.modifications).toEqual([notice]);
+    expect(report.modification_notice).toContain(notice);
+    expect(report).toMatchObject({ vertical_mode: 'per_feature_ground', height_basis: 'per_feature_ground_flattened_symbolic_street_z0', attribution_text: SJ_ATTRIBUTION, frame: { vertical_mode: 'per_feature_ground', origin: { hM: null } } });
+    expect(HEIGHT_BASIS_FLATTENED).toBe('per_feature_ground_flattened_symbolic_street_z0');
+    const scene = document.getRoot().listScenes()[0]!.getExtras();
+    expect(scene).toMatchObject({ gteki_role: 'context', navigation_use: 'NOT_FOR_ROUTING', visual_only: true, vertical_mode: 'per_feature_ground', height_basis: HEIGHT_BASIS_FLATTENED, modifications: [notice], attribution_text: SJ_ATTRIBUTION });
+    expect(String(scene.modification_notice)).toContain(notice);
+    expect((scene.ground_offsets as { buildings: GroundOffsetStats }).buildings.count).toBe(5);
+    expect(scene.selection_rule).toMatch(/node_rule\.poi_ids/);
+    for (const n of document.getRoot().listNodes()) for (const extras of [n.getExtras(), n.getMesh()!.getExtras()]) {
+      expect(extras).toMatchObject({ gteki_role: 'context', navigation_use: 'NOT_FOR_ROUTING', visual_only: true, vertical_mode: 'per_feature_ground', height_basis: HEIGHT_BASIS_FLATTENED, modifications: [notice], attribution_text: SJ_ATTRIBUTION });
+      expect(String(extras.modification_notice)).toContain(notice);
+    }
+    expect(document.getRoot().listNodes().map((n) => n.getName())).toEqual(['ctx_bldg_all']); // merge kind, ctx_bldg_* naming, no textures
+    expect(document.getRoot().listTextures()).toHaveLength(0);
+    expect(report.validation.status).toBe('PASS');
+  });
+
+  it('adds the road notice only when roads are converted', async () => {
+    const { report } = await buildSj({ kinds: ['bldg', 'tran'], merge: { mode: 'kind' } });
+    expect(report.modifications).toEqual(['building bases flattened to street level', 'road surfaces flattened to street level']);
+  });
+});
+
+describe('Shinjuku: window of 300 m discs around ground-level exits 1-4 (node_rule.poi_ids)', () => {
+  it('gives a disc to the connector nodes of exits 1-4 only; exits 5 and 6 (kind exit, B1) get none and no origin disc exists', async () => {
+    const { window, report } = await buildSj();
+    expect(window.discs.map((d) => [d.id, d.x, d.y, d.r, d.origin])).toEqual([['x1', 0, 0, 300, 'node'], ['x2', 10, 0, 300, 'node'], ['x3', 0, 10, 300, 'node'], ['x4', 10, 10, 300, 'node']]);
+    expect(window.graph).toMatchObject({ nodes_total: 6, selected_nodes: 4, exit_connectors: 0, street_level_nodes: 0, pois: { poi_ids: SJ_EXIT_IDS, connector_nodes: 4 } });
+    expect(window.graph!.selected.map((n) => [n.id, n.matched_by, n.poi_ids])).toEqual([['x1', ['poi_id'], ['poi:exit:1']], ['x2', ['poi_id'], ['poi:exit:2']], ['x3', ['poi_id'], ['poi:exit:3']], ['x4', ['poi_id'], ['poi:exit:4']]]);
+    // sj_only_exit5 lies only inside exit 5's disc: not selected when exits 5 and 6 are excluded; sj_far lies in none.
+    expect(sjIds(report)).not.toContain('sj_only_exit5');
+    expect(sjIds(report)).not.toContain('sj_far');
+    expect(report.window).toMatchObject({ r_origin_m: 0, radius_m: 0, r_exit_m: 300, disc_count: 4, node_rule: { poi_ids: SJ_EXIT_IDS } });
+    // Listing exit 5 as well does reach it: the rule is exactly the listed ids.
+    const withFive = await buildSj({ rule: { ...SJ_RULE, poi_ids: [...SJ_EXIT_IDS, 'poi:exit:5'] } });
+    expect(sjIds(withFive.report)).toContain('sj_only_exit5');
+  });
+
+  it('fails closed on a configured POI id that is missing, has no connector node, or names a node that is not in the graph', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-poi-')); dirs.push(dir);
+    const graphPath = await writeGraph(dir, SJ_NODES, 'shinjuku');
+    const read = async (poiIds: string[], pois: unknown[]) => readGraphWindowNodes({ ...SJ_RULE, poi_ids: poiIds }, { stationId: 'shinjuku', graphPath, poisPath: await writePois(dir, pois, 'shinjuku') });
+    await expect(read([...SJ_EXIT_IDS, 'poi:exit:9'], SJ_POIS)).rejects.toThrow(/poi:exit:9, which is not in .*pois\.json; refusing to guess/);
+    await expect(read(SJ_EXIT_IDS, SJ_POIS.map((p) => (p.id === 'poi:exit:2' ? { ...p, connectorNodeIds: [] } : p)))).rejects.toThrow(/poi:exit:2 has no resolvable connectorNodeIds/);
+    await expect(read(SJ_EXIT_IDS, SJ_POIS.map((p) => { const { connectorNodeIds, ...rest } = p; return p.id === 'poi:exit:3' ? rest : p; }))).rejects.toThrow(/poi:exit:3 has no resolvable connectorNodeIds/);
+    await expect(read(SJ_EXIT_IDS, SJ_POIS.map((p) => (p.id === 'poi:exit:4' ? { ...p, connectorNodeIds: ['x404'] } : p)))).rejects.toThrow(/poi:exit:4 names connector node x404 that is not in/);
+    await expect(read([], SJ_POIS)).rejects.toThrow(/poi_ids must be a non-empty array/);
+    await expect(read(['poi:exit:1', 'poi:exit:1'], SJ_POIS)).rejects.toThrow(/poi_ids must be a non-empty array of distinct/);
+    // Whole-window level: the failure stops the build, nothing is converted.
+    await expect(buildContextWindow({ r_origin_m: 0, r_exit_m: 300, node_rule: { ...SJ_RULE, poi_ids: ['poi:exit:9'] } }, { stationId: 'shinjuku', graphPath, poisPath: await writePois(dir, SJ_POIS, 'shinjuku') })).rejects.toThrow(/poi:exit:9/);
+  });
+
+  it('r_origin_m 0 adds no disc; a window with no disc at all is refused; a positive R_origin still adds the origin disc', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-r0-')); dirs.push(dir);
+    const graphPath = await writeGraph(dir, SJ_NODES, 'shinjuku'), poisPath = await writePois(dir, SJ_POIS, 'shinjuku');
+    const zero = await buildContextWindow({ r_origin_m: 0, r_exit_m: 300, node_rule: SJ_RULE }, { stationId: 'shinjuku', graphPath, poisPath });
+    expect(zero.discs.some((d) => d.id === 'origin')).toBe(false);
+    expect(zero.discs).toHaveLength(4);
+    expect(zero.spec.r_origin_m).toBe(0);
+    const some = await buildContextWindow({ r_origin_m: 100, r_exit_m: 300, node_rule: SJ_RULE }, { stationId: 'shinjuku', graphPath, poisPath });
+    expect(some.discs.map((d) => d.id)).toEqual(['origin', 'x1', 'x2', 'x3', 'x4']);
+    await expect(buildContextWindow({ r_origin_m: 0, r_exit_m: 0 }, { stationId: 'shinjuku' })).rejects.toThrow(/no disc.*radius/);
+    await expect(buildContextWindow({ r_origin_m: 0, r_exit_m: 300, node_rule: SJ_RULE }, { stationId: 'shinjuku', graphPath: await writeGraph(dir, [], 'shinjuku'), poisPath })).rejects.toThrow(/names connector node x1 that is not in/);
+    await expect(buildContextWindow({ r_origin_m: -1, r_exit_m: 300, node_rule: SJ_RULE }, { stationId: 'shinjuku', graphPath, poisPath })).rejects.toThrow(/radius/);
+  });
+
+  it('reads the committed Shinjuku graph: exits 1-4 on toei-nwd floors, the 4 connector positions, and exactly meshes 53394525, 26, 35 and 36', async () => {
+    const dirOf = fileURLToPath(new URL('../../../stations/shinjuku/gteki/', import.meta.url));
+    const graphBytes = await readFile(join(dirOf, 'graph.json')).catch(() => null);
+    if (graphBytes === null) return; // standalone checkout without stations/
+    const config = await loadContextConfig('shinjuku');
+    const window = await buildContextWindow({ r_origin_m: config.window!.r_origin_m!, r_exit_m: config.window!.r_exit_m, node_rule: config.window!.node_rule!, mesh_margin_m: config.window!.mesh_margin_m! }, { stationId: 'shinjuku' });
+    expect(window.graph!.selected.map((n) => [n.id, n.floor_id, n.x, n.y])).toEqual([
+      ['n:4423521d79e54865b7c41e4aec29826d', 'toei-nwd-0', -58.1, 146.84], ['n:a06f3d191885497bac197b666c4daef9', 'toei-nwd-0', -59.9, 211.96],
+      ['n:e4cfe61e944e4f5e8ad8caeb6d521750', 'toei-nwd-0', 2.85, -9.56], ['n:e6feaa2cc7514b68be2758b956baeb28', 'toei-nwd-1', -2.59, 3.56],
+    ]);
+    expect(window.graph!.selected.map((n) => n.poi_ids![0]).sort()).toEqual(SJ_EXIT_IDS);
+    expect(window.graph!.graph_sha256).toBe(createHash('sha256').update(graphBytes).digest('hex'));
+    expect(window.discs).toHaveLength(4); expect(window.discs.every((d) => d.r === 300 && d.id !== 'origin')).toBe(true);
+    const frame = await shinjukuFrame();
+    expect(meshesTouchedByWindow(window.discs, frame, window.spec.mesh_margin_m).meshes).toEqual(['53394525', '53394526', '53394535', '53394536']);
+    expect(meshesTouchedByWindow(window.discs, frame, 0).meshes).toEqual(['53394525', '53394526']); // the north pair is brought in by the 50 m margin (exit 1's disc ends at y 512 m, the cell edge is at about 518 m)
+    const sourceIds = config.sources;
+    expect(assertMeshCoverage('shinjuku', window, frame, sourceIds, ['bldg']).neededSources).toEqual(['plateau-13104-bldg-53394525', 'plateau-13104-bldg-53394526', 'plateau-13104-bldg-53394535', 'plateau-13104-bldg-53394536']);
+    // Fail closed: without the two north meshes the window is refused, never clipped.
+    expect(() => assertMeshCoverage('shinjuku', window, frame, sourceIds.filter((id) => !/5339453[56]/.test(id)), ['bldg'])).toThrow(/53394535 bldg \(not in the context config\), 53394536 bldg/);
+  });
+});
+
+describe('Shinjuku: config, sources and the full command wrapper', () => {
+  it('defaults to buildings only; READY with the 300 m exit 1-4 window, r_origin 0, the 4 needed meshes and a flattening frame', async () => {
+    const config = await loadContextConfig('shinjuku');
+    expect(config).toMatchObject({ status: 'READY', frame_id: 'shinjuku-station-enu-v0', radius_m: 0, kinds: ['bldg'], merge: 'kind', variant: 'high', window: { r_origin_m: 0, r_exit_m: 300, node_rule: { graph: 'stations/shinjuku/gteki/graph.json', exit_kinds: [], street_floor_ids: [], poi_ids: SJ_EXIT_IDS } } });
+    expect(config.sources.filter((id) => id.includes('-bldg-')).sort()).toEqual(['plateau-13104-bldg-53394525', 'plateau-13104-bldg-53394526', 'plateau-13104-bldg-53394535', 'plateau-13104-bldg-53394536']);
+    expect(config.sources.filter((id) => id.includes('-tran-')).sort()).toEqual(['plateau-13104-tran-53394525', 'plateau-13104-tran-53394526', 'plateau-13104-tran-53394535', 'plateau-13104-tran-53394536']);
+    expect(parseKinds(config.kinds!)).toEqual(['bldg']);
+    const frame = await shinjukuFrame();
+    expect(frame).toMatchObject({ vertical_mode: 'per_feature_ground', horizontal_origin_height_m: 0, origin: { lat: 35.687, lon: 139.6994, hM: null, crs: 'EPSG:6668', datum: 'JGD2011' }, source_crs: 'EPSG:6697', navigation_use: 'NOT_FOR_ROUTING', verification: 'UNVERIFIED' });
+  });
+
+  it('lists 53394535 and 53394536 (bldg and tran) in sources.yaml like 53394525/26, not yet acquired: expected_bytes null, URL from the same package directory', async () => {
+    const sources = new Map(loadSources().map((s) => [s.source_id, s]));
+    const reference = sources.get('plateau-13104-bldg-53394525')!;
+    const catalog = JSON.parse(await readFile(fixture('plateau-catalog-meshes-13116-13104.json'), 'utf8')) as { meshes: Record<string, string[]> };
+    for (const kind of ['bldg', 'tran'] as const) for (const mesh of ['53394535', '53394536']) {
+      const entry = sources.get(`plateau-13104-${kind}-${mesh}`)!;
+      expect(entry, `${kind} ${mesh}`).toBeDefined();
+      expect(catalog.meshes[`13104-${kind}`]).toContain(mesh); // the catalog lists this mesh for this kind
+      expect(entry).toMatchObject({ station_ids: ['shinjuku'], publisher: 'MLIT Project PLATEAU', official_url: reference.official_url, license_name: 'CC BY 4.0', attribution_text: SJ_ATTRIBUTION, expected_bytes: null, publish_gate: 'CONDITIONAL', resolution: { kind: 'plateau_catalog_api', catalog_source_id: 'plateau-catalog-bldg-tran-13116-13104', match: `${mesh}_${kind}_6697_op.gml` } });
+      expect(entry.expected_url).toBe(`https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/${kind}/${mesh}_${kind}_6697_op.gml`);
+      expect(entry.notes).toMatch(/NOT YET ACQUIRED/);
+    }
+    expect(reference.expected_url.startsWith('https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/')).toBe(true);
+  });
+
+  it('writes a Shinjuku receipt: per-building offsets, offset stats, basis counts, notice, run id with r0 and bldg, feature table with the offset column', async () => {
+    const dirOf = fileURLToPath(new URL('../../../stations/shinjuku/gteki/', import.meta.url));
+    if (await readFile(join(dirOf, 'graph.json')).catch(() => null) === null) return;
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-run-')); dirs.push(dir);
+    const manifest = new Map(loadSources().map((s) => [s.source_id, s]));
+    const bldgIds = ['plateau-13104-bldg-53394525', 'plateau-13104-bldg-53394526', 'plateau-13104-bldg-53394535', 'plateau-13104-bldg-53394536'];
+    const stored = vi.spyOn(common, 'getStoredSource').mockImplementation(async (id: string) => ({ path: fixture('context-bldg-shinjuku.xml'), record: { source_id: id, sha256: createHash('sha256').update(id).digest('hex') }, source: manifest.get(id)! }) as Awaited<ReturnType<typeof common.getStoredSource>>);
+    vi.spyOn(common, 'getStoreRoot').mockReturnValue(dir);
+    const originalWrite = common.writeJson;
+    vi.spyOn(common, 'writeJson').mockImplementation(async (path, value) => originalWrite(path.startsWith(common.docsRoot) ? join(dir, 'docs', relative(common.docsRoot, path)) : path, value));
+    const summary = await contextGlb('shinjuku');
+    expect(stored.mock.calls.map((c) => c[0]).sort()).toEqual(bldgIds); // default kinds bldg: no tran source is opened
+    expect(summary.run_id).toMatch(/^context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-kind-bldg-[a-f0-9]{20}$/);
+    expect(summary.mesh_coverage).toMatchObject({ needed_meshes: ['53394525', '53394526', '53394535', '53394536'], kinds: ['bldg'], needed_sources: bldgIds });
+    expect(summary).toMatchObject({ kinds: ['bldg'], merge: 'kind', vertical_mode: 'per_feature_ground', height_basis: HEIGHT_BASIS_FLATTENED, modifications: ['building bases flattened to street level'], window: { r_origin_m: 0, r_exit_m: 300, disc_count: 4 } });
+    expect(summary.ground_offsets!.buildings).toEqual({ count: 5, min_m: 30, median_m: 35, max_m: 40, basis_counts: { ground_height_attribute: 0, min_z_of_drawn_lod: 5 } });
+    expect(summary.feature_table.columns).toEqual(['gml_id', 'source_id', 'lod', 'mesh', 'tri_start', 'tri_count', 'ground_offset_m', 'ground_basis']);
+    expect(summary.feature_table.rows.map((r) => [r[0], r[6], r[7]])).toEqual([['sj_a', 30, 'min_z_of_drawn_lod'], ['sj_b', 40, 'min_z_of_drawn_lod'], ['sj_c', 35, 'min_z_of_drawn_lod'], ['sj_d', 36, 'min_z_of_drawn_lod'], ['sj_lod2', 31, 'min_z_of_drawn_lod']]);
+    const receipt = JSON.parse(await readFile(join(dir, 'docs', 'gis', 'context', `${summary.run_id}.json`), 'utf8'));
+    expect(receipt).toMatchObject({ run_id: summary.run_id, vertical_mode: 'per_feature_ground', ground_offsets: { buildings: { count: 5 } }, modifications: ['building bases flattened to street level'] });
+    expect(receipt.modification_notice).toContain('building bases flattened to street level');
+    expect(receipt.window.graph.pois.poi_ids).toEqual(SJ_EXIT_IDS);
+    expect(JSON.stringify(receipt)).not.toMatch(/"(?:cleared|clearance)"/);
+    const sidecar = JSON.parse(await readFile(join(dir, summary.sidecar_path), 'utf8'));
+    expect(sidecar.per_feature.map((f: Record<string, unknown>) => [f.gml_id, f.ground_height_m, f.ground_basis])).toEqual(summary.feature_table.rows.map((r) => [r[0], r[6], r[7]]));
+    // The other three bldg sources hold the same ids in this fixture-backed run: excluded as duplicates, never emitted twice.
+    expect(summary.sources.map((src) => src.converted)).toEqual([5, 0, 0, 0]);
+  });
+
+  it('fails closed before reading any source when a needed Shinjuku mesh source is missing from the run', async () => {
+    const dirOf = fileURLToPath(new URL('../../../stations/shinjuku/gteki/', import.meta.url));
+    if (await readFile(join(dirOf, 'graph.json')).catch(() => null) === null) return;
+    const stored = vi.spyOn(common, 'getStoredSource');
+    await expect(contextGlb('shinjuku', { sourceIds: ['plateau-13104-bldg-53394525', 'plateau-13104-bldg-53394526'] })).rejects.toThrow(/53394535 bldg \(not in the context config\), 53394536 bldg/);
+    expect(stored).not.toHaveBeenCalled();
+  });
+});
+
+describe('Ikebukuro is unchanged by the Shinjuku support', () => {
+  it('keeps the TP height basis, no modification field, no ground offsets and the 6-column feature table', async () => {
+    const { report, document } = await build();
+    expect(report.height_basis).toBeUndefined();
+    expect('ground_offsets' in report || 'modifications' in report || 'vertical_mode' in report).toBe(false);
+    expect(report.per_feature.every((f) => !('ground_height_m' in f))).toBe(true);
+    const scene = document.getRoot().listScenes()[0]!.getExtras();
+    expect(Object.keys(scene)).not.toEqual(expect.arrayContaining(['modifications']));
+    for (const key of ['modifications', 'modification_notice', 'vertical_mode', 'ground_offsets', 'height_basis']) expect(key in scene).toBe(false);
+    for (const n of document.getRoot().listNodes()) {
+      expect(n.getExtras().height_basis).toBe(HEIGHT_BASIS_TP);
+      expect('modifications' in n.getExtras() || 'vertical_mode' in n.getExtras()).toBe(false);
+    }
+    expect(scene.selection_rule).not.toMatch(/poi_ids/);
+    expect(report.frame.vertical_mode).toBeUndefined();
+    expect(report.frame.origin.hM).toBe(0);
+  });
+
+  it('a TP frame with the Ikebukuro origin still projects z = height - hM and its window text carries no poi_ids sentence', async () => {
+    const { report } = await build();
+    const rows = report.per_feature.filter((f) => f.gml_id === 'bldg_lod1only');
+    expect(rows).toHaveLength(1);
+    expect(report.window.rule).not.toMatch(/poi_ids/);
+    expect(report.bbox_local_ENU!.min[2]).toBeGreaterThan(32); // TP heights (32.5 and up), not flattened
   });
 });

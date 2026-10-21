@@ -1161,7 +1161,7 @@
   redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
   content_year: null
   availability_deadline: null
-  notes: Street-level context source (#39), visual only. expected_bytes is the decoded size served on 2026-10-21 (gzip-encoded, strong ETag); the catalog fileSize 93876352 did not match it, bldg only; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Textures are not converted. Shinjuku street-level conversion is blocked on the symbolic vertical anchor decision.
+  notes: Street-level context source (#39), visual only. expected_bytes is the decoded size served on 2026-10-21 (gzip-encoded, strong ETag); the catalog fileSize 93876352 did not match it, bldg only; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Textures are not converted. Shinjuku street-level conversion is unblocked by the station lead's decision (GitHub #39 comment 6324045059): no vertical datum, each feature flattened to its own ground height; see docs/gis/HANDOFF.md.
   publish_gate: CONDITIONAL
 - source_id: plateau-13104-bldg-53394526
   title: Shinjuku building CityGML 53394526
@@ -1179,7 +1179,7 @@
   redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
   content_year: null
   availability_deadline: null
-  notes: Street-level context source (#39), visual only. expected_bytes is the decoded size served on 2026-10-21 (gzip-encoded, strong ETag); the catalog fileSize 62405121 did not match it, bldg only; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Textures are not converted. Shinjuku street-level conversion is blocked on the symbolic vertical anchor decision.
+  notes: Street-level context source (#39), visual only. expected_bytes is the decoded size served on 2026-10-21 (gzip-encoded, strong ETag); the catalog fileSize 62405121 did not match it, bldg only; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Textures are not converted. Shinjuku street-level conversion is unblocked by the station lead's decision (GitHub #39 comment 6324045059): no vertical datum, each feature flattened to its own ground height; see docs/gis/HANDOFF.md.
   publish_gate: CONDITIONAL
 - source_id: plateau-13104-tran-53394525
   title: Shinjuku transportation CityGML 53394525
@@ -1197,7 +1197,7 @@
   redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
   content_year: null
   availability_deadline: null
-  notes: Street-level context source (#39), visual only. Catalog fileSize is the uncompressed GML size; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Tran LOD1/LOD2 geometry is flat at z=0; only LOD3 carries heights. Textures are not converted. Shinjuku street-level conversion is blocked on the symbolic vertical anchor decision.
+  notes: Street-level context source (#39), visual only. Catalog fileSize is the uncompressed GML size; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Tran LOD1/LOD2 geometry is flat at z=0; only LOD3 carries heights. Textures are not converted. Shinjuku street-level conversion is unblocked by the station lead's decision (GitHub #39 comment 6324045059): no vertical datum, each feature flattened to its own ground height; see docs/gis/HANDOFF.md.
   publish_gate: CONDITIONAL
 - source_id: plateau-13104-tran-53394526
   title: Shinjuku transportation CityGML 53394526
@@ -1215,5 +1215,77 @@
   redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
   content_year: null
   availability_deadline: null
-  notes: Street-level context source (#39), visual only. Catalog fileSize is the uncompressed GML size; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Tran LOD1/LOD2 geometry is flat at z=0; only LOD3 carries heights. Textures are not converted. Shinjuku street-level conversion is blocked on the symbolic vertical anchor decision.
+  notes: Street-level context source (#39), visual only. Catalog fileSize is the uncompressed GML size; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Tran LOD1/LOD2 geometry is flat at z=0; only LOD3 carries heights. Textures are not converted. Shinjuku street-level conversion is unblocked by the station lead's decision (GitHub #39 comment 6324045059): no vertical datum, each feature flattened to its own ground height; see docs/gis/HANDOFF.md.
+  publish_gate: CONDITIONAL
+- source_id: plateau-13104-bldg-53394535
+  title: Shinjuku building CityGML 53394535
+  station_ids: [shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-bldg-tran-13116-13104, match: 53394535_bldg_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/bldg/53394535_bldg_6697_op.gml
+  expected_bytes: null
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: null
+  availability_deadline: null
+  notes: "Street-level context source (#39), visual only; one of the 3rd-level meshes the Shinjuku window (300 m discs around ground-level exits 1-4, plus mesh_margin_m) needs besides 53394525/53394526. NOT YET ACQUIRED: expected_bytes is unknown (null) and must be recorded after `gis acquire` on the host. expected_url follows the directory of the acquired Shinjuku 53394525/53394526/53394536 files (only the mesh name changes); it is not read from the catalog snapshot, whose test fixture lists mesh codes only. `gis acquire` resolves the real URL from the live catalog and records expected_url_match; if that is false, correct expected_url. Until expected_bytes is set the decoded-stream cap is the 128 MiB default. Catalog package year 2025; the per-theme survey year is not asserted here. Textures are not converted. Shinjuku street-level conversion follows the station lead's decision (GitHub #39 comment 6324045059)."
+  publish_gate: CONDITIONAL
+- source_id: plateau-13104-bldg-53394536
+  title: Shinjuku building CityGML 53394536
+  station_ids: [shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-bldg-tran-13116-13104, match: 53394536_bldg_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/bldg/53394536_bldg_6697_op.gml
+  expected_bytes: null
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: null
+  availability_deadline: null
+  notes: "Street-level context source (#39), visual only; one of the 3rd-level meshes the Shinjuku window (300 m discs around ground-level exits 1-4, plus mesh_margin_m) needs besides 53394525/53394526. NOT YET ACQUIRED: expected_bytes is unknown (null) and must be recorded after `gis acquire` on the host. expected_url follows the directory of the acquired Shinjuku 53394525/53394526/53394536 files (only the mesh name changes); it is not read from the catalog snapshot, whose test fixture lists mesh codes only. `gis acquire` resolves the real URL from the live catalog and records expected_url_match; if that is false, correct expected_url. Until expected_bytes is set the decoded-stream cap is the 128 MiB default. Catalog package year 2025; the per-theme survey year is not asserted here. Textures are not converted. Shinjuku street-level conversion follows the station lead's decision (GitHub #39 comment 6324045059)."
+  publish_gate: CONDITIONAL
+- source_id: plateau-13104-tran-53394535
+  title: Shinjuku transportation CityGML 53394535
+  station_ids: [shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-bldg-tran-13116-13104, match: 53394535_tran_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/tran/53394535_tran_6697_op.gml
+  expected_bytes: null
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: null
+  availability_deadline: null
+  notes: "Street-level context source (#39), visual only; one of the 3rd-level meshes the Shinjuku window (300 m discs around ground-level exits 1-4, plus mesh_margin_m) needs besides 53394525/53394526. NOT YET ACQUIRED: expected_bytes is unknown (null) and must be recorded after `gis acquire` on the host. expected_url follows the directory of the acquired Shinjuku 53394525/53394526/53394536 files (only the mesh name changes); it is not read from the catalog snapshot, whose test fixture lists mesh codes only. `gis acquire` resolves the real URL from the live catalog and records expected_url_match; if that is false, correct expected_url. Until expected_bytes is set the decoded-stream cap is the 128 MiB default. Catalog package year 2025; the per-theme survey year is not asserted here. Textures are not converted. Tran LOD1/LOD2 geometry is flat at z=0; only LOD3 carries heights. Shinjuku street-level conversion follows the station lead's decision (GitHub #39 comment 6324045059)."
+  publish_gate: CONDITIONAL
+- source_id: plateau-13104-tran-53394536
+  title: Shinjuku transportation CityGML 53394536
+  station_ids: [shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-bldg-tran-13116-13104, match: 53394536_tran_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/tran/53394536_tran_6697_op.gml
+  expected_bytes: null
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: null
+  availability_deadline: null
+  notes: "Street-level context source (#39), visual only; one of the 3rd-level meshes the Shinjuku window (300 m discs around ground-level exits 1-4, plus mesh_margin_m) needs besides 53394525/53394526. NOT YET ACQUIRED: expected_bytes is unknown (null) and must be recorded after `gis acquire` on the host. expected_url follows the directory of the acquired Shinjuku 53394525/53394526/53394536 files (only the mesh name changes); it is not read from the catalog snapshot, whose test fixture lists mesh codes only. `gis acquire` resolves the real URL from the live catalog and records expected_url_match; if that is false, correct expected_url. Until expected_bytes is set the decoded-stream cap is the 128 MiB default. Catalog package year 2025; the per-theme survey year is not asserted here. Textures are not converted. Tran LOD1/LOD2 geometry is flat at z=0; only LOD3 carries heights. Shinjuku street-level conversion follows the station lead's decision (GitHub #39 comment 6324045059)."
   publish_gate: CONDITIONAL

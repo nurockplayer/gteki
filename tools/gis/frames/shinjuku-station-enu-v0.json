@@ -1,0 +1,24 @@
+{
+  "frame_id": "shinjuku-station-enu-v0",
+  "frame_kind": "station-enu",
+  "station_id": "shinjuku",
+  "station_json_path": "stations/shinjuku/gteki/station.json",
+  "station_json_sha256": "9d7c6be8d400932622693b23e98c7b70c640b4459fee6715ce866f1a9752684f",
+  "verification": "UNVERIFIED",
+  "origin": {
+    "lat": 35.687,
+    "lon": 139.6994,
+    "hM": null,
+    "datum": "JGD2011",
+    "crs": "EPSG:6668"
+  },
+  "source_crs": "EPSG:6697",
+  "ellipsoid": "GRS80",
+  "horizontal": "ENU tangent plane at the origin on GRS80 (geodetic -> ECEF -> ENU, ECEF origin evaluated at horizontal_origin_height_m); x east, y north; no curvature term. Origin CRS EPSG:6668 (JGD2011 geographic 2D) and source CRS EPSG:6697 (JGD2011 geographic 2D + JGD2011 height) share the JGD2011 horizontal datum on GRS80, so the source latitude/longitude are used as published with no horizontal transformation and no translation from any other frame",
+  "vertical": "none: no vertical datum and origin.hM is null on purpose. The frame defines x/y only. Each context feature is flattened to symbolic street z = 0 by subtracting its own ground height (its CityGML ground-height attribute when it carries one, else the minimum source height of the LOD geometry actually drawn for that feature; never one constant for all features): z_local = z_source - groundHeight(feature). Source heights are EPSG:6697 orthometric (TP) and are only ever used as differences within one feature.",
+  "axis_order": "source latitude,longitude,height; station x east, y north, z up; glTF (renderer) x east, y up, z -north",
+  "navigation_use": "NOT_FOR_ROUTING",
+  "purpose": "Station reference frame (docs/core/contract.md Frames) for visual-only context geometry; NOT an envelope processing origin and NOT a routing frame",
+  "vertical_mode": "per_feature_ground",
+  "horizontal_origin_height_m": 0
+}
