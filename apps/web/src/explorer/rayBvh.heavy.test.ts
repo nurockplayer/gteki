@@ -2,8 +2,9 @@
  * Differential proof for the explorer's BVH ray tests on a real station: the Shinjuku scene module (whatever
  * version is checked out), ray-tested the way the explorer does (walk, ground, camera, sky), plus random
  * stress rays. Every hit list must equal three's brute-force intersectObjects exactly (objects, distances,
- * faces, order). Heavy: run with `pnpm test:heavy:box`.
+ * faces, order). Heavy: run with `pnpm test:heavy:box`. Writes its numbers to .qa/ray-bvh/shinjuku.json.
  */
+import { mkdirSync, writeFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { WALKER_BODY, type StationScene } from "@gteki/scene-api";
@@ -85,10 +86,15 @@ describe("BVH ray tests on the Shinjuku scene module equal brute force", () => {
   }, 120_000);
 
   afterAll(() => {
-    console.log(`[ray-bvh] shinjuku targets: ground ${targets.ground.length}, collider ${targets.collider.length}, sky ${targets.sky.length}, camera ${targets.camera.length} (blockers ${targets.blockers.size})`);
-    console.log(`[ray-bvh] trees ${trees.trees}, triangles ${trees.triangles}, ${(trees.bytes / 2 ** 20).toFixed(2)} MB, build ${trees.buildMs.toFixed(1)} ms; heap Δ ${memory.heapMb.toFixed(2)} MB, arrayBuffers Δ ${memory.arrayBuffersMb.toFixed(2)} MB`);
-    for (const m of mixes) {
-      console.log(`[ray-bvh] ${m.name.padEnd(8)} rays ${m.rays}, hit ${m.hits}, mismatches ${m.mismatches.length}, max first-hit Δ ${m.maxFirstDelta} m, brute ${(m.bruteMs * 1000 / m.rays).toFixed(1)} µs/ray, bvh ${(m.bvhMs * 1000 / m.rays).toFixed(1)} µs/ray`);
+    if (targets && trees) {
+      const report = {
+        targets: { ground: targets.ground.length, collider: targets.collider.length, sky: targets.sky.length, camera: targets.camera.length, blockers: targets.blockers.size },
+        trees: { ...trees, mb: trees.bytes / 2 ** 20 },
+        memory: { ...memory, workerPeakRssMb: process.resourceUsage().maxRSS / 1024 },
+        mixes: mixes.map((m) => ({ ...m, mismatches: m.mismatches.length, firstMismatches: m.mismatches.slice(0, 5), bruteUsPerRay: (m.bruteMs * 1000) / m.rays, bvhUsPerRay: (m.bvhMs * 1000) / m.rays })),
+      };
+      mkdirSync(".qa/ray-bvh", { recursive: true });
+      writeFileSync(".qa/ray-bvh/shinjuku.json", `${JSON.stringify(report, null, 2)}\n`);
     }
     scene?.dispose();
     vi.unstubAllGlobals();
