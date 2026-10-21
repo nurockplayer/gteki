@@ -310,11 +310,12 @@ class Validator:
                 index_size = sizes[indices["componentType"]]
                 storage(indices["bufferView"], indices.get("byteOffset", 0), sparse_count, index_size, index_size, False)
                 storage(values["bufferView"], values.get("byteOffset", 0), sparse_count, element_size, component_size, False)
-        for extension in doc.get("extensionsUsed", []):
-            if extension in ("KHR_draco_mesh_compression", "EXT_meshopt_compression"):
-                self.message("FAIL", f"forbidden compression: {extension}")
-            elif extension != "KHR_materials_emissive_strength":
-                self.message("WARN", f"extension outside canonical baseline: {extension}")
+        for key in ("extensionsUsed", "extensionsRequired"):
+            for extension in doc.get(key, []):
+                if extension in ("KHR_draco_mesh_compression", "EXT_meshopt_compression"):
+                    self.message("FAIL", f"forbidden compression: {extension}")
+                elif extension != "KHR_materials_emissive_strength":
+                    self.message("FAIL", f"extension outside canonical baseline ({key}): {extension}")
         scenes = doc.get("scenes", [])
         roots = self.index(scenes, doc.get("scene", 0)).get("nodes", []) if scenes else []
         if len(roots) != 1:
@@ -370,6 +371,8 @@ class Validator:
             locals_.append(matrix)
             if negative:
                 self.message("FAIL", f"node {index} {node.get('name')!r} has negative scale/reflection")
+            if index == root_index and any(abs(a - b) > 1e-6 for a, b in zip(matrix, IDENTITY)):
+                self.message("FAIL", "asset root must be at identity (no translation, rotation or scale)")
             if any(abs(s - 1) > 1e-6 for s in scales):
                 # the contract applies every transform's scale: unapplied scale on any node fails
                 self.message("FAIL", f"node {index} has non-unit scale {scales}")
@@ -528,9 +531,9 @@ class Validator:
             except (KeyError, TypeError, ValueError):
                 self.message("FAIL", "bounds_m must contain finite min/max vec3 arrays")
             if low[1] < -0.01 and "allow_below_floor" not in meta.get("params", {}):
-                self.message("WARN", f"bounds extend below floor: min.y={low[1]:.6f}")
+                self.message("FAIL", f"bounds extend below floor without params.allow_below_floor: min.y={low[1]:.6f}")
         if self.result["triangles"] != meta.get("triangles"):
-            self.message("WARN", f"visual triangles {self.result['triangles']} differ from metadata {meta.get('triangles')}")
+            self.message("FAIL", f"visual triangles {self.result['triangles']} differ from metadata {meta.get('triangles')}")
 
     @staticmethod
     def index(items, index):
@@ -581,8 +584,8 @@ def self_test():
     assert Validator("tiny.glb", encode_glb(sparse, data)).check()["status"] == "FAIL"
     # Exercise nested quaternion/TRS and matrix composition, strips/fans, warnings.
     moved = copy.deepcopy(doc)
-    moved["nodes"][0]["translation"] = [2, 0, 0]
-    moved["nodes"][0]["rotation"] = [0, 1, 0, 0]
+    moved["nodes"].append(dict(name="group", translation=[2, 0, 0], rotation=[0, 1, 0, 0], children=[1, 2, 3]))
+    moved["nodes"][0]["children"] = [4]
     moved["nodes"][1]["matrix"] = IDENTITY.copy()
     moved["nodes"][1]["matrix"][13] = 2
     moved["meshes"][0]["primitives"][0]["mode"] = 5
@@ -593,6 +596,34 @@ def self_test():
     scaled = copy.deepcopy(doc)
     scaled["nodes"][1]["scale"] = [1, 2, 1]  # child scale is not applied
     assert Validator("tiny.glb", encode_glb(scaled, binary)).check()["status"] == "FAIL"
+    # contract rules that are FAIL, not advice
+    rooted = [("translation", [0, 0.5, 0]), ("rotation", [0, 1, 0, 0]), ("matrix", IDENTITY[:12] + [0, 1, 0, 1])]
+    for key, value in rooted:
+        bad_root = copy.deepcopy(doc)
+        bad_root["nodes"][0][key] = value  # a moved root; the same transform on a child is fine
+        assert Validator("tiny.glb", encode_glb(bad_root, binary)).check()["status"] == "FAIL", key
+    child = copy.deepcopy(doc)
+    child["nodes"][3].update(translation=[0, 0.5, 0], rotation=[0, 1, 0, 0])
+    assert Validator("tiny.glb", encode_glb(child, binary)).check()["status"] == "PASS"
+    for key in ("extensionsUsed", "extensionsRequired"):
+        ext = copy.deepcopy(doc)
+        ext[key] = ["KHR_materials_emissive_strength"]
+        assert Validator("tiny.glb", encode_glb(ext, binary)).check()["status"] == "PASS", key
+        ext[key] = ["KHR_materials_emissive_strength", "KHR_materials_clearcoat"]
+        assert Validator("tiny.glb", encode_glb(ext, binary)).check()["status"] == "FAIL", key
+    counted = copy.deepcopy(doc)
+    counted["nodes"][0]["extras"]["gteki"]["triangles"] = 2
+    assert Validator("tiny.glb", encode_glb(counted, binary)).check()["status"] == "FAIL"
+    pit = struct.pack("<9f", -1, -0.5, 0, 1, -0.5, 0, 0, 0.5, -1)
+    for params, status in (({}, "FAIL"), (dict(allow_below_floor=True), "PASS")):
+        below = copy.deepcopy(doc)
+        below["accessors"][0].update(min=[-1, -0.5, -1], max=[1, 0.5, 0])
+        below["nodes"][0]["extras"]["gteki"].update(params=params, bounds_m=dict(min=[-1, -0.5, -1], max=[1, 0.5, 0]))
+        assert Validator("tiny.glb", encode_glb(below, pit)).check()["status"] == status, params
+    # AABB mismatch stays advice
+    aabb = copy.deepcopy(doc)
+    aabb["nodes"][0]["extras"]["gteki"]["bounds_m"] = dict(min=[-1, 0, -1], max=[1, 2, 0])
+    assert Validator("tiny.glb", encode_glb(aabb, binary)).check()["status"] == "WARN"
     # a texture must sample a UV set the primitive has (texCoord -1 / 1 without TEXCOORD_1 fail)
     for coord, attrs, status in ((0, ("TEXCOORD_0",), "PASS"), (-1, ("TEXCOORD_0",), "FAIL"),
                                  (1, ("TEXCOORD_0",), "FAIL"), (1, ("TEXCOORD_0", "TEXCOORD_1"), "PASS")):
@@ -664,7 +695,7 @@ def self_test():
     assert lightmapped(apart, count=5) == "FAIL"  # one UV per vertex
     assert lightmapped(tuple(c + 2 * (k % 2 == 0) for k, c in enumerate(apart))) == "FAIL"  # outside the unit square
     print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs, "
-          "texCoord (core, extension, transform, extras), palette mipmaps, lightmap (overlap, strips, fans, range, NaN, collapsed, mobile UV1)")
+          "root identity, extensions, triangle count, below floor, texCoord (core, extension, transform, extras), palette mipmaps, lightmap (overlap, strips, fans, range, NaN, collapsed, mobile UV1)")
 
 
 def main():
