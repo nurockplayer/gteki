@@ -1,0 +1,317 @@
+{
+  "source_id": "tokyo-s10-shinjuku-nishiguchi-csv",
+  "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
+  "station_ids": [
+    "shinjuku"
+  ],
+  "tool_input_sha256": "7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad049a2",
+  "input_sources": [
+    {
+      "source_id": "tokyo-s10-shinjuku-nishiguchi-csv",
+      "sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6"
+    },
+    {
+      "source_id": "tokyo-s10-catalog",
+      "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea"
+    },
+    {
+      "source_id": "plateau-related-provenance",
+      "sha256": "ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d"
+    }
+  ],
+  "records": [
+    {
+      "resource": "https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku-nishiguchi.csv",
+      "catalog_resource_url": "https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku-nishiguchi.csv",
+      "catalog_resource_identity": {
+        "matches": true,
+        "prior_sha256": null,
+        "acquired_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6"
+      },
+      "layer": null,
+      "claim_level": "DATASET",
+      "licence_claimed": {
+        "name": "Creative Commons Attribution",
+        "version": "4.0",
+        "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja"
+      },
+      "scope": "Commercial public Web3D/product reuse and redistribution of the factual CSV fields, including plain labels and URL strings as pointers only; no linked target content or branding rights.",
+      "exact_resource_covered": true,
+      "archive_catalog_covered": false,
+      "derivative_licence_verified": false,
+      "catalog_resource_id": "327d3a06-e0dd-4381-b648-2884627173bf",
+      "resource_licence_fields": [],
+      "evidence": [
+        {
+          "id": "tokyo-s10-catalog#licence",
+          "source_id": "tokyo-s10-catalog",
+          "supporting_document": null,
+          "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
+          "url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000039",
+          "section": "/result/license_id",
+          "quote": "CC-BY-4.0",
+          "json_pointer": "/result/license_id"
+        },
+        {
+          "id": "tokyo-s10-catalog#share",
+          "source_id": "tokyo-s10-catalog",
+          "supporting_document": "cc-by-4-deed-ja",
+          "sha256": "cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382",
+          "url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+          "section": "CC BY 4.0 deed / freedoms and attribution",
+          "quote": "営利目的も含め、どのような目的でも。"
+        },
+        {
+          "id": "tokyo-s10-catalog#credit",
+          "source_id": "tokyo-s10-catalog",
+          "supporting_document": "cc-by-4-deed-ja",
+          "sha256": "cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382",
+          "url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+          "section": "CC BY 4.0 deed / freedoms and attribution",
+          "quote": "適切なクレジット"
+        },
+        {
+          "id": "tokyo-s10-catalog#changes",
+          "source_id": "tokyo-s10-catalog",
+          "supporting_document": "cc-by-4-deed-ja",
+          "sha256": "cf5b3d5b092076f0c146b9c41d7bca8a5ad5171660b7033cd8125ba5ac6d0382",
+          "url": "https://creativecommons.org/licenses/by/4.0/deed.ja",
+          "section": "CC BY 4.0 deed / freedoms and attribution",
+          "quote": "変更があったらその旨を示さ"
+        },
+        {
+          "id": "tokyo-s10-catalog#tokyo-portal",
+          "source_id": "tokyo-s10-catalog",
+          "supporting_document": "tokyo-portal-terms",
+          "sha256": "74e591bc0092beaed0921015d3b2b0b9bf90c70e67508b036155f6e5400cd67a",
+          "url": "https://portal.data.metro.tokyo.lg.jp/terms/",
+          "section": "§2 知的財産権の取扱い",
+          "quote": "商用利用も可能です。"
+        },
+        {
+          "id": "tokyo-s10-catalog#tokyo-precedence",
+          "source_id": "tokyo-s10-catalog",
+          "supporting_document": "tokyo-portal-terms",
+          "sha256": "74e591bc0092beaed0921015d3b2b0b9bf90c70e67508b036155f6e5400cd67a",
+          "url": "https://portal.data.metro.tokyo.lg.jp/terms/",
+          "section": "§3 他のサイトの利用規約との関係",
+          "quote": "本利用規約が優先するものとします。"
+        },
+        {
+          "id": "tokyo-s10-catalog#tokyo-exclusions",
+          "source_id": "tokyo-s10-catalog",
+          "supporting_document": "tokyo-portal-terms",
+          "sha256": "74e591bc0092beaed0921015d3b2b0b9bf90c70e67508b036155f6e5400cd67a",
+          "url": "https://portal.data.metro.tokyo.lg.jp/terms/",
+          "section": "§2(3) ロゴ・シンボル等の別途確認",
+          "quote": "利用条件を確認してください。"
+        },
+        {
+          "id": "plateau-related-provenance#trademarks-excluded",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §2(b)(2)",
+          "quote": "特許権および商標権は"
+        },
+        {
+          "id": "plateau-related-provenance#legal-modifications",
+          "source_id": "plateau-related-provenance",
+          "supporting_document": "cc-by-4-legal-ja",
+          "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+          "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+          "section": "CC BY 4.0 §3(a)(1)(B)",
+          "quote": "ライセンス対象物を改変した場合はその旨を記し"
+        },
+        {
+          "id": "tokyo-s10-catalog#resource",
+          "source_id": "tokyo-s10-catalog",
+          "supporting_document": null,
+          "sha256": "c69c9270d280820e77f75bcecacd5b08dbdc7bbe7cc3f078226774bfde938fea",
+          "url": "https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=t000018d0000000039",
+          "section": "/result/resources/11/url",
+          "quote": "other_stores_shinjuku-nishiguchi.csv",
+          "json_pointer": "/result/resources/11/url"
+        }
+      ],
+      "evidence_verified": true,
+      "attribution_required": "出典：東京都交通局「駅構内のお店」; preserve supplied credits, source and CC BY 4.0 links; identify actual modifications.",
+      "modification_notice_required": true,
+      "commercial_use": "conditional",
+      "redistribution": "conditional",
+      "modification_allowed": "conditional",
+      "third_party_exclusions": {
+        "items": [
+          "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+          "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+          "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+        ],
+        "applies_to_scope": false,
+        "assessment": "Dataset grant for bounded factual/technical content; general site reservation does not override it. Expressive promotional prose, linked content and branding are excluded."
+      },
+      "missing_evidence": [],
+      "attribution_templates": {
+        "status": "CLEARED_WITH_CONDITIONS; example",
+        "examples_only": true,
+        "mandated_verbatim": false,
+        "examples": [
+          "出典：東京都交通局「駅構内のお店」（https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku-nishiguchi.csv）。CC BY 4.0（https://creativecommons.org/licenses/by/4.0/legalcode.ja）。GTEki が［実際の編集・加工内容］。"
+        ],
+        "note": "Replace placeholders and describe actual modifications. Preserve supplied creator, rights, licence and approval notices; these examples do not grant permission."
+      },
+      "not_covered": [
+        "Logos, photographs, artwork and linked websites are outside the assessed data scope.",
+        "Store/station names are plain factual labels only. CC BY 4.0 §2(b)(2) excludes trademark rights; logos/brand artwork are not cleared.",
+        "Current-world accuracy, surveyed location, floor assignment, navigation and publication approval are not established."
+      ],
+      "publish_gate": "HOLD",
+      "routable": false,
+      "verdict": "CLEARED_WITH_CONDITIONS",
+      "reason": "Exact resource listed in CC BY 4.0 dataset; bounded data reuse requires attribution, licence link and change notice."
+    }
+  ],
+  "identity_checks": [],
+  "terms_fetches": [
+    {
+      "id": "api-docs",
+      "requested_url": "https://docs.plateauview.mlit.go.jp/api/",
+      "url": "https://docs.plateauview.mlit.go.jp/api/",
+      "http_status": 200,
+      "sha256": "a5e8a60e2f1aa596aed11415eea09efc6b5f759f37a0df4c91b0858c8cb7c2d8",
+      "bytes": 39834,
+      "store_path": "raw/a5e8a60e2f1aa596aed11415eea09efc6b5f759f37a0df4c91b0858c8cb7c2d8/api"
+    },
+    {
+      "id": "ksj-p20",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P20.html",
+      "http_status": 200,
+      "sha256": "2816504ac3178241a4835c5bfb95ffe0f1d17592bae267b025fdcfc897b13f4f",
+      "bytes": 91991,
+      "store_path": "raw/2816504ac3178241a4835c5bfb95ffe0f1d17592bae267b025fdcfc897b13f4f/KsjTmplt-P20.html"
+    },
+    {
+      "id": "ksj-p13",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-P13.html",
+      "http_status": 200,
+      "sha256": "be4df70a744ab1fed239925db72287d83a0066568ef6b16a9c6cd0acf954d3d7",
+      "bytes": 91454,
+      "store_path": "raw/be4df70a744ab1fed239925db72287d83a0066568ef6b16a9c6cd0acf954d3d7/KsjTmplt-P13.html"
+    },
+    {
+      "id": "ksj-n02-2024",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2024.html",
+      "http_status": 200,
+      "sha256": "6c3e0f6a98872a0f1ba77675ecd74f38502a93681681a7e6a4da01ed65b47161",
+      "bytes": 54007,
+      "store_path": "raw/6c3e0f6a98872a0f1ba77675ecd74f38502a93681681a7e6a4da01ed65b47161/KsjTmplt-N02-2024.html"
+    },
+    {
+      "id": "ksj-n10-2024",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N10-2024.html",
+      "http_status": 200,
+      "sha256": "9a7a0fd249751279ab63dd23da0dd7d712e2c84ce95c320dab02ce83e141e7b7",
+      "bytes": 242194,
+      "store_path": "raw/9a7a0fd249751279ab63dd23da0dd7d712e2c84ce95c320dab02ce83e141e7b7/KsjTmplt-N10-2024.html"
+    },
+    {
+      "id": "ksj-n03-2025",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-2025.html",
+      "http_status": 200,
+      "sha256": "93a92aa8544c7a2b77fa95b3e1470805b6687d760293860288a0bd47641e18e0",
+      "bytes": 1832971,
+      "store_path": "raw/93a92aa8544c7a2b77fa95b3e1470805b6687d760293860288a0bd47641e18e0/KsjTmplt-N03-2025.html"
+    },
+    {
+      "id": "ksj-terms",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/other/agreement.html",
+      "http_status": 200,
+      "sha256": "c385a98f568b6875c1416843d7c1fd56a662c9f48851ca908c04d6f397f34c8e",
+      "bytes": 27978,
+      "store_path": "raw/c385a98f568b6875c1416843d7c1fd56a662c9f48851ca908c04d6f397f34c8e/agreement.html"
+    },
+    {
+      "id": "ksj-old-terms",
+      "requested_url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+      "url": "https://nlftp.mlit.go.jp/ksj/other/agreement_02.html",
+      "http_status": 200,
+      "sha256": "33d99d1df15d6c98a507d550a7a579c1acd55d85d08af981eae41010e01deac8",
+      "bytes": 62499,
+      "store_path": "raw/33d99d1df15d6c98a507d550a7a579c1acd55d85d08af981eae41010e01deac8/agreement_02.html"
+    },
+    {
+      "id": "gsi-origin",
+      "requested_url": "https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html",
+      "url": "https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html",
+      "http_status": 200,
+      "transport": "curl",
+      "sha256": "0bbbae9566cb71c9059f252a8578812306fb6db4d0ef287ca5e6b49f405b78b2",
+      "bytes": 32237,
+      "store_path": "raw/0bbbae9566cb71c9059f252a8578812306fb6db4d0ef287ca5e6b49f405b78b2/kibanjoho40027.html"
+    },
+    {
+      "id": "gsi-terms",
+      "requested_url": "https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html",
+      "url": "https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html",
+      "http_status": 200,
+      "transport": "curl",
+      "sha256": "5388d2854a05f3e7b41cb980ecfb2de75b315de68e0d9c94b9334c11e580739e",
+      "bytes": 23271,
+      "store_path": "raw/5388d2854a05f3e7b41cb980ecfb2de75b315de68e0d9c94b9334c11e580739e/kikakuchousei40182.html"
+    },
+    {
+      "id": "gsi-survey",
+      "requested_url": "https://www.gsi.go.jp/LAW/2930-index.html",
+      "url": "https://www.gsi.go.jp/LAW/2930-index.html",
+      "http_status": 200,
+      "transport": "curl",
+      "sha256": "5888fbd6094d30574d056bfa26827cd8e11391a382a6a2f083a572fa15b08722",
+      "bytes": 40480,
+      "store_path": "raw/5888fbd6094d30574d056bfa26827cd8e11391a382a6a2f083a572fa15b08722/2930-index.html"
+    },
+    {
+      "id": "gsi-qa",
+      "requested_url": "https://www.gsi.go.jp/LAW/2930-qa.html",
+      "url": "https://www.gsi.go.jp/LAW/2930-qa.html",
+      "http_status": 200,
+      "transport": "curl",
+      "sha256": "325949a4c9053085311afd402b14a1d17ec27da093ff91dfca4d4362b99ae12b",
+      "bytes": 49660,
+      "store_path": "raw/325949a4c9053085311afd402b14a1d17ec27da093ff91dfca4d4362b99ae12b/2930-qa.html"
+    },
+    {
+      "id": "plateau-policy",
+      "requested_url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "http_status": 200,
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "bytes": 31822,
+      "store_path": "raw/3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f/site-policy"
+    },
+    {
+      "id": "pdl-1",
+      "requested_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "http_status": 200,
+      "sha256": "e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c",
+      "bytes": 59216,
+      "store_path": "raw/e5ebeb7413223d38f600321dbbd5833c726cb14563a25f39b6fc2bd88f85c55c/public_data_license_v1.0"
+    },
+    {
+      "id": "cc-by-4-legal-ja",
+      "requested_url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.ja",
+      "http_status": 200,
+      "sha256": "bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548",
+      "bytes": 53871,
+      "store_path": "raw/bda3a76be7223ed50862df5e3bbd00bdd7ca736f8a733dcc4ad86ca7ff3c0548/legalcode.ja"
+    }
+  ],
+  "coverage_note": "Reuse rights only; every publish gate HOLD and routable false. S03 ZIP/reference PDF and related ZIPs require scoped splits. Catalog metadata has no inferred self-licence."
+}

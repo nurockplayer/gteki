@@ -4,7 +4,7 @@ import { mkdtemp, readFile, rm, stat, symlink, writeFile } from 'node:fs/promise
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { acquisitionExitCode, acquisitionResultFromDownload, downloadUrl, loadSources } from '../src/acquire.js';
+import { acquisitionExitCode, acquisitionResultFromDownload, downloadUrl, loadSources, recordRequest } from '../src/acquire.js';
 import { getStoredSource, getStoreRoot, repoRoot, verifyStoredFile } from '../src/common.js';
 
 const servers: Server[] = [];
@@ -34,9 +34,15 @@ afterEach(async () => {
 });
 
 describe('source acquisition', () => {
-  it('loads exactly the bounded 19-source manifest with explicit unknown rights', () => {
+  it('loads exactly the bounded 45-source manifest with explicit unknown rights', () => {
     const sources = loadSources();
-    expect(sources).toHaveLength(19);
+    expect(sources).toHaveLength(45);
+    for (const id of ['tokyo-s03-zip', 'tokyo-s03-spec', 'tokyo-s03-reference']) {
+      const moved = sources.find(source => source.source_id === id)!;
+      expect(moved.expected_url).toContain('/documents/d/toshiseibi/');
+      expect(moved.catalog_resource_url).toContain('/kiban/shinjuku_terminal/pdf/');
+      expect(moved.catalog_resource_sha256).toMatch(/^[a-f0-9]{64}$/);
+    }
     expect(sources.find((source) => source.source_id === 'plateau-catalog-ubld-13116-13104')?.resolution.kind).toBe('direct');
     expect(sources.find((source) => source.source_id === 'plateau-13116-codelists')?.commercial_use.status).toBe('unknown');
   });
@@ -56,6 +62,40 @@ describe('source acquisition', () => {
     expect(tmpMode & 0o077).toBe(0);
     const rootMode = (await stat(storeRoot)).mode & 0o777;
     expect(rootMode & 0o077).toBe(0);
+  });
+
+  it('sends the exact fixed POST body and records its UTF-8 SHA-256 while leaving GET unchanged', async () => {
+    const body = '{"query":"{ synthetic { name } }","label":"駅"}';
+    let received = '', method = '', contentType = '';
+    const server = createServer(async (request, response) => {
+      method = request.method!; contentType = request.headers['content-type'] ?? '';
+      for await (const chunk of request) received += chunk.toString();
+      response.writeHead(200, { 'content-type': 'application/json' }).end('{"data":{}}');
+    });
+    servers.push(server);
+    await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('Expected TCP address');
+    const url = `http://127.0.0.1:${address.port}/graphql`;
+    const request = { method: 'POST' as const, content_type: 'application/json' as const, body };
+    const result = await downloadUrl(url, { storeRoot: await tempStore(), request });
+    expect({ method, contentType, received }).toEqual({ method: 'POST', contentType: 'application/json', received: body });
+    expect(result.request).toEqual({ ...request, body_sha256: createHash('sha256').update(body, 'utf8').digest('hex') });
+    expect(recordRequest(request)).toEqual(result.request);
+    const get = await downloadUrl(url, { storeRoot: await tempStore() });
+    expect(method).toBe('GET'); expect(get).not.toHaveProperty('request');
+    expect(recordRequest()).toBeUndefined();
+    expect(() => recordRequest({ ...request, body: 'not JSON' })).toThrow();
+    await expect(downloadUrl(url, { storeRoot: await tempStore(), request, transport: 'curl' })).rejects.toThrow('default fetch');
+  });
+
+  it('uses explicitly selected curl transport with the same hash and HTTP status checks', async () => {
+    const bytes = Buffer.from('synthetic curl transport');
+    const url = await serve(bytes);
+    const result = await downloadUrl(url, { storeRoot: await tempStore(), transport: 'curl' });
+    expect(result.httpStatus).toBe(200); expect(result.headers.etag).toBe('"fixture"');
+    expect(await readFile(result.path)).toEqual(bytes);
+    expect(result.sha256).toBe(createHash('sha256').update(bytes).digest('hex'));
   });
 
   it('marks an expected-size mismatch so the acquisition command can fail the source', async () => {
@@ -115,6 +155,18 @@ describe('source acquisition', () => {
     await expect(getStoredSource('synthetic-offline-missing-record')).rejects.toThrow();
     expect(fetchSpy).not.toHaveBeenCalled();
     fetchSpy.mockRestore();
+  });
+
+  it('archives an explicitly requested HTTP error body as evidence without granting success terms', async () => {
+    const server = createServer((_request, response) => response.writeHead(404).end('SYNTHETIC missing terms'));
+    servers.push(server);
+    await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('Expected a TCP server');
+    const result = await downloadUrl(`http://127.0.0.1:${address.port}/terms`, { storeRoot: await tempStore(), captureHttpErrors: true });
+    expect(result.httpStatus).toBe(404);
+    expect((await readFile(result.path)).toString()).toBe('SYNTHETIC missing terms');
+    await expect(verifyStoredFile(result.path, result.sha256, result.bytes)).resolves.toBeUndefined();
   });
 
   it('rejects a repository-local store override, including one reached through a symlink', async () => {

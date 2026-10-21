@@ -1,0 +1,43 @@
+{
+  "source_id": "plateau-13116-related-catalog",
+  "resolved_url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13116-toshima-ku-2025",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-21T00:14:00.132Z",
+  "completed_at": "2026-10-21T00:14:00.190Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/json;charset=utf-8",
+    "content-length": null,
+    "etag": null,
+    "last-modified": null,
+    "date": "Wed, 21 Oct 2026 00:14:00 GMT"
+  },
+  "bytes": 112532,
+  "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+  "store_path": "raw/e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b/package_show",
+  "tool_version": "0.1.0",
+  "git_commit": "df0365dea7dcc1d87005917ae4e38f02a5cc6a42",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "plateau-site-policy",
+      "requested_url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "url": "https://www.mlit.go.jp/plateau/site-policy/",
+      "http_status": 200,
+      "sha256": "3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f",
+      "bytes": 31822,
+      "store_path": "raw/3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f/site-policy"
+    }
+  ],
+  "last_offline_check": {
+    "requested_at": "2026-10-21T00:18:39.280Z",
+    "completed_at": "2026-10-21T00:18:39.280Z",
+    "tool_version": "0.1.0",
+    "sha256": "e2ed5817d93c48d6733a34d471388edf1808aaa115f73e316b32e7a4bb07187b",
+    "bytes": 112532,
+    "status": "PASS"
+  }
+}

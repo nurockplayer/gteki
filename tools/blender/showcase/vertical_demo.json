@@ -1,0 +1,16 @@
+{
+  "title": "SYNTHETIC KIT DEMO — vertical circulation, not a station layout",
+  "mode": "studio",
+  "exposure": -0.2,
+  "hint_lights": false,
+  "items": [
+    {"glb": "assets/library/glb/gteki_escalator_s1000_r5000_up.glb", "pos": [-1.0, 0, 0]},
+    {"glb": "assets/library/glb/gteki_escalator_s1000_r5000_down.glb", "pos": [0.75, 0, 0]},
+    {"glb": "assets/library/glb/gteki_stairs_straight_w2400_r3000.glb", "pos": [3.6, 0, 0]},
+    {"glb": "assets/library/glb/gteki_sign_hanging_exit_yellow_up.glb", "pos": [-0.1, -1.2, 0]},
+    {"glb": "assets/library/glb/gteki_tactile_strip_bars_3m.glb", "pos": [3.6, -3.6, 0]}
+  ],
+  "cameras": {
+    "hero": {"pos": [-4.2, -6.2, 1.7], "look_at": [0.8, 3.0, 1.6], "lens": 22}
+  }
+}
