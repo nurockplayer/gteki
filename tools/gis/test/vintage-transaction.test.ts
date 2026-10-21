@@ -6,15 +6,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const state = vi.hoisted(() => ({
   root: `${process.env.TMPDIR ?? '/tmp'}/gis-vintage-transaction-${process.pid}`,
   failInspection: false, failStage: false, failPromotion: false, identicalMembers: false, inspections: 0,
-  rich: false, networkCrs: undefined as unknown, networkBboxStatus: 'COMPUTED' as string | undefined, networkBbox: [139.69, 35.68, 139.71, 35.70] as unknown, combinedCrs: undefined as unknown, secondMember: false, vintageBbox: true, unresolved: 0, unsupportedExternal: 0, unsupportedRecords: 0, secondMemberCrs: 'EPSG:4326' as unknown,
+  rich: false, networkCrs: undefined as unknown, networkBboxStatus: 'COMPUTED' as string | undefined, networkBbox: [139.69, 35.68, 139.71, 35.70] as unknown, combinedCrs: undefined as unknown, secondMember: false, vintageBbox: true, unresolved: 0, unsupportedExternal: 0, unsupportedRecords: 0, secondMemberCrs: 'EPSG:4326' as unknown, unconsumed: 0, networkExtraInputs: [] as string[], storedSha: {} as Record<string, string>,
 }));
 vi.mock('../src/common.js', async original => ({
   ...await original<typeof import('../src/common.js')>(),
   docsRoot: `${state.root}/docs`, getStoreRoot: () => `${state.root}/store`, ensurePrivateStore: vi.fn(),
   getGitCommit: async () => null,
-  getStoredSource: async (id: string) => ({ path: id, record: { source_id: id, sha256: 'a'.repeat(64) } }),
+  getStoredSource: async (id: string) => ({ path: id, record: { source_id: id, sha256: state.storedSha[id] ?? 'a'.repeat(64) } }),
   readJson: async (path: string) => path === 'plateau-13104-package-2023' ? { success: true, result: { resources: [1, 2].map(n => ({ url: `https://example.invalid/13104_synthetic_2023_citygml_${n}_op.zip` })) } }
-    : path.includes('/networks/') ? (() => { const source_id = path.split('/').pop()!.replace(/\.json$/, ''); return { source_id, source_sha256: 'a'.repeat(64), tool_input_sha256: 'b'.repeat(64), input_sources: [{ source_id, sha256: 'a'.repeat(64) }], ...(state.combinedCrs === undefined ? {} : { network_inventory: { crs: state.combinedCrs } }), members: state.rich ? [{ file: 'synthetic.geojson', bbox: state.networkBbox, bbox_status: state.networkBboxStatus, crs: state.networkCrs }, ...(state.secondMember ? [{ file: 'second.geojson', bbox: state.networkBbox, bbox_status: state.networkBboxStatus, crs: { type: 'name', properties: { name: state.secondMemberCrs } } }] : [])] : [] }; })() : { cities: [] },
+    : path.includes('/networks/') ? (() => { const source_id = path.split('/').pop()!.replace(/\.json$/, ''); return { source_id, source_sha256: 'a'.repeat(64), tool_input_sha256: 'b'.repeat(64), input_sources: [{ source_id, sha256: 'a'.repeat(64) }, ...state.networkExtraInputs.map(id => ({ source_id: id, sha256: 'a'.repeat(64) }))], ...(state.combinedCrs === undefined ? {} : { network_inventory: { crs: state.combinedCrs } }), members: state.rich ? [{ file: 'synthetic.geojson', bbox: state.networkBbox, bbox_status: state.networkBboxStatus, crs: state.networkCrs }, ...(state.secondMember ? [{ file: 'second.geojson', bbox: state.networkBbox, bbox_status: state.networkBboxStatus, crs: { type: 'name', properties: { name: state.secondMemberCrs } } }] : [])] : [] }; })() : { cities: [] },
 }));
 vi.mock('../src/provenance.js', () => ({ toolFingerprint: async () => 'b'.repeat(64) }));
 vi.mock('../src/citygml.js', () => ({ inspectCityGmlPath: async () => {
@@ -22,6 +22,7 @@ vi.mock('../src/citygml.js', () => ({ inspectCityGmlPath: async () => {
   if (state.failInspection) throw new Error('injected CityGML failure');
   return { totals: { feature_count: 0, polygon_count: 0, bbox_lat_lon_height: state.rich && state.vintageBbox ? { min: [35.68, 139.69, 0], max: [35.70, 139.71, 10] } : null }, envelope: state.rich ? { srsName: 'EPSG:6697' } : null, unknowns: [],
     geometry_reference_summary: { total: 10, resolved: 10 - state.unresolved - state.unsupportedExternal, unresolved: state.unresolved, unsupported_external: state.unsupportedExternal, signed_reverse: 0, by_context: {} },
+    geometry_coverage_gaps: { unconsumed_coordinate_elements: state.unconsumed, by_element: {} },
     unsupported_geometry_references: Array.from({ length: state.unsupportedRecords }, () => ({ target: '#x', owner_gml_id: null, context: 'boundary', reason: 'synthetic' })) };
 } }));
 vi.mock('node:fs/promises', async original => {
@@ -38,7 +39,7 @@ vi.mock('node:fs/promises', async original => {
   };
 });
 
-import { inspectVintages, type RangeFetcher } from '../src/vintage.js';
+import { inspectVintages, verifyVintageEvidence, type RangeFetcher } from '../src/vintage.js';
 
 // Entirely synthetic single-member ZIP, with no source data or geometry.
 const plain = Buffer.from('<synthetic/>');
@@ -64,7 +65,7 @@ async function snapshot(directory = `${state.root}/docs/gis`): Promise<Record<st
   return result;
 }
 beforeEach(async () => {
-  state.rich = false; state.networkCrs = undefined; state.networkBboxStatus = 'COMPUTED'; state.networkBbox = [139.69, 35.68, 139.71, 35.70]; state.combinedCrs = undefined; state.secondMember = false; state.vintageBbox = true; state.unresolved = 0; state.unsupportedExternal = 0; state.unsupportedRecords = 0; state.secondMemberCrs = 'EPSG:4326'; state.failInspection = false; state.failStage = false; state.failPromotion = false; state.identicalMembers = false; state.inspections = 0;
+  state.rich = false; state.networkCrs = undefined; state.networkBboxStatus = 'COMPUTED'; state.networkBbox = [139.69, 35.68, 139.71, 35.70]; state.combinedCrs = undefined; state.secondMember = false; state.vintageBbox = true; state.unresolved = 0; state.unsupportedExternal = 0; state.unsupportedRecords = 0; state.secondMemberCrs = 'EPSG:4326'; state.unconsumed = 0; state.networkExtraInputs = []; state.storedSha = {}; state.failInspection = false; state.failStage = false; state.failPromotion = false; state.identicalMembers = false; state.inspections = 0;
   await rm(state.root, { recursive: true, force: true });
   const memberId = createHash('sha256').update(plain).digest('hex').slice(0, 16);
   for (const file of ['vintages/shinjuku-2023.json', 'vintages/shinjuku-2023.md', 'acquisitions/vintages/vintage-directory-citygml-2-op.zip.json', `acquisitions/vintages/vintage-member-${memberId}.json`]) {
@@ -167,6 +168,30 @@ describe('vintage bundle transaction', () => {
       state.combinedCrs = { value: null, status: 'UNKNOWN', note: 'Explicit "crs": null declares no CRS.' };
       unknownEverywhere(await inspectVintages({ fetcher }));
     });
+    it('carries the network reports\' transitive inputs into the vintage lineage and verifies them offline', async () => {
+      const spec = 'mlit-walk-network-spec-2024-07';
+      state.rich = true; state.networkCrs = name('EPSG:6668'); state.networkExtraInputs = [spec];
+      const report = await inspectVintages({ fetcher });
+      expect(report.input_sources.filter(i => i.source_id === spec)).toEqual([{ source_id: spec, sha256: 'a'.repeat(64) }]);
+      expect((await verifyVintageEvidence(report)).status).toBe('PASS');
+      // A report that omits the transitive spec lineage is rejected, even though its direct hashes still match.
+      const stripped = { ...report, input_sources: report.input_sources.filter(i => i.source_id !== spec) };
+      const missing = await verifyVintageEvidence(stripped);
+      expect(missing.status).toBe('FAIL');
+      expect(missing.errors.join(' ')).toMatch(/lacks required network lineage input mlit-walk-network-spec-2024-07/);
+    });
+    it('fails offline verification when a transitive network spec snapshot changed since the vintage was generated', async () => {
+      const spec = 'mlit-walk-network-spec-2024-07';
+      state.rich = true; state.networkCrs = name('EPSG:6668'); state.networkExtraInputs = [spec];
+      const report = await inspectVintages({ fetcher });
+      state.storedSha[spec] = 'c'.repeat(64);
+      const stale = await verifyVintageEvidence(report);
+      expect(stale.status).toBe('FAIL');
+      expect(stale.errors.join(' ')).toMatch(/mlit-walk-network-spec-2024-07/);
+      // The same stale spec also fails the stripped (pre-fix shaped) report.
+      const stripped = await verifyVintageEvidence({ ...report, input_sources: report.input_sources.filter(i => i.source_id !== spec) });
+      expect(stripped.status).toBe('FAIL');
+    });
     it.each([
       ['unresolved geometry references', { unresolved: 2 }],
       ['unsupported external geometry references', { unsupportedExternal: 1 }],
@@ -178,6 +203,13 @@ describe('vintage bundle transaction', () => {
       expect(report.comparison.bbox_relations.every(r => r.relation === 'UNKNOWN' && r.intersection_bbox_lat_lon === null)).toBe(true);
       expect(report.comparison.bbox_relations.every(r => /geometry coverage is incomplete/.test(r.unknown_reason ?? ''))).toBe(true);
       expect(report.selected_member_records.every(m => m.inspection?.geometry_coverage?.complete === false)).toBe(true);
+    });
+    it('keeps every relation UNKNOWN when coordinate-bearing geometry elements were not consumed by the bbox scanner', async () => {
+      state.rich = true; state.networkCrs = name('EPSG:6668'); state.unconsumed = 3;
+      const report = await inspectVintages({ fetcher });
+      expect(report.comparison.bbox_relations.length).toBeGreaterThan(0);
+      expect(report.comparison.bbox_relations.every(r => r.relation === 'UNKNOWN' && /did not consume/.test(r.unknown_reason ?? ''))).toBe(true);
+      expect(report.selected_member_records.every(m => m.inspection?.geometry_coverage?.unconsumed_coordinate_elements === 3)).toBe(true);
     });
     it('records complete geometry coverage and compares when every reference resolved', async () => {
       state.rich = true; state.networkCrs = name('EPSG:6668');

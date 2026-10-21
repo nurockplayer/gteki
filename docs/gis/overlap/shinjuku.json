@@ -4087,7 +4087,7 @@
     "hold": "HOLD: no latest catalogued nominal ubld mesh is among the Hokonavi bbox meshes. Nominal mesh is not actual coverage; older vintages UNKNOWN.",
     "note": "JIS X 0410 first/second/third mesh calculation; closed bboxes include cells touched at a boundary. File-name mesh is nominal. Actual geometry may extend outside it. No feature correspondence is inferred."
   },
-  "tool_input_sha256": "2809c058f990da51d848c2bacfcfa1f06931c0e6dce8fc5345290800f8583d80",
+  "tool_input_sha256": "fa67960baf2d610307b5452d7a16bfa613558f97326b347eb2fd12af98ee4f73",
   "input_sources": [
     {
       "source_id": "plateau-13116-ubld-53394576",

@@ -79,6 +79,8 @@ export interface CityInventory {
   geometry_reference_summary: { total: number; resolved: number; unresolved: number; unsupported_external: number; signed_reverse: number; by_context: Record<string, number> };
   geometry_totals: { polygon_definitions: number; resolved_uses: number; boundary_uses: number; solid_uses: number; other_uses: number; polygon_records_counted: number };
   unsupported_geometry_references: Array<{ target: string; owner_gml_id: string | null; context: 'boundary' | 'solid' | 'other'; reason: string }>;
+  /** Coordinate-bearing GML elements (pos, posList, coordinates, coord) whose values the polygon-ring scanner did not consume, so the bbox omits them. Zero is required before a bbox may claim whole-member coverage. */
+  geometry_coverage_gaps: { unconsumed_coordinate_elements: number; by_element: Record<string, number> };
   features: CityFeature[];
   floor_label_observations: Array<{ object_key: string; gml_id: string | null; field: string; value: string; source: 'gml:name' | 'uro-attribute' }>;
   mathematical_topology_observations: Array<{ element: string; gml_id: string | null; parent_topology_gml_id: string | null; namespace_uri: string }>;
@@ -214,6 +216,7 @@ export async function scanCityGml(path: string, options: ScanCityGmlOptions = {}
   };
   const usedCodes = new Map<string, { code: string; space: string | null }>(); const frames: Frame[] = []; let envelope: CityInventory['envelope'] = null;
   let cityModelEnvelopeCount = 0; let cityModelEnvelopeCrs: string | null = null; let usedEnvelopeCrsFallback = false;
+  const unconsumedCoordinates: Record<string, number> = {};
   let totalBBox: CityInventory['totals']['bbox_lat_lon_height'] = null; let polygonCount = 0; let ringCount = 0; let interiorRingCount = 0; let vertexCount = 0; let degenerateCount = 0; let tooFewDistinctCount = 0; let projectedZeroAreaCount = 0; let unclosedCount = 0;
   let rootSrs: string | null = null;
   let boundaryUses = 0; let solidUses = 0; let otherUses = 0;
@@ -354,6 +357,10 @@ export async function scanCityGml(path: string, options: ScanCityGmlOptions = {}
     }
     if (frame.local === 'name' && frame.uri === GML && owner && parentFrame?.feature?.semantic && frame.text.trim()) (owner.feature.names ??= []).push(frame.text.trim());
     if (URO.test(frame.uri) && frame.uroPropertyOwner && frame.text.trim()) (frame.uroPropertyOwner.feature.raw_uro_attributes[frame.qname] ??= []).push(frame.text.trim());
+    if (isGmlUri(frame.uri) && ['posList', 'pos', 'coordinates', 'coord', 'pointRep'].includes(frame.local) && !(parentFrame?.ring && frame.local !== 'coord' && frame.local !== 'pointRep')) {
+      // Fail closed: any coordinate-bearing element not consumed into a Polygon ring (Ring/curveMember/LineString, Curve, Point, Triangle, ...) leaves the bbox partial.
+      unconsumedCoordinates[frame.local] = (unconsumedCoordinates[frame.local] ?? 0) + 1;
+    }
     if (isGmlUri(frame.uri) && ['posList', 'pos', 'coordinates'].includes(frame.local) && parentFrame?.ring) {
       // EPSG:6697 is a 3D CRS. When GML omits srsDimension, tuple grouping comes from that declared CRS; all three ordinates must still be present.
       const values = numericValues(frame.text); const dim = Number(getAttr(frame.attrs, 'srsDimension') ?? parentFrame.ring.dimension) || 3;
@@ -440,6 +447,7 @@ export async function scanCityGml(path: string, options: ScanCityGmlOptions = {}
     schema_location: [...schemaLocations].join(' ') || null, srs_names: [...srsNames].sort(), srs_dimensions: [...dimensions].sort(), envelope, creation_dates: [...creationDates].sort(),
     features, floor_label_observations: floorLabelObservations, mathematical_topology_observations: mathematicalTopologyObservations, group_memberships: memberships, codelist_resolution: resolvedCodes, codelist_inputs: options.codelist_inputs ?? (options.codelists as CodelistData | undefined)?.inputs ?? [], codelist_status: (options.codelists as CodelistData | undefined)?.status ?? (options.codelists ? 'LOADED' : 'NOT_APPLICABLE'),
     unsupported_geometry_references: unsupportedReferences,
+    geometry_coverage_gaps: { unconsumed_coordinate_elements: Object.values(unconsumedCoordinates).reduce((sum, n) => sum + n, 0), by_element: unconsumedCoordinates },
     geometry_reference_summary: { total: geometryReferenceCount, resolved: resolvedReferenceCount, unresolved: unsupportedReferences.length - externalReferenceCount, unsupported_external: externalReferenceCount, signed_reverse: reverseReferenceCount, by_context: referenceContexts },
     geometry_totals: { polygon_definitions: polygonCount, resolved_uses: resolvedReferenceCount, boundary_uses: boundaryUses, solid_uses: solidUses, other_uses: otherUses, polygon_records_counted: polygonCount + resolvedReferenceCount },
     semantic_presence: {

@@ -28,18 +28,21 @@ export type VintageZipMember = {
   local_header_offset: number; mesh: string | null; category: 'udx' | 'ubld' | null;
 } & ZipNameInfo;
 /** Geometry-reference completeness of one inspected CityGML member; a bbox from partial geometry is not a coverage claim. */
-export type GeometryCoverage = { total_references: number; resolved: number; unresolved: number; unsupported_external: number; unsupported_reference_records: number; complete: boolean };
-export function geometryCoverage(inventory: Pick<CityInventory, 'geometry_reference_summary' | 'unsupported_geometry_references' | 'totals'>): GeometryCoverage {
+export type GeometryCoverage = { total_references: number; resolved: number; unresolved: number; unsupported_external: number; unsupported_reference_records: number; unconsumed_coordinate_elements: number; complete: boolean };
+export function geometryCoverage(inventory: Pick<CityInventory, 'geometry_reference_summary' | 'unsupported_geometry_references' | 'totals' | 'geometry_coverage_gaps'>): GeometryCoverage {
   const summary = inventory.geometry_reference_summary, records = inventory.unsupported_geometry_references.length;
-  return { total_references: summary.total, resolved: summary.resolved, unresolved: summary.unresolved, unsupported_external: summary.unsupported_external, unsupported_reference_records: records,
-    complete: summary.unresolved === 0 && summary.unsupported_external === 0 && records === 0 && summary.total === summary.resolved && inventory.totals.bbox_lat_lon_height !== null };
+  // Missing gap evidence is treated as unconsumed: fail closed.
+  const gaps = inventory.geometry_coverage_gaps?.unconsumed_coordinate_elements;
+  const unconsumed = typeof gaps === 'number' && Number.isInteger(gaps) && gaps >= 0 ? gaps : Number.MAX_SAFE_INTEGER;
+  return { total_references: summary.total, resolved: summary.resolved, unresolved: summary.unresolved, unsupported_external: summary.unsupported_external, unsupported_reference_records: records, unconsumed_coordinate_elements: unconsumed,
+    complete: unconsumed === 0 && summary.unresolved === 0 && summary.unsupported_external === 0 && records === 0 && summary.total === summary.resolved && inventory.totals.bbox_lat_lon_height !== null };
 }
 /** Why a member's bbox cannot support INTERSECTS/DISJOINT, or null when geometry coverage is complete. */
 export function coverageUnknownReason(inspection: { geometry_coverage?: GeometryCoverage } | null): string | null {
   const coverage = inspection?.geometry_coverage;
   if (!coverage) return 'CityGML geometry coverage evidence is missing';
   if (coverage.complete) return null;
-  return `CityGML geometry coverage is incomplete (${coverage.unresolved} unresolved, ${coverage.unsupported_external} unsupported external, ${coverage.unsupported_reference_records} unsupported reference records of ${coverage.total_references} references); the bbox covers only the geometry that resolved`;
+  return `CityGML geometry coverage is incomplete (${coverage.unresolved} unresolved, ${coverage.unsupported_external} unsupported external, ${coverage.unsupported_reference_records} unsupported reference records of ${coverage.total_references} references; ${coverage.unconsumed_coordinate_elements} coordinate-bearing geometry elements the bbox scanner did not consume); the bbox covers only the geometry that resolved`;
 }
 
 export type VintageRange = { start: number; end: number; bytes: number; final_url: string; requested_at: string; completed_at: string; sha256?: string; store_path?: string };
@@ -408,6 +411,40 @@ function validLonLatBbox(bbox: unknown): bbox is [number, number, number, number
     && bbox[0]! <= bbox[2]! && bbox[1]! <= bbox[3]! && bbox[0]! >= -180 && bbox[2]! <= 180 && bbox[1]! >= -90 && bbox[3]! <= 90;
 }
 
+type InputSourceRef = { source_id: string; sha256: string };
+const E27_NETWORK_REPORTS = ['hokonavi-oedo-shinjuku-network-geojson', 'hokonavi-oedo-shinjuku-stationmap-geojson'];
+
+function mergeInputSources(inputs: InputSourceRef[]): InputSourceRef[] {
+  const merged = new Map<string, string>();
+  for (const input of inputs) {
+    const prior = merged.get(input.source_id);
+    if (prior !== undefined && prior !== input.sha256) throw new Error(`Conflicting SHA-256 for input source ${input.source_id}`);
+    merged.set(input.source_id, input.sha256);
+  }
+  return [...merged].map(([source_id, sha256]) => ({ source_id, sha256 }));
+}
+
+/**
+ * The single rule set for the E27 network reports that feed vintage comparisons: each report must be current
+ * (assertNetworkInspectionCurrent: source, tool fingerprint, complete acquisition lineage). The vintage report then
+ * inherits the report's whole transitive input_sources (including walking-network specifications), so generation and
+ * offline verification cannot disagree about which inputs matter.
+ */
+async function currentE27NetworkEvidence(fingerprint: string): Promise<{ layers: E27Layer[]; inputs: InputSourceRef[] }> {
+  const layers: E27Layer[] = []; const inputs: InputSourceRef[] = [];
+  for (const sourceId of E27_NETWORK_REPORTS) {
+    const stored = await getStoredSource(sourceId);
+    const network = await readJson<NetworkInspection>(join(docsRoot, 'gis', 'networks', `${sourceId}.json`));
+    if (network.source_sha256 !== stored.record.sha256) throw new Error(`E27 network report source SHA mismatch: ${sourceId}`);
+    // Source SHA alone accepts a report produced by older tools or lineage: require full currency.
+    await assertNetworkInspectionCurrent(network, sourceId, { fingerprint });
+    inputs.push({ source_id: sourceId, sha256: stored.record.sha256 });
+    for (const item of network.input_sources as InputSourceRef[]) inputs.push({ source_id: item.source_id, sha256: item.sha256 });
+    layers.push(...effectiveNetworkLayers(sourceId, network));
+  }
+  return { layers, inputs: mergeInputSources(inputs) };
+}
+
 /**
  * Effective CRS and bbox of each saved network layer. A layer is usable only when its own `crs` is a plain {type:"name"}
  * geographic declaration, its bbox is complete (`bbox_status` COMPUTED) and valid, and no other declaration in the same
@@ -444,28 +481,14 @@ export async function inspectVintages(options: { fetcher?: RangeFetcher; fetchMe
   const { record: catalogRecord, path: catalogPath } = await getStoredSource('plateau-catalog-ubld-mesh-533945');
   const catalog = await readJson<{ cities?: Array<{ cityCode?: string; year?: number; files?: { ubld?: Array<{ code?: string; url?: string; fileSize?: number }> } }> }>(catalogPath);
   const current2025 = (catalog.cities ?? []).filter(city => city.cityCode === '13104' && city.year === 2025).flatMap(city => city.files?.ubld ?? []).map(file => ({ code: file.code ?? 'unknown', url: file.url ?? '', file_size: file.fileSize ?? null }));
-  const e27Specs = [
-    { source_id: 'hokonavi-oedo-shinjuku-network-geojson', path: join(docsRoot, 'gis', 'networks', 'hokonavi-oedo-shinjuku-network-geojson.json') },
-    { source_id: 'hokonavi-oedo-shinjuku-stationmap-geojson', path: join(docsRoot, 'gis', 'networks', 'hokonavi-oedo-shinjuku-stationmap-geojson.json') },
-  ];
   const e27Fingerprint = await toolFingerprint();
-  const e27Layers: E27Layer[] = [];
-  const e27Inputs: Array<{ source_id: string; sha256: string }> = [];
-  for (const spec of e27Specs) {
-    const stored = await getStoredSource(spec.source_id);
-    const network = await readJson<NetworkInspection>(spec.path);
-    if (network.source_sha256 !== stored.record.sha256) throw new Error(`E27 network report source SHA mismatch: ${spec.source_id}`);
-    // Source SHA alone accepts a report produced by older tools or lineage: require full currency.
-    await assertNetworkInspectionCurrent(network, spec.source_id, { fingerprint: e27Fingerprint });
-    e27Inputs.push({ source_id: spec.source_id, sha256: stored.record.sha256 });
-    e27Layers.push(...effectiveNetworkLayers(spec.source_id, network));
-  }
+  const { layers: e27Layers, inputs: e27Inputs } = await currentE27NetworkEvidence(e27Fingerprint);
   const networkBboxes = e27Layers.flatMap(layer => layer.bbox ? bboxMeshes(layer.bbox) : []);
   const currentBboxMeshes = [...new Set([...(options.bbox ? bboxMeshes(options.bbox) : []), ...networkBboxes])].sort();
   const report: VintageReport = { source_id: PACKAGE_ID, verification: 'UNVERIFIED', routable: false, rights: 'HOLD', status: 'PENDING_PACKAGE', generated_at: new Date().toISOString(), package_sha256: pkg?.sha256 ?? null, archives: [], selected_member_records: [],
     comparison: { current_catalog_source_id: 'plateau-catalog-ubld-mesh-533945', target_mesh: '53394525', bbox_meshes: currentBboxMeshes, current_2025_ubld: current2025, meshes_2023: [], meshes_2025: current2025.map(file => file.code).filter(code => /^\d{8}$/.test(code)).sort(), only_2023: [], only_2025: [], touching_target_2023: [], bbox_relations: [], note: '2023 geometry uses declared EPSG:6697 latitude,longitude axes; E27 network layers use declared EPSG:6668 longitude,latitude axes. Both are JGD2011 horizontal coordinates; intersections are bbox-only with no feature or routing claim.' },
     byte_totals: { directory_range_bytes: 0, member_range_bytes: 0, extracted_member_bytes: 0, requested_http_bytes: 0 },
-    input_sources: [{ source_id: PACKAGE_ID, sha256: pkg.sha256 }, { source_id: 'plateau-catalog-ubld-mesh-533945', sha256: catalogRecord.sha256 }, ...e27Inputs],
+    input_sources: mergeInputSources([{ source_id: PACKAGE_ID, sha256: pkg.sha256 }, { source_id: 'plateau-catalog-ubld-mesh-533945', sha256: catalogRecord.sha256 }, ...e27Inputs]),
     tool_input_sha256: await toolFingerprint(),
     limitations: ['Rights remain HOLD pending rights review.', 'Every vintage finding is UNVERIFIED and routable:false.', 'Only ZIP directory ranges and explicitly selected member bytes may be acquired.'] };
   const files = new Map<string, ReportFile>();
@@ -549,6 +572,14 @@ export async function verifyVintageEvidence(report: VintageReport): Promise<{ st
     }
     artifacts.push({ label: `${member.member} extracted member`, bytes: member.bytes, sha256: member.sha256, store_path: member.store_path });
   }
+  try {
+    const required = await currentE27NetworkEvidence(await toolFingerprint());
+    const recorded = new Map((Array.isArray(report.input_sources) ? report.input_sources : []).map(item => [item?.source_id, item?.sha256]));
+    for (const input of required.inputs) {
+      if (!recorded.has(input.source_id)) errors.push(`vintage report lacks required network lineage input ${input.source_id}`);
+      else if (recorded.get(input.source_id) !== input.sha256) errors.push(`vintage report input ${input.source_id} SHA-256 differs from the current E27 network lineage`);
+    }
+  } catch (error) { errors.push(`E27 network lineage: ${error instanceof Error ? error.message : String(error)}`); }
   for (const source of report.input_sources) {
     try {
       const stored = await getStoredSource(source.source_id);

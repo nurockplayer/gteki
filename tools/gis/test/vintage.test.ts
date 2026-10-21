@@ -166,4 +166,48 @@ describe('vintage evidence currency and geometry coverage', () => {
       expect(result.errors.join(' ')).toMatch(/tool_input_sha256|tool fingerprint/);
     }
   });
+
+  const gmlModel = (members: string) => `<?xml version="1.0" encoding="UTF-8"?>
+<core:CityModel xmlns:core="http://www.opengis.net/citygml/2.0" xmlns:gml="http://www.opengis.net/gml" xmlns:bldg="http://www.opengis.net/citygml/building/2.0">
+<gml:boundedBy><gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/6697" srsDimension="3"><gml:lowerCorner>35.70 139.70 0</gml:lowerCorner><gml:upperCorner>35.74 139.74 10</gml:upperCorner></gml:Envelope></gml:boundedBy>
+<core:cityObjectMember><bldg:Building gml:id="b1"><bldg:lod1Solid><gml:Solid><gml:exterior><gml:CompositeSurface>${members}</gml:CompositeSurface></gml:exterior></gml:Solid></bldg:lod1Solid></bldg:Building></core:cityObjectMember></core:CityModel>`;
+  const linearRing = '<gml:surfaceMember><gml:Polygon gml:id="p1"><gml:exterior><gml:LinearRing><gml:posList srsDimension="3">35.700 139.700 1 35.700 139.701 1 35.701 139.701 1 35.700 139.700 1</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon></gml:surfaceMember>';
+  const scanXml = async (xml: string) => {
+    const { scanCityGml } = await import('../src/citygml.js');
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-gis-coverage-'));
+    try { const file = join(dir, 'm.gml'); await (await import('node:fs/promises')).writeFile(file, xml); return await scanCityGml(file, { source_id: 'synthetic-coverage', source_sha256: 'b'.repeat(64) }); }
+    finally { await rm(dir, { recursive: true, force: true }); }
+  };
+
+  it('treats a fully ring-consumed model as complete coverage (control)', async () => {
+    const { geometryCoverage } = await import('../src/vintage.js');
+    const inventory = await scanXml(gmlModel(linearRing));
+    expect(inventory.geometry_coverage_gaps.unconsumed_coordinate_elements).toBe(0);
+    expect(geometryCoverage(inventory).complete).toBe(true);
+  });
+
+  it.each([
+    ['gml:Ring/curveMember/LineString in a polygon', '<gml:surfaceMember><gml:Polygon gml:id="p2"><gml:exterior><gml:Ring><gml:curveMember><gml:LineString><gml:posList srsDimension="3">35.730 139.730 1 35.730 139.731 1 35.731 139.731 1 35.730 139.730 1</gml:posList></gml:LineString></gml:curveMember></gml:Ring></gml:exterior></gml:Polygon></gml:surfaceMember>', 'posList'],
+    ['gml:Curve segments', '<gml:surfaceMember><gml:Polygon gml:id="p3"><gml:exterior><gml:Ring><gml:curveMember><gml:Curve><gml:segments><gml:LineStringSegment><gml:posList srsDimension="3">35.730 139.730 1 35.731 139.731 1</gml:posList></gml:LineStringSegment></gml:segments></gml:Curve></gml:curveMember></gml:Ring></gml:exterior></gml:Polygon></gml:surfaceMember>', 'posList'],
+    ['gml:Triangle ring outside a gml:Polygon', '<gml:surfaceMember><gml:Triangle><gml:exterior><gml:LinearRing><gml:posList srsDimension="3">35.730 139.730 1 35.730 139.731 1 35.731 139.731 1 35.730 139.730 1</gml:posList></gml:LinearRing></gml:exterior></gml:Triangle></gml:surfaceMember>', 'posList'],
+    ['gml:Point pos', '<gml:surfaceMember><gml:Point><gml:pos srsDimension="3">35.730 139.730 1</gml:pos></gml:Point></gml:surfaceMember>', 'pos'],
+    ['gml:coordinates', '<gml:surfaceMember><gml:LineString><gml:coordinates>139.73,35.73,1 139.74,35.74,1</gml:coordinates></gml:LineString></gml:surfaceMember>', 'coordinates'],
+    ['gml:coord (GML2)', '<gml:surfaceMember><gml:LineString><gml:coord><gml:X>139.73</gml:X><gml:Y>35.73</gml:Y></gml:coord></gml:LineString></gml:surfaceMember>', 'coord'],
+  ])('flags coverage incomplete when %s holds coordinates the bbox scanner did not consume', async (_label, extra, element) => {
+    const { geometryCoverage, coverageUnknownReason } = await import('../src/vintage.js');
+    const inventory = await scanXml(gmlModel(linearRing + extra));
+    // The bbox only covers the consumed LinearRing polygon; the omitted geometry must make coverage incomplete.
+    expect(inventory.totals.bbox_lat_lon_height?.max[0]).toBeLessThan(35.72);
+    expect(inventory.geometry_coverage_gaps.by_element[element]).toBeGreaterThan(0);
+    const coverage = geometryCoverage(inventory);
+    expect(coverage.complete).toBe(false);
+    expect(coverageUnknownReason({ geometry_coverage: coverage })).toMatch(/did not consume/);
+  });
+
+  it('fails closed when an inventory carries no gap evidence', async () => {
+    const { geometryCoverage } = await import('../src/vintage.js');
+    const inventory = await scanXml(gmlModel(linearRing));
+    const { geometry_coverage_gaps: _omit, ...legacy } = inventory;
+    expect(geometryCoverage(legacy as unknown as typeof inventory).complete).toBe(false);
+  });
 });
