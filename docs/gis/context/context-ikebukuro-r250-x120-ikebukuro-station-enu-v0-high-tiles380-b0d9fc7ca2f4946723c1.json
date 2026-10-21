@@ -1,5 +1,5 @@
 {
-  "run_id": "context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-high-tiles380-0f5577d9f72022ee92f6",
+  "run_id": "context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-high-tiles380-b0d9fc7ca2f4946723c1",
   "verification": "UNVERIFIED",
   "navigation_use": "NOT_FOR_ROUTING",
   "visual_only": true,
@@ -28,6 +28,10 @@
     "purpose": "Station reference frame (docs/core/contract.md Frames) for visual-only context geometry; NOT an envelope processing origin and NOT a routing frame"
   },
   "window": {
+    "kinds": [
+      "bldg",
+      "tran"
+    ],
     "center_station_xy_m": [
       0,
       0
@@ -451,6 +455,10 @@
   "policy_version": "context-v2",
   "variant": "high",
   "merge": "tiles:380",
+  "kinds": [
+    "bldg",
+    "tran"
+  ],
   "sources": [
     {
       "source_id": "plateau-13116-bldg-53394576",
@@ -865,6 +873,11 @@
       "plateau-13116-tran-53394577"
     ],
     "unused_sources": [],
+    "excluded_kind_sources": [],
+    "kinds": [
+      "bldg",
+      "tran"
+    ],
     "missing": []
   },
   "feature_table": {
@@ -6250,13 +6263,13 @@
   "feature_table_sha256": "aeb70c2c673a764a0840484b10144cb570b04aa57fe447f11c267189bd3c057a",
   "per_feature_count": 671,
   "tool_version": "0.1.0",
-  "tool_input_sha256": "b6ecfbfd0250436347b7be861df09ab258300b7de07ab8dfcd3b650e6ad1a626",
+  "tool_input_sha256": "0ca1af67b253f067d9245668707af3e7b181436850e03f49e9ab10d7069d50fa",
   "station_json_sha256_now": "3bbcdf9b0eaa284320858bff2183819e30fd311792841ebbdf01153bb4f6e99b",
   "station_json_changed_since_frame": true,
-  "store_path": "out/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-high-tiles380-0f5577d9f72022ee92f6.glb",
-  "sidecar_path": "out/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-high-tiles380-0f5577d9f72022ee92f6.provenance.json",
-  "output_sha256": "c542ff1426ddcd320cb8e51685e9e718a4db8b1d9fa462d44976829246dc94b5",
-  "output_bytes": 9487612,
-  "elapsed_ms": 9981,
-  "peak_rss_bytes": 243830784
+  "store_path": "out/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-high-tiles380-b0d9fc7ca2f4946723c1.glb",
+  "sidecar_path": "out/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-high-tiles380-b0d9fc7ca2f4946723c1.provenance.json",
+  "output_sha256": "ad55b6da91ae7c8960db789cc6e654043735736bbf5e813f904c15a6519dcdb6",
+  "output_bytes": 9488428,
+  "elapsed_ms": 10071,
+  "peak_rss_bytes": 243863552
 }

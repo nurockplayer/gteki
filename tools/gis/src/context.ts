@@ -94,6 +94,11 @@ export function bboxIntersectsDisc(box: { minX: number; minY: number; maxX: numb
   const dx = Math.max(box.minX, 0, -box.maxX), dy = Math.max(box.minY, 0, -box.maxY);
   return Math.hypot(dx, dy) <= radiusM;
 }
+/** Run-id digest: every provenance input embedded in the GLB must be here, or two different builds would share one artifact path. */
+export function contextRunDigest(input: { frame: unknown; windowSpec: unknown; discs: unknown; graphSha256: string | null; poisSha256: string | null; merge: string; variant: string; kinds: readonly string[]; sources: [string, string][]; fingerprint: string }): string {
+  const { frame, windowSpec, discs, graphSha256, poisSha256, merge, variant, kinds, sources, fingerprint } = input;
+  return createHash('sha256').update(JSON.stringify({ frame, window: windowSpec, discs, graph: graphSha256, pois: poisSha256, merge, variant, kinds, sources, policy: CONTEXT_POLICY_VERSION, fingerprint })).digest('hex').slice(0, 20);
+}
 export function contextNodeName(kind: ContextKind, gmlId: string): string { return kind === 'bldg' ? `ctx_bldg_${gmlId}` : `ctx_road_${gmlId}`; }
 const pad = (n: number, width: number): string => String(n).padStart(width, '0');
 /** Role-safe names of merged meshes: `ctx_bldg_all`, `ctx_road_all`, `ctx_bldg_t03_05` (tile column, tile row). */
@@ -457,7 +462,7 @@ export async function contextGlb(station: string, options: ContextRunOptions = {
   const meshCoverage: MeshCoverageReport = { method: 'JIS X 0410 3rd-level (8 digit) cells, projected into the station frame, tested against every disc of the window (closed; widened by margin_m)', needed_meshes: coverage.meshes, margin_m: window.spec.mesh_margin_m, needed_sources: coverage.neededSources, unused_sources: coverage.unusedSources, excluded_kind_sources: coverage.excludedKindSources, kinds, missing: [] };
 
   const fingerprint = await toolFingerprint();
-  const digest = createHash('sha256').update(JSON.stringify({ frame, window: window.spec, discs: window.discs.map((d) => [d.id, d.x, d.y, d.r]), graph: window.graph?.graph_sha256 ?? null, merge: mergeLabel(merge), variant, kinds, sources: inputs.map((i) => [i.sourceId, i.sourceSha256]), policy: CONTEXT_POLICY_VERSION, fingerprint })).digest('hex').slice(0, 20);
+  const digest = contextRunDigest({ frame, windowSpec: window.spec, discs: window.discs.map((d) => [d.id, d.x, d.y, d.r]), graphSha256: window.graph?.graph_sha256 ?? null, poisSha256: window.graph?.pois?.pois_sha256 ?? null, merge: mergeLabel(merge), variant, kinds, sources: inputs.map((i) => [i.sourceId, i.sourceSha256]), fingerprint });
   const exitPart = window.spec.r_exit_m > 0 ? `-x${window.spec.r_exit_m}` : '';
   const kindsPart = kinds.length === ALL_KINDS.length ? '' : `-${kinds.join('-')}`; // full (bldg+tran) runs keep the old id shape; a subset is visible in the id
   const runId = `context-${station}-r${radiusM}${exitPart}-${frame.frame_id}-${variant}-${mergeLabel(merge).replace(':', '')}${kindsPart}-${digest}`;

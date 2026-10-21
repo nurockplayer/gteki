@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NodeIO } from '@gltf-transform/core';
 import * as common from '../src/common.js';
-import { assertMeshCoverage, bboxIntersectsDisc, buildContextGlb, contextGlb, contextMergedName, contextNodeName, EXPLORER_ROLE_WORDS, explorerRoleFromName, loadContextConfig, parseKinds, parseMergeSpec, type ContextInput, type ContextVariant, type MergeSpec } from '../src/context.js';
+import { assertMeshCoverage, bboxIntersectsDisc, buildContextGlb, contextGlb, contextMergedName, contextRunDigest, contextNodeName, EXPLORER_ROLE_WORDS, explorerRoleFromName, loadContextConfig, parseKinds, parseMergeSpec, type ContextInput, type ContextVariant, type MergeSpec } from '../src/context.js';
 import { bboxIntersectsAnyDisc, buildContextWindow, meshCellBounds, meshCode3, meshesTouchedByWindow, readGraphWindowNodes, type NodeRule } from '../src/context-window.js';
 import { scanContextFeatures, type ContextFeatureRecord } from '../src/context-scan.js';
 import { loadFrame } from '../src/crs.js';
@@ -694,6 +694,17 @@ describe('low variant', () => {
     expect(low.report.layout.meshes.map((m) => [m.name, m.triangles])).toEqual([['ctx_bldg_all', 72], ['ctx_road_all', 4]]);
     expect(low.document.getRoot().listNodes().every((n) => n.getExtras().variant === 'low')).toBe(true);
     expect(() => parseMergeSpec('kind')).not.toThrow();
+  });
+});
+
+describe('run-id digest', () => {
+  it('changes when only the pois.json hash changes, so builds with different embedded provenance never share an artifact path', () => {
+    const base = { frame: { frame_id: 'f' }, windowSpec: { r_origin_m: 250 }, discs: [['origin', 0, 0, 250]], graphSha256: 'a'.repeat(64), poisSha256: 'b'.repeat(64), merge: 'kind', variant: 'low', kinds: ['bldg'], sources: [['s', 'c'.repeat(64)]] as [string, string][], fingerprint: 'd'.repeat(64) };
+    expect(contextRunDigest(base)).toMatch(/^[a-f0-9]{20}$/);
+    expect(contextRunDigest({ ...base, poisSha256: 'e'.repeat(64) })).not.toBe(contextRunDigest(base));
+    expect(contextRunDigest({ ...base, poisSha256: null })).not.toBe(contextRunDigest(base));
+    expect(contextRunDigest({ ...base, graphSha256: 'f'.repeat(64) })).not.toBe(contextRunDigest(base));
+    expect(contextRunDigest({ ...base })).toBe(contextRunDigest(base));
   });
 });
 
