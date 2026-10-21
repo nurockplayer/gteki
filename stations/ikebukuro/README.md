@@ -193,7 +193,14 @@ Evidence stills:
   1 cm cut, a short panel). The walker: a lattice flood from every graph node with the
   explorer's own rules, keeping each floor level separate, never reaches floor outside the
   routable areas (negative control: no fences). `pnpm check:access` runs both, the flood at
-  0.1 m. Fences block the walker only; the graph, routing and gridnav are unchanged.
+  0.1 m. Both use their own collider build, so a third check replays the explorer's real walker
+  (`stepWalk`: forward rays with the radius allowance, step limits, damped height, 0.05 m steps,
+  continuous headings, wandering walks) against the colliders `scene.ts` itself assembles
+  (`assembleCollision` plus the fence collider, ray-tested with the explorer's `castAll`), from public floor
+  on both sides of every fence panel and around every panel endpoint
+  (`scene/walker_replay.test.ts`, harness `pipeline/walker_replay.ts`; `scene/walker_replay.heavy.test.ts`
+  is the dense version, `pnpm test:heavy`). Negative controls: removing the longest panel, and removing
+  every fence. Fences block the walker only; the graph, routing and gridnav are unchanged.
 
 ## Next
 

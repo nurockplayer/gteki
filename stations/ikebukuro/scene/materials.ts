@@ -5,6 +5,13 @@
 import type * as THREE_NS from "three";
 type ThreeNS = typeof THREE_NS;
 
+/** Roles whose material draws both faces; every other role is front-face only. The scene's ray-test tiles
+ * follow a material's side, so the walker's collision depends on this list too (see scene.ts raycastTiles). */
+const DOUBLE_SIDED_ROLES: ReadonlySet<string> = new Set(["wall", "ceiling", "barriers", "windows", "doors", "portal_sky", "portal_beyond"]);
+export function roleSide(THREE: ThreeNS, role: string): THREE_NS.Side {
+  return DOUBLE_SIDED_ROLES.has(role) ? THREE.DoubleSide : THREE.FrontSide;
+}
+
 type Paint = (g: CanvasRenderingContext2D, size: number, rnd: () => number) => void;
 
 function rng(seed: number) {
@@ -506,7 +513,7 @@ const SKY_GAIN = 1.0;
  * destination stair stays readable on arrival.
  */
 function skyMaterial(THREE: ThreeNS) {
-  const m = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+  const m = new THREE.MeshBasicMaterial({ color: 0xffffff, side: roleSide(THREE, "portal_sky") });
   const uniforms = { uSky: { value: new THREE.Color(0.86, 0.92, 1.0).multiplyScalar(SKY_GAIN) }, uStreet: { value: new THREE.Color(0.26, 0.255, 0.245) } };
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, uniforms);
@@ -541,7 +548,7 @@ float gtPulse(float x, float hw, float w) {
 }`;
 
 function beyondMaterial(THREE: ThreeNS) {
-  const m = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+  const m = new THREE.MeshBasicMaterial({ color: 0xffffff, side: roleSide(THREE, "portal_beyond") });
   m.onBeforeCompile = (sh) => {
     sh.vertexShader = sh.vertexShader
       .replace("#include <common>", "#include <common>\nattribute vec2 band;\nvarying vec2 vBand;\nvarying vec3 vWorldP;")
@@ -639,10 +646,10 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
   };
   const floor = std({ map: floorMap, roughnessMap: floorRough, roughness: 1, metalness: 0, normalMap: floorNormal, envMapIntensity: ENV_INTENSITY.floor });
   const wall = std({ color: 0xdedee0, // cooler than the warm bake, never brighter than the old 0xe2e0da (luminance 0.731 vs 0.745)
-    roughness: 0.42, metalness: 0, side: THREE.DoubleSide });
-  const ceiling = std({ map: ceilMap, normalMap: ceilNormal, roughness: 0.95, side: THREE.DoubleSide });
+    roughness: 0.42, metalness: 0, side: roleSide(THREE, "wall") });
+  const ceiling = std({ map: ceilMap, normalMap: ceilNormal, roughness: 0.95, side: roleSide(THREE, "ceiling") });
   const stairs = std({ map: stairMap, normalMap: stairNormal, roughness: 0.7 });
-  const barriers = std({ color: 0xc6cacf, roughness: 0.3, metalness: 0, side: THREE.DoubleSide });
+  const barriers = std({ color: 0xc6cacf, roughness: 0.3, metalness: 0, side: roleSide(THREE, "barriers") });
   patchLit(floor, "floor", 0.9);
   patchLit(wall, "wall", 0.9, WALL_CLAD);
   patchLit(ceiling, "ceiling", 0.6);
@@ -657,8 +664,8 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     barriers,
     floor_elements: std({ color: 0x9b958c, roughness: 0.6 }),
     transport: std({ color: 0x9aa0a7, roughness: 0.38, metalness: 0.35 }),
-    windows: std({ map: shopMap, emissiveMap: shopMap, emissive: 0xffffff, emissiveIntensity: 1.15, roughness: 0.15, side: THREE.DoubleSide }, false),
-    doors: std({ map: shopMap, emissiveMap: shopMap, emissive: 0xffffff, emissiveIntensity: 1.35, roughness: 0.2, side: THREE.DoubleSide }, false),
+    windows: std({ map: shopMap, emissiveMap: shopMap, emissive: 0xffffff, emissiveIntensity: 1.15, roughness: 0.15, side: roleSide(THREE, "windows") }, false),
+    doors: std({ map: shopMap, emissiveMap: shopMap, emissive: 0xffffff, emissiveIntensity: 1.35, roughness: 0.2, side: roleSide(THREE, "doors") }, false),
     light_fixtures: new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.97, 0.92).multiplyScalar(2.2) }),
     // Openings to the street at the top of exit stairs: daylight.
     portal_sky: skyMaterial(THREE),

@@ -270,6 +270,96 @@ function makeEnvironment(THREE: ThreeNS, renderer: THREE_NS.WebGLRenderer) {
   return target; // caller disposes the render target (texture.dispose() alone leaks it)
 }
 
+/**
+ * The walker's world, built once for the scene and, with stub materials, for the access replay
+ * (pipeline/walker_replay.ts): the GLB's walkable and collider meshes by role, the solid doors, windows and
+ * portal closures, the walk-bridge strips and the access-fence collider. Returned untiled; buildScene tiles them.
+ * Nothing here touches the DOM, a renderer or a texture.
+ */
+export function assembleCollision(
+  THREE: ThreeNS,
+  gltfScene: THREE_NS.Object3D,
+  o: {
+    /** Material for a role (the scene's own; an access replay passes stubs with the same `roleSide`). */
+    materialFor: (role: string) => THREE_NS.Material | undefined;
+    toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3;
+    enuToRenderer: (p: { x: number; y: number; z: number }) => readonly number[];
+    fenceCollider: THREE_NS.Object3D;
+  },
+) {
+  const { toRenderer } = o;
+  const walkable: THREE_NS.Object3D[] = [];
+  const colliders: THREE_NS.Object3D[] = [];
+  const extra: THREE_NS.Mesh[] = [];
+  const routeSegments = (graph as { edges: { verification: string; geometry: { x: number; y: number; z: number }[] }[] }).edges
+    .filter((e) => e.verification === "verified")
+    .flatMap((e) => e.geometry.slice(1).map((b, i): [THREE_NS.Vector3, THREE_NS.Vector3] => [toRenderer(e.geometry[i]!.x, e.geometry[i]!.y, e.geometry[i]!.z), toRenderer(b.x, b.y, b.z)]));
+  const meshesByRole = new Map<string, THREE_NS.Mesh[]>();
+  gltfScene.traverse((obj) => {
+    const m = obj as THREE_NS.Mesh;
+    if (!m.isMesh) return;
+    const role = (m.userData.gteki_role as string) ?? m.name;
+    meshesByRole.set(role, [...(meshesByRole.get(role) ?? []), m]);
+    if (role === "portals") {
+      const { sky, beyond } = splitPortals(THREE, m);
+      const beyondMesh = new THREE.Mesh(beyond, o.materialFor("portal_beyond"));
+      beyondMesh.userData.gteki_role = "portal_beyond";
+      // Nothing past these openings is modelled: block walker and camera there.
+      colliders.push(beyondMesh);
+      extra.push(new THREE.Mesh(sky, o.materialFor("portal_sky")), beyondMesh);
+      m.visible = false;
+      return;
+    }
+    const mat = o.materialFor(role);
+    if (mat) m.material = mat;
+    if (role === "floor" || role === "stairs_ramps") walkable.push(m);
+    // Ceilings too: walker side-rays (0.45/1.25 m) never reach them, but they keep the follow camera inside.
+    if (role === "wall" || role === "barriers" || role === "transport" || role === "ceiling") colliders.push(m);
+    if (role === "doors" || role === "windows") {
+      // Shopfront doors and glazing open onto unmodelled rooms and must be solid. A panel a verified
+      // route passes through, such as an exit's doors, stays open.
+      const solid = new THREE.Mesh(solidDoors(THREE, m, routeSegments), o.materialFor("portal_beyond"));
+      solid.visible = false;
+      solid.userData.gteki_role = `${role}_solid`;
+      colliders.push(solid);
+      extra.push(solid);
+    }
+    m.matrixAutoUpdate = false;
+  });
+
+  // Invisible strips over hairline cracks between PLATEAU floor polygons (pipeline/build_walkfix.py):
+  // without them a ground ray landing in a sliver finds nothing and the walker stalls mid-floor.
+  let bridges: THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial> | null = null;
+  const quads = (walkBridges as { quads: number[][][] }).quads;
+  if (quads.length) {
+    const pos = new Float32Array(quads.length * 12);
+    const idx: number[] = [];
+    quads.forEach((q, i) => {
+      q.forEach(([x, y, z], k) => pos.set(o.enuToRenderer({ x: x!, y: y!, z: z! }), i * 12 + k * 3));
+      idx.push(i * 4, i * 4 + 1, i * 4 + 2, i * 4, i * 4 + 2, i * 4 + 3);
+    });
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    g.setIndex(idx);
+    g.computeBoundingSphere();
+    bridges = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })); // winding varies per crack
+    bridges.name = "walk_bridges";
+    bridges.userData.gteki_role = "walk_bridges";
+    bridges.visible = false;
+    bridges.updateMatrixWorld(true);
+    bridges.matrixAutoUpdate = false;
+    walkable.push(bridges);
+  }
+
+  colliders.push(o.fenceCollider);
+  return { walkable, colliders, extra, meshesByRole, bridges };
+}
+
+/** Raycast-only tiles of the walker's world: what `StationScene.walkable` and `.colliders` are. */
+export function tileCollision(THREE: ThreeNS, world: { walkable: THREE_NS.Object3D[]; colliders: THREE_NS.Object3D[] }) {
+  return { walkable: raycastTiles(THREE, world.walkable, true), colliders: raycastTiles(THREE, world.colliders) };
+}
+
 export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const THREE = ctx.THREE;
   const low = ctx.quality === "low";
@@ -287,77 +377,20 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     baked = false;
   }
   gltf.scene.updateMatrixWorld(true);
-  const walkable: THREE_NS.Object3D[] = [];
-  const colliders: THREE_NS.Object3D[] = [];
-  const extra: THREE_NS.Mesh[] = [];
-  const routeSegments = (graph as { edges: { verification: string; geometry: { x: number; y: number; z: number }[] }[] }).edges
-    .filter((e) => e.verification === "verified")
-    .flatMap((e) => e.geometry.slice(1).map((b, i): [THREE_NS.Vector3, THREE_NS.Vector3] => [toRenderer(e.geometry[i]!.x, e.geometry[i]!.y, e.geometry[i]!.z), toRenderer(b.x, b.y, b.z)]));
-  const meshesByRole = new Map<string, THREE_NS.Mesh[]>();
-  gltf.scene.traverse((o) => {
-    const m = o as THREE_NS.Mesh;
-    if (!m.isMesh) return;
-    const role = (m.userData.gteki_role as string) ?? m.name;
-    meshesByRole.set(role, [...(meshesByRole.get(role) ?? []), m]);
-    if (role === "portals") {
-      const { sky, beyond } = splitPortals(THREE, m);
-      const beyondMesh = new THREE.Mesh(beyond, mats.byRole.portal_beyond);
-      beyondMesh.userData.gteki_role = "portal_beyond";
-      // Nothing past these openings is modelled: block walker and camera there.
-      colliders.push(beyondMesh);
-      extra.push(new THREE.Mesh(sky, mats.byRole.portal_sky), beyondMesh);
-      m.visible = false;
-      return;
-    }
-    const mat = mats.byRole[role];
-    if (mat) m.material = mat;
-    if (role === "floor" || role === "stairs_ramps") walkable.push(m);
-    // Ceilings too: walker side-rays (0.45/1.25 m) never reach them, but they keep the follow camera inside.
-    if (role === "wall" || role === "barriers" || role === "transport" || role === "ceiling") colliders.push(m);
-    if (role === "doors" || role === "windows") {
-      // Shopfront doors and glazing open onto unmodelled rooms and must be solid. A panel a verified
-      // route passes through, such as an exit's doors, stays open.
-      const solid = new THREE.Mesh(solidDoors(THREE, m, routeSegments), mats.byRole.portal_beyond);
-      solid.visible = false;
-      solid.userData.gteki_role = `${role}_solid`;
-      colliders.push(solid);
-      extra.push(solid);
-    }
-    m.matrixAutoUpdate = false;
+  const fences = buildAccessFences(THREE, accessFences as AccessFences, toRenderer);
+  const { walkable, colliders, extra, meshesByRole, bridges } = assembleCollision(THREE, gltf.scene, {
+    materialFor: (role) => mats.byRole[role],
+    toRenderer,
+    enuToRenderer: ctx.enuToRenderer,
+    fenceCollider: fences.collider,
   });
   attachSurfaceData(THREE, meshesByRole);
   root.add(gltf.scene, ...extra);
-
-  // Invisible strips over hairline cracks between PLATEAU floor polygons (pipeline/build_walkfix.py):
-  // without them a ground ray landing in a sliver finds nothing and the walker stalls mid-floor.
-  let bridges: THREE_NS.Mesh<THREE_NS.BufferGeometry, THREE_NS.MeshBasicMaterial> | null = null;
-  const quads = (walkBridges as { quads: number[][][] }).quads;
-  if (quads.length) {
-    const pos = new Float32Array(quads.length * 12);
-    const idx: number[] = [];
-    quads.forEach((q, i) => {
-      q.forEach(([x, y, z], k) => pos.set(ctx.enuToRenderer({ x: x!, y: y!, z: z! }), i * 12 + k * 3));
-      idx.push(i * 4, i * 4 + 1, i * 4 + 2, i * 4, i * 4 + 2, i * 4 + 3);
-    });
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    g.setIndex(idx);
-    g.computeBoundingSphere();
-    bridges = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })); // winding varies per crack
-    bridges.name = "walk_bridges";
-    bridges.userData.gteki_role = "walk_bridges";
-    bridges.visible = false;
-    bridges.updateMatrixWorld(true);
-    bridges.matrixAutoUpdate = false;
-    root.add(bridges);
-    walkable.push(bridges);
-  }
+  if (bridges) root.add(bridges);
 
   // Surveyed floor outside the routable areas (e.g. the JR-Tobu passage, possibly a fare-paid transfer
   // concourse) has no verified access: it stays visible, but their outline is fenced and labelled.
-  const fences = buildAccessFences(THREE, accessFences as AccessFences, toRenderer);
   root.add(fences.visual, fences.collider);
-  colliders.push(fences.collider);
 
   // Lightmap (baked by pipeline/blender_bake_lighting.py, TEXCOORD_1). Falls back to a hemisphere rig.
   let lightmap: THREE_NS.Texture | null = null;
@@ -404,7 +437,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
 
   // The explorer raycasts walkable and colliders several times a frame. Whole-station meshes cost a
   // full triangle scan per ray; ~8 m tiles let three.js skip every tile out of a short ray's reach.
-  const walkTiles = raycastTiles(THREE, walkable, true), colliderTiles = raycastTiles(THREE, colliders);
+  const { walkable: walkTiles, colliders: colliderTiles } = tileCollision(THREE, { walkable, colliders });
   const rayTiles = [...walkTiles, ...colliderTiles];
   return {
     root,
