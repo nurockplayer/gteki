@@ -7,6 +7,7 @@
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "test:heavy": "vitest run --mode heavy --maxWorkers=1 --passWithNoTests",
+    "test:heavy:box": "node tools/test-box.mjs",
     "check": "pnpm typecheck && pnpm test",
     "dev": "pnpm --filter @gteki/web dev",
     "build": "pnpm --filter @gteki/web build"
