@@ -4,7 +4,7 @@ import { glbPrimitivePlugin, sceneFromGlbRoles, seeThroughMeshes } from "@gteki/
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { LightProbeGridHelperWebGL } from "three/addons/helpers/LightProbeGridHelperWebGL.js";
 import { LightProbeGridWebGL } from "three/addons/lighting/LightProbeGridWebGL.js";
-import { clampDistance, FOLLOW, followDistance, followPose } from "./followCamera.ts";
+import { clampDistance, FOLLOW, followBoom, followDistance, followPose } from "./followCamera.ts";
 import { castAll, castCamera, castTargets, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
 
 const plane = (y: number) => {
@@ -223,6 +223,49 @@ describe("camera-only blockers", () => {
     }
     expect(crossedUnconstrained).toBeGreaterThan(0);
     expect(crossed).toBe(0);
+  });
+
+  it("slide the boom under a hanging box instead of pulling the camera into the avatar", () => {
+    const floor = plane(0);
+    floor.updateMatrixWorld(true);
+    const head = new THREE.Vector3(0, 1.62, 0);
+    const wanted = FOLLOW.defaultDistance;
+    // Pitch 0: a box low enough to meet the lifted boom; a downward pitch: the usual 2.2-2.6 m sign box.
+    for (const [pitch, bottom] of [[0, 1.9], [-0.5, 2.2]] as const) {
+      const box = new THREE.Mesh(new THREE.BoxGeometry(4, 0.4, 6).translate(0, bottom + 0.2, 3.5), new THREE.MeshBasicMaterial());
+      box.updateMatrixWorld(true);
+      const t = explorerTargets([floor], [], [box]);
+      const pose = followPose(head, 0, pitch);
+      const cast = (b: THREE.Vector3) => {
+        const ray = new THREE.Raycaster(pose.pivot, b, 0, wanted + FOLLOW.clearance);
+        return castCamera(ray, t.camera, t.blockers).map((h) => ({ distance: h.distance, cameraOnly: t.blockers.has(h.object) }));
+      };
+      const pulledIn = followDistance(wanted, cast(pose.back));
+      expect(pulledIn).toBeLessThan(FOLLOW.boomKeep * wanted);
+      const out = followBoom(wanted, pose.back, cast);
+      expect(out.back.y).toBeLessThan(pose.back.y);
+      expect(out.distance).toBeGreaterThanOrEqual(FOLLOW.boomKeep * wanted);
+      const end = pose.pivot.clone().addScaledVector(out.back, out.distance);
+      expect(end.y).toBeLessThan(bottom);
+      expect(end.y).toBeGreaterThan(0);
+      // No blocker lies within the chosen distance plus clearance along the chosen boom.
+      const ray = new THREE.Raycaster(pose.pivot, out.back, 0, out.distance + FOLLOW.clearance);
+      expect(castCamera(ray, t.camera, t.blockers).filter((h) => t.blockers.has(h.object))).toEqual([]);
+    }
+  });
+
+  it("do not move the boom for a hanging box when only a wall limits the camera", () => {
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    wall.position.z = 1.2;
+    wall.updateMatrixWorld(true);
+    const box = new THREE.Mesh(new THREE.BoxGeometry(4, 0.4, 6).translate(0, 2.4, 6), new THREE.MeshBasicMaterial());
+    box.updateMatrixWorld(true);
+    const t = explorerTargets([], [wall], [box]);
+    const pose = followPose(new THREE.Vector3(0, 1.62, 0), 0, -0.2);
+    const cast = (b: THREE.Vector3) => castCamera(new THREE.Raycaster(pose.pivot, b, 0, FOLLOW.defaultDistance + FOLLOW.clearance), t.camera, t.blockers).map((h) => ({ distance: h.distance, cameraOnly: t.blockers.has(h.object) }));
+    const out = followBoom(FOLLOW.defaultDistance, pose.back, cast);
+    expect(out.back).toBe(pose.back);
+    expect(out.distance).toBe(followDistance(FOLLOW.defaultDistance, cast(pose.back)));
   });
 
   it("stay camera-only when nested inside a floor or wall group", () => {
