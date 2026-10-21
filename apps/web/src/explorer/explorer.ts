@@ -125,6 +125,8 @@ export class Explorer {
   private readonly street = new StreetBackdrop();
   /** Render height of the station's street floor when it is an underground (scene-lit) station, else null. */
   private streetY: number | null = null;
+  /** Set by each discrete placement (walkFrom, startGuide); consumed by the next frame outside overview. */
+  private teleported = false;
   private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
   private readonly probeDown = new THREE.Vector3(0, -1, 0);
   private readonly probeNormal = new THREE.Vector3();
@@ -244,7 +246,7 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; street: { active: boolean; opacity: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
@@ -252,6 +254,7 @@ export class Explorer {
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
+      street: { active: this.street.active, opacity: Math.round(this.street.opacity * 1000) / 1000 },
     };
   }
 
@@ -540,6 +543,7 @@ export class Explorer {
     const ground = this.groundAt(p.x, p.y + 1.5, p.z, 4);
     if (ground === null) return false;
     this.pos.set(p.x, ground, p.z);
+    this.teleported = true;
     this.yaw = (-headingDeg * Math.PI) / 180;
     this.stopGuide();
     this.setMode("walk");
@@ -855,6 +859,7 @@ export class Explorer {
     this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
+    this.teleported = true;
     if (first.tx || first.tz) this.yaw = Math.atan2(-first.tx, -first.tz);
     this.setMode("guide");
   }
@@ -950,8 +955,12 @@ export class Explorer {
 
     if (this.mode !== "overview") {
       this.placeCamera(dt);
+      // A teleport re-probes at once and snaps the backdrop to its target (no daylight carried underground).
+      const snap = this.teleported;
+      this.teleported = false;
+      if (snap) this.streetProbe.at.set(Infinity, 0, 0);
       this.updateStreetProbe(dt);
-      this.street.update(this.scene, this.camera, this.pos, this.streetProbe.outdoors, dt, this.streetProbe.level);
+      this.street.update(this.scene, this.camera, this.pos, this.streetProbe.outdoors, dt, this.streetProbe.level, snap);
     }
     // Signs between the follow camera and the avatar (or inside its near distance) are cut, never collided with.
     this.camera.updateMatrixWorld();
