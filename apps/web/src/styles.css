@@ -144,6 +144,8 @@ button.on { border-color: var(--accent); color: var(--accent); }
 /* Centred in the band between its left and right insets (fit-content + auto margins); on desktop the guide's band starts right of the From/To panel. */
 @media (min-width: 721px) {
   .app[data-mode="guide"] .hud-instruction { left: calc(16px + min(400px, 100vw - 32px) + 16px); }
+  /* The toast below it shares that band's centre. */
+  .app[data-mode="guide"] .toast { left: calc(50% + (16px + min(400px, 100vw - 32px)) / 2); }
 }
 
 .hint { position: absolute; z-index: 2; right: 16px; top: calc(60px + env(safe-area-inset-top)); font-size: 11px; color: var(--muted); padding: 6px 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.35); display: none; }
@@ -171,7 +173,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .joystick-knob { position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(94, 240, 255, 0.55); box-shadow: 0 0 18px rgba(94, 240, 255, 0.5); }
 
 /* ---- toast & dialog ---- */
-.toast { position: absolute; z-index: 9; left: 50%; top: calc(70px + env(safe-area-inset-top)); transform: translateX(-50%) translateY(-8px); padding: 8px 14px; border-radius: 10px; background: var(--glass-strong); opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; font-size: 13px; }
+.toast { position: absolute; z-index: 9; left: 50%; top: var(--hud-clear, calc(70px + env(safe-area-inset-top))); transform: translateX(-50%) translateY(-8px); padding: 8px 14px; border-radius: 10px; background: var(--glass-strong); opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; font-size: 13px; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .coverage { max-width: min(560px, calc(100vw - 32px)); max-height: 80vh; border-radius: var(--radius); border: 1px solid var(--line); background: var(--glass-strong); color: var(--text); padding: 18px 20px; }
 .coverage::backdrop { background: rgba(0, 0, 0, 0.5); }

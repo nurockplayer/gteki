@@ -117,7 +117,7 @@
    "crs": "EPSG:6697"
   },
   "frame": "ENU",
-  "datasetVersion": "ikebukuro-b1-slice5.3",
+  "datasetVersion": "ikebukuro-b1-slice5.4",
   "synthetic": false,
   "generatedAt": "2026-10-20T15:00:00+00:00"
  },
@@ -238,11 +238,11 @@
   "summary": [
    {
     "lang": "en",
-    "text": "Routable (desk-verified against the PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown): slice 1, the B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43; slice 2, the passage along the JR east side to the South Passage east end and the south-east corridor to Exits 38/39/40/41; slice 3, the passage along the JR east side north to the North Passage (Exit 22, 東口（北）) and the passage between the Ikebukuro Shopping Park blocks to Exits 26/28/32/33; slice 4, the Central Passage west to the West Exit (西口) underground hall and its passages to Exits 10/11/15/17/18; slice 5, the South Passage west past the JR South Gate to the West Exit (South) hall (Exit 4, routed to the foot of its stairs, which are outside the survey) and the passage north to the West Exit hall. The rest of the PLATEAU B1 passage network is explorable but not routable yet. Fare-paid concourses and platforms are not modelled."
+    "text": "Routable (desk-verified against the PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown): slice 1, the B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43; slice 2, the passage along the JR east side to the South Passage east end and the south-east corridor to Exits 38/39/40/41; slice 3, the passage along the JR east side north to the North Passage (Exit 22, 東口（北）) and the passage between the Ikebukuro Shopping Park blocks to Exits 26/28/32/33; slice 4, the Central Passage west to the West Exit (西口) underground hall and its passages to Exits 10/11/15/17/18; slice 5, the South Passage west past the JR South Gate to the West Exit (South) hall (Exit 4, routed to the foot of its stairs, which are outside the survey) and the passage north to the West Exit hall. The rest of the PLATEAU B1 passage network is visible but not accessible (access unverified); access fences stop free walking there. Fare-paid concourses and platforms are not modelled."
    },
    {
     "lang": "ja",
-    "text": "ルート案内対象（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）：第1区画 中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43；第2区画 JR東側通路から南通路東端、南東通路の出口38・39・40・41；第3区画 JR東側通路から北通路（出口22・東口（北））、池袋ショッピングパーク間の通路の出口26・28・32・33；第4区画 中央通路（西）から西口地下広場、出口10・11・15・17・18；第5区画 南通路（西）・JR南改札から西口（南）地下広場（出口4は計測範囲外の階段の下まで案内）、西口地下広場への通路。その他のB1地下通路は探索のみ。改札内・ホームは未モデル化。"
+    "text": "ルート案内対象（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）：第1区画 中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43；第2区画 JR東側通路から南通路東端、南東通路の出口38・39・40・41；第3区画 JR東側通路から北通路（出口22・東口（北））、池袋ショッピングパーク間の通路の出口26・28・32・33；第4区画 中央通路（西）から西口地下広場、出口10・11・15・17・18；第5区画 南通路（西）・JR南改札から西口（南）地下広場（出口4は計測範囲外の階段の下まで案内）、西口地下広場への通路。その他のB1地下通路は表示のみで立入不可（アクセス未確認のため、フェンスで進入を止めています）。改札内・ホームは未モデル化。"
    }
   ],
   "areas": [
