@@ -117,11 +117,28 @@ const CAMERA_ROLES = new Set(["camera_blocker"]);
  */
 const SEE_THROUGH_ROLES = new Set(["sign", "signs", "signage"]);
 
+/** Meshes GLTFLoader generated for the primitives of a multi-primitive glTF mesh (see markGlbPrimitives). */
+const GLB_PRIMITIVES = new WeakSet<THREE.Object3D>();
+
+/**
+ * Record the meshes GLTFLoader generated for the primitives of a multi-primitive glTF mesh. They sit under
+ * the node's Group and are named after the mesh resource, not the node, so their names (and mesh-level
+ * extras) never give them a role: they inherit the node's, as in Godot, which keeps one node with several
+ * surfaces. The explorer's `loadGlb` calls this for every GLB; returns `gltf`.
+ */
+export function markGlbPrimitives(gltf: GLTF): GLTF {
+  gltf.parser?.associations?.forEach((ref, object) => {
+    if (ref?.primitives !== undefined && ref.nodes === undefined && (object as THREE.Object3D).isObject3D === true) GLB_PRIMITIVES.add(object as THREE.Object3D);
+  });
+  return gltf;
+}
+
 /**
  * glTF extras arrive as userData; also accept "<role>" or "<role>_<n>" object names. A role is trimmed and
  * lowercased, and an empty one counts as absent (same normalisation as the Godot loader).
  */
 export function roleOf(object: THREE.Object3D): string | null {
+  if (GLB_PRIMITIVES.has(object)) return null;
   const extra = object.userData?.gteki_role;
   if (typeof extra === "string" && extra.trim() !== "") return extra.trim().toLowerCase();
   // GLTFLoader sanitises node names ("floor.001" → "floor001") and keeps the authored one in userData.name.

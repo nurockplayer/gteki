@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { sceneFromGlbRoles, seeThroughMeshes } from "@gteki/scene-api";
+import { markGlbPrimitives, sceneFromGlbRoles, seeThroughMeshes } from "@gteki/scene-api";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { LightProbeGridHelperWebGL } from "three/addons/helpers/LightProbeGridHelperWebGL.js";
 import { LightProbeGridWebGL } from "three/addons/lighting/LightProbeGridWebGL.js";
 import { clampDistance, FOLLOW, followDistance, followPose } from "./followCamera.ts";
@@ -104,6 +105,30 @@ describe("castTargets", () => {
     expect(castAll(down(), castTargets(roles.walkable, roles.colliders))[0]?.point.y).toBeCloseTo(0);
   });
 });
+
+/** A binary glTF (GLB) with its buffer in the BIN chunk, so parsing needs no fetch. */
+const glb = (json: object, bin: Float32Array): ArrayBuffer => {
+  const pad = (bytes: Uint8Array, fill: number) => {
+    const out = new Uint8Array(Math.ceil(bytes.length / 4) * 4).fill(fill);
+    out.set(bytes);
+    return out;
+  };
+  const jsonChunk = pad(new TextEncoder().encode(JSON.stringify(json)), 0x20);
+  const binChunk = pad(new Uint8Array(bin.buffer), 0);
+  const out = new ArrayBuffer(12 + 8 + jsonChunk.length + 8 + binChunk.length);
+  const view = new DataView(out);
+  view.setUint32(0, 0x46546c67, true);
+  view.setUint32(4, 2, true);
+  view.setUint32(8, out.byteLength, true);
+  view.setUint32(12, jsonChunk.length, true);
+  view.setUint32(16, 0x4e4f534a, true);
+  new Uint8Array(out, 20, jsonChunk.length).set(jsonChunk);
+  const binAt = 20 + jsonChunk.length;
+  view.setUint32(binAt, binChunk.length, true);
+  view.setUint32(binAt + 4, 0x004e4942, true);
+  new Uint8Array(out, binAt + 8, binChunk.length).set(binChunk);
+  return out;
+};
 
 describe("camera-only blockers", () => {
   const ceiling = (y: number) => {
@@ -346,4 +371,37 @@ describe("camera-only blockers", () => {
     expect([glb.material, direct.material]).toEqual([material, material]);
     expect(material.side).toBe(THREE.FrontSide);
   });
+
+  it("keep a multi-primitive GLB node's role on its generated primitive meshes (as Godot's one node)", async () => {
+    // One triangle buffer shared by two primitives; mesh resources named like other roles.
+    const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 0, 1]);
+    const mesh = (name: string) => ({ name, primitives: [{ attributes: { POSITION: 0 } }, { attributes: { POSITION: 0 } }] });
+    const json = {
+      asset: { version: "2.0" },
+      scene: 0,
+      scenes: [{ nodes: [0, 1, 2] }],
+      nodes: [
+        { name: "slab", mesh: 0, extras: { gteki_role: "camera_blocker" } },
+        { name: "panel", mesh: 1 },
+        { name: "single", mesh: 2 },
+      ],
+      meshes: [mesh("sign_panel"), mesh("floor_panel"), { name: "floor_single", primitives: [{ attributes: { POSITION: 0 } }] }],
+      buffers: [{ byteLength: positions.byteLength }],
+      bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: positions.byteLength }],
+      accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [0, 0, 0], max: [1, 0, 1] }],
+    };
+    const gltf = markGlbPrimitives(await new GLTFLoader().parseAsync(glb(json, positions), ""));
+    const node = (name: string) => gltf.scene.getObjectByName(name)!;
+    const slabParts = node("slab").children;
+    expect(slabParts).toHaveLength(2);
+    expect(slabParts.map((o) => o.name)).toEqual(["sign_panel", "sign_panel_1"]);
+    const roles = sceneFromGlbRoles(gltf.scene);
+    expect(roles.cameraBlockers).toEqual(slabParts);
+    expect(seeThroughMeshes(gltf.scene)).toEqual([]);
+    // An untagged node never takes a role from its mesh resource's name.
+    expect(roles.walkable).toEqual([]);
+    // A single-primitive mesh is the node itself and keeps its node name ("single", no role).
+    expect(node("single").type).toBe("Mesh");
+  });
 });
+
