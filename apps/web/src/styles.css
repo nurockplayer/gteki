@@ -139,6 +139,11 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .hud > * { pointer-events: auto; }
 .hud-instruction { position: fixed; top: calc(64px + env(safe-area-inset-top)); left: 16px; right: 16px; width: fit-content; margin-inline: auto; padding: 10px 18px; border-radius: 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, 0.4); font-size: 18px; font-weight: 700; box-shadow: 0 0 30px rgba(94, 240, 255, 0.2); }
 .hud-row { display: flex; gap: 6px; padding: 6px; border-radius: 12px; background: var(--glass); backdrop-filter: blur(12px); }
+/* Guide playback controls: ‹ pause › speed end. Previous/next are compact icon buttons; the group never wraps. */
+.hud-guide { display: flex; flex-wrap: nowrap; gap: 6px; flex: none; }
+.hud-guide .guide-step { min-width: 36px; padding: 8px 0; font-size: 20px; line-height: 1; font-weight: 700; }
+.hud-guide .guide-step:disabled { opacity: 0.35; cursor: default; }
+.hud-guide .guide-step:disabled:active { transform: none; }
 .app[data-mode="walk"] .sheet, .app[data-mode="guide"] .sheet { opacity: 0.0; pointer-events: none; }
 .app[data-mode="walk"] .hud, .app[data-mode="guide"] .hud { left: auto; right: 16px; transform: none; justify-items: end; }
 /* Centred in the band between its left and right insets (fit-content + auto margins); on desktop the guide's band starts right of the From/To panel. */
@@ -207,5 +212,9 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .app[data-mode="walk"] .panel, .app[data-mode="guide"] .panel { display: none; }
   .app[data-mode="walk"] .hud, .app[data-mode="guide"] .hud { right: 16px; left: 16px; justify-items: stretch; }
   .hud-row { flex-wrap: wrap; justify-content: center; }
+  /* 375 px: the group gets the row's full width (343 - 12 padding) and its five buttons fit on one line; smaller screens squeeze the text buttons rather than wrap. */
+  .hud-guide { flex: 1 1 100%; min-width: 0; gap: 4px; justify-content: center; }
+  .hud-guide button { min-width: 0; padding: 8px 6px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hud-guide .guide-step { flex: 0 0 32px; min-width: 32px; padding: 8px 0; font-size: 20px; }
   .hud-instruction { font-size: 16px; text-align: center; }
 }
