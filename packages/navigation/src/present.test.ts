@@ -378,3 +378,256 @@ describe("describeRoute junction hints", () => {
     expect(describeRoute(b, route(b, "start", "g"), "en")[2]!.junctions).toEqual([{ nodeId: "p", stepIndex: 2, atM: 30, action: "keep_right", name: null }]);
   });
 });
+
+describe("describeRoute short legs, lift rides and continued flights (Shinjuku E27 shapes)", () => {
+  type Bundle = ReturnType<typeof createSyntheticBundle>;
+  const node = (id: string, floorId: string, x: number, y: number) => ({ id, floorId, position: { x, y, z: null }, kind: "junction" as const, inOut: null, sourceRefs: [] });
+  /** MLIT-style floors: symbolic heights, so up/down rests on same-operator ordinals alone. */
+  const floor = (id: string, label: string, ordinal: number | null) => ({
+    id, operatorId: "operator-a", sourceLabels: [{ operatorId: "operator-a", label, sourceId: "fixture-geometry" }],
+    ordinal, intermediate: ordinal !== null && !Number.isInteger(ordinal), elevationM: null, elevationSource: "symbolic" as const, renderElevationM: (ordinal ?? 0) * 4,
+  });
+  const texts = (b: Bundle, r: RouteResult, lang: "ja" | "en") => describeRoute(b, r, lang).map((i) => i.text);
+  /** Every step still belongs to exactly one instruction, in walking order. */
+  const covered = (b: Bundle, r: RouteResult) => expect(describeRoute(b, r, "en").flatMap((i) => i.stepIndexes)).toEqual(r.steps.map((_, k) => k));
+
+  /**
+   * The tail of the real E27 platform → exit 2 route: a corridor on B1, two short jogs onto a flight up
+   * to a landing, a switchback flight that stays on the landing, another up to the street and a 1.4 m
+   * step to the exit. Before: 11 lines, five of them legs under 5 m ("Turn left, ~2 m").
+   */
+  function switchback(): Bundle {
+    const b = createSyntheticBundle([
+      edge("corridor", "s0", "p1", { lengthM: 20 }),
+      edge("jog-1", "p1", "p2", { lengthM: 1.6 }),
+      edge("jog-2", "p2", "p3", { lengthM: 2.8 }),
+      edge("flight-1", "p3", "l1", { mode: "stairs", lengthM: 7.8 }),
+      edge("landing-1", "l1", "l2", { lengthM: 3.6 }),
+      edge("flight-2", "l2", "l3", { mode: "stairs", lengthM: 10.6 }),
+      edge("landing-2", "l3", "l4", { lengthM: 3 }),
+      edge("flight-3", "l4", "st", { mode: "stairs", lengthM: 11 }),
+      edge("to-exit", "st", "exit", { lengthM: 1.4 }),
+    ]);
+    b.floors.push(floor("b1", "B1", -1), floor("landing", "Landing", -0.5), floor("street", "Street", 0));
+    b.nodes.push(
+      node("s0", "b1", 0, 0), node("p1", "b1", 20, 0), node("p2", "b1", 20, 1.6), node("p3", "b1", 17.2, 1.6),
+      node("l1", "landing", 9.4, 1.6), node("l2", "landing", 9.4, -2), node("l3", "landing", 20, -2), node("l4", "landing", 20, 1),
+      node("st", "street", 9, 1), node("exit", "street", 9, 2.4),
+    );
+    return b;
+  }
+
+  it("folds legs under 5 m into the next instruction, naming each turn once and in order", () => {
+    const b = switchback();
+    const r = route(b, "s0", "exit");
+    expect(texts(b, r, "en")).toEqual([
+      "Start",
+      "Go straight ~20 m",
+      "Turn left, then left again, then take the stairs up to Landing",
+      "Turn left, then left again, then continue on the stairs",
+      // Known "up" after a flight of unknown direction: "continue up" would claim the last one rose too.
+      "Turn left, then left again, then take the stairs up to Street, then turn right",
+      "Arrive at destination",
+    ]);
+    expect(texts(b, r, "ja")).toEqual([
+      "出発",
+      "約20m 直進",
+      "左へ曲がり、さらに左へ曲がり、階段で上へ・Landingへ",
+      "左へ曲がり、さらに左へ曲がり、引き続き階段を進む",
+      "左へ曲がり、さらに左へ曲がり、階段で上へ・Streetへ、その先で右へ",
+      "目的地に到着",
+    ]);
+    const en = describeRoute(b, r, "en");
+    // The flight's own turn stays on `turn`; folded turns are listed apart, so nothing is double-counted.
+    expect(en[2]).toMatchObject({ kind: "stairs", stepIndexes: [1, 2, 3], leadTurns: ["left", "left"], turn: null, vertical: "up" });
+    expect(en[3]).toMatchObject({ kind: "stairs", stepIndexes: [4, 5], leadTurns: ["left"], turn: "left", vertical: null });
+    expect(en[4]).toMatchObject({ stepIndexes: [6, 7, 8], leadTurns: ["left"], turn: "left", trailTurns: ["right"], toFloorId: "street" });
+    expect(en[4]!.distanceM).toBeCloseTo(15.4);
+    covered(b, r);
+  });
+
+  it("names a flight that follows another a continuation only when it does not reverse it", () => {
+    const b = switchback();
+    // Without ordinals no flight has an evidenced direction: never "up", still a continuation.
+    for (const f of b.floors) if (["b1", "landing", "street"].includes(f.id)) f.ordinal = null;
+    const r = route(b, "s0", "exit");
+    expect(texts(b, r, "en").slice(2, 5)).toEqual([
+      "Turn left, then left again, then take the stairs to Landing",
+      "Turn left, then left again, then continue on the stairs",
+      "Turn left, then left again, then continue on the stairs to Street, then turn right",
+    ]);
+    // A long walk between two flights makes the second a new one.
+    b.edges = b.edges.map((e) => e.id === "landing-1" ? { ...e, lengthM: 12 } : e);
+    expect(texts(b, route(b, "s0", "exit"), "en")[4]).toBe("Turn left, then take the stairs");
+  });
+
+  it("keeps an opening leg it cannot fold without moving a turn, and folds one leading straight onto a flight", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a", { lengthM: 3.4 }), edge("a-up", "a", "upper", { mode: "escalator" }), edge("a-n", "a", "isolated")]);
+    const onto = describeRoute(b, route(b, "start", "upper"), "en");
+    expect(onto.map((i) => i.kind)).toEqual(["start", "escalator", "arrive"]);
+    expect(onto[1]).toMatchObject({ stepIndexes: [0, 1], text: "Take the escalator up to 1F" });
+    b.nodes.find((n) => n.id === "isolated")!.position = { x: 10, y: 10, z: 0 };
+    // The first leg is what the left turn is measured from: it stays a line of its own.
+    expect(texts(b, route(b, "start", "isolated"), "en")).toEqual(["Start", "Go straight ~3 m", "Turn left, ~10 m", "Arrive at destination"]);
+  });
+
+  it("adds a straight step off a flight or lift to it, so the turn after it still starts its own line", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("st", "a", "upper", { mode: "stairs" }), edge("off", "upper", "upper-2", { lengthM: 2 })]);
+    b.nodes.find((n) => n.id === "upper")!.position = { x: 15, y: 0, z: 4 };
+    b.nodes.find((n) => n.id === "upper-2")!.position = { x: 17, y: 0, z: 4 };
+    b.nodes.push({ ...node("north", "upper", 17, 20), position: { x: 17, y: 20, z: 4 } });
+    b.edges.push(edge("turn", "upper-2", "north", { lengthM: 20 }));
+    const ins = describeRoute(b, route(b, "start", "north"), "en");
+    expect(ins.map((i) => i.text)).toEqual(["Start", "Go straight ~10 m", "Take the stairs up to 1F", "Turn left, ~20 m", "Arrive at destination"]);
+    expect(ins[2]).toMatchObject({ stepIndexes: [1, 2], distanceM: 12 });
+    expect(ins[2]!.trailTurns).toBeUndefined();
+  });
+
+  it("speaks distances and junction hints from the last turn, never moving a turn by a folded leg", () => {
+    const b = createSyntheticBundle([
+      edge("s0-x", "s0", "x"), edge("x-a", "x", "a", { lengthM: 4 }), edge("s-a", "start", "a"), edge("a-east", "a", "goal"),
+      edge("a-p", "a", "p", { lengthM: 30 }), edge("p-q", "p", "q", { lengthM: 30 }), edge("q-g", "q", "g", { lengthM: 30 }),
+      edge("p-fork", "p", "r", { lengthM: 30 }), edge("q-east", "q", "s", { lengthM: 30 }),
+    ]);
+    const at = (id: string, x: number, y: number) => ({ ...node(id, "concourse", x, y), position: { x, y, z: 0 } });
+    b.nodes.push(at("s0", 6, 10), at("x", 6, 0), at("p", 10, -30), at("q", 7, -60), at("g", 7, -90), at("r", 25, -55), at("s", 37, -60));
+    b.nodes.find((n) => n.id === "start")!.position = { x: 0, y: 5, z: 0 };
+    const ins = describeRoute(b, route(b, "s0", "g"), "en");
+    // The 4 m leg after the left turn is folded in front: ~90 m and the hints count from the right turn at `a`.
+    expect(ins.map((i) => i.text)).toEqual([
+      "Start",
+      "Go straight ~10 m",
+      "Turn left, then right, ~90 m. After ~30 m, keep right at the junction. After ~60 m, continue straight through the junction.",
+      "Arrive at destination",
+    ]);
+    expect(ins[2]).toMatchObject({ stepIndexes: [1, 2, 3, 4], distanceM: 94, leadTurns: ["left"] });
+    expect(ins[2]!.junctions!.map((j) => j.atM)).toEqual([30, 60]);
+    expect(describeRoute(b, route(b, "s0", "g"), "ja")[2]!.text).toBe("左へ曲がり、すぐ右へ曲がり約90m。約30m先の分岐は右寄りに進む。約60m先の分岐はそのまま直進");
+  });
+
+  it("turns back where the walk ends, not after the folded leg", () => {
+    const b = createSyntheticBundle([edge("s-goal", "start", "goal", { lengthM: 20 }), edge("back", "goal", "a", { lengthM: 4 })]);
+    b.nodes.find((n) => n.id === "a")!.position = { x: 16, y: 0, z: 0 };
+    const r = route(b, "start", "a");
+    expect(describeRoute(b, r, "en")[1]).toMatchObject({ stepIndexes: [0, 1], distanceM: 24, trailTurns: ["back"], text: "Go straight ~20 m, then turn back" });
+    expect(texts(b, r, "ja")[1]).toBe("約20m 直進、その先で引き返す");
+  });
+
+  it("anchors trailing turns to the end of the walk when junction hints come before them", () => {
+    // The Restroom junction at `a` is passed after 10 m; the 2 m left turn comes after the whole 20 m.
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("a-goal", "a", "goal"), edge("a-n", "a", "b"), edge("goal-up", "goal", "isolated", { lengthM: 2 })]);
+    b.nodes.find((n) => n.id === "b")!.position = { x: 10, y: 10, z: 0 };
+    b.nodes.find((n) => n.id === "isolated")!.position = { x: 20, y: 2, z: 0 };
+    const r = route(b, "start", "isolated");
+    expect(describeRoute(b, r, "en")[1]).toMatchObject({
+      stepIndexes: [0, 1, 2], trailTurns: ["left"],
+      text: "Go straight ~20 m. After ~10 m, continue straight past Restroom. After ~20 m, turn left.",
+    });
+    expect(texts(b, r, "ja")[1]).toBe("約20m 直進。約10m先、トイレの分岐はそのまま直進。約20m先で左へ");
+  });
+
+  it("folds a route of short walks only into its opening leg", () => {
+    const b = createSyntheticBundle([edge("e1", "start", "a", { lengthM: 3 }), edge("n1", "a", "b", { lengthM: 2 }), edge("e2", "b", "goal", { lengthM: 3 })]);
+    b.nodes.find((n) => n.id === "a")!.position = { x: 3, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "b")!.position = { x: 3, y: 2, z: 0 };
+    b.nodes.find((n) => n.id === "goal")!.position = { x: 6, y: 2, z: 0 };
+    const r = route(b, "start", "goal");
+    expect(describeRoute(b, r, "en")[1]).toMatchObject({ kind: "walk", stepIndexes: [0, 1, 2], trailTurns: ["left", "right"], text: "Go straight ~3 m, then turn left, then right" });
+    expect(texts(b, r, "ja")).toEqual(["出発", "約3m 直進、その先で左へ、すぐ右へ", "目的地に到着"]);
+  });
+
+  it("judges straight wording on the instruction's own walk, not on the legs folded into it", () => {
+    // Own walk: 30 m north, 20 m east, 30 m south (bent inside one edge), then a 3 m step east.
+    const b = createSyntheticBundle([
+      edge("u", "start", "goal", { lengthM: null, geometry: [{ x: 0, y: 0, z: 0 }, { x: 0, y: 30, z: 0 }, { x: 20, y: 30, z: 0 }, { x: 20, y: 0, z: 0 }] }),
+      edge("step", "goal", "a", { lengthM: 3 }),
+    ]);
+    b.nodes.find((n) => n.id === "goal")!.position = { x: 20, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "a")!.position = { x: 23, y: 0, z: 0 };
+    const r = route(b, "start", "a");
+    expect(describeRoute(b, r, "en")[1]).toMatchObject({ stepIndexes: [0, 1], trailTurns: ["left"], text: "Continue ~80 m, then turn left" });
+    expect(texts(b, r, "ja")[1]).toBe("約80m 進む、その先で左へ");
+  });
+
+  it("gives a moving walkway its own length, not the steps folded onto it", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a", { lengthM: 3 }), edge("walkway", "a", "goal", { mode: "moving_walkway", lengthM: 10 }), edge("off", "goal", "isolated", { lengthM: 2 })]);
+    b.nodes.find((n) => n.id === "a")!.position = { x: 3, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "goal")!.position = { x: 13, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "isolated")!.position = { x: 15, y: 0, z: 0 };
+    const r = route(b, "start", "isolated");
+    expect(describeRoute(b, r, "en")[1]).toMatchObject({ stepIndexes: [0, 1, 2], distanceM: 15, text: "Moving walkway ~10 m" });
+    expect(texts(b, r, "ja")[1]).toBe("動く歩道で約10m");
+  });
+
+  it("gives a moving walkway reached after a turn a verb of its own", () => {
+    // 20 m east, a 2 m step north (left), then a walkway straight on north.
+    const b = createSyntheticBundle([edge("s-a", "start", "a", { lengthM: 20 }), edge("step", "a", "b", { lengthM: 2 }), edge("walkway", "b", "goal", { mode: "moving_walkway", lengthM: 10 })]);
+    b.nodes.find((n) => n.id === "a")!.position = { x: 20, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "b")!.position = { x: 20, y: 2, z: 0 };
+    b.nodes.find((n) => n.id === "goal")!.position = { x: 20, y: 12, z: 0 };
+    const r = route(b, "start", "goal");
+    expect(describeRoute(b, r, "en")[2]).toMatchObject({ kind: "moving_walkway", stepIndexes: [1, 2], leadTurns: ["left"], text: "Turn left, then take the moving walkway ~10 m" });
+    expect(texts(b, r, "ja")[2]).toBe("左へ曲がり、動く歩道で約10m");
+    // Without a turn before it, the walkway line reads as before.
+    b.nodes.find((n) => n.id === "b")!.position = { x: 22, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "goal")!.position = { x: 32, y: 0, z: 0 };
+    expect(texts(b, route(b, "start", "goal"), "en")).toEqual(["Start", "Go straight ~22 m", "Moving walkway ~10 m", "Arrive at destination"]);
+  });
+
+  it("keeps an opening leg that ends in a turn onto a flight or gate", () => {
+    for (const mode of ["stairs", "gate"] as const) {
+      const b = createSyntheticBundle([edge("s-a", "start", "a", { lengthM: 3 }), edge("onto", "a", "upper", { mode, ...(mode === "gate" ? { crossesFareBoundary: true, paid: null } : {}) })]);
+      b.nodes.find((n) => n.id === "a")!.position = { x: 3, y: 0, z: 0 };
+      b.nodes.find((n) => n.id === "upper")!.position = { x: 3, y: 10, z: mode === "gate" ? 0 : 4 };
+      if (mode === "gate") b.nodes.find((n) => n.id === "upper")!.floorId = "concourse";
+      const r = route(b, "start", "upper");
+      const en = describeRoute(b, r, "en");
+      expect(en.map((i) => i.stepIndexes)).toEqual([[], [0], [1], []]);
+      expect(en[1]!.text).toBe("Go straight ~3 m");
+      expect(en[2]!.text).toBe(mode === "gate" ? "Turn left, then pass the ticket gate" : "Turn left, then take the stairs up to 1F");
+      expect(texts(b, r, "ja").slice(1, 3)).toEqual(["約3m 直進", mode === "gate" ? "左へ曲がり、改札を通過" : "左へ曲がり、階段で上へ・1Fへ"]);
+    }
+  });
+
+  /** The E27 lift (1F・B1・B2): door ↔ cab links on one floor, then one cab link per floor passed. */
+  function liftRide(ordinals: [number | null, number | null, number | null]): Bundle {
+    const b = createSyntheticBundle([
+      edge("door-1f", "door-1f", "cab-1f", { mode: "elevator", lengthM: 1.3 }),
+      edge("cab-1f-b1", "cab-1f", "cab-b1", { mode: "elevator", lengthM: 0.5 }),
+      edge("cab-b1-b2", "cab-b1", "cab-b2", { mode: "elevator", lengthM: 0.4 }),
+      edge("door-b2", "cab-b2", "door-b2", { mode: "elevator", lengthM: 1.2 }),
+      edge("out", "door-b2", "hall", { lengthM: 20 }),
+    ]);
+    b.floors.push(floor("f1", "1F", ordinals[0]), floor("fb1", "B1", ordinals[1]), floor("fb2", "B2", ordinals[2]));
+    b.nodes.push(
+      node("door-1f", "f1", -2.6, 3.6), node("cab-1f", "f1", -3.8, 3.2), node("cab-b1", "fb1", -4, 3.7),
+      node("cab-b2", "fb2", -4, 4.1), node("door-b2", "fb2", -2.8, 4.5), node("hall", "fb2", 17.2, 4.5),
+    );
+    return b;
+  }
+
+  it("collapses one lift ride into one instruction to the floor where it is left", () => {
+    const b = liftRide([1, -1, -2]);
+    const r = route(b, "door-1f", "hall");
+    const en = describeRoute(b, r, "en");
+    expect(en.map((i) => i.text)).toEqual(["Start", "Take the elevator down to B2", "Go straight ~20 m", "Arrive at destination"]);
+    expect(en[1]).toMatchObject({ kind: "elevator", stepIndexes: [0, 1, 2, 3], vertical: "down", toFloorId: "fb2" });
+    expect(texts(b, r, "ja")[1]).toBe("エレベーターで下へ・B2へ");
+    covered(b, r);
+  });
+
+  it("says up/down for a lift ride only when the ride's ends evidence it and no link of it contradicts", () => {
+    const unknown = liftRide([null, null, null]);
+    const r = route(unknown, "door-1f", "hall");
+    expect(describeRoute(unknown, r, "en")[1]).toMatchObject({ vertical: null, text: "Take the elevator to B2" });
+    expect(texts(unknown, r, "ja")[1]).toBe("エレベーターでB2へ");
+    // Ends say "up" (1 → 2) but the first floor link goes down (1 → -1): fail closed.
+    const odd = liftRide([1, -1, 2]);
+    expect(describeRoute(odd, route(odd, "door-1f", "hall"), "en")[1]).toMatchObject({ vertical: null, text: "Take the elevator to B2" });
+    // Boarded and left on one floor: no floor to name.
+    const loop = liftRide([1, -1, -2]);
+    loop.nodes.find((n) => n.id === "door-b2")!.floorId = "f1";
+    loop.nodes.find((n) => n.id === "hall")!.floorId = "f1";
+    expect(describeRoute(loop, route(loop, "door-1f", "hall"), "en")[1]).toMatchObject({ vertical: null, text: "Take the elevator" });
+  });
+});

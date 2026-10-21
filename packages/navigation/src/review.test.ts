@@ -155,8 +155,9 @@ describe("turn narration robustness (Ikebukuro lane observations)", () => {
     b.nodes.find((n) => n.id === "start")!.position = { x: -1, y: 0, z: 0 };
     const stairs = describeRoute(b, ok(createRouter(b).route("start", "upper-2", base)), "en").filter((i) => i.kind === "stairs");
     expect(stairs).toHaveLength(2);
-    expect(stairs[1]!.text).toMatch(/^Turn left, then take the stairs/);
-    expect(describeRoute(b, ok(createRouter(b).route("start", "upper-2", base)), "ja").filter((i) => i.kind === "stairs")[1]!.text).toMatch(/^左へ曲がり、階段/);
+    // The second flight follows straight on from the first: a continuation, with its turn still named.
+    expect(stairs[1]!.text).toBe("Turn left, then continue on the stairs");
+    expect(describeRoute(b, ok(createRouter(b).route("start", "upper-2", base)), "ja").filter((i) => i.kind === "stairs")[1]!.text).toBe("左へ曲がり、引き続き階段を進む");
   });
 });
 
@@ -385,7 +386,7 @@ describe("moving walkway entry turns (PR #15 Codex review 7)", () => {
     const template = b.nodes.find((n) => n.id === "a")!;
     b.nodes.push({ ...template, id: "b2", position: { x: 10, y: 20, z: 0 } });
     const texts = describeRoute(b, ok(createRouter(b).route("start", "b2", base)), "en").map((i) => i.text);
-    expect(texts).toEqual(["Start", "Go straight ~10 m", "Turn left, then moving walkway ~10 m", "Arrive at destination"]);
+    expect(texts).toEqual(["Start", "Go straight ~10 m", "Turn left, then take the moving walkway ~10 m", "Arrive at destination"]);
     const ja = describeRoute(b, ok(createRouter(b).route("start", "b2", base)), "ja").map((i) => i.text);
     expect(ja).toContain("左へ曲がり、動く歩道で約10m");
   });
@@ -809,5 +810,96 @@ describe("opening hours are checked when the route reaches each edge", () => {
     const router = createRouter(createSyntheticBundle([edge("passage", "start", "goal", { lengthM: 144, hours: hours("05:00", "23:00") })]));
     waitsFor(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 22 * 60 + 59 } }), "passage", { weekday: "tue", minutes: 5 * 60, dayOffset: 1 });
     noWait(router.route("start", "goal", { ...base, at: { weekday: "mon", minutes: 22 * 60 + 57 } }));
+  });
+});
+
+describe("continued flights never invent or flip a direction (Shinjuku E27 narration)", () => {
+  /** Flight 1 heads east from a; flight 2 turns left (north) at its foot. All on one floor: senses come from z alone. */
+  function twoFlights(z1: number, z2: number | null) {
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("f1", "a", "upper", { mode: "stairs" }),
+      edge("f2", "upper", "upper-2", { mode: "stairs" }),
+    ]);
+    b.nodes.find((n) => n.id === "upper")!.position = { x: 20, y: 0, z: z1 };
+    b.nodes.find((n) => n.id === "upper-2")!.position = { x: 20, y: 10, z: z2 };
+    for (const id of ["upper", "upper-2"]) b.nodes.find((n) => n.id === id)!.floorId = "concourse";
+    const r = ok(createRouter(b).route("start", "upper-2", base));
+    return { en: describeRoute(b, r, "en").filter((i) => i.kind === "stairs"), ja: describeRoute(b, r, "ja").filter((i) => i.kind === "stairs") };
+  }
+
+  it("continues a flight in the same evidenced sense", () => {
+    const { en, ja } = twoFlights(2, 4);
+    expect(en.map((i) => i.text)).toEqual(["Take the stairs up", "Turn left, then continue up the stairs"]);
+    expect(ja[1]!.text).toBe("左へ曲がり、引き続き階段で上へ");
+  });
+
+  it("does not call a flight that reverses the last one a continuation", () => {
+    // Down to a passage under the line, then up the other side.
+    const { en, ja } = twoFlights(-3, 0);
+    expect(en.map((i) => i.text)).toEqual(["Take the stairs down", "Turn left, then take the stairs up"]);
+    expect(ja[1]!.text).toBe("左へ曲がり、階段で上へ");
+  });
+
+  it("continues on the stairs without a direction when the next flight's is unknown", () => {
+    const { en, ja } = twoFlights(-3, null);
+    expect(en[1]).toMatchObject({ vertical: null, text: "Turn left, then continue on the stairs" });
+    expect(ja[1]!.text).toBe("左へ曲がり、引き続き階段を進む");
+  });
+});
+
+describe("short legs never fold into or across a wait (rebased onto waits for opening windows)", () => {
+  it("ends the walk before the wait and starts afresh after it", () => {
+    const window = { kind: "window" as const, open: "12:01", close: "23:00", evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } };
+    const b = createSyntheticBundle([
+      edge("e1", "start", "a", { lengthM: 20 }),
+      edge("e2", "a", "b", { lengthM: 3 }),
+      edge("e3", "b", "c", { lengthM: 2, hours: window }),
+      edge("e4", "c", "d", { lengthM: 20 }),
+    ]);
+    const node = (id: string, x: number, y: number) => ({ id, floorId: "concourse", position: { x, y, z: 0 }, kind: "junction" as const, inOut: null, sourceRefs: [] });
+    // East 20 m, a 3 m step north (left), then — once e3 opens — 2 m on north and 20 m east (right).
+    b.nodes = b.nodes.filter((n) => n.id !== "a" && n.id !== "b");
+    b.nodes.push(node("a", 20, 0), node("b", 20, 3), node("c", 20, 5), node("d", 40, 5));
+    const r = ok(createRouter(b).route("start", "d", { ...base, at: { weekday: "mon", minutes: 12 * 60 } }));
+    expect(r.steps[2]!.waitUntil).toEqual({ weekday: "mon", minutes: 12 * 60 + 1, dayOffset: 0 });
+    const en = describeRoute(b, r, "en");
+    expect(en.map((i) => i.text)).toEqual(["Start", "Go straight ~20 m, then turn left", "Wait until 12:01", "Go straight ~2 m", "Turn right, ~20 m", "Arrive at destination"]);
+    expect(en.map((i) => i.stepIndexes)).toEqual([[], [0, 1], [], [2], [3], []]);
+    expect(en[2]).toMatchObject({ kind: "wait", beforeStepIndex: 2 });
+    expect(describeRoute(b, r, "ja").map((i) => i.text)).toEqual(["出発", "約20m 直進、その先で左へ", "12:01まで待つ", "約2m 直進", "右へ曲がり約20m", "目的地に到着"]);
+  });
+
+  it("names a turn on the first leg after a wait, folded into the next line at the wait point", () => {
+    const window = { kind: "window" as const, open: "12:01", close: "23:00", evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } };
+    const b = createSyntheticBundle([
+      edge("e1", "start", "a", { lengthM: 20 }),
+      edge("e2", "a", "b", { lengthM: 3, hours: window }),
+      edge("e3", "b", "c", { lengthM: 20 }),
+    ]);
+    const node = (id: string, x: number, y: number) => ({ id, floorId: "concourse", position: { x, y, z: 0 }, kind: "junction" as const, inOut: null, sourceRefs: [] });
+    // East 20 m, wait at a until e2 opens, then 3 m north (left, measured from the heading waited in) and 20 m east.
+    b.nodes = b.nodes.filter((n) => n.id !== "a" && n.id !== "b");
+    b.nodes.push(node("a", 20, 0), node("b", 20, 3), node("c", 40, 3));
+    const r = ok(createRouter(b).route("start", "c", { ...base, at: { weekday: "mon", minutes: 12 * 60 } }));
+    expect(r.steps[1]!.waitUntil).toEqual({ weekday: "mon", minutes: 12 * 60 + 1, dayOffset: 0 });
+    const en = describeRoute(b, r, "en");
+    expect(en.map((i) => i.text)).toEqual(["Start", "Go straight ~20 m", "Wait until 12:01", "Turn left, then right, ~20 m", "Arrive at destination"]);
+    expect(en[3]).toMatchObject({ stepIndexes: [1, 2], leadTurns: ["left"] });
+    expect(en[2]).toMatchObject({ kind: "wait", stepIndexes: [], beforeStepIndex: 1 });
+    expect(describeRoute(b, r, "ja")[3]!.text).toBe("左へ曲がり、すぐ右へ曲がり約20m");
+  });
+
+  it("does not ride one lift across a wait", () => {
+    const window = { kind: "window" as const, open: "12:01", close: "23:00", evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } };
+    const b = createSyntheticBundle([
+      edge("s-a", "start", "a"),
+      edge("lift-1", "a", "upper", { mode: "elevator", lengthM: 1 }),
+      edge("lift-2", "upper", "upper-2", { mode: "elevator", lengthM: 1, hours: window }),
+    ]);
+    const r = ok(createRouter(b).route("start", "upper-2", { ...base, at: { weekday: "mon", minutes: 12 * 60 } }));
+    const en = describeRoute(b, r, "en");
+    expect(en.map((i) => i.kind)).toEqual(["start", "walk", "elevator", "wait", "elevator", "arrive"]);
+    expect(en.map((i) => i.stepIndexes)).toEqual([[], [0], [1], [], [2], []]);
   });
 });
