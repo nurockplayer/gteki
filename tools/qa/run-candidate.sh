@@ -6,8 +6,9 @@
 #   tools/qa/run-candidate.sh "$TMPDIR/gteki-qa" origin/claude/gteki-shinjuku-station-on-core origin/feat/ikebukuro-g0-slice -- --project=desktop-chromium
 #
 # Creates a detached worktree at <workdir>/candidate (never pushed), merges each extra ref locally,
-# installs with pnpm, runs typecheck/tests/build, serves the explorer and each lane app on ports it
-# owns, runs tests/e2e, and writes manifest.json with every SHA so evidence is tied to exact code.
+# installs with pnpm, runs typecheck/tests/build, serves the explorer (plus the dev-only look harness
+# on port+1 when the candidate has apps/web/qa/look.html) and each lane app on ports it owns, runs
+# tests/e2e, and writes manifest.json with every SHA so evidence is tied to exact code.
 # A conflicting merge stops the run: resolve it in the worktree by hand, commit, and rerun with
 # QA_REUSE=1 (the manifest then records the worktree's dirty state). Exits non-zero if any stage
 # fails. Only pnpm/Homebrew tooling is used.
@@ -63,6 +64,9 @@ port=${GTEKI_PORT:-5270}
 serve explorer "$cand/apps/web" "$port" pnpm exec vite preview
 # The explorer must be serving this candidate's build, byte for byte.
 curl -sf "http://127.0.0.1:$port/" | cmp -s - "$cand/apps/web/dist/index.html" || { echo "served explorer is not this candidate's dist/index.html" >&2; exit 1; }
+# look.html (the #94 look-compare harness) is dev-only: `pnpm build` emits index.html alone, so only the Vite dev server serves it.
+look_url=""
+if [ -f "$cand/apps/web/qa/look.html" ]; then serve look-dev "$cand/apps/web" $((port + 1)) pnpm exec vite; look_url="http://127.0.0.1:$((port + 1))"; fi
 shinjuku_url=""; ikebukuro_url=""
 if [ -f "$cand/stations/shinjuku/vite.config.ts" ]; then serve shinjuku-app "$cand/stations/shinjuku" $((port + 2)) pnpm exec vite; shinjuku_url="http://127.0.0.1:$((port + 2))"; fi
 if [ -f "$cand/stations/ikebukuro/vite.config.ts" ]; then serve ikebukuro-preview "$cand/stations/ikebukuro" $((port + 3)) pnpm exec vite; ikebukuro_url="http://127.0.0.1:$((port + 3))"; fi
@@ -94,7 +98,7 @@ cat "$e2e/artifacts/manifest.json"
 
 status=0
 ( cd "$e2e" && GTEKI_ROOT="$cand" GTEKI_BASE_URL="http://127.0.0.1:$port" \
-  GTEKI_SHINJUKU_APP_URL="$shinjuku_url" GTEKI_IKEBUKURO_PREVIEW_URL="$ikebukuro_url" \
+  GTEKI_SHINJUKU_APP_URL="$shinjuku_url" GTEKI_IKEBUKURO_PREVIEW_URL="$ikebukuro_url" GTEKI_LOOK_URL="$look_url" \
   pnpm exec playwright test "$@" ) || status=$?
 [ -z "$failed" ] || { echo "prerequisite stages failed:$failed (logs in $log)" >&2; [ "$status" -ne 0 ] || status=1; }
 exit "$status"
