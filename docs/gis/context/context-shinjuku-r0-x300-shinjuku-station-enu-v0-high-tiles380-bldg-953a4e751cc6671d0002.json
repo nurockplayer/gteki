@@ -1,5 +1,5 @@
 {
-  "run_id": "context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-tiles380-bldg-708c7130de36e22d2f7a",
+  "run_id": "context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-tiles380-bldg-953a4e751cc6671d0002",
   "verification": "UNVERIFIED",
   "navigation_use": "NOT_FOR_ROUTING",
   "visual_only": true,
@@ -671,7 +671,8 @@
       }
     ]
   },
-  "attribution_text": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+  "attribution_text": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成（建物の基部を地表面の高さにそろえて表示）",
+  "attribution_decision": "https://github.com/nurockplayer/gteki/issues/39#issuecomment-6324813261",
   "selected_gml_ids_sha256": "c7113360af16cbb48b63769a75cc117953182a90c9f7568abcdbe26f504354b2",
   "validation": {
     "status": "PASS",
@@ -6451,13 +6452,13 @@
   "feature_table_sha256": "eb4a8d28100ef484837a17a356ccb951f228db617421e72d5793b7374b56d280",
   "per_feature_count": 520,
   "tool_version": "0.1.0",
-  "tool_input_sha256": "4127610b2f25687f775e9e1572ac2af3e6c869a570b572809dfedd02bc7e3075",
+  "tool_input_sha256": "2c04ead5fe75e4d3430ba8914229e438b85aa1dfe697f21d840c9c72086ac626",
   "station_json_sha256_now": "9d7c6be8d400932622693b23e98c7b70c640b4459fee6715ce866f1a9752684f",
   "station_json_changed_since_frame": false,
-  "store_path": "out/context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-tiles380-bldg-708c7130de36e22d2f7a.glb",
-  "sidecar_path": "out/context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-tiles380-bldg-708c7130de36e22d2f7a.provenance.json",
-  "output_sha256": "643377cb2ab3e0d10ca0594a748dca56278506660e49c8cf9d280999e64a1a75",
-  "output_bytes": 5350632,
-  "elapsed_ms": 18752,
-  "peak_rss_bytes": 226004992
+  "store_path": "out/context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-tiles380-bldg-953a4e751cc6671d0002.glb",
+  "sidecar_path": "out/context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-tiles380-bldg-953a4e751cc6671d0002.provenance.json",
+  "output_sha256": "21fd23e3538b8bf4b84eed5a9c541064a766e5119de6799623f5d790730d3585",
+  "output_bytes": 5351612,
+  "elapsed_ms": 16456,
+  "peak_rss_bytes": 252473344
 }
