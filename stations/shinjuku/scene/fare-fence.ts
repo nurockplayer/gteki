@@ -230,8 +230,10 @@ export function restrictionDigest(input: string) {
 export function restrictedInputKey(layout: Layout, plan: Plan, bundle: StationBundle, base: Fence[]) {
   // Digest the complete source/graph/layout input; CI compares the fresh derivation
   // and separately requires review of every change to the conflict table.
-  return restrictionDigest(JSON.stringify(["restricted-boundary-v5", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
+  return restrictionDigest(JSON.stringify(["restricted-boundary-v6", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
     plan.levels.map(l => [l.label, l.renderElevationM, l.spaces.filter(s => s.restricted)]),
+    bundle.edges.filter(e => e.verification === "verified"),
+    bundle.nodes.map(n => [n.id, n.position]), [...layout.nodeZ], layout.gates,
     verifiedFloorSegments(layout, plan, bundle),
     layout.levels.map(l => [l.label, l.z, l.slabs.map(s => [s.z, s.rings]), l.walls]),
     [layout.pads, layout.linkStrips, layout.streetPads].map(ss => ss.map(s => [s.z, s.rings])),

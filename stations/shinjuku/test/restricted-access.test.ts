@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { buildLayout, type Plan } from "../scene/layout.ts";
-import { restrictionDigest, protectFareAndAccess, deriveRestrictedAccess, restrictedDepth, restrictionAt, verifiedFloorSegments } from "../scene/fare-fence.ts";
+import { restrictionDigest, restrictedInputKey, protectFareAndAccess, deriveRestrictedAccess, restrictedDepth, restrictionAt, verifiedFloorSegments } from "../scene/fare-fence.ts";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import geometry from "../scene/fare-restricted.generated.json" with { type: "json" };
@@ -19,6 +19,12 @@ describe("source restriction and verified centreline authority", () => {
   });
   it("pins every buffer/source overlap; additions require review of the generated table", () => {
     expect(derived.conflicts).toEqual(expected);
+  });
+  it("invalidates the cache for gate rows and the full cross-floor routing geometry", () => {
+    const key = restrictedInputKey(layout, plan, bundle, []);
+    expect(restrictedInputKey({ ...layout, gates: [] }, plan, bundle, [])).not.toBe(key);
+    const changed = { ...bundle, edges: bundle.edges.map((edge, i) => i ? edge : { ...edge, crossesFareBoundary: !edge.crossesFareBoundary }) };
+    expect(restrictedInputKey(layout, plan, changed, [])).not.toBe(key);
   });
   it("the generated geometry equals the fresh general derivation and cache inputs", () => {
     const fresh = protectFareAndAccess(buildLayout(bundle, plan), plan, bundle, { recomputeRestricted: true,
