@@ -35,11 +35,11 @@ describe("ikebukuro access fences", () => {
 
 describe("ikebukuro exit connectors", () => {
   const graph = read("gteki/graph.json") as { nodes: { id: string; kind: string; position: { x: number; y: number; z: number } }[] };
-  const pois = read("gteki/pois.json").pois as { id: string; category: string; names: { text: string }[]; connectorNodeIds: string[] }[];
+  const pois = read("gteki/pois.json").pois as { id: string; category: string; names: { text: string }[]; connectorNodeIds: string[]; evidence: { method: string } }[];
   const node = new Map(graph.nodes.map((n) => [n.id, n]));
   const exits = pois.filter((p) => p.category === "exit");
 
-  it("an exit node is the top of its surveyed stairs; a route that stops lower is named for it", async () => {
+  it("an exit node is the top of its surveyed stairs; a route that stops lower ends at a stair_end and the shared narration says the stairs start there", async () => {
     const roles = await glbRoles();
     const stairs = bake(roles.get("stairs_ramps")!), closures = bake(roles.get("portals")!);
     for (const p of exits) {
@@ -59,7 +59,12 @@ describe("ikebukuro exit connectors", () => {
           expect(cap, `${p.id} (${id}): no street-level closure overhead`).toBe(true);
         } else {
           expect(n.kind, `${p.id} (${id})`).toBe("stair_end");
-          expect(p.names.map((t) => t.text).join(" | "), p.id).toMatch(/階段下.*stair foot|stair foot.*階段下/s);
+          // The arrival text ("Stairs to <name> start here") comes from the shared narration for a stair_end connector,
+          // so the primary names stay plain: they are the onward destination, not the stair foot.
+          expect(p.evidence.method, p.id).toMatch(/foot of the exit stairs/);
+          const names = p.names.map((t) => t.text).join(" | ");
+          expect(names, p.id).not.toContain("階段下");
+          expect(names, p.id).not.toContain("stair foot");
         }
       }
     }
