@@ -117,23 +117,30 @@ const CAMERA_ROLES = new Set(["camera_blocker"]);
  */
 const SEE_THROUGH_ROLES = new Set(["sign", "signs", "signage"]);
 
-/** userData flag on the meshes GLTFLoader generates for a multi-primitive glTF mesh (see glbPrimitivePlugin). */
+/** userData flag on objects GLTFLoader names after a mesh resource rather than a node (see glbPrimitivePlugin). */
 const GLB_PRIMITIVE = "gteki_glb_primitive";
 
 /**
- * A GLTFLoader plugin (`loader.register(glbPrimitivePlugin)`) that flags the meshes GLTFLoader generates for
- * the primitives of a multi-primitive glTF mesh. They sit under the node's Group and are named after the mesh
- * resource, not the node, so their names (and mesh-level extras) never give them a role: they inherit the
- * node's, as in Godot, which keeps one node with several surfaces. The flag is in userData, so it holds in
- * every scene of the file and survives `clone()`. The explorer's `loadGlb` registers it.
+ * A GLTFLoader plugin (`loader.register(glbPrimitivePlugin)`) that flags the objects GLTFLoader builds for a
+ * glTF mesh but that are not the node itself: the meshes of a multi-primitive mesh, and a mesh wrapped in a
+ * Group because its node also carries a camera or light. They are named after the mesh resource, so their
+ * names (and mesh-level extras) never give them a role: they inherit the node's, as in Godot, which keeps one
+ * node with its surfaces. Every mesh object is flagged on load and the node object is unflagged once built.
+ * The flag is in userData, so it holds in every scene of a file and survives `clone()`. The explorer's
+ * `loadGlb` registers it.
  */
 export function glbPrimitivePlugin(parser: GLTFParser): GLTFLoaderPlugin {
   return {
     name: "gteki_glb_primitives",
     loadMesh: async (meshIndex: number) => {
       const mesh = await parser.loadMesh(meshIndex);
-      if ((mesh as THREE.Object3D).type === "Group") for (const primitive of mesh.children) primitive.userData[GLB_PRIMITIVE] = true;
+      mesh.traverse((object) => { object.userData[GLB_PRIMITIVE] = true; });
       return mesh;
+    },
+    loadNode: async (nodeIndex: number) => {
+      const node = await parser.loadNode(nodeIndex);
+      delete node.userData[GLB_PRIMITIVE];
+      return node;
     },
   };
 }

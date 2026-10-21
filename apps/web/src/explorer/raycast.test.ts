@@ -380,14 +380,22 @@ describe("camera-only blockers", () => {
       asset: { version: "2.0" },
       scene: 0,
       // A second, disjoint scene: GLTFLoader prunes its associations per scene, the flag must not depend on them.
-      scenes: [{ nodes: [0, 1, 2] }, { nodes: [3] }],
+      scenes: [{ nodes: [0, 1, 2, 4, 5, 6] }, { nodes: [3] }],
       nodes: [
         { name: "slab", mesh: 0, extras: { gteki_role: "camera_blocker" } },
         { name: "panel", mesh: 1 },
         { name: "single", mesh: 2 },
         { name: "other_scene", mesh: 1 },
+        // One primitive, but a camera / light attachment makes GLTFLoader wrap the mesh in the node's Group.
+        { name: "lit_slab", mesh: 3, camera: 0, extras: { gteki_role: "camera_blocker" } },
+        { name: "lamp_slab", mesh: 3, extensions: { KHR_lights_punctual: { light: 0 } }, extras: { gteki_role: "camera_blocker" } },
+        // A plain single-primitive node keeps its own name and extras.
+        { name: "floor_plain", mesh: 3 },
       ],
-      meshes: [mesh("sign_panel"), mesh("floor_panel"), { name: "floor_single", primitives: [{ attributes: { POSITION: 0 } }] }],
+      cameras: [{ type: "perspective", perspective: { yfov: 1, znear: 0.1 } }],
+      extensionsUsed: ["KHR_lights_punctual"],
+      extensions: { KHR_lights_punctual: { lights: [{ type: "point" }] } },
+      meshes: [mesh("sign_panel"), mesh("floor_panel"), { name: "floor_single", primitives: [{ attributes: { POSITION: 0 } }] }, { name: "sign_one", primitives: [{ attributes: { POSITION: 0 } }] }],
       buffers: [{ byteLength: positions.byteLength }],
       bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: positions.byteLength }],
       accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [0, 0, 0], max: [1, 0, 1] }],
@@ -398,14 +406,20 @@ describe("camera-only blockers", () => {
     for (const scene of [gltf.scene, gltf.scene.clone()]) {
       const parts = scene.getObjectByName("slab")!.children;
       expect(parts.map((o) => o.name)).toEqual(["sign_panel", "sign_panel_1"]);
-      expect(sceneFromGlbRoles(scene).cameraBlockers).toEqual(parts);
+      const wrapped = ["lit_slab", "lamp_slab"].map((name) => scene.getObjectByName(name)!.children.find((o) => (o as THREE.Mesh).isMesh)!);
+      // Named after the mesh resource ("sign_one…"), not the node.
+      expect(wrapped.every((o) => o.name.startsWith("sign_one"))).toBe(true);
+      const plain = scene.getObjectByName("floor_plain")!;
+      expect((plain as THREE.Mesh).isMesh).toBe(true);
+      const roles = sceneFromGlbRoles(scene);
+      expect(roles.cameraBlockers).toEqual([...parts, ...wrapped]);
+      expect(roles.walkable).toEqual([plain]);
       expect(seeThroughMeshes(scene)).toEqual([]);
     }
     expect(sceneFromGlbRoles(gltf.scenes[1]!).walkable).toEqual([]);
     const node = (name: string) => gltf.scene.getObjectByName(name)!;
-    const roles = sceneFromGlbRoles(gltf.scene);
-    // An untagged node never takes a role from its mesh resource's name.
-    expect(roles.walkable).toEqual([]);
+    // An untagged node never takes a role from its mesh resource's name ("floor_panel" under "panel").
+    expect(sceneFromGlbRoles(node("panel")).walkable).toEqual([]);
     // A single-primitive mesh is the node itself and keeps its node name ("single", no role).
     expect(node("single").type).toBe("Mesh");
   });
