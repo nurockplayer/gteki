@@ -177,7 +177,7 @@
   redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#S01 }
   content_year: null
   availability_deadline: 2027-03-12
-  notes: Preserve Toei Oedo E27 operator scope and source floor labels.
+  notes: "Preserve Toei Oedo E27 operator scope and source floor labels. Ships under the Owner's #16 override (PR #16, Owner comment 2026-10-21T10:31:49Z), not on a licence finding; the package PDL 1.0 is not taken to cover this resource (Owner Q11 = No, #39 comment 6324726321). Open: reuse after 2027-03-12 (ほこナビDP inquiry)."
   publish_gate: CONDITIONAL
 - source_id: hokonavi-oedo-shinjuku-stationmap-geojson
   title: Toei Oedo Shinjuku station floor-map GeoJSON ZIP
@@ -195,7 +195,7 @@
   redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#S01 }
   content_year: null
   availability_deadline: 2027-03-12
-  notes: Inventory-only floor-map source; do not reproduce source graphics as released assets.
+  notes: "Floor-map source. Shipped Shinjuku plan geometry (plan.json) is derived geometry, not a reproduction of the source graphics; do not ship the source's own drawings, symbols or styling as assets. Ships under the Owner's #16 override (PR #16, Owner comment 2026-10-21T10:31:49Z), not on a licence finding; the package PDL 1.0 is not taken to cover this resource (Owner Q11 = No, #39 comment 6324726321). Open: reuse after 2027-03-12 (ほこナビDP inquiry)."
   publish_gate: CONDITIONAL
 - source_id: hokonavi-ikebukuro-walk-node-csv
   title: Hokonavi Ikebukuro walking network nodes CSV
