@@ -5,6 +5,7 @@ import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
 import { guideStops } from "../explorer/guideStops.ts";
+import { nextGuideSpeed } from "../explorer/walker.ts";
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
@@ -431,7 +432,7 @@ export class App {
     this.s.route = best;
     if (best.ok) {
       this.s.polyline = routePolyline(loaded.bundle, best);
-      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang);
+      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination);
       this.s.activeInstruction = 0;
       this.explorer.showRoute(this.s.polyline);
       if (this.explorer.currentMode === "overview") this.explorer.focusPoints(this.s.polyline);
@@ -537,22 +538,25 @@ export class App {
     if (mode === "guide" && ins) hud.append(el("div", "hud-instruction", ins.text));
     const row = el("div", "hud-row");
     if (mode === "guide") {
+      // The HUD is rebuilt on every instruction change: every control starts from the explorer's state.
       let paused = this.explorer.guidePaused;
+      let mult = this.explorer.guideSpeed;
       const pause = el("button", undefined, paused ? t.resume : t.pause);
       pause.addEventListener("click", () => { paused = !paused; this.explorer.setGuidePaused(paused); pause.textContent = paused ? t.resume : t.pause; });
-      const speed = el("button", "ghost", `${t.speed} ×1`);
-      let mult = 1;
-      speed.addEventListener("click", () => { mult = mult === 1 ? 2 : mult === 2 ? 4 : 1; this.explorer.setGuideSpeed(mult); speed.textContent = `${t.speed} ×${mult}`; });
+      const speed = el("button", "ghost guide-speed", `${t.speed} ×${mult}`);
+      speed.addEventListener("click", () => { mult = nextGuideSpeed(mult); this.explorer.setGuideSpeed(mult); speed.textContent = `${t.speed} ×${mult}`; });
       const stop = el("button", "ghost", t.exitGuide);
       stop.addEventListener("click", () => this.explorer.stopGuide());
       row.append(pause, speed, stop);
     }
     const fp = el("button", "ghost", t.firstPerson);
+    fp.classList.toggle("on", this.explorer.firstPersonOn);
     fp.addEventListener("click", () => fp.classList.toggle("on", this.explorer.toggleFirstPerson()));
     const ov = el("button", "ghost", t.overview);
     ov.addEventListener("click", () => this.explorer.frameAll());
     const net = el("button", "ghost", t.graphOverlay);
-    let netOn = false;
+    let netOn = this.explorer.graphOverlayOn;
+    net.classList.toggle("on", netOn);
     net.addEventListener("click", () => { netOn = !netOn; this.explorer.setGraphOverlay(netOn); net.classList.toggle("on", netOn); });
     const snd = el("button", "ghost", this.explorer.audioMuted ? t.soundOff : t.soundOn);
     snd.setAttribute("aria-pressed", String(!this.explorer.audioMuted));
@@ -592,7 +596,11 @@ export class App {
       this.s.activeInstruction = next;
       this.renderHud();
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === next));
-      if (p.done) this.toast(this.t.arrived, 2500);
+      if (p.done) {
+        // A route ending on a stair/escalator/ramp connector has not reached the destination: say so.
+        const last = this.s.instructions[this.s.instructions.length - 1];
+        this.toast(last?.connector ? last.text : this.t.arrived, 2500);
+      }
     }
   }
 
@@ -678,6 +686,9 @@ export class App {
       instructions: () => this.s.instructions.map((i) => i.text),
       mode: () => this.explorer.currentMode,
       startGuide: () => this.startGuide(),
+      guideControls: () => ({ paused: this.explorer.guidePaused, speed: this.explorer.guideSpeed }),
+      hud: () => [...this.ui.hud.querySelectorAll("button")].map((b) => b.textContent),
+      labels: () => this.explorer.labelInfo(),
       quality: () => this.explorer.qualityLevel,
       avatar: () => this.explorer.avatarEnu,
       sceneInfo: () => this.explorer.sceneInfo(),

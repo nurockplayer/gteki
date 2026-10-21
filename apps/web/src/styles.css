@@ -25,9 +25,10 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
 button, input, select { font: inherit; color: inherit; }
 
 .app { position: fixed; inset: 0; }
-.viewport { position: absolute; inset: 0; }
+/* Own stacking context: CSS2DRenderer gives each label a z-index, which must stay under the UI layers. */
+.viewport { position: absolute; inset: 0; z-index: 0; }
 .gteki-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
-.gteki-labels { position: absolute; inset: 0; pointer-events: none; }
+.gteki-labels { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 
 /* ---- top bar ---- */
 .topbar {
@@ -148,6 +149,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .poi-label {
   pointer-events: auto; font-size: 12px; padding: 4px 9px; border-radius: 8px; white-space: nowrap;
   background: rgba(10, 14, 20, 0.82); border: 1px solid var(--line); color: var(--text); transform: translateY(-50%);
+  transition: opacity 0.2s;
 }
 .poi-label::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; background: var(--muted); vertical-align: 1px; }
 .poi-label.cat-exit::before { background: var(--ok); } .poi-label.cat-ticket_gate::before { background: var(--gate); }
@@ -155,6 +157,9 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .poi-label.cat-elevator::before { background: var(--accent); }
 .poi-label.selected { border-color: var(--gate); color: #fff3cf; box-shadow: 0 0 16px rgba(255, 200, 87, 0.35); }
 .poi-label.search-only { opacity: 0.55; border-style: dashed; }
+/* Behind a floor or wall from this view (or a selected label on another floor). */
+.poi-label.occluded { opacity: 0.3; }
+.poi-label.occluded:hover, .poi-label.occluded:focus-visible { opacity: 0.9; }
 
 /* ---- joystick ---- */
 .joystick { position: absolute; z-index: 6; width: 110px; height: 110px; margin: -55px 0 0 -55px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.06); display: none; pointer-events: none; }
