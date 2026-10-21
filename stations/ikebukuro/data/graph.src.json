@@ -1,0 +1,4716 @@
+{
+ "_doc": "Hand-authored source for the Ikebukuro graph. Node xy are anchors in station ENU metres; the builder snaps them to the PLATEAU walkable grid (<= snapR m) and derives z. Edge polylines and stairs/walk mode come from A* over surveyed floor and stair treads. An edge is emitted as verified only when its geometry check passes AND it references an accessFact. See docs/G0-source-audit.md.",
+ "gridBBox": [
+  -190,
+  180,
+  -190,
+  186
+ ],
+ "station": {
+  "id": "ikebukuro",
+  "names": [
+   {
+    "lang": "ja",
+    "text": "池袋駅"
+   },
+   {
+    "lang": "ja-Hrkt",
+    "text": "いけぶくろえき"
+   },
+   {
+    "lang": "ja-Latn",
+    "text": "Ikebukuro"
+   },
+   {
+    "lang": "en",
+    "text": "Ikebukuro Station"
+   },
+   {
+    "lang": "zh-Hant",
+    "text": "池袋站"
+   }
+  ],
+  "codes": [
+   {
+    "operatorId": "tokyometro",
+    "code": "M25"
+   },
+   {
+    "operatorId": "tokyometro",
+    "code": "Y09"
+   },
+   {
+    "operatorId": "tokyometro",
+    "code": "F09"
+   },
+   {
+    "operatorId": "jreast",
+    "code": "JY13"
+   }
+  ],
+  "operators": [
+   {
+    "id": "public",
+    "names": [
+     {
+      "lang": "ja",
+      "text": "公共地下通路"
+     },
+     {
+      "lang": "en",
+      "text": "Public underground passages"
+     }
+    ]
+   },
+   {
+    "id": "jreast",
+    "names": [
+     {
+      "lang": "ja",
+      "text": "JR東日本"
+     },
+     {
+      "lang": "en",
+      "text": "JR East"
+     }
+    ]
+   },
+   {
+    "id": "tokyometro",
+    "names": [
+     {
+      "lang": "ja",
+      "text": "東京メトロ"
+     },
+     {
+      "lang": "en",
+      "text": "Tokyo Metro"
+     }
+    ]
+   },
+   {
+    "id": "tobu",
+    "names": [
+     {
+      "lang": "ja",
+      "text": "東武鉄道"
+     },
+     {
+      "lang": "en",
+      "text": "Tobu Railway"
+     }
+    ]
+   },
+   {
+    "id": "seibu",
+    "names": [
+     {
+      "lang": "ja",
+      "text": "西武鉄道"
+     },
+     {
+      "lang": "en",
+      "text": "Seibu Railway"
+     }
+    ]
+   }
+  ],
+  "origin": {
+   "lat": 35.7297,
+   "lon": 139.7114,
+   "hM": 0,
+   "datum": "JGD2011",
+   "crs": "EPSG:6697"
+  },
+  "frame": "ENU",
+  "datasetVersion": "ikebukuro-b1-slice5.2",
+  "synthetic": false
+ },
+ "sources": [
+  {
+   "id": "plateau-ubld-13116",
+   "title": "PLATEAU 豊島区 2025 地下街モデル (ubld) 53394576 — 池袋駅_B1地下通路",
+   "publisher": "国土交通省 Project PLATEAU (source survey: 東京都 2023 LidarSLAM)",
+   "url": "https://www.mlit.go.jp/plateau/",
+   "downloadUrls": [
+    "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/ubld/53394576_ubld_6697_op.gml"
+   ],
+   "license": {
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "attribution": "Contains PLATEAU data (MLIT), CC BY 4.0. Modified: reprojected to a local ENU frame, triangulated and re-encoded by GTEki.",
+   "modified": true,
+   "retrievedAt": "2026-10-20T10:44:13Z",
+   "sha256": {
+    "53394576_ubld_6697_op.gml": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09"
+   },
+   "datasetDate": "2023",
+   "notes": "creationDate 2024-03-15; LOD4.1; map information level 500 (scale class, not RMS). Free B1 passages only; fare-paid concourses are not modelled."
+  },
+  {
+   "id": "toshima-underground-guide-2022",
+   "title": "池袋駅地下空間案内図 (2022年1月版)",
+   "publisher": "豊島区",
+   "url": "https://www.city.toshima.lg.jp/405/1705251510.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "attribution": "豊島区「池袋駅地下空間案内図」(facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-20T10:52:00Z",
+   "datasetDate": "2022-01",
+   "notes": "Used only to identify which PLATEAU openings are which named passage, exit or gate. No image, layout or pictogram is reproduced.",
+   "usage": "facts-only"
+  },
+  {
+   "id": "tokyometro-ikebukuro-yardmap-2026-03",
+   "title": "東京メトロ 池袋駅構内立体図 (2026.3現在)",
+   "publisher": "東京地下鉄",
+   "url": "https://www.tokyometro.jp/station/ikebukuro/yardmap/index.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "attribution": "東京メトロ 池袋駅構内図 (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-20T10:49:00Z",
+   "datasetDate": "2026-03",
+   "notes": "Exit numbers and the public status of B1 passages were read from the official map. Nothing is reproduced.",
+   "usage": "facts-only"
+  }
+ ],
+ "floors": [
+  {
+   "id": "b1",
+   "operatorId": "public",
+   "sourceLabels": [
+    {
+     "operatorId": "public",
+     "label": "池袋駅_B1地下通路",
+     "sourceId": "plateau-ubld-13116"
+    },
+    {
+     "operatorId": "tokyometro",
+     "label": "B1F",
+     "sourceId": "tokyometro-ikebukuro-yardmap-2026-03"
+    }
+   ],
+   "ordinal": -1,
+   "intermediate": false,
+   "elevationM": null,
+   "elevationSource": "source-derived",
+   "renderElevationM": 27.9,
+   "_note": "One continuous public B1 passage level whose surveyed walking height varies 25.9-29.1 m TP; per-node z carries the real height.",
+   "displayNames": [
+    {
+     "lang": "ja",
+     "text": "地下1階 通路"
+    },
+    {
+     "lang": "en",
+     "text": "B1 passages"
+    }
+   ]
+  },
+  {
+   "id": "street",
+   "operatorId": "public",
+   "sourceLabels": [
+    {
+     "operatorId": "public",
+     "label": "地上",
+     "sourceId": "plateau-ubld-13116"
+    }
+   ],
+   "ordinal": 0,
+   "intermediate": false,
+   "elevationM": null,
+   "elevationSource": "unknown",
+   "renderElevationM": 32.5,
+   "displayNames": [
+    {
+     "lang": "ja",
+     "text": "地上"
+    },
+    {
+     "lang": "en",
+     "text": "street level"
+    }
+   ],
+   "_note": "No source names this level; it is the open ground where exit stairs end (PLATEAU closure surfaces at the stair tops)."
+  }
+ ],
+ "accessFacts": [
+  {
+   "id": "af-central-passage",
+   "text": "中央通路 (Central Passage) is a public east-west passage outside fare gates, linking the west and east exits.",
+   "sourceIds": [
+    "toshima-underground-guide-2022",
+    "tokyometro-ikebukuro-yardmap-2026-03"
+   ],
+   "method": "official-map-reading (facts only)",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-east-exits",
+   "text": "Exits 27, 34, 35, 36, 37, 41, 42 and 43 connect the public B1 passages east of the JR concourse to street level.",
+   "sourceIds": [
+    "toshima-underground-guide-2022",
+    "tokyometro-ikebukuro-yardmap-2026-03"
+   ],
+   "method": "official-map-reading (facts only) matched to PLATEAU stair-top closures within 1-7 m",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-jr-central-gates",
+   "text": "JR 中央2改札 opens north and JR 中央1改札 opens south from the Central Passage.",
+   "sourceIds": [
+    "toshima-underground-guide-2022"
+   ],
+   "method": "official-map-reading matched to PLATEAU passage openings (Central Gate 2: 13 m north opening, ~1 m from projected map position; Central Gate 1: south openings, ~6 m)",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-east-jr-passage",
+   "text": "A public passage runs south from the Central Passage, between the JR concourse (east side) and the Seibu store, to the South Passage.",
+   "sourceIds": [
+    "toshima-underground-guide-2022"
+   ],
+   "method": "official-map-reading (facts only) matched to the PLATEAU passage linking the Central and South Passages",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-south-passage",
+   "text": "南通路 (South Passage) is a public passage outside fare gates. Its east end continues past the Seibu store, up one short flight and down another, to the corridor serving Exits 39, 40 and 41.",
+   "sourceIds": [
+    "toshima-underground-guide-2022",
+    "tokyometro-ikebukuro-yardmap-2026-03"
+   ],
+   "method": "official-map-reading (facts only) matched to PLATEAU floors and stair treads (TP 27.6 -> 29.1 -> 25.9 m)",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-south-exits",
+   "text": "Exit 38 (東口（南）/ East Exit South) rises from the South Passage east end beside Seibu; Exit 41 from a north branch of the south-east corridor; Exits 40 and 39 from that corridor, in that order, towards Meiji-dori.",
+   "sourceIds": [
+    "toshima-underground-guide-2022",
+    "tokyometro-ikebukuro-yardmap-2026-03"
+   ],
+   "method": "official-map-reading (facts only): order of exit stairs along each passage matched one-to-one to PLATEAU stair-top closures (TP 32.2-32.8 m)",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-east-jr-passage-north",
+   "text": "A public passage runs north from the Central Passage, along the east side of the JR concourse, to the North Passage (北通路).",
+   "sourceIds": [
+    "toshima-underground-guide-2022"
+   ],
+   "method": "official-map-reading (facts only) matched to the PLATEAU passage linking the Central and North Passages",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-north-passage",
+   "text": "北通路 (North Passage) is a public passage outside fare gates. East of the stairwell to Exit 22 (東口（北）) a short flight leads down to the passage between the Ikebukuro Shopping Park blocks.",
+   "sourceIds": [
+    "toshima-underground-guide-2022"
+   ],
+   "method": "official-map-reading (facts only) matched to PLATEAU floors and stair treads (TP 28.5 -> 26.2 m)",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-ne-exits",
+   "text": "Exit 22 (東口（北）/ East Exit North) rises from the stairwell in the North Passage; Exits 26, 28 and 33 from the south side of the passage between the Ikebukuro Shopping Park blocks, west to east; Exit 32 from its east end, northwards.",
+   "sourceIds": [
+    "toshima-underground-guide-2022",
+    "tokyometro-ikebukuro-yardmap-2026-03"
+   ],
+   "method": "official-map-reading (facts only): order of exit stairs along the passage matched one-to-one to PLATEAU stair-top closures (TP 32.1-32.4 m, 5-9 m from the projected map positions)",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-central-passage-west",
+   "text": "中央通路 (Central Passage) continues west outside the fare gates, past the Marunouchi Line and Tobu Tojo Line central gates, into the underground hall at 西口 (West Exit).",
+   "sourceIds": [
+    "toshima-underground-guide-2022"
+   ],
+   "method": "official-map-reading (facts only) matched to PLATEAU floors (TP 27.9 m)",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-west-passages",
+   "text": "From the West Exit underground hall, public passages lead west towards Exits 7-13 and north between Exits 15 and 17; a passage along the north side links the stairs of Exits 10/11 with Exits 17/18.",
+   "sourceIds": [
+    "toshima-underground-guide-2022"
+   ],
+   "method": "official-map-reading (facts only) matched to PLATEAU floors (TP 27.9 m)",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-west-exits",
+   "text": "Exit 15 and Exit 17 rise from the passage running north from the West Exit hall (15 to its west, 17 further north); Exit 18 lies just east of Exit 17; Exits 10 and 11 rise at the west end of the northern passage, 10 to the south of 11.",
+   "sourceIds": [
+    "toshima-underground-guide-2022",
+    "tokyometro-ikebukuro-yardmap-2026-03"
+   ],
+   "method": "official-map-reading (facts only): exit stairs matched one-to-one to PLATEAU stair-top closures (TP 33.15-33.17 m, within ~5 m of the projected map positions)",
+   "checkedDate": "2026-10-20"
+  },
+  {
+   "id": "af-south-passage-west",
+   "text": "南通路 (South Passage) continues west outside the fare gates, past the JR South Gate (南改札) on its north side and the Yurakucho Line South Passage gates on its south side, to the West Exit (South) (西口（南）) hall.",
+   "sourceIds": [
+    "toshima-underground-guide-2022"
+   ],
+   "method": "official-map-reading (facts only) matched to PLATEAU floors (TP 27.6 m)",
+   "checkedDate": "2026-10-21"
+  },
+  {
+   "id": "af-jr-south-gate",
+   "text": "The JR South Gate (南改札) opens onto the north side of the South Passage.",
+   "sourceIds": [
+    "toshima-underground-guide-2022"
+   ],
+   "method": "official-map-reading (facts only): the gate line matched to the only wide (~29 m) opening in the passage's north wall in PLATEAU",
+   "checkedDate": "2026-10-21"
+  },
+  {
+   "id": "af-exit-4",
+   "text": "Exit 4 (西口（南）/ West Exit South) stairs leave from the south side of the West Exit (South) hall. The stairs themselves are outside the PLATEAU survey; GTEki routes to their foot.",
+   "sourceIds": [
+    "toshima-underground-guide-2022",
+    "tokyometro-ikebukuro-yardmap-2026-03"
+   ],
+   "method": "official-map-reading (facts only): the exit area matched to the run of floor-level openings in the hall's south wall in PLATEAU (TP 27.6 m)",
+   "checkedDate": "2026-10-21"
+  },
+  {
+   "id": "af-exit-13",
+   "text": "Exit 13 stairs leave the north side of the passage running west from the West Exit hall, between the hall and the stairs of Exits 9 and 10. PLATEAU surveys only their lower flight (to TP ~30.2 m); GTEki routes to their foot.",
+   "sourceIds": [
+    "toshima-underground-guide-2022",
+    "tokyometro-ikebukuro-yardmap-2026-03"
+   ],
+   "method": "official-map-reading (facts only): the exit stair matched to the only PLATEAU stair flight within ~3 m of the projected map position, same climb direction (TP 27.9 m foot)",
+   "checkedDate": "2026-10-21"
+  },
+  {
+   "id": "af-west-corridor",
+   "text": "A public passage runs north from the West Exit (South) hall, along the west side of the Tobu department store, to the West Exit underground hall. Whether any part of it closes outside shop hours is unknown.",
+   "sourceIds": [
+    "toshima-underground-guide-2022"
+   ],
+   "method": "official-map-reading (facts only) matched to PLATEAU floors (TP 27.6 -> 27.9 m)",
+   "checkedDate": "2026-10-21"
+  }
+ ],
+ "nodes": [
+  {
+   "id": "c_w",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -60,
+    82
+   ]
+  },
+  {
+   "id": "w_c",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -107,
+    122
+   ]
+  },
+  {
+   "id": "w_n",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -108,
+    151
+   ]
+  },
+  {
+   "id": "w_w",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -152,
+    126
+   ]
+  },
+  {
+   "id": "w_13j",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -139.5,
+    123
+   ]
+  },
+  {
+   "id": "x13f",
+   "kind": "stair_end",
+   "floor": "b1",
+   "xy": [
+    -139.3,
+    129.3
+   ]
+  },
+  {
+   "id": "w_nw",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -152,
+    166
+   ]
+  },
+  {
+   "id": "w_cj",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -127,
+    120
+   ]
+  },
+  {
+   "id": "sw_h",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -115,
+    -30
+   ]
+  },
+  {
+   "id": "sp_m",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -68,
+    -40
+   ]
+  },
+  {
+   "id": "g_jr_s",
+   "kind": "ticket_gate",
+   "floor": "b1",
+   "xy": [
+    -69.6,
+    -30.4
+   ]
+  },
+  {
+   "id": "x4f",
+   "kind": "stair_end",
+   "floor": "b1",
+   "xy": [
+    -121,
+    -42.5
+   ]
+  },
+  {
+   "id": "x10",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    -155.7,
+    153.1
+   ],
+   "zHint": 33.15
+  },
+  {
+   "id": "x11",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    -145.2,
+    179
+   ],
+   "zHint": 33.15
+  },
+  {
+   "id": "x15",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    -117.5,
+    137.2
+   ],
+   "zHint": 33.15
+  },
+  {
+   "id": "x17",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    -107.1,
+    163.9
+   ],
+   "zHint": 33.15
+  },
+  {
+   "id": "x18",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    -98.7,
+    155.6
+   ],
+   "zHint": 33.17
+  },
+  {
+   "id": "c_mid",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -25,
+    70
+   ]
+  },
+  {
+   "id": "g_jr_c2",
+   "kind": "ticket_gate",
+   "floor": "b1",
+   "xy": [
+    -14,
+    78.5
+   ]
+  },
+  {
+   "id": "g_jr_c1",
+   "kind": "ticket_gate",
+   "floor": "b1",
+   "xy": [
+    -24,
+    59.5
+   ]
+  },
+  {
+   "id": "c_g2",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -14,
+    71.5
+   ]
+  },
+  {
+   "id": "c_c",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    5,
+    63
+   ]
+  },
+  {
+   "id": "c_e1",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    29,
+    45
+   ]
+  },
+  {
+   "id": "c_s",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    26,
+    32
+   ],
+   "zHint": 28.2
+  },
+  {
+   "id": "c_n",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    46,
+    42
+   ],
+   "zHint": 28.49
+  },
+  {
+   "id": "c_e2",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    60,
+    34
+   ]
+  },
+  {
+   "id": "e_27j",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    79,
+    32.5
+   ]
+  },
+  {
+   "id": "e_hall",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    92,
+    27
+   ]
+  },
+  {
+   "id": "e_low",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    128,
+    34
+   ],
+   "zHint": 26.9
+  },
+  {
+   "id": "se_1",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    80,
+    4
+   ],
+   "zHint": 27.6,
+   "snapR": 2
+  },
+  {
+   "id": "se_j",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    99,
+    -16
+   ],
+   "zHint": 27.1
+  },
+  {
+   "id": "n_h",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    66,
+    113
+   ],
+   "zHint": 28.45
+  },
+  {
+   "id": "n_c",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    71.5,
+    116.5
+   ],
+   "zHint": 28.45
+  },
+  {
+   "id": "n_e",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    97,
+    111
+   ],
+   "zHint": 28.45
+  },
+  {
+   "id": "ne_j",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    110,
+    108
+   ],
+   "zHint": 26.24
+  },
+  {
+   "id": "ne_m",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    128,
+    100
+   ],
+   "zHint": 26.24
+  },
+  {
+   "id": "ne_e",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    150,
+    95
+   ],
+   "zHint": 26.3,
+   "snapR": 3
+  },
+  {
+   "id": "ne_k",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    156.5,
+    94.5
+   ],
+   "zHint": 26.24
+  },
+  {
+   "id": "x27",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    83.0,
+    47.0
+   ],
+   "zHint": 32.27
+  },
+  {
+   "id": "x34",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    139.5,
+    53.5
+   ],
+   "zHint": 31.89
+  },
+  {
+   "id": "x35",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    153.5,
+    18.0
+   ],
+   "zHint": 31.27
+  },
+  {
+   "id": "x36f",
+   "kind": "stair_end",
+   "floor": "b1",
+   "xy": [
+    61.5,
+    26.0
+   ],
+   "zHint": 28.49
+  },
+  {
+   "id": "x37",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    38.0,
+    19.0
+   ],
+   "zHint": 32.35
+  },
+  {
+   "id": "x42",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    91.0,
+    -30.5
+   ],
+   "zHint": 31.97
+  },
+  {
+   "id": "x43",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    108.5,
+    -7.5
+   ],
+   "zHint": 31.79
+  },
+  {
+   "id": "sp_j",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    -5,
+    -45
+   ]
+  },
+  {
+   "id": "sp_e",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    10,
+    -63
+   ]
+  },
+  {
+   "id": "s38_w",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    21,
+    -64
+   ],
+   "zHint": 29.05
+  },
+  {
+   "id": "s38_j",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    52,
+    -65
+   ],
+   "zHint": 29.05
+  },
+  {
+   "id": "s41_j",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    73,
+    -71
+   ],
+   "zHint": 25.86
+  },
+  {
+   "id": "s41_f",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    73.5,
+    -55
+   ],
+   "zHint": 26.69
+  },
+  {
+   "id": "s40_j",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    128,
+    -133
+   ],
+   "zHint": 25.93
+  },
+  {
+   "id": "s39_f",
+   "kind": "junction",
+   "floor": "b1",
+   "xy": [
+    168,
+    -168
+   ],
+   "zHint": 26.04
+  },
+  {
+   "id": "x38",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    53.5,
+    -52.5
+   ],
+   "zHint": 32.64
+  },
+  {
+   "id": "x41",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    84.5,
+    -39.5
+   ],
+   "zHint": 32.15
+  },
+  {
+   "id": "x40",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    131.0,
+    -129.0
+   ],
+   "zHint": 32.5
+  },
+  {
+   "id": "x39",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    172.5,
+    -179.0
+   ],
+   "zHint": 32.6
+  },
+  {
+   "id": "x22",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    80,
+    114.5
+   ],
+   "zHint": 32.42
+  },
+  {
+   "id": "x26",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    101,
+    92
+   ],
+   "zHint": 32.25
+  },
+  {
+   "id": "x28",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    127,
+    95
+   ],
+   "zHint": 32.37
+  },
+  {
+   "id": "x32",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    157,
+    115.5
+   ],
+   "zHint": 32.43
+  },
+  {
+   "id": "x33",
+   "kind": "exit",
+   "floor": "street",
+   "xy": [
+    148,
+    73
+   ],
+   "zHint": 32.08
+  }
+ ],
+ "edges": [
+  {
+   "from": "c_w",
+   "to": "c_mid",
+   "access": "af-central-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "g_jr_c2",
+   "to": "c_g2",
+   "access": "af-jr-central-gates",
+   "mode": "walk"
+  },
+  {
+   "from": "c_mid",
+   "to": "c_g2",
+   "access": "af-central-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "c_mid",
+   "to": "g_jr_c1",
+   "access": "af-jr-central-gates",
+   "mode": "walk"
+  },
+  {
+   "from": "c_g2",
+   "to": "c_c",
+   "access": "af-central-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "c_c",
+   "to": "c_e1",
+   "access": "af-central-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "c_e1",
+   "to": "c_n",
+   "access": "af-central-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "c_n",
+   "to": "c_e2",
+   "access": "af-central-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "c_e1",
+   "to": "c_s",
+   "access": "af-central-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "c_s",
+   "to": "x37",
+   "access": "af-east-exits"
+  },
+  {
+   "from": "c_e2",
+   "to": "x36f",
+   "access": "af-east-exits"
+  },
+  {
+   "from": "c_e2",
+   "to": "e_27j",
+   "access": "af-central-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "e_27j",
+   "to": "e_hall",
+   "access": "af-central-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "e_27j",
+   "to": "x27",
+   "access": "af-east-exits"
+  },
+  {
+   "from": "e_hall",
+   "to": "e_low",
+   "access": "af-east-exits"
+  },
+  {
+   "from": "e_low",
+   "to": "x34",
+   "access": "af-east-exits"
+  },
+  {
+   "from": "e_low",
+   "to": "x35",
+   "access": "af-east-exits"
+  },
+  {
+   "from": "e_hall",
+   "to": "se_1",
+   "access": "af-east-exits"
+  },
+  {
+   "from": "se_1",
+   "to": "se_j",
+   "access": "af-east-exits",
+   "maxRatio": 1.8
+  },
+  {
+   "from": "se_j",
+   "to": "x43",
+   "access": "af-east-exits"
+  },
+  {
+   "from": "se_j",
+   "to": "x42",
+   "access": "af-east-exits"
+  },
+  {
+   "from": "c_s",
+   "to": "sp_j",
+   "access": "af-east-jr-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "sp_j",
+   "to": "sp_e",
+   "access": "af-south-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "sp_e",
+   "to": "s38_w",
+   "access": "af-south-passage"
+  },
+  {
+   "from": "s38_w",
+   "to": "s38_j",
+   "access": "af-south-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "s38_j",
+   "to": "x38",
+   "access": "af-south-exits"
+  },
+  {
+   "from": "s38_j",
+   "to": "s41_j",
+   "access": "af-south-passage"
+  },
+  {
+   "from": "s41_j",
+   "to": "s41_f",
+   "access": "af-south-exits"
+  },
+  {
+   "from": "s41_f",
+   "to": "x41",
+   "access": "af-south-exits"
+  },
+  {
+   "from": "s41_j",
+   "to": "s40_j",
+   "access": "af-south-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "s40_j",
+   "to": "x40",
+   "access": "af-south-exits",
+   "maxRatio": 6,
+   "note": "U-shaped stair: two flights with a half landing, so the walked path is much longer than the straight line."
+  },
+  {
+   "from": "s40_j",
+   "to": "s39_f",
+   "access": "af-south-exits",
+   "mode": "walk"
+  },
+  {
+   "from": "s39_f",
+   "to": "x39",
+   "access": "af-south-exits",
+   "maxRatio": 3,
+   "note": "Stair turns back on itself over three flights (landings at TP 27.4, 29.3 and 31.4 m)."
+  },
+  {
+   "from": "c_n",
+   "to": "n_h",
+   "access": "af-east-jr-passage-north",
+   "mode": "walk"
+  },
+  {
+   "from": "n_h",
+   "to": "n_c",
+   "access": "af-north-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "n_c",
+   "to": "n_e",
+   "access": "af-north-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "n_c",
+   "to": "x22",
+   "access": "af-ne-exits"
+  },
+  {
+   "from": "n_e",
+   "to": "ne_j",
+   "access": "af-north-passage"
+  },
+  {
+   "from": "ne_j",
+   "to": "x26",
+   "access": "af-ne-exits"
+  },
+  {
+   "from": "ne_j",
+   "to": "ne_m",
+   "access": "af-north-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "ne_m",
+   "to": "x28",
+   "access": "af-ne-exits",
+   "maxRatio": 6,
+   "note": "U-shaped stair: two flights with a half landing (TP 29.0 m)."
+  },
+  {
+   "from": "ne_m",
+   "to": "ne_e",
+   "access": "af-north-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "ne_e",
+   "to": "ne_k",
+   "access": "af-north-passage",
+   "mode": "walk"
+  },
+  {
+   "from": "ne_k",
+   "to": "x32",
+   "access": "af-ne-exits"
+  },
+  {
+   "from": "ne_e",
+   "to": "x33",
+   "access": "af-ne-exits"
+  },
+  {
+   "from": "c_w",
+   "to": "w_c",
+   "access": "af-central-passage-west",
+   "mode": "walk"
+  },
+  {
+   "from": "w_c",
+   "to": "w_n",
+   "access": "af-west-passages",
+   "mode": "walk"
+  },
+  {
+   "from": "w_c",
+   "to": "w_cj",
+   "access": "af-west-passages",
+   "mode": "walk"
+  },
+  {
+   "from": "w_cj",
+   "to": "w_13j",
+   "access": "af-west-passages",
+   "mode": "walk"
+  },
+  {
+   "from": "w_13j",
+   "to": "w_w",
+   "access": "af-west-passages",
+   "mode": "walk"
+  },
+  {
+   "from": "w_13j",
+   "to": "x13f",
+   "access": "af-exit-13",
+   "mode": "walk"
+  },
+  {
+   "from": "w_w",
+   "to": "w_nw",
+   "access": "af-west-passages",
+   "mode": "walk"
+  },
+  {
+   "from": "w_nw",
+   "to": "w_n",
+   "access": "af-west-passages",
+   "mode": "walk"
+  },
+  {
+   "from": "w_n",
+   "to": "x15",
+   "access": "af-west-exits"
+  },
+  {
+   "from": "w_n",
+   "to": "x17",
+   "access": "af-west-exits"
+  },
+  {
+   "from": "w_n",
+   "to": "x18",
+   "access": "af-west-exits",
+   "maxRatio": 6,
+   "note": "U-shaped stair: three flights with landings at TP 29.1 and 30.5 m."
+  },
+  {
+   "from": "w_nw",
+   "to": "x10",
+   "access": "af-west-exits"
+  },
+  {
+   "from": "w_nw",
+   "to": "x11",
+   "access": "af-west-exits"
+  },
+  {
+   "from": "sp_j",
+   "to": "sp_m",
+   "access": "af-south-passage-west",
+   "mode": "walk"
+  },
+  {
+   "from": "sp_m",
+   "to": "g_jr_s",
+   "access": "af-jr-south-gate",
+   "mode": "walk"
+  },
+  {
+   "from": "sp_m",
+   "to": "sw_h",
+   "access": "af-south-passage-west",
+   "mode": "walk"
+  },
+  {
+   "from": "sw_h",
+   "to": "x4f",
+   "access": "af-exit-4",
+   "mode": "walk"
+  },
+  {
+   "from": "sw_h",
+   "to": "w_cj",
+   "access": "af-west-corridor",
+   "mode": "walk"
+  }
+ ],
+ "pois": [
+  {
+   "id": "exit-22",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "22番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 22"
+    },
+    {
+     "lang": "ja",
+     "text": "東口（北）"
+    },
+    {
+     "lang": "en",
+     "text": "East Exit (North)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口22"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "22ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "22-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "22"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "22號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x22"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-26",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "26番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 26"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口26"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "26ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "26-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "26"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "26號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x26"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-28",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "28番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 28"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口28"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "28ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "28-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "28"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "28號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x28"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-32",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "32番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 32"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口32"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "32ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "32-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "32"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "32號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x32"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-33",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "33番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 33"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口33"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "33ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "33-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "33"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "33號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x33"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-27",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "27番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 27"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口27"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "27ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "27-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "27"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "27號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x27"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-34",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "34番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 34"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口34"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "34ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "34-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "34"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "34號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x34"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-35",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "35番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 35"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口35"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "35ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "35-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "35"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "35號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x35"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-36",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "36番出口（階段下・B1）"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 36 (stair foot, B1)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "36番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 36"
+    },
+    {
+     "lang": "ja",
+     "text": "出口36"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "36ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "36-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "36"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "36號出口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x36f"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; connector = B1 foot of the exit stairs; PLATEAU surveys only their lower flight (to TP 29.7 m, ending at a vertical closure)",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-37",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "37番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 37"
+    },
+    {
+     "lang": "ja",
+     "text": "東口（中央）"
+    },
+    {
+     "lang": "en",
+     "text": "East Exit (Central)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口37"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "37ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "37-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "37"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "37號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x37"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-42",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "42番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 42"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口42"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "42ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "42-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "42"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "42號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x42"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-43",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "43番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 43"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口43"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "43ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "43-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "43"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "43號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x43"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-41",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "41番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 41"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口41"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "41ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "41-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "41"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "41號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x41"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-38",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "38番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 38"
+    },
+    {
+     "lang": "ja",
+     "text": "東口（南）"
+    },
+    {
+     "lang": "en",
+     "text": "East Exit (South)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口38"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "38ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "38-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "38"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "38號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x38"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-39",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "39番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 39"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口39"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "39ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "39-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "39"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "39號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x39"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-40",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "40番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 40"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口40"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "40ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "40-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "40"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "40號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x40"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-19",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "19番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 19"
+    },
+    {
+     "lang": "ja",
+     "text": "西口（中央）"
+    },
+    {
+     "lang": "en",
+     "text": "West Exit (Central)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口19"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "19ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "19-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "19"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "19號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-5",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "5番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 5"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口5"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "5ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "5-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "5"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "5號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-6a",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "6a番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 6a"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口6a"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "6aばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "6a-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "6a"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "6a號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-6b",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "6b番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 6b"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口6b"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "6bばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "6b-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "6b"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "6b號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-7",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "7番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 7"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口7"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "7ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "7-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "7"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "7號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-8",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "8番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 8"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口8"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "8ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "8-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "8"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "8號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-9",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "9番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 9"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口9"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "9ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "9-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "9"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "9號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-14",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "14番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 14"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口14"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "14ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "14-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "14"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "14號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-16",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "16番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 16"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口16"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "16ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "16-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "16"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "16號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-23",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "23番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 23"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口23"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "23ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "23-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "23"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "23號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-24",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "24番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 24"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口24"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "24ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "24-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "24"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "24號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-25",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "25番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 25"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口25"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "25ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "25-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "25"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "25號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-29",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "29番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 29"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口29"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "29ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "29-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "29"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "29號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-30",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "30番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 30"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口30"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "30ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "30-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "30"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "30號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-31",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "31番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 31"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口31"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "31ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "31-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "31"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "31號出口"
+    }
+   ],
+   "floorId": null,
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; not yet connected in GTEki graph",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "jr-central-gate-2",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "JR 中央2改札"
+    },
+    {
+     "lang": "en",
+     "text": "JR Central Gate 2"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "中央2改札"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ちゅうおうにかいさつ"
+    },
+    {
+     "lang": "en",
+     "text": "JR Yamanote Line"
+    },
+    {
+     "lang": "ja",
+     "text": "山手線"
+    },
+    {
+     "lang": "ja",
+     "text": "JR線"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "JR 中央2號剪票口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "g_jr_c2"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "plateau-ubld-13116"
+    ],
+    "method": "gate identity from official map; connector = PLATEAU passage opening",
+    "checkedDate": "2026-10-20"
+   },
+   "notes": [
+    {
+     "lang": "en",
+     "text": "Routes end at the public side of the gate. Platforms inside the fare area are not modelled."
+    }
+   ]
+  },
+  {
+   "id": "jr-central-gate-1",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "JR 中央1改札"
+    },
+    {
+     "lang": "en",
+     "text": "JR Central Gate 1"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "中央1改札"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ちゅうおういちかいさつ"
+    },
+    {
+     "lang": "ja",
+     "text": "JR線"
+    },
+    {
+     "lang": "en",
+     "text": "JR Lines"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "JR 中央1號剪票口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "g_jr_c1"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "plateau-ubld-13116"
+    ],
+    "method": "gate identity from official map; connector = PLATEAU passage opening",
+    "checkedDate": "2026-10-20"
+   },
+   "notes": [
+    {
+     "lang": "en",
+     "text": "Routes end at the public side of the gate. Platforms inside the fare area are not modelled."
+    }
+   ]
+  },
+  {
+   "id": "metro-m-central-west-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "丸ノ内線 中央通路西改札"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage West Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "丸ノ内線"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "metro-m-central-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "丸ノ内線 中央通路中央改札"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage Central Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "丸ノ内線"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "metro-m-central-east-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "丸ノ内線 中央通路東改札"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi Line Central Passage East Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "丸ノ内線"
+    },
+    {
+     "lang": "en",
+     "text": "Marunouchi"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "tobu-central-gate-1",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 中央1改札"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line Central Gate 1"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "tobu-central-gate-2",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東武東上線 中央2改札"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo Line Central Gate 2"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "東武線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "central-passage",
+   "category": "other",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "中央通路"
+    },
+    {
+     "lang": "en",
+     "text": "Central Passage"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ちゅうおうつうろ"
+    },
+    {
+     "lang": "en",
+     "text": "East-West passage"
+    },
+    {
+     "lang": "ja",
+     "text": "東西自由通路"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "中央通道"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "c_mid"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-10",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "10番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 10"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口10"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "10ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "10-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "10"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "10號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x10"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-11",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "11番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 11"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口11"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "11ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "11-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "11"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "11號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x11"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-15",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "15番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 15"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口15"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "15ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "15-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "15"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "15號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x15"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-17",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "17番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 17"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口17"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "17ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "17-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "17"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "17號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x17"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-18",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "18番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 18"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "出口18"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "18ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "18-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "18"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "18號出口"
+    }
+   ],
+   "floorId": "street",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x18"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; location = PLATEAU stair-top closure",
+    "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "exit-4",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "4番出口（階段下・B1）"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 4 (stair foot, B1)"
+    },
+    {
+     "lang": "ja",
+     "text": "西口（南）"
+    },
+    {
+     "lang": "en",
+     "text": "West Exit (South)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "4番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 4"
+    },
+    {
+     "lang": "ja",
+     "text": "出口4"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "4ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "4-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "4"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "4號出口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x4f"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; connector = B1 foot of the exit stairs (PLATEAU wall opening); the stairs are outside the survey",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "exit-13",
+   "category": "exit",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "13番出口（階段下・B1）"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 13 (stair foot, B1)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "13番出口"
+    },
+    {
+     "lang": "en",
+     "text": "Exit 13"
+    },
+    {
+     "lang": "ja",
+     "text": "出口13"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "13ばんでぐち"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "13-ban deguchi"
+    },
+    {
+     "lang": "en",
+     "text": "13"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "13號出口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "x13f"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03",
+     "plateau-ubld-13116"
+    ],
+    "method": "exit number from official maps; connector = B1 foot of the exit stairs; PLATEAU surveys only the lower flight",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "jr-south-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "JR 南改札"
+    },
+    {
+     "lang": "en",
+     "text": "JR South Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "南改札"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "みなみかいさつ"
+    },
+    {
+     "lang": "en",
+     "text": "JR Yamanote Line"
+    },
+    {
+     "lang": "ja",
+     "text": "山手線"
+    },
+    {
+     "lang": "ja",
+     "text": "JR線"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "JR 南剪票口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "g_jr_s"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "plateau-ubld-13116"
+    ],
+    "method": "gate identity from official map (facts only); connector on the passage side of the PLATEAU gate-line opening",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "north-passage",
+   "category": "other",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "北通路"
+    },
+    {
+     "lang": "en",
+     "text": "North Passage"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "きたつうろ"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "北通道"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "n_h"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only): area name as printed on the map; connector = a junction inside that area",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "south-passage",
+   "category": "other",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "南通路"
+    },
+    {
+     "lang": "en",
+     "text": "South Passage"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "みなみつうろ"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "南通道"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "sp_e"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only): area name as printed on the map; connector = a junction inside that area",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "east-exit-b1",
+   "category": "other",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "東口（地下）"
+    },
+    {
+     "lang": "en",
+     "text": "East Exit (B1)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "ひがしぐち"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東口（地下）"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "c_e2"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only): area name as printed on the map; connector = a junction inside that area",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "west-exit-b1",
+   "category": "other",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "西口（地下）"
+    },
+    {
+     "lang": "en",
+     "text": "West Exit (B1)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "にしぐち"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "西口（地下）"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "w_c"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only): area name as printed on the map; connector = a junction inside that area",
+    "checkedDate": "2026-10-21"
+   }
+  },
+  {
+   "id": "west-exit-south-b1",
+   "category": "other",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "西口（南）（地下）"
+    },
+    {
+     "lang": "en",
+     "text": "West Exit South (B1)"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja-Hrkt",
+     "text": "にしぐちみなみ"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "西口（南）（地下）"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [
+    "sw_h"
+   ],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022"
+    ],
+    "method": "official-map-reading (facts only): area name as printed on the map; connector = a junction inside that area",
+    "checkedDate": "2026-10-21"
+   }
+  }
+ ],
+ "coverage": {
+  "summary": [
+   {
+    "lang": "en",
+    "text": "Routable (desk-verified against the PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown): slice 1, the B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43; slice 2, the passage along the JR east side to the South Passage east end and the south-east corridor to Exits 38/39/40/41; slice 3, the passage along the JR east side north to the North Passage (Exit 22, 東口（北）) and the passage between the Ikebukuro Shopping Park blocks to Exits 26/28/32/33; slice 4, the Central Passage west to the West Exit (西口) underground hall and its passages to Exits 10/11/15/17/18; slice 5, the South Passage west past the JR South Gate to the West Exit (South) hall (Exit 4, routed to the foot of its stairs, which are outside the survey) and the passage north to the West Exit hall. The rest of the PLATEAU B1 passage network is explorable but not routable yet. Fare-paid concourses and platforms are not modelled."
+   },
+   {
+    "lang": "ja",
+    "text": "ルート案内対象（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）：第1区画 中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43；第2区画 JR東側通路から南通路東端、南東通路の出口38・39・40・41；第3区画 JR東側通路から北通路（出口22・東口（北））、池袋ショッピングパーク間の通路の出口26・28・32・33；第4区画 中央通路（西）から西口地下広場、出口10・11・15・17・18；第5区画 南通路（西）・JR南改札から西口（南）地下広場（出口4は計測範囲外の階段の下まで案内）、西口地下広場への通路。その他のB1地下通路は探索のみ。改札内・ホームは未モデル化。"
+   }
+  ],
+  "areas": [
+   {
+    "id": "slice1",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "Central Passage (east) and east exits"
+     }
+    ],
+    "polygon": [
+     {
+      "x": -65,
+      "y": 95
+     },
+     {
+      "x": 45,
+      "y": 62
+     },
+     {
+      "x": 160,
+      "y": 60
+     },
+     {
+      "x": 160,
+      "y": 10
+     },
+     {
+      "x": 115,
+      "y": -40
+     },
+     {
+      "x": 80,
+      "y": -40
+     },
+     {
+      "x": 40,
+      "y": 15
+     },
+     {
+      "x": -65,
+      "y": 55
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "slice2",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "JR east-side passage, South Passage (east) and south-east exits"
+     },
+     {
+      "lang": "ja",
+      "text": "JR東側通路・南通路（東）・南東出口"
+     }
+    ],
+    "polygon": [
+     {
+      "x": 12,
+      "y": 28
+     },
+     {
+      "x": 40,
+      "y": 24
+     },
+     {
+      "x": 14,
+      "y": -40
+     },
+     {
+      "x": 18,
+      "y": -58
+     },
+     {
+      "x": 50,
+      "y": -58
+     },
+     {
+      "x": 50,
+      "y": -50
+     },
+     {
+      "x": 56,
+      "y": -50
+     },
+     {
+      "x": 56,
+      "y": -60
+     },
+     {
+      "x": 70,
+      "y": -60
+     },
+     {
+      "x": 70,
+      "y": -48
+     },
+     {
+      "x": 82,
+      "y": -36
+     },
+     {
+      "x": 88,
+      "y": -40
+     },
+     {
+      "x": 78,
+      "y": -62
+     },
+     {
+      "x": 80,
+      "y": -90
+     },
+     {
+      "x": 126,
+      "y": -122
+     },
+     {
+      "x": 140,
+      "y": -114
+     },
+     {
+      "x": 142,
+      "y": -128
+     },
+     {
+      "x": 180,
+      "y": -165
+     },
+     {
+      "x": 176,
+      "y": -184
+     },
+     {
+      "x": 166,
+      "y": -184
+     },
+     {
+      "x": 120,
+      "y": -150
+     },
+     {
+      "x": 66,
+      "y": -100
+     },
+     {
+      "x": 66,
+      "y": -74
+     },
+     {
+      "x": 10,
+      "y": -74
+     },
+     {
+      "x": -14,
+      "y": -60
+     },
+     {
+      "x": -14,
+      "y": -38
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "slice3",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "JR east-side passage (north), North Passage (east) and north-east exits"
+     },
+     {
+      "lang": "ja",
+      "text": "JR東側通路（北）・北通路（東）・北東出口"
+     }
+    ],
+    "polygon": [
+     {
+      "x": 36,
+      "y": 40
+     },
+     {
+      "x": 56,
+      "y": 40
+     },
+     {
+      "x": 66,
+      "y": 100
+     },
+     {
+      "x": 100,
+      "y": 104
+     },
+     {
+      "x": 98,
+      "y": 90
+     },
+     {
+      "x": 104,
+      "y": 88
+     },
+     {
+      "x": 112,
+      "y": 88
+     },
+     {
+      "x": 114,
+      "y": 98
+     },
+     {
+      "x": 124,
+      "y": 86
+     },
+     {
+      "x": 136,
+      "y": 86
+     },
+     {
+      "x": 140,
+      "y": 90
+     },
+     {
+      "x": 146,
+      "y": 70
+     },
+     {
+      "x": 155,
+      "y": 70
+     },
+     {
+      "x": 156,
+      "y": 88
+     },
+     {
+      "x": 162,
+      "y": 96
+     },
+     {
+      "x": 160,
+      "y": 120
+     },
+     {
+      "x": 152,
+      "y": 120
+     },
+     {
+      "x": 150,
+      "y": 104
+     },
+     {
+      "x": 112,
+      "y": 116
+     },
+     {
+      "x": 100,
+      "y": 120
+     },
+     {
+      "x": 64,
+      "y": 126
+     },
+     {
+      "x": 58,
+      "y": 120
+     },
+     {
+      "x": 44,
+      "y": 72
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "slice4",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "Central Passage (west), West Exit hall and Exits 15/17/18"
+     },
+     {
+      "lang": "ja",
+      "text": "中央通路（西）・西口地下広場・出口15・17・18"
+     }
+    ],
+    "polygon": [
+     {
+      "x": -56,
+      "y": 79
+     },
+     {
+      "x": -68,
+      "y": 83
+     },
+     {
+      "x": -82,
+      "y": 95
+     },
+     {
+      "x": -92,
+      "y": 100
+     },
+     {
+      "x": -104,
+      "y": 112
+     },
+     {
+      "x": -110,
+      "y": 117
+     },
+     {
+      "x": -124,
+      "y": 117
+     },
+     {
+      "x": -124,
+      "y": 125
+     },
+     {
+      "x": -117,
+      "y": 128
+     },
+     {
+      "x": -121,
+      "y": 134
+     },
+     {
+      "x": -121,
+      "y": 141
+     },
+     {
+      "x": -116,
+      "y": 149
+     },
+     {
+      "x": -114,
+      "y": 156
+     },
+     {
+      "x": -111,
+      "y": 166
+     },
+     {
+      "x": -104,
+      "y": 166
+     },
+     {
+      "x": -103,
+      "y": 160
+     },
+     {
+      "x": -92,
+      "y": 160
+     },
+     {
+      "x": -90,
+      "y": 153
+     },
+     {
+      "x": -96,
+      "y": 150
+     },
+     {
+      "x": -104,
+      "y": 148
+     },
+     {
+      "x": -104,
+      "y": 131
+     },
+     {
+      "x": -104,
+      "y": 124
+     },
+     {
+      "x": -100,
+      "y": 118
+     },
+     {
+      "x": -90,
+      "y": 108
+     },
+     {
+      "x": -80,
+      "y": 101
+     },
+     {
+      "x": -66,
+      "y": 90
+     },
+     {
+      "x": -56,
+      "y": 88
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "slice4-west",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "West Exit passages to Exits 10/11"
+     },
+     {
+      "lang": "ja",
+      "text": "西口地下通路・出口10・11"
+     }
+    ],
+    "polygon": [
+     {
+      "x": -124,
+      "y": 117
+     },
+     {
+      "x": -153,
+      "y": 121
+     },
+     {
+      "x": -158,
+      "y": 124
+     },
+     {
+      "x": -159,
+      "y": 150
+     },
+     {
+      "x": -159,
+      "y": 158
+     },
+     {
+      "x": -156,
+      "y": 166
+     },
+     {
+      "x": -153,
+      "y": 171
+     },
+     {
+      "x": -149,
+      "y": 183
+     },
+     {
+      "x": -142,
+      "y": 182
+     },
+     {
+      "x": -143,
+      "y": 172
+     },
+     {
+      "x": -108,
+      "y": 157
+     },
+     {
+      "x": -105,
+      "y": 152
+     },
+     {
+      "x": -110,
+      "y": 148
+     },
+     {
+      "x": -145,
+      "y": 160
+     },
+     {
+      "x": -148,
+      "y": 140
+     },
+     {
+      "x": -148,
+      "y": 131
+     },
+     {
+      "x": -122,
+      "y": 128
+     },
+     {
+      "x": -122,
+      "y": 125
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "slice5",
+    "floorId": "b1",
+    "status": "routable",
+    "label": [
+     {
+      "lang": "en",
+      "text": "South Passage (west), West Exit (South) hall and the passage north to the West Exit hall"
+     },
+     {
+      "lang": "ja",
+      "text": "南通路（西）・西口（南）地下広場・西口地下広場への通路"
+     }
+    ],
+    "polygon": [
+     {
+      "x": -2,
+      "y": -40
+     },
+     {
+      "x": -50,
+      "y": -40
+     },
+     {
+      "x": -60,
+      "y": -35.5
+     },
+     {
+      "x": -72,
+      "y": -29
+     },
+     {
+      "x": -88,
+      "y": -22.5
+     },
+     {
+      "x": -100,
+      "y": -14
+     },
+     {
+      "x": -116,
+      "y": -8
+     },
+     {
+      "x": -119,
+      "y": 8
+     },
+     {
+      "x": -121,
+      "y": 60
+     },
+     {
+      "x": -121,
+      "y": 118
+     },
+     {
+      "x": -124,
+      "y": 123
+     },
+     {
+      "x": -131,
+      "y": 123
+     },
+     {
+      "x": -134,
+      "y": 118
+     },
+     {
+      "x": -134,
+      "y": 60
+     },
+     {
+      "x": -133,
+      "y": 10
+     },
+     {
+      "x": -135,
+      "y": 0
+     },
+     {
+      "x": -137,
+      "y": -30
+     },
+     {
+      "x": -134,
+      "y": -38
+     },
+     {
+      "x": -121,
+      "y": -46
+     },
+     {
+      "x": -100,
+      "y": -45
+     },
+     {
+      "x": -70,
+      "y": -46
+     },
+     {
+      "x": -48,
+      "y": -50
+     },
+     {
+      "x": -20,
+      "y": -53
+     },
+     {
+      "x": -6,
+      "y": -50
+     },
+     {
+      "x": -2,
+      "y": -47
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116",
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ]
+   },
+   {
+    "id": "plateau-b1-rest",
+    "floorId": "b1",
+    "status": "visual_only",
+    "label": [
+     {
+      "lang": "en",
+      "text": "Other PLATEAU B1 passages (explore only)"
+     }
+    ],
+    "polygon": [
+     {
+      "x": -190,
+      "y": 200
+     },
+     {
+      "x": 180,
+      "y": 200
+     },
+     {
+      "x": 180,
+      "y": -200
+     },
+     {
+      "x": -190,
+      "y": -200
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "note": "Geometry present; graph and access facts not yet authored."
+   },
+   {
+    "id": "fare-areas",
+    "floorId": null,
+    "status": "excluded",
+    "label": [
+     {
+      "lang": "en",
+      "text": "Fare-paid concourses and platforms (JR, Tobu, Seibu, Tokyo Metro)"
+     }
+    ],
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "note": "Not present in open geometry."
+   }
+  ],
+  "gaps": [
+   {
+    "id": "gap-hours",
+    "floorId": "b1",
+    "zone": "all passages and exits",
+    "missingFact": "Opening hours of the B1 passages and each exit stair",
+    "fieldWorkNeeded": "Official hours statement per exit, or dated on-site photographs of posted hours",
+    "sourceDate": null
+   },
+   {
+    "id": "gap-metro-tobu-gates",
+    "floorId": "b1",
+    "zone": "Central Passage, west and central parts",
+    "missingFact": "Exact openings of the Marunouchi west/central/east gates and the Tobu central gates 1/2 in the PLATEAU geometry (two floor-level openings near the projected Marunouchi gates look like stairwells)",
+    "fieldWorkNeeded": "On-site check of gate lines relative to columns; photos where permitted"
+   },
+   {
+    "id": "gap-step-free",
+    "floorId": "b1",
+    "zone": "east hall to east corridor (z 27.8 -> 26.9) and all exits",
+    "missingFact": "Step-free alternatives: elevators (EF_80 transport elements exist but their type, served levels and hours are unknown) and ramps",
+    "fieldWorkNeeded": "Verify lifts/escalators near Exits 34/35 against the Tokyo Metro accessibility page and on site"
+   },
+   {
+    "id": "gap-freshness",
+    "floorId": null,
+    "zone": "whole slice",
+    "missingFact": "Geometry is from a 2023 survey; construction changes since then are unknown",
+    "fieldWorkNeeded": "Dated walk-through comparing columns, exits and openings"
+   },
+   {
+    "id": "gap-south-west",
+    "floorId": "b1",
+    "zone": "South Passage, south side between the JR South Gate and the West Exit (South) hall",
+    "missingFact": "Which PLATEAU features are the Yurakucho Line South Passage East and West Gates: the gate machines on the official map sit inside surveyed floor with no gate-line opening, so their exact lines and the paid side are not established",
+    "fieldWorkNeeded": "on-site check of both Yurakucho gate lines against column positions"
+   },
+   {
+    "id": "gap-ne-north",
+    "floorId": "b1",
+    "zone": "North-east, north of the Ikebukuro Shopping Park passage",
+    "missingFact": "Exits 23, 24, 25, 29, 30 and 31: the official map shows two stairs (24, 25) where PLATEAU has one stair top, and 23/29/30/31 lie outside the surveyed geometry",
+    "fieldWorkNeeded": "On-site check of which stair is 24 and which is 25; a survey source for the passage north of it"
+   },
+   {
+    "id": "gap-west-stairs",
+    "floorId": "b1",
+    "zone": "West Exit area: Exits 8, 9, 14, 16, 19 and two unmatched stairwells",
+    "missingFact": "PLATEAU models only the lower flights of Exit 9 and of two stairwells near (-181, 126) and (-165, 113) (to TP ~30 m, street ~33 m). Exit 9's flight lies ~9 m from its map position; the (-181, 126) flight sits beside the wide stair to the Fukutoshin Line West Passage, and the (-165, 113) flight runs into the Hope Center block towards Exit 7's map position, so neither is matched. Exit 8's stairs lie at the west end of the passage, ~12 m beyond the surveyed floor. Exits 14, 16 and 19 (西口（中央）) have no stair in the survey. (Exit 13's lower flight matches its map position and is routed to its foot.)",
+    "fieldWorkNeeded": "a survey source for the upper flights and the passage west to Exit 8 (or a later PLATEAU release); on-site check of which stairwell is which exit",
+    "sourceDate": null
+   },
+   {
+    "id": "gap-west-corridor-exits",
+    "floorId": "b1",
+    "zone": "Passage north from the West Exit (South) hall; Hope Center block",
+    "missingFact": "Exits 5, 6a, 6b and 7: their stairs are outside the PLATEAU survey, and their feet cannot be matched one-to-one to PLATEAU openings (Exit 5 has two candidate openings 6 and 13 m from the map position, Exit 6b's nearest is 11 m away and raised; 6a and 7 lie inside the Hope Center block, whose interior is not surveyed)",
+    "fieldWorkNeeded": "on-site note of where each exit stair leaves the passage, counted against column positions",
+    "sourceDate": null
+   },
+   {
+    "id": "gap-tobu-jr-link",
+    "floorId": "b1",
+    "zone": "Passage along the west side of the JR block, between the South Passage and the Central Passage (west)",
+    "missingFact": "Whether this surveyed passage is public (outside fare gates) or a JR-Tobu transfer concourse: the official map shows gate machines along its JR side and Tobu Central Gate 1 at its north end",
+    "fieldWorkNeeded": "on-site check of both ends for gate lines and posted signage",
+    "sourceDate": null
+   }
+  ],
+  "freshness": "2023"
+ },
+ "spawnNodeIds": [
+  "c_mid",
+  "c_e2",
+  "n_h",
+  "sp_e",
+  "w_c",
+  "sw_h"
+ ],
+ "assets": [
+  {
+   "id": "b1",
+   "uri": "assets/ikebukuro_b1.glb",
+   "format": "glb",
+   "floorIds": [
+    "b1",
+    "street"
+   ],
+   "sourceIds": [
+    "plateau-ubld-13116"
+   ],
+   "role": "visual",
+   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform; collision comes from per-mesh gteki_role tags (floor/stairs_ramps walkable; wall/barriers/transport collide), not from the asset role, because verified exit routes pass through door and portal panels; runtime variant assets/ikebukuro_b1_lit.glb (listed in files, not a second asset, so loaders that load every asset never stack both): the same geometry + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap (assets/ikebukuro_b1_lightmap.webp / _2k.webp, gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json). scene/scene.ts loads the lit variant and falls back to this GLB",
+   "files": [
+    "assets/ikebukuro_b1.meta.json",
+    "assets/ikebukuro_b1_lit.glb",
+    "assets/ikebukuro_b1_lit.meta.json",
+    "assets/ikebukuro_b1_lightmap.webp",
+    "assets/ikebukuro_b1_lightmap_2k.webp"
+   ]
+  }
+ ]
+}
