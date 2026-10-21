@@ -109,6 +109,7 @@ export const hooks = {
   setProfile: (page: Page, p: Record<string, boolean>) => page.evaluate((x) => (window as any).__gteki.setProfile(x), p),
   walkFromNode: (page: Page, id: string): Promise<boolean> => page.evaluate((x) => (window as any).__gteki.walkFromNode(x), id),
   quality: (page: Page): Promise<string> => page.evaluate(() => (window as any).__gteki.quality()),
+  guideControls: (page: Page): Promise<{ paused: boolean; tier: string; speed: number }> => page.evaluate(() => (window as any).__gteki.guideControls()),
 };
 
 /** Pick an endpoint the way a user does: type into the field and click a search result by its visible name. */
