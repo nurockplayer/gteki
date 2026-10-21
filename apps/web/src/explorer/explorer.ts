@@ -696,9 +696,11 @@ export class Explorer {
       return;
     }
     // Every 0.25 m walked, plus once shortly after stopping, so the footing where the walker halts is used.
+    // While the pavement shows, every step: stepping down off the top must hide it on the first tread.
     p.wait -= dt;
     const moved = p.at.distanceToSquared(this.pos);
-    if (moved < 0.0625 && (moved < 1e-6 || p.wait > 0)) return;
+    const due = moved >= 0.0625 || (moved > 1e-6 && (p.level || p.wait <= 0));
+    if (!due) return;
     p.at.copy(this.pos);
     p.wait = 0.25;
     this.ray.set(this.probeOrigin.set(this.pos.x, this.pos.y + EYE, this.pos.z), this.probeUp);
@@ -712,7 +714,8 @@ export class Explorer {
       : null;
     // Single-sided winding varies across source polygons: only the tilt matters.
     const footing = footingLevel(hit ? roleOf(hit.object) : null, normalY === null ? null : Math.abs(normalY), p.level);
-    p.level = atStreetTop(this.pos, this.streetTops, footing);
+    // The surface actually underfoot, not the walker's smoothed height, decides which tread this is.
+    p.level = atStreetTop(hit ? hit.point : this.pos, this.streetTops, footing);
   }
 
   private placeCamera(dt: number): void {
