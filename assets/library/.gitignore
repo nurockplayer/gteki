@@ -1,0 +1,2 @@
+# build.py staging directories (removed after each build)
+.build-*/

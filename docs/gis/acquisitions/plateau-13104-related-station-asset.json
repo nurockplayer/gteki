@@ -1,0 +1,32 @@
+{
+  "source_id": "plateau-13104-related-station-asset",
+  "resolved_url": "https://assets.cms.plateau.reearth.io/assets/7c/5ce191-f5a8-4aac-a48a-df1ea472c80a/13104_shinjuku-ku_pref_2025_station.geojson",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-21T00:14:04.655Z",
+  "completed_at": "2026-10-21T00:14:04.671Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/geo+json",
+    "content-length": "17894",
+    "etag": "\"8bcc7592d141a45f5362cf3e0a26b42c\"",
+    "last-modified": "Tue, 10 Feb 2026 11:57:29 GMT",
+    "date": "Wed, 21 Oct 2026 00:13:49 GMT"
+  },
+  "bytes": 17894,
+  "sha256": "7e7071807bb493ce3c9eb2ea0b192d817b1a64b93f693e456f81c9589446d929",
+  "store_path": "raw/7e7071807bb493ce3c9eb2ea0b192d817b1a64b93f693e456f81c9589446d929/13104_shinjuku-ku_pref_2025_station.geojson",
+  "tool_version": "0.1.0",
+  "git_commit": "df0365dea7dcc1d87005917ae4e38f02a5cc6a42",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-21T00:18:39.379Z",
+    "completed_at": "2026-10-21T00:18:39.379Z",
+    "tool_version": "0.1.0",
+    "sha256": "7e7071807bb493ce3c9eb2ea0b192d817b1a64b93f693e456f81c9589446d929",
+    "bytes": 17894,
+    "status": "PASS"
+  }
+}

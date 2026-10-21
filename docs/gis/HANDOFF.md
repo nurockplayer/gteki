@@ -23,7 +23,8 @@ Reproduce the full run with `pnpm --dir tools/gis install --frozen-lockfile`, th
 
 ## Verified checks (this candidate)
 
-- `typecheck` 0 · `test` **82/82** · `test:real` **3/3** · `acquire --all --offline` **13/13** hashes · real run **16/16** CLI invocations exit 0. The Opus lead re-ran these independently.
+- Current candidate (rights research, on top of main `4d5c412`): `typecheck` 0 · `test` **291/291** · `test:real` **10/10** · `acquire --all` **45/45** online · real run **23/23** CLI invocations exit 0 · digest `7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad049a2` (run, validation and summary agree). The 4 GLB outputs are byte-identical to the merged main. The Opus lead re-ran these independently.
+- At PR #18 merge time: `typecheck` 0 · `test` **82/82** · `test:real` **3/3** · `acquire --all --offline` **13/13** hashes · real run **16/16**.
 - CRS: two independent controls from the official GSI 測量計算サイト `bl2xy` (JGD2011, zone IX, retrieved 2026-10-20) match within **0.05 mm**. Envelope-corner roundtrips are below 1e-6 m.
 - GLB readback: bbox error ≤ **0.006 mm**. Independent Blender 5.2.2 import of both full-file GLBs reproduces the recorded local bbox to within float32 precision (see [evidence/](evidence/)).
 
@@ -52,12 +53,18 @@ Reproduce the full run with `pnpm --dir tools/gis install --frozen-lockfile`, th
 | PLATEAU-derived GLB/renders | CC BY 4.0 permits commercial use, modification and redistribution with attribution plus a modification notice (text in the manifest). **Not yet published.** The station lead decides on inclusion after verifying geometry, and the Owner approves release. |
 | Hokonavi-derived candidate graphs | PDL 1.0 with attribution and a processing notice, and no implication of government authorship. Stay internal because they are `UNVERIFIED`. |
 | PLATEAU codelists/schemas | Rights recorded as `unknown`. Labels are used internally for inspection only. |
+| S10 都営 駅構内のお店 CSV (新宿, 新宿西口) | CLEARED_WITH_CONDITIONS at dataset level (CC BY 4.0): factual fields only, plain store names, URLs as pointers. Logos, photos, linked pages and trademarks are **not** cleared. No coordinates. |
+| S03 東京都 新宿駅周辺の施設情報 ZIP / 参考資料 PDF | Whole resource **UNKNOWN**. Geometry + factual fields (ZIP) and technical text (PDF) are CLEARED_WITH_CONDITIONS (CC BY 4.0). Promotional `description` prose, linked content and the PDF illustration stay UNKNOWN. 仕様書 PDF: CLEARED_WITH_CONDITIONS. |
+| PLATEAU `related` layers (13104, 13116) | shelter (KSJ P20), park (P13), emergency_route (N10): **RESTRICTED** (KSJ non-commercial). station + railway (N02-2024), border (N03-2025, keep the 測量法 approval notice): CLEARED_WITH_CONDITIONS. landmark (GSI 数値地図 origin): UNKNOWN. Whole ZIPs: UNKNOWN (split required). |
+| CKAN `package_show` snapshots, PLATEAU catalog API response | UNKNOWN (no self-licence); kept as evidence only. |
 | Operator maps (JR, Metro, Tobu, Seibu, Keio, Odakyu, Toei pages …) | Not acquired. Reference-only per the dossier. |
+
+Every rights verdict is about reuse terms only. It never makes data routable or verified, and every publish gate stays HOLD until the Owner approves. Generated table: [rights/README.md](rights/README.md).
 
 ## Handoff to station leads (A/B), shared core (C) and assets (E)
 
 1. **Ikebukuro (A):** the PLATEAU B1 passage is the only open 3D geometry acquired. Use it as a geometry candidate for a B1 slice after verifying it against permitted references or a field survey. It has no route graph, no gates and no other levels. R1 is an outdoor/peripheral network, not an indoor graph. Neither R1 file declares a CRS; JGD2011 lon/lat is only inferred from the MLIT spec (see Gap research). Under that inference, the 176 R1 nodes inside the B1 passage bbox are all floor 0 or 0.5 and no `rt_struct=5` (地下通路) link crosses it, so R1 does not appear to model this B1 passage.
-2. **Shinjuku (B):** E27 is the only open indoor graph, and it does not overlap the PLATEAU ubld file. No 2025 PLATEAU ubld file is catalogued for E27's mesh `53394525`. One E27 underground-passage link (`b80b3f4aef474ac2aa25c6680b26177a`) contradicts itself: `rank` SBS (slope 5–8 %) but `vtcl_slope=1` (0 %), both field-surveyed. Treat its slope as UNKNOWN. Choose between (a) an E27-first slice whose geometry is derived from the E27 station-map polygons (PDL 1.0) with **no invented heights** (only literal floor values) and (b) a PLATEAU-area slice with no open graph. Both are HOLD for verified routing.
+2. **Shinjuku (B):** E27 is the only open indoor graph, and it does not overlap the PLATEAU ubld file. No 2025 PLATEAU ubld file is catalogued for E27's mesh `53394525`. One E27 underground-passage link (`b80b3f4aef474ac2aa25c6680b26177a`) contradicts itself: `rank` SBS (slope 5–8 %) but `vtcl_slope=1` (0 %), both field-surveyed. Treat its slope as UNKNOWN. Choose between (a) an E27-first slice whose geometry is derived from the E27 station-map polygons (PDL 1.0) with **no invented heights** (only literal floor values) and (b) a PLATEAU-area slice with no open graph. Both are HOLD for verified routing. **New candidate (rights research):** S03 (東京都都市整備局, March 2020 base data, published 2023-02-28) holds per-level drawing geometry for literal levels B5F…4F, M1F and MB2F around Shinjuku station (lon 139.6965–139.7037, lat 35.6865–35.6953). It also holds a `v5_nav.json` with 2,506 source nodes and 2,653 n1/n2 source links. Its geometry and factual fields are CC BY 4.0. Its CRS is undeclared: the spec says absent means WGS84, but the tool keeps it UNKNOWN. Its nav links are unvalidated source references; 0 edges are exported, `routable: false`. Level labels are not elevations.
 3. **Shared core (C):** the frames `ikebukuro-plateau-ubld-v0` / `shinjuku-plateau-ubld-v0` are arbitrary processing origins, not station reference points. They are a proposal for the #2 coordinate contract and are not imposed. Field names follow the source-register schema.
 4. **Assets (E):** GLB nodes carry `gml_id` extras for traceability. Merging for runtime should keep a sidecar mapping back to the IDs.
 
@@ -65,7 +72,11 @@ Reproduce the full run with `pnpm --dir tools/gis install --frozen-lockfile`, th
 
 - Done in the gap research (below): MLIT code tables decoded per spec version; R1 GeoJSON acquired (it has no CRS either); E27↔PLATEAU coverage checked against the catalog.
 - Still open: which spec version R1 actually follows; R1's verified datum; earlier PLATEAU vintages; operator-floor equivalence and floor-to-height mapping; paid/unpaid boundaries.
-- Next targeted acquisitions: S10 Toei shop CSV (CC BY, version to verify), S03 Tokyo 2023 Shinjuku facility ZIP (resource-level licence still to verify), and the Shinjuku `related` POI ZIP (rights unknown).
+- Done in the rights research (below): S10, S03 and both PLATEAU `related` ZIPs acquired, inventoried and given evidence-based verdicts.
+- Still open (rights): the downstream approval scope and wording for the GSI-origin landmark layers; a self-licence for the CKAN metadata snapshots; permission for any logos, photos or brand artwork.
+- Next targeted research: S03 `v5_nav.json` and level geometry for Shinjuku (verify the CRS against an independent control, decode the local Path/drawing transforms, compare with E27 and PLATEAU, and keep everything non-routable until verified).
+- Open test item: on merged main, the first `test:real` run once failed 2/6 (log not captured), and three reruns passed 6/6. The rights-research runs have passed 10/10. Capture the log if it recurs.
+- Cosmetic: `rights/README.md` cells show raw JSON for the exclusion objects; a readable rendering is a follow-up.
 - Use the operator-permission/field-survey template: [gaps/operator-survey-questions.md](gaps/operator-survey-questions.md).
 
 ## Gap research (2026-10-21, stacked on PR #18)
@@ -139,3 +150,39 @@ A ninth automated review found that the summary listed 6 conversions while `real
 - `real-run` records the `conversion_run_id` of each conversion it runs.
 - `summarize` includes only those conversions, and refuses to run if any of them is missing.
 - `test:real` deletes its bounded conversion receipt after checking it.
+
+## Rights research (2026-10-21, after PR #18/#19 merged as `e298fbc` / `eeaf317`)
+
+Full evidence: [research/poi-rights-s10-s03-related.md](research/poi-rights-s10-s03-related.md). Records: [rights/](rights/README.md) (one JSON per source, generated by `gis rights-report`). Inventories: [poi/](poi/). Integration notes: [research/lane-d-integration-report.md](research/lane-d-integration-report.md).
+
+**Added sources:** 26, for 45 in total, all hashed. They cover:
+- the S10 CSVs and their catalog snapshot;
+- the S03 ZIP, 仕様書 and 参考資料 PDFs and their catalog snapshot;
+- both PLATEAU `related` ZIPs with their G空間 catalog snapshots;
+- the PLATEAU data-catalog GraphQL response, fetched with a fixed, hashed POST body;
+- the 14 direct related-layer GeoJSON assets;
+- the terms pages (Tokyo portal terms, CC BY 4.0 deed, PLATEAU site policy, PDL 1.0, KSJ product pages and agreement, GSI terms and survey-approval pages).
+
+**Rights model:** each verdict records the claimed licence, its claim level (RESOURCE / DATASET / SITE_POLICY / ORIGIN_DATASET), the evidence, scope, exclusions and what is not covered. Each evidence item is a snapshot hash, URL, section and a short quoted clause; a real-data test checks that every quoted clause occurs in its stored snapshot.
+- `CLEARED_WITH_CONDITIONS` requires an explicit licence covering the exact resource or layer.
+- Non-commercial origins are `RESTRICTED`; anything else is `UNKNOWN`.
+- A whole-resource verdict is never cleared while any scoped part is not; the tests enforce this.
+- Scope and exclusions travel with every exported verdict, including the summary and gap packets.
+
+**Related-layer origins:** each `related` layer is tied to its origin product only after an identity check against the directly acquired asset. All 14 hold: 8 are JSON-equal and 6 are features-equal with name-only differences. The KSJ old-terms non-commercial clause is §1.3(2) in the acquired agreement.
+
+**Acquisition hardening:** acquisition refuses every redirect (Node GET/POST and curl), recording the status and Location. The S03 ZIP and PDFs answered 301 from their catalog URLs, so the manifest now declares their final URLs with the catalog URL and hash pinned.
+
+**Content:**
+- S10: Shift_JIS, 5 (新宿) and 10 (新宿西口) populated rows, no coordinates (`UNKNOWN`). Location text is kept literally. 新宿三丁目 was not acquired.
+- S03: per-level geometry, Path drawings and `v5_nav.json`, as described under Handoff → Shinjuku. Opening hours are kept as literals.
+- PLATEAU `related`: Shinjuku 110 shelters / 168 parks / 201 landmarks / 48 stations / 108 railway / 45 emergency routes / 1 border. Toshima 42 / 62 / 143 / 35 / 81 / 26 / 1.
+- No POI becomes a node, edge, door or floor.
+
+**Review:** an independent rights audit by a separate GPT-6 Astra session (it never saw the code) reached the same layer verdicts, and both review rounds were fresh read-only Astra (high) sessions.
+- Round 1 returned REQUEST_CHANGES with two P1s, both fixed: the S03 scope was lost in the summary and gap projections, and curl redirects could reach private hosts.
+- Round 2: **APPROVE**. It verified all 45 acquisitions, 74 stored files, 101 quoted clauses and 14 identities.
+
+**Verification (Opus lead's independent online rerun):** `typecheck` 0 · `test` **291/291** · `test:real` **10/10** · `acquire --all` 45/45 · real run **23/23** · digest `7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad049a2`. The GLBs are unchanged.
+
+**PR #34 automated Codex review:** seven rounds with nine P2 findings, all fixed with regression tests. (1) S03 entity opening times are in a field named `hours`, which the opening-time classifier missed. Fixed with a shared `OPENING_TIME_FIELD` pattern and a regression test. The 236 populated `hours` values are now reported as literals. (2) `gap-packet` now adds a HOLD for each expected POI or rights report that is missing, instead of dropping the source silently when other reports loaded. (3) `summarize` refuses unless exactly one gap packet per station exists. (4) The research doc now derives the legacy S10 URL and terms-URL statements from the stored acquisition records instead of fixed text. (5) A cached acquisition is accepted only while it still matches the current manifest: the same direct URL, or the same catalog snapshot and JSON pointer for catalog-resolved sources, and the same supporting-document IDs and requested URLs. (6) The S10 CSV header `営業時間・利用時間` is now a literal location/time field. (7) `summarize` rebuilds each station's expected gap-packet POI content and refuses if any entry was dropped or changed. (8) A gap packet now includes the rights reports of every POI source it admits through a bbox match, not only the sources whose manifest names that station. As a result, Ikebukuro now carries the `plateau-13104-related` layer verdicts, and `summarize` and `test:real` check this with the same shared rule. (9) The cached-record check for catalog-resolved sources reruns the current `resolution.match` selector, through a shared `selectCatalogResource`, and requires the same pointer and URL. Changing the selector therefore forces a re-acquisition. Digest `7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad049a2`; the GLBs are unchanged.

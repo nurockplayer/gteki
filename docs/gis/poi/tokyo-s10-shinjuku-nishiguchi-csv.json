@@ -1,0 +1,603 @@
+{
+  "source_id": "tokyo-s10-shinjuku-nishiguchi-csv",
+  "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
+  "tool_input_sha256": "7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad049a2",
+  "input_sources": [
+    {
+      "source_id": "tokyo-s10-shinjuku-nishiguchi-csv",
+      "sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6"
+    },
+    {
+      "source_id": "plateau-13116-ubld-53394576",
+      "sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09"
+    },
+    {
+      "source_id": "plateau-13104-ubld-53394536",
+      "sha256": "013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-csv",
+      "sha256": "2477e6f27d8be30b3e57ee6849a36b5d8c9f56e1d2ff34956fe5934b71f4920a"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-csv",
+      "sha256": "a0f8376556bc7c920be10c27181d8a4219745b55ec2bea6938d28dfeadde80d2"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+      "sha256": "4960a88bd2a6a32e14c0b980ac9328148eb63091398d17823b48a19b80824b33"
+    },
+    {
+      "source_id": "hokonavi-ikebukuro-walk-link-geojson",
+      "sha256": "f6b84c9c6d05559f04b4a4796b9286f6bfd1bdb4aea0b112666b3d7585b3eab6"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-network-geojson",
+      "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff"
+    },
+    {
+      "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
+      "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2018-03",
+      "sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974"
+    },
+    {
+      "source_id": "mlit-walk-network-spec-2024-07",
+      "sha256": "963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4"
+    },
+    {
+      "source_id": "plateau-catalog-ubld-mesh-533945",
+      "sha256": "ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e"
+    }
+  ],
+  "context_evidence": [],
+  "station_ids": [
+    "shinjuku"
+  ],
+  "members": [
+    {
+      "file": "resource.csv",
+      "format": "CSV",
+      "encoding": "Shift_JIS",
+      "headers": [
+        "配置",
+        "施設名",
+        "設置場所",
+        "営業時間・利用時間",
+        "サイズ・口数（コインロッカー）",
+        "座席",
+        "電話番号",
+        "ホームページ",
+        "PASMO対応",
+        "備考"
+      ],
+      "row_count": 17,
+      "populated_row_count": 10,
+      "blank_row_count": 7,
+      "fields": {
+        "配置": {
+          "blank_count": 7,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 10,
+          "literal_distribution": [
+            {
+              "value": "A",
+              "count": 1
+            },
+            {
+              "value": "B",
+              "count": 1
+            },
+            {
+              "value": "C",
+              "count": 1
+            },
+            {
+              "value": "D",
+              "count": 1
+            },
+            {
+              "value": "E",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 5
+        },
+        "施設名": {
+          "blank_count": 7,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 8,
+          "literal_distribution": [
+            {
+              "value": "コインロッカー",
+              "count": 3
+            },
+            {
+              "value": "ATM（セブン銀行）",
+              "count": 1
+            },
+            {
+              "value": "ATM（みずほ銀行）",
+              "count": 1
+            },
+            {
+              "value": "ATM（ゆうちょ銀行）",
+              "count": 1
+            },
+            {
+              "value": "ファミリーマート（ミニ・コンビニ）",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 3
+        },
+        "設置場所": {
+          "blank_count": 7,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 5,
+          "literal_distribution": [
+            {
+              "value": "B1階改札外コンコース（D1出口付近）",
+              "count": 4
+            },
+            {
+              "value": "B3階改札外コンコース（駅務室横）",
+              "count": 3
+            },
+            {
+              "value": "B1階改札外コンコース（D2出口付近）",
+              "count": 1
+            },
+            {
+              "value": "B3階改札外コンコース（D5出口方）",
+              "count": 1
+            },
+            {
+              "value": "B3階改札外コンコース（JR新宿駅方面改札付近）",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "営業時間・利用時間": {
+          "blank_count": 9,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 8,
+          "literal_distribution": [
+            {
+              "value": "【全日】5時から24時まで",
+              "count": 1
+            },
+            {
+              "value": "【全日】7時から23時まで",
+              "count": 1
+            },
+            {
+              "value": "【全日】8時から21時まで",
+              "count": 1
+            },
+            {
+              "value": "※1【中型】3口【標準】11口",
+              "count": 1
+            },
+            {
+              "value": "※1【標準】20口",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 3
+        },
+        "サイズ・口数（コインロッカー）": {
+          "blank_count": 17,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 0,
+          "literal_distribution": [],
+          "omitted_distinct": 0
+        },
+        "座席": {
+          "blank_count": 17,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 0,
+          "literal_distribution": [],
+          "omitted_distinct": 0
+        },
+        "電話番号": {
+          "blank_count": 16,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "03-5338-1277",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "ホームページ": {
+          "blank_count": 16,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "http://www.family.co.jp/",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "PASMO対応": {
+          "blank_count": 14,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 1,
+          "literal_distribution": [
+            {
+              "value": "○",
+              "count": 3
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "備考": {
+          "blank_count": 15,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 2,
+          "literal_distribution": [
+            {
+              "value": "★宅配受取サービス（利用時間：5時から24時まで）",
+              "count": 1
+            },
+            {
+              "value": "ベビー用紙おむつ、菓子、飲料（乳児用液体ミルクなど）を販売",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        }
+      },
+      "coordinates": "UNKNOWN",
+      "coordinate_fields": [],
+      "crs": "UNKNOWN",
+      "bbox": null,
+      "geometry_types": {},
+      "literal_location_time_fields": {
+        "設置場所": {
+          "blank_count": 7,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 5,
+          "literal_distribution": [
+            {
+              "value": "B1階改札外コンコース（D1出口付近）",
+              "count": 4
+            },
+            {
+              "value": "B3階改札外コンコース（駅務室横）",
+              "count": 3
+            },
+            {
+              "value": "B1階改札外コンコース（D2出口付近）",
+              "count": 1
+            },
+            {
+              "value": "B3階改札外コンコース（D5出口方）",
+              "count": 1
+            },
+            {
+              "value": "B3階改札外コンコース（JR新宿駅方面改札付近）",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 0
+        },
+        "営業時間・利用時間": {
+          "blank_count": 9,
+          "missing_count": 0,
+          "types": [
+            "string"
+          ],
+          "distinct_count": 8,
+          "literal_distribution": [
+            {
+              "value": "【全日】5時から24時まで",
+              "count": 1
+            },
+            {
+              "value": "【全日】7時から23時まで",
+              "count": 1
+            },
+            {
+              "value": "【全日】8時から21時まで",
+              "count": 1
+            },
+            {
+              "value": "※1【中型】3口【標準】11口",
+              "count": 1
+            },
+            {
+              "value": "※1【標準】20口",
+              "count": 1
+            }
+          ],
+          "omitted_distinct": 3
+        }
+      },
+      "routable": false
+    }
+  ],
+  "identity_checks": [],
+  "detail": {
+    "store_path": "out/poi/tokyo-s10-shinjuku-nishiguchi-csv-71930f167c2f-e2ed122ebc17.json",
+    "sha256": "31811e373a02391d11163a81c49f2ad9823d7fc7059db92334681e998586dd44",
+    "bytes": 6253
+  },
+  "station_relevance": [
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "plateau-13104-ubld-53394536",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:link.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-network-geojson:node.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Facility.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Floor.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_1_Space.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Facility.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Floor.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B1_Space.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Facility.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Floor.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B2_Space.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Facility.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Floor.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B3_Space.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Facility.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Floor.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B5_Space.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Facility.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Floor.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "shinjuku",
+      "reference_layer": "hokonavi-oedo-shinjuku-stationmap-geojson:Shinjuku_B6_Space.geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "ikebukuro",
+      "reference_layer": "plateau-13116-ubld-53394576",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "KNOWN",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-csv-pair",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-node-geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    },
+    {
+      "file": "resource.csv",
+      "station_id": "ikebukuro",
+      "reference_layer": "hokonavi-ikebukuro-walk-link-geojson",
+      "relation": "UNKNOWN",
+      "status": "CONDITIONAL_NUMERIC_BBOX_ONLY",
+      "reference_crs_status": "CONDITIONAL_ON_INFERRED_CRS",
+      "condition": "Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence."
+    }
+  ],
+  "coordinates": "UNKNOWN",
+  "routable": false,
+  "verification": "UNVERIFIED",
+  "publish_gate": "HOLD",
+  "limitations": [
+    "No POI becomes a node, edge, door or floor.",
+    "Literal location, opening-hour and level fields remain verbatim in the hashed detail.",
+    "No source currency, operator permission, complete coverage or navigability established."
+  ]
+}

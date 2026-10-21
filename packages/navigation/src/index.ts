@@ -59,6 +59,8 @@ export type RouteUnknown = "hours" | "paid" | "fare_boundary" | "wheelchair" | "
 
 export interface RouteResult {
   ok: true;
+  /** A copy of the profile this route was computed under, so presentation applies the same closures and hours. */
+  profile: RouteProfile;
   nodeIds: string[];
   steps: RouteStep[];
   /** Walking distance in metres (stairs/ramps include the climb; lift rides add time, not length). */
@@ -128,4 +130,4 @@ export interface Router {
  */
 export { createRouter } from "./router.ts";
 export { routeBetween, type RouteEndpoint } from "./poi.ts";
-export { describeRoute, floorDisplayName, instructionPoints, nodeDisplayZ, routePolyline, type Instruction, type InstructionKind, type PolylinePoint } from "./present.ts";
+export { describeRoute, floorDisplayName, instructionPoints, nodeDisplayZ, routePolyline, type Instruction, type InstructionKind, type JunctionHint, type PolylinePoint, type Turn } from "./present.ts";
