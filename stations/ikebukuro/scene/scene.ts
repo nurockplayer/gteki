@@ -396,23 +396,31 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // Street-level context buildings (#39): visual only, so they never join walkable, colliders or cameraBlockers
   // (and assembleCollision never sees them). The explorer has no context slot, so the gate is station-side: the
   // group is in the scene only while the camera is at street height and the scene is fogged (see context.ts),
-  // which keeps underground draws exactly as before and keeps it out of the overview's framing box. Fails soft:
+  // which keeps underground draws exactly as before and keeps it out of the overview's framing box. It loads in the
+  // background (it is only ever seen at street level, so the station is walkable before it arrives) and fails soft:
   // no file, no layer.
   const streetY = streetRenderY(ctx.bundle.floors);
   let context: THREE_NS.Object3D | null = null;
   let contextMaterial: THREE_NS.Material | null = null;
-  try {
-    const loaded = await ctx.loadGlb(CONTEXT_GLB[ctx.quality]);
-    contextMaterial = createContextMaterial(THREE);
-    dressContext(loaded.scene, contextMaterial);
-    loaded.scene.name = "street-context";
-    loaded.scene.visible = false;
-    context = loaded.scene;
-  } catch {
-    context = null;
-  }
+  let disposed = false;
+  ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
+    (loaded) => {
+      const material = createContextMaterial(THREE);
+      dressContext(loaded.scene, material);
+      if (disposed) {
+        loaded.scene.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
+        material.dispose();
+        return;
+      }
+      loaded.scene.name = "street-context";
+      loaded.scene.visible = false;
+      context = loaded.scene;
+      contextMaterial = material;
+    },
+    () => undefined,
+  );
   // The camera is read from a mesh drawn every frame anyway (the floor), so the gate costs no draw call.
-  const probe = context ? (meshesByRole.get("floor")?.[0] ?? [...meshesByRole.values()].flat()[0] ?? null) : null;
+  const probe = meshesByRole.get("floor")?.[0] ?? [...meshesByRole.values()].flat()[0] ?? null;
   const cameraTrack = probe ? trackCamera(probe) : null;
   const setContext = (show: boolean) => {
     if (!context) return;
@@ -485,6 +493,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     dispose() {
       ambience?.dispose();
       cameraTrack?.dispose();
+      disposed = true;
       if (context) {
         setContext(false);
         context.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());

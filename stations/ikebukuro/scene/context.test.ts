@@ -134,7 +134,7 @@ describe("the context is not part of the collision world", () => {
       expect([t.ground, t.collider, t.sky, t.camera].map((a) => a.length)).toEqual([0, 0, 0, 0]);
       // This scene's collision assembly (scene.ts): even if handed the context, nothing becomes walkable or solid.
       const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(...enuToRenderer({ x, y, z }));
-      const fenceCollider = buildFenceCollider(THREE, (accessFences as { fences: never }).fences, toRenderer);
+      const fenceCollider = buildFenceCollider(THREE, (accessFences as unknown as { fences: never }).fences, toRenderer);
       const parts = assembleCollision(THREE, scene, { materialFor: () => undefined, toRenderer, enuToRenderer, fenceCollider });
       expect(parts.walkable.filter((o) => o !== parts.bridges)).toEqual([]);
       expect(parts.colliders).toEqual([fenceCollider]);
