@@ -13,6 +13,7 @@ import type { SceneContext, StationScene } from "@gteki/scene-api";
 import { WALKER_BODY, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
+import { bodyBlocked } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
 import { manifestScene } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
@@ -563,16 +564,11 @@ export class Explorer {
 
   private blockedByColliders(from: THREE.Vector3, to: THREE.Vector3): boolean {
     if (this.colliders.length === 0) return false;
-    const dir = to.clone().sub(from);
-    const len = dir.length();
-    if (len < 1e-6) return false;
-    dir.divideScalar(len);
-    for (const h of [0.5, 1.2]) {
-      this.ray.set(from.clone().add(new THREE.Vector3(0, h, 0)), dir);
-      this.ray.far = len + RADIUS;
-      if (castAll(this.ray, this.colliderTargets).length > 0) return true;
-    }
-    return false;
+    return bodyBlocked(from, to, (origin, dir, far) => {
+      this.ray.set(origin, dir);
+      this.ray.far = far;
+      return castAll(this.ray, this.colliderTargets)[0]?.distance ?? null;
+    }, RADIUS);
   }
 
   // ---- Routes & POIs -------------------------------------------------------------
