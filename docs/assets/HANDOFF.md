@@ -6,6 +6,8 @@ Updated 2026-10-21 · kit `0.1.0` · contract [`gteki-asset/0.1`](asset-contract
 
 ![Synthetic kit demo](img/concourse_approach.jpg)
 
+**Look:** the whole game targets the look of `vertical_hero` and `concourse_gates_closed`. [style.md](style.md) gives the palette, materials, bevels, signage and lighting rules every piece follows ([#94](https://github.com/nurockplayer/gteki/issues/94)).
+
 ## What is in the box
 
 | Family | Assets (`assets/library/glb/`) | Placement |
