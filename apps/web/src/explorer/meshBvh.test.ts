@@ -206,6 +206,11 @@ describe("BVH ray tests match three's brute-force Mesh.raycast", () => {
     const full = half.geometry.getIndex()!.clone();
     half.geometry.setIndex(new THREE.BufferAttribute(full.array.slice(full.count / 2), 1));
     check(half, () => half.geometry.getIndex()!.copy(full), new THREE.Vector3(-3.7, 0.3, 5));
+
+    // Index item size: getX reads every itemSize-th entry.
+    const strided = new THREE.Mesh(new THREE.PlaneGeometry(8, 8, 8, 8), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    strided.geometry.setDrawRange(0, 192);
+    check(strided, () => { strided.geometry.getIndex()!.itemSize = 2; }, new THREE.Vector3(-3.8, -3.2, 5));
   });
 
   it("deforming, instanced and partial-triangle meshes keep three's own raycast", () => {

@@ -21,6 +21,7 @@ interface Source {
   index: THREE.BufferAttribute | null;
   indexArray: THREE.TypedArray | null;
   indexVersion: number;
+  indexItemSize: number;
   indexCount: number;
   indexNormalized: boolean;
 }
@@ -45,7 +46,7 @@ function sourceOf(position: Position, index: THREE.BufferAttribute | null): Sour
     positionVersion: data ? data.version : (position as THREE.BufferAttribute).version,
     itemSize: position.itemSize, offset: data ? interleaved.offset : 0, stride: data ? data.stride : position.itemSize,
     count: position.count, normalized: position.normalized,
-    index, indexArray: index?.array ?? null, indexVersion: index?.version ?? -1, indexCount: index?.count ?? -1, indexNormalized: index?.normalized ?? false,
+    index, indexArray: index?.array ?? null, indexVersion: index?.version ?? -1, indexItemSize: index?.itemSize ?? -1, indexCount: index?.count ?? -1, indexNormalized: index?.normalized ?? false,
   };
 }
 
@@ -61,7 +62,7 @@ function unchanged(e: Source, position: Position, index: THREE.BufferAttribute |
     if (plain.array !== e.positionArray || plain.version !== e.positionVersion) return false;
   }
   if (position.itemSize !== e.itemSize || position.count !== e.count || position.normalized !== e.normalized) return false;
-  return index === null || (index.array === e.indexArray && index.version === e.indexVersion && index.count === e.indexCount && index.normalized === e.indexNormalized);
+  return index === null || (index.array === e.indexArray && index.version === e.indexVersion && index.itemSize === e.indexItemSize && index.count === e.indexCount && index.normalized === e.indexNormalized);
 }
 
 export function currentBvh(g: THREE.BufferGeometry): TriangleBvh | null {
