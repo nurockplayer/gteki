@@ -10,7 +10,7 @@ import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
 import { sourceCredit } from "../credits.ts";
-import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, optionAria, type ComboState } from "./combobox.ts";
+import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { LiveRegion, routeLiveMessage, searchLiveMessage } from "./live.ts";
 import { watchReducedMotion } from "./motion.ts";
 
@@ -293,6 +293,9 @@ export class App {
     this.renderBanner(b);
     this.renderSpawnChips(b);
     this.renderProfile();
+    // The lists show the previous language / selection: drop them.
+    this.closeResults("from");
+    this.closeResults("to");
     this.ui.fromInput.value = this.originLabel();
     this.ui.toInput.value = this.s.destination ? this.poiName(this.s.destination) : "";
     if (b) this.explorer.showPois(b, (p) => this.poiName(p), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
@@ -365,7 +368,14 @@ export class App {
     const q = input.value.trim();
     const hits: SearchHit[] = q ? this.s.search.search(q, { limit: 8 }) : this.s.loaded.bundle.pois.slice(0, 8).map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
     this.ui.live.announce(searchLiveMessage(this.t, hits.length));
-    if (hits.length === 0) { box.append(el("div", "result empty", this.t.noResults)); return; }
+    if (hits.length === 0) {
+      const none = el("div", "result empty", this.t.noResults);
+      none.setAttribute("role", "option");
+      none.setAttribute("aria-disabled", "true");
+      box.append(none);
+      this.setCombo(which, { open: true, count: 0, active: -1 });
+      return;
+    }
     const floors = new Map(this.s.loaded.bundle.floors.map((f) => [f.id, f]));
     hits.forEach((h, i) => {
       const b = el("button", `result cat-${h.poi.category}${h.routable ? "" : " disabled"}`);
@@ -388,24 +398,28 @@ export class App {
       });
       box.append(b);
     });
-    box.setAttribute("role", "listbox");
     this.setCombo(which, { open: true, count: hits.length, active: -1 });
   }
 
-  /** Empty and close one results list. */
+  /** Close one results list (focus is left alone). */
   private closeResults(which: "from" | "to"): void {
-    const box = which === "from" ? this.ui.fromResults : this.ui.toResults;
-    box.innerHTML = "";
-    box.removeAttribute("role");
     this.setCombo(which, COMBO_CLOSED);
   }
 
-  /** Store the listbox state and mirror it into aria-expanded / aria-activedescendant / aria-selected. */
+  /**
+   * The one place the popup and its ARIA state are kept in step: store the state, drop the options of a
+   * closed list (`.results:empty` hides the box), set the listbox role and the input's
+   * aria-expanded / aria-activedescendant, and mark the active option. Visible popup <=> aria-expanded.
+   */
   private setCombo(which: "from" | "to", st: ComboState): void {
-    const state: ComboState = { open: st.open, count: st.count, active: st.active };
+    const state = normalizeCombo(st);
     this.combo[which] = state;
     const input = which === "from" ? this.ui.fromInput : this.ui.toInput;
     const box = which === "from" ? this.ui.fromResults : this.ui.toResults;
+    if (!state.open) box.replaceChildren();
+    const role = listboxRole(state);
+    if (role) box.setAttribute("role", role);
+    else box.removeAttribute("role");
     applyAria(input, inputAria(state, box.id));
     box.querySelectorAll('[role="option"]').forEach((o, i) => o.setAttribute("aria-selected", String(i === state.active)));
   }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COMBO_CLOSED, applyAria, comboboxKeys, inputAria, optionAria, optionId, type ComboState } from "./combobox.ts";
+import { COMBO_CLOSED, applyAria, comboboxKeys, inputAria, listboxRole, normalizeCombo, optionAria, optionId, type ComboState } from "./combobox.ts";
 
 const open = (count: number, active = -1): ComboState => ({ open: true, count, active });
 
@@ -59,10 +59,25 @@ describe("combobox ARIA attributes", () => {
     });
   });
 
-  it("collapsed or empty lists are not expanded and have no active descendant", () => {
+  it("a closed list is not expanded and has no active descendant", () => {
     expect(inputAria(COMBO_CLOSED, list)).toMatchObject({ "aria-expanded": "false", "aria-activedescendant": null });
-    expect(inputAria(open(0, -1), list)["aria-expanded"]).toBe("false");
     expect(inputAria(open(3), list)["aria-activedescendant"]).toBeNull();
+  });
+
+  it("the empty-results message is a shown popup: expanded, nothing active", () => {
+    expect(inputAria(open(0), list)).toMatchObject({ "aria-expanded": "true", "aria-activedescendant": null });
+  });
+
+  it("popup visibility and aria-expanded agree for every state", () => {
+    for (const s of [COMBO_CLOSED, open(0), open(3), open(3, 1), { open: false, count: 3, active: 1 }]) {
+      expect(inputAria(s, list)["aria-expanded"] === "true").toBe(listboxRole(s) === "listbox");
+    }
+  });
+
+  it("closing (Escape) normalizes to the empty closed state, so the options are dropped", () => {
+    const closed = normalizeCombo(comboboxKeys(open(3, 1), "Escape"));
+    expect(closed).toEqual(COMBO_CLOSED);
+    expect(normalizeCombo(open(3, 1))).toEqual(open(3, 1));
   });
 
   it("options have unique ids, role=option, aria-selected only on the active one, and carry their label", () => {

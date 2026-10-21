@@ -45,9 +45,22 @@ export type AriaAttrs = Record<string, string | null>;
 /** Id of option `i` of the listbox `listId`. */
 export const optionId = (listId: string, i: number): string => `${listId}-opt-${i}`;
 
+/** A closed list holds nothing: any closed state is COMBO_CLOSED. */
+export function normalizeCombo(state: ComboState): ComboState {
+  return state.open ? { open: true, count: state.count, active: state.active } : COMBO_CLOSED;
+}
+
+/**
+ * The single source of truth for the popup: it is visible (the box holds options or the empty message,
+ * and has the listbox role) exactly when `open`, and aria-expanded mirrors it.
+ */
+export function listboxRole(state: ComboState): string | null {
+  return state.open ? "listbox" : null;
+}
+
 /** Attributes for the input (null removes the attribute). */
 export function inputAria(state: ComboState, listId: string): AriaAttrs {
-  const shown = state.open && state.count > 0;
+  const shown = state.open;
   return {
     role: "combobox",
     "aria-autocomplete": "list",
