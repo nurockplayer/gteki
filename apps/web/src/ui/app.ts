@@ -617,6 +617,11 @@ export class App {
     const stops = guideStops(this.s.polyline, this.s.instructions);
     this.guideWaits = stops.map((x) => x.instruction);
     const spans = this.s.route?.ok ? guidePaceSpans(this.s.polyline, this.s.route.steps, this.s.instructions) : [];
+    // The guide opens on the first move; "Start" carries no direction and would only flash.
+    if (this.s.instructions[0]?.kind === "start" && this.s.instructions.length > 1) {
+      this.s.activeInstruction = 1;
+      this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === 1));
+    }
     this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans);
   }
 
