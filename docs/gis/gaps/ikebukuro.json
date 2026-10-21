@@ -1,6 +1,6 @@
 {
   "station_id": "ikebukuro",
-  "tool_input_sha256": "b07ff35a92d73bcdedb3a19ccdbc94ac11240547db3a0de65b53f0c38109854c",
+  "tool_input_sha256": "abf79c7e825f8f81ba85a9c753732ef18b67ce0af05f56f38157b187c112fce9",
   "poi_content": [
     {
       "source_id": "plateau-13104-related",
@@ -1689,9 +1689,13 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "階層数": 1887
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "1415e29d83ccfcf8e119f902c78ce583eb06668600fdd257559798eb67066654",
+                  "value_type": "string",
+                  "count": 1887
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2018-03",
@@ -1705,9 +1709,13 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "階層数": 1887
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "1415e29d83ccfcf8e119f902c78ce583eb06668600fdd257559798eb67066654",
+                  "value_type": "string",
+                  "count": 1887
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2024-07",
@@ -1729,9 +1737,13 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "施設外": 1887
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "c9ceaae242cc49d4ac4993378e03c706cb1258b9e8b9f5435f927a194f8a8662",
+                  "value_type": "string",
+                  "count": 1887
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2018-03",
@@ -1745,9 +1757,13 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "施設外": 1887
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "c9ceaae242cc49d4ac4993378e03c706cb1258b9e8b9f5435f927a194f8a8662",
+                  "value_type": "string",
+                  "count": 1887
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2024-07",
@@ -1773,11 +1789,23 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "不明": 1,
-                "視覚障害者誘導用ブロック等あり": 596,
-                "視覚障害者誘導用ブロック等なし": 1599
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "ab290fad5a4bd566f80d7b3285909744a0e1ff0d0c47d7a41365bb315dc8ed76",
+                  "value_type": "string",
+                  "count": 1599
+                },
+                {
+                  "value_sha256": "6c0aa67f72288f74bf38439fb3dbec5c0bf9c208c83b34c744578891456d1aa3",
+                  "value_type": "string",
+                  "count": 596
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2018-03",
@@ -1791,11 +1819,23 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "不明": 1,
-                "視覚障害者誘導用ブロック等あり": 596,
-                "視覚障害者誘導用ブロック等なし": 1599
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "ab290fad5a4bd566f80d7b3285909744a0e1ff0d0c47d7a41365bb315dc8ed76",
+                  "value_type": "string",
+                  "count": 1599
+                },
+                {
+                  "value_sha256": "6c0aa67f72288f74bf38439fb3dbec5c0bf9c208c83b34c744578891456d1aa3",
+                  "value_type": "string",
+                  "count": 596
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2024-07",
@@ -1889,9 +1929,13 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "両方向": 2196
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "3cd7f7c0cad0b51cfe39e84eda960acd9079099920b138425604c4a437d9fdce",
+                  "value_type": "string",
+                  "count": 2196
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2018-03",
@@ -1905,9 +1949,13 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "両方向": 2196
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "3cd7f7c0cad0b51cfe39e84eda960acd9079099920b138425604c4a437d9fdce",
+                  "value_type": "string",
+                  "count": 2196
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2024-07",
@@ -1966,10 +2014,18 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "エレベーターなし": 2195,
-                "不明": 1
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "7cfcad6aef8ea22b78ad6600e3fcc5487661317e97d14bd96792d235295b9ac4",
+                  "value_type": "string",
+                  "count": 2195
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2018-03",
@@ -1983,10 +2039,18 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "エレベーターなし": 2195,
-                "不明": 1
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "7cfcad6aef8ea22b78ad6600e3fcc5487661317e97d14bd96792d235295b9ac4",
+                  "value_type": "string",
+                  "count": 2195
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2024-07",
@@ -2086,10 +2150,18 @@
                 "3",
                 "5"
               ],
-              "decoded_label_counts": {
-                "2 ㎝より大きい": 2112,
-                "不明": 1
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "23aa5e280ea77b66ccebf6658d3202ea35cc4581ab4227188bb47ed72b2bd48c",
+                  "value_type": "string",
+                  "count": 2112
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2018-03",
@@ -2103,12 +2175,28 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "0cm より大きい～2 ㎝以下": 2112,
-                "10cm より大きい": 24,
-                "2cm より大きい～5cm 以下": 59,
-                "不明": 1
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "7f73041ea9b32ad17c85d243982bee7ddf38e7cbcb95625bc25e7d472001d5eb",
+                  "value_type": "string",
+                  "count": 2112
+                },
+                {
+                  "value_sha256": "0f26f5f89319bdd486cb1102d802b55d789f3d410e57b6234fc318b435953292",
+                  "value_type": "string",
+                  "count": 59
+                },
+                {
+                  "value_sha256": "eab3892b3000edb819a62532c04a1629b5b5f776cdfa9acf61cd634cf0d79d10",
+                  "value_type": "string",
+                  "count": 24
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2024-07",
@@ -2302,11 +2390,23 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "あり": 3,
-                "なし": 2192,
-                "不明": 1
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "868310e193d1af0b9a0a16b18d5826a5490fe3f9410defa30dc115829fc1db4a",
+                  "value_type": "string",
+                  "count": 2192
+                },
+                {
+                  "value_sha256": "538fa5973853cacc8a87f28d8a795fde7c8f680dc3d245426f22cef197333705",
+                  "value_type": "string",
+                  "count": 3
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2018-03",
@@ -2320,11 +2420,23 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "あり": 3,
-                "なし": 2192,
-                "不明": 1
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "868310e193d1af0b9a0a16b18d5826a5490fe3f9410defa30dc115829fc1db4a",
+                  "value_type": "string",
+                  "count": 2192
+                },
+                {
+                  "value_sha256": "538fa5973853cacc8a87f28d8a795fde7c8f680dc3d245426f22cef197333705",
+                  "value_type": "string",
+                  "count": 3
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2024-07",
@@ -2349,12 +2461,28 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "不明": 1,
-                "対応する属性情報なし": 2169,
-                "踏切": 2,
-                "階段": 24
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "6e95e0507555494331c24ce5bd13b436e5f13d1d21d67fa6bc60a783a2d8f2be",
+                  "value_type": "string",
+                  "count": 2169
+                },
+                {
+                  "value_sha256": "44ec5ddfce336444ce0f950629b3780de9306d058d15076c9ba4f0cf53e81613",
+                  "value_type": "string",
+                  "count": 24
+                },
+                {
+                  "value_sha256": "f80626172d59da2f2d5b99c11abfb71399f31b4b1dfc0ccebb4d11f47045994c",
+                  "value_type": "string",
+                  "count": 2
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2018-03",
@@ -2368,12 +2496,28 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "不明": 1,
-                "対応する属性情報なし": 2169,
-                "踏切": 2,
-                "階段": 24
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "6e95e0507555494331c24ce5bd13b436e5f13d1d21d67fa6bc60a783a2d8f2be",
+                  "value_type": "string",
+                  "count": 2169
+                },
+                {
+                  "value_sha256": "44ec5ddfce336444ce0f950629b3780de9306d058d15076c9ba4f0cf53e81613",
+                  "value_type": "string",
+                  "count": 24
+                },
+                {
+                  "value_sha256": "f80626172d59da2f2d5b99c11abfb71399f31b4b1dfc0ccebb4d11f47045994c",
+                  "value_type": "string",
+                  "count": 2
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2024-07",
@@ -2402,16 +2546,48 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "不明": 1,
-                "地下通路": 8,
-                "施設内通路": 83,
-                "横断歩道": 584,
-                "横断歩道の路面標示の無い道路の横断部": 142,
-                "歩道橋": 16,
-                "車道と歩道の物理的な分離あり": 1241,
-                "車道と歩道の物理的な分離なし": 121
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "03665f75c27063c136963b37f4485d095782e686fb9b1b6f1f1d501753eb8366",
+                  "value_type": "string",
+                  "count": 1241
+                },
+                {
+                  "value_sha256": "8f5ab70b827ca315bea0fd191126831309f408bba31dfdef79ce5d5eb99bf947",
+                  "value_type": "string",
+                  "count": 584
+                },
+                {
+                  "value_sha256": "fd4b452c49390aacf900d5547d26b8b14ef1d262870844456e403b3e2e3bf636",
+                  "value_type": "string",
+                  "count": 142
+                },
+                {
+                  "value_sha256": "dc8dc772b3ebf7b93eb7201520d3442ef922a4947a565faf504bac1d4b7b0e91",
+                  "value_type": "string",
+                  "count": 121
+                },
+                {
+                  "value_sha256": "013082445fca160b20aa63c97a64a85624023cb2dd9e15f7e317511e00811757",
+                  "value_type": "string",
+                  "count": 83
+                },
+                {
+                  "value_sha256": "918b504b1a1098b7fcee2338638beb85836511351e0ac112be68119fff7f994f",
+                  "value_type": "string",
+                  "count": 16
+                },
+                {
+                  "value_sha256": "e98d89314843f05c38f076ab8809c4a1663a232dbe63b04d3fd81e8deda59606",
+                  "value_type": "string",
+                  "count": 8
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2018-03",
@@ -2425,16 +2601,48 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "不明": 1,
-                "地下通路": 8,
-                "施設内通路": 83,
-                "横断歩道": 584,
-                "横断歩道の路面標示の無い道路の横断部": 142,
-                "歩道橋": 16,
-                "車道と歩道の物理的な分離あり": 1241,
-                "車道と歩道の物理的な分離なし": 121
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "03665f75c27063c136963b37f4485d095782e686fb9b1b6f1f1d501753eb8366",
+                  "value_type": "string",
+                  "count": 1241
+                },
+                {
+                  "value_sha256": "8f5ab70b827ca315bea0fd191126831309f408bba31dfdef79ce5d5eb99bf947",
+                  "value_type": "string",
+                  "count": 584
+                },
+                {
+                  "value_sha256": "fd4b452c49390aacf900d5547d26b8b14ef1d262870844456e403b3e2e3bf636",
+                  "value_type": "string",
+                  "count": 142
+                },
+                {
+                  "value_sha256": "dc8dc772b3ebf7b93eb7201520d3442ef922a4947a565faf504bac1d4b7b0e91",
+                  "value_type": "string",
+                  "count": 121
+                },
+                {
+                  "value_sha256": "013082445fca160b20aa63c97a64a85624023cb2dd9e15f7e317511e00811757",
+                  "value_type": "string",
+                  "count": 83
+                },
+                {
+                  "value_sha256": "918b504b1a1098b7fcee2338638beb85836511351e0ac112be68119fff7f994f",
+                  "value_type": "string",
+                  "count": 16
+                },
+                {
+                  "value_sha256": "e98d89314843f05c38f076ab8809c4a1663a232dbe63b04d3fd81e8deda59606",
+                  "value_type": "string",
+                  "count": 8
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2024-07",
@@ -2495,12 +2703,28 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "不明": 1,
-                "音響設備あり（音響用押しボタンあり）": 50,
-                "音響設備あり（音響用押しボタンなし）": 50,
-                "音響設備なし": 2095
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "fe607296c9201675fa0f55fbed814c4173f492dac0482c1b9b031badf1620cb9",
+                  "value_type": "string",
+                  "count": 2095
+                },
+                {
+                  "value_sha256": "4f8da13fd68f5e3571f3d548d55d4239ac7b608c4009cb5b7937e140b6c00601",
+                  "value_type": "string",
+                  "count": 50
+                },
+                {
+                  "value_sha256": "64fe993247f8462b44a1a4b6fba1c20406c381e97e8333556409705ecf6d791f",
+                  "value_type": "string",
+                  "count": 50
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2018-03",
@@ -2514,12 +2738,28 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "不明": 1,
-                "音響設備あり（音響用押しボタンあり）": 50,
-                "音響設備あり（音響用押しボタンなし）": 50,
-                "音響設備なし": 2095
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "fe607296c9201675fa0f55fbed814c4173f492dac0482c1b9b031badf1620cb9",
+                  "value_type": "string",
+                  "count": 2095
+                },
+                {
+                  "value_sha256": "4f8da13fd68f5e3571f3d548d55d4239ac7b608c4009cb5b7937e140b6c00601",
+                  "value_type": "string",
+                  "count": 50
+                },
+                {
+                  "value_sha256": "64fe993247f8462b44a1a4b6fba1c20406c381e97e8333556409705ecf6d791f",
+                  "value_type": "string",
+                  "count": 50
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2024-07",
@@ -2545,13 +2785,33 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "これら以外の信号機": 222,
-                "不明": 1,
-                "押しボタン式信号機あり": 30,
-                "歩行者用信号機なし": 1935,
-                "歩車分離式信号機あり": 8
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "cef29c5ca8256affc3ad521633539bed8caca9060a3776c34d450370c0ab1c45",
+                  "value_type": "string",
+                  "count": 1935
+                },
+                {
+                  "value_sha256": "c431cc15f84124988aca981c8ab97ef5fbd895d1307495ec6cf3c001570722c2",
+                  "value_type": "string",
+                  "count": 222
+                },
+                {
+                  "value_sha256": "dd2e9da6a9c5c640df6428e6ba671b465a30b5a9e494f3ea1c35c9cf3d692c1c",
+                  "value_type": "string",
+                  "count": 30
+                },
+                {
+                  "value_sha256": "7399912f05d8d41ffe11c1f06508ae92b988d0de685358aa2b3d198f268934b1",
+                  "value_type": "string",
+                  "count": 8
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2018-03",
@@ -2565,13 +2825,33 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "これら以外の信号機": 222,
-                "不明": 1,
-                "押しボタン式信号機あり": 30,
-                "歩行者用信号機なし": 1935,
-                "歩車分離式信号機あり": 8
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "cef29c5ca8256affc3ad521633539bed8caca9060a3776c34d450370c0ab1c45",
+                  "value_type": "string",
+                  "count": 1935
+                },
+                {
+                  "value_sha256": "c431cc15f84124988aca981c8ab97ef5fbd895d1307495ec6cf3c001570722c2",
+                  "value_type": "string",
+                  "count": 222
+                },
+                {
+                  "value_sha256": "dd2e9da6a9c5c640df6428e6ba671b465a30b5a9e494f3ea1c35c9cf3d692c1c",
+                  "value_type": "string",
+                  "count": 30
+                },
+                {
+                  "value_sha256": "7399912f05d8d41ffe11c1f06508ae92b988d0de685358aa2b3d198f268934b1",
+                  "value_type": "string",
+                  "count": 8
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2024-07",
@@ -2602,11 +2882,23 @@
                 "7",
                 "8"
               ],
-              "decoded_label_counts": {
-                "5％より大きい（起点より終点が低い）": 172,
-                "5％より大きい（起点より終点が高い）": 1839,
-                "不明": 1
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "740b521e7e47558a0a16d75b263e44230a4930d7c8b38362dcd734c0ad219a61",
+                  "value_type": "string",
+                  "count": 1839
+                },
+                {
+                  "value_sha256": "6b82c9333ef0c7b3d35edcd2755d390ec3a0aea1bb0f74927a3996429d969c7e",
+                  "value_type": "string",
+                  "count": 172
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2018-03",
@@ -2620,14 +2912,38 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "0％より大きい～5％以下": 1839,
-                "18％より大きい（起点より終点が低い）": 16,
-                "18％より大きい（起点より終点が高い）": 8,
-                "5％より大きい～8％以下（起点より終点が低い）": 160,
-                "5％より大きい～8％以下（起点より終点が高い）": 172,
-                "不明": 1
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "c602057edab09be36431c63186c4f5374ecf67ff418379e99b29fcdde1124638",
+                  "value_type": "string",
+                  "count": 1839
+                },
+                {
+                  "value_sha256": "f319984d7363a11283a4171abc0a695cd2d830d4fb9ce03b90ec5974cecac267",
+                  "value_type": "string",
+                  "count": 172
+                },
+                {
+                  "value_sha256": "804139cd391ac7b2d994e5139ca447c21c64c93cf62b9ba7e489dfc950294308",
+                  "value_type": "string",
+                  "count": 160
+                },
+                {
+                  "value_sha256": "a6dcacb0ca31450578db47af1bf484147fa327d6488fc36112f659a28602bede",
+                  "value_type": "string",
+                  "count": 16
+                },
+                {
+                  "value_sha256": "958d3c601f13d327634458f1f265489029840b4b6b872d99a6500aabe59e359b",
+                  "value_type": "string",
+                  "count": 8
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2024-07",
@@ -2689,13 +3005,33 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "1.0m 以上～2.0m 未満": 239,
-                "1.0m 未満": 37,
-                "2.0m 以上～3.0m 未満": 322,
-                "3.0m 以上": 1597,
-                "不明": 1
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "df14694e6558c6d05ebfa415b310289689b4e3f3efc78e89c3a6dc46473d017f",
+                  "value_type": "string",
+                  "count": 1597
+                },
+                {
+                  "value_sha256": "e69e03554bf69eb9823f3cc7a05ae676bacc5f985fa7a4a028f10883a475d673",
+                  "value_type": "string",
+                  "count": 322
+                },
+                {
+                  "value_sha256": "cceae68465835ae893e41c28af7d1f27fd22df98bc97910195e475786043fa16",
+                  "value_type": "string",
+                  "count": 239
+                },
+                {
+                  "value_sha256": "1c51e97288fb6e2f4478ab68f2e20c07a94b76588d1a5207f3c81603c3c89cd2",
+                  "value_type": "string",
+                  "count": 37
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2018-03",
@@ -2709,13 +3045,33 @@
               "compatible": true,
               "defined_in_spec": true,
               "undefined_codes": [],
-              "decoded_label_counts": {
-                "1.0m 以上～2.0m 未満": 239,
-                "1.0m 未満": 37,
-                "2.0m 以上～3.0m 未満": 322,
-                "3.0m 以上": 1597,
-                "不明": 1
-              },
+              "decoded_label_value_hash_distribution": [
+                {
+                  "value_sha256": "df14694e6558c6d05ebfa415b310289689b4e3f3efc78e89c3a6dc46473d017f",
+                  "value_type": "string",
+                  "count": 1597
+                },
+                {
+                  "value_sha256": "e69e03554bf69eb9823f3cc7a05ae676bacc5f985fa7a4a028f10883a475d673",
+                  "value_type": "string",
+                  "count": 322
+                },
+                {
+                  "value_sha256": "cceae68465835ae893e41c28af7d1f27fd22df98bc97910195e475786043fa16",
+                  "value_type": "string",
+                  "count": 239
+                },
+                {
+                  "value_sha256": "1c51e97288fb6e2f4478ab68f2e20c07a94b76588d1a5207f3c81603c3c89cd2",
+                  "value_type": "string",
+                  "count": 37
+                },
+                {
+                  "value_sha256": "bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c",
+                  "value_type": "string",
+                  "count": 1
+                }
+              ],
               "defined_codes_without_label_count": 0,
               "evidence": {
                 "spec_source_id": "mlit-walk-network-spec-2024-07",

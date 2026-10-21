@@ -51,9 +51,15 @@ export async function storeDetailLiterals(storeRoot: string = getStoreRoot(), mi
 
 /** Generic vocabulary that coincides with our own text (see codebooks/poi-literal-allowlist.json); it is not a source value. */
 export async function loadLiteralAllowlist(): Promise<Set<string>> {
-  const parsed = JSON.parse(await readFile(join(packageRoot, 'codebooks', 'poi-literal-allowlist.json'), 'utf8')) as { terms?: unknown };
+  const parsed = JSON.parse(await readFile(join(packageRoot, 'codebooks', 'poi-literal-allowlist.json'), 'utf8')) as { terms?: unknown; justifications?: unknown };
   if (!Array.isArray(parsed.terms) || parsed.terms.some(term => typeof term !== 'string')) throw new Error('poi-literal-allowlist.json needs a string array `terms`');
-  return new Set(parsed.terms as string[]);
+  const terms = new Set(parsed.terms as string[]);
+  // `justifications` states why a generic term is exempt (#129); a reason for a term outside `terms`, or an empty one, is a mistake.
+  if (parsed.justifications !== undefined) {
+    const entries = Object.entries(parsed.justifications !== null && typeof parsed.justifications === 'object' ? parsed.justifications : { invalid: null });
+    if (entries.some(([term, reason]) => !terms.has(term) || typeof reason !== 'string' || reason.trim().length < 20)) throw new Error('poi-literal-allowlist.json `justifications` must map listed terms to a reason of at least 20 characters');
+  }
+  return terms;
 }
 
 /** Literals present in `text`, verbatim or as the JSON-escaped form a report writer would emit. */

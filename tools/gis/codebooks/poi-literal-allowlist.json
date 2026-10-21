@@ -1,5 +1,5 @@
 {
-  "purpose": "Generic vocabulary exempt from the POI leak scan (gis check-poi-literals). Each term is a common word or schema/file-name fragment that our own committed text, floor-label file names and non-POI sources use; none is a distinctive source value. Add a term only after confirming that, never to hide a leaked value.",
+  "purpose": "Generic vocabulary exempt from the leak scan (gis check-literals, alias check-poi-literals): the POI values of #124 and the class (b) non-POI literals of #129 (docs/gis/rights/non-poi-literals.md). Each term is a common word or schema/file-name fragment that our own committed text, floor-label file names and non-POI sources use; none is a distinctive source value. Add a term only after confirming that, never to hide a leaked value. Every term added for #129 has its reason in `justifications`.",
   "terms": [
     "MB2F",
     "Stream",
@@ -11,21 +11,39 @@
     "elevator",
     "entrance",
     "escalator",
+    "exception",
     "gate",
     "general",
     "indoor",
     "information",
     "locker",
+    "park",
     "ramp",
+    "river",
+    "road",
     "section",
     "stairs",
     "step",
     "true",
     "unit",
+    "unknown",
     "wall",
+    "zone",
     "エスカレーター",
     "エレベーター",
     "コインロッカー",
-    "スロープ"
-  ]
+    "スロープ",
+    "地下2階",
+    "地下通路"
+  ],
+  "justifications": {
+    "exception": "Ordinary English word. It occurs inside our own evidence ids (plateau-related-provenance#ksj-exception-heading) in gaps and rights text; also a PLATEAU codelist description.",
+    "park": "Ordinary English word. It occurs in our own source ids and layer names (plateau-13104-related-park-asset) and HANDOFF prose; also a PLATEAU codelist description.",
+    "river": "Ordinary English word used in our own research prose (lane-d-review-fixes.md); also a PLATEAU codelist description.",
+    "road": "Ordinary English word. It is our own feature-kind name in context reports and HANDOFF prose (road tran layer); also a PLATEAU codelist description.",
+    "unknown": "Our own status marker (UNKNOWN stays unknown) written in lower case across reports; also a PLATEAU codelist description.",
+    "zone": "Ordinary English word in our own CRS reports (JGD2011 plane rectangular zone IX, query parameter zone=9); also a PLATEAU codelist description.",
+    "地下2階": "Generic floor word. fix-pass.md uses it as the name of a synthetic test case ('standalone B2, 地下2階, 階段室, 地下通路 cases'), not as a quote of a source floor label. Floor labels of the E27 station map are still hashed in the reports; this term only exempts that prose.",
+    "地下通路": "Common noun for an underground passage. It is part of the class (a) PLATEAU group name kept in the inventory (gml:name 「池袋駅_B1地下通路」), appears in our own HANDOFF and fix-pass prose and test-case names, and is also MLIT route-structure label 5; the exact label is not policed because the same word legitimately appears in class (a) text."
+  }
 }

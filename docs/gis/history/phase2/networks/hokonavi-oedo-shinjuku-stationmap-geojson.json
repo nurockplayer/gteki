@@ -57,10 +57,10 @@
       },
       "categorical_values": {
         "floor_id": {
-          "728f2dd21d10464d8a913e3b4cf6001f": 3,
-          "760b5e4d053149f3b1a757570e2daefd": 5,
-          "f521c9e601be4434aee84f3c8d901316": 2,
-          "fc864b5d0418434087b974400fbf6599": 2
+          "value_sha256:c6061ddda1d597620f02f9d405c3feaf947ea8a3d1093f98cd7b8084fcd261c1": 3,
+          "value_sha256:a0bf4e9965e853ad31fe4ad869e89fc80e86939bed8c86496d8bf0441f5f4b39": 5,
+          "value_sha256:d413ea57a1e55980e2a65c08e3eacb4b8a7b99f17788f69b8b62d44f2f9d8295": 2,
+          "value_sha256:92bebde1dcaf42bd79013fd220396aef81ff15edc7025e6f45f4bf094bf71948": 2
         }
       },
       "floor_labels_present_literally": []
@@ -186,10 +186,10 @@
       },
       "categorical_values": {
         "floor_id": {
-          "728f2dd21d10464d8a913e3b4cf6001f": 5,
-          "760b5e4d053149f3b1a757570e2daefd": 9,
-          "f521c9e601be4434aee84f3c8d901316": 2,
-          "fc864b5d0418434087b974400fbf6599": 1
+          "value_sha256:c6061ddda1d597620f02f9d405c3feaf947ea8a3d1093f98cd7b8084fcd261c1": 5,
+          "value_sha256:a0bf4e9965e853ad31fe4ad869e89fc80e86939bed8c86496d8bf0441f5f4b39": 9,
+          "value_sha256:d413ea57a1e55980e2a65c08e3eacb4b8a7b99f17788f69b8b62d44f2f9d8295": 2,
+          "value_sha256:92bebde1dcaf42bd79013fd220396aef81ff15edc7025e6f45f4bf094bf71948": 1
         }
       },
       "floor_labels_present_literally": []
@@ -248,8 +248,8 @@
       },
       "categorical_values": {
         "floor_id": {
-          "918d35f85b4c4cef84c6ba5225f954d2": 22,
-          "f570ed519db442faa0c85f1a934547e5": 7
+          "value_sha256:e0d11be737abe7d83305b1a3ec5a007ad7fee638f436be406e8041596ac8c881": 22,
+          "value_sha256:b34454c05cb34da0fd3901fd58292ed2e22e15b61859e4a3929671048c2c7970": 7
         }
       },
       "floor_labels_present_literally": []
@@ -310,7 +310,7 @@
       },
       "categorical_values": {},
       "floor_labels_present_literally": [
-        "地下1階"
+        "value_sha256:541f4bbc612294c0f7951e58215a8f4002090729f30dfd429c255ec12d7d079b"
       ]
     },
     {
@@ -375,8 +375,8 @@
       },
       "categorical_values": {
         "floor_id": {
-          "918d35f85b4c4cef84c6ba5225f954d2": 84,
-          "f570ed519db442faa0c85f1a934547e5": 19
+          "value_sha256:e0d11be737abe7d83305b1a3ec5a007ad7fee638f436be406e8041596ac8c881": 84,
+          "value_sha256:b34454c05cb34da0fd3901fd58292ed2e22e15b61859e4a3929671048c2c7970": 19
         }
       },
       "floor_labels_present_literally": []
@@ -435,8 +435,8 @@
       },
       "categorical_values": {
         "floor_id": {
-          "5cacd61ad7704d8fbc748167c154dbea": 10,
-          "fe9c7dc46cce4b6f91b3462933690343": 5
+          "value_sha256:e8860df53e6c96c57e758d455d3047da85345bb7dfbd35301b0b6a94064a6339": 10,
+          "value_sha256:d28dc9000f747cda9a76ad88cd802f5f52c76d93f732cde1841b47ed7f486f7e": 5
         }
       },
       "floor_labels_present_literally": []
@@ -562,8 +562,8 @@
       },
       "categorical_values": {
         "floor_id": {
-          "5cacd61ad7704d8fbc748167c154dbea": 34,
-          "fe9c7dc46cce4b6f91b3462933690343": 12
+          "value_sha256:e8860df53e6c96c57e758d455d3047da85345bb7dfbd35301b0b6a94064a6339": 34,
+          "value_sha256:d28dc9000f747cda9a76ad88cd802f5f52c76d93f732cde1841b47ed7f486f7e": 12
         }
       },
       "floor_labels_present_literally": []
@@ -622,8 +622,8 @@
       },
       "categorical_values": {
         "floor_id": {
-          "220cccd00be94faeb8f84cb191130c76": 5,
-          "63df68d1c60e42f3b2fab3161e030808": 27
+          "value_sha256:f432e835757f2dc191c3b994a8846f20967ba1697cc05860c80c6182b4d91977": 5,
+          "value_sha256:cb7c532edd59b815691031e4cbdd9b85fe1f7932ab54f78df3414f82e95a3d6d": 27
         }
       },
       "floor_labels_present_literally": []
@@ -684,7 +684,7 @@
       },
       "categorical_values": {},
       "floor_labels_present_literally": [
-        "地下3階"
+        "value_sha256:2f2d864b68d26ac9634202a415e0f7ee274b100914327fce73298a5e14f7954f"
       ]
     },
     {
@@ -749,8 +749,8 @@
       },
       "categorical_values": {
         "floor_id": {
-          "220cccd00be94faeb8f84cb191130c76": 11,
-          "63df68d1c60e42f3b2fab3161e030808": 73
+          "value_sha256:f432e835757f2dc191c3b994a8846f20967ba1697cc05860c80c6182b4d91977": 11,
+          "value_sha256:cb7c532edd59b815691031e4cbdd9b85fe1f7932ab54f78df3414f82e95a3d6d": 73
         }
       },
       "floor_labels_present_literally": []
@@ -809,7 +809,7 @@
       },
       "categorical_values": {
         "floor_id": {
-          "b9b1fdfdd6d040088a5fcba1d54cc786": 6
+          "value_sha256:4ba4eb334f63b3de4caed5d5c2b5c1a2b7e240f49772d78674171d0533e248b1": 6
         }
       },
       "floor_labels_present_literally": []
@@ -870,7 +870,7 @@
       },
       "categorical_values": {},
       "floor_labels_present_literally": [
-        "地下5階"
+        "value_sha256:27a651ea63fba300793d9bcf3a39e29e0328550778395490c73fee1c3dde9512"
       ]
     },
     {
@@ -935,7 +935,7 @@
       },
       "categorical_values": {
         "floor_id": {
-          "b9b1fdfdd6d040088a5fcba1d54cc786": 14
+          "value_sha256:4ba4eb334f63b3de4caed5d5c2b5c1a2b7e240f49772d78674171d0533e248b1": 14
         }
       },
       "floor_labels_present_literally": []
@@ -994,7 +994,7 @@
       },
       "categorical_values": {
         "floor_id": {
-          "8e00d6d1-991a-4a55-a203-20af3cd8639f": 10
+          "value_sha256:f3c3d1616acd84099985be70483988fba849a0dd8f9c504a1a79d5cb1fa693a4": 10
         }
       },
       "floor_labels_present_literally": []
@@ -1055,7 +1055,7 @@
       },
       "categorical_values": {},
       "floor_labels_present_literally": [
-        "地下6階"
+        "value_sha256:317a1a345f26128a5ebe72df6725f57f6f4aa1f3f462358dff1d503ce48a0db8"
       ]
     },
     {
@@ -1120,7 +1120,7 @@
       },
       "categorical_values": {
         "floor_id": {
-          "8e00d6d1991a4a55a20320af3cd8639f": 85
+          "value_sha256:2f1b07c7b8d754b39947e1822683fe27db981aa833c205e7e1b7c9b2e083f588": 85
         }
       },
       "floor_labels_present_literally": []

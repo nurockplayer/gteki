@@ -323,25 +323,25 @@
         {
           "code": "EF_25",
           "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-          "label": "壁およびバリア（バリケード）エレメント",
+          "label": "value_sha256:c7a9775bd6feabde179a1470f7ac0f08cebed673870b8c4464e161129bd387c9",
           "status": "RESOLVED"
         },
         {
           "code": "EF_30",
           "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-          "label": "屋根、床、舗装エレメント",
+          "label": "value_sha256:66c68648b5487923cfbc6ca49fd4e687f1a44f4bac5c45fb95fb17e8de7fc274",
           "status": "RESOLVED"
         },
         {
           "code": "EF_35",
           "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-          "label": "階段および傾斜路（スロープ）エレメント",
+          "label": "value_sha256:f3e12c8759e6155c83dc9bdd12427b5399b612a768cef5613b12a30757953e81",
           "status": "RESOLVED"
         },
         {
           "code": "EF_80",
           "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-          "label": "輸送機能",
+          "label": "value_sha256:feef0259985a457ff6d630d25b1a7e36aa1805b186d1ddd0a1ccf8c9cf89853e",
           "status": "RESOLVED"
         }
       ],
@@ -651,11 +651,11 @@
       "endpoint_coverage": null,
       "floor_labels": [
         "1階",
-        "地下1階",
+        "value_sha256:541f4bbc612294c0f7951e58215a8f4002090729f30dfd429c255ec12d7d079b",
         "地下2階",
-        "地下3階",
-        "地下5階",
-        "地下6階"
+        "value_sha256:2f2d864b68d26ac9634202a415e0f7ee274b100914327fce73298a5e14f7954f",
+        "value_sha256:27a651ea63fba300793d9bcf3a39e29e0328550778395490c73fee1c3dde9512",
+        "value_sha256:317a1a345f26128a5ebe72df6725f57f6f4aa1f3f462358dff1d503ce48a0db8"
       ],
       "csv_in_out": null,
       "csv_elevation": null

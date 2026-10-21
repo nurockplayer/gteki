@@ -85,7 +85,7 @@ function describeNetwork(report: any): string[] {
   const members = report.members ?? [];
   if (members.length) return [
     ...members.map((m: any) => `- ${m.file}: ${m.feature_count} features; CRS ${JSON.stringify(m.crs)}; bbox ${JSON.stringify(m.bbox)}.`),
-    ...(report.network_inventory ? [`- Combined source layers: ${report.network_inventory.feature_count} features; literal floor labels ${JSON.stringify(report.network_inventory.floor_labels_present_literally)}.`] : []),
+    ...(report.network_inventory ? [`- Combined source layers: ${report.network_inventory.feature_count} features; source floor labels as value_sha256 + count ${JSON.stringify(report.network_inventory.floor_label_value_hash_distribution ?? null)}.`] : []),
     ...(report.topology ? [`- Combined network source topology: ${report.topology.weak_component_count} weak components, ${report.topology.dangling_links?.length ?? 'UNKNOWN'} dangling references, ${report.topology.geometry_endpoint_mismatches_over_0_5m?.length ?? 'UNKNOWN'} endpoint mismatches above 0.5 m.`] : []),
   ];
   return [`- The source report contains ${report.totals?.features ?? 'UNKNOWN'} features; spatial topology remains unverified.`];
