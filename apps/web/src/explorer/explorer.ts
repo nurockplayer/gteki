@@ -19,7 +19,7 @@ import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, clampDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
-import { STREET, StreetBackdrop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
+import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
@@ -57,6 +57,9 @@ export class Explorer {
   private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
   private readonly probeDown = new THREE.Vector3(0, -1, 0);
   private readonly probeNormal = new THREE.Vector3();
+  private readonly probeNormalMatrix = new THREE.Matrix3();
+  /** Street-level graph nodes (exit tops) in renderer space. */
+  private streetTops: THREE.Vector3[] = [];
   private readonly probeOrigin = new THREE.Vector3();
   private readonly probeUp = new THREE.Vector3(0, 1, 0);
   private readonly timer = new THREE.Timer();
@@ -310,6 +313,9 @@ export class Explorer {
       this.applyLighting(env?.lighting === "scene" ? "scene" : "default");
       const streets = station.bundle.floors.filter((f) => f.ordinal === 0 && !f.intermediate);
       this.streetY = env?.lighting === "scene" && streets.length ? Math.max(...streets.map((f) => f.renderElevationM)) : null;
+      this.streetTops = station.bundle.nodes
+        .filter((n) => streets.some((f) => f.id === n.floorId))
+        .map((n) => R(n.position.x, n.position.y, nodeDisplayZ(n, streets.find((f) => f.id === n.floorId)).z));
       this.stationScene.root.updateMatrixWorld(true);
     } else {
       this.world.add(this.graph.root);
@@ -339,6 +345,7 @@ export class Explorer {
   private clearStation(): void {
     this.street.restore(this.scene);
     this.streetY = null;
+    this.streetTops = [];
     this.streetProbe.at.set(Infinity, 0, 0);
     this.overviewLook.set(this.scene, this.world, false);
     this.disconnectStationAudio();
@@ -700,9 +707,11 @@ export class Explorer {
     this.ray.set(this.probeOrigin.set(this.pos.x, this.pos.y + 0.4, this.pos.z), this.probeDown);
     this.ray.far = 1.2;
     const hit = castAll(this.ray, this.groundTargets)[0];
-    const normalY = hit?.face ? this.probeNormal.copy(hit.face.normal).transformDirection(hit.object.matrixWorld).y : null;
+    const normalY = hit?.face
+      ? this.probeNormal.copy(hit.face.normal).applyNormalMatrix(this.probeNormalMatrix.getNormalMatrix(hit.object.matrixWorld)).y
+      : null;
     // Single-sided winding varies across source polygons: only the tilt matters.
-    p.level = footingLevel(hit ? roleOf(hit.object) : null, normalY === null ? null : Math.abs(normalY), p.level);
+    p.level = atStreetTop(this.pos, this.streetTops) || footingLevel(hit ? roleOf(hit.object) : null, normalY === null ? null : Math.abs(normalY), p.level);
   }
 
   private placeCamera(dt: number): void {

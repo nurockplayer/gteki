@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { StreetBackdrop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
+import { StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 
 describe("street backdrop", () => {
   it("is outdoors only with a street floor, open sky and a walker near street height", () => {
@@ -34,6 +34,8 @@ describe("level footing", () => {
     expect(footingLevel("floor", 1, false)).toBe(true);
     expect(footingLevel("stairs_ramps", 1, true)).toBe(false);
     expect(footingLevel("floor", 0.95, true)).toBe(false);
+    expect(footingLevel("stairs_ramps_2", 1, true)).toBe(false);
+    expect(footingLevel("Escalator", 1, true)).toBe(false);
   });
 
   it("keeps the previous answer on crack bridges and when the ground ray misses", () => {
@@ -50,5 +52,14 @@ describe("level footing", () => {
     expect(roleOf(mesh)).toBe("stairs_ramps");
     mesh.userData.gteki_role = "floor";
     expect(roleOf(mesh)).toBe("floor");
+  });
+});
+
+describe("street tops", () => {
+  const tops = [new THREE.Vector3(10, 33.17, -4)];
+  it("counts the exit's street-level node as level ground, not the flight below it", () => {
+    expect(atStreetTop(new THREE.Vector3(10.5, 33.17, -3), tops)).toBe(true);
+    expect(atStreetTop(new THREE.Vector3(10, 32.5, -2.5), tops)).toBe(false);
+    expect(atStreetTop(new THREE.Vector3(14, 33.17, -4), tops)).toBe(false);
   });
 });
