@@ -3,7 +3,7 @@
  *
  *   pnpm --filter @gteki/station-shinjuku shoot [--url http://localhost:5274] [--out dir] [--only id,id] [--w 1280 --h 720] [--q high|low] [--crowd N] [--route fromPoiId,toPoiId] [--ride-distance 4] [--check-ui 1] [--vantages file.json] [--timings 1] [--virtual-clock 1]
  *
- * Needs a running dev server (`pnpm --filter @gteki/station-shinjuku dev`) and Google Chrome.
+ * Needs a running dev server (`pnpm --filter @gteki/station-shinjuku dev`) and Brave (see browser.ts).
  * Writes <out>/<vantage>.png plus <out>/report.json (fps is not meaningful headless; calls/tris/void are).
  */
 import { chromium } from "playwright-core";

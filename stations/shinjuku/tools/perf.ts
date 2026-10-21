@@ -1,5 +1,5 @@
 /**
- * Start-up cost of Shinjuku in production builds (headless Chrome on this machine, not a phone).
+ * Start-up cost of Shinjuku in production builds (headless Brave on this machine, not a phone).
  *
  *   pnpm --filter @gteki/station-shinjuku build && pnpm --filter @gteki/web build
  *   (serve: vite preview --port 5275 for the lane, --port 5291 for apps/web)

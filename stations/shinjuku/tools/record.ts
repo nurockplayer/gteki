@@ -6,8 +6,8 @@
  *
  * The page runs on a virtual clock: `performance.now` and `requestAnimationFrame` are replaced before
  * the app loads, and each video frame advances exactly 1/fps of station time. The video therefore
- * shows the walk at true speed regardless of how fast headless Chrome renders. It needs a running dev
- * server, Google Chrome and Homebrew ffmpeg. Writes <out>/<from>__<to>.mp4 and a JSON sidecar.
+ * shows the walk at true speed regardless of how fast the headless browser renders. It needs a running dev
+ * server, Brave (see browser.ts) and Homebrew ffmpeg. Writes <out>/<from>__<to>.mp4 and a JSON sidecar.
  */
 import { chromium } from "playwright-core";
 import { browserTarget } from "./browser.ts";
