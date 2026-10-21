@@ -41,8 +41,9 @@ failed=""
 # Frozen first: an out-of-date lockfile is itself a finding (recorded), then install to keep going.
 if ( cd "$cand" && pnpm install --frozen-lockfile ) > "$log/install.log" 2>&1; then lock=frozen
 else lock=out-of-date; ( cd "$cand" && pnpm install ) >> "$log/install.log" 2>&1; fi
-( cd "$cand" && pnpm -r typecheck ) > "$log/typecheck.log" 2>&1 && tc=pass || { tc=fail; failed="$failed typecheck"; }
-( cd "$cand" && pnpm vitest run ) > "$log/unit.log" 2>&1 && unit=pass || { unit=fail; failed="$failed unit"; }
+( cd "$cand" && pnpm -r --include-workspace-root typecheck ) > "$log/typecheck.log" 2>&1 && tc=pass || { tc=fail; failed="$failed typecheck"; }
+# Default suites only (heavy ones run in the box via test:heavy:box); two workers on a shared 16 GB host.
+( cd "$cand" && pnpm vitest run --maxWorkers=2 ) > "$log/unit.log" 2>&1 && unit=pass || { unit=fail; failed="$failed unit"; }
 ( cd "$cand" && pnpm build ) > "$log/build.log" 2>&1 || { echo "build failed: $log/build.log" >&2; exit 1; }
 
 pids=""
@@ -70,6 +71,9 @@ e2e="$here/tests/e2e"
 [ -d "$e2e/node_modules" ] || ( cd "$e2e" && pnpm install --ignore-workspace --frozen-lockfile )
 rm -rf "$e2e/artifacts"; mkdir -p "$e2e/artifacts"
 pw=$(cd "$e2e" && pnpm exec playwright --version)
+brave="/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+browser=${GTEKI_BROWSER:-}; [ -n "$browser" ] || { [ -x "$brave" ] && browser=$brave || browser="playwright bundled chromium"; }
+browser_version=$([ -x "$browser" ] && "$browser" --version 2>/dev/null || echo "$browser")
 harness_dirty=$(git -C "$here" status --porcelain -- tests/e2e tools/qa | grep -v '^??.*artifacts' | wc -l | tr -d ' ')
 cat > "$e2e/artifacts/manifest.json" <<EOF
 {
@@ -80,7 +84,7 @@ cat > "$e2e/artifacts/manifest.json" <<EOF
   "lockfile": "$lock",
   "typecheck": "$tc", "unitTests": "$unit",
   "harnessSha": "$(git -C "$here" rev-parse HEAD)", "harnessDirtyFiles": $harness_dirty,
-  "playwright": "$pw",
+  "playwright": "$pw", "chromiumProjectsBrowser": "$browser_version",
   "host": "$(sysctl -n machdep.cpu.brand_string 2>/dev/null || uname -m), macOS $(sw_vers -productVersion 2>/dev/null || uname -r)",
   "node": "$(node -v)", "pnpm": "$(pnpm -v)",
   "date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"

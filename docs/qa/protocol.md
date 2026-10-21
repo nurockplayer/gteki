@@ -26,7 +26,7 @@ Phone projects only run tests tagged `@phone`:
 tools/qa/run-candidate.sh "$TMPDIR/gteki-qa" <base> <refs...> -- --project=phone-webkit --project=phone-chromium
 ```
 
-First-time setup is `pnpm install --ignore-workspace` in `tests/e2e`. The harness is deliberately not a workspace member, so Lane F never edits root workspace files owned by Lane C. It reuses Playwright's cached Chromium and WebKit builds.
+First-time setup is `pnpm install --ignore-workspace` in `tests/e2e`. The harness is deliberately not a workspace member, so Lane F never edits root workspace files owned by Lane C. The `desktop-chromium` and `phone-chromium` projects drive Brave on the dev Mac (the machine's browser policy rules out Chrome), or the executable in `GTEKI_BROWSER`; without either they fall back to Playwright's bundled Chromium. WebKit comes from Playwright's cache. `manifest.json` records the browser used.
 
 Outputs go to `tests/e2e/artifacts/`, which is git-ignored:
 
@@ -56,7 +56,7 @@ Outputs go to `tests/e2e/artifacts/`, which is git-ignored:
 - Free walk advances the explorer's own deterministic 60 Hz step (`__gteki.simulate`). It uses the same `stepWalk` collision code as real input. Mouse-look is real pointer drags.
 - Elevator rides are not walkable in the explorer. The autopilot jumps to the far node and logs it.
 - Phone projects are Playwright device emulation: an iPhone 15 profile on WebKit and a Pixel 7 profile on Chromium, both with touch. **This is not a physical device.** Physical-device checks stay a GAP until someone runs them on hardware.
-- Headless Chromium is launched with `--use-angle=metal`. The probe records the WebGL renderer, and any run reporting SwiftShader is invalid for performance.
+- Headless Brave (Chromium 155) is launched with `--use-angle=metal`. The probe records the WebGL renderer, and any run reporting SwiftShader is invalid for performance.
 
 ## L2 review (human / independent model)
 

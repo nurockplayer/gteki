@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
 
 /**
@@ -13,6 +14,11 @@ const root = process.env.GTEKI_ROOT;
 
 // Real GPU where the host has one; the probe records which renderer was actually used.
 const gpuArgs = ["--enable-gpu", "--ignore-gpu-blocklist", "--use-angle=metal", "--enable-unsafe-webgpu"];
+// Chromium projects drive Brave on the dev Mac (machine policy: never Chrome); GTEKI_BROWSER overrides
+// the executable. Without either, Playwright's bundled Chromium is used (e.g. a Linux CI runner).
+const brave = "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser";
+const chromiumExecutable = process.env.GTEKI_BROWSER || (fs.existsSync(brave) ? brave : undefined);
+const chromiumLaunch = { args: gpuArgs, executablePath: chromiumExecutable };
 
 export default defineConfig({
   testDir: "./specs",
@@ -42,7 +48,7 @@ export default defineConfig({
   projects: [
     {
       name: "desktop-chromium",
-      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 }, video: { mode: "on", size: { width: 1280, height: 800 } } },
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 }, launchOptions: chromiumLaunch, video: { mode: "on", size: { width: 1280, height: 800 } } },
     },
     {
       name: "phone-webkit",
@@ -52,7 +58,7 @@ export default defineConfig({
     {
       name: "phone-chromium",
       grep: /@phone/,
-      use: { ...devices["Pixel 7"], video: { mode: "on", size: { width: 412, height: 915 } } },
+      use: { ...devices["Pixel 7"], launchOptions: chromiumLaunch, video: { mode: "on", size: { width: 412, height: 915 } } },
     },
   ],
 });
