@@ -194,12 +194,13 @@ def outside_coverage(edges, areas):
     return bad
 
 
-def crowd_lanes(grid, edges):
+def crowd_lanes(grid, edges, areas):
     """Presentation data for scene/crowd.ts: per verified edge and per 1 m interval of horizontal
     distance (the last one ends at the end node), how far (m, up to 1) a pedestrian may stand
     left/right of the polyline anywhere in that interval: every point between the polyline and that
-    offset is on a surveyed walkable cell (>= 0.35 m from walls) without crossing a wall. Right =
-    right of the edge's from->to direction.
+    offset is on a surveyed walkable cell (>= 0.35 m from walls) without crossing a wall, and inside
+    the union of the routable coverage areas (the access fences stand on its outline, so a lane never
+    reaches past them). Right = right of the edge's from->to direction.
 
     Each value is the minimum over probes every FINE of distance (so both interval ends are probed)
     and at every polyline vertex with both adjacent segment directions (the crowd's sideways vector
@@ -207,8 +208,11 @@ def crowd_lanes(grid, edges):
     longer than FINE falls between probes."""
     FINE = 0.05
     STEPS = round(1.0 / FINE)
+    routable = [a["polygon"] for a in areas if a.get("status") == "routable" and a.get("polygon")]
 
     def on_floor(px, py, z):
+        if not any(_in_poly(px, py, P) for P in routable):
+            return False
         cell = grid.cells.get((round((px - grid.x0) / RES), round((py - grid.y0) / RES)), [])
         return any(abs(cz - z) < 0.3 for cz, _ in cell)
 
@@ -418,7 +422,7 @@ def main():
     for name, obj in (("station.json", station), ("graph.json", graph), ("pois.json", pois)):
         write_json(os.path.join(OUT_DIR, name), obj, indent=1)
     write_json(os.path.join(ROOT, "scene", "crowd_lanes.json"),
-               {"generatedFrom": "gteki/graph.json + PLATEAU walkable grid", "lanes": crowd_lanes(grid, edges_out)})
+               {"generatedFrom": "gteki/graph.json + PLATEAU walkable grid", "lanes": crowd_lanes(grid, edges_out, src["coverage"]["areas"])})
     v = sum(1 for e in edges_out if e["verification"] == "verified")
     print(f"OK: {len(nodes)} nodes, {len(edges_out)} edges ({v} verified), "
           f"{sum(e['lengthM'] for e in edges_out if e['verification'] == 'verified'):.0f} m verified")
