@@ -14,6 +14,8 @@ export const STREET = {
   maxBelowStreet: 2.5,
   /** Open sky is looked for this far above the walker's head (m). */
   skyClearance: 40,
+  /** Pavement shows only on level footing: height change over the last ~0.8 m walked under this (m). */
+  levelTolerance: 0.12,
   /** The plane sits this far under the walker's feet, so stair-top slabs and closures draw over it. */
   planeDrop: 0.15,
   planeRadius: 700,
@@ -31,6 +33,25 @@ export function isOutdoors(walkerY: number, streetY: number | null, coveredOverh
   return streetY !== null && !coveredOverhead && walkerY >= streetY - STREET.maxBelowStreet;
 }
 
+/**
+ * Level footing from the walker's own path: over the last ~0.8 m walked the height barely changed (a stair
+ * climbs ~0.5 m per metre). A jump over 2 m is a teleport onto a spawn floor and counts as level. Updates
+ * `state.anchor` and returns the new level flag (or the previous one between samples).
+ */
+export function trackLevel(state: { anchor: THREE.Vector3; level: boolean }, pos: THREE.Vector3): boolean {
+  const moved = Math.hypot(pos.x - state.anchor.x, pos.z - state.anchor.z);
+  if (moved > 2) {
+    state.anchor.copy(pos);
+    return true;
+  }
+  if (moved > 0.8) {
+    const level = Math.abs(pos.y - state.anchor.y) < STREET.levelTolerance;
+    state.anchor.copy(pos);
+    return level;
+  }
+  return state.level;
+}
+
 const SKY_VERT = /* glsl */ `
   varying vec3 vDir;
   void main() {
@@ -45,8 +66,12 @@ const SKY_FRAG = /* glsl */ `
   void main() {
     float h = clamp(vDir.y, -1.0, 1.0);
     vec3 col = mix(uHorizon, uZenith, pow(max(h, 0.0), 0.55));
-    col = mix(col, uHorizon * 0.92, smoothstep(0.0, -0.2, h));
+    col = mix(col, uHorizon * 0.92, 1.0 - smoothstep(-0.2, 0.0, h));
     gl_FragColor = vec4(col, uOpacity);
+    // Direct-to-screen rendering (low quality, no composer) needs tone mapping and sRGB here; with the
+    // composer three makes these no-ops for the HDR target and OutputPass does them.
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
   }`;
 
 function pavementTexture(): THREE.CanvasTexture {
@@ -127,7 +152,7 @@ export class StreetBackdrop {
    * Per frame, outside overview (see isOutdoors). The station's own walking fog is blended toward
    * daylight haze, and restored exactly once the walker is back under cover.
    */
-  update(scene: THREE.Scene, camera: THREE.Camera, walker: THREE.Vector3, outdoors: boolean, dt: number): void {
+  update(scene: THREE.Scene, camera: THREE.Camera, walker: THREE.Vector3, outdoors: boolean, dt: number, level = true): void {
     this.blend = THREE.MathUtils.damp(this.blend, outdoors ? 1 : 0, 4, dt);
     if (this.blend < 0.002) {
       this.restore(scene);
@@ -146,8 +171,9 @@ export class StreetBackdrop {
     this.group.visible = true;
     this.sky.position.copy(camera.position);
     this.sky.material.uniforms.uOpacity!.value = b;
-    // The plane follows the walker's feet, so it never rises over them (or over a stair they are on).
-    const up = outdoors;
+    // The plane follows the walker's feet and shows only on level ground: on a stair (or at the lip of a
+    // stairwell) it would cut across the flight below, so there the stair geometry stays visible.
+    const up = outdoors && level;
     this.ground.visible = up;
     // Follow the camera in whole tiles so the pavement pattern stays put in the world.
     const snap = (v: number) => Math.round(v / 1.2) * 1.2;
