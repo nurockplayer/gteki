@@ -1,0 +1,90 @@
+[
+  {
+    "file": "poster_01.jpg",
+    "theme": "abstract seaside summer",
+    "prompt": "Use case: ads-marketing. Create ONE ORIGINAL finished artwork texture for a fictional advertising lightbox in a generic modern Japanese railway-station concourse in the 3D game GTEki. Portrait 2:3 aspect ratio, ideally 1024x1536 or higher resolution. Artwork fills the entire image edge to edge; no photographed poster, no lightbox, no frame, no room or station mockup. Clean high-quality commercial graphic design with strong simple composition, good contrast, large forms readable from 5-10 metres. Absolutely NO text, letters, numbers, kana, kanji, typography, pseudo-writing, text-like glyphs, logos, trademarks, brand products, QR codes, watermarks, signatures, people, celebrities, fictional characters, identifiable real places, landmarks or stations. Entirely original composition; do not imitate any existing campaign, artist or game. Opaque image. Layered teal and turquoise wave bands, one warm sun disc, minimal abstract seaside summer. Broad smooth curving bands with a calm pale upper field and a strong deep-teal foreground. Flat graphic illustration, restrained clean edges.",
+    "generator": "image_gen.imagegen / gpt-image (PNG C2PA softwareAgent version)",
+    "generated_at": "2026-10-20T11:08:47.121092422Z",
+    "width": 682,
+    "height": 1024,
+    "sha256": "b63c554cf99f9b9a34809e3cbf2faf76efe4a6a79d9bce5e3fccc7538ea6d0ae",
+    "notes": "Original AI-generated artwork. Full-resolution PNG: 1024x1536 (2:3). JPEG converted using macOS sips -Z 1024 -s format jpeg -s formatOptions 88. Visually inspected: no visible text, text-like glyphs, logos, signatures, watermarks, people or identifiable real places. Generator model label gpt-image is reported by embedded PNG C2PA metadata; the tool does not expose a more specific model version. generated_at is the C2PA creation timestamp."
+  },
+  {
+    "file": "poster_02.jpg",
+    "theme": "autumn mountains",
+    "prompt": "Use case: ads-marketing. Create ONE ORIGINAL finished artwork texture for a fictional advertising lightbox in a generic modern Japanese railway-station concourse in the 3D game GTEki. Portrait 2:3 aspect ratio, ideally 1024x1536 or higher resolution. Artwork fills the entire image edge to edge; no photographed poster, no lightbox, no frame, no room or station mockup. Clean high-quality commercial graphic design with strong simple composition, good contrast, large forms readable from 5-10 metres. Absolutely NO text, letters, numbers, kana, kanji, typography, pseudo-writing, text-like glyphs, logos, trademarks, brand products, QR codes, watermarks, signatures, people, celebrities, fictional characters, identifiable real places, landmarks or stations. Entirely original composition; do not imitate any existing campaign, artist or game. Opaque image. Autumn mountains as geometric folded ridges in vermilion, ochre and indigo. Bold flat design with overlapping angular planes, a simple warm pale sky and distinctive large ridge silhouettes. Imaginary mountain shapes only.",
+    "generator": "image_gen.imagegen / gpt-image (PNG C2PA softwareAgent version)",
+    "generated_at": "2026-10-20T11:09:15.514653127Z",
+    "width": 682,
+    "height": 1024,
+    "sha256": "26dd3b94c17cf77dd659e9096a16a90c8f42dc15fa243f167e22560f306a7875",
+    "notes": "Original AI-generated artwork. Full-resolution PNG: 1024x1536 (2:3). JPEG converted using macOS sips -Z 1024 -s format jpeg -s formatOptions 88. Visually inspected: no visible text, text-like glyphs, logos, signatures, watermarks, people or identifiable real places. Generator model label gpt-image is reported by embedded PNG C2PA metadata; the tool does not expose a more specific model version. generated_at is the C2PA creation timestamp."
+  },
+  {
+    "file": "poster_03.jpg",
+    "theme": "night city bokeh",
+    "prompt": "Use case: ads-marketing. Create ONE ORIGINAL finished artwork texture for a fictional advertising lightbox in a generic modern Japanese railway-station concourse in the 3D game GTEki. Portrait 2:3 aspect ratio, ideally 1024x1536 or higher resolution. Artwork fills the entire image edge to edge; no photographed poster, no lightbox, no frame, no room or station mockup. Clean high-quality commercial graphic design with strong simple composition, good contrast, large forms readable from 5-10 metres. Absolutely NO text, letters, numbers, kana, kanji, typography, pseudo-writing, text-like glyphs, logos, trademarks, brand products, QR codes, watermarks, signatures, people, celebrities, fictional characters, identifiable real places, landmarks or stations. Entirely original composition; do not imitate any existing campaign, artist or game. Opaque image. Abstract night-city bokeh consisting solely of coloured light orbs over deep navy, with no buildings or identifiable objects. Rich soft luminous circles of cyan, amber, coral and violet at varied scales, an elegant clear focal cluster and dark breathing room. No glyph-like patterns.",
+    "generator": "image_gen.imagegen / gpt-image (PNG C2PA softwareAgent version)",
+    "generated_at": "2026-10-20T11:09:39.512316653Z",
+    "width": 682,
+    "height": 1024,
+    "sha256": "2b1f03c019c82e6b9d035776e595abd01f43780bee6c87d9eedee651b044836a",
+    "notes": "Original AI-generated artwork. Full-resolution PNG: 1024x1536 (2:3). JPEG converted using macOS sips -Z 1024 -s format jpeg -s formatOptions 88. Visually inspected: no visible text, text-like glyphs, logos, signatures, watermarks, people or identifiable real places. Generator model label gpt-image is reported by embedded PNG C2PA metadata; the tool does not expose a more specific model version. generated_at is the C2PA creation timestamp."
+  },
+  {
+    "file": "poster_04.jpg",
+    "theme": "spring blossom pattern",
+    "prompt": "Use case: ads-marketing. Create ONE ORIGINAL finished artwork texture for a fictional advertising lightbox in a generic modern Japanese railway-station concourse in the 3D game GTEki. Portrait 2:3 aspect ratio, ideally 1024x1536 or higher resolution. Artwork fills the entire image edge to edge; no photographed poster, no lightbox, no frame, no room or station mockup. Clean high-quality commercial graphic design with strong simple composition, good contrast, large forms readable from 5-10 metres. Absolutely NO text, letters, numbers, kana, kanji, typography, pseudo-writing, text-like glyphs, logos, trademarks, brand products, QR codes, watermarks, signatures, people, celebrities, fictional characters, identifiable real places, landmarks or stations. Entirely original composition; do not imitate any existing campaign, artist or game. Opaque image. Stylised pink blossom petals drifting over a pale sky gradient. A clean airy pattern with larger simple petal silhouettes, pale blush and rose accents, gentle diagonal movement. No trees, branches, architecture or landmarks. Shapes should read as petals, never glyphs.",
+    "generator": "image_gen.imagegen / gpt-image (PNG C2PA softwareAgent version)",
+    "generated_at": "2026-10-20T11:10:11.637268977Z",
+    "width": 682,
+    "height": 1024,
+    "sha256": "f3bdecef83e4a30e715bd5be2a506266326f597021f5c37b304d0c14ab4fce94",
+    "notes": "Original AI-generated artwork. Full-resolution PNG: 1024x1536 (2:3). JPEG converted using macOS sips -Z 1024 -s format jpeg -s formatOptions 88. Visually inspected: no visible text, text-like glyphs, logos, signatures, watermarks, people or identifiable real places. Generator model label gpt-image is reported by embedded PNG C2PA metadata; the tool does not expose a more specific model version. generated_at is the C2PA creation timestamp."
+  },
+  {
+    "file": "poster_05.jpg",
+    "theme": "coffee/cafe mood",
+    "prompt": "Use case: ads-marketing. Create ONE ORIGINAL finished artwork texture for a fictional advertising lightbox in a generic modern Japanese railway-station concourse in the 3D game GTEki. Portrait 2:3 aspect ratio, ideally 1024x1536 or higher resolution. Artwork fills the entire image edge to edge; no photographed poster, no lightbox, no frame, no room or station mockup. Clean high-quality commercial graphic design with strong simple composition, good contrast, large forms readable from 5-10 metres. Absolutely NO text, letters, numbers, kana, kanji, typography, pseudo-writing, text-like glyphs, logos, trademarks, brand products, QR codes, watermarks, signatures, people, celebrities, fictional characters, identifiable real places, landmarks or stations. Entirely original composition; do not imitate any existing campaign, artist or game. Opaque image. Overhead flat illustration of one completely unbranded ceramic coffee cup with dark coffee and simple pastries on a pastel table. Warm cafe mood, a cream saucer, one croissant and one round pastry, large simple shapes and soft shadows. No packaging, labels, latte-art symbols, lettering or additional objects. Critical style requirement: visibly FLAT TWO-DIMENSIONAL VECTOR-STYLE ILLUSTRATION, solid pastel colour fills, simplified cut-paper silhouettes, almost no texture, only two or three flat tone shapes per object. Not a photograph, not photorealistic, not a 3D rendering. Large flat illustrated cream cup and two simplified golden pastries on a solid mint pastel tabletop, gentle graphic shadow shapes.",
+    "generator": "image_gen.imagegen / gpt-image (PNG C2PA softwareAgent version)",
+    "generated_at": "2026-10-20T11:11:35.456993273Z",
+    "width": 682,
+    "height": 1024,
+    "sha256": "224f698633c638f54352d37794ba762c1fb38889c903fe98f2c88158ebd60fcd",
+    "notes": "Original AI-generated artwork. Full-resolution PNG: 1024x1536 (2:3). JPEG converted using macOS sips -Z 1024 -s format jpeg -s formatOptions 88. Visually inspected: no visible text, text-like glyphs, logos, signatures, watermarks, people or identifiable real places. Generator model label gpt-image is reported by embedded PNG C2PA metadata; the tool does not expose a more specific model version. generated_at is the C2PA creation timestamp."
+  },
+  {
+    "file": "poster_06.jpg",
+    "theme": "museum/exhibition",
+    "prompt": "Use case: ads-marketing. Create ONE ORIGINAL finished artwork texture for a fictional advertising lightbox in a generic modern Japanese railway-station concourse in the 3D game GTEki. Portrait 2:3 aspect ratio, ideally 1024x1536 or higher resolution. Artwork fills the entire image edge to edge; no photographed poster, no lightbox, no frame, no room or station mockup. Clean high-quality commercial graphic design with strong simple composition, good contrast, large forms readable from 5-10 metres. Absolutely NO text, letters, numbers, kana, kanji, typography, pseudo-writing, text-like glyphs, logos, trademarks, brand products, QR codes, watermarks, signatures, people, celebrities, fictional characters, identifiable real places, landmarks or stations. Entirely original composition; do not imitate any existing campaign, artist or game. Opaque image. Bold original geometric museum/exhibition artwork using circles, triangles and bars in primary red, yellow and blue with warm ivory and near-black. Flat clean modernist geometry, asymmetrical balanced composition, broad silhouettes. Bauhaus-like elementary geometry only, without referencing any particular artist or existing artwork. No forms arranged to resemble letters or numbers.",
+    "generator": "image_gen.imagegen / gpt-image (PNG C2PA softwareAgent version)",
+    "generated_at": "2026-10-20T11:10:56.337280219Z",
+    "width": 682,
+    "height": 1024,
+    "sha256": "d408d38561ccedf78f6d308d8e4d4fcd534134f587c5beedf9703d4bfef386b5",
+    "notes": "Original AI-generated artwork. Full-resolution PNG: 1024x1536 (2:3). JPEG converted using macOS sips -Z 1024 -s format jpeg -s formatOptions 88. Visually inspected: no visible text, text-like glyphs, logos, signatures, watermarks, people or identifiable real places. Generator model label gpt-image is reported by embedded PNG C2PA metadata; the tool does not expose a more specific model version. generated_at is the C2PA creation timestamp."
+  },
+  {
+    "file": "poster_07.jpg",
+    "theme": "winter snow",
+    "prompt": "Use case: ads-marketing. Create ONE ORIGINAL finished artwork texture for a fictional advertising lightbox in a generic modern Japanese railway-station concourse in the 3D game GTEki. Portrait 2:3 aspect ratio, ideally 1024x1536 or higher resolution. Artwork fills the entire image edge to edge; no photographed poster, no lightbox, no frame, no room or station mockup. Clean high-quality commercial graphic design with strong simple composition, good contrast, large forms readable from 5-10 metres. Absolutely NO text, letters, numbers, kana, kanji, typography, pseudo-writing, text-like glyphs, logos, trademarks, brand products, QR codes, watermarks, signatures, people, celebrities, fictional characters, identifiable real places, landmarks or stations. Entirely original composition; do not imitate any existing campaign, artist or game. Opaque image. Very minimal winter snow artwork: soft gradient blue-white snowy field and two simple gently curving parallel ski-trail lines receding into the distance. Broad smooth snow contours, ice-blue shaded foreground and pale luminous sky. No people, skis, buildings, trees, signposts or mountains identifiable as a real place. Trails do not intersect or form glyphs. Critical visual treatment: extremely minimal graphic artwork, smooth blue-white gradient fields and just two elegant pale-blue curved trail lines. No photographic realism, no granular snow, no glitter, no clouds, no sun disc, no small surface detail. Reduce the entire image to three or four smooth sweeping shapes with large quiet open areas.",
+    "generator": "image_gen.imagegen / gpt-image (PNG C2PA softwareAgent version)",
+    "generated_at": "2026-10-20T11:12:55.961949424Z",
+    "width": 682,
+    "height": 1024,
+    "sha256": "48ea83397df986a810aa0dc738535aea19840ce4c8dc207bd11c38577c89b2fb",
+    "notes": "Original AI-generated artwork. Full-resolution PNG: 1024x1536 (2:3). JPEG converted using macOS sips -Z 1024 -s format jpeg -s formatOptions 88. Visually inspected: no visible text, text-like glyphs, logos, signatures, watermarks, people or identifiable real places. Generator model label gpt-image is reported by embedded PNG C2PA metadata; the tool does not expose a more specific model version. generated_at is the C2PA creation timestamp."
+  },
+  {
+    "file": "poster_08.jpg",
+    "theme": "music event",
+    "prompt": "Use case: ads-marketing. Create ONE ORIGINAL finished artwork texture for a fictional advertising lightbox in a generic modern Japanese railway-station concourse in the 3D game GTEki. Portrait 2:3 aspect ratio, ideally 1024x1536 or higher resolution. Artwork fills the entire image edge to edge; no photographed poster, no lightbox, no frame, no room or station mockup. Clean high-quality commercial graphic design with strong simple composition, good contrast, large forms readable from 5-10 metres. Absolutely NO text, letters, numbers, kana, kanji, typography, pseudo-writing, text-like glyphs, logos, trademarks, brand products, QR codes, watermarks, signatures, people, celebrities, fictional characters, identifiable real places, landmarks or stations. Entirely original composition; do not imitate any existing campaign, artist or game. Opaque image. Abstract sound-wave ribbons in vivid magenta, violet and cyan on deep black. A few broad flowing luminous wave ribbons sweeping through the portrait with strong rhythmic motion, clean negative space and high contrast. Abstract visual music only: no instruments, notation, musical symbols, equalizer labels or glyphs.",
+    "generator": "image_gen.imagegen / gpt-image (PNG C2PA softwareAgent version)",
+    "generated_at": "2026-10-20T11:12:20.974957640Z",
+    "width": 682,
+    "height": 1024,
+    "sha256": "b5fe3b534ad1bf5c14dd28dd527165d98496d0a477d5243206012b6cfbe10f6b",
+    "notes": "Original AI-generated artwork. Full-resolution PNG: 1024x1536 (2:3). JPEG converted using macOS sips -Z 1024 -s format jpeg -s formatOptions 88. Visually inspected: no visible text, text-like glyphs, logos, signatures, watermarks, people or identifiable real places. Generator model label gpt-image is reported by embedded PNG C2PA metadata; the tool does not expose a more specific model version. generated_at is the C2PA creation timestamp."
+  }
+]
