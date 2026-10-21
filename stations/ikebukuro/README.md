@@ -37,6 +37,7 @@ pnpm typecheck
     no post FX).
 - **Shared explorer** (core lane, `apps/web`): discovers `gteki/` automatically. Search, route,
   guided walk and free walk run there.
+- **Street-context budget probe** (draws/tris underground vs street, one run per tier; real GPU, not in CI): after `pnpm build`, in `tests/e2e` run `GTEKI_BUDGET=1 GTEKI_ROOT=<repo> pnpm exec playwright test specs/10-ikebukuro-context-budget.spec.ts --project=phone-chromium` (low) or `--project=desktop-chromium` (high); results land in `<repo>/.qa/ikebukuro-context-budget/`.
 - **Capture tooling** (dev only): `gt.capture(name)` and `gt.walkCapture(...)` write frames to
   `build/captures/`.
 
