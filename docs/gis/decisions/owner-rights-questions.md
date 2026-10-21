@@ -126,7 +126,7 @@ Open rights questions from Issues #39 and #26 and the committed rights records. 
 
 | Topic | Decision | Link |
 | --- | --- | --- |
-| Roads (tran), geometry only | Owner chose (b) on 2026-10-22: accept the risk, ship with attribution, GSI approval treated as attributes-only, no tran attributes shipped. The UNKNOWN evidence stays visible. | https://github.com/nurockplayer/gteki/issues/39#issuecomment-6323977745 (record file added by PR #104) |
+| Roads (tran), geometry only | Owner chose (b) on 2026-10-22: accept the risk, ship with attribution, GSI approval treated as attributes-only, no tran attributes shipped. The UNKNOWN evidence stays visible. | https://github.com/nurockplayer/gteki/issues/39#issuecomment-6323977745 ; record: `docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md` (#104) |
 | Facts-only sources | Owner decided on 2026-10-21: independently verifiable exit numbers, gate names and access facts may be used without reproducing the works. | https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404 |
 | JR East trace | Resolved: not used. The JR map images returned HTTP 403 and were never read. | same #26 comment |
 | Buildings first deploy | Merge lead decided on 2026-10-22: ship buildings with the attribution as-is. The roads half was replaced by (b). | https://github.com/nurockplayer/gteki/issues/39#issuecomment-6323832068 |
