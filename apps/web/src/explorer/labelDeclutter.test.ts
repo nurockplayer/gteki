@@ -1,0 +1,125 @@
+import { describe, expect, it } from "vitest";
+import { DECLUTTER_HOLD_PX, DECLUTTER_PAD_PX, LABEL_CLASS, declutter, labelClass, type DeclutterItem } from "./labelDeclutter.ts";
+
+const item = (id: string, x: number, y: number, over: Partial<DeclutterItem> = {}): DeclutterItem => ({
+  id, x, y, w: 80, h: 24, klass: LABEL_CLASS.other, routable: true, ...over,
+});
+
+const overlap = (a: DeclutterItem, b: DeclutterItem, gap = 0): boolean =>
+  Math.abs(a.x - b.x) < (a.w + b.w) / 2 + gap && Math.abs(a.y - b.y) < (a.h + b.h) / 2 + gap;
+
+/** Deterministic pseudo-random numbers (no Math.random: the suite must be repeatable). */
+function rng(seed: number): () => number {
+  let s = seed >>> 0;
+  return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+}
+
+function crowd(n: number, seed = 7): DeclutterItem[] {
+  const r = rng(seed);
+  const classes = [LABEL_CLASS.exit, LABEL_CLASS.gate, LABEL_CLASS.other, LABEL_CLASS.other];
+  return Array.from({ length: n }, (_, i) => item(`poi-${i}`, 100 + r() * 400, 100 + r() * 250, { klass: classes[i % 4]!, routable: r() > 0.3, w: 50 + r() * 90 }));
+}
+
+describe("declutter", () => {
+  it("keeps everything when nothing touches", () => {
+    const items = [item("a", 0, 0), item("b", 200, 0), item("c", 0, 100)];
+    expect([...declutter(items)].sort()).toEqual(["a", "b", "c"]);
+  });
+
+  it("drops the lower-priority label of an overlapping pair, whatever the input order", () => {
+    const exit = item("z-exit", 10, 0, { klass: LABEL_CLASS.exit });
+    const shop = item("a-shop", 0, 0);
+    expect([...declutter([shop, exit])]).toEqual(["z-exit"]);
+    expect([...declutter([exit, shop])]).toEqual(["z-exit"]);
+  });
+
+  it("ranks endpoints, exits, gates, others in that order", () => {
+    const stack = [
+      item("other", 0, 0),
+      item("gate", 5, 0, { klass: LABEL_CLASS.gate }),
+      item("exit", 10, 0, { klass: LABEL_CLASS.exit }),
+    ];
+    expect([...declutter(stack)]).toEqual(["exit"]);
+    expect([...declutter(stack.filter((s) => s.id !== "exit"))]).toEqual(["gate"]);
+    expect(labelClass(true, "exit")).toBe(LABEL_CLASS.endpoint);
+    expect(labelClass(false, "exit")).toBe(LABEL_CLASS.exit);
+    expect(labelClass(false, "ticket_gate")).toBe(LABEL_CLASS.gate);
+    expect(labelClass(false, "shop")).toBe(LABEL_CLASS.other);
+  });
+
+  it("within a class prefers clear over faded, routable over search-only, then the id", () => {
+    const base = { klass: LABEL_CLASS.exit } as const;
+    expect([...declutter([item("a", 0, 0, { ...base, faded: true }), item("b", 4, 0, base)])]).toEqual(["b"]);
+    expect([...declutter([item("a", 0, 0, { ...base, routable: false }), item("b", 4, 0, base)])]).toEqual(["b"]);
+    expect([...declutter([item("b", 0, 0, base), item("a", 4, 0, base)])]).toEqual(["a"]);
+  });
+
+  it("always keeps the start and the destination, even when they sit on each other", () => {
+    const items = [
+      item("exit", 0, 0, { klass: LABEL_CLASS.exit }),
+      item("start", 6, 0, { klass: LABEL_CLASS.endpoint }),
+      item("dest", 9, 2, { klass: LABEL_CLASS.endpoint }),
+    ];
+    expect([...declutter(items)].sort()).toEqual(["dest", "start"]);
+  });
+
+  it("never lets a lower-priority label displace a higher one, even if that frees more labels", () => {
+    // The exit overlaps two shops that do not overlap each other: priority still wins.
+    const items = [item("exit", 50, 0, { klass: LABEL_CLASS.exit, w: 120 }), item("s1", 0, 0), item("s2", 100, 0)];
+    expect([...declutter(items)]).toEqual(["exit"]);
+  });
+
+  it("leaves no overlaps among non-endpoint labels (with the pad) in a dense crowd", () => {
+    for (const seed of [1, 2, 3]) {
+      const items = crowd(200, seed);
+      const kept = declutter(items);
+      const list = items.filter((i) => kept.has(i.id));
+      expect(list.length).toBeGreaterThan(5);
+      expect(list.length).toBeLessThan(items.length);
+      for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+        expect(overlap(list[i]!, list[j]!, DECLUTTER_PAD_PX), `${list[i]!.id} vs ${list[j]!.id}`).toBe(false);
+      }
+    }
+  });
+
+  it("is maximal in priority terms: every dropped label overlaps a kept label of equal or better class", () => {
+    const items = crowd(120, 9);
+    const kept = declutter(items);
+    for (const d of items.filter((i) => !kept.has(i.id))) {
+      const blockers = items.filter((k) => kept.has(k.id) && overlap(d, k, DECLUTTER_PAD_PX + DECLUTTER_HOLD_PX));
+      expect(blockers.length, d.id).toBeGreaterThan(0);
+      expect(blockers.some((b) => b.klass <= d.klass), d.id).toBe(true);
+    }
+  });
+
+  it("is stable: same input, same output, independent of input order", () => {
+    const items = crowd(200, 4);
+    const a = [...declutter(items)].sort();
+    expect([...declutter(items)].sort()).toEqual(a);
+    expect([...declutter(items.slice().reverse())].sort()).toEqual(a);
+    expect([...declutter(items.slice().sort((x, y) => x.x - y.x))].sort()).toEqual(a);
+  });
+
+  it("holds a visible label that merely touches, and makes a hidden one clear the extra margin", () => {
+    // Rects 80 wide, centres 84 apart: a 4 px gap, inside pad + hold (7) but outside pad (3).
+    const first = item("a", 0, 0, { klass: LABEL_CLASS.exit });
+    const second = (wasVisible: boolean) => item("b", 84, 0, { wasVisible });
+    expect(declutter([first, second(true)]).has("b")).toBe(true);
+    expect(declutter([first, second(false)]).has("b")).toBe(false);
+    expect(declutter([first, item("b", 90, 0, { wasVisible: false })]).has("b")).toBe(true);
+  });
+
+  it("handles 200 labels in well under a millisecond (loose bound)", () => {
+    const items = crowd(200, 11);
+    declutter(items); // warm up
+    const runs = 50;
+    const t0 = performance.now();
+    for (let i = 0; i < runs; i++) declutter(items);
+    const perRun = (performance.now() - t0) / runs;
+    expect(perRun).toBeLessThan(1);
+  });
+
+  it("copes with no labels", () => {
+    expect(declutter([]).size).toBe(0);
+  });
+});

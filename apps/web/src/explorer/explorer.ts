@@ -7,7 +7,7 @@ import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment
 import { ASSET_SCHEME, fencedUrlResolver, stationDir } from "./assetFence.ts";
 import { enuToRenderer } from "@gteki/geo";
 import type { Router, PolylinePoint } from "@gteki/navigation";
-import { nodeDisplayZ } from "@gteki/navigation";
+import { DEFAULT_PROFILE, nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
 import { WALKER_BODY, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
@@ -22,6 +22,8 @@ import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, followBoom, followDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
+import { OVERVIEW_OFFSET, frameBounds, routableBounds } from "./overviewFraming.ts";
+import { declutter, labelClass, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
 import { avatarMotion } from "./avatarMotion.ts";
@@ -58,6 +60,10 @@ const LABEL_RAYS = { low: { count: 6, ms: 0.6 }, high: { count: 16, ms: 1.5 } } 
  * steps) and render-state changes (hidden, faded or relayered meshes) are followed.
  */
 const LABEL_RECHECK_MS = 1000;
+/** Overview declutter runs at most this often (ms) while the view changes. */
+const DECLUTTER_MS = 80;
+/** A label's box before it has been measured (px): dot, padding and border plus ~7 px per character. */
+const LABEL_BOX_GUESS = { base: 31, perChar: 7, h: 26 };
 /** Instanced meshes with more instances than this occlude only as registered proxies. */
 const MAX_OCCLUDER_INSTANCES = 1024;
 
@@ -114,6 +120,13 @@ interface PoiLabel {
   selected: boolean;
   occluded: boolean;
   state: LabelState;
+  /** Overview only: dropped by the screen-space declutter (hidden on top of `state`, never instead of it). */
+  decluttered: boolean;
+  klass: LabelClass;
+  /** Backed by a graph node (not search-only). */
+  routable: boolean;
+  /** Measured box of the label element (px), cached; null until it has been laid out. */
+  size: { w: number; h: number } | null;
 }
 
 export class Explorer {
@@ -207,6 +220,16 @@ export class Explorer {
   /** Camera pose at the last occlusion sweep. */
   private readonly labelCamPos = new THREE.Vector3(Infinity, 0, 0);
   private readonly labelCamQuat = new THREE.Quaternion();
+  /** Overview declutter: runs when the view, label states or sizes change (see updateDeclutter). */
+  private declutterDirty = true;
+  private declutterAt = -Infinity;
+  /** Some label may carry `decluttered` (set by an overview pass, cleared when leaving overview). */
+  private declutterActive = false;
+  private readonly viewSize = { w: 1, h: 1 };
+  /** The routable slice's bounds (renderer frame), or null when the bundle has no usable edge. */
+  private routableBox: THREE.Box3 | null = null;
+  /** What the overview is framed on, so a resize can refit; cleared by the user's own orbit/zoom/pan. */
+  private framed: THREE.Box3 | null = null;
   private quality: "low" | "high";
   /** Why the station's own scene could not be shown (L0 fallback is in use), if any. */
   sceneError: string | null = null;
@@ -230,6 +253,8 @@ export class Explorer {
     this.orbit.enableDamping = true;
     this.orbit.maxPolarAngle = Math.PI * 0.49;
     this.orbit.screenSpacePanning = false;
+    // Any user orbit, pan or zoom ends automatic refitting on resize.
+    this.orbit.addEventListener("start", () => { this.framed = null; });
 
     this.input = new Input(this.renderer.domElement, host);
     this.scene.add(this.world, this.overlays, this.avatar, this.street.group);
@@ -351,6 +376,7 @@ export class Explorer {
     this.station = station;
     const bundle = station.bundle;
     this.graph = buildGraphView(bundle, router);
+    this.routableBox = toBox3(routableBounds(bundle, (e) => router.isTraversable(e, DEFAULT_PROFILE)));
     // One loading manager per station: every request (GLB, its external buffers/images, textures)
     // must resolve through this station's fenced asset map.
     const refused: string[] = [];
@@ -476,6 +502,8 @@ export class Explorer {
     this.clearPois();
     if (this.stationScene) { this.world.remove(this.stationScene.root); this.stationScene.dispose(); this.stationScene = null; }
     if (this.graph) { this.world.remove(this.graph.root); this.overlays.remove(this.graph.overlay); this.graph.dispose(); this.graph = null; }
+    this.routableBox = null;
+    this.framed = null;
     this.walkable = [];
     this.colliders = [];
     this.cameraBlockers = [];
@@ -504,17 +532,26 @@ export class Explorer {
     return Boolean(this.graph && this.stationScene && this.graph.overlay.visible);
   }
 
-  /** Frame the whole station (or a box) from above in overview mode. */
+  /**
+   * Frame a box (default: the routable slice, else the whole scene) in overview mode, so it fills
+   * about OVERVIEW_FILL of the viewport's shorter side (see overviewFraming.ts). The viewing direction
+   * is kept; a resize refits until the user moves the camera.
+   */
   frameAll(box?: THREE.Box3): void {
-    const b = box ?? new THREE.Box3().setFromObject(this.world);
+    const b = (box ?? this.routableBox ?? new THREE.Box3().setFromObject(this.world)).clone();
     if (b.isEmpty()) b.set(new THREE.Vector3(-50, -10, -50), new THREE.Vector3(50, 10, 50));
-    const center = b.getCenter(new THREE.Vector3());
-    const size = b.getSize(new THREE.Vector3());
-    const radius = Math.max(20, Math.hypot(size.x, size.z) * 0.62);
     this.setMode("overview");
-    this.orbit.target.copy(center);
-    this.camera.position.set(center.x + radius * 0.55, center.y + radius * 0.85, center.z + radius * 0.75);
+    this.framed = b;
     this.camera.near = 0.1;
+    this.fitOverview();
+  }
+
+  /** Put the camera on the fit of `framed` for the current aspect. */
+  private fitOverview(): void {
+    if (!this.framed) return;
+    const pose = frameBounds(this.framed, { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near }, undefined, OVERVIEW_OFFSET);
+    this.orbit.target.copy(pose.target);
+    this.camera.position.copy(pose.position);
     this.camera.updateProjectionMatrix();
     this.orbit.update();
   }
@@ -661,10 +698,11 @@ export class Explorer {
       const obj = new CSS2DObject(el);
       obj.position.copy(at).add(new THREE.Vector3(0, LABEL_LIFT, 0));
       this.poiGroup.add(obj);
-      this.poiLabels.push({ poiId: poi.id, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.has(poi.id), state: "shown" });
+      this.poiLabels.push({ poiId: poi.id, obj, groundY: at.y, selected: isSelected, occluded: wasOccluded.has(poi.id), state: "shown", decluttered: false, klass: labelClass(isSelected, poi.category), routable: Boolean(node), size: null });
     }
     this.poiGroup.updateMatrixWorld(true);
     this.labelSweep.invalidate(this.poiLabels.length);
+    this.declutterDirty = true;
   }
 
   clearPois(): void {
@@ -761,6 +799,7 @@ export class Explorer {
     if (camMoved) {
       this.labelCamPos.copy(cam.position);
       this.labelCamQuat.copy(cam.quaternion);
+      this.declutterDirty = true;
     }
     const now = performance.now();
     // The periodic re-check waits LABEL_RECHECK_MS after the previous sweep completed.
@@ -782,9 +821,59 @@ export class Explorer {
       const state = labelState({ occluded: l.occluded, onFocusFloor: onFocusFloor(l.groundY, focusY), selected: l.selected });
       if (state === l.state) continue;
       l.state = state;
-      l.obj.visible = state !== "hidden";
       l.obj.element.classList.toggle("occluded", state === "faded");
+      this.declutterDirty = true;
     }
+    this.updateDeclutter(now);
+    for (const l of labels) {
+      const shown = l.state !== "hidden" && !l.decluttered;
+      if (l.obj.visible !== shown) l.obj.visible = shown;
+    }
+  }
+
+  /**
+   * Overview only: hide labels whose screen rectangle meets a higher-priority one (see labelDeclutter.ts).
+   * Candidates are the labels the floor and occlusion rules leave on screen, so this only ever hides more.
+   * Runs when the camera, sizes or label states changed, at most every DECLUTTER_MS. Label boxes are
+   * measured once (a batched read, no per-frame layout) and cached.
+   */
+  private updateDeclutter(now: number): void {
+    const labels = this.poiLabels;
+    if (this.mode !== "overview") {
+      // Walk and guide never declutter; undo an earlier overview pass once.
+      if (this.declutterActive) for (const l of labels) l.decluttered = false;
+      this.declutterActive = false;
+      this.declutterDirty = true;
+      return;
+    }
+    if (!this.declutterDirty || now - this.declutterAt < DECLUTTER_MS) return;
+    this.declutterDirty = false;
+    this.declutterAt = now;
+    this.declutterActive = true;
+    // Measure labels the browser has laid out and not yet measured: reads only, so one layout at most.
+    for (const l of labels) {
+      const el = l.obj.element;
+      if (l.size || !el.isConnected || el.style.display === "none") continue;
+      const w = el.offsetWidth, h = el.offsetHeight;
+      if (w > 0 && h > 0) { l.size = { w, h }; this.declutterDirty = true; }
+    }
+    const { w: vw, h: vh } = this.viewSize;
+    const items: DeclutterItem[] = [];
+    const byId = new Map<string, PoiLabel>();
+    const p = new THREE.Vector3();
+    for (const l of labels) {
+      l.decluttered = false;
+      if (l.state === "hidden") continue;
+      p.setFromMatrixPosition(l.obj.matrixWorld).project(this.camera);
+      if (p.z < -1 || p.z > 1) continue; // behind the camera or past far: the CSS2D renderer hides it
+      const size = l.size ?? { w: LABEL_BOX_GUESS.base + LABEL_BOX_GUESS.perChar * (l.obj.element.textContent?.length ?? 0), h: LABEL_BOX_GUESS.h };
+      const x = (p.x * 0.5 + 0.5) * vw, y = (-p.y * 0.5 + 0.5) * vh;
+      if (x + size.w / 2 < 0 || x - size.w / 2 > vw || y + size.h / 2 < 0 || y - size.h / 2 > vh) continue;
+      items.push({ id: l.poiId, x, y, w: size.w, h: size.h, klass: l.klass, routable: l.routable, faded: l.state === "faded", wasVisible: l.obj.visible });
+      byId.set(l.poiId, l);
+    }
+    const keep = declutter(items);
+    for (const [id, l] of byId) l.decluttered = !keep.has(id);
   }
 
   private labelOccluded(label: PoiLabel): boolean {
@@ -921,6 +1010,10 @@ export class Explorer {
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.composer?.setSize(w, h);
+    this.viewSize.w = w;
+    this.viewSize.h = h;
+    this.declutterDirty = true;
+    if (this.mode === "overview") this.fitOverview();
     // A new aspect brings other labels on screen without the camera moving.
     this.labelSweep.invalidate(this.poiLabels.length);
   }
@@ -1232,4 +1325,9 @@ function meshDrawn(mesh: THREE.Mesh, camera: THREE.Camera): boolean {
 function blocksView(material: THREE.Material): boolean {
   const m = material as THREE.MeshPhysicalMaterial;
   return m.visible && m.colorWrite && !m.wireframe && !(m.transparent && m.opacity < 0.5) && (m.transmission ?? 0) < 0.5;
+}
+
+/** A pure Aabb (see overviewFraming.ts) as a three Box3; null stays null. */
+function toBox3(a: { min: THREE.Vector3; max: THREE.Vector3 } | null): THREE.Box3 | null {
+  return a ? new THREE.Box3(a.min.clone(), a.max.clone()) : null;
 }
