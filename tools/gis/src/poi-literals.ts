@@ -1,7 +1,8 @@
+import { createHash } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 import { getStoreRoot, packageRoot } from './common.js';
-import { object } from './poi.js';
+import { object, POI_SOURCES } from './poi.js';
 import { ownValue } from './values.js';
 
 /**
@@ -41,7 +42,8 @@ export function detailLiterals(detail: unknown, minLength = MIN_LITERAL_LENGTH):
 /** Literals from every `out/poi/*.json` detail in the store (stale details included: they are equally private). */
 export async function storeDetailLiterals(storeRoot: string = getStoreRoot(), minLength = MIN_LITERAL_LENGTH): Promise<Map<string, string[]>> {
   const directory = join(storeRoot, 'out', 'poi'), literals = new Map<string, string[]>();
-  for (const name of (await readdir(directory)).filter(entry => entry.endsWith('.json')).sort()) {
+  const names = await readdir(directory).catch((error: NodeJS.ErrnoException) => { if (error.code === 'ENOENT') return [] as string[]; throw error; });
+  for (const name of names.filter(entry => entry.endsWith('.json')).sort()) {
     for (const literal of detailLiterals(JSON.parse(await readFile(join(directory, name), 'utf8')), minLength)) literals.set(literal, [...literals.get(literal) ?? [], name]);
   }
   return literals;
@@ -76,4 +78,43 @@ export async function scanTreeForLiterals(root: string, literals: Iterable<strin
     if (hits.length) leaks.push({ file: path.slice(root.length + 1), count: hits.length });
   }
   return leaks.sort((a, b) => a.file.localeCompare(b.file));
+}
+
+export type DetailProblem = { source_id: string; reason: 'missing' | 'hash_mismatch'; detail: string };
+
+/**
+ * Every committed POI report names its store detail (`detail.store_path`, `sha256`, `bytes`). A PASS is only meaningful when
+ * all of those details are present and byte-identical to what the report recorded, because otherwise the scan silently
+ * covers a subset of the literals.
+ */
+export async function verifyPoiDetails(poiDocsDir: string, storeRoot: string = getStoreRoot()): Promise<DetailProblem[]> {
+  const problems: DetailProblem[] = [];
+  const present = (await readdir(poiDocsDir).catch(() => [] as string[])).filter(name => name.endsWith('.json')).map(name => name.slice(0, -'.json'.length));
+  for (const sourceId of [...new Set([...POI_SOURCES, ...present])].sort()) {
+    let report: any;
+    try { report = JSON.parse(await readFile(join(poiDocsDir, `${sourceId}.json`), 'utf8')); } catch { problems.push({ source_id: sourceId, reason: 'missing', detail: 'committed POI report not readable' }); continue; }
+    const storePath = report?.detail?.store_path, expectedSha = report?.detail?.sha256, expectedBytes = report?.detail?.bytes;
+    if (typeof storePath !== 'string' || typeof expectedSha !== 'string' || typeof expectedBytes !== 'number') { problems.push({ source_id: sourceId, reason: 'missing', detail: 'report has no detail.store_path/sha256/bytes' }); continue; }
+    const absolute = resolve(storeRoot, storePath), inside = relative(resolve(storeRoot), absolute);
+    if (isAbsolute(storePath) || inside.startsWith('..') || isAbsolute(inside)) { problems.push({ source_id: sourceId, reason: 'missing', detail: `detail.store_path escapes the store: ${storePath}` }); continue; }
+    let bytes: Buffer;
+    try { bytes = await readFile(absolute); } catch { problems.push({ source_id: sourceId, reason: 'missing', detail: storePath }); continue; }
+    const sha = createHash('sha256').update(bytes).digest('hex');
+    if (sha !== expectedSha || bytes.length !== expectedBytes) problems.push({ source_id: sourceId, reason: 'hash_mismatch', detail: `${storePath}: expected ${expectedSha} / ${expectedBytes} bytes, found ${sha} / ${bytes.length} bytes` });
+  }
+  return problems;
+}
+
+/**
+ * The full guard: verifies every referenced detail, then scans `docsGisDir` against every detail present in the store
+ * (stale or unreferenced details are extra inputs). FAIL on any leak, any missing or mismatched detail, or zero literals.
+ */
+export async function checkPoiLiterals(docsGisDir: string, storeRoot: string = getStoreRoot(), allowlist: ReadonlySet<string> = new Set()) {
+  const detailProblems = await verifyPoiDetails(join(docsGisDir, 'poi'), storeRoot);
+  const literals = await storeDetailLiterals(storeRoot);
+  for (const term of allowlist) literals.delete(term);
+  const leaks = await scanTreeForLiterals(docsGisDir, literals.keys());
+  const status = leaks.length || detailProblems.length || literals.size === 0 ? 'FAIL' as const : 'PASS' as const;
+  return { status, scanned_literals: literals.size, allowlisted_generic_terms: allowlist.size, detail_problems: detailProblems,
+    ...(literals.size === 0 ? { error: 'no literals scanned (store out/poi empty or without free-text values)' } : {}), leaking_files: leaks };
 }

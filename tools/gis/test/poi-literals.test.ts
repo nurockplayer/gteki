@@ -4,7 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { inventoryCsv, inventoryJson, valueSha256 } from '../src/poi.js';
-import { detailLiterals, literalsInText, scanTreeForLiterals, storeDetailLiterals } from '../src/poi-literals.js';
+import { checkPoiLiterals, detailLiterals, literalsInText, scanTreeForLiterals, storeDetailLiterals } from '../src/poi-literals.js';
+import { POI_SOURCES } from '../src/poi.js';
 import { projectPoiContent } from '../src/gaps.js';
 import { openingHourLines } from '../src/poi-research.js';
 
@@ -88,5 +89,83 @@ describe('generic-vocabulary allowlist', () => {
     expect(terms.size).toBeGreaterThan(0); expect(terms.has('building')).toBe(true);
     // Distinctive source values (facility names, addresses, opening-hour strings) must never be exempted.
     for (const term of terms) { expect(term).not.toMatch(/\s|[〜:：（）()]/u); expect(term.length).toBeLessThanOrEqual(12); }
+  });
+});
+
+describe('check-poi-literals completeness', () => {
+  // Synthetic docs/gis + store: one detail per POI source, each referenced by its committed report with sha256 and bytes.
+  const setup = async () => {
+    const root = await mkdtemp(join(tmpdir(), 'poi-check-')), docs = join(root, 'docs-gis'), store = join(root, 'store');
+    await mkdir(join(docs, 'poi'), { recursive: true }); await mkdir(join(store, 'out', 'poi'), { recursive: true });
+    for (const id of POI_SOURCES) {
+      const bytes = Buffer.from(`${JSON.stringify([{ 項目: `SYNTH-VALUE-${id}` }])}\n`), storePath = `out/poi/${id}-aaaa-bbbb.json`;
+      await writeFile(join(store, storePath), bytes);
+      await writeFile(join(docs, 'poi', `${id}.json`), JSON.stringify({ source_id: id, detail: { store_path: storePath, sha256: createHash('sha256').update(bytes).digest('hex'), bytes: bytes.length } }));
+    }
+    return { root, docs, store };
+  };
+  it('passes when every referenced detail is present and matches', async () => {
+    const { root, docs, store } = await setup();
+    try { expect(await checkPoiLiterals(docs, store)).toMatchObject({ status: 'PASS', scanned_literals: POI_SOURCES.length, detail_problems: [], leaking_files: [] }); }
+    finally { await rm(root, { recursive: true, force: true }); }
+  });
+  it('fails with reason missing, naming the source, when a referenced detail is absent', async () => {
+    const { root, docs, store } = await setup();
+    try {
+      await rm(join(store, 'out', 'poi', `${POI_SOURCES[2]}-aaaa-bbbb.json`));
+      const result = await checkPoiLiterals(docs, store);
+      expect(result.status).toBe('FAIL');
+      expect(result.detail_problems).toEqual([expect.objectContaining({ source_id: POI_SOURCES[2], reason: 'missing' })]);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+  it('fails with reason hash_mismatch when a detail differs from the recorded sha256/bytes', async () => {
+    const { root, docs, store } = await setup();
+    try {
+      await writeFile(join(store, 'out', 'poi', `${POI_SOURCES[0]}-aaaa-bbbb.json`), JSON.stringify([{ 項目: 'SYNTH-TAMPERED' }]));
+      const result = await checkPoiLiterals(docs, store);
+      expect(result.status).toBe('FAIL');
+      expect(result.detail_problems).toEqual([expect.objectContaining({ source_id: POI_SOURCES[0], reason: 'hash_mismatch' })]);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+  it('fails when out/poi is empty or absent: every source missing and zero literals', async () => {
+    const { root, docs, store } = await setup();
+    try {
+      await rm(join(store, 'out', 'poi'), { recursive: true });
+      const absent = await checkPoiLiterals(docs, store);
+      expect(absent.status).toBe('FAIL'); expect(absent.scanned_literals).toBe(0); expect(absent.detail_problems.map(problem => problem.reason)).toEqual(POI_SOURCES.map(() => 'missing')); expect(absent).toHaveProperty('error');
+      await mkdir(join(store, 'out', 'poi'), { recursive: true });
+      expect((await checkPoiLiterals(docs, store)).status).toBe('FAIL');
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+  it('fails on zero literals even when the referenced details verify', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'poi-check-')), docs = join(root, 'docs-gis'), store = join(root, 'store');
+    try {
+      await mkdir(join(docs, 'poi'), { recursive: true }); await mkdir(join(store, 'out', 'poi'), { recursive: true });
+      for (const id of POI_SOURCES) {
+        const bytes = Buffer.from('[]\n'), storePath = `out/poi/${id}.json`;
+        await writeFile(join(store, storePath), bytes);
+        await writeFile(join(docs, 'poi', `${id}.json`), JSON.stringify({ detail: { store_path: storePath, sha256: createHash('sha256').update(bytes).digest('hex'), bytes: bytes.length } }));
+      }
+      const result = await checkPoiLiterals(docs, store);
+      expect(result).toMatchObject({ status: 'FAIL', scanned_literals: 0, detail_problems: [] });
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+  it('still scans a stale, unreferenced detail as an extra input', async () => {
+    const { root, docs, store } = await setup();
+    try {
+      await writeFile(join(store, 'out', 'poi', 'tokyo-s03-zip-old-old.json'), JSON.stringify([{ 項目: 'SYNTH-STALE-ONLY-VALUE' }]));
+      await writeFile(join(docs, 'note.md'), 'copied SYNTH-STALE-ONLY-VALUE here');
+      const result = await checkPoiLiterals(docs, store);
+      expect(result).toMatchObject({ status: 'FAIL', detail_problems: [], leaking_files: [{ file: 'note.md', count: 1 }] });
+      expect(result.scanned_literals).toBe(POI_SOURCES.length + 1);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+  it('rejects a detail.store_path that escapes the store', async () => {
+    const { root, docs, store } = await setup();
+    try {
+      const file = join(docs, 'poi', `${POI_SOURCES[1]}.json`), report = JSON.parse(await (await import('node:fs/promises')).readFile(file, 'utf8'));
+      report.detail.store_path = '../outside.json'; await writeFile(file, JSON.stringify(report));
+      expect((await checkPoiLiterals(docs, store)).detail_problems).toEqual([expect.objectContaining({ source_id: POI_SOURCES[1], reason: 'missing' })]);
+    } finally { await rm(root, { recursive: true, force: true }); }
   });
 });

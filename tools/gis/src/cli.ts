@@ -1,5 +1,5 @@
 import { inspectPoi } from './poi.js';
-import { loadLiteralAllowlist, scanTreeForLiterals, storeDetailLiterals } from './poi-literals.js';
+import { checkPoiLiterals, loadLiteralAllowlist } from './poi-literals.js';
 import { rightsReport } from './rights.js';
 import { inspectVintages } from './vintage.js';
 import { parseArgs } from 'node:util';
@@ -58,10 +58,9 @@ async function main() {
     case 'inspect-poi': { const report=await inspectPoi(requireArg(0)); result={source_id:report.source_id,member_count:report.members.length,report:`docs/gis/poi/${report.source_id}.json`}; break; }
     case 'check-poi-literals': {
       // Read-only leak guard: no literal POI source field value (from the store detail reports) may appear under docs/gis.
-      const literals=await storeDetailLiterals(),allowed=await loadLiteralAllowlist();for(const term of allowed)literals.delete(term);
-      const leaks=await scanTreeForLiterals(join(docsRoot,'gis'),literals.keys());
-      result={status:leaks.length?'FAIL':'PASS',scanned_literals:literals.size,allowlisted_generic_terms:allowed.size,leaking_files:leaks};
-      if(leaks.length)process.exitCode=1;break;
+      const checked=await checkPoiLiterals(join(docsRoot,'gis'),undefined,await loadLiteralAllowlist());
+      result=checked;
+      if(checked.status!=='PASS')process.exitCode=1;break;
     }
     case 'inspect-vintages': {
       const report=await inspectVintages();
