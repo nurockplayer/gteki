@@ -31,6 +31,9 @@ export function replayShard(index: number, count: number) {
      Number(conflicts.has(b.fence?.restrictedSpaceId ?? "")) - Number(conflicts.has(a.fence?.restrictedSpaceId ?? "")) ||
      (conflicts.get(b.fence?.restrictedSpaceId ?? "") ?? 0) - (conflicts.get(a.fence?.restrictedSpaceId ?? "") ?? 0) || b.p.z - a.p.z);
    const result = await replayMatrix(built, scene, plan, selected, index);
+   // One summary line per shard, so runs without FARE_REPLAY_REPORT (e.g. test:heavy:box) still record totals.
+   const { jobs, finished, wallMs, integratedFrames, frames, failedPaths, fringeContacts, maxFringeM, leaks } = result;
+   console.log(`fare-replay shard ${index + 1}/${count} ${JSON.stringify({ jobs, finished, wallMs: Math.round(wallMs), integratedFrames, frames, failedPaths, fringeContacts, maxFringeM, leaks: leaks.length, paths: result.matrix.reduce((n, r) => n + r.paths, 0) })}`);
    expect(result.finished).toBe(result.jobs); expect(result.leaks).toEqual([]); expect(result.matrix).toHaveLength(72);
    for (const row of result.matrix) { expect(row.paths).toBeGreaterThan(0); expect(row.passed).toBe(row.paths); }
   }, 7_200_000);
