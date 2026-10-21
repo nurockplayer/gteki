@@ -772,8 +772,8 @@ export class Explorer {
     const d = new THREE.Vector3();
     /** Puts the segment into the space `m` maps world points to, as a (start) and d (direction). */
     const segmentIn = (m: THREE.Matrix4) => { a.copy(from).applyMatrix4(m); d.copy(to).applyMatrix4(m).sub(a); };
-    const blocks = (proxy: boolean, bvh: TriangleBvh, parts: MeshPart[]) =>
-      parts.some((p) => (proxy || blocksView(p.material)) && bvh.anyHit(a.x, a.y, a.z, d.x, d.y, d.z, proxy ? "both" : cullOf(p.material), p.start, p.count));
+    const blocks = (proxy: boolean, bvh: TriangleBvh, parts: MeshPart[], mirrored = false) =>
+      parts.some((p) => (proxy || blocksView(p.material)) && bvh.anyHit(a.x, a.y, a.z, d.x, d.y, d.z, proxy ? "both" : cullOf(p.material, mirrored), p.start, p.count));
     for (const o of this.occluders) {
       // World-box prefilter: skip meshes the segment does not reach.
       if (!o.box.containsPoint(from) && !(ray.intersectBox(o.box, entry) && entry.distanceTo(from) <= far)) continue;
@@ -800,8 +800,11 @@ export class Explorer {
       for (let i = 0; i < n; i++) {
         if (!segmentHitsBox(ax, ay, az, dx, dy, dz, boxes, i * 6)) continue;
         inst.getMatrixAt(i, instance);
+        // The renderer offsets a mirrored matrixWorld (gl.frontFace) but not a mirrored instance matrix,
+        // whose local back faces are then drawn as front faces.
+        const mirrored = instance.determinant() < 0;
         segmentIn(instance.invert().multiply(toLocal));
-        if (blocks(proxy, bvh, parts)) return true;
+        if (blocks(proxy, bvh, parts, mirrored)) return true;
       }
     }
     return false;
@@ -1067,9 +1070,14 @@ function readMuted(): boolean {
   try { return localStorage.getItem("gteki.muted") === "1"; } catch { return false; }
 }
 
-/** The faces a label ray can hit, as three's material.side. */
-function cullOf(material: THREE.Material): Cull {
-  return material.side === THREE.DoubleSide ? "both" : material.side === THREE.BackSide ? "back-only" : "front-only";
+/**
+ * The faces a label ray can hit in mesh-local space, as three's material.side. The renderer flips
+ * gl.frontFace for a mirrored matrixWorld, so local winding decides the side there; `mirrored` swaps
+ * the sides for a mirrored transform it does not offset (an instance matrix).
+ */
+function cullOf(material: THREE.Material, mirrored = false): Cull {
+  if (material.side === THREE.DoubleSide) return "both";
+  return (material.side === THREE.BackSide) !== mirrored ? "back-only" : "front-only";
 }
 
 /** Still attached under `scene` (a mesh removed from the station no longer occludes). */

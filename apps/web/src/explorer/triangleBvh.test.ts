@@ -102,6 +102,19 @@ describe("triangle BVH", () => {
     expect(misses).toBe(0);
   });
 
+  it("sees the other face once a mirror is applied to both the triangle and the segment", () => {
+    // Why a mirrored transform the renderer does not offset (an instance matrix) swaps the culled side.
+    const floor = new THREE.PlaneGeometry(4, 4).rotateX(-Math.PI / 2); // front face up
+    const down = [0, 2, 0, 0, -4, 0] as const; // from above, towards the front face
+    expect(bvhOf(floor).anyHit(...down, "front-only")).toBe(true);
+    const mirror = new THREE.Matrix4().makeScale(-1, 1, 1);
+    const mirrored = floor.clone().applyMatrix4(mirror);
+    const o = new THREE.Vector3(0, 2, 0).applyMatrix4(mirror);
+    const d = new THREE.Vector3(0, -4, 0).transformDirection(mirror).multiplyScalar(4);
+    expect(bvhOf(mirrored).anyHit(o.x, o.y, o.z, d.x, d.y, d.z, "front-only")).toBe(false);
+    expect(bvhOf(mirrored).anyHit(o.x, o.y, o.z, d.x, d.y, d.z, "back-only")).toBe(true);
+  });
+
   it("builds an empty tree for an empty geometry", () => {
     const bvh = bvhOf(new THREE.BufferGeometry().setAttribute("position", new THREE.Float32BufferAttribute([], 3)));
     expect(bvh.triangleCount).toBe(0);
