@@ -1,4 +1,4 @@
-import type * as THREE from "three";
+import * as THREE from "three";
 
 /**
  * The meshes a list of scene objects stands for when ray-tested. A scene's `walkable` / `colliders` are
@@ -42,6 +42,50 @@ function insideHelper(o: THREE.Object3D): boolean {
 }
 
 /** Hits against precomputed `castTargets` (each target tested on its own, never its descendants). */
+/** The explorer's ray-test sets, built once per loaded scene. */
+export interface ExplorerTargets {
+  /** Ground under the walker (walkable surfaces). */
+  ground: THREE.Object3D[];
+  /** Walls the walker bumps into. */
+  collider: THREE.Object3D[];
+  /** Walls and floors: the street probe's sky test. Camera-only blockers never hide the sky. */
+  sky: THREE.Object3D[];
+  /** What the follow camera stops at: walls, floors and camera-only blockers (which add, never replace). */
+  camera: THREE.Object3D[];
+  /** The camera-only blocker meshes, so a hit on one may pull the camera closer than its usual minimum. */
+  blockers: ReadonlySet<THREE.Object3D>;
+}
+
+export function explorerTargets(walkable: readonly THREE.Object3D[], colliders: readonly THREE.Object3D[], cameraBlockers: readonly THREE.Object3D[] = []): ExplorerTargets {
+  // A blocker nested in a floor or wall group stays camera-only; one listed explicitly in both lists keeps both.
+  const ground = castTargets(walkable, [...colliders, ...cameraBlockers]);
+  const collider = castTargets(colliders, [...walkable, ...cameraBlockers]);
+  const sky = [...new Set([...collider, ...ground])];
+  const blockers = castTargets(cameraBlockers, [...walkable, ...colliders]);
+  // A mesh listed both as a wall and as a camera blocker is tested once.
+  const camera = [...new Set([...sky, ...blockers])];
+  return { ground, collider, sky, camera, blockers: new Set(blockers) };
+}
+
 export function castAll(ray: THREE.Raycaster, targets: readonly THREE.Object3D[]): THREE.Intersection[] {
   return ray.intersectObjects(targets as THREE.Object3D[], false);
+}
+
+/**
+ * Keep a smoothed camera position on the pivot's side of every camera-only blocker: if the segment from
+ * the pivot to `position` crosses one, `position` is pulled in to `clearance` in front of it (to the pivot
+ * at most). Interpolation toward a clamped target can otherwise sweep the camera through a ceiling while
+ * the walker turns. Mutates and returns `position`.
+ */
+export function keepBelowBlockers(pivot: THREE.Vector3, position: THREE.Vector3, blockers: readonly THREE.Object3D[], clearance: number, ray = new THREE.Raycaster()): THREE.Vector3 {
+  if (blockers.length === 0) return position;
+  const offset = position.clone().sub(pivot);
+  const length = offset.length();
+  if (length < 1e-9) return position;
+  ray.set(pivot, offset.divideScalar(length));
+  ray.near = 0;
+  ray.far = length + clearance;
+  const hit = castAll(ray, blockers)[0];
+  if (hit) position.copy(pivot).addScaledVector(offset, Math.min(length, Math.max(0, hit.distance - clearance)));
+  return position;
 }

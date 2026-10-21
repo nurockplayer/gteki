@@ -99,7 +99,7 @@ func test_generated_glb(station_root: Node3D) -> void:
 	source.name = "GeneratedFixture"
 	# floor/wall test names; metadata_only tests extras independently of names.
 	# "floor_001" has no metadata: it is walkable by name prefix, exactly as on the web.
-	for entry in [["floor", "floor"], ["wall", "wall"], ["metadata_only", "stairs_ramps"], ["barriers", "barriers"], ["plain_box", ""], ["floor_001", ""]]:
+	for entry in [["floor", "floor"], ["wall", "wall"], ["metadata_only", "stairs_ramps"], ["barriers", "barriers"], ["plain_box", ""], ["floor_001", ""], ["slab_cap", "camera_blocker"], ["camera_blocker_b1", ""]]:
 		var mesh := MeshInstance3D.new()
 		mesh.name = entry[0]
 		mesh.mesh = BoxMesh.new()
@@ -171,7 +171,8 @@ func test_generated_glb(station_root: Node3D) -> void:
 	check(assets.load_assets(manifest, "user://", station_root), "generated GLBs reimport through manifest: %s" % str(assets.issues))
 	# Meshes per asset: walkable floor, stairs_ramps, floor_001 and the floor/" FLOOR " groups' children; colliding wall,
 	# barriers and the wall group's child. The collision asset also turns its untagged box into a collider.
-	check(assets.counts == {"assets": 3, "walkable": 15, "collider": 10}, "GLB names/extras/prefixes/inherited roles classify like the web; manifest collision role covers untagged meshes: %s" % str(assets.counts))
+	# Two camera blockers per asset (one by extras, one by name prefix); in the collision asset they stay camera-only.
+	check(assets.counts == {"assets": 3, "walkable": 15, "collider": 10, "camera_blocker": 6}, "GLB names/extras/prefixes/inherited roles classify like the web; manifest collision role covers untagged meshes: %s" % str(assets.counts))
 	var collision_only := station_root.get_node_or_null("collision_only") as Node3D
 	if collision_only != null:
 		var grouped_mesh := collision_only.find_child("grouped_mesh", true, false)
@@ -183,7 +184,13 @@ func test_generated_glb(station_root: Node3D) -> void:
 	check(transformed != null and identity != null, "assets parented under station root")
 	if transformed != null:
 		check((transformed.transform * Vector3(1, 2, 3)).distance_to(Vector3(17, 12, 5)) < EPSILON, "asset column-major basis/translation")
-		check(transformed.find_children("*", "StaticBody3D", true, false).size() == 3, "wall/barrier meshes, including an inherited wall child, create colliders")
+		var bodies := transformed.find_children("*", "StaticBody3D", true, false)
+		check(bodies.filter(func(b): return b.collision_layer == 1).size() == 3, "wall/barrier meshes, including an inherited wall child, create colliders")
+		var camera_bodies := bodies.filter(func(b): return b.collision_layer == Assets.CAMERA_LAYER and b.collision_mask == 0)
+		check(camera_bodies.size() == 2, "camera blockers collide on the camera layer only, never with walking bodies")
+		for name in ["slab_cap", "camera_blocker_b1"]:
+			var blocker := transformed.find_child(name, true, false) as MeshInstance3D
+			check(blocker != null and blocker.has_meta("gteki_camera_blocker") and not blocker.visible and not blocker.has_meta("gteki_collider"), "%s is a hidden camera-only blocker" % name)
 	if identity != null:
 		check(identity.transform == Transform3D.IDENTITY, "omitted asset transform is identity")
 	var rejected := Assets.new()

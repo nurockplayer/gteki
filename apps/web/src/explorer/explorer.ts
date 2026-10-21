@@ -14,10 +14,10 @@ import { WALKER_BODY } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { manifestScene } from "./manifestScene.ts";
-import { castAll, castTargets } from "./raycast.ts";
+import { castAll, explorerTargets, keepBelowBlockers } from "./raycast.ts";
 import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
-import { FOLLOW, clampDistance, followPose } from "./followCamera.ts";
+import { FOLLOW, followDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
@@ -74,11 +74,16 @@ export class Explorer {
   private readonly routeGroup = new THREE.Group();
   private readonly poiGroup = new THREE.Group();
   private walkable: THREE.Object3D[] = [];
-  /** Meshes actually ray-tested for ground, walls and the follow camera (see castTargets). */
+  /** Meshes actually ray-tested for ground, walls and the follow camera (see explorerTargets). */
   private groundTargets: THREE.Object3D[] = [];
   private colliderTargets: THREE.Object3D[] = [];
   private cameraTargets: THREE.Object3D[] = [];
+  /** Walls and floors only: the street probe's sky test (camera-only blockers such as signs never hide the sky). */
+  private skyTargets: THREE.Object3D[] = [];
+  private blockerTargets: ReadonlySet<THREE.Object3D> = new Set();
   private colliders: THREE.Object3D[] = [];
+  /** Camera-only blockers (ceilings): stop the follow camera, never the walker. */
+  private cameraBlockers: THREE.Object3D[] = [];
   private walls: Segment2[] = [];
   private routeTexture: THREE.CanvasTexture | null = null;
 
@@ -152,11 +157,11 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
-      walkable: this.walkable.length, colliders: this.colliders.length,
+      walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length,
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
     };
@@ -305,6 +310,7 @@ export class Explorer {
       this.graph.overlay.visible = false;
       this.walkable = this.stationScene.walkable;
       this.colliders = this.stationScene.colliders ?? [];
+      this.cameraBlockers = this.stationScene.cameraBlockers ?? [];
       this.walls = (this.stationScene.walls ?? []).map(wallToRenderer);
       const env = this.stationScene.environment;
       if (env?.background !== undefined) this.scene.background = new THREE.Color(env.background);
@@ -322,9 +328,12 @@ export class Explorer {
       this.walkable = this.graph.walkable;
     }
     this.world.updateMatrixWorld(true);
-    this.groundTargets = castTargets(this.walkable, this.colliders);
-    this.colliderTargets = castTargets(this.colliders, this.walkable);
-    this.cameraTargets = [...new Set([...this.colliderTargets, ...this.groundTargets])];
+    const targets = explorerTargets(this.walkable, this.colliders, this.cameraBlockers);
+    this.groundTargets = targets.ground;
+    this.colliderTargets = targets.collider;
+    this.skyTargets = targets.sky;
+    this.cameraTargets = targets.camera;
+    this.blockerTargets = targets.blockers;
     this.phase = "composer";
     this.setupComposer();
     this.frameAll();
@@ -356,9 +365,12 @@ export class Explorer {
     if (this.graph) { this.world.remove(this.graph.root); this.overlays.remove(this.graph.overlay); this.graph.dispose(); this.graph = null; }
     this.walkable = [];
     this.colliders = [];
+    this.cameraBlockers = [];
     this.groundTargets = [];
     this.colliderTargets = [];
     this.cameraTargets = [];
+    this.skyTargets = [];
+    this.blockerTargets = new Set();
     this.walls = [];
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
@@ -689,7 +701,7 @@ export class Explorer {
    */
   private updateStreetProbe(dt: number): void {
     const p = this.streetProbe;
-    if (this.streetY === null || this.pos.y < this.streetY - STREET.maxBelowStreet || !this.cameraTargets.length) {
+    if (this.streetY === null || this.pos.y < this.streetY - STREET.maxBelowStreet || !this.skyTargets.length) {
       p.outdoors = false;
       p.level = false;
       p.at.set(Infinity, 0, 0);
@@ -705,7 +717,7 @@ export class Explorer {
     p.wait = 0.25;
     this.ray.set(this.probeOrigin.set(this.pos.x, this.pos.y + EYE, this.pos.z), this.probeUp);
     this.ray.far = STREET.skyClearance;
-    p.outdoors = isOutdoors(this.pos.y, this.streetY, castAll(this.ray, this.cameraTargets).length > 0);
+    p.outdoors = isOutdoors(this.pos.y, this.streetY, castAll(this.ray, this.skyTargets).length > 0);
     this.ray.set(this.probeOrigin.set(this.pos.x, this.pos.y + 0.4, this.pos.z), this.probeDown);
     this.ray.far = 1.2;
     const hit = castAll(this.ray, this.groundTargets)[0];
@@ -739,10 +751,13 @@ export class Explorer {
     if (this.cameraTargets.length) {
       this.ray.set(pose.pivot, pose.back);
       this.ray.far = dist + FOLLOW.clearance;
-      dist = clampDistance(dist, castAll(this.ray, this.cameraTargets)[0]?.distance ?? null);
+      const hits = castAll(this.ray, this.cameraTargets).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+      dist = followDistance(dist, hits);
     }
     const desired = pose.pivot.clone().addScaledVector(pose.back, dist);
     this.camera.position.lerp(desired, 1 - Math.exp(-dt * 10));
+    // The smoothed position, not only the target, stays below camera-only blockers.
+    if (this.blockerTargets.size) keepBelowBlockers(pose.pivot, this.camera.position, [...this.blockerTargets], FOLLOW.clearance, this.ray);
     this.camera.lookAt(pose.target);
   }
 

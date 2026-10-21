@@ -48,6 +48,12 @@ export interface StationScene {
   walkable: THREE.Object3D[];
   /** Meshes blocking horizontal movement. */
   colliders?: THREE.Object3D[];
+  /**
+   * Meshes that stop only the follow camera (ceilings, slab undersides, soffits), so it never rises
+   * through a ceiling. They add to walkable and colliders for the camera, never replace them, and never
+   * block walking or count as ground.
+   */
+  cameraBlockers?: THREE.Object3D[];
   walls?: WallSegment[];
   spawnPoints?: SpawnPoint[];
   /** Fog/background/lighting preferences; the explorer applies sane defaults otherwise. */
@@ -102,6 +108,8 @@ export interface StationSceneModule {
 
 const WALKABLE_ROLES = new Set(["floor", "stairs_ramps", "walkable", "ramp", "stairs"]);
 const COLLIDER_ROLES = new Set(["wall", "walls", "barriers", "barrier", "transport", "collider"]);
+/** Camera-only: hidden like "collider" unless showColliders. Opt-in by role or name, never inferred from "ceiling". */
+const CAMERA_ROLES = new Set(["camera_blocker"]);
 
 /**
  * glTF extras arrive as userData; also accept "<role>" or "<role>_<n>" object names. A role is trimmed and
@@ -114,21 +122,23 @@ export function roleOf(object: THREE.Object3D): string | null {
   const authored = typeof object.userData?.name === "string" ? (object.userData.name as string) : null;
   for (const raw of authored === null ? [object.name] : [authored, object.name]) {
     const name = raw.toLowerCase();
-    for (const role of [...WALKABLE_ROLES, ...COLLIDER_ROLES]) if (name === role || name.startsWith(`${role}_`) || name.startsWith(`${role}.`)) return role;
+    for (const role of [...WALKABLE_ROLES, ...COLLIDER_ROLES, ...CAMERA_ROLES]) if (name === role || name.startsWith(`${role}_`) || name.startsWith(`${role}.`)) return role;
   }
   return null;
 }
 
 /**
- * Classify a GLB scene by `gteki_role`: floor/stairs_ramps → walkable, wall/barriers → colliders.
+ * Classify a GLB scene by `gteki_role`: floor/stairs_ramps → walkable, wall/barriers → colliders,
+ * camera_blocker → cameraBlockers (hidden, camera only).
  * Collider-only meshes are hidden unless `showColliders`. Children inherit their parent's role.
  * `assetRole` is the manifest's asset-wide role: in a "collision"/"visual+collision" asset every mesh
  * without its own walkable/collider role still collides, and a "collision" asset is never drawn
  * (the same rule as the Godot loader).
  */
-export function sceneFromGlbRoles(root: THREE.Object3D, opts: { showColliders?: boolean; assetRole?: "visual" | "collision" | "visual+collision" } = {}): { walkable: THREE.Object3D[]; colliders: THREE.Object3D[] } {
+export function sceneFromGlbRoles(root: THREE.Object3D, opts: { showColliders?: boolean; assetRole?: "visual" | "collision" | "visual+collision" } = {}): { walkable: THREE.Object3D[]; colliders: THREE.Object3D[]; cameraBlockers: THREE.Object3D[] } {
   const walkable: THREE.Object3D[] = [];
   const colliders: THREE.Object3D[] = [];
+  const cameraBlockers: THREE.Object3D[] = [];
   const visit = (object: THREE.Object3D, inherited: string | null) => {
     const role = roleOf(object) ?? inherited;
     const isMesh = (object as THREE.Mesh).isMesh === true;
@@ -137,18 +147,21 @@ export function sceneFromGlbRoles(root: THREE.Object3D, opts: { showColliders?: 
       else if (COLLIDER_ROLES.has(role)) {
         colliders.push(object);
         if (role === "collider" && !opts.showColliders) object.visible = false;
+      } else if (CAMERA_ROLES.has(role)) {
+        cameraBlockers.push(object);
+        if (!opts.showColliders) object.visible = false;
       }
     }
     for (const child of object.children) visit(child, role);
   };
   visit(root, null);
   if (opts.assetRole && opts.assetRole !== "visual") {
-    const tagged = new Set<THREE.Object3D>([...walkable, ...colliders]);
+    const tagged = new Set<THREE.Object3D>([...walkable, ...colliders, ...cameraBlockers]);
     root.traverse((object) => {
       if ((object as THREE.Mesh).isMesh !== true) return;
       if (!tagged.has(object)) colliders.push(object);
       if (opts.assetRole === "collision" && !opts.showColliders) object.visible = false;
     });
   }
-  return { walkable, colliders };
+  return { walkable, colliders, cameraBlockers };
 }

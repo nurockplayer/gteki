@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import { sceneFromGlbRoles } from "@gteki/scene-api";
 import { LightProbeGridHelperWebGL } from "three/addons/helpers/LightProbeGridHelperWebGL.js";
 import { LightProbeGridWebGL } from "three/addons/lighting/LightProbeGridWebGL.js";
-import { castAll, castTargets } from "./raycast.ts";
+import { clampDistance, FOLLOW, followDistance, followPose } from "./followCamera.ts";
+import { castAll, castTargets, explorerTargets, keepBelowBlockers } from "./raycast.ts";
 
 const plane = (y: number) => {
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(10, 10).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial());
@@ -101,5 +102,160 @@ describe("castTargets", () => {
     expect(roles.walkable).toEqual([floor]);
     expect(castTargets(roles.walkable, roles.colliders)).toEqual([floor]);
     expect(castAll(down(), castTargets(roles.walkable, roles.colliders))[0]?.point.y).toBeCloseTo(0);
+  });
+});
+
+describe("camera-only blockers", () => {
+  const ceiling = (y: number) => {
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(40, 40).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    mesh.position.y = y;
+    mesh.updateMatrixWorld(true);
+    return mesh;
+  };
+
+  it("stop the follow camera under a ceiling that is neither wall nor floor", () => {
+    const floor = plane(0);
+    floor.updateMatrixWorld(true);
+    const slab = ceiling(2.6);
+    const head = new THREE.Vector3(0, 1.6, 0);
+    // Looking down 40°: the camera rises behind the walker, through a 2.6 m ceiling unless it is a blocker.
+    const pose = followPose(head, 0, -0.7);
+    const wanted = FOLLOW.defaultDistance;
+    const distanceWith = (targets: THREE.Object3D[]) => {
+      const ray = new THREE.Raycaster(pose.pivot, pose.back, 0, wanted + FOLLOW.clearance);
+      return clampDistance(wanted, castAll(ray, targets)[0]?.distance ?? null);
+    };
+    const without = explorerTargets([floor], []);
+    const withBlocker = explorerTargets([floor], [], [slab]);
+    expect(pose.pivot.clone().addScaledVector(pose.back, distanceWith(without.camera)).y).toBeGreaterThan(2.6);
+    const clamped = distanceWith(withBlocker.camera);
+    expect(clamped).toBeLessThan(wanted);
+    expect(pose.pivot.clone().addScaledVector(pose.back, clamped).y).toBeLessThan(2.6);
+  });
+
+  it("keep the camera below a low ceiling even at the steepest pitch", () => {
+    // Feet at 0, ceiling at 2.0 m, pitch -1.1: the ceiling is ~0.4 m behind the pivot, inside the usual minimum.
+    const slab = ceiling(2.0);
+    const head = new THREE.Vector3(0, 1.6, 0);
+    const pose = followPose(head, 0, -1.1);
+    const t = explorerTargets([], [], [slab]);
+    const hit = castAll(new THREE.Raycaster(pose.pivot, pose.back, 0, FOLLOW.defaultDistance + FOLLOW.clearance), t.camera)[0]!;
+    expect(hit.distance).toBeLessThan(FOLLOW.minDistance + FOLLOW.clearance);
+    const dist = clampDistance(FOLLOW.defaultDistance, hit.distance, t.blockers.has(hit.object));
+    expect(pose.pivot.clone().addScaledVector(pose.back, dist).y).toBeLessThan(2.0);
+    // Walls keep the usual minimum.
+    expect(clampDistance(FOLLOW.defaultDistance, hit.distance, false)).toBe(FOLLOW.minDistance);
+  });
+
+  it("bound the camera even behind a nearer wall", () => {
+    // Pitch -0.7, a wall 0.32 m behind the walker and a ceiling at 2.0 m: the wall is hit first, and its
+    // usual minimum alone would hold the camera above the ceiling.
+    const head = new THREE.Vector3(0, 1.6, 0);
+    const pose = followPose(head, 0, -0.7);
+    const wall = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    wall.position.z = 0.32;
+    wall.updateMatrixWorld(true);
+    const slab = ceiling(2.0);
+    const t = explorerTargets([], [wall], [slab]);
+    const hits = castAll(new THREE.Raycaster(pose.pivot, pose.back, 0, FOLLOW.defaultDistance + FOLLOW.clearance), t.camera);
+    expect(hits.map((h) => h.object)).toEqual([wall, slab]);
+    const dist = followDistance(FOLLOW.defaultDistance, hits.map((h) => ({ distance: h.distance, cameraOnly: t.blockers.has(h.object) })));
+    expect(pose.pivot.clone().addScaledVector(pose.back, dist).y).toBeLessThan(2.0);
+    // Without a blocker the wall clamp is unchanged.
+    expect(followDistance(FOLLOW.defaultDistance, [{ distance: hits[0]!.distance, cameraOnly: false }])).toBe(clampDistance(FOLLOW.defaultDistance, hits[0]!.distance));
+    expect(followDistance(2, [])).toBe(2);
+  });
+
+  it("keep the smoothed camera below a ceiling while the walker turns (frame-stepped)", () => {
+    // A 2.6 m slab over x ≥ 0 only; the walker stands at x = -0.1 looking down (-0.7) and turns 180° in 2 s.
+    const slab = new THREE.Mesh(new THREE.PlaneGeometry(40, 40).rotateX(Math.PI / 2).translate(20, 0, 0), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    slab.position.y = 2.6;
+    slab.updateMatrixWorld(true);
+    const t = explorerTargets([], [], [slab]);
+    const head = new THREE.Vector3(-0.1, 1.6, 0);
+    const camera = followPose(head, Math.PI / 2, -0.7).pivot.clone().addScaledVector(followPose(head, Math.PI / 2, -0.7).back, FOLLOW.defaultDistance);
+    const dt = 1 / 60;
+    let crossed = 0;
+    let crossedUnconstrained = 0;
+    const loose = camera.clone();
+    for (let frame = 0; frame <= 120; frame++) {
+      const yaw = Math.PI / 2 - (Math.PI * frame) / 120;
+      const pose = followPose(head, yaw, -0.7);
+      const ray = new THREE.Raycaster(pose.pivot, pose.back, 0, FOLLOW.defaultDistance + FOLLOW.clearance);
+      const hits = castAll(ray, t.camera).map((h) => ({ distance: h.distance, cameraOnly: t.blockers.has(h.object) }));
+      const desired = pose.pivot.clone().addScaledVector(pose.back, followDistance(FOLLOW.defaultDistance, hits));
+      const k = 1 - Math.exp(-dt * 10);
+      camera.lerp(desired, k);
+      loose.lerp(desired, k);
+      keepBelowBlockers(pose.pivot, camera, [...t.blockers], FOLLOW.clearance);
+      const through = (p: THREE.Vector3) => {
+        const offset = p.clone().sub(pose.pivot);
+        const r = new THREE.Raycaster(pose.pivot, offset.clone().normalize(), 0, offset.length());
+        return castAll(r, [slab]).length > 0;
+      };
+      if (through(camera)) crossed++;
+      if (through(loose)) crossedUnconstrained++;
+    }
+    expect(crossedUnconstrained).toBeGreaterThan(0);
+    expect(crossed).toBe(0);
+  });
+
+  it("stay camera-only when nested inside a floor or wall group", () => {
+    const tread = plane(0);
+    const sign = ceiling(2.4);
+    const floors = new THREE.Group().add(tread, sign);
+    const pole = plane(1);
+    const sign2 = ceiling(2.5);
+    const walls = new THREE.Group().add(pole, sign2);
+    const t = explorerTargets([floors], [walls], [sign, sign2]);
+    expect(t.ground).toEqual([tread]);
+    expect(t.collider).toEqual([pole]);
+    expect(t.sky).not.toContain(sign);
+    expect(t.sky).not.toContain(sign2);
+    expect(t.camera).toEqual(expect.arrayContaining([tread, pole, sign, sign2]));
+    expect([...t.blockers]).toEqual([sign, sign2]);
+  });
+
+  it("add to walls and floors for the camera only, and are tested once when also a wall", () => {
+    const floor = plane(0);
+    const wall = plane(1);
+    const cap = ceiling(2.6);
+    const sign = ceiling(2.2);
+    const t = explorerTargets([floor], [wall, cap], [cap, sign]);
+    expect(t.ground).toEqual([floor]);
+    expect(t.collider).toEqual([wall, cap]);
+    expect(t.sky).toEqual([wall, cap, floor]);
+    expect(t.camera).toEqual([wall, cap, floor, sign]);
+    expect(t.camera.filter((o) => o === cap)).toHaveLength(1);
+  });
+
+  it("never hide the sky for the street probe (a sign over an exit stair)", () => {
+    const tread = plane(0);
+    tread.updateMatrixWorld(true);
+    const sign = ceiling(2.4);
+    const t = explorerTargets([tread], [], [sign]);
+    const up = new THREE.Raycaster(new THREE.Vector3(1.3, 1.6, 2.1), new THREE.Vector3(0, 1, 0), 0, 30);
+    expect(castAll(up, t.sky)).toHaveLength(0);
+    expect(castAll(up, t.camera)).toHaveLength(1);
+  });
+
+  it("are classified from GLB roles, hidden unless colliders are shown, and never collide in a collision asset", () => {
+    const root = new THREE.Group();
+    const slab = plane(2.6);
+    slab.name = "camera_blocker_b1";
+    const tagged = plane(2.7);
+    tagged.userData = { gteki_role: " Camera_Blocker " };
+    const ceilingNamed = plane(2.8);
+    ceilingNamed.name = "ceiling";
+    root.add(slab, tagged, ceilingNamed);
+    const roles = sceneFromGlbRoles(root, { assetRole: "visual+collision" });
+    expect(roles.cameraBlockers).toEqual([slab, tagged]);
+    expect(roles.colliders).toEqual([ceilingNamed]);
+    expect(slab.visible).toBe(false);
+    expect(tagged.visible).toBe(false);
+    const shown = plane(2.6);
+    shown.name = "camera_blocker";
+    sceneFromGlbRoles(new THREE.Group().add(shown), { showColliders: true });
+    expect(shown.visible).toBe(true);
   });
 });
