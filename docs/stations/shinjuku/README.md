@@ -135,7 +135,7 @@ Still needed for L2 (not claimed): an independent visual/interaction review (Lan
 
 ## G4 — delivery: **GAP** (release published by Owner override at [#16](https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757); QA and rights items open)
 
-Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --check`, which reproduces byte-identical files from hashed inputs (provenance uses the pinned `acquiredAt` in `sources/manifest.json`, not the local download time). Three fresh read-only Codex reviews ran: 15 findings, then 6 on the fixes, then 2 partials on those. All are fixed; the PR lists each one. Still open: an exact-SHA QA pass by Lane F. Release: published by Owner override at [#16](https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757); reuse after 2027-03-12 open.
+Reproducibility is in place: `pnpm typecheck`, `pnpm test`, and `import:e27 --check`, which reproduces byte-identical files from hashed inputs (provenance uses the pinned `acquiredAt` in `sources/manifest.json`, not the local download time). Three fresh read-only Codex reviews ran: 15 findings, then 6 on the fixes, then 2 partials on those. All are fixed; the PR lists each one. Still open: an exact-SHA QA pass by Lane F; the Owner's L2 acceptance sign-off. Release: published by Owner override at [#16](https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757); reuse after 2027-03-12 open.
 
 ## Coverage gaps (field work needed)
 
