@@ -550,7 +550,7 @@ export class App {
     const hud = this.ui.hud;
     hud.innerHTML = "";
     const mode = this.explorer.currentMode;
-    if (mode === "overview") return;
+    if (mode === "overview") { this.trackInstruction(); return; }
     const t = this.t;
     const ins = this.s.instructions[this.s.activeInstruction];
     if (mode === "guide" && ins) hud.append(el("div", "hud-instruction", ins.text));
@@ -601,6 +601,23 @@ export class App {
     });
     row.append(fp, net, ov, snd);
     hud.append(row);
+    this.trackInstruction();
+  }
+
+  private instructionEl: Element | null = null;
+  private instructionSize: ResizeObserver | null = null;
+
+  /** Keep `--hud-clear` (the guide instruction's bottom edge + 8 px) current for the toast, which sits below the instruction while one shows; unset otherwise. */
+  private trackInstruction(): void {
+    const cur = this.ui.hud.querySelector(".hud-instruction");
+    if (cur !== this.instructionEl) {
+      this.instructionSize?.disconnect();
+      this.instructionEl = cur;
+      if (cur && typeof ResizeObserver !== "undefined") (this.instructionSize ??= new ResizeObserver(() => this.trackInstruction())).observe(cur);
+    }
+    const r = cur?.getBoundingClientRect();
+    if (r) this.root.style.setProperty("--hud-clear", `${Math.round(r.bottom) + 8}px`);
+    else this.root.style.removeProperty("--hud-clear");
   }
 
   /** Refresh the guide HUD's instruction and pause label in place (the buttons must not be replaced mid-click); full rebuild if it isn't a guide HUD. */
@@ -614,6 +631,7 @@ export class App {
     else if (cur) cur.textContent = ins.text;
     else hud.prepend(el("div", "hud-instruction", ins.text));
     pause.textContent = this.explorer.guidePaused ? this.t.resume : this.t.pause;
+    this.trackInstruction();
   }
 
   /** Guide along the route, stopping where each wait for an opening happens. */
