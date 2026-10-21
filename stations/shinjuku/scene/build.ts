@@ -677,20 +677,35 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   // ---- source fare borders and unverified procedural access fill
   {
     const steel: THREE.BufferGeometry[] = [], base: THREE.BufferGeometry[] = [], panels: THREE.BufferGeometry[] = [];
+    // Joined fence runs hide the rail end faces. Keep the four visible sides;
+    // short curved collision pieces do not need separate closed glass boxes.
+    const rail = (a: THREE.Vector3, b: THREE.Vector3, w: number, h: number) => {
+      const geometry = boxAlong(a, b, w, h);
+      geometry.setIndex(Array.from(geometry.index!.array).slice(0, 24));
+      geometry.clearGroups();
+      return geometry;
+    };
+    const postCells = new Map<string, THREE.Vector3[]>(), spacing = .45;
+    const addPost = (p: THREE.Vector3) => {
+      const x = Math.floor(p.x / spacing), y = Math.floor(p.z / spacing), z = Math.round(p.y * 100);
+      for (let i = x - 1; i <= x + 1; i++) for (let j = y - 1; j <= y + 1; j++)
+        if ((postCells.get(`${z},${i},${j}`) ?? []).some(q => q.distanceToSquared(p) < spacing * spacing)) return;
+      const key = `${z},${x},${y}`, cell = postCells.get(key) ?? [];
+      cell.push(p); postCells.set(key, cell);
+      const post = new THREE.BoxGeometry(.044, 1.15, .044);
+      post.translate(p.x, p.y + .575, p.z);
+      steel.push(post);
+    };
     for (const f of protection.fences) {
       const z = f.zMin + 0.05, a = v3({ ...f.a, z }), b = v3({ ...f.b, z });
-      base.push(boxAlong(a.clone().add(new THREE.Vector3(0, .08, 0)), b.clone().add(new THREE.Vector3(0, .08, 0)), .12, .16));
-      panels.push(boxAlong(a.clone().add(new THREE.Vector3(0, .63, 0)), b.clone().add(new THREE.Vector3(0, .63, 0)), .035, .96));
-      steel.push(boxAlong(a.clone().add(new THREE.Vector3(0, 1.13, 0)), b.clone().add(new THREE.Vector3(0, 1.13, 0)), .045, .045));
+      base.push(rail(a.clone().add(new THREE.Vector3(0, .08, 0)), b.clone().add(new THREE.Vector3(0, .08, 0)), .12, .16));
+      panels.push(wallQuad(f.a, f.b, z + .15, z + 1.11));
+      steel.push(rail(a.clone().add(new THREE.Vector3(0, 1.13, 0)), b.clone().add(new THREE.Vector3(0, 1.13, 0)), .045, .045));
       const count = Math.max(1, Math.ceil(a.distanceTo(b) / 1.4));
-      for (let i = 0; i <= count; i++) {
-        const p = a.clone().lerp(b, i / count);
-        const post = new THREE.BoxGeometry(.044, 1.15, .044);
-        post.translate(p.x, p.y + .575, p.z);
-        steel.push(post);
-      }
+      for (let i = 0; i <= count; i++) addPost(a.clone().lerp(b, i / count));
       propWalls.push(f);
     }
+    postCells.clear();
     for (const [geos, material] of [[steel, mat.steel], [base, mat.darkSteel], [panels, mat.glass]] as const) {
       const geo = merged(geos);
       if (geo) { const mesh = new THREE.Mesh(track(geo), material); mesh.name = "fare/access fence"; root.add(mesh); }
