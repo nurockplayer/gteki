@@ -54,7 +54,8 @@ jobs:
           GTEKI_ROOT: ${{ github.workspace }}
         run: pnpm exec playwright test specs/01-smoke.spec.ts specs/03-guided-walkthrough.spec.ts --project=desktop-chromium --trace=off
 
-      # Failure only, and small: screenshots, error context and videos; no HTML report, no traces.
+      # Failure only, and small: per-test evidence JSON (records the quality path), screenshots and error
+      # context; no HTML report, no traces.
       - name: Upload failure artifacts
         if: failure()
         uses: actions/upload-artifact@v4
@@ -62,6 +63,7 @@ jobs:
           name: e2e-smoke-results
           path: |
             tests/e2e/artifacts/results.json
+            tests/e2e/artifacts/evidence/**/*.json
             tests/e2e/artifacts/test-results
           retention-days: 7
           if-no-files-found: ignore
