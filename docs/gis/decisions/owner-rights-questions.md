@@ -1,5 +1,7 @@
 # Owner rights questions (yes/no)
 
+> **Answered 2026-10-22.** All 12 have Owner answers ([#39 comment 6324726321](https://github.com/nurockplayer/gteki/issues/39#issuecomment-6324726321)); see `2026-10-22-owner-rights-answers.md`. The defaults below are kept for history; the Answer column is what applies now.
+
 Open rights questions from Issues #39 and #26 and the committed rights records. Only the Owner can decide these. Each is yes/no. Answer in the issue and the lead will record it under `docs/gis/decisions/`.
 
 - **Nothing here blocks visual prototyping.** The default for every item is the conservative one and is what applies today.
@@ -9,20 +11,20 @@ Open rights questions from Issues #39 and #26 and the committed rights records. 
 
 ## Quick table
 
-| # | Question (short) | Default if unanswered |
-| --- | --- | --- |
-| 1 | Ship Tokyo S10 factual fields? | No |
-| 2 | Ship Tokyo S03 geometry and factual fields? | No |
-| 3 | Does the S03 dataset grant control over the bureau site reservation? | No |
-| 4 | Ship S03 promotional prose, links and PDF illustration? | No |
-| 5 | Ship PLATEAU related station, railway and border layers? | No |
-| 6 | Ship PLATEAU related shelter, park and emergency-route layers? | No |
-| 7 | Ship PLATEAU related landmark layer? | No |
-| 8 | Accept catalog-API PLATEAU files as the release the licence covers? | No (nothing new ships on it) |
-| 9 | Keep textures out of every ship? | Yes |
-| 10 | Add the "building bases flattened" notice to the Shinjuku credit? | Yes |
-| 11 | Treat the E27 package PDL 1.0 as covering both E27 resources? | No |
-| 12 | Does road risk acceptance (b) also cover Shinjuku (13104) tran? | No |
+| # | Question (short) | Default if unanswered | Answer (2026-10-22) |
+| --- | --- | --- | --- |
+| 1 | Ship Tokyo S10 factual fields? | No | **Yes** |
+| 2 | Ship Tokyo S03 geometry and factual fields? | No | **Yes** |
+| 3 | Does the S03 dataset grant control over the bureau site reservation? | No | **Yes** |
+| 4 | Ship S03 promotional prose, links and PDF illustration? | No | No |
+| 5 | Ship PLATEAU related station, railway and border layers? | No | No |
+| 6 | Ship PLATEAU related shelter, park and emergency-route layers? | No | No |
+| 7 | Ship PLATEAU related landmark layer? | No | No |
+| 8 | Accept catalog-API PLATEAU files as the release the licence covers? | No (nothing new ships on it) | **Accept** |
+| 9 | Keep textures out of every ship? | Yes | Yes |
+| 10 | Add the "building bases flattened" notice to the Shinjuku credit? | Yes | Yes (wording pending) |
+| 11 | Treat the E27 package PDL 1.0 as covering both E27 resources? | No | No |
+| 12 | Does road risk acceptance (b) also cover Shinjuku (13104) tran? | No | **Yes** |
 
 ## Questions
 
