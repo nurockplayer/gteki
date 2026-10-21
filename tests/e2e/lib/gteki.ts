@@ -201,7 +201,11 @@ export async function labelUiOverlaps(page: Page) {
       const a = rects[i]!, b = rects[j]!;
       if (Math.min(a.right, b.right) - Math.max(a.left, b.left) > 4 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 4) pairs++;
     }
-    return { visibleLabels: rects.length, labelLabelOverlaps: pairs, uiOverlaps: hits };
+    // Spread of on-screen label anchors (rect centres, the CSS2D anchor) as a share of the viewport's shorter side:
+    // a cheap proxy for how much of the screen the station's POIs span (overview framing, #109).
+    const xs = rects.map((r) => r.left + r.width / 2), ys = rects.map((r) => r.top + r.height / 2);
+    const spread = rects.length > 1 ? Math.round((Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) / Math.min(innerWidth, innerHeight)) * 100) / 100 : 0;
+    return { visibleLabels: rects.length, labelLabelOverlaps: pairs, labelSpread: spread, uiOverlaps: hits };
   });
 }
 
