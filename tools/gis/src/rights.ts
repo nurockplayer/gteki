@@ -15,7 +15,7 @@ export type RightsEvidence = {source_id:string;sha256:string;location:string;quo
 export type RightsRecord = {
   source_id:string;source_sha256:string;tool_input_sha256:string;station_ids:string[];
   licence:{value:string|null;status:LicenceStatus;scope:string};
-  resource_licence:{value:string|null;status:'RESOURCE_LEVEL_DECLARED'|'UNKNOWN'};
+  resource_licence:{value:string|null;status:'RESOURCE_LEVEL_DECLARED'|'UNKNOWN';reason?:string};
   file_embedded_licence:{value:string|null;status:'FILE_EMBEDDED'|'UNKNOWN';scope?:string;reason?:string};
   declarations:Array<{value:string;status:LicenceStatus;evidence:RightsEvidence}>;
   evidence:RightsEvidence[];input_sources:Array<{source_id:string;sha256:string}>;
@@ -36,12 +36,33 @@ export function urlEvidence(source_id:string,sha256:string,location:string,url:s
   if(!/^[a-f0-9]{64}$/.test(sha256)||!/^https:\/\//.test(url))throw new Error('Invalid URL evidence');
   return {source_id,sha256,location,exact_url:url,scope};
 }
+export type LicenceDeclaration={key:string;value:string};
+const LICENCE_KEYS=['license','license_id','license_title','license_url'] as const;
+/** Identifier-style fields must agree; titles and URLs are descriptive and are preserved but not compared. */
+const IDENTIFIER_KEYS=new Set(['license','license_id']);
+const normalizeIdentifier=(value:string)=>value.toLowerCase().replace(/[\s_.-]+/g,'');
+/** Collect every own, nonblank licence declaration of one level. Disagreeing identifier fields at the
+ * same level (for example license "CC-BY-4.0" vs license_id "all-rights-reserved") resolve to UNKNOWN. */
+export function licenceDeclarations(level:unknown,valueKeys:readonly string[]=LICENCE_KEYS):{declarations:LicenceDeclaration[];value:string|null;conflict:boolean} {
+  const declarations=LICENCE_KEYS.flatMap(key=>{const v=own(level,key);return typeof v==='string'&&v.trim()?[{key:key as string,value:v}]:[];});
+  const identifiers=new Set(declarations.filter(d=>IDENTIFIER_KEYS.has(d.key)).map(d=>normalizeIdentifier(d.value)));
+  const conflict=identifiers.size>1;
+  const value=conflict?null:declarations.find(d=>valueKeys.includes(d.key))?.value??null;
+  return {declarations,value,conflict};
+}
 /** A package declaration never becomes a resource declaration, including inherited-looking fields. */
-export function packageLicence(payload:unknown):{value:string|null;resource_fields:string[]} {
+export function packageLicence(payload:unknown):{value:string|null;resource_fields:string[];declarations:LicenceDeclaration[];conflict:boolean} {
   const result=own(payload,'result');
   if(own(payload,'success')!==true||!result||typeof result!=='object')throw new Error('Invalid CKAN rights snapshot');
-  const value=own(result,'license_id');
-  return {value:typeof value==='string'&&value.trim()?value:null,resource_fields:['license','license_id','license_title','license_url']};
+  const resolved=licenceDeclarations(result,['license_id']);
+  return {value:resolved.value,resource_fields:[...LICENCE_KEYS],declarations:resolved.declarations,conflict:resolved.conflict};
+}
+/** Evidence for one declaration; very long values are truncated to the evidence bound, never dropped. */
+function declarationEvidence(source_id:string,sha256:string,location:string,declaration:LicenceDeclaration,scope:string):RightsEvidence {
+  if(declaration.key==='license_url'&&declaration.value.startsWith('https://')&&declaration.value.length<=2000)return urlEvidence(source_id,sha256,location,declaration.value,scope);
+  const words=declaration.value.trim().split(/\s+/).slice(0,15).join(' ');
+  const quote=words.length>170?words.slice(0,170):words;
+  return shortEvidence(source_id,sha256,location,quote,quote===declaration.value.trim()?scope:`${scope} Value truncated to the evidence bound.`);
 }
 export function exactResourceUrlIndex(resources:unknown, url:string):number|null {
   if(!Array.isArray(resources))return null;
@@ -201,12 +222,14 @@ export async function generateRights():Promise<RightsRecord[]> {
     const parent=parentFor(source);
     if(parent) {
       const p=await getStoredSource(parent),payload=await readJson<unknown>(p.path),decl=packageLicence(payload);
-      if(decl.value){
-        const ev=shortEvidence(parent,p.record.sha256,'/result/license_id',decl.value,'Package only; no resource or third-party scope inferred.');evidence.push(ev);
+      const packageScope=(key:string)=>key==='license_id'?'Package only; no resource or third-party scope inferred.':key==='license_title'?'Package licence title only.':key==='license_url'?'Package licence link only.':'Package licence declaration only; no resource or third-party scope inferred.';
+      for(const d of decl.declarations)evidence.push(declarationEvidence(parent,p.record.sha256,`/result/${d.key}`,d,decl.conflict?`CONFLICTING_DECLARATIONS: ${packageScope(d.key)}`:packageScope(d.key)));
+      if(decl.conflict){
+        licence={value:null,status:'UNKNOWN',scope:'CONFLICTING_DECLARATIONS: package license and license_id disagree; all declarations preserved as evidence; licence UNKNOWN.'};
+        caveats.push(`CONFLICTING_DECLARATIONS at package level in ${parent}: license and license_id disagree; no licence is resolved.`);
+      } else if(decl.value){
+        const ev=evidence.find(e=>e.source_id===parent&&e.location==='/result/license_id')??shortEvidence(parent,p.record.sha256,'/result/license_id',decl.value,'Package only; no resource or third-party scope inferred.');
         licence={value:decl.value,status:'PACKAGE_LEVEL_DECLARED',scope:ev.scope};declarations.push({value:decl.value,status:'PACKAGE_LEVEL_DECLARED',evidence:ev});
-        const title=own(own(payload,'result'),'license_title'),url=own(own(payload,'result'),'license_url');
-        if(typeof title==='string'&&title.trim())evidence.push(shortEvidence(parent,p.record.sha256,'/result/license_title',title,'Package licence title only.'));
-        if(typeof url==='string'&&url.startsWith('https://'))evidence.push(urlEvidence(parent,p.record.sha256,'/result/license_url',url,'Package licence link only.'));
         if(decl.value==='CC-BY-4.0'){attributionRequired='YES';modificationRequired='YES';caveats.push('CC BY obligations are conditional on applicability; exact resource coverage and required credit parties remain UNKNOWN.');}
       }
       if(source.source_id!==parent){
@@ -214,9 +237,18 @@ export async function generateRights():Promise<RightsRecord[]> {
         const matched=matchAcquiredResource(resources,stored.record,source,{source_id:parent,sha256:p.record.sha256});
         const i=matched.index,r=resources[i];
         evidence.push(urlEvidence(parent,p.record.sha256,`/result/resources/${i}/url`,matched.url,`Exact catalog resource URL matched acquisition ${matched.field}${matched.field==='expected_url'?'; resolved_url differs after HTTP redirect; verified hashed resolution_evidence pointer':''}. Package membership only.`));
-        const values=decl.resource_fields.flatMap(key=>{const v=own(r,key);return typeof v==='string'&&v.trim()?[{key,value:v}]:[];});
-        if(values.length){const declared=values[0]!;resourceLicence={value:declared.value,status:'RESOURCE_LEVEL_DECLARED'};const ev=shortEvidence(parent,p.record.sha256,`/result/resources/${i}/${declared.key}`,declared.value,'Exact resource declaration; third-party scope still requires checking.');evidence.push(ev);licence={value:declared.value,status:'RESOURCE_LEVEL_DECLARED',scope:ev.scope};declarations.push({value:declared.value,status:'RESOURCE_LEVEL_DECLARED',evidence:ev});}
-        else evidence.push({source_id:parent,sha256:p.record.sha256,location:`/result/resources/${i}`,scope:'No own nonblank license/license_id/license_title/license_url field. This absence grants no permission.'});
+        const resolved=licenceDeclarations(r);
+        for(const d of resolved.declarations)evidence.push(declarationEvidence(parent,p.record.sha256,`/result/resources/${i}/${d.key}`,d,resolved.conflict?'CONFLICTING_DECLARATIONS: exact resource declaration; third-party scope still requires checking.':'Exact resource declaration; third-party scope still requires checking.'));
+        if(resolved.conflict) {
+          const reason='CONFLICTING_DECLARATIONS: resource license and license_id disagree; all declarations preserved as evidence; licence UNKNOWN.';
+          resourceLicence={value:null,status:'UNKNOWN',reason};licence={value:null,status:'UNKNOWN',scope:reason};
+          caveats.push(`CONFLICTING_DECLARATIONS at resource level in ${parent} resources/${i}: no licence is resolved, and the package-level declaration is not inherited.`);
+        } else if(resolved.value!==null) {
+          const declared=resolved.declarations.find(d=>d.value===resolved.value)!;
+          resourceLicence={value:declared.value,status:'RESOURCE_LEVEL_DECLARED'};
+          const ev=evidence.find(e=>e.location===`/result/resources/${i}/${declared.key}`)!;
+          licence={value:declared.value,status:'RESOURCE_LEVEL_DECLARED',scope:ev.scope};declarations.push({value:declared.value,status:'RESOURCE_LEVEL_DECLARED',evidence:ev});
+        } else evidence.push({source_id:parent,sha256:p.record.sha256,location:`/result/resources/${i}`,scope:'No own nonblank license/license_id/license_title/license_url field. This absence grants no permission.'});
       }
     }
     // Only already-acquired supporting evidence is used for the original sources.
@@ -236,6 +268,12 @@ export async function generateRights():Promise<RightsRecord[]> {
         const memberIndexes=Array.isArray(resources)?resources.flatMap((resource:unknown,index:number)=>own(resource,'url')===stored.record.resolved_url?[index]:[]):[];
         if(memberIndexes.length!==1) {
           caveats.push(`Supporting CKAN package snapshot has ${memberIndexes.length} exact resource URL matches for ${source.source_id}; package licence and availability notes are not attributed (UNKNOWN).`);
+        } else if(decl.conflict){
+          const i=memberIndexes[0]!;
+          for(const d of decl.declarations)evidence.push(declarationEvidence(support.record.source_id,doc.sha256,`supporting_documents/ckan-metadata:/result/${d.key}`,d,'CONFLICTING_DECLARATIONS: package declaration preserved; licence UNKNOWN.'));
+          evidence.push(urlEvidence(support.record.source_id,doc.sha256,`supporting_documents/ckan-metadata:/result/resources/${i}/url`,stored.record.resolved_url,'Exact catalog resource URL matched acquisition resolved_url in the hashed supporting CKAN snapshot. Package membership only.'));
+          licence={value:null,status:'UNKNOWN',scope:'CONFLICTING_DECLARATIONS: package license and license_id disagree; licence UNKNOWN.'};
+          caveats.push(`CONFLICTING_DECLARATIONS in the supporting CKAN package snapshot for ${source.source_id}: license and license_id disagree; no licence is resolved.`);
         } else if(decl.value){
           const i=memberIndexes[0]!;
           evidence.push(urlEvidence(support.record.source_id,doc.sha256,`supporting_documents/ckan-metadata:/result/resources/${i}/url`,stored.record.resolved_url,'Exact catalog resource URL matched acquisition resolved_url in the hashed supporting CKAN snapshot. Package membership only.'));
@@ -279,6 +317,10 @@ export async function generateRights():Promise<RightsRecord[]> {
               if(!text.includes(quote))throw new Error(`PLATEAU policy evidence changed: ${location}`);
               const ev=shortEvidence(policy.record.source_id,policy.record.sha256,location,quote,'PLATEAU Site Policy §3 linked by exact parent package declaration.');evidence.push(ev);
               if(quote==='公共データ利用規約（第1.0版）')declarations.push({value:'PLATEAU Site Policy §3; CC BY 4.0 compatible',status:'SITE_TERMS',evidence:ev});
+            }
+            if(declared.conflict) {
+              for(const d of declared.declarations)evidence.push(declarationEvidence(packageId,pkg.record.sha256,`/result/${d.key}`,d,'CONFLICTING_DECLARATIONS: package declaration preserved; licence UNKNOWN.'));
+              caveats.push(`CONFLICTING_DECLARATIONS at package level in ${packageId}: license and license_id disagree; no licence is resolved.`);
             }
             if(declared.value) {
               const ev=shortEvidence(packageId,pkg.record.sha256,'/result/license_id',declared.value,'Package declaration applies at package scope only; resource rights remain unknown.');
@@ -362,6 +404,7 @@ export async function generateRights():Promise<RightsRecord[]> {
       let licence:RightsRecord['licence']={value:null,status:'UNKNOWN',scope:'No exact package resource URL establishes the source archive relationship.'};
       if(exact) {
         evidence.push(urlEvidence(packageId,pkg.record.sha256,`/result/resources/${matches[0]}/url`,archive.url,'Exact package resource URL for the archive containing this range-extracted member.'));
+        if(packageDecl.conflict)for(const d of packageDecl.declarations)evidence.push(declarationEvidence(packageId,pkg.record.sha256,`/result/${d.key}`,d,'CONFLICTING_DECLARATIONS: package declaration preserved; licence UNKNOWN.'));
         if(packageDecl.value) {const ev=shortEvidence(packageId,pkg.record.sha256,'/result/license_id',packageDecl.value,'PACKAGE_LEVEL_DECLARED_VIA_PARENT_RESOURCE');evidence.push(ev);declarations.push({value:packageDecl.value,status:'PACKAGE_LEVEL_DECLARED',evidence:ev});licence={value:packageDecl.value,status:'PACKAGE_LEVEL_DECLARED',scope:'PACKAGE_LEVEL_DECLARED_VIA_PARENT_RESOURCE'};}
         if(typeof packageLicenseUrl==='string'&&packageLicenseUrl)evidence.push(urlEvidence(packageId,pkg.record.sha256,'/result/license_url',packageLicenseUrl,'Package licence link points to PLATEAU Site Policy §3.'));
       }
@@ -370,7 +413,7 @@ export async function generateRights():Promise<RightsRecord[]> {
         const ev=shortEvidence(policy.record.source_id,policy.record.sha256,'HTML §3 コンテンツの利用',policyQuote,'PLATEAU Site Policy §3 referenced by the package declaration.');
         evidence.push(ev);declarations.push({value:'PLATEAU Site Policy §3',status:'SITE_TERMS',evidence:ev});
       }
-      const record:RightsRecord={source_id:sourceId,source_sha256:member.sha256,tool_input_sha256:fingerprint,station_ids:['shinjuku'],licence,resource_licence:{value:null,status:'UNKNOWN'},file_embedded_licence:{value:null,status:'UNKNOWN',reason:'No exact file-embedded declaration was established for the extracted member.'},declarations,evidence,input_sources:[{source_id:sourceId,sha256:member.sha256},{source_id:packageId,sha256:pkg.record.sha256},...(exact?[{source_id:policy.record.source_id,sha256:policy.record.sha256}]:[])],attribution:{required:'YES',text_required:'出典：国土交通省 PLATEAUウェブサイト（当該ページのURL）',proposed_text:'出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成',status:'SITE_EXAMPLE; verify exact resource credit'},modification_notice:{required:'YES',text:'State the actual edits and identify the source; do not imply official authorship.',status:'REQUIRED_IF_TERMS_APPLY'},caveats:['Rights remain package-level only; resource and extracted-member scope remains unverified.','G空間 3D city model copyright belongs to the municipality; third-party originals require separate review.',...(exact?[]:[`No exact package resource URL or pointer matched member archive ${archive.url}; licence remains UNKNOWN.`])],publish_gate:'HOLD',clearance_required:[`Confirm rights covering exact archive ${archive.url} and member ${member.member} SHA-256 ${member.sha256}.`,'Resolve third-party original and individual-law caveats.','Record required credit parties and actual modification notice.'],file_rights_observations:[],verification:'UNVERIFIED',routable:false};
+      const record:RightsRecord={source_id:sourceId,source_sha256:member.sha256,tool_input_sha256:fingerprint,station_ids:['shinjuku'],licence,resource_licence:{value:null,status:'UNKNOWN'},file_embedded_licence:{value:null,status:'UNKNOWN',reason:'No exact file-embedded declaration was established for the extracted member.'},declarations,evidence,input_sources:[{source_id:sourceId,sha256:member.sha256},{source_id:packageId,sha256:pkg.record.sha256},...(exact?[{source_id:policy.record.source_id,sha256:policy.record.sha256}]:[])],attribution:{required:'YES',text_required:'出典：国土交通省 PLATEAUウェブサイト（当該ページのURL）',proposed_text:'出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成',status:'SITE_EXAMPLE; verify exact resource credit'},modification_notice:{required:'YES',text:'State the actual edits and identify the source; do not imply official authorship.',status:'REQUIRED_IF_TERMS_APPLY'},caveats:['Rights remain package-level only; resource and extracted-member scope remains unverified.','G空間 3D city model copyright belongs to the municipality; third-party originals require separate review.',...(packageDecl.conflict?['CONFLICTING_DECLARATIONS at package level in the 2023 package: license and license_id disagree; no licence is resolved.']:[]),...(exact?[]:[`No exact package resource URL or pointer matched member archive ${archive.url}; licence remains UNKNOWN.`])],publish_gate:'HOLD',clearance_required:[`Confirm rights covering exact archive ${archive.url} and member ${member.member} SHA-256 ${member.sha256}.`,'Resolve third-party original and individual-law caveats.','Record required credit parties and actual modification notice.'],file_rights_observations:[],verification:'UNVERIFIED',routable:false};
       records.push(record);
     }
   }

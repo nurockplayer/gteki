@@ -1,11 +1,11 @@
 # POI inventory: tokyo-shinjuku-facilities-zip
 
 - Source SHA-256: `fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31`
-- Tool-input SHA-256: `3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0`
+- Tool-input SHA-256: `57d5e579f559bff361ec90e230322cb62015817c8a593d24c74ebede63b70062`
 - Station IDs: ["shinjuku"]
 - Verification: UNVERIFIED; routable: false
 - Rights observations: {"manifest_attribution":"出典：東京都都市整備局「新宿駅周辺の施設情報等」（当該リソースURL）","source_property_fields":["原典","出典","著作権","copyright","Copyright","source","Source","attribution"]}
-- Literal-value artifact store path: `raw/65346fc7024f8f59b9015a6e8549d15997201a8c588f067e4165cadad7153fd9/tokyo-shinjuku-facilities-zip.literal-values.json` (SHA-256 `65346fc7024f8f59b9015a6e8549d15997201a8c588f067e4165cadad7153fd9`, 22 tables)
+- Literal-value artifact store path: `raw/86d92362a75889bafae399e9dbb3a0616aaaf8c9697c6b2ca5b63cf70cc3defe/tokyo-shinjuku-facilities-zip.literal-values.json` (SHA-256 `86d92362a75889bafae399e9dbb3a0616aaaf8c9697c6b2ca5b63cf70cc3defe`, 22 tables)
 
 | Member | Features | Bbox | CRS |
 | --- | ---: | --- | --- |

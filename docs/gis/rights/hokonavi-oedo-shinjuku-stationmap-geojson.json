@@ -1,7 +1,7 @@
 {
   "source_id": "hokonavi-oedo-shinjuku-stationmap-geojson",
   "source_sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090",
-  "tool_input_sha256": "3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0",
+  "tool_input_sha256": "57d5e579f559bff361ec90e230322cb62015817c8a593d24c74ebede63b70062",
   "station_ids": [
     "shinjuku"
   ],

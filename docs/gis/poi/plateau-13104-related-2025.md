@@ -1,11 +1,11 @@
 # POI inventory: plateau-13104-related-2025
 
 - Source SHA-256: `d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9`
-- Tool-input SHA-256: `3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0`
+- Tool-input SHA-256: `57d5e579f559bff361ec90e230322cb62015817c8a593d24c74ebede63b70062`
 - Station IDs: ["shinjuku"]
 - Verification: UNVERIFIED; routable: false
 - Rights observations: {"manifest_attribution":"UNKNOWN exact original-data attribution; PLATEAU and municipality source credits pending resource scope","source_property_fields":["原典","出典","著作権","copyright","Copyright","source","Source","attribution"]}
-- Literal-value artifact store path: `raw/8c1b557b045654b0b158a0a68dfd9885cf896c33052c92c8a8f3ab81bab22831/plateau-13104-related-2025.literal-values.json` (SHA-256 `8c1b557b045654b0b158a0a68dfd9885cf896c33052c92c8a8f3ab81bab22831`, 10 tables)
+- Literal-value artifact store path: `raw/be15983b14ff13da6dbb050e76048d29e538e4b4d1b0eaf026e7c09b37ec3bb1/plateau-13104-related-2025.literal-values.json` (SHA-256 `be15983b14ff13da6dbb050e76048d29e538e4b4d1b0eaf026e7c09b37ec3bb1`, 10 tables)
 
 | Member | Features | Bbox | CRS |
 | --- | ---: | --- | --- |

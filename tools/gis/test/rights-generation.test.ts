@@ -161,6 +161,39 @@ describe('rights generation for vintage members',()=>{
     expect(fixture.writes.size).toBe(0);
   });
 
+  describe('conflicting licence declarations are never silently resolved',()=>{
+    const id='tokyo-shinjuku-facilities-reference-pdf',parent='tokyo-shinjuku-facilities-package',url='https://example.invalid/resource.pdf';
+    const install=(result:Record<string,unknown>)=>{
+      fixture.sources.push({...fixture.sources[0] as object,source_id:id,expected_url:url,resolution:{kind:'ckan_resource',catalog_source_id:parent}});
+      fixture.records.set(id,{source_id:id,sha256:'1'.repeat(64),resolved_url:url,resolution_evidence:{source_id:parent,sha256:packageSha,json_pointer:'/result/resources/0/url'}});
+      fixture.records.set(parent,{source_id:parent,sha256:packageSha});
+      fixture.json.set(`/virtual/source/${parent}`,{success:true,result});
+    };
+    it('resource-level license vs license_id: UNKNOWN with CONFLICTING_DECLARATIONS and both declarations kept as evidence',async()=>{
+      // Regression: license won and RESOURCE_LEVEL_DECLARED CC-BY-4.0 hid the restriction.
+      install({license_id:'CC-BY-4.0',resources:[{url,license:'CC-BY-4.0',license_id:'all-rights-reserved'}]});
+      const record=(await generateRights()).find(r=>r.source_id===id)!;
+      expect(record.resource_licence).toMatchObject({value:null,status:'UNKNOWN',reason:expect.stringContaining('CONFLICTING_DECLARATIONS')});
+      expect(record.licence).toMatchObject({value:null,status:'UNKNOWN',scope:expect.stringContaining('CONFLICTING_DECLARATIONS')});
+      expect(record.evidence).toContainEqual(expect.objectContaining({location:'/result/resources/0/license',quote:'CC-BY-4.0'}));
+      expect(record.evidence).toContainEqual(expect.objectContaining({location:'/result/resources/0/license_id',quote:'all-rights-reserved'}));
+      expect(record.caveats.some(c=>c.includes('CONFLICTING_DECLARATIONS'))).toBe(true);
+      expect(record.publish_gate).toBe('HOLD');
+    });
+    it('package-level license vs license_id: UNKNOWN, no inherited package licence, all declarations preserved',async()=>{
+      install({license:'CC-BY-4.0',license_id:'all-rights-reserved',license_title:'Custom terms',license_url:'https://example.invalid/terms',resources:[{url}]});
+      const record=(await generateRights()).find(r=>r.source_id===id)!;
+      expect(record.licence).toMatchObject({value:null,status:'UNKNOWN',scope:expect.stringContaining('CONFLICTING_DECLARATIONS')});
+      expect(record.declarations).toEqual([]);
+      for(const key of ['license','license_id','license_title','license_url'])expect(record.evidence.some(e=>e.location===`/result/${key}`)).toBe(true);
+      expect(record.caveats.some(c=>c.includes('CONFLICTING_DECLARATIONS at package level'))).toBe(true);
+    });
+    it('agreeing declarations keep the resolved resource licence',async()=>{
+      install({license_id:'cc-by',resources:[{url,license:'CC-BY-4.0',license_id:'cc by 4.0'}]});
+      const record=(await generateRights()).find(r=>r.source_id===id)!;
+      expect(record.resource_licence).toMatchObject({value:'CC-BY-4.0',status:'RESOURCE_LEVEL_DECLARED'});
+    });
+  });
   describe('Ikebukuro package attribution requires exact resource membership',()=>{
     const docSha='9'.repeat(64),docPath='/virtual/store/raw/doc/package_show';
     const install=(resources:Array<{url:string}>)=>{

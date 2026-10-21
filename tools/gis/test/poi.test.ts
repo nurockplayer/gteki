@@ -39,6 +39,33 @@ describe('POI source inspection', () => {
     expect(unrelated.observations.some((row: any) => row.latitude === 99 || row.longitude === 100)).toBe(false);
   });
 
+  // Regression: latitude=999 / longitude=1000 used to be published as numeric coordinates.
+  it.each([
+    ['both impossible', '999', '1000', null, null, 'INVALID_RANGE'],
+    ['latitude only impossible', '91', '139.7', null, 139.7, 'INVALID_RANGE'],
+    ['longitude only impossible', '35.7', '-180.5', 35.7, null, 'INVALID_RANGE'],
+    ['boundary values are valid', '90', '-180', 90, -180, 'LITERAL_UNDECLARED_CRS'],
+    ['non-numeric', 'north', '139.7', null, 139.7, 'MISSING_OR_NON_NUMERIC'],
+    ['in range', '35.69', '139.7', 35.69, 139.7, 'LITERAL_UNDECLARED_CRS'],
+  ])('publishes CSV coordinates only when finite and in range: %s', (_label, lat, lon, expectedLat, expectedLon, status) => {
+    const report = inspectPoiCsv('toei-stores-shinjuku-csv', 'a'.repeat(64), Buffer.from(`店舗ID,緯度,経度\nE27,${lat},${lon}\n`)) as any;
+    expect(report.observations[0]).toMatchObject({ latitude: expectedLat, longitude: expectedLon, coordinate_status: status, raw_latitude: lat, raw_longitude: lon });
+  });
+
+  // Regression: features literally named "(blank)" / "(non-scalar)" collided with the table sentinels.
+  it('keeps literal "(blank)" and "(non-scalar)" values apart from blank and non-scalar counts', () => {
+    const feature = (properties: Record<string, unknown>) => ({ type: 'Feature', properties, geometry: { type: 'Point', coordinates: [139.7, 35.7] } });
+    const report = inspectPoiGeoJson('sentinels', 'a'.repeat(64), 'sentinels.geojson', { type: 'FeatureCollection', features: [
+      feature({ name: '(blank)' }), feature({ name: '(non-scalar)' }), feature({ name: '' }), feature({ name: null }), feature({ name: { nested: true } }), feature({ name: 'real' }), feature({ name: '(blank)' }),
+    ] }) as any;
+    const table = report.literal_value_tables.find((item: any) => item.field === 'name');
+    expect(table.values).toEqual({ '(blank)': 2, '(non-scalar)': 1, real: 1 });
+    expect(table).toMatchObject({ value_count: 3, blank_count: 2, non_scalar_count: 1, complete: true });
+    expect(report.literal_field_distributions.name).toMatchObject({ blank_count: 2, distinct_count: 3, distinct_values: { values: { '(blank)': 2, '(non-scalar)': 1, real: 1 }, blank_count: 2, non_scalar_count: 1 } });
+    const csv = inspectPoiCsv('toei-stores-shinjuku-csv', 'a'.repeat(64), Buffer.from('店舗名\n(blank)\n\u00a0 \nreal\n')) as any;
+    expect(csv.columns[0]).toMatchObject({ distinct_values: { values: { '(blank)': 1, real: 1 }, blank_count: 1 } });
+  });
+
   it('preserves duplicate CSV headers and rejects non-decimal coordinate values', () => {
     const csv = Buffer.from('施設名,緯度,緯度,経度,extra\n店,0x23,35.6,139.7,1e2\n');
     const report = inspectPoiCsv('toei-stores-shinjuku-csv', 'f'.repeat(64), csv) as any;

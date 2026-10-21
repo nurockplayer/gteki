@@ -1,11 +1,11 @@
 # POI inventory: plateau-13116-related-2025
 
 - Source SHA-256: `df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787`
-- Tool-input SHA-256: `3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0`
+- Tool-input SHA-256: `57d5e579f559bff361ec90e230322cb62015817c8a593d24c74ebede63b70062`
 - Station IDs: ["ikebukuro"]
 - Verification: UNVERIFIED; routable: false
 - Rights observations: {"manifest_attribution":"UNKNOWN exact original-data attribution; PLATEAU and municipality source credits pending resource scope","source_property_fields":["原典","出典","著作権","copyright","Copyright","source","Source","attribution"]}
-- Literal-value artifact store path: `raw/0c0c2a0e3e74815793e9297c1c85c0227025f6d87f3a6a8318d552ed2c4cb096/plateau-13116-related-2025.literal-values.json` (SHA-256 `0c0c2a0e3e74815793e9297c1c85c0227025f6d87f3a6a8318d552ed2c4cb096`, 10 tables)
+- Literal-value artifact store path: `raw/4197924ed1f33203c733364c65ee270b2801fb3afc3899be7a64bd59ee10e076/plateau-13116-related-2025.literal-values.json` (SHA-256 `4197924ed1f33203c733364c65ee270b2801fb3afc3899be7a64bd59ee10e076`, 10 tables)
 
 | Member | Features | Bbox | CRS |
 | --- | ---: | --- | --- |

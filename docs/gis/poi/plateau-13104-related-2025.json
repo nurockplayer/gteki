@@ -2,7 +2,7 @@
   "source_id": "plateau-13104-related-2025",
   "source_sha256": "d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9",
   "source_bytes": 40290,
-  "tool_input_sha256": "3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0",
+  "tool_input_sha256": "57d5e579f559bff361ec90e230322cb62015817c8a593d24c74ebede63b70062",
   "input_sources": [
     {
       "source_id": "plateau-13104-related-2025",
@@ -124,7 +124,9 @@
               "3": 14,
               "4": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "住所": {
@@ -176,7 +178,9 @@
               "東京都新宿区戸山1-22-12": 1,
               "東京都新宿区戸山1-22-2": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "収容人数": {
@@ -191,7 +195,9 @@
               "103000": 1,
               "184300": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 107,
+            "non_scalar_count": 0
           }
         },
         "名称": {
@@ -243,7 +249,9 @@
               "戸塚第二幼稚園": 1,
               "戸山ことぶき館": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "対象とする災害の分類": {
@@ -256,7 +264,9 @@
             "values": {
               "指定なし": 110
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "施設の種類": {
@@ -273,7 +283,9 @@
               "避難場所": 3,
               "避難所、一時避難所": 8
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "施設規模": {
@@ -288,7 +300,9 @@
               "399500": 1,
               "414300": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 107,
+            "non_scalar_count": 0
           }
         },
         "行政区域": {
@@ -302,7 +316,9 @@
               "13104": 107,
               "13113": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "高さ": {
@@ -351,9 +367,12 @@
               "18.8": 1,
               "19.1": 1,
               "19.5": 2,
-              "19.6": 1
+              "19.6": 1,
+              "19.7": 2
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 5,
+            "non_scalar_count": 0
           }
         }
       },
@@ -475,7 +494,9 @@
               "14235": 1,
               "15054": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "供用開始年": {
@@ -527,7 +548,9 @@
               "1987": 2,
               "1988": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "公園名": {
@@ -579,7 +602,9 @@
               "わかまつ児童遊園": 1,
               "三栄公園": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "公園種別": {
@@ -596,7 +621,9 @@
               "近隣公園": 5,
               "都市緑地": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "所在地市区町村名": {
@@ -609,7 +636,9 @@
             "values": {
               "新宿区": 168
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "所在地都道府県名": {
@@ -622,7 +651,9 @@
             "values": {
               "東京都": 168
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "管理市区町村": {
@@ -635,7 +666,9 @@
             "values": {
               "新宿区": 166
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 2,
+            "non_scalar_count": 0
           }
         },
         "管理都道府県・整備局": {
@@ -648,7 +681,9 @@
             "values": {
               "東京都": 168
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "都市計画決定": {
@@ -662,7 +697,9 @@
               "1": 31,
               "2": 137
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -778,7 +815,9 @@
               "区立牛込第一中学校": 1,
               "区立牛込第三中学校": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "種類": {
@@ -800,7 +839,9 @@
               "警察署": 34,
               "郵便局": 25
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "高さ": {
@@ -852,7 +893,9 @@
               "17.1": 2,
               "17.4": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -934,7 +977,9 @@
               "公営鉄道": 16,
               "民営鉄道": 23
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "路線名": {
@@ -959,7 +1004,9 @@
               "新宿線": 4,
               "荒川線": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "運営会社": {
@@ -977,7 +1024,9 @@
               "東日本旅客鉄道": 9,
               "西武鉄道": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "鉄道区分": {
@@ -992,7 +1041,9 @@
               "普通鉄道JR": 9,
               "軌道": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "駅名": {
@@ -1033,7 +1084,9 @@
               "飯田橋駅": 3,
               "高田馬場駅": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "高さ": {
@@ -1060,7 +1113,9 @@
               "8.4": 1,
               "9.2": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -1142,7 +1197,9 @@
               "公営鉄道": 37,
               "民営鉄道": 53
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "行政区域": {
@@ -1155,7 +1212,9 @@
             "values": {
               "13104": 108
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "路線名": {
@@ -1180,7 +1239,9 @@
               "新宿線": 8,
               "荒川線": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "運営会社": {
@@ -1198,7 +1259,9 @@
               "東日本旅客鉄道": 18,
               "西武鉄道": 8
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "鉄道区分": {
@@ -1213,7 +1276,9 @@
               "普通鉄道JR": 18,
               "軌道": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -1332,7 +1397,9 @@
               "659": 1,
               "663": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "区分": {
@@ -1347,7 +1414,9 @@
               "第２次緊急輸送道路": 20,
               "第３次緊急輸送道路": 8
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "枝ID": {
@@ -1366,7 +1435,9 @@
               "6": 1,
               "8": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "行政区域": {
@@ -1379,7 +1450,9 @@
             "values": {
               "13104": 45
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "資料名称": {
@@ -1392,7 +1465,9 @@
             "values": {
               "東京都緊急輸送道路ネットワーク計": 45
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "資料年月": {
@@ -1405,7 +1480,9 @@
             "values": {
               "2019": 45
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "路線名称": {
@@ -1452,7 +1529,9 @@
               "飯田橋石神井新座線": 1,
               "鮫洲大山線": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "道路種別": {
@@ -1470,7 +1549,9 @@
               "市町村道（認定道路）": 11,
               "都市高速道路": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -1550,7 +1631,9 @@
             "values": {
               "13104": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "city_name": {
@@ -1563,7 +1646,9 @@
             "values": {
               "新宿区": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "prefecture_code": {
@@ -1576,7 +1661,9 @@
             "values": {
               "13": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "prefecture_name": {
@@ -1589,7 +1676,9 @@
             "values": {
               "東京都": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -3447,9 +3536,9 @@
     "candidate_edges_truncated": false
   },
   "literal_values_artifact": {
-    "store_path": "raw/8c1b557b045654b0b158a0a68dfd9885cf896c33052c92c8a8f3ab81bab22831/plateau-13104-related-2025.literal-values.json",
-    "sha256": "8c1b557b045654b0b158a0a68dfd9885cf896c33052c92c8a8f3ab81bab22831",
-    "bytes": 23089,
+    "store_path": "raw/be15983b14ff13da6dbb050e76048d29e538e4b4d1b0eaf026e7c09b37ec3bb1/plateau-13104-related-2025.literal-values.json",
+    "sha256": "be15983b14ff13da6dbb050e76048d29e538e4b4d1b0eaf026e7c09b37ec3bb1",
+    "bytes": 23379,
     "tables": 10
   }
 }

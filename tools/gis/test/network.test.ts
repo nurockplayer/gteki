@@ -109,6 +109,12 @@ describe('network source inspection', () => {
     const unsupported = inspectGeoJsonFeatures(raw.features, { source_id: 'synthetic-network', sha256: 'synthetic-hash' }, { type: 'name', properties: { name: 'EPSG:9999' } }, 'synthetic.geojson', 'network');
     expect(unsupported.topology.geometry_endpoint_check_status).toBe('UNKNOWN_UNSUPPORTED_CRS');
     expect(unsupported.topology.geometry_endpoint_mismatches_over_0_5m).toBeNull();
+    // Regression: a linked CRS (name beside an href) must not select a metric method from its text.
+    for (const linked of [{ type: 'link', properties: { name: 'EPSG:6668', href: 'https://example.invalid/crs' } }, { type: 'name', properties: { name: 'EPSG:6668', href: 'https://example.invalid/crs' } }]) {
+      const report2 = inspectGeoJsonFeatures(completeLinks, { source_id: 'synthetic-network', sha256: 'synthetic-hash' }, linked, 'synthetic.geojson', 'network');
+      expect(report2.topology.geometry_endpoint_check_status).toBe('UNKNOWN_UNSUPPORTED_CRS');
+      expect(report2.topology.geometry_endpoint_mismatches_over_0_5m).toBeNull();
+    }
   });
 
   it('does not claim complete endpoint checks when link geometry or referenced coordinates are missing', () => {

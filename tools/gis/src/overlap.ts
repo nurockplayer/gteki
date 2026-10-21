@@ -5,6 +5,7 @@ import { projectLonLat } from './crs.js';
 import { catalogCoverage,r1BboxContainment } from './coverage.js';
 import { toolFingerprint } from './provenance.js';
 import { r1GeoEvidence } from './r1.js';
+import { crsName } from './crs-declaration.js';
 import { assertNetworkInspectionCurrent } from './network-evidence.js';
 import { assertPoiInspectionCurrent, assertVintageResearchCurrent } from './inspection-evidence.js';
 
@@ -200,7 +201,7 @@ function cityLayer(sourceId: string, report: CityReport): BboxLayerInput {
 
 function geoLayers(sourceId: string, report: GeoReport): BboxLayerInput[] {
   const poi = ['tokyo-shinjuku-facilities-zip', 'plateau-13104-related-2025', 'plateau-13116-related-2025'].includes(sourceId);
-  const crs = (value: Pick<GeoReport, 'crs' | 'crs_status'>): string | null => poi && value.crs_status !== 'DECLARED' ? null : value.crs?.properties?.name ?? null;
+  const crs = (value: Pick<GeoReport, 'crs' | 'crs_status'>): string | null => poi && value.crs_status !== 'DECLARED' ? null : (typeof crsName(value.crs) === 'string' ? crsName(value.crs) as string : null);
   const status = (value: Pick<GeoReport, 'crs_status'>): string | undefined => poi && value.crs_status === 'RFC7946_ASSUMPTION' ? 'UNDECLARED_RFC7946_ASSUMPTION' : value.crs_status;
   const members = (report.members ?? []).filter(m=>typeof m.feature_count==='number');
   if (!members.length && report.bbox) return [{ layer_id: `${sourceId}:all`, layer_role: sourceId.includes('stationmap') ? 'station_map' : 'hokonavi_network', source_id: sourceId, source_crs: crs(report), crs_status: status(report), source_crs_bbox: report.bbox, bbox_axis_order: crs(report) || status(report) === 'UNDECLARED_RFC7946_ASSUMPTION' ? 'longitude,latitude' : 'unknown', bbox_status: report.bbox_status }];

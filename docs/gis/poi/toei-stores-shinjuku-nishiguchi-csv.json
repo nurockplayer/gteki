@@ -2,7 +2,7 @@
   "source_id": "toei-stores-shinjuku-nishiguchi-csv",
   "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
   "source_bytes": 1339,
-  "tool_input_sha256": "3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0",
+  "tool_input_sha256": "57d5e579f559bff361ec90e230322cb62015817c8a593d24c74ebede63b70062",
   "input_sources": [
     {
       "source_id": "toei-stores-shinjuku-nishiguchi-csv",
@@ -88,7 +88,9 @@
           "I": 1,
           "J": 1
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 7,
+        "non_scalar_count": 0
       }
     },
     {
@@ -108,7 +110,9 @@
           "育児用品自動販売機": 1,
           "証明写真機": 1
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 7,
+        "non_scalar_count": 0
       }
     },
     {
@@ -125,7 +129,9 @@
           "B3階改札外コンコース（JR新宿駅方面改札付近）": 1,
           "B3階改札外コンコース（駅務室横）": 3
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 7,
+        "non_scalar_count": 0
       }
     },
     {
@@ -145,7 +151,9 @@
           "※1【標準】20口": 1,
           "※2【大型】7口【中型】7口【標準】13口": 1
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 9,
+        "non_scalar_count": 0
       }
     },
     {
@@ -156,7 +164,9 @@
       "distinct_values": {
         "distinct_count": 0,
         "values": {},
-        "truncated": false
+        "truncated": false,
+        "blank_count": 17,
+        "non_scalar_count": 0
       }
     },
     {
@@ -167,7 +177,9 @@
       "distinct_values": {
         "distinct_count": 0,
         "values": {},
-        "truncated": false
+        "truncated": false,
+        "blank_count": 17,
+        "non_scalar_count": 0
       }
     },
     {
@@ -180,7 +192,9 @@
         "values": {
           "03-5338-1277": 1
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 16,
+        "non_scalar_count": 0
       }
     },
     {
@@ -193,7 +207,9 @@
         "values": {
           "http://www.family.co.jp/": 1
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 16,
+        "non_scalar_count": 0
       }
     },
     {
@@ -206,7 +222,9 @@
         "values": {
           "○": 3
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 14,
+        "non_scalar_count": 0
       }
     },
     {
@@ -220,7 +238,9 @@
           "★宅配受取サービス（利用時間：5時から24時まで）": 1,
           "ベビー用紙おむつ、菓子、飲料（乳児用液体ミルクなど）を販売": 1
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 15,
+        "non_scalar_count": 0
       }
     }
   ],
@@ -236,8 +256,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": "ファミリーマート（ミニ・コンビニ）",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -246,8 +269,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": "コインロッカー",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -256,8 +282,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": "コインロッカー",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -266,8 +295,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": "コインロッカー",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -276,8 +308,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": "証明写真機",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -286,8 +321,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": "ATM（みずほ銀行）",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -296,8 +334,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": "ATM（ゆうちょ銀行）",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -306,8 +347,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": "ATM（セブン銀行）",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -316,8 +360,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": "ベビーカーレンタルサービス（ベビカル）",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -326,8 +373,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": "育児用品自動販売機",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -336,8 +386,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": null,
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -346,8 +399,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": null,
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -356,8 +412,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": null,
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -366,8 +425,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": null,
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -376,8 +438,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": null,
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -386,8 +451,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": null,
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -396,8 +464,11 @@
       "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
       "native_id": null,
       "name": null,
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     }

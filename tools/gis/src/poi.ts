@@ -7,6 +7,7 @@ import path from 'node:path';
 import { assertPathWithinStore, docsRoot, ensurePrivateStore, getStoredSource, getStoreRoot, storeRelativePath } from './common.js';
 import { toolFingerprint } from './provenance.js';
 import { readZip, type ZipEntry } from './zip.js';
+import { crsName, geographicCrs } from './crs-declaration.js';
 import { displayZipMemberName } from './zip-names.js';
 import { commitReportFiles, type ReportFile } from './report-transaction.js';
 
@@ -39,6 +40,9 @@ type Observation = {
   latitude: number | null;
   longitude: number | null;
   raw_coordinates?: unknown[] | null;
+  raw_latitude?: string | null;
+  raw_longitude?: string | null;
+  coordinate_status?: string;
   coordinate_reference?: { name: unknown; status: 'DECLARED' | 'RFC7946_ASSUMPTION' | 'LOCAL_COORDINATES' | 'UNSUPPORTED_DECLARED_CRS' | 'UNKNOWN' };
   verification: 'UNVERIFIED';
   routable: false;
@@ -67,27 +71,43 @@ function firstOwnString(row: Record<string, unknown>, fields: readonly string[])
   return stringValue(ownValue(row, fields));
 }
 
-function addCount(counts: Map<string, number>, value: unknown): void {
-  const key = value === null || value === undefined ? '(blank)' : typeof value === 'object' ? '(non-scalar)' : typeof value === 'boolean' ? String(value) : stringValue(value) ?? '(blank)';
+/** Literal values are map keys; blank/missing and non-scalar occurrences are counted separately so a
+ * value that happens to read "(blank)" or "(non-scalar)" can never collide with them.
+ */
+class LiteralCounts extends Map<string, number> {
+  blank = 0;
+  non_scalar = 0;
+}
+
+function addCount(counts: LiteralCounts, value: unknown): void {
+  if (value === null || value === undefined) { counts.blank++; return; }
+  if (typeof value === 'object') { counts.non_scalar++; return; }
+  const key = typeof value === 'boolean' ? String(value) : stringValue(value);
+  if (key === null) { counts.blank++; return; }
   counts.set(key, (counts.get(key) ?? 0) + 1);
 }
 
-function distribution(counts: Map<string, number>): { distinct_count: number; values: Record<string, number>; truncated: boolean } {
+function increment(counts: Map<string, number>, key: string): void {
+  counts.set(key, (counts.get(key) ?? 0) + 1);
+}
+
+function distribution(counts: Map<string, number>): { distinct_count: number; values: Record<string, number>; truncated: boolean; blank_count?: number; non_scalar_count?: number } {
   const sorted = [...counts].sort(([a], [b]) => a.localeCompare(b));
   const truncated = sorted.length > MAX_DISTRIBUTION_VALUES;
-  return { distinct_count: sorted.length, values: Object.fromEntries(sorted.slice(0, MAX_DISTRIBUTION_VALUES)), truncated };
+  return { distinct_count: sorted.length, values: Object.fromEntries(sorted.slice(0, MAX_DISTRIBUTION_VALUES)), truncated,
+    ...(counts instanceof LiteralCounts ? { blank_count: counts.blank, non_scalar_count: counts.non_scalar } : {}) };
 }
 
 function metadataInventory(parsed: unknown): Record<string, unknown> {
   const rootKeys = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? Object.keys(parsed).sort() : [];
-  const attribution = new Map<string, Map<string, number>>();
+  const attribution = new Map<string, LiteralCounts>();
   let visited = 0;
   const visit = (value: unknown, depth: number): void => {
     if (depth > 8 || visited++ >= 100_000 || !value || typeof value !== 'object') return;
     if (Array.isArray(value)) { for (const child of value) visit(child, depth + 1); return; }
     const object = value as Record<string, unknown>;
     for (const field of ATTRIBUTION_FIELDS) if (Object.hasOwn(object, field)) {
-      const values = attribution.get(field) ?? new Map<string, number>(); addCount(values, object[field]); attribution.set(field, values);
+      const values = attribution.get(field) ?? new LiteralCounts(); addCount(values, object[field]); attribution.set(field, values);
     }
     for (const key of Object.keys(object)) visit(object[key], depth + 1);
   };
@@ -125,6 +145,16 @@ function csvRows(buffer: Buffer): { headers: string[]; rows: string[][]; encodin
   return { headers, rows: records, encoding };
 }
 
+/** CSV coordinates carry no CRS declaration: a literal pair is published only when each value is
+ * finite and within geographic ranges; otherwise it is withheld with status INVALID_RANGE. */
+function csvCoordinates(rawLatitude: unknown, rawLongitude: unknown): { latitude: number | null; longitude: number | null; coordinate_status: 'NO_COORDINATE_FIELDS' | 'MISSING_OR_NON_NUMERIC' | 'INVALID_RANGE' | 'LITERAL_UNDECLARED_CRS' } {
+  if (rawLatitude === null && rawLongitude === null) return { latitude: null, longitude: null, coordinate_status: 'NO_COORDINATE_FIELDS' };
+  const latitude = numericValue(rawLatitude), longitude = numericValue(rawLongitude);
+  const latitudeOk = latitude !== null && latitude >= -90 && latitude <= 90, longitudeOk = longitude !== null && longitude >= -180 && longitude <= 180;
+  const status = latitude === null || longitude === null ? 'MISSING_OR_NON_NUMERIC' as const : latitudeOk && longitudeOk ? 'LITERAL_UNDECLARED_CRS' as const : 'INVALID_RANGE' as const;
+  return { latitude: latitudeOk ? latitude : null, longitude: longitudeOk ? longitude : null, coordinate_status: status };
+}
+
 export function inspectPoiCsv(sourceId: string, sha256: string, buffer: Buffer): Record<string, unknown> {
   const { headers, rows, encoding } = csvRows(buffer);
   const recognized = Object.hasOwn(COORDINATES, sourceId) ? COORDINATES[sourceId] : undefined;
@@ -134,10 +164,9 @@ export function inspectPoiCsv(sourceId: string, sha256: string, buffer: Buffer):
   const idIndex = uniqueIndex(IDENTIFIERS);
   const nameIndex = uniqueIndex(NAME_FIELDS);
   const columnStatistics = headers.map((header, index) => {
-    const counts = new Map<string, number>(); let blankCount = 0;
+    const counts = new LiteralCounts(); let blankCount = 0;
     for (const row of rows) { const value = row[index] ?? ''; if (value.trim() === '') blankCount++; addCount(counts, value); }
     const values = distribution(counts);
-    delete values.values['(blank)'];
     const distinctCount = new Set(rows.map((row) => row[index] ?? '').filter((value) => value.trim() !== '')).size;
     return { header, index, blank_count: blankCount, distinct_count: distinctCount, distinct_values: { ...values, distinct_count: distinctCount } };
   });
@@ -150,8 +179,10 @@ export function inspectPoiCsv(sourceId: string, sha256: string, buffer: Buffer):
     source_sha256: sha256,
     native_id: idIndex < 0 ? null : stringValue(row[idIndex]),
     name: nameIndex < 0 ? null : stringValue(row[nameIndex]),
-    latitude: latitudeIndex < 0 ? null : numericValue(row[latitudeIndex]),
-    longitude: longitudeIndex < 0 ? null : numericValue(row[longitudeIndex]),
+    // Raw cells stay verbatim; numeric latitude/longitude are published only when finite and in range.
+    raw_latitude: latitudeIndex < 0 ? null : row[latitudeIndex] ?? null,
+    raw_longitude: longitudeIndex < 0 ? null : row[longitudeIndex] ?? null,
+    ...csvCoordinates(latitudeIndex < 0 ? null : row[latitudeIndex], longitudeIndex < 0 ? null : row[longitudeIndex]),
     verification: 'UNVERIFIED',
     routable: false,
   }));
@@ -175,21 +206,6 @@ function pointCoordinates(geometry: unknown): unknown[] | null {
   return geo.coordinates;
 }
 
-function geographicCrs(name: unknown): boolean {
-  if (typeof name !== 'string') return false;
-  const normalized = name.trim().toUpperCase();
-  const codes = ['4326', '4612', '6668'];
-  if (codes.some(code => normalized === `EPSG:${code}` || normalized === `HTTP://WWW.OPENGIS.NET/DEF/CRS/EPSG/0/${code}` || normalized === `URN:OGC:DEF:CRS:EPSG::${code}`)) return true;
-  return ['OGC:CRS84', 'CRS84', 'HTTP://WWW.OPENGIS.NET/DEF/CRS/OGC/1.3/CRS84', 'URN:OGC:DEF:CRS:OGC:1.3:CRS84'].includes(normalized);
-}
-
-function crsName(declaration: unknown): unknown {
-  if (!declaration || typeof declaration !== 'object' || Array.isArray(declaration) || !Object.hasOwn(declaration, 'type') || (declaration as Record<string, unknown>).type !== 'name' || !Object.hasOwn(declaration, 'properties')) return null;
-  const properties = (declaration as Record<string, unknown>).properties;
-  return properties && typeof properties === 'object' && !Array.isArray(properties) && !Object.hasOwn(properties, 'href') && !Object.hasOwn(properties, 'type') && Object.hasOwn(properties, 'name') && typeof (properties as Record<string, unknown>).name === 'string'
-    ? (properties as Record<string, unknown>).name : null;
-}
-
 export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string, parsed: unknown): Record<string, unknown> | null {
   if (!parsed || typeof parsed !== 'object' || !Object.hasOwn(parsed, 'type')) return null;
   const root = parsed as Record<string, unknown>;
@@ -202,7 +218,7 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
   else if (root.type === 'Feature') features = [root];
   else return null;
   const geometryCounts = new Map<string, number>();
-  const propertyCounts = new Map<string, Map<string, number>>();
+  const propertyCounts = new Map<string, LiteralCounts>();
   const propertyPresent = new Map<string, number>();
   // Recognized literal fields are always inspected, independent of the generic per-feature
   // property cap; skipped generic properties are "unobserved", never "absent".
@@ -210,7 +226,7 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
   const relevantLiteralFields = new Set<string>([...STATION_FIELDS, ...LANDMARK_FIELDS, ...OPERATOR_FIELDS, ...LINE_FIELDS, ...NAME_FIELDS]);
   const propertyPresentFullyScanned = new Map<string, number>();
   let featuresOverPropertyCap = 0;
-  const attributionCounts = new Map<string, Map<string, number>>();
+  const attributionCounts = new Map<string, LiteralCounts>();
   const endpointFieldSets = new Map<string, number>();
   const bboxKeys = ['bbox', 'BBOX', 'extent', 'Extent'] as const;
   const observations: Observation[] = [];
@@ -301,7 +317,7 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
     if (feature.type !== 'Feature') coordinateTraversalIncomplete = true;
     const geometry = feature.geometry;
     const geometryType = geometry && typeof geometry === 'object' && Object.hasOwn(geometry, 'type') ? String((geometry as Record<string, unknown>).type) : '(null)';
-    addCount(geometryCounts, geometryType);
+    increment(geometryCounts, geometryType);
     if (geometryType === 'LineString' || geometryType === 'MultiLineString') {
       const props = Object.hasOwn(featureValue, 'properties') && feature.properties && typeof feature.properties === 'object' && !Array.isArray(feature.properties) ? feature.properties as Record<string, unknown> : Object.create(null) as Record<string, unknown>;
       const fields = ENDPOINT_ID_FIELDS.filter((field) => Object.hasOwn(props, field));
@@ -314,14 +330,14 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
     if (overCap) featuresOverPropertyCap++;
     for (const [position, field] of propertyKeys.entries()) {
       if (position >= PROPERTY_CAP && !relevantLiteralFields.has(field)) continue;
-      const map = propertyCounts.get(field) ?? new Map<string, number>();
+      const map = propertyCounts.get(field) ?? new LiteralCounts();
       addCount(map, properties[field]); propertyCounts.set(field, map);
       propertyPresent.set(field, (propertyPresent.get(field) ?? 0) + 1);
       if (!overCap) propertyPresentFullyScanned.set(field, (propertyPresentFullyScanned.get(field) ?? 0) + 1);
     }
     for (const field of ATTRIBUTION_FIELDS) {
       if (!Object.hasOwn(properties, field)) continue;
-      const map = attributionCounts.get(field) ?? new Map<string, number>(); addCount(map, properties[field]); attributionCounts.set(field, map);
+      const map = attributionCounts.get(field) ?? new LiteralCounts(); addCount(map, properties[field]); attributionCounts.set(field, map);
     }
     if (sourceId === 'tokyo-shinjuku-facilities-zip' && geometryType === 'LineString') {
       const lineId = firstOwnString(properties, ['line_id', 'lineId', 'lineID']);
@@ -343,8 +359,8 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
   }
   const bboxPropertyKeys = bboxKeys.filter((key) => Object.hasOwn(root, key));
   const literalDistributions = Object.fromEntries([...propertyCounts].sort(([a], [b]) => a.localeCompare(b)).map(([field, counts]) => {
-    const values = distribution(counts); const blanks = values.values['(blank)'] ?? 0; delete values.values['(blank)'];
-    const distinctCount = Math.max(0, values.distinct_count - Number(blanks > 0));
+    const values = distribution(counts); const blanks = counts.blank;
+    const distinctCount = values.distinct_count;
     // Features over the cap never count a skipped generic property as absent.
     const exact = relevantLiteralFields.has(field) || featuresOverPropertyCap === 0;
     const absent = exact ? features.length - (propertyPresent.get(field) ?? 0) : features.length - featuresOverPropertyCap - (propertyPresentFullyScanned.get(field) ?? 0);
@@ -352,8 +368,8 @@ export function inspectPoiGeoJson(sourceId: string, sha256: string, file: string
   }));
   const sourceAttributions = Object.fromEntries([...attributionCounts].sort(([a], [b]) => a.localeCompare(b)).map(([field, counts]) => [field, distribution(counts)]));
   const literalValueTables = [...propertyCounts].filter(([field]) => relevantLiteralFields.has(field)).sort(([a], [b]) => a.localeCompare(b)).map(([field, counts]) => {
-    const values = Object.fromEntries([...counts].filter(([value]) => value !== '(blank)' && value !== '(non-scalar)').sort(([a], [b]) => a.localeCompare(b)));
-    return { file, field, values, value_count: Object.keys(values).length, complete: true, blank_count: counts.get('(blank)') ?? 0 };
+    const values = Object.fromEntries([...counts].sort(([a], [b]) => a.localeCompare(b)));
+    return { file, field, values, value_count: Object.keys(values).length, complete: true, blank_count: counts.blank, non_scalar_count: counts.non_scalar };
   });
   const mixedCrs = effectiveCrsKeys.size > 1;
   if (mixedCrs) for (const observation of observations) { observation.longitude = null; observation.latitude = null; }

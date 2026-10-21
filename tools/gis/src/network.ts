@@ -1,3 +1,4 @@
+import { crsName } from './crs-declaration.js';
 import { parse } from 'csv-parse/sync';
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -342,8 +343,11 @@ export function inspectGeoJsonFeatures(features: any[], source: { source_id: str
   const referenced = new Set(edgeReferences.flatMap((e) => [e.start, e.end]).filter((v): v is string => v !== null));
   const graphLinks = edgeReferences;
   const graph = weakComponents(nodeIds, graphLinks);
-  const crsText = typeof declaredCrs === 'string' ? declaredCrs : JSON.stringify(declaredCrs ?? 'CRS84');
-  const distanceMethod = /4326|6668|crs84/i.test(crsText) || declaredCrs == null ? 'GEOGRAPHIC_DEGREES_APPROX_METRES'
+  // Only a plain {type:"name"} declaration identifies a CRS; linked/typed/malformed structures never
+  // contribute text from their other members (for example a link's name next to an href).
+  const namedCrs = declaredCrs == null ? 'CRS84' : typeof declaredCrs === 'string' ? declaredCrs : crsName(declaredCrs);
+  const crsText = typeof namedCrs === 'string' ? namedCrs : null;
+  const distanceMethod = crsText === null ? null : /4326|6668|crs84/i.test(crsText) ? 'GEOGRAPHIC_DEGREES_APPROX_METRES'
     : /6677/i.test(crsText) ? 'PROJECTED_METRES' : null;
   const nodeIdsUnique = nodeIdsComplete && duplicateValues(nodeIdsOnly).length === 0;
   const endpointChecks = distanceMethod === null || !graphComplete || !nodeIdsUnique ? null : linkFeatures.map((feature, i) => {

@@ -2,7 +2,7 @@
   "source_id": "tokyo-shinjuku-facilities-zip",
   "source_sha256": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
   "source_bytes": 2317035,
-  "tool_input_sha256": "3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0",
+  "tool_input_sha256": "57d5e579f559bff361ec90e230322cb62015817c8a593d24c74ebede63b70062",
   "input_sources": [
     {
       "source_id": "tokyo-shinjuku-facilities-zip",
@@ -230,7 +230,9 @@
             "values": {
               "section": 23
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "barrier": {
@@ -243,7 +245,9 @@
             "values": {
               "gate": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -295,20 +299,22 @@
               "9中央本線特急": 1,
               "A": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 13034,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 91
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 91
           }
         },
         "facility": {
@@ -327,7 +333,9 @@
               "step": 1,
               "unit": 22
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "from": {
@@ -341,7 +349,9 @@
               "above": 2,
               "below": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -369,7 +379,9 @@
               "Unit1F-30": 1,
               "Unit1F-31": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "marker": {
@@ -382,7 +394,9 @@
             "values": {
               "entrance": 96
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "nonphysical": {
@@ -395,7 +409,9 @@
             "values": {
               "true": 96
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "object": {
@@ -408,7 +424,9 @@
             "values": {
               "true": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "openinghour": {
@@ -421,7 +439,9 @@
             "values": {
               "8:00〜21:30": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "safety": {
@@ -434,7 +454,9 @@
             "values": {
               "defibrillator": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -447,7 +469,9 @@
             "values": {
               "stroller": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -460,7 +484,9 @@
             "values": {
               "building": 23
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "to": {
@@ -474,7 +500,9 @@
               "above": 8,
               "below": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "traffic": {
@@ -488,7 +516,9 @@
               "railwayrail": 42,
               "railwaytie": 12648
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "use": {
@@ -501,7 +531,9 @@
             "values": {
               "information": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "vegetation": {
@@ -514,7 +546,9 @@
             "values": {
               "grass": 13
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -607,7 +641,9 @@
             "values": {
               "gate": 9
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "class": {
@@ -620,7 +656,9 @@
             "values": {
               "ticketmachine": 9
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "currency": {
@@ -633,7 +671,9 @@
             "values": {
               "general": 6
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "disabledaccess": {
@@ -646,7 +686,9 @@
             "values": {
               "true": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -698,20 +740,22 @@
               "Unit2F-55": 1,
               "Unit2F-59": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 298,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 11
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 11
           }
         },
         "facility": {
@@ -733,7 +777,9 @@
               "step": 46,
               "unit": 51
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "fixture": {
@@ -746,7 +792,9 @@
             "values": {
               "ramp": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "from": {
@@ -759,7 +807,9 @@
             "values": {
               "below": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "gender": {
@@ -774,7 +824,9 @@
               "female": 2,
               "male": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -826,7 +878,9 @@
               "Unit2F-S4": 1,
               "Unit2F-S5": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "openinghour": {
@@ -839,7 +893,9 @@
             "values": {
               "7:00〜23:00": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -854,7 +910,9 @@
               "changingstation": 1,
               "locker": 10
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -867,7 +925,9 @@
             "values": {
               "building": 7
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "to": {
@@ -881,7 +941,9 @@
               "above": 1,
               "below": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "use": {
@@ -894,7 +956,9 @@
             "values": {
               "information": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "vegetation": {
@@ -908,7 +972,9 @@
               "garden": 4,
               "greenery": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -995,7 +1061,9 @@
             "values": {
               "section": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "disabledaccess": {
@@ -1008,7 +1076,9 @@
             "values": {
               "true": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -1028,20 +1098,22 @@
               "男子トイレ": 1,
               "階段": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 77,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 1
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 1
           }
         },
         "facility": {
@@ -1062,7 +1134,9 @@
               "unit": 2,
               "wall": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "gender": {
@@ -1077,7 +1151,9 @@
               "female": 1,
               "male": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -1091,7 +1167,9 @@
               "Unit3F-42": 1,
               "Unit3F-43": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "meta": {
@@ -1104,7 +1182,9 @@
             "values": {
               "leveloutline": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "object": {
@@ -1117,7 +1197,9 @@
             "values": {
               "true": 11
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -1130,7 +1212,9 @@
             "values": {
               "building": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "vegetation": {
@@ -1143,7 +1227,9 @@
             "values": {
               "greenery": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -1233,7 +1319,9 @@
               "rest area": 3,
               "section": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "class": {
@@ -1246,7 +1334,9 @@
             "values": {
               "ticket machine": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -1282,20 +1372,22 @@
               "男子トイレ": 2,
               "階段": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 130,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 12
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 12
           }
         },
         "facility": {
@@ -1317,7 +1409,9 @@
               "unit": 7,
               "wall": 30
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "gender": {
@@ -1331,7 +1425,9 @@
               "female": 2,
               "male": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -1348,7 +1444,9 @@
               "Unit 4F-56": 1,
               "Unit 4F-57": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "object": {
@@ -1361,7 +1459,9 @@
             "values": {
               "true": 17
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -1376,7 +1476,9 @@
               "changing station": 2,
               "locker": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -1389,7 +1491,9 @@
             "values": {
               "building": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "vegetation": {
@@ -1402,7 +1506,9 @@
             "values": {
               "greenery": 6
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -1501,7 +1607,9 @@
             "values": {
               "section": 14
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "barrier": {
@@ -1514,7 +1622,9 @@
             "values": {
               "gate": 20
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "class": {
@@ -1527,7 +1637,9 @@
             "values": {
               "ticketmachine": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "currency": {
@@ -1540,7 +1652,9 @@
             "values": {
               "general": 13
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "disabledaccess": {
@@ -1553,7 +1667,9 @@
             "values": {
               "true": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -1605,20 +1721,22 @@
               "CafeRally": 1,
               "CafeRenoir": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 1069,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 177
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 177
           }
         },
         "facility": {
@@ -1643,7 +1761,9 @@
               "universalaccesstoilet": 4,
               "wall": 43
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "from": {
@@ -1657,7 +1777,9 @@
               "above": 6,
               "below": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "gender": {
@@ -1673,7 +1795,9 @@
               "kidstoilet": 2,
               "male": 7
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -1725,7 +1849,9 @@
               "UnitB1F-15": 1,
               "UnitB1F-151": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "openinghour": {
@@ -1739,7 +1865,9 @@
               "5:00〜24:00": 1,
               "6:00〜23:00": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "safety": {
@@ -1752,7 +1880,9 @@
             "values": {
               "defibrillator": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -1769,7 +1899,9 @@
               "locker": 9,
               "telephone": 7
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -1782,7 +1914,9 @@
             "values": {
               "building": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "to": {
@@ -1796,7 +1930,9 @@
               "above": 9,
               "below": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "traffic": {
@@ -1810,7 +1946,9 @@
               "railwayrail": 10,
               "railwaytie": 592
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "type": {
@@ -1825,7 +1963,9 @@
               "disableaccess": 1,
               "ostomate": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "use": {
@@ -1838,7 +1978,9 @@
             "values": {
               "information": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "vegetation": {
@@ -1851,7 +1993,9 @@
             "values": {
               "greenery": 7
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -1946,7 +2090,9 @@
             "values": {
               "section": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "barrier": {
@@ -1959,7 +2105,9 @@
             "values": {
               "gate": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "currency": {
@@ -1972,7 +2120,9 @@
             "values": {
               "general": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -2024,20 +2174,22 @@
               "Kyoryokunozo": 1,
               "L": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 130,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 53
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 53
           }
         },
         "facility": {
@@ -2059,7 +2211,9 @@
               "universalaccesstoilet": 1,
               "wall": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "fixture": {
@@ -2073,7 +2227,9 @@
               "kiosk": 12,
               "ramp": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "from": {
@@ -2087,7 +2243,9 @@
               "above": 1,
               "below": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -2139,7 +2297,9 @@
               "UnitB2F-6": 1,
               "UnitB2F-7": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "openinghour": {
@@ -2152,7 +2312,9 @@
             "values": {
               "6:00〜23:00": 7
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "safety": {
@@ -2165,7 +2327,9 @@
             "values": {
               "defibrillator": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -2181,7 +2345,9 @@
               "locker": 6,
               "telephone": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -2194,7 +2360,9 @@
             "values": {
               "building": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "to": {
@@ -2208,7 +2376,9 @@
               "above": 2,
               "below": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "type": {
@@ -2221,7 +2391,9 @@
             "values": {
               "ostomate": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "use": {
@@ -2234,7 +2406,9 @@
             "values": {
               "information": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -2331,7 +2505,9 @@
             "values": {
               "section": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "barrier": {
@@ -2344,7 +2520,9 @@
             "values": {
               "gate": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "class": {
@@ -2357,7 +2535,9 @@
             "values": {
               "ticketmachine": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "currency": {
@@ -2370,7 +2550,9 @@
             "values": {
               "general": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "disabledaccess": {
@@ -2383,7 +2565,9 @@
             "values": {
               "true": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -2435,20 +2619,22 @@
               "Bay-BClub": 1,
               "BIEWS": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 189,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 149
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 149
           }
         },
         "facility": {
@@ -2471,7 +2657,9 @@
               "universalaccesstoilet": 1,
               "wall": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "fixture": {
@@ -2484,7 +2672,9 @@
             "values": {
               "ramp": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "from": {
@@ -2498,7 +2688,9 @@
               "above": 5,
               "below": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "gender": {
@@ -2513,7 +2705,9 @@
               "female": 4,
               "male": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -2565,7 +2759,9 @@
               "UnitB3F-21": 1,
               "UnitB3F-22": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "object": {
@@ -2578,7 +2774,9 @@
             "values": {
               "true": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "safety": {
@@ -2591,7 +2789,9 @@
             "values": {
               "defibrillator": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -2606,7 +2806,9 @@
               "locker": 3,
               "telephone": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -2619,7 +2821,9 @@
             "values": {
               "building": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "type": {
@@ -2632,7 +2836,9 @@
             "values": {
               "ostomate": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "use": {
@@ -2645,7 +2851,9 @@
             "values": {
               "information": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -2726,7 +2934,9 @@
               "エレベーター": 2,
               "階段": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "facility": {
@@ -2742,7 +2952,9 @@
               "hallway": 4,
               "stairs": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -2755,7 +2967,9 @@
             "values": {
               "building": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -2833,7 +3047,9 @@
               "エレベーター": 1,
               "階段": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "facility": {
@@ -2849,7 +3065,9 @@
               "hallway": 1,
               "stairs": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -2958,20 +3176,22 @@
               "階段": 11,
               "電話": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 38,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 15
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 15
           }
         },
         "facility": {
@@ -2990,7 +3210,9 @@
               "stairs": 11,
               "unit": 18
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "from": {
@@ -3003,7 +3225,9 @@
             "values": {
               "above": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "gender": {
@@ -3017,7 +3241,9 @@
               "female": 1,
               "male": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -3047,7 +3273,9 @@
               "Unit B1F-207": 1,
               "Unit B1F-208": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -3060,7 +3288,9 @@
             "values": {
               "telephone": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -3073,7 +3303,9 @@
             "values": {
               "building": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "to": {
@@ -3087,7 +3319,9 @@
               "above": 2,
               "below": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -3169,7 +3403,9 @@
             "values": {
               "general": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -3192,20 +3428,22 @@
               "コインロッカー": 1,
               "階段": 6
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 29,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 4
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 4
           }
         },
         "facility": {
@@ -3223,7 +3461,9 @@
               "stairs": 6,
               "unit": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -3237,7 +3477,9 @@
               "atm": 1,
               "locker": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -3250,22 +3492,25 @@
             "values": {
               "building": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "to": {
           "blank_count": 27,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 3,
+          "distinct_count": 2,
           "distinct_values": {
-            "distinct_count": 3,
+            "distinct_count": 2,
             "values": {
-              "(non-scalar)": 1,
               "above": 1,
               "below": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 1
           }
         }
       },
@@ -3348,7 +3593,9 @@
             "values": {
               "section": 23
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "barrier": {
@@ -3361,7 +3608,9 @@
             "values": {
               "gate": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -3413,20 +3662,22 @@
               "9　中央本線特急": 1,
               "A": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 13038,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 91
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 91
           }
         },
         "facility": {
@@ -3445,7 +3696,9 @@
               "step": 1,
               "unit": 22
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "from": {
@@ -3459,7 +3712,9 @@
               "above": 2,
               "below": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -3487,7 +3742,9 @@
               "Unit 1F-30": 1,
               "Unit 1F-31": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "marker": {
@@ -3500,7 +3757,9 @@
             "values": {
               "entrance": 96
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "nonphysical": {
@@ -3513,7 +3772,9 @@
             "values": {
               "true": 96
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "object": {
@@ -3526,7 +3787,9 @@
             "values": {
               "true": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "opening hour": {
@@ -3539,7 +3802,9 @@
             "values": {
               "8:00〜21:30": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "safety": {
@@ -3552,7 +3817,9 @@
             "values": {
               "defibrillator": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -3565,7 +3832,9 @@
             "values": {
               "stroller": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -3578,7 +3847,9 @@
             "values": {
               "building": 23
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "to": {
@@ -3592,7 +3863,9 @@
               "above": 8,
               "below": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "traffic": {
@@ -3606,7 +3879,9 @@
               "railway rail": 42,
               "railway tie": 12648
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "use": {
@@ -3619,7 +3894,9 @@
             "values": {
               "information": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "vegetation": {
@@ -3632,7 +3909,9 @@
             "values": {
               "grass": 13
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -3714,7 +3993,9 @@
             "values": {
               "gate": 9
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "class": {
@@ -3727,7 +4008,9 @@
             "values": {
               "ticket machine": 9
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "currency": {
@@ -3740,7 +4023,9 @@
             "values": {
               "general": 6
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "disabled access": {
@@ -3753,7 +4038,9 @@
             "values": {
               "true": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -3805,20 +4092,22 @@
               "Unit 2F-55": 1,
               "Unit 2F-59": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 298,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 11
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 11
           }
         },
         "facility": {
@@ -3840,7 +4129,9 @@
               "step": 46,
               "unit": 51
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "fixture": {
@@ -3853,7 +4144,9 @@
             "values": {
               "ramp": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "from": {
@@ -3866,7 +4159,9 @@
             "values": {
               "below": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "gender": {
@@ -3881,7 +4176,9 @@
               "female": 2,
               "male": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -3933,7 +4230,9 @@
               "Unit 2F-S4": 1,
               "Unit 2F-S5": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "opening hour": {
@@ -3946,7 +4245,9 @@
             "values": {
               "7:00〜23:00": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -3961,7 +4262,9 @@
               "changing station": 1,
               "locker": 10
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -3974,7 +4277,9 @@
             "values": {
               "building": 7
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "to": {
@@ -3988,7 +4293,9 @@
               "above": 1,
               "below": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "use": {
@@ -4001,7 +4308,9 @@
             "values": {
               "information": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "vegetation": {
@@ -4015,7 +4324,9 @@
               "garden": 4,
               "greenery": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -4091,7 +4402,9 @@
             "values": {
               "section": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "disabled access": {
@@ -4104,7 +4417,9 @@
             "values": {
               "true": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -4124,20 +4439,22 @@
               "男子トイレ": 1,
               "階段": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 77,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 1
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 1
           }
         },
         "facility": {
@@ -4158,7 +4475,9 @@
               "unit": 2,
               "wall": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "gender": {
@@ -4173,7 +4492,9 @@
               "female": 1,
               "male": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -4187,7 +4508,9 @@
               "Unit 3F-42": 1,
               "Unit 3F-43": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "meta": {
@@ -4200,7 +4523,9 @@
             "values": {
               "level outline": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "object": {
@@ -4213,7 +4538,9 @@
             "values": {
               "true": 11
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -4226,7 +4553,9 @@
             "values": {
               "building": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "vegetation": {
@@ -4239,7 +4568,9 @@
             "values": {
               "greenery": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -4316,7 +4647,9 @@
               "rest area": 3,
               "section": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "class": {
@@ -4329,7 +4662,9 @@
             "values": {
               "ticket machine": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -4365,20 +4700,22 @@
               "男子トイレ": 2,
               "階段": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 130,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 12
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 12
           }
         },
         "facility": {
@@ -4400,7 +4737,9 @@
               "unit": 7,
               "wall": 30
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "gender": {
@@ -4414,7 +4753,9 @@
               "female": 2,
               "male": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -4431,7 +4772,9 @@
               "Unit 4F-56": 1,
               "Unit 4F-57": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "object": {
@@ -4444,7 +4787,9 @@
             "values": {
               "true": 17
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -4459,7 +4804,9 @@
               "changing station": 2,
               "locker": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -4472,7 +4819,9 @@
             "values": {
               "building": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "vegetation": {
@@ -4485,7 +4834,9 @@
             "values": {
               "greenery": 6
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -4570,7 +4921,9 @@
             "values": {
               "section": 14
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "barrier": {
@@ -4583,7 +4936,9 @@
             "values": {
               "gate": 20
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "class": {
@@ -4596,7 +4951,9 @@
             "values": {
               "ticket machine": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "currency": {
@@ -4609,7 +4966,9 @@
             "values": {
               "general": 13
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "disabled access": {
@@ -4622,7 +4981,9 @@
             "values": {
               "true": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -4674,20 +5035,22 @@
               "Cafe Rally": 1,
               "Cafe Renoir": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 1071,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 177
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 177
           }
         },
         "facility": {
@@ -4712,7 +5075,9 @@
               "universal access toilet": 4,
               "wall": 43
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "from": {
@@ -4726,7 +5091,9 @@
               "above": 6,
               "below": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "gender": {
@@ -4742,7 +5109,9 @@
               "kids toilet": 2,
               "male": 7
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -4794,7 +5163,9 @@
               "Unit B1F-15": 1,
               "Unit B1F-151": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "opening hour": {
@@ -4808,7 +5179,9 @@
               "5:00〜24:00": 1,
               "6:00〜23:00": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "safety": {
@@ -4821,7 +5194,9 @@
             "values": {
               "defibrillator": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -4838,7 +5213,9 @@
               "locker": 9,
               "telephone": 7
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -4851,7 +5228,9 @@
             "values": {
               "building": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "to": {
@@ -4865,7 +5244,9 @@
               "above": 9,
               "below": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "traffic": {
@@ -4879,7 +5260,9 @@
               "railway rail": 10,
               "railway tie": 592
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "type": {
@@ -4894,7 +5277,9 @@
               "disable access": 1,
               "ostomate": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "use": {
@@ -4907,7 +5292,9 @@
             "values": {
               "information": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "vegetation": {
@@ -4920,7 +5307,9 @@
             "values": {
               "greenery": 7
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -5001,7 +5390,9 @@
             "values": {
               "section": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "barrier": {
@@ -5014,7 +5405,9 @@
             "values": {
               "gate": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "currency": {
@@ -5027,7 +5420,9 @@
             "values": {
               "general": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -5079,20 +5474,22 @@
               "Kyoryoku no zo": 1,
               "L": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 131,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 53
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 53
           }
         },
         "facility": {
@@ -5114,7 +5511,9 @@
               "universal access toilet": 1,
               "wall": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "fixture": {
@@ -5128,7 +5527,9 @@
               "kiosk": 12,
               "ramp": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "from": {
@@ -5142,7 +5543,9 @@
               "above": 1,
               "below": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -5194,7 +5597,9 @@
               "Unit B2F-6": 1,
               "Unit B2F-7": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "opening hour": {
@@ -5207,7 +5612,9 @@
             "values": {
               "6:00〜23:00": 7
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "safety": {
@@ -5220,7 +5627,9 @@
             "values": {
               "defibrillator": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -5236,7 +5645,9 @@
               "locker": 6,
               "telephone": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -5249,7 +5660,9 @@
             "values": {
               "building": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "to": {
@@ -5263,7 +5676,9 @@
               "above": 2,
               "below": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "type": {
@@ -5276,7 +5691,9 @@
             "values": {
               "ostomate": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "use": {
@@ -5289,7 +5706,9 @@
             "values": {
               "information": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -5372,7 +5791,9 @@
             "values": {
               "section": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "barrier": {
@@ -5385,7 +5806,9 @@
             "values": {
               "gate": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "class": {
@@ -5398,7 +5821,9 @@
             "values": {
               "ticket machine": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "currency": {
@@ -5411,7 +5836,9 @@
             "values": {
               "general": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "disabled access": {
@@ -5424,7 +5851,9 @@
             "values": {
               "true": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -5476,20 +5905,22 @@
               "Bay-B Club": 1,
               "BIEWS": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 189,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 149
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 149
           }
         },
         "facility": {
@@ -5512,7 +5943,9 @@
               "universal access toilet": 1,
               "wall": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "fixture": {
@@ -5525,7 +5958,9 @@
             "values": {
               "ramp": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "from": {
@@ -5539,7 +5974,9 @@
               "above": 5,
               "below": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "gender": {
@@ -5554,7 +5991,9 @@
               "female": 4,
               "male": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -5606,7 +6045,9 @@
               "Unit B3F-21": 1,
               "Unit B3F-22": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "object": {
@@ -5619,7 +6060,9 @@
             "values": {
               "true": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "safety": {
@@ -5632,7 +6075,9 @@
             "values": {
               "defibrillator": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -5647,7 +6092,9 @@
               "locker": 3,
               "telephone": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -5660,7 +6107,9 @@
             "values": {
               "building": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "type": {
@@ -5673,7 +6122,9 @@
             "values": {
               "ostomate": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "use": {
@@ -5686,7 +6137,9 @@
             "values": {
               "information": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -5755,7 +6208,9 @@
               "エレベーター": 2,
               "階段": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "facility": {
@@ -5771,7 +6226,9 @@
               "hallway": 4,
               "stairs": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -5784,7 +6241,9 @@
             "values": {
               "building": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -5852,7 +6311,9 @@
               "エレベーター": 1,
               "階段": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "facility": {
@@ -5868,7 +6329,9 @@
               "hallway": 1,
               "stairs": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -5967,20 +6430,22 @@
               "階段": 11,
               "電話": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 38,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 15
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 15
           }
         },
         "facility": {
@@ -5999,7 +6464,9 @@
               "stairs": 11,
               "unit": 18
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "from": {
@@ -6012,7 +6479,9 @@
             "values": {
               "above": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "gender": {
@@ -6026,7 +6495,9 @@
               "female": 1,
               "male": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "int_address": {
@@ -6056,7 +6527,9 @@
               "Unit B1F-207": 1,
               "Unit B1F-208": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -6069,7 +6542,9 @@
             "values": {
               "telephone": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -6082,7 +6557,9 @@
             "values": {
               "building": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "to": {
@@ -6096,7 +6573,9 @@
               "above": 2,
               "below": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -6168,7 +6647,9 @@
             "values": {
               "general": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "display_name": {
@@ -6191,20 +6672,22 @@
               "コインロッカー": 1,
               "階段": 6
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "entities": {
           "blank_count": 29,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 1,
+          "distinct_count": 0,
           "distinct_values": {
-            "distinct_count": 1,
-            "values": {
-              "(non-scalar)": 4
-            },
-            "truncated": false
+            "distinct_count": 0,
+            "values": {},
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 4
           }
         },
         "facility": {
@@ -6222,7 +6705,9 @@
               "stairs": 6,
               "unit": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "service": {
@@ -6236,7 +6721,9 @@
               "atm": 1,
               "locker": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "structure": {
@@ -6249,22 +6736,25 @@
             "values": {
               "building": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "to": {
           "blank_count": 27,
           "complete": true,
           "unobserved_feature_count": 0,
-          "distinct_count": 3,
+          "distinct_count": 2,
           "distinct_values": {
-            "distinct_count": 3,
+            "distinct_count": 2,
             "values": {
-              "(non-scalar)": 1,
               "above": 1,
               "below": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 1
           }
         }
       },
@@ -8404,9 +8894,9 @@
     "candidate_edges_truncated": false
   },
   "literal_values_artifact": {
-    "store_path": "raw/65346fc7024f8f59b9015a6e8549d15997201a8c588f067e4165cadad7153fd9/tokyo-shinjuku-facilities-zip.literal-values.json",
-    "sha256": "65346fc7024f8f59b9015a6e8549d15997201a8c588f067e4165cadad7153fd9",
-    "bytes": 45313,
+    "store_path": "raw/86d92362a75889bafae399e9dbb3a0616aaaf8c9697c6b2ca5b63cf70cc3defe/tokyo-shinjuku-facilities-zip.literal-values.json",
+    "sha256": "86d92362a75889bafae399e9dbb3a0616aaaf8c9697c6b2ca5b63cf70cc3defe",
+    "bytes": 45951,
     "tables": 22
   },
   "specification_source": {

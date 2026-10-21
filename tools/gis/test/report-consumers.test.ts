@@ -96,6 +96,25 @@ it.each(['UNKNOWN', 'MIXED', 'UNSUPPORTED_DECLARED_CRS'])('does not promote a re
   expect(layer.crs_status).toBe(status);
 });
 
+describe('network CRS structure in overlap layers', () => {
+  const layerFor = async (crs: unknown) => {
+    fixture.reports.get('hokonavi-oedo-shinjuku-network-geojson').members = [{ file: 'x.geojson', feature_count: 1, bbox: [139.7, 35.7, 139.71, 35.71], crs }];
+    const reports = await generateOverlapReports();
+    return reports[1]!.layers.find(l => l.source_id === 'hokonavi-oedo-shinjuku-network-geojson')!;
+  };
+  it('uses a validated {type:"name"} network CRS', async () => {
+    expect(await layerFor({ type: 'name', properties: { name: 'EPSG:6668' } })).toMatchObject({ source_crs: 'EPSG:6668', metric_status: 'KNOWN' });
+  });
+  // Regression: a linked CRS was flattened to EPSG:6668 and compared.
+  it.each([
+    ['linked', { type: 'link', properties: { name: 'EPSG:6668', href: 'https://example.invalid/crs' } }],
+    ['name with href', { type: 'name', properties: { name: 'EPSG:6668', href: 'https://example.invalid/crs' } }],
+    ['malformed', { type: 'name', properties: { name: 6668 } }],
+  ])('keeps a %s network CRS UNKNOWN', async (_label, crs) => {
+    expect(await layerFor(crs)).toMatchObject({ source_crs: null, metric_status: 'UNKNOWN', bbox_jgd2011_lon_lat: null });
+  });
+});
+
 describe.each([['overlap', generateOverlapReports], ['gap packet', gapPacket]] as const)('%s inspection freshness', (_name, generate) => {
   it.each(['tokyo-shinjuku-facilities-zip', 'plateau-13104-related-2025', 'plateau-13116-related-2025'])('rejects stale POI acquisition %s before writing', async id => {
     fixture.reports.get(id).source_sha256 = 'a'.repeat(64);

@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const state = vi.hoisted(() => ({
   root: `${process.env.TMPDIR ?? '/tmp'}/gis-vintage-transaction-${process.pid}`,
   failInspection: false, failStage: false, failPromotion: false, identicalMembers: false, inspections: 0,
+  rich: false, networkCrs: undefined as unknown,
 }));
 vi.mock('../src/common.js', async original => ({
   ...await original<typeof import('../src/common.js')>(),
@@ -13,13 +14,13 @@ vi.mock('../src/common.js', async original => ({
   getGitCommit: async () => null,
   getStoredSource: async (id: string) => ({ path: id, record: { source_id: id, sha256: 'a'.repeat(64) } }),
   readJson: async (path: string) => path === 'plateau-13104-package-2023' ? { success: true, result: { resources: [1, 2].map(n => ({ url: `https://example.invalid/13104_synthetic_2023_citygml_${n}_op.zip` })) } }
-    : path.includes('/networks/') ? (() => { const source_id = path.split('/').pop()!.replace(/\.json$/, ''); return { source_id, source_sha256: 'a'.repeat(64), tool_input_sha256: 'b'.repeat(64), input_sources: [{ source_id, sha256: 'a'.repeat(64) }], members: [] }; })() : { cities: [] },
+    : path.includes('/networks/') ? (() => { const source_id = path.split('/').pop()!.replace(/\.json$/, ''); return { source_id, source_sha256: 'a'.repeat(64), tool_input_sha256: 'b'.repeat(64), input_sources: [{ source_id, sha256: 'a'.repeat(64) }], members: state.rich ? [{ file: 'synthetic.geojson', bbox: [139.69, 35.68, 139.71, 35.70], crs: state.networkCrs }] : [] }; })() : { cities: [] },
 }));
 vi.mock('../src/provenance.js', () => ({ toolFingerprint: async () => 'b'.repeat(64) }));
 vi.mock('../src/citygml.js', () => ({ inspectCityGmlPath: async () => {
   state.inspections++;
   if (state.failInspection) throw new Error('injected CityGML failure');
-  return { totals: { feature_count: 0, polygon_count: 0, bbox_lat_lon_height: null }, envelope: null, unknowns: [] };
+  return { totals: { feature_count: 0, polygon_count: 0, bbox_lat_lon_height: state.rich ? { min: [35.68, 139.69, 0], max: [35.70, 139.71, 10] } : null }, envelope: state.rich ? { srsName: 'EPSG:6697' } : null, unknowns: [] };
 } }));
 vi.mock('node:fs/promises', async original => {
   const actual = await original<typeof import('node:fs/promises')>();
@@ -61,7 +62,7 @@ async function snapshot(directory = `${state.root}/docs/gis`): Promise<Record<st
   return result;
 }
 beforeEach(async () => {
-  state.failInspection = false; state.failStage = false; state.failPromotion = false; state.identicalMembers = false; state.inspections = 0;
+  state.rich = false; state.networkCrs = undefined; state.failInspection = false; state.failStage = false; state.failPromotion = false; state.identicalMembers = false; state.inspections = 0;
   await rm(state.root, { recursive: true, force: true });
   const memberId = createHash('sha256').update(plain).digest('hex').slice(0, 16);
   for (const file of ['vintages/shinjuku-2023.json', 'vintages/shinjuku-2023.md', 'acquisitions/vintages/vintage-directory-citygml-2-op.zip.json', `acquisitions/vintages/vintage-member-${memberId}.json`]) {
@@ -104,5 +105,31 @@ describe('vintage bundle transaction', () => {
       if (file.includes('/acquisitions/')) expect(value.final_url).toContain('https://cdn.example.invalid/');
       else expect(value.archives.every((a: any) => a.final_url.includes('https://cdn.example.invalid/'))).toBe(true);
     }
+  });
+  describe('network CRS structure in vintage comparisons', () => {
+    const name = (value: unknown) => ({ type: 'name', properties: { name: value } });
+    it('compares and selects meshes only from a validated {type:"name"} geographic CRS', async () => {
+      state.rich = true; state.networkCrs = name('EPSG:6668');
+      const report = await inspectVintages({ fetcher });
+      expect(report.comparison.bbox_relations.length).toBeGreaterThan(0);
+      expect(report.comparison.bbox_relations.every(r => r.relation === 'INTERSECTS' && r.layer_crs === 'EPSG:6668' && r.layer_crs_status === 'DECLARED_NAME')).toBe(true);
+      expect(report.comparison.bbox_meshes.length).toBeGreaterThan(0);
+    });
+    // Regression: a linked CRS {type:"link", properties:{name, href}} was flattened to plain EPSG:6668 and returned INTERSECTS.
+    it.each([
+      ['linked', { type: 'link', properties: { name: 'EPSG:6668', href: 'https://example.invalid/crs' } }],
+      ['name with an href', { type: 'name', properties: { name: 'EPSG:6668', href: 'https://example.invalid/crs' } }],
+      ['name with a nested type', { type: 'name', properties: { name: 'EPSG:6668', type: 'proj4' } }],
+      ['malformed name', name(6668)],
+      ['unsupported projected name', name('EPSG:6677')],
+      ['missing', undefined],
+      ['assumed (not declared)', { value: 'RFC 7946 default CRS84 longitude/latitude assumed because no crs member is present', status: 'ASSUMPTION' }],
+    ])('keeps a %s network CRS UNKNOWN with no mesh selection or bbox comparison', async (_label, crs) => {
+      state.rich = true; state.networkCrs = crs;
+      const report = await inspectVintages({ fetcher });
+      expect(report.comparison.bbox_relations.length).toBeGreaterThan(0);
+      expect(report.comparison.bbox_relations.every(r => r.relation === 'UNKNOWN' && r.layer_crs === null && r.layer_crs_status === 'UNKNOWN' && r.intersection_bbox_lat_lon === null)).toBe(true);
+      expect(report.comparison.bbox_meshes).toEqual([]);
+    });
   });
 });

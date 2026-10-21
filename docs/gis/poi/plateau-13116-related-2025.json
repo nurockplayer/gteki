@@ -2,7 +2,7 @@
   "source_id": "plateau-13116-related-2025",
   "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
   "source_bytes": 28543,
-  "tool_input_sha256": "3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0",
+  "tool_input_sha256": "57d5e579f559bff361ec90e230322cb62015817c8a593d24c74ebede63b70062",
   "input_sources": [
     {
       "source_id": "plateau-13116-related-2025",
@@ -123,7 +123,9 @@
               "1": 33,
               "3": 9
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "住所": {
@@ -173,7 +175,9 @@
               "東京都豊島区高松2-57-22": 1,
               "東京都豊島区高田2-12-7": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "収容人数": {
@@ -190,7 +194,9 @@
               "70300": 1,
               "86200": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 37,
+            "non_scalar_count": 0
           }
         },
         "名称": {
@@ -242,7 +248,9 @@
               "駒込中学校一帯": 1,
               "駒込小学校": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "対象とする災害の分類": {
@@ -256,7 +264,9 @@
               "地震災害": 1,
               "指定なし": 41
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "施設の種類": {
@@ -270,7 +280,9 @@
               "救援センター": 35,
               "避難場所": 7
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "施設規模": {
@@ -287,7 +299,9 @@
               "115000": 1,
               "130800": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 37,
+            "non_scalar_count": 0
           }
         },
         "行政区域": {
@@ -301,7 +315,9 @@
               "13116": 41,
               "13117": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "高さ": {
@@ -343,7 +359,9 @@
               "4.3": 1,
               "4.7": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 6,
+            "non_scalar_count": 0
           }
         }
       },
@@ -465,7 +483,9 @@
               "4992": 1,
               "5113": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "供用開始年": {
@@ -517,7 +537,9 @@
               "2008": 1,
               "2009": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "公園名": {
@@ -569,7 +591,9 @@
               "池袋の森": 1,
               "池袋ふれあい": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "公園種別": {
@@ -586,7 +610,9 @@
               "近隣公園": 1,
               "都市緑地": 8
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "所在地市区町村名": {
@@ -599,7 +625,9 @@
             "values": {
               "豊島区": 62
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "所在地都道府県名": {
@@ -612,7 +640,9 @@
             "values": {
               "東京都": 62
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "管理市区町村": {
@@ -625,7 +655,9 @@
             "values": {
               "豊島区": 62
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "管理都道府県・整備局": {
@@ -638,7 +670,9 @@
             "values": {
               "東京都": 62
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "都市計画決定": {
@@ -652,7 +686,9 @@
               "1": 28,
               "2": 34
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -768,7 +804,9 @@
               "大塚駅前郵便局": 1,
               "大正大学(巣鴨校舎)": 1
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "種類": {
@@ -791,7 +829,9 @@
               "警察署": 26,
               "郵便局": 30
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "高さ": {
@@ -843,7 +883,9 @@
               "18.2": 1,
               "18.3": 3
             },
-            "truncated": true
+            "truncated": true,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -925,7 +967,9 @@
               "公営鉄道": 11,
               "民営鉄道": 17
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "路線名": {
@@ -947,7 +991,9 @@
               "荒川線": 9,
               "赤羽線": 2
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "運営会社": {
@@ -964,7 +1010,9 @@
               "東武鉄道": 3,
               "西武鉄道": 3
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "鉄道区分": {
@@ -979,7 +1027,9 @@
               "普通鉄道JR": 7,
               "軌道": 9
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "駅名": {
@@ -1016,7 +1066,9 @@
               "駒込駅": 2,
               "鬼子母神前駅": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "高さ": {
@@ -1050,7 +1102,9 @@
               "7.9": 1,
               "8.8": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -1132,7 +1186,9 @@
               "公営鉄道": 26,
               "民営鉄道": 40
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "行政区域": {
@@ -1145,7 +1201,9 @@
             "values": {
               "13116": 81
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "路線名": {
@@ -1169,7 +1227,9 @@
               "荒川線": 19,
               "赤羽線": 4
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "運営会社": {
@@ -1186,7 +1246,9 @@
               "東武鉄道": 6,
               "西武鉄道": 7
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "鉄道区分": {
@@ -1201,7 +1263,9 @@
               "普通鉄道JR": 15,
               "軌道": 19
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -1307,7 +1371,9 @@
               "593": 1,
               "648": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "区分": {
@@ -1322,7 +1388,9 @@
               "第２次緊急輸送道路": 12,
               "第３次緊急輸送道路": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "枝ID": {
@@ -1339,7 +1407,9 @@
               "4": 2,
               "8": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "行政区域": {
@@ -1352,7 +1422,9 @@
             "values": {
               "13116": 26
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "資料名称": {
@@ -1365,7 +1437,9 @@
             "values": {
               "東京都緊急輸送道路ネットワーク計": 26
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "資料年月": {
@@ -1378,7 +1452,9 @@
             "values": {
               "2019": 26
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "路線名称": {
@@ -1412,7 +1488,9 @@
               "音羽池袋線": 1,
               "鮫洲大山線": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "道路種別": {
@@ -1429,7 +1507,9 @@
               "市町村道（認定道路）": 6,
               "都市高速道路": 5
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -1509,7 +1589,9 @@
             "values": {
               "13116": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "city_name": {
@@ -1522,7 +1604,9 @@
             "values": {
               "豊島区": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "prefecture_code": {
@@ -1535,7 +1619,9 @@
             "values": {
               "13": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         },
         "prefecture_name": {
@@ -1548,7 +1634,9 @@
             "values": {
               "東京都": 1
             },
-            "truncated": false
+            "truncated": false,
+            "blank_count": 0,
+            "non_scalar_count": 0
           }
         }
       },
@@ -3406,9 +3494,9 @@
     "candidate_edges_truncated": false
   },
   "literal_values_artifact": {
-    "store_path": "raw/0c0c2a0e3e74815793e9297c1c85c0227025f6d87f3a6a8318d552ed2c4cb096/plateau-13116-related-2025.literal-values.json",
-    "sha256": "0c0c2a0e3e74815793e9297c1c85c0227025f6d87f3a6a8318d552ed2c4cb096",
-    "bytes": 12936,
+    "store_path": "raw/4197924ed1f33203c733364c65ee270b2801fb3afc3899be7a64bd59ee10e076/plateau-13116-related-2025.literal-values.json",
+    "sha256": "4197924ed1f33203c733364c65ee270b2801fb3afc3899be7a64bd59ee10e076",
+    "bytes": 13226,
     "tables": 10
   }
 }

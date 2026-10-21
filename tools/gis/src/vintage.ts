@@ -5,6 +5,7 @@ import { dirname, isAbsolute, join } from 'node:path';
 import { assertPathWithinStore, docsRoot, ensurePrivateStore, getGitCommit, getStoredSource, getStoreRoot, readJson, storeRelativePath, verifyStoredFile, TOOL_VERSION } from './common.js';
 import { bboxMeshes, meshBounds } from './mesh.js';
 import { toolFingerprint } from './provenance.js';
+import { crsName, geographicCrs } from './crs-declaration.js';
 import { assertNetworkInspectionCurrent } from './network-evidence.js';
 import { describeZipName, type ZipNameInfo } from './zip-names.js';
 import { inspectCityGmlPath } from './citygml.js';
@@ -38,7 +39,7 @@ export type VintageReport = {
   input_sources: Array<{ source_id: string; sha256: string }>;
   tool_input_sha256: string;
   selected_member_records: Array<{ archive: string; final_url: string; member: string; sha256: string; bytes: number; store_path: string; ranges: VintageRange[]; etag: string | null; last_modified: string | null; validator_type: VintageValidatorType; crc32: string; size: number; inspection: { verification: 'UNVERIFIED'; feature_count: number; polygon_count: number; envelope: { lower: number[]; upper: number[]; srsName: string | null; axis_order: 'latitude,longitude,height' } | null; bbox_lat_lon_height: unknown; unknowns: string[] } | null; inspection_error: string | null }>;
-  comparison: { current_catalog_source_id: string; target_mesh: string; bbox_meshes: string[]; current_2025_ubld: Array<{ code: string; url: string; file_size: number | null }>; meshes_2023: string[]; meshes_2025: string[]; only_2023: string[]; only_2025: string[]; touching_target_2023: string[]; bbox_relations: Array<{ archive: string; layer: string; source_crs: string | null; layer_crs: string | null; relation: 'INTERSECTS' | 'DISJOINT' | 'UNKNOWN'; intersection_bbox_lat_lon: number[] | null }>; note: string };
+  comparison: { current_catalog_source_id: string; target_mesh: string; bbox_meshes: string[]; current_2025_ubld: Array<{ code: string; url: string; file_size: number | null }>; meshes_2023: string[]; meshes_2025: string[]; only_2023: string[]; only_2025: string[]; touching_target_2023: string[]; bbox_relations: Array<{ archive: string; layer: string; source_crs: string | null; layer_crs: string | null; layer_crs_status: 'DECLARED_NAME' | 'UNKNOWN'; relation: 'INTERSECTS' | 'DISJOINT' | 'UNKNOWN'; intersection_bbox_lat_lon: number[] | null }>; note: string };
   byte_totals: { directory_range_bytes: number; member_range_bytes: number; extracted_member_bytes: number; requested_http_bytes: number };
   limitations: string[];
 };
@@ -391,16 +392,22 @@ export async function inspectVintages(options: { fetcher?: RangeFetcher; fetchMe
     { source_id: 'hokonavi-oedo-shinjuku-stationmap-geojson', path: join(docsRoot, 'gis', 'networks', 'hokonavi-oedo-shinjuku-stationmap-geojson.json') },
   ];
   const e27Fingerprint = await toolFingerprint();
-  const e27Layers: Array<{ layer: string; bbox: number[] | null; crs: string | null }> = [];
+  const e27Layers: Array<{ layer: string; bbox: number[] | null; crs: string | null; crs_status: 'DECLARED_NAME' | 'UNKNOWN' }> = [];
   const e27Inputs: Array<{ source_id: string; sha256: string }> = [];
   for (const spec of e27Specs) {
     const stored = await getStoredSource(spec.source_id);
-    const network = await readJson<{ source_id?: string; source_sha256?: string; tool_input_sha256?: string; input_sources?: unknown; members?: Array<{ file: string; bbox: number[] | null; crs?: { properties?: { name?: string } } | null }> }>(spec.path);
+    const network = await readJson<{ source_id?: string; source_sha256?: string; tool_input_sha256?: string; input_sources?: unknown; members?: Array<{ file: string; bbox: number[] | null; crs?: unknown }> }>(spec.path);
     if (network.source_sha256 !== stored.record.sha256) throw new Error(`E27 network report source SHA mismatch: ${spec.source_id}`);
     // Source SHA alone accepts a report produced by older tools or lineage: require full currency.
     await assertNetworkInspectionCurrent(network, spec.source_id, { fingerprint: e27Fingerprint });
     e27Inputs.push({ source_id: spec.source_id, sha256: stored.record.sha256 });
-    for (const member of network.members ?? []) e27Layers.push({ layer: `${spec.source_id}:${member.file}`, bbox: member.bbox, crs: member.crs?.properties?.name ?? null });
+    for (const member of network.members ?? []) {
+      // Only {type:"name"} CRS members with a supported geographic identifier count. Linked (href),
+      // typed, malformed, absent or assumed declarations are UNKNOWN: no mesh selection or comparison.
+      const name = crsName(member.crs);
+      const usable = typeof name === 'string' && geographicCrs(name);
+      e27Layers.push({ layer: `${spec.source_id}:${member.file}`, bbox: usable ? member.bbox : null, crs: usable ? name : null, crs_status: usable ? 'DECLARED_NAME' : 'UNKNOWN' });
+    }
   }
   const networkBboxes = e27Layers.flatMap(layer => layer.bbox ? bboxMeshes(layer.bbox) : []);
   const currentBboxMeshes = [...new Set([...(options.bbox ? bboxMeshes(options.bbox) : []), ...networkBboxes])].sort();
@@ -438,11 +445,11 @@ export async function inspectVintages(options: { fetcher?: RangeFetcher; fetchMe
     const sourceCrs = member.inspection?.envelope?.srsName ?? null;
     const isCode=(value:unknown,code:string):boolean=>typeof value==='string'&&[`EPSG:${code}`,`HTTP://WWW.OPENGIS.NET/DEF/CRS/EPSG/0/${code}`,`URN:OGC:DEF:CRS:EPSG::${code}`].includes(value.toUpperCase());
     const isJgd2011 = isCode(sourceCrs,'6697') && isCode(layer.crs,'6668');
-    if (!vintage?.min || !vintage.max || !layer.bbox || !isJgd2011) return { archive: member.archive, layer: layer.layer, source_crs: sourceCrs, layer_crs: layer.crs, relation: 'UNKNOWN' as const, intersection_bbox_lat_lon: null };
+    if (!vintage?.min || !vintage.max || !layer.bbox || !isJgd2011) return { archive: member.archive, layer: layer.layer, source_crs: sourceCrs, layer_crs: layer.crs, layer_crs_status: layer.crs_status, relation: 'UNKNOWN' as const, intersection_bbox_lat_lon: null };
     const networkLonLat = layer.bbox;
     const intersection: [number, number, number, number] = [Math.max(vintage.min[0]!, networkLonLat[1]!), Math.max(vintage.min[1]!, networkLonLat[0]!), Math.min(vintage.max[0]!, networkLonLat[3]!), Math.min(vintage.max[1]!, networkLonLat[2]!)];
     const intersects = intersection[0] <= intersection[2] && intersection[1] <= intersection[3];
-    return { archive: member.archive, layer: layer.layer, source_crs: sourceCrs, layer_crs: layer.crs, relation: intersects ? 'INTERSECTS' as const : 'DISJOINT' as const, intersection_bbox_lat_lon: intersects ? intersection : null };
+    return { archive: member.archive, layer: layer.layer, source_crs: sourceCrs, layer_crs: layer.crs, layer_crs_status: layer.crs_status, relation: intersects ? 'INTERSECTS' as const : 'DISJOINT' as const, intersection_bbox_lat_lon: intersects ? intersection : null };
   }));
   report.byte_totals.directory_range_bytes = report.archives.flatMap(archive => archive.directory_ranges).reduce((sum, range) => sum + range.bytes, 0);
   report.byte_totals.member_range_bytes = report.selected_member_records.flatMap(member => member.ranges).reduce((sum, range) => sum + range.bytes, 0);

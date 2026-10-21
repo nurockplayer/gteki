@@ -1,10 +1,19 @@
 import { describe,it,expect } from 'vitest';
-import { matchAcquiredResource, embeddedMetadataRights, classifyMetadataRightsScope, exactPackageAssetFolderMatch, exactResourceUrlIndex, findPublicationPeriodNotes, findTextValue, htmlText, packageLicence, shortEvidence, urlEvidence } from '../src/rights.js';
+import { licenceDeclarations, matchAcquiredResource, embeddedMetadataRights, classifyMetadataRightsScope, exactPackageAssetFolderMatch, exactResourceUrlIndex, findPublicationPeriodNotes, findTextValue, htmlText, packageLicence, shortEvidence, urlEvidence } from '../src/rights.js';
 describe('rights evidence scope',()=>{
   it('retains package scope without inventing resource coverage',()=>{
     expect(packageLicence({success:true,result:{license_id:'CC-BY-4.0',resources:[{url:'https://example.invalid/a'}]}}).value).toBe('CC-BY-4.0');
     expect(packageLicence({success:true,result:Object.create({license_id:'inherited'})}).value).toBeNull();
     expect(()=>packageLicence({success:true})).toThrow('Invalid CKAN');
+  });
+  it('preserves every licence declaration and resolves disagreeing identifiers to UNKNOWN',()=>{
+    const level={license:'CC-BY-4.0',license_id:'all-rights-reserved',license_title:'Custom terms',license_url:'https://example.invalid/terms'};
+    expect(licenceDeclarations(level)).toMatchObject({value:null,conflict:true,declarations:[{key:'license',value:'CC-BY-4.0'},{key:'license_id',value:'all-rights-reserved'},{key:'license_title',value:'Custom terms'},{key:'license_url',value:'https://example.invalid/terms'}]});
+    // Regression: the first field used to win and the restriction vanished.
+    expect(licenceDeclarations({license:'CC-BY-4.0',license_id:'cc by 4.0'})).toMatchObject({value:'CC-BY-4.0',conflict:false});
+    expect(licenceDeclarations({license_title:'Terms'})).toMatchObject({value:'Terms',conflict:false});
+    expect(packageLicence({success:true,result:{license:'CC-BY-4.0',license_id:'all-rights-reserved'}})).toMatchObject({value:null,conflict:true});
+    expect(packageLicence({success:true,result:{license_id:'cc-by',license_title:'Creative Commons Attribution'}})).toMatchObject({value:'cc-by',conflict:false});
   });
   it('bounds quotes and validates exact evidence hashes',()=>{
     expect(shortEvidence('source','a'.repeat(64),'/result/license_id','CC-BY-4.0','Package').scope).toBe('Package');

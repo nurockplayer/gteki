@@ -2,7 +2,7 @@
   "source_id": "toei-stores-shinjuku-csv",
   "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
   "source_bytes": 694,
-  "tool_input_sha256": "3bdb264cad2ea8800dabf59832eeb780540ad8ce5c921d7d9ff3afa8e8ebdbe0",
+  "tool_input_sha256": "57d5e579f559bff361ec90e230322cb62015817c8a593d24c74ebede63b70062",
   "input_sources": [
     {
       "source_id": "toei-stores-shinjuku-csv",
@@ -83,7 +83,9 @@
           "D": 1,
           "E": 1
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 0,
+        "non_scalar_count": 0
       }
     },
     {
@@ -99,7 +101,9 @@
           "コインロッカー": 2,
           "証明写真機": 1
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 0,
+        "non_scalar_count": 0
       }
     },
     {
@@ -115,7 +119,9 @@
           "B2階改札内コンコース（A1出口方駅務室横）": 1,
           "B2階改札外コンコース（A1出口方改札付近）": 1
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 0,
+        "non_scalar_count": 0
       }
     },
     {
@@ -130,7 +136,9 @@
           "【平日】7時から22時30分まで【土曜・日曜・祝日】8時から21時まで": 1,
           "【月曜】7時から23時まで【火曜～金曜】6時から23時まで【土曜】6時から22時まで【日曜】8時から21時まで【祝日】当該曜日営業時間": 1
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 2,
+        "non_scalar_count": 0
       }
     },
     {
@@ -143,7 +151,9 @@
         "values": {
           "【標準】20口": 1
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 4,
+        "non_scalar_count": 0
       }
     },
     {
@@ -154,7 +164,9 @@
       "distinct_values": {
         "distinct_count": 0,
         "values": {},
-        "truncated": false
+        "truncated": false,
+        "blank_count": 5,
+        "non_scalar_count": 0
       }
     },
     {
@@ -167,7 +179,9 @@
         "values": {
           "03-5321-3300": 1
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 4,
+        "non_scalar_count": 0
       }
     },
     {
@@ -180,7 +194,9 @@
         "values": {
           "http://www.curry-cc.jp/": 1
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 4,
+        "non_scalar_count": 0
       }
     },
     {
@@ -193,7 +209,9 @@
         "values": {
           "○": 2
         },
-        "truncated": false
+        "truncated": false,
+        "blank_count": 3,
+        "non_scalar_count": 0
       }
     },
     {
@@ -204,7 +222,9 @@
       "distinct_values": {
         "distinct_count": 0,
         "values": {},
-        "truncated": false
+        "truncated": false,
+        "blank_count": 5,
+        "non_scalar_count": 0
       }
     }
   ],
@@ -220,8 +240,11 @@
       "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
       "native_id": null,
       "name": "カレーショップC＆C",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -230,8 +253,11 @@
       "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
       "native_id": null,
       "name": "コインロッカー",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -240,8 +266,11 @@
       "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
       "native_id": null,
       "name": "コインロッカー",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -250,8 +279,11 @@
       "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
       "native_id": null,
       "name": "証明写真機",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     },
@@ -260,8 +292,11 @@
       "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
       "native_id": null,
       "name": "ATM（みずほ銀行）",
+      "raw_latitude": null,
+      "raw_longitude": null,
       "latitude": null,
       "longitude": null,
+      "coordinate_status": "NO_COORDINATE_FIELDS",
       "verification": "UNVERIFIED",
       "routable": false
     }
