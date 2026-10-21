@@ -52,6 +52,17 @@ precedence = "override"
 SPDX-FileCopyrightText = "GTEki contributors (AI-generated image, dedicated to the public domain)"
 SPDX-License-Identifier = "CC0-1.0"
 
+# Art batch 1 (2026-10-22): 31 Owner-approved AI images, their provenance.json and catalog.json,
+# and the contact sheet that shows only those images. Placed after the section 2 CC-BY block so it
+# overrides assets/library/** and docs/assets/img/** (last matching annotation wins).
+# Fictional brands only; the text layer is typeset afterwards in Noto Sans JP (SIL OFL 1.1; the
+# font is not committed). The JPEGs are the source of record.
+[[annotations]]
+path = ["assets/library/source/art2d/**", "docs/assets/img/art2d_batch1.jpg"]
+precedence = "override"
+SPDX-FileCopyrightText = "GTEki contributors (AI-generated; see provenance.json)"
+SPDX-License-Identifier = "CC0-1.0"
+
 # =============================================================================================
 # 4. THIRD-PARTY: draft for GIS review (Lane D owns the final entries and the path mapping)
 # =============================================================================================

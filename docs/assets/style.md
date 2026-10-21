@@ -204,3 +204,30 @@ Checklist for every piece in a batch PR:
 - **Brands:** fictional only.
 - **Trial first:** the Owner sees a style batch of about 10 images before any mass run.
 - **Not for:** never for geometry, and never for anything that imitates a real operator.
+
+## 10. Look direction for 2D art and the whole game (Owner, 2026-10-22)
+
+**Goal:** a visitor should feel 「原來新宿和池袋可以這麼美」 (Owner's words). In English: "so Shinjuku and Ikebukuro can be this beautiful."
+
+**Audience:** mainly women who get lost easily, so the look is cute, warm and reassuring.
+
+**Look families the Owner picked:**
+- 唯美: light and seasons.
+- Japanese seasonal scenes (花火 and so on).
+- Shōwa retro.
+- Photographic ads.
+- Anime key visuals.
+- The guide cat and dog. They are headed for the navigation UI ([#132](https://github.com/nurockplayer/gteki/issues/132)), but until the Owner approves their model sheets they are assets only.
+
+Batch 1 is in `assets/library/source/art2d/` (31 images, [contact sheet](img/art2d_batch1.jpg)); `catalog.json` there says which image fits which slot.
+
+![Art batch 1 contact sheet](img/art2d_batch1.jpg)
+
+**Rules:**
+- AI never draws text. All copy is typeset afterwards in Noto Sans JP (OFL) with `tools/blender/art2d/typeset.py`.
+- Fictional brands only. No real brands, operators, liveries or campaign slogans.
+- No real landmarks, except Mt Fuji in the bathhouse mural (Owner exception).
+- Characters are original and must not resemble existing ones: Capoo/咖波, 臭跩貓, Pusheen, Sanrio, Chiikawa and so on.
+- No photorealistic people.
+- Tileable surfaces stay procedural, because the AI seamless test failed.
+- Batches of at most 30, each with provenance and a reject log.
