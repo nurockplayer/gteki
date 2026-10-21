@@ -21,7 +21,7 @@ function typedArray(kind: Kind, buffer: SharedArrayBuffer) {
 }
 interface Buffer { kind: Kind; data: SharedArrayBuffer; itemSize: number; normalized: boolean }
 interface MeshData { name: string; attributes: Record<string, Buffer>; index?: Buffer; side: THREE.Side; matrix: number[] }
-interface Fixture { kind: "shinjuku-fare-replay"; regions: RestrictedRegion[]; layout: Layout; props: WallSeg[]; meshes: MeshData[]; walkable: number[]; colliders: number[]; walls: NonNullable<StationScene["walls"]>; plan: Plan }
+interface Fixture { kind: "shinjuku-fare-replay"; failFast: boolean; regions: RestrictedRegion[]; layout: Layout; props: WallSeg[]; meshes: MeshData[]; walkable: number[]; colliders: number[]; walls: NonNullable<StationScene["walls"]>; plan: Plan }
 export interface MatrixRow { walker: Walker; fps: number; run: boolean; approach: string; paths: number; passed: number }
 interface Job { id: number; end: End; walker: Walker }
 interface Result { id: number; rows: MatrixRow[]; frames: number; integratedFrames: number; seeds: number; groupDone?: boolean; leak?: ReplayLeak }
@@ -44,7 +44,7 @@ function capture(built: BuiltStation, scene: StationScene, plan: Plan): Fixture 
     return { name: mesh.name, attributes, index: mesh.geometry.index ? buffer(mesh.geometry.index) : undefined,
       side: mesh.material.side, matrix: [...mesh.matrixWorld.elements] };
   });
-  return { kind: "shinjuku-fare-replay", regions: derivedRestrictedAccess(built.layout)?.regions ?? [], layout: built.layout, props: built.propWalls, meshes, walkable: scene.walkable.map(o => objects.indexOf(o)),
+  return { kind: "shinjuku-fare-replay", failFast: process.env.FARE_REPLAY_FAIL_FAST === "1", regions: derivedRestrictedAccess(built.layout)?.regions ?? [], layout: built.layout, props: built.propWalls, meshes, walkable: scene.walkable.map(o => objects.indexOf(o)),
     colliders: (scene.colliders ?? []).map(o => objects.indexOf(o)), walls: scene.walls ?? [], plan };
 }
 
@@ -55,7 +55,8 @@ export async function replayMatrix(built: BuiltStation, scene: StationScene, pla
   for (const job of jobs) { const p = job.end.p, key = `${job.walker}:${p.x},${p.y},${p.z}`, list = groupsByKey.get(key) ?? []; list.push(job); groupsByKey.set(key, list); }
   const groups = [...groupsByKey.values()], startedAt = Date.now(), start = performance.now();
   let next = 0, finished = 0;
-  const report = () => ({ jobs: jobs.length, finished, startedAt, finishedAt: Date.now(), wallMs: performance.now() - start, integratedFrames: results.reduce((n, r) => n + r.integratedFrames, 0), frames: results.reduce((n, r) => n + r.frames, 0),
+  const report = () => ({ jobs: jobs.length, finished, failFast: fixture.failFast, startedAt, finishedAt: Date.now(), wallMs: performance.now() - start, integratedFrames: results.reduce((n, r) => n + r.integratedFrames, 0), frames: results.reduce((n, r) => n + r.frames, 0),
+    failedPaths: [...matrix.values()].reduce((n, r) => n + r.paths - r.passed, 0),
     matrix: [...matrix.values()], zeroSeedJobs: results.filter(r => !r.seeds).map(r => jobs[r.id]!.end.id), leaks: results.flatMap(r => r.leak ? [r.leak] : []) });
   const save = () => { if (process.env.FARE_REPLAY_REPORT) writeFileSync(process.env.FARE_REPLAY_REPORT.replace(/\.json$/, shard === undefined ? ".json" : `-${shard + 1}.json`), JSON.stringify(report(), null, 2)); };
   const tasks = Array.from({ length: Math.min(6, Math.max(1, Math.floor(availableParallelism() / 2)), groups.length) }, () => new Promise<void>((resolve, reject) => {
@@ -68,7 +69,7 @@ export async function replayMatrix(built: BuiltStation, scene: StationScene, pla
           const key = `${row.walker}:${row.fps}:${row.run}:${row.approach}`, value = matrix.get(key);
           if (value) { value.paths += row.paths; value.passed += row.passed; } else matrix.set(key, { ...row });
         }
-        save(); if (result.leak) { reject(new Error(JSON.stringify(result.leak))); return; }
+        save(); if (result.leak && fixture.failFast) { reject(new Error(JSON.stringify(result.leak))); return; }
         if (!result.groupDone) return;
       }
       if (next < groups.length) worker.postMessage(groups[next++]!); else resolve();
@@ -103,11 +104,11 @@ if (parentPort && workerData?.kind === "shinjuku-fare-replay") {
       for (const seed of seeds) {
         const point = seed[job.walker]; if (!point) continue;
         const leak = env.replay(job.end, point, approach, job.walker, fps, run); row.paths++;
-        if (leak) { result.leak = leak; break outer; } row.passed++;
+        if (leak) { result.leak ??= leak; if (fixture.failFast) break outer; } else row.passed++;
       }
     }
     result.frames = env.frames() - before; result.integratedFrames = env.integratedFrames() - integratedBefore; parentPort!.postMessage(result);
-    if (result.leak) break;
+    if (result.leak && fixture.failFast) break;
    }
   });
   parentPort.postMessage("ready");

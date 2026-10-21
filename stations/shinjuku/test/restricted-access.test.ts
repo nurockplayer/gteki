@@ -69,8 +69,27 @@ describe("source restriction and verified centreline authority", () => {
       const env = replayEnvironment(fixture.built, fixture.scene, fixture.plan, fixture.canonical);
       const end = { id: "floor-overhang", p: { x: .21, y: 0, z: 0 }, other: { x: .21, y: -3 } };
       expect(fixture.built.propWalls.some(w => Math.abs(w.a.x - .21) < .001 && Math.abs(w.b.x - .21) < .001)).toBe(true);
+      const seeds = env.seeds(end);
+      for (const walker of ["lane", "explorer"] as const) expect(seeds.some(row => row[walker] && Math.abs(row[walker]!.x + .1) < 1e-9 && Math.abs(row[walker]!.y) < 1e-9)).toBe(true);
       for (const walker of ["lane", "explorer"] as const) for (const fps of [30, 60]) for (const run of [false, true])
         expect(env.replay(end, { x: -1, y: 0, z: 0 }, "toward", walker, fps, run)).toBeNull();
     } finally { fixture.dispose(); }
+  });
+  it("detects diagonal entry into a thin wall when the corridor returns are removed", () => {
+    const proper = restrictedCorridorFixture(.32, 3, { oblique: true });
+    const opened = restrictedCorridorFixture(.32, 3, { oblique: true, returns: false });
+    try {
+      const safe = replayEnvironment(proper.built, proper.scene, proper.plan, proper.canonical);
+      const bad = replayEnvironment(opened.built, opened.scene, opened.plan, opened.canonical);
+      for (const walker of ["lane", "explorer"] as const) for (const fps of [30, 60]) for (const run of [false, true]) {
+        let detected = false;
+        for (const y of [-.15, -.1, -.06, .06, .1, .15]) {
+          const end = { id: "oblique-wall", p: { x: 2, y, z: 0 }, other: { x: 2, y: -3 } }, seed = { x: -1, y, z: 0 };
+          expect(safe.replay(end, seed, "toward", walker, fps, run)).toBeNull();
+          detected ||= !!bad.replay(end, seed, "toward", walker, fps, run);
+        }
+        expect(detected, `${walker}/${fps}/${run}`).toBe(true);
+      }
+    } finally { proper.dispose(); opened.dispose(); }
   });
 });

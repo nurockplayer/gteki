@@ -23,10 +23,13 @@ export function replayShard(index: number, count: number) {
   it("replays every public seed, all nine approaches, both fps, speeds and walkers", async () => {
    const ends = replayEnds(built), key = (p: { x: number; y: number; z: number }) => `${p.x},${p.y},${p.z}`;
    const groups = new Map([...new Set(ends.map(e => key(e.p)))].map((k, i) => [k, i % count]));
-   const conflicts = new Set(derivedRestrictedAccess(built.layout)!.conflicts.map(c => c.spaceId));
+   const conflicts = new Map<string, number>();
+   for (const c of derivedRestrictedAccess(built.layout)!.conflicts)
+     conflicts.set(c.spaceId, Math.max(conflicts.get(c.spaceId) ?? 0, c.maxEdgeDepthM));
    // Exercise source/route conflicts first so regressions fail early. No cases are removed.
    const selected = ends.filter(e => groups.get(key(e.p)) === index).sort((a, b) =>
-     Number(conflicts.has(b.fence?.restrictedSpaceId ?? "")) - Number(conflicts.has(a.fence?.restrictedSpaceId ?? "")) || b.p.z - a.p.z);
+     Number(conflicts.has(b.fence?.restrictedSpaceId ?? "")) - Number(conflicts.has(a.fence?.restrictedSpaceId ?? "")) ||
+     (conflicts.get(b.fence?.restrictedSpaceId ?? "") ?? 0) - (conflicts.get(a.fence?.restrictedSpaceId ?? "") ?? 0) || b.p.z - a.p.z);
    const result = await replayMatrix(built, scene, plan, selected, index);
    expect(result.finished).toBe(result.jobs); expect(result.leaks).toEqual([]); expect(result.matrix).toHaveLength(72);
    for (const row of result.matrix) { expect(row.paths).toBeGreaterThan(0); expect(row.passed).toBe(row.paths); }

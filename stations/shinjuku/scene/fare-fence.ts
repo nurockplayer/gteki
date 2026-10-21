@@ -231,7 +231,7 @@ export function restrictionDigest(input: string) {
 export function restrictedInputKey(layout: Layout, plan: Plan, bundle: StationBundle, base: Fence[]) {
   // Digest the complete source/graph/layout input; CI compares the fresh derivation
   // and separately requires review of every change to the conflict table.
-  return restrictionDigest(JSON.stringify(["restricted-boundary-v13", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
+  return restrictionDigest(JSON.stringify(["restricted-boundary-v16", VERIFIED_CORRIDOR_M, RESTRICTED_ALIGNMENT_M,
     plan.levels.map(l => [l.label, l.renderElevationM, l.spaces.filter(s => s.restricted)]),
     bundle.edges.filter(e => e.verification === "verified"),
     bundle.nodes.map(n => [n.id, n.position]), [...layout.nodeZ], layout.gates,
@@ -575,6 +575,44 @@ export function deriveRestrictedFences(layout: Layout, restricted: RestrictedAcc
         }
       }
     }
+    // Continue corridor sides one body radius beyond the source wall. Without
+    // these returns a circle can enter the thin wall opening diagonally before
+    // touching a panel, despite every endpoint being closed.
+    const touched = regions.filter(r => r.paths.length);
+    if (!touched.length) continue;
+    const sourceRings = touched.map(r => r.source), inSource = containsPolygons(sourceRings);
+    const reach = VERIFIED_CORRIDOR_M / Math.cos(Math.PI / 16);
+    const expanded = union(touched.flatMap(r => [poly(r.source), ...r.source.flatMap(rs => rs.flatMap((p, i) => {
+      const q = rs[(i + 1) % rs.length]!;
+      return Math.hypot(p.x - q.x, p.y - q.y) > 1e-8 ? [capsule(p, q, reach, 8)] : [];
+    }))])).map(rings);
+    const inExpanded = containsPolygons(expanded);
+    const corridors = union(restricted.segments.filter(p => p.floor === level.label).map(p => capsule(p.a, p.b, VERIFIED_CORRIDOR_M - .01, 16))).map(rings);
+    const guardCuts = [...sourceRings.flat(), ...expanded.flat(), ...wallCaps.flat()];
+    const guards: Fence[] = [];
+    for (const rs of corridors) for (const raw of rs) {
+      const ring = simplify(raw);
+      for (let i = 1; i < ring.length; i++) {
+        const a = ring[i - 1]!, b = ring[i]!, dx = b.x - a.x, dy = b.y - a.y;
+        const divisions = cuts(a, b, guardCuts);
+        for (let j = 1; j < divisions.length; j++) {
+          const lo = divisions[j - 1]!, hi = divisions[j]!, t = (lo + hi) / 2, mid = { x: a.x + dx * t, y: a.y + dy * t };
+          const from = { x: a.x + dx * lo, y: a.y + dy * lo }, to = { x: a.x + dx * hi, y: a.y + dy * hi };
+          if (inSource(mid) || !inExpanded(mid) || inWall(mid) || !closeToFloor(from, to) || Math.hypot(to.x - from.x, to.y - from.y) < 1e-8) continue;
+          const source = touched.find(r => r.source.some(rs => rs.some((p, k) => distance(mid, p, rs[(k + 1) % rs.length]!) <= reach)));
+          guards.push({ id: `return:${level.label}:${base.length + fences.length + guards.length}`, restrictedSpaceId: source?.spaceId,
+            reason: "access", level: level.label, a: from, b: to, zMin: level.z - .05, zMax: level.z + 1.15, side: 1, kind: "wall" });
+        }
+      }
+    }
+    // A return extends an existing restricted boundary, not the unrelated far
+    // side of a nearby corridor. Keep complete connected chains, never a free wing.
+    const anchors = fences.filter(f => f.level === level.label && f.restrictedSpaceId);
+    const touches = (g: Fence, other: Fence) => Math.min(distance(g.a, other.a, other.b), distance(g.b, other.a, other.b)) <= .020000001;
+    const connected = new Set(guards.filter(g => anchors.some(f => touches(g, f))));
+    let changed = true;
+    while (changed) { changed = false; for (const g of guards) if (!connected.has(g) && [...connected].some(f => touches(g, f))) { connected.add(g); changed = true; } }
+    fences.push(...guards.filter(g => connected.has(g)));
   }
   return fences;
 }
@@ -615,7 +653,15 @@ function closeBarrierEnds(layout: Layout, fences: Fence[], gates: GateLine[], cl
       .flatMap(w => [nearest(p, w), w.a, w.b, ...extensionHit(w)].filter(outward).map(q => ({ w, q, d: Math.hypot(p.x - q.x, p.y - q.y) })))
       .filter(v => v.d <= radius).sort((a, b) => a.d - b.d);
     const options = optionsAt(2);
-    if ((options[0]?.d ?? Infinity) <= .02) return;
+    if ((options[0]?.d ?? Infinity) <= .02) {
+      // Snap a safe cap to the actual joining line instead of leaving a 1 cm
+      // numerical sliver. The entire adjusted segment must keep graph clearance.
+      if (self && end && other && options[0]!.d > 1e-8) {
+        const exact = options.find(v => v.d <= .02 && clear(other, v.q, z));
+        if (exact) self[end] = { ...exact.q };
+      }
+      return;
+    }
     const option = options.find(v => clear(p, v.q, z));
     if (!option) {
       // Continue on R' around its corner when a straight cap would cross a verified

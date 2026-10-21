@@ -285,6 +285,8 @@ export function lazySurfaceGrid(patches: Patch[]) {
 }
 export function replayEnvironment(built: BuiltStation, scene: StationScene, plan: Plan, regions?: RestrictedRegion[]) {
   const explorer = new ExplorerReplay(scene), labels = publicLabels(built, plan, regions), laneWorld = laneReplayWorld(built);
+  const verified = [...new Map((regions ?? derivedRestrictedAccess(built.layout)?.regions ?? []).flatMap(r => r.paths)
+    .map(p => [`${p.edgeId}:${p.floor}:${p.a.x},${p.a.y},${p.b.x},${p.b.y}`, p])).values()];
   let grid: ReturnType<typeof lazySurfaceGrid> | undefined;
   const seedCache = new Map<string, { lane?: XYZ; explorer?: XYZ }>();
   const seeds = (end: End, resolution = .25) => {
@@ -317,6 +319,22 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
       if (a !== null && labels({ ...p, z: a }).mapped && distance(built.world.resolveWalls(p, a, .3), p) < 1e-7) row.lane = { ...p, z: a };
       if (acceptGround(end.p.z, b) && labels({ ...p, z: b! }).mapped && distance(explorer.push({ ...p, z: b! }), p) < 1e-7) row.explorer = { ...p, z: b! };
       if (row.lane || row.explorer) result.push(row);
+    }
+    // A 25 cm lattice can miss the entire narrow centre corridor. Explicitly
+    // start on the verified centreline and 5 mm either side, when grounded/clear.
+    const seen = new Set<string>();
+    for (const path of verified) {
+      if (Math.abs(path.z - end.p.z) > .2) continue;
+      const q = closest(end.p, path.a, path.b), len = distance(path.a, path.b);
+      if (distance(q, end.p) > 3) continue;
+      for (const offset of len ? [0, -.005, .005] : [0]) {
+        const p = { x: q.x - (path.b.y - path.a.y) / (len || 1) * offset, y: q.y + (path.b.x - path.a.x) / (len || 1) * offset };
+        const key = `${p.x},${p.y},${path.z}`; if (seen.has(key)) continue; seen.add(key);
+        const row: { lane?: XYZ; explorer?: XYZ } = {}, a = built.world.groundAt(p, path.z), b = explorer.ground({ ...p, z: path.z });
+        if (a !== null && labels({ ...p, z: a }).mapped && distance(built.world.resolveWalls(p, a, .3), p) < 1e-7) row.lane = { ...p, z: a };
+        if (acceptGround(path.z, b) && labels({ ...p, z: b! }).mapped && distance(explorer.push({ ...p, z: b! }), p) < 1e-7) row.explorer = { ...p, z: b! };
+        if (row.lane || row.explorer) result.push(row);
+      }
     }
     return result;
   };

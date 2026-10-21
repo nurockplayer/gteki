@@ -36,8 +36,13 @@ export function accessFixture(width: number, publicBeyond: boolean, restricted =
 }
 
 /** Same actual walkers/meshes; only the generic derivation's corridor radius is mutated. */
-export function restrictedCorridorFixture(radius: number, floorRight = 3) {
+export function restrictedCorridorFixture(radius: number, floorRight = 3, options: { oblique?: boolean; returns?: boolean } = {}) {
   const base = accessFixture(3, false, true), { built, scene, plan } = base;
+  if (options.oblique) {
+    const level = plan.levels[0]!;
+    level.spaces[0]!.rings = built.layout.levels[0]!.slabs[0]!.rings;
+    level.spaces[1]!.rings = [[{ x: -3, y: 3 }, { x: -2.8, y: 3 }, { x: 3, y: -2.8 }, { x: 3, y: -3 }]];
+  }
   if (floorRight !== 3) {
     const rs = [[{ x: -3, y: -3 }, { x: floorRight, y: -3 }, { x: floorRight, y: 3 }, { x: -3, y: 3 }]];
     built.layout.levels[0]!.slabs[0]!.rings = rs;
@@ -45,13 +50,14 @@ export function restrictedCorridorFixture(radius: number, floorRight = 3) {
     floor.geometry.dispose(); floor.geometry = slabGeometry(rs, 0, 1);
   }
   const template = loadShinjukuBundle().bundle, a = "fixture:verified-a", b = "fixture:verified-b";
-  const nodes = [a, b].map((id, i) => ({ ...template.nodes[0]!, id, floorId: "fixture", position: { x: -.1, y: i ? 3 : -3, z: 0 } }));
+  const nodes = [a, b].map((id, i) => ({ ...template.nodes[0]!, id, floorId: "fixture", position: options.oblique
+    ? { x: i ? 3 : -3, y: 0, z: 0 } : { x: -.1, y: i ? 3 : -3, z: 0 } }));
   const bundle = { ...template, nodes, pois: [], edges: [{ ...template.edges[0]!, id: "fixture:verified-edge", from: a, to: b,
     verification: "verified" as const, mode: "walk" as const, geometry: nodes.map(n => n.position) }] };
   built.layout.nodeZ.set(a, 0); built.layout.nodeZ.set(b, 0);
   const canonical = deriveRestrictedAccess(built.layout, plan, bundle).regions;
   const derived = deriveRestrictedAccess(built.layout, plan, bundle, radius);
-  const props = deriveRestrictedFences(built.layout, derived, []);
+  const props = deriveRestrictedFences(built.layout, derived, []).filter(f => options.returns !== false || !f.id.startsWith("return:"));
   const walls = [...built.layout.levels.flatMap(l => l.walls), ...props], positions: number[] = [], indices: number[] = [];
   for (const w of walls) { const i = positions.length / 3; positions.push(w.a.x, w.zMin, -w.a.y, w.b.x, w.zMin, -w.b.y, w.b.x, w.zMax, -w.b.y, w.a.x, w.zMax, -w.a.y); indices.push(i, i + 1, i + 2, i, i + 2, i + 3); }
   const geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3)); geometry.setIndex(indices);
