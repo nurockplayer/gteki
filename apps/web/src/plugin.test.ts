@@ -114,6 +114,20 @@ describe("virtual station module asset URLs", () => {
     expect([...publishableAssets(discoverStations([root])).get("alpha")!].sort()).toEqual(["assets/b1.glb", "assets/b1.meta.json", "assets/b1.mobile.glb"]);
   });
 
+  it("refuses a facts-only source without a #26 decision in a build, even for a synthetic station", () => {
+    const root = valid(tree());
+    const file = path.join(root, "alpha", "gteki", "station.json");
+    const m = JSON.parse(fs.readFileSync(file, "utf8"));
+    expect(m.station.synthetic).toBe(true);
+    m.sources.push({ ...m.sources[0], id: "facts-src", usage: "facts-only", rights: "REFERENCE_ONLY" });
+    fs.writeFileSync(file, JSON.stringify(m));
+    expect(() => load([root], "build")).toThrow(/source\.decision \(facts-src\)/);
+    expect(() => load([root], "serve")).not.toThrow();
+    m.sources.at(-1).decision = { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-1", date: "2026-10-21" };
+    fs.writeFileSync(file, JSON.stringify(m));
+    expect(() => load([root], "build")).not.toThrow();
+  });
+
   it("refuses a production build from a station that fails the contract, but still serves it in dev", () => {
     const root = tree();
     expect(() => load([root], "build")).toThrow(/refusing a production build with invalid stations: alpha/);

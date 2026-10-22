@@ -16,7 +16,7 @@ type Spec = Record<string, Kind | `${Kind}?`>;
 const SPECS = {
   station: { id: "string", names: "array", codes: "array?", operators: "array", origin: "object", frame: "string", datasetVersion: "string", generatedAt: "string", synthetic: "boolean" },
   origin: { lat: "number", lon: "number", hM: "number|null", datum: "string", crs: "string" },
-  source: { id: "string", title: "string", publisher: "string", url: "string", license: "object|null", rights: "string", attribution: "string", modified: "boolean", retrievedAt: "string|null", datasetDate: "string|null", downloadUrls: "array?", usage: "string?", decision: "object?", sha256: "object?", validUntil: "string|null?", notes: "string?" },
+  source: { id: "string", title: "string", publisher: "string", url: "string", license: "object|null", rights: "string", attribution: "string", modified: "boolean", retrievedAt: "string|null", datasetDate: "string|null", downloadUrls: "array?", usage: "string?", decision: "object?", override: "object?", sha256: "object?", validUntil: "string|null?", notes: "string?" },
   floor: { id: "string", operatorId: "string", sourceLabels: "array", ordinal: "number|null", intermediate: "boolean", elevationM: "number|null", elevationSource: "string", renderElevationM: "number", displayNames: "array?" },
   node: { id: "string", floorId: "string", position: "object", kind: "string", inOut: "string|null", sourceRefs: "array", renderZ: "number?" },
   position: { x: "number", y: "number", z: "number|null" },
@@ -28,6 +28,7 @@ const SPECS = {
   code: { operatorId: "string", code: "string" },
   license: { name: "string", url: "string" },
   decision: { url: "string", date: "string" },
+  override: { decision: "string", date: "string" },
   sourceLabel: { operatorId: "string", label: "string", sourceId: "string" },
   featureRef: { sourceId: "string", featureId: "string" },
   hoursAlways: { kind: "string", evidence: "object" },
@@ -37,6 +38,7 @@ const SPECS = {
   point2: { x: "number", y: "number" },
   coverage: { summary: "array", areas: "array", gaps: "array", freshness: "string|null" },
   asset: { id: "string", uri: "string", uriMobile: "string?", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?", files: "array?" },
+  dataFile: { id: "string", path: "string", sourceIds: "array", modified: "boolean", derivation: "string?" },
 } satisfies Record<string, Spec>;
 
 function kindOf(v: unknown): string {
@@ -134,7 +136,7 @@ function idOf(item: unknown): string {
 /** Structural check of the three station files. Returns issues; empty = shape-valid. */
 export function checkShape(manifest: unknown, graph: unknown, pois: unknown): ValidationIssue[] {
   const c = new ShapeChecker();
-  if (c.check(manifest, { schema: "string", station: "object", sources: "array", floors: "array", coverage: "object", spawnNodeIds: "array?", assets: "array?" }, "station.json")) {
+  if (c.check(manifest, { schema: "string", station: "object", sources: "array", floors: "array", coverage: "object", spawnNodeIds: "array?", assets: "array?", dataFiles: "array?" }, "station.json")) {
     const m = manifest as Record<string, unknown>;
     if (c.check(m.station, SPECS.station, "station.json.station")) {
       const st = m.station as Record<string, unknown>;
@@ -146,6 +148,7 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
     c.each(m.sources, SPECS.source, "sources", (src, where) => {
       if (src.license !== null) c.check(src.license, SPECS.license, `${where}.license`);
       if (src.decision !== undefined) c.check(src.decision, SPECS.decision, `${where}.decision`);
+      if (src.override !== undefined) c.check(src.override, SPECS.override, `${where}.override`);
       c.strings(src.downloadUrls, `${where}.downloadUrls`);
       if (kindOf(src.sha256) === "object") c.strings(Object.values(src.sha256 as object), `${where}.sha256`);
     });
@@ -164,6 +167,7 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
       c.each(cov.gaps, SPECS.gap, "coverage.gaps");
     }
     c.strings(m.spawnNodeIds, "spawnNodeIds");
+    c.each(m.dataFiles, SPECS.dataFile, "dataFiles", (file, where) => c.strings(file.sourceIds, `${where}.sourceIds`));
     c.each(m.assets, SPECS.asset, "assets", (asset, where) => {
       c.strings(asset.floorIds, `${where}.floorIds`);
       c.strings(asset.sourceIds, `${where}.sourceIds`);
@@ -218,6 +222,7 @@ export function composeBundle(manifest: StationManifestFile, graph: GraphFile, p
   };
   if (manifest.spawnNodeIds) bundle.spawnNodeIds = manifest.spawnNodeIds;
   if (manifest.assets) bundle.assets = manifest.assets;
+  if (manifest.dataFiles) bundle.dataFiles = manifest.dataFiles;
   return bundle;
 }
 
