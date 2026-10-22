@@ -56,6 +56,7 @@ class Asset:
         self.notes = notes
         self.provenance = contract.PROVENANCE  # families override these for supplied artwork
         self.license = contract.LICENSE
+        self.license_spdx = contract.LICENSE_SPDX  # written only when contract.EMBED_SPDX
         self.placement = "free"
         self.ao_res_override = None  # catalog `ao_res`, applied to both tiers
         self.materials = []
@@ -218,6 +219,7 @@ class Asset:
             "provenance": self.provenance,
             "license": self.license,
         }
+        meta.update(contract.rights_fields(self.license_spdx))  # {} while contract.EMBED_SPDX is off
         if self.notes:
             meta["notes"] = self.notes
         if mobile:
@@ -258,7 +260,7 @@ class Asset:
             export_animations=False,
             export_skins=False,
             export_morph=False,
-            export_copyright="GTEki (original work; licence pending Owner decision)",
+            export_copyright=contract.GLB_COPYRIGHT,
             use_selection=False,
             export_draco_mesh_compression_enable=False,
         )
@@ -290,6 +292,7 @@ class Asset:
             "light_hints": len(self.light_hints),
             "collision_nodes": [f"{contract.COL}{n}{contract.COL_SUFFIX}" for n, _ in self.collision],
             "generator": self.generator,
+            **contract.rights_fields(self.license_spdx),  # {} while contract.EMBED_SPDX is off
         }
 
 

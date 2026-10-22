@@ -1,5 +1,5 @@
 {
-  "run_id": "context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-tiles380-6f27ec2e47c111aeae7a",
+  "run_id": "context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-tiles380-daebc9ca51cbeea3c90a",
   "verification": "UNVERIFIED",
   "navigation_use": "NOT_FOR_ROUTING",
   "visual_only": true,
@@ -6263,13 +6263,13 @@
   "feature_table_sha256": "020dfa0894b7bd0dbdecc8fb80caa026e07a5c23649e8f726d850f38cc80da1e",
   "per_feature_count": 671,
   "tool_version": "0.1.0",
-  "tool_input_sha256": "0ca1af67b253f067d9245668707af3e7b181436850e03f49e9ab10d7069d50fa",
+  "tool_input_sha256": "377d08e4be78065b87052c741d3ebfe18c97b8ec469664de87c7939d63086ac4",
   "station_json_sha256_now": "3bbcdf9b0eaa284320858bff2183819e30fd311792841ebbdf01153bb4f6e99b",
   "station_json_changed_since_frame": true,
-  "store_path": "out/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-tiles380-6f27ec2e47c111aeae7a.glb",
-  "sidecar_path": "out/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-tiles380-6f27ec2e47c111aeae7a.provenance.json",
+  "store_path": "out/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-tiles380-daebc9ca51cbeea3c90a.glb",
+  "sidecar_path": "out/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-tiles380-daebc9ca51cbeea3c90a.provenance.json",
   "output_sha256": "0629b00cf18a57f816d341c871052fd19f835e39ffdfc445058a216346d5487c",
   "output_bytes": 2266864,
-  "elapsed_ms": 9651,
-  "peak_rss_bytes": 244350976
+  "elapsed_ms": 29319,
+  "peak_rss_bytes": 198844416
 }

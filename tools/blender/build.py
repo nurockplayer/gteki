@@ -148,6 +148,7 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
         "catalog": os.path.relpath(os.path.abspath(args.catalog), os.path.abspath(args.out)),
         "texture_resolution": args.tex_res,
         "license": contract.LICENSE,
+        **contract.rights_fields(),  # {} while contract.EMBED_SPDX is off: the manifest keeps its bytes
         "assets": entries,
     }
     if args.profile != "full":  # the canonical manifest keeps its exact bytes

@@ -340,6 +340,14 @@ class Validator:
         for key in REQUIRED:
             if key not in meta:
                 self.message("FAIL", f"missing root extras.gteki.{key}")
+        # machine-readable rights (written once contract.EMBED_SPDX is on): all or none, well formed
+        rights = [k for k in ("license_spdx", "rights_class", "attribution") if k in meta]
+        if rights:
+            for key in ("license_spdx", "rights_class", "attribution"):
+                if not isinstance(meta.get(key), str) or not meta[key].strip():
+                    self.message("FAIL", f"root extras.gteki.{key} must be a non-empty string when rights fields are present")
+            if meta.get("rights_class") not in (None, "original"):
+                self.message("FAIL", "root extras.gteki.rights_class must be 'original'")
         if meta.get("contract") != CONTRACT:
             self.message("FAIL", f"contract must equal {CONTRACT}")
         if meta.get("id") != stem:

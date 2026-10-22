@@ -2,9 +2,11 @@
 
 Updated 2026-10-21 · kit `0.1.0` · contract [`gteki-asset/0.1`](asset-contract.md) · lane: Issue #11 (`tools/blender/**`, `assets/library/**`, `docs/assets/**`).
 
-**Status:** a reusable, reproducible kit of 48 station components, built only from repository code plus AI-generated posters whose provenance is recorded (rights clearance for release is pending the Owner; see PROVENANCE). It imports into Web (three.js) and Godot 4.7 with tested parity; evidence is in the [import report](import-report.md). The kit is **generic**: no asset is a measurement of Ikebukuro, Shinjuku or any real station. **Layout, station identity, measured dimensions and routing belong to each station lead.** Merging needs Owner approval; the repository licence is still undecided.
+**Status:** a reusable, reproducible kit of 48 station components, built only from repository code plus AI-generated posters whose provenance is recorded (licences decided by the Owner, Issue #123: original assets CC BY 4.0, AI posters CC0 1.0; see PROVENANCE and the root NOTICE). It imports into Web (three.js) and Godot 4.7 with tested parity; evidence is in the [import report](import-report.md). The kit is **generic**: no asset is a measurement of Ikebukuro, Shinjuku or any real station. **Layout, station identity, measured dimensions and routing belong to each station lead.** Merges follow the Issue #6 rules. The licence is decided (code Apache-2.0, original assets CC BY 4.0, AI images CC0 1.0); the machine-readable form is embedded in the GLBs at the next full library rebuild (see [asset-contract.md](asset-contract.md) §3).
 
 ![Synthetic kit demo](img/concourse_approach.jpg)
+
+**Look:** the whole game targets the look of `vertical_hero` and `concourse_gates_closed`. [style.md](style.md) gives the palette, materials, bevels, signage and lighting rules every piece follows ([#94](https://github.com/nurockplayer/gteki/issues/94)).
 
 ## What is in the box
 
@@ -126,11 +128,11 @@ pnpm --dir tools/blender/web_preview install && pnpm --dir tools/blender/web_pre
 
 | Gate | Status | Evidence / note |
 | --- | --- | --- |
-| G0 rights | **PASS (kit) / HOLD (release)** | Geometry and textures are original code output; posters are AI-generated with a recorded provenance. Owner still decides the repository licence and confirms the image provider's terms ([PROVENANCE](../../assets/library/PROVENANCE.md)). |
+| G0 rights | **PASS (kit) / HOLD (release)** | Geometry and textures are original code output; posters are AI-generated with a recorded provenance. Licence decided by the Owner (Issue #123): geometry and textures CC BY 4.0, posters CC0 1.0 with provenance sidecars ([PROVENANCE](../../assets/library/PROVENANCE.md)). The image provider's terms were not independently re-verified for release. |
 | G1 geometry | **PASS (kit level)** | Validator 0 FAIL; Godot 48/48 parity; scale, axes, collision and sockets checked; texture budget check PASS. Station fit is per lead. |
 | G2 routing | n/a | The kit carries no navigation; routes come from the station graph. |
 | G3 quality | **GAP (station level)** | The kit reads at L2 quality in synthetic demos. L2 itself must be judged on each station's real walkthrough. |
-| G4 delivery | **PASS pending Owner** | Reproducible build, tests, PR, Handoff and import report. |
+| G4 delivery | **PASS (merge per Issue #6 rules)** | Reproducible build, tests, PR, Handoff and import report. |
 
 ## Known gaps / next steps (kit lane)
 
