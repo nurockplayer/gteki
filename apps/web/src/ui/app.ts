@@ -1,4 +1,4 @@
-import { createRouter, describeRoute, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline } from "@gteki/navigation";
+import { createRouter, describeRoute, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline, ROUTE_PACE } from "@gteki/navigation";
 import type { Instruction, NoPathCause, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
 import type { Poi, Source, StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
@@ -11,6 +11,7 @@ import { listStations, StationLoadError, type LoadedStation, type StationEntry }
 import { noPathView } from "../noPath.ts";
 import { stationClock } from "../stationClock.ts";
 import { sourceCredit } from "../credits.ts";
+import { nodeLabel, poiLabel } from "./labels.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -282,7 +283,7 @@ export class App {
     this.renderProfile();
     this.ui.fromInput.value = this.originLabel();
     this.ui.toInput.value = this.s.destination ? this.poiName(this.s.destination) : "";
-    if (b) this.explorer.showPois(b, (p) => this.poiName(p), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
+    if (b) this.explorer.showPois(b, (p) => poiLabel(b, p, this.s.lang, this.t), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
     this.computeRoute();
   }
 
@@ -295,6 +296,14 @@ export class App {
     const fresh = b.coverage.freshness;
     if (fresh) this.ui.banner.append(el("span", "muted", ` · ${this.t.freshness} ${fresh}`));
     this.ui.banner.append(el("span", "muted", ` · ${this.t.noIndoorPositioning}`));
+    // Only a station whose scene draws its own signs from the graph is told that they mark no surveyed position.
+    if (this.sceneSignsFromGraph()) this.ui.banner.append(el("span", "muted", ` · ${this.t.generatedSigns}`));
+  }
+
+  /** The loaded scene declares that its wayfinding signs are GTEki's own, generated from the graph (#203 B14). */
+  private sceneSignsFromGraph(): boolean {
+    const scene = this.s.loaded?.scene as { generatedSignageFromGraph?: unknown } | null | undefined;
+    return !this.explorer.sceneError && scene?.generatedSignageFromGraph === true;
   }
 
   private renderSpawnChips(b: StationBundle | undefined): void {
@@ -334,8 +343,7 @@ export class App {
   }
 
   private nodeLabel(b: StationBundle, nodeId: string): string {
-    const poi = b.pois.find((p) => p.connectorNodeIds.includes(nodeId));
-    return poi ? this.poiName(poi) : nodeId;
+    return nodeLabel(b, nodeId, this.s.lang, this.t);
   }
 
   private originLabel(): string {
@@ -504,6 +512,8 @@ export class App {
       el("span", undefined, t.floors(r.floorChanges)),
     );
     card.append(head);
+    // The time estimate's assumed pace, taken from the router's own constants (never a copy), and the guide is its own pace.
+    card.append(el("p", "muted pace-note", t.paceNote(ROUTE_PACE.walkMps, ROUTE_PACE.stairsMps)));
     // No station records an on-site check, so a real station's route is always said to be desk-checked only (synthetic data says so itself).
     if (!r.synthetic) card.append(el("p", "desk-check", t.deskChecked));
 
@@ -516,12 +526,18 @@ export class App {
     if (r.waitSeconds > 0) badge(t.waiting(Math.max(1, Math.round(r.waitSeconds / 60))), "info");
     if (r.timeRestricted.length) badge(`${t.timeWindow}: ${r.timeRestricted.map((w) => `${w.open}–${w.close}`).join(", ")}`, "unknown");
     if (r.crossesFareBoundary === true) badge(t.paidCrossing, "info");
-    if (r.stale === true) badge(t.stale, "warn", r.expiredSourceIds.length > 0 ? `${t.expired}: ${r.expiredSourceIds.join(", ")}` : (r.oldestSourceDate ?? undefined));
+    if (r.stale === true) badge(t.stale, "warn");
     // UNKNOWN freshness is shown whatever its cause: undated sources, or a year/month date straddling the cutoff.
-    else if (r.stale === null) badge(t.freshnessUnknown, "unknown", r.undatedSourceIds.length > 0 ? r.undatedSourceIds.join(", ") : (r.oldestSourceDate ?? undefined));
+    else if (r.stale === null) badge(t.freshnessUnknown, "unknown");
+    if (r.steps.some((s) => s.mode === "stairs")) badge(t.routeStairs, "info");
     if (this.s.polyline.some((p) => !p.zKnown)) badge(t.symbolicHeight, "muted");
     if (r.operatorIds.length > 1) badge(`${t.operators}: ${r.operatorIds.join(" → ")}`, "info");
     card.append(badges);
+    // Why the freshness is stale or unknown, as text: a tooltip alone is invisible on touch (#203 B5).
+    let freshnessReason: string | null = null;
+    if (r.stale === true) freshnessReason = r.expiredSourceIds.length > 0 ? `${t.expired}: ${r.expiredSourceIds.join(", ")}` : `${t.oldestSource} ${r.oldestSourceDate ?? "?"}`;
+    else if (r.stale === null) freshnessReason = r.undatedSourceIds.length > 0 ? `${t.undatedSources}: ${r.undatedSourceIds.join(", ")}` : `${t.oldestSource} ${r.oldestSourceDate ?? "?"}`;
+    if (freshnessReason) card.append(el("p", `freshness-reason${r.stale === true ? " warn" : ""}`, freshnessReason));
 
     const actions = el("div", "actions");
     const guide = el("button", "primary", t.guide);
@@ -550,7 +566,7 @@ export class App {
     card.append(list);
 
     const prov = el("details", "provenance");
-    prov.append(el("summary", undefined, `${t.sources} · ${t.freshness} ${r.oldestSourceDate ?? "?"}${r.evidenceCheckedDate ? ` / ${r.evidenceCheckedDate}` : ""}`));
+    prov.append(el("summary", undefined, `${t.sources} · ${t.oldestSource} ${r.oldestSourceDate ?? "?"}${r.evidenceCheckedDate ? `${t.dateJoiner}${t.deskCheckedOn} ${r.evidenceCheckedDate}` : ""}`));
     const srcList = el("ul");
     for (const id of r.sourceIds) {
       const s = b.sources.find((x) => x.id === id);
