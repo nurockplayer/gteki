@@ -9,7 +9,7 @@ import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGu
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
-import { factsOnlyCredit, sourceCredit } from "../credits.ts";
+import { factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -675,17 +675,6 @@ export class App {
   }
 
   /** A source's credit line: title (linked), attribution, licence (linked) and the modification notice. */
-  /** Human wording for a source's rights status (#130); unknown values read as unverified rather than leaking the enum. */
-  private rightsLabel(rights: Source["rights"]): string {
-    switch (rights) {
-      case "REUSABLE_WITH_CONDITIONS": return this.t.rightsReusable;
-      case "PUBLISHED_UNDER_OWNER_OVERRIDE": return this.t.rightsOwnerOverride;
-      case "REFERENCE_ONLY": return this.t.rightsReference;
-      case "RESTRICTED": return this.t.rightsRestricted;
-      default: return this.t.rightsUnverified;
-    }
-  }
-
   private creditItem(s: Source): HTMLLIElement {
     const c = sourceCredit(s);
     const link = (text: string, href: string | null): HTMLElement => {
@@ -735,7 +724,7 @@ export class App {
       for (const s of b.sources) {
         const li = this.creditItem(s);
         // #130: plain-language rights, never the internal enum. A facts-only source is already described by creditItem (#122 wording).
-        if (s.usage !== "facts-only") li.append(el("span", "muted", ` · ${this.rightsLabel(s.rights)}`));
+        if (s.usage !== "facts-only") li.append(el("span", "muted", ` · ${rightsLabel(s.rights, this.t)}`));
         src.append(li);
       }
       d.append(src);

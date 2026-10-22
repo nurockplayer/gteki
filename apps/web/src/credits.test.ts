@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Source } from "@gteki/schema";
-import { factsOnlyCredit, safeHref, sourceCredit } from "./credits.ts";
+import { factsOnlyCredit, rightsLabel, safeHref, sourceCredit } from "./credits.ts";
 import { strings } from "./i18n.ts";
 
 const glbSource: Source = {
@@ -51,5 +51,28 @@ describe("facts-only credit line (#26)", () => {
     expect(factsOnlyCredit(glbSource, strings("en"))).toBeNull();
     expect(factsOnlyCredit({ ...glbSource, usage: "data" } as Source, strings("en"))).toBeNull();
     expect(factsOnlyCredit({ ...glbSource, decision: facts.decision } as Source, strings("en"))).toBeNull();
+  });
+});
+
+describe("rights label (#130)", () => {
+  it("words every rights value in plain language, in both languages", () => {
+    const t = strings("en");
+    expect(rightsLabel("REUSABLE_WITH_CONDITIONS", t)).toBe(t.rightsReusable);
+    expect(rightsLabel("PUBLISHED_UNDER_OWNER_OVERRIDE", t)).toBe(t.rightsOwnerOverride);
+    expect(rightsLabel("REFERENCE_ONLY", t)).toBe(t.rightsReference);
+    expect(rightsLabel("RESTRICTED", t)).toBe(t.rightsRestricted);
+    expect(rightsLabel("UNVERIFIED", t)).toBe(t.rightsUnverified);
+    expect(rightsLabel("PUBLISHED_UNDER_OWNER_OVERRIDE", strings("ja"))).toBe("ライセンス未確認・オーナー判断により公開");
+  });
+
+  it("reads an unknown or empty rights value as unverified and never prints the enum", () => {
+    for (const lang of ["ja", "en"] as const) {
+      const t = strings(lang);
+      for (const bad of ["", "SOMETHING_NEW", undefined]) {
+        const label = rightsLabel(bad as unknown as Source["rights"], t);
+        expect(label).toBe(t.rightsUnverified);
+        expect(label).not.toContain("SOMETHING_NEW");
+      }
+    }
   });
 });

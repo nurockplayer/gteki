@@ -45,8 +45,8 @@ stations/<id>/gteki/
 | Fare crossing outside a `gate` edge, bidirectional escalators → warnings | validate |
 | Operator floors are never equated by label (`B1` ≠ `B1`); optional `Floor.displayNames` (ja/en, station-authored) are display-only and `sourceLabels` stay exact | schema, tests |
 | `Source.usage: "facts-only"`: may evidence facts; may not feed edge geometry, node positions or assets | validate |
-| Assets, edge geometry and node positions (`sourceRefs`) derived from non-`REUSABLE_WITH_CONDITIONS` or `facts-only` sources are rejected for public bundles | validate |
-| `rights: "PUBLISHED_UNDER_OWNER_OVERRIDE"` ships like `REUSABLE_WITH_CONDITIONS` but needs `override: {decision: issue/comment URL or #ref, date: YYYY-MM-DD}` and `license.name` text, else `source.override` (a publication rule: the build refuses it). The Coverage dialog shows plain-language rights labels (i18n), never the enum (#130) | validate + web build + i18n |
+| Assets, edge geometry and node positions (`sourceRefs`) derived from sources that are neither `REUSABLE_WITH_CONDITIONS` nor `PUBLISHED_UNDER_OWNER_OVERRIDE`, or from `facts-only` sources, are rejected for public bundles | validate |
+| `rights: "PUBLISHED_UNDER_OWNER_OVERRIDE"` ships like `REUSABLE_WITH_CONDITIONS` but needs `override: {decision: issue/comment URL or #ref, date: YYYY-MM-DD}` and `license.name` text, else `source.override` (a publication rule: the build refuses it); an `override` record on a source with any other rights is only a warning (it has no effect). The Coverage dialog shows plain-language rights labels (i18n), never the enum (#130) | validate + web build + i18n |
 | Every evidence record (edge geometry/access/hours, POI) names at least one source | validate |
 | Station origin datum is `JGD2011` | validate |
 | Real-station floors cite at least one source label; routes count the traversed floors' sources in provenance and freshness | validate + router |
@@ -56,7 +56,7 @@ stations/<id>/gteki/
 | With `at`, known hours are checked for the whole time the route spends on each edge (entering, leaving and every whole clock minute in between, rolling over midnight and weekdays), not only at departure; an edge left more than a year after the departure day fails closed (see the clock-dependent row: a search that dropped one is `search_limit`, not `no_path`) | router |
 | Production builds apply every publication rights rule (node positions, edge geometry, floor elevations, POI display positions, coverage polygons, assets) to every station, synthetic or not | web build |
 | `station.origin` latitude is within −90…90, longitude within −180…180, and a known height is finite | validate |
-| A known floor `elevationM` needs a REUSABLE_WITH_CONDITIONS data source among its `sourceLabels` (real stations) and equals `renderElevationM` | validate |
+| A known floor `elevationM` needs a shippable (REUSABLE_WITH_CONDITIONS or PUBLISHED_UNDER_OWNER_OVERRIDE) data source among its `sourceLabels` (real stations) and equals `renderElevationM` | validate |
 | Credits and route provenance disclose `Source.modified` (加工して作成 / modified) and list asset `derivation` notices | web |
 | Every source of a real (and every published) station has a non-empty attribution and an http(s) landing URL; every data source a licence name and an http(s) licence link | validate + web build |
 | Every source (including ones cited only by assets or coverage) is credited with its link, licence name and licence link; only http(s) URLs become links | web |
