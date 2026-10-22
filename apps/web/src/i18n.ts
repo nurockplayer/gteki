@@ -261,6 +261,15 @@ export function pick(texts: LocalizedText[] | undefined, lang: Lang): string {
   return (texts.find((t) => t.lang === lang) ?? texts.find((t) => t.lang === "ja") ?? texts[0]!).text;
 }
 
+/**
+ * Coverage text is station data (#259): a legacy plain string, or localized text. The requested language wins,
+ * then ja, then the first entry; a plain string is shown exactly as the station wrote it.
+ */
+export function coverageText(value: string | LocalizedText[] | undefined, lang: Lang): string {
+  if (value === undefined) return "";
+  return typeof value === "string" ? value : pick(value, lang);
+}
+
 export function initialLang(): Lang {
   const q = new URLSearchParams(location.search).get("lang");
   if (q === "ja" || q === "en") return q;

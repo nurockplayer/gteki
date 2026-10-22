@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { asRealStation, createSyntheticBundle, syntheticEdge as edge } from "../../navigation/src/fixtures.ts";
 import { dataFileFactsOnlySources, isOpenAt, parseHm, parseStationFiles, validateBundle } from "./index.ts";
-import type { DataFile, GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
+import type { CoverageArea, CoverageText, DataFile, GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
 
 const ev = { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" };
 const DECISION = { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" };
@@ -173,6 +173,56 @@ describe("parseStationFiles (fail-closed JSON loading)", () => {
     const parsed = parseStationFiles(...split(b));
     expect(parsed.ok).toBe(false);
     expect(parsed.bundle).toBeNull();
+  });
+});
+
+describe("coverage text: a plain string or localized text (#259)", () => {
+  const area = (sourceId: string, note?: CoverageText): CoverageArea => ({
+    id: "area:test", floorId: null, status: "routable", label: [{ lang: "en", text: "Whole station" }], sourceIds: [sourceId],
+    ...(note === undefined ? {} : { note }),
+  });
+
+  it("keeps legacy plain-string gap text and area notes validating and parsing unchanged", () => {
+    const b = createSyntheticBundle();
+    b.coverage.gaps = [{ id: "gap:test", floorId: null, zone: "All levels", missingFact: "Hours", fieldWorkNeeded: "Field check", approximateExtent: "Whole station" }];
+    b.coverage.areas = [area(b.sources[0]!.id, "One language only")];
+    expect(errors(b)).toEqual([]);
+    expect(parseStationFiles(...split(b)).ok).toBe(true);
+  });
+
+  it("accepts localized gap text and area notes and carries them through parsing", () => {
+    const b = createSyntheticBundle();
+    b.coverage.gaps = [{
+      id: "gap:test", floorId: null,
+      zone: [{ lang: "ja", text: "全フロア" }, { lang: "en", text: "All levels" }],
+      missingFact: [{ lang: "ja", text: "営業時間" }],
+      approximateExtent: [{ lang: "ja", text: "駅全体" }],
+      fieldWorkNeeded: [{ lang: "en", text: "Field check" }],
+    }];
+    b.coverage.areas = [area(b.sources[0]!.id, [{ lang: "ja", text: "補足" }])];
+    expect(errors(b)).toEqual([]);
+    const parsed = parseStationFiles(...split(b));
+    expect(parsed.ok).toBe(true);
+    expect(parsed.bundle?.coverage.gaps[0]?.zone).toEqual([{ lang: "ja", text: "全フロア" }, { lang: "en", text: "All levels" }]);
+  });
+
+  it("rejects gap text that is neither a string nor complete localized text", () => {
+    for (const bad of [42, null, { lang: "ja", text: "an object, not an array" }, [{ lang: "ja" }], [{ text: "no lang" }], ["plain entry"]]) {
+      const b = createSyntheticBundle();
+      b.coverage.gaps = [{ id: "gap:test", floorId: null, zone: bad as never, missingFact: "Hours", fieldWorkNeeded: "Field check" }];
+      expect(parseStationFiles(...split(b)).ok, JSON.stringify(bad)).toBe(false);
+    }
+  });
+
+  it("rejects an area note that is neither a string nor complete localized text", () => {
+    for (const bad of [42, null, { lang: "ja", text: "an object, not an array" }, [{ lang: "ja" }]]) {
+      const b = createSyntheticBundle();
+      b.coverage.areas = [area(b.sources[0]!.id, bad as never)];
+      const parsed = parseStationFiles(...split(b));
+      expect(parsed.ok, JSON.stringify(bad)).toBe(false);
+      // The checker names the exact defect: an incomplete text entry is shape.missing, a non-text value shape.type.
+      expect(parsed.issues.map((i) => i.code)).toContain(Array.isArray(bad) ? "shape.missing" : "shape.type");
+    }
   });
 });
 

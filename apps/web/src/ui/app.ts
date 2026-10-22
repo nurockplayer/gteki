@@ -7,7 +7,7 @@ import { Explorer } from "../explorer/explorer.ts";
 import { guideStops } from "../explorer/guideStops.ts";
 import { firstStopFor, guideKeyAction, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
-import { initialLang, pick, strings, type Lang } from "../i18n.ts";
+import { coverageText, initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { noPathView } from "../noPath.ts";
 import { stationClock } from "../stationClock.ts";
@@ -984,12 +984,19 @@ export class App {
       d.append(el("p", undefined, pick(b.coverage.summary, this.s.lang)));
       if (b.coverage.areas.length) {
         const ul = el("ul");
-        for (const a of b.coverage.areas) ul.append(el("li", `cov-${a.status}`, `${this.t.coverageStatus[a.status] ?? a.status} · ${pick(a.label, this.s.lang)}${a.note ? ` — ${a.note}` : ""}`));
+        for (const a of b.coverage.areas) ul.append(el("li", `cov-${a.status}`, `${this.t.coverageStatus[a.status] ?? a.status} · ${pick(a.label, this.s.lang)}${a.note ? ` — ${coverageText(a.note, this.s.lang)}` : ""}`));
         d.append(ul);
       }
       d.append(el("h3", undefined, this.t.gaps));
       const gaps = el("ul");
-      for (const g of b.coverage.gaps) gaps.append(el("li", undefined, `${g.zone}: ${g.missingFact} → ${g.fieldWorkNeeded}`));
+      for (const g of b.coverage.gaps)
+        gaps.append(
+          el(
+            "li",
+            undefined,
+            `${coverageText(g.zone, this.s.lang)}: ${coverageText(g.missingFact, this.s.lang)} → ${coverageText(g.fieldWorkNeeded, this.s.lang)}`,
+          ),
+        );
       if (!b.coverage.gaps.length) gaps.append(el("li", "muted", "—"));
       d.append(gaps, el("h3", undefined, this.t.sources));
       const src = el("ul");

@@ -9,7 +9,7 @@ import { validateBundle, type ValidationIssue } from "./validate.ts";
  * state UNKNOWN explicitly.
  */
 
-type Kind = "string" | "number" | "boolean" | "array" | "object" | "tri" | "string|null" | "number|null" | "object|null";
+type Kind = "string" | "number" | "boolean" | "array" | "object" | "tri" | "string|null" | "number|null" | "object|null" | "string|texts";
 
 type Spec = Record<string, Kind | `${Kind}?`>;
 
@@ -33,8 +33,8 @@ const SPECS = {
   featureRef: { sourceId: "string", featureId: "string" },
   hoursAlways: { kind: "string", evidence: "object" },
   hoursWindow: { kind: "string", open: "string", close: "string", days: "array?", evidence: "object" },
-  area: { id: "string", floorId: "string|null", status: "string", label: "array", polygon: "array?", sourceIds: "array", note: "string?" },
-  gap: { id: "string", floorId: "string|null", zone: "string", missingFact: "string", fieldWorkNeeded: "string", approximateExtent: "string?", sourceDate: "string|null?" },
+  area: { id: "string", floorId: "string|null", status: "string", label: "array", polygon: "array?", sourceIds: "array", note: "string|texts?" },
+  gap: { id: "string", floorId: "string|null", zone: "string|texts", missingFact: "string|texts", fieldWorkNeeded: "string|texts", approximateExtent: "string|texts?", sourceDate: "string|null?" },
   point2: { x: "number", y: "number" },
   coverage: { summary: "array", areas: "array", gaps: "array", freshness: "string|null" },
   asset: { id: "string", uri: "string", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?", files: "array?" },
@@ -55,6 +55,7 @@ function matches(value: unknown, kind: Kind): boolean {
     case "string|null": return actual === "string" || actual === "null";
     case "number|null": return actual === "number" || actual === "null";
     case "object|null": return actual === "object" || actual === "null";
+    case "string|texts": return actual === "string" || actual === "array";
     default: return actual === kind;
   }
 }
@@ -97,6 +98,16 @@ class ShapeChecker {
 
   texts(list: unknown, where: string): void {
     this.each(list, SPECS.text, where);
+  }
+
+  /** Coverage text: a legacy plain string, or localized text in the POI-name shape (#259). */
+  textOrTexts(value: unknown, where: string): void {
+    if (kindOf(value) === "string") return;
+    if (Array.isArray(value)) {
+      this.texts(value, where);
+      return;
+    }
+    this.issues.push({ level: "error", code: "shape.type", message: `${where}: expected string or localized text, got ${kindOf(value)}`, ref: where });
   }
 
   evidence(value: unknown, where: string): void {
@@ -163,8 +174,13 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
         c.texts(area.label, `${where}.label`);
         c.strings(area.sourceIds, `${where}.sourceIds`);
         c.each(area.polygon, SPECS.point2, `${where}.polygon`);
+        if (area.note !== undefined) c.textOrTexts(area.note, `${where}.note`);
       });
-      c.each(cov.gaps, SPECS.gap, "coverage.gaps");
+      c.each(cov.gaps, SPECS.gap, "coverage.gaps", (gap, where) => {
+        for (const key of ["zone", "missingFact", "fieldWorkNeeded", "approximateExtent"] as const) {
+          if (gap[key] !== undefined) c.textOrTexts(gap[key], `${where}.${key}`);
+        }
+      });
     }
     c.strings(m.spawnNodeIds, "spawnNodeIds");
     c.each(m.dataFiles, SPECS.dataFile, "dataFiles", (file, where) => c.strings(file.sourceIds, `${where}.sourceIds`));

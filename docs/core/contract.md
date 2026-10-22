@@ -53,6 +53,7 @@ stations/<id>/gteki/
 | Real-station floors cite at least one source label; routes count the traversed floors' sources in provenance and freshness | validate + router |
 | Polyline endpoints take their node's height for measurement, as drawn (unknown node height = no climb measured) | router |
 | Coverage area `status` is routable / visual_only / unverified / excluded | validate |
+| Coverage text (`coverage.gaps[].zone` / `missingFact` / `approximateExtent` / `fieldWorkNeeded` and an area's `note`) is station data: either a legacy plain string or localized text `[{lang, text}]` in the POI-name shape (#259). The web Coverage dialog shows the requested language, then ja, then the first entry, and a plain string exactly as written — it never translates or rewrites station text | validate + web |
 | Step-free never uses stairs or escalators; stairs with `steps:false`, or stairs/escalators with `wheelchair:true`, are errors | router + validate |
 | With `at`, known hours are checked for the whole time the route spends on each edge (entering, leaving and every whole clock minute in between, rolling over midnight and weekdays), not only at departure; an edge left more than a year after the departure day fails closed (see the clock-dependent row: a search that dropped one is `search_limit`, not `no_path`) | router |
 | Production builds apply every publication rights rule (node positions, edge geometry, floor elevations, POI display positions, coverage polygons, assets) to every station, synthetic or not | web build |
