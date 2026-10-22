@@ -28,5 +28,5 @@ PLACEMENT = {
     "lift_portal": "wall", "sign_wall": "wall", "sign_blade": "wall", "poster_lightbox": "wall",
     "vending_machine": "wall", "bin_trio": "wall", "ticket_kiosk": "wall",
     "bench": "free", "column_clad": "free", "sign_totem": "free", "barrier_rail": "free",
-    "sign_hanging": "ceiling",
+    "sign_hanging": "ceiling", "sign_frame_9slice": "ceiling",
 }
