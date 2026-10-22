@@ -97,6 +97,10 @@ func _inspect(scene_root: Node) -> Dictionary:
 				result.checks.extends_negative_z = merged.position.z < -0.01
 				result.checks.front_reach_within_1m = merged.end.z <= 1.0
 				result.checks.base_between_slab_and_first_riser = (merged.position.y >= -0.1 or below_ok) and merged.position.y <= 0.5
+			"surface":
+				# a flat finish sample lying on its wall plane (z=0) instead of projecting from it
+				result.checks.floor_min_y_near_zero = floor_ok
+				result.checks.lies_on_wall_plane = merged.position.z >= -0.01 and merged.end.z <= 0.01
 			"edge_anchored":
 				# origin at one end or at the foot of the piece, which extends from there
 				result.checks.floor_min_y_near_zero = floor_ok

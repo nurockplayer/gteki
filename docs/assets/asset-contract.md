@@ -163,8 +163,9 @@ Dressing pieces (`family: "dressing"`, generators in `families/dressing.py`) go 
 | `anchor` | Origin | Godot import checks |
 | --- | --- | --- |
 | `linear_run` | entry line at z=0, the run extends toward −Z; newels, handrail ends and post caps may reach up to 1 m in front, and a piece mounted on its host may start up to one riser above the floor | `extends_negative_z`, `front_reach_within_1m`, `base_between_slab_and_first_riser` (−0.1 m to 0.5 m, or lower with `allow_below_floor`) |
+| `surface` | a flat finish sample (§9) lying on its wall plane at z=0, base y=0, instead of projecting into the room like other `wall` pieces | `floor_min_y_near_zero`, `lies_on_wall_plane` (z within ±1 cm) |
 | `edge_anchored` | one end or the foot of the piece, which extends from there (a run's first point, a lamp's pole) | `floor_min_y_near_zero`, `origin_on_footprint` (the origin lies within the plan footprint, 6 cm tolerance) |
 
-The kit catalog sets `linear_run` on every `escalator_dressing` and `stair_dressing` entry and `edge_anchored` on every `railing_run` entry. Any other value fails the build.
+The kit catalog sets `linear_run` on every `escalator_dressing` and `stair_dressing` entry and `edge_anchored` on every `railing_run` entry; the finish pack sets `surface` on its `wall` samples. Any other value fails the build.
 
 `params.allow_below_floor` is set only where a piece sinks into the station's slab: escalator skirts (60 mm) and static treads (45 mm). Textures use the usual metric UV0; the mobile tier adds the TEXCOORD_1 lightmap layout. A station that bakes with its own second UV set uses UV0 for materials only.
