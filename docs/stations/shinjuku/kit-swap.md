@@ -94,7 +94,8 @@ hides only the lift boxes' own triangles, so it is not a large saving. Item 5 is
 
 Lane E (PR #143) builds the dressing pieces from a catalog in our tree, in the same entry shape as
 `tools/blender/catalog/kit_v0_1.json` (`id`, `generator`, `params`, `tags`, plus `dimension_basis` and `notes`, both of which
-`build.py` reads). We bundle with `tools/blender/bundle_kit.py` ourselves. Do not run Blender or the bundler from this lane.
+`build.py` reads). Stair and escalator dressings also carry `ao_res: 128` (128 x 128 AO, to keep the mobile texture total near
+3.1 MB against the 8 MB budget); the gate array does not. We bundle with `tools/blender/bundle_kit.py` ourselves. Do not run Blender or the bundler from this lane.
 
 - 33 entries: 22 `stair_dressing` (`parts: ["nosing"]`), 10 `escalator_dressing` (`parts: ["comb","newel"]`),
   1 `gate_array` (`aisles 1, wide_aisles [0], wide_w 1.02`). Ids are `gteki_sj_stair_<edge>`, `gteki_sj_escalator_<edge>` and

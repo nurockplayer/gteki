@@ -30,7 +30,19 @@ describe("Shinjuku station catalog for the Lane E kit (Issue #94)", () => {
     const kit = JSON.parse(readFileSync(new URL("../../../tools/blender/catalog/kit_v0_1.json", import.meta.url), "utf8"));
     expect(Object.keys(kit)).toEqual(expect.arrayContaining(["catalog", "version", "notes", "assets"]));
     for (const k of ["catalog", "version", "notes", "assets"]) expect(committed).toHaveProperty(k);
-    for (const e of committed.assets) expect(Object.keys(e).sort()).toEqual(["dimension_basis", "generator", "id", "notes", "params", "tags"]);
+    // ao_res is the optional build.py key; only stair and escalator dressings carry it.
+    for (const e of committed.assets) expect(Object.keys(e).filter((k) => k !== "ao_res").sort()).toEqual(["dimension_basis", "generator", "id", "notes", "params", "tags"]);
+  });
+
+  it("dressings carry ao_res 128 at entry level (stairs and escalators); the gate array carries none", () => {
+    const dressings = committed.assets.filter((e) => e.generator !== "gate_array");
+    expect(dressings.map((e) => e.generator).filter((g) => g === "escalator_dressing").length).toBe(10);
+    expect(dressings.map((e) => e.generator).filter((g) => g === "stair_dressing").length).toBe(22);
+    for (const e of dressings) {
+      expect(e.ao_res).toBe(128);
+      expect(e.params).not.toHaveProperty("ao_res");
+    }
+    for (const e of committed.assets.filter((x) => x.generator === "gate_array")) expect(e).not.toHaveProperty("ao_res");
   });
 
   it("is exactly what the generator derives from the current data (regenerate with pnpm kit:catalog)", () => {
@@ -117,6 +129,10 @@ describe("Shinjuku station catalog for the Lane E kit (Issue #94)", () => {
     expect(validateStationCatalog(mutate(stair, { params: { ...stair.params, step_count: 90 } })).join()).toMatch(/step_count/);
     expect(validateStationCatalog(mutate(gate, { params: { ...gate.params, wide_w: 1.2 } })).join()).toMatch(/wide_w/);
     expect(validateStationCatalog(mutate(gate, { dimension_basis: "station-verified" as never })).join()).toMatch(/station-verified/);
+    expect(validateStationCatalog(mutate(base, { ao_res: 64 as never })).join()).toMatch(/ao_res must be one of/);
+    expect(validateStationCatalog(mutate(base, { ao_res: 256 })).join()).toMatch(/ao_res must be 128/);
+    expect(validateStationCatalog(mutate(stair, { ao_res: undefined })).join()).toMatch(/ao_res must be 128/);
+    expect(validateStationCatalog(mutate(gate, { ao_res: 128 })).join()).toMatch(/stair and escalator dressings only/);
     expect(validateStationCatalog({ ...committed, assets: [base, base] }).join()).toMatch(/duplicate id/);
     expect(validateStationCatalog({})).not.toEqual([]);
   });
