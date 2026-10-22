@@ -21,6 +21,7 @@
  *    except true abutments (±0.05 m) and their 0.6 m endpoint joins. Deeper levels move down;
  *    street floors 0/1 remain pinned and monotonic floor gaps are retained.
  */
+import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -32,6 +33,7 @@ import {
   type CoverageGap,
   type Edge,
   type EdgeMode,
+  type Asset,
   type EvidenceRef,
   type Floor,
   type Node,
@@ -935,6 +937,57 @@ const sources: Source[] = [
   });
 }
 
+// Street-level PLATEAU building context (visual only): two GLBs from tools/gis (`gis context-glb shinjuku`,
+// PR #115) that replace the LOD1 building extrusions above when present. The manifest is the hand-kept
+// provenance record of those files; the importer refuses GLB bytes that differ from it, then emits the two
+// PLATEAU sources and the street-context asset (low file in `uri`, high file in `files`, so a loader that loads
+// every declared asset never stacks both). Frame: shinjuku-station-enu-v0, horizontal only; every building is
+// flattened to street z = 0 by tools/gis, which is why the credit says so.
+const assets: Asset[] = [];
+{
+  const m = JSON.parse(readFileSync(join(HERE, "../sources/context-manifest.json"), "utf8")) as {
+    attribution: string; license: { name: string; url: string }; landingUrl: string; datasetDate: string;
+    sources: { id: string; meshCode: string; file: string; url: string; bytes: number; sha256: string; retrievedAt: string }[];
+    readButUnused: string[];
+    assets: Record<"low" | "high", { uri: string; receipt: string; command: string; runId: string; outputSha256: string; outputBytes: number; triangles: number; drawCalls: number; features: number }>;
+  };
+  for (const a of Object.values(m.assets)) {
+    const bytes = readFileSync(join(OUT_GTEKI, a.uri));
+    const hash = createHash("sha256").update(bytes).digest("hex");
+    if (hash !== a.outputSha256 || bytes.length !== a.outputBytes) throw new Error(`${a.uri} does not match sources/context-manifest.json (sha256 ${hash}, ${bytes.length} B)`);
+  }
+  for (const f of m.sources) {
+    sources.push({
+      id: f.id,
+      title: `PLATEAU 新宿区 2025 建築物モデル (bldg) ${f.meshCode} — street-level context buildings (visual only)`,
+      publisher: "国土交通省 Project PLATEAU",
+      url: m.landingUrl,
+      downloadUrls: [f.url],
+      license: m.license,
+      rights: "REUSABLE_WITH_CONDITIONS",
+      usage: "data",
+      attribution: m.attribution,
+      modified: true,
+      retrievedAt: f.retrievedAt,
+      sha256: { [f.file]: f.sha256 },
+      datasetDate: m.datasetDate,
+      validUntil: null,
+      notes: "Visual-only street-level context; never geometry for routing, walking or collision. Building bases are flattened to street z = 0 (each building keeps its own height above its own ground; no vertical datum is asserted). Textures are not shipped. Catalog package year 2025; the per-theme survey year is not asserted. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. CC BY 4.0 attribution required; 加工 is the modification notice.",
+    });
+  }
+  const low = m.assets.low, high = m.assets.high;
+  assets.push({
+    id: "street-context",
+    uri: low.uri,
+    format: "glb",
+    floorIds: [floorId(0)],
+    sourceIds: m.sources.map((f) => f.id),
+    role: "visual",
+    derivation: `PLATEAU bldg (LOD1 low / LOD2 high) -> tools/gis: \`${low.command}\` (${low.uri}, ${low.drawCalls} mesh, ${low.triangles.toLocaleString("en-US")} tris, ${low.features} buildings, receipt ${low.receipt}) and \`${high.command}\` (${high.uri}, ${high.drawCalls} meshes, ${high.triangles.toLocaleString("en-US")} tris, receipt ${high.receipt}); the high file is listed in files, not a second asset, so loaders that load every asset never stack both. Committed bytes equal the receipts: ${low.uri} sha256 ${low.outputSha256} (${low.outputBytes.toLocaleString("en-US")} B), ${high.uri} sha256 ${high.outputSha256} (${high.outputBytes.toLocaleString("en-US")} B). Frame shinjuku-station-enu-v0 (horizontal only, origin = this station's origin), each building flattened to street z = 0, whole features, no textures, buildings only (no roads). Every node is gteki_role=context, named ctx_bldg_*, NOT_FOR_ROUTING, visual_only: never walkable, never a collider, never a camera blocker. gteki/scene.ts loads the variant matching ctx.quality (low on low, high on high) and, when it loads, draws it instead of the LOD1 building extrusions of the procedural street layer.`,
+    files: [high.uri],
+  });
+}
+
 const areas: CoverageArea[] = mapLevels.flatMap((ml) => {
   const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
   return raw.levels
@@ -1002,6 +1055,7 @@ const bundle: StationBundle = {
   pois,
   coverage,
   spawnNodeIds,
+  assets,
 };
 
 // ---------------------------------------------------------------- plan (render geometry)

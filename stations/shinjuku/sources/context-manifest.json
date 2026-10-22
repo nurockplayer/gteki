@@ -1,0 +1,80 @@
+{
+ "note": "Provenance record of the Lane D (tools/gis) street-context GLBs. Input of tools/import-e27.ts, which verifies the GLB bytes against it and emits the PLATEAU sources and the street-context asset into gteki/station.json. Not generated: update it only together with a new GLB from `gis context-glb shinjuku`.",
+ "issue": "https://github.com/nurockplayer/gteki/issues/39",
+ "lane": "tools/gis on PR #115 (branch claude/gteki-gis-shinjuku-context); receipts docs/gis/context/context-shinjuku-r0-x300-shinjuku-station-enu-v0-*.json",
+ "toolVersion": "0.1.0",
+ "toolFingerprint": "2c04ead5fe75",
+ "frame": {
+  "id": "shinjuku-station-enu-v0",
+  "file": "tools/gis/frames/shinjuku-station-enu-v0.json",
+  "verticalMode": "per_feature_ground",
+  "origin": "stations/shinjuku/gteki/station.json station.origin (35.687, 139.6994, JGD2011, EPSG:6668); horizontal only",
+  "axes": "glTF x east, y up (street z = 0), z -north = the scene's own ENU to three.js mapping (X = x, Y = z, Z = -y)"
+ },
+ "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成（建物の基部を地表面の高さにそろえて表示）",
+ "attributionDecision": "https://github.com/nurockplayer/gteki/issues/39#issuecomment-6324813261",
+ "license": {
+  "name": "CC BY 4.0",
+  "url": "https://creativecommons.org/licenses/by/4.0/"
+ },
+ "landingUrl": "https://www.mlit.go.jp/plateau/",
+ "datasetDate": "2025",
+ "sources": [
+  {
+   "id": "plateau-13104-bldg-53394525",
+   "meshCode": "53394525",
+   "file": "53394525_bldg_6697_op.gml",
+   "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/bldg/53394525_bldg_6697_op.gml",
+   "bytes": 94275150,
+   "sha256": "6ee3ab2254dd634b437ebc2afbb5dbb430acb9cc5c2f7cfe687ca637f403d327",
+   "retrievedAt": "2026-10-21T16:54:57Z"
+  },
+  {
+   "id": "plateau-13104-bldg-53394526",
+   "meshCode": "53394526",
+   "file": "53394526_bldg_6697_op.gml",
+   "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/bldg/53394526_bldg_6697_op.gml",
+   "bytes": 62700939,
+   "sha256": "b6a84b0148dff5a33fbaf012549eb482979ffa75fd9f764f20fb9a7434fcda3c",
+   "retrievedAt": "2026-10-21T16:54:58Z"
+  }
+ ],
+ "readButUnused": [
+  "plateau-13104-bldg-53394535",
+  "plateau-13104-bldg-53394536"
+ ],
+ "assets": {
+  "low": {
+   "uri": "assets/shinjuku_context_low.glb",
+   "receipt": "docs/gis/context/context-shinjuku-r0-x300-shinjuku-station-enu-v0-low-kind-bldg-cc570c4cf87f1a9f5f5c.json",
+   "command": "gis context-glb shinjuku --variant low --merge kind",
+   "for": "phone and quality low",
+   "runId": "context-shinjuku-r0-x300-shinjuku-station-enu-v0-low-kind-bldg-cc570c4cf87f1a9f5f5c",
+   "variant": "low",
+   "merge": "kind",
+   "outputSha256": "304e1cd5074973175ae7c9bb37cf3c70c8fb12d18e8fc3b20477a6780eea70a3",
+   "outputBytes": 767780,
+   "triangles": 14260,
+   "drawCalls": 1,
+   "features": 520,
+   "featureTableSha256": "2a32d3704111d4c002eee364dde8ea17bcf4c6b3b7d927a7dde1c8e2de7141e7",
+   "toolInputSha256": "2c04ead5fe75e4d3430ba8914229e438b85aa1dfe697f21d840c9c72086ac626"
+  },
+  "high": {
+   "uri": "assets/shinjuku_context_high.glb",
+   "receipt": "docs/gis/context/context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-tiles380-bldg-953a4e751cc6671d0002.json",
+   "command": "gis context-glb shinjuku --variant high --merge tiles:380",
+   "for": "desktop and quality high",
+   "runId": "context-shinjuku-r0-x300-shinjuku-station-enu-v0-high-tiles380-bldg-953a4e751cc6671d0002",
+   "variant": "high",
+   "merge": "tiles:380",
+   "outputSha256": "21fd23e3538b8bf4b84eed5a9c541064a766e5119de6799623f5d790730d3585",
+   "outputBytes": 5351612,
+   "triangles": 83705,
+   "drawCalls": 6,
+   "features": 520,
+   "featureTableSha256": "eb4a8d28100ef484837a17a356ccb951f228db617421e72d5793b7374b56d280",
+   "toolInputSha256": "2c04ead5fe75e4d3430ba8914229e438b85aa1dfe697f21d840c9c72086ac626"
+  }
+ }
+}
