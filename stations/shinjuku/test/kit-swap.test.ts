@@ -28,16 +28,17 @@ const { bundle } = loadShinjukuBundle();
 const catalogJson = JSON.parse(readFileSync(new URL("../kit/catalog.json", import.meta.url), "utf8")) as Parameters<typeof shinjukuStubManifestJson>[0];
 const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../assets/library/${file}`, import.meta.url), "utf8"));
 
-/** Digest of the flag-off station at fe8d3b6 (computed from that tree, and equal to geometry-lifetime.test.ts). */
-const FE8D3B6 = {
+/** Digest of the flag-off shipping buildScene at main c94e4c7c (#263), measured on that tree with this very
+ * helper and recomputed byte-identically on the merged tree. geometryDigest/bytes equal geometry-lifetime.test.ts.
+ * Earlier values were from fe8d3b6 (2b3a94ba…, 13,288,866 B); #72's batch merge accounts for the difference. */
+const MAIN_BASELINE = {
   station: {
-    geometryDigest: "2b3a94baf32629b9d6371d6f365c808fd67efcb924a7ae00dc27daebdecb48b4",
-    appearanceDigest: "3b66b3e19fd747dc9308d1f7ddc2adc8c60b13a53d925dca92514143dd07cfaf",
-    // Added with the widened digest; computed from the pristine fe8d3b6 tree with scene/digest code identical to this helper.
-    nodesDigest: "65b79536aaa611048f5c749fc7a28155e3f2edfcb06fea86313bdcf47e17c8ba",
+    geometryDigest: "f713e7215da792b850e481561fa12f87510276792878a8c15f5cd490c5b48071",
+    appearanceDigest: "08bd418bfd9ad8a4b93c8e22240ad680e0285565bff58cc02170a0ad7376025b",
+    nodesDigest: "431c19413bcf1c1d2ac4f07afd71794630665d788c379677d1ba51a2740d2c7e",
     texturesDigest: "b53f31c89f2650e9170c4c1773cea0e17f8299a97ec829f711f0fa2e901da8de",
     meshes: 136,
-    bytes: 13_288_866,
+    bytes: 13_284_666,
   },
   lists: {
     listsDigest: "00b3bf1efd3019cf7d68881896ff00d49bc57575e4fcb2077b6af49612c39895",
@@ -585,12 +586,22 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       vi.unstubAllGlobals();
     });
 
-    it("flag off: the scene equals fe8d3b6 in every mesh byte, node, light, userData, texture parameter and explorer list", () => {
+    it("flag off: the scene equals main c94e4c7c in every mesh byte, node, light, userData, texture parameter and explorer list", () => {
       expect(off.root.userData.kitSwap).toBeUndefined();
       // Meshes (geometry + appearance), all other nodes incl. lights and userData, and texture params of every material.
-      expect(digestStation(off.root, isStationProxy)).toEqual(FE8D3B6.station);
+      expect(digestStation(off.root, isStationProxy)).toEqual(MAIN_BASELINE.station);
       // walls, walkable, colliders, cameraBlockers, spawn points and environment, as the explorer reads them.
-      expect(digestSceneLists(off)).toEqual(FE8D3B6.lists);
+      expect(digestSceneLists(off)).toEqual(MAIN_BASELINE.lists);
+    });
+
+    it("flag on: the explorer's physics lists equal flag off in digest and counts", () => {
+      // The swap adds render meshes and hides placeholder triangles; every list a walker or the explorer's
+      // follow camera reads must be untouched: walls, walkable, colliders, cameraBlockers, spawn points
+      // (and the environment the hook reports alongside them).
+      const onLists = digestSceneLists(on);
+      expect(onLists).toEqual(digestSceneLists(off));
+      expect(onLists).toEqual(MAIN_BASELINE.lists);
+      expect(onLists.counts).toEqual({ walkable: 433, colliders: 2, cameraBlockers: 3, walls: 14479 });
     });
 
     it("flag on: every placement lands on a real anchor, in the right role", () => {
@@ -680,8 +691,8 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       const unchanged = (scene: StationScene) => {
         expect(scene.root.userData.kitSwap).toBeUndefined();
         expect(scene.root.children.some((c) => c.name === "kit-swap")).toBe(false);
-        expect(digestStation(scene.root, isStationProxy)).toEqual(FE8D3B6.station);
-        expect(digestSceneLists(scene)).toEqual(FE8D3B6.lists);
+        expect(digestStation(scene.root, isStationProxy)).toEqual(MAIN_BASELINE.station);
+        expect(digestSceneLists(scene)).toEqual(MAIN_BASELINE.lists);
       };
 
       it("an error while building the kit meshes logs 'kit swap off', returns no report and leaves the scene exactly as flag-off", () => {
