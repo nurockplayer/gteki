@@ -6,10 +6,14 @@ Consolidated 2026-10-22 from the five research files (R1 to R5) and the existing
 >
 > - Public areas only. No faces. No staff-only zones.
 > - Operator signage is photographed for facts only and never published.
+> - **Two kinds of photo** (clarified 2026-10-22 after the Lane F review of #178, comment 6335333410):
+>   - *Sign photos* (any method that says "sign photo" or "photo of the posted sign", e.g. A1–A3, B2, F2, G1/G2, H1/H2, FC-IK-01, and FC-IMG-09) are **private evidence only**. They stay on the Owner's device or the private store, never enter the repo and never ship, even with marks blurred. Only the fact read from them (a number, an hour, a name) is recorded.
+>   - *Surface close-ups* (materials, floors, ceilings, walls with no sign, logo, ad or face in frame) are the only Owner photos that may ship, under OD-13/OD-14 below.
+> - Hours and lift facts recorded at FC-IK-01 and H1/H2 are **on-site observations by the Owner**, dated and timed. They are not JR East data (OD-02 bars JR East page facts, not facts the Owner observes on site).
 > - Record the date and time on every note.
 > - No measurement inside a paid area unless the item says a ticket is needed (column "Paid?").
 > - Contact no one (Owner decision of 2026-10-22, recorded on #165). Items that need an operator are in "Not collectable by the Owner alone" and are blocked.
-> - The Owner's own photos ship as CC BY 4.0, attribution "GTEki contributors" (OD-13, decided 2026-10-22, [`owner-decisions-pending.md`](owner-decisions-pending.md)). Photos showing operator logos or ads ship only with those regions removed or blurred (OD-14). Operator photography rules were not checked (`gaps/DR-imagery-materials.md` section 7).
+> - The Owner's own surface close-ups ship as CC BY 4.0, attribution "GTEki contributors" (OD-13, decided 2026-10-22, [`owner-decisions-pending.md`](owner-decisions-pending.md)). Photos showing operator logos or ads ship only with those regions removed or blurred (OD-14). Operator photography rules were not checked (`gaps/DR-imagery-materials.md` section 7).
 
 ## How to read this
 
@@ -51,7 +55,7 @@ Consolidated 2026-10-22 from the five research files (R1 to R5) and the existing
 | FC-IMG-03 | IK | B1 free passages | Walls and columns: panel size and joints, skirting profile, wainscot band height against a known object | photo with an object for scale | 10 | No | rank 4 (IK-12) | IMG |
 | FC-IMG-06 | SJ | JR east-west free passage | Floor, ceiling, lighting strip | photo | 10 | No | rank 4 (SJ-17) | IMG |
 | FC-IMG-08 | IK + SJ | Free passages in both stations | Tactile paving (bars and dots), close up, where it meets the floor tile. Source gives 10 min for both stations; planned in the Ikebukuro visit | photo | 10 | No | rank 4 | IMG |
-| FC-IMG-09 | IK + SJ | Free passages in both stations | Wayfinding sign style, from an angle that shows the form and not the faces (style reference only; do not copy operator marks). Source gives 10 min for both; planned in the Ikebukuro visit | photo | 10 | No | rank 4 | IMG |
+| FC-IMG-09 | IK + SJ | Free passages in both stations | Wayfinding sign style, from an angle that shows the form and not the faces (style reference only, private evidence: never ships; see the rules box). Source gives 10 min for both; planned in the Ikebukuro visit | photo | 10 | No | rank 4 | IMG |
 | G1, G2 (alias FC-IK-03) | IK | North-east, end of the shopping-park passage; east side of that block | Is the stair at the passage end 24 or 25 and where is the other; can 23, 29, 30, 31 be reached from the underground passage and where do they start; are 30 and 31 one stairway with two numbers or two stairways | sign photo | 15 | No | `gap-ne-north`; `exit-23`, `exit-24`, `exit-25`, `exit-29`, `exit-30`, `exit-31`; rank 2 | IK, CL |
 | FC-IMG-01 | IK | B1 free passages (Central, South, North) | Floor tile close-ups, flat and straight down, with a ruler or coin for scale; one wide floor-and-ceiling frame per passage | photo with scale | 15 | No | rank 4 (IK-12) | IMG |
 | FC-IMG-05 | SJ | West underground plaza, free side | Floor, ceiling, column cladding; put the renovation state in the file name | photo | 15 | No | rank 4 (SJ-17) | IMG |
