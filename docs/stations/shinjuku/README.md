@@ -57,7 +57,7 @@ To get the raw inputs, run `stations/shinjuku/tools/fetch-sources.sh`. It downlo
 - **Street context: PLATEAU 2025 新宿区, stage 2.** Licence recorded as the catalogue's PLATEAU Site Policy 「３．著作権について」; the `Licensed under CC BY 4.0` clause in the data metadata is kept as unconfirmed evidence only and is not shown in the app (#161). Credit shown as the Owner's Q10 Option A string 「出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成（建物の基部を地表面の高さにそろえて表示）」. Buildings (bldg) and roads (tran) of meshes 53394525/26/35/36 are converted to a render-only street around the exits (`sources/surface-manifest.json` with sha256; `import:surface --check` reproduces `data/surface.json`). It is cited as source `plateau-13104-shinjuku-ku-2025` (`REUSABLE_WITH_CONDITIONS`, `modified: true`) and credited in the Coverage dialog (and the lane app footer). It never feeds routing.
 - **Evaluated and not used:**
   - PLATEAU ubld 53394536 does not overlap E27.
-  - The S10 store CSV has no coordinates.
+  - The S10 store CSV (東京都交通局「駅構内のお店」, CC BY 4.0; not part of E27) has no coordinates.
   - The Toei website served a bot-check (CAPTCHA). It was **not** bypassed, so exit numbers remain a gap.
   - OSM entrances (ODbL) are a cross-check only. Nothing from OSM ships.
 - **Verified against the data itself** (documented in the importer header):
