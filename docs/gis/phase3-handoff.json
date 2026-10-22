@@ -425,5 +425,6 @@
     "?? .serena/",
     "?? docs/gis/",
     "?? tools/"
-  ]
+  ],
+  "credit_note": "Class (a) values quoted in this receipt (PLATEAU ubld gml:name text, CC BY 4.0) keep the credit recorded in docs/gis/rights/non-poi-literals.md: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成"
 }

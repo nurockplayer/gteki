@@ -52,6 +52,8 @@ pnpm typecheck
 | `scene/signage.json`, `scene/crowd_lanes.json` | Derived from the verified graph and the PLATEAU walkable grid | presentation |
 | `scene/walk_bridges.json` | Invisible walking strips over hairline cracks between PLATEAU floor polygons | presentation |
 | `scene/access_fences.json` | Walker-blocking fences with a 「通行可否 未確認」/"Access unverified" marker where surveyed floor of unknown access would shortcut the routable areas | presentation |
+| `scene/finishes.json` | Finish-pack manifest for the Lane E kit: role → texture folder + repeat in metres. Empty today (see "Kit integration") | presentation |
+| `scene/dressing_anchors.json` | Stair nosing lines and escalator landings from the PLATEAU survey, where kit dressing is placed (see "Kit integration") | truth (survey positions) |
 | `pipeline/` | Reproducible data and asset build (stdlib Python + Blender; one Node walker check) | — |
 | `docs/` | G0 source audit, coverage gaps, evidence | — |
 
@@ -65,7 +67,13 @@ pnpm build:data                   # GML -> ENU JSON -> GLB -> verified graph -> 
 pnpm bake:lighting                # 4096 Cycles lightmap (Metal GPU ~5 min; DEVICE=CPU works) -> WebP
 pnpm check:access                 # outline has no fence gap; walker flood never leaves routable floor
 pnpm check:godot                  # headless Godot: loader colliders + every verified edge traversable (see below)
+pnpm audit:assets                 # G0: sha256, size and declaring manifest entry of every shipped file; fails on undeclared/missing
 ```
+
+Lightmap provenance: `ikebukuro_b1_lit.meta.json` records `source_glb_sha256` `e0188c50…`, while the shipped
+`ikebukuro_b1.glb` is `aef077a6…`. Commit 93023f3 rebuilt the generic GLB and changed the `mat_portals` material only
+(glTF JSON apart from `materials`, and the BIN buffer, are byte-identical); the bake replaces every material, so the
+lightmap is not stale. `scene/lit_provenance.test.ts` pins this pair and fails on any change, forcing a re-bake or a re-documentation.
 
 `build_station.py` exits non-zero if any edge fails geometry validation or if a POI points at a
 missing node. An edge is `verified` only when **both** of these hold:
@@ -105,6 +113,68 @@ reproduces `w_n__x18` at ENU (-100.5, 152.5) blocked by `doors`), which shows th
   meshes tagged `wall`. Recommendation: not now; keep role `visual` and use `pnpm check:godot` as the
   regression gate.
 
+## Kit integration (Lane E, issue #94)
+
+Swapping a kit piece in is a data change. Nothing below changes the lit GLB, the graph or the walker; with an
+empty `scene/finishes.json` the scene builds exactly the procedural materials.
+
+**Finish packs.** `scene/finishes.json` maps a role (`floor`, `ceiling`, `stairs_ramps`, `shopfront` for both
+`windows` and `doors`, plus `wall` and `barriers`) to a texture set. `scene/finishes.ts` loads it through
+`ctx.loadTexture` (albedo sRGB; normal and roughness linear; `flipY` as the canvas textures), sets the repeat from
+metres (UV0 is metric) and hands the textures to `createMaterials`. `patchLit`, the lightmap and the balance knee
+are untouched. Roles without an entry keep the procedural texture.
+
+```json
+{ "schema": "gteki.ikebukuro.finishes/0",
+  "packs": {
+    "floor": {
+      "source": "assets/library/<pack folder>",
+      "dir": "assets/finishes/floor",
+      "repeat_m": 1.2,
+      "maps": { "albedo": "albedo.webp", "normal": "normal.webp", "roughness": "roughness.webp" },
+      "low": { "albedo": "albedo_512.webp" },
+      "color": "#ffffff" } } }
+```
+
+- `repeat_m` is a number or `[u, v]`. `orm` may replace `roughness` (three reads its G channel). `color` tints a
+  textured pack; for `wall` and `barriers` a pack with only a `color` is a recolour.
+- Low tier (style.md §8): `low` names smaller variants, the normal map is not fetched (shader relief is a no-op
+  there), and any loaded image over 1024 px drops the pack. A pack that cannot load (file not in the station
+  folder, bad entry) warns and falls back to the procedural texture; it never fails the scene.
+- **Serving.** The explorer bundles only files under `gteki/` and follows symlinks only inside the station's own
+  folder, so a link into `assets/library/` is refused. Copy instead: `python3 -I pipeline/sync_finish_packs.py`
+  copies each pack's `source` files to `gteki/<dir>/` (`--check` for CI) and prints the paths to add as
+  `assets[].files` of the kit asset in `data/graph.src.json`; a production build refuses undeclared asset files.
+  The kit source (CC BY 4.0, "GTEki contributors") is declared there too, once the licence PR (#131) lands.
+
+**Dressing anchors.** `python3 -I pipeline/build_dressing_anchors.py` (from `build/ubld_enu.json`; it refuses an
+extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressing_anchors.json`, ENU metres to
+1 mm, deterministic. Facts only, derived from the surveyed EF_35 and EF_80 triangles:
+
+- `stair_flights[]`: a riser's top edge is the nosing line of the tread above; nosings one rise and one tread apart
+  chain into a flight. Each has `bottom` and `top` (`position`, `dir` = horizontal up-stair unit vector, `width_m`,
+  end points `a` left and `b` right facing up), `steps`, `rise_m`, `run_m`, and every `nosings` row `[ax, ay, bx, by, z]`.
+- `escalator_lanes[]`: the bank's sloped walking quad gives the landing lines (low edge = `lower`, high edge =
+  `upper`); the thin truss plates inside pair into lanes. Each lane has `lower` and `upper` anchors
+  (`position`, `dir` up the escalator, `width_m` clear between plates), plus `rise_m`, `run_m` and `slope_deg`.
+
+**How the bake will take a kit GLB in** (not built yet; `blender_bake_lighting.py` is unchanged):
+
+1. A Lane E generator places pieces on the anchors: origin at the nosing midpoint or landing point, rotated about
+   +Z by `atan2(dir.y, dir.x)`, width / rise / run passed as catalog params (the kit stays generic; station
+   measurements live only in the anchors). Output is a separate `ikebukuro_kit.glb` in ENU, not merged into the
+   PLATEAU base, so it stays separately attributable.
+2. The bake imports the base GLB and the kit GLB, selects meshes by `gteki_role` extras (`barriers` for railings,
+   `transport` for escalator parts, `stairs_ramps` only on walkable overlays, `light_fixtures` for luminaires),
+   and packs both into one atlas. Kit meshes arrive with their own UV2 (lightmap UVs); `pack()` today expects a
+   single UV layer and unwraps, so it needs a branch that keeps a kit mesh's UV2 islands and scales them into
+   the atlas. UV0 stays the material UV.
+3. It exports two lit GLBs sharing the one lightmap WebP: `ikebukuro_b1_lit.glb` as today and
+   `ikebukuro_kit_lit.glb`, each with TEXCOORD_1.
+4. `scene.ts` loads the kit GLB with `ctx.loadGlb`, applies the same lightmap (`channel = 1`) and adds it to
+   `root` **without** `assembleCollision`: kit pieces carry no colliders, so `walkable` and `colliders` stay the
+   PLATEAU sets. Kit luminaires would replace the generated ceiling fixtures (`fixtures()`), a separate change.
+
 ## Sources and rights
 
 | Source | Use | Rights |
@@ -127,6 +197,16 @@ reproduces `w_n__x18` at ENU (-100.5, 152.5) blocked by `doors`), which shows th
 | **G2** routing | **PASS (desk)** | 63/63 edges verified, 1744 m. Shared-core `parseStationFiles` returns ok; the only warnings are 20 deliberately search-only POIs (5 Metro/Tobu gates and 15 exit numbers on the official maps that are not yet routable, so a search for them says so instead of finding nothing). From JR Central Gate 2: Exit 35 = 199 m, Exit 38 = 242 m, Exit 41 = 291 m, Exit 40 = 369 m, Exit 39 = 425 m, Exit 22 = 173 m, Exit 26 = 223 m, Exit 28 = 244 m, Exit 33 = 269 m, Exit 32 = 278 m, Exit 17 = 166 m, Exit 15 = 169 m, Exit 18 = 176 m, Exit 10 = 211 m, Exit 11 = 212 m, JR South Gate = 234 m, Exit 4 (stair foot) = 287 m, Exit 13 (stair foot) = 159 m. Junction nodes sit at real decision points (e.g. just outside each JR gate), so narration reads "Go straight ~7 m / Turn left…" ([explorer](docs/evidence/explorer-route-jrc2-exit35.jpg)). Negative case: the step-free profile fails safely (`no_path`). |
 | **G3** quality (L2) | **GAP**: candidate, not yet claimed | See "G3 detail" below. |
 | **G4** delivery | **PASS (Owner, 2026-10-21)** | Public release cleared ("ship directly") once the rights check, deployment isolation, Codex review and integration regression pass. The UI states that the data is desk-verified, not field-verified, and that hours are unknown. |
+
+### Automated evidence for G0 / G1 / G2
+
+Code-and-test evidence only (no browser, GPU or field visit). Each is a light vitest under `stations/ikebukuro`.
+
+| Gate | Test | Proves | Does not prove |
+|---|---|---|---|
+| **G0** asset audit | [`pipeline/audit_assets.test.ts`](pipeline/audit_assets.test.ts) runs [`pipeline/audit_assets.ts`](pipeline/audit_assets.ts) (`pnpm audit:assets [--dist <dir>]`) | Every file the deploy ships for Ikebukuro (10: contract JSON, scene entry, 6 declared assets) is declared in `station.json` or is a contract file; none is missing; the sidecar source hash is `station.json`'s pin and the recorded sizes are the files'. Negative controls fail on an undeclared, a missing or a tampered file; `--dist` checks a deploy directory for every non-inlined declared file by sha256. | Rights (see the G0 audit), and the built `dist/` unless `--dist` is given. Finding: `ikebukuro_b1_lit.meta.json` records `source_glb_sha256` of an older generic GLB than the one shipped (warning, not fatal). Scene code and `scene/*.json` are bundled into JS and left to PR review. |
+| **G1** frame round trip | [`scene/frame.test.ts`](scene/frame.test.ts) | The scene's `enuToRenderer` is the shared `(x, z, -y)` mapping and round-trips all nodes and edge vertices exactly. Both GLBs' POSITION bounds equal the build-time ENU bounds mapped through it, with identity node transforms, and the graph sits inside them. The Python extractor, `packages/geo` and `tools/gis` agree on the `station.json` origin to 1 cm across the footprint. With `GTEKI_UBLD_ENU=<ubld_enu.json>` (git-ignored build output) 100 % of sampled PLATEAU polygon vertices are in the GLB within 1 cm. | The PLATEAU GML's own lat/lon/h are not read (the 35 MB GML is not committed): the source-to-ENU step is shown by Python-vs-TS agreement, not against the GML. The extract-to-GLB check runs only where the build output exists. |
+| **G2** core matrix | [`scene/routing.test.ts`](scene/routing.test.ts) | On the committed bundle: golden route (JR Central Gate 2 to Exit 35, 198.6 m) and optimality against an independent Dijkstra for all endpoint pairs; unknown ids, `start_equals_goal`, search-only POIs; one-way and closed-link reroute / `no_path` (on mutated copies); the stairs level change and its narration; freshness (`stale`, dates); `require_known` hours and step-free both `no_path`. | Fare-paid boundary and cross-operator rows do not apply (no paid edge, one operator; asserted). Real-world hours, step-free access and narration versus the station are not field-verified. |
 
 ### G3 detail
 
