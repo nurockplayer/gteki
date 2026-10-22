@@ -1,0 +1,36 @@
+{
+  "source_id": "plateau-13116-bldg-53394576",
+  "resolved_url": "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/bldg/53394576_bldg_6697_op.gml",
+  "resolution_evidence": {
+    "source_id": "plateau-catalog-bldg-tran-13116-13104",
+    "sha256": "cff24d7b1e50a4561188118e6dcff5c57f945f87d4aaa8b1cf3e8ae7efbf5668",
+    "json_pointer": "/cities/0/files/bldg/9/url"
+  },
+  "requested_at": "2026-10-21T16:54:53.889Z",
+  "completed_at": "2026-10-21T16:54:54.930Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "text/plain; charset=utf-8",
+    "content-length": "16726617",
+    "etag": "\"1b8fd9d3db43b56f9b1e79cc71a96f35\"",
+    "last-modified": "Fri, 27 Mar 2026 01:03:17 GMT",
+    "date": "Wed, 21 Oct 2026 16:54:12 GMT"
+  },
+  "bytes": 153213705,
+  "sha256": "29009b87ac7c7bf07f2bc8862362629d7c11fb81240b392b2c975ff04f6f7873",
+  "store_path": "raw/29009b87ac7c7bf07f2bc8862362629d7c11fb81240b392b2c975ff04f6f7873/53394576_bldg_6697_op.gml",
+  "tool_version": "0.1.0",
+  "git_commit": "e244d206a546f42259d903d8a91a2d75ac8825f7",
+  "expected_bytes": 153213705,
+  "expected_url_match": true,
+  "size_check": "MATCH",
+  "mode": "online",
+  "last_offline_check": {
+    "requested_at": "2026-10-21T17:37:59.979Z",
+    "completed_at": "2026-10-21T17:37:59.979Z",
+    "tool_version": "0.1.0",
+    "sha256": "29009b87ac7c7bf07f2bc8862362629d7c11fb81240b392b2c975ff04f6f7873",
+    "bytes": 153213705,
+    "status": "PASS"
+  }
+}

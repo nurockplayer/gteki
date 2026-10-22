@@ -49,17 +49,35 @@ function paintLabel(label: { ja: string; en: string }): HTMLCanvasElement {
   return c;
 }
 
+type ToRenderer = (x: number, y: number, z: number) => THREE_NS.Vector3;
+
+function pushQuad(out: number[], toRenderer: ToRenderer, a: number[], b: number[], z0: number, z1: number) {
+  const v = [toRenderer(a[0]!, a[1]!, z0), toRenderer(b[0]!, b[1]!, z0), toRenderer(b[0]!, b[1]!, z1), toRenderer(a[0]!, a[1]!, z1)];
+  for (const k of [0, 1, 2, 0, 2, 3]) out.push(v[k]!.x, v[k]!.y, v[k]!.z);
+}
+
+/** The invisible full-height collision mesh of the fence panels (no canvas): what the walker is blocked by. */
+export function buildFenceCollider(THREE: typeof THREE_NS, fences: AccessFences["fences"], toRenderer: ToRenderer) {
+  const col: number[] = [];
+  for (const f of fences) pushQuad(col, toRenderer, f.a, f.b, f.z0, f.z1);
+  const colGeo = new THREE.BufferGeometry();
+  colGeo.setAttribute("position", new THREE.Float32BufferAttribute(col, 3));
+  const collider = new THREE.Mesh(colGeo, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+  collider.name = "access_fences_collider";
+  collider.userData.gteki_role = "access_fences_collider";
+  collider.visible = false;
+  collider.updateMatrixWorld(true);
+  collider.matrixAutoUpdate = false;
+  return collider;
+}
+
 export function buildAccessFences(
   THREE: typeof THREE_NS,
   data: AccessFences,
-  toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3,
+  toRenderer: ToRenderer,
 ) {
-  const vis: number[] = [], uv: number[] = [], col: number[] = [];
-  const quad = (out: number[], a: number[], b: number[], z0: number, z1: number) => {
-    const v = [toRenderer(a[0]!, a[1]!, z0), toRenderer(b[0]!, b[1]!, z0), toRenderer(b[0]!, b[1]!, z1), toRenderer(a[0]!, a[1]!, z1)];
-    for (const k of [0, 1, 2, 0, 2, 3]) out.push(v[k]!.x, v[k]!.y, v[k]!.z);
-  };
-  for (const f of data.fences) quad(col, f.a, f.b, f.z0, f.z1);
+  const vis: number[] = [], uv: number[] = [];
+  const quad = (out: number[], a: number[], b: number[], z0: number, z1: number) => pushQuad(out, toRenderer, a, b, z0, z1);
   for (const m of data.marks) {
     const u = Math.hypot(m.b[0]! - m.a[0]!, m.b[1]! - m.a[1]!) / TILE_W;
     // One single-sided face per side, each with its own UVs, so the label never reads mirrored.
@@ -79,16 +97,9 @@ export function buildAccessFences(
   const visual = new THREE.Mesh(visGeo, visMat);
   visual.name = "access_fences";
   visual.userData.gteki_role = "access_fences";
-  const colGeo = new THREE.BufferGeometry();
-  colGeo.setAttribute("position", new THREE.Float32BufferAttribute(col, 3));
-  const collider = new THREE.Mesh(colGeo, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
-  collider.name = "access_fences_collider";
-  collider.userData.gteki_role = "access_fences_collider";
-  collider.visible = false;
-  for (const m of [visual, collider]) {
-    m.updateMatrixWorld(true);
-    m.matrixAutoUpdate = false;
-  }
+  const collider = buildFenceCollider(THREE, data.fences, toRenderer);
+  visual.updateMatrixWorld(true);
+  visual.matrixAutoUpdate = false;
   return {
     visual,
     collider,
@@ -96,7 +107,7 @@ export function buildAccessFences(
       visGeo.dispose();
       visMat.dispose();
       tex.dispose();
-      colGeo.dispose();
+      collider.geometry.dispose();
       collider.material.dispose();
     },
   };

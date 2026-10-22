@@ -16,6 +16,18 @@ import {
 const MANIFEST_PATH = join(packageRoot, 'sources', 'sources.yaml');
 const USER_AGENT = `gteki-gis-tools/${TOOL_VERSION} (+https://github.com/nurockplayer/gteki)`;
 const MAX_DOWNLOAD_BYTES = 128 * 1024 * 1024;
+/** A manifest typo must not open an unbounded download, so even a declared size has a hard ceiling. */
+const MAX_DECLARED_DOWNLOAD_BYTES = 512 * 1024 * 1024;
+/**
+ * Decoded-stream cap. 128 MiB is the default for every source. Only a source that declares `expected_bytes`
+ * above that default (the PLATEAU bldg meshes are 150-170 MB of GML) gets a larger cap, and then the cap is
+ * exactly the declared size: any extra byte is a hard failure rather than a size mismatch.
+ */
+export function downloadCap(expectedBytes?: number | null): number {
+  if (expectedBytes == null || expectedBytes <= MAX_DOWNLOAD_BYTES) return MAX_DOWNLOAD_BYTES;
+  if (!Number.isSafeInteger(expectedBytes) || expectedBytes > MAX_DECLARED_DOWNLOAD_BYTES) throw new RangeError(`expected_bytes ${expectedBytes} exceeds the ${MAX_DECLARED_DOWNLOAD_BYTES} byte hard ceiling`);
+  return expectedBytes;
+}
 const FETCH_TIMEOUT_MS = 120_000;
 
 /** Fixed manifest URLs have a zero-hop redirect budget, including captured HTTP errors. */
@@ -63,11 +75,12 @@ export async function downloadUrl(
   await assertPathWithinStore(root, join(root, 'tmp'));
   const headers: Record<string, string | null> = { 'content-type': null, 'content-length': null, etag: null, 'last-modified': null, date: null };
   const retries = Math.min(2, Math.max(0, options.retries ?? 2));
+  const maxBytes = downloadCap(options.expectedBytes);
   let lastError: unknown;
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     const tempPath = join(root, 'tmp', `${randomUUID()}.download`);
     try {
-      const response = options.transport === 'curl' ? await curlResponse(url, tempPath, options.userAgent ?? USER_AGENT) : await fetch(url, { redirect: 'manual', headers: { 'user-agent': options.userAgent ?? USER_AGENT, ...(request ? { 'content-type': request.content_type } : {}) }, ...(request ? { method: request.method, body: request.body } : {}), signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+      const response = options.transport === 'curl' ? await curlResponse(url, tempPath, options.userAgent ?? USER_AGENT, maxBytes) : await fetch(url, { redirect: 'manual', headers: { 'user-agent': options.userAgent ?? USER_AGENT, ...(request ? { 'content-type': request.content_type } : {}) }, ...(request ? { method: request.method, body: request.body } : {}), signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
       if (response.status >= 300 && response.status < 400) {
         await response.body?.cancel();
         refuseRedirect(response.status, response.headers.get('location'), url);
@@ -82,8 +95,8 @@ export async function downloadUrl(
       const meter = new Transform({
         transform(chunk: Buffer, _encoding, callback) {
           bytes += chunk.length;
-          if (bytes > MAX_DOWNLOAD_BYTES) {
-            callback(new RangeError(`Download exceeded ${MAX_DOWNLOAD_BYTES} byte limit: ${url}`));
+          if (bytes > maxBytes) {
+            callback(new RangeError(`Download exceeded ${maxBytes} byte limit: ${url}`));
             return;
           }
           hash.update(chunk);
@@ -121,9 +134,9 @@ export async function downloadUrl(
 }
 
 /** Explicit per-document curl transport for servers incompatible with Node TLS. TLS verification stays enabled. */
-async function curlResponse(url: string, tempPath: string, userAgent: string): Promise<Response> {
+async function curlResponse(url: string, tempPath: string, userAgent: string, maxBytes: number): Promise<Response> {
   // -q must be first: a user curlrc must not re-enable automatic redirect following.
-  const { stdout } = await promisify(execFile)('curl', ['-q', '--max-redirs', '0', '--silent', '--show-error', '--max-time', '120', '--connect-timeout', '20', '--max-filesize', String(MAX_DOWNLOAD_BYTES), '--proto', '=https,http', '--user-agent', userAgent, '--dump-header', `${tempPath}.headers`, '--output', `${tempPath}.curl`, '--write-out', '%{http_code}\n%{url_effective}', url], { maxBuffer: 65536 });
+  const { stdout } = await promisify(execFile)('curl', ['-q', '--max-redirs', '0', '--silent', '--show-error', '--max-time', '120', '--connect-timeout', '20', '--max-filesize', String(maxBytes), '--proto', '=https,http', '--user-agent', userAgent, '--dump-header', `${tempPath}.headers`, '--output', `${tempPath}.curl`, '--write-out', '%{http_code}\n%{url_effective}', url], { maxBuffer: 65536 });
   const [status, finalUrl] = stdout.trim().split('\n');
   const blocks = readFileSync(`${tempPath}.headers`, 'utf8').trim().split(/\r?\n\r?\n/);
   const fields = blocks.at(-1)!.split(/\r?\n/).slice(1).map(line => { const i = line.indexOf(':'); return [line.slice(0, i).trim(), line.slice(i + 1).trim()] as [string, string]; }).filter(([key]) => key.length > 0);
@@ -183,12 +196,15 @@ export function selectCatalogResource(source: SourceManifest, payload: unknown):
   const city = cities[cityIndex] as Record<string, unknown>;
   const cityPath = `/cities/${cityIndex}`;
   const isGml = match.endsWith('.gml');
+  // The data type (ubld, bldg, tran...) is the `_<type>_` token of a mesh file name such as 53394576_bldg_6697_op.gml.
+  const fileType = isGml ? /_(ubld|bldg|tran)_/.exec(match)?.[1] : undefined;
+  if (isGml && !fileType) throw new Error(`Cannot determine the PLATEAU data type from ${match} for ${source.source_id}`);
   const resourceField = isGml ? 'files' : 'metadataZipUrls';
   const resourceValue = isGml
-    ? (city.files && typeof city.files === 'object' ? (city.files as Record<string, unknown>).ubld : undefined)
+    ? (city.files && typeof city.files === 'object' ? (city.files as Record<string, unknown>)[fileType!] : undefined)
     : city.metadataZipUrls;
-  if (resourceValue == null) throw new Error(`Catalog city ${cityCode} has no ${isGml ? 'files.ubld' : 'metadataZipUrls'} for ${source.source_id}`);
-  const candidates = collectStrings(resourceValue, `${cityPath}/${resourceField}${isGml ? '/ubld' : ''}`)
+  if (resourceValue == null) throw new Error(`Catalog city ${cityCode} has no ${isGml ? `files.${fileType}` : 'metadataZipUrls'} for ${source.source_id}`);
+  const candidates = collectStrings(resourceValue, `${cityPath}/${resourceField}${isGml ? `/${fileType}` : ''}`)
     .filter(({ value }) => value.startsWith('https://') || value.startsWith('http://'));
   const selected = candidates.find(({ value }) => {
     try { return decodeURIComponent(new URL(value).pathname).endsWith(match); }
@@ -288,19 +304,23 @@ export async function acquireSources(ids: string[], options: { offline?: boolean
     return output;
   }
   const output: AcquisitionResult[] = [];
-  const catalogId = 'plateau-catalog-ubld-13116-13104';
-  const needsCatalog = ids.some((id) => byId.get(id)?.resolution.kind === 'plateau_catalog_api');
-  let catalogFreshResult: AcquisitionResult | null = null;
-  if (needsCatalog) {
+  // Each catalog referenced by a requested source is re-fetched once, fresh, before any resolution from it.
+  const catalogIds = [...new Set(ids.flatMap((id) => { const resolution = byId.get(id)!.resolution; return resolution.kind === 'plateau_catalog_api' ? [resolution.catalog_source_id] : []; }))];
+  const catalogResults = new Map<string, AcquisitionResult>();
+  for (const catalogId of catalogIds) {
     // Every online resolution starts from a fresh API snapshot, even if a prior
     // acquisition record exists. The snapshot is archived and hashed first.
-    catalogFreshResult = await performAcquisition(byId.get(catalogId)!);
-    if (ids.includes(catalogId)) output.push(catalogFreshResult);
+    const catalogSource = byId.get(catalogId);
+    if (!catalogSource) throw new Error(`Missing catalog source ${catalogId}`);
+    const fresh = await performAcquisition(catalogSource);
+    catalogResults.set(catalogId, fresh);
+    if (ids.includes(catalogId)) output.push(fresh);
   }
   for (const id of ids) {
-    if (needsCatalog && id === catalogId) continue;
+    if (catalogResults.has(id)) continue;
     const source = byId.get(id)!;
-    if (source.resolution.kind === 'plateau_catalog_api' && catalogFreshResult && !catalogFreshResult.ok) {
+    const catalogFreshResult = source.resolution.kind === 'plateau_catalog_api' ? catalogResults.get(source.resolution.catalog_source_id) : undefined;
+    if (catalogFreshResult && !catalogFreshResult.ok) {
       output.push({ source_id: id, ok: false, error: `Fresh catalog acquisition failed: ${catalogFreshResult.error ?? 'unknown error'}` });
       continue;
     }

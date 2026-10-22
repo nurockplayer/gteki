@@ -50,7 +50,7 @@ function quads(list: THREE.Vector3[][]): [THREE.BufferGeometry, THREE.Matrix4] {
   return [g, new THREE.Matrix4()];
 }
 
-function inPoly(x: number, y: number, poly: XY[]): boolean {
+export function inPoly(x: number, y: number, poly: XY[]): boolean {
   let inside = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
     const a = poly[i]!, b = poly[j]!;
@@ -83,8 +83,8 @@ export function heightsAt(mesh: THREE.Mesh, x: number, y: number, z0: number, z1
 
 export { bake, read, R };
 
-const committed = (): Fence[] => read("scene/access_fences.json").fences;
-const routable = (): XY[][] =>
+export const committed = (): Fence[] => read("scene/access_fences.json").fences;
+export const routable = (): XY[][] =>
   (read("gteki/station.json").coverage.areas as { status: string; polygon?: XY[] }[])
     .filter((a) => a.status === "routable" && a.polygon).map((a) => a.polygon!);
 

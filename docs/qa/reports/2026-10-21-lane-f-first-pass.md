@@ -2,6 +2,40 @@
 
 **Reviewer:** Lane F ([#12](https://github.com/nurockplayer/gteki/issues/12)), Claude Opus 5.5, read-only towards product code. This report feeds [#6](https://github.com/nurockplayer/gteki/issues/6). **It does not accept anything.** All verdicts below are evidence for the Owner's decision. Passing automated checks is not counted as L2 acceptance anywhere in this report.
 
+## 0. Update: pass 2 (2026-10-21, candidate `b511263`)
+
+Sections 1–10 are the first pass and are kept as written. This section supersedes their verdicts where it says so.
+
+**Run:**
+- **Candidate:** `b5112635`, which is #61 head `2784dea` (Shinjuku stage 2) plus core #56 `e6636ef` (camera blockers) on main `c2b5a9b`. 0 dirty files.
+- **Build:** frozen lockfile, root typecheck pass, unit 708/708.
+- **Harness:** `5e0f4fb` (#67). Brave 155 for both Chromium projects, Playwright 1.64.1, workers 1, traces off.
+- **Result:** 56 passed, 1 skipped (opt-in `08`), 25.8 min. Step probes S1 (23 steps) and S2 (31 steps): worst miss 0.74 m, worst |dz| 0.35 m.
+- **Host:** an OrbStack test-box replay (2.5 GB / 2 CPU cap) ran alongside, under the memory gate (42–57 % free, 0 swapouts).
+- **Baseline:** main `c2b5a9b` with harness `b978bcd`, before #67: 44 passed, 6 failed. Two failures were intended narration changes, now re-baselined; three were a toast-matcher bug after #21, now fixed; one was B8.
+
+| Item | Pass-2 verdict | Evidence (`b511263`) |
+|---|---|---|
+| B1 guide camera above slabs | **PASS** | exit1→platform frames are interior views under lit ceilings |
+| B2 black voids on descents | **PASS** | Near-black per frame: desktop max 0.061 (main 0.686), phones max 0.003. No clipped white |
+| B3 north switchback | **PASS** | S1 probe |
+| B4 overview draw calls | **PASS** (improved) | 279 desktop / 127 phone (main 913 / 314) |
+| B7 second walkable surface | **PASS** | No S2 probe step ends more than 0.35 m off its display height |
+| B8 B3 containment | **PASS** | The end point lies 15.4 m from the network, inside unrestricted GSI space B021 (z −23.74). The end frame shows a drawn wall. `04` now accepts a mapped space as an alternative to network distance |
+| C1 labels above UI | **PASS** (#30 on main) | Phone search passes on both phone projects |
+| C3 camera (Shinjuku) | **GAP** P2 | On the exit:2 street stair the camera presses against the avatar (`platform-exit2-10`) |
+| C6 route line x-ray | **GAP** P2 | Unchanged |
+| C8 toast over HUD pill | **GAP** P3, tracked as [#66](https://github.com/nurockplayer/gteki/issues/66) | Every arrival frame |
+| Label fade (`09`, new) | **PASS** (spot-checked) | FADED anchors sit behind signs and walls; one ambiguous at the far colonnade. After the #67 Codex review, `09` separates selected endpoints faded for being off-floor (8 of the 20 fades on a Shinjuku desktop rerun) and draws the anchor at the rect centre, the true CSS2D anchor. The red occlusion fades still sit behind drawn geometry |
+| Exit-top daylight | **PASS** | Only at the exit:2 and exit:4 street tops |
+| Perf | **PASS / watch** | 60 fps desktop and Pixel 7. iPhone 15 emulation, Shinjuku walk: 40.2 fps (main 59.4) with the replay running; to be rerun on an idle host |
+
+**Summary of pass 2:**
+- **Shinjuku (`b511263`):** G1 **PASS** for the tested slice. G3 moves from FAIL to **GAP** (C3 residual, C6). It is the first Shinjuku candidate whose guided walks read as an enclosed, lit station on emulation.
+- **Ikebukuro on main:** after Lane G (#54), walls, columns and ceilings read bright. Near-black max is 0.047 on main.
+- **Exit 35 stairs, one transient frame:** in the full run, `ikebukuro-walk-jrc2-exit35-07` showed the camera above the stair cover (near-black 0.202). It did not recur in a rerun and two dense sweeps (about 266 frames each), nor on main. `sceneInfo()` reports 0 camera blockers on Ikebukuro, so it is not attributed to #56.
+- **Still open:** no physical phone, no Astra review this pass, and the Owner holds G0/G4.
+
 ## 1. What was tested (exact code)
 
 Both candidates were built with [`tools/qa/run-candidate.sh`](../../../tools/qa/run-candidate.sh) as local, unpushed integration worktrees. Neither is a merge of any PR on GitHub.

@@ -1,7 +1,12 @@
 import { posix } from 'node:path';
 import yauzl from 'yauzl';
+import { describeZipName, type ZipNameInfo } from './zip-names.js';
 
-export type ZipEntry = { name: string; data: Buffer };
+/**
+ * `name` is the decoded lookup key (ZIP specification decoding, or the caller-asserted `legacyFileNameEncoding`).
+ * The identity fields are additive: raw name bytes in hex, the CP437 decoding and a labelled CP932 candidate.
+ */
+export type ZipEntry = { name: string; data: Buffer } & ZipNameInfo;
 export type ZipReadOptions = { maxEntryBytes?: number; maxTotalBytes?: number; legacyFileNameEncoding?: 'shift_jis' };
 const DEFAULT_ENTRY_LIMIT = 128 * 1024 * 1024;
 const DEFAULT_TOTAL_LIMIT = 512 * 1024 * 1024;
@@ -46,6 +51,8 @@ export async function readZip(path: string, options: ZipReadOptions = {}): Promi
       resolve(entries);
     });
     zip.on('entry', (entry: yauzl.Entry) => {
+      // Raw central-directory name bytes are the member identity in both decoding modes.
+      const rawName = entry.fileNameRaw, utf8Flag = (entry.generalPurposeBitFlag & 0x800) !== 0;
       try {
         if (options.legacyFileNameEncoding) {
           const raw = entry.fileName as unknown as Buffer;
@@ -74,7 +81,8 @@ export async function readZip(path: string, options: ZipReadOptions = {}): Promi
         stream.on('end', () => {
           if (settled) return;
           totalBytes += entryBytes;
-          entries.push({ name: entry.fileName, data: Buffer.concat(chunks, entryBytes) });
+          // A caller-asserted legacy encoding replaces the specification name, so yauzl's Unicode Path detection does not apply.
+          entries.push({ name: entry.fileName, data: Buffer.concat(chunks, entryBytes), ...describeZipName(rawName, utf8Flag, options.legacyFileNameEncoding ? undefined : entry.fileName) });
           zip.readEntry();
         });
       });

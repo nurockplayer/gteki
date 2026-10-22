@@ -1,5 +1,6 @@
 /**
- * Minimal triangle BVH for "is anything in the way?" queries (label occlusion). Engine-free so it can
+ * Minimal triangle BVH for "is anything in the way?" queries (label occlusion) and for picking the
+ * triangles a ray may hit (the explorer's ray tests, see meshBvh.ts). Engine-free so it can
  * be unit-tested: built from any position/index accessor (three's BufferAttribute fits), queried with a
  * segment o + t·d, t ∈ [0, 1], in the same space as the positions. Merged station meshes reach tens of
  * thousands of triangles, which a plain per-triangle raycast cannot test within a phone's frame.
@@ -37,6 +38,26 @@ export function segmentHitsBox(ox: number, oy: number, oz: number, dx: number, d
     const o = axis === 0 ? ox : axis === 1 ? oy : oz;
     const d = axis === 0 ? dx : axis === 1 ? dy : dz;
     const lo = box[at + axis]!, hi = box[at + 3 + axis]!;
+    if (d === 0) {
+      if (o < lo || o > hi) return false;
+      continue;
+    }
+    let a = (lo - o) / d, c = (hi - o) / d;
+    if (a > c) { const tmp = a; a = c; c = tmp; }
+    if (a > t0) t0 = a;
+    if (c < t1) t1 = c;
+    if (t0 > t1) return false;
+  }
+  return true;
+}
+
+/** As segmentHitsBox, for o + t·d with t ∈ [0, tMax], against the box grown by `pad` on every side. */
+function rayHitsPaddedBox(ox: number, oy: number, oz: number, dx: number, dy: number, dz: number, tMax: number, pad: number, box: ArrayLike<number>, at: number): boolean {
+  let t0 = 0, t1 = tMax;
+  for (let axis = 0; axis < 3; axis++) {
+    const o = axis === 0 ? ox : axis === 1 ? oy : oz;
+    const d = axis === 0 ? dx : axis === 1 ? dy : dz;
+    const lo = box[at + axis]! - pad, hi = box[at + 3 + axis]! + pad;
     if (d === 0) {
       if (o < lo || o > hi) return false;
       continue;
@@ -153,6 +174,35 @@ export class TriangleBvh {
       }
     }
     return false;
+  }
+
+  /**
+   * Push the number (index position / 3) of every triangle in a leaf whose box the ray o + t·d, t ∈ [0, tMax],
+   * passes near. Conservative: boxes grow by a millionth of the tree's largest coordinate (plus 1e-6), far
+   * beyond the rounding of a point three's Ray.intersectTriangle reports, so every triangle the ray hits is
+   * pushed (each once, in no order).
+   */
+  rayCandidates(ox: number, oy: number, oz: number, dx: number, dy: number, dz: number, tMax: number, out: number[]): void {
+    if (this.tris.length === 0) return;
+    const b = this.bounds;
+    let reach = 0;
+    for (let i = 0; i < 6; i++) reach = Math.max(reach, Math.abs(b[i]!));
+    const pad = 1e-6 * (1 + reach);
+    const stack = [0];
+    while (stack.length) {
+      const node = stack.pop()!;
+      if (!rayHitsPaddedBox(ox, oy, oz, dx, dy, dz, tMax, pad, b, node * 6)) continue;
+      const child = this.nodes[node * 3]!;
+      if (child >= 0) { stack.push(child, child + 1); continue; }
+      const first = this.nodes[node * 3 + 1]!;
+      const leafEnd = first + this.nodes[node * 3 + 2]!;
+      for (let t = first; t < leafEnd; t++) out.push(this.ids[t]!);
+    }
+  }
+
+  /** Bytes held by the tree (triangles, ids, bounds, nodes). */
+  get byteLength(): number {
+    return this.tris.byteLength + this.ids.byteLength + this.bounds.byteLength + this.nodes.byteLength;
   }
 
   /** Möller–Trumbore with three's face convention (Ray.intersectTriangle), closed under EDGE_EPS. */

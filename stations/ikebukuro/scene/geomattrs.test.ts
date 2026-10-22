@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { NO_FLOOR, NO_NOSE, buildFloorIndex, floorYFor, noseDistances, wallFloorAttribute } from "./geomattrs.ts";
 
@@ -68,6 +69,55 @@ describe("wallFloorAttribute", () => {
     expect([...f].every((v) => v === NO_FLOOR) || [...f].every((v) => v !== NO_FLOOR)).toBe(true);
     expect(f[0]).toBeCloseTo(27.9);
     expect(f[1]).toBeCloseTo(27.9); // filled from the resolved neighbour
+  });
+
+  it("gives every vertex of an unresolved vertical chain one fallback height (#50)", () => {
+    // Left chain (x = 1) stands on a 27.9 m floor, right chain (x = 9) on a 26.0 m floor, the middle chain
+    // (x = 5) finds none. Its bottom vertex touches only the left chain's triangles and its top vertex also
+    // touches the right chain, so a per-vertex fill would hand the two ends different heights.
+    const floors = buildFloorIndex([...quad(0, -2, 2, 2, 27.9), ...quad(8, -2, 10, 2, 26.0)]);
+    const pos = [
+      1, 27.9, 0, 1, 30.9, 0, // 0 L0, 1 L1
+      5, 27.9, 0, 5, 30.9, 0, // 2 M0, 3 M1
+      9, 27.9, 0, 9, 30.9, 0, // 4 R0, 5 R1
+    ];
+    const idx = [0, 1, 2, /* L0 L1 M0 */ 2, 3, 5, /* M0 M1 R1 */ 4, 5, 3 /* R0 R1 M1 */];
+    const f = wallFloorAttribute(pos, idx, floors);
+    expect(f[0]).toBeCloseTo(27.9);
+    expect(f[4]).toBeCloseTo(26.0);
+    expect(f[2]).not.toBe(NO_FLOOR);
+    expect(f[3]).toBe(f[2]);
+    expect([27.9, 26.0].some((h) => Math.abs(f[2]! - h) < 1e-4)).toBe(true);
+  });
+
+  it("gives the vertical edge at (56.990, -132.579) of the shipped GLB a single floor height (#50)", () => {
+    const glb = readFileSync(new URL("../gteki/assets/ikebukuro_b1_lit.glb", import.meta.url));
+    const jsonLen = glb.readUInt32LE(12);
+    const json = JSON.parse(glb.subarray(20, 20 + jsonLen).toString());
+    const bin = 20 + jsonLen + 8;
+    const mesh = (role: string) => {
+      const prim = json.meshes[json.nodes.find((n: { extras: { gteki_role: string } }) => n.extras.gteki_role === role).mesh].primitives[0];
+      const read = (i: number, comps: number, Arr: typeof Float32Array | typeof Uint16Array | typeof Uint32Array) => {
+        const a = json.accessors[i], bv = json.bufferViews[a.bufferView];
+        const start = bin + (bv.byteOffset ?? 0) + (a.byteOffset ?? 0);
+        const bytes = glb.subarray(start, start + a.count * comps * Arr.BYTES_PER_ELEMENT);
+        return new Arr(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+      };
+      const wide = json.accessors[prim.indices].componentType === 5125;
+      return { pos: read(prim.attributes.POSITION, 3, Float32Array) as Float32Array, idx: read(prim.indices, 1, wide ? Uint32Array : Uint16Array) as Uint16Array | Uint32Array };
+    };
+    const tris: number[] = [];
+    for (const role of ["floor", "stairs_ramps"]) {
+      const { pos, idx } = mesh(role);
+      for (const i of idx) tris.push(pos[i * 3]!, pos[i * 3 + 1]!, pos[i * 3 + 2]!);
+    }
+    const wall = mesh("wall");
+    const f = wallFloorAttribute(wall.pos, wall.idx, buildFloorIndex(tris));
+    const heights = new Set<number>();
+    for (let v = 0; v < wall.pos.length / 3; v++)
+      if (Math.abs(wall.pos[v * 3]! - 56.99) < 0.002 && Math.abs(wall.pos[v * 3 + 2]! + 132.579) < 0.002) heights.add(f[v]!);
+    expect(heights.size).toBe(1);
+    expect([...heights][0]).not.toBe(NO_FLOOR);
   });
 
   it("stays unresolved when nothing in the patch finds a floor", () => {

@@ -1029,3 +1029,191 @@
   availability_deadline: null
   notes: Bounded identity input, linked only by our hash-verified catalog response. No standalone clearance or graph export.
   publish_gate: HOLD
+- source_id: plateau-13104-package-2023
+  title: PLATEAU 13104 2023 G空間 package_show
+  station_ids:
+    - shinjuku
+  publisher: G空間情報センター / MLIT Project PLATEAU
+  official_url: https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2023
+  resolution:
+    kind: direct
+  expected_url: https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2023
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use:
+    status: unknown
+    evidence: docs/gis/vintages/shinjuku-2023.json
+  modification_allowed:
+    status: unknown
+    evidence: docs/gis/vintages/shinjuku-2023.json
+  redistribution_allowed:
+    status: unknown
+    evidence: docs/gis/vintages/shinjuku-2023.json
+  content_year: 2023
+  availability_deadline: null
+  notes: Vintage research only. Listing of the 2023 CityGML archive URLs; the archives are read by HTTP range (EOCD, central directory, selected ubld members), never downloaded whole, and are not licence evidence. Unknown stays UNKNOWN.
+  publish_gate: HOLD
+- source_id: plateau-catalog-bldg-tran-13116-13104
+  title: PLATEAU citygml data-catalog response for Toshima and Shinjuku bldg and tran
+  station_ids: [ikebukuro, shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  resolution: { kind: direct }
+  expected_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G2 }
+  modification_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G2 }
+  redistribution_allowed: { status: unknown, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G2 }
+  content_year: null
+  availability_deadline: null
+  notes: Live catalog snapshot for the street-level context sources (#39); authoritative bldg/tran resource URLs and fileSize values are resolved from its response at acquisition time. Its file list is a different publication path from the CKAN-listed ZIPs; see docs/gis/HANDOFF.md.
+  publish_gate: HOLD
+- source_id: plateau-13116-bldg-53394576
+  title: Toshima building CityGML 53394576
+  station_ids: [ikebukuro]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-bldg-tran-13116-13104, match: 53394576_bldg_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/bldg/53394576_bldg_6697_op.gml
+  expected_bytes: 153213705
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: null
+  availability_deadline: null
+  notes: Street-level context source (#39), visual only. expected_bytes is the decoded size served on 2026-10-21 (gzip-encoded, strong ETag); the catalog fileSize 152652335 did not match it, bldg only; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Textures are not converted.
+  publish_gate: CONDITIONAL
+- source_id: plateau-13116-bldg-53394577
+  title: Toshima building CityGML 53394577
+  station_ids: [ikebukuro]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-bldg-tran-13116-13104, match: 53394577_bldg_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/bldg/53394577_bldg_6697_op.gml
+  expected_bytes: 168102762
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: null
+  availability_deadline: null
+  notes: Street-level context source (#39), visual only. expected_bytes is the decoded size served on 2026-10-21 (gzip-encoded, strong ETag); the catalog fileSize 167549708 did not match it, bldg only; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Textures are not converted.
+  publish_gate: CONDITIONAL
+- source_id: plateau-13116-tran-53394576
+  title: Toshima transportation CityGML 53394576
+  station_ids: [ikebukuro]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-bldg-tran-13116-13104, match: 53394576_tran_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/tran/53394576_tran_6697_op.gml
+  expected_bytes: 20812006
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: null
+  availability_deadline: null
+  notes: Street-level context source (#39), visual only. Catalog fileSize is the uncompressed GML size; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Tran LOD1/LOD2 geometry is flat at z=0; only LOD3 carries heights. Textures are not converted.
+  publish_gate: CONDITIONAL
+- source_id: plateau-13116-tran-53394577
+  title: Toshima transportation CityGML 53394577
+  station_ids: [ikebukuro]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-bldg-tran-13116-13104, match: 53394577_tran_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/tran/53394577_tran_6697_op.gml
+  expected_bytes: 32601545
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: null
+  availability_deadline: null
+  notes: Street-level context source (#39), visual only. Catalog fileSize is the uncompressed GML size; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Tran LOD1/LOD2 geometry is flat at z=0; only LOD3 carries heights. Textures are not converted.
+  publish_gate: CONDITIONAL
+- source_id: plateau-13104-bldg-53394525
+  title: Shinjuku building CityGML 53394525
+  station_ids: [shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-bldg-tran-13116-13104, match: 53394525_bldg_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/bldg/53394525_bldg_6697_op.gml
+  expected_bytes: 94275150
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: null
+  availability_deadline: null
+  notes: Street-level context source (#39), visual only. expected_bytes is the decoded size served on 2026-10-21 (gzip-encoded, strong ETag); the catalog fileSize 93876352 did not match it, bldg only; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Textures are not converted. Shinjuku street-level conversion is blocked on the symbolic vertical anchor decision.
+  publish_gate: CONDITIONAL
+- source_id: plateau-13104-bldg-53394526
+  title: Shinjuku building CityGML 53394526
+  station_ids: [shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-bldg-tran-13116-13104, match: 53394526_bldg_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/bldg/53394526_bldg_6697_op.gml
+  expected_bytes: 62700939
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: null
+  availability_deadline: null
+  notes: Street-level context source (#39), visual only. expected_bytes is the decoded size served on 2026-10-21 (gzip-encoded, strong ETag); the catalog fileSize 62405121 did not match it, bldg only; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Textures are not converted. Shinjuku street-level conversion is blocked on the symbolic vertical anchor decision.
+  publish_gate: CONDITIONAL
+- source_id: plateau-13104-tran-53394525
+  title: Shinjuku transportation CityGML 53394525
+  station_ids: [shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-bldg-tran-13116-13104, match: 53394525_tran_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/tran/53394525_tran_6697_op.gml
+  expected_bytes: 34370375
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: null
+  availability_deadline: null
+  notes: Street-level context source (#39), visual only. Catalog fileSize is the uncompressed GML size; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Tran LOD1/LOD2 geometry is flat at z=0; only LOD3 carries heights. Textures are not converted. Shinjuku street-level conversion is blocked on the symbolic vertical anchor decision.
+  publish_gate: CONDITIONAL
+- source_id: plateau-13104-tran-53394526
+  title: Shinjuku transportation CityGML 53394526
+  station_ids: [shinjuku]
+  publisher: MLIT Project PLATEAU
+  official_url: https://api.plateauview.mlit.go.jp/datacatalog/citygml/13116,13104?types=bldg,tran
+  resolution: { kind: plateau_catalog_api, catalog_source_id: plateau-catalog-bldg-tran-13116-13104, match: 53394526_tran_6697_op.gml }
+  expected_url: https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/tran/53394526_tran_6697_op.gml
+  expected_bytes: 11415006
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/
+  attribution_text: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
+  commercial_use: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  modification_allowed: { status: yes, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  redistribution_allowed: { status: conditional, evidence: docs/research/GTEki_Public_Data_Research_2026-10-20.md#G3 }
+  content_year: null
+  availability_deadline: null
+  notes: Street-level context source (#39), visual only. Catalog fileSize is the uncompressed GML size; the file is served gzip-encoded and hashed over the decoded bytes. Catalog package year 2025; the per-theme survey year is not asserted here. Tran LOD1/LOD2 geometry is flat at z=0; only LOD3 carries heights. Textures are not converted. Shinjuku street-level conversion is blocked on the symbolic vertical anchor decision.
+  publish_gate: CONDITIONAL

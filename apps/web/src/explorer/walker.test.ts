@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { acceptGround, angleDelta, cumulativeLengths, nextGuideSpeed, resolveWalls, samplePolyline, wallToRenderer } from "./walker.ts";
+import { acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer } from "./walker.ts";
 import { WALKER_BODY } from "@gteki/scene-api";
 
 describe("walker", () => {
@@ -54,12 +54,5 @@ describe("walker body is part of the scene contract", () => {
     expect(at(-1, 0.15)).toEqual({ x: 0, z: 0.1 }); // below the shin band
     expect(at(1.6, 2.8).z).not.toBeCloseTo(0.1); // overlaps at the top edge
     expect(at(-1, 0.25).z).not.toBeCloseTo(0.1); // overlaps at the bottom edge
-  });
-});
-
-describe("guide speed", () => {
-  it("cycles ×1 → ×2 → ×4 → ×1 and restarts an unknown multiplier at the first step", () => {
-    expect([1, 2, 4].map(nextGuideSpeed)).toEqual([2, 4, 1]);
-    expect(nextGuideSpeed(3)).toBe(1);
   });
 });

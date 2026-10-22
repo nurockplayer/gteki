@@ -1,0 +1,256 @@
+{
+  "run_id": "context-ikebukuro-r250-ikebukuro-station-enu-v0-da1ec14153372f8d9b69",
+  "verification": "UNVERIFIED",
+  "navigation_use": "NOT_FOR_ROUTING",
+  "visual_only": true,
+  "geometry_status": "UNVERIFIED_RAW_CONVERSION",
+  "station_id": "ikebukuro",
+  "frame": {
+    "frame_id": "ikebukuro-station-enu-v0",
+    "frame_kind": "station-enu",
+    "station_id": "ikebukuro",
+    "station_json_path": "stations/ikebukuro/gteki/station.json",
+    "station_json_sha256": "59fa599565a38c1baee71af3b0757768cb893874ff106f615027dec11dc75535",
+    "verification": "UNVERIFIED",
+    "origin": {
+      "lat": 35.7297,
+      "lon": 139.7114,
+      "hM": 0,
+      "datum": "JGD2011",
+      "crs": "EPSG:6697"
+    },
+    "source_crs": "EPSG:6697",
+    "ellipsoid": "GRS80",
+    "horizontal": "ENU tangent plane at the origin on GRS80 (geodetic -> ECEF -> ENU, evaluated at the origin height); x east, y north; no curvature term",
+    "vertical": "z = source height - origin.hM, unchanged otherwise; PLATEAU EPSG:6697 heights are orthometric (TP), so z stays a TP height when hM is 0; no geoid or ellipsoid conversion",
+    "axis_order": "source latitude,longitude,height; station x east, y north, z up; glTF (renderer) x east, y up, z -north",
+    "navigation_use": "NOT_FOR_ROUTING",
+    "purpose": "Station reference frame (docs/core/contract.md Frames) for visual-only context geometry; NOT an envelope processing origin and NOT a routing frame"
+  },
+  "window": {
+    "center_station_xy_m": [
+      0,
+      0
+    ],
+    "radius_m": 250
+  },
+  "selection_rule": "A top-level bldg:Building / tran:Road is selected when the XY bounding box of all its polygon vertices (every LOD) in the station frame intersects the closed disc of radius R around the frame origin. Selected features are converted whole; geometry is never cut at the window edge.",
+  "lod_policy": "Buildings: LOD2 where the building has lod2Solid or a lod2MultiSurface boundary (all inline LOD2 polygons incl. installations), else LOD1; LOD0 is never converted; one LOD per building (a building whose LOD2 solid references do not all resolve to its own inline LOD2 polygons falls back to LOD1, never a mix). Roads: LOD3 only, because LOD1/LOD2 road geometry is flat at z=0; roads without LOD3 height are excluded and counted; no ground height is ever synthesised.",
+  "policy_version": "context-v1",
+  "sources": [
+    {
+      "source_id": "plateau-13116-bldg-53394576",
+      "source_sha256": "29009b87ac7c7bf07f2bc8862362629d7c11fb81240b392b2c975ff04f6f7873",
+      "kind": "bldg",
+      "features_in_source": 3192,
+      "outside_window": 2998,
+      "selected": 194,
+      "converted": 194,
+      "excluded": {},
+      "lod_used": {
+        "LOD2": 194
+      },
+      "lod2_fallback_to_lod1": 0,
+      "unresolved_refs_in_drawn_lod": 0,
+      "skipped_degenerate_polygons": 0,
+      "footprint_scan": {
+        "envelope": {
+          "srsName": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "lower": [
+            35.724907997975016,
+            139.6997684233019,
+            0
+          ],
+          "upper": [
+            35.73361555346836,
+            139.71266873074572,
+            171.31
+          ]
+        },
+        "srs_names": [
+          "http://www.opengis.net/def/crs/EPSG/0/6697"
+        ],
+        "top_level_features": 3192,
+        "other_top_level_elements": {},
+        "polygons_without_lod": 0,
+        "unconsumed_coordinate_elements": {},
+        "unsupported_geometry_elements": {},
+        "external_href_count": 0
+      },
+      "collect_pass_top_level_features": 3192
+    },
+    {
+      "source_id": "plateau-13116-bldg-53394577",
+      "source_sha256": "96b2c510ac44d955c0902612d0c702ee3594ca699993e0b187cbff86c2b82c37",
+      "kind": "bldg",
+      "features_in_source": 2921,
+      "outside_window": 2804,
+      "selected": 117,
+      "converted": 117,
+      "excluded": {},
+      "lod_used": {
+        "LOD2": 117
+      },
+      "lod2_fallback_to_lod1": 0,
+      "unresolved_refs_in_drawn_lod": 0,
+      "skipped_degenerate_polygons": 0,
+      "footprint_scan": {
+        "envelope": {
+          "srsName": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "lower": [
+            35.724900664962554,
+            139.71233739890985,
+            0
+          ],
+          "upper": [
+            35.73344184241558,
+            139.7251118928741,
+            286.571
+          ]
+        },
+        "srs_names": [
+          "http://www.opengis.net/def/crs/EPSG/0/6697"
+        ],
+        "top_level_features": 2921,
+        "other_top_level_elements": {},
+        "polygons_without_lod": 0,
+        "unconsumed_coordinate_elements": {},
+        "unsupported_geometry_elements": {},
+        "external_href_count": 0
+      },
+      "collect_pass_top_level_features": 2921
+    },
+    {
+      "source_id": "plateau-13116-tran-53394576",
+      "source_sha256": "6cc53f9c3ddfa90423ae1ae5c5741ceb004be2ddd6580b533644c449a7d068f7",
+      "kind": "tran",
+      "features_in_source": 1010,
+      "outside_window": 941,
+      "selected": 69,
+      "converted": 69,
+      "excluded": {},
+      "lod_used": {
+        "LOD3": 69
+      },
+      "lod2_fallback_to_lod1": 0,
+      "unresolved_refs_in_drawn_lod": 0,
+      "skipped_degenerate_polygons": 0,
+      "footprint_scan": {
+        "envelope": {
+          "srsName": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "lower": [
+            35.72478258728373,
+            139.69984410553315,
+            0
+          ],
+          "upper": [
+            35.733516796291816,
+            139.7127278782814,
+            34.05
+          ]
+        },
+        "srs_names": [
+          "http://www.opengis.net/def/crs/EPSG/0/6697"
+        ],
+        "top_level_features": 1010,
+        "other_top_level_elements": {},
+        "polygons_without_lod": 0,
+        "unconsumed_coordinate_elements": {},
+        "unsupported_geometry_elements": {},
+        "external_href_count": 0
+      },
+      "collect_pass_top_level_features": 1010
+    },
+    {
+      "source_id": "plateau-13116-tran-53394577",
+      "source_sha256": "052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2",
+      "kind": "tran",
+      "features_in_source": 1167,
+      "outside_window": 1108,
+      "selected": 59,
+      "converted": 59,
+      "excluded": {},
+      "lod_used": {
+        "LOD3": 59
+      },
+      "lod2_fallback_to_lod1": 0,
+      "unresolved_refs_in_drawn_lod": 0,
+      "skipped_degenerate_polygons": 0,
+      "footprint_scan": {
+        "envelope": {
+          "srsName": "http://www.opengis.net/def/crs/EPSG/0/6697",
+          "lower": [
+            35.72460258461065,
+            139.7120809569014,
+            0
+          ],
+          "upper": [
+            35.733547676172115,
+            139.7252780863296,
+            51.039
+          ]
+        },
+        "srs_names": [
+          "http://www.opengis.net/def/crs/EPSG/0/6697"
+        ],
+        "top_level_features": 1167,
+        "other_top_level_elements": {},
+        "polygons_without_lod": 0,
+        "unconsumed_coordinate_elements": {},
+        "unsupported_geometry_elements": {},
+        "external_href_count": 0
+      },
+      "collect_pass_top_level_features": 1167
+    }
+  ],
+  "totals": {
+    "features_in_sources": 8290,
+    "outside_window": 7851,
+    "selected_in_window": 439,
+    "converted": 439,
+    "excluded": {},
+    "excluded_total": 0,
+    "triangles": 104241,
+    "lod_used": {
+      "LOD2": 311,
+      "LOD3": 128
+    }
+  },
+  "bbox_local_ENU": {
+    "min": [
+      -281.11177444293116,
+      -295.12052241467336,
+      27.251
+    ],
+    "max": [
+      267.40181163532316,
+      267.64155305329984,
+      136.384
+    ]
+  },
+  "textures": "not converted: PLATEAU texture lineage is aerial photography and its licence is unassessed",
+  "attribution_text": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+  "selected_gml_ids_sha256": "78bf29cf714178216dc73314d4abda68220d8468208353d4c5edca55bcdd1157",
+  "validation": {
+    "status": "PASS",
+    "node_count": 439,
+    "expected_node_count": 439,
+    "triangle_count": 104241,
+    "expected_triangle_count": 104241,
+    "bbox_max_error_m": 0.000013315848718775669,
+    "tolerance_m": 0.001,
+    "all_node_names_clear_of_explorer_roles": true,
+    "all_nodes_tagged_context": true
+  },
+  "per_feature_count": 439,
+  "tool_version": "0.1.0",
+  "tool_input_sha256": "8d1982ae8457fb4b26f367bc5c4477623a5a43ea49c041c48b4de9c9fc6204ea",
+  "station_json_sha256_now": "59fa599565a38c1baee71af3b0757768cb893874ff106f615027dec11dc75535",
+  "station_json_changed_since_frame": false,
+  "store_path": "out/context-ikebukuro-r250-ikebukuro-station-enu-v0-da1ec14153372f8d9b69.glb",
+  "sidecar_path": "out/context-ikebukuro-r250-ikebukuro-station-enu-v0-da1ec14153372f8d9b69.provenance.json",
+  "output_sha256": "4d71386b6b6e8c278ba4b71082578384fe1c0c898e0ec2cb96e1b18ac6054136",
+  "output_bytes": 8202808,
+  "elapsed_ms": 14825,
+  "peak_rss_bytes": 327356416
+}

@@ -7,7 +7,10 @@ export default defineConfig(({ mode }) => {
   const testPattern = heavy ? "*.heavy.test.ts" : "*.test.ts";
   return {
     test: {
-      include: testRoots.map((root) => `${root}/**/${testPattern}`),
+      include: [
+        ...testRoots.map((root) => `${root}/**/${testPattern}`),
+        ...(heavy ? [] : ["tools/*.test.mjs"]),
+      ],
       exclude: heavy ? configDefaults.exclude : [...configDefaults.exclude, "**/*.heavy.test.ts"],
       execArgv: [`--max-old-space-size=${process.env.GTEKI_TEST_HEAP_MB ?? "3072"}`],
     },

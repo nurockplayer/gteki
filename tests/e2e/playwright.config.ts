@@ -12,8 +12,20 @@ const port = Number(process.env.GTEKI_PORT ?? 5270);
 const baseURL = process.env.GTEKI_BASE_URL ?? `http://127.0.0.1:${port}`;
 const root = process.env.GTEKI_ROOT;
 
-// Real GPU where the host has one; the probe records which renderer was actually used.
-const gpuArgs = ["--enable-gpu", "--ignore-gpu-blocklist", "--use-angle=metal", "--enable-unsafe-webgpu"];
+// Real GPU where the host has one; the probe records which renderer was actually used. CI runners have
+// none, so CI=1 selects software WebGL (SwiftShader): fine for DOM/HUD smoke, never valid for perf or visuals.
+const ci = !!process.env.CI;
+const gpuArgs = ci
+  ? ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"]
+  : ["--enable-gpu", "--ignore-gpu-blocklist", "--use-angle=metal", "--enable-unsafe-webgpu"];
+// At 1440×900 with video, SwiftShader on a 2-vCPU runner starves the frame loop: clicks never pass the
+// stability check and screenshots time out. In CI the desktop project uses a screen under 700 px, which
+// puts the explorer on its low-quality path (no composer, lower pixel ratio), and records no video.
+// (Brave's fingerprint protection reports its own screen size on http pages, so CI=1 runs locally in
+// Brave stay on the high-quality path; the runner's bundled Chromium honours the override.)
+const desktopView = ci
+  ? { viewport: { width: 960, height: 600 }, screen: { width: 960, height: 600 }, video: "off" as const }
+  : { viewport: { width: 1440, height: 900 }, video: { mode: "on" as const, size: { width: 1280, height: 800 } } };
 // Chromium projects drive Brave on the dev Mac (machine policy: never Chrome); GTEKI_BROWSER overrides
 // the executable. Without either, Playwright's bundled Chromium is used (e.g. a Linux CI runner).
 const brave = "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser";
@@ -48,7 +60,7 @@ export default defineConfig({
   projects: [
     {
       name: "desktop-chromium",
-      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 }, launchOptions: chromiumLaunch, video: { mode: "on", size: { width: 1280, height: 800 } } },
+      use: { ...devices["Desktop Chrome"], ...desktopView, launchOptions: chromiumLaunch },
     },
     {
       name: "phone-webkit",

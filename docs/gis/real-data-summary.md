@@ -2,7 +2,7 @@
 
 Generated from acquisition, inventory, conversion and network JSON; no counts are manually maintained. All results are UNVERIFIED and NOT_FOR_ROUTING.
 
-Tool-input SHA-256: `7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad049a2` (src, source manifest, codebooks, frames, synthetic tests/fixtures, package/lock/workspace/TypeScript configuration; sorted relative names plus exact bytes).
+Tool-input SHA-256: `ca9ef46e121b7da44432c6b39e75b87bfc5be56e7e661fdd04e6bfbaefcbf403` (src, source manifest, codebooks, frames, synthetic tests/fixtures, package/lock/workspace/TypeScript configuration; sorted relative names plus exact bytes).
 
 ## Acquisitions
 
@@ -17,8 +17,11 @@ Tool-input SHA-256: `7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad
 | mlit-walk-network-spec-2018-03 | 2440666 | 9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974 | MATCH |
 | mlit-walk-network-spec-2024-07-diff | 306273 | 1a0b007099ba03467b564b9daf74bc198efdbbecc874ae1a0eed36e450326773 | MATCH |
 | mlit-walk-network-spec-2024-07 | 2174437 | 963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4 | MATCH |
+| plateau-13104-bldg-53394525 | 94275150 | 6ee3ab2254dd634b437ebc2afbb5dbb430acb9cc5c2f7cfe687ca637f403d327 | MATCH |
+| plateau-13104-bldg-53394526 | 62700939 | b6a84b0148dff5a33fbaf012549eb482979ffa75fd9f764f20fb9a7434fcda3c | MATCH |
 | plateau-13104-codelists | 806577 | f2c8921ff22f82aae279b61e380565e78927f74cc068ceb8586ee7887a9baec4 | NOT_SPECIFIED |
 | plateau-13104-metadata | 26786 | ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da | NOT_SPECIFIED |
+| plateau-13104-package-2023 | 1792735 | e92201b02dfe689b6561a699d03cc88c81590708a18e4874d072037c9f7e065d | NOT_SPECIFIED |
 | plateau-13104-related-border-asset | 49802 | 8a6b33c4b3731e3c7f5a97b0cee7526c5da73b351e91d113a0eeef0039d2e784 | NOT_SPECIFIED |
 | plateau-13104-related-catalog | 187935 | 6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942 | NOT_SPECIFIED |
 | plateau-13104-related-emergency-route-asset | 57954 | a76910ca4e2355ccfc25d9f279d6f9929fe7fbec96f0fb0774ce229a6c0fde1f | NOT_SPECIFIED |
@@ -29,7 +32,11 @@ Tool-input SHA-256: `7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad
 | plateau-13104-related-station-asset | 17894 | 7e7071807bb493ce3c9eb2ea0b192d817b1a64b93f693e456f81c9589446d929 | NOT_SPECIFIED |
 | plateau-13104-related | 40290 | d62a5ba1cde070ddc632f0d2838ca9d8b1af2ae1d2123b98036ed597813b38a9 | NOT_SPECIFIED |
 | plateau-13104-schemas | 27952 | 28ca5c63686afac1487b84dd77a8778e24ec0af680cc71cd39bb3cb1beacb0a2 | NOT_SPECIFIED |
+| plateau-13104-tran-53394525 | 34370375 | 5b6e432a857c3241766abcda3c3c596b5ff8f298e1ae95051619fbb191c4c195 | MATCH |
+| plateau-13104-tran-53394526 | 11415006 | 2ff55bf2847f8f9ce30dff083a3fedf77599390d08644002b56c8cf50fe829d5 | MATCH |
 | plateau-13104-ubld-53394536 | 43830765 | 013e81b5798027387a2fdd4d4cac4d7cd25f9d0816afde2a40710c4bb7b6f977 | MATCH |
+| plateau-13116-bldg-53394576 | 153213705 | 29009b87ac7c7bf07f2bc8862362629d7c11fb81240b392b2c975ff04f6f7873 | MATCH |
+| plateau-13116-bldg-53394577 | 168102762 | 96b2c510ac44d955c0902612d0c702ee3594ca699993e0b187cbff86c2b82c37 | MATCH |
 | plateau-13116-codelists | 805989 | 183a3f554d816837f92c865124fa3cd2605e1c8f6ca7c58318b0241e718c5600 | NOT_SPECIFIED |
 | plateau-13116-metadata | 21755 | 9c75c7135d5b1693db5474c0756eeb5632496d9d1fbcfd8ca7882c4cbea7d624 | NOT_SPECIFIED |
 | plateau-13116-related-border-asset | 50847 | c0b661997a0b8e86eb44dd2a6b92bc5641f1dffef1d8003089dbd444fa88157d | NOT_SPECIFIED |
@@ -42,7 +49,10 @@ Tool-input SHA-256: `7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad
 | plateau-13116-related-station-asset | 12960 | 9759eb4bfd8d07e5a628882364d545fd527e7d115de6637cafb659eb9209a004 | NOT_SPECIFIED |
 | plateau-13116-related | 28543 | df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787 | NOT_SPECIFIED |
 | plateau-13116-schemas | 27934 | e1d3011989038e21fb07ffc5bc4bc5fc08b1506e8092ef5222b246a205354bde | NOT_SPECIFIED |
+| plateau-13116-tran-53394576 | 20812006 | 6cc53f9c3ddfa90423ae1ae5c5741ceb004be2ddd6580b533644c449a7d068f7 | MATCH |
+| plateau-13116-tran-53394577 | 32601545 | 052919a57424e9a6d33edc1bbaad8e2bdea91dac33ebaeb62c032769e0b52cb2 | MATCH |
 | plateau-13116-ubld-53394576 | 35427963 | 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 | MATCH |
+| plateau-catalog-bldg-tran-13116-13104 | 34932 | cff24d7b1e50a4561188118e6dcff5c57f945f87d4aaa8b1cf3e8ae7efbf5668 | NOT_SPECIFIED |
 | plateau-catalog-ubld-13116-13104 | 2540 | 7e5abc031afa5ab9f4e0da1df9b7e3413d642c7cbdeb6de6f909b4a23a9737ad | NOT_SPECIFIED |
 | plateau-catalog-ubld-mesh-533945 | 2540 | ab284eeac06d0844c0216c0f14951d0c9b8e70c89d2048708fab3264187e7b9e | NOT_SPECIFIED |
 | plateau-related-provenance | 10851 | ae2656faccc03d3a553f597da3b1dc2cbe217aabd51cdfcf4210b09978f9131d | NOT_SPECIFIED |
@@ -65,10 +75,10 @@ Tool-input SHA-256: `7d7acad25836772cc8de5bf0531fccb1ae3ed04c10b6013c1c5491164ad
 
 | Run | Polygons | Triangles | Nodes | Bbox error m | Time ms | Peak RSS bytes |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-92f96981cb9c62036365 | 6 | 12 | 1 | 0.00000452290078101214 | 14971 | 393052160 |
-| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-98639ff0109884b5936f | 65013 | 148950 | 30358 | 0.0000054997890401864424 | 21454 | 1614053376 |
-| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-17badba2f620875f74fc | 58761 | 64811 | 32 | 0.000003925928467651829 | 35080 | 461127680 |
-| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-b8254bb6613425689e57 | 184 | 184 | 6 | 0.0000046096065489109606 | 33465 | 221462528 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-56fb51caa16f1e70850d | 6 | 12 | 1 | 0.00000452290078101214 | 12874 | 393998336 |
+| plateau-13104-ubld-53394536-013e81b5-shinjuku-plateau-ubld-v0-5dc72d34d55c55984c94 | 65013 | 148950 | 30358 | 0.0000054997890401864424 | 20694 | 1198546944 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-1abf0c1d6c74b0a48010 | 58761 | 64811 | 32 | 0.000003925928467651829 | 29865 | 383651840 |
+| plateau-13116-ubld-53394576-38f17964-ikebukuro-plateau-ubld-v0-cba8626d02272aa587f1 | 184 | 184 | 6 | 0.0000046096065489109606 | 28206 | 232132608 |
 
 ## Network observations
 

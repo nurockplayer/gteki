@@ -6,7 +6,8 @@ Run through Blender (no GUI):
       --catalog tools/blender/catalog/kit_v0_1.json --out assets/library
 
 Options:
-  --only id1,id2     build a subset (manifest entries for others are kept)
+  --only id1,id2     build a subset (manifest entries for others are kept;
+                     assets no longer in the catalog are removed)
   --tex-res N        texture resolution (default 1024; 2048/4096 for Godot HQ)
   --save-blend DIR   also save an editable .blend per asset (keep outside Git)
   --manifest PATH    manifest path (default <out>/manifest.json)
@@ -170,6 +171,14 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
                 if os.path.basename(path) not in keep:
                     os.remove(path)
                     print(f"[gteki] removed stale {os.path.basename(path)}", flush=True)
+        else:
+            # an --only build must not leave deleted assets behind either: GLB and manifest entry go together
+            catalog_ids = {item["id"] for item in catalog["assets"]}
+            for aid in previous:
+                path = os.path.join(glb_dir, f"{aid}.glb")  # ids from a manifest on disk: only safe file names
+                if aid not in catalog_ids and contract.is_asset_id(aid) and os.path.exists(path):
+                    os.remove(path)
+                    print(f"[gteki] removed {aid}.glb and its manifest entry (no longer in the catalog)", flush=True)
         os.replace(manifest_tmp, manifest_path)
     finally:
         if os.path.exists(manifest_tmp):
