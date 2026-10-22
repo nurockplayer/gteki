@@ -275,6 +275,25 @@ Ideal download seconds = **bytes × 8 / rate**, with rate in bit/s (1 Mbit/s = 1
 
 The entire-directory row counts each file once, excluding the nested mobile tier from full. Full includes authoring `source/` files, provenance and metadata; those are not required consumer downloads. The kit + finish row counts runtime media only, excludes metadata, and intentionally includes both loose maps and embedded sample copies. Actual station downloads depend on which assets and finishes it requests.
 
+### Full-tier UV1: what it is for
+
+The full tier's `TEXCOORD_1` (+3.83 MiB) is the UV set of the baked AO map. The occlusionTexture in the core glTF material reads it (`texCoord` 1), as do three.js's `aoMap` and Godot's AO import. It is also the second UV set that Ikebukuro's lightmap bake uses. It ships because the AO map cannot be sampled without it. A full-tier build without AO would drop it.
+
+### Getting the mobile tier back under its cap (follow-up, #276)
+
+The mobile library is 34 % over the provisional 6.2 MiB line (8.32 MiB, about 7 s at 10 Mbit/s). Where the 8.32 MiB goes (stdlib scan of the 91 mobile GLBs): vertex data 5.44 MiB (POSITION 1.65, NORMAL 1.65, TEXCOORD_0 1.10, TEXCOORD_1 1.04), indices 0.52 MiB, images 1.72 MiB (AO 0.57 MiB), JSON and padding about 0.6 MiB. The first two candidates below were asked for; the third is the largest lever the data shows. Savings are estimates, not yet built:
+
+| Candidate | What changes | Estimated saving (mobile library) | Cost and risk |
+| --- | --- | --- | --- |
+| Load by station area, not the whole library | A station's first load fetches only the assets its area places. The concourse showcase bundle is 2.47 MiB and the vertical one 1.54 MiB, against 8.32 MiB for the whole library | first load ≈ 2.5 MiB (−70 %); `library_mib` itself unchanged | station loader work (Ikebukuro / Shinjuku); the cap would need to count a first load instead of the library |
+| AO: 128 px or a shared map for low-frequency assets | small flat pieces (trim, tactile strips, signs) get 128 px, or one shared neutral map | ≤ 0.15 to 0.25 MiB of the 0.57 MiB AO, plus a few MiB of GPU | lower AO detail on small pieces; the nine stepped-up assets cannot go lower (their charts do not fit) |
+| Atlas packing efficiency | fewer, larger lightmap charts mean fewer UV1 seam splits, and so fewer duplicated vertices in every attribute | not measured; seam duplicates are a share of the 5.44 MiB vertex data | needs a per-asset seam count before it is worth doing |
+| Vertex quantization (`KHR_mesh_quantization`) | POSITION int16, NORMAL int8, UVs uint16 normalised | ≈ 2.7 MiB (vertex data 5.44 → about 2.7 MiB), which would bring the library to about 5.6 MiB, under 6.2 | an exporter option plus validate_glb, web and Godot checks; three.js supports it, Godot import still to be verified |
+
+Target: back under the cap after #46 recalibrates it. Not part of this PR.
+
+**Until the mobile tier is back under its cap**, any PR that adds mobile texture or geometry lists the matching saving in the #275 table, or says explicitly "no offset, reason: …".
+
 ### Not changed
 
 Caps are unchanged per the director’s ruling on #275. Mobile caps are a provisional warning line; calibrate after #46. Being over budget does not block merges. The checker still reports the numerical failures above.
