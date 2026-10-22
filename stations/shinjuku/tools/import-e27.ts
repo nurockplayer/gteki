@@ -69,6 +69,8 @@ const PUBLICATION_PERIOD_END = "2027-03-12";
 const PERIOD_NOTE = `Publication period (公開提供期限): limited publication for 公共交通オープンデータチャレンジ2026 until ${PUBLICATION_PERIOD_END}, per the dataset page. This is the provider's publication period, not a confirmed end of any licence; reuse of derived data after that date is unconfirmed with the provider (see coverage gap:reuse-after-publication). Licence basis for this resource is unconfirmed: it ships under the Owner's override at the #16 merge, and PDL 1.0 is not treated as covering it (Owner decision #39, Q11 = No).`;
 /** Honest licence value for the E27 resources: validate.ts requires a data source to name a licence with an http(s) link, so link the provider's dataset page. */
 const E27_LICENSE = { name: "Licence unconfirmed — published under the Owner's override (#16)", url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45" };
+// #130: the E27 resources ship under the Owner's recorded override (the #16 merge), not under a confirmed licence.
+const E27_OVERRIDE = { decision: "https://github.com/nurockplayer/gteki/pull/16", date: "2026-10-21" };
 const SRC_NWD = "mlit-hokonavi-e27-nwd";
 const SRC_MAP = "mlit-hokonavi-e27-stationmap";
 const OP = "toei";
@@ -880,7 +882,8 @@ const sources: Source[] = [
     url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45",
     downloadUrls: ["https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/d4519a9a-917a-4de8-9104-83e21246c04c/download/nwd_oedo_shinjuku_geojson.zip"],
     license: E27_LICENSE,
-    rights: "REUSABLE_WITH_CONDITIONS",
+    rights: "PUBLISHED_UNDER_OWNER_OVERRIDE",
+    override: E27_OVERRIDE,
     attribution: "「歩行空間ネットワークデータ（都営地下鉄大江戸線 新宿駅）」（国土交通省）を加工して作成",
     modified: true,
     retrievedAt: ACQUIRED_AT,
@@ -896,7 +899,8 @@ const sources: Source[] = [
     url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45",
     downloadUrls: ["https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/9c5ecc7b-a6e4-4d92-978c-9b66ca642172/download/stationmap_oedo_shinjuku_geojson.zip"],
     license: E27_LICENSE,
-    rights: "REUSABLE_WITH_CONDITIONS",
+    rights: "PUBLISHED_UNDER_OWNER_OVERRIDE",
+    override: E27_OVERRIDE,
     attribution: "「構内地図データ（都営地下鉄大江戸線 新宿駅）」（国土交通省）を加工して作成",
     modified: true,
     retrievedAt: ACQUIRED_AT,
