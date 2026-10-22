@@ -4,7 +4,7 @@
     "sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
     "bytes": 35427963,
     "crs": "EPSG:6697 (JGD2011 geographic 3D: lat, lon, orthometric height)",
-    "license": "CC BY 4.0 (PLATEAU / MLIT); modified: reprojected and re-encoded"
+    "license": "PLATEAU Site Policy 「３．著作権について」に拠る; modified: reprojected and re-encoded"
   },
   "frame": {
     "type": "ENU local tangent plane",
@@ -338,6 +338,6 @@
     }
   },
   "blender_version": "5.2.2 LTS",
-  "attribution": "Contains PLATEAU data (MLIT), CC BY 4.0. Modified: reprojected to a local ENU frame, triangulated and re-encoded as glTF by GTEki.",
+  "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成 Modified: reprojected to a local ENU frame, triangulated and re-encoded as glTF by GTEki.",
   "triangulation_failures": 0
 }

@@ -6,8 +6,8 @@
   "extract_sha256": "7a073d93e5564ea13cbc6a52c4417f1381c58a53636447c15b4fecdfa3703577",
   "gml": "53394576_ubld_6697_op.gml",
   "gml_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
-  "license": "CC BY 4.0 (PLATEAU / MLIT); modified: positions derived from survey triangles by GTEki",
-  "attribution": "Contains PLATEAU data (MLIT), CC BY 4.0. Modified: reprojected to a local ENU frame; nosing and landing lines derived by GTEki."
+  "license": "PLATEAU Site Policy 「３．著作権について」に拠る; modified: positions derived from survey triangles by GTEki",
+  "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成 Modified: reprojected to a local ENU frame; nosing and landing lines derived by GTEki."
  },
  "frame": {
   "axes": "ENU metres: x east, y north, z TP height",

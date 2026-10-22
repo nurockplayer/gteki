@@ -136,18 +136,18 @@
     "https://assets.cms.plateau.reearth.io/assets/cc/d90677-ae87-4718-8899-f6131004cfa5/13116_toshima-ku_pref_2025_citygml_1_op/udx/ubld/53394576_ubld_6697_op.gml"
    ],
    "license": {
-    "name": "CC BY 4.0",
-    "url": "https://creativecommons.org/licenses/by/4.0/"
+    "name": "PLATEAU Site Policy 「３．著作権について」に拠る",
+    "url": "https://www.mlit.go.jp/plateau/site-policy/"
    },
    "rights": "REUSABLE_WITH_CONDITIONS",
-   "attribution": "Contains PLATEAU data (MLIT), CC BY 4.0. Modified: reprojected to a local ENU frame, triangulated and re-encoded by GTEki.",
+   "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成 Modified: reprojected to a local ENU frame, triangulated and re-encoded by GTEki.",
    "modified": true,
    "retrievedAt": "2026-10-20T10:44:13Z",
    "sha256": {
     "53394576_ubld_6697_op.gml": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09"
    },
    "datasetDate": "2023",
-   "notes": "creationDate 2024-03-15; LOD4.1; map information level 500 (scale class, not RMS). Free B1 passages only; fare-paid concourses are not modelled."
+   "notes": "creationDate 2024-03-15; LOD4.1; map information level 500 (scale class, not RMS). Free B1 passages only; fare-paid concourses are not modelled. Licence is the catalogue's PLATEAU Site Policy 「３．著作権について」 (docs/gis/rights/plateau-13116-related-catalog.json, claim_level SITE_POLICY). A 'CC BY 4.0' clause seen earlier is recorded as unconfirmed evidence only and is not shown in the app (#161)."
   },
   {
    "id": "toshima-underground-guide-2022",

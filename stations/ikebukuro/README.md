@@ -178,7 +178,7 @@ extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressi
 
 | Source | Use | Rights |
 |---|---|---|
-| PLATEAU CityGML ubld 53394576 (Toshima, LOD4.1, 2023 survey) | all geometry, assets and walkable grid | CC BY 4.0. Credit "PLATEAU (MLIT)", modified |
+| PLATEAU CityGML ubld 53394576 (Toshima, LOD4.1, 2023 survey) | all geometry, assets and walkable grid | PLATEAU Site Policy 「３．著作権について」(#161). Credit 「出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成」 |
 | Toshima underground guide map (2022) | facts only: which opening is which exit or gate | reference-only, `usage: facts-only` |
 | Tokyo Metro Ikebukuro yard map (2026-03) | facts only: exit numbers, gate names | reference-only, `usage: facts-only` |
 
