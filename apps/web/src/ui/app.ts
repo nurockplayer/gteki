@@ -961,6 +961,8 @@ export class App {
     box.innerHTML = "";
     box.hidden = !text;
     this.root.classList.toggle("has-credit", Boolean(text));
+    // The strip is a second occluder for the overview's free area: keep the slice above it (#114).
+    this.explorer.setCreditLine(text ? box : null);
     if (!text) return;
     box.setAttribute("aria-label", this.t.creditsLabel);
     const line = el("span", "credit-text", text);

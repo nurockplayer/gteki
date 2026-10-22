@@ -240,7 +240,10 @@ export class Explorer {
   private framed: THREE.Box3 | null = null;
   /** The HUD/search panel the overview must not frame under; its rect is read, never drawn. */
   private panelEl: HTMLElement | null = null;
-  private panelResize: ResizeObserver | null = null;
+  /** The persistent credit line along the canvas bottom; the overview keeps clear of it too. */
+  private creditEl: HTMLElement | null = null;
+  /** Refits the overview when an occluder's size changes: the panel collapsing, the credit line wrapping. */
+  private occluderResize: ResizeObserver | null = null;
   private quality: "low" | "high";
   /** Why the station's own scene could not be shown (L0 fallback is in use), if any. */
   sceneError: string | null = null;
@@ -309,12 +312,13 @@ export class Explorer {
 
   /**
    * Where the routable network sits on screen now (CSS px, page coordinates like label rects) and how
-   * big it is, measured against the FREE area — the part of the canvas the search panel leaves uncovered:
-   * `extentShare` = larger bbox side / the free area's shorter side (about 0.65 right after the fit; the
-   * bbox of the network's own points, so a little below the fit target, which is measured on the slice
-   * box). `fitShare` is that box's share against the same free area (the fit target, about 0.65).
-   * `visibleRect` is that free area itself (page CSS px), so a spec can check `bbox` lies outside the
-   * panel. Null outside overview or without a routable network.
+   * big it is, measured against the FREE area — the part of the canvas neither the search panel nor the
+   * credit line covers: `extentShare` = larger bbox side / the free area's shorter side (about 0.65 right
+   * after the fit; the bbox of the network's own points, so a little below the fit target, which is
+   * measured on the slice box). `fitShare` is that box's share against the same free area (the fit target,
+   * about 0.65). `visibleRect` is that free area itself (page CSS px, so it excludes the panel and the
+   * credit strip), so a spec can check `bbox` lies outside both. Null outside overview or without a
+   * routable network.
    */
   overviewFrame(): { extentShare: number; fitShare: number | null; bbox: { x0: number; y0: number; x1: number; y1: number }; visibleRect: { x: number; y: number; w: number; h: number } } | null {
     if (this.mode !== "overview" || this.routablePts.length === 0) return null;
@@ -596,32 +600,57 @@ export class Explorer {
    */
   setPanel(el: HTMLElement | null): void {
     this.panelEl = el;
-    this.panelResize?.disconnect();
-    this.panelResize = null;
-    if (el && typeof ResizeObserver !== "undefined") {
-      this.panelResize = new ResizeObserver(() => this.refitOverview());
-      this.panelResize.observe(el);
-    }
+    this.watchOccluders();
     this.refitOverview();
   }
 
-  /** Re-measure the panel and refit an automatic overview (never a camera the user has moved). */
+  /**
+   * Name the persistent credit line along the canvas bottom (the app's `.credit-line` footer, shown when
+   * `.app` has `has-credit`). It blocks the whole width, so the free area ends above it: the overview keeps
+   * clear of it, and its height changes (a longer string wrapping) refit a user-untouched overview. Null
+   * while there is no credit line: the whole viewport height is free.
+   */
+  setCreditLine(el: HTMLElement | null): void {
+    this.creditEl = el;
+    this.watchOccluders();
+    this.refitOverview();
+  }
+
+  /** Observe both occluders on one observer, so a size change of either refits through the same path. */
+  private watchOccluders(): void {
+    this.occluderResize?.disconnect();
+    this.occluderResize = null;
+    const els = [this.panelEl, this.creditEl].filter((e): e is HTMLElement => e !== null);
+    if (els.length === 0 || typeof ResizeObserver === "undefined") return;
+    this.occluderResize = new ResizeObserver(() => this.refitOverview());
+    for (const e of els) this.occluderResize.observe(e);
+  }
+
+  /** Re-measure the occluders and refit an automatic overview (never a camera the user has moved). */
   refitOverview(): void {
     if (this.mode === "overview" && this.framed) this.fitOverview();
   }
 
   /**
-   * The canvas area no panel covers (CSS px, canvas-relative). The panel's own page rect is measured here,
-   * on a resize or a panel change — never per frame.
+   * The canvas area no UI covers (CSS px, canvas-relative): neither the panel nor the credit line. Both page
+   * rects are measured here, on a resize or an occluder change — never per frame.
    */
   private freeRect(): ViewRect {
     const { w, h } = this.viewSize;
     const el = this.panelEl;
     // display:none (walk/guide on a phone), a collapsed element or none at all leaves the canvas free.
-    if (!el || el.getClientRects().length === 0) return { x: 0, y: 0, w, h };
-    const host = this.host.getBoundingClientRect();
+    const measured = el && el.getClientRects().length > 0 ? el.getBoundingClientRect() : null;
+    const host = (measured || this.creditEl) ? this.host.getBoundingClientRect() : null;
+    const panel = measured && host ? { x: measured.left - host.left, y: measured.top - host.top, w: measured.width, h: measured.height } : null;
+    return freeArea({ w, h }, panel, this.creditInset(host));
+  }
+
+  /** The canvas-bottom band the credit line blocks (CSS px): it spans the width, so only its top edge counts. */
+  private creditInset(host: DOMRect | null): number {
+    const el = this.creditEl;
+    if (!host || !el || el.getClientRects().length === 0) return 0;
     const p = el.getBoundingClientRect();
-    return freeArea({ w, h }, { x: p.left - host.left, y: p.top - host.top, w: p.width, h: p.height });
+    return Math.min(this.viewSize.h, Math.max(0, host.bottom - Math.max(host.top, p.top)));
   }
 
   /** Put the camera on the fit of `framed` for the current aspect, inside the panel-free area. */
@@ -1382,8 +1411,8 @@ export class Explorer {
 
   dispose(): void {
     this.disposed = true;
-    this.panelResize?.disconnect();
-    this.panelResize = null;
+    this.occluderResize?.disconnect();
+    this.occluderResize = null;
     this.removeAudioUnlock();
     this.disconnectStationAudio();
     void this.audio?.context.close();

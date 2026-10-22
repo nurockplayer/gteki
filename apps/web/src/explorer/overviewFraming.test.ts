@@ -51,14 +51,15 @@ function fitted(raw: Aabb): Aabb {
 describe("frameBounds", () => {
   for (const vp of VIEWPORTS) {
     for (const [name, raw] of Object.entries(BOXES)) {
-      it(`${vp.name}, ${name}: larger extent is 50-80% of the shorter side, centred, nothing clipped`, () => {
+      it(`${vp.name}, ${name}: the limiting axis is 65% of its side, the other no more; centred, nothing clipped`, () => {
         const pose = frameBounds(raw, { fovDeg: 60, aspect: vp.w / vp.h });
         const cam = camera(vp.w, vp.h, pose);
         const e = screenExtent(fitted(raw), cam, vp.w, vp.h);
-        const fill = Math.max(e.widthPx, e.heightPx) / Math.min(vp.w, vp.h);
-        expect(fill).toBeGreaterThanOrEqual(0.5);
-        expect(fill).toBeLessThanOrEqual(0.8);
-        expect(fill).toBeCloseTo(OVERVIEW_FILL, 2);
+        // Per-axis fit: one axis reaches `fill` of its own side, the other stays at or under it.
+        const wShare = e.widthPx / vp.w, hShare = e.heightPx / vp.h;
+        expect(Math.max(wShare, hShare)).toBeCloseTo(OVERVIEW_FILL, 2);
+        expect(Math.min(wShare, hShare)).toBeLessThanOrEqual(OVERVIEW_FILL + 1e-3);
+        expect(Math.max(wShare, hShare)).toBeLessThanOrEqual(0.8);
         // Inside the viewport on every side (NDC +-1) with room to spare, and centred.
         for (const v of [e.x0, e.x1, e.y0, e.y1]) expect(Math.abs(v)).toBeLessThan(1);
         expect((e.x0 + e.x1) / 2).toBeCloseTo(0, 2);
@@ -93,11 +94,11 @@ describe("frameBounds", () => {
     expect(box.min.equals(before[0]!) && box.max.equals(before[1]!)).toBe(true);
   });
 
-  it("honours another fill", () => {
+  it("honours another fill, per axis", () => {
     const box = BOXES["Ikebukuro, compact"]!;
     const pose = frameBounds(box, { fovDeg: 60, aspect: 1.6 }, 0.5);
     const e = screenExtent(box, camera(1440, 900, pose), 1440, 900);
-    expect(Math.max(e.widthPx, e.heightPx) / 900).toBeCloseTo(0.5, 2);
+    expect(Math.max(e.widthPx / 1440, e.heightPx / 900)).toBeCloseTo(0.5, 2);
   });
 });
 
@@ -128,41 +129,66 @@ describe("freeArea: what the search panel leaves unobstructed", () => {
     expect(freeArea(PHONE, { x: 16, y: 58, w: 500, h: 552 })).toEqual({ x: 0, y: 610, w: 393, h: 242 });
     expect(freeArea(PHONE, { x: -10, y: -20, w: 500, h: 900 })).toEqual({ x: 0, y: 0, w: 393, h: 852 });
   });
+
+  it("keeps the credit strip out of the free area: it spans the width at the bottom edge", () => {
+    // No panel: the strip alone shortens the usable canvas (38 px phone, 30 px desktop).
+    expect(freeArea(PHONE, null, 38)).toEqual({ x: 0, y: 0, w: 393, h: 814 });
+    expect(freeArea(DESKTOP, null, 30)).toEqual({ x: 0, y: 0, w: 1440, h: 870 });
+    // With a top panel the free band below it ends above the strip.
+    expect(freeArea(PHONE, { x: 16, y: 58, w: 361, h: 552 }, 38)).toEqual({ x: 0, y: 610, w: 393, h: 204 });
+    // The desktop column's right-hand area is full height minus the strip.
+    expect(freeArea(DESKTOP, { x: 16, y: 58, w: 400, h: 260 }, 30)).toEqual({ x: 416, y: 0, w: 1024, h: 870 });
+    // A bottom sheet that runs into the strip still leaves only the area above the sheet.
+    expect(freeArea(PHONE, { x: 0, y: 600, w: 393, h: 252 }, 38)).toEqual({ x: 0, y: 0, w: 393, h: 600 });
+    // A strip taller than the canvas never yields an empty rect (or a negative one).
+    const sliver = freeArea(PHONE, null, 9999);
+    expect(sliver.w).toBe(393);
+    expect(sliver.h).toBe(1);
+  });
 });
 
 describe("frameBounds inside the free area", () => {
+  const PHONE_PANEL = { x: 16, y: 58, w: 361, h: 552 };
+  const DESKTOP_PANEL = { x: 16, y: 58, w: 400, h: 260 };
   const layouts = [
-    { name: "phone 393x852 with a top panel", w: 393, h: 852, panel: { x: 16, y: 58, w: 361, h: 552 } },
-    { name: "desktop 1440x900 with a left column", w: 1440, h: 900, panel: { x: 16, y: 58, w: 400, h: 260 } },
+    { name: "phone 393x852 with a top panel", w: 393, h: 852, panel: PHONE_PANEL, strip: 0 },
+    { name: "phone 393x852 with a top panel and a 38 px credit strip", w: 393, h: 852, panel: PHONE_PANEL, strip: 38 },
+    { name: "desktop 1440x900 with a left column", w: 1440, h: 900, panel: DESKTOP_PANEL, strip: 0 },
+    { name: "desktop 1440x900 with a left column and a 30 px credit strip", w: 1440, h: 900, panel: DESKTOP_PANEL, strip: 30 },
   ];
 
   for (const lay of layouts) {
     for (const name of ["Ikebukuro, compact", "Shinjuku, flat and long"]) {
-      it(`${lay.name}, ${name}: 50-80% of the free area's short side, centred in it, clear of the panel`, () => {
-        const free = freeArea({ w: lay.w, h: lay.h }, lay.panel);
+      it(`${lay.name}, ${name}: per-axis fit, 50-80% of the free short side, centred, clear of panel and strip`, () => {
+        const free = freeArea({ w: lay.w, h: lay.h }, lay.panel, lay.strip);
         const raw = BOXES[name]!;
         const pose = frameBounds(raw, { fovDeg: 60, aspect: lay.w / lay.h, viewport: { w: lay.w, h: lay.h }, free });
         const cam = camera(lay.w, lay.h, pose);
         const e = screenExtent(fitted(raw), cam, lay.w, lay.h); // NDC
         // To px against the free area's own origin.
         const box = { x0: (e.x0 * 0.5 + 0.5) * lay.w, x1: (e.x1 * 0.5 + 0.5) * lay.w, y0: (-e.y1 * 0.5 + 0.5) * lay.h, y1: (-e.y0 * 0.5 + 0.5) * lay.h };
+        // The limiting axis reaches `fill` of its own free side; the other stays at or under it.
+        const wShare = (box.x1 - box.x0) / free.w, hShare = (box.y1 - box.y0) / free.h;
+        expect(Math.max(wShare, hShare)).toBeCloseTo(OVERVIEW_FILL, 2);
+        expect(Math.min(wShare, hShare)).toBeLessThanOrEqual(OVERVIEW_FILL + 1e-3);
+        // What the QA hook reports (larger side / the free short side) stays in the accepted band.
         const share = Math.max(box.x1 - box.x0, box.y1 - box.y0) / Math.min(free.w, free.h);
         expect(share).toBeGreaterThanOrEqual(0.5);
         expect(share).toBeLessThanOrEqual(0.8);
-        expect(share).toBeCloseTo(OVERVIEW_FILL, 2);
-        // Centred in the free area, inside it, and never under the panel.
+        // Centred in the free area, inside it: never under the panel nor in the credit strip.
         expect((box.x0 + box.x1) / 2).toBeCloseTo(free.x + free.w / 2, 0);
         expect((box.y0 + box.y1) / 2).toBeCloseTo(free.y + free.h / 2, 0);
         expect(box.x0).toBeGreaterThanOrEqual(free.x);
         expect(box.x1).toBeLessThanOrEqual(free.x + free.w);
         expect(box.y0).toBeGreaterThanOrEqual(free.y);
         expect(box.y1).toBeLessThanOrEqual(free.y + free.h);
+        expect(box.y1).toBeLessThanOrEqual(lay.h - lay.strip);
       });
     }
   }
 
   it("keeps the viewing direction when it is pushed off centre", () => {
-    const free = freeArea({ w: 393, h: 852 }, { x: 16, y: 58, w: 361, h: 552 });
+    const free = freeArea({ w: 393, h: 852 }, PHONE_PANEL, 38);
     const pose = frameBounds(BOXES["Ikebukuro, compact"]!, { fovDeg: 60, aspect: 393 / 852, viewport: { w: 393, h: 852 }, free });
     expect(pose.position.clone().sub(pose.target).normalize().distanceTo(OVERVIEW_OFFSET)).toBeLessThan(1e-9);
   });
@@ -203,16 +229,17 @@ describe("routableBounds", () => {
 
 describe("screen extent of the network (overviewFrame hook math)", () => {
   for (const vp of VIEWPORTS) {
-    it(`${vp.name}: the fitted slice box shares 65%, and its inner network points no more than that`, () => {
+    it(`${vp.name}: the fitted slice box takes 65% of one axis, and its inner network points no more`, () => {
       const raw = BOXES["Ikebukuro, compact"]!;
       const pose = frameBounds(raw, { fovDeg: 60, aspect: vp.w / vp.h });
       const cam = camera(vp.w, vp.h, pose);
-      const boxShare = extentShare(screenBox(boxCorners(raw), cam, vp.w, vp.h)!, vp.w, vp.h);
-      expect(boxShare).toBeCloseTo(OVERVIEW_FILL, 2);
+      const boxBox = screenBox(boxCorners(raw), cam, vp.w, vp.h)!;
+      const largest = Math.max(boxBox.x1 - boxBox.x0, boxBox.y1 - boxBox.y0);
+      expect(Math.max((boxBox.x1 - boxBox.x0) / vp.w, (boxBox.y1 - boxBox.y0) / vp.h)).toBeCloseTo(OVERVIEW_FILL, 2);
       // A network that spans only part of the box (the corners are extremes) is no bigger on screen.
       const inner = [raw.min.clone().lerp(raw.max, 0.1), raw.min.clone().lerp(raw.max, 0.9), raw.min.clone().lerp(raw.max, 0.5)];
       const box = screenBox(inner, cam, vp.w, vp.h)!;
-      expect(extentShare(box, vp.w, vp.h)).toBeLessThanOrEqual(boxShare + 1e-9);
+      expect(Math.max(box.x1 - box.x0, box.y1 - box.y0)).toBeLessThanOrEqual(largest + 1e-9);
       expect(box.x0).toBeGreaterThanOrEqual(0);
       expect(box.y1).toBeLessThanOrEqual(vp.h);
     });

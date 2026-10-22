@@ -15,7 +15,7 @@ export interface Aabb { min: THREE.Vector3; max: THREE.Vector3 }
 /** Direction from the target to the camera (renderer frame): the overview's established look, ~42 degrees up. */
 export const OVERVIEW_OFFSET = new THREE.Vector3(0.55, 0.85, 0.75).normalize();
 
-/** The slice's larger on-screen extent as a share of the viewport's shorter side (accepted range 0.5 to 0.8). */
+/** The slice's on-screen extent as a share of each axis of the free area (accepted range 0.5 to 0.8). */
 export const OVERVIEW_FILL = 0.65;
 
 /** A slice smaller than this (m, per ground axis) is framed as if it were this big, so a point never zooms to the floor. */
@@ -66,24 +66,27 @@ export interface ScreenBox { x0: number; y0: number; x1: number; y1: number }
 export interface ViewRect { x: number; y: number; w: number; h: number }
 
 /**
- * The part of the canvas a UI panel leaves unobstructed. The panel is a top bar on a phone (so the free
- * area is below it) and a left column on a desktop (so it is to the right); rather than sniff the layout,
- * this tries the four rectangles the panel's edges leave and keeps the one with the largest usable short
- * side — which is also the one that lets the slice be framed biggest. A panel over the whole canvas (or
- * none at all) leaves the canvas as it is.
+ * The part of the canvas the UI leaves unobstructed: an optional panel and an optional persistent strip
+ * along the canvas bottom (the credit line). The panel is a top bar on a phone (so the free area is below
+ * it) and a left column on a desktop (so it is to the right); rather than sniff the layout, this tries the
+ * four rectangles the panel's edges leave and keeps the one with the largest usable short side — which is
+ * also the one that lets the slice be framed biggest. A panel over the whole canvas (or none at all) leaves
+ * the canvas as it is. `bottomInsetPx` is the height of the strip; no rectangle reaches into it.
  */
-export function freeArea(viewport: { w: number; h: number }, panel: ViewRect | null): ViewRect {
-  const full: ViewRect = { x: 0, y: 0, w: viewport.w, h: viewport.h };
+export function freeArea(viewport: { w: number; h: number }, panel: ViewRect | null, bottomInsetPx = 0): ViewRect {
+  // The strip blocks the whole width, so the usable canvas simply ends above it.
+  const h = Math.max(1, viewport.h - Math.max(0, bottomInsetPx));
+  const full: ViewRect = { x: 0, y: 0, w: viewport.w, h };
   if (!panel) return full;
   // The panel may hang off the canvas (safe areas, a slide-in): only its part over the canvas blocks.
   const x0 = Math.max(0, panel.x), y0 = Math.max(0, panel.y);
-  const x1 = Math.min(viewport.w, panel.x + panel.w), y1 = Math.min(viewport.h, panel.y + panel.h);
+  const x1 = Math.min(viewport.w, panel.x + panel.w), y1 = Math.min(h, panel.y + panel.h);
   if (x1 <= x0 || y1 <= y0) return full;
   const candidates: ViewRect[] = [
-    { x: 0, y: y1, w: viewport.w, h: viewport.h - y1 },          // below a top bar
-    { x: x1, y: 0, w: viewport.w - x1, h: viewport.h },          // right of a left column
-    { x: 0, y: 0, w: viewport.w, h: y0 },                        // above a bottom bar
-    { x: 0, y: 0, w: x0, h: viewport.h },                        // left of a right column
+    { x: 0, y: y1, w: viewport.w, h: h - y1 },                    // below a top bar
+    { x: x1, y: 0, w: viewport.w - x1, h },                       // right of a left column
+    { x: 0, y: 0, w: viewport.w, h: y0 },                         // above a bottom bar
+    { x: 0, y: 0, w: x0, h },                                     // left of a right column
   ];
   let best = full;
   let bestKey = -Infinity;
@@ -137,8 +140,8 @@ export interface FrameView {
   viewport?: { w: number; h: number };
   /**
    * The unobstructed part of the view to fit into (CSS px, top-left origin, e.g. `freeArea(...)`). The fit
-   * fills a share of this rect's shorter side and centres the slice in it, so the slice never sits under
-   * the search panel. Default: the whole viewport.
+   * fills a share of this rect's width and of its height, and centres the slice in it, so the slice never
+   * sits under the search panel or the credit line. Default: the whole viewport.
    */
   free?: ViewRect;
 }
@@ -163,11 +166,13 @@ function projectCorners(corners: readonly THREE.Vector3[], eye: THREE.Vector3, f
 }
 
 /**
- * Fit the camera to `box` along `offsetDir` (target to camera). The box's larger projected extent
- * (width or height on screen) lands at `fill` of the free area's shorter side, and the box is centred in
- * that area, so with `fill` at most 0.8 nothing is clipped (nor hidden under a UI panel) at any aspect.
- * Uses the real perspective projection of the 8 corners (not a bounding sphere), so a flat, long slice
- * is framed tightly. Only the target and the distance change; the viewing direction never does.
+ * Fit the camera to `box` along `offsetDir` (target to camera). The fit is per axis: the box's projected
+ * width may reach `fill` of the free area's width and its projected height `fill` of its height, and the
+ * axis that hits its limit first sets the distance — so a wide free area (a desktop's left column) is not
+ * wasted on a wide slice. The box is centred in that area, so with `fill` at most 0.8 nothing is clipped
+ * (nor hidden under a UI panel) at any aspect. Uses the real perspective projection of the 8 corners (not a
+ * bounding sphere), so a flat, long slice is framed tightly. Only the target and the distance change; the
+ * viewing direction never does.
  *
  * Pure: no camera is touched. The caller puts `position` and `target` on the camera and orbit controls.
  */
@@ -194,26 +199,28 @@ export function frameBounds(box: Aabb, view: FrameView, fill = OVERVIEW_FILL, of
   for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) corners.push(new THREE.Vector3(sx * half.x, sy * half.y, sz * half.z));
 
   // Extent units are viewport heights: the free width in those units is (free.w / vw) * aspect.
-  const goal = fill * Math.min((free.w / vw) * view.aspect, free.h / vh);
+  // Each axis gets its own goal; the axis that first reaches its goal sets the distance.
+  const goalW = Math.max(1e-6, fill * (free.w / vw) * view.aspect);
+  const goalH = Math.max(1e-6, fill * (free.h / vh));
   const target = centre.clone();
   const world = corners.map((c) => c.clone().add(centre));
   const eyeAt = (dist: number): THREE.Vector3 => target.clone().addScaledVector(dir, dist);
   const outline = (dist: number): Extent | null => {
     return projectCorners(world, eyeAt(dist), forward, right, up, tanV, view.aspect, near);
   };
-  const larger = (dist: number): number => {
+  /** How far past its per-axis goal the box is: 1 exactly at the fit, and it falls monotonically as the camera backs away. */
+  const excess = (dist: number): number => {
     const e = outline(dist);
-    return e ? Math.max(e.widthPx, e.heightPx) : Infinity;
+    return e ? Math.max(e.widthPx / goalW, e.heightPx / goalH) : Infinity;
   };
-  /** The distance at which the larger extent equals the goal (it falls monotonically as the camera backs away). */
   const solve = (): number => {
     let lo = near * 2;
-    while (larger(lo) === Infinity && lo < 1e7) lo *= 2;
+    while (excess(lo) === Infinity && lo < 1e7) lo *= 2;
     let hi = Math.max(lo * 2, 1);
-    while (larger(hi) > goal && hi < 1e7) hi *= 2;
+    while (excess(hi) > 1 && hi < 1e7) hi *= 2;
     for (let i = 0; i < 48; i++) {
       const mid = (lo + hi) / 2;
-      if (larger(mid) > goal) lo = mid; else hi = mid;
+      if (excess(mid) > 1) lo = mid; else hi = mid;
     }
     return hi;
   };
