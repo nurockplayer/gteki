@@ -5,7 +5,9 @@ import { hooks, openStation, stationData } from "../lib/gteki.ts";
 
 /**
  * Draw-call and triangle budget probe for the Ikebukuro street-context layer (PR #110). Measurement, not a
- * gate, except that the LOW tier is soft-checked against the underground budget (<= 28 draws, <= 129k tris).
+ * gate. Counts include every pass, so absolute budgets taken with other counters do not apply: with
+ * GTEKI_BUDGET_BASELINE=<the same probe's .json from a run on the base branch>, it soft-checks that underground
+ * views are unchanged and that street views cost no more than the context's own meshes.
  *
  * Not part of CI (e2e-smoke.yml names its specs) and skipped unless GTEKI_BUDGET=1. Needs a real GPU: run it
  * on the dev Mac in Brave, one project per tier, each against a built candidate (see README, "Context budget").
@@ -21,7 +23,8 @@ import { hooks, openStation, stationData } from "../lib/gteki.ts";
  *
  * Env: GTEKI_BUDGET_OUT (output dir, default <GTEKI_ROOT>/.qa/ikebukuro-context-budget),
  *      GTEKI_BUDGET_STREET (comma list of street exit node ids), GTEKI_BUDGET_FRAMES (default 60),
- *      GTEKI_BUDGET_TIER (optional: assert the explorer picked this tier, "low" or "high").
+ *      GTEKI_BUDGET_TIER (optional: assert the explorer picked this tier, "low" or "high"),
+ *      GTEKI_BUDGET_BASELINE (optional: base-branch run of this probe, same tier, to compare against).
  */
 test.skip(!process.env.GTEKI_BUDGET, "set GTEKI_BUDGET=1 to run the Ikebukuro context budget probe");
 test.use({ trace: "off", video: "off", screenshot: "off" });
@@ -32,7 +35,8 @@ const UNDERGROUND = ["c_mid", "w_c", "sw_h", "n_h"];
 const STREET = (process.env.GTEKI_BUDGET_STREET ?? "x35,x39,x11,x38").split(",").map((s) => s.trim()).filter(Boolean);
 const HEADINGS = [0, 90, 180, 270];
 const FRAMES = Number(process.env.GTEKI_BUDGET_FRAMES ?? 60);
-const LOW_BUDGET = { draws: 28, tris: 129_000 };
+// What the context may add at street level (its mesh count and triangles per variant, see scene/context.test.ts).
+const CONTEXT_COST = { low: { draws: 8, tris: 31_000 }, high: { draws: 8, tris: 140_000 } };
 const LOOK_RAD_PER_PX = 0.0042;
 
 /** Counts draw calls and triangles per rendered frame at the WebGL boundary (independent of lib PROBE_SCRIPT). */
@@ -167,7 +171,6 @@ test("ikebukuro street-context draw/tri budget @phone", async ({ page }, testInf
     frames: FRAMES, baselineWorldBox: baseline,
     underground: {
       ...underMax, contextAttachedAnywhere: under.some((r) => r.contextAttached), streetActiveAnywhere: under.some((r) => r.streetActive),
-      lowBudget: LOW_BUDGET, withinLowBudget: tier === "low" ? underMax.draws <= LOW_BUDGET.draws && underMax.tris <= LOW_BUDGET.tris : null,
     },
     street: {
       spotsWithContext: new Set(street.filter((r) => r.contextAttached).map((r) => r.spot)).size,
@@ -188,7 +191,7 @@ test("ikebukuro street-context draw/tri budget @phone", async ({ page }, testInf
     "",
     `Renderer: ${gl?.renderer ?? "unknown"} (gpuValid=${gpuValid}); viewport ${JSON.stringify(page.viewportSize())}; ${FRAMES} frames per row; draws/tris counted at the WebGL boundary, all passes.`,
     "",
-    `Underground max: ${underMax.draws} draws, ${underMax.tris} tris` + (tier === "low" ? ` (budget ${LOW_BUDGET.draws} / ${LOW_BUDGET.tris}: ${result.underground.withinLowBudget ? "within" : "OVER"})` : "") +
+    `Underground max: ${underMax.draws} draws, ${underMax.tris} tris` + (process.env.GTEKI_BUDGET_BASELINE ? ` (compared with ${path.basename(process.env.GTEKI_BUDGET_BASELINE)})` : "") +
       `; context attached underground: ${yn(result.underground.contextAttachedAnywhere)}; street.active underground: ${yn(result.underground.streetActiveAnywhere)}.`,
     "",
     "| group | spot | heading | facing | draws p50 | draws max | tris p50 | tris max | context attached | street.active |",
@@ -203,8 +206,19 @@ test("ikebukuro street-context draw/tri budget @phone", async ({ page }, testInf
   expect(gpuValid, `renderer ${gl?.renderer}: software rendering invalidates the measurement`).toBe(true);
   expect.soft(result.underground.contextAttachedAnywhere, "the context must never be in the scene underground").toBe(false);
   expect.soft(result.street.spotsWithContext, "the context never attached at any street spot").toBeGreaterThan(0);
-  if (tier === "low") {
-    expect.soft(underMax.draws, "underground draws (low)").toBeLessThanOrEqual(LOW_BUDGET.draws);
-    expect.soft(underMax.tris, "underground triangles (low)").toBeLessThanOrEqual(LOW_BUDGET.tris);
+  const baselineFile = process.env.GTEKI_BUDGET_BASELINE;
+  if (baselineFile) {
+    const baseRun = JSON.parse(fs.readFileSync(baselineFile, "utf8")) as { tier: string; rows: any[] };
+    expect(baseRun.tier, "baseline must be the same tier").toBe(tier);
+    const cost = CONTEXT_COST[tier as "low" | "high"];
+    // p50 per view; the crowd moves, so allow one draw and 3 % triangles of noise. Views whose heading missed are skipped.
+    for (const r of rows as any[]) {
+      const b = baseRun.rows.find((x) => x.spot === r.spot && x.heading === r.heading);
+      if (!b || !r.headingOk || !b.headingOk) continue;
+      const extra = r.group === "street" ? cost : { draws: 0, tris: 0 };
+      const view = `${r.group} ${r.spot} @${r.heading}`;
+      expect.soft(r.drawsP50, `${view}: draws vs baseline ${b.drawsP50}`).toBeLessThanOrEqual(b.drawsP50 + extra.draws + 1);
+      expect.soft(r.trisP50, `${view}: triangles vs baseline ${b.trisP50}`).toBeLessThanOrEqual(b.trisP50 * 1.03 + extra.tris);
+    }
   }
 });
