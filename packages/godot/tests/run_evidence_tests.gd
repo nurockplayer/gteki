@@ -16,6 +16,7 @@ const Walker = preload("res://addons/gteki/gteki_walker.gd")
 const Bridge = preload("res://addons/gteki/gteki_bridge.gd")
 const Station = preload("res://addons/gteki/gteki_station.gd")
 const Guide = preload("res://addons/gteki/gteki_guide.gd")
+const Hud = preload("res://hq/hq_guide.gd")
 
 const DT := 1.0 / 60.0
 ## A vertex is reached when the walker is this close to it, and only then does it turn to the next one. The walker turns
@@ -25,6 +26,10 @@ const DT := 1.0 / 60.0
 const WAYPOINT_REACH := 0.05
 ## Consecutive steps with no horizontal progress that count as a stall (1 s of walking into something).
 const STALL_STEPS := 60
+## Consecutive steps with no horizontal progress before the walk takes the lift the route states (1/6 s). The shaft's
+## edge is not walkable ground, so the ride is taken from where the walker actually stops, never from wherever it first
+## came within reach: the approach gap in the table is the measured unwalkable ground, not the trigger distance.
+const RIDE_STALL_STEPS := 10
 ## A leg's step budget is twice its straight-line walking time plus this many steps, so a walker that keeps moving but
 ## never arrives is stopped without the budget cutting off an honest long leg (W2's longest is 113 m: ~4700 steps).
 const LEG_BUDGET_STEPS := 600
@@ -171,6 +176,7 @@ func run() -> void:
 		row["rides"] = guided.rides
 		walk_route(walker, label, doc, guided, elevations, row)
 		check_shaft_edge(walker, label, guided)
+		check_ride_hud(walker, label, doc, guided)
 		rows.append(row)
 
 	holder.queue_free()
@@ -363,10 +369,11 @@ static func route_measures_plan(doc: Dictionary) -> bool:
 ## measurements and checks them: arrival within 1 m, no stall or body block outside KNOWN_BLOCKS, the walk reaching the
 ## route's floors in order with every band in between one the transit passes through (`bands_follow_route`), and the
 ## walked length within the stated tolerance of the route's, compared in the basis the router measured it in.
-## A route that states a lift ride (#287) is walked up to the shaft and then rides it: the same Guide.take_ride() the HQ
-## client uses lands the feet on the shaft's exit through the walker's own ground rule. The ridden span's plan length and
-## the approach the walker could not step (it cannot stand on the shaft edge) are excluded from the walked length and
-## reported, so the ride is visible in the numbers rather than lost in a tolerance.
+## A route that states a lift ride (#287) is walked up to the shaft, and the ride is taken only once the walker has
+## actually stalled at its edge (the ground ends at the opening), so the approach gap in the table is the ground the
+## walker could not step, measured. The ride goes through the same Guide.take_ride() the HQ client uses. The ridden
+## span, the measured approach gap and the stretch the ride's own landing covered are excluded from the walked length
+## and reported, so the ride is visible in the numbers rather than lost in a tolerance.
 func walk_route(walker: Walker, label: String, doc: Dictionary, guided: Guide, elevations: Array[float], row: Dictionary) -> void:
 	var points: Array[Vector3] = []
 	for p in doc.polyline:
@@ -376,6 +383,16 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, guided: Guide, e
 	check(points.size() >= 2, "%s: the route polyline has points" % label)
 	if points.size() < 2:
 		return
+	# A vertical jump in the polyline is a ride only when a step calls it a lift (#287 review). Anything else is neither
+	# walkable (the walker's own step-down rule refuses the drop) nor rideable, so it is stated here, explicitly, before
+	# the walk — a route with one fails as a route the walk cannot take, not as a stall found halfway through.
+	var jump_problems: Array[String] = []
+	for span in guided.shafts:
+		var problem := vertical_span_problem(doc.result.get("steps", []), span)
+		if not problem.is_empty():
+			jump_problems.append(problem)
+	check(jump_problems.is_empty(), "%s: every vertical span in the polyline is on an elevator step (%s)" % [label, "; ".join(jump_problems)])
+	row["jump_problems"] = jump_problems
 	# The rides the route states, anchored to this walk's own polyline points (the walker drops vertices closer than
 	# 0.05 m, so the guide's point indices are matched by position, never assumed).
 	var ride_at_point := {}
@@ -413,6 +430,9 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, guided: Guide, e
 	var approach_gap := 0.0
 	var ride_landing := 0.0
 	var ride_landing_sum := 0.0
+	## Per ride, the ground the walker could not step to the shaft and the stretch forward the landing covered.
+	var ride_approaches: Array[float] = []
+	var ride_landings: Array[float] = []
 	var i := 1
 	while i < points.size():
 		var goal := points[i]
@@ -422,16 +442,20 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, guided: Guide, e
 		var budget := int(ceil(Vector2(goal.x - walker.feet().x, goal.z - walker.feet().z).length() / (Walker.WALK * DT) * LEG_BUDGET_FACTOR)) + LEG_BUDGET_STEPS
 		while true:
 			var here := walker.feet()
-			# The shaft's edge is not walkable ground, so the last stretch before it cannot be stepped: the walker takes
-			# the ride the route states when it is within RIDE_TRIGGER of the shaft, exactly as the HUD offers it.
-			if not ride.is_empty() and here.distance_to(ride.from) <= Guide.RIDE_TRIGGER:
+			# The shaft's edge is not walkable ground, so the last stretch before it cannot be stepped. The walker takes
+			# the ride only once it has actually stalled here — the ground ends at the opening — and only within the
+			# distance the HUD offers it. The gap left is the measured unwalkable ground, not the trigger distance.
+			if not ride.is_empty() and stalled >= RIDE_STALL_STEPS and here.distance_to(ride.from) <= Guide.RIDE_TRIGGER:
 				# The client's own predicate, asked at the place a player stands when the lift is offered: the active
 				# step there must be the ride's elevator step (Guide.step_at carries the ride back through its
 				# approach), so the HUD's prompt shows without widening it to other steps.
 				var offered := guided.ride_near(here, guided.project(here).s)
 				check(not offered.is_empty(), "%s: %.2f m from the shaft the guide offers the ride on step %d, as the HUD asks it" % [label, here.distance_to(ride.from), int(ride.step)])
-				approach_gap += Vector2(ride.from.x - here.x, ride.from.z - here.z).length()
-				print("%s: takes the lift at %s (%.2f m from the shaft start), exit %s" % [label, str(here), here.distance_to(ride.from), str(ride.to)])
+				var approach := Vector2(ride.from.x - here.x, ride.from.z - here.z).length()
+				check(approach <= Guide.RIDE_TRIGGER, "%s: the walker stalls %.2f m from the shaft, within the ride's %.1f m reach" % [label, approach, Guide.RIDE_TRIGGER])
+				approach_gap += approach
+				ride_approaches.append(approach)
+				print("%s: the walk stalls %.2f m short of the shaft; takes the lift at %s, exit %s" % [label, approach, str(here), str(ride.to)])
 				if not guided.take_ride(walker, ride):
 					check(false, "%s: the lift's exit has walkable ground (%s)" % [label, str(ride.to)])
 					stopped_at = i
@@ -445,6 +469,7 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, guided: Guide, e
 				var landing_offset := Vector2(landed.x - exit_point.x, landed.z - exit_point.z).length()
 				ride_landing = maxf(ride_landing, landing_offset)
 				ride_landing_sum += landing_offset
+				ride_landings.append(landing_offset)
 				if landing_offset > 0.01:
 					print("%s: the shaft's exit vertex is over the opening; the feet are set down %.2f m forward of it, on the exit's level" % [label, landing_offset])
 				heights.append(landed.y)
@@ -516,9 +541,11 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, guided: Guide, e
 		walked_bands.append(float(crossing.to))
 	var plan_length := route_measures_plan(doc)
 	var compared_length := walked_flat if plan_length else walked_3d
-	# What the walk was supposed to cover on foot: the route minus the span it rode, minus the approach the walker could
-	# not step because the ground ends at the shaft, and minus the stretch forward the ride's own landing covered.
-	var expected_walk := route_length - ride_plan - approach_gap - ride_landing_sum
+	# What the walk was supposed to cover on foot: the route minus the span it rode, minus the measured approach the
+	# walker could not step because the ground ends at the shaft, and minus the stretch forward the ride's own landing
+	# covered. Each of the last two is measured where it happened, and each is bounded below.
+	var excluded := ride_plan + approach_gap + ride_landing_sum
+	var expected_walk := route_length - excluded
 	row["walk"] = {
 		"points": points.size(),
 		"steps": steps,
@@ -536,7 +563,10 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, guided: Guide, e
 		"ride_drop": ride_drop,
 		"ride_plan": ride_plan,
 		"ride_landing": ride_landing,
+		"ride_approaches": ride_approaches,
+		"ride_landings": ride_landings,
 		"approach_gap": approach_gap,
+		"excluded": excluded,
 		"expected_walk": expected_walk,
 		"miss": miss,
 		"seconds": steps * DT,
@@ -561,27 +591,26 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, guided: Guide, e
 	# No silent teleport: every ride the route states must have been taken by the shared take_ride() path, and the walked
 	# length is held to the route's own minus that ridden span and the approach the ground did not allow.
 	check(rides_taken.size() == ride_at_point.size(), "%s: every lift the route states is ridden (route states %d, the walk took %d)" % [label, ride_at_point.size(), rides_taken.size()])
-	check(absf(compared_length - expected_walk) <= tolerance, "%s: the walked %s length %.1f m is within %.1f m of the route's %.1f m less %.2f m ridden, %.2f m unstepable approach and %.2f m landed forward (%.1f m)" % [label, "plan" if plan_length else "3D", compared_length, tolerance, route_length, ride_plan, approach_gap, ride_landing_sum, expected_walk])
+	# What a ride may remove from the walked length, and no more: its own span, the ground it could not step to the
+	# shaft (within the offer distance) and the stretch its landing covered (within its reach).
+	var ride_bound := ride_plan + float(rides_taken.size()) * (Guide.RIDE_TRIGGER + Walker.RIDE_LANDING_REACH)
+	check(excluded <= ride_bound + 1e-6 and approach_gap <= rides_taken.size() * Guide.RIDE_TRIGGER + 1e-6 and ride_landing_sum <= rides_taken.size() * Walker.RIDE_LANDING_REACH + 1e-6, "%s: the %.2f m excluded from the walked length is at most the rides' %.2f m span plus %.1f m approach and %.1f m landing each (bound %.2f m)" % [label, excluded, ride_plan, Guide.RIDE_TRIGGER, Walker.RIDE_LANDING_REACH, ride_bound])
+	check(absf(compared_length - expected_walk) <= tolerance, "%s: the walked %s length %.1f m is within %.1f m of the route's %.1f m less %.2f m excluded (ridden %.2f m, approach %.2f m, landed %.2f m forward), i.e. %.1f m" % [label, "plan" if plan_length else "3D", compared_length, tolerance, route_length, excluded, ride_plan, approach_gap, ride_landing_sum, expected_walk])
 	var ride_note := ""
 	if not rides_taken.is_empty():
 		ride_note = ", %d lift ride(s) totalling %.2f m of rise/fall excluded from the walked length (ridden spans %s, approach %.2f m, landed %.2f m forward)" % [rides_taken.size(), ride_drop, str(rides_taken.map(func(r): return "%.2f m" % float(r.plan_m))), approach_gap, ride_landing_sum]
 	print("%s: walk %d waypoints, %d steps, %.1f m walked (flat %.1f m, router's %s length %.1f m)%s, %d stopped, %d block episodes, %d band crossings (route %d floor changes), %.0f s at %.2f m/s, %s" % [label, points.size(), steps, walked_3d, walked_flat, "plan" if plan_length else "3D", route_length, ride_note, stalls.size(), blocks, levels, int(row.expected.floorChanges), steps * DT, Walker.WALK, ("arrived %.2f m from the goal" % miss) if stopped_at < 0 else ("stopped %.2f m short of the goal at %s, height %.2f..%.2f" % [miss, str(end), heights.min(), heights.max()])])
 
 
-## A player walking up to the lift on foot (#287 review): the ground ends at the opening, so the walker stops short of
-## the shaft. At that spot the guide's active step must already be the ride's elevator step and it must offer the ride —
-## the same Guide.ride_near the HUD's prompt asks — and taking it must land the feet through the real ground rules. No
-## ride in the route, no probe.
-func check_shaft_edge(walker: Walker, label: String, guided: Guide) -> void:
-	if guided.rides.is_empty():
-		return
+## Puts the real walker at the route's start and walks it on foot to the shaft's edge, where the ground ends. Returns
+## false when the start has no ground. The walker's feet are left where it stopped.
+func approach_shaft(walker: Walker, label: String, guided: Guide) -> bool:
 	var ride: Dictionary = guided.rides[0]
-	var to_point := int(ride.from_point)
 	var start := guided.points[0]
 	if not walker.walk_from(start, 0.0):
 		check(false, "%s: the route start has walkable ground for the shaft-edge probe" % label)
-		return
-	for i in range(1, mini(to_point + 1, guided.points.size())):
+		return false
+	for i in range(1, mini(int(ride.from_point) + 1, guided.points.size())):
 		var goal := guided.points[i]
 		var stalled := 0
 		for _k in 4000:
@@ -595,6 +624,19 @@ func check_shaft_edge(walker: Walker, label: String, guided: Guide) -> void:
 			stalled = (stalled + 1) if Vector2(after.x - here.x, after.z - here.z).length() < 1e-4 else 0
 			if stalled > 30:
 				break
+	return true
+
+
+## A player walking up to the lift on foot (#287 review): the ground ends at the opening, so the walker stops short of
+## the shaft. At that spot the guide's active step must already be the ride's elevator step and it must offer the ride —
+## the same Guide.ride_near the HUD's prompt asks — and taking it must land the feet through the real ground rules. No
+## ride in the route, no probe.
+func check_shaft_edge(walker: Walker, label: String, guided: Guide) -> void:
+	if guided.rides.is_empty():
+		return
+	var ride: Dictionary = guided.rides[0]
+	if not approach_shaft(walker, label, guided):
+		return
 	var feet := walker.feet()
 	var reach := feet.distance_to(ride.from)
 	var s := float(guided.project(feet).s)
@@ -612,6 +654,82 @@ func check_shaft_edge(walker: Walker, label: String, guided: Guide) -> void:
 	check(absf(landed.y - float(ride.to.y)) <= 0.01, "%s: the ride lands on the shaft's exit level (%.2f m)" % [label, landed.y])
 	check(Vector2(landed.x - ride.to.x, landed.z - ride.to.z).length() <= 1.05, "%s: the landing is within a metre of the shaft's exit vertex" % label)
 	check(is_equal_approx(walker.yaw, yaw_before), "%s: the ride keeps the yaw" % label)
+
+
+## The HQ client's ride with the real walker and the real station (#287 review): guided walking stops at the shaft and
+## waits there, E is the only way past it, and after the fade the guide resumes from the landing — never placing the
+## feet back over the opening.
+func check_ride_hud(walker: Walker, label: String, doc: Dictionary, guided: Guide) -> void:
+	if guided.rides.is_empty():
+		return
+	var ride: Dictionary = guided.rides[0]
+	if not approach_shaft(walker, label, guided):
+		return
+	var stub_script := GDScript.new()
+	stub_script.source_code = "extends Node3D\nvar walker\nvar camera\nvar current\n"
+	stub_script.reload()
+	var stub := Node3D.new()
+	stub.set_script(stub_script)
+	stub.walker = walker
+	stub.camera = null
+	stub.current = {"spawn_points": []}
+	root.add_child(stub)
+	var hud := Hud.new()
+	stub.add_child(hud)
+	hud.setup(stub)
+	hud.apply_answer({"ok": true, "doc": doc})
+	check(hud.guide.ok and hud.guide.rides.size() == 1, "%s: the client's HUD loads the route's one ride (%d)" % [label, hud.guide.rides.size()])
+	if not hud.guide.ok or hud.guide.rides.size() != 1:
+		stub.queue_free()
+		return
+	hud.set_guided(true)
+	# Guided motion walks up to the shaft and waits there: it never passes a lift the route states.
+	for _k in 300:
+		hud.physics(DT, Vector2.ZERO)
+	var at_shaft := walker.feet()
+	check(is_equal_approx(hud.guide.s, float(ride.from_s)), "%s: guided walking stops at the shaft's start (s %.2f, shaft at %.2f)" % [label, hud.guide.s, float(ride.from_s)])
+	check(hud._prompt.text == Hud.RIDE_PROMPT, "%s: waiting at the shaft, the HUD offers the lift (%s)" % [label, hud._prompt.text])
+	for _k in 60:
+		hud.physics(DT, Vector2.ZERO)
+	check(walker.feet().distance_to(at_shaft) < 1e-4 and is_equal_approx(hud.guide.s, float(ride.from_s)), "%s: without E the avatar waits at the shaft (moved %.3f m)" % [label, walker.feet().distance_to(at_shaft)])
+	check(hud._prompt.text == Hud.RIDE_PROMPT, "%s: the lift is still offered while the avatar waits" % label)
+	# E is the only way past it.
+	var key := InputEventKey.new()
+	key.keycode = KEY_E
+	key.pressed = true
+	hud._unhandled_input(key)
+	check(hud._ride_phase == "out", "%s: the E key starts the ride at the shaft (%s)" % [label, hud._ride_phase])
+	hud.physics(Hud.RIDE_FADE, Vector2.ZERO)
+	var landed := walker.feet()
+	var ground: Variant = walker.ground_at(landed.x, landed.y + 0.5, landed.z, 1.45)
+	check(Walker.accept_ground(landed.y, ground), "%s: the ride puts the feet on accepted ground (%s, ground %s)" % [label, str(landed), str(ground)])
+	check(Vector2(landed.x - ride.to.x, landed.z - ride.to.z).length() > Walker.RADIUS, "%s: the feet are set down %.2f m forward of the exit vertex, not over the opening" % [label, Vector2(landed.x - ride.to.x, landed.z - ride.to.z).length()])
+	check(hud.guide.s > float(ride.to_s) + 1e-3, "%s: the guide resumes from the landing, not from the exit vertex (s %.2f, exit %.2f)" % [label, hud.guide.s, float(ride.to_s)])
+	# The guided ticks after the fade never place the feet back over the shaft.
+	hud.physics(Hud.RIDE_FADE, Vector2.ZERO)
+	var off_ground := 0
+	var over_opening := 0
+	for _k in 30:
+		hud.physics(DT, Vector2.ZERO)
+		var feet := walker.feet()
+		if not Walker.accept_ground(feet.y, walker.ground_at(feet.x, feet.y + 0.5, feet.z, 1.45)):
+			off_ground += 1
+		if Vector2(feet.x - ride.to.x, feet.z - ride.to.z).length() <= Walker.RADIUS:
+			over_opening += 1
+	check(off_ground == 0, "%s: after the ride every guided tick keeps the feet on accepted ground (%d off)" % [label, off_ground])
+	check(over_opening == 0, "%s: after the ride no guided tick puts the feet over the opening (%d did)" % [label, over_opening])
+	stub.queue_free()
+
+
+## "" when a vertical span in the route's polyline is on an `elevator` step (the ride the walk takes), else the reason
+## the walk cannot cross it: the walker's own step-down rule refuses a jump like that, and only an `elevator` step may be
+## ridden. Pure, so the self-checks can state both a lift and a jump nobody calls one.
+static func vertical_span_problem(steps: Array, span: Dictionary) -> String:
+	var step := int(span.step)
+	var mode := str((steps[step] as Dictionary).get("mode", "?")) if step >= 0 and step < steps.size() else "?"
+	if mode == "elevator":
+		return ""
+	return "the polyline jumps %.2f m over %.2f m on step %d, whose mode is %s: neither walkable nor a lift" % [absf(float(span.drop)), float(span.plan_m), step, mode]
 
 
 ## The refusal in words for a failure message: the stage, the collider, the feet position (renderer frame) and the
@@ -679,6 +797,14 @@ func check_self() -> void:
 	# may be ridden.
 	var stair_points := PackedVector3Array([Vector3(0, 0, 0), Vector3(1.2, 0, 0), Vector3(1.6, -2.0, 0)])
 	check(Guide.find_rides([{"mode": "walk"}, {"mode": "stairs"}], stair_points, wide_steps, cumulative_of(stair_points)).is_empty(), "self: a 0.4 m wide 2 m drop under a stairs step is no ride (the mode gate)")
+	# A vertical jump no step calls a lift (#287 review): find_shafts still sees it, so the walk can state it outright —
+	# the walker's step-down rule would refuse the drop and only an `elevator` step may be ridden.
+	var walk_steps: Array = [{"mode": "walk"}, {"mode": "walk"}, {"mode": "walk"}]
+	var jumps := Guide.find_shafts(walk_steps, shaft_points, shaft_steps, cumulative_of(shaft_points))
+	check(jumps.size() == 1 and Guide.find_rides(walk_steps, shaft_points, shaft_steps, cumulative_of(shaft_points)).is_empty(), "self: the S4 shaft under walk steps is a vertical span but no ride (%s)" % str(jumps))
+	if jumps.size() == 1:
+		check(not vertical_span_problem(walk_steps, jumps[0]).is_empty(), "self: a vertical jump on a walk step is reported as a route the walk cannot take (%s)" % vertical_span_problem(walk_steps, jumps[0]))
+		check(vertical_span_problem([{"mode": "walk"}, {"mode": "elevator"}, {"mode": "walk"}], jumps[0]).is_empty(), "self: the same span on its elevator step is rideable")
 
 	check(not writes_table(["a check failed"]), "self: a failing run does not write the table")
 	check(writes_table([]), "self: a passing run writes the table")
@@ -858,8 +984,8 @@ func write_evidence(station_id: String, scene: Scene, plan: Dictionary, elevatio
 	lines.append("match exactly (length at the golden's 0.1 m and seconds at its whole-second presentation). A scenario the")
 	lines.append("golden refuses must be refused by the router, with the golden's own reason, and is not walked.")
 	lines.append("")
-	lines.append("| Route | From -> To | Golden (length / time / nodes / floor changes) | Route check | Walked 3D / flat | Length basis | Rides | Length tolerance | Stopped | Body-block episodes | Floor-band crossings walked / route floor changes | Arrival miss | Walk time |")
-	lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+	lines.append("| Route | From -> To | Golden (length / time / nodes / floor changes) | Route check | Walked 3D / flat | Length basis | Rides | Approach | Landing | Excluded | Length tolerance | Stopped | Body-block episodes | Floor-band crossings walked / route floor changes | Arrival miss | Walk time |")
+	lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
 	for row in rows:
 		var expected: Dictionary = row.expected
 		var refused := bool(row.get("expect_refusal", false))
@@ -868,6 +994,9 @@ func write_evidence(station_id: String, scene: Scene, plan: Dictionary, elevatio
 		var walked := "not walked (the router refuses)" if refused else "did not walk"
 		var basis := "-"
 		var rides_text := "-"
+		var approach_text := "-"
+		var landing_text := "-"
+		var excluded_text := "-"
 		var tolerance := "-"
 		var stopped := "-"
 		var blocks := "-"
@@ -889,6 +1018,18 @@ func write_evidence(station_id: String, scene: Scene, plan: Dictionary, elevatio
 					for ride in taken:
 						spans.append("%.2f m wide, %.1f m drop" % [float(ride.plan_m), absf(float(ride.drop))])
 					rides_text = "%d, %.1f m total (%s)" % [taken.size(), float(walk.ride_drop), "; ".join(spans)]
+					# What the ride removed from the walked length: the ground the walker could not step to the shaft,
+					# the stretch the landing covered, and the two together with the ridden span.
+					var approaches: Array = walk.ride_approaches
+					var landings: Array = walk.ride_landings
+					var approach_parts: Array[String] = []
+					var landing_parts: Array[String] = []
+					for k in approaches.size():
+						approach_parts.append("%.2f m" % float(approaches[k]))
+						landing_parts.append("%.2f m" % float(landings[k]))
+					approach_text = " + ".join(approach_parts)
+					landing_text = " + ".join(landing_parts)
+					excluded_text = "%.2f m" % float(walk.excluded)
 				tolerance = "±%.1f m" % length_tolerance(int(walk.points))
 				var stopped_at := int(walk.stopped_at)
 				stopped = "point %d" % stopped_at if stopped_at >= 0 else "no"
@@ -896,7 +1037,7 @@ func write_evidence(station_id: String, scene: Scene, plan: Dictionary, elevatio
 				levels = "%d / %d" % [int(walk.levels), int(expected.floorChanges)]
 				miss = ("%.2f m" % float(walk.miss)) if stopped_at < 0 else "-"
 				seconds = "%.0f s" % float(walk.seconds)
-		lines.append("| %s | `%s` -> `%s` | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |" % [row.label, row.from, row.to, golden, verdict, walked, basis, rides_text, tolerance, stopped, blocks, levels, miss, seconds])
+		lines.append("| %s | `%s` -> `%s` | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |" % [row.label, row.from, row.to, golden, verdict, walked, basis, rides_text, approach_text, landing_text, excluded_text, tolerance, stopped, blocks, levels, miss, seconds])
 	lines.append("")
 	var has_why := false
 	for spec in plan.routes:
@@ -929,10 +1070,14 @@ func write_evidence(station_id: String, scene: Scene, plan: Dictionary, elevatio
 	lines.append("  finding, not tolerance noise.")
 	lines.append("- **Rides**: a lift ride is read from the route itself (#287): inside an `elevator` step, a consecutive polyline")
 	lines.append("  pair that moves under %.1f m horizontally while changing height by more than %.1f m is the shaft, and the same" % [Guide.RIDE_MAX_FLAT, Guide.RIDE_MIN_DROP])
-	lines.append("  vertical span under `walk` or `stairs` is never a ride. The walk takes a ride through the same")
-	lines.append("  `Guide.take_ride()` the HQ client's E prompt uses, and the **Rides** column shows the count, each shaft's width")
-	lines.append("  and drop and the total height. The ridden span's plan length and the approach the walking walker could not step")
-	lines.append("  (the ground ends at the shaft) are excluded from the walked length; a route that states a ride the walk did not")
+	lines.append("  vertical span under `walk` or `stairs` is never a ride. The walk states that explicitly before it starts:")
+	lines.append("  a route with a vertical jump no step calls a lift fails as a route the walk cannot take, rather than as")
+	lines.append("  the stall it would cause. The walk takes a ride through the same `Guide.take_ride()` the HQ client's E")
+	lines.append("  prompt uses, and only once the walker has actually stalled at the shaft's edge (the ground ends at the")
+	lines.append("  opening), so the **Approach** column is the measured ground it could not step, not the offer distance.")
+	lines.append("  The **Rides** column shows the count, each shaft's width and drop and the total height; **Landing** is the")
+	lines.append("  stretch forward of the exit vertex the landing covered, and **Excluded** is the ridden span plus both, held")
+	lines.append("  to the ride span plus 1.0 m approach and 1.0 m landing per ride. A route that states a ride the walk did not")
 	lines.append("  take fails, so no leg is ever teleported.")
 	var ridden: Array[String] = []
 	var landing_max := 0.0
@@ -947,7 +1092,8 @@ func write_evidence(station_id: String, scene: Scene, plan: Dictionary, elevatio
 		lines.append("  On this run %s — inside the gate with a visible margin," % "; ".join(ridden))
 		lines.append("  while a flat elevator step's entry walk and any stair are outside it. The shaft's exit vertex sits over")
 		lines.append("  the opening (the car's floor is the hole), so the feet are set down on the first ground forward along the")
-		lines.append("  route's own continuation — inside a ±%.0f° cone of the direction to the next point, within %.1f m of the" % [Walker.RIDE_LANDING_CONE, Walker.RIDE_LANDING_REACH])
+		lines.append("  route's own continuation — straight ahead first, then either side inside a ±%.0f° cone of the direction to" % Walker.RIDE_LANDING_CONE)
+		lines.append("  the next point, within %.1f m of the" % Walker.RIDE_LANDING_REACH)
 		lines.append("  vertex, on the exit's own level and with a clear body-height line from it — %.2f m out on this run. Never" % landing_max)
 		lines.append("  behind the shaft, across a wall or into another room; with nothing qualifying the ride is refused and fails.")
 	lines.append("- **Stopped**: a leg that makes no horizontal progress for %d steps (%.0f s) or that exceeds twice its" % [STALL_STEPS, STALL_STEPS * DT])

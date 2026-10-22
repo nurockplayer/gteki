@@ -8,6 +8,7 @@ const Bridge = preload("res://addons/gteki/gteki_bridge.gd")
 const Guide = preload("res://addons/gteki/gteki_guide.gd")
 const Ribbon = preload("res://addons/gteki/gteki_ribbon.gd")
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
+const Scene = preload("res://addons/gteki/gteki_scene.gd")
 const Hud = preload("res://hq/hq_guide.gd")
 const QUERIES_PER_STATION := 4
 
@@ -36,6 +37,8 @@ func run() -> void:
 	test_failures()
 	await test_hud()
 	await test_ride_hud()
+	await test_ride_refusal_hud()
+	await test_ride_landing()
 	finish()
 
 
@@ -161,10 +164,16 @@ func test_rides() -> void:
 	check(guide.ride_at(ride.from + Vector3(2.0, 0.0, 0.0), int(ride.step)).is_empty(), "shinjuku S4: 2 m from the shaft start the ride is not offered")
 	check(guide.ride_at(near, int(ride.step) + 1).is_empty(), "shinjuku S4: off the ride's step the ride is not offered")
 	check(guide.ride_at(near, int(ride.step) - 1).is_empty(), "shinjuku S4: the step before the ride does not offer it")
-	# The step progression: on the approach that ends at the shaft the ride's step is already the active one, so a
-	# walker stopped short of the edge has the lift showing where it stands.
-	check(guide.step_at(float(ride.from_s) - 0.3) == int(ride.step), "shinjuku S4: on the approach to the shaft the ride's step is the active one")
+	# The step progression: on the last RIDE_TRIGGER of the approach that ends at the shaft the ride's step is already
+	# the active one — the same distance the ride is offered over — so a walker stopped short of the edge has the lift
+	# showing where it stands; further back the walk step keeps the highlight (#287 review).
+	var walk_step := int(guide.step_index[int(ride.from_point)])
+	check(walk_step != int(ride.step), "shinjuku S4: the step that ends at the shaft's start is the walk step (%d), not the ride's (%d)" % [walk_step, int(ride.step)])
+	check(guide.step_at(float(ride.from_s) - 0.3) == int(ride.step), "shinjuku S4: 0.3 m short of the shaft the ride's step is the active one")
+	check(guide.step_at(float(ride.from_s) - 0.7) == int(ride.step), "shinjuku S4: 0.7 m short of the shaft, inside the 1.0 m offer, the ride's step is the active one")
 	check(guide.step_at(float(ride.from_s) + 0.3) == int(ride.step), "shinjuku S4: on the shaft itself the ride's step is the active one")
+	if float(ride.from_s) > Guide.RIDE_TRIGGER + 0.1:
+		check(guide.step_at(float(ride.from_s) - (Guide.RIDE_TRIGGER + 0.1)) == walk_step, "shinjuku S4: %.1f m short of the shaft the highlight is still on the walk step (%d)" % [Guide.RIDE_TRIGGER + 0.1, guide.step_at(float(ride.from_s) - (Guide.RIDE_TRIGGER + 0.1))])
 	# A route with no elevator step states no rides (Ikebukuro's W1 is all walk).
 	var flat := bridge.route("ikebukuro", "jr-central-gate-2", "exit-35", true, true)
 	var flat_guide := Guide.new()
@@ -180,10 +189,10 @@ func test_rides() -> void:
 	check(no_lift.ride_at(near, int(ride.step)).is_empty(), "shinjuku S4: with the elevator relabelled, standing on the shaft offers nothing")
 
 
-# HUD ride flow (#287) with a stub hq and a stub walker that records the landing, on a small synthetic route shaped like
-# S4: a flat elevator entry, a 0.473 m wide 7.8 m shaft, a flat exit.
-func test_ride_hud() -> void:
-	var doc := {
+## The synthetic S4-shaped route the HUD tests share: a flat walk entry, a 0.473 m wide 7.8 m shaft on an `elevator`
+## step, a flat walk exit.
+func ride_doc() -> Dictionary:
+	return {
 		"contract": "gteki.route/0.1",
 		"result": {"ok": true, "totalLengthM": 5.3, "estimatedSeconds": 4, "floorChanges": 1, "steps": [
 			{"edgeId": "a", "mode": "walk"},
@@ -202,22 +211,53 @@ func test_ride_hud() -> void:
 			"en": [{"stepIndexes": [0], "text": "Start"}, {"stepIndexes": [1], "text": "Take the elevator down"}, {"stepIndexes": [2], "text": "Arrive"}],
 		},
 	}
-	var walker_script := GDScript.new()
-	# A real Walker with only the landing stubbed: there is no snapshot under the synthetic exit to accept ground from.
-	walker_script.source_code = "extends \"res://addons/gteki/gteki_walker.gd\"\nvar rides: Array[Vector3] = []\nfunc ride_to(target: Vector3, _forward: Vector3) -> bool:\n\trides.append(target)\n\tglobal_position = target\n\tbody_yaw = yaw\n\treturn true\n"
-	walker_script.reload()
+
+
+## A stub hq for the HUD tests: the walker, a camera that records where it was put, and no spawn points.
+func ride_stub(walker: Node, camera: Node) -> Node3D:
 	var hq_script := GDScript.new()
 	hq_script.source_code = "extends Node3D\nvar walker\nvar camera\nvar current\n"
 	hq_script.reload()
 	var stub := Node3D.new()
 	stub.set_script(hq_script)
-	var walker := CharacterBody3D.new()
-	walker.set_script(walker_script)
-	stub.add_child(walker)
 	stub.walker = walker
-	stub.camera = null
+	stub.camera = camera
 	stub.current = {"spawn_points": []}
 	root.add_child(stub)
+	return stub
+
+
+## A stub walker for the HUD flow: the real Walker with only the landing stubbed (there is no snapshot under the
+## synthetic exit to accept ground from), set down `offset` forward of the shaft's exit vertex as the real one is.
+func ride_walker(landing: Vector3) -> CharacterBody3D:
+	var walker_script := GDScript.new()
+	walker_script.source_code = "extends \"res://addons/gteki/gteki_walker.gd\"\nvar rides: Array[Vector3] = []\nvar refused := false\nfunc ride_to(target: Vector3, _forward: Vector3) -> bool:\n\tif refused:\n\t\treturn false\n\trides.append(target)\n\tglobal_position = target + Vector3(%f, %f, %f)\n\tbody_yaw = yaw\n\treturn true\n" % [landing.x, landing.y, landing.z]
+	walker_script.reload()
+	var walker := CharacterBody3D.new()
+	walker.set_script(walker_script)
+	return walker
+
+
+## A stub follow camera that remembers where it was last put and whether the move was a snap.
+func ride_camera() -> Camera3D:
+	var camera_script := GDScript.new()
+	camera_script.source_code = "extends Camera3D\nvar last_position := Vector3.ZERO\nvar last_snap := false\nvar follows := 0\nfunc follow(walker: Node3D, _dt: float, snap: bool = false) -> void:\n\tfollows += 1\n\tlast_snap = snap\n\tlast_position = walker.global_position\n"
+	camera_script.reload()
+	var camera := Camera3D.new()
+	camera.set_script(camera_script)
+	return camera
+
+
+# HUD ride flow (#287 review) with a stub hq and a stub walker that records the landing, on the S4-shaped route: guided
+# walking stops at the shaft and waits for E, the camera is put on the landing while the screen is black, the guide
+# resumes from the landing (never the exit vertex over the opening) and guided walking carries on to the goal.
+func test_ride_hud() -> void:
+	var doc := ride_doc()
+	var camera := ride_camera()
+	var walker := ride_walker(Vector3(0.75, 0.0, 0.0))
+	var stub := ride_stub(walker, camera)
+	stub.add_child(walker)
+	stub.add_child(camera)
 	var hud := Hud.new()
 	stub.add_child(hud)
 	hud.setup(stub)
@@ -226,6 +266,7 @@ func test_ride_hud() -> void:
 	if not hud.guide.ok or hud.guide.rides.size() != 1:
 		stub.queue_free()
 		return
+	var ride: Dictionary = hud.guide.rides[0]
 	walker.global_position = Vector3(0.0, 0.0, 0.0)
 	walker.yaw = 0.42
 	hud.set_guided(true)
@@ -235,13 +276,19 @@ func test_ride_hud() -> void:
 	hud.update_ride_prompt()
 	check(hud._prompt.text.is_empty() and hud._ride.is_empty(), "hud ride: 2 m before the shaft nothing is offered")
 	check(not hud.ride_pressed(), "hud ride: with nothing offered, the ride key does nothing")
-	# A player walking this route stops 0.3 m short of the shaft (the ground ends): the approach segment already carries
-	# the ride's own elevator step, so the prompt shows at the place the player actually stands (#287 review).
-	hud.guide.start_guide(float(hud.guide.cumulative[1]) - 0.3)
-	walker.global_position = Vector3(0.9, 0.0, 0.0)
-	check(hud.guide.step_at(hud.guide.s) == int(hud.guide.rides[0].step), "hud ride: 0.3 m short of the shaft, the ride's elevator step is the active one")
-	hud.update_ride_prompt()
-	check(hud._prompt.text == Hud.RIDE_PROMPT and not hud._ride.is_empty(), "hud ride: the prompt appears where a player stands when the ground ends (%s)" % hud._prompt.text)
+	# Guided motion carries the avatar to the shaft and stops there: it never passes a lift the route states, and only
+	# E gets past it (#287 review).
+	hud.guide.start_guide(0.0)
+	for _k in 300:
+		hud.physics(1.0 / 60.0, Vector2.ZERO)
+	var waiting := walker.global_position
+	check(is_equal_approx(hud.guide.s, float(ride.from_s)), "hud ride: guided walking stops at the shaft's start (s=%.2f, shaft at %.2f)" % [hud.guide.s, float(ride.from_s)])
+	check(waiting.is_equal_approx(hud.guide.sample(float(ride.from_s)).position), "hud ride: the avatar waits at the shaft (%s)" % str(waiting))
+	check(walker.rides.is_empty(), "hud ride: guided motion never rides the lift by itself (%s)" % str(walker.rides))
+	check(hud._prompt.text == Hud.RIDE_PROMPT and not hud._ride.is_empty(), "hud ride: at the shaft the prompt shows (%s)" % hud._prompt.text)
+	for _k in 60:
+		hud.physics(1.0 / 60.0, Vector2.ZERO)
+	check(walker.global_position.distance_to(waiting) < 1e-4 and is_equal_approx(hud.guide.s, float(ride.from_s)), "hud ride: without E the avatar waits at the shaft (moved %.3f m)" % walker.global_position.distance_to(waiting))
 	# The real key path: an E press starts it; a second press during the fade does nothing.
 	var key := InputEventKey.new()
 	key.keycode = KEY_E
@@ -251,20 +298,126 @@ func test_ride_hud() -> void:
 	check(not hud.ride_pressed(), "hud ride: a second press during the fade is ignored")
 	var yaw_before: float = walker.yaw
 	check(hud.physics(Hud.RIDE_FADE, Vector2.ZERO), "hud ride: a ride in progress owns the tick")
-	check(walker.rides.size() == 1 and walker.rides[0].is_equal_approx(hud.guide.points[2]), "hud ride: the landing is the shaft's exit (%s)" % str(walker.rides))
-	check(walker.global_position.is_equal_approx(hud.guide.points[2]), "hud ride: the walker's feet are at the exit (%s)" % str(walker.global_position))
-	check(is_equal_approx(hud.guide.s, float(hud.guide.cumulative[2])), "hud ride: the guide moves to the exit (s=%.2f)" % hud.guide.s)
+	check(walker.rides.size() == 1 and walker.rides[0].is_equal_approx(hud.guide.points[2]), "hud ride: the landing starts from the shaft's exit (%s)" % str(walker.rides))
+	var landing := hud.guide.points[2] + Vector3(0.75, 0.0, 0.0)
+	check(walker.global_position.is_equal_approx(landing), "hud ride: the walker's feet are on the landing, 0.75 m forward of the exit (%s)" % str(walker.global_position))
+	check(is_equal_approx(hud.guide.s, float(hud.guide.cumulative[2]) + 0.75), "hud ride: the guide resumes from the landing, not the exit vertex (s=%.2f)" % hud.guide.s)
+	# The camera is on the landing before the fade-in starts, so the screen never fades in on the departure floor and then
+	# jumps a floor (#287 review).
+	check(camera.last_snap and camera.last_position.is_equal_approx(walker.global_position), "hud ride: the camera is snapped to the landing while black (%s, snap %s)" % [str(camera.last_position), str(camera.last_snap)])
 	check(is_equal_approx(walker.yaw, yaw_before) and is_equal_approx(walker.body_yaw, yaw_before), "hud ride: the yaw is kept through the ride")
 	check(hud._ride_phase == "in" and hud._fade.color.a > 0.99, "hud ride: the fade back in starts from black")
 	hud.physics(Hud.RIDE_FADE, Vector2.ZERO)
 	check(hud._ride_phase.is_empty() and is_zero_approx(hud._fade.color.a) and hud._prompt.text.is_empty(), "hud ride: the fade in clears the ride and the prompt")
-	# Guided walking continues from the exit to the goal.
+	# Guided walking continues from the landing, never back over the exit vertex, and reaches the goal.
+	hud.physics(1.0 / 60.0, Vector2.ZERO)
+	check(walker.global_position.distance_to(hud.guide.points[2]) > 0.5, "hud ride: the first guided tick after the ride is past the exit vertex, not on it (%s)" % str(walker.global_position))
+	check(walker.global_position.distance_to(landing) < 0.1, "hud ride: the first guided tick continues from the landing (%s)" % str(walker.global_position))
 	var ticks := 0
 	while not hud.guide.arrived and ticks < 600:
 		hud.physics(1.0 / 60.0, Vector2.ZERO)
 		ticks += 1
-	check(hud.guide.arrived and walker.global_position.is_equal_approx(hud.guide.points[hud.guide.points.size() - 1]), "hud ride: guided walking carries on from the exit to the goal after %d ticks" % ticks)
+	check(hud.guide.arrived and walker.global_position.is_equal_approx(hud.guide.points[hud.guide.points.size() - 1]), "hud ride: guided walking carries on from the landing to the goal after %d ticks" % ticks)
 	stub.queue_free()
+	await process_frame
+
+
+# A ride whose landing nothing accepts (#287 review): the walker stays where it is, the HUD says why, and guided motion
+# stays at the shaft instead of carrying the avatar past the lift.
+func test_ride_refusal_hud() -> void:
+	var camera := ride_camera()
+	var walker := ride_walker(Vector3.ZERO)
+	walker.refused = true
+	var stub := ride_stub(walker, camera)
+	stub.add_child(walker)
+	stub.add_child(camera)
+	var hud := Hud.new()
+	stub.add_child(hud)
+	hud.setup(stub)
+	hud.apply_answer({"ok": true, "doc": ride_doc()})
+	if not hud.guide.ok or hud.guide.rides.size() != 1:
+		check(false, "hud refusal: the route states one ride")
+		stub.queue_free()
+		return
+	var ride: Dictionary = hud.guide.rides[0]
+	walker.global_position = hud.guide.points[0]
+	hud.set_guided(true)
+	for _k in 300:
+		hud.physics(1.0 / 60.0, Vector2.ZERO)
+	check(is_equal_approx(hud.guide.s, float(ride.from_s)) and hud._prompt.text == Hud.RIDE_PROMPT, "hud refusal: guided motion waits at the shaft with the prompt showing")
+	var before := walker.global_position
+	var key := InputEventKey.new()
+	key.keycode = KEY_E
+	key.pressed = true
+	hud._unhandled_input(key)
+	hud.physics(Hud.RIDE_FADE, Vector2.ZERO)
+	check(walker.global_position.is_equal_approx(before), "hud refusal: a refused landing leaves the walker unmoved (%s)" % str(walker.global_position))
+	check(hud.status_text.contains("not taken"), "hud refusal: the HUD says the lift was not taken (%s)" % hud.status_text)
+	check(walker.rides.is_empty(), "hud refusal: nothing was landed")
+	hud.physics(Hud.RIDE_FADE, Vector2.ZERO)
+	for _k in 120:
+		hud.physics(1.0 / 60.0, Vector2.ZERO)
+	check(is_equal_approx(hud.guide.s, float(ride.from_s)) and walker.global_position.is_equal_approx(before), "hud refusal: after the failed ride guided motion still does not pass the shaft (s=%.2f)" % hud.guide.s)
+	check(hud._prompt.text == Hud.RIDE_PROMPT, "hud refusal: the lift is offered again so the player can retry")
+	stub.queue_free()
+	await process_frame
+
+
+## A static box on a physics layer, for the landing tests: the only station truth the synthetic world has.
+func add_box(center: Vector3, size: Vector3, layer: int) -> StaticBody3D:
+	var body := StaticBody3D.new()
+	body.collision_layer = layer
+	body.collision_mask = 0
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = size
+	shape.shape = box
+	body.add_child(shape)
+	body.position = center
+	root.add_child(body)
+	return body
+
+
+## The landing search's rules (#287 review) in a synthetic physics world: the vertex is over the opening, so the feet
+## go straight ahead first, on the exit's own level, never behind the shaft, never across a wall and never into a wall;
+## with nothing found the ride is refused and the walker does not move.
+func test_ride_landing() -> void:
+	var walker := Walker.new()
+	root.add_child(walker)
+	var forward := Vector3(1.0, 0.0, 0.0)
+	# A: ground ahead on the exit's level, starting 2.0 m from the vertex (its edge is a body radius from it).
+	add_box(Vector3(3.5, -8.0, 0.0), Vector3(3.0, 0.4, 4.0), Scene.GROUND_LAYER)
+	# B: ground only behind the shaft.
+	add_box(Vector3(-2.0, -8.0, 100.0), Vector3(6.0, 0.4, 4.0), Scene.GROUND_LAYER)
+	# C: ground ahead but 0.4 m below the exit's level.
+	add_box(Vector3(3.5, -8.4, 200.0), Vector3(3.0, 0.4, 4.0), Scene.GROUND_LAYER)
+	# D: ground ahead on the exit's level, with a collider between the vertex and it at body height.
+	add_box(Vector3(3.5, -8.0, 300.0), Vector3(3.0, 0.4, 4.0), Scene.GROUND_LAYER)
+	add_box(Vector3(1.925, -7.2, 300.0), Vector3(0.05, 1.4, 2.0), Scene.COLLIDER_LAYER)
+	# E: ground ahead and clear, but a wall within the body's radius at the landing.
+	add_box(Vector3(3.5, -8.0, 400.0), Vector3(3.0, 0.4, 4.0), Scene.GROUND_LAYER)
+	await physics_frame
+	await physics_frame
+	var landing: Variant = walker.ride_landing(Vector3(1.673, -7.8, 0.0), forward)
+	check(landing != null, "landing: ground ahead on the exit's level is found (%s)" % str(landing))
+	if landing != null:
+		var point: Vector3 = landing
+		var flat := Vector2(point.x - 1.673, point.z)
+		check(is_equal_approx(point.y, -7.8), "landing: the feet are on the exit's own level (%.2f m)" % point.y)
+		check(absf(flat.length() - 0.75) < 0.01, "landing: the landing is 0.75 m forward, where the body first fits (%.2f m)" % flat.length())
+		check(flat.normalized().dot(Vector2(forward.x, forward.z)) > 0.999, "landing: straight ahead is tried first, so the landing is on the route's continuation")
+	check(walker.ride_landing(Vector3(1.673, -7.8, 100.0), forward) == null, "landing: ground only behind the shaft is no landing (outside the cone)")
+	check(walker.ride_landing(Vector3(1.673, -7.8, 200.0), forward) == null, "landing: ground 0.4 m off the exit's level is no landing (the level gate)")
+	check(walker.ride_landing(Vector3(1.673, -7.8, 300.0), forward) == null, "landing: a wall between the vertex and the ground refuses the ride")
+	# The same spot with a sidecar wall within RADIUS of it: the body does not fit (ENU y = -renderer z).
+	walker.set_walls([{"a": Vector2(2.5, -398.0), "b": Vector2(2.5, -402.0), "zMin": -7.8, "zMax": -6.0}])
+	check(walker.ride_landing(Vector3(1.673, -7.8, 400.0), forward) == null, "landing: a wall within the body's radius refuses the landing (body fit)")
+	walker.set_walls([])
+	walker.global_position = Vector3(0.0, 0.0, 100.0)
+	var before := walker.global_position
+	check(not walker.ride_to(Vector3(1.673, -7.8, 100.0), forward), "landing: a ride with no landing is refused")
+	check(walker.global_position.is_equal_approx(before), "landing: a refused ride leaves the walker where it was")
+	walker.queue_free()
 	await process_frame
 
 

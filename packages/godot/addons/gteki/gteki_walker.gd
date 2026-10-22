@@ -379,7 +379,9 @@ const RIDE_LANDING_RINGS: Array[float] = [0.0, 0.25, 0.5, 0.75, 1.0]
 const RIDE_LANDING_CONE := 30.0
 const RIDE_LANDING_REACH := 1.0
 const RIDE_LANDING_LEVEL := 0.2
-const RIDE_LANDING_SPOKES := 7
+## Spoke angles (degrees off the route's continuation), straight ahead first and then either side: a ride steps aside
+## only when the way ahead is blocked.
+const RIDE_LANDING_SPREADS: Array[float] = [0.0, 10.0, -10.0, 20.0, -20.0, 30.0, -30.0]
 
 
 ## A lift ride's landing (#287): the feet go down only where `ride_landing` finds ground the walker's own rules accept.
@@ -405,13 +407,13 @@ func ride_landing(target: Vector3, forward: Vector3) -> Variant:
 	for ring in RIDE_LANDING_RINGS:
 		if ring > RIDE_LANDING_REACH + 1e-6:
 			continue
-		for k in RIDE_LANDING_SPOKES:
+		if ring > 0.0 and heading == Vector3.ZERO:
+			continue
+		# The vertex itself is probed once; around a ring, each spoke once.
+		for k in (1 if ring <= 0.0 else RIDE_LANDING_SPREADS.size()):
 			var at := target
 			if ring > 0.0:
-				if heading == Vector3.ZERO:
-					break
-				var spread := deg_to_rad(RIDE_LANDING_CONE) * (2.0 * float(k) / float(RIDE_LANDING_SPOKES - 1) - 1.0)
-				at = target + heading.rotated(Vector3.UP, spread) * ring
+				at = target + heading.rotated(Vector3.UP, deg_to_rad(RIDE_LANDING_SPREADS[k])) * ring
 			var ground: Variant = _ground_near(at, target.y)
 			if not accept_ground(target.y, ground) or absf(float(ground) - target.y) > RIDE_LANDING_LEVEL:
 				continue
@@ -441,12 +443,20 @@ func _ground_near(at: Vector3, feet_y: float) -> Variant:
 	return ground_at(at.x, feet_y + STEP_UP + 0.05, at.z, STEP_UP + STEP_DOWN + 0.1)
 
 
-## True when every ground probe the body's own radius reaches from `at` is acceptable at `feet_y`.
+## True when a body of the walker's own radius fits at `at`: every ground probe within RADIUS is acceptable at
+## `feet_y`, no sidecar wall pushes the circle out (`resolve_walls`), and no collider stands within RADIUS at either
+## body height. A landing with a wall in the body is not a landing.
 func _body_fits(at: Vector3, feet_y: float) -> bool:
+	var pushed := resolve_walls(at.x, at.z, feet_y)
+	if Vector2(pushed.x - at.x, pushed.y - at.z).length() > 1e-4:
+		return false
 	for k in 8:
 		var angle := TAU * float(k) / 8.0
 		var around := at + Vector3(cos(angle), 0.0, sin(angle)) * RADIUS
 		if not accept_ground(feet_y, _ground_near(around, feet_y)):
+			return false
+	for height in BODY_HEIGHTS:
+		if _touches(at.x, feet_y + height, at.z):
 			return false
 	return true
 

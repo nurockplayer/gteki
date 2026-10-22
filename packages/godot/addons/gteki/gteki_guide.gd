@@ -32,6 +32,12 @@ var symbolic := false
 ## The rides this route states (#287), each {step, from_point, to_point, from, to, drop, plan_m, from_s, to_s}. Read
 ## from the route's own `elevator` steps in load_doc; empty on a route with no shaft.
 var rides: Array = []
+## Every vertical span the polyline makes, whatever its step's mode (`find_shafts`). A route that jumps more than
+## RIDE_MIN_DROP over less than RIDE_MAX_FLAT on a step that is not an `elevator` is neither walkable nor a lift, and the
+## evidence walk fails it explicitly instead of reporting the stall it causes.
+var shafts: Array = []
+## The step ids ridden on this route. Guided motion stops at a shaft that is not in here: E is the only way past it.
+var ridden: Array[int] = []
 var issues: Array[String] = []
 
 # Guided walk
@@ -48,7 +54,7 @@ func clear() -> void:
 	ok = false; reason = ""; message = ""; result = {}
 	instructions = {"ja": [], "en": []}
 	points = PackedVector3Array(); z_known.clear(); step_index.clear(); cumulative = PackedFloat32Array()
-	rides.clear()
+	rides.clear(); shafts.clear(); ridden.clear()
 	symbolic = false; issues.clear(); guiding = false; arrived = false; s = 0.0
 
 
@@ -85,6 +91,7 @@ func load_doc(doc: Dictionary) -> bool:
 			cumulative.append(run)
 		prev = q
 	symbolic = z_known.has(false)
+	shafts = find_shafts(result.get("steps", []), points, step_index, cumulative)
 	rides = find_rides(result.get("steps", []), points, step_index, cumulative)
 	var ins: Variant = doc.get("instructions")
 	if ins is Dictionary:
@@ -93,15 +100,14 @@ func load_doc(doc: Dictionary) -> bool:
 	return true
 
 
-## The rides a route states: for each `elevator` step, every consecutive polyline pair inside that step's span that
-## moves horizontally < RIDE_MAX_FLAT and changes height by > RIDE_MIN_DROP. A step's span runs from the point before
-## its first point to its last point (a point's stepIndex names the step that ends there). Pure, so the tests can state
-## both gates: an elevator step with no vertical segment, and a vertical span under any other mode, both give no ride.
-static func find_rides(steps: Array, points: PackedVector3Array, point_steps: Array[int], cumulative: PackedFloat32Array) -> Array:
+## Every vertical span the polyline makes, whatever its step's mode: for each step, every consecutive polyline pair
+## inside that step's span that moves horizontally < RIDE_MAX_FLAT and changes height by > RIDE_MIN_DROP. A step's span
+## runs from the point before its first point to its last point (a point's stepIndex names the step that ends there).
+## Pure, so the tests can state the gates. `find_rides` keeps only the spans on `elevator` steps; the others are jumps
+## no step calls a lift, which the walk reports rather than stalling at.
+static func find_shafts(steps: Array, points: PackedVector3Array, point_steps: Array[int], cumulative: PackedFloat32Array) -> Array:
 	var found: Array = []
 	for step_id in range(steps.size()):
-		if str((steps[step_id] as Dictionary).get("mode", "")) != "elevator":
-			continue
 		var first := -1
 		var last := -1
 		for k in point_steps.size():
@@ -122,6 +128,16 @@ static func find_rides(steps: Array, points: PackedVector3Array, point_steps: Ar
 	return found
 
 
+## The rides a route states: the vertical spans that sit on an `elevator` step. The same span under any other mode is no
+## ride, so a vertical jump nobody calls a lift can never be ridden.
+static func find_rides(steps: Array, points: PackedVector3Array, point_steps: Array[int], cumulative: PackedFloat32Array) -> Array:
+	var found: Array = []
+	for shaft in find_shafts(steps, points, point_steps, cumulative):
+		if str((steps[int(shaft.step)] as Dictionary).get("mode", "")) == "elevator":
+			found.append(shaft)
+	return found
+
+
 ## The route step whose span holds the path distance `at` (the segment's end point names the step, as the web guide's
 ## highlight does); -1 for a route with no polyline.
 func step_at(at: float) -> int:
@@ -131,12 +147,14 @@ func step_at(at: float) -> int:
 		return step_index[step_index.size() - 1]
 	var seg: int = sample(clampf(at, 0.0, total())).segment
 	var step := step_index[mini(step_index.size() - 1, seg + 1)]
-	# A lift ride belongs to its approach too (#287): on the segment that ends at the ride's start the ride's own
-	# elevator step is already the active one. The ground walker stops short of the shaft (the ground ends there), so
-	# without this the lift's step would never be showing where a player is actually standing when the lift is offered.
+	# A lift ride belongs to the last stretch of its approach too (#287): on the segment that ends at the ride's start the
+	# ride's own elevator step is already the active one, but only within RIDE_TRIGGER of the shaft — the same distance
+	# the ride is offered over. The ground walker stops short of the shaft (the ground ends there), so without this the
+	# lift's step would never be showing where a player is standing when the lift is offered; further back the walk
+	# step keeps the highlight.
 	if ride_on_step(step).is_empty() and seg + 2 < step_index.size():
 		var ahead := ride_on_step(step_index[seg + 2])
-		if not ahead.is_empty() and int(ahead.from_point) == seg + 1:
+		if not ahead.is_empty() and int(ahead.from_point) == seg + 1 and float(ahead.from_s) - at <= RIDE_TRIGGER:
 			return step_index[seg + 2]
 	return step
 
@@ -178,8 +196,25 @@ func take_ride(walker: Object, ride: Dictionary) -> bool:
 		forward = points[to_point] - points[to_point - 1]
 	if not walker.ride_to(ride.to, forward):
 		return false
-	s = clampf(float(ride.to_s), 0.0, total())
+	# Guided motion continues from where the lift put the feet, never from the exit vertex over the opening: the guide
+	# moves to the projected landing (never back, so at least the shaft's exit), and the shaft is marked as ridden so the
+	# gate below lets the walk on (#287 review).
+	var landed: Vector3 = walker.feet() if walker.has_method("feet") else walker.global_position
+	s = clampf(maxf(float(ride.to_s), float(project(landed).s)), 0.0, total())
+	if not ridden.has(int(ride.step)):
+		ridden.append(int(ride.step))
 	return true
+
+
+## The ride a guided tick from `at` to `next_s` would pass without riding it, or {} when the stretch is free. Guided
+## motion never crosses a shaft the route states until the ride is taken: E is the only way past it.
+func ride_ahead(at: float, next_s: float) -> Dictionary:
+	for ride in rides:
+		if ridden.has(int(ride.step)):
+			continue
+		if at < float(ride.to_s) and next_s > float(ride.from_s):
+			return ride
+	return {}
 
 
 ## explorer samplePolyline: position and horizontal tangent at distance `at` along the path, plus the segment index.
@@ -254,11 +289,17 @@ func stop_guide() -> void:
 	guiding = false
 
 
-## One guided tick: advance along the path and return the sample (position, tangent). Empty when not guiding.
+## One guided tick: advance along the path and return the sample (position, tangent). Empty when not guiding. Motion
+## stops at a shaft the route states and has not ridden yet: the tick lands on the shaft's start and stays there until
+## take_ride() succeeds, so guided walking can never skip a lift the route asks for.
 func advance(dt: float) -> Dictionary:
 	if not guiding or not ok:
 		return {}
-	s = minf(total(), s + GUIDE_SPEED * dt)
+	var next_s := minf(total(), s + GUIDE_SPEED * dt)
+	var gate := ride_ahead(s, next_s)
+	if not gate.is_empty():
+		next_s = maxf(s, minf(next_s, float(gate.from_s)))
+	s = next_s
 	if s >= total():
 		arrived = true
 	return sample(s)

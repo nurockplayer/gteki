@@ -456,9 +456,15 @@ func ride_tick(delta: float) -> void:
 		_ride_phase = "in"
 		_ride_left = RIDE_FADE
 		if ride.is_empty() or not guide.take_ride(hq.walker, ride):
+			# Nothing qualified: the ride is refused and the guide stays at the shaft, so no guided tick carries the
+			# avatar past it without the lift.
 			set_status("The lift's exit has no walkable ground; the lift was not taken.", true)
 			return
 		snap_camera = true
+		# Put the camera on the landing while the screen is still black, so the fade-in never starts on the departure
+		# floor and then jumps a floor (#287 review).
+		if hq.camera != null:
+			hq.camera.follow(hq.walker, 0.0, true)
 		return
 	_fade.color.a = _ride_left / RIDE_FADE
 	if _ride_left <= 0.0:
