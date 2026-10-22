@@ -13,7 +13,8 @@ import { protectFareAndAccess, gateMachines, accessSigns, ACCESS_WORDING } from 
 import surfaceJson from "../data/surface.json";
 import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "./surface.ts";
 
-export const OEDO_MAGENTA = "#b6007a"; // public line colour of the Oedo Line
+import { OEDO_MAGENTA } from "./palette.ts";
+export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
 
