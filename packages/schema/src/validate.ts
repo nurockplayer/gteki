@@ -245,6 +245,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (a.uriMobile !== undefined) {
       if (!isCanonicalAssetPath(a.uriMobile)) err("asset.uri", `uriMobile: ${CANONICAL_MESSAGE}`, a.id);
       else if (!a.uriMobile.toLowerCase().endsWith(".glb")) err("asset.uri", "glb asset uriMobile must end in .glb", a.id);
+      else if (a.uriMobile === a.uri) err("asset.uri", "uriMobile must differ from uri (omit it when there is no lighter variant)", a.id);
     }
     for (const f of a.files ?? []) {
       if (!isCanonicalAssetPath(f)) err("asset.files", `${f}: ${CANONICAL_MESSAGE}`, a.id);

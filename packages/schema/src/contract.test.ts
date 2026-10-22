@@ -350,7 +350,7 @@ describe("review regressions: nested fail-closed shape and rights", () => {
       return errors(b);
     };
     expect(withMobile("assets/mobile/a.glb")).toEqual([]);
-    for (const bad of ["../a.glb", "assets//a.glb", "assets/a#1.glb", "/abs.glb", "assets/a.gltf", "assets/a.webp"])
+    for (const bad of ["../a.glb", "assets//a.glb", "assets/a#1.glb", "/abs.glb", "assets/a.gltf", "assets/a.webp", "assets/a.glb"])
       expect(withMobile(bad), bad).toContain("asset.uri");
   });
 
