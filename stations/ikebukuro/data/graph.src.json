@@ -193,6 +193,21 @@
    "notes": "Exit numbers and the public status of B1 passages were read from the official map. Nothing is reproduced.",
    "usage": "facts-only",
    "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+  },
+  {
+   "id": "tokyometro-ikebukuro-accessibility-2026-10",
+   "title": "東京メトロ 池袋駅 バリアフリー設備",
+   "publisher": "東京地下鉄",
+   "url": "https://www.tokyometro.jp/station/ikebukuro/accessibility/index.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "attribution": "東京メトロ 池袋駅 バリアフリー設備 (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-22T00:00:00+09:00",
+   "datasetDate": null,
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。Owner decision #26 (FACTS_ONLY_REFERENCE). Terms: all rights reserved, no use beyond private use/quotation without permission (https://www.tokyometro.jp/terms/index.html). Read only for names and lift/escalator connections; no text block, map or graphic is copied. Fact used: under the 改札外 lift and escalator lists, 南通路西改札～４番出入口（エソラ）. Hours not stated. Same record as DR-IK-02 / M-acc in docs/research/gaps/DR-IK-station-facts.md (PR #177).",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   }
  ],
  "floors": [
@@ -3265,6 +3280,102 @@
    }
   },
   {
+   "id": "metro-y-south-west-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "有楽町線 南通路西改札"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line South Passage West Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "有楽町線"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho"
+    },
+    {
+     "lang": "ja",
+     "text": "東京メトロ"
+    },
+    {
+     "lang": "ja",
+     "text": "メトロ"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro"
+    },
+    {
+     "lang": "en",
+     "text": "Metro"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line"
+    },
+    {
+     "lang": "en",
+     "text": "Y"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ゆうらくちょうせん"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "有樂町線"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東京地下鐵"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東京Metro"
+    },
+    {
+     "lang": "ja",
+     "text": "南通路西改札"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "みなみつうろにしかいさつ"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ゆうらくちょうせんみなみつうろにしかいさつ"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Yurakucho-sen Minami-tsuro Nishi kaisatsu"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "有樂町線 南通道西剪票口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-accessibility-2026-10"
+    ],
+    "method": "gate name per the Toshima guide; a lift and escalator connection to Exit 4 (エソラ) outside the fare gates (改札外) per Tokyo Metro's accessibility page (facts only). Search-only: the gate machines sit inside surveyed floor with no gate-line opening (gap-south-west), so no node or edge is authored",
+    "checkedDate": "2026-10-22"
+   }
+  },
+  {
    "id": "metro-m-central-gate",
    "category": "ticket_gate",
    "names": [
@@ -5059,7 +5170,7 @@
     "id": "gap-south-west",
     "floorId": "b1",
     "zone": "South Passage, south side between the JR South Gate and the West Exit (South) hall",
-    "missingFact": "Which PLATEAU features are the Yurakucho Line South Passage East and West Gates: the gate machines on the official map sit inside surveyed floor with no gate-line opening, so their exact lines and the paid side are not established",
+    "missingFact": "Which PLATEAU features are the Yurakucho Line South Passage East and West Gates: the gate machines on the official map sit inside surveyed floor with no gate-line opening, so their exact lines and the paid side are not established. Tokyo Metro's accessibility page does state a lift and escalator connection 南通路西改札～４番出入口（エソラ） (改札外), but it gives neither the gate's position nor the passage geometry, so 南通路西改札 is a search-only POI (metro-y-south-west-gate) and the link to Exit 4 is not an edge",
     "fieldWorkNeeded": "on-site check of both Yurakucho gate lines against column positions"
    },
    {
