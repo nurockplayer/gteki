@@ -1,0 +1,567 @@
+{
+  "note": "Golden vectors for the Godot search port. `normalize` is the exact output of normalizeJa (packages/search/src/search.ts); `queries` are the top hits of the TS index (createSearchIndex) on the real station data. Regenerate only through the test that guards this file.",
+  "normalize": [
+    {
+      "input": "Exit 35",
+      "normalized": "exit35"
+    },
+    {
+      "input": "EXIT 35",
+      "normalized": "exit35"
+    },
+    {
+      "input": "exit35",
+      "normalized": "exit35"
+    },
+    {
+      "input": "Ｅｘｉｔ　３５",
+      "normalized": "exit35"
+    },
+    {
+      "input": "35番出口",
+      "normalized": "35番出口"
+    },
+    {
+      "input": "３５番出口",
+      "normalized": "35番出口"
+    },
+    {
+      "input": "35ばんでぐち",
+      "normalized": "35ばんでぐち"
+    },
+    {
+      "input": "35バンデグチ",
+      "normalized": "35ばんでぐち"
+    },
+    {
+      "input": "ﾃﾞｸﾞﾁ",
+      "normalized": "でぐち"
+    },
+    {
+      "input": "ﾄｳﾌﾞ ﾄｳｼﾞｮｳ",
+      "normalized": "とうぶとうじょう"
+    },
+    {
+      "input": "東武東上線 中央2改札",
+      "normalized": "東武東上線中央2改札"
+    },
+    {
+      "input": "JR 中央２改札",
+      "normalized": "jr中央2改札"
+    },
+    {
+      "input": "丸ノ内線",
+      "normalized": "丸の内線"
+    },
+    {
+      "input": "マルノウチセン",
+      "normalized": "まるのうちせん"
+    },
+    {
+      "input": "ラーメン",
+      "normalized": "らめん"
+    },
+    {
+      "input": "らーめん",
+      "normalized": "らめん"
+    },
+    {
+      "input": "コーヒー",
+      "normalized": "こひ"
+    },
+    {
+      "input": "ｺｰﾋｰ",
+      "normalized": "こひ"
+    },
+    {
+      "input": "Tobu-Tojo Line",
+      "normalized": "tobutojoline"
+    },
+    {
+      "input": "central_passage",
+      "normalized": "centralpassage"
+    },
+    {
+      "input": "中央通路（西）",
+      "normalized": "中央通路西"
+    },
+    {
+      "input": "B1・B2",
+      "normalized": "b1b2"
+    },
+    {
+      "input": "地下3階",
+      "normalized": "地下3階"
+    },
+    {
+      "input": "出口〜北側",
+      "normalized": "出口北側"
+    },
+    {
+      "input": "a~b",
+      "normalized": "ab"
+    },
+    {
+      "input": "<exit>",
+      "normalized": "exit"
+    },
+    {
+      "input": "Ｅ２７",
+      "normalized": "e27"
+    },
+    {
+      "input": "",
+      "normalized": ""
+    },
+    {
+      "input": "   ",
+      "normalized": ""
+    },
+    {
+      "input": "。、！？",
+      "normalized": ""
+    },
+    {
+      "input": "ヴァイオリン",
+      "normalized": "ゔぁいおりん"
+    },
+    {
+      "input": "ゔぁ",
+      "normalized": "ゔぁ"
+    },
+    {
+      "input": "①②",
+      "normalized": "12"
+    },
+    {
+      "input": "㈱",
+      "normalized": "株"
+    },
+    {
+      "input": "ＪＲ",
+      "normalized": "jr"
+    },
+    {
+      "input": "6a番出口",
+      "normalized": "6a番出口"
+    },
+    {
+      "input": "Exit 6A",
+      "normalized": "exit6a"
+    },
+    {
+      "input": "22號出口",
+      "normalized": "22號出口"
+    }
+  ],
+  "queries": {
+    "ikebukuro": [
+      {
+        "query": "35",
+        "normalized": "35",
+        "top": [
+          {
+            "poiId": "exit-35",
+            "score": 105
+          }
+        ]
+      },
+      {
+        "query": "exit 35",
+        "normalized": "exit35",
+        "top": [
+          {
+            "poiId": "exit-35",
+            "score": 105
+          }
+        ]
+      },
+      {
+        "query": "35番出口",
+        "normalized": "35番出口",
+        "top": [
+          {
+            "poiId": "exit-35",
+            "score": 105
+          }
+        ]
+      },
+      {
+        "query": "35ばんでぐち",
+        "normalized": "35ばんでぐち",
+        "top": [
+          {
+            "poiId": "exit-35",
+            "score": 105
+          }
+        ]
+      },
+      {
+        "query": "JR Central Gate 2",
+        "normalized": "jrcentralgate2",
+        "top": [
+          {
+            "poiId": "jr-central-gate-2",
+            "score": 105
+          }
+        ]
+      },
+      {
+        "query": "中央通路",
+        "normalized": "中央通路",
+        "top": [
+          {
+            "poiId": "central-passage",
+            "score": 105
+          },
+          {
+            "poiId": "metro-m-central-gate",
+            "score": 60
+          },
+          {
+            "poiId": "metro-m-central-east-gate",
+            "score": 60
+          }
+        ]
+      },
+      {
+        "query": "ちゅうおうつうろ",
+        "normalized": "ちゅうおうつうろ",
+        "top": [
+          {
+            "poiId": "central-passage",
+            "score": 105
+          }
+        ]
+      },
+      {
+        "query": "central passage",
+        "normalized": "centralpassage",
+        "top": [
+          {
+            "poiId": "central-passage",
+            "score": 105
+          },
+          {
+            "poiId": "metro-m-central-gate",
+            "score": 60
+          },
+          {
+            "poiId": "metro-m-central-east-gate",
+            "score": 60
+          }
+        ]
+      },
+      {
+        "query": "東口",
+        "normalized": "東口",
+        "top": [
+          {
+            "poiId": "exit-22",
+            "score": 85
+          },
+          {
+            "poiId": "exit-37",
+            "score": 85
+          },
+          {
+            "poiId": "exit-38",
+            "score": 85
+          }
+        ]
+      },
+      {
+        "query": "East Exit",
+        "normalized": "eastexit",
+        "top": [
+          {
+            "poiId": "exit-22",
+            "score": 85
+          },
+          {
+            "poiId": "exit-37",
+            "score": 85
+          },
+          {
+            "poiId": "exit-38",
+            "score": 85
+          }
+        ]
+      },
+      {
+        "query": "6a",
+        "normalized": "6a",
+        "top": [
+          {
+            "poiId": "exit-6a",
+            "score": 100
+          },
+          {
+            "poiId": "exit-26",
+            "score": 45
+          },
+          {
+            "poiId": "exit-36",
+            "score": 45
+          }
+        ]
+      },
+      {
+        "query": "tobu",
+        "normalized": "tobu",
+        "top": [
+          {
+            "poiId": "tobu-central-gate-1",
+            "score": 100
+          },
+          {
+            "poiId": "tobu-central-gate-2",
+            "score": 100
+          }
+        ]
+      },
+      {
+        "query": "丸ノ内線",
+        "normalized": "丸の内線",
+        "top": [
+          {
+            "poiId": "metro-m-central-gate",
+            "score": 100
+          },
+          {
+            "poiId": "metro-m-central-east-gate",
+            "score": 100
+          },
+          {
+            "poiId": "metro-m-central-west-gate",
+            "score": 100
+          }
+        ]
+      },
+      {
+        "query": "zzzzqx",
+        "normalized": "zzzzqx",
+        "top": []
+      },
+      {
+        "query": "22號出口",
+        "normalized": "22號出口",
+        "top": [
+          {
+            "poiId": "exit-22",
+            "score": 105
+          }
+        ]
+      }
+    ],
+    "shinjuku": [
+      {
+        "query": "出口",
+        "normalized": "出口",
+        "top": [
+          {
+            "poiId": "poi:exit:1",
+            "score": 85
+          },
+          {
+            "poiId": "poi:exit:2",
+            "score": 85
+          },
+          {
+            "poiId": "poi:exit:3",
+            "score": 85
+          }
+        ]
+      },
+      {
+        "query": "exit",
+        "normalized": "exit",
+        "top": [
+          {
+            "poiId": "poi:exit:1",
+            "score": 105
+          },
+          {
+            "poiId": "poi:exit:2",
+            "score": 105
+          },
+          {
+            "poiId": "poi:exit:3",
+            "score": 105
+          }
+        ]
+      },
+      {
+        "query": "でぐち",
+        "normalized": "でぐち",
+        "top": [
+          {
+            "poiId": "poi:exit:1",
+            "score": 105
+          },
+          {
+            "poiId": "poi:exit:2",
+            "score": 105
+          },
+          {
+            "poiId": "poi:exit:3",
+            "score": 105
+          }
+        ]
+      },
+      {
+        "query": "改札",
+        "normalized": "改札",
+        "top": [
+          {
+            "poiId": "poi:gate:2",
+            "score": 85
+          },
+          {
+            "poiId": "poi:gate:1",
+            "score": 85
+          },
+          {
+            "poiId": "poi:gate:3",
+            "score": 85
+          }
+        ]
+      },
+      {
+        "query": "ticket gates",
+        "normalized": "ticketgates",
+        "top": [
+          {
+            "poiId": "poi:gate:2",
+            "score": 85
+          },
+          {
+            "poiId": "poi:gate:1",
+            "score": 85
+          },
+          {
+            "poiId": "poi:gate:3",
+            "score": 85
+          }
+        ]
+      },
+      {
+        "query": "エレベーター",
+        "normalized": "えれべた",
+        "top": [
+          {
+            "poiId": "poi:elevator:1",
+            "score": 105
+          },
+          {
+            "poiId": "poi:elevator:2",
+            "score": 105
+          },
+          {
+            "poiId": "poi:elevator:3",
+            "score": 105
+          }
+        ]
+      },
+      {
+        "query": "えれべーたー",
+        "normalized": "えれべた",
+        "top": [
+          {
+            "poiId": "poi:elevator:1",
+            "score": 105
+          },
+          {
+            "poiId": "poi:elevator:2",
+            "score": 105
+          },
+          {
+            "poiId": "poi:elevator:3",
+            "score": 105
+          }
+        ]
+      },
+      {
+        "query": "トイレ",
+        "normalized": "といれ",
+        "top": [
+          {
+            "poiId": "poi:toilet:1",
+            "score": 105
+          },
+          {
+            "poiId": "poi:toilet:2",
+            "score": 105
+          },
+          {
+            "poiId": "poi:toilet:3",
+            "score": 105
+          }
+        ]
+      },
+      {
+        "query": "toilet",
+        "normalized": "toilet",
+        "top": [
+          {
+            "poiId": "poi:toilet:1",
+            "score": 85
+          },
+          {
+            "poiId": "poi:toilet:2",
+            "score": 85
+          },
+          {
+            "poiId": "poi:toilet:3",
+            "score": 85
+          }
+        ]
+      },
+      {
+        "query": "大江戸線",
+        "normalized": "大江戸線",
+        "top": [
+          {
+            "poiId": "poi:platform:oedo",
+            "score": 85
+          }
+        ]
+      },
+      {
+        "query": "oedo",
+        "normalized": "oedo",
+        "top": [
+          {
+            "poiId": "poi:platform:oedo",
+            "score": 85
+          }
+        ]
+      },
+      {
+        "query": "ホーム",
+        "normalized": "ほむ",
+        "top": [
+          {
+            "poiId": "poi:platform:oedo",
+            "score": 75
+          }
+        ]
+      },
+      {
+        "query": "platform",
+        "normalized": "platform",
+        "top": [
+          {
+            "poiId": "poi:platform:oedo",
+            "score": 75
+          }
+        ]
+      },
+      {
+        "query": "zzzzqx",
+        "normalized": "zzzzqx",
+        "top": []
+      }
+    ]
+  }
+}
