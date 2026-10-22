@@ -10,15 +10,15 @@
      "params": {"role": "floor", "gteki_role": "floor", "facility": ["paid_area", "gate_surround"], "use": "paid-side floor, gate surrounds and the 0.30 m border band", "pattern": "dark granite tile 600 x 300 mm (u x v), 3 mm grout"}},
     {"id": "gteki_finish_floor_tile600", "generator": "finish_sample", "placement": "free", "dimension_basis": "synthetic", "tags": ["finish", "floor"],
      "params": {"role": "floor", "gteki_role": "floor", "facility": ["platform", "back_of_house"], "use": "platform and back-of-house floor", "pattern": "light ceramic tile 600 x 600 mm, 5 mm grout"}},
-    {"id": "gteki_finish_wall_enamel_panel", "generator": "finish_sample", "placement": "wall", "dimension_basis": "synthetic", "tags": ["finish", "wall"],
+    {"id": "gteki_finish_wall_enamel_panel", "generator": "finish_sample", "placement": "wall", "anchor": "surface", "dimension_basis": "synthetic", "tags": ["finish", "wall"],
      "params": {"role": "wall", "gteki_role": "wall", "facility": ["passage", "concourse"], "use": "upper wall above the wainscot, column cladding", "pattern": "warm white enamel; vertical 8 mm joints every 1.2 m (u = k x 1.2 m), no horizontal joint"}},
-    {"id": "gteki_finish_wall_wainscot_blue", "generator": "finish_sample", "placement": "wall", "dimension_basis": "synthetic", "tags": ["finish", "wall"],
+    {"id": "gteki_finish_wall_wainscot_blue", "generator": "finish_sample", "placement": "wall", "anchor": "surface", "dimension_basis": "synthetic", "tags": ["finish", "wall"],
      "params": {"role": "wall", "gteki_role": "wall", "facility": ["passage", "concourse"], "use": "lower wall band up to 1.1 m", "pattern": "deep blue enamel #334F66; vertical 8 mm joints every 1.2 m (u = k x 1.2 m), no horizontal joint"}},
-    {"id": "gteki_finish_wall_kick_plate", "generator": "finish_sample", "placement": "wall", "dimension_basis": "synthetic", "tags": ["finish", "trim"],
+    {"id": "gteki_finish_wall_kick_plate", "generator": "finish_sample", "placement": "wall", "anchor": "surface", "dimension_basis": "synthetic", "tags": ["finish", "trim"],
      "params": {"role": "trim", "gteki_role": "wall", "facility": ["passage", "concourse", "paid_area"], "use": "skirting and kick zone along the wall foot", "pattern": "brushed steel, streaks along u"}},
-    {"id": "gteki_finish_ceiling_spandrel", "generator": "finish_sample", "placement": "wall", "dimension_basis": "synthetic", "tags": ["finish", "ceiling"],
+    {"id": "gteki_finish_ceiling_spandrel", "generator": "finish_sample", "placement": "wall", "anchor": "surface", "dimension_basis": "synthetic", "tags": ["finish", "ceiling"],
      "params": {"role": "ceiling", "gteki_role": "ceiling", "facility": ["concourse", "passage"], "use": "linear metal ceiling", "pattern": "100 mm strips along u, 8 mm dark groove between strips"}},
-    {"id": "gteki_finish_band_line_accent", "generator": "finish_sample", "placement": "wall", "dimension_basis": "synthetic", "tags": ["finish", "band", "tint"],
+    {"id": "gteki_finish_band_line_accent", "generator": "finish_sample", "placement": "wall", "anchor": "surface", "dimension_basis": "synthetic", "tags": ["finish", "band", "tint"],
      "params": {"role": "band", "gteki_role": "wall", "facility": ["passage", "concourse", "platform"], "use": "line-colour stripe on the wall; the station multiplies the base by its line colour at runtime", "tint": true, "pattern": "neutral near-white painted metal #F2F2F0 with faint orange peel; the base carries no colour"}}
   ]
 }
