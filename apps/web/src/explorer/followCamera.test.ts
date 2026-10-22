@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW, FOV, approachFov, clampDistance, followBoom, followDistance, followPose, targetFov, viewDirection } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, clampDistance, followBoom, followDistance, followPose, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("stays under a 2.6 m ceiling at the default pitch and distance", () => {
@@ -185,5 +185,49 @@ describe("follow camera FOV", () => {
   it("holds still for a zero or negative frame time", () => {
     expect(approachFov(55, 50, 0)).toBe(55);
     expect(approachFov(55, 50, -1)).toBe(55);
+  });
+});
+
+describe("slope lens", () => {
+  it("widens third person to 60 on a slope; overview is unchanged", () => {
+    expect(targetFov("guide", false, true)).toBe(FOV.firstPerson);
+    expect(targetFov("walk", false, true)).toBe(FOV.firstPerson);
+    expect(targetFov("guide", false, false)).toBe(FOV.follow);
+    expect(targetFov("overview", false, true)).toBe(FOV.overview);
+  });
+
+  const run = (state: typeof NO_SLOPE, vy: number, seconds: number, dt = 1 / 60) => {
+    for (let i = 0; i < Math.round(seconds / dt); i++) state = stepSlope(state, vy * dt, dt);
+    return state;
+  };
+
+  it("turns on for a climb or descent and off on level ground after the hold", () => {
+    let s = run(NO_SLOPE, 0.8, 0.5);
+    expect(s.on).toBe(true);
+    s = run(s, -0.8, 0.5);
+    expect(s.on).toBe(true);
+    s = run(s, 0, SLOPE.hold * 0.5);
+    expect(s.on).toBe(true);
+    s = run(s, 0, 1.5);
+    expect(s.on).toBe(false);
+  });
+
+  it("ignores slow drift and a single step-height blip", () => {
+    expect(run(NO_SLOPE, 0.1, 5).on).toBe(false);
+    const blip = stepSlope(NO_SLOPE, 0.15, 1 / 60);
+    expect(stepSlope(run(NO_SLOPE, 0, 1), 0.02, 1 / 60).on).toBe(false);
+  });
+
+  it("does not flutter when a landing dips just under the exit speed briefly", () => {
+    let s = run(NO_SLOPE, 0.8, 0.5);
+    s = run(s, 0, 0.3);
+    s = run(s, 0.8, 0.3);
+    expect(s.on).toBe(true);
+    expect(s.level).toBe(0);
+  });
+
+  it("is frame-rate independent", () => {
+    const at = (hz: number) => run(NO_SLOPE, 0.5, 0.3, 1 / hz).speed;
+    expect(at(30)).toBeCloseTo(at(144), 1);
   });
 });

@@ -20,7 +20,7 @@ import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers 
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
-import { FOLLOW, FOV, approachFov, followBoom, followDistance, followPose, targetFov } from "./followCamera.ts";
+import { FOLLOW, FOV, approachFov, followBoom, followDistance, followPose, stepSlope, targetFov, NO_SLOPE, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
@@ -124,6 +124,9 @@ export class Explorer {
   private readonly orbit: OrbitControls;
   private composer: PostFx | null = null;
   private readonly overviewLook = new OverviewLook();
+  /** Stair/escalator/ramp detection from the walker's vertical speed; widens the follow lens (see targetFov). */
+  private slope: SlopeState = NO_SLOPE;
+  private slopeY = 0;
   private readonly street = new StreetBackdrop();
   /** Render height of the station's street floor when it is an underground (scene-lit) station, else null. */
   private streetY: number | null = null;
@@ -255,13 +258,13 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; street: { active: boolean; opacity: number } } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; fov: number; far: number; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; street: { active: boolean; opacity: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
-      camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
+      camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), fov: Math.round(this.camera.fov * 100) / 100, far: this.camera.far, mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
       street: { active: this.street.active, opacity: Math.round(this.street.opacity * 1000) / 1000 },
     };
@@ -521,6 +524,9 @@ export class Explorer {
     this.orbit.target.copy(center);
     this.camera.position.set(center.x + radius * 0.55, center.y + radius * 0.85, center.z + radius * 0.75);
     this.camera.near = 0.1;
+    // The overview camera sits ~1.3 radii out: keep the far plane beyond the whole box so nothing is culled (a box
+    // that is huge or unfit for the default 2000 draws nothing, so no projection is uploaded at all).
+    this.camera.far = Math.max(2000, radius * 4);
     this.camera.updateProjectionMatrix();
     this.orbit.update();
   }
@@ -1121,7 +1127,10 @@ export class Explorer {
   }
 
   private placeCamera(dt: number, snap = false): void {
-    this.setFov(targetFov(this.mode, this.firstPerson), snap, dt);
+    // The slope state follows the walker's height; a teleport or snap restarts it so a jump is not read as a climb.
+    this.slope = snap || dt <= 0 ? NO_SLOPE : stepSlope(this.slope, this.pos.y - this.slopeY, dt);
+    this.slopeY = this.pos.y;
+    this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on), snap, dt);
     const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
     if (this.firstPerson) {

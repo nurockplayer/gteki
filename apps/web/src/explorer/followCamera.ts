@@ -51,10 +51,46 @@ export const FOV = {
   settle: 0.25,
 } as const;
 
-/** The vertical FOV a camera mode wants. */
-export function targetFov(mode: "overview" | "walk" | "guide", firstPerson: boolean): number {
+/**
+ * The vertical FOV a camera mode wants. On a stair, escalator or ramp (`onSlope`) the third-person lens widens to
+ * the first-person 60: at 50 the boom, which trails behind and above, loses the avatar on a long climb or descent
+ * (Lane F: out of frame in 39% of Exit 35 guide samples vs 14% at 60). It eases back to 50 on level ground.
+ */
+export function targetFov(mode: "overview" | "walk" | "guide", firstPerson: boolean, onSlope = false): number {
   if (mode === "overview") return FOV.overview;
-  return firstPerson ? FOV.firstPerson : FOV.follow;
+  return firstPerson || onSlope ? FOV.firstPerson : FOV.follow;
+}
+
+/** Slope detection from the walker's smoothed vertical speed, with hysteresis and a hold so landings do not flutter the lens. */
+export const SLOPE = {
+  /** Smoothed |vertical speed| (m/s) above which the walker counts as on a slope. */
+  enter: 0.25,
+  /** ... and below which (for `hold` seconds) it counts as level again. */
+  exit: 0.12,
+  /** Seconds the slope state is kept after the speed drops below `exit`. */
+  hold: 0.6,
+  /** Time constant (s) of the vertical-speed smoothing. */
+  smooth: 0.15,
+} as const;
+
+export interface SlopeState {
+  /** Smoothed absolute vertical speed (m/s). */
+  speed: number;
+  on: boolean;
+  /** Seconds spent below `exit` while on. */
+  level: number;
+}
+
+export const NO_SLOPE: SlopeState = { speed: 0, on: false, level: 0 };
+
+/** One step of slope detection for a height change `dy` (m) over `dt` (s). Pure: returns a new state. */
+export function stepSlope(s: SlopeState, dy: number, dt: number): SlopeState {
+  if (!(dt > 0)) return s;
+  const k = 1 - Math.exp(-dt / SLOPE.smooth);
+  const speed = s.speed + (Math.abs(dy) / dt - s.speed) * k;
+  if (!s.on) return { speed, on: speed > SLOPE.enter, level: 0 };
+  const level = speed < SLOPE.exit ? s.level + dt : 0;
+  return { speed, on: level < SLOPE.hold, level };
 }
 
 /** One framerate-independent step of `current` toward `target` (exponential, time constant `FOV.settle`); lands exactly within 0.01 degrees. */
