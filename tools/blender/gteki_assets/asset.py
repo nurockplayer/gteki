@@ -57,6 +57,7 @@ class Asset:
         self.provenance = contract.PROVENANCE  # families override these for supplied artwork
         self.license = contract.LICENSE
         self.placement = "free"
+        self.ao_res_override = None  # catalog `ao_res`, applied to both tiers
         self.materials = []
         self.parts = []  # (group, Part)
         self.collision = []  # (name, Part)
@@ -159,7 +160,8 @@ class Asset:
         bpy.context.view_layer.update()
 
         # one shared occlusion map per asset; baked before the colliders exist, so they never occlude
-        self.ao_res = ao.resolution(_gltf_bounds(vis_objs), mobile)
+        # a station catalog may pin the size (`ao_res`) when it places many copies of a long piece
+        self.ao_res = self.ao_res_override or ao.resolution(_gltf_bounds(vis_objs), mobile)
         _lightmap_uvs(vis_objs, self.ao_res)
         self.ao_png = ao.png(*ao.bake(vis_objs, self.ao_res))
 

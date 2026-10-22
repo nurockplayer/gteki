@@ -20,7 +20,9 @@ SAMPLES = 256
 SEED = 7
 LARGE_EXTENT_M = 1.5  # assets with a larger bounds extent get the bigger map
 HUGE_EXTENT_M = 6.0  # escalators and long runs: many small parts share one atlas, so they need more texels
-RES_FULL, RES_MOBILE = (256, 512, 1024), (128, 256, 512)  # below LARGE / up to HUGE / at or above HUGE
+RES_FULL, RES_MOBILE = (256, 512, 1024), (128, 256, 256)  # below LARGE / up to HUGE / at or above HUGE;
+# mobile stays capped at 256 px (about 0.35 MB on the GPU with mips), the size agreed with Explorer (#134)
+SIZES = (128, 256, 512, 1024)  # what a catalog `ao_res` override may ask for
 MARGIN_PX = 5  # island gap used when packing; the contract asks for at least 4 px
 DILATE_PX = 4  # baked texels copied into the gutter so mips and filtering do not bleed
 FLOOR_REACH_M = 1.0  # the temporary floor extends this far past the asset
@@ -29,7 +31,7 @@ FLOOR_DROP_M = 0.001  # it sits a hair below Z=0, so surfaces resting on the flo
 
 def resolution(bounds, mobile=False):
     """Map size for an asset with glTF bounds (min, max). Full: 256 px below 1.5 m, 512 px below
-    6 m, else 1024 px; mobile: 128, 256 and 512 px."""
+    6 m, else 1024 px; mobile: 128 px below 1.5 m, else 256 px."""
     extent = max(hi - lo for lo, hi in zip(*bounds))
     return (RES_MOBILE if mobile else RES_FULL)[(extent >= LARGE_EXTENT_M) + (extent >= HUGE_EXTENT_M)]
 
