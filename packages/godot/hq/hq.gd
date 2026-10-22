@@ -5,12 +5,14 @@ extends Node3D
 ## <dir> holds <stationId>/{scene.glb,scene.json} from packages/godot/src/export-scene.ts (default: .cache/scenes).
 ## Keys: WASD/arrows move, Shift runs, drag (left or right mouse) or right stick orbits, wheel zooms,
 ##       Tab switches station, N cycles the station's spawn points. --check loads, prints a summary and quits.
-##       --lightmap=on (default) applies the station's baked lightmap (G-4a); =off keeps the unlit snapshot.
+##       --lightmap=on (default) applies the station's baked lightmap (G-4a); =off keeps the unlit snapshot. With the
+##       lightmap on, the added lights are masked to the avatar, as the web lights only its own avatar in "scene" mode.
 
 const Scene = preload("res://addons/gteki/gteki_scene.gd")
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
 const FollowCamera = preload("res://addons/gteki/gteki_follow_camera.gd")
 const GuideHud = preload("res://hq/hq_guide.gd")
+const HqLights = preload("res://addons/gteki/gteki_hq_lights.gd")
 
 ## Web wheel notch (deltaY) in the units apply_look expects, and stick look speed in pixels per second.
 const WHEEL_UNITS := 100.0
@@ -26,7 +28,8 @@ var camera: FollowCamera
 var spawn_index := 0
 var guide_hud: GuideHud
 var lightmap := true
-var key_light: DirectionalLight3D
+## Key + fill, masked to the avatar layer while a station bake is applied (gteki_hq_lights.gd).
+var lights: Array[DirectionalLight3D] = []
 var _look := Vector2.ZERO
 var _zoom := 0.0
 var _placing := false
@@ -61,9 +64,7 @@ func _ready() -> void:
 	camera.name = "camera"
 	add_child(camera)
 	camera.current = true
-	key_light = DirectionalLight3D.new()
-	key_light.rotation_degrees = Vector3(-50, 30, 0)
-	add_child(key_light)
+	lights = HqLights.build(self)
 	if not check_only:
 		guide_hud = GuideHud.new()
 		add_child(guide_hud)
@@ -103,9 +104,10 @@ func load_station(id: String) -> bool:
 		printerr("Cannot load %s: %s" % [id, str(current.issues)])
 		return false
 	print("%s: %d meshes (walkable %d, collider %d), %d walls, %d spawn points, %d export warnings, %s" % [id, current.counts.meshes, current.counts.walkable, current.counts.collider, current.wall_shapes, current.spawn_points.size(), current.sidecar.warnings.size(), lightmap_summary()])
-	# The bake is the light for the meshes that carry it and the web scene has no directional light; the skeleton
-	# key light stays only for the unlit snapshot (--lightmap=off or a station without a lightmap such as Shinjuku).
-	key_light.visible = not current.lightmap_applied
+	# The bake is the station's light and the web adds no scene lights: the added lights then reach the avatar layer
+	# only, so the avatar stays shaded instead of a black silhouette. The unlit snapshot (--lightmap=off or a station
+	# without a lightmap such as Shinjuku) keeps them on every layer.
+	HqLights.apply(lights, current.lightmap_applied)
 	var background: Variant = current.environment.get("background")
 	if background is float or background is int:
 		RenderingServer.set_default_clear_color(Color.hex((int(background) << 8) | 0xff))

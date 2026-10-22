@@ -163,9 +163,13 @@ textures), and replaces the flagged surfaces with a `ShaderMaterial` that sample
 `albedo × (1 − metalness)`, added as EMISSION. The albedo uniform is declared `source_color` because the importer
 stores `StandardMaterial3D.albedo_color` in sRGB (glTF `baseColorFactor` is linear and Godot encodes it); without the
 hint every lightmapped surface, and the emission it scales, would be too bright. The net factor is `(byte/255)^2.2 × scale × LIGHTMAP_GAIN`; scale and
-gain stay in `scene.ts`, the sidecar only carries their product. `hq.gd` takes `--lightmap=on|off` (default on) and,
-when the bake is applied, hides its skeleton directional light — the web scene has no directional light, and the bake
-is the light for those meshes. Shinjuku has no lightmap block, so the flag changes nothing there. Not mirrored:
+gain stay in `scene.ts`, the sidecar only carries their product. `hq.gd` takes `--lightmap=on|off` (default on).
+The avatar draws on its own render layer (`gteki_walker.gd` `AVATAR_LAYER`, Godot layer 2); while the bake is applied
+`gteki_hq_lights.gd` masks the client's key + fill lights to that layer, so station meshes stay unlit by any added
+light (as the web, whose `lighting: "scene"` adds no scene lights and lights only its own avatar with a per-material
+environment map) and the avatar stays clearly shaded rather than a black silhouette. With `--lightmap=off` or a
+station without a bake (Shinjuku) the same lights reach every layer and light the unlit snapshot. Shinjuku has no
+lightmap block, so the flag changes nothing there. Not mirrored:
 three's dielectric multi-scattering energy compensation (a few percent) and the envMap specular (no reflections in
 the snapshot); the light rig will be settled in the G-4 look pass.
 
@@ -174,6 +178,9 @@ mesh and surface counts equal the applied ones, that each flagged surface keeps 
 that `lightMapIntensity / (scale × PI)` equals the scene's `LIGHTMAP_GAIN` (0.09), that 36 sampled texel channels
 decode within 1e-3 of `(byte/255)^2.2 × scale × gain`, that the shader declares `albedo_color : source_color` and its
 uniform equals the source material's own `albedo_color`, and that `--lightmap=off` applies nothing.
+`tests/run_walk_tests.gd` checks the light masks: the avatar meshes sit on `AVATAR_LAYER`, with the bake applied at
+least one light reaches that layer and no light's cull mask includes the station's layer, and with it off every light
+does.
 
 ## Third-person walk and follow camera (G-2 of #164)
 
