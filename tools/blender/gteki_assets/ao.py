@@ -144,9 +144,16 @@ def bake(vis_objs, res):
         view_layer.objects.active = targets[0]
         bpy.ops.object.bake(type="AO", margin=0, use_clear=clear)
 
+    for t in glassy:  # glass never casts occlusion: not on the solids (pass 1), not on other glass (pass 2)
+        t.visible_diffuse = t.visible_glossy = t.visible_transmission = False
+        t.visible_shadow = t.visible_volume_scatter = False
     try:
         if solid:
+            for t in glassy:  # out of the scene entirely while the solids bake
+                t.hide_render = True
             run(solid, True)
+            for t in glassy:
+                t.hide_render = False
         if glassy:
             run(glassy, not solid)
         px = np.empty(res * res * 4, dtype=np.float32)
