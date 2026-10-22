@@ -1,5 +1,7 @@
 # Network inventory: hokonavi-oedo-shinjuku-network-geojson
 
+Credit: 出典：国土交通省「歩行空間ネットワークデータ等整備仕様 平成30年3月」（版 2018-03、https://www.mlit.go.jp/common/001244374.pdf、SHA-256 9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974）／加工して作成 ; 出典：国土交通省「歩行空間ネットワークデータ整備仕様 令和6年7月」（版 2024-07、https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf、SHA-256 963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4）／加工して作成 (see docs/gis/rights/non-poi-literals.md)
+
 - Files: ["link.geojson","node.geojson"]
 - Counts: {"files":2,"features":496}
 - CRS: {"type":"name","properties":{"name":"EPSG:6668"}}
