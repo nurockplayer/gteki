@@ -60,7 +60,7 @@ CSV in_out: null; elevation: null.
 
 Counts: {"features":465,"layers":18}. Duplicate nodes/links: UNKNOWN / UNKNOWN; dangling references: UNKNOWN; self-loops: UNKNOWN; weak components: UNKNOWN.
 Endpoint comparisons: UNKNOWN; mismatches: UNKNOWN. Coverage: null.
-Literal source floor labels: ["1階","地下1階","地下2階","地下3階","地下5階","地下6階"].
+Literal source floor labels: ["value_sha256:c86b35ff294bed1ceee8cda02b57630479fce5c3c93557efd786105e43245d3c","value_sha256:541f4bbc612294c0f7951e58215a8f4002090729f30dfd429c255ec12d7d079b","value_sha256:c0836dff4714db1e120615df114e789a33e801b9706330dc44c5f16827a0ba46","value_sha256:2f2d864b68d26ac9634202a415e0f7ee274b100914327fce73298a5e14f7954f","value_sha256:27a651ea63fba300793d9bcf3a39e29e0328550778395490c73fee1c3dde9512","value_sha256:317a1a345f26128a5ebe72df6725f57f6f4aa1f3f462358dff1d503ce48a0db8"].
 CSV in_out: null; elevation: null.
 
 ## Changes from Phase 1
