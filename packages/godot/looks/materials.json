@@ -273,7 +273,7 @@
           }
         },
         "material_52": {
-          "style": "stainless_polished",
+          "style": "steel_brushed",
           "from": {
             "color": "#aab2b5",
             "metal": 0.6,
@@ -285,7 +285,7 @@
             "meshes": [
               "elevator-portal_finish2"
             ],
-            "evidence": "source mat.steel (#aab2b5, metal 0.6, roughness 0.58): lift-portal frames and handrails. The style stays stainless_polished so the approved look does not change with the merge, although the source is now darker and rougher than the #c7ccd1 / 0.85 / 0.28 it was when the mapping was made; the lead decides whether it wants steel_brushed"
+            "evidence": "source mat.steel (#aab2b5, metal 0.6, roughness 0.58): lift-portal frames and handrails. The source changed in main (it was #c7ccd1, metal 0.85, roughness 0.28, a polished stainless); the darker, rougher finish is brushed steel, so the mapping follows it (lead's decision, 2026-10-23)"
           }
         }
       },
