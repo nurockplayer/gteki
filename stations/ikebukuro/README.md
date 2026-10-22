@@ -52,7 +52,7 @@ pnpm typecheck
 | `scene/walk_bridges.json` | Invisible walking strips over hairline cracks between PLATEAU floor polygons | presentation |
 | `scene/access_fences.json` | Walker-blocking fences with a 「通行可否 未確認」/"Access unverified" marker where surveyed floor of unknown access would shortcut the routable areas | presentation |
 | `scene/finishes.json` | Finish-pack manifest for the Lane E kit: role → texture folder + repeat in metres. Empty today (see "Kit integration") | presentation |
-| `scene/kit/kit.json`, `scene/kit.ts` | Kit GLBs placed as instances on existing data (batch 1: barrier rails on the access-fence stretches); copies in `gteki/kit/` | presentation |
+| `scene/kit/kit.json`, `scene/kit.ts` | Kit GLBs placed as instances on existing data (batch 1: barrier rails on the access-fence stretches; plus one labelled representative gate array per JR gate node); copies in `gteki/kit/` | presentation |
 | `scene/dressing_anchors.json` | Stair nosing lines and escalator landings from the PLATEAU survey, where kit dressing is placed (see "Kit integration") | truth (survey positions) |
 | `pipeline/` | Reproducible data and asset build (stdlib Python + Blender; one Node walker check) | — |
 | `docs/` | G0 source audit, coverage gaps, evidence | — |
@@ -148,7 +148,7 @@ are untouched. Roles without an entry keep the procedural texture.
   The kit source (CC BY 4.0, "GTEki contributors") is declared there too, once the licence PR (#131) lands.
 
 **Kit instances (batch 1).** `scene/kit/kit.json` lists the kit GLBs the scene places; `scene/kit.ts` places them on
-data the station already has and nothing else. Batch 1: `gteki_barrier_rail_2400_solid` along the access-fence label
+data the station already has and nothing else, except the labelled gate arrays below. Batch 1: `gteki_barrier_rail_2400_solid` along the access-fence label
 stretches (`scene/access_fences.json` `marks`; the 62 of 80 that are at least 1.8 m long, 259 modules, stretched at most
 12 % along the run; the label boards move onto the rail faces and the collision panels are unchanged). The
 desktop tier loads `gteki/kit/high/` (the full library GLB), `quality: "low"` loads `gteki/kit/low/` (the mobile library
@@ -160,6 +160,17 @@ checks them against the kit manifests' sha256; both copies are declared in `asse
 `stations/*/gteki/kit/**`; the GLBs' embedded licence strings read UNDECIDED until Lane E's EMBED_SPDX rebuild). Kit
 meshes have no lightmap in this atlas, so they are lit by the scene's PMREM environment only. What else still renders
 procedurally, and what each needs: [docs/kit-gap-list.md](docs/kit-gap-list.md).
+
+**Representative gate arrays (the one exception).** By director decision (issue #3, 2026-10-22) the three JR gate nodes
+(`g_jr_c1`, `g_jr_c2`, `g_jr_s`) each get one `gteki_gate_array_2` (the smallest neutral, bidirectional array), and every
+one is labelled 「代表性擺設，通道數與方向未驗證」 / "representative placement; aisle count and orientation unverified"
+(`GATE_ARRAY_LABEL` in `scene/kit.ts`, copied into `kit.json`, each placement, each mesh's `userData`, the kit source
+credit in `station.json` and the asset derivation; a manifest entry without that exact label is not placed). The data
+fixes only the node and its verified edge. Placement rule, a guess: the piece's aisles run along the edge's last segment as
+it arrives, the first aisle's centre stands on the node at mid-depth (the edge runs down an aisle and crosses no cabinet),
+lifted 1 cm against z-fighting with the piece's floor plate. Like the rails the arrays are visual only (no collider, not in
+`walkable` or the walk graph). The three arrays are merged per material and instanced: one draw on the phone tier (one
+palette material, always drawn) and one draw per material per 16 m tile on desktop.
 
 **Dressing anchors.** `python3 -I pipeline/build_dressing_anchors.py` (from `build/ubld_enu.json`; it refuses an
 extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressing_anchors.json`, ENU metres to

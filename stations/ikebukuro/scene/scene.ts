@@ -8,7 +8,7 @@ import { type FinishManifest, loadFinishPacks } from "./finishes.ts";
 import { buildFloorIndex, noseDistances, wallFloorAttribute } from "./geomattrs.ts";
 import { buildSigns, type SignSpec } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
-import { type KitManifest, loadKit } from "./kit.ts";
+import { type KitGraph, type KitManifest, loadKit } from "./kit.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { createAmbience } from "./ambience.ts";
 import crowdLanes from "./crowd_lanes.json";
@@ -385,7 +385,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   gltf.scene.updateMatrixWorld(true);
   // Kit pieces (scene/kit/kit.json, tier by quality): visual-only instances on data the station already has.
   // They never enter `walkable` or `colliders`; a piece that fails to load leaves the procedural label board.
-  const kit = await loadKit(THREE, ctx, kitManifest as KitManifest, (accessFences as AccessFences).marks, low);
+  // The three JR gate nodes get one REPRESENTATIVE array each (aisle count and orientation unverified; see kit.ts).
+  const kit = await loadKit(THREE, ctx, kitManifest as KitManifest, (accessFences as AccessFences).marks, low, graph as unknown as KitGraph);
   const fences = buildAccessFences(THREE, accessFences as AccessFences, toRenderer, kit.railed);
   const { walkable, colliders, extra, meshesByRole, bridges } = assembleCollision(THREE, gltf.scene, {
     materialFor: (role) => mats.byRole[role],

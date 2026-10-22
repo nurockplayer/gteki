@@ -5,6 +5,9 @@ Status 2026-10-22, main `dc59b38`, kit 0.1.0 (`assets/library/manifest.json`, 48
 items that list did not have (access-fence stretches, sign housings) and says, for each, whether the station data
 already places the object. Rule used: a kit piece goes in only where existing data fixes its position, orientation and
 extent. Nothing is invented (G0 audit: PLATEAU has no ticket gates, no paid/unpaid boundary, no shops, no benches).
+One exception, by director decision (issue #3, 2026-10-22): a generic gate array at each of the three JR gate nodes
+(row 9), which is always shown as 「代表性擺設，通道數與方向未驗證」 / "representative placement; aisle count and
+orientation unverified", never as a surveyed layout.
 
 Stairs, escalators and their handrails are out of scope here: PR #155 (per-flight catalog from `scene/dressing_anchors.json`).
 
@@ -23,7 +26,7 @@ Screen time ranks follow the guided routes in `tests/e2e/specs/__goldens__/02-na
 | 6 | Access-fence collision panels | 92 panels, invisible | yes | none (collision only) | n/a |
 | 7 | Sign housings: one plain box per sign | 100 signs (`scene/signage.json`), 0.48 m tall, 1.0 to 4.8 m wide, scale 0.48 to 1.0 | yes (position, facing, size) | **needs new piece**: variable-width hanging-sign frame (housing, two hangers, bevel, blank face quad with full 0-1 UV), params `width`, `height` 0.42, `depth` 0.08, `drop`. The kit's `sign_hanging_*` is fixed 1.8 x 0.9 x 0.12 and 1,054 tris (324 mobile), so 100 of them would be 105k / 32k triangles for housings alone | gap, for Lane E |
 | 8 | Sign faces: canvas atlas, 3 draws for 100 signs | same 100 | yes | keep (graph-derived wording; Lane E's own list says keep) | n/a |
-| 9 | Ticket gates: **not rendered**. The three JR gates (`g_jr_c1`, `g_jr_c2`, `g_jr_s`) are graph nodes at the end of a verified edge, next to a PLATEAU opening into unmodelled space (haze) | 3 gate lines | **no**: node position only. Aisle count, line width and orientation are not in the data (the nearest PLATEAU portal triangles to `g_jr_c2` sit 4 to 6 m east of the node) | `gteki_gate_array_4w1/_6w1/_2/_3w1_oneway` exist | **blocked on a decision**: placing them would invent an array. Needs an Owner/director ruling that a generic array at the gate node is acceptable, or field data (field-checklist F1) |
+| 9 | Ticket gates: the three JR gates (`g_jr_c1`, `g_jr_c2`, `g_jr_s`) are graph nodes at the end of a verified edge, next to a PLATEAU opening into unmodelled space (haze) | 3 gate lines | **node position and the arriving edge only.** Aisle count, line width and orientation are not in the data (the nearest PLATEAU portal triangles to `g_jr_c2` sit 4 to 6 m east of the node) | `gteki_gate_array_2`, the smallest bidirectional array (`_4w1`, `_6w1` and the one-way `_3w1_oneway` exist and are not used) | **placed, representative** (director decision, issue #3, 2026-10-22): one generic array per node, labelled 「代表性擺設，通道數與方向未驗證」 / "representative placement; aisle count and orientation unverified" in `kit.json`, in every placement, in the `station.json` credits and in the asset derivation. Guess rule: aisles along the edge's last segment as it arrives, the first aisle's centre on the node at mid-depth. Visual only (no collider, not in the walk graph). Field data (field-checklist F1) would replace the guess |
 | 10 | Other operators' gates (Metro, Tobu, Yurakucho) | 5 search-only gate POIs, no node | no | gate arrays | blocked: `gap-metro-tobu-gates`, `gap-south-west` |
 | 11 | Stair and escalator surfaces, railings | 72 flights, 3 escalator banks | landings and nosings: yes | stairs dressing (D2, PR #143) via PR #155 | out of scope |
 | 12 | Plain `barriers` mesh (stair side walls, parapets, PLATEAU columns), flat `#c6cacf` | 10,992 tris | surface: yes, as one merged mesh | railing runs (D2) need polylines, which the merged mesh does not give; columns (`gteki_column_*`) need per-column footprints, which are not extracted | needs data (extract column footprints from `build/ubld_enu.json`) |
@@ -40,13 +43,20 @@ PLATEAU geometry with materials, signs, fixtures and a crowd. The one existing d
 fits as it is: the access-fence label stretches (row 5). Batch 1 dresses those with `gteki_barrier_rail_2400_solid`;
 see `scene/kit.ts`. The label wording, the collision and the walk graph are unchanged.
 
+The same PR then adds the one object the data does not place: a representative gate array at each JR gate node (row 9,
+director decision). It uses only the node position and the arriving edge, so the aisle count (a 2-aisle piece is the
+smallest), the direction of use, the width and the side the array opens to are all guesses, and the label says so.
+
 ## Next batches, in order
 
 1. **Sign housings** (row 7): Lane E adds the variable-width hanging-sign frame; the scene swaps the 100 boxes for
    instanced frames (a single draw per tile, mobile palette material).
-2. **Gate arrays** (row 9): needs the decision above. If approved: three generic arrays at the three JR gate nodes,
-   oriented from the verified edge's last segment, with the aisle count recorded as "generic, not surveyed". Lane E
-   measured the mobile gate array as `THREE.BatchedMesh` at +1 draw for all three (docs/assets/HANDOFF.md).
+2. **Gate arrays** (row 9): **done, representative** (approved with conditions, issue #3, 2026-10-22). One
+   `gteki_gate_array_2` at each of the three JR gate nodes, oriented from the verified edge's last segment, labelled
+   「代表性擺設，通道數與方向未驗證」 / "representative placement; aisle count and orientation unverified". The three
+   arrays are merged per material and instanced, so the phone tier pays one draw (one palette material); Lane E's
+   `THREE.BatchedMesh` measurement for the larger array was +1 draw as well (docs/assets/HANDOFF.md). Not measured
+   here: the look and the draws need a GPU check. Replace with the surveyed layout when field data exists.
 3. **Finish packs** (rows 1 to 3): data-only, `scene/finishes.json` is ready; waits for PR #133.
 4. **Luminaires** (row 4): needs a re-bake; do it together with the stair/escalator kit GLB bake (README "Kit integration").
 5. **Columns** (row 12): extract the PLATEAU column footprints once, commit them as a data file, then place

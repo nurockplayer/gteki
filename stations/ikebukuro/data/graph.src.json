@@ -179,7 +179,7 @@
   },
   {
    "id": "gteki-kit-0-1-0",
-   "title": "GTEki station kit 0.1.0 (Lane E): barrier rail module",
+   "title": "GTEki station kit 0.1.0 (Lane E): barrier rail module and a representative gate array",
    "publisher": "GTEki contributors",
    "url": "https://github.com/nurockplayer/gteki/tree/main/assets/library",
    "license": {
@@ -187,15 +187,17 @@
     "url": "https://creativecommons.org/licenses/by/4.0/"
    },
    "rights": "REUSABLE_WITH_CONDITIONS",
-   "attribution": "GTEki contributors, CC BY 4.0. Procedural Blender kit pieces (assets/library), copied unmodified into gteki/kit/.",
+   "attribution": "GTEki contributors, CC BY 4.0. Procedural Blender kit pieces (assets/library), copied unmodified into gteki/kit/. The gate arrays are 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\".",
    "modified": false,
    "retrievedAt": "2026-10-22T00:00:00Z",
    "datasetDate": "2026-10",
    "sha256": {
     "kit/high/gteki_barrier_rail_2400_solid.glb": "39aeede21a45fcc3d711dc650f48070eedad952be6ee8d80b08b8418d95b46b2",
-    "kit/low/gteki_barrier_rail_2400_solid.glb": "66e620f277ab6bd7d8802b354a020dba73c5eaec1a1c42ff03b1c19a5189c8f4"
+    "kit/low/gteki_barrier_rail_2400_solid.glb": "66e620f277ab6bd7d8802b354a020dba73c5eaec1a1c42ff03b1c19a5189c8f4",
+    "kit/high/gteki_gate_array_2.glb": "f65539453b69724cc9761dd99293705f5813a58b96029ddce0600fb9e5ae42e3",
+    "kit/low/gteki_gate_array_2.glb": "ffe72d1a05cb6dec19fb6a4fe49597b7f2720808c762f2ca62aeb6a8687e0e5a"
    },
-   "notes": "Original project art, generic and unbranded; not a measurement of Ikebukuro. The GLBs' embedded licence strings still read UNDECIDED until the kit's EMBED_SPDX rebuild; REUSE.toml records CC-BY-4.0 for gteki/kit/**."
+   "notes": "Original project art, generic and unbranded; not a measurement of Ikebukuro. The GLBs' embedded licence strings still read UNDECIDED until the kit's EMBED_SPDX rebuild; REUSE.toml records CC-BY-4.0 for gteki/kit/**. gteki_gate_array_2 is placed once at each of the gate nodes g_jr_c1, g_jr_c2 and g_jr_s as a generic stand-in: 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\". It is never a verified layout of the Ikebukuro gates."
   }
  ],
  "floors": [
@@ -4700,7 +4702,7 @@
     "gteki-kit-0-1-0"
    ],
    "role": "visual",
-   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform; collision comes from per-mesh gteki_role tags (floor/stairs_ramps walkable; wall/barriers/transport collide), not from the asset role, because verified exit routes pass through door and portal panels; runtime variant assets/ikebukuro_b1_lit.glb (listed in files, not a second asset, so loaders that load every asset never stack both): the same geometry + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap (assets/ikebukuro_b1_lightmap.webp / _2k.webp, gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json). scene/scene.ts loads the lit variant and falls back to this GLB; kit/{high,low}/*.glb: Lane E kit pieces (see source gteki-kit-0-1-0) copied unmodified by pipeline/sync_kit.py and instanced by scene/kit.ts on the access-fence label stretches, visual only, no colliders",
+   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform; collision comes from per-mesh gteki_role tags (floor/stairs_ramps walkable; wall/barriers/transport collide), not from the asset role, because verified exit routes pass through door and portal panels; runtime variant assets/ikebukuro_b1_lit.glb (listed in files, not a second asset, so loaders that load every asset never stack both): the same geometry + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap (assets/ikebukuro_b1_lightmap.webp / _2k.webp, gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json). scene/scene.ts loads the lit variant and falls back to this GLB; kit/{high,low}/*.glb: Lane E kit pieces (see source gteki-kit-0-1-0) copied unmodified by pipeline/sync_kit.py and instanced by scene/kit.ts on the access-fence label stretches, visual only, no colliders; gteki_gate_array_2 (kit/{high,low}/): ONE generic array per node at g_jr_c1, g_jr_c2 and g_jr_s, anchored on the node with its aisles along the verified edge's arriving direction, visual only, no colliders, not in the walk graph. 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\": the aisle count, direction and side are guesses, not a surveyed layout",
    "files": [
     "assets/ikebukuro_b1.meta.json",
     "assets/ikebukuro_b1_lit.glb",
@@ -4708,7 +4710,9 @@
     "assets/ikebukuro_b1_lightmap.webp",
     "assets/ikebukuro_b1_lightmap_2k.webp",
     "kit/high/gteki_barrier_rail_2400_solid.glb",
-    "kit/low/gteki_barrier_rail_2400_solid.glb"
+    "kit/low/gteki_barrier_rail_2400_solid.glb",
+    "kit/high/gteki_gate_array_2.glb",
+    "kit/low/gteki_gate_array_2.glb"
    ]
   }
  ]
