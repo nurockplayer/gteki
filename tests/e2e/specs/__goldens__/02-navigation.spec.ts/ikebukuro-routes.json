@@ -363,7 +363,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+      "uiCard": "No verified route to showNo verified route with \"Verified hours only\" on. The connection found uses passages whose hours are not verified.Turn off \"Verified hours only\""
     }
   },
   "IN3": {
@@ -378,7 +378,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+      "uiCard": "No verified route to showNo verified route with \"Step-free\" on.Turn off \"Step-free\""
     }
   },
   "IN4": {

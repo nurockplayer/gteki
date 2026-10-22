@@ -113,4 +113,4 @@ The texture-dedupe follow-up had two fresh read-only Codex reviews. Every findin
 3. **Glass sorting** is described in Import notes; no fix in the kit.
 4. **Vending machine** has 24 material slots (product-face colours) on the full tier. On phones, use the mobile tier: 2 draws ([mobile-profile.md](mobile-profile.md)).
 5. **Not measured:** phone GPU frame times (gate cost in both station scenes is measured as draw calls, triangles and memory; see [mobile-profile.md](mobile-profile.md)). The kit ships no scene; frame-time evidence belongs with each station's L2 walkthrough.
-6. **Licence:** the repository licence is undecided. Every GLB says so in `extras.gteki.license`.
+6. **Licence:** decided by the Owner (Issue #123): original assets CC BY 4.0, AI posters CC0 1.0. The committed GLBs still carry the old `UNDECIDED` string in `extras.gteki.license`, because changing it alters their bytes. The next full library rebuild writes the decided values ([asset-contract.md](asset-contract.md) §3).

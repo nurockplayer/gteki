@@ -1,4 +1,5 @@
 import type { Source } from "@gteki/schema";
+import type { Strings } from "./i18n.ts";
 
 /** A source's credit as shown to users: link, licence (with its link) and the modification notice. */
 export interface SourceCredit {
@@ -29,4 +30,31 @@ export function sourceCredit(s: Source): SourceCredit {
     attribution: s.attribution,
     modified: s.modified,
   };
+}
+
+/** The extra line a facts-only source carries instead of a licence: the #26 wording and, when safe, the decision link. */
+export interface FactsOnlyCredit {
+  text: string;
+  decision: { label: string; href: string } | null;
+}
+
+/** null unless `usage === "facts-only"`; the decision link needs `decision.url` to be an http(s) URL. */
+export function factsOnlyCredit(s: Source, t: Pick<Strings, "factsOnly" | "rightsDecision">): FactsOnlyCredit | null {
+  if (s.usage !== "facts-only") return null;
+  const href = safeHref(s.decision?.url);
+  return {
+    text: t.factsOnly,
+    decision: s.decision && href ? { label: `${t.rightsDecision} ${s.decision.date}`, href } : null,
+  };
+}
+
+/** Human wording for a source's rights status (#130); an unknown value reads as unverified rather than leaking the enum. */
+export function rightsLabel(rights: Source["rights"], t: Pick<Strings, "rightsReusable" | "rightsOwnerOverride" | "rightsReference" | "rightsRestricted" | "rightsUnverified">): string {
+  switch (rights) {
+    case "REUSABLE_WITH_CONDITIONS": return t.rightsReusable;
+    case "PUBLISHED_UNDER_OWNER_OVERRIDE": return t.rightsOwnerOverride;
+    case "REFERENCE_ONLY": return t.rightsReference;
+    case "RESTRICTED": return t.rightsRestricted;
+    default: return t.rightsUnverified;
+  }
 }

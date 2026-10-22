@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createHash } from 'node:crypto';
 import { decodeText, fieldStatistics, inventoryCsv, inventoryJson, bboxRelation } from '../src/poi.js';
 import { compareFeatureCollections, attachVerifiedOrigin } from '../src/related.js';
 import { evaluateRights, evaluateRightsRecords, snapshotText } from '../src/rights.js';
@@ -114,7 +115,7 @@ describe('bounded content inventories', () => {
   it('handles odd field names, non-string literals and missing values safely', () => {
     const row = JSON.parse('{"__proto__":"literal","constructor":null,"a":[1],"b":false}');
     const fields = fieldStatistics([row, {}]);
-    expect(fields['__proto__'].literal_distribution).toEqual([{ value: 'literal', count: 1 }]);
+    expect(fields['__proto__'].value_hash_distribution).toEqual([{ value_sha256: createHash('sha256').update('literal', 'utf8').digest('hex'), value_type: 'string', count: 1 }]);
     expect(fields['constructor'].blank_count).toBe(2); expect(fields['b'].types).toContain('boolean');
     expect(({} as any).literal).toBeUndefined();
   });
@@ -124,13 +125,14 @@ describe('bounded content inventories', () => {
       { geometry: { type: 'LineString', coordinates: [[138, 34], [140, 36]] }, properties: {} },
     ] }, 'synthetic.geojson');
     expect(result).toMatchObject({ feature_count: 2, bbox: [138, 34, 140, 36], crs: 'UNKNOWN', routable: false });
-    expect(result.literal_location_time_fields['floor'].literal_distribution[0].value).toBe('地下通路');
+    expect(result.location_time_fields['floor'].value_hash_distribution).toEqual([{ value_sha256: createHash('sha256').update('地下通路', 'utf8').digest('hex'), value_type: 'string', count: 1 }]);
+    expect(JSON.stringify(result)).not.toMatch(/地下通路|SYNTHETIC 05:00|Synthetic origin/u);
     expect(Object.keys(result.origin_attribution_fields)).toEqual(['source']);
   });
   it('keeps HERE entity `hours` with the literal opening-time fields', () => {
     const result = inventoryJson({ entities: [{ properties: { hours: 'SYNTHETIC 10:00〜20:00', name: 'Synthetic shop' } }, { properties: { hours: '' } }] }, 'com-entity.geojson');
-    expect(Object.keys(result.literal_location_time_fields)).toEqual(['hours']);
-    expect(result.literal_location_time_fields['hours'].literal_distribution[0].value).toBe('SYNTHETIC 10:00〜20:00');
+    expect(Object.keys(result.location_time_fields)).toEqual(['hours']);
+    expect(result.location_time_fields['hours'].value_hash_distribution[0]).toEqual({ value_sha256: createHash('sha256').update('SYNTHETIC 10:00〜20:00', 'utf8').digest('hex'), value_type: 'string', count: 1 });
     expect(result.routable).toBe(false);
   });
   it('keeps Path commands out of geographic bboxes and navigation references out of edges', () => {
@@ -139,10 +141,25 @@ describe('bounded content inventories', () => {
     const nav = inventoryJson({ n: [{ id: 1, mx: 100, my: 200 }], l: [{ n1: 1, n2: 2 }] }, 'v5_nav.json');
     expect(nav.route_structure).toMatchObject({ source_link_count: 1, source_node_count: 1, start_end_fields: ['n1', 'n2'], exported_edges: 0 });
   });
-  it('keeps promotional description samples out of Git inventories', () => {
+  it('keeps every field value, including promotional description prose, out of Git inventories', () => {
     const stats = fieldStatistics([{ description: 'SYNTHETIC promotional prose', name: 'SYNTHETIC factual label' }]);
-    expect(stats.description.literal_distribution).toEqual([]);expect(stats.description.distinct_count).toBe(1);expect(stats.description.omitted_distinct).toBe(1);
-    expect(stats.name.literal_distribution).toHaveLength(1);
+    expect(JSON.stringify(stats)).not.toMatch(/SYNTHETIC/u);
+    expect(stats.description.value_hash_distribution).toEqual([{ value_sha256: createHash('sha256').update('SYNTHETIC promotional prose', 'utf8').digest('hex'), value_type: 'string', count: 1 }]);
+    expect(stats.description).toMatchObject({ distinct_count: 1, omitted_distinct: 0 }); expect(stats.name.value_hash_distribution).toHaveLength(1);
+  });
+  it('orders hashed distributions by count then hash, deterministically and independent of row order', () => {
+    const rows = ['b', 'a', 'c', 'a', 'd', 'e', 'f', 'a', 'b'].map(name => ({ name }));
+    const forward = fieldStatistics(rows).name, backward = fieldStatistics([...rows].reverse()).name;
+    expect(forward).toEqual(backward);
+    expect(forward.value_hash_distribution.map((item: any) => item.count)).toEqual([3, 2, 1, 1, 1]);
+    expect(forward).toMatchObject({ distinct_count: 6, omitted_distinct: 1 });
+    const tail = forward.value_hash_distribution.slice(2).map((item: any) => item.value_sha256);
+    expect(tail).toEqual([...tail].sort());
+  });
+  it('hashes non-string values as JSON text and keeps the type so "1" and 1 stay distinct', () => {
+    const stats = fieldStatistics([{ v: '1' }, { v: 1 }, { v: ['x'] }]).v;
+    expect(stats.value_hash_distribution.map((item: any) => item.value_type).sort()).toEqual(['array', 'number', 'string']);
+    expect(stats.value_hash_distribution.find((item: any) => item.value_type === 'array')?.value_sha256).toBe(createHash('sha256').update('["x"]', 'utf8').digest('hex'));
   });
   it('compares only valid bboxes including boundary contact', () => {
     expect(bboxRelation([0, 0, 1, 1], [1, 1, 2, 2])).toBe('INTERSECTS');
@@ -177,8 +194,9 @@ describe('opening times and gap POI projection', () => {
   it('classifies CSV opening-hour headers as literal location/time fields', () => {
     const csv = Buffer.from('店舗名,設置場所,営業時間・利用時間\nSynthetic,改札内,SYNTHETIC 7:00〜22:00\n', 'utf8');
     const { summary } = inventoryCsv(csv);
-    expect(Object.keys(summary.literal_location_time_fields)).toEqual(['設置場所', '営業時間・利用時間']);
-    expect(summary.literal_location_time_fields['営業時間・利用時間'].literal_distribution[0].value).toBe('SYNTHETIC 7:00〜22:00');
+    expect(Object.keys(summary.location_time_fields)).toEqual(['設置場所', '営業時間・利用時間']);
+    expect(summary.location_time_fields['営業時間・利用時間'].value_hash_distribution[0].value_sha256).toBe(createHash('sha256').update('SYNTHETIC 7:00〜22:00', 'utf8').digest('hex'));
+    expect(JSON.stringify(summary)).not.toContain('SYNTHETIC 7:00');
   });
   it('projects only station-relevant POI reports', () => {
     const report = { source_id: 'poi-a', source_sha256: 'a', coordinates: 'UNKNOWN', station_ids: ['shinjuku'], members: [], detail: {},
