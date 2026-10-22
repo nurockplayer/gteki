@@ -30,6 +30,7 @@ import {
   validateBundle,
   type CoverageArea,
   type CoverageGap,
+  type DataFile,
   type Edge,
   type EdgeMode,
   type EvidenceRef,
@@ -976,6 +977,32 @@ const spawnNodeIds = (["ticket_gate", "platform", "exit"] as const).flatMap((cat
   return poi?.connectorNodeIds[0] ? [poi.connectorNodeIds[0]] : [];
 });
 
+// Non-code data the web bundle inlines (#186). Declared here so station.json carries the same
+// source and rights gate as assets; each derivation names the script that writes the file.
+const dataFiles: DataFile[] = [
+  {
+    id: "plan",
+    path: "data/plan.json",
+    sourceIds: [SRC_NWD, SRC_MAP].sort(),
+    modified: true,
+    derivation: "tools/import-e27.ts: render-only plan from the 構内地図 polygons (level outlines, spaces and their restricted/toll flags, facilities) and the NWD node positions behind nodeRenderZ; heights are symbolic estimates from stair/escalator run lengths, not measurements. It is not routing truth.",
+  },
+  {
+    id: "surface",
+    path: "data/surface.json",
+    sourceIds: [SRC_NWD, "plateau-13104-shinjuku-ku-2025"].sort(),
+    modified: true,
+    derivation: "tools/import-surface.ts: LOD1 building footprints/heights and road polygons from the PLATEAU bldg/tran CityGML around the E27 exits, simplified and flattened to the symbolic street level; gteki/graph.json only supplies the street-level exit node positions that bound the selection radius. Render-only context, not routing.",
+  },
+  {
+    id: "fare-restricted",
+    path: "scene/fare-restricted.generated.json",
+    sourceIds: [SRC_NWD, SRC_MAP].sort(),
+    modified: true,
+    derivation: "test/helpers/generate-restricted-fences.ts: fare/access containment geometry recomputed from the bundle's verified edges (gteki/graph.json) and the restricted spaces/ 構内地図 polygons in data/plan.json; it never supplies or alters routing edges.",
+  },
+];
+
 const bundle: StationBundle = {
   schema: SCHEMA_VERSION,
   station: {
@@ -1000,6 +1027,7 @@ const bundle: StationBundle = {
   pois,
   coverage,
   spawnNodeIds,
+  dataFiles,
 };
 
 // ---------------------------------------------------------------- plan (render geometry)
