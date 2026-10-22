@@ -174,6 +174,13 @@ func test_rides() -> void:
 	check(guide.step_at(float(ride.from_s) + 0.3) == int(ride.step), "shinjuku S4: on the shaft itself the ride's step is the active one")
 	if float(ride.from_s) > Guide.RIDE_TRIGGER + 0.1:
 		check(guide.step_at(float(ride.from_s) - (Guide.RIDE_TRIGGER + 0.1)) == walk_step, "shinjuku S4: %.1f m short of the shaft the highlight is still on the walk step (%d)" % [Guide.RIDE_TRIGGER + 0.1, guide.step_at(float(ride.from_s) - (Guide.RIDE_TRIGGER + 0.1))])
+	# A guided walk started strictly inside the shaft (a teleported or hand-edited position) backs up to the shaft's
+	# start, where the lift is offered, instead of freezing inside the span with no prompt (#290 review).
+	var inside := Guide.new()
+	inside.load_doc(answer.doc)
+	inside.start_guide(float(ride.from_s) + 0.3)
+	check(is_equal_approx(inside.s, float(ride.from_s)), "shinjuku S4: a guided walk started inside the shaft backs up to its start (s=%.2f)" % inside.s)
+	check(not inside.ride_near(ride.from, inside.s).is_empty(), "shinjuku S4: at the shaft's start the lift is offered, so the walk is not stranded")
 	# A route with no elevator step states no rides (Ikebukuro's W1 is all walk).
 	var flat := bridge.route("ikebukuro", "jr-central-gate-2", "exit-35", true, true)
 	var flat_guide := Guide.new()
@@ -302,6 +309,7 @@ func test_ride_hud() -> void:
 	var landing := hud.guide.points[2] + Vector3(0.75, 0.0, 0.0)
 	check(walker.global_position.is_equal_approx(landing), "hud ride: the walker's feet are on the landing, 0.75 m forward of the exit (%s)" % str(walker.global_position))
 	check(is_equal_approx(hud.guide.s, float(hud.guide.cumulative[2]) + 0.75), "hud ride: the guide resumes from the landing, not the exit vertex (s=%.2f)" % hud.guide.s)
+	check(hud.guide.s <= float(ride.to_s) + Walker.RIDE_LANDING_REACH + 1e-6, "hud ride: the resume point is never more than the landing's reach past the exit (s=%.2f)" % hud.guide.s)
 	# The camera is on the landing before the fade-in starts, so the screen never fades in on the departure floor and then
 	# jumps a floor (#287 review).
 	check(camera.last_snap and camera.last_position.is_equal_approx(walker.global_position), "hud ride: the camera is snapped to the landing while black (%s, snap %s)" % [str(camera.last_position), str(camera.last_snap)])
@@ -318,6 +326,15 @@ func test_ride_hud() -> void:
 		hud.physics(1.0 / 60.0, Vector2.ZERO)
 		ticks += 1
 	check(hud.guide.arrived and walker.global_position.is_equal_approx(hud.guide.points[hud.guide.points.size() - 1]), "hud ride: guided walking carries on from the landing to the goal after %d ticks" % ticks)
+	# Toggling guided walking back on from the departure floor offers the same lift again: a ride taken earlier in the
+	# session does not count as ridden for a guide started behind it (#290 review).
+	walker.global_position = hud.guide.points[0]
+	hud.set_guided(true)
+	for _k in 300:
+		hud.physics(1.0 / 60.0, Vector2.ZERO)
+	check(is_equal_approx(hud.guide.s, float(ride.from_s)), "hud ride: re-enabled guided walking clamps at the shaft again (s=%.2f)" % hud.guide.s)
+	check(hud._prompt.text == Hud.RIDE_PROMPT, "hud ride: the re-offered lift's prompt shows (%s)" % hud._prompt.text)
+	check(hud.guide.ridden.is_empty() or not hud.guide.ridden.has(int(ride.step)), "hud ride: the shaft ahead of the new start counts as not ridden (%s)" % str(hud.guide.ridden))
 	stub.queue_free()
 	await process_frame
 

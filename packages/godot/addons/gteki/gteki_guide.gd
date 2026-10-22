@@ -3,6 +3,8 @@ extends RefCounted
 ## instructions, result facts) plus guided-walk stepping that mirrors explorer.ts `stepGuide`/`samplePolyline`.
 ## Nothing is routed or guessed here. A failed answer keeps its reason/message and has no polyline at all.
 
+const Walker = preload("res://addons/gteki/gteki_walker.gd")
+
 ## Web guide tier "run" (guidePace.ts DEFAULT_GUIDE_TIER): 3.4 m/s along the path, no collisions.
 const GUIDE_SPEED := 3.4
 const YAW_FOLLOW := 4.0
@@ -200,7 +202,10 @@ func take_ride(walker: Object, ride: Dictionary) -> bool:
 	# moves to the projected landing (never back, so at least the shaft's exit), and the shaft is marked as ridden so the
 	# gate below lets the walk on (#287 review).
 	var landed: Vector3 = walker.feet() if walker.has_method("feet") else walker.global_position
-	s = clampf(maxf(float(ride.to_s), float(project(landed).s)), 0.0, total())
+	# Never before the exit and never more than the landing's own reach past it: on a route that doubles back near the
+	# exit the projection could otherwise jump `s` over later vertices.
+	var limit := minf(total(), float(ride.to_s) + Walker.RIDE_LANDING_REACH)
+	s = clampf(maxf(float(ride.to_s), float(project(landed).s)), minf(float(ride.to_s), limit), limit)
 	if not ridden.has(int(ride.step)):
 		ridden.append(int(ride.step))
 	return true
@@ -277,12 +282,23 @@ func facts() -> Array:
 
 
 ## Start guided walking at distance `from`; stops at the end, no collision, same as the web guide.
+## A shaft ahead of the new start counts as not ridden again — toggling guided walking back on at the departure floor
+## must offer the same lift and clamp at it, not fly through it — and a start strictly inside a shaft backs up to the
+## shaft's start, where the lift is offered: a clamped advance inside the span would otherwise freeze with no prompt.
 func start_guide(from := 0.0) -> void:
 	if not ok:
 		return
 	guiding = true
 	arrived = false
 	s = clampf(from, 0.0, total())
+	for step in ridden.duplicate():
+		var taken := ride_on_step(step)
+		if not taken.is_empty() and float(taken.from_s) >= s:
+			ridden.erase(step)
+	for ride in rides:
+		if float(ride.from_s) < s and s < float(ride.to_s):
+			s = float(ride.from_s)
+			break
 
 
 func stop_guide() -> void:
