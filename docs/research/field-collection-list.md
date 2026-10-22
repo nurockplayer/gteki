@@ -9,7 +9,7 @@ Consolidated 2026-10-22 from the five research files (R1 to R5) and the existing
 > - Record the date and time on every note.
 > - No measurement inside a paid area unless the item says a ticket is needed (column "Paid?").
 > - Contact no one (Owner decision of 2026-10-22, recorded on #165). Items that need an operator are in "Not collectable by the Owner alone" and are blocked.
-> - The licence of the Owner's own photos is an open Owner decision (OD-13, `gaps/DR-imagery-materials.md` section 8 item 6). Until it is decided, keep the photos on the Owner's device as reference only. Operator photography rules were not checked (`gaps/DR-imagery-materials.md` section 7).
+> - The Owner's own photos ship as CC BY 4.0, attribution "GTEki contributors" (OD-13, decided 2026-10-22, [`owner-decisions-pending.md`](owner-decisions-pending.md)). Photos showing operator logos or ads ship only with those regions removed or blurred (OD-14). Operator photography rules were not checked (`gaps/DR-imagery-materials.md` section 7).
 
 ## How to read this
 

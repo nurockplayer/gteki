@@ -1,8 +1,34 @@
-# Owner decisions pending (from the R1 to R5 research files)
+# Owner decisions on the R1 to R5 research files
 
-Consolidated 2026-10-22 from section 8 of the five research files: [`gaps/DR-IK-station-facts.md`](gaps/DR-IK-station-facts.md) (IK), [`gaps/DR-SJ-station-facts.md`](gaps/DR-SJ-station-facts.md) (SJ), [`gaps/DR-changes-since-2023.md`](gaps/DR-changes-since-2023.md) (CH), [`gaps/DR-imagery-materials.md`](gaps/DR-imagery-materials.md) (IMG), [`gaps/DR-rights-lineage.md`](gaps/DR-rights-lineage.md) (RL). Duplicates are merged. A recommendation (marked **Rec**) appears only where the source file gives one. Nothing here is a decision; items already covered by a recorded decision are in "Already decided" and are not re-asked. The matching on-site work is in [field-collection-list.md](field-collection-list.md).
+Consolidated 2026-10-22 from section 8 of the five research files: [`gaps/DR-IK-station-facts.md`](gaps/DR-IK-station-facts.md) (IK), [`gaps/DR-SJ-station-facts.md`](gaps/DR-SJ-station-facts.md) (SJ), [`gaps/DR-changes-since-2023.md`](gaps/DR-changes-since-2023.md) (CH), [`gaps/DR-imagery-materials.md`](gaps/DR-imagery-materials.md) (IMG), [`gaps/DR-rights-lineage.md`](gaps/DR-rights-lineage.md) (RL). Duplicates are merged. A recommendation (marked **Rec**) appears only where the source file gives one. The questions below were collected as pending; **all were decided on 2026-10-22** (next section). Items already covered by a recorded decision are in "Already decided" and are not re-asked. The matching on-site work is in [field-collection-list.md](field-collection-list.md).
 
-## Top decisions (most work unblocked first)
+## Decided 2026-10-22
+
+Decided by the director (gteki-80) under the Owner's delegation of 2026-10-22: [#165 comment 6335071234](https://github.com/nurockplayer/gteki/issues/165#issuecomment-6335071234). The Owner wants as much data shipped as rights allow, within clear limits. The question tables further down are kept as the record of what was asked.
+
+| Id | Decision |
+| --- | --- |
+| OD-01 | Split. **Toei** station-page plain facts (exit numbers, closures, hours, lift counts) are covered by the #26 facts-only reference, with no copied text or layout (A). **Tobu** station-map gate names are **not** used (B), because Tobu terms §7–8 prohibit commercial use. |
+| OD-02 | A. No JR East data. |
+| OD-03 | Layout, not fact. Relative label placement stays in the research files only. |
+| OD-04 | Withdrawn (research work, item R8). |
+| OD-05 | Third-party aggregators are indicators only and never enter data. |
+| OD-06 | A. S10 only for Shinjuku store location text. |
+| OD-07 | Not needed. |
+| OD-08 | A. Third-party photos are reference only, never shipped textures. |
+| OD-09 | Moot under OD-08 A: no CC BY-SA material ships. |
+| OD-10 | Yes: per-file CC BY attribution in `NOTICE` (applies only if a CC BY file ever ships). |
+| OD-11 | Mapillary is reference only; no derived data. |
+| OD-12 | Yes: Poly Haven and ambientCG **CC0** materials may be Lane E inputs, with provenance recorded per file. |
+| OD-13 | B. Owner photos ship as **CC BY 4.0** (attribution "GTEki contributors"), matching the project's own assets. The Owner may override. |
+| OD-14 | Photos showing operator logos or ads do not ship unless those regions are removed or blurred. |
+| OD-15 | A. Keep roads risk acceptance (b) (the Owner accepted it knowingly); add the GSI Q1-24 note to `docs/gis/HANDOFF.md` (GIS lane). |
+| OD-16 | A. Keep Q8; add a `HANDOFF` note on the confirmed catalog-versus-CKAN divergence (GIS lane). |
+| OD-17 | R1 (Ikebukuro walk network) stays context-only. |
+
+## Questions as asked (pending until 2026-10-22)
+
+### Top decisions as ranked before the decisions (most work unblocked first)
 
 1. **OD-01** Operator-page text facts under #26 (Toei, Tobu): unblocks the whole Shinjuku station-lead handoff (exit 2, tags, hours, lift counts) and the Tobu gate names.
 2. **OD-08** Photo-as-texture policy: decides whether any third-party photo can ship, and sets the frame for OD-09 to OD-12.
