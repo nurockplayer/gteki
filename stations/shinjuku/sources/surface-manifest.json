@@ -5,14 +5,19 @@
   "year": 2025,
   "specification": "5.0",
   "version": "13104_shinjuku-ku_pref_2025_citygml_1_op",
-  "license": "CC-BY-4.0",
-  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "license": "PLATEAU Site Policy 「３．著作権について」に拠る",
+  "licenseUrl": "https://www.mlit.go.jp/plateau/site-policy/",
   "licenseEvidence": {
-    "metadata": "metadata.zip!metadata/udx_13104_pref_2025_op.xml",
-    "quote": "Licensed under CC BY 4.0",
+    "basis": "Catalogue licence (CKAN license_id plateau): PLATEAU Site Policy 「３．著作権について」. The credit required is 出典 plus a 加工 notice, not a licence label.",
     "catalogLicense": "PLATEAU Site Policy 「３．著作権について」に拠る",
     "policy": "https://www.mlit.go.jp/plateau/site-policy/",
-    "note": "CKAN dataset and metadata read on acquisition. Dataset-specific CC BY 4.0; site policy allows CC BY 4.0. Raw textures/appearances are not used."
+    "recordedClause": {
+      "status": "unconfirmed",
+      "metadata": "metadata.zip!metadata/udx_13104_pref_2025_op.xml",
+      "quote": "Licensed under CC BY 4.0",
+      "note": "Evidence recorded only. This clause sits inside the data package metadata; the dataset page does not name CC BY 4.0 and the repo treats the CC BY 4.0 label as needing confirmation (docs/gis/HANDOFF.md, NOTICE 4.1). It is not asserted as the licence and is not shown in the app (#161)."
+    },
+    "note": "CKAN dataset and metadata read on acquisition. Raw textures/appearances are not used."
   },
   "crs": "EPSG:6697 (JGD2011 latitude, longitude, orthometric height; metres for height)",
   "origin": {
