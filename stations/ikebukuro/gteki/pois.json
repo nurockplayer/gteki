@@ -1791,7 +1791,7 @@
      "toshima-underground-guide-2022",
      "plateau-ubld-13116"
     ],
-    "method": "gate identity from official map; connector = PLATEAU passage opening",
+    "method": "gate identity from official map; connector = PLATEAU passage opening; placed about 6 m from the projected map position (the map shows plural south openings), weaker than Central Gate 2 (about 1 m)",
     "checkedDate": "2026-10-20"
    },
    "notes": [
@@ -1882,6 +1882,102 @@
     ],
     "method": "gate exists per official map; exact opening not yet identified in PLATEAU",
     "checkedDate": "2026-10-20"
+   }
+  },
+  {
+   "id": "metro-y-south-west-gate",
+   "category": "ticket_gate",
+   "names": [
+    {
+     "lang": "ja",
+     "text": "有楽町線 南通路西改札"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line South Passage West Gate"
+    }
+   ],
+   "aliases": [
+    {
+     "lang": "ja",
+     "text": "有楽町線"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho"
+    },
+    {
+     "lang": "ja",
+     "text": "東京メトロ"
+    },
+    {
+     "lang": "ja",
+     "text": "メトロ"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro"
+    },
+    {
+     "lang": "en",
+     "text": "Metro"
+    },
+    {
+     "lang": "en",
+     "text": "Yurakucho Line"
+    },
+    {
+     "lang": "en",
+     "text": "Y"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ゆうらくちょうせん"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "有樂町線"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東京地下鐵"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東京Metro"
+    },
+    {
+     "lang": "ja",
+     "text": "南通路西改札"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "みなみつうろにしかいさつ"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ゆうらくちょうせんみなみつうろにしかいさつ"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Yurakucho-sen Minami-tsuro Nishi kaisatsu"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "有樂町線 南通道西剪票口"
+    }
+   ],
+   "floorId": "b1",
+   "displayPosition": null,
+   "connectorNodeIds": [],
+   "paid": false,
+   "evidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-accessibility-2026-10"
+    ],
+    "method": "gate name per the Toshima guide; a lift and escalator connection to Exit 4 (エソラ) outside the fare gates (改札外) per Tokyo Metro's accessibility page (facts only). Search-only: the gate machines sit inside surveyed floor with no gate-line opening (gap-south-west), so no node or edge is authored",
+    "checkedDate": "2026-10-22"
    }
   },
   {
