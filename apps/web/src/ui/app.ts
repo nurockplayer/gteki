@@ -10,7 +10,7 @@ import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGu
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
-import { factsOnlyCredit, sourceCredit } from "../credits.ts";
+import { factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { LiveRegion, routeLiveMessage, searchLiveMessage } from "./live.ts";
 import { watchReducedMotion } from "./motion.ts";
@@ -934,7 +934,8 @@ export class App {
       // Every source, including those cited only by assets or coverage: link, licence and modification notice.
       for (const s of b.sources) {
         const li = this.creditItem(s);
-        li.append(el("span", "muted", ` [${s.rights}${s.usage === "facts-only" ? `, ${this.t.factsOnlyTag}` : ""}]`));
+        // #130: plain-language rights, never the internal enum. A facts-only source is already described by creditItem (#122 wording).
+        if (s.usage !== "facts-only") li.append(el("span", "muted", ` · ${rightsLabel(s.rights, this.t)}`));
         src.append(li);
       }
       d.append(src);

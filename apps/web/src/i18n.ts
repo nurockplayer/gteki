@@ -82,6 +82,12 @@ const STRINGS = {
     symbolicHeight: "高さは表示用の推定です",
     coverage: "カバー範囲",
     gaps: "未整備・要調査",
+    /** #130: plain-language rights labels for the Coverage dialog (the internal rights enum is never shown). */
+    rightsReusable: "条件付きで再利用可",
+    rightsOwnerOverride: "ライセンス未確認・オーナー判断により公開",
+    rightsReference: "参照のみ（公開データには使用しない）",
+    rightsRestricted: "利用制限あり（公開データには使用しない）",
+    rightsUnverified: "権利未確認（公開データには使用しない）",
     validationFailed: "駅データが検証に失敗したため表示しません（安全側）",
     loading: "読み込み中…",
     sceneFallback: "駅の3Dシーンを読み込めず、経路網表示（L0）に切り替えました",
@@ -95,8 +101,6 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `ルートが見つかりました：${m}m、約${min}分`,
     liveSeparator: "。",
     coverageStatus: { routable: "経路あり", visual_only: "表示のみ", unverified: "未確認", excluded: "対象外" } as Record<string, string>,
-    /** Short Coverage-dialog tag; the full #122 wording is `factsOnly`. */
-    factsOnlyTag: "事実確認のみ",
     language: "English",
   },
   en: {
@@ -174,6 +178,12 @@ const STRINGS = {
     symbolicHeight: "Heights are display estimates",
     coverage: "Coverage",
     gaps: "Gaps & survey needs",
+    /** #130: plain-language rights labels for the Coverage dialog (the internal rights enum is never shown). */
+    rightsReusable: "Reusable with conditions",
+    rightsOwnerOverride: "Published under the Owner's decision; licence unconfirmed",
+    rightsReference: "Reference only (not used in published data)",
+    rightsRestricted: "Restricted (not used in published data)",
+    rightsUnverified: "Rights unverified (not used in published data)",
     validationFailed: "Station data failed validation and is not shown (fail-safe)",
     loading: "Loading…",
     sceneFallback: "Station 3D scene failed; showing the network view (L0)",
@@ -187,8 +197,6 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `Route found: ${m} m, about ${min} minute${min === 1 ? "" : "s"}`,
     liveSeparator: ". ",
     coverageStatus: { routable: "routable", visual_only: "visual only", unverified: "unverified", excluded: "excluded" } as Record<string, string>,
-    /** Short Coverage-dialog tag; the full #122 wording is `factsOnly`. */
-    factsOnlyTag: "facts-only",
     language: "日本語",
   },
 };

@@ -622,3 +622,72 @@ describe("late-opening windows (PR #15 Codex review 6)", () => {
     expect(errors(b)).toContain("edge.hours");
   });
 });
+
+describe("PUBLISHED_UNDER_OWNER_OVERRIDE rights (#130)", () => {
+  const OVERRIDE = { decision: "https://github.com/nurockplayer/gteki/issues/130", date: "2026-10-22" };
+  const overridden = (override?: unknown, license: { name: string; url: string } | null = { name: "Licence unconfirmed", url: "https://example.org/terms" }) => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    const src = b.sources.find((s) => s.id === "fixture-access")!;
+    src.rights = "PUBLISHED_UNDER_OWNER_OVERRIDE";
+    src.license = license;
+    (src as { override?: unknown }).override = override;
+    return b;
+  };
+
+  it("ships like REUSABLE_WITH_CONDITIONS when the override is recorded", () => {
+    const b = overridden(OVERRIDE);
+    expect(errors(b)).not.toContain("source.override");
+    expect(errors(b)).not.toContain("source.rights.value");
+    expect(warnings(b)).not.toContain("source.rights");
+    // An issue reference is accepted as well as a URL.
+    for (const decision of ["#130", "nurockplayer/gteki#130"]) expect(errors(overridden({ ...OVERRIDE, decision }))).not.toContain("source.override");
+  });
+
+  it("is an error without an override reference or with a malformed one", () => {
+    expect(errors(overridden(undefined))).toContain("source.override");
+    for (const bad of [null, "x", {}, { decision: "see chat", date: "2026-10-22" }, { decision: OVERRIDE.decision }, { decision: OVERRIDE.decision, date: "2026-10" }, { decision: OVERRIDE.decision, date: "2026-02-30" }])
+      expect(errors(overridden(bad))).toContain("source.override");
+  });
+
+  it("needs licence text", () => {
+    expect(errors(overridden(OVERRIDE, null))).toContain("source.override");
+    expect(errors(overridden(OVERRIDE, { name: " ", url: "https://example.org/terms" }))).toContain("source.override");
+  });
+
+  it("lets geometry ship: nodes, edges, assets, POIs and coverage polygons derived from an override source validate clean", () => {
+    const geometry = (rights: "PUBLISHED_UNDER_OWNER_OVERRIDE" | "UNVERIFIED") => {
+      const b = asRealStation(createSyntheticBundle([edge("v", "start", "goal", { verification: "verified" })]));
+      const src = b.sources.find((s) => s.id === "fixture-geometry")!;
+      src.rights = rights;
+      if (rights === "PUBLISHED_UNDER_OWNER_OVERRIDE") (src as { override?: unknown }).override = OVERRIDE;
+      b.assets = [{ id: "x", uri: "assets/x.glb", format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-geometry"] }];
+      b.coverage.areas = [{ id: "area", floorId: "concourse", status: "routable", label: [], polygon: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }], sourceIds: ["fixture-geometry"] }];
+      return b;
+    };
+    expect(errors(geometry("PUBLISHED_UNDER_OWNER_OVERRIDE"))).toEqual([]);
+    // The same bundle with an unverified source is refused at every geometry gate.
+    expect(errors(geometry("UNVERIFIED"))).toEqual(expect.arrayContaining([
+      "node.source.rights", "edge.geometry.rights", "asset.rights", "poi.position.rights", "coverage.polygon.rights",
+    ]));
+  });
+
+  it("warns, without erroring, when an override is recorded on a source whose rights is not the override value", () => {
+    const b = overridden(OVERRIDE);
+    b.sources.find((s) => s.id === "fixture-access")!.rights = "REUSABLE_WITH_CONDITIONS";
+    expect(errors(b)).toEqual([]);
+    expect(warnings(b)).toContain("source.override");
+    expect(warnings(overridden(OVERRIDE))).not.toContain("source.override");
+    // A malformed record on a non-override source is still an error.
+    const bad = overridden({ decision: "see chat", date: "2026-10-22" });
+    bad.sources.find((s) => s.id === "fixture-access")!.rights = "REUSABLE_WITH_CONDITIONS";
+    expect(errors(bad)).toContain("source.override");
+  });
+
+  it("fails closed on a wrong-shaped override at parse time", () => {
+    const [m, g, p] = split(overridden(OVERRIDE));
+    expect(parseStationFiles(m, g, p).ok).toBe(true);
+    (m.sources.find((s) => s.id === "fixture-access") as { override?: unknown }).override = "x";
+    expect(parseStationFiles(m, g, p).ok).toBe(false);
+  });
+});
