@@ -264,7 +264,7 @@ describe("describeRoute opening leg", () => {
   });
 
   it("a later straight walk still says straight", () => {
-    const b = createSyntheticBundle([edge("g", "start", "a", { mode: "gate" }), edge("a-goal", "a", "goal")]);
+    const b = createSyntheticBundle([edge("g", "start", "a", { mode: "gate" }), edge("a-goal", "a", "goal", { lengthM: 20 })]);
     b.nodes.find((n) => n.id === "a")!.position = { x: 0, y: 0, z: 0 };
     b.nodes.find((n) => n.id === "goal")!.position = { x: 20, y: 0, z: 0 };
     expect(describeRoute(b, route(b, "start", "goal"), "en").map((i) => i.text)).toEqual(["Start", "Pass the ticket gate", "Go straight ~20 m", "Arrive at destination"]);
