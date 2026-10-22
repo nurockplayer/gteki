@@ -27,6 +27,11 @@ export interface LightingPlan {
   hemiIntensity: number;
   /** Set `scene.environment` to the core environment map. */
   sceneEnvironment: boolean;
+  /**
+   * How the environment lights materials: "envMap" (`scene.environment`, PMREM diffuse + specular), "probe" (SH light probe,
+   * diffuse only, low tier), or null (no environment). The low tier skips per-pixel PMREM lookups, which dominated its frame time.
+   */
+  environmentVia: "envMap" | "probe" | null;
   environmentIntensity: number;
   /** The avatar carries its own envMap (scene mode without `scene.environment`). */
   avatarEnvMap: boolean;
@@ -37,9 +42,10 @@ export interface LightingPlan {
 /**
  * "default": hemisphere + sun + `scene.environment`. "scene": the scene owns lighting (lightmaps), so no core
  * lights and no `scene.environment` unless the station opts in with `envIntensity`, and the avatar keeps its
- * own envMap. A lightmapped station is therefore never double-lit by default.
+ * own envMap. A lightmapped station is therefore never double-lit by default. `quality` "low" routes the environment
+ * through an SH light probe instead of `scene.environment` (`environmentVia`); `avatarEnvMap` is unaffected.
  */
-export function resolveLighting(env?: LightingEnv): LightingPlan {
+export function resolveLighting(env?: LightingEnv, quality: "low" | "high" = "high"): LightingPlan {
   const mode = env?.lighting === "scene" ? "scene" : "default";
   // A scene-lit station opts in with a positive envIntensity; 0 there would leave the avatar unlit (no core lights, no own envMap).
   const sceneEnvironment = mode === "default" || (env?.envIntensity ?? 0) > 0;
@@ -48,6 +54,7 @@ export function resolveLighting(env?: LightingEnv): LightingPlan {
     coreLights: mode === "default",
     hemiIntensity: HEMI_INTENSITY,
     sceneEnvironment,
+    environmentVia: !sceneEnvironment ? null : quality === "low" ? "probe" : "envMap",
     environmentIntensity: env?.envIntensity ?? DEFAULT_ENV_INTENSITY,
     avatarEnvMap: !sceneEnvironment,
     toneMappingExposure: (env?.exposure ?? 1) * AGX_EXPOSURE_GAIN,
