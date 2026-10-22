@@ -44,13 +44,14 @@ function sceneLifecycle(stepBuilt: (dt: number, t: number) => void, disposeBuilt
 
 /**
  * Drops what Shinjuku keeps between opens: the layout/fence snapshot that makes a reopen fast (~7.5 MB of JS
- * heap). Call it when the explorer leaves Shinjuku for good (apps/web does not call it yet, so until it is
- * wired the heap goal of #72 is not met). The next open then rebuilds the layout once. The baked street table
+ * heap). Exported as the optional scene-api hook `releaseCaches`, which the explorer calls when it leaves Shinjuku
+ * for another station or is disposed, never on a reopen of Shinjuku. The next open then rebuilds the layout once. The baked street table
  * (a 0.4 MB module-level string) cannot be released: it is a static ESM import.
  */
 export function releaseShinjukuCaches() {
   clearLayoutCache();
 }
+export const releaseCaches = releaseShinjukuCaches;
 
 /**
  * The explorer hook. The Lane E kit swap (Issue #94) is OFF by default: with no opt-in this is the same

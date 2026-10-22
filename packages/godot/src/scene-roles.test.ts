@@ -90,6 +90,22 @@ describe("tagSceneRoles", () => {
     expect(summary).toMatchObject({ collider: 1, walkable: 0, collisionOnly: 1 });
   });
 
+  it("leaves a draw-nothing mesh out of every count, warning by name instead (#254)", () => {
+    // Shinjuku's viewer probe: an empty BufferGeometry. GLTFExporter skips it, so a sidecar that counted it would
+    // disagree with the GLB and with Godot (571 vs 572).
+    const probe = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial({ colorWrite: false }));
+    probe.name = "viewer probe (draws nothing)";
+    const drawn = named("drawn");
+    const root = new THREE.Group();
+    root.add(probe, drawn);
+    const summary = tagSceneRoles({ root, walkable: [], colliders: [], dispose() {} } as unknown as StationScene);
+    expect(summary).toMatchObject({ meshes: 1, triangles: 12, byRole: { visual: 1 } });
+    expect(summary.warnings.some((w) => w.includes("no drawable geometry") && w.includes(probe.name))).toBe(true);
+    // Nothing tags it either: no role, no hidden or collision-only flag, and it stays where the scene put it.
+    expect(probe.userData).toEqual({});
+    expect(root.children).toEqual([probe, drawn]);
+  });
+
   it("keeps an own vocabulary role such as stairs_ramps", () => {
     const stairs = named("st", "stairs_ramps");
     const root = new THREE.Group();
