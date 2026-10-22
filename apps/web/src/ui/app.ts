@@ -173,7 +173,7 @@ export class App {
     this.ui.langBtn.textContent = t.language;
     this.ui.langBtn.dataset.short = this.s.lang === "ja" ? "EN" : "日本語";
     this.ui.coverageBtn.textContent = t.coverage;
-    this.ui.railBtn.textContent = this.s.lang === "ja" ? "電車に乗る" : "Ride train";
+    this.ui.railBtn.textContent = this.s.lang === "ja" ? "電車に乗る（デモ・未調査）" : "Ride train (demo, not surveyed)";
     this.ui.railBtn.title = this.s.lang === "ja" ? "埼京線 乗車デモ（仮設ホーム）" : "JR Saikyo ride demo (temporary platform)";
     this.ui.more.setAttribute("aria-label", t.options);
     this.ui.fromInput.placeholder = t.fromPlaceholder;
