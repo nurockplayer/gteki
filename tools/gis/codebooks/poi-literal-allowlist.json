@@ -37,6 +37,8 @@
     "公園",
     "地下通路",
     "島",
+    "東京地下鉄",
+    "通路",
     "道路",
     "鉄道"
   ],
@@ -78,7 +80,9 @@
     "地下通路": "Common noun for an underground passage. It is part of the class (a) PLATEAU group name kept in the inventories (gml:name 池袋駅_B1地下通路), so it must survive inside that name, and it occurs in our own HANDOFF and gap prose; it is also an MLIT route-structure label. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
     "島": "Single kanji that is part of place names in our own prose (豊島区, the ward whose data we cite) and a one-character PLATEAU codelist description; generic geography, not source wording. Exempt only as a substring of prose.",
     "道路": "Ordinary Japanese noun in our own prose (道路, the road geometry decisions) and report keys (道路種別); a one-word PLATEAU codelist description that carries no source-specific wording. Exempt only as a substring of prose.",
-    "鉄道": "Common noun (railway) inside the recorded KSJ attribution text 国土数値情報（鉄道・2024年） that rights/ reports quote, and in our theme names; it is also an MLIT specification label. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak."
+    "鉄道": "Common noun (railway) inside the recorded KSJ attribution text 国土数値情報（鉄道・2024年） that rights/ reports quote, and in our theme names; it is also an MLIT specification label. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "東京地下鉄": "Publisher name (Tokyo Metro Co., Ltd.) that provenance and credit must record: the facts-only source tokyometro-ikebukuro-yardmap-2026-03 (decisions/facts-only-credit-wording.md, #122/#138) is published by it. It coincides with an operator value in the PLATEAU related layers, but naming a source's publisher is attribution, not reuse of a field value. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "通路": "Ordinary Japanese noun (passage) inside station facility names that our own pois.json records as facts (ticket-gate names such as a 中央通路 gate, decisions/facts-only-credit-wording.md, #122/#138) and in 地下通路; a one-word PLATEAU codelist description that carries no source-specific wording. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak."
   },
   "structural_values": [
     "road",
