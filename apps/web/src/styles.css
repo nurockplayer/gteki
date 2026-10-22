@@ -227,3 +227,61 @@ button.on { border-color: var(--accent); color: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.001ms !important; transition-delay: 0s !important; animation-duration: 0.001ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
 }
+
+
+/* ---- JR Saikyo interstation ride demo (unsurveyed boarding location) ---- */
+.rail-launch {
+  position: fixed; right: 16px; bottom: calc(78px + env(safe-area-inset-bottom));
+  z-index: 8; padding: 12px 18px;
+  font-weight: 750; font-size: 13px; letter-spacing: 0.015em;
+  border: 1px solid rgba(94, 240, 255, .65);
+  background: rgba(7, 30, 42, .91);
+  color: #e4fcff; box-shadow: 0 8px 26px rgba(0, 0, 0, .5), 0 0 22px rgba(94, 240, 255, .16);
+  backdrop-filter: blur(12px);
+}
+.rail-launch:hover { background: #114858; }
+.rail-ride {
+  position: absolute; inset: 0; z-index: 20;
+  overflow: hidden; color: #f5f9ff; background: #08111b;
+  isolation: isolate;
+}
+.rail-ride-canvas { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+.rail-ride::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(3,10,20,.65), transparent 26%, transparent 56%, rgba(2,8,17,.88));
+}
+.rail-ride-banner, .rail-ride-sheet, .rail-ride-cancel { position: absolute; z-index: 1; }
+.rail-ride-banner { top: max(22px, env(safe-area-inset-top)); left: clamp(18px, 4vw, 64px); max-width: min(640px, 75vw); text-shadow: 0 2px 16px #020910; }
+.rail-ride-banner h2 { margin: 0 0 8px; font-weight: 850; font-size: clamp(20px, 3vw, 36px); letter-spacing: -.035em; }
+.rail-ride-route { margin: 0 0 10px; font-size: clamp(16px, 2.5vw, 27px); color: #a3fff1; font-weight: 750; }
+.rail-ride-demo-note { max-width: 560px; font-size: 12px; line-height: 1.6; color: #c5d4e6; margin: 0; }
+.rail-ride-cancel { right: max(16px, env(safe-area-inset-right)); top: max(20px, env(safe-area-inset-top)); background: rgba(5, 13, 24, .78); }
+.rail-ride-cancel:disabled { opacity: .35; cursor: default; }
+.rail-ride-sheet {
+  bottom: max(28px, calc(18px + env(safe-area-inset-bottom)));
+  left: 50%; transform: translateX(-50%);
+  width: min(570px, calc(100vw - 32px));
+  padding: clamp(18px, 3vw, 28px);
+  background: rgba(7, 20, 32, .91);
+  backdrop-filter: blur(22px); border: 1px solid rgba(142, 211, 235, .3);
+  border-radius: 18px; box-shadow: 0 16px 54px rgba(0,0,0,.6);
+  text-align: center;
+}
+.rail-ride-stage { font-size: clamp(21px, 3vw, 29px); font-weight: 850; margin: 0 0 5px; }
+.rail-ride-message { color: #c5d4e6; font-size: 13px; line-height: 1.6; margin: 0 0 16px; }
+.rail-ride-progress-track { height: 3px; border-radius: 5px; overflow: hidden; background: rgba(194,235,252,.18); margin-bottom: 17px; }
+.rail-ride-progress { height: 100%; width: 0; background: linear-gradient(90deg,#68dbd4,#dbfff7); transition: width .1s linear; }
+.rail-ride-action { display: block; width: 100%; min-height: 44px; }
+.rail-ride-action:disabled { opacity: .58; cursor: default; }
+@media (max-width: 620px) {
+  .rail-launch { bottom: calc(92px + env(safe-area-inset-bottom)); right: 12px; padding: 9px 12px; }
+  .rail-ride-banner { top: calc(64px + env(safe-area-inset-top)); left: 16px; max-width: calc(100vw - 32px); }
+  .rail-ride-banner h2 { font-size: 20px; }
+  .rail-ride-route { font-size: 16px; }
+  .rail-ride-demo-note { font-size: 10px; max-width: 85vw; }
+  .rail-ride-cancel { top: calc(12px + env(safe-area-inset-top)); }
+  .rail-ride-sheet { padding: 16px; bottom: calc(14px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail-ride-progress { transition: none; }
+}
