@@ -167,3 +167,121 @@ GTEKI_COMPARE_LIBRARY_DIR=/path/to/old/library pnpm --dir tools/blender/web_prev
 ```
 
 The old library is `git show d77257b:assets/library/...`. The Godot runtime probe is a 60-line `SceneTree` script and is not committed; its method is described above.
+
+## Integration rebuild, 2026-10-23 (Lane E PRs #133 #143 #145 #151 #152 #153 #160 #167 #196)
+
+Integration input: the Lane E integration build (local `scratch/lane-e-integration` at `ae7e50d`: main at `9ffa1e3` plus the listed Lane E PRs), compared with the library on main. The earlier measurements above describe the previous rebuild. MiB = 1,048,576 B. GPU estimates use RGBA8 × 4/3 for mipmaps; they are not runtime measurements.
+
+### Budget checks
+
+Each tier has 48 → 91 kit GLBs (43 added, none removed). The finish pack is separate: 8 finishes, 22 loose maps and 8 sample GLBs; it is excluded from the four kit metrics. Baseline has no finish pack, so its finish costs are 0. All caps apply to these inputs.
+
+| Tier | Metric | Main → integration → cap (MiB) | Result |
+| --- | --- | ---: | --- |
+| full | `library_mib` | 21.03 → 35.19 → 22 | OVER |
+| full | `unique_image_mib` | 2.42 → 6.31 → 2.8 | OVER |
+| full | `gpu_unique_mib` | 192.32 → 368.32 → 202 | OVER |
+| full | `gpu_all_glbs_mib` | 1152.99 → 1625.66 → 1210 | OVER |
+| full | `finishes_mib` | 0.00000 → 1.48878 → 1.6 | PASS |
+| full | `finishes_gpu_mib` | 0.00 → 95.33 → 100 | PASS |
+| mobile | `library_mib` | 5.86 → 8.32 → 6.2 | OVER |
+| mobile | `unique_image_mib` | 0.89 → 1.55 → 0.95 | OVER |
+| mobile | `gpu_unique_mib` | 46.72 → 89.22 → 49 | OVER |
+| mobile | `gpu_all_glbs_mib` | 50.99 → 101.09 → 54 | OVER |
+| mobile | `finishes_mib` | 0.00000 → 0.60427 → 0.6 | OVER |
+| mobile | `finishes_gpu_mib` | 0.00 → 23.83 → 28 | PASS |
+
+Both checks exit 1 because of the overages shown; neither reports image/plan, duplicate-image, manifest-integrity or finish-tier rule failures. Mobile `finishes_mib` is 633,621 B against 629,145.6 B (0.6 MiB), an excess of 4,475.4 B that disappears when rounded to two decimals.
+
+### Attribution
+
+Counts come from manifest IDs and image bufferViews; AO is identified by material `occlusionTexture`, counted once per embedded image even when many materials sample it. Content hashes determine unique costs. These snapshots support source attribution, but not a separate byte total for each PR.
+
+| Source | Full | Mobile |
+| --- | ---: | ---: |
+| 43 added kit GLBs, including their AO | 8,381,308 B (7.993 MiB) | 2,183,204 B (2.082 MiB) |
+| #160 baked AO, all 91 kit GLBs | 91 maps; 4,119,348 B; 176.333 MiB GPU | 91 maps; 600,225 B; 36.083 MiB GPU |
+| AO after content dedupe | 81 maps; 3,958,281 B; 166.000 MiB GPU | 81 maps; 536,961 B; 32.500 MiB GPU |
+| AO within the 43 added GLBs (included above) | 1,671,601 B; 78.333 MiB GPU | 214,110 B; 13.583 MiB GPU |
+| AO within the 48 existing GLBs | 2,447,747 B; 98.000 MiB GPU | 386,115 B; 22.500 MiB GPU |
+| Existing GLBs: non-AO embedded-image delta | +0 B; +0.000 MiB GPU | +912 B; +0.000 MiB GPU |
+| Existing GLBs: non-image delta | +4,019,061 B (3.833 MiB) | +16,209 B (0.015 MiB) |
+| #133 finish pack: loose maps (separate budget) | 1,561,100 B; 95.333 MiB GPU | 633,621 B; 23.833 MiB GPU |
+| Finish pack: 8 sample GLBs (outside kit caps) | 1,640,716 B; 104.000 MiB GPU | 676,256 B; 26.000 MiB GPU |
+
+The download increase reconciles without double-counting: added GLBs + AO on existing GLBs + existing non-AO image delta + existing non-image delta = **14,848,116 B full / 2,586,440 B mobile**. Non-image data includes geometry, accessors, GLB JSON and padding. The full-tier remainder (+3.83 MiB on the 48 existing GLBs) matches #160's lightmap layer: full GLBs gain a `TEXCOORD_1` accessor on every visual vertex, plus vertices split at the new chart seams. Mobile already carried UV1 (§8), so its remainder is only +0.015 MiB. This scan does not split the remainder further by PR. The 912 B mobile non-AO change is measured but its cause is not established. Finish costs are additional, not part of that equation.
+
+| Increase explaining kit texture caps | Full | Mobile |
+| --- | ---: | ---: |
+| `unique_image_mib`: AO + newly unique non-AO images | 3.775 + 0.116 MiB | 0.512 + 0.148 MiB + 19 B existing-image delta |
+| `gpu_unique_mib`: AO + newly unique non-AO images | 166.000 + 10.000 MiB | 32.500 + 10.000 MiB |
+| `gpu_all_glbs_mib`: AO + non-AO images in added GLBs | 176.333 + 296.333 MiB | 36.083 + 14.021 MiB |
+
+Thus all four kit overages are accounted for by added assets, AO and the measured non-image remainder. The finish pack passes both full caps and mobile GPU; only mobile loose-map bytes exceed their cap. The two mobile PNG normals total 179,076 B. Against the director-supplied q88 JPEG sizes (28,642 B combined), they add **150,434 B loose + 150,434 B embedded in samples = 300,868 B (0.287 MiB)** of image payload, with no GPU increase. Without that loose-map substitution the pack would be 483,187 B, below 0.6 MiB. The JPEG counterfactual comes from the supplied table, not a re-encode in this run; GLB JSON/padding changes are not included in that substitution delta.
+
+The nine mobile 512 px AO maps total **208,451 B (0.199 MiB)** and **12 MiB GPU**. Their 256 → 512 step adds **9 MiB GPU when each of the nine GLBs is loaded once**, already included in the AO rows. Two vending variants share an AO image, so after content dedupe this subset is 8 images / 181,351 B / 10.667 MiB GPU, and the resolution step adds 8 MiB unique GPU. A valid 256 px build is unavailable for these charts; the download step cannot be measured, only bounded above by 208,451 B.
+
+### Director tables (verbatim)
+
+| Asset | Largest extent | occlusion_res before → after | AO PNG (download) |
+| --- | --- | --- | --- |
+| gteki_gate_array_6w1 | 5.54 m | 256 → 512 | 56.9 KiB |
+| gteki_stairs_straight_w2400_r3000 | 7.10 m | 256 → 512 | 17.6 KiB |
+| gteki_stairs_landing_w2400_r4000 | 10.40 m | 256 → 512 | 13.3 KiB |
+| gteki_escalator_s1000_r5000_up | 12.66 m | 256 → 512 | 12.7 KiB |
+| gteki_escalator_s1000_r5000_down | 12.66 m | 256 → 512 | 13.0 KiB |
+| gteki_escalator_s600_r3500_down | 10.86 m | 256 → 512 | 17.7 KiB |
+| gteki_escalator_dress_s1000_r4000_glass_treads | 10.93 m | 256 → 512 | 19.3 KiB |
+| gteki_vending_machine | 1.83 m | 256 → 512 | 26.5 KiB |
+| gteki_vending_machine_sand | 1.83 m | 256 → 512 | 26.5 KiB |
+
+No asset needed 1024 px. GPU (texture_budget.py's RGBA8 + mips rule): +1.0 MiB per asset, +9.0 MiB for all nine. Download: the nine 512 px AO maps total 0.20 MiB; a 256 px baseline cannot be built for them (the charts do not fit), so the download delta is an upper bound of 0.20 MiB.
+
+Mobile finish normals (5c), lossless PNG at 512 px instead of JPEG (director-approved):
+
+| Finish | normal.jpg (q88) → normal.png | Δ download (loose + sample GLB) | Δ GPU |
+| --- | --- | --- | --- |
+| gteki_finish_floor_granite_tile | 16,316 B → 89,815 B | +147 KB | 0 |
+| gteki_finish_floor_tile600 | 12,326 B → 89,261 B | +154 KB | 0 |
+
+Total +0.29 MiB download for the library (+0.14 MiB for a station that loads only the loose maps); GPU unchanged (same 512² RGBA8 decode).
+
+### Transfer time
+
+Ideal download seconds = **bytes × 8 / rate**, with rate in bit/s (1 Mbit/s = 1,000,000 bit/s), no protocol overhead, decoding or import time. All rows use integration bytes. `per_instance` means one GLB download per placement, summed over the layout, not a per-item average. Concourse has 29 placements / 20 assets; the current vertical demo has 5 / 5. Bundle download is the tool’s geometry + unique-image estimate; no bundle was built. Layouts load kit GLBs and do not include loose finishes or sample GLBs.
+
+| Tier | Download scope / strategy | Bytes | MiB | At slower rate | At faster rate |
+| --- | --- | ---: | ---: | ---: | ---: |
+| mobile | Library: all 91 kit GLBs | 8,729,080 | 8.325 | 6.983 s (10 Mbit/s) | 2.328 s (30 Mbit/s) |
+| mobile | Library: kit + loose finishes + 8 finish samples | 10,038,957 | 9.574 | 8.031 s (10 Mbit/s) | 2.677 s (30 Mbit/s) |
+| mobile | Entire tier directory (including metadata/source) | 10,270,710 | 9.795 | 8.217 s (10 Mbit/s) | 2.739 s (30 Mbit/s) |
+| mobile | Concourse `per_instance` | 3,390,564 | 3.233 | 2.712 s (10 Mbit/s) | 0.904 s (30 Mbit/s) |
+| mobile | Concourse `bundle` | 2,588,573 | 2.469 | 2.071 s (10 Mbit/s) | 0.690 s (30 Mbit/s) |
+| mobile | Vertical `per_instance` | 1,621,792 | 1.547 | 1.297 s (10 Mbit/s) | 0.432 s (30 Mbit/s) |
+| mobile | Vertical `bundle` | 1,618,220 | 1.543 | 1.295 s (10 Mbit/s) | 0.432 s (30 Mbit/s) |
+| full | Library: all 91 kit GLBs | 36,901,400 | 35.192 | 9.840 s (30 Mbit/s) | 2.952 s (100 Mbit/s) |
+| full | Library: kit + loose finishes + 8 finish samples | 40,103,216 | 38.245 | 10.694 s (30 Mbit/s) | 3.208 s (100 Mbit/s) |
+| full | Entire tier directory (including metadata/source) | 46,828,089 | 44.659 | 12.487 s (30 Mbit/s) | 3.746 s (100 Mbit/s) |
+| full | Concourse `per_instance` | 13,472,304 | 12.848 | 3.593 s (30 Mbit/s) | 1.078 s (100 Mbit/s) |
+| full | Concourse `bundle` | 5,816,269 | 5.547 | 1.551 s (30 Mbit/s) | 0.465 s (100 Mbit/s) |
+| full | Vertical `per_instance` | 5,876,368 | 5.604 | 1.567 s (30 Mbit/s) | 0.470 s (100 Mbit/s) |
+| full | Vertical `bundle` | 5,763,410 | 5.496 | 1.537 s (30 Mbit/s) | 0.461 s (100 Mbit/s) |
+
+The entire-directory row counts each file once, excluding the nested mobile tier from full. Full includes authoring `source/` files, provenance and metadata; those are not required consumer downloads. The kit + finish row counts runtime media only, excludes metadata, and intentionally includes both loose maps and embedded sample copies. Actual station downloads depend on which assets and finishes it requests.
+
+### Not changed
+
+Caps are unchanged per the director’s ruling on #275. Mobile caps are a provisional warning line; calibrate after #46. Being over budget does not block merges. The checker still reports the numerical failures above.
+
+**Reproduce** (stdlib only; run from a checkout of the integration build, with `BASE` pointing at a checkout of main; each command exits 1 for the caps above):
+
+```sh
+python3 -I tools/blender/texture_budget.py assets/library --compare "$BASE/assets/library" \
+  --check tools/blender/catalog/budget.json \
+  --layout tools/blender/showcase/concourse_demo.json --layout tools/blender/showcase/vertical_demo.json
+python3 -I tools/blender/texture_budget.py assets/library/mobile --compare "$BASE/assets/library/mobile" \
+  --check tools/blender/catalog/budget_mobile.json \
+  --layout tools/blender/showcase/concourse_demo.json --layout tools/blender/showcase/vertical_demo.json
+```
+
+The attribution tables come from a stdlib scan of the same GLBs (image bufferViews, `occlusionTexture` references, content hashes) and the manifests.
