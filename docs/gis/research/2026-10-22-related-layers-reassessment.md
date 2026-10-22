@@ -133,3 +133,69 @@ Each PR also updates the decisions record (a new dated note recording that B2/B3
 - GSI: <https://www.gsi.go.jp/kibanjoho/kibanjoho40027.html>, <https://www.gsi.go.jp/kikakuchousei/kikakuchousei40182.html>.
 - Tokyo open-data catalogue metadata: `package_show` for `t000014d2000000030` and `t131164d0000000003`; `package_search` for organisation `t131164` (32 datasets, none a park or emergency-route list); `t131164d2025000003` returned 404.
 - Repo evidence: `docs/gis/rights/plateau-13104-related.json`, `plateau-13116-related.json`, `docs/gis/poi/plateau-13104-related.json` and `plateau-13116-related.json` field and count inventories, `tools/gis/sources/sources.yaml` (14 direct layer asset entries, `plateau-related-provenance`), `tools/gis/README.md` and `tools/gis/src/context*.ts`.
+
+## 7. Landmark option (c): municipal lists (director decision via Owner delegation)
+
+Decision: the director, acting on the Owner's delegation, chose option (c) of section 5 item 1. The GSI 国土基本情報 landmark layer is not used. Landmarks come from clean municipal lists, or stay out. Research only: nothing here is acquired, implemented or verified. Catalogue metadata (CKAN `package_show`, dataset ids from `package_search` per organisation) and landing/terms pages were read on 2026-10-22. No dataset file was downloaded and no row value is recorded here. Where a column is named below it comes from the earlier header-row read in `docs/gis/research/2026-10-22-shinjuku-poi-next-gaps.md` (items 8 to 10); every other column fact is UNKNOWN.
+
+### 7.1 Test applied ("clean")
+
+1. Dataset-level licence CC BY 4.0 (`license_id: CC-BY-4.0`, title 表示（CC BY）).
+2. Resource licence fields present or empty: recorded either way (all empty or absent below).
+3. WGS84 lat/lon columns or another stated CRS.
+4. Coverage overlapping the roughly 300 m station windows (Ikebukuro, Shinjuku).
+5. No third-party restriction note.
+
+Item 4 cannot be answered from the catalogue: `datastore_active` is false for every resource below, so the CKAN datastore exposes no row counts or columns, and counts inside a station window are UNKNOWN until the files are acquired and read after the freeze.
+
+### 7.2 Findings common to all candidates
+
+- Every dataset below has `license_id: CC-BY-4.0`. The dataset notes carry no third-party or usage-restriction statement (Shinjuku notes are one short line; Toshima notes only say the ward publishes the data). Extras hold only an update-frequency key.
+- No resource has its own licence field (absent in every `package_show` resource object). This is the same dataset-level-only shape the Owner accepted for S03 (Q3) and that B1 extends to non-KSJ sources; it is recorded here, not decided here.
+- Portal terms URL, as linked from the catalogue's API-spec pages (Toshima): <https://portal.data.metro.tokyo.lg.jp/terms/> (labelled Terms of Service). On 2026-10-22 a fetch of that URL returned only a "site closed, please wait" notice, and a fetch of <https://catalog.data.metro.tokyo.lg.jp/terms> and of the dataset landing pages returned HTTP 403; so the terms text and landing pages could not be re-read today. The repo already holds an earlier acquisition of the portal terms with the S10 catalogue (`docs/gis/acquisitions/tokyo-s10-catalog.json`, `docs/gis/research/poi-rights-s10-s03-related.md`). A fresh hash-verified snapshot is still needed for these datasets (next-gaps action 4).
+- None of these datasets states a CRS in the catalogue metadata (the Toshima spec pages say "not stated"). The Digital Agency 自治体標準オープンデータセット is the evident schema family for the Shinjuku files (tag 自治体標準オープンデータセット; definition tables A, C and D at <https://www.digital.go.jp/resources/open_data/municipal-standard-open-dataset> via the page <https://www.digital.go.jp/resources/open_data/municipal-standard-data-set-test>, accessed 2026-10-22). The definition workbook was not machine-readable in this lane, so the schema's coordinate-system wording is UNKNOWN and is not assumed.
+- Shinjuku files carry image and image-licence columns (per the earlier header read). Those columns, descriptions, URLs, phone numbers and hours must not be copied (same exclusions as the overlay spec in section 4.1 above and section 4.4 above). The images are a possible third-party-rights area; they are simply excluded.
+- A municipal facility list is a facility point layer, not a nameless GSI landmark layer. Per the overlay spec in the earlier section 4.1, the overlay keeps geometry only, so the output would be unlabelled points. Ward lists also stop at the ward boundary; whether a station window crosses into another ward is UNKNOWN.
+
+### 7.3 Per-dataset table
+
+Sizes are CKAN resource `size` (bytes). Dates are resource `created` / `last_modified` and dataset `metadata_modified`.
+
+| Dataset id | Title (catalogue) | `license_id` | Resource (format, size, URL) | Resource licence field | Columns (names only) | CRS / lat-lon | Resource dates; dataset `metadata_modified` | Coverage in station window | Verdict |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `t131041d0000000113` | 新宿区の公共施設情報 (Shinjuku 公共施設; 267 data rows per the earlier header read) | CC-BY-4.0 | CSV, 97,280, <https://www.city.shinjuku.lg.jp/content/000399965.csv> | Absent | Earlier header read: an ID, name, address parts, latitude, longitude, altitude type and value, hours, accessibility flags, description, image and image-licence columns | Lat and lon columns present; no CRS column; CRS value UNKNOWN | 2023-04-30 / 2023-04-30; 2025-12-12 | UNKNOWN (ward-wide list; per-window count not computed) | `CANDIDATE_CLEAN`, pending the terms snapshot and a header and CRS check. Currency is 2023. |
+| `t131041d0000000131` | 新宿区の観光ポイント (Shinjuku 観光ポイント; 6 data rows) | CC-BY-4.0 | CSV, 3,072, <https://www.city.shinjuku.lg.jp/content/000399980.csv> | Absent | Earlier header read: a per-record CRS name and code, latitude, longitude, description and image columns | Lat and lon columns plus a per-record CRS declaration (declared value not read: UNKNOWN) | 2023-04-30 / 2023-04-30; 2025-12-12 | UNKNOWN | `CANDIDATE_CLEAN` on the checks, pending the terms snapshot and header check; value is low (6 rows) and may add nothing inside a window. |
+| `t131041d0000000114` | 新宿区の文化財一覧 (Shinjuku 文化財; not in the brief, found next to the others) | CC-BY-4.0 | CSV, 294,912, <https://www.city.shinjuku.lg.jp/content/000399966.csv> | Absent | UNKNOWN (not read) | UNKNOWN whether coordinates exist | 2023-04-30 / 2023-04-30; 2025-12-12 | UNKNOWN | `UNKNOWN` (licence-clean; coordinates unseen). Optional: include in the header check. |
+| `t131041d0000000064` | 新宿区の公共施設情報, resource named 保健所等 (older duplicate title; not in the brief) | CC-BY-4.0 | RDF 23,552 (<https://data.odp.jig.jp/rdf/jp/tokyo/shinjuku/772.rdf>) and CSV 3,072 (<https://data.odp.jig.jp/viewcsv/jp/tokyo/shinjuku/772.csv>), both on a third-party host | Absent on both | UNKNOWN | UNKNOWN | 2017-02-27 / 2022-04-06; 2025-12-12 | UNKNOWN | `UNKNOWN`; not pursued (health-centre subset, stale, hosted by a third party, 3,072 bytes). Do not confuse with `t131041d0000000113`, which is the 267-row list. |
+| `t131164d0000000005` | 観光施設一覧 (Toshima 観光施設) | CC-BY-4.0 | CSV, 4,096, <https://www.opendata.metro.tokyo.lg.jp/toyoshima/R4_tourism.csv> | Absent | UNKNOWN (catalogue spec page lists none) | UNKNOWN (CRS "not stated"; lat and lon columns unseen) | 2022-04-12 / 2022-08-21; 2025-12-12 | UNKNOWN (4 KB, so few rows; count INFERRED to be small, not measured) | `UNKNOWN` (licence-clean; columns and CRS unseen). |
+| `t131164d0000000007` | 文化財一覧（国もしくは地方公共団体が指定、登録、選定等行った文化財の一覧）(Toshima 文化財) | CC-BY-4.0 | CSV, 79,872, <https://www.opendata.metro.tokyo.lg.jp/toyoshima/R4_cultural_property.csv> | Absent | UNKNOWN | UNKNOWN (CRS "not stated") | 2022-04-12 / 2022-08-21; 2025-12-12 | UNKNOWN | `UNKNOWN` (licence-clean; columns and CRS unseen). |
+| `t131164d0000000010` | 公共施設一覧 (Toshima 公共施設) | CC-BY-4.0 | CSV, 78,848, <https://www.opendata.metro.tokyo.lg.jp/toyoshima/R4_public_facility.csv> | Absent | UNKNOWN | UNKNOWN (CRS "not stated") | 2022-04-12 / 2022-08-21; 2025-12-12 | UNKNOWN | `UNKNOWN` (licence-clean; columns and CRS unseen). |
+
+No dataset is `NOT_CLEAN` on licence grounds: all seven rows carry dataset-level CC BY 4.0 with no stated third-party note. Five of them are `UNKNOWN` only because the column and CRS evidence is missing, not because anything restrictive was found. Nothing found so far changes the earlier statement that the Toshima ward has no park list.
+
+### 7.4 Consequence for the landmark layer
+
+- Shinjuku: a landmark-style facility point layer is feasible from `t131041d0000000113` alone (and `t131041d0000000131` if the director wants the 6 tourism points), conditional on the steps in (c).5.
+- Ikebukuro (Toshima): no Toshima list has any confirmed coordinate column. Until the header check passes, Ikebukuro has no landmark layer. If none of the three Toshima files has coordinates, Ikebukuro landmarks stay out (option (c) fallback: "otherwise landmarks stay out").
+- Credit pattern, pending the terms snapshot: 「出典：新宿区「公共施設情報」」 and 「出典：豊島区「公共施設一覧」」 plus the change notice, same shape as section 3. Not final.
+- Output stays the form of the earlier section 4.1: geometry plus `kind: landmark_point` and the allow-listed hash fields only; no name, address, description, URL, image or flag column.
+
+### 7.5 Next acquisition steps (after the host freeze ends, 19:30 JST)
+
+1. Snapshot the terms and licence pages as hashed supporting documents: <https://portal.data.metro.tokyo.lg.jp/terms/> (retry; it served a closed-site notice on 2026-10-22) and <https://creativecommons.org/licenses/by/4.0/deed.ja> (already held, reuse the stored hash).
+2. Snapshot the CKAN metadata, one per dataset, as supporting documents: `https://catalog.data.metro.tokyo.lg.jp/api/3/action/package_show?id=<id>` for `t131041d0000000113`, `t131041d0000000131`, `t131041d0000000114`, `t131164d0000000005`, `t131164d0000000007`, `t131164d0000000010`. Skip `t131041d0000000064`.
+3. Register and acquire the six CSV resources (URLs in the table) with `gis acquire`, one source each, with the catalogue resource id and expected size as cross-checks; declare each expected final URL because the runner allows no redirects. The Shinjuku files are on `www.city.shinjuku.lg.jp`, the Toshima files on `www.opendata.metro.tokyo.lg.jp`; Toshima hosts have no other known fetch problem but were not tested.
+4. Read each header only. Record in the repo: column names, row counts, the CRS column or its absence, the declared CRS value for `t131041d0000000131`, and the count of rows inside each station window as a number only (Ikebukuro and Shinjuku, using the earlier section 4.1 frame code and a swapped-axis check). Commit counts, hashes and column names only, never a row value.
+5. Per dataset, move to `CLEAN` if: the terms snapshot matches the CC BY statement, lat/lon columns exist, the CRS is stated or a sanity check against the ward bbox and PLATEAU footprints passes with `crs: UNKNOWN` recorded, and the window count is above zero. Otherwise `NOT_CLEAN` (reason: no coordinates, or no window coverage) and the landmark layer for that station stays out.
+6. Owner or director: confirm that B1 (dataset-level licence with empty resource licence) covers these datasets, as it does for the park, shelter and emergency-route replacements.
+
+Sources (accessed 2026-10-22): `package_search` for organisations `t131041` (137 datasets) and `t131164` (32 datasets) and `package_show` for each id above at <https://catalog.data.metro.tokyo.lg.jp/api/3/action/>; spec pages <https://spec.api.metro.tokyo.lg.jp/spec/t131164d0000000010-b1a0680aebbc5d8b102d9705f880ce7d-0?lang=en> and <https://spec.api.metro.tokyo.lg.jp/spec/t131164d0000000007-83def088cb55c24a0cae4251717412d7-0?lang=en>; <https://www.digital.go.jp/resources/open_data/municipal-standard-data-set-test>; the portal terms URL above.
+
+## 8. Vertical placement of the 2D overlays (station leads, 2026-10-22)
+
+Neither station drapes the overlays on DEM or PLATEAU terrain per vertex. A source ground height may be kept as provenance only. The scene side owns any depth offset, draw order and z-fight handling, so GIS bakes no lift.
+
+| Station | z in the station frame | Recorded as | Evidence |
+| --- | --- | --- | --- |
+| Shinjuku (`shinjuku-station-enu-v0`) | 0 | "symbolic street z = 0 (no datum asserted)" | `stations/shinjuku/tools/import-surface.ts` height note; `scene/surface-data.ts`. Surface and context buildings are both flattened to street z = 0. |
+| Ikebukuro | 32.5 (constant) | "render z = street floor renderElevationM", not TP ground | `stations/ikebukuro/gteki/station.json`, ordinal-0 street floor `renderElevationM`. That floor has `elevationM: null` and `elevationSource: "unknown"`, so the value is a render anchor and not a surveyed height. |
