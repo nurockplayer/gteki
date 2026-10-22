@@ -5,13 +5,15 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import { buildScene } from "../gteki/scene.ts";
 import { buildLayout, type Plan } from "../scene/layout.ts";
 import planJson from "../data/plan.json";
-import { FOLLOW, followDistance, followPose } from "../../../apps/web/src/explorer/followCamera.ts";
-import { castCamera, explorerTargets, keepBelowBlockers } from "../../../apps/web/src/explorer/raycast.ts";
+import { FOLLOW, followBoom, followDistance, followPose } from "../../../apps/web/src/explorer/followCamera.ts";
+import { bodyBlock, hitNormal } from "../../../apps/web/src/explorer/bodyCollision.ts";
+import { DEFAULT_GROUND, resolveWalls, wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
+import { castAll, castCamera, explorerTargets, keepBelowBlockers } from "../../../apps/web/src/explorer/raycast.ts";
 
 /**
  * #70: follow camera and roof on the street-level flights of every roofed (E27 屋根の有無 = 2) sloped run.
  *
- * It replays the explorer's follow rig at steady state (the same followPose / castCamera / followDistance /
+ * It replays the explorer's follow rig at steady state (the same followPose / castCamera / followBoom /
  * keepBelowBlockers sequence as Explorer.placeCamera, imported read-only from apps/web) against the real Shinjuku
  * scene, with the walker standing on the drawn treads facing uphill and downhill, and measures:
  *  - the clearance between each tread and the roof cap straight above it;
@@ -43,58 +45,112 @@ describe("roofed sloped street stairs: roof caps, glazing and the follow camera 
   /** Every roofed (roof = 2) stair/escalator run that crosses the street-opening band z -2.6..0.1. */
   const roofedRuns = () => layout.runs.filter((r) => bundle.edges.find((e) => e.id === r.edgeId)?.attributes?.roof === 2 && Math.abs(r.b.z - r.a.z) > 0.01 && Math.max(r.a.z, r.b.z) > -2.6 && Math.min(r.a.z, r.b.z) < 0.1);
 
-  function replay(pitch: number): Row[] {
-    const targets = explorerTargets(scene.walkable, scene.colliders ?? [], scene.cameraBlockers ?? []);
+  /** The explorer's ray targets, and a copy with every roof/canopy cap triangle (all vertices above 2.5 m) removed. */
+  function rayTargets() {
+    const full = explorerTargets(scene.walkable, scene.colliders ?? [], scene.cameraBlockers ?? []);
+    // One replacement per original, so a mesh listed as both collider and camera blocker stays both.
+    const made = new Map<THREE.Object3D, THREE.Object3D>();
+    const swap = (list: readonly THREE.Object3D[]) => list.map((o) => {
+      if (o.name !== CEILING) return o;
+      if (made.has(o)) return made.get(o)!;
+      const src = (o as THREE.Mesh).geometry, pos = src.attributes.position!, idx = src.index;
+      const kept: number[] = [];
+      const n = idx ? idx.count : pos.count;
+      for (let i = 0; i < n; i += 3) {
+        const ids = [0, 1, 2].map((k) => idx ? idx.getX(i + k) : i + k);
+        if (!ids.every((id) => pos.getY(id) > 2.5)) kept.push(...ids);
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", pos);
+      g.setIndex(kept);
+      const m = new THREE.Mesh(g, (o as THREE.Mesh).material);
+      m.name = o.name; m.matrixAutoUpdate = false; m.matrix.copy(o.matrixWorld); m.matrixWorld.copy(o.matrixWorld);
+      made.set(o, m);
+      return m;
+    });
+    const capless = explorerTargets(scene.walkable, swap(scene.colliders ?? []), swap(scene.cameraBlockers ?? []));
+    return { full, capless };
+  }
+
+  /** Explorer.placeCamera at steady state (snap): shoulder probe, followPose, followBoom / followDistance, keepBelowBlockers. */
+  function settle(t: ReturnType<typeof explorerTargets>, ray: THREE.Raycaster, head: THREE.Vector3, yaw: number, pitch: number) {
+    let shoulder: number = FOLLOW.shoulder;
+    ray.set(head, new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw))); ray.far = FOLLOW.shoulder + 0.25;
+    const side = castCamera(ray, t.camera, t.blockers)[0];
+    if (side) shoulder = Math.max(0, side.distance - 0.25);
+    const pose = followPose(head, yaw, pitch, shoulder);
+    const cast = (b: THREE.Vector3) => {
+      ray.set(pose.pivot, b); ray.far = FOLLOW.defaultDistance + FOLLOW.clearance;
+      return castCamera(ray, t.camera, t.blockers).map((h) => ({ distance: h.distance, cameraOnly: t.blockers.has(h.object) }));
+    };
+    const { back, distance } = t.blockers.size ? followBoom(FOLLOW.defaultDistance, pose.back, cast) : { back: pose.back, distance: followDistance(FOLLOW.defaultDistance, cast(pose.back)) };
+    const position = pose.pivot.clone().addScaledVector(back, distance);
+    if (t.blockers.size) keepBelowBlockers(pose.pivot, position, [...t.blockers], FOLLOW.clearance, ray);
+    return { pose, position, back, distance, hit: cast(back)[0] };
+  }
+
+  const memo = new Map<number, Row[]>();
+  const replay = (pitch: number): Row[] => memo.get(pitch) ?? (memo.set(pitch, replayAt(pitch)), memo.get(pitch)!);
+  function replayAt(pitch: number): Row[] {
+    const { full: targets, capless } = rayTargets();
+    const walls = (scene.walls ?? []).map(wallToRenderer);
     const glass = scene.root.getObjectByName("surface-glass") as THREE.Mesh;
     const ray = new THREE.Raycaster();
     const cam = new THREE.PerspectiveCamera(FOV_DEG, 1, 0.05, 2000);
-    const down = new THREE.Vector3(0, -1, 0), up = new THREE.Vector3(0, 1, 0);
+    const up = new THREE.Vector3(0, 1, 0);
+    const groundAt = (x: number, y: number, z: number) => {
+      ray.set(new THREE.Vector3(x, y + DEFAULT_GROUND.stepUp + 0.05, z), new THREE.Vector3(0, -1, 0));
+      ray.far = DEFAULT_GROUND.stepUp + DEFAULT_GROUND.stepDown + 0.1;
+      return castAll(ray, targets.ground)[0]?.point.y ?? null;
+    };
+    const bodyHits = (from: THREE.Vector3, to: THREE.Vector3) => bodyBlock(from, to, (origin, dir, far) => {
+      ray.set(origin, dir); ray.far = far;
+      const hit = castAll(ray, targets.collider)[0];
+      return hit ? { distance: hit.distance, normal: hitNormal(hit, dir) } : null;
+    }, WALKER_BODY.radiusM);
     const rows: Row[] = [];
     for (const run of roofedRuns()) {
       const dz = run.b.z - run.a.z;
       const ta = Math.min(1, Math.max(0, (-2.6 - run.a.z) / dz)), tb = Math.min(1, Math.max(0, (0.02 - run.a.z) / dz));
       const lo = Math.min(ta, tb), hi = Math.max(ta, tb);
+      const len = Math.hypot(run.b.x - run.a.x, run.b.y - run.a.y);
       for (const dir of ["up", "down"] as const) {
+        // Facing: along the run toward its high end ("up") or its low end ("down").
+        const s = (dz > 0 ? 1 : -1) * (dir === "up" ? 1 : -1);
+        const fx = (run.b.x - run.a.x) * s / len, fy = (run.b.y - run.a.y) * s / len; // ENU heading
+        const yaw = Math.atan2(-fx, fy);
         for (let k = 0; k <= 12; k++) {
           const t = lo + ((hi - lo) * k) / 12;
+          const nominalZ = run.a.z + dz * t;
           const x = run.a.x + (run.b.x - run.a.x) * t, y = run.a.y + (run.b.y - run.a.y) * t;
-          // Settle on the drawn tread, as the walker does.
-          ray.set(new THREE.Vector3(x, run.a.z + dz * t + 0.6, -y), down); ray.far = 1.2;
-          const tread = ray.intersectObjects(scene.walkable, false)[0];
-          if (!tread) continue;
-          const foot = new THREE.Vector3(x, tread.point.y, -y);
-          // Facing: along the run toward its high end ("up") or its low end ("down").
-          const s = (dz > 0 ? 1 : -1) * (dir === "up" ? 1 : -1);
-          const yaw = Math.atan2(-(run.b.x - run.a.x) * s, (run.b.y - run.a.y) * s);
+          // Stand where the explorer's body step would let the walker be: pushed out of walls, on the ground its
+          // step-up/step-down probe finds, and reachable by a 0.3 m body move from behind (colliders, #81).
+          const pushed = resolveWalls(x, -y, WALKER_BODY.radiusM, nominalZ, WALKER_BODY.bodyTopM, walls);
+          const gy = groundAt(pushed.x, nominalZ, pushed.z);
+          if (gy === null) continue;
+          const foot = new THREE.Vector3(pushed.x, gy, pushed.z);
+          const from = foot.clone(); from.x -= fx * 0.3; from.z += fy * 0.3;
+          const fromY = groundAt(from.x, nominalZ, from.z);
+          if (fromY !== null && bodyHits(from.setY(fromY), foot)) continue;
           // Roof cap straight above the tread, and the glazing faces crossed on the way up.
           ray.set(foot, up); ray.far = 60;
           const cap = castCamera(ray, targets.camera, targets.blockers).find((h) => h.object.name === CEILING && h.point.y > 2.5);
           const glassFaces = ray.intersectObject(glass, false).length;
-          // Follow rig, steady state (Explorer.placeCamera).
           const head = foot.clone().add(new THREE.Vector3(0, WALKER_BODY.eyeM, 0));
-          let shoulder: number = FOLLOW.shoulder;
-          ray.set(head, new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw))); ray.far = FOLLOW.shoulder + 0.25;
-          const side = castCamera(ray, targets.camera, targets.blockers)[0];
-          if (side) shoulder = Math.max(0, side.distance - 0.25);
-          const pose = followPose(head, yaw, pitch, shoulder);
-          ray.set(pose.pivot, pose.back); ray.far = FOLLOW.defaultDistance + FOLLOW.clearance;
-          const all = castCamera(ray, targets.camera, targets.blockers);
-          const dist = followDistance(FOLLOW.defaultDistance, all.map((h) => ({ distance: h.distance, cameraOnly: targets.blockers.has(h.object) })));
-          cam.position.copy(pose.pivot).addScaledVector(pose.back, dist);
-          keepBelowBlockers(pose.pivot, cam.position, [...targets.blockers], FOLLOW.clearance, ray);
-          cam.lookAt(pose.target); cam.updateMatrixWorld(true);
+          const rig = settle(targets, ray, head, yaw, pitch);
+          // A roof cap limits the camera when removing the cap triangles (and nothing else) moves the settled camera.
+          const without = settle(capless, ray, head, yaw, pitch);
+          const capLimits = rig.position.distanceTo(without.position) > 1e-3;
+          cam.position.copy(rig.position);
+          cam.lookAt(rig.pose.target); cam.updateMatrixWorld(true);
           const ndcY = (v: THREE.Vector3) => v.clone().project(cam).y;
           const sole = ndcY(foot), crown = ndcY(foot.clone().setY(foot.y + WALKER_BODY.bodyTopM)), chest = ndcY(foot.clone().setY(foot.y + WALKER_BODY.bodyTopM - 0.45));
-          // A roof cap limits the camera when removing the cap hits (and only those) changes the settled distance.
-          const isCap = (h: THREE.Intersection) => h.object.name === CEILING && h.point.y > 2.5;
-          const toHit = (h: THREE.Intersection) => ({ distance: h.distance, cameraOnly: targets.blockers.has(h.object) });
-          const withoutCaps = followDistance(FOLLOW.defaultDistance, all.filter((h) => !isCap(h)).map(toHit));
-          const capLimits = Math.abs(withoutCaps - dist) > 1e-6;
-          const limiting = dist < FOLLOW.defaultDistance ? all[0] : undefined;
+          const dist = rig.position.distanceTo(rig.pose.pivot);
+          const limiting = rig.distance < FOLLOW.defaultDistance ? rig.hit : undefined;
           rows.push({
             edge: run.edgeId.slice(2, 8), dir, pitch, z: foot.y, clearance: cap?.distance ?? Infinity, glassFaces, dist,
             capLimits,
-            limiter: limiting ? `${limiting.object.name.replace(" (invisible)", "")}@y${limiting.point.y.toFixed(2)}` : "-",
+            limiter: limiting ? `${limiting.cameraOnly ? "blocker" : "wall/floor"}@${limiting.distance.toFixed(2)}${rig.back.y < rig.pose.back.y - 1e-6 ? " boom-lowered" : ""}` : "-",
             share: (crown - sole) / 2, headShare: (crown - chest) / 2,
           });
         }
