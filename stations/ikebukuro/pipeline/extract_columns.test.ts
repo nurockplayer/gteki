@@ -193,6 +193,7 @@ describe("the committed scene/columns.json", () => {
   const file = JSON.parse(fs.readFileSync(COMMITTED, "utf8")) as ColumnsFile & { source: Record<string, string>; counts: Record<string, number> };
 
   it("cites the extract and its GML, and its counts add up", () => {
+    expect(file.counts).toMatchObject({ triangles_read: 10992, columns: 281, kit_square: 42, kit_round: 103, kit_null: 136, open_prisms: 0, by_shape: { polygon: 7, rect: 89, round: 110, square: 75 } });
     expect(file.schema).toBe("gteki.ikebukuro.columns/0");
     expect(file.source.gml).toMatch(/_ubld_.*\.gml$/);
     expect(file.source.gml_sha256).toMatch(/^[0-9a-f]{64}$/);

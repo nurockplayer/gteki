@@ -33,7 +33,7 @@ describe("audit_assets on the committed tree", () => {
   it("lists the contract files, the scene entry and exactly the declared assets, each with its real sha256 and size", () => {
     const files = result.files.map((f) => f.file).sort();
     expect(files).toEqual([...declared, "graph.json", "pois.json", "scene.ts", "station.json"].sort());
-    expect(declared.length).toBe(12); // the PLATEAU GLB + lit variant + sidecars + lightmaps (6) and the kit copies: rail and two columns, both tiers
+    expect(declared.length).toBe(14); // the PLATEAU GLB + lit variant + sidecars + lightmaps (6), and the kit copies, both tiers: rail, gate array and two columns (8)
     for (const f of result.files) {
       expect(f.sha256, f.file).toBe(sha(path.join(gteki, f.file)));
       expect(f.bytes, f.file).toBe(fs.statSync(path.join(gteki, f.file)).size);
@@ -108,7 +108,7 @@ describe("audit_assets negative controls (temporary copy of gteki/)", () => {
     scratch.push(dist);
     fs.mkdirSync(path.join(dist, "assets"));
     const big = declared.filter((f) => fs.statSync(path.join(gteki, f)).size >= INLINE_LIMIT_BYTES);
-    expect(big.length).toBe(7); // 5 PLATEAU files + 2 kit GLBs; the 1.5 KB lit sidecar is inlined by Vite and not expected
+    expect(big.length).toBe(13); // 5 PLATEAU files + 8 kit GLBs (rail, gate array, two columns; both tiers); the 1.5 KB lit sidecar is inlined by Vite and not expected
     big.forEach((f, i) => fs.copyFileSync(path.join(gteki, f), path.join(dist, "assets", `${path.basename(f, path.extname(f))}-hash${i}${path.extname(f)}`)));
     expect(audit({ dist }).problems).toEqual([]);
 

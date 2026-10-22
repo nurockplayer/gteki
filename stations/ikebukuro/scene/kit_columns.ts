@@ -12,7 +12,7 @@
 import type * as THREE_NS from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import type { SceneContext } from "@gteki/scene-api";
-import { KIT_ENV_INTENSITY, type KitManifest, type KitStats, pieceUri, tileGroups, tileSize, visibleParts } from "./kit.ts";
+import { KIT_ENV_INTENSITY, type KitManifest, pieceUri, tileGroups, tileSize, visibleParts } from "./kit.ts";
 type ThreeNS = typeof THREE_NS;
 
 export const COLUMN_USES = ["column_square", "column_round"] as const;
@@ -100,7 +100,7 @@ export function columnPieces(kit: Pick<KitManifest, "pieces">): Record<string, C
   const out: Record<string, ColumnPieceSpec> = {};
   for (const [id, p] of Object.entries(kit.pieces)) {
     const h = (p as { height_m?: number }).height_m;
-    if ((COLUMN_USES as readonly string[]).includes(p.use) && typeof h === "number") out[id] = { footprint_m: p.pitch_m, height_m: h };
+    if ((COLUMN_USES as readonly string[]).includes(p.use) && typeof h === "number") out[id] = { footprint_m: p.pitch_m ?? 0, height_m: h };
   }
   return out;
 }
@@ -110,10 +110,19 @@ interface PieceAsset {
   parts: ReturnType<typeof visibleParts>;
 }
 
+export interface ColumnStats {
+  modules: number;
+  tiles: number;
+  /** One draw per part per piece per tile (worst case: every tile in view). */
+  drawCallsAllTiles: number;
+  trianglesAllTiles: number;
+  trianglesWorstTile: number;
+}
+
 export interface LoadedColumnKit {
   /** Sleeves that will be drawn (empty when no piece loaded). */
   placements: readonly ColumnPlacement[];
-  build(THREE: ThreeNS, env: THREE_NS.Texture, toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3): { group: THREE_NS.Group; stats: KitStats };
+  build(THREE: ThreeNS, env: THREE_NS.Texture, toRenderer: (x: number, y: number, z: number) => THREE_NS.Vector3): { group: THREE_NS.Group; stats: ColumnStats };
   dispose(): void;
 }
 
@@ -144,7 +153,7 @@ export async function loadColumnKit(THREE: ThreeNS, host: Host, kit: KitManifest
       const group = new THREE.Group();
       group.name = "ikebukuro_kit_columns";
       group.userData = { gteki_role: "kit_column" };
-      const stats: KitStats = { modules: placements.length, tiles: 0, drawCallsAllTiles: 0, trianglesAllTiles: 0, trianglesWorstTile: 0 };
+      const stats: ColumnStats = { modules: placements.length, tiles: 0, drawCallsAllTiles: 0, trianglesAllTiles: 0, trianglesWorstTile: 0 };
       if (!placements.length) return { group, stats };
       const world = placements.map((p) => ({ centre: toRenderer(p.x, p.y, p.z), yaw: (p.yawDeg * Math.PI) / 180, p }));
       const lit = new Map<THREE_NS.Material, THREE_NS.Material>();

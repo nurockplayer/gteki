@@ -243,7 +243,7 @@ describe("the walk graph and the walker's world do not depend on the column slee
     const lines = src.split("\n").filter((l) => /\bcolumnKit\b|\bcolumnsFile\b/.test(l));
     expect(lines.filter((l) => /walkable|colliders|assembleCollision|tileCollision/.test(l))).toEqual([]);
     const ownSrc = fs.readFileSync(path.join(HERE, "kit_columns.ts"), "utf8");
-    expect(ownSrc).not.toMatch(/graph\.json|walkable|assembleCollision|gteki_role = "(floor|wall|barriers|stairs_ramps|transport)"/);
+    expect(ownSrc).not.toMatch(/graph\.json|assembleCollision|tileCollision|gteki_role = "(floor|wall|barriers|stairs_ramps|transport)"/);
   });
 
   it("the PLATEAU columns stay in the barriers mesh: columns.json is not read by the GLB build or the graph", () => {
