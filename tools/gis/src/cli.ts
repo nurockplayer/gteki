@@ -1,4 +1,5 @@
 import { inspectPoi } from './poi.js';
+import { checkPoiLiterals, loadLiteralAllowlist } from './poi-literals.js';
 import { rightsReport } from './rights.js';
 import { inspectVintages } from './vintage.js';
 import { parseArgs } from 'node:util';
@@ -10,7 +11,8 @@ import { inspectNetwork } from './network.js';
 import { gapPacket } from './gaps.js';
 import { parseBboxLocal } from './filters.js';
 import { generateOverlapReports } from './overlap.js';
-import { ensurePrivateStore } from './common.js';
+import { ensurePrivateStore, docsRoot } from './common.js';
+import { join } from 'node:path';
 import { invalidateRealRunReceipt } from './history.js';
 import { createStationEnuFrame, type StationVerticalMode } from './station-enu.js';
 import { contextGlb } from './context.js';
@@ -22,7 +24,7 @@ async function main() {
   for(let i=0;i<argv.length-1;i++)if(argv[i]==='--bbox-local'&&argv[i+1].startsWith('-')&&!argv[i+1].startsWith('--'))argv.splice(i,2,`--bbox-local=${argv[i+1]}`);
   const { values, positionals } = parseArgs({ args:argv,allowPositionals:true, options:{offline:{type:'boolean'},all:{type:'boolean'},frame:{type:'string'},'bbox-local':{type:'string'},ids:{type:'string'},'max-polygons':{type:'string'},radius:{type:'string'},'exit-radius':{type:'string'},merge:{type:'string'},variant:{type:'string'},kinds:{type:'string'},sources:{type:'string'},vertical:{type:'string'},help:{type:'boolean'}} });
   const [command,...args]=positionals;
-  if(values.help || !command){console.log('sources | acquire <source_id...> [--all] [--offline] | inspect-citygml <source_id> | frame-from-envelope <source_id> <frame_id> | crs-roundtrip <frame_id> | citygml-to-glb <source_id> --frame <frame_id> [--bbox-local minE,minN,maxE,maxN] [--ids id1,id2] [--max-polygons N] | station-frame <station> [frame_id] [--vertical per_feature_ground] | context-glb <station> [--radius M] [--exit-radius M] [--merge none|kind|tiles:<size_m>] [--variant high|low] [--kinds bldg,tran] [--sources id1,id2] | inspect-network <source_id> | inspect-poi <source_id> | inspect-vintages | rights-report | overlap | gap-packet');return;}
+  if(values.help || !command){console.log('sources | acquire <source_id...> [--all] [--offline] | inspect-citygml <source_id> | frame-from-envelope <source_id> <frame_id> | crs-roundtrip <frame_id> | citygml-to-glb <source_id> --frame <frame_id> [--bbox-local minE,minN,maxE,maxN] [--ids id1,id2] [--max-polygons N] | station-frame <station> [frame_id] [--vertical per_feature_ground] | context-glb <station> [--radius M] [--exit-radius M] [--merge none|kind|tiles:<size_m>] [--variant high|low] [--kinds bldg,tran] [--sources id1,id2] | inspect-network <source_id> | inspect-poi <source_id> | check-poi-literals | inspect-vintages | rights-report | overlap | gap-packet');return;}
   const requireArg=(index:number):string=>{if(!args[index])throw new Error(`Missing argument ${index+1} for ${command}`);return args[index];};
   const writesReports=['inspect-citygml','frame-from-envelope','station-frame','crs-roundtrip','citygml-to-glb','inspect-network','inspect-poi','inspect-vintages','rights-report','overlap','gap-packet'].includes(command)||(command==='acquire'&&!values.offline);
   if(writesReports&&process.env.GTEKI_GIS_REAL_RUN!=='1')await invalidateRealRunReceipt(`gis ${positionals.join(' ')}`);
@@ -54,6 +56,12 @@ async function main() {
     }
     case 'inspect-network':{const report=await inspectNetwork(requireArg(0));result={source_id:args[0],report:`docs/gis/networks/${args[0]}.json`,verification:'UNVERIFIED'};break;}
     case 'inspect-poi': { const report=await inspectPoi(requireArg(0)); result={source_id:report.source_id,member_count:report.members.length,report:`docs/gis/poi/${report.source_id}.json`}; break; }
+    case 'check-poi-literals': {
+      // Read-only leak guard: no literal POI source field value (from the store detail reports) may appear under docs/gis.
+      const checked=await checkPoiLiterals(join(docsRoot,'gis'),undefined,await loadLiteralAllowlist());
+      result=checked;
+      if(checked.status!=='PASS')process.exitCode=1;break;
+    }
     case 'inspect-vintages': {
       const report=await inspectVintages();
       const relations=report.comparison.bbox_relations.reduce<Record<string,number>>((counts,row)=>({...counts,[row.relation]:(counts[row.relation]??0)+1}),{});

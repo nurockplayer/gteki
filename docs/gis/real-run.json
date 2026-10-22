@@ -180,8 +180,8 @@
     }
   ],
   "invalidated": {
-    "at": "2026-10-21T19:24:32.055Z",
-    "by_command": "gis acquire plateau-13104-bldg-53394536",
+    "at": "2026-10-22T05:41:58.553Z",
+    "by_command": "gis rights-report",
     "reason": "Report-writing command run outside real-run; rerun real-run before summarizing"
   }
 }

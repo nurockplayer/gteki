@@ -7,8 +7,8 @@ const FAST_MPS = 6.8;
 /**
  * CI's e2e-smoke sets this: under SwiftShader the explorer runs at ~7 fps and caps each frame at 0.05 s,
  * so a guide advances ~0.35 s per real second and no walk can arrive within the job's budget. Flow-only
- * runs check the UI path (guide starts, fast tier selected, HUD instructions advance) and stop there;
- * arrival and distance stay with GPU runs.
+ * runs check the UI path (guide starts, fast tier selected, HUD instructions advance) and stop there,
+ * without screenshots; arrival, distance and frames stay with GPU runs.
  */
 const FLOW_ONLY = !!process.env.GTEKI_GUIDE_FLOW_ONLY;
 
@@ -69,9 +69,11 @@ for (const key of STATIONS) {
         await page.waitForTimeout(isPhone ? 4000 : 3000);
         const instruction = await textIf(page, ".hud-instruction");
         if (instruction) seen.add(instruction);
-        const png = await page.screenshot({ path: shotPath(testInfo, `${key}-walk-${w.label}-${String(i++).padStart(2, "0")}.png`) });
+        // Flow-only (CI) takes no frames: under SwiftShader a screenshot can wait past its 15 s timeout for a
+        // frame, which made the smoke job flaky (#76); the video and frame stats come from GPU runs.
+        const png = FLOW_ONLY ? null : await page.screenshot({ path: shotPath(testInfo, `${key}-walk-${w.label}-${String(i++).padStart(2, "0")}.png`) });
         const avatar = await hooks.avatar(page);
-        frames.push({ t: Date.now() - t0, instruction, avatar, stats: FLOW_ONLY ? null : await imageStats(page, png), overlaps: FLOW_ONLY ? null : await labelUiOverlaps(page) });
+        frames.push({ t: Date.now() - t0, instruction, avatar, stats: png ? await imageStats(page, png) : null, overlaps: png ? await labelUiOverlaps(page) : null });
         // The arrival toast lasts 2.5 s; the probe's observer records it even between samples.
         if ((await toasts(page)).some(isArrival)) arrived = true;
         const pos = JSON.stringify(avatar, (_k, v) => (typeof v === "number" ? Math.round(v * 10) / 10 : v));

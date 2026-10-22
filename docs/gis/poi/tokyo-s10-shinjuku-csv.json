@@ -1,7 +1,7 @@
 {
   "source_id": "tokyo-s10-shinjuku-csv",
   "source_sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
-  "tool_input_sha256": "ca9ef46e121b7da44432c6b39e75b87bfc5be56e7e661fdd04e6bfbaefcbf403",
+  "tool_input_sha256": "b07ff35a92d73bcdedb3a19ccdbc94ac11240547db3a0de65b53f0c38109854c",
   "input_sources": [
     {
       "source_id": "tokyo-s10-shinjuku-csv",
@@ -84,25 +84,30 @@
             "string"
           ],
           "distinct_count": 5,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "A",
+              "value_sha256": "3f39d5c348e5b79d06e842c114e6cc571583bbf44e4b0ebfda1a01ec05745d43",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "B",
+              "value_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "C",
+              "value_sha256": "6b23c0d5f35d1b11f9b683f0b0a617355deb11277d91ae091d399c655b87940d",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "D",
+              "value_sha256": "a9f51566bd6705f7ea6ad54bb9deb449f795582d6529a0e22207b8981233ec58",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "E",
+              "value_sha256": "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -115,21 +120,25 @@
             "string"
           ],
           "distinct_count": 4,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "コインロッカー",
+              "value_sha256": "b1456c4c007d1e939ec7cf308950b9f746798beb9a29db106f2cc0334324d63a",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "ATM（みずほ銀行）",
+              "value_sha256": "0815ceacc25ffa4cd9c630705f0345746e16d3fcbaa90c8b800d19920d0d7ec5",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "カレーショップC＆C",
+              "value_sha256": "b69390b8895d14bbd8cdd9534c2d6ca7526ca55c02f385b14ca0f7c09ae50a12",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "証明写真機",
+              "value_sha256": "b8de95838391500422601f7dfee53d9ae015e969b7b0815da6b4beaed33a20f8",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -142,21 +151,25 @@
             "string"
           ],
           "distinct_count": 4,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "B1階改札外コンコース（4出口付近）",
+              "value_sha256": "4581dc80e708b301f38a93e5aadc2477bc44525028f1cf29e69f272506391ede",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "B1階改札外コンコース（2出口付近）",
+              "value_sha256": "4eb5c7e833351ab7858fbe8e811ce176d9e48ea54784e38be68435ce5b1c362e",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "B2階改札内コンコース（A1出口方駅務室横）",
+              "value_sha256": "98b663ddf57fd637e6eb3cb1f79987fc5e6fa55d0ef9b419b5641c5ad9f6ce3f",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "B2階改札外コンコース（A1出口方改札付近）",
+              "value_sha256": "b88a5baa8b6ca159345d21747b8d7a48f4fb35ae8d822909b248a9baa2d80e1c",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -169,17 +182,24 @@
             "string"
           ],
           "distinct_count": 3,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "【大型】3口【中型】3口【標準】4口",
+              "value_sha256": "267f866f46d6c91c304d5ebd8790ff9a39349814c9872ba329d8dbd4e49c7bc8",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "【平日】7時から22時30分まで【土曜・日曜・祝日】8時から21時まで",
+              "value_sha256": "6d7bbddde043893915aa988a8e5b14ee8004974ef2d440cde9b6dd3e24c87594",
+              "value_type": "string",
+              "count": 1
+            },
+            {
+              "value_sha256": "e3614b618d457122f48dcb48e5f6d451ac2cb6264a4fd49f57a36d7601ee8735",
+              "value_type": "string",
               "count": 1
             }
           ],
-          "omitted_distinct": 1
+          "omitted_distinct": 0
         },
         "サイズ・口数（コインロッカー）": {
           "blank_count": 4,
@@ -188,9 +208,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "【標準】20口",
+              "value_sha256": "c77859c00c7b403e51159c80cb77cb8972807e4522cd383273777eac851355be",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -203,7 +224,7 @@
             "string"
           ],
           "distinct_count": 0,
-          "literal_distribution": [],
+          "value_hash_distribution": [],
           "omitted_distinct": 0
         },
         "電話番号": {
@@ -213,9 +234,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "03-5321-3300",
+              "value_sha256": "f210f7b9c29f72768e8a3051e74d0c68f9056f6c4b144e444a2dcaec74a3bdd1",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -228,9 +250,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "http://www.curry-cc.jp/",
+              "value_sha256": "a99c5ad9f255b6a20f10b99a716ffea4382dfd70f1823f7a8944e262c55ef3be",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -243,9 +266,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "○",
+              "value_sha256": "1f444cd5d56c5aa0895aaeecc7a4ab9dde91b1b16bb1bb2fa4a7a1bc44619cc5",
+              "value_type": "string",
               "count": 2
             }
           ],
@@ -258,7 +282,7 @@
             "string"
           ],
           "distinct_count": 0,
-          "literal_distribution": [],
+          "value_hash_distribution": [],
           "omitted_distinct": 0
         }
       },
@@ -267,7 +291,7 @@
       "crs": "UNKNOWN",
       "bbox": null,
       "geometry_types": {},
-      "literal_location_time_fields": {
+      "location_time_fields": {
         "設置場所": {
           "blank_count": 0,
           "missing_count": 0,
@@ -275,21 +299,25 @@
             "string"
           ],
           "distinct_count": 4,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "B1階改札外コンコース（4出口付近）",
+              "value_sha256": "4581dc80e708b301f38a93e5aadc2477bc44525028f1cf29e69f272506391ede",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "B1階改札外コンコース（2出口付近）",
+              "value_sha256": "4eb5c7e833351ab7858fbe8e811ce176d9e48ea54784e38be68435ce5b1c362e",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "B2階改札内コンコース（A1出口方駅務室横）",
+              "value_sha256": "98b663ddf57fd637e6eb3cb1f79987fc5e6fa55d0ef9b419b5641c5ad9f6ce3f",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "B2階改札外コンコース（A1出口方改札付近）",
+              "value_sha256": "b88a5baa8b6ca159345d21747b8d7a48f4fb35ae8d822909b248a9baa2d80e1c",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -302,17 +330,24 @@
             "string"
           ],
           "distinct_count": 3,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "【大型】3口【中型】3口【標準】4口",
+              "value_sha256": "267f866f46d6c91c304d5ebd8790ff9a39349814c9872ba329d8dbd4e49c7bc8",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "【平日】7時から22時30分まで【土曜・日曜・祝日】8時から21時まで",
+              "value_sha256": "6d7bbddde043893915aa988a8e5b14ee8004974ef2d440cde9b6dd3e24c87594",
+              "value_type": "string",
+              "count": 1
+            },
+            {
+              "value_sha256": "e3614b618d457122f48dcb48e5f6d451ac2cb6264a4fd49f57a36d7601ee8735",
+              "value_type": "string",
               "count": 1
             }
           ],
-          "omitted_distinct": 1
+          "omitted_distinct": 0
         }
       },
       "routable": false
@@ -557,7 +592,7 @@
   "publish_gate": "HOLD",
   "limitations": [
     "No POI becomes a node, edge, door or floor.",
-    "Literal location, opening-hour and level fields remain verbatim in the hashed detail.",
+    "Location, opening-hour, level and every other source field value appear in this committed report only as SHA-256 + count (no release permission for some sources); the verbatim values stay in the git-ignored external detail.",
     "No source currency, operator permission, complete coverage or navigability established."
   ]
 }
