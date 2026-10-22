@@ -4,7 +4,7 @@ import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { getStoreRoot, getStoredSource, packageRoot } from './common.js';
 import { checkPoiLiterals, detailLiterals, type DetailProblem } from './poi-literals.js';
 import { SUBSTRING_MIN_LENGTH, buildMatcher, isWording, literalsInProse, nfkc, redactProse, wholeValueLiteral, type LiteralMatcher } from './literal-match.js';
-import { CreditUnavailableError, EXEMPT_PATHS, LITERAL_CLASSES, classACredit } from './literal-classes.js';
+import { CreditUnavailableError, EXEMPT_PATHS, LITERAL_CLASSES, classACredit, reportSourceIds } from './literal-classes.js';
 import { parseCsv } from './network.js';
 import { readZip } from './zip.js';
 import { valueSha256 } from './poi.js';
@@ -260,6 +260,17 @@ export async function verifyClassACredits(docsGisDir: string, credits: ReadonlyA
   const textOf = (sourceId: string): string => credits.find(credit => credit.source_id === sourceId)?.attribution_text ?? '';
   const inventories: unknown[] = [];
   for (const name of (await readdir(join(docsGisDir, 'inventory')).catch(() => [] as string[])).filter(entry => entry.endsWith('.inventory.json')).sort()) inventories.push(await readJsonOrNull(join(docsGisDir, 'inventory', name)));
+  // A network report whose sources include a class (a) one (its own Ikebukuro source, or the MLIT specifications behind decoded labels, at the root or in any
+  // member) must carry that credit even when no literal of it survives in the committed text: the decoding notes are specification-derived (#147 review).
+  for (const name of (await readdir(join(docsGisDir, 'networks')).catch(() => [] as string[])).filter(entry => entry.endsWith('.json')).sort()) {
+    const doc = await readJsonOrNull(join(docsGisDir, 'networks', name));
+    const needed = isRecord(doc) ? reportSourceIds(doc).map(textOf).filter(text => text !== '') : [];
+    if (needed.length === 0) continue;
+    const credit = isRecord(doc) && isRecord(doc.credit) ? doc.credit : null;
+    if (!credit || typeof credit.attribution_text !== 'string' || typeof credit.classification !== 'string' || !credit.classification.includes(CREDIT_POINTER) || !needed.every(text => (credit.attribution_text as string).includes(text))) problems.push({ file: `networks/${name}`, reason: 'network report of a class (a) source or MLIT-specification decoding without a `credit` field naming every recorded credit' });
+    const markdown = await readFile(join(docsGisDir, 'networks', name.replace(/\.json$/u, '.md')), 'utf8').catch(() => null);
+    if (markdown !== null && !needed.every(text => markdown.includes(text))) problems.push({ file: `networks/${name.replace(/\.json$/u, '.md')}`, reason: 'network report Markdown without the recorded credit text of its class (a) sources' });
+  }
   const owners = classAWording(inventories);
   for (const [literal, ids] of options.classA ?? []) { const key = nfkc(literal).trim(); if (key.length >= 4 || ids.some(isMlitOwner)) owners.set(key, [...new Set([...owners.get(key) ?? [], ...ids])]); }
   if (owners.size === 0) return problems;

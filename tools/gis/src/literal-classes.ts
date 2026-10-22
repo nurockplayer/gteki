@@ -100,7 +100,10 @@ export function reportSourceIds(report: unknown): string[] {
   if (isRecord(report)) {
     if (typeof report.source_id === 'string') for (const id of report.source_id.split('+')) ids.add(id);
     if (Array.isArray(report.members)) for (const member of report.members) if (isRecord(member) && typeof member.source_id === 'string') ids.add(member.source_id);
-    if (report.attribute_decoding !== undefined && report.attribute_decoding !== null) for (const version of ['2018-03', '2024-07']) ids.add(`mlit-walk-network-spec-${version}`);
+    // Station-map archives keep `attribute_decoding` inside each member, not at the root (#147 review).
+    const decoded = (report.attribute_decoding !== undefined && report.attribute_decoding !== null)
+      || (Array.isArray(report.members) && report.members.some(member => isRecord(member) && member.attribute_decoding !== undefined && member.attribute_decoding !== null));
+    if (decoded) for (const version of ['2018-03', '2024-07']) ids.add(`mlit-walk-network-spec-${version}`);
   }
   return [...ids];
 }

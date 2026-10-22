@@ -462,6 +462,15 @@ export function archiveGeoJsonNetworkInventory(inspected: ReturnType<typeof insp
   };
 }
 
+/** Floor-label observations of a network report: combined inventory, archive members, a GeoJSON-pair root, then CSV field statistics; null when none is reported. */
+export function networkFloorLabels(r: any): unknown {
+  return r.network_inventory?.floor_label_value_hash_distribution
+    ?? r.members?.flatMap((m: any) => m.floor_label_value_hash_distribution ?? m.floor_labels_present_literally ?? [])
+    ?? r.floor_label_value_hash_distribution
+    ?? r.floor_labels_present_literally
+    ?? (r.field_statistics?.node?.floor?.distinct_values ? Object.keys(r.field_statistics.node.floor.distinct_values).sort() : null);
+}
+
 export function candidateGraphFromGeoJsonInventory(inspected: ReturnType<typeof inspectGeoJsonFeatures>) {
   const candidates = inspected.candidate_features ?? [];
   return {

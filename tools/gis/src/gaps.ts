@@ -115,6 +115,15 @@ function describeOverlap(report: StationOverlapReport | null): string[] {
   ];
 }
 
+/** Markdown lines naming the source files; the credit line stays whenever a credit exists, also when the CityGML inventory is missing. */
+export function sourceFileLines(gml: string, inventory: unknown, credit: { attribution_text: string; classification: string } | null, semanticFacts: string[]): string[] {
+  return [
+    ...(inventory ? [`- CityGML source: ${gml}.`] : []),
+    ...(credit ? [`- Credit: ${credit.attribution_text} (see ${credit.classification}).`] : []),
+    ...(inventory ? semanticFacts : ['- CityGML inventory: unavailable; contents UNKNOWN.']),
+  ];
+}
+
 export async function gapPacket(): Promise<Record<string, unknown>> {
   const results: Record<string, unknown> = {};
   const manifestStations = Object.fromEntries(loadSources().map(source => [source.source_id, source.station_ids]));
@@ -163,7 +172,7 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
       'This packet is generated from the current inventory and network report files. Missing reports and fields are UNKNOWN.',
       '',
       '## What the source files report',
-      ...(inventory ? [`- CityGML source: ${station.gml}.`, ...(credit ? [`- Credit: ${credit.attribution_text} (see ${credit.classification}).`] : []), ...semanticFacts] : ['- CityGML inventory: unavailable; contents UNKNOWN.']),
+      ...sourceFileLines(station.gml, inventory, credit, semanticFacts),
       ...describeNetwork(network),
       '',
       '## Spatial bbox comparison',

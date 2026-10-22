@@ -448,6 +448,9 @@ describe('class (a) networks and MLIT labels (decisions of 2026-10-22)', () => {
   it('names the MLIT specifications behind decoded labels, and credits only class (a) sources', async () => {
     expect(reportSourceIds({ source_id: 'a+b', members: [{ source_id: 'c' }], attribute_decoding: { fields: {} } }).sort()).toEqual(['a', 'b', 'c', 'mlit-walk-network-spec-2018-03', 'mlit-walk-network-spec-2024-07']);
     expect(reportSourceIds({ source_id: 'a' })).toEqual(['a']);
+    // Station-map archives keep the decoding inside each member, not at the root.
+    expect(reportSourceIds({ source_id: 'a', members: [{ file: 'm1' }, { file: 'm2', attribute_decoding: { fields: {} } }] }).sort()).toEqual(['a', 'mlit-walk-network-spec-2018-03', 'mlit-walk-network-spec-2024-07']);
+    expect(reportSourceIds({ source_id: 'a', members: [{ file: 'm1', attribute_decoding: null }] })).toEqual(['a']);
     await withAcquisitions(async acquisitionsDir => {
       const credit = await reportCredit(['hokonavi-oedo-shinjuku-network-geojson', 'hokonavi-ikebukuro-walk-node-csv', 'mlit-walk-network-spec-2018-03', 'brand-new-source'], { manifest, acquisitionsDir });
       expect(credit?.sources.map(source => source.source_id)).toEqual(['hokonavi-ikebukuro-walk-node-csv', 'mlit-walk-network-spec-2018-03']);
@@ -536,6 +539,22 @@ describe('class (a) networks and MLIT labels (decisions of 2026-10-22)', () => {
       expect((await verifyClassACredits(docs, credits, { classA })).map(problem => problem.file)).toEqual(['networks/n.md']);
       // A value shared by two sources is credited by either source.
       await writeFile(join(docs, 'networks', 'n.md'), '# n\nCredit: SYNTH-GEOJSON-CREDIT\nsynth-ikebukuro-node-0001\n');
+      expect(await verifyClassACredits(docs, credits, { classA })).toEqual([]);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+  it('requires the MLIT credit of a network report that decodes only inside its members, even with no literal left in the text', async () => {
+    const body = { source_id: 'hokonavi-oedo-shinjuku-stationmap-geojson', members: [{ file: 'm.geojson', attribute_decoding: { status: 'LITERAL_LABEL_LOOKUP_ONLY', fields: { node: {}, link: {} } } }] };
+    const { root, docs } = await tree({ 'networks/s.json': `${JSON.stringify(body, null, 2)}\n`, 'networks/s.md': '# s\nno credit\n' });
+    try {
+      expect((await verifyClassACredits(docs, credits, { classA })).map(problem => problem.file)).toEqual(['networks/s.json', 'networks/s.md']);
+      const credit = { attribution_text: 'SYNTH-MLIT-CREDIT', classification: 'docs/gis/rights/non-poi-literals.md' };
+      await writeFile(join(docs, 'networks', 's.json'), `${JSON.stringify({ credit, ...body }, null, 2)}\n`);
+      expect((await verifyClassACredits(docs, credits, { classA })).map(problem => problem.file)).toEqual(['networks/s.md']);
+      await writeFile(join(docs, 'networks', 's.md'), `# s\nCredit: ${credit.attribution_text}\n`);
+      expect(await verifyClassACredits(docs, credits, { classA })).toEqual([]);
+      // A report with no decoding anywhere and only a class (b) source needs no credit.
+      await writeFile(join(docs, 'networks', 's.json'), `${JSON.stringify({ source_id: body.source_id, members: [{ file: 'm.geojson' }] }, null, 2)}\n`);
+      await writeFile(join(docs, 'networks', 's.md'), '# s\n');
       expect(await verifyClassACredits(docs, credits, { classA })).toEqual([]);
     } finally { await rm(root, { recursive: true, force: true }); }
   });

@@ -10,6 +10,7 @@ import { docsRoot,readJson,writeJson } from './common.js';
 import { toolFingerprint } from './provenance.js';
 import { GAP_STATION_IDS, projectPoiContent, rightsRelevant } from './gaps.js';
 import { LITERAL_CLASSES, reportCredit } from './literal-classes.js';
+import { networkFloorLabels } from './network.js';
 const root=join(docsRoot,'gis');
 function networkSourceHashes(report:any):Array<[string,string]>{
   const pairs:Array<[string,string]>=[];
@@ -108,7 +109,7 @@ const networkSummary=networks.map(r=>({source_id:r.source_id,counts:r.counts??{f
   self_loops:r.topology?.self_loops?.length??null,weak_components:r.topology?.weak_component_count??null,endpoint_mismatches:r.topology?.geometry_endpoint_mismatches_over_0_5m?.length??null,
   endpoint_check_status:r.topology?.geometry_endpoint_check_status??'UNKNOWN',
   endpoint_coverage:r.topology?.geometry_endpoint_coverage??null,
-  floor_label_value_hash_distribution:r.network_inventory?.floor_label_value_hash_distribution??r.members?.flatMap((m:any)=>m.floor_label_value_hash_distribution??m.floor_labels_present_literally??[])??(r.field_statistics?.node?.floor?.distinct_values?Object.keys(r.field_statistics.node.floor.distinct_values).sort():null),
+  floor_label_value_hash_distribution:networkFloorLabels(r),
   csv_in_out:r.field_statistics?.node?.in_out??null,csv_elevation:r.field_statistics?.node?.elevation??null,
   attribute_decoding:r.attribute_decoding??null,crs:r.crs??null,distance_consistency:r.distance_consistency??null,representation_comparison:r.csv_comparison??r.geojson_comparison??null,metric_status:r.topology?.metric_status??null,
   csv_route_structure:r.field_statistics?.link?.rt_struct??null,csv_step_class:r.field_statistics?.link?.lev_diff??null})).map(n=>({...n,endpoint_mismatches:/UNKNOWN/.test(n.endpoint_check_status)?null:n.endpoint_mismatches}));
