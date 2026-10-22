@@ -49,7 +49,7 @@ describe("describeRoute", () => {
     expect(straight.map((i) => i.kind)).toEqual(["start", "walk", "arrive"]);
     expect(straight[1]!.distanceM).toBe(20);
     // `a` is a real choice point (the northern branch) and reaches the Restroom POI.
-    expect(straight[1]!.text).toBe("約20m 直進。約10m先、トイレの分岐はそのまま直進");
+    expect(straight[1]!.text).toBe("約20m 進む。約10m先、トイレの分岐はそのまま直進");
   });
 
   it("says up/down only when evidenced and names the source floor label", () => {
@@ -177,6 +177,100 @@ describe("describeRoute arrival at a stair/escalator/ramp connector", () => {
   });
 });
 
+describe("describeRoute start at a stair/escalator/ramp connector", () => {
+  /** Exit A1 left from the foot of its unsurveyed stairs at "goal" (a stair_end): the route walks away from it. */
+  function stairFootOrigin(kind: "stair_end" | "escalator_end" | "ramp_end" = "stair_end") {
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("a-goal", "a", "goal")]);
+    b.nodes.find((n) => n.id === "goal")!.kind = kind;
+    const exit = b.pois.find((p) => p.id === "exit-a1")!;
+    exit.connectorNodeIds = ["goal"];
+    return { b, exit, r: route(b, "goal", "start") };
+  }
+
+  it("says the route starts at the foot of the stairs, which are not part of it", () => {
+    const { b, exit, r } = stairFootOrigin();
+    const en = describeRoute(b, r, "en", undefined, exit);
+    expect(en[0]).toMatchObject({ kind: "start", connector: "stair_end", stepIndexes: [], text: "Start at the foot of the Exit A1 stairs (the stairs are not part of this route)" });
+    expect(describeRoute(b, r, "ja", undefined, exit)[0]!.text).toBe("Ａ１出口の階段の下から出発（階段は経路に含まれません）");
+    // Only the opening line changes: the steps are those of the same route.
+    expect(en.slice(1).map((i) => i.stepIndexes)).toEqual(describeRoute(b, r, "en").slice(1).map((i) => i.stepIndexes));
+  });
+
+  it("covers escalator and ramp ends without claiming a foot", () => {
+    for (const [kind, en, ja] of [
+      ["escalator_end", "Start at the end of the Exit A1 escalator (the escalator is not part of this route)", "Ａ１出口のエスカレーターの端から出発（エスカレーターは経路に含まれません）"],
+      ["ramp_end", "Start at the end of the Exit A1 ramp (the ramp is not part of this route)", "Ａ１出口のスロープの端から出発（スロープは経路に含まれません）"],
+    ] as const) {
+      const { b, exit, r } = stairFootOrigin(kind);
+      expect(describeRoute(b, r, "en", undefined, exit)[0]).toMatchObject({ connector: kind, text: en });
+      expect(describeRoute(b, r, "ja", undefined, exit)[0]!.text).toBe(ja);
+    }
+  });
+
+  it("names the POI like the arrival side does, and never by id", () => {
+    const { b, exit, r } = stairFootOrigin();
+    exit.names = [{ lang: "ja", text: "４番出口" }];
+    expect(describeRoute(b, r, "en", undefined, exit)[0]!.text).toBe("Start at the foot of the ４番出口 stairs (the stairs are not part of this route)");
+    exit.names = [];
+    expect(describeRoute(b, r, "en", undefined, exit)[0]!.text).toBe("Start at the foot of the stairs (the stairs are not part of this route)");
+    expect(describeRoute(b, r, "ja", undefined, exit)[0]!.text).toBe("階段の下から出発（階段は経路に含まれません）");
+  });
+
+  it("keeps the plain start without an origin POI, for a bare node, or when the origin is not that connector", () => {
+    const { b, exit, r } = stairFootOrigin();
+    expect(describeRoute(b, r, "en")[0]).toEqual(expect.objectContaining({ kind: "start", text: "Start" }));
+    expect(describeRoute(b, r, "en")[0]).toEqual(expect.not.objectContaining({ connector: expect.anything() }));
+    expect(describeRoute(b, r, "ja", undefined, exit)[0]!.connector).toBe("stair_end");
+    // An exit/junction connector is the origin itself.
+    b.nodes.find((n) => n.id === "goal")!.kind = "exit";
+    expect(describeRoute(b, r, "en", undefined, exit)[0]!.text).toBe("Start");
+    // A stair_end that is not this POI's connector.
+    b.nodes.find((n) => n.id === "goal")!.kind = "stair_end";
+    exit.connectorNodeIds = ["start"];
+    expect(describeRoute(b, r, "en", undefined, exit)[0]!.text).toBe("Start");
+  });
+
+  it("keeps the plain start when the origin is the stairs/escalator itself", () => {
+    const { b, exit, r } = stairFootOrigin();
+    exit.category = "stairs";
+    expect(describeRoute(b, r, "en", undefined, exit)[0]!.text).toBe("Start");
+    const ramp = stairFootOrigin("ramp_end");
+    ramp.exit.category = "stairs";
+    // A ramp has no POI category of its own, so a ramp_end connector never counts as the POI itself.
+    expect(describeRoute(ramp.b, ramp.r, "en", undefined, ramp.exit)[0]!.connector).toBe("ramp_end");
+  });
+
+  it("does not say the stairs are left out when the route starts by climbing them", () => {
+    const b = createSyntheticBundle([edge("st", "upper", "a", { mode: "stairs" }), edge("s-a", "a", "start")]);
+    b.nodes.find((n) => n.id === "upper")!.kind = "stair_end";
+    const exit = b.pois.find((p) => p.id === "exit-a1")!;
+    exit.connectorNodeIds = ["upper"];
+    const r = route(b, "upper", "start");
+    expect(r.steps[0]!.mode).toBe("stairs");
+    expect(describeRoute(b, r, "en", undefined, exit)[0]).toEqual(expect.objectContaining({ kind: "start", text: "Start" }));
+    expect(describeRoute(b, r, "en", undefined, exit)[0]).toEqual(expect.not.objectContaining({ connector: expect.anything() }));
+  });
+});
+
+describe("describeRoute opening leg", () => {
+  it("only says how far: no heading comes before it, so it is never 'straight', bent or not", () => {
+    const b = createSyntheticBundle([edge("s-a", "start", "a"), edge("a-x", "a", "goal")]);
+    const r = route(b, "start", "goal");
+    expect(describeRoute(b, r, "en")[1]!.text).toMatch(/^Go ~20 m/);
+    expect(describeRoute(b, r, "ja")[1]!.text).toMatch(/^約20m 進む/);
+    const bent = createSyntheticBundle([edge("u", "start", "goal", { lengthM: null, geometry: [{ x: 0, y: 0, z: 0 }, { x: 0, y: 30, z: 0 }, { x: 20, y: 30, z: 0 }, { x: 20, y: 0, z: 0 }] })]);
+    bent.nodes.find((n) => n.id === "goal")!.position = { x: 20, y: 0, z: 0 };
+    expect(describeRoute(bent, route(bent, "start", "goal"), "en")[1]!.text).toBe("Go ~80 m");
+  });
+
+  it("a later straight walk still says straight", () => {
+    const b = createSyntheticBundle([edge("g", "start", "a", { mode: "gate" }), edge("a-goal", "a", "goal")]);
+    b.nodes.find((n) => n.id === "a")!.position = { x: 0, y: 0, z: 0 };
+    b.nodes.find((n) => n.id === "goal")!.position = { x: 20, y: 0, z: 0 };
+    expect(describeRoute(b, route(b, "start", "goal"), "en").map((i) => i.text)).toEqual(["Start", "Pass the ticket gate", "Go straight ~20 m", "Arrive at destination"]);
+  });
+});
+
 describe("instructionPoints", () => {
   it("includes the junction an instruction starts from, so one long step frames its whole segment", () => {
     const b = createSyntheticBundle([edge("only", "start", "goal", { lengthM: 20 })]);
@@ -210,13 +304,15 @@ describe("routePolyline with a malformed one-point geometry", () => {
 });
 
 describe("walk wording follows the walked geometry", () => {
+  /** The walk is not the route's opening leg (a zero-length gate comes first): that leg only says "Go", never "straight". */
   const say = (geometry: { x: number; y: number; z: number }[] | undefined) => {
-    const b = createSyntheticBundle([edge("w", "start", "goal", geometry ? { lengthM: null, geometry } : { lengthM: 20 })]);
+    const b = createSyntheticBundle([edge("g", "pre", "start", { mode: "gate" }), edge("w", "start", "goal", geometry ? { lengthM: null, geometry } : { lengthM: 20 })]);
+    b.nodes.push({ ...b.nodes.find((n) => n.id === "start")!, id: "pre" });
     // The goal node sits on the polyline's end, so endpoint snapping keeps the drawn shape.
     if (geometry) b.nodes.find((n) => n.id === "goal")!.position = { ...geometry.at(-1)! };
-    const r = createRouter(b).route("start", "goal");
+    const r = createRouter(b).route("pre", "goal");
     if (!r.ok) throw new Error(r.message);
-    return [describeRoute(b, r, "ja")[1]!.text, describeRoute(b, r, "en")[1]!.text];
+    return [describeRoute(b, r, "ja")[2]!.text, describeRoute(b, r, "en")[2]!.text];
   };
 
   it("never says straight for one edge whose own polyline bends", () => {
@@ -526,7 +622,7 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     const r = route(b, "s0", "exit");
     expect(texts(b, r, "en")).toEqual([
       "Start",
-      "Go straight ~20 m",
+      "Go ~20 m",
       "Turn left, then left again, then take the stairs up to Landing",
       "Turn left, then left again, then continue on the stairs",
       // Known "up" after a flight of unknown direction: "continue up" would claim the last one rose too.
@@ -535,7 +631,7 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     ]);
     expect(texts(b, r, "ja")).toEqual([
       "出発",
-      "約20m 直進",
+      "約20m 進む",
       "左へ曲がり、さらに左へ曲がり、階段で上へ・Landingへ",
       "左へ曲がり、さらに左へ曲がり、引き続き階段を進む",
       "左へ曲がり、さらに左へ曲がり、階段で上へ・Streetへ、その先で右へ",
@@ -572,7 +668,7 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     expect(onto[1]).toMatchObject({ stepIndexes: [0, 1], text: "Take the escalator up to 1F" });
     b.nodes.find((n) => n.id === "isolated")!.position = { x: 10, y: 10, z: 0 };
     // The first leg is what the left turn is measured from: it stays a line of its own.
-    expect(texts(b, route(b, "start", "isolated"), "en")).toEqual(["Start", "Go straight ~3 m", "Turn left, ~10 m", "Arrive at destination"]);
+    expect(texts(b, route(b, "start", "isolated"), "en")).toEqual(["Start", "Go ~3 m", "Turn left, ~10 m", "Arrive at destination"]);
   });
 
   it("adds a straight step off a flight or lift to it, so the turn after it still starts its own line", () => {
@@ -582,7 +678,7 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     b.nodes.push({ ...node("north", "upper", 17, 20), position: { x: 17, y: 20, z: 4 } });
     b.edges.push(edge("turn", "upper-2", "north", { lengthM: 20 }));
     const ins = describeRoute(b, route(b, "start", "north"), "en");
-    expect(ins.map((i) => i.text)).toEqual(["Start", "Go straight ~10 m", "Take the stairs up to 1F", "Turn left, ~20 m", "Arrive at destination"]);
+    expect(ins.map((i) => i.text)).toEqual(["Start", "Go ~10 m", "Take the stairs up to 1F", "Turn left, ~20 m", "Arrive at destination"]);
     expect(ins[2]).toMatchObject({ stepIndexes: [1, 2], distanceM: 12 });
     expect(ins[2]!.trailTurns).toBeUndefined();
   });
@@ -600,7 +696,7 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     // The 4 m leg after the left turn is folded in front: ~90 m and the hints count from the right turn at `a`.
     expect(ins.map((i) => i.text)).toEqual([
       "Start",
-      "Go straight ~10 m",
+      "Go ~10 m",
       "Turn left, then right, ~90 m. After ~30 m, keep right at the junction. After ~60 m, continue straight through the junction.",
       "Arrive at destination",
     ]);
@@ -613,8 +709,8 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     const b = createSyntheticBundle([edge("s-goal", "start", "goal", { lengthM: 20 }), edge("back", "goal", "a", { lengthM: 4 })]);
     b.nodes.find((n) => n.id === "a")!.position = { x: 16, y: 0, z: 0 };
     const r = route(b, "start", "a");
-    expect(describeRoute(b, r, "en")[1]).toMatchObject({ stepIndexes: [0, 1], distanceM: 24, trailTurns: ["back"], text: "Go straight ~20 m, then turn back" });
-    expect(texts(b, r, "ja")[1]).toBe("約20m 直進、その先で引き返す");
+    expect(describeRoute(b, r, "en")[1]).toMatchObject({ stepIndexes: [0, 1], distanceM: 24, trailTurns: ["back"], text: "Go ~20 m, then turn back" });
+    expect(texts(b, r, "ja")[1]).toBe("約20m 進む、その先で引き返す");
   });
 
   it("anchors trailing turns to the end of the walk when junction hints come before them", () => {
@@ -625,9 +721,9 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     const r = route(b, "start", "isolated");
     expect(describeRoute(b, r, "en")[1]).toMatchObject({
       stepIndexes: [0, 1, 2], trailTurns: ["left"],
-      text: "Go straight ~20 m. After ~10 m, continue straight past Restroom. After ~20 m, turn left.",
+      text: "Go ~20 m. After ~10 m, continue straight past Restroom. After ~20 m, turn left.",
     });
-    expect(texts(b, r, "ja")[1]).toBe("約20m 直進。約10m先、トイレの分岐はそのまま直進。約20m先で左へ");
+    expect(texts(b, r, "ja")[1]).toBe("約20m 進む。約10m先、トイレの分岐はそのまま直進。約20m先で左へ");
   });
 
   it("folds a route of short walks only into its opening leg", () => {
@@ -636,8 +732,8 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     b.nodes.find((n) => n.id === "b")!.position = { x: 3, y: 2, z: 0 };
     b.nodes.find((n) => n.id === "goal")!.position = { x: 6, y: 2, z: 0 };
     const r = route(b, "start", "goal");
-    expect(describeRoute(b, r, "en")[1]).toMatchObject({ kind: "walk", stepIndexes: [0, 1, 2], trailTurns: ["left", "right"], text: "Go straight ~3 m, then turn left, then right" });
-    expect(texts(b, r, "ja")).toEqual(["出発", "約3m 直進、その先で左へ、すぐ右へ", "目的地に到着"]);
+    expect(describeRoute(b, r, "en")[1]).toMatchObject({ kind: "walk", stepIndexes: [0, 1, 2], trailTurns: ["left", "right"], text: "Go ~3 m, then turn left, then right" });
+    expect(texts(b, r, "ja")).toEqual(["出発", "約3m 進む、その先で左へ、すぐ右へ", "目的地に到着"]);
   });
 
   it("judges straight wording on the instruction's own walk, not on the legs folded into it", () => {
@@ -649,7 +745,7 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     b.nodes.find((n) => n.id === "goal")!.position = { x: 20, y: 0, z: 0 };
     b.nodes.find((n) => n.id === "a")!.position = { x: 23, y: 0, z: 0 };
     const r = route(b, "start", "a");
-    expect(describeRoute(b, r, "en")[1]).toMatchObject({ stepIndexes: [0, 1], trailTurns: ["left"], text: "Continue ~80 m, then turn left" });
+    expect(describeRoute(b, r, "en")[1]).toMatchObject({ stepIndexes: [0, 1], trailTurns: ["left"], text: "Go ~80 m, then turn left" });
     expect(texts(b, r, "ja")[1]).toBe("約80m 進む、その先で左へ");
   });
 
@@ -675,7 +771,7 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
     // Without a turn before it, the walkway line reads as before.
     b.nodes.find((n) => n.id === "b")!.position = { x: 22, y: 0, z: 0 };
     b.nodes.find((n) => n.id === "goal")!.position = { x: 32, y: 0, z: 0 };
-    expect(texts(b, route(b, "start", "goal"), "en")).toEqual(["Start", "Go straight ~22 m", "Moving walkway ~10 m", "Arrive at destination"]);
+    expect(texts(b, route(b, "start", "goal"), "en")).toEqual(["Start", "Go ~22 m", "Moving walkway ~10 m", "Arrive at destination"]);
   });
 
   it("keeps an opening leg that ends in a turn onto a flight or gate", () => {
@@ -687,9 +783,9 @@ describe("describeRoute short legs, lift rides and continued flights (Shinjuku E
       const r = route(b, "start", "upper");
       const en = describeRoute(b, r, "en");
       expect(en.map((i) => i.stepIndexes)).toEqual([[], [0], [1], []]);
-      expect(en[1]!.text).toBe("Go straight ~3 m");
+      expect(en[1]!.text).toBe("Go ~3 m");
       expect(en[2]!.text).toBe(mode === "gate" ? "Turn left, then pass the ticket gate" : "Turn left, then take the stairs up to 1F");
-      expect(texts(b, r, "ja").slice(1, 3)).toEqual(["約3m 直進", mode === "gate" ? "左へ曲がり、改札を通過" : "左へ曲がり、階段で上へ・1Fへ"]);
+      expect(texts(b, r, "ja").slice(1, 3)).toEqual(["約3m 進む", mode === "gate" ? "左へ曲がり、改札を通過" : "左へ曲がり、階段で上へ・1Fへ"]);
     }
   });
 

@@ -4,7 +4,7 @@ export type Lang = "ja" | "en";
 
 const STRINGS = {
   ja: {
-    tagline: "駅を探して、歩いて確かめる",
+    tagline: "駅を探して、歩いて下見する",
     station: "駅",
     from: "出発地",
     to: "目的地",
@@ -13,7 +13,7 @@ const STRINGS = {
     swap: "入れ替え",
     stepFree: "段差なし",
     unpaidOnly: "改札外のみ",
-    strictHours: "営業時間確認済みのみ",
+    strictHours: "営業時間が記載されたもののみ",
     startHere: "ここから出発",
     avatarHere: "現在のアバター位置（仮想）",
     searchOnly: "検索のみ（入口未確認）",
@@ -37,23 +37,23 @@ const STRINGS = {
     soundOn: "音声オン",
     soundOff: "音声オフ",
     arrived: "目的地に到着しました",
-    noRoute: "表示できる確認済みルートがありません",
+    noRoute: "データ上で確認できたルートがありません",
     noRouteWhy: {
-      no_path: "確認済みの通路だけでは到達できません。条件（段差なし・改札外・営業時間）を見直すか、未調査区間がある可能性があります。",
+      no_path: "データ上で確認できた通路だけでは到達できません。条件（段差なし・改札外・営業時間）を見直すか、未調査区間がある可能性があります。",
       unknown_start: "出発地が経路網にありません。",
-      unknown_goal: "目的地に確認済みの入口がありません。",
+      unknown_goal: "目的地に、データ上で確認できた入口がありません。",
       start_equals_goal: "出発地と目的地が同じです。",
       search_limit: "探索が上限に達しました。ルートの有無は不明です（到達できないとは限りません）。",
     } as Record<string, string>,
     noPath: {
-      one: (option: string) => `「${option}」をオンにしたままでは、確認済みのルートがありません。`,
+      one: (option: string) => `「${option}」をオンにしたままでは、データ上で確認できたルートがありません。`,
       unsurveyed: {
         stepFree: (all: boolean) => `見つかった経路は、段差の有無が未調査の通路を${all ? "通ります" : "含みます"}。`,
         unpaidOnly: (all: boolean) => `見つかった経路は、改札の内外が未調査の通路を${all ? "通ります" : "含みます"}。`,
         strictHours: (all: boolean) => `見つかった経路は、営業時間が未確認の通路を${all ? "通ります" : "含みます"}。`,
       } as Record<string, (all: boolean) => string>,
       knownStepFree: (all: boolean) => `見つかった経路は、階段・エスカレーターなど段差のある通路を${all ? "通ります" : "含みます"}。`,
-      none: "すべての条件をオフにしても、確認済みの通路ではこの2地点がつながりません。未調査区間がある可能性があります。",
+      none: "すべての条件をオフにしても、データ上で確認できた通路ではこの2地点がつながりません。未調査区間がある可能性があります。",
       endpoint: {
         origin: { inside: "出発地は改札内にあります。", unknown: "出発地が改札外にあるか確認できません。" },
         destination: { inside: "目的地は改札内にあります。", unknown: "目的地が改札外にあるか確認できません。" },
@@ -61,6 +61,11 @@ const STRINGS = {
       },
       any: (options: string) => `次のどれか1つをオフにすると経路が見つかります: ${options}`,
       all: (options: string) => `${options}をすべてオフにすると経路が見つかります。`,
+      /** The station records nothing the option could pass on: missing data, not a known barrier. */
+      noData: {
+        stepFree: "この駅にはバリアフリー情報がありません。",
+        strictHours: "この駅には営業時間の情報がありません。",
+      } as Record<string, string>,
       unknown: "どの条件が原因か判定できませんでした。",
       relax: (option: string) => `「${option}」をオフにする`,
       relaxAll: "すべてオフにして再検索",
@@ -80,7 +85,9 @@ const STRINGS = {
     paidCrossing: "改札を通過",
     synthetic: "合成データ — 実在の駅案内ではありません",
     syntheticShort: "合成",
-    realCandidate: "公開データ由来・現地未確認を含む",
+    realCandidate: "公開データ由来・机上確認のみ（現地未確認）",
+    /** Fixed route-card line: no station records an on-site check (there is no such field), so it is always said. */
+    deskChecked: "机上確認のみ（現地未確認）",
     freshness: "データ時点",
     sources: "出典",
     /** Modification disclosure required by PDL / CC BY when a source was processed. */
@@ -108,7 +115,7 @@ const STRINGS = {
     swap: "Swap",
     stepFree: "Step-free",
     unpaidOnly: "Outside gates only",
-    strictHours: "Verified hours only",
+    strictHours: "Only places with listed hours",
     startHere: "Start here",
     avatarHere: "Current avatar position (virtual)",
     searchOnly: "Search only (entrance not verified)",
@@ -132,23 +139,23 @@ const STRINGS = {
     soundOn: "Sound on",
     soundOff: "Sound off",
     arrived: "You have arrived",
-    noRoute: "No verified route to show",
+    noRoute: "No route confirmed in the surveyed data",
     noRouteWhy: {
-      no_path: "Verified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet.",
+      no_path: "Passages confirmed in the surveyed data don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet.",
       unknown_start: "The start is not on the network.",
-      unknown_goal: "The destination has no verified entrance.",
+      unknown_goal: "The destination has no entrance confirmed in the surveyed data.",
       start_equals_goal: "Start and destination are the same.",
       search_limit: "The search hit its work limit: whether a route exists is unknown (not that there is none).",
     } as Record<string, string>,
     noPath: {
-      one: (option: string) => `No verified route with "${option}" on.`,
+      one: (option: string) => `No route confirmed in the surveyed data with "${option}" on.`,
       unsurveyed: {
         stepFree: (all: boolean) => `The connection found ${all ? "uses" : "includes"} passages whose step-free access is not surveyed.`,
         unpaidOnly: (all: boolean) => `The connection found ${all ? "uses" : "includes"} passages whose gate side is not surveyed.`,
         strictHours: (all: boolean) => `The connection found ${all ? "uses" : "includes"} passages whose hours are not verified.`,
       } as Record<string, (all: boolean) => string>,
       knownStepFree: (all: boolean) => `The connection found ${all ? "uses" : "includes"} stairs, escalators or passages not step-free.`,
-      none: "Even with every option off, verified passages don't connect these points; the link may not be surveyed yet.",
+      none: "Even with every option off, passages confirmed in the surveyed data don't connect these points; the link may not be surveyed yet.",
       endpoint: {
         origin: { inside: "The start is inside the ticket gates.", unknown: "The start is not known to be outside the ticket gates." },
         destination: { inside: "The destination is inside the ticket gates.", unknown: "The destination is not known to be outside the ticket gates." },
@@ -156,6 +163,10 @@ const STRINGS = {
       },
       any: (options: string) => `Turning off any one of these finds a route: ${options}`,
       all: (options: string) => `Turning off all of ${options} finds a route.`,
+      noData: {
+        stepFree: "This station has no step-free data.",
+        strictHours: "This station has no opening-hours data.",
+      } as Record<string, string>,
       unknown: "Couldn't determine which option is responsible.",
       relax: (option: string) => `Turn off "${option}"`,
       relaxAll: "Turn all off and retry",
@@ -175,7 +186,8 @@ const STRINGS = {
     paidCrossing: "Passes a ticket gate",
     synthetic: "Synthetic data — not real station guidance",
     syntheticShort: "Synthetic",
-    realCandidate: "From open data; parts not field-verified",
+    realCandidate: "From open data; desk-checked only, not verified on site",
+    deskChecked: "Desk-checked against maps and surveys; not verified on site",
     freshness: "Data as of",
     sources: "Sources",
     modified: "modified",
