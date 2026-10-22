@@ -77,4 +77,21 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     expect(out.polyline).toEqual([]);
     expect(out.instructions).toEqual({ ja: [], en: [] });
   });
+
+  // Endpoint fare policy must match routeBetween for every POI/node mix: poi:elevator:1 has paid: null (unknown).
+  const EXIT_NODE = "n:a06f3d191885497bac197b666c4daef9";
+  it.each([
+    ["POI origin, node goal", ["poi:elevator:1", EXIT_NODE, "--from-poi"]],
+    ["node origin, POI goal", [EXIT_NODE, "poi:elevator:1", "--goal-poi"]],
+    ["POI origin, POI goal", ["poi:elevator:1", "poi:exit:1", "--from-poi", "--goal-poi"]],
+  ] as const)("Shinjuku --unpaid-only with a paid-unknown POI fails closed (%s)", (_label, args) => {
+    const open = route("shinjuku", [...args]);
+    expect(open.status, open.stderr).toBe(0); // routable under the default profile
+    const { status, out } = route("shinjuku", [...args, "--unpaid-only"]);
+    expect(status).toBe(1);
+    expect(out.result).toMatchObject({ ok: false, reason: "no_path" });
+    expect(out.path).toEqual([]);
+    expect(out.polyline).toEqual([]);
+    expect(out.instructions).toEqual({ ja: [], en: [] });
+  });
 });

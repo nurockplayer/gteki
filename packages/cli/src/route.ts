@@ -121,6 +121,10 @@ function routeByPoi(bundle: StationBundle, router: Router, options: CliOptions):
   }
   // POI origin, node goals: resolve the origin's connectors only (a POI never routes from a bare display position).
   if (from.kind !== "poi" || from.poi.connectorNodeIds.length === 0) return { ok: false, reason: "unknown_start", message: "origin has no verified entrance" };
+  // Same origin fare rule as `routeBetween` (packages/navigation/src/poi.ts; it needs a Poi goal, so it cannot be called
+  // here): under `unpaid_only` a POI that is not known to be outside the paid area fails closed.
+  if (options.profile.fare === "unpaid_only" && from.poi.paid !== false)
+    return { ok: false, reason: "no_path", message: `origin ${from.poi.id} is ${from.poi.paid === true ? "inside" : "not known to be outside"} the paid area` };
   return router.route(from.poi.connectorNodeIds, options.goals, options.profile, [from.poi.evidence]);
 }
 
