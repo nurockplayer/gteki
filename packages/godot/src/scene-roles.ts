@@ -65,7 +65,7 @@ function triangles(mesh: THREE.Mesh): number {
 /**
  * True when the GLB can carry the mesh. GLTFExporter skips geometry with no position data, so a draw-nothing helper
  * (Shinjuku's viewer probe, which only reports the rendering camera) reaches neither snapshot nor Godot; counting it
- * in the sidecar would make the two disagree (#272).
+ * in the sidecar would make the two disagree.
  */
 function drawable(mesh: THREE.Mesh): boolean {
   const position = (mesh.geometry as THREE.BufferGeometry | undefined)?.getAttribute("position");
