@@ -5,8 +5,10 @@
  * - A *code* is a pure number, one of our own markers, or a short ASCII token (at most three characters of
  *   `[A-Za-z0-9 +-./()]`, e.g. rank `SBS`, floor `B1F`). Codes carry no wording and stay readable in reports.
  * - Everything else is *wording*, however short: `1階`, `階段`, `歩道橋`, `あり` are source labels. Wording of four or more
- *   characters (NFKC) is found as a substring; shorter wording is found only as a whole JSON string/key or with a
- *   non-letter, non-digit neighbour on both sides, so it cannot match inside a longer word such as `階段室`.
+ *   characters (NFKC) is found as a substring. Shorter wording is found as a substring too, unless it sits inside a longer
+ *   *known* term (class (a) wording, class (b) wording or an allowlisted term; longest first), so `1階のみ`, `1階に` and
+ *   `地下1階へ` are detected (Japanese particles are letters, so no word-boundary rule can be used), while `階段室` is not
+ *   counted as `階段` when `階段室` is itself a known term.
  * - Allowlisted generic terms (codebooks/poi-literal-allowlist.json) are exempt only as substrings of our own prose. A whole
  *   JSON string value or key that equals a class (b) literal is always a leak, even when the word is also allowlisted.
  * - Comparison is on the NFKC form, so full-width digits and letters (`１階`) do not escape.
@@ -26,7 +28,6 @@ export function isCodeValue(value: string): boolean {
 export const isWording = (value: string): boolean => nfkc(value).trim().length > 0 && !isCodeValue(value);
 
 const escapeRegex = (text: string): string => text.replace(/[\\^$.*+?()[\]{}|]/gu, '\\$&');
-const SHORT_BOUNDARY = ['(?<![\\p{L}\\p{N}])', '(?![\\p{L}\\p{N}])'] as const;
 
 export type LiteralMatcher = {
   /** NFKC-normalised trimmed literal -> the first original spelling (used for the hash). */
@@ -34,12 +35,14 @@ export type LiteralMatcher = {
   readonly allowlist: ReadonlySet<string>;
   /** Allowlisted terms that are also exempt as a whole JSON value or key (our own enum values, see the allowlist file). */
   readonly structural: ReadonlySet<string>;
+  /** Longer terms that are not hits but shield the short literals inside them (class (a) wording). */
+  readonly known: ReadonlySet<string>;
 };
 
-export function buildMatcher(literals: Iterable<string>, allowlist: Iterable<string> = [], structural: Iterable<string> = []): LiteralMatcher {
+export function buildMatcher(literals: Iterable<string>, allowlist: Iterable<string> = [], structural: Iterable<string> = [], known: Iterable<string> = []): LiteralMatcher {
   const map = new Map<string, string>();
   for (const literal of literals) { const key = nfkc(literal).trim(); if (key && !map.has(key)) map.set(key, literal); }
-  return { literals: map, allowlist: new Set([...allowlist].map(term => nfkc(term))), structural: new Set([...structural].map(term => nfkc(term))) };
+  return { literals: map, allowlist: new Set([...allowlist].map(term => nfkc(term))), structural: new Set([...structural].map(term => nfkc(term))), known: new Set([...known].map(term => nfkc(term).trim()).filter(Boolean)) };
 }
 
 const byLength = (a: string, b: string): number => b.length - a.length || (a < b ? -1 : a > b ? 1 : 0);
@@ -62,13 +65,10 @@ function fold(text: string): { folded: string; starts: number[]; ends: number[] 
 /** Non-overlapping spans of class (b) literals and allowlisted terms in `normalized`, longest first at each position. */
 function spans(normalized: string, matcher: LiteralMatcher): Span[] {
   const candidates = [...matcher.literals.keys()].filter(literal => normalized.includes(literal));
-  const allowed = [...matcher.allowlist].filter(term => normalized.includes(term));
+  const shields = [...matcher.allowlist, ...matcher.known].filter(term => normalized.includes(term));
   if (candidates.length === 0) return [];
-  const terms = [...new Set([...candidates, ...allowed])].sort(byLength);
-  const pattern = terms.map(term => {
-    const short = term.length < SUBSTRING_MIN_LENGTH && !matcher.allowlist.has(term);
-    return short ? `${SHORT_BOUNDARY[0]}${escapeRegex(term)}${SHORT_BOUNDARY[1]}` : escapeRegex(term);
-  }).join('|');
+  const terms = [...new Set([...candidates, ...shields])].sort(byLength);
+  const pattern = terms.map(escapeRegex).join('|');
   const out: Span[] = [];
   for (const match of normalized.matchAll(new RegExp(pattern, 'gu'))) {
     const term = match[0]!;

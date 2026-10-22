@@ -3,8 +3,8 @@ import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { getStoreRoot, getStoredSource, packageRoot } from './common.js';
 import { checkPoiLiterals, detailLiterals, type DetailProblem } from './poi-literals.js';
-import { buildMatcher, isWording, literalsInProse, nfkc, redactProse, wholeValueLiteral, type LiteralMatcher } from './literal-match.js';
-import { LITERAL_CLASSES, classACredit } from './literal-classes.js';
+import { SUBSTRING_MIN_LENGTH, buildMatcher, isWording, literalsInProse, nfkc, redactProse, wholeValueLiteral, type LiteralMatcher } from './literal-match.js';
+import { CreditUnavailableError, EXEMPT_PATHS, LITERAL_CLASSES, classACredit } from './literal-classes.js';
 import { parseCsv } from './network.js';
 import { readZip } from './zip.js';
 import { valueSha256 } from './poi.js';
@@ -57,20 +57,35 @@ const problemOf = (sourceId: string, error: unknown): DetailProblem => ({ source
  * recorded acquisition, so a missing, altered or never-acquired copy surfaces as a problem for that source.
  */
 export const loadClassBLiterals = (): Promise<ClassBResult> => loadLiterals('b');
+const isMlitOwner = (id: string): boolean => id.startsWith('mlit-walk-network-spec-');
+const isE27Owner = (id: string): boolean => id.startsWith('hokonavi-oedo-shinjuku-');
+
 /**
- * A word that is also class (a) wording is public through that source (for example a PLATEAU codelist description that is
- * identical to an MLIT specification label), so it cannot be a class (b) secret. Returns the class (b) literals without those,
- * and the overlap that was removed.
+ * A class (b) word that is identical to an MLIT specification label is public through that specification (the PLATEAU
+ * codelist descriptions `階段` and `横断歩道` are examples), so it cannot be a class (b) secret. Only MLIT owners deduct:
+ * a re-acquired Ikebukuro value equal to an E27 or codelist literal stays guarded. If a deducted word is also owned by Hokonavi
+ * E27 the check fails (and the word stays guarded), because E27 values must never be unguarded through an MLIT label.
+ * Returns the class (b) literals without the deducted words, the deducted words, and the class (a) words that shield short
+ * literals inside them (`known`).
  */
-export function withoutClassA(classB: ClassBResult, classA: ClassBResult): ClassBResult & { overlap: string[] } {
-  const publicKeys = new Set([...classA.literals.keys()].map(literal => nfkc(literal).trim()));
-  const literals = new Map<string, string[]>(), overlap: string[] = [];
-  for (const [literal, ids] of classB.literals) { if (publicKeys.has(nfkc(literal).trim())) overlap.push(literal); else literals.set(literal, ids); }
-  return { literals, problems: classB.problems, per_source: classB.per_source.map(row => ({ ...row, literal_count: [...literals.values()].filter(ids => ids.includes(row.source_id)).length })), overlap: overlap.sort() };
+export function withoutClassA(classB: ClassBResult, classA: ClassBResult): ClassBResult & { overlap: string[]; known: string[] } {
+  const owners = new Map<string, string[]>();
+  for (const [literal, ids] of classA.literals) { const key = nfkc(literal).trim(); owners.set(key, [...new Set([...owners.get(key) ?? [], ...ids])]); }
+  const literals = new Map<string, string[]>(), overlap: string[] = [], problems = [...classB.problems];
+  for (const [literal, ids] of classB.literals) {
+    const classAOwners = owners.get(nfkc(literal).trim()) ?? [];
+    if (!classAOwners.some(isMlitOwner)) { literals.set(literal, ids); continue; }
+    if (ids.some(isE27Owner)) {
+      for (const id of ids.filter(isE27Owner)) problems.push({ source_id: id, reason: 'overlap', detail: `an E27 value (sha256 ${valueSha256(literal)}) equals an MLIT specification label; it stays guarded and needs a decision before the check can pass` });
+      literals.set(literal, ids); continue;
+    }
+    overlap.push(literal);
+  }
+  return { literals, problems, per_source: classB.per_source.map(row => ({ ...row, literal_count: [...literals.values()].filter(ids => ids.includes(row.source_id)).length })), overlap: overlap.sort(), known: [...owners.keys()] };
 }
 
-/** Class (b) literals for the guard and the scrub: store-derived, without words that class (a) sources make public. */
-export async function loadClassBMinusA(): Promise<ClassBResult & { overlap: string[] }> { return withoutClassA(await loadClassBLiterals(), await loadClassALiterals()); }
+/** Class (b) literals for the guard and the scrub: store-derived, without words that an MLIT specification makes public. */
+export async function loadClassBMinusA(): Promise<ClassBResult & { overlap: string[]; known: string[] }> { return withoutClassA(await loadClassBLiterals(), await loadClassALiterals()); }
 
 /** Class (a) source wording read from the store (Ikebukuro Hokonavi values, MLIT specification labels); CityGML names come from the committed inventories. */
 export const loadClassALiterals = (): Promise<ClassBResult> => loadLiterals('a');
@@ -81,7 +96,7 @@ async function loadLiterals(cls: 'a' | 'b'): Promise<ClassBResult> {
     perSource.push({ source_id: sourceId, literal_count: add(literals, sourceId, found) });
     if (found.size === 0) problems.push({ source_id: sourceId, reason: 'missing', detail: 'no literals extracted from the stored source' });
   };
-  for (const entry of LITERAL_CLASSES.filter(item => item.class === cls && item.kind !== 'citygml')) {
+  for (const entry of LITERAL_CLASSES.filter(item => item.class === cls && item.kind !== 'citygml' && item.kind !== 'unquoted')) {
     try {
       const stored = await getStoredSource(entry.source_id);
       if (entry.kind === 'hokonavi') {
@@ -227,26 +242,39 @@ export function classAWording(inventories: Iterable<unknown>): Map<string, strin
  * names, Ikebukuro Hokonavi values, MLIT specification labels) must carry the recorded credit of the source(s) behind that
  * wording or point at the classification file. Generated reports (inventory, gaps, networks) must carry the credit text
  * itself, in the Markdown companion and in a structured `credit` field of the JSON. Frozen history snapshots are covered
- * by history/README.md. Only wording of four or more characters is used to detect a file, and allowlisted generic terms
- * never count, so common short words cannot demand a credit.
+ * by history/README.md. Wording of four or more characters detects a file, and so does any MLIT specification label of any length; allowlisted generic
+ * terms never count.
  */
+/** Short class (a) labels that appear as data: a whole JSON string or key, or a whole line / table cell / list item of other text. */
+function shortLabelHits(name: string, text: string, short: ReadonlySet<string>): string[] {
+  if (short.size === 0) return [];
+  let cells: string[];
+  if (JSON_FILE.test(name)) {
+    try { cells = jsonStrings(JSON.parse(text), []); } catch { cells = [text]; }
+  } else cells = text.split('\n').flatMap(line => line.split('|')).map(cell => cell.replace(/^\s*(?:[-*+]\s+)?`?/u, '').replace(/`?\s*$/u, ''));
+  return [...new Set(cells.map(cell => nfkc(cell).trim()).filter(cell => short.has(cell)))];
+}
+
 export async function verifyClassACredits(docsGisDir: string, credits: ReadonlyArray<Credit>, options: { classA?: ReadonlyMap<string, string[]>; allowlist?: ReadonlySet<string> } = {}): Promise<Array<{ file: string; reason: string }>> {
   const problems: Array<{ file: string; reason: string }> = [];
   const textOf = (sourceId: string): string => credits.find(credit => credit.source_id === sourceId)?.attribution_text ?? '';
   const inventories: unknown[] = [];
   for (const name of (await readdir(join(docsGisDir, 'inventory')).catch(() => [] as string[])).filter(entry => entry.endsWith('.inventory.json')).sort()) inventories.push(await readJsonOrNull(join(docsGisDir, 'inventory', name)));
   const owners = classAWording(inventories);
-  for (const [literal, ids] of options.classA ?? []) { const key = nfkc(literal).trim(); if (key.length >= 4) owners.set(key, [...new Set([...owners.get(key) ?? [], ...ids])]); }
+  for (const [literal, ids] of options.classA ?? []) { const key = nfkc(literal).trim(); if (key.length >= 4 || ids.some(isMlitOwner)) owners.set(key, [...new Set([...owners.get(key) ?? [], ...ids])]); }
   if (owners.size === 0) return problems;
   const allow = options.allowlist ?? new Set<string>();
-  const matcher = buildMatcher(owners.keys(), allow, allow);
+  // Wording of four or more characters is found anywhere. A short MLIT label (`階段`, `なし`) is ordinary prose when it sits inside a sentence,
+  // so it demands the credit only where it is data: a whole JSON string/key, or a whole line / table cell of a text file.
+  const short = new Set([...owners.keys()].filter(key => key.length < SUBSTRING_MIN_LENGTH && !allow.has(key)));
+  const matcher = buildMatcher([...owners.keys()].filter(key => !short.has(key) && (key.length >= SUBSTRING_MIN_LENGTH || allow.has(key))), allow, allow);
   const history = await readFile(join(docsGisDir, 'history', 'README.md'), 'utf8').catch(() => '');
   const generated = /^(?:inventory|gaps|networks)\//u;
   for await (const path of textFiles(docsGisDir)) {
     const file = path.slice(docsGisDir.length + 1).split(sep).join('/');
     if (file === CREDIT_POINTER) continue;
     const text = await readFile(path, 'utf8');
-    const hits = literalsInFile(path, text, matcher);
+    const hits = [...new Set([...literalsInFile(path, text, matcher), ...shortLabelHits(path, text, short)])];
     if (hits.length === 0) continue;
     // A hit is credited when any source that owns the wording has its credit text in the file (or, for hand-written and frozen files, a pointer).
     const credited = (haystack: string): boolean => hits.every(hit => (owners.get(hit) ?? []).some(id => { const credit = textOf(id); return credit !== '' && haystack.includes(credit); }));
@@ -265,6 +293,8 @@ export async function verifyClassACredits(docsGisDir: string, credits: ReadonlyA
 const cmpText = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 export type CheckLiteralsOptions = {
+  /** Directory of the acquisition records the MLIT credit text is composed from (default docs/gis/acquisitions). */
+  acquisitionsDir?: string;
   classB?: () => Promise<ClassBResult>;
   credits?: ReadonlyArray<Credit>;
   classificationFile?: string;
@@ -286,24 +316,31 @@ export async function checkLiterals(docsGisDir: string, storeRoot: string = getS
   const classB = withoutClassA(await (options.classB ?? loadClassBLiterals)(), classAResult);
   const reportProblems = await verifyReportDetails(docsGisDir, storeRoot);
   const unregistered = await verifyRegistered(docsGisDir, options.registered);
-  const matcher = buildMatcher(classB.literals.keys(), allowlist, options.structural);
+  const matcher = buildMatcher(classB.literals.keys(), allowlist, options.structural, classB.known);
   const leaks = await scanTreeForClassB(docsGisDir, matcher);
-  const credits = options.credits ?? await defaultCredits();
-  const creditProblems = [...await verifyCredits(options.classificationFile ?? join(docsGisDir, 'rights', 'non-poi-literals.md'), credits)];
+  const recorded = options.credits ? { credits: options.credits, problems: [] as Array<{ source_id: string; reason: string }> } : await defaultCredits({ acquisitionsDir: options.acquisitionsDir });
+  const credits = recorded.credits;
+  const creditProblems = [...recorded.problems, ...await verifyCredits(options.classificationFile ?? join(docsGisDir, 'rights', 'non-poi-literals.md'), credits)];
   const fileCredits = await verifyClassACredits(docsGisDir, credits, { classA: classAResult.literals, allowlist });
   const nonPoiProblems = [...classB.problems, ...classAResult.problems, ...reportProblems, ...unregistered];
   const nonPoi = {
     status: leaks.length || nonPoiProblems.length || creditProblems.length || fileCredits.length || classB.literals.size === 0 ? 'FAIL' as const : 'PASS' as const,
     scanned_literals: classB.literals.size, per_source: classB.per_source, public_through_class_a: classB.overlap, detail_problems: nonPoiProblems, credit_problems: creditProblems, file_credit_problems: fileCredits,
-    ...(classB.literals.size === 0 ? { error: 'no class (b) literals scanned' } : {}), leaking_files: leaks };
+    ...(classB.literals.size === 0 ? { error: 'no class (b) literals scanned' } : {}), leaking_files: leaks,
+    // Listed so the exemption is visible; these paths are never read by the scan.
+    exempt_paths: EXEMPT_PATHS.map(entry => ({ path: entry.path, basis: entry.basis })) };
   const status = nonPoi.status === 'FAIL' || (poi !== null && poi.status === 'FAIL') ? 'FAIL' as const : 'PASS' as const;
   return { status, poi, non_poi: nonPoi };
 }
 
-async function defaultCredits(): Promise<Credit[]> {
-  const credits: Credit[] = [];
-  for (const entry of LITERAL_CLASSES.filter(item => item.class === 'a')) { const credit = await classACredit(entry.source_id); credits.push({ source_id: entry.source_id, attribution_text: credit?.attribution_text ?? '' }); }
-  return credits;
+/** The recorded credit text of every class (a) source; a source whose credit cannot be composed from the records is a problem, never a fallback. */
+export async function defaultCredits(options: { acquisitionsDir?: string } = {}): Promise<{ credits: Credit[]; problems: Array<{ source_id: string; reason: string }> }> {
+  const credits: Credit[] = [], problems: Array<{ source_id: string; reason: string }> = [];
+  for (const entry of LITERAL_CLASSES.filter(item => item.class === 'a')) {
+    try { credits.push({ source_id: entry.source_id, attribution_text: (await classACredit(entry.source_id, options))?.attribution_text ?? '' }); }
+    catch (error) { if (!(error instanceof CreditUnavailableError)) throw error; problems.push({ source_id: entry.source_id, reason: error.reason }); credits.push({ source_id: entry.source_id, attribution_text: '' }); }
+  }
+  return { credits, problems };
 }
 
 /** Replace class (b) literals in a JSON document (whole strings and keys) or prose; used by `scrubLiterals`. */
@@ -323,10 +360,10 @@ function scrubJson(value: unknown, matcher: LiteralMatcher, token: (original: st
 
 /**
  * Replace every class (b) literal in `text` (verbatim, NFKC-aware, longest first) with `value_sha256:<hex>`. A literal is
- * never replaced inside a longer word (`エスカレータ` inside `エスカレーター`) or inside an allowlisted generic term.
+ * never replaced inside a longer known term (`エスカレータ` inside `エスカレーター`) or inside an allowlisted generic term.
  */
-export function scrubText(text: string, literals: Iterable<string>, allowlist: Iterable<string> = [], structural: Iterable<string> = []): { text: string; replaced: number } {
-  return redactProse(text, buildMatcher(literals, allowlist, structural), original => `value_sha256:${valueSha256(original)}`);
+export function scrubText(text: string, literals: Iterable<string>, allowlist: Iterable<string> = [], structural: Iterable<string> = [], known: Iterable<string> = []): { text: string; replaced: number } {
+  return redactProse(text, buildMatcher(literals, allowlist, structural, known), original => `value_sha256:${valueSha256(original)}`);
 }
 
 async function* scrubTargets(path: string): AsyncGenerator<string> {
@@ -344,7 +381,7 @@ async function* scrubTargets(path: string): AsyncGenerator<string> {
 export async function scrubLiterals(docsGisDir: string, targets: string[], allowlist: ReadonlySet<string>, classB?: ClassBResult, structural: ReadonlySet<string> = new Set()): Promise<Array<{ file: string; replaced: number }>> {
   const loaded = classB ?? await loadClassBMinusA();
   if (loaded.problems.length) throw new Error(`Class (b) literals unavailable: ${loaded.problems.map(problem => `${problem.source_id} ${problem.reason}`).join('; ')}`);
-  const matcher = buildMatcher(loaded.literals.keys(), allowlist, structural), token = (original: string): string => `value_sha256:${valueSha256(original)}`;
+  const matcher = buildMatcher(loaded.literals.keys(), allowlist, structural, (loaded as { known?: string[] }).known ?? []), token = (original: string): string => `value_sha256:${valueSha256(original)}`;
   const changed: Array<{ file: string; replaced: number }> = [];
   for (const target of targets) {
     const absolute = resolve(docsGisDir, target);

@@ -98,7 +98,7 @@ export async function scanTreeForLiterals(root: string, literals: Iterable<strin
   return leaks.sort((a, b) => a.file.localeCompare(b.file));
 }
 
-export type DetailProblem = { source_id: string; reason: 'missing' | 'hash_mismatch' | 'unregistered'; detail: string };
+export type DetailProblem = { source_id: string; reason: 'missing' | 'hash_mismatch' | 'unregistered' | 'overlap'; detail: string };
 
 /**
  * Every committed POI report names its store detail (`detail.store_path`, `sha256`, `bytes`). A PASS is only meaningful when

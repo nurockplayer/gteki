@@ -6,9 +6,9 @@ import { join } from 'node:path';
 import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 import { packageRoot, repoRoot } from '../src/common.js';
-import { classAWording, codebookLabels, codelistLabels, checkLiterals, hokonaviLiterals, literalsInFile, scrubLiterals, scrubText, verifyClassACredits, verifyCredits, verifyRegistered, verifyReportDetails, withoutClassA, type ClassBResult } from '../src/literals.js';
+import { classAWording, codebookLabels, codelistLabels, checkLiterals, hokonaviLiterals, literalsInFile, defaultCredits, scrubLiterals, scrubText, verifyClassACredits, verifyCredits, verifyRegistered, verifyReportDetails, withoutClassA, type ClassBResult } from '../src/literals.js';
 import { buildMatcher, isCodeValue, isWording } from '../src/literal-match.js';
-import { LITERAL_CLASSES, classACredit, literalClassificationMarkdown, literalRows, mlitSpecCreditText, reportCredit, reportKeepsSourceValues, reportSourceIds } from '../src/literal-classes.js';
+import { CreditUnavailableError, EXEMPT_PATHS, LITERAL_CLASSES, classACredit, literalClassificationMarkdown, literalRows, mlitSpecCreditText, reportCredit, reportKeepsSourceValues, reportSourceIds } from '../src/literal-classes.js';
 import { hashedDistribution, hashedValue, isEnumeratedCode, publicInventorySummary, publicNetworkReport } from '../src/literal-public.js';
 import { literalsInText, loadLiteralAllowlistFile } from '../src/poi-literals.js';
 
@@ -202,10 +202,10 @@ describe('scrub-literals (frozen snapshots)', () => {
   const provider = (literals: string[]): ClassBResult => ({ literals: new Map(literals.map(literal => [literal, ['s']])), problems: [], per_source: [] });
   it('replaces literals longest first, never inside a longer word or an allowlisted term, and is idempotent', () => {
     const text = `${LABEL_A} | ${LABEL_B}-LONGER | ${LABEL_B} | エスカレーター | エスカレータ | 階段室 | 階段・スロープ`;
-    const out = scrubText(text, [LABEL_B, `${LABEL_B}-LONGER`, LABEL_A, 'エスカレータ', 'エスカレーター', '階段'], ['エスカレーター']);
+    const out = scrubText(text, [LABEL_B, `${LABEL_B}-LONGER`, LABEL_A, 'エスカレータ', 'エスカレーター', '階段'], ['エスカレーター'], [], ['階段室']);
     expect(out.text).toBe(`value_sha256:${sha(LABEL_A)} | value_sha256:${sha(`${LABEL_B}-LONGER`)} | value_sha256:${sha(LABEL_B)} | エスカレーター | value_sha256:${sha('エスカレータ')} | 階段室 | value_sha256:${sha('階段')}・スロープ`);
     expect(out.replaced).toBe(5);
-    expect(scrubText(out.text, [LABEL_B, LABEL_A, 'エスカレータ', '階段'], ['エスカレーター']).replaced).toBe(0);
+    expect(scrubText(out.text, [LABEL_B, LABEL_A, 'エスカレータ', '階段'], ['エスカレーター'], [], ['階段室']).replaced).toBe(0);
     expect(out.text).not.toMatch(/value_sha256:[0-9a-f]{64}ー/u);
   });
   it('folds full-width forms and keeps the original characters around a match', () => {
@@ -298,6 +298,8 @@ describe('classification file (docs/gis/rights/non-poi-literals.md)', () => {
         expect(existsSync(join(repoRoot, file)), `${entry.source_id} evidence ${file}`).toBe(true);
       }
     }
+    // Each Ikebukuro / MLIT row cites its own acquisition record, not another row's.
+    for (const entry of LITERAL_CLASSES.filter(item => item.class === 'a' && /^(?:hokonavi-ikebukuro|mlit-walk-network)/u.test(item.source_id))) expect(entry.evidence, entry.source_id).toContain(`docs/gis/acquisitions/${entry.source_id}.json`);
     // The cases fixed by the task: codelists are (b), E27 labels are (b), MLIT specification labels are (b).
     const classOf = (id: string) => LITERAL_CLASSES.find(entry => entry.source_id === id)?.class;
     expect(classOf('plateau-13116-codelists')).toBe('b'); expect(classOf('plateau-13104-codelists')).toBe('b');
@@ -309,7 +311,7 @@ describe('classification file (docs/gis/rights/non-poi-literals.md)', () => {
     }
     expect(LITERAL_CLASSES.find(entry => entry.source_id === 'mlit-walk-network-spec-2024-07')!.basis).toContain("director gteki-80's direct extension of the Owner's decision (ii)");
     expect(LITERAL_CLASSES.find(entry => entry.source_id === 'mlit-walk-network-spec-2024-07')!.basis).toContain('not a separate Owner statement');
-    expect(LITERAL_CLASSES.filter(entry => entry.class === 'b').map(entry => entry.source_id).sort()).toEqual(['hokonavi-oedo-shinjuku-network-geojson', 'hokonavi-oedo-shinjuku-stationmap-geojson', 'plateau-13104-codelists', 'plateau-13116-codelists']);
+    expect(LITERAL_CLASSES.filter(entry => entry.class === 'b' && entry.kind !== 'unquoted').map(entry => entry.source_id).sort()).toEqual(['hokonavi-oedo-shinjuku-network-geojson', 'hokonavi-oedo-shinjuku-stationmap-geojson', 'plateau-13104-codelists', 'plateau-13116-codelists']);
     expect(classOf('plateau-13116-ubld-53394576')).toBe('a');
   });
 });
@@ -330,12 +332,27 @@ describe('generic-vocabulary allowlist justifications (#129)', () => {
 
 describe('class (b) matching rules (#129)', () => {
   const matcher = (literals: string[], allow: string[] = [], structural: string[] = []) => buildMatcher(literals, allow, structural);
-  it('finds short Japanese wording as a whole JSON value or key or with word boundaries, never inside a longer word', () => {
-    const m = matcher(['階段', '歩道橋', '不明', '1階', 'あり']);
-    expect(literalsInFile('x.json', JSON.stringify({ '階段': 3, list: ['歩道橋', '階段室'], note: '階段室と歩道橋あり' }), m).sort()).toEqual(['歩道橋', '階段']);
-    expect(literalsInFile('x.md', '| 階段 | 不明 |\n階段室 here', m).sort()).toEqual(['不明', '階段'].sort());
-    expect(literalsInFile('x.md', '"1階", 地下1階, 1階建て', m)).toEqual(['1階']);
-    expect(literalsInFile('x.md', '階段室、歩道橋上り', m)).toEqual([]);
+  it('finds short Japanese wording wherever it occurs, except inside a longer known term', () => {
+    const m = buildMatcher(['段差', '歩道橋', '不明', '1階', 'あり', '地下1階'], [], [], ['段差室']);
+    // Whole JSON values and keys; 段差室 is a known longer term, so it does not count as 段差.
+    expect(literalsInFile('x.json', JSON.stringify({ '段差': 3, list: ['歩道橋', '段差室'] }), m).sort()).toEqual(['歩道橋', '段差']);
+    expect(literalsInFile('x.json', JSON.stringify({ list: ['段差室'] }), m)).toEqual([]);
+    expect(literalsInFile('x.md', '| 段差 | 不明 |\n段差室 here', m).sort()).toEqual(['不明', '段差'].sort());
+    expect(literalsInFile('x.md', '段差室、歩道橋上り', m)).toEqual(['歩道橋']);
+    expect(literalsInFile('x.md', '段差室のみ', m)).toEqual([]);
+  });
+  it('detects a short label followed or preceded by a Japanese particle (particles are letters, so no word boundary applies)', () => {
+    const m = buildMatcher(['1階', '地下1階', '段差', 'SYNTH-LONG-LABEL-ONE'], [], [], ['段差室']);
+    expect(literalsInFile('x.md', '1階のみ', m)).toEqual(['1階']);
+    expect(literalsInFile('x.md', '1階に', m)).toEqual(['1階']);
+    expect(literalsInFile('x.md', '地下1階へ', m)).toEqual(['地下1階']);
+    expect(literalsInFile('x.md', '1階建て and 段差室のみ', m)).toEqual(['1階']);
+    expect(literalsInFile('x.json', JSON.stringify({ note: '１階のみ' }), m)).toEqual(['1階']);
+    // A longer known term wins over the short literal inside it; an unknown longer word does not shield.
+    expect(literalsInFile('x.md', '段差室', m)).toEqual([]);
+    expect(literalsInFile('x.md', '段差状', m)).toEqual(['段差']);
+    // Without the known term the short literal inside 段差室 is a hit.
+    expect(literalsInFile('x.md', '段差室', buildMatcher(['段差']))).toEqual(['段差']);
   });
   it('compares the NFKC form, so full-width digits and letters do not escape', () => {
     const m = matcher(['1階', 'ABC-LABEL']);
@@ -424,14 +441,40 @@ describe('class (a) networks and MLIT labels (decisions of 2026-10-22)', () => {
     for (const id of ['hokonavi-oedo-shinjuku-network-geojson', 'hokonavi-oedo-shinjuku-stationmap-geojson', 'hokonavi-ikebukuro-walk-node-csv+hokonavi-oedo-shinjuku-network-geojson', 'brand-new-source', '']) expect(reportKeepsSourceValues({ source_id: id }), id).toBe(false);
     expect(reportKeepsSourceValues(null)).toBe(false);
   });
+  const withAcquisitions = async (run: (dir: string) => Promise<void>, records: Record<string, unknown> = { 'mlit-walk-network-spec-2018-03': { resolved_url: 'https://example.invalid/spec.pdf', sha256: 'f'.repeat(64) } }) => {
+    const dir = await mkdtemp(join(tmpdir(), 'literals-acq-'));
+    try { for (const [id, record] of Object.entries(records)) await writeFile(join(dir, `${id}.json`), JSON.stringify(record)); await run(dir); } finally { await rm(dir, { recursive: true, force: true }); }
+  };
   it('names the MLIT specifications behind decoded labels, and credits only class (a) sources', async () => {
     expect(reportSourceIds({ source_id: 'a+b', members: [{ source_id: 'c' }], attribute_decoding: { fields: {} } }).sort()).toEqual(['a', 'b', 'c', 'mlit-walk-network-spec-2018-03', 'mlit-walk-network-spec-2024-07']);
     expect(reportSourceIds({ source_id: 'a' })).toEqual(['a']);
-    const credit = await reportCredit(['hokonavi-oedo-shinjuku-network-geojson', 'hokonavi-ikebukuro-walk-node-csv', 'mlit-walk-network-spec-2018-03', 'brand-new-source'], { manifest, acquisitionsDir: '/nonexistent' });
-    expect(credit?.sources.map(source => source.source_id)).toEqual(['hokonavi-ikebukuro-walk-node-csv', 'mlit-walk-network-spec-2018-03']);
-    expect(credit?.attribution_text).toBe('SYNTH-HOKONAVI-CREDIT ; SYNTH-MLIT-CREDIT');
-    expect(credit?.classification).toBe('docs/gis/rights/non-poi-literals.md');
-    expect(await reportCredit(['hokonavi-oedo-shinjuku-network-geojson', 'plateau-13116-codelists'], { manifest })).toBeNull();
+    await withAcquisitions(async acquisitionsDir => {
+      const credit = await reportCredit(['hokonavi-oedo-shinjuku-network-geojson', 'hokonavi-ikebukuro-walk-node-csv', 'mlit-walk-network-spec-2018-03', 'brand-new-source'], { manifest, acquisitionsDir });
+      expect(credit?.sources.map(source => source.source_id)).toEqual(['hokonavi-ikebukuro-walk-node-csv', 'mlit-walk-network-spec-2018-03']);
+      expect(credit?.attribution_text).toBe(`SYNTH-HOKONAVI-CREDIT ; ${mlitSpecCreditText('SYNTH-SPEC-TITLE', '2018-03', 'https://example.invalid/spec.pdf', 'f'.repeat(64))}`);
+      expect(credit?.classification).toBe('docs/gis/rights/non-poi-literals.md');
+      expect(await reportCredit(['hokonavi-oedo-shinjuku-network-geojson', 'plateau-13116-codelists'], { manifest })).toBeNull();
+    });
+  });
+  it('does not fall back to the recorded attribution text when the MLIT acquisition record or its sha256 is missing', async () => {
+    const id = 'mlit-walk-network-spec-2018-03';
+    await expect(classACredit(id, { manifest, acquisitionsDir: '/nonexistent' })).rejects.toBeInstanceOf(CreditUnavailableError);
+    await expect(reportCredit([id], { manifest, acquisitionsDir: '/nonexistent' })).rejects.toThrow(/Credit unavailable for mlit-walk-network-spec-2018-03/u);
+    await withAcquisitions(async acquisitionsDir => { await expect(classACredit(id, { manifest, acquisitionsDir })).rejects.toBeInstanceOf(CreditUnavailableError); }, { [id]: { resolved_url: 'https://example.invalid/spec.pdf' } });
+    await withAcquisitions(async acquisitionsDir => { await expect(classACredit(id, { manifest, acquisitionsDir })).rejects.toBeInstanceOf(CreditUnavailableError); }, { [id]: { resolved_url: 'https://example.invalid/spec.pdf', sha256: 'not-a-hash' } });
+    // A Hokonavi source carries its recorded text and needs no acquisition record.
+    expect((await classACredit('hokonavi-ikebukuro-walk-node-csv', { manifest, acquisitionsDir: '/nonexistent' }))?.attribution_text).toBe('SYNTH-HOKONAVI-CREDIT');
+  });
+  it('check-literals fails (credit_problems) when a class (a) credit cannot be composed from the records', async () => {
+    const { root, docs } = await tree({ 'rights/non-poi-literals.md': 'SYNTH-CREDIT-TEXT\n' });
+    try {
+      const recorded = await defaultCredits({ acquisitionsDir: '/nonexistent' });
+      expect(recorded.problems.map(problem => problem.source_id)).toEqual(['mlit-walk-network-spec-2018-03', 'mlit-walk-network-spec-2024-07']);
+      const provider = async (): Promise<ClassBResult> => ({ literals: new Map([['SYNTH-ABSENT-E27-NAME', ['hokonavi-oedo-shinjuku-network-geojson']]]), problems: [], per_source: [] });
+      const failing = await checkLiterals(docs, root, new Set(), { skipPoi: true, classB: provider, registered: new Set(['x']), acquisitionsDir: '/nonexistent' });
+      expect(failing.status).toBe('FAIL');
+      expect(failing.non_poi.credit_problems.map((problem: { source_id: string }) => problem.source_id)).toEqual(expect.arrayContaining(['mlit-walk-network-spec-2018-03', 'mlit-walk-network-spec-2024-07']));
+    } finally { await rm(root, { recursive: true, force: true }); }
   });
   it('composes the MLIT credit from the acquisition record when it exists', async () => {
     const root = await mkdtemp(join(tmpdir(), 'literals-acq-'));
@@ -442,11 +485,35 @@ describe('class (a) networks and MLIT labels (decisions of 2026-10-22)', () => {
       expect(credit?.attribution_text).toContain('2018-03'); expect(credit?.attribution_text).toContain('f'.repeat(64));
     } finally { await rm(root, { recursive: true, force: true }); }
   });
-  it('does not treat a class (b) word that class (a) makes public as a class (b) secret', () => {
+  it('does not treat a class (b) word that an MLIT specification makes public as a class (b) secret', () => {
     const b: ClassBResult = { literals: new Map([['階段', ['plateau-13116-codelists']], ['SYNTH-CODELIST-ONLY', ['plateau-13116-codelists']]]), problems: [], per_source: [{ source_id: 'plateau-13116-codelists', literal_count: 2 }] };
     const a: ClassBResult = { literals: new Map([['階段', ['mlit-walk-network-spec-2024-07']]]), problems: [], per_source: [] };
     const out = withoutClassA(b, a);
-    expect([...out.literals.keys()]).toEqual(['SYNTH-CODELIST-ONLY']); expect(out.overlap).toEqual(['階段']); expect(out.per_source[0]!.literal_count).toBe(1);
+    expect([...out.literals.keys()]).toEqual(['SYNTH-CODELIST-ONLY']); expect(out.overlap).toEqual(['階段']); expect(out.per_source[0]!.literal_count).toBe(1); expect(out.problems).toEqual([]);
+    expect(out.known).toEqual(['階段']);
+  });
+  it('deducts only MLIT-owned labels: a re-acquired Ikebukuro value equal to a codelist or E27 literal stays guarded', () => {
+    const b: ClassBResult = { literals: new Map([['1階', ['plateau-13116-codelists']], ['SYNTH-E27-ONLY', ['hokonavi-oedo-shinjuku-network-geojson']], ['階段', ['hokonavi-oedo-shinjuku-stationmap-geojson']]]), problems: [], per_source: [] };
+    const a: ClassBResult = { literals: new Map([['1階', ['hokonavi-ikebukuro-walk-node-csv']], ['SYNTH-E27-ONLY', ['hokonavi-ikebukuro-walk-link-csv']], ['階段', ['hokonavi-ikebukuro-walk-node-geojson']]]), problems: [], per_source: [] };
+    const out = withoutClassA(b, a);
+    expect([...out.literals.keys()].sort()).toEqual(['1階', 'SYNTH-E27-ONLY', '階段'].sort()); expect(out.overlap).toEqual([]); expect(out.problems).toEqual([]);
+  });
+  it('fails when a word that an MLIT label makes public is also owned by Hokonavi E27, and keeps it guarded; E27 literals never appear in public_through_class_a', async () => {
+    const b: ClassBResult = { literals: new Map([['階段', ['plateau-13116-codelists', 'hokonavi-oedo-shinjuku-network-geojson']], ['横断歩道', ['plateau-13116-codelists']]]), problems: [], per_source: [] };
+    const a: ClassBResult = { literals: new Map([['階段', ['mlit-walk-network-spec-2024-07']], ['横断歩道', ['mlit-walk-network-spec-2024-07']]]), problems: [], per_source: [] };
+    const out = withoutClassA(b, a);
+    expect(out.overlap).toEqual(['横断歩道']); expect(out.literals.has('階段')).toBe(true);
+    expect(out.problems).toEqual([expect.objectContaining({ source_id: 'hokonavi-oedo-shinjuku-network-geojson', reason: 'overlap' })]);
+    expect(JSON.stringify(out.problems)).not.toContain('階段');
+    const { root, docs } = await tree({ 'rights/non-poi-literals.md': 'SYNTH-CREDIT-TEXT\n', 'gaps/g.json': JSON.stringify({ label: '階段' }) });
+    try {
+      const options = { skipPoi: true, credits: [{ source_id: 'plateau-synth-ubld', attribution_text: 'SYNTH-CREDIT-TEXT' }], registered: new Set(['x']) };
+      const report = await checkLiterals(docs, root, new Set(), { ...options, classB: async () => b, classA: async () => a });
+      expect(report.status).toBe('FAIL');
+      expect(report.non_poi.public_through_class_a).toEqual(['横断歩道']);
+      expect(report.non_poi.detail_problems).toEqual([expect.objectContaining({ source_id: 'hokonavi-oedo-shinjuku-network-geojson', reason: 'overlap' })]);
+      expect(report.non_poi.leaking_files).toEqual([{ file: 'gaps/g.json', count: 1 }]);
+    } finally { await rm(root, { recursive: true, force: true }); }
   });
   const tree = async (files: Record<string, string>) => {
     const root = await mkdtemp(join(tmpdir(), 'literals-a-')), docs = join(root, 'docs-gis');
@@ -482,10 +549,17 @@ describe('class (a) networks and MLIT labels (decisions of 2026-10-22)', () => {
       expect(await verifyClassACredits(docs, credits, { classA: withShort, allowlist: new Set(['plain-term-here']) })).toEqual([]);
     } finally { await rm(root, { recursive: true, force: true }); }
   });
+  it('requires the MLIT credit for a short label that is data (whole JSON value or key, table cell, list item), not for the same word inside a sentence', async () => {
+    const { root, docs } = await tree({ 'networks/k.json': JSON.stringify({ 'なし': 1 }), 'research/cell.md': '| 階段 | 3 |\n', 'research/item.md': '- 階段\n', 'research/prose.md': 'ライセンスなし and 階段室 are plain words\n' });
+    try {
+      const short = new Map([['なし', ['mlit-walk-network-spec-2024-07']], ['階段', ['mlit-walk-network-spec-2024-07']]]);
+      expect((await verifyClassACredits(docs, credits, { classA: short })).map(problem => problem.file)).toEqual(['networks/k.json', 'networks/k.json', 'research/cell.md', 'research/item.md']);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
   it('check-literals still fails closed for class (b): hashed values, leaks, and a class (a) overlap that is public', async () => {
     const { root, docs } = await tree({ 'rights/non-poi-literals.md': 'SYNTH-CREDIT-TEXT\n', 'context/e27.json': JSON.stringify({ floor: 'SYNTH-E27-FLOOR-NAME' }), 'gaps/g.json': JSON.stringify({ label: '階段' }) });
     try {
-      const provider = (literals: string[]) => async (): Promise<ClassBResult> => ({ literals: new Map(literals.map(literal => [literal, ['hokonavi-oedo-shinjuku-network-geojson']])), problems: [], per_source: [] });
+      const provider = (literals: string[]) => async (): Promise<ClassBResult> => ({ literals: new Map(literals.map(literal => [literal, [literal === '階段' ? 'plateau-13116-codelists' : 'hokonavi-oedo-shinjuku-network-geojson']])), problems: [], per_source: [] });
       const options = { skipPoi: true, credits: [{ source_id: 'plateau-synth-ubld', attribution_text: 'SYNTH-CREDIT-TEXT' }], registered: new Set(['x']) };
       const failing = await checkLiterals(docs, root, new Set(), { ...options, classB: provider(['SYNTH-E27-FLOOR-NAME', '階段']), classA: async () => ({ literals: new Map([['階段', ['mlit-walk-network-spec-2024-07']]]), problems: [], per_source: [] }) });
       expect(failing.status).toBe('FAIL'); expect(failing.non_poi.leaking_files).toEqual([{ file: 'context/e27.json', count: 1 }]); expect(failing.non_poi.public_through_class_a).toEqual(['階段']);
@@ -535,6 +609,48 @@ describe('committed reports follow the class split (#129)', () => {
     expect(summary.credit?.attribution_text).toContain('歩行空間ネットワークデータ');
     expect(readFileSync(join(gis, 'real-data-summary.md'), 'utf8')).toContain(summary.credit!.attribution_text);
     expect(readFileSync(join(gis, 'history', 'README.md'), 'utf8')).toContain('rights/non-poi-literals.md');
+  });
+});
+
+describe('scope and store-free checks of the committed reports (#147 review)', () => {
+  const gis = join(repoRoot, 'docs', 'gis');
+  it('registers every source with a recorded term, with the recorded class and no invented licence', () => {
+    const manifest = parse(readFileSync(join(packageRoot, 'sources', 'sources.yaml'), 'utf8')) as Array<Record<string, any>>;
+    const classOf = (id: string) => LITERAL_CLASSES.find(entry => entry.source_id === id);
+    for (const id of ['plateau-13116-metadata', 'plateau-13104-metadata', 'plateau-13116-schemas', 'plateau-13104-schemas', 'plateau-catalog-ubld-13116-13104', 'plateau-catalog-ubld-mesh-533945', 'plateau-catalog-bldg-tran-13116-13104']) {
+      expect(classOf(id)?.class, id).toBe('b'); expect(classOf(id)?.kind, id).toBe('unquoted');
+      expect(manifest.find(source => source.source_id === id)!.license_name, id).toBe('unknown');
+    }
+    expect(classOf('mlit-walk-network-spec-2024-07-diff')?.class).toBe('a');
+    expect(manifest.find(source => source.source_id === 'mlit-walk-network-spec-2024-07-diff')!.license_name).toBe('PDL 1.0');
+  });
+  it('lists the justified exempt paths with their basis, outside the scan roots', () => {
+    expect(EXEMPT_PATHS.map(entry => entry.path)).toEqual(['stations/shinjuku/**', 'tests/e2e/specs/__goldens__/02-navigation.spec.ts/**', 'stations/shinjuku/tools/import-e27.ts']);
+    for (const entry of EXEMPT_PATHS) {
+      expect(entry.path.startsWith('docs/gis'), entry.path).toBe(false);
+      expect(entry.basis).toContain('6325100917'); expect(entry.basis).toContain('pull/16#issuecomment-6313815757');
+      expect(entry.evidence.length).toBeGreaterThanOrEqual(2);
+    }
+  });
+  it('check-literals prints the exempt paths without scanning them', async () => {
+    const { root, docs } = await (async () => { const r = await mkdtemp(join(tmpdir(), 'literals-exempt-')); await mkdir(join(r, 'docs-gis', 'rights'), { recursive: true }); await writeFile(join(r, 'docs-gis', 'rights', 'non-poi-literals.md'), 'SYNTH-CREDIT-TEXT\n'); return { root: r, docs: join(r, 'docs-gis') }; })();
+    try {
+      const report = await checkLiterals(docs, root, new Set(), { skipPoi: true, classB: async () => ({ literals: new Map([['SYNTH-ABSENT-E27-NAME', ['hokonavi-oedo-shinjuku-network-geojson']]]), problems: [], per_source: [] }), credits: [{ source_id: 'plateau-synth-ubld', attribution_text: 'SYNTH-CREDIT-TEXT' }], registered: new Set(['x']) });
+      expect(report.non_poi.exempt_paths.map((entry: { path: string }) => entry.path)).toEqual(EXEMPT_PATHS.map(entry => entry.path));
+      expect(report.non_poi.exempt_paths.every((entry: { basis: string }) => entry.basis.length > 40)).toBe(true);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+  it('store-free: every committed network and inventory source is registered, every class (a) report carries its credit, and the classification file is current', async () => {
+    expect(await verifyRegistered(gis)).toEqual([]);
+    for (const [directory, suffix] of [['networks', '.json'], ['inventory', '.inventory.json'], ['gaps', '.json']] as const) {
+      for (const name of readdirSync(join(gis, directory)).filter(entry => entry.endsWith(suffix))) {
+        const doc = JSON.parse(readFileSync(join(gis, directory, name), 'utf8')) as Record<string, unknown> & { credit?: { attribution_text: string; classification: string } };
+        const keepsClassA = directory === 'inventory' || directory === 'gaps' || reportKeepsSourceValues(doc) || doc.attribute_decoding !== undefined;
+        if (keepsClassA) { expect(doc.credit?.attribution_text, `${directory}/${name}`).toBeTruthy(); expect(doc.credit?.classification, `${directory}/${name}`).toBe('docs/gis/rights/non-poi-literals.md'); }
+      }
+    }
+    const manifest = parse(readFileSync(join(packageRoot, 'sources', 'sources.yaml'), 'utf8')) as Array<Record<string, any>>;
+    expect(readFileSync(join(gis, 'rights', 'non-poi-literals.md'), 'utf8')).toBe(await literalClassificationMarkdown(gis, manifest));
   });
 });
 

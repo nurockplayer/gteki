@@ -8,7 +8,8 @@ import { isWording } from './literal-match.js';
  * only. (a) the record shows a licence that covers that specific resource; (b) terms unclear or no-release. Unknown stays
  * unknown: nothing here invents a licence. The generated table is docs/gis/rights/non-poi-literals.md.
  */
-export type LiteralKind = 'citygml' | 'codelists' | 'hokonavi' | 'mlit-spec';
+/** `unquoted`: no text of this source is quoted in any committed report, so nothing is extracted from it. */
+export type LiteralKind = 'citygml' | 'codelists' | 'hokonavi' | 'mlit-spec' | 'unquoted';
 export type LiteralClassEntry = { source_id: string; class: 'a' | 'b'; kind: LiteralKind; values: string; basis: string; evidence: string[] };
 
 const SOURCES = 'tools/gis/sources/sources.yaml';
@@ -17,7 +18,7 @@ const OWNER_Q = 'docs/gis/decisions/owner-rights-questions.md';
 const CODES = 'docs/gis/research/network-codes-and-coverage.md';
 const ubld = (id: string): LiteralClassEntry => ({
   source_id: id, class: 'a', kind: 'citygml', values: 'gml:id and gml:name text',
-  basis: 'The record names a licence and credit for this resource; the credit stays with the values. Publish gate CONDITIONAL. Owner question 8 (identity of the catalog-API file versus the CKAN-listed upload): Accept, recorded on #39 comment 6324726321 and in docs/gis/decisions/2026-10-22-owner-rights-answers.md via #117 (not yet merged).',
+  basis: 'The record names a licence and credit for this resource; the credit stays with the values. Publish gate CONDITIONAL. Owner question 8 (identity of the catalog-API file versus the CKAN-listed upload): Accept, recorded on #39 comment 6324726321 and in docs/gis/decisions/2026-10-22-owner-rights-answers.md (via #117).',
   evidence: [SOURCES, `${RESEARCH}#G3`, `${OWNER_Q}#8-catalog-api-plateau-files-versus-the-ckan-listed-upload`, `docs/gis/acquisitions/${id}.json`],
 });
 const codelist = (id: string): LiteralClassEntry => ({
@@ -30,11 +31,17 @@ const e27 = (id: string): LiteralClassEntry => ({
   basis: 'The record names the package licence; Owner question 11 leaves the licence of the E27 resources unconfirmed. Its geometry ships under the Owner override of #16, which is not a licence record, so its values stay hashed in the docs reports.',
   evidence: [SOURCES, `${OWNER_Q}#11-e27-hokonavi-package-licence`, `${RESEARCH}#S01`, `docs/gis/acquisitions/${id}.json`],
 });
+/** Sources whose text no committed report quotes: classified so a future quote cannot slip in unclassified. Recorded terms only. */
+const unquotedUnknown = (id: string, what: string): LiteralClassEntry => ({
+  source_id: id, class: 'b', kind: 'unquoted', values: `none quoted (${what})`,
+  basis: 'The record gives licence `unknown`; no record shows rights for this resource. No committed report quotes its text today, so there is nothing to extract; class (b) is the default, so any future quote must be hashed and this entry must then be given a kind that the guard can read.',
+  evidence: [SOURCES, `docs/gis/acquisitions/${id}.json`],
+});
 const COMMENT = 'https://github.com/nurockplayer/gteki/pull/147#issuecomment-6330792563';
 const ikebukuro = (id: string): LiteralClassEntry => ({
   source_id: id, class: 'a', kind: 'hokonavi', values: 'link and node ids, floor labels, source field values (Ikebukuro walking network)',
   basis: `Owner decision (i), ${COMMENT} (2026-10-22, relayed by gteki-80): keep the literals with attribution under the package-level PDL 1.0 notice, for Ikebukuro only. The recorded attribution text of this source stays with the values. ${id.endsWith('-csv') ? 'This CSV record gives PDL 1.0 with the digital.go.jp licence page, publish gate CONDITIONAL.' : 'This GeoJSON record gives PDL 1.0 with the MLIT site-terms page as licence URL, publish gate HOLD.'} The acquired CKAN snapshot carries the licence on the package, not on the four resources; the decision does not extend to Shinjuku E27 (Q11, the #16 override), which stays class (b).`,
-  evidence: [SOURCES, `${RESEARCH}#R1`, CODES, 'docs/gis/acquisitions/hokonavi-ikebukuro-walk-node-geojson.json', COMMENT],
+  evidence: [SOURCES, `${RESEARCH}#R1`, CODES, `docs/gis/acquisitions/${id}.json`, COMMENT],
 });
 const spec = (id: string): LiteralClassEntry => ({
   source_id: id, class: 'a', kind: 'mlit-spec', values: 'code labels transcribed from the specification tables',
@@ -58,6 +65,11 @@ export function mlitSpecCreditText(title: string, version: string, url: string, 
 
 type Manifest = ReadonlyArray<Record<string, any>>;
 
+/** A class (a) credit that cannot be composed from the records. `check-literals` reports it in `credit_problems`. */
+export class CreditUnavailableError extends Error {
+  constructor(readonly sourceId: string, readonly reason: string) { super(`Credit unavailable for ${sourceId}: ${reason}`); }
+}
+
 /** The credit one class (a) source's committed values must carry, or null for any other source. */
 export async function classACredit(sourceId: string, options: { manifest?: Manifest; acquisitionsDir?: string } = {}): Promise<SourceCredit | null> {
   const entry = LITERAL_CLASSES.find(item => item.source_id === sourceId && item.class === 'a');
@@ -68,7 +80,9 @@ export async function classACredit(sourceId: string, options: { manifest?: Manif
   let attribution = String(source.attribution_text);
   if (entry.kind === 'mlit-spec') {
     const acquisition = await readJson<{ resolved_url?: string; sha256?: string }>(join(options.acquisitionsDir ?? join(docsRoot, 'gis', 'acquisitions'), `${sourceId}.json`)).catch(() => null);
-    if (acquisition?.resolved_url && acquisition.sha256) attribution = mlitSpecCreditText(String(source.title), sourceId.replace('mlit-walk-network-spec-', ''), acquisition.resolved_url, acquisition.sha256);
+    // The credit names the snapshot it was taken from; without the record there is nothing true to name, so fail instead of falling back.
+    if (!acquisition?.resolved_url || !/^[0-9a-f]{64}$/u.test(acquisition.sha256 ?? '')) throw new CreditUnavailableError(sourceId, `acquisition record docs/gis/acquisitions/${sourceId}.json is missing or has no resolved_url / sha256`);
+    attribution = mlitSpecCreditText(String(source.title), sourceId.replace('mlit-walk-network-spec-', ''), acquisition.resolved_url, acquisition.sha256!);
   }
   return { source_id: sourceId, attribution_text: attribution, license_name: String(source.license_name), license_url: source.license_url ?? null };
 }
@@ -104,6 +118,29 @@ export const LITERAL_CLASSES: LiteralClassEntry[] = [
   ikebukuro('hokonavi-ikebukuro-walk-node-csv'), ikebukuro('hokonavi-ikebukuro-walk-link-csv'),
   ikebukuro('hokonavi-ikebukuro-walk-node-geojson'), ikebukuro('hokonavi-ikebukuro-walk-link-geojson'),
   spec('mlit-walk-network-spec-2018-03'), spec('mlit-walk-network-spec-2024-07'),
+  {
+    source_id: 'mlit-walk-network-spec-2024-07-diff', class: 'a', kind: 'unquoted', values: 'none quoted (2018-03 to 2024-07 comparison document)',
+    basis: 'The record names PDL 1.0 (https://www.mlit.go.jp/link.html) and the credit 出典：国土交通省／加工して作成, the same terms as the two specifications. No committed report quotes this document and no codebook is transcribed from it, so no literal is read from it; its recorded credit is listed below.',
+    evidence: [SOURCES, 'docs/gis/acquisitions/mlit-walk-network-spec-2024-07-diff.json'],
+  },
+  unquotedUnknown('plateau-13116-metadata', 'metadata ZIP'), unquotedUnknown('plateau-13104-metadata', 'metadata ZIP'),
+  unquotedUnknown('plateau-13116-schemas', 'schemas ZIP'), unquotedUnknown('plateau-13104-schemas', 'schemas ZIP'),
+  unquotedUnknown('plateau-catalog-ubld-13116-13104', 'catalog API snapshot'), unquotedUnknown('plateau-catalog-ubld-mesh-533945', 'catalog API snapshot'),
+  unquotedUnknown('plateau-catalog-bldg-tran-13116-13104', 'catalog API snapshot'),
+];
+
+/**
+ * Paths outside `docs/gis` that carry Hokonavi E27 ids and labels in clear. They are NOT scanned: the guard's scope is `docs/gis`.
+ * Their basis is the Owner's decision to keep shipping the Shinjuku slice (Q11 against #16), not a rights PASS.
+ */
+export type ExemptPath = { path: string; basis: string; evidence: string[] };
+const Q11_VS_16 = 'https://github.com/nurockplayer/gteki/issues/39#issuecomment-6325100917';
+const OWNER_16 = 'https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757';
+const shipBasis = (what: string): string => `${what} Hokonavi E27 values ship here under the Owner's decision of 2026-10-22 that the Shinjuku E27-derived slice keeps shipping (${Q11_VS_16}, option (a)), on the Owner's #16 override of 2026-10-21 (${OWNER_16}), not on a rights PASS. Q11 = No: no file claims that PDL 1.0 covers the E27 resources.`;
+export const EXEMPT_PATHS: ExemptPath[] = [
+  { path: 'stations/shinjuku/**', basis: shipBasis('The shipped Shinjuku slice (data, graph, POIs, station JSON).'), evidence: [Q11_VS_16, OWNER_16] },
+  { path: 'tests/e2e/specs/__goldens__/02-navigation.spec.ts/**', basis: shipBasis('Route goldens of the shipped slice.'), evidence: [Q11_VS_16, OWNER_16] },
+  { path: 'stations/shinjuku/tools/import-e27.ts', basis: shipBasis('The importer holds the E27 source-label code that builds the shipped slice.'), evidence: [Q11_VS_16, OWNER_16] },
 ];
 
 const cmp = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
@@ -205,7 +242,7 @@ export async function literalClassificationMarkdown(gisDir: string, manifest: Re
     '- **(a) Publishable with credit:** the record shows a licence that covers that specific resource, or a decision recorded in the basis column says to publish it with attribution. The values stay in committed reports with the credit below, as a `credit` field (JSON) or `Credit:` line (Markdown).',
     '- **(b) Unclear or no-release:** the committed reports carry `{ value_sha256, value_type, count }` (identifier lists: `{ value_sha256, value_type }`; SHA-256 of the UTF-8 value) instead of the literal. The literals stay in the git-ignored store detail reports (`out/networks/`, `out/plateau-*.inventory-detail.json`) and in the hash-verified store copies of the sources. Class (b) is now only the PLATEAU codelists (rights `unknown`) and Hokonavi E27 (Q11, the #16 override).',
     '- Source codes are not free text: values that are numeric, `(blank)`, `(unavailable)`, `(unknown)` or a short ASCII token of at most three characters (for example rank `SBS`, floor `-0.5`, route structure `5`) stay as the code, because hashing them would make the distributions unreadable. Any other class (b) value, however short (for example a station-map floor name), is wording and is hashed.',
-    '- Guard: `pnpm --dir tools/gis gis check-literals` (alias `check-poi-literals`) fails if a class (b) literal appears under `docs/gis/**`, if a store copy or report detail is missing or altered, if a class (b) source yields no literals, if a network or inventory source is not listed below, or if a file keeps class (a) values without its credit or a pointer to this file.', '',
+    '- Guard (needs the private store, so it runs on the developer host and cannot run in CI): `pnpm --dir tools/gis gis check-literals` (alias `check-poi-literals`) fails if a class (b) literal appears under `docs/gis/**`, if a store copy or report detail is missing or altered, if a class (b) source yields no literals, if a network or inventory source is not listed below, or if a file keeps class (a) values without its credit or a pointer to this file.', '',
     '## Source classification', '',
     '| Source id | Class | Values quoted in reports | Recorded terms (verbatim from `tools/gis/sources/sources.yaml`) | Basis | Evidence |',
     '| --- | --- | --- | --- | --- | --- |',
@@ -223,9 +260,18 @@ export async function literalClassificationMarkdown(gisDir: string, manifest: Re
   lines.push('', '## Fields in committed reports', '', 'Counts are read from the committed JSON of `inventory/`, `networks/`, `gaps/` and `real-data-summary.json` (the Markdown companions are rendered from it). Class (b) rows count hashed values; class (a) rows count the literals kept. Not tabulated: `history/**` (frozen snapshots of earlier runs, migrated with `gis scrub-literals` to `value_sha256:<hex>` tokens and kept under `history/README.md`, which carries the class (a) credit pointer), and `conversions/**` and `context/**` (they hold geometry statistics, no source labels; the leak scan covers them).', '', '| File | Field path | Source id | Class | Count | Evidence |', '| --- | --- | --- | --- | ---: | --- |');
   const evidenceOf = (id: string): string => (LITERAL_CLASSES.find(entry => entry.source_id === id)?.evidence ?? []).map(quote).join(', ');
   for (const { file, doc } of await committedJson(gisDir)) for (const row of literalRows(file, doc)) lines.push(`| ${file} | ${cell(row.path)} | ${row.source_id} | ${row.class} | ${row.count} | ${cell(evidenceOf(row.source_id))} |`);
-  lines.push('', '## Not covered', '',
+  lines.push('', '## Why E27 values stay hashed inside `docs/gis`', '',
+    'The shipped Shinjuku slice carries E27 values in clear under the Owner decisions below (see the next section), but the Lane D reports under `docs/gis` are not that shipped slice. The resource licence of the two E27 resources is still unconfirmed (Owner question 11 answered No for PDL 1.0), so class (b) here is the conservative default: the reports hash what the shipped slice does not need to repeat.',
+    '', '## Exempt paths outside `docs/gis` (listed, not scanned)', '',
+    'The guard scans `docs/gis/**` only and does not widen its roots. These paths hold E27 ids and labels in clear by decision. `gis check-literals` prints this list as `exempt_paths` in its output so the exemption is visible.', '',
+    '| Path | Basis | Evidence |', '| --- | --- | --- |',
+    ...EXEMPT_PATHS.map(entry => `| ${quote(entry.path)} | ${cell(entry.basis)} | ${cell(entry.evidence.join(', '))} |`));
+  lines.push('', '## Hash meaning', '',
+    'Class (b) and POI hashes are a matching fingerprint for not redistributing the original text in this repository. They are not secrecy: they are deliberately unsalted SHA-256 so that anyone can verify a match, and dictionary guessing of public or enumerable vocabularies (floor names, codelist descriptions) is an accepted trade-off. No HMAC is used (director gteki-80 decision, #147; the Owner is not asked).', '', '## Not covered', '',
     `- \`tools/gis/codebooks/mlit-walk-network-*.json\` transcribe the MLIT specification labels. They are public per the Owner's decision (ii) at ${COMMENT} (2026-10-22), and each carries a \`source_note\` naming the specification, its version, URL and snapshot SHA-256. The labels in the \`docs/gis\` reports moved to class (a) as well, as director gteki-80's direct extension of that decision (not a separate Owner statement).`,
     '- Text in `docs/gis/**` that GTEki wrote and that happens to use a generic word is exempt through `tools/gis/codebooks/poi-literal-allowlist.json`; each term there carries a justification.',
+    '- `tools/gis/test/attributes.test.ts` (lines 41-42) holds two MLIT slope-range labels. By the decision above they are class (a), so they stay in that test.',
+    '- Redaction in `literal-public.ts` is a deny-list (named fields, `ID_LISTS`, `COUNT_MAP_KEYS`): a new report field that carries source text would pass through unhashed and is caught only by the store-side `check-literals` scan, which cannot run in CI. This is a known limit (P3), not changed here.',
     '- Earlier Git commits still contain the old literals; rewriting history is not attempted (Owner decision on #124).', '');
   return lines.join('\n');
 }
