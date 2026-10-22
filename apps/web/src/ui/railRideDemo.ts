@@ -25,6 +25,10 @@ export class RailRideDemo {
   private rideTime = 0;
   private closed = false;
   private stage: Stage = "boarding";
+  private readonly previousInert = new Map<HTMLElement, boolean>();
+  private readonly focusBefore: HTMLElement | null = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  private readonly motionQuery = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null;
+  private reduceMotion = this.motionQuery?.matches ?? false;
 
   constructor(
     private readonly host: HTMLElement,
@@ -91,11 +95,18 @@ export class RailRideDemo {
     sheet.append(this.stageTitle, this.stageMessage, track, this.action);
     this.root.append(this.renderer.domElement, banner, this.cancelButton, sheet);
     this.host.append(this.root);
+    // A real modal: background controls and WebGL input must not remain interactive.
+    for (const child of Array.from(this.host.children)) {
+      if (child === this.root || !(child instanceof HTMLElement)) continue;
+      this.previousInert.set(child, child.inert);
+      child.inert = true;
+    }
     this.setStage("boarding");
     window.addEventListener("resize", this.resize);
-    window.addEventListener("keydown", this.onKeyDown);
+    window.addEventListener("keydown", this.onKeyDown, true);
+    this.motionQuery?.addEventListener("change", this.onMotionChange);
     this.resize();
-    this.root.focus();
+    this.action.focus();
     this.frameId = requestAnimationFrame(this.animate);
   }
 
@@ -183,7 +194,10 @@ export class RailRideDemo {
     this.stageMessage.textContent = message;
     this.action.textContent = button;
     this.action.disabled = stage === "moving" || stage === "loading";
-    this.cancelButton.disabled = stage === "loading";
+    // Keep one modal focus target in the tab order even while destination loads.
+    this.cancelButton.disabled = false;
+    this.cancelButton.setAttribute("aria-disabled", String(stage === "loading"));
+    if (stage === "loading") this.cancelButton.focus();
   }
 
   private beginRide(): void {
@@ -209,11 +223,15 @@ export class RailRideDemo {
     this.lastTime = now;
     if (this.stage === "moving") {
       this.rideTime += delta;
-      for (const beam of this.railLights) {
-        beam.position.z += delta * (11 + 7 * Math.min(this.rideTime / 2, 1));
-        if (beam.position.z > 8) beam.position.z -= 38.4;
+      if (!this.reduceMotion) {
+        for (const beam of this.railLights) {
+          beam.position.z += delta * (11 + 7 * Math.min(this.rideTime / 2, 1));
+          if (beam.position.z > 8) beam.position.z -= 38.4;
+        }
+        this.camera.position.y = 1.66 + Math.sin(now * 0.017) * 0.006;
+      } else {
+        this.camera.position.y = 1.66;
       }
-      this.camera.position.y = 1.66 + Math.sin(now * 0.017) * 0.006;
       this.progress.style.width = Math.min(100, this.rideTime / 9 * 100) + "%";
       if (this.rideTime >= 9) void this.arrive();
     } else if (this.stage === "arrived") {
@@ -232,7 +250,28 @@ export class RailRideDemo {
     this.renderer.setSize(w, h);
   };
 
+  private readonly onMotionChange = (e: MediaQueryListEvent): void => {
+    this.reduceMotion = e.matches;
+  };
+
   private readonly onKeyDown = (e: KeyboardEvent): void => {
+    if (e.key === "Tab") {
+      // Contain focus within the two controls, including during disabled-button loading.
+      const targets = [this.action, this.cancelButton].filter((button) => !button.disabled);
+      const first = targets[0];
+      const last = targets[targets.length - 1];
+      if (!first || !last) { e.preventDefault(); this.root.focus(); return; }
+      const current = document.activeElement;
+      if (!targets.includes(current as HTMLButtonElement)) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      } else if (e.shiftKey && current === first) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && current === last) {
+        e.preventDefault(); first.focus();
+      }
+      return;
+    }
     if (e.key === "Escape" && this.stage !== "loading") {
       e.preventDefault();
       this.dismiss();
@@ -249,7 +288,10 @@ export class RailRideDemo {
     this.closed = true;
     cancelAnimationFrame(this.frameId);
     window.removeEventListener("resize", this.resize);
-    window.removeEventListener("keydown", this.onKeyDown);
+    window.removeEventListener("keydown", this.onKeyDown, true);
+    this.motionQuery?.removeEventListener("change", this.onMotionChange);
+    for (const [node, wasInert] of this.previousInert) node.inert = wasInert;
+    this.previousInert.clear();
     const geometries = new Set<THREE.BufferGeometry>();
     const materials = new Set<THREE.Material>();
     this.scene.traverse((object) => {
@@ -263,5 +305,6 @@ export class RailRideDemo {
     this.renderer.dispose();
     this.renderer.forceContextLoss();
     this.root.remove();
+    if (this.focusBefore?.isConnected && !this.focusBefore.inert) this.focusBefore.focus();
   }
 }
