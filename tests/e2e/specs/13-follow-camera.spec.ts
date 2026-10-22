@@ -224,7 +224,7 @@ for (const key of STATIONS) {
     await startWalkUi(page, key, w);
     const hud = (name: RegExp) => page.locator(".hud button").filter({ hasText: name }).first();
 
-    const events: (FovEase & { expectedFov: number | null; kind: "ease" | "snap-by-design" })[] = [];
+    const events: (FovEase & { expectedFov: number | null; kind: "ease" | "snap-by-design"; end: Record<string, unknown> })[] = [];
     const declared = k.declaredFov;
     const run = async (event: string, act: () => Promise<void>, expectedFov: number | null, kind: "ease" | "snap-by-design" = "ease", settleMs = 900) => {
       await startFovRecorder(page);
@@ -232,7 +232,12 @@ for (const key of STATIONS) {
       await act();
       await page.waitForTimeout(settleMs);
       const rec = await stopFovRecorder(page);
-      events.push({ ...analyseFovEase(event, rec), expectedFov, kind });
+      // End-of-window state: the app's own FOV/far (newer builds) and the canvas aspect, to tell a missing render from a stale aspect.
+      const end = await page.evaluate(() => {
+        const w = window as any, c = document.querySelector("canvas.gteki-canvas") as HTMLCanvasElement | null, info = w.__gteki?.sceneInfo?.() ?? {};
+        return { mode: w.__gteki?.mode?.() ?? null, sceneFov: info.fov ?? null, sceneFar: info.far ?? null, cameraAspect: info.aspect ?? null, canvasAspect: c && c.clientHeight ? c.clientWidth / c.clientHeight : null };
+      });
+      events.push({ ...analyseFovEase(event, rec), expectedFov, kind, end });
     };
 
     // Start guide: overview 60 -> follow.
