@@ -181,7 +181,7 @@ without being blocked.
 
 It also replays **every verified edge** of `stations/ikebukuro/gteki/graph.json` with the selection and sampling of
 `stations/ikebukuro/pipeline/godot_colliders.gd` (`check:godot`: verified edges with a polyline, sampled every 0.25 m
-keeping each vertex, so edge and sample counts compare 1:1 with that script's 63 / 7,140). Per sample the snapshot must
+keeping each vertex, so edge and sample counts compare 1:1 with that script's `EDGES verified=… samples=…` line; 67 / 7,150 since #245). Per sample the snapshot must
 have walkable ground; between samples, horizontal rays at 0.2/0.6/1.0/1.4/1.7 m (that script's rule) and the walker's
 own body test must find no collider. A negative control makes the asset's `doors`/`windows`/`portals` meshes collide
 again (what `--control` does there) and the same replay must then report blocked edges; the test prints whether

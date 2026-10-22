@@ -95,10 +95,11 @@ reproduces `w_n__x18` at ENU (-100.5, 152.5) blocked by `doors`), which shows th
   `barriers`, `transport`. `doors`, `portals`, `windows`, `ceiling` and `floor_elements` get none;
   `floor` and `stairs_ramps` are tagged walkable but also get no physics body (the addon has no floor
   collider). Door/portal/window colliders: 0.
-- **Verified routes:** all 63 verified edges (7140 samples) are clear of rays; 0 blocked. The stricter
-  capsule overlaps `barriers` / `transport` (stair and escalator rails) at 35 samples on `e_low__x35`,
-  `ne_e__x33` and `w_c__w_n` (ENU (-112.8, 130.8)): the centerline is clear, but a 0.3 m radius body would graze
-  those rails. This is not a door problem.
+- **Verified routes:** all 67 verified edges (7150 samples) are clear of rays and of the 0.3 m capsule: 0 blocked
+  (polylines keep ≥ 0.35 m from colliders since #245). The Godot HQ walk replay (`packages/godot/run-walk.sh`, web
+  `bodyBlock` rules on the `buildScene` snapshot, which includes access fences) reports `bodyBlocked=1`: `sp_m__g_jr_s`
+  sample 38 at the gate-line end `g_jr_s`, which sits 0.13 m from the access fence it routes to (the same 0.6 m end
+  allowance as `build_access.py` `END_ALLOW`).
 - **Access fences are web-only:** `scene/access_fences.json` is built by `scene/scene.ts` and is not in
   the GLB or the manifest, so Godot free walk is NOT access-fenced; it can reach surveyed floor the web scene
   fences off as "access unverified".
