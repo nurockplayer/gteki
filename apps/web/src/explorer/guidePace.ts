@@ -46,14 +46,24 @@ export function guideTierSpeed(id: GuideTierId): number {
   return GUIDE_TIERS.find((t) => t.id === id)!.mps;
 }
 
-/** Connector caps per polyline segment (by the step it belongs to) and a dwell cap per non-wait instruction. */
-export function guidePaceSpans(polyline: readonly PolylinePoint[], steps: readonly Pick<RouteStep, "mode">[], instructions: readonly Instruction[]): PaceSpan[] {
+function cumulativeS(polyline: readonly PolylinePoint[]): number[] {
   const cum = [0];
   for (let i = 1; i < polyline.length; i++) {
     const a = polyline[i - 1]!;
     const b = polyline[i]!;
     cum.push(cum[i - 1]! + Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z));
   }
+  return cum;
+}
+
+/** Length (m) of the polyline: the distance the guide covers end to end. */
+export function polylineLengthM(polyline: readonly PolylinePoint[]): number {
+  return cumulativeS(polyline).at(-1) ?? 0;
+}
+
+/** Connector caps per polyline segment (by the step it belongs to) and a dwell cap per non-wait instruction. */
+export function guidePaceSpans(polyline: readonly PolylinePoint[], steps: readonly Pick<RouteStep, "mode">[], instructions: readonly Instruction[]): PaceSpan[] {
+  const cum = cumulativeS(polyline);
   const spans: PaceSpan[] = [];
   for (let i = 1; i < polyline.length; i++) {
     const cap = CONNECTOR_MPS[steps[polyline[i]!.stepIndex]?.mode as EdgeMode];
@@ -99,4 +109,29 @@ export function pacedDistance(s: number, dt: number, tier: GuideTierId, spans: r
     at = edge;
   }
   return at + guideSpeedAt(at, tier, spans) * Math.max(0, remaining) - s;
+}
+
+/**
+ * Seconds the guide takes to cover `totalM` at `tier` (stops at waits excluded). Speed is constant between span edges,
+ * so this sums each stretch at the speed pacedDistance would use there: the two agree exactly.
+ */
+export function pacedDuration(totalM: number, tier: GuideTierId, spans: readonly PaceSpan[]): number {
+  const edges = new Set<number>([0, totalM]);
+  for (const sp of spans) for (const e of [sp.fromS, sp.toS]) if (e > 0 && e < totalM) edges.add(e);
+  const at = [...edges].sort((a, b) => a - b);
+  let seconds = 0;
+  for (let i = 1; i < at.length; i++) seconds += (at[i]! - at[i - 1]!) / guideSpeedAt(at[i - 1]!, tier, spans);
+  return seconds;
+}
+
+/** The pace (m/s) the guide averages over the route at `tier`: length over paced duration; the tier's speed for an empty route. */
+export function effectivePace(totalM: number, tier: GuideTierId, spans: readonly PaceSpan[]): number {
+  return totalM > 0 ? totalM / pacedDuration(totalM, tier, spans) : guideTierSpeed(tier);
+}
+
+/** What the HUD shows for the tier: the route's effective pace and the tier's top speed, one decimal each; `approx` unless they round alike (open corridor). */
+export function paceReadout(totalM: number, tier: GuideTierId, spans: readonly PaceSpan[]): { pace: string; top: string; approx: boolean } {
+  const pace = effectivePace(totalM, tier, spans).toFixed(1);
+  const top = guideTierSpeed(tier).toFixed(1);
+  return { pace, top, approx: pace !== top };
 }

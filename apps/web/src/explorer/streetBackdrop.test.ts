@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
+import { StreetBackdrop, atStreetTop, STREET_RESCAN_S, STREET_SURFACE_FLAG, collectStreetSurfaces, footingLevel, isOutdoors, roleOf, stationDrawsGround } from "./streetBackdrop.ts";
 
 describe("street backdrop", () => {
   it("is outdoors only with a street floor, open sky and a walker near street height", () => {
@@ -82,6 +82,156 @@ describe("level footing", () => {
     expect(roleOf(mesh)).toBe("stairs_ramps");
     mesh.userData.gteki_role = "floor";
     expect(roleOf(mesh)).toBe("floor");
+  });
+});
+
+describe("pavement plane yields to the station's street surfaces", () => {
+  const flagged = <T extends THREE.Object3D>(o: T): T => {
+    o.userData[STREET_SURFACE_FLAG] = true;
+    return o;
+  };
+  const walker = new THREE.Vector3(0, 32.65, 0);
+  const setup = () => {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera();
+    const root = new THREE.Group();
+    const b = new StreetBackdrop();
+    const ground = () => b.group.getObjectByName("street-backdrop-ground")!;
+    // One frame outdoors on level street; `dt` is the backdrop's clock (the re-scan period counts it).
+    const frame = (dt = 1 / 60, teleport = false) => b.update(scene, camera, walker, true, dt, true, teleport);
+    return { root, b, ground, frame, scene, camera };
+  };
+
+  it("collects flagged groups and meshes; names and roles alone never count", () => {
+    const root = new THREE.Group();
+    expect(collectStreetSurfaces(root)).toEqual([]);
+    expect(collectStreetSurfaces(null)).toEqual([]);
+    const named = new THREE.Group();
+    named.name = "street-context";
+    const role = new THREE.Mesh();
+    role.userData.gteki_role = "context";
+    const group = flagged(new THREE.Group());
+    const inside = flagged(new THREE.Mesh());
+    group.add(inside);
+    const nestedHolder = new THREE.Group();
+    const nested = flagged(new THREE.Mesh());
+    nestedHolder.add(nested);
+    const wrong = new THREE.Group();
+    wrong.userData[STREET_SURFACE_FLAG] = "yes"; // only a literal true counts
+    root.add(named, role, group, nestedHolder, wrong);
+    const found = collectStreetSurfaces(root);
+    expect(found).toHaveLength(2);
+    expect(found).toContain(group);
+    expect(found).toContain(nested);
+    expect(found).not.toContain(inside); // covered by its flagged parent
+  });
+
+  it("counts only objects attached under the root with every ancestor visible", () => {
+    const root = new THREE.Group();
+    const holder = new THREE.Group();
+    const surface = flagged(new THREE.Group());
+    holder.add(surface);
+    root.add(holder);
+    const found = collectStreetSurfaces(root);
+    expect(stationDrawsGround([], root)).toBe(false);
+    expect(stationDrawsGround(found, root)).toBe(true);
+    expect(stationDrawsGround(found, null)).toBe(false);
+    surface.visible = false;
+    expect(stationDrawsGround(found, root)).toBe(false);
+    surface.visible = true;
+    holder.visible = false; // invisible ancestor
+    expect(stationDrawsGround(found, root)).toBe(false);
+    holder.visible = true;
+    root.visible = false;
+    expect(stationDrawsGround(found, root)).toBe(false);
+    root.visible = true;
+    root.remove(holder); // detached but visible: nothing is drawn
+    expect(surface.visible).toBe(true);
+    expect(stationDrawsGround(found, root)).toBe(false);
+  });
+
+  it("hides the plane while a surface shows, and brings it back when it is hidden", () => {
+    const { root, b, ground, frame } = setup();
+    const surface = flagged(new THREE.Group());
+    root.add(surface);
+    b.attach(new THREE.Group());
+    frame(1 / 60, true);
+    expect(ground().visible).toBe(true); // no station surface: the plane shows
+    b.attach(root); // scanned at attach
+    frame();
+    expect(ground().visible).toBe(false);
+    expect(b.group.visible).toBe(true); // sky and haze carry on
+    expect(b.opacity).toBeGreaterThan(0);
+    surface.visible = false;
+    frame();
+    expect(ground().visible).toBe(true);
+    b.dispose();
+  });
+
+  it("picks up a surface added after attach on the next re-scan, and drops it the same frame when removed", () => {
+    const { root, b, ground, frame } = setup();
+    b.attach(root);
+    for (let i = 0; i < 120; i++) frame();
+    expect(ground().visible).toBe(true);
+    const surface = flagged(new THREE.Group());
+    root.add(surface); // e.g. an async GLB arriving
+    frame(1 / 60); // not due yet
+    expect(ground().visible).toBe(true);
+    frame(STREET_RESCAN_S); // due
+    expect(ground().visible).toBe(false);
+    root.remove(surface); // removal needs no re-scan
+    frame(1 / 60);
+    expect(ground().visible).toBe(true);
+    root.add(surface); // a cached object that comes back is seen the same frame
+    frame(1 / 60);
+    expect(ground().visible).toBe(false);
+    b.dispose();
+  });
+
+  it("is not fooled by a detached visible object or an unflagged buildings-only group, and sees a nested flagged mesh", () => {
+    const { root, b, ground, frame } = setup();
+    const detached = flagged(new THREE.Group());
+    const buildings = new THREE.Group();
+    buildings.name = "street-context";
+    buildings.userData.gteki_role = "context";
+    buildings.add(new THREE.Mesh());
+    root.add(buildings);
+    b.attach(root);
+    frame(STREET_RESCAN_S);
+    expect(detached.visible).toBe(true);
+    expect(ground().visible).toBe(true);
+    const deep = new THREE.Group();
+    const mesh = flagged(new THREE.Mesh());
+    deep.add(mesh);
+    buildings.add(deep);
+    frame(STREET_RESCAN_S);
+    expect(ground().visible).toBe(false); // a nested flagged mesh counts, even under an unflagged group
+    b.dispose();
+  });
+
+  it("cancels a fading-in plane the frame after a surface arrives, without waiting for the 0.5 s re-scan", () => {
+    const { root, b, ground, frame } = setup();
+    b.attach(root);
+    frame(); // comes out onto level street: the plane starts to fade in
+    frame();
+    frame();
+    expect(ground().visible).toBe(true);
+    root.add(flagged(new THREE.Group())); // e.g. #110 adding its context as the camera reaches street height
+    frame();
+    expect(ground().visible).toBe(false);
+    b.dispose();
+  });
+
+  it("re-scans on the frame the walker comes out onto level street, not only on the 0.5 s cadence", () => {
+    const { root, b, ground, scene, camera } = setup();
+    b.attach(root);
+    for (let i = 0; i < 120; i++) b.update(scene, camera, walker, true, 1 / 60, true, false); // street, fully shown
+    b.update(scene, camera, walker, true, 1 / 60, false, false); // steps onto a stair: plane cleared, still outdoors
+    expect(ground().visible).toBe(false);
+    root.add(flagged(new THREE.Group())); // arrives while the plane is down, between scheduled re-scans
+    b.update(scene, camera, walker, true, 1 / 60, true, false); // level again (rising edge)
+    expect(ground().visible).toBe(false); // never flashes in
+    b.dispose();
   });
 });
 

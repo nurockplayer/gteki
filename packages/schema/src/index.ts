@@ -46,6 +46,11 @@ export interface Source {
    * Omitted = "data" (contents or derivatives may ship).
    */
   usage?: "data" | "facts-only";
+  /**
+   * The Owner decision that permits using this source (#26 per-source clearance record). A real
+   * facts-only source must carry one; the web UI shows the #26 credit line for every facts-only source.
+   */
+  decision?: { url: string; date: string };
   /** Credit line to display wherever derived data is shown. */
   attribution: string;
   /** True when GTEki modified/derived the data (must be disclosed for PDL/CC BY). */

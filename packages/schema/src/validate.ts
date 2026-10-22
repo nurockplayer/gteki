@@ -108,6 +108,11 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (!b.station.synthetic && !isHttpUrl(s.url)) err("source.url", "source without an http(s) landing URL", s.id);
     if (!b.station.synthetic && s.usage !== "facts-only" && !(s.license && s.license.name.trim() && isHttpUrl(s.license.url)))
       err("source.license", "data source without a licence name and http(s) licence link", s.id);
+    // #26/#122: a facts-only source has no licence to show; the UI says so, and the source records the Owner decision that allows it.
+    const decisionOk = typeof s.decision === "object" && s.decision !== null && isHttpUrl(s.decision.url) && typeof s.decision.date === "string" && isIsoDate(s.decision.date);
+    if (s.decision !== undefined && !decisionOk) err("source.decision", "decision needs an http(s) url and a YYYY-MM-DD date", s.id);
+    if (!b.station.synthetic && s.usage === "facts-only" && s.decision === undefined)
+      err("source.decision", "facts-only source without a decision {url, date} (the #26 Owner decision)", s.id);
     if (!b.station.synthetic && s.rights !== "REUSABLE_WITH_CONDITIONS" && s.usage !== "facts-only")
       warn("source.rights", `source rights ${s.rights}; must not feed published geometry/data (mark usage:"facts-only" if only cited as evidence)`, s.id);
   }
