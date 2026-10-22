@@ -36,6 +36,8 @@ export interface BuiltStation {
 
 export interface BuildOptions {
   quality: "low" | "high";
+  /** A loaded PLATEAU street-context GLB scene (scene/context.ts). Drawn instead of the LOD1 building extrusions; never a collider. */
+  streetContext?: THREE.Object3D | null;
 }
 
 // ---------------------------------------------------------------- helpers

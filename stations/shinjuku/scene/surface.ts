@@ -12,6 +12,7 @@ import type { SurfaceData } from "./surface-data.ts";
 import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfaceGround, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceVisibleAt } from "./surface-layout.ts";
 import { daylight, facadeTexture, hash, pavingTexture, skyMaterial } from "./surface-materials.ts";
 import { inside, strip, surfaceStreets } from "./surface-street.ts";
+import { contextMeshes, createContextMaterial, CONTEXT_ATTRIBUTION } from "./context.ts";
 export { surfaceWalls } from "./surface-layout.ts";
 export type { SurfaceData } from "./surface-data.ts";
 
@@ -57,7 +58,9 @@ function beam(a: THREE.Vector3, b: THREE.Vector3, width: number, depth: number) 
   g.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
   return g;
 }
-export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high" }) {
+/** `streetContext`: a loaded PLATEAU context GLB scene (see context.ts). When it is accepted, it is drawn here, under the
+ * same street-visibility rule, instead of the LOD1 building extrusions below; walls, furniture and paving are unchanged. */
+export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high"; streetContext?: THREE.Object3D | null }) {
   const root = new THREE.Group(); root.name = "surface-render-only"; root.visible = false;
   root.userData.attribution = surface.attribution;
   const resources = new Set<{ dispose(): void }>();
@@ -164,7 +167,16 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   const signMaterial=track(daylight("#ffffff",signTexture,0,true));signMaterial.side=THREE.FrontSide;
   if(batches.has("signs"))batches.get("signs")!.material=signMaterial;
 
-  const buildings=surfaceBuildingFootprints(surface,layout,opts.bundle);
+  const contextParts=opts.streetContext?contextMeshes(opts.streetContext):null;
+  // The LOD1 extrusions are visual only (their footprints still become obstacle walls in surfaceWalls), so a
+  // context that is accepted replaces just the drawing.
+  const buildings=contextParts?[]:surfaceBuildingFootprints(surface,layout,opts.bundle);
+  if(contextParts){
+    const material=track(createContextMaterial());
+    for(const mesh of contextParts){const loaded=mesh.material;mesh.material=material;for(const m of [loaded].flat())m.dispose();mesh.castShadow=false;mesh.receiveShadow=false;track(mesh.geometry);}
+    opts.streetContext!.name="street-context";opts.streetContext!.userData.attribution=CONTEXT_ATTRIBUTION;
+    root.add(opts.streetContext!);
+  }
   for(const b of buildings){
     const h=hash(b.id), style=b.height>65?0:b.usage==="401"?1:(h%4)+1;
     const tint=new THREE.Color().setRGB(.88+(h%9)/100,.88+((h>>>4)%8)/100,.87+((h>>>8)%9)/100);
@@ -227,7 +239,7 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   }
   const dome=new THREE.Mesh(track(new THREE.SphereGeometry(300,24,12)),track(skyMaterial()));dome.name="surface-sky";dome.frustumCulled=false;dome.renderOrder=-1000;
   dome.onBeforeRender=(_renderer,_scene,camera)=>{dome.position.copy(camera.position);dome.updateMatrixWorld();};root.add(dome);
-  root.userData.drawCallBudget=batches.size+4;root.userData.buildingParts=buildings.length;
+  root.userData.drawCallBudget=batches.size+4+(contextParts?.length??0);root.userData.buildingParts=buildings.length;root.userData.streetContext=contextParts?contextParts.length:0;
   // The live update/dispose closures share this scope with add(). Disposing a
   // source geometry does not release its arrays; drop the batch references once
   // merging is complete, keeping only the final meshes for rendering/restoration.

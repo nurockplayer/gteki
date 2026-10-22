@@ -3,18 +3,39 @@
  * renderer-neutral layout + Three.js builder; geometry is a visual/physical approximation and
  * never adds routes (the explorer routes only on graph.json).
  */
-import { WALKER_BODY, type BuildScene, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
+import { WALKER_BODY, type BuildScene, type SceneContext, type SpawnPoint, type StationScene, type WallSegment } from "@gteki/scene-api";
 import type * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
 import { surfaceEntrances, surfaceRoofs } from "../scene/surface-layout.ts";
+import { contextGlbFor, contextMeshes } from "../scene/context.ts";
 import plan from "../data/plan.json" with { type: "json" };
 
-export const buildScene: BuildScene = (ctx) => {
+/**
+ * The PLATEAU street-context GLB for this quality (low on low, high on high), or null: station.json does not
+ * declare it, the explorer does not bundle it, or it fails to load or is not what tools/gis writes. Any null
+ * leaves the procedural LOD1 street untouched. Loaded before the build so no LOD1 geometry is made to be thrown away.
+ */
+async function loadStreetContext(ctx: SceneContext): Promise<THREE.Object3D | null> {
+  const uri = contextGlbFor(ctx);
+  if (!uri) return null;
+  try {
+    const loaded = await ctx.loadGlb(uri);
+    if (contextMeshes(loaded.scene)) return loaded.scene;
+    console.warn(`[gteki] shinjuku street context ${uri} is not a visual-only ctx_bldg_* file; using the procedural street`);
+    loaded.scene.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
+  } catch (err) {
+    console.warn(`[gteki] shinjuku street context ${uri} failed to load; using the procedural street`, err);
+  }
+  return null;
+}
+
+export const buildScene: BuildScene = async (ctx) => {
   const T = ctx.THREE;
-  const built = buildStation(ctx.bundle, plan as unknown as Plan, { quality: ctx.quality });
+  const streetContext = await loadStreetContext(ctx);
+  const built = buildStation(ctx.bundle, plan as unknown as Plan, { quality: ctx.quality, streetContext });
   const { layout } = built;
 
   // Invisible walk proxies: the explorer raycasts these from above (non-recursive), so each is a Mesh.
