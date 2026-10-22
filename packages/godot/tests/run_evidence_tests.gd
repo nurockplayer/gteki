@@ -31,9 +31,9 @@ const LEG_BUDGET_FACTOR := 2.0
 const GOLDEN := "tests/e2e/specs/__goldens__/02-navigation.spec.ts/ikebukuro-routes.json"
 const EVIDENCE := "res://docs/evidence/g5-ikebukuro.md"
 ## Walked 3D length must match the route's own length within `max(LENGTH_TOLERANCE_M, vertices * WAYPOINT_REACH)`. The
-## walk ties every vertex, so each one can add or cut less than the reach of path, and the ground height it follows is
-## damped (~0.2 m lag on a stair): the error is bounded per vertex, not proportionally to the route. The measured worst
-## case is in the table; a route outside the band is a finding, not tolerance noise.
+## walk ties every vertex from inside the reach, so by construction each one can add or cut less than `WAYPOINT_REACH` of
+## path: the error is bounded per vertex, not proportionally to the route. The measured worst case is in the table; a
+## route outside the band is a finding, not tolerance noise.
 const LENGTH_TOLERANCE_M := 0.5
 const LENGTH_TOLERANCE_PER_VERTEX := WAYPOINT_REACH
 
@@ -50,6 +50,9 @@ var checks := 0
 var failures: Array[String] = []
 var repo_root := ""
 var rows: Array[Dictionary] = []
+## The floors' own provenance, read with the elevations so the table states it from the data rather than from memory.
+var floor_sources: Array[String] = []
+var floor_elevation_m_missing := false
 
 
 func _initialize() -> void:
@@ -113,7 +116,7 @@ func run() -> void:
 		rows.append(row)
 
 	holder.queue_free()
-	write_evidence(station_id, scene)
+	write_evidence(station_id, scene, elevations)
 	finish()
 
 
@@ -178,11 +181,63 @@ func floor_elevations(station_dir: String) -> Array[float]:
 	var path := station_dir.path_join("gteki/station.json")
 	var errors: Array[String] = []
 	var station := Station.read_json(path, errors)
+	var floors: Array = station.get("floors", [])
 	var elevations: Array[float] = []
-	for floor_record in station.get("floors", []):
+	floor_sources.clear()
+	floor_elevation_m_missing = not floors.is_empty()
+	for floor_record in floors:
 		elevations.append(float(floor_record.renderElevationM))
+		var source := str(floor_record.get("elevationSource", "UNKNOWN"))
+		if not floor_sources.has(source):
+			floor_sources.append(source)
+		if floor_record.get("elevationM", null) != null:
+			floor_elevation_m_missing = false
 	check(not elevations.is_empty(), "the station's floor elevations load from %s (%s)" % [path, str(errors)])
 	return elevations
+
+
+## The narrowest gap between two different rendered floor bands, from the elevations the walk itself uses. Two floors can
+## share a rendered elevation (a mezzanine drawn at street level), so equal values are one band, not a zero gap. Returns
+## 0.0 when the station has fewer than two bands, which the table words as "one rendered band".
+static func floor_band_separation(elevations: Array[float]) -> float:
+	var bands: Array[float] = []
+	for elevation in elevations:
+		if not bands.has(elevation):
+			bands.append(elevation)
+	bands.sort()
+	var narrowest := 0.0
+	for i in range(1, bands.size()):
+		var gap := bands[i] - bands[i - 1]
+		if narrowest == 0.0 or gap < narrowest:
+			narrowest = gap
+	return narrowest
+
+
+## The band-separation sentence the table needs, from the same elevations the walk used.
+static func band_sentence(elevations: Array[float]) -> String:
+	var narrowest := floor_band_separation(elevations)
+	if narrowest <= 0.0:
+		return "This station has a single rendered floor band, so its height trace cannot cross one."
+	return "The narrowest separation between two different rendered bands here is %.1f m." % narrowest
+
+
+## The table's "Floor changes" bullet. The elevations are rendered floor bands, not surveyed physical levels: the bullet
+## says which of that is in the station data it was given.
+func floor_band_lines(elevations: Array[float]) -> Array[String]:
+	var lines: Array[String] = []
+	lines.append("- **Floor changes**: every sample of the walker's own height is put in the band of the station floor whose")
+	lines.append("  elevation is nearest (`floorChanges` counts graph floor transitions, so this is an independent observation")
+	lines.append("  of the same thing, not a copy of the route). The elevation is the station's *rendered floor band*")
+	lines.append("  (`renderElevationM` in `station.json`), not the physical floor level:")
+	if floor_elevation_m_missing:
+		lines.append("  `elevationM` is null on every floor and `elevationSource` is %s." % ", ".join(PackedStringArray(floor_sources)))
+	elif not floor_sources.is_empty():
+		lines.append("  `elevationSource` is %s." % ", ".join(PackedStringArray(floor_sources)))
+	lines.append("  %s" % band_sentence(elevations))
+	if floor_band_separation(elevations) > 0.0:
+		lines.append("  The walker's height is damped toward the stair surface; a lag smaller than half of that separation cannot")
+		lines.append("  add or lose a crossing, and no lag figure is asserted here.")
+	return lines
 
 
 static func heading_to_yaw(forward_x: float, forward_z: float) -> float:
@@ -318,6 +373,10 @@ func check_self() -> void:
 	check(not route_compare(altered_steps, doc).diffs.is_empty(), "self: a golden step list with a flipped edge is reported as a mismatch")
 	check(refusal_note({"collider": "Mesh1", "feet": Vector3(1.0, 2.0, 3.0), "stage": "ahead h=0.5 d=0.290", "clearance": 0.29}).contains("Mesh1"), "self: a block's failure note names the collider, the place and the clearance")
 	check(refusal_note({}).is_empty(), "self: a walk with no refusal has no note")
+	check(is_equal_approx(floor_band_separation([0.0, 4.6]), 4.6), "self: the band separation is the gap between rendered elevations")
+	check(is_equal_approx(floor_band_separation([0.0, 0.0, 4.6]), 4.6), "self: two floors drawn at one elevation are one band, not a zero gap")
+	check("\n".join(floor_band_lines([0.0, 0.0, 4.6])).contains("4.6"), "self: the table states the band separation it was given")
+	check("\n".join(floor_band_lines([2.0, 2.0])).contains("single"), "self: a station with one band says so instead of quoting 0 m")
 
 	check(not writes_table(["a check failed"]), "self: a failing run does not write the table")
 	check(writes_table([]), "self: a passing run writes the table")
@@ -332,10 +391,10 @@ func check_self() -> void:
 # ---- walk measurements ----------------------------------------------------------------------------------------
 
 ## Counts floor changes in the walker's own height trace: every sample is put in the band of the station floor whose
-## elevation is nearest, and every change of band is counted. The walker's height is damped toward the stair surface,
-## so it lags by ~0.2 m mid-flight — well inside half of this station's 4.6 m floor separation, so a stair is crossed
-## once. A dip that stays on one floor (W1 dips 1.0 m inside B1) stays in its band and is not counted, while a route
-## that goes up and comes back down counts both crossings.
+## elevation is nearest, and every change of band is counted. The walker's height is damped toward the stair surface, so
+## a lag smaller than half of the narrowest rendered floor-band separation cannot add or lose a crossing; the lag itself
+## is not measured here. A dip that stays on one floor (W1 dips 1.0 m inside B1) stays in its band and is not counted,
+## while a route that goes up and comes back down counts both crossings.
 static func count_level_changes(heights: Array[float], elevations: Array[float]) -> int:
 	if heights.is_empty() or elevations.is_empty():
 		return 0
@@ -394,7 +453,7 @@ static func writes_table(failure_list: Array[String]) -> bool:
 	return failure_list.is_empty()
 
 
-func write_evidence(station_id: String, scene: Scene) -> void:
+func write_evidence(station_id: String, scene: Scene, elevations: Array[float]) -> void:
 	var path := ProjectSettings.globalize_path(EVIDENCE)
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	var version: Dictionary = Engine.get_version_info()
@@ -446,23 +505,21 @@ func write_evidence(station_id: String, scene: Scene) -> void:
 	lines.append("## How the walk numbers are made")
 	lines.append("")
 	lines.append("- **Steering**: the walker walks the route polyline itself: it turns toward the next vertex only once it is")
-	lines.append("  within %.2f m of the current one, so every vertex is cut by less than %.2f m in plan and the walk never takes a" % [WAYPOINT_REACH, WAYPOINT_REACH])
-	lines.append("  chord across a corner that the line does not take. The same rule is used on every route.")
+	lines.append("  within %.2f m of the current one, so by construction of that reach every vertex is cut by less than %.2f m in" % [WAYPOINT_REACH, WAYPOINT_REACH])
+	lines.append("  plan and the walk never takes a chord across a corner that the line does not take. The same rule is used on")
+	lines.append("  every route.")
 	lines.append("- **Walked length**: summed 3D distance the walker's feet travel while following the route polyline waypoint")
-	lines.append("  by waypoint. Every vertex is tied from inside the vertex reach, so it can add or cut less than %.2f m of path," % WAYPOINT_REACH)
-	lines.append("  and the ground height the walk follows is damped (~0.2 m lag on a stair); the error is bounded per vertex, not")
-	lines.append("  proportionally to the route. The tolerance is therefore `max(%.1f m, %.2f m x polyline vertices)`: the measured" % [LENGTH_TOLERANCE_M, LENGTH_TOLERANCE_PER_VERTEX])
-	lines.append("  value is in the table and a route outside the band is a finding, not tolerance noise.")
+	lines.append("  by waypoint. Every vertex is tied from inside the vertex reach, so by construction of that reach it can add or")
+	lines.append("  cut less than %.2f m of path; the error is bounded per vertex, not proportionally to the route. The tolerance is" % WAYPOINT_REACH)
+	lines.append("  therefore `max(%.1f m, %.2f m x polyline vertices)`: the measured value is in the table and a route outside the" % [LENGTH_TOLERANCE_M, LENGTH_TOLERANCE_PER_VERTEX])
+	lines.append("  band is a finding, not tolerance noise.")
 	lines.append("- **Stopped**: a leg that makes no horizontal progress for %d steps (%.0f s) or that exceeds twice its" % [STALL_STEPS, STALL_STEPS * DT])
 	lines.append("  straight-line walking time plus %d steps. No route may stop: a stopped route fails the test." % LEG_BUDGET_STEPS)
 	lines.append("- **Body-block episodes**: runs of steps the walker's own body test (`bodyBlock`: radius %.1f m, rays at %.1f / %.1f m)"
 		% [Walker.RADIUS, Walker.BODY_HEIGHTS[0], Walker.BODY_HEIGHTS[1]])
 	lines.append("  refused. Slide moves along the surface the walker hit are not blocks. No route may have one; a failure names")
 	lines.append("  the collider that refused the step, the walker's feet where it stood and the clearance to the surface's plane.")
-	lines.append("- **Floor changes**: every sample of the walker's own height is put in the band of the station floor whose")
-	lines.append("  elevation is nearest (`floorChanges` counts graph floor transitions, so this is an independent observation")
-	lines.append("  of the same thing, not a copy of the route). Height damping lags a stair by ~0.2 m, far inside half of the")
-	lines.append("  4.6 m separation between this station's floors.")
+	lines.append_array(floor_band_lines(elevations))
 	lines.append("- **Walk time**: steps at the web's walk speed %.2f m/s (60 Hz fixed step); reported, not asserted." % Walker.WALK)
 	lines.append("")
 	var text := "\n".join(lines) + "\n"
