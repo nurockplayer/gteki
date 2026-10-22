@@ -298,6 +298,107 @@ walked by the same step rules as on the web, nothing more. Camera and walker fee
 Runtime APIs: [GLTFDocument](https://docs.godotengine.org/en/latest/classes/class_gltfdocument.html)
 and [Godot glTF scene export](https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/exporting_3d_scenes.html).
 
+## Capture and performance (G-4 prep / G-5b of #164)
+
+Windowed only. `project.godot` stays `gl_compatibility`; Forward+ comes from the command line.
+
+```
+godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- --station=<id> --capture=<outDir> \
+  [--look=baseline|hq] [--gi=off|sdfgi] [--perf=<seconds>] [--poses=<file>]
+```
+
+Per pose it places the walker, settles the follow camera for 45 physics frames, waits 3 rendered frames, saves a 1600x900
+PNG and writes its camera transform, FOV and `RenderingServer` counts into `<outDir>/report.json` (`gteki.capture/0.1`),
+together with the run's station, look, GI, renderer, driver, adapter, window size, machine, and any pose it could not
+take (`pose_problems`). `renderer` is the method the run actually rendered with
+(`RenderingServer.get_current_rendering_method()`), because `project.godot` says `gl_compatibility` while the runbook
+asks for Forward+ on the command line; the project setting is recorded apart as `project_renderer` and never labelled
+as the measured renderer. Default poses: each spawn point x 4 yaws; Ikebukuro adds the `g_jr_c2` -> `x35` route every 15 m
+(needs `.cache/routes/ikebukuro.route.json`, written by `run-walk.sh` or by the router command in the runbook below; a
+missing route file is recorded in `pose_problems` and makes the run exit non-zero, with the other poses still captured,
+rather than quietly shortening the list) and the #227 stall area; Shinjuku adds 3 poses at inverted-band walls. Then the **G-5 evidence poses**: for every route the
+evidence walk covers (`addons/gteki/gteki_evidence.gd`; `run-capture.sh` fails if that list and the walk's own plan
+ever disagree) its start,
+its mid-stair point and its goal — the route comes from the real router through the bridge, the mid-stair point is the
+middle of the route's own `stairs` step that has walkable ground, and a route the router refuses, or a route with no
+stairs step, is stated in `pose_problems` instead of being filled in — plus each lift's landing, where the walker's own
+ride rules put the feet (Shinjuku S4's is the one shaft in the goldens). `--poses` takes a JSON array of
+`{name, position:[x,y,z], yaw_deg, pitch?, distance?}` (Godot frame). Hard 10-minute bound, which also counts the perf
+window about to start.
+
+`--perf=<seconds>` measures every settled pose: 60 rendered warm-up frames first (shader compilation, first-use uploads),
+then rendered frames until the window has passed. No warm-up frame is in any series. Per measured frame it records the
+real interval between rendered frames (vsync, presenter and compositor included) and
+`RenderingServer.get_frame_setup_time_cpu()` (the CPU time the renderer spent setting up that frame), reporting
+p50/p95/max of each (nearest rank), the frame's draw calls, primitives and video memory, and the run's window size,
+renderer, driver and
+`RenderingServer.get_video_adapter_name()`. `Performance.TIME_PROCESS` is not sampled as a series: the engine refreshes
+it about once a second with the largest process time seen in that second, so it is recorded once per pose as
+`process_interval_max_ms` and the report keeps it out of every percentile. `--perf` needs `--capture=<dir>`, because the
+figures go into that report.
+**On a headless display `--capture` says "capture needs a display" and exits 0 after loading the station, and `--perf`
+says "perf needs a display" and exits 0 before anything is loaded; neither writes a report or a perf figure.** An
+argument that makes no sense (`--perf=0`, `--perf=soon`, `--perf` without `--capture`) exits 2.
+
+`tests/run_capture_tests.gd` (run by `run-capture.sh`) checks the argument rules, the percentiles, that a missing route
+file fails the run instead of shortening it, that the capture's
+route list is exactly the evidence walk's routable routes, that every route has its start and goal (and its mid-stair
+point where it has a `stairs` step, standing on a stairs step inside that step's own span), that S4's lift landing is
+captured within the ride's reach on the exit's level, that every pose stands on ground the real walker accepts, and the
+report generator on fixture reports — which must name the machine, print the measured values, say "No frames were
+sampled" for a run captured without `--perf`, and write nothing for a file that is not a capture report. It asks the
+real router for the routes, so it needs `pnpm install`; nothing in it renders.
+
+```sh
+lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-capture.sh
+```
+
+## GPU slot runbook (G-5b)
+
+The captures are the one part that needs a display and a GPU, so they run in the lead's GPU slot, on the machine whose
+figures go into `docs/evidence/g5-performance.md`. In order, from the workspace root:
+
+```sh
+# 0. the snapshots the client loads, and the route file the Ikebukuro G-4 poses sample (skip if already fresh)
+pnpm tsx packages/godot/src/export-scene.ts ikebukuro packages/godot/.cache/scenes/ikebukuro
+pnpm tsx packages/godot/src/export-scene.ts shinjuku packages/godot/.cache/scenes/shinjuku
+mkdir -p packages/godot/.cache/routes
+pnpm tsx packages/cli/src/route.ts stations/ikebukuro g_jr_c2 x35 > packages/godot/.cache/routes/ikebukuro.route.json
+
+# 1. Ikebukuro, baseline look (53 poses, ~6 min)
+godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- \
+  --station=ikebukuro --look=baseline --capture=.cache/g5/ikebukuro-baseline --perf=5
+
+# 2. Ikebukuro, hq look (~6 min)
+godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- \
+  --station=ikebukuro --look=hq --capture=.cache/g5/ikebukuro-hq --perf=5
+
+# 3. Shinjuku, baseline look (27 poses, ~3 min)
+godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- \
+  --station=shinjuku --look=baseline --capture=.cache/g5/shinjuku-baseline --perf=5
+
+# 4. Shinjuku, hq look (~3 min)
+godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- \
+  --station=shinjuku --look=hq --capture=.cache/g5/shinjuku-hq --perf=5
+
+# 5. Shinjuku, hq look with SDFGI (~3 min; gl_compatibility warns that it ignores SDFGI, which is itself the finding)
+godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- \
+  --station=shinjuku --look=hq --gi=sdfgi --capture=.cache/g5/shinjuku-hq-sdfgi --perf=5
+
+# 6. the table, from every report.json the runs wrote
+godot --headless --path packages/godot --script res://tests/perf_report.gd -- \
+  packages/godot/docs/evidence/g5-performance.md packages/godot/.cache/g5/*/report.json
+```
+
+Each capture command has its own 10-minute bound (`hq_capture.gd` `TIMEOUT_MS`) and stops before starting a pose the
+bound could not hold. At `--perf=5` and 60 rendered frames a second the five runs take about 22 minutes; at half that
+frame rate each pose spends twice as long in its 60-frame warm-up and the whole set takes about 25. A capture that exits
+non-zero still wrote its `report.json`: the reason is in its `pose_problems` (a missing route file, a pose with no
+walkable ground, the timeout), and the table below lists it. The captures write only
+under `packages/godot/.cache/g5/` (gitignored): each run's `report.json` and its PNGs. The generated
+`docs/evidence/g5-performance.md` is the one file to commit; every line of it is a report's own, labelled with the
+machine and the GPU slot it was measured in.
+
 ## Search, route and guided walk (G-3 of #164)
 
 `hq.tscn` now has a HUD (left panel, built for 1600x900): search box, results with name (ja/en toggle), category, floor and a
