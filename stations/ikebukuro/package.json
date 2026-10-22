@@ -10,6 +10,7 @@
     "sync:finishes": "python3 -I pipeline/sync_finish_packs.py",
     "typecheck": "tsc -p .",
     "check:access": "node pipeline/check_access.ts",
+    "audit:assets": "node pipeline/audit_assets.ts",
     "check:godot": "bash pipeline/godot_colliders.sh",
     "bake:lighting": "sh pipeline/bake_lighting.sh"
   },

@@ -1,0 +1,43 @@
+name: Root tests
+
+# #148: the root workspace (apps/web, packages/*, stations/*) had no CI job. The required `test`
+# check is tools/gis only. This job runs the root typecheck and the default Vitest suite
+# (heavy suites stay in the box via `pnpm test:heavy:box`).
+on:
+  # No path filter on PRs, for the same reason as gis-test: a path-filtered required check never
+  # reports on PRs it skips, which leaves them blocked.
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: root-test-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  root-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # pnpm version comes from package.json packageManager.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+
+      # Default suites only; two workers fit the runner. Station importers' `--check` modes need raw
+      # inputs that are not in the repo, so they stay local.
+      - run: pnpm vitest run --maxWorkers=2
