@@ -14,7 +14,7 @@ Credit: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工
 | Result | Meaning here |
 | --- | --- |
 | `MATCHED_BY_NAME` | A recorded dataset has exactly one feature (or one authored node/POI pair) whose id or name field carries the same exit or stair number as the change source, and its kind is recorded. Placed as `MATCHED_BY_NAME, UNVERIFIED`, `routable: false`. |
-| `AMBIGUOUS (n)` | The name token is present on n features, but the kind (exit, stair, hallway) or the owner of the numbering is not recorded, or the token repeats under more than one scheme. Nothing is placed. The candidates are listed in section 5 by hash so that a field check can test them. |
+| `AMBIGUOUS (n)` | The name token is present on n features, but the kind (exit, stair, passage) or the owner of the numbering is not recorded, or the token repeats under more than one scheme. Nothing is placed. The candidates are listed in section 5 by hash so that a field check can test them. |
 | `UNKNOWN` | No feature carries the name. Nothing is placed. |
 | `OUT_OF_COVERAGE` | The change is a kind of place that every dataset's own description excludes. |
 
@@ -67,17 +67,17 @@ Abbreviations: TOKEN = token-only candidates (section 5); the datasets named are
 | CH-IK-02 | Metro exit `2b` closed 2024-09-30 to 2025-07-07 (planned) | UNKNOWN | No exit `2`, `2a` or `2b` in the repo (the 38 exit POIs are numbered 4 to 43, none below 4, with letter suffixes only on 6a/6b). | Open or closed today; sign; position |
 | CH-IK-03 | Metro exit `1b`, sign changed | UNKNOWN | No exit `1` or `1b` in the repo. | Sign; position |
 | CH-IK-04 | stairs 36 / 37, escalators and lift considered | MATCHED_BY_NAME, UNVERIFIED | Section 3.1 | Section 3.1 |
-| CH-IK-05 | 西口地区 and 直上西地区 redevelopment (district plan) | UNKNOWN | A district, not a named feature. The repo exits 5, 6a, 6b, 7, 8, 9 are west-side exits, but #174 names none of them, so no link is made. | Hoarding and re-routing at exits 5 to 9 (#174 FC-CH-04) |
+| CH-IK-05 | 西口 and 直上西 district redevelopment (district plan) | UNKNOWN | A district, not a named feature. The repo exits 5, 6a, 6b, 7, 8, 9 are west-side exits, but #174 names none of them, so no link is made. | Hoarding and re-routing at exits 5 to 9 (#174 FC-CH-04) |
 | CH-IK-06 | 地下道第3号線 / 第4号線 (city-planned designations, 西池袋一丁目) | UNKNOWN | The designations are planning line numbers. No repo object is named 地下道 or 第3/第4号線; the repo's passages (中央通路, 北通路, 南通路, west/east B1 exit passages) are different names. The number 3 or 4 is not a stair or exit number here and is not matched. | A map from the planning lines to physical passages from the ward; a field walk of the west passage |
 | CH-IK-07 | 東西自由通路 north deck over the tracks (concept) | UNKNOWN | Not built. The repo's 北通路 (a B1 passage) is a different object from the 北デッキ and is not matched. | Nothing until built |
-| CH-IK-08 | 東口駅前広場 re-plan (concept) | UNKNOWN | Not built; no named feature. | Nothing until built |
+| CH-IK-08 | 東口 station-front plaza re-plan (concept) | UNKNOWN | Not built; no named feature. | Nothing until built |
 | CH-IK-09 | Tobu Tojo line tracks and platforms, 350 m deck (announced) | OUT_OF_COVERAGE | Platforms, tracks and fare-paid areas are outside every dataset by their own description: the G0 audit says the ubld does not model fare-paid concourses or platforms, and Hokonavi is a street-level walk network. | Not applicable until a plan with a footprint exists |
 
 ### 4.2 Shinjuku (#174 section 2b) and the extra row
 
 | id | Change (short) | Result | Why | A field check would need |
 | --- | --- | --- | --- | --- |
-| CH-SJ-01 | West Exit B1 stairs No.1 (closed 2023-11-14) and No.2 (closed 2023-10-23) | AMBIGUOUS (4 + 4, TOKEN) | S03 has a bare label equal to 1 and one equal to 2, each on 1 entity and 4 features (2 polygons on 1F, a point on B1F, a point on B3F), all inside the ubld 13104 bbox and outside the E27 network bbox. The label does not say stair, exit or hallway, and the same numbers are shared across several numbering schemes in the file (see 5.2). The 402 `stairs` features carry no number. E27 and the ubld carry no numbers. Not placed. | Walk the plaza, record which numbered signs exist and which are stairs; mark the entities in section 5 on a plan; test whether label 1 and 2 are the plaza stairs. The closures predate nothing in S03 that records them. |
+| CH-SJ-01 | West Exit B1 stairs No.1 (closed 2023-11-14) and No.2 (closed 2023-10-23) | AMBIGUOUS (4 + 4, TOKEN) | S03 has a bare label equal to 1 and one equal to 2, each on 1 entity and 4 features (2 polygons on 1F, a point on B1F, a point on B3F), all inside the ubld 13104 bbox and outside the E27 network bbox. The label does not say stair, exit or passage, and the same numbers are shared across several numbering schemes in the file (see 5.2). The 402 `stairs` features carry no number. E27 and the ubld carry no numbers. Not placed. | Walk the plaza, record which numbered signs exist and which are stairs; mark the entities in section 5 on a plan; test whether label 1 and 2 are the plaza stairs. The closures predate nothing in S03 that records them. |
 | CH-SJ-02 | West Exit B1 north passage (closed 2023-11-10) | UNKNOWN | S03 has 3 passage-like names (JR/Keio and JR/Odakyu passages and one West underground exit); none is a "north passage" of the plaza and none is matched. No other dataset names a passage. | A dated walk of the plaza, passage endpoints and their position |
 | CH-SJ-03 | West Exit elevators A and B, temporary lifts | UNKNOWN | S03 has 103 elevator-kind features under one generic label. Elevators are not covered by the exit/stair/passage rule. Bare labels `A` and `B` exist but their kind is unrecorded and they are not accepted. | Lift positions and the current lift list |
 | CH-SJ-04 | B1 public restroom No.1 abolished, No.2 renamed | UNKNOWN | S03 has 17+17 gendered toilet labels and 6 multipurpose, none numbered as No.1 or No.2. A toilet is a POI; S03 values are not quoted. No other dataset. | Walk; toilet position and name |
@@ -91,9 +91,9 @@ Abbreviations: TOKEN = token-only candidates (section 5); the datasets named are
 | CH-SJ-12 | West underground passages, 2026-04-07 (sections not passable, 70 cm change) | UNKNOWN | No named feature. | As CH-SJ-07, dated after 2026-04-07 |
 | CH-SJ-13 | Stair 11 (B1 to ground, bus side) closed; temporary stair built, 2026-06-23 | AMBIGUOUS (4, TOKEN) | S03 has a bare label equal to 11: 1 entity, 4 features, inside the ubld 13104 bbox and outside the E27 network bbox. Token-only. The new temporary stair has no feature anywhere. | Walk; record stair 11 and the temporary stair, with positions |
 | CH-SJ-14 | Road improvement on the plaza surface, 2026-10 to 2027-02 | UNKNOWN | No named surface feature; S03 1F covers the area but names none of these works. | Not a placement target (surface works); observe curb and crossing changes |
-| CH-SJ-15 | 新宿駅西口地区開発計画 (Odakyu site) | UNKNOWN | A site, not a named feature. | Hoarding outline |
+| CH-SJ-15 | 新宿駅西口 district development plan (Odakyu site) | UNKNOWN | A site, not a named feature. | Hoarding outline |
 | CH-SJ-16 | Keio B2 platform extension and new gate (FY2030) | UNKNOWN | No named feature; future work. | Deferred (#174 FC-CH-05) |
-| CH-SJ-17 | 西南口地区 development | UNKNOWN | S03 has south-exit names for JR, Odakyu and Keio lines but none named 西南口; no match. | Hoarding outline |
+| CH-SJ-17 | 西南口 district development | UNKNOWN | S03 has south-exit names for JR, Odakyu and Keio lines but none named 西南口; no match. | Hoarding outline |
 | CH-SJ-18 | 東西自由通路 inside JR station, works complete 2024-03-08 | UNKNOWN | No dataset names it. S03's passage-like names are other passages. | Not applicable inside the paid area |
 | CH-SJ-19 | West plaza design principles | UNKNOWN | A policy, not a feature. | None |
 | EX-SJ-EXIT2 | Toei/Keio 新宿線 新宿駅 exit 2 closed from 2024-03-30; exit 1 also listed closed ([#175](https://github.com/nurockplayer/gteki/pull/175), DR-SJ-01, DR-SJ-05) | AMBIGUOUS (4, TOKEN); E27 layer: OUT_OF_COVERAGE | Not placed. (1) E27 is the Oedo line only: no exit number in its data, and the Shinjuku station repo notes "Exit number/name not in source", so its `poi:exit:2` is an internal ordinal, not the official exit 2. (2) S03 has a bare label equal to 2 on 1 entity, 4 features (the same entity that CH-SJ-01 would use for stair 2), inside the ubld 13104 bbox and outside the E27 network bbox. S03 defines no exit or entrance type, and S03 nav nodes were not used. The same label cannot be both the plaza's stair 2 and the Toei exit 2, which is itself the ambiguity. (3) S03 predates the closure. | A dated walk: the exit 2 gate and which passage it served (the notice has this only on a drawing); position by a field method. The Toei per-exit coordinates are not used. |
@@ -120,7 +120,7 @@ Feature refs (same hashing of the feature id), in the order 1F, 1F, B1F, B3F:
 
 ### 5.2 Why they are not accepted
 
-- The kind is not recorded: the B1F and B3F items are `hallway`-kind points and the 1F items are unclassified polygons; none is `stairs`-kind, and the 402 `stairs` features carry no number.
+- The kind is not recorded: the B1F and B3F items are passage-kind points and the 1F items are unclassified polygons; none is `stairs`-kind, and the 402 `stairs` features carry no number.
 - The numbering is not unique across schemes. The label 3 sits on 2 separate entities: one inside the ubld 13104 bbox and one inside the E27 network bbox (6 features in all). The code-like names include plain numbers 1..22 and letter-number codes, which cannot all belong to the West Exit plaza stairs.
 - The same entity is the only candidate for both CH-SJ-01 (stair 2) and the Toei exit 2, so it cannot identify either.
 - S03 content predates 2023-10: #175 DR-SJ-09 puts the survey vintage at 2020-03 and the publication at 2023-02-28. The ZIP's recorded `last-modified` is 2024-10-01 (`docs/gis/acquisitions/tokyo-s03-zip.json`). Neither date is verified for the contents.
