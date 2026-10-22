@@ -26,6 +26,12 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
    generation through Codex; each is labelled AI-generated, keeps its
    provenance sidecar (assets/library/source/posters/provenance.json), and shows
    no real brands, logos or trademarks. Attribution is not required.
+   This covers the 31 Owner-approved images of art batch 1 in
+   assets/library/source/art2d/ (provenance.json and catalog.json included) and
+   the contact sheet docs/assets/img/art2d_batch1.jpg. Their text was typeset
+   afterwards in Noto Sans JP (SIL OFL 1.1); the font is not committed, only its
+   glyphs appear in the images. The guide cat and dog among them are assets,
+   not the official mascot (adoption pending a similarity and trademark check).
 
 4. THIRD-PARTY DATA AND DERIVED FILES - their own terms
    DRAFT FOR GIS REVIEW: Lane D (GIS) owns the final entries and the path
