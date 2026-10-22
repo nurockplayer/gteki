@@ -13,7 +13,7 @@ Updated 2026-10-21 · contract `gteki-asset/0.1` (additive changes only) · lane
 | **Aspect-matched sign faces.** A 4.6:1 bar sign gets 1024×256 instead of 1024², and a map totem gets 512×1024, at the same texels per metre. | `signage._face_shape` | 33 MiB less unique GPU memory across the kit |
 | **Kit bundle** (`gteki-kit-bundle/0.1`). One GLB per scene, with images, samplers, textures and materials stored once. Placements are clones that share GPU resources. | `tools/blender/bundle_kit.py`, [contract §7](asset-contract.md#7-kit-bundles--gteki-kit-bundle01-derived-optional) | cross-asset dedupe without external files, so the Lane C fence and Godot's self-contained rule still hold |
 
-The manifest records each textured material's plan, for example `"textures": {"gteki_floor_terrazzo": {"res": 1024, "maps": ["albedo", "orm"]}}`, and the validator checks the GLBs against it. An asset with a baked occlusion map ([contract §4](asset-contract.md#4-materials-and-textures)) lists `occlusion` among every material's maps (also factor-only ones, whose `res` is 0) and gives its size as `occlusion_res` (128, 256 or 512), which the image-size rule checks instead of `res`.
+The manifest records each textured material's plan, for example `"textures": {"gteki_floor_terrazzo": {"res": 1024, "maps": ["albedo", "orm"]}}`, and the validator checks the GLBs against it. An asset with a baked occlusion map ([contract §4](asset-contract.md#4-materials-and-textures)) lists `occlusion` among every material's maps (also factor-only ones, whose `res` is 0) and gives its size as `occlusion_res` (128, 256, 512 or 1024), which the image-size rule checks instead of `res`.
 
 ### Options evaluated and not adopted (yet)
 

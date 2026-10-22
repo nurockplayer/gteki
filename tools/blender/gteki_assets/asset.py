@@ -169,7 +169,16 @@ class Asset:
         # one shared occlusion map per asset; baked before the colliders exist, so they never occlude
         # a station catalog may pin the size (`ao_res`) when it places many copies of a long piece
         self.ao_res = self.ao_res_override or ao.resolution(_gltf_bounds(vis_objs), mobile)
-        _lightmap_uvs(vis_objs, self.ao_res)
+        while True:
+            try:
+                _lightmap_uvs(vis_objs, self.ao_res)
+                break
+            except LightmapOverflow:
+                # too many charts to keep MARGIN_PX gaps on this map (mobile joins every static
+                # part into one atlas): the next size up, never past the full tier's largest
+                if self.ao_res_override or self.ao_res >= ao.RES_FULL[-1]:
+                    raise
+                self.ao_res *= 2
         self.ao_png = ao.png(*ao.bake(vis_objs, self.ao_res))
 
         col_objs = []
@@ -421,10 +430,13 @@ def _lightmap_uvs(objs, res):
     view_layer.objects.active = objs[0]
     bpy.ops.object.mode_set(mode="EDIT")
     bpy.ops.mesh.select_all(action="SELECT")
-    bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=0.0, area_weight=0.0,
-                             correct_aspect=True, scale_to_bounds=False)
-    _pack(margin)
-    _separate_overlaps(objs, margin)  # the layers are invalid once in edit mode
+    try:
+        _unwrap_lightmap(objs, margin)
+    except LightmapOverflow:  # leave the objects as they were, for a retry at another size
+        bpy.ops.object.mode_set(mode="OBJECT")
+        for o in objs:
+            o.data.uv_layers.remove(o.data.uv_layers["UVLightmap"])
+        raise
     bpy.ops.object.mode_set(mode="OBJECT")
     for o in objs:
         o.select_set(False)
@@ -446,6 +458,17 @@ def _lightmap_uvs(objs, res):
     finally:
         for bm in bms:
             bm.free()
+
+
+def _unwrap_lightmap(objs, margin):
+    bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=0.0, area_weight=0.0,
+                             correct_aspect=True, scale_to_bounds=False)
+    _pack(margin)
+    _separate_overlaps(objs, margin)  # the layers are invalid once in edit mode
+
+
+class LightmapOverflow(RuntimeError):
+    """The charts do not fit the unit square with the requested margin."""
 
 
 def _pack(margin):
@@ -487,6 +510,11 @@ def _separate_overlaps(objs, margin, attempts=4):
             _snap_lightmap(bm)        # can make bevel slivers overlap that did not before
             bmesh.update_edit_mesh(o.data)
         bad, folded = _lightmap_overlaps(bms)
+        collapsed = _collapsed_lightmap_faces(bms)
+        if any(collapsed) and attempt < attempts:  # a sliver projected edge-on: unwrap it alone
+            _reproject_faces(objs, bms, collapsed)
+            _pack(margin)
+            continue
         outside = any(not -1e-6 <= c <= 1 + 1e-6 for bm in bms for f in bm.faces
                       for loop in f.loops for c in loop[bm.loops.layers.uv["UVLightmap"]].uv)
         if not any(bad) and not outside:
@@ -511,7 +539,57 @@ def _separate_overlaps(objs, margin, attempts=4):
                 n += 1
             bmesh.update_edit_mesh(o.data)
         _pack(margin)
+    if not any(bad):
+        raise LightmapOverflow(f"lightmap charts do not fit the unit square at margin {margin:g}")
     raise RuntimeError(f"lightmap UVs still overlap after {attempts} repairs")
+
+
+def _collapsed_lightmap_faces(bms):
+    """Per bmesh, the faces with a lightmap triangle that validate_glb would call collapsed:
+    visible geometry whose chart squeezed it to a point or a line."""
+    from validate_glb import COLLAPSED_UV_AREA, VISIBLE_GEOMETRY_M2
+
+    out = []
+    for bm in bms:
+        uv = bm.loops.layers.uv["UVLightmap"]
+        bm.faces.index_update()
+        faces = set()
+        for t in bm.calc_loop_triangles():
+            (a, b, c) = (loop[uv].uv for loop in t)
+            uv_area = abs((b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y)) / 2
+            p, q, r = (loop.vert.co for loop in t)
+            if uv_area <= COLLAPSED_UV_AREA and (q - p).cross(r - p).length / 2 >= VISIBLE_GEOMETRY_M2:
+                faces.add(t[0].face.index)
+        out.append(sorted(faces))
+    return out
+
+
+def _reproject_faces(objs, bms, faces_per_bm):
+    """Give each face its own chart: projected onto its own plane at the atlas's mean texel
+    density, parked outside the unit square until the next pack."""
+    uv_area = mesh_area = 0.0
+    for bm in bms:
+        uv = bm.loops.layers.uv["UVLightmap"]
+        for t in bm.calc_loop_triangles():
+            (a, b, c) = (loop[uv].uv for loop in t)
+            uv_area += abs((b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y)) / 2
+            p, q, r = (loop.vert.co for loop in t)
+            mesh_area += (q - p).cross(r - p).length / 2
+    scale = math.sqrt(uv_area / mesh_area) if mesh_area > 0 else 1.0
+    n = 0
+    for o, bm, faces in zip(objs, bms, faces_per_bm):
+        uv = bm.loops.layers.uv["UVLightmap"]
+        bm.faces.ensure_lookup_table()
+        for index in faces:
+            face = bm.faces[index]
+            origin = face.verts[0].co
+            u = (face.verts[1].co - origin).normalized()
+            v = face.normal.cross(u).normalized()
+            for loop in face.loops:
+                d = loop.vert.co - origin
+                loop[uv].uv = Vector((2.0 + 2.0 * n + d.dot(u) * scale, d.dot(v) * scale))
+            n += 1
+        bmesh.update_edit_mesh(o.data)
 
 
 def _snap_lightmap(bm, step=None):
