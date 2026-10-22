@@ -70,7 +70,7 @@ export interface StationScene {
     /**
      * Strength of the explorer's environment light (`scene.environment`, a neutral studio map). In "default"
      * lighting it applies whether or not it is set (the explorer's default when omitted). In "scene" lighting
-     * there is no environment light unless this is set, so baked lightmaps are not double-lit.
+     * there is no environment light unless this is set above 0, so baked lightmaps are not double-lit.
      */
     envIntensity?: number;
   };
