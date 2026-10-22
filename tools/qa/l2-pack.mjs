@@ -87,6 +87,8 @@ const maxOf = (a) => { const n = a.filter((x) => typeof x === "number"); return 
 // A row collects checks; verdict: any fail -> FAIL, nothing found -> n/a (not run), partly found -> GAP, else PASS.
 function check(name, projects, fn) {
   const per = projects.filter((p) => ran.includes(p)).map((p) => ({ p, r: (() => { try { return fn(p); } catch (e) { return { ok: false, text: `unreadable evidence (${e.message})` }; } })() }));
+  // A check whose projects all stayed out of this run is a GAP, not a silent pass of the row.
+  if (!per.length && ran.length) per.push({ p: ran[0], r: { ok: "gap", text: `runs only on ${projects.map((x) => SHORT[x]).join("/")}, none in this run` } });
   return { name, per };
 }
 function verdictOf(checks) {
@@ -216,12 +218,13 @@ row({
       const what = typeof direct === "number" ? "routable extent (overviewFrame)" : "routable label spread (proxy)";
       const bad = [];
       if (j.mode !== "overview") bad.push(`opens in ${j.mode}`);
+      if (typeof sp !== "number" && !bad.length) return { ok: "gap", text: "no framing measure (no overviewFrame and fewer than two routable labels)" };
       if (typeof sp === "number" && (sp < FRAMING.min || sp > FRAMING.max)) bad.push(`${what} ${num(sp, 2)} outside ${FRAMING.min}-${FRAMING.max}`);
       return { ok: !bad.length, text: bad.length ? bad.join(", ") : `overview mode, ${what} ${num(sp, 2)} of the shorter side` };
     }),
     check("09 labels", PROJECTS, (p) => {
       const j = ev(p, `${station}-label-fade.json`); if (!j) return;
-      const ok = j.posesWithVisibleLabels >= Math.ceil(j.totalPoses / 2);
+      const ok = j.totalPoses > 0 && j.posesWithVisibleLabels >= Math.ceil(j.totalPoses / 2);
       return { ok, text: `${j.posesWithVisibleLabels}/${j.totalPoses} poses with labels, shown ${j.totalShown}, faded ${j.totalFaded}${j.totalOffFloor !== undefined ? `, off-floor ${j.totalOffFloor}` : ""}` };
     }),
   ],
@@ -293,7 +296,7 @@ row({
       const j = cam(p, w); if (!j) return;
       const r = j.result ?? {};
       const bad = [];
-      if (!j.flowOnly && j.arrived !== true) bad.push("no arrival");
+      if (j.arrived !== true) bad.push("no arrival"); // 13 never runs flow-only (CI smoke is 01/03 only)
       const lim = j.thresholds?.clampRunMaxMs ?? CLAMP_RUN_MS;
       if (!(r.longestAtClampRunMs <= lim)) bad.push(`clamp run ${num(r.longestAtClampRunMs, 0)} ms`);
       return { ok: !bad.length, text: bad.length ? bad.join(", ") : `clamp run ${num(r.longestAtClampRunMs, 0)} ms, at clamp ${num(r.fractionAtClamp, 3)}, crowded ${r.crowdedSamples ?? "?"} (${num(r.fractionCrowded, 3)}), min head ${num(r.minHeadDistance, 2)} m, avatar ${num(r.avatarHeightShareMedian, 2)} of height` };
@@ -301,6 +304,7 @@ row({
     check("13 lens ease", PROJECTS, (p) => {
       const j = ev(p, `${station}-camera-fov-ease.json`); if (!j?.events) return;
       const jump = j.thresholds?.fovJumpMaxDeg ?? FOV_JUMP_DEG, tol = j.thresholds?.fovToleranceDeg ?? FOV_TOL_DEG;
+      if (!j.events.some((e) => e.startFov !== null && e.endFov !== null)) return { ok: "gap", text: "lens not measured (no event with a start and end FOV)" };
       const bad = j.events.filter((e) => e.startFov !== null && e.endFov !== null && ((e.kind === "ease" && (e.maxStepDeg ?? 0) > jump) || (e.expectedFov !== null && e.expectedFov !== undefined && Math.abs(e.endFov - e.expectedFov) > tol)));
       return { ok: !bad.length, text: bad.length ? bad.map((e) => e.event).join(", ") : `${j.events.length} events, max step ${num(maxOf(j.events.filter((e) => e.kind === "ease").map((e) => e.maxStepDeg)), 2)} deg` };
     }),
@@ -331,11 +335,11 @@ row({
 
 row({
   id: "U1", criterion: "Freshness notice on the route card (stale source)",
-  rule: "The core marks a route stale when a source is older than staleAfterDays (730 by default); Ikebukuro's 2022 guide is past it today. 02's search-UI test saves `<station>-search-ui.json` { stale, staleBadge }: when stale is true the card must show the 'Possibly outdated' badge. Older evidence without that file falls back to 02's per-scenario route.stale, with the card half n/a.",
+  rule: "The core marks a route stale when a source is older than staleAfterDays (730 by default); Ikebukuro's 2022 guide is past it today. 02's search-UI test saves `<station>-route-card.json` { stale, staleBadge }: when stale is true the card must show the 'Possibly outdated' badge. Older evidence without that file falls back to 02's per-scenario route.stale, with the card half n/a.",
   checks: [],
   info: () => {
     const lines = ran.map((p) => {
-      const ui = ev(p, `${station}-search-ui.json`);
+      const ui = ev(p, `${station}-route-card.json`);
       if (ui) return `${SHORT[p]} stale ${ui.stale}, badge ${ui.staleBadge ? "shown" : "not shown"}`;
       const j = ev(p, `${station}-navigation.json`);
       if (!j) return `${SHORT[p]} ${NOT_RUN}`;
@@ -345,8 +349,9 @@ row({
     return [`02: ${lines.join("; ")}`];
   },
   verdict: () => {
-    const ui = ran.map((p) => ev(p, `${station}-search-ui.json`)).filter(Boolean);
+    const ui = ran.map((p) => ev(p, `${station}-route-card.json`)).filter(Boolean);
     if (ui.length) {
+      if (ui.some((u) => typeof u.stale === "undefined" || typeof u.staleBadge !== "boolean")) return "GAP (route-card.json without the stale verdict)";
       if (ui.some((u) => u.stale === true && !u.staleBadge)) return "FAIL (stale route without the card notice)";
       return ui.some((u) => u.stale === true) ? "PASS (stale route shows the notice)" : "info (route not stale; no notice expected)";
     }
@@ -387,7 +392,7 @@ row({
 // ---- Required observed L2 evidence -----------------------------------------------------------------
 row({
   id: "E1", criterion: "Evidence 1: walkthrough from an in-scene landmark to the destination, with turning and wayfinding",
-  rule: "03: arrived, within 2 m of the destination, several HUD instructions. 13: arrival on the follow-camera walks." + (st.cues ? " 12: the sampled walk covers >= 90 % of the leg." : ""),
+  rule: "03: arrived, within 2 m of the destination, several HUD instructions. 13: arrival on the follow-camera walks." + (st.cues ? " 12's leg coverage (>= 90 %) is judged in C3." : ""),
   checks: [
     ...st.walks.map(spec03),
     ...st.walks.map((w) => check(`13 arrival ${w.label}`, PROJECTS, (p) => {
@@ -442,6 +447,7 @@ row({
       return { ok: soft ? "gap" : !bad.length, text: soft ? `INVALID (${renderer})` : `${renderer}; overview ${num(o.fps, 1)} fps ${o.drawCallsMax} dc, guide ${num(g.fps, 1)} fps ${g.drawCallsMax ?? "?"} dc, walk ${num(w.fps, 1)} fps (p95 ${num(w.frameMsP95, 1)} ms) ${w.drawCallsMax ?? "?"} dc${bad.length && !soft ? `; ${bad.join(", ")}` : ""}` };
     }),
   ],
+  verdict: function () { const v = verdictOf(this.checks); return v === "PASS" ? "VALID (measurements recorded; no threshold)" : v; },
   info: () => [
     `Browser: ${manifest?.chromiumProjectsBrowser?.trim() ?? "n/a (no manifest)"}; host ${manifest?.host ?? "n/a"}`,
     ...(station === "shinjuku" ? [`B-checks (B4 overview draw calls, phone speed): ${fs.existsSync(path.join(parent, "b-checks.md")) ? rel(path.join(parent, "b-checks.md")) : "n/a (b-checks.md not found)"}`] : []),

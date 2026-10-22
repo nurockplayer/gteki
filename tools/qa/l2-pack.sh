@@ -3,11 +3,11 @@
 #
 # usage: tools/qa/l2-pack.sh <station> <workdir> <base-ref> [merge-ref ...] [-- <extra playwright args>]
 #   tools/qa/l2-pack.sh ikebukuro "$TMPDIR/gteki-qa" origin/main
-#   tools/qa/l2-pack.sh shinjuku "$TMPDIR/gteki-qa" origin/main origin/claude/some-pr -- --project=phone-chromium
+#   tools/qa/l2-pack.sh shinjuku "$TMPDIR/gteki-qa" origin/main origin/claude/some-pr -- --project=desktop-chromium --project=phone-webkit --project=phone-chromium
 #
 # A thin wrapper: tools/qa/run-candidate.sh builds the exact candidate and runs only the tests of <station>
 # (ikebukuro or shinjuku) with workers 1 (config) and traces off, on desktop-chromium and phone-webkit. Add
-# --project=phone-chromium (or any --project) after `--` to choose the projects yourself. Then
+# --project after `--` replaces both defaults, so list every project you want (phone-chromium too). Then
 # tools/qa/l2-pack.mjs builds tests/e2e/artifacts/l2-pack-<station>/ (l2-review.md, l2-pack.json, contact sheets).
 # The pack is evidence for a human or independent reviewer, never an acceptance (docs/qa/l2-acceptance.md).
 # Exits with the Playwright / prerequisite status.
