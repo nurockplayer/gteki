@@ -1,3 +1,5 @@
+import { isKeyOwner, takesWalkKey } from "./inputGuard.ts";
+
 /**
  * Desktop + phone input for walking: WASD/arrows (+Shift to run), drag to look, wheel to zoom;
  * on touch a left-thumb virtual joystick and right-side drag-to-look.
@@ -27,9 +29,11 @@ export class Input {
       this.off.push(() => t.removeEventListener(type, fn as EventListener, opts));
     };
     on(window, "keydown", (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement)?.closest?.("input, textarea, select")) return;
+      if (!takesWalkKey(e.target as HTMLElement | null, e.code)) return;
       this.keys.add(e.code);
     });
+    // Focus moving into a key-owning element (Tab to a button, say) must not leave a held key stuck.
+    on(window, "focusin", (e: FocusEvent) => { if (isKeyOwner(e.target as HTMLElement | null)) this.keys.clear(); });
     on(window, "keyup", (e: KeyboardEvent) => this.keys.delete(e.code));
     on(window, "blur", () => this.keys.clear());
     on(surface, "pointerdown", (e: PointerEvent) => {
