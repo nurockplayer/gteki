@@ -4,7 +4,7 @@ import importlib
 
 REGISTRY = {}
 
-for _mod in ("passage", "gates", "vertical", "signage", "props"):
+for _mod in ("passage", "gates", "vertical", "signage", "props", "street"):
     try:
         m = importlib.import_module(f"{__name__}.{_mod}")
     except ModuleNotFoundError as e:
@@ -29,4 +29,6 @@ PLACEMENT = {
     "vending_machine": "wall", "bin_trio": "wall", "ticket_kiosk": "wall",
     "bench": "free", "column_clad": "free", "sign_totem": "free", "barrier_rail": "free",
     "sign_hanging": "ceiling",
+    "street_canopy": "linear", "street_guard_rail": "linear",
+    "street_bollard": "free", "street_lamp": "free", "street_planter": "free",
 }
