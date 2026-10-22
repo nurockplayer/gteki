@@ -51,6 +51,10 @@ What the record supports, and what it does not:
 - **Source of record:** the shipped JPEGs (long edge 1024 px, sRGB, quality 85, metadata stripped). Generation is not reproducible bit-for-bit; `shipped` in `provenance.json` holds each JPEG's size and SHA-256, and `sha256`/`bytes` are those of the raw PNG.
 - **Owner exception:** `s10_sento_mural` shows a snow-capped volcano in a bathhouse mural, accepted by the Owner as Mt Fuji (2026-10-22). It is the only real landmark in the batch.
 
+## Guide mascot UI set (`mascots/ui/`)
+
+Ten flat SVG icons (cat and dog × neutral / happy / encourage / sorry / unsure) for in-game UI, original GTEki vector drawings: the geometry is written out in `tools/blender/art2d/mascot_shapes.py` and `mascot_svg.py` emits the SVGs, `index.json` and the PNG previews from it. They were redrawn from the approved #132 v1 design; no raster art is embedded in or traced from the source images, and the SVGs contain no filters, gradients, masks, text or embedded images. Regeneration is deterministic, and `mascot_svg.py --check` verifies the committed bytes. The previews are drawn from the same primitives with ImageMagick, not rendered from the SVG files (this host's ImageMagick SVG parser drops strokes). Licence: CC BY 4.0, attribution "GTEki contributors" (Owner decision, Issue #123), mapped in `REUSE.toml`.
+
 ## Regeneration
 
 `tools/blender/build.sh` rebuilds all GLBs and `manifest.json` from the catalog; `tools/blender/build.sh repro` checks two clean builds are byte-identical.

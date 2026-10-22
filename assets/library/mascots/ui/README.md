@@ -62,9 +62,9 @@ lockf -k /tmp/gteki-local-test.lock python3 -I tools/blender/art2d/mascot_svg.py
 
 `--check` fails if an SVG is missing, over 4096 bytes, differs from a fresh regeneration, contains a
 filter/image/text/gradient/mask or a background `rect`, if `index.json` is stale, or if a preview is missing.
-Previews are drawn from the same primitives with ImageMagick (`magick`, MVG renderer at 4×), because its SVG parser
-on this host drops strokes; the SVGs themselves are checked byte-for-byte, so a preview difference never hides an
-SVG difference.
+The previews are **not** renders of the SVG files: they are drawn from the same primitives (through ImageMagick's
+`magick` MVG renderer at 4×), because this host's ImageMagick SVG parser drops strokes on paths and shapes. The SVGs
+themselves are checked byte-for-byte, so a preview never stands in for the SVG.
 
 ## Licence
 
