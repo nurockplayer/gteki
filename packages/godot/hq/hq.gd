@@ -5,7 +5,8 @@ extends Node3D
 ## Run:  godot --path packages/godot res://hq/hq.tscn -- [--station=<id>] [--scenes=<dir>] [--lightmap=on|off] [--look=baseline|hq] [--gi=off|sdfgi] [--check]
 ## <dir> holds <stationId>/{scene.glb,scene.json} from packages/godot/src/export-scene.ts (default: .cache/scenes).
 ## Keys: WASD/arrows move, Shift runs, drag (left or right mouse) or right stick orbits, wheel zooms,
-##       Tab switches station, N cycles the station's spawn points. --check loads, prints a summary and quits.
+##       Tab switches station, N cycles the station's spawn points. --check loads every station (or the one named by
+##       --station), prints a summary and quits; it also asserts the lighting wiring (check_lighting) on each.
 ##       --lightmap=on (default) applies the station's baked lightmap (G-4a); =off keeps the unlit snapshot. With the
 ##       lightmap on, the added lights are masked to the avatar, as the web lights only its own avatar in "scene" mode.
 
@@ -90,11 +91,26 @@ func _ready() -> void:
 		guide_hud = GuideHud.new()
 		add_child(guide_hud)
 		guide_hud.setup(self)
+	if check_only:
+		# Every station unless one was named: --check is the one place the real client asserts its lighting wiring.
+		var ids: Array[String] = []
+		if wanted.is_empty():
+			ids.append_array(station_ids)
+		else:
+			ids.append(wanted)
+		var ok := true
+		for id in ids:
+			var loaded := load_station(id)
+			if not loaded:
+				ok = false
+				continue
+			var placed := await place_at_spawn(0)
+			ok = (placed and check_lighting(id)) and ok
+		get_tree().quit(0 if ok else 1)
+		return
 	var ok := load_station(wanted if not wanted.is_empty() else station_ids[0])
 	if ok:
 		ok = await place_at_spawn(0)
-	if check_only:
-		get_tree().quit(0 if ok else 1)
 
 
 func lightmap_summary() -> String:
@@ -114,6 +130,48 @@ func look_summary() -> String:
 	var fog := "fog %d..%d" % [int(environment.fog_depth_begin), int(environment.fog_depth_end)] if environment.fog_enabled else "no fog"
 	return "look hq (AgX %.2f, ssao, %s, %s, %s, %d surfaces mapped)" % [
 		environment.tonemap_exposure, fog, ambient, "sdfgi" if environment.sdfgi_enabled else "gi off", materials_applied]
+
+
+## --check: the added lights' cull masks are exactly the expected ones (`gteki_hq_lights.gd`), every station mesh that
+## still draws is on WORLD_LAYER, and with a bake applied at least one light reaches the avatar layer. Run after
+## `load_station`, i.e. against the same snapshot and lightmap state the client renders.
+func check_lighting(id: String) -> bool:
+	var ok := true
+	var expected := HqLights.cull_mask(current.lightmap_applied)
+	for light in lights:
+		if light.light_cull_mask != expected:
+			printerr("%s: light %s cull mask 0x%x != 0x%x" % [id, light.name, light.light_cull_mask, expected])
+			ok = false
+	var drawn := 0
+	var off_layer := 0
+	var stack: Array[Node] = [current.root]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		stack.append_array(node.get_children())
+		if not node is MeshInstance3D:
+			continue
+		var mesh: MeshInstance3D = node
+		if not Scene.is_drawn(mesh):
+			continue
+		drawn += 1
+		if mesh.layers != HqLights.WORLD_LAYER:
+			off_layer += 1
+	if drawn == 0:
+		printerr("%s: no station mesh draws, so the layer check would pass vacuously" % id)
+		ok = false
+	if off_layer > 0:
+		printerr("%s: %d of %d drawing station mesh(es) are not on WORLD_LAYER" % [id, off_layer, drawn])
+		ok = false
+	if current.lightmap_applied:
+		var on_avatar := 0
+		for light in lights:
+			if (light.light_cull_mask & Walker.AVATAR_LAYER) != 0:
+				on_avatar += 1
+		if on_avatar == 0:
+			printerr("%s: no light reaches the avatar layer while the bake is applied" % id)
+			ok = false
+	print("%s: lighting check %s (lightmap %s, %d lights, mask 0x%x, %d drawing meshes on WORLD_LAYER)" % [id, "ok" if ok else "FAILED", "applied" if current.lightmap_applied else "off", lights.size(), expected, drawn])
+	return ok
 
 
 static func list_stations(dir: String) -> Array[String]:
