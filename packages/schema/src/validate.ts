@@ -20,6 +20,11 @@ const POI_CATEGORIES = new Set(["exit", "ticket_gate", "platform", "elevator", "
 const WEEKDAYS = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
 /** File types a station may publish next to its GLBs (same list the web build discovers). */
 export const ASSET_FILE_EXT = /\.(glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|ogg|mp3|m4a|json)$/i;
+/**
+ * Extensions a station may declare in `dataFiles[]`; code (.ts/.js) is never data and needs no declaration.
+ * svg/shader text are here because a scene may `?raw`-import them, which inlines the bytes like any other data.
+ */
+export const DATA_FILE_EXT = /\.(json|geojson|csv|tsv|txt|xml|yaml|yml|bin|dat|svg|glsl|vert|frag|wgsl)$/i;
 const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json"]);
 const CANONICAL_MESSAGE = "asset paths must be canonical slash-separated relative paths inside the station folder (no ., .. or empty segments; no colon, backslash, ? or #)";
 
@@ -33,6 +38,13 @@ const ELEVATION_SOURCES = new Set(["measured", "source-derived", "symbolic", "un
 const RIGHTS = new Set(["REUSABLE_WITH_CONDITIONS", "PUBLISHED_UNDER_OWNER_OVERRIDE", "REFERENCE_ONLY", "RESTRICTED", "UNVERIFIED"]);
 /** Rights values whose data may feed published geometry/data: REUSABLE_WITH_CONDITIONS and the Owner's recorded override (#130). */
 const isShippableRights = (r: unknown) => r === "REUSABLE_WITH_CONDITIONS" || r === "PUBLISHED_UNDER_OWNER_OVERRIDE";
+/**
+ * Director decision under Owner delegation, 2026-10-22 (#186/#26): a data file MAY cite facts-only sources,
+ * because it states facts (names, ids, labels) without reproducing the source, as the shipped graph already does.
+ * Every other non-shippable source is still refused, and `derivation` is required (see `data.derivation`).
+ * Flip to false to refuse facts-only citations in data files again.
+ */
+const DATA_FILES_MAY_CITE_FACTS_ONLY = true;
 /** An issue/comment URL or an issue reference such as #130 or owner/repo#130. */
 const isDecisionRef = (v: unknown) => typeof v === "string" && (isHttpUrl(v) || /^(?:[\w.-]+\/[\w.-]+)?#\d+$/.test(v));
 /** Polyline endpoints further than this from their node are reported. */
@@ -281,6 +293,35 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (a.sourceIds.length === 0 && !b.station.synthetic) err("asset.source", "asset without source provenance", a.id);
   }
 
+  // Data files: the same source and rights gate as assets. Contract files are loaded as data and never declared.
+  const dataIds = new Set<string>();
+  const dataPaths = new Set<string>();
+  for (const d of b.dataFiles ?? []) {
+    if (dataIds.has(d.id)) err("data.dup", "duplicate data file id", d.id);
+    dataIds.add(d.id);
+    if (!isCanonicalAssetPath(d.path)) err("data.path", CANONICAL_MESSAGE.replace("asset paths", "data file paths"), d.id);
+    else if (!DATA_FILE_EXT.test(d.path)) err("data.path", `${d.path}: not a data file type`, d.id);
+    // dataFiles are relative to the station folder and live outside gteki/ (assets[] covers that folder).
+    else if (d.path.toLowerCase().startsWith("gteki/")) err("data.path", `${d.path}: data files live outside gteki/ (declare files there as assets[].files; contract files are loaded as data and never declared)`, d.id);
+    if (dataPaths.has(d.path)) err("data.dup", `${d.path}: declared twice`, d.id);
+    dataPaths.add(d.path);
+    let citesFactsOnly = false;
+    for (const s of d.sourceIds) {
+      if (!sourceIds.has(s)) err("data.source", `unknown source ${s}`, d.id);
+      if (factsOnly.has(s)) {
+        citesFactsOnly = true;
+        if (!DATA_FILES_MAY_CITE_FACTS_ONLY) err("data.rights", `data derives from facts-only source ${s}`, d.id);
+        continue;
+      }
+      const rights = sourceRights.get(s);
+      if (rights !== undefined && !isShippableRights(rights) && !b.station.synthetic)
+        err("data.rights", `data derives from source ${s} with rights ${rights}; it cannot ship in the public bundle`, d.id);
+    }
+    if (d.sourceIds.length === 0 && !b.station.synthetic) err("data.source", "data file without source provenance", d.id);
+    if ((d.modified || citesFactsOnly) && !(typeof d.derivation === "string" && d.derivation.trim()))
+      err("data.derivation", `${d.modified ? "modified data" : "data citing a facts-only source"} needs a derivation naming the generating script`, d.id);
+  }
+
   const poiIds = new Set<string>();
   for (const p of b.pois) {
     if (poiIds.has(p.id)) err("poi.dup", "duplicate POI id", p.id);
@@ -308,4 +349,13 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
   }
 
   return issues;
+}
+
+/** Audit list: every declared data file that cites facts-only sources (the #186/#26 allowance), with those source ids. */
+export function dataFileFactsOnlySources(b: StationBundle): { dataFileId: string; path: string; factsOnlySourceIds: string[] }[] {
+  const factsOnly = new Set(b.sources.filter((s) => s.usage === "facts-only").map((s) => s.id));
+  return (b.dataFiles ?? []).flatMap((d) => {
+    const ids = [...new Set(d.sourceIds.filter((id) => factsOnly.has(id)))];
+    return ids.length ? [{ dataFileId: d.id, path: d.path, factsOnlySourceIds: ids }] : [];
+  });
 }
