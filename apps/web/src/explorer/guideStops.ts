@@ -24,3 +24,20 @@ export function advanceGuide(g: { s: number; stops: { s: number; index: number }
   g.s = next;
   return null;
 }
+
+/**
+ * Put a running guide at distance `s` (clamped to the path, `total` long): stops numbered below `firstStop` count as
+ * passed, the others (including one at `s`) apply again, and a hold on an earlier stop is released. Pure guide state;
+ * Explorer.seekGuide calls it, then places the avatar and camera.
+ */
+export function seekGuideState(
+  g: { s: number; stops: { s: number; index: number }[]; holding: boolean },
+  allStops: readonly { s: number; index: number }[],
+  total: number,
+  s: number,
+  firstStop = 0,
+): void {
+  g.s = s >= total - 1e-6 ? total : Math.max(0, s);
+  g.stops = allStops.filter((x) => x.index >= firstStop);
+  g.holding = false;
+}

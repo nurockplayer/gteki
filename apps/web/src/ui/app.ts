@@ -5,7 +5,7 @@ import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
 import { guideStops } from "../explorer/guideStops.ts";
-import { firstStopFor, guideKeyAction, instructionStartsM, jumpTarget } from "../explorer/guideSteps.ts";
+import { firstStopFor, guideKeyAction, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, type GuideTierId } from "../explorer/guidePace.ts";
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
@@ -660,12 +660,16 @@ export class App {
     if (!guiding || !this.arrived || !row) return;
     const t = this.t;
     const after = el("div", "hud-row hud-arrival");
-    const reverse = el("button", "reverse-route", t.reverseRoute);
-    reverse.disabled = !this.originPoi() || !this.s.destination;
-    reverse.addEventListener("click", () => this.reverseRoute());
     const again = el("button", "ghost search-again", t.searchAgain);
     again.addEventListener("click", () => this.searchAgain());
-    after.append(reverse, again);
+    // Not offered where the destination was not reached (the arrival toast says so): there is nothing to reverse back from.
+    if (!this.endsOnConnector()) {
+      const reverse = el("button", "reverse-route", t.reverseRoute);
+      reverse.disabled = !this.originPoi() || !this.s.destination;
+      reverse.addEventListener("click", () => this.reverseRoute());
+      after.append(reverse);
+    }
+    after.append(again);
     row.before(after);
   }
 
@@ -713,7 +717,7 @@ export class App {
     this.guideStarts = instructionStartsM(this.s.polyline, this.s.instructions);
     this.guideFirst = this.s.instructions[0]?.kind === "start" && this.s.instructions.length > 1 ? 1 : 0;
     this.guideS = 0;
-    this.insElapsedMs = 0;
+    this.insClock.reset();
     this.jumpPin = null;
     this.arrived = false;
     this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans);
@@ -723,9 +727,8 @@ export class App {
   private guideStarts: number[] = [];
   private guideFirst = 0;
   private guideS = 0;
-  /** Guide time (ms, not counting pauses) spent in the active instruction, for Previous's restart rule. */
-  private insElapsedMs = 0;
-  private lastTickMs = 0;
+  /** Guide time (not counting pauses or arrival) spent in the active instruction, for Previous's restart rule. */
+  private readonly insClock = new StepClock();
   /** After a jump: the distance the guide landed at; the active instruction stays as chosen until the guide moves off it. */
   private jumpPin: number | null = null;
   private arrived = false;
@@ -736,18 +739,27 @@ export class App {
    */
   private jumpGuide(dir: 1 | -1): void {
     if (this.explorer.currentMode !== "guide") return;
-    const j = jumpTarget(this.guideS, this.guideStarts, dir, this.insElapsedMs / 1000, this.s.activeInstruction, this.guideFirst);
+    const j = jumpTarget(this.guideS, this.guideStarts, dir, this.insClock.elapsedS, this.s.activeInstruction, this.guideFirst);
     if (!j) return;
     this.s.activeInstruction = j.index;
     this.explorer.seekGuide(j.s, firstStopFor(this.guideWaits, j.index));
     this.guideS = j.s;
-    this.insElapsedMs = 0;
+    this.insClock.reset();
     this.jumpPin = j.s;
     const last = this.s.instructions.length - 1;
     this.arrived = j.index === last && this.s.instructions[last]?.kind === "arrive";
     this.updateGuideHud();
     this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === j.index));
-    if (this.arrived) this.toast(this.s.instructions[last]!.connector ? this.s.instructions[last]!.text : this.t.arrived, 2500);
+    if (this.arrived) this.toast(this.arrivalText(), 2500);
+  }
+
+  /** A route ending on a stair/escalator/ramp connector has not reached the destination: the last instruction says so. */
+  private endsOnConnector(): boolean {
+    return !!this.s.instructions[this.s.instructions.length - 1]?.connector;
+  }
+
+  private arrivalText(): string {
+    return this.endsOnConnector() ? this.s.instructions[this.s.instructions.length - 1]!.text : this.t.arrived;
   }
 
   /** `[` / `]` or PageUp / PageDown step the guide; never while typing in a field or with a dialog open. */
@@ -766,16 +778,15 @@ export class App {
     const wait = this.guideWaits[index];
     if (wait === undefined) return;
     this.s.activeInstruction = wait;
-    this.insElapsedMs = 0;
+    this.insClock.reset();
     this.updateGuideHud();
     this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === wait));
     this.toast(this.s.instructions[wait]!.text, 4000);
   }
 
   private onGuideProgress(p: { s: number; stepIndex: number; done: boolean }): void {
-    const now = performance.now();
-    if (!this.explorer.guidePaused) this.insElapsedMs += Math.min(250, now - this.lastTickMs);
-    this.lastTickMs = now;
+    // Guide time stops while paused and at arrival (the guide stays in guide mode there; Previous must not read that as time spent).
+    this.insClock.tick(performance.now(), !this.explorer.guidePaused && !this.arrived && !p.done);
     this.guideS = p.s;
     // Just after a jump the guide stands on the instruction's first point, which still reports the previous step: keep the chosen one.
     if (this.jumpPin !== null) {
@@ -788,15 +799,11 @@ export class App {
     const next = p.done ? this.s.instructions.length - 1 : idx;
     if (next >= 0 && next !== this.s.activeInstruction) {
       this.s.activeInstruction = next;
-      this.insElapsedMs = 0;
+      this.insClock.reset();
       this.arrived = p.done;
       this.updateGuideHud();
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === next));
-      if (p.done) {
-        // A route ending on a stair/escalator/ramp connector has not reached the destination: say so.
-        const last = this.s.instructions[this.s.instructions.length - 1];
-        this.toast(last?.connector ? last.text : this.t.arrived, 2500);
-      }
+      if (p.done) this.toast(this.arrivalText(), 2500);
     }
   }
 

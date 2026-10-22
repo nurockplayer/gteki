@@ -37,6 +37,33 @@ export function instructionIndexAt(s: number, starts: readonly number[]): number
   return at;
 }
 
+/**
+ * Guide time spent in the active instruction (for Previous's restart rule). Counts only while the guide runs: the
+ * tick after a pause, a seek, a reset or the arrival adds nothing, so a stale last-tick time never adds a frame.
+ */
+export class StepClock {
+  /** Per-tick cap (ms), so a throttled tab does not add its whole gap. */
+  static readonly MAX_TICK_MS = 250;
+  private ms = 0;
+  private last: number | null = null;
+
+  get elapsedS(): number {
+    return this.ms / 1000;
+  }
+
+  /** A new instruction, a seek or a (re)start: zero the time and drop the last tick. */
+  reset(): void {
+    this.ms = 0;
+    this.last = null;
+  }
+
+  /** One guide progress tick at `nowMs`; `running` is false while paused or once arrived. */
+  tick(nowMs: number, running: boolean): void {
+    if (running && this.last !== null) this.ms += Math.min(StepClock.MAX_TICK_MS, nowMs - this.last);
+    this.last = running ? nowMs : null;
+  }
+}
+
 export interface GuideJump {
   /** The instruction the guide lands in. */
   index: number;
@@ -51,7 +78,8 @@ export interface GuideJump {
  *
  * - Next: the start of the next instruction; null on the last one (arrival), where the control is disabled.
  * - Previous: the start of the current instruction when the guide is more than RESTART_AFTER_S or RESTART_AFTER_M
- *   into it, else the previous instruction's start; on the first instruction it restarts it.
+ *   into it, else the previous instruction's start; on the first instruction it restarts it. Arrival (the last
+ *   instruction) is a point, not a stretch, so it never restarts: Previous from it goes back to the last move.
  */
 export function jumpTarget(
   currentM: number,
@@ -66,7 +94,8 @@ export function jumpTarget(
   const at = Math.min(Math.max(active, first), last);
   if (dir === 1) return at >= last ? null : { index: at + 1, s: starts[at + 1]! };
   const intoM = currentM - starts[at]!;
-  const restart = elapsedS > RESTART_AFTER_S || intoM > RESTART_AFTER_M || at <= first;
+  const arrival = at >= last && at > first;
+  const restart = at <= first || (!arrival && (elapsedS > RESTART_AFTER_S || intoM > RESTART_AFTER_M));
   const index = restart ? at : at - 1;
   return { index, s: starts[index]! };
 }

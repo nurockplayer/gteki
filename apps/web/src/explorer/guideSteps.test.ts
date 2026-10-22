@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createRouter, describeRoute, routePolyline } from "@gteki/navigation";
 import { createSyntheticBundle, syntheticEdge } from "../../../../packages/navigation/src/fixtures.ts";
-import { advanceGuide, guideStops } from "./guideStops.ts";
-import { firstStopFor, guideKeyAction, instructionIndexAt, instructionStartsM, jumpTarget, RESTART_AFTER_M, RESTART_AFTER_S } from "./guideSteps.ts";
+import { advanceGuide, guideStops, seekGuideState } from "./guideStops.ts";
+import { firstStopFor, guideKeyAction, instructionIndexAt, instructionStartsM, jumpTarget, RESTART_AFTER_M, RESTART_AFTER_S, StepClock } from "./guideSteps.ts";
 import { cumulativeLengths } from "./walker.ts";
 
 const hours = (open: string, close: string) => ({ kind: "window" as const, open, close, evidence: { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" } });
@@ -69,8 +69,9 @@ describe("jumpTarget", () => {
   it("Previous goes to the previous instruction when just into the current one", () => {
     expect(jumpTarget(12.5, starts, -1, 0.4, 2, 1)).toEqual({ index: 1, s: 0 });
     expect(jumpTarget(31, starts, -1, 1, 3, 1)).toEqual({ index: 2, s: 12 });
-    // From arrival (parked at the end): back to the last move.
+    // From arrival (parked at the end): back to the last move, whatever guide time has run at the end.
     expect(jumpTarget(41, starts, -1, 0, 4, 1)).toEqual({ index: 3, s: 30 });
+    expect(jumpTarget(41, starts, -1, RESTART_AFTER_S + 30, 4, 1)).toEqual({ index: 3, s: 30 });
   });
 
   it("Previous on the first instruction restarts it, even right at its start; the skipped Start line is never a target", () => {
@@ -97,7 +98,7 @@ describe("jumpTarget", () => {
 });
 
 describe("wait stops across jumps", () => {
-  // Mirrors Explorer.seekGuide: the stops ahead are those numbered firstStopFor(...) or higher; advanceGuide consumes them.
+  // seekGuideState is what Explorer.seekGuide runs on the guide's state; advanceGuide consumes the stops it leaves ahead.
   const play = (g: { s: number; stops: { s: number; index: number }[] }, total: number) => {
     const reached: number[] = [];
     for (let i = 0; i < 10; i++) {
@@ -115,7 +116,11 @@ describe("wait stops across jumps", () => {
     const stops = guideStops(polyline, instructions);
     const waits = stops.map((x) => x.instruction);
     const all = stops.map((x, index) => ({ s: cum[x.point]!, index }));
-    const seek = (index: number) => ({ s: starts[index]!, stops: all.filter((x) => x.index >= firstStopFor(waits, index)) });
+    const seek = (index: number) => {
+      const g = { s: -1, stops: [] as typeof all, holding: true };
+      seekGuideState(g, all, total, starts[index]!, firstStopFor(waits, index));
+      return g;
+    };
     const wait = waits[0]!;
 
     // Landing before the wait (the first move): the wait is ahead and stops the guide at its spot.
@@ -145,6 +150,108 @@ describe("wait stops across jumps", () => {
     expect(firstStopFor([3, 6], 6)).toBe(1);
     expect(firstStopFor([3, 6], 7)).toBe(2);
     expect(firstStopFor([], 7)).toBe(0);
+  });
+});
+
+describe("seekGuideState", () => {
+  const all = [{ s: 5, index: 0 }, { s: 8, index: 1 }];
+
+  it("clamps to the path, snaps to its end, releases a hold and keeps only the stops numbered firstStop or higher", () => {
+    const g = { s: 5, stops: [] as typeof all, holding: true };
+    seekGuideState(g, all, 20, 12, 1);
+    expect(g).toEqual({ s: 12, stops: [{ s: 8, index: 1 }], holding: false });
+    seekGuideState(g, all, 20, -3);
+    expect(g.s).toBe(0);
+    expect(g.stops).toEqual(all);
+    seekGuideState(g, all, 20, 20 - 1e-9, 2);
+    expect(g.s).toBe(20);
+    expect(g.stops).toEqual([]);
+    expect(all).toHaveLength(2);
+  });
+});
+
+describe("step clock", () => {
+  it("adds only the time between running ticks, capped per tick", () => {
+    const c = new StepClock();
+    c.tick(1000, true);
+    expect(c.elapsedS).toBe(0);
+    c.tick(1100, true);
+    c.tick(1200, true);
+    expect(c.elapsedS).toBeCloseTo(0.2, 9);
+    c.tick(9000, true);
+    expect(c.elapsedS).toBeCloseTo(0.2 + StepClock.MAX_TICK_MS / 1000, 9);
+  });
+
+  it("does not count a pause, the first tick after it, or a reset", () => {
+    const c = new StepClock();
+    c.tick(0, true);
+    c.tick(100, true);
+    c.tick(200, false);
+    c.tick(60_000, false);
+    // The first running tick after the pause has no previous running tick, so the stale time adds nothing.
+    c.tick(60_100, true);
+    expect(c.elapsedS).toBeCloseTo(0.1, 9);
+    c.reset();
+    expect(c.elapsedS).toBe(0);
+    c.tick(60_200, true);
+    expect(c.elapsedS).toBe(0);
+  });
+});
+
+describe("Previous / Next on the guide's real state", () => {
+  // The wait route: start, the approach, the wait, the last walk, arrive. The guide shows from instruction 1, as the app does.
+  const { polyline, instructions, cum } = waitRoute();
+  const total = cum.at(-1)!;
+  const starts = instructionStartsM(polyline, instructions);
+  const stops = guideStops(polyline, instructions);
+  const waits = stops.map((x) => x.instruction);
+  const all = stops.map((x, index) => ({ s: cum[x.point]!, index }));
+  const first = 1;
+  const last = instructions.length - 1;
+
+  /** The app's jumpGuide on the real pieces: jumpTarget picks the spot, seekGuideState applies it. */
+  const jump = (g: { s: number; stops: typeof all; holding: boolean }, dir: 1 | -1, clock: StepClock) => {
+    const j = jumpTarget(g.s, starts, dir, clock.elapsedS, instructionIndexAt(g.s, starts), first);
+    if (!j) return null;
+    seekGuideState(g, all, total, j.s, firstStopFor(waits, j.index));
+    clock.reset();
+    return j;
+  };
+
+  it("Previous from arrival goes to the last movement instruction, however long the guide has sat at arrival", () => {
+    const g = { s: 0, stops: all.slice(), holding: false };
+    const clock = new StepClock();
+    let t = 0;
+    while (g.s < total) {
+      advanceGuide(g, 1, total);
+      clock.tick((t += 16), g.s < total);
+    }
+    // Arrived: the app stops the clock, so ten simulated seconds of further progress ticks add nothing.
+    const atArrival = clock.elapsedS;
+    for (let i = 0; i < 625; i++) clock.tick((t += 16), false);
+    expect(clock.elapsedS).toBe(atArrival);
+    const j = jump(g, -1, clock)!;
+    expect(j.index).toBe(last - 1);
+    expect(g.s).toBeCloseTo(starts[last - 1]!, 9);
+    expect(g.s).toBeLessThan(total);
+  });
+
+  it("Previous from arrival ignores guide time even if more than the restart threshold was counted", () => {
+    const g = { s: total, stops: [] as typeof all, holding: false };
+    const clock = new StepClock();
+    for (let t = 0; t <= 20_000; t += 250) clock.tick(t, true);
+    expect(clock.elapsedS).toBeGreaterThan(RESTART_AFTER_S);
+    expect(jump(g, -1, clock)!.index).toBe(last - 1);
+  });
+
+  it("Previous on the first shown instruction restarts it; Next on the last is a no-op", () => {
+    const g = { s: 4, stops: all.slice(), holding: false };
+    const clock = new StepClock();
+    expect(jump(g, -1, clock)).toEqual({ index: first, s: starts[first] });
+    expect(g.s).toBe(starts[first]);
+    const end = { s: total, stops: [] as typeof all, holding: false };
+    expect(jump(end, 1, clock)).toBeNull();
+    expect(end.s).toBe(total);
   });
 });
 
