@@ -4,14 +4,13 @@
  * the exported obstacle segments, which the integration hook adds to WalkWorld.
  */
 import * as THREE from "three";
-import polygonClipping from "polygon-clipping";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import type { Layout, XY, XYZ } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
-import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfaceGround, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceVisibleAt } from "./surface-layout.ts";
+import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceVisibleIn } from "./surface-layout.ts";
 import { daylight, facadeTexture, hash, pavingTexture, skyMaterial } from "./surface-materials.ts";
-import { inside, strip, surfaceStreets } from "./surface-street.ts";
+import { inside, strip, surfaceKerbs, surfaceLampRails, surfacePaving, surfaceStreets } from "./surface-street.ts";
 import { OEDO_MAGENTA } from "./palette.ts";
 export { surfaceWalls } from "./surface-layout.ts";
 export type { SurfaceData } from "./surface-data.ts";
@@ -68,7 +67,20 @@ function beam(a: THREE.Vector3, b: THREE.Vector3, width: number, depth: number) 
   g.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
   return g;
 }
+/** Builds the street layer and returns only what the live scene keeps. The construction lives in its own
+ * function on purpose: any closure that survives (visibility update, setViewer, dispose, the sky hook)
+ * keeps the whole scope it was defined in reachable, and this scope holds the street polygons, building
+ * footprints and every source geometry (#72). The survivors are created in buildSurface, whose scope
+ * holds nothing else. */
 export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high" }) {
+  const { root, resources, visibility } = assembleSurface(surface, layout, opts);
+  const dome = root.getObjectByName("surface-sky")!;
+  dome.onBeforeRender = (_renderer, _scene, camera) => { dome.position.copy(camera.position); dome.updateMatrixWorld(); };
+  let disposed = false, viewer: XYZ | null = null;
+  const update = (_dt: number, _t: number) => { root.visible = viewer !== null && surfaceVisibleIn(visibility, viewer); };
+  return { root, update, setViewer(p: XYZ) { viewer = { ...p }; update(0, 0); }, dispose() { if (disposed) return; disposed = true; for (const r of resources) r.dispose(); resources.clear(); root.clear(); } };
+}
+function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high" }) {
   const root = new THREE.Group(); root.name = "surface-render-only"; root.visible = false;
   root.userData.attribution = surface.attribution;
   const resources = new Set<{ dispose(): void }>();
@@ -90,17 +102,13 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   const streets=surfaceStreets(surface,layout,opts.bundle);
   // Adjacent road/paving polygons, not nearly coplanar overlays: avoids distant
   // depth fighting and gives the asphalt a small, deliberate kerb depression.
-  const paving=polygonClipping.difference(surfaceGround(layout,opts.bundle),streets.asphalt);
+  const paving=surfacePaving(surface,layout,opts.bundle);
   for(const poly of paving)add("ground",texturedFlat(poly,-.012,3.2),mats.ground);
   for(const poly of streets.asphalt)add("asphalt",texturedFlat(poly,-.06,5),mats.asphalt);
   mats.paint.polygonOffset=true;mats.paint.polygonOffsetFactor=-1;mats.paint.polygonOffsetUnits=-1;
   for(const poly of streets.markings)add("paint",flat(poly,-.055),mats.paint);
   // Kerbs are context outside the evidence-limited pads, with breaks at openings.
-  for(const poly of streets.asphalt)for(const ring of poly)for(let i=1;i<ring.length;i++){
-    const a={x:ring[i-1]![0],y:ring[i-1]![1]},b={x:ring[i]![0],y:ring[i]![1]};
-    if(Math.hypot(b.x-a.x,b.y-a.y)<.5)continue;
-    const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
-    if(inside(mid,streets.pads)||inside(mid,streets.holes))continue;
+  for(const {a,b} of surfaceKerbs(surface,layout,opts.bundle)){
     add("stone",quad(a,b,-.06,.11),mats.stone);
     add("stone",flat(strip(a,b,.13),.11),mats.stone);
   }
@@ -211,11 +219,7 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   instance("surface-tree-trunks",new THREE.CylinderGeometry(.12,.17,3,6),mats.stone,trees.map(({p})=>matrix(p,1.6)),trees.map(()=>new THREE.Color("#75685b")));
   const lampParts=[new THREE.CylinderGeometry(.055,.095,6,8),new THREE.BoxGeometry(.85,.12,.28)];lampParts[0]!.translate(0,3,0);lampParts[1]!.translate(.32,6,0);
   const lamp=mergeGeometries(lampParts,false)!;lampParts.forEach(g=>g.dispose());instance("surface-streetlights",lamp,mats.steel,lights.map(({p})=>matrix(p,0)));
-  for(const {p,u} of lights){
-    const safe=(q:XY)=>!inside(q,streets.pads)&&!inside(q,streets.holes)&&!inside(q,streets.asphalt)&&!inside(q,surface.buildings.map(b=>b.rings));
-    const a={x:p.x+u.x*2,y:p.y+u.y*2},b={x:p.x+u.x*5,y:p.y+u.y*5};
-    const samples=Array.from({length:31},(_,i)=>({x:a.x+(b.x-a.x)*i/30,y:a.y+(b.y-a.y)*i/30}));
-    if(!samples.every(q=>[-.15,0,.15].every(dx=>[-.15,0,.15].every(dy=>safe({x:q.x+dx,y:q.y+dy})))))continue;
+  for(const {a,b} of surfaceLampRails(surface,layout,opts.bundle)){
     add("steel",beam(pos(a,.85),pos(b,.85),.04,.04),mats.steel);
     for(const q of [a,b]){
       const bollard=new THREE.CylinderGeometry(.065,.065,.9,8);bollard.translate(q.x,.45,-q.y);add("steel",bollard,mats.steel);
@@ -234,15 +238,8 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
     const merged=mergeGeometries(gs,false)!;gs.forEach(g=>g.dispose());
     const mesh=new THREE.Mesh(track(merged),batch.material);mesh.name=`surface-${name}`;root.add(mesh);
   }
-  const dome=new THREE.Mesh(track(new THREE.SphereGeometry(300,24,12)),track(skyMaterial()));dome.name="surface-sky";dome.frustumCulled=false;dome.renderOrder=-1000;
-  dome.onBeforeRender=(_renderer,_scene,camera)=>{dome.position.copy(camera.position);dome.updateMatrixWorld();};root.add(dome);
+  const dome=new THREE.Mesh(track(new THREE.SphereGeometry(300,24,12)),track(skyMaterial()));dome.name="surface-sky";dome.frustumCulled=false;dome.renderOrder=-1000;root.add(dome);
   root.userData.drawCallBudget=batches.size+4;root.userData.buildingParts=buildings.length;
-  // The live update/dispose closures share this scope with add(). Disposing a
-  // source geometry does not release its arrays; drop the batch references once
-  // merging is complete, keeping only the final meshes for rendering/restoration.
   batches.clear();
-  let disposed=false,viewer:XYZ|null=null;
-  const visibility={entrances,openings:streets.holes};
-  const update=(_dt:number,_t:number)=>{root.visible=viewer!==null&&surfaceVisibleAt(layout,opts.bundle,viewer,visibility);};
-  return {root,update,setViewer(p:XYZ){viewer={...p};update(0,0);},dispose(){if(disposed)return;disposed=true;for(const r of resources)r.dispose();resources.clear();root.clear();}};
+  return {root,resources,visibility:{entrances,openings:streets.holes}};
 }

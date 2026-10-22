@@ -432,7 +432,7 @@ describe("enclosure scene assembly (geometry only, no WebGL or raster validation
   it("gives every underground elevator node a portal mounted on a full-height WalkWorld wall", () => {
     const portals: { nodeIds: string[]; center: XYZ; a: XYZ; b: XYZ }[] = [];
     station.root.traverse((o) => {
-      if (o.name === "elevator-portal:finish" && !portals.length) portals.push(...o.userData.portals);
+      if (o.userData.portals && !portals.length) portals.push(...o.userData.portals); // carried by the batch that holds the portal finishes
     });
     const covered = new Set(portals.flatMap((p) => p.nodeIds));
     const expected = bundle.nodes.filter((n) => n.kind === "elevator" && layout.nodeZ.get(n.id)! < -0.5).map((n) => n.id);
