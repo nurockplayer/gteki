@@ -194,3 +194,19 @@ walked by the same step rules as on the web, nothing more. Camera and walker fee
 
 Runtime APIs: [GLTFDocument](https://docs.godotengine.org/en/latest/classes/class_gltfdocument.html)
 and [Godot glTF scene export](https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/exporting_3d_scenes.html).
+
+## Capture mode (G-4 prep, #164)
+
+Windowed only. `project.godot` stays `gl_compatibility`; Forward+ comes from the command line.
+
+```
+godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- --station=<id> --capture=<outDir> [--poses=<file>] [--look=baseline|hq]
+```
+
+Per pose it places the walker, settles the follow camera for 45 physics frames, waits 3 rendered frames, saves a 1600x900 PNG
+and records camera transform, FOV and `RenderingServer` stats (draw calls, primitives, video memory, frame time over 30 frames)
+in `captures.json`. Default poses: each spawn point x 4 yaws; Ikebukuro adds the `g_jr_c2` -> `x35` route every 15 m (needs
+`.cache/routes/ikebukuro.route.json`, written by `run-walk.sh`) and the #227 stall area; Shinjuku adds 3 poses at inverted-band
+walls. `--poses` takes a JSON array of `{name, position:[x,y,z], yaw_deg, pitch?, distance?}` (Godot frame). Hard 10-minute
+limit. `--look=hq` only adds a WorldEnvironment (AgX, SSAO on, glow off, one ambient source). On a headless display it prints
+"capture needs a display" and exits 0.

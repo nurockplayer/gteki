@@ -9,6 +9,7 @@ extends Node3D
 const Scene = preload("res://addons/gteki/gteki_scene.gd")
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
 const FollowCamera = preload("res://addons/gteki/gteki_follow_camera.gd")
+const Capture = preload("res://hq/hq_capture.gd")
 
 ## Web wheel notch (deltaY) in the units apply_look expects, and stick look speed in pixels per second.
 const WHEEL_UNITS := 100.0
@@ -30,6 +31,9 @@ var _placing := false
 func _ready() -> void:
 	var wanted := ""
 	var check_only := false
+	var capture_dir := ""
+	var poses_file := ""
+	var look := "baseline"
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--station="):
 			wanted = arg.trim_prefix("--station=")
@@ -37,6 +41,12 @@ func _ready() -> void:
 			scenes_dir = arg.trim_prefix("--scenes=")
 		elif arg == "--check":
 			check_only = true
+		elif arg.begins_with("--capture="):
+			capture_dir = arg.trim_prefix("--capture=")
+		elif arg.begins_with("--poses="):
+			poses_file = arg.trim_prefix("--poses=")
+		elif arg.begins_with("--look="):
+			look = arg.trim_prefix("--look=")
 	station_ids = list_stations(scenes_dir)
 	if station_ids.is_empty():
 		printerr("No station snapshots in %s (run packages/godot/run-scenes.sh)" % scenes_dir)
@@ -52,9 +62,27 @@ func _ready() -> void:
 	var light := DirectionalLight3D.new()
 	light.rotation_degrees = Vector3(-50, 30, 0)
 	add_child(light)
+	if look == "hq":
+		add_child(Capture.hq_environment())
+	elif look != "baseline":
+		printerr("Unknown --look=%s (baseline or hq)" % look)
+		get_tree().quit(2)
+		return
 	var ok := load_station(wanted if not wanted.is_empty() else station_ids[0])
 	if ok:
 		ok = await place_at_spawn(0)
+	if not capture_dir.is_empty():
+		if not ok:
+			get_tree().quit(1)
+			return
+		if DisplayServer.get_name() == "headless":
+			print("capture needs a display (run windowed, not --headless)")
+			get_tree().quit(0)
+			return
+		var capture := Capture.new()
+		var code := await capture.run(self, capture_dir, poses_file, look)
+		get_tree().quit(code)
+		return
 	if check_only:
 		get_tree().quit(0 if ok else 1)
 
