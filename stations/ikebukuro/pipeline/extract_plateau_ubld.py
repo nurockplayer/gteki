@@ -97,7 +97,7 @@ def main(src, dst):
             "sha256": hashlib.sha256(raw).hexdigest(),
             "bytes": len(raw),
             "crs": "EPSG:6697 (JGD2011 geographic 3D: lat, lon, orthometric height)",
-            "license": "CC BY 4.0 (PLATEAU / MLIT); modified: reprojected and re-encoded",
+            "license": "PLATEAU Site Policy 「３．著作権について」に拠る; modified: reprojected and re-encoded",
         },
         "frame": {
             "type": "ENU local tangent plane",
