@@ -334,8 +334,8 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     };
     const ok: DataFile = { id: "plan", path: "data/plan.json", sourceIds: ["fixture-geometry"], modified: false };
     expect(withData([ok])).toEqual([]);
-    // dataFiles live outside gteki/: contract files and anything else under it are refused (assets[] covers that folder).
-    for (const bad of ["../x.json", "data//x.json", "data/x#1.json", "/abs.json", "data/x.ts", "gteki/station.json", "gteki/graph.json", "gteki/assets/b1.meta.json"])
+    // dataFiles live outside gteki/ (any case: macOS is case-insensitive): contract files and anything else under it are refused (assets[] covers that folder).
+    for (const bad of ["../x.json", "data//x.json", "data/x#1.json", "/abs.json", "data/x.ts", "gteki/station.json", "gteki/graph.json", "gteki/assets/b1.meta.json", "GTEKI/station.json", "Gteki/graph.json"])
       expect(withData([{ ...ok, path: bad }]), bad).toContain("data.path");
     // ?raw imports of svg/shader text can be declared.
     for (const good of ["scene/sign.svg", "scene/fog.glsl", "scene/a.vert", "scene/a.frag", "scene/a.wgsl"])

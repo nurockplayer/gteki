@@ -302,7 +302,7 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     if (!isCanonicalAssetPath(d.path)) err("data.path", CANONICAL_MESSAGE.replace("asset paths", "data file paths"), d.id);
     else if (!DATA_FILE_EXT.test(d.path)) err("data.path", `${d.path}: not a data file type`, d.id);
     // dataFiles are relative to the station folder and live outside gteki/ (assets[] covers that folder).
-    else if (d.path.startsWith("gteki/")) err("data.path", `${d.path}: data files live outside gteki/ (declare files there as assets[].files; contract files are loaded as data and never declared)`, d.id);
+    else if (d.path.toLowerCase().startsWith("gteki/")) err("data.path", `${d.path}: data files live outside gteki/ (declare files there as assets[].files; contract files are loaded as data and never declared)`, d.id);
     if (dataPaths.has(d.path)) err("data.dup", `${d.path}: declared twice`, d.id);
     dataPaths.add(d.path);
     let citesFactsOnly = false;
