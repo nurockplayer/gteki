@@ -88,6 +88,7 @@ Every rights verdict is about reuse terms only. It never makes data routable or 
 - Cosmetic: `rights/README.md` cells show raw JSON for the exclusion objects; a readable rendering is a follow-up.
 - Facts-only credit wording (#122, from the #26 decision): [decisions/facts-only-credit-wording.md](decisions/facts-only-credit-wording.md) records the wording 「ライセンスなし・事実のみ参照（複製なし）」 (English equivalent proposed), the 2 facts-only sources (both Ikebukuro; per-source Owner statement UNKNOWN), and proposals for core (`Source.decision`, rule `source.decision`, shape spec), Lane C (UI strings) and the Ikebukuro station lead (`graph.src.json` plus regenerated `station.json`); diffs in `decisions/proposals/`. Nothing outside `docs/gis/**` is applied; `tools/gis` has no facts-only check to extend.
 - Use the operator-permission/field-survey template: [gaps/operator-survey-questions.md](gaps/operator-survey-questions.md).
+- M0-01 coverage gap list (Issue #1): [research/m0-01-coverage-gaps.md](research/m0-01-coverage-gaps.md) — per-station source/rights/coverage matrix, go/no-go for candidate geometry, ranked gaps and source-register corrections.
 
 ## Gap research (2026-10-21, stacked on PR #18)
 
