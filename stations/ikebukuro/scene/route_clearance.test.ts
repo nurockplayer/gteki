@@ -30,6 +30,8 @@ function samples(g: P3[]): P3[] {
   return out;
 }
 
+// #227's guard in CI, so it stays out of *.heavy.test.ts (not run in CI): measured 1.7-4.6 s per file run (the test itself
+// about 1.5 s), single worker under the shared test lock on a loaded host (2026-10-23).
 describe("verified polylines clear the walker's body (#227)", () => {
   const all = read("gteki/graph.json").edges as Edge[];
   const edges = all.filter((e) => e.verification === "verified");
@@ -72,5 +74,5 @@ describe("verified polylines clear the walker's body (#227)", () => {
     expect(edges.map((e) => e.id)).toContain("ne_j__x26"); // the stair head whose wall top is the street edge
     expect(steps).toBeGreaterThan(6000);
     expect(blocked).toEqual([]);
-  }, 300_000);
+  }, 60_000);
 });
