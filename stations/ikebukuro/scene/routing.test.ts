@@ -302,7 +302,7 @@ describe("PLATEAU source credit (#161)", () => {
   const source = load().sources.find((s) => s.id === "plateau-ubld-13116")!;
 
   it("uses the Option A string, with no CC BY label and no Shinjuku base-adjustment parenthetical", () => {
-    expect(source.attribution).toContain("出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成");
+    expect(source.attribution).toBe("出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成");
     expect(source.attribution).not.toMatch(/CC[ -]?BY/i);
     expect(source.attribution).not.toContain("建物の基部");
     expect(source.license?.name ?? "").not.toMatch(/CC[ -]?BY/i);

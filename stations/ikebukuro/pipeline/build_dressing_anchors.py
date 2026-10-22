@@ -381,7 +381,7 @@ def build(data, input_sha256):
             "gml": data["source"]["file"],
             "gml_sha256": data["source"]["sha256"],
             "license": "PLATEAU Site Policy 「３．著作権について」に拠る; modified: positions derived from survey triangles by GTEki",
-            "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成 Modified: reprojected to a local ENU frame; nosing and landing lines derived by GTEki.",
+            "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
         },
         "frame": {"axes": "ENU metres: x east, y north, z TP height", "origin": data["frame"]["origin"], "rounding_m": 0.001,
                   "dir": "horizontal unit vector (east, north) of travel up the stair or escalator"},

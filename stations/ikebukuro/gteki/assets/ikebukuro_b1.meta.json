@@ -338,6 +338,6 @@
     }
   },
   "blender_version": "5.2.2 LTS",
-  "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成 Modified: reprojected to a local ENU frame, triangulated and re-encoded as glTF by GTEki.",
+  "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
   "triangulation_failures": 0
 }

@@ -7,7 +7,7 @@
   "gml": "53394576_ubld_6697_op.gml",
   "gml_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
   "license": "PLATEAU Site Policy 「３．著作権について」に拠る; modified: positions derived from survey triangles by GTEki",
-  "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成 Modified: reprojected to a local ENU frame; nosing and landing lines derived by GTEki."
+  "attribution": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成"
  },
  "frame": {
   "axes": "ENU metres: x east, y north, z TP height",
