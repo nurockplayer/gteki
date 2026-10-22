@@ -71,8 +71,6 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "chuo 1 kaisatsu", top1: "jr-central-gate-1" },
     { q: "minami kaisatsu", top1: "jr-south-gate" },
     { q: "JR 南剪票口", top1: "jr-south-gate" },
-    { q: "山手線", top: ["jr-central-gate-2", "jr-south-gate"] },
-    { q: "JR 山手線", top: ["jr-central-gate-2", "jr-south-gate"] },
   ],
   "Tokyo Metro Marunouchi gates": [
     { q: "メトロ", top: METRO },
@@ -127,7 +125,7 @@ describe("Ikebukuro golden search", () => {
   // The data has no Seibu gate (only the operator in station.json), so searching it must not invent one.
   // Same for department-store names: no source ties them to an exit here.
   describe("no false gate for names the data does not evidence", () => {
-    for (const q of ["西武", "西武線", "Seibu", "Seibu Railway", "そごう", "PARCO", "パルコ"]) {
+    for (const q of ["西武", "西武線", "Seibu", "Seibu Railway", "そごう", "PARCO", "パルコ", "山手線"]) {
       it(`${JSON.stringify(q)} returns no gate or exit`, () => {
         const hits = index.search(q).filter((hit) => hit.poi.category === "ticket_gate" || hit.poi.category === "exit");
         expect(hits).toEqual([]);
