@@ -3,7 +3,38 @@
 CONTRACT = "gteki-asset/0.1"
 KIT_VERSION = "0.1.0"
 
-LICENSE = "UNDECIDED — original GTEki work; repository licence pending Owner decision"
+# --- Rights (Owner decision, Issue #123, 2026-10-22) --------------------------------------------
+# Original procedural assets are CC-BY-4.0, attribution "GTEki contributors"; AI-generated 2D
+# images are CC0-1.0. These constants are the decided values.
+RIGHTS_CLASS = "original"  # rights class of everything the kit generates itself
+LICENSE_SPDX = "CC-BY-4.0"
+ATTRIBUTION = "GTEki contributors"
+AI_IMAGE_SPDX = "CC0-1.0"  # AI-generated 2D images (assets/library/source/posters/)
+
+# EMBED_SPDX is the single switch for writing license_spdx / rights_class / attribution into the
+# manifest and every GLB's extras.gteki, and for replacing the "UNDECIDED" strings below
+# (LICENSE, the GLB copyright). It stays False now because those strings are embedded in all
+# committed GLBs and `build.sh repro` compares rebuilds byte-for-byte with the committed library.
+# The next full library rebuild (the AO rollout) turns it on and commits the new GLBs, both
+# manifests and the new hashes together. See docs/assets/asset-contract.md.
+EMBED_SPDX = False
+
+LICENSE_UNDECIDED = "UNDECIDED — original GTEki work; repository licence pending Owner decision"
+LICENSE_DECIDED = f"{LICENSE_SPDX} — original GTEki work; attribution: {ATTRIBUTION}"
+LICENSE = LICENSE_DECIDED if EMBED_SPDX else LICENSE_UNDECIDED  # value unchanged while the switch is off
+
+GLB_COPYRIGHT_UNDECIDED = "GTEki (original work; licence pending Owner decision)"
+GLB_COPYRIGHT_DECIDED = f"{ATTRIBUTION}. {LICENSE_SPDX}"
+GLB_COPYRIGHT = GLB_COPYRIGHT_DECIDED if EMBED_SPDX else GLB_COPYRIGHT_UNDECIDED  # GLB asset.copyright
+
+
+def rights_fields(license_spdx=None):
+    """The machine-readable rights keys; empty while EMBED_SPDX is off so that no bytes change."""
+    if not EMBED_SPDX:
+        return {}
+    return {"license_spdx": license_spdx or LICENSE_SPDX, "rights_class": RIGHTS_CLASS, "attribution": ATTRIBUTION}
+
+
 PROVENANCE = "original procedural geometry and textures; see assets/library/PROVENANCE.md"
 FIDELITY = "generic kit; not a replica of any operator equipment or station"
 NAVIGATION = "none — visual/physical only; routing truth lives in the station graph"
