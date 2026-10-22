@@ -5,6 +5,8 @@
  *
  * - Every mesh that is not drawn in the source (invisible itself, under an invisible ancestor, or with only invisible
  *   materials) is flagged `gteki_hidden`, whether or not it is listed; the Godot loader never draws flagged meshes.
+ *   A multi-material mesh with only some materials visible keeps its drawn groups and gets its invisible groups as a
+ *   hidden sibling mesh, so neither the drawn geometry nor the collision triangles are lost.
  * - A mesh listed in a list gets that list's role (its own role when it is already one of that list's
  *   vocabulary, e.g. "stairs_ramps", else "walkable" / "collider" / "camera_blocker").
  * - Listed meshes the scene keeps outside `root` (Ikebukuro's raycast tiles) are attached to a proxy group.
@@ -74,6 +76,105 @@ function isUnder(object: THREE.Object3D, root: THREE.Object3D): boolean {
   return false;
 }
 
+/** Every mesh under `roots`, each once, without following parents (list members may live outside `root`). */
+function meshesUnder(roots: readonly THREE.Object3D[]): THREE.Mesh[] {
+  const found = new Set<THREE.Mesh>();
+  for (const root of roots) root.traverse((o) => { if (isMesh(o)) found.add(o); });
+  return [...found];
+}
+
+/** One `geometry.groups` entry (three's `GeometryGroup`; `materialIndex` is optional there). */
+type GeometryRange = { start: number; count: number; materialIndex?: number };
+
+/**
+ * Copies the index ranges of `ranges` into a new geometry, renumbering vertices and remapping each range's
+ * materialIndex through `materialIndex`. The source geometry is left untouched. Morph targets are not carried
+ * (the snapshot is static; every animated object is dropped or baked before this runs).
+ */
+function extractGroups(
+  geometry: THREE.BufferGeometry,
+  ranges: readonly GeometryRange[],
+  materialIndex: (index: number) => number,
+): THREE.BufferGeometry {
+  const source = geometry.index;
+  const remap = new Map<number, number>();
+  const data = Object.entries(geometry.attributes).map(([name, attribute]) => ({ name, attribute, values: [] as number[] }));
+  const out = new THREE.BufferGeometry();
+  const indices: number[] = [];
+  const groups: { start: number; count: number; materialIndex: number }[] = [];
+  for (const range of ranges) {
+    const start = indices.length;
+    for (let k = 0; k < range.count; k++) {
+      const vertex = source ? source.getX(range.start + k) : range.start + k;
+      let mapped = remap.get(vertex);
+      if (mapped === undefined) {
+        mapped = remap.size;
+        remap.set(vertex, mapped);
+        for (const entry of data) for (let c = 0; c < entry.attribute.itemSize; c++) entry.values.push(entry.attribute.getComponent(vertex, c));
+      }
+      indices.push(mapped);
+    }
+    groups.push({ start, count: indices.length - start, materialIndex: materialIndex(range.materialIndex ?? 0) });
+  }
+  for (const { name, attribute, values } of data) {
+    // Keep the source's component type (Uint8 colours, Uint16 joints); interleaved buffers have no flat array, so
+    // they fall back to Float32, which glTF export accepts for every attribute the static snapshot carries.
+    const flat = (attribute as THREE.BufferAttribute).array as ArrayLike<number> | undefined;
+    const ArrayType = (flat?.constructor ?? Float32Array) as new (n: number | ArrayLike<number>) => THREE.TypedArray;
+    out.setAttribute(name, new THREE.BufferAttribute(new ArrayType(values), attribute.itemSize, attribute.normalized));
+  }
+  out.setIndex(indices);
+  for (const group of groups) out.addGroup(group.start, group.count, group.materialIndex);
+  return out;
+}
+
+/**
+ * A multi-material mesh with only some materials visible would draw its invisible groups in Godot (three skips them
+ * per group; glTF has no per-primitive visibility). The invisible groups move to a hidden sibling mesh with the same
+ * transform and role, so the drawn part stays on the original and collision keeps every triangle. The original mesh
+ * keeps its identity for the scene's own lists. Returns null when the mesh is all-visible or all-invisible.
+ */
+function splitInvisibleGroups(mesh: THREE.Mesh): THREE.Mesh | null {
+  if (!Array.isArray(mesh.material)) return null;
+  const materials = mesh.material;
+  const visible = (index: number) => materials[index]?.visible === true;
+  const groups = mesh.geometry.groups;
+  if (groups.length === 0 || materials.every((m) => m.visible) || !materials.some((m) => m.visible)) return null;
+  const drawn = groups.filter((g) => visible(g.materialIndex ?? 0));
+  const hidden = groups.filter((g) => !visible(g.materialIndex ?? 0));
+  if (drawn.length === 0 || hidden.length === 0) return null;
+  // Each part keeps only the material slots its groups use, in first-use order.
+  const slots = (list: readonly GeometryRange[]) => {
+    const map = new Map<number, number>();
+    for (const group of list) {
+      const index = group.materialIndex ?? 0;
+      if (!map.has(index)) map.set(index, map.size);
+    }
+    return map;
+  };
+  const drawnSlots = slots(drawn);
+  const hiddenSlots = slots(hidden);
+  const original = mesh.geometry;
+  const sibling = new THREE.Mesh(
+    extractGroups(original, hidden, (index) => hiddenSlots.get(index)!),
+    [...hiddenSlots.keys()].map((index) => materials[index]!),
+  );
+  sibling.name = `${mesh.name || "mesh"}_hidden_materials`;
+  sibling.userData = { ...mesh.userData };
+  sibling.matrixAutoUpdate = mesh.matrixAutoUpdate;
+  if (mesh.matrixAutoUpdate) {
+    sibling.position.copy(mesh.position);
+    sibling.quaternion.copy(mesh.quaternion);
+    sibling.scale.copy(mesh.scale);
+  } else {
+    sibling.matrix.copy(mesh.matrix);
+  }
+  mesh.geometry = extractGroups(original, drawn, (index) => drawnSlots.get(index)!);
+  mesh.material = [...drawnSlots.keys()].map((index) => materials[index]!);
+  mesh.parent?.add(sibling);
+  return sibling;
+}
+
 export function tagSceneRoles(scene: StationScene): RoleSummary {
   const warnings: string[] = [];
   const categories = new Map<THREE.Mesh, Category>();
@@ -93,10 +194,35 @@ export function tagSceneRoles(scene: StationScene): RoleSummary {
   }
   if (conflicts > 0) warnings.push(`${conflicts} mesh(es) were listed under more than one of walkable/colliders/cameraBlockers; the first of that order won`);
 
+  // A multi-material mesh with only some materials visible keeps its drawn groups and moves the invisible ones to a
+  // hidden sibling (see splitInvisibleGroups); the sibling inherits the original's list category.
+  const splitSiblings = new Map<THREE.Mesh, THREE.Mesh>();
+  for (const mesh of meshesUnder([scene.root, ...categories.keys()])) {
+    const sibling = splitInvisibleGroups(mesh);
+    if (sibling === null) continue;
+    splitSiblings.set(mesh, sibling);
+    const category = categories.get(mesh);
+    if (category !== undefined) categories.set(sibling, category);
+  }
+  if (splitSiblings.size > 0) {
+    warnings.push(`${splitSiblings.size} multi-material mesh(es) have only some materials visible: their invisible groups are exported as hidden sibling meshes (gteki_hidden), so Godot draws exactly the groups three draws`);
+  }
+
+  // Visibility is read before any re-parenting: attaching a listed mesh to the proxy group would otherwise replace
+  // its original ancestor chain, and a mesh that was under an invisible parent outside root would look drawn.
+  const drawnBefore = new WeakMap<THREE.Mesh, boolean>();
+  for (const mesh of meshesUnder([scene.root, ...categories.keys()])) drawnBefore.set(mesh, isDrawn(mesh));
+  const drawnNow = (mesh: THREE.Mesh) => drawnBefore.get(mesh) ?? isDrawn(mesh);
+
   // Listed meshes the scene holds outside root (raycast tiles) join the snapshot under one proxy group.
   const proxies = new THREE.Group();
   proxies.name = "gteki_collision_proxies";
-  for (const mesh of categories.keys()) if (!isUnder(mesh, scene.root)) proxies.attach(mesh);
+  for (const mesh of categories.keys()) {
+    if (isUnder(mesh, scene.root)) continue;
+    proxies.attach(mesh);
+    const sibling = splitSiblings.get(mesh);
+    if (sibling !== undefined) proxies.attach(sibling);
+  }
   if (proxies.children.length > 0) scene.root.add(proxies);
 
   const summary: RoleSummary = { meshes: 0, triangles: 0, byRole: {}, walkable: 0, collider: 0, camera_blocker: 0, see_through: 0, collisionOnly: 0, hidden: 0, replacedByCollision: 0, warnings };
@@ -108,7 +234,7 @@ export function tagSceneRoles(scene: StationScene): RoleSummary {
       // Visibility is a property of the source mesh, whatever lists it is in: GLTFExporter (onlyVisible: false) would
       // otherwise draw scene helpers (access-fence collider, solid doors, portal and walk-bridge meshes) that the
       // scene keeps invisible and collides through tiles instead. The loader hides every flagged mesh.
-      if (!isDrawn(object)) {
+      if (!drawnNow(object)) {
         object.userData.gteki_hidden = true;
         summary.hidden += 1;
       }
@@ -116,7 +242,7 @@ export function tagSceneRoles(scene: StationScene): RoleSummary {
       if (category !== undefined) {
         effective = role !== null && VOCAB[category].includes(role) ? role : category;
         if (effective !== role && role !== null) object.userData.gteki_source_role = role;
-        if (!isDrawn(object)) {
+        if (!drawnNow(object)) {
           object.userData.gteki_collision_only = true;
           summary.collisionOnly += 1;
         }

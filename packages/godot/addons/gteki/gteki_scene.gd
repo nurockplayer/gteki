@@ -130,13 +130,52 @@ func _apply_collider_side(mesh: MeshInstance3D) -> void:
 					shape_node.shape.backface_collision = double_sided
 
 
-## Not drawn. A mesh with drawn children (they carry their own flags) leaves no render layer instead, so they stay.
+## Not drawn. `visible = false` would hide the whole subtree, and a hidden mesh can carry drawn children (they carry
+## their own flags): those stay, and this mesh's own surfaces get a fully transparent override material instead
+## (#232). Drawing nothing is stronger than `layers = 0`, which only keeps the node out of every camera.
 func _hide_mesh(mesh: MeshInstance3D) -> void:
 	for child in mesh.get_children():
 		if not child is CollisionObject3D:
-			mesh.layers = 0
+			_hide_own_surfaces(mesh)
 			return
 	mesh.visible = false
+
+
+## A MeshInstance3D has no per-surface visibility flag, so each surface gets an unshaded fully transparent
+## material; the node itself (and its children) keeps rendering.
+func _hide_own_surfaces(mesh: MeshInstance3D) -> void:
+	if mesh.mesh == null:
+		mesh.visible = false
+		return
+	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var invisible := StandardMaterial3D.new()
+	invisible.albedo_color = Color(0.0, 0.0, 0.0, 0.0)
+	invisible.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	invisible.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	invisible.cull_mode = BaseMaterial3D.CULL_DISABLED
+	for surface in range(mesh.mesh.get_surface_count()):
+		mesh.set_surface_override_material(surface, invisible)
+
+
+## True when this mesh still paints: visible, on a render layer, and at least one surface that is not the
+## transparent override `_hide_own_surfaces` installs. The headless tests use it to assert that no flagged mesh draws.
+static func is_drawn(mesh: MeshInstance3D) -> bool:
+	if not mesh.visible or mesh.layers == 0 or mesh.mesh == null:
+		return false
+	for surface in range(mesh.mesh.get_surface_count()):
+		var material: Material = mesh.get_surface_override_material(surface)
+		if material == null:
+			material = mesh.get_active_material(surface)
+		if material == null or not _is_transparent(material):
+			return true
+	return false
+
+
+static func _is_transparent(material: Material) -> bool:
+	if material is BaseMaterial3D:
+		var base: BaseMaterial3D = material
+		return base.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED and base.albedo_color.a <= 0.0
+	return false
 
 
 func _add_ground(mesh: MeshInstance3D) -> void:

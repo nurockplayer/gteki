@@ -97,6 +97,95 @@ describe("tagSceneRoles", () => {
     tagSceneRoles({ root, walkable: [stairs], dispose() {} } as unknown as StationScene);
     expect(stairs.userData.gteki_role).toBe("stairs_ramps");
   });
+
+  it("reads visibility through the original parent chain, not through the proxy it is attached to (#232)", () => {
+    // A drawn mesh the scene lists but keeps outside root, under an invisible parent. Attaching it to the visible
+    // proxy group must not make it look drawn again.
+    const hiddenParent = new THREE.Group();
+    hiddenParent.visible = false;
+    const tile = named("tile", "collider");
+    hiddenParent.add(tile);
+    const root = new THREE.Group();
+    tagSceneRoles({ root, walkable: [], colliders: [tile], dispose() {} } as unknown as StationScene);
+    expect(tile.parent?.name).toBe("gteki_collision_proxies");
+    expect(tile.userData).toMatchObject({ gteki_role: "collider", gteki_collision_only: true, gteki_hidden: true });
+  });
+});
+
+/** Two triangles in two material groups (0..2 → material 0, 3..5 → material 1). */
+function twoGroups(): THREE.BufferGeometry {
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1]), 3));
+  geometry.addGroup(0, 3, 0);
+  geometry.addGroup(3, 3, 1);
+  return geometry;
+}
+
+function multiMaterial(visible: [boolean, boolean], name = "part"): THREE.Mesh {
+  const mesh = new THREE.Mesh(twoGroups(), [new THREE.MeshBasicMaterial(), new THREE.MeshBasicMaterial({ visible: visible[1] })]);
+  (mesh.material as THREE.Material[])[0]!.visible = visible[0];
+  mesh.name = name;
+  return mesh;
+}
+
+describe("multi-material visibility (#232)", () => {
+  it("leaves an all-visible multi-material mesh untouched", () => {
+    const part = multiMaterial([true, true]);
+    const root = new THREE.Group();
+    root.add(part);
+    const summary = tagSceneRoles({ root, walkable: [], colliders: [part], dispose() {} } as unknown as StationScene);
+    expect(root.children).toEqual([part]);
+    expect((part.material as THREE.Material[]).length).toBe(2);
+    expect(part.geometry.groups.length).toBe(2);
+    expect(part.userData.gteki_hidden).toBeUndefined();
+    expect(summary).toMatchObject({ meshes: 1, collider: 1, hidden: 0, collisionOnly: 0 });
+    expect(summary.warnings).toEqual([]);
+  });
+
+  it("moves the invisible groups of a partially invisible mesh to a hidden sibling, keeping every triangle", () => {
+    const part = multiMaterial([true, false]);
+    const root = new THREE.Group();
+    root.add(part);
+    const summary = tagSceneRoles({ root, walkable: [], colliders: [part], dispose() {} } as unknown as StationScene);
+    const sibling = root.children.find((o) => o !== part) as THREE.Mesh;
+    expect(sibling.name).toBe("part_hidden_materials");
+    // The drawn part keeps the visible material only; the hidden sibling carries the invisible one.
+    expect((part.material as THREE.Material[]).length).toBe(1);
+    expect((part.material as THREE.Material[])[0]!.visible).toBe(true);
+    expect(part.geometry.groups).toEqual([{ start: 0, count: 3, materialIndex: 0 }]);
+    expect((sibling.material as THREE.Material[]).length).toBe(1);
+    expect((sibling.material as THREE.Material[])[0]!.visible).toBe(false);
+    expect(sibling.geometry.groups).toEqual([{ start: 0, count: 3, materialIndex: 0 }]);
+    // Same triangles in total, and each part keeps the mesh's position and role.
+    const total = (part.geometry.index!.count + sibling.geometry.index!.count) / 3;
+    expect(total).toBe(2);
+    expect(sibling.userData).toMatchObject({ gteki_hidden: true, gteki_role: "collider", gteki_collision_only: true });
+    expect(part.userData).toMatchObject({ gteki_role: "collider" });
+    expect(part.userData.gteki_hidden).toBeUndefined();
+    expect(summary).toMatchObject({ meshes: 2, collider: 2, hidden: 1, collisionOnly: 1 });
+    expect(summary.warnings.some((w) => w.includes("only some materials visible"))).toBe(true);
+  });
+
+  it("splits a listed mesh outside root and attaches both parts to the proxy group", () => {
+    const part = multiMaterial([true, false]);
+    const root = new THREE.Group();
+    const summary = tagSceneRoles({ root, walkable: [], colliders: [part], dispose() {} } as unknown as StationScene);
+    const proxies = root.children.find((o) => o.name === "gteki_collision_proxies") as THREE.Group;
+    expect(proxies.children).toHaveLength(2);
+    expect(proxies.children.map((o) => (o.userData as { gteki_hidden?: boolean }).gteki_hidden === true)).toEqual([false, true]);
+    expect(summary).toMatchObject({ meshes: 2, collider: 2, hidden: 1, collisionOnly: 1 });
+  });
+
+  it("does not split an all-invisible multi-material mesh: the whole mesh is hidden", () => {
+    const part = multiMaterial([false, false]);
+    const root = new THREE.Group();
+    root.add(part);
+    const summary = tagSceneRoles({ root, walkable: [], colliders: [part], dispose() {} } as unknown as StationScene);
+    expect(root.children).toEqual([part]);
+    expect((part.material as THREE.Material[]).length).toBe(2);
+    expect(part.userData).toMatchObject({ gteki_hidden: true, gteki_role: "collider", gteki_collision_only: true });
+    expect(summary).toMatchObject({ meshes: 1, collider: 1, hidden: 1, collisionOnly: 1 });
+  });
 });
 
 describe("snapshot helpers", () => {
