@@ -125,7 +125,8 @@ W1 needs its own generator and an Owner look check before any piece uses it.
 - Arrow directions are left, right, up or none. The back face carries the mirrored arrow.
 - **Exception: facility pictograms (batch P1).** The toilet entrance sign (`toilet_entrance`) carries a procedurally drawn figure:
   - It is GTEki's own geometric shape, in the general manner of public-information symbols; no artwork is copied.
-  - It only restates the facility the source names. A station places it only at a source facility point (Shinjuku GSI F001 / F002 / F003), with the matching `kind`.
+  - It only restates the facility the source names, with the matching `kind`. A station places it only where the source gives the entrance or door position.
+  - A space-representative point alone is not enough, because the piece would imply a door the source doesn't give. This rules out GSI F001 / F002 / F003 by themselves, so Shinjuku does not place it.
   - The `accessible` figure claims an accessible toilet, so it is used only where the source says so.
   - Still no text or digits.
 
