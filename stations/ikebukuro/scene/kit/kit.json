@@ -1,0 +1,13 @@
+{
+  "schema": "gteki.ikebukuro.kit/0",
+  "kit_version": "0.1.0",
+  "credit": "GTEki contributors, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+  "dirs": { "high": "kit/high", "low": "kit/low" },
+  "pieces": {
+    "gteki_barrier_rail_2400_solid": {
+      "use": "access_fence_rail",
+      "pitch_m": 2.4,
+      "note": "Origin on the floor, centred, +X along the run. Posts at the start of each module only, so modules chain."
+    }
+  }
+}

@@ -13,7 +13,8 @@ REUSE.toml and the licence texts are in LICENSES/. Owner decision: Issue #123
 2. ORIGINAL ASSETS AND ART - CC BY 4.0
    The Lane E procedural assets (Blender-built GLB files in assets/library/,
    including the textures embedded in them, the manifests, the contact sheets
-   and renders in docs/assets/img/) and other original art made by this project
+   and renders in docs/assets/img/, and the byte-for-byte copies of kit GLBs a
+   station bundles, e.g. stations/ikebukuro/gteki/kit/) and other original art made by this project
    are licensed under Creative Commons Attribution 4.0 International
    (CC-BY-4.0). Attribution line:
 
