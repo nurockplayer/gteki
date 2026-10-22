@@ -972,7 +972,7 @@ const assets: Asset[] = [];
       sha256: { [f.file]: f.sha256 },
       datasetDate: m.datasetDate,
       validUntil: null,
-      notes: "Visual-only street-level context; never geometry for routing, walking or collision. Building bases are flattened to street z = 0 (each building keeps its own height above its own ground; no vertical datum is asserted). Textures are not shipped. Catalog package year 2025; the per-theme survey year is not asserted. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. CC BY 4.0 attribution required; 加工 is the modification notice.",
+      notes: "Visual-only street-level context; never geometry for routing, walking or collision. Building bases are flattened to street z = 0 (each building keeps its own height above its own ground; no vertical datum is asserted). Textures are not shipped. Catalog package year 2025; the per-theme survey year is not asserted. The hash is over the decoded bytes of the file served by the PLATEAU catalog API. Licence recorded as the catalogue's PLATEAU Site Policy 「３．著作権について」; the credit required is 出典 plus a 加工 notice, not a licence label (a licence clause in the data metadata is unconfirmed evidence, kept out of the app, #161).",
     });
   }
   const low = m.assets.low, high = m.assets.high;

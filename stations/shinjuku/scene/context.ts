@@ -78,18 +78,39 @@ export function createContextMaterial(): THREE.MeshBasicMaterial {
 /** Which file a uri names. */
 export const contextVariant = (uri: string): "low" | "high" => (uri === CONTEXT_GLB.high ? "high" : "low");
 
-interface OmitRange { mesh: string; triStart: number; triCount: number }
+/** `bbox`: [minX, minY, minZ, maxX, maxY, maxZ] of the vertices the range's triangles use (the fingerprint of the building it names). */
+interface OmitRange { mesh: string; triStart: number; triCount: number; bbox: [number, number, number, number, number, number] }
 export const CONTEXT_OMIT = omitJson as unknown as {
   glbTriangles: Record<"low" | "high", number>;
   omit: { gmlId: string; where: string; overlapM2: Record<string, number>; ranges: Record<"low" | "high", OmitRange> }[];
 };
 
+/** Float32 positions are exact in the stored boxes up to their rounding (1e-4 m); a looser tolerance still tells buildings apart. */
+const BOX_TOLERANCE_M = 1e-3;
+
+/** True when the vertices used by the range's triangles span exactly the recorded bounding box. */
+function rangeMatchesBox(g: THREE.BufferGeometry, r: OmitRange): boolean {
+  const index = g.index!.array, pos = g.attributes.position!;
+  const box = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
+  for (let k = r.triStart * 3; k < (r.triStart + r.triCount) * 3; k++) {
+    const v = index[k]!;
+    if (v >= pos.count) return false;
+    for (let a = 0; a < 3; a++) {
+      const x = pos.getComponent(v, a);
+      if (x < box[a]!) box[a] = x;
+      if (x > box[a + 3]!) box[a + 3] = x;
+    }
+  }
+  return Array.isArray(r.bbox) && r.bbox.length === 6 && box.every((x, i) => Math.abs(x - r.bbox[i]!) <= BOX_TOLERANCE_M);
+}
+
 /**
  * Prepare a loaded, accepted context for drawing: drop the triangles of the buildings listed in
  * sources/context-omit.json (visual omission by triangle range; their exit openings lie inside the PLATEAU
  * footprint), and store each index as Uint16 where the mesh has under 65,536 vertices. Returns false, touching
- * nothing, when the file is not the one the list was written for (triangle total or a range does not fit): the
- * caller then draws the procedural street instead of a context whose omissions would be wrong.
+ * nothing, when the file is not the one the list was written for (triangle total, a range that does not fit,
+ * or a range whose triangles no longer span the bounding box recorded for its building, as after a reordering
+ * of the features): the caller then draws the procedural street instead of a context whose omissions would be wrong.
  */
 export function prepareContext(gltfScene: THREE.Object3D, variant: "low" | "high"): boolean {
   const meshes = contextMeshes(gltfScene);
@@ -100,7 +121,8 @@ export function prepareContext(gltfScene: THREE.Object3D, variant: "low" | "high
   for (const { ranges } of CONTEXT_OMIT.omit) {
     const r = ranges[variant];
     const mesh = meshes.find((m) => m.name === r.mesh);
-    if (!mesh || r.triStart < 0 || r.triCount <= 0 || (r.triStart + r.triCount) * 3 > mesh.geometry.index!.count) return false;
+    if (!mesh || !mesh.geometry.index || r.triStart < 0 || r.triCount <= 0 || (r.triStart + r.triCount) * 3 > mesh.geometry.index!.count) return false;
+    if (!rangeMatchesBox(mesh.geometry, r)) return false;
     (cut.get(mesh) ?? cut.set(mesh, []).get(mesh)!).push(r);
   }
   for (const mesh of meshes) {

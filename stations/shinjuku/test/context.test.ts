@@ -38,6 +38,7 @@ const LOD1_BUILDINGS = { draws: 6, triangles: 25308, geometryBytes: 2_052_424 };
 
 const manifest = JSON.parse(readFileSync(join(SOURCES_DIR, "context-manifest.json"), "utf8")) as {
   attribution: string;
+  license: { name: string; url: string };
   assets: Record<"low" | "high", { uri: string; outputSha256: string; outputBytes: number; triangles: number; drawCalls: number; features: number }>;
 };
 const VARIANT = { low: { uri: CONTEXT_GLB.low, draws: 1, triangles: 14_260, drawnTriangles: 14_220, geometryBytes: 672_408, meshNames: ["ctx_bldg_all"] }, high: { uri: CONTEXT_GLB.high, draws: 6, triangles: 83_705, drawnTriangles: 83_543, geometryBytes: 5_088_132, meshNames: ["ctx_bldg_t00_00", "ctx_bldg_t00_01", "ctx_bldg_t00_02", "ctx_bldg_t01_00", "ctx_bldg_t01_01", "ctx_bldg_t01_02"] } } as const;
@@ -59,7 +60,8 @@ describe("street context: station record and rights gate", () => {
     expect(a.derivation).toMatch(/flattened to street z = 0/);
   });
 
-  it("carries the Owner's credit verbatim (Q10 Option A) and CC BY 4.0 with its URL on every source the asset cites", () => {
+  it("carries the Owner's credit verbatim (Q10 Option A) and the PLATEAU Site Policy licence, never a CC BY label, on every source the asset cites", () => {
+    expect(manifest.license).toEqual({ name: "PLATEAU Site Policy 「３．著作権について」に拠る", url: "https://www.mlit.go.jp/plateau/site-policy/" });
     expect(CONTEXT_ATTRIBUTION).toBe("出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成（建物の基部を地表面の高さにそろえて表示）");
     expect(manifest.attribution).toBe(CONTEXT_ATTRIBUTION);
     for (const id of bundle.assets![0]!.sourceIds) {
@@ -68,7 +70,10 @@ describe("street context: station record and rights gate", () => {
       expect(source.usage).toBe("data");
       expect(source.modified).toBe(true);
       // What apps/web's Coverage dialog renders for this source.
-      expect(sourceCredit(source)).toMatchObject({ attribution: CONTEXT_ATTRIBUTION, license: { name: "CC BY 4.0", href: "https://creativecommons.org/licenses/by/4.0/" }, modified: true });
+      expect(sourceCredit(source)).toMatchObject({ attribution: CONTEXT_ATTRIBUTION, license: { name: "PLATEAU Site Policy 「３．著作権について」に拠る", href: "https://www.mlit.go.jp/plateau/site-policy/" }, modified: true });
+      // No licence name or in-app credit names CC BY (#161).
+      const shown = sourceCredit(source);
+      expect([source.license?.name ?? "", shown.license?.name ?? "", shown.attribution, source.attribution, source.title, source.notes ?? ""].join("\n")).not.toMatch(/CC[ -]?BY/i);
     }
   });
 
@@ -318,6 +323,7 @@ describe("street context: clearance from our walkable street", () => {
     });
   }
 
+  const meshesOf = {} as Record<"low" | "high", ReturnType<typeof parseGlb>["meshes"]>;
   it("every omitted id and triangle range is in the features table of both files, and the list is for these GLBs", () => {
     const man = JSON.parse(readFileSync(join(SOURCES_DIR, "context-omit.json"), "utf8")) as { glbSha256: Record<"low" | "high", string>; reason: string };
     expect(man.reason).toBe("E27 exit opening lies inside this building's footprint; the context is a solid visual mass with no modelled opening, so drawing it would put the exit inside a wall. Omitted visually; not a claim that the building is absent.");
@@ -325,10 +331,19 @@ describe("street context: clearance from our walkable street", () => {
       expect(man.glbSha256[v]).toBe(manifest.assets[v].outputSha256);
       expect(CONTEXT_OMIT.glbTriangles[v]).toBe(VARIANT[v].triangles);
       const rows = featureRows(v);
+      meshesOf[v] = parseGlb(readGlbBytes(VARIANT[v].uri)).meshes;
       for (const o of CONTEXT_OMIT.omit) {
         const row = rows.find((r) => r.gmlId === o.gmlId);
         expect(row, `${v} ${o.gmlId}`).toBeDefined();
-        expect({ mesh: row!.mesh, triStart: row!.triStart, triCount: row!.triCount }, `${v} ${o.gmlId}`).toEqual(o.ranges[v]);
+        expect({ mesh: row!.mesh, triStart: row!.triStart, triCount: row!.triCount }, `${v} ${o.gmlId}`).toEqual({ mesh: o.ranges[v].mesh, triStart: o.ranges[v].triStart, triCount: o.ranges[v].triCount });
+        // The stored fingerprint is the box measured from the committed GLB (what prepareContext checks at load).
+        const mesh = meshesOf[v].find((m) => m.name === row!.mesh)!;
+        const box = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
+        for (let k = row!.triStart * 3; k < (row!.triStart + row!.triCount) * 3; k++) for (let a = 0; a < 3; a++) {
+          const x = mesh.positions[mesh.indices[k]! * 3 + a]!;
+          box[a] = Math.min(box[a]!, x); box[a + 3] = Math.max(box[a + 3]!, x);
+        }
+        box.forEach((x, i) => expect(x, `${v} ${o.gmlId} bbox[${i}]`).toBeCloseTo(o.ranges[v].bbox[i]!, 3));
       }
     }
   });
@@ -360,6 +375,20 @@ describe("street context: clearance from our walkable street", () => {
       const first = contextMeshes(stale.scene)![0]!;
       first.geometry.setIndex(Array.from(first.geometry.index!.array).slice(0, 30));
       expect(prepareContext(stale.scene, v)).toBe(false);
+    });
+  }
+
+  for (const v of ["low", "high"] as const) {
+    it(`${v}: fails closed on reordered features with the same triangle total (bounding-box fingerprint), touching nothing`, async () => {
+      const gltf = await nodeLoadGlb()(VARIANT[v].uri);
+      const first = contextMeshes(gltf.scene)!.find((m) => m.name === CONTEXT_OMIT.omit[0]!.ranges[v].mesh)!;
+      const before = Array.from(first.geometry.index!.array);
+      // Rotate the triangle list by half its length: same total, same names and ranges, different buildings inside them.
+      const cut = Math.floor(before.length / 6) * 3;
+      first.geometry.setIndex([...before.slice(cut), ...before.slice(0, cut)]);
+      const reordered = Array.from(first.geometry.index!.array);
+      expect(prepareContext(gltf.scene, v)).toBe(false);
+      expect(Array.from(first.geometry.index!.array)).toEqual(reordered);
     });
   }
 
