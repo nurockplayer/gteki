@@ -431,6 +431,7 @@ export class Explorer {
         .filter((n) => streets.some((f) => f.id === n.floorId))
         .map((n) => R(n.position.x, n.position.y, nodeDisplayZ(n, streets.find((f) => f.id === n.floorId)).z));
       this.stationScene.root.updateMatrixWorld(true);
+      this.street.attach(this.stationScene.root);
     } else {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
@@ -470,6 +471,7 @@ export class Explorer {
 
   private clearStation(): void {
     this.street.restore(this.scene);
+    this.street.attach(null);
     this.streetY = null;
     this.streetTops = [];
     this.streetProbe.at.set(Infinity, 0, 0);
