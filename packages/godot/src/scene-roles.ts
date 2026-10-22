@@ -3,6 +3,8 @@
  * (written to glTF `extras.gteki_role` by GLTFExporter), taken from the scene's own `walkable` / `colliders` /
  * `cameraBlockers` lists, which are the only collision truth the web walker uses. Godot never infers it.
  *
+ * - Every mesh that is not drawn in the source (invisible itself, under an invisible ancestor, or with only invisible
+ *   materials) is flagged `gteki_hidden`, whether or not it is listed; the Godot loader never draws flagged meshes.
  * - A mesh listed in a list gets that list's role (its own role when it is already one of that list's
  *   vocabulary, e.g. "stairs_ramps", else "walkable" / "collider" / "camera_blocker").
  * - Listed meshes the scene keeps outside `root` (Ikebukuro's raycast tiles) are attached to a proxy group.
@@ -42,6 +44,8 @@ export interface RoleSummary {
   camera_blocker: number;
   see_through: number;
   collisionOnly: number;
+  /** Meshes whose source was not drawn (hidden object or ancestor, or invisible material), listed or not. */
+  hidden: number;
   /** Drawn meshes replaced by scene collision (exported as "visual"). */
   replacedByCollision: number;
   warnings: string[];
@@ -95,12 +99,19 @@ export function tagSceneRoles(scene: StationScene): RoleSummary {
   for (const mesh of categories.keys()) if (!isUnder(mesh, scene.root)) proxies.attach(mesh);
   if (proxies.children.length > 0) scene.root.add(proxies);
 
-  const summary: RoleSummary = { meshes: 0, triangles: 0, byRole: {}, walkable: 0, collider: 0, camera_blocker: 0, see_through: 0, collisionOnly: 0, replacedByCollision: 0, warnings };
+  const summary: RoleSummary = { meshes: 0, triangles: 0, byRole: {}, walkable: 0, collider: 0, camera_blocker: 0, see_through: 0, collisionOnly: 0, hidden: 0, replacedByCollision: 0, warnings };
   const visit = (object: THREE.Object3D, inherited: string | null) => {
     const own = roleOf(object);
     const role = own ?? inherited;
     if (isMesh(object)) {
       const category = categories.get(object);
+      // Visibility is a property of the source mesh, whatever lists it is in: GLTFExporter (onlyVisible: false) would
+      // otherwise draw scene helpers (access-fence collider, solid doors, portal and walk-bridge meshes) that the
+      // scene keeps invisible and collides through tiles instead. The loader hides every flagged mesh.
+      if (!isDrawn(object)) {
+        object.userData.gteki_hidden = true;
+        summary.hidden += 1;
+      }
       let effective: string;
       if (category !== undefined) {
         effective = role !== null && VOCAB[category].includes(role) ? role : category;
