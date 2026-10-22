@@ -36,7 +36,7 @@ Not re-run here (cited from the PRs that ran them): `pnpm check:godot` (re-run 2
 | 6 | Independent audit of every shipped asset against the manifest | PASS (desk) for the non-inlined files; GAP for inlined JSON | Lane F desk audit: [#12 comment](https://github.com/nurockplayer/gteki/issues/12#issuecomment-6324807437). `pnpm audit:assets` (#142, `pipeline/audit_assets.ts`) run today against the real `pnpm build` output with `--dist`: 10 files, all declared; both GLBs and both lightmaps are in `dist` byte-for-byte (`ikebukuro_b1.glb` `aef077a6...`, `ikebukuro_b1_lit.glb` `29b98e44...`); the two small `.meta.json` are inlined by Vite, as the audit expects. One WARN remains and is pinned on purpose: `ikebukuro_b1_lit.meta.json` records `source_glb_sha256 e0188c50...` while the shipped generic GLB is `aef077a6...` (a material-only rebuild, `lit_provenance.test.ts:64-76`, #139). Still open: the four inlined scene JSON files (`signage`, `crowd_lanes`, `walk_bridges`, `access_fences`) are not declared anywhere (#121). [inlined-data-declarations.md](inlined-data-declarations.md) (#150) proposes a `dataFiles` schema; it needs `packages/schema` and `apps/web/stations-plugin.ts`, so it is Lane C's. | Lane F (audit), Lane C (#121) |
 | 7 | Street-context rights (#39) | in progress (#110) | Owner chose option (b) on #39 (buildings, roads as geometry only, credit shown in-app). #110 at `d3e248a` carries the sources, the credits and the independent review. Nothing street-related is on main. | Ikebukuro |
 | 8 | Facts-only credit wording (#26 follow-up) | GAP (Lane C) | The app shows `[REFERENCE_ONLY, facts-only]`, not the agreed wording. Draft: `docs/gis/decisions/facts-only-credit-wording.md`; tracked as #122. | Lane C |
-| 9 | Field verification of access, gates and hours | HOLD (field) | 21 checks in [field-checklist.md](field-checklist.md); not a release blocker (Owner, 2026-10-21). | Owner |
+| 9 | Field verification of access, gates and hours | HOLD (field) | 21 checks (A1 to H4) plus section I (I1 to I7: FC-IK-01 to 03 and the #174 freshness checks) in [field-checklist.md](field-checklist.md); Exit 9 is B2; not a release blocker (Owner, 2026-10-21). | Owner |
 
 ## G1 Geometry
 
@@ -60,7 +60,8 @@ Not re-run here (cited from the PRs that ran them): `pnpm check:godot` (re-run 2
 | 3 | Negative routes fail safely | PASS | `routing.test.ts:103-130` (unknown ids, start equals goal, search-only POI, `no_path`); Lane F IN1-IN5 on `b511263`. | Ikebukuro, Lane F |
 | 4 | Core test matrix (stale, closed link, level transition, wrong-way, unknown, accessible, paid, cross-operator) | PASS (was UNKNOWN) | `routing.test.ts`: one-way `:131`, closed link `:151`, level transition `:187`, freshness `:225`, hours and step-free `:249`; fare-paid and cross-operator rows do not apply (asserted, `:281-291`, no paid edge, one operator). | Ikebukuro |
 | 5 | Narration reads sensibly | PASS | `routing.test.ts:207`: the "stairs down, then stairs up to street level" in I1 is real (`e_hall` to `e_low` down, `e_low` to `x35` up), closing Lane F's A5. | Ikebukuro |
-| 6 | Exits and gates routable | GAP | 20 POIs are search-only (5 gates, 15 exit numbers) and refuse to route (`routing.test.ts:113`). Per-POI evidence: [coverage-gaps.md](coverage-gaps.md) (#140). Cheapest field unlock: checklist B2 (Exit 9). | Ikebukuro, Owner |
+| 6 | Exits and gates routable | GAP | 20 POIs are search-only (5 gates, 15 exit numbers) and refuse to route (`routing.test.ts:113`). Per-POI evidence: [coverage-gaps.md](coverage-gaps.md) (#140). Cheapest field unlock: checklist B2 (Exit 9). Desk research R1 (data-research PR #177, `DR-IK-station-facts.md`, 2026-10-22) found no public source that closes the blocker for any of the 20, so all 20 stay search-only; the per-POI verdicts are the last column of the coverage-gaps table. One candidate is not wireable yet: `metro-m-central-east-gate` (Metro's pages disagree on whether the lift is at Exit 34 or 35, FC-IK-02). | Ikebukuro, Owner |
+| 6b | Candidate POI addition (not one of the 20) | GAP, pending an Owner OK | Yurakucho 南通路西改札 to Exit 4 is stated by Tokyo Metro's accessibility page with both endpoints (改札外 lift and escalator), and Exit 4 is already routed, but the west gate has no POI (`gap-south-west`, field item F2). Adding a POI is a data change and waits for the Owner's OK; nothing was added here (#177). | Owner |
 | 7 | Narration and destination match real public access within data freshness | GAP (field) | Based on a 2023 survey and 2022/2026 map facts; hours unknown; gate lines not placed. Needs the field visit; see "Freshness risks since the 2023 survey" below. | Owner |
 
 ### Freshness risks since the 2023 survey (G0 / G2 field-check items)
@@ -76,7 +77,7 @@ Source: data-research PR #174 (open, `docs/research/gaps/DR-changes-since-2023.m
 | CH-IK-03 | Exit 1b sign changed to wall-embedded during a 2025 building renovation; no passage change stated | None expected | Photograph the sign for facts only |
 | CH-IK-07 to 09 | Concept-stage over-track east-west deck, east plaza (2040s), Tobu platform work | None today (beyond 2030, or no gate or passage change stated) | None |
 
-Effect on the rows above: G0 row 9 and G2 row 7 stay HOLD / GAP, and G2 row 2's `stale: true` is the right signal. These items give the field visit a concrete list. [field-checklist.md](field-checklist.md) does not yet carry CH-IK-04, 01, 02 or 05/06 as checks; adding them is a checklist edit for the lane, not done here.
+Effect on the rows above: G0 row 9 and G2 row 7 stay HOLD / GAP, and G2 row 2's `stale: true` is the right signal. These items give the field visit a concrete list. They are now checks I4 to I7 in [field-checklist.md](field-checklist.md) section I (CH-IK-04, 01, 02, 05/06), together with FC-IK-01 to 03 from #177, cross-referenced to the existing A to H items.
 
 ## G3 Quality (L2)
 
@@ -116,7 +117,7 @@ Desk-closable by Ikebukuro: none left. What remains needs a GPU or phone, anothe
 | Lane F verdict on current main; G1 row 8 camera recheck; Exit 18 full descent; stale flag on the route card | Lane F | GPU slot (see l2-evidence.md capture plan) |
 | Fresh independent side-by-side review (G3 7, 8) | Lane F | Read-only Claude subagent over fresh frames and the video |
 | Physical phone checks (G3 6) | Owner | A real iPhone and Android phone |
-| Field visit: 21 checks, plus the #174 freshness items (CH-IK-04, 01, 02, 05/06); search-only POIs; hours; narration versus reality (G0 9, G2 6, 7, G3 8) | Owner | On-site |
+| Field visit: 21 checks plus section I (FC-IK-01 to 03, CH-IK-04, 01, 02, 05/06); search-only POIs; hours; narration versus reality (G0 9, G2 6, 7, G3 8) | Owner | On-site |
 | Sound assessment (G3 5) | Owner, Lane F | Listening on a device |
 | Inlined scene JSON declared (G0 6) | Lane C | `packages/schema` and `apps/web` change (#121, proposal in #150) |
 | Facts-only credit wording (G0 8); persistent HUD credit (G0 4) | Lane C | #122, #137 |
