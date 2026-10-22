@@ -32,8 +32,8 @@ afterEach(() => vi.useRealTimers());
 describe("mascotLine: event -> line", () => {
   for (const lang of LANGS) {
     const t = strings(lang);
-    it(`arrival is the dog, happy, announced (${lang})`, () => {
-      expect(mascotLine(t, { kind: "arrival" })).toMatchObject({ character: "dog", expression: "happy", lineKey: "arrival", line: t.mascot.arrival, announce: true });
+    it(`arrival is the dog, happy, not announced (the toast says it) (${lang})`, () => {
+      expect(mascotLine(t, { kind: "arrival" })).toMatchObject({ character: "dog", expression: "happy", lineKey: "arrival", line: t.mascot.arrival, announce: false });
     });
 
     it(`arrival_connector is the cat, sorry, and never says arrived (${lang})`, () => {
@@ -83,11 +83,12 @@ describe("mascotLine: event -> line", () => {
     expect(mascotLine(t, { kind: "no_path", reason: "start_equals_goal" })!.expression).toBe("neutral");
   });
 
-  it("announce is true for every state event and false only for turn", () => {
+  it("announce is true for arrival_connector and every state event, false for turn and arrival (the toast announces arrival)", () => {
     const t = strings("en");
-    const events: MascotEvent[] = [{ kind: "arrival" }, { kind: "arrival_connector" }, { kind: "no_path", reason: "no_path" }, { kind: "route_unknowns" }, { kind: "search_empty" }];
+    const events: MascotEvent[] = [{ kind: "arrival_connector" }, { kind: "no_path", reason: "no_path" }, { kind: "route_unknowns" }, { kind: "search_empty" }];
     for (const ev of events) expect(mascotLine(t, ev)!.announce).toBe(true);
     expect(mascotLine(t, { kind: "turn" })!.announce).toBe(false);
+    expect(mascotLine(t, { kind: "arrival" })!.announce).toBe(false);
   });
 
   it("transient: only turn and arrival lines time out", () => {
@@ -187,7 +188,7 @@ describe("MascotSlot", () => {
     expect(heard).toEqual([]);
     s.say({ kind: "arrival" });
     s.say({ kind: "route_unknowns" });
-    expect(heard).toEqual([strings("en").mascot.arrival, strings("en").mascot.routeUnknowns]);
+    expect(heard).toEqual([strings("en").mascot.routeUnknowns]);
   });
 
   it("state lines stay until cleared; turn and arrival lines time out", () => {

@@ -21,7 +21,7 @@ export interface MascotLine {
   lineKey: string;
   /** Fixed i18n text. Never interpolated with route facts. */
   line: string;
-  /** Joined into the shared LiveRegion burst; false when the text is announced elsewhere (turn). */
+  /** Joined into the shared LiveRegion burst; false when the text is announced elsewhere (turn, arrival: the toast already says it). */
   announce: boolean;
   /** Hides itself after a few seconds; state events stay until cleared. */
   transient: boolean;
@@ -39,7 +39,7 @@ export function mascotLine(t: Strings, ev: MascotEvent): MascotLine | null {
   const m = t.mascot;
   switch (ev.kind) {
     case "arrival":
-      return { character: "dog", expression: "happy", lineKey: "arrival", line: m.arrival, announce: true, transient: true };
+      return { character: "dog", expression: "happy", lineKey: "arrival", line: m.arrival, announce: false, transient: true };
     case "arrival_connector":
       // The guide ran out on a stair/escalator/ramp, not at the destination: never "arrived".
       return { character: "cat", expression: "sorry", lineKey: "arrival_connector", line: m.arrivalConnector, announce: true, transient: true };
