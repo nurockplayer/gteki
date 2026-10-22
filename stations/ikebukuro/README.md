@@ -100,9 +100,10 @@ reproduces `w_n__x18` at ENU (-100.5, 152.5) blocked by `doors`), which shows th
   `bodyBlock` rules on the `buildScene` snapshot, which includes access fences) reports `bodyBlocked=1`: `sp_m__g_jr_s`
   sample 38 at the gate-line end `g_jr_s`, which sits 0.13 m from the access fence it routes to (the same 0.6 m end
   allowance as `build_access.py` `END_ALLOW`).
-- **Access fences are web-only:** `scene/access_fences.json` is built by `scene/scene.ts` and is not in
-  the GLB or the manifest, so Godot free walk is NOT access-fenced; it can reach surveyed floor the web scene
-  fences off as "access unverified".
+- **Access fences are not in the GLB:** `scene/access_fences.json` is built by `scene/scene.ts` and is not
+  in the GLB or the manifest, so free walk with the GLB addon loader (`gteki_station.gd`) is NOT
+  access-fenced; it can reach surveyed floor the web scene fences off as "access unverified". The Godot HQ
+  client (`packages/godot`, from the `buildScene` snapshot) includes the fence colliders.
 - **Door semantics:** with role `visual`, doors are simply non-colliding everywhere in Godot. Verified exit
   routes pass, but so do shopfront doors and windows, which the web scene makes solid (`solidDoors`, leaving
   open only panels that verified-route segments cross), and so do `portals`, which the web blocks as
