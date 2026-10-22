@@ -402,7 +402,7 @@ export interface FovEase {
   settleMs: number | null;
   /** Total change in FOV after the click (deg). */
   changeDeg: number | null;
-  curve: { t: number; fovV: number | null }[];
+  curve: { t: number; fovV: number | null; mode: string | null }[];
 }
 
 export function analyseFovEase(event: string, rec: { frames: FovFrame[] }): FovEase {
@@ -423,6 +423,6 @@ export function analyseFovEase(event: string, rec: { frames: FovFrame[] }): FovE
     event, frames: rec.frames.length, startFov: rnd(start, 100), endFov: rnd(end, 100), maxStepDeg: post.length > 1 ? rnd(maxStep, 100) : null, settleMs: settle,
     changeDeg: start !== null && end !== null ? rnd(end - start, 100) : null,
     // Thin the curve (every other frame away from the click) so the JSON stays small and diffable.
-    curve: post.filter((f, i) => i % 2 === 0 || Math.abs(f.t) < 80).map((f) => ({ t: f.t, fovV: rnd(f.fovV, 100) })),
+    curve: post.filter((f, i) => i % 2 === 0 || Math.abs(f.t) < 80).map((f) => ({ t: f.t, fovV: rnd(f.fovV, 100), mode: f.mode })),
   };
 }
