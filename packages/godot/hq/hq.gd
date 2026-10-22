@@ -10,6 +10,7 @@ const Scene = preload("res://addons/gteki/gteki_scene.gd")
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
 const FollowCamera = preload("res://addons/gteki/gteki_follow_camera.gd")
 const Capture = preload("res://hq/hq_capture.gd")
+const GuideHud = preload("res://hq/hq_guide.gd")
 
 ## Web wheel notch (deltaY) in the units apply_look expects, and stick look speed in pixels per second.
 const WHEEL_UNITS := 100.0
@@ -23,6 +24,7 @@ var holder: Node3D
 var walker: Walker
 var camera: FollowCamera
 var spawn_index := 0
+var guide_hud: GuideHud
 var _look := Vector2.ZERO
 var _zoom := 0.0
 var _placing := false
@@ -68,6 +70,10 @@ func _ready() -> void:
 		printerr("Unknown --look=%s (baseline or hq)" % look)
 		get_tree().quit(2)
 		return
+	if not check_only and capture_dir.is_empty():
+		guide_hud = GuideHud.new()
+		add_child(guide_hud)
+		guide_hud.setup(self)
 	var ok := load_station(wanted if not wanted.is_empty() else station_ids[0])
 	if ok:
 		ok = await place_at_spawn(0)
@@ -111,6 +117,8 @@ func load_station(id: String) -> bool:
 	if background is float or background is int:
 		RenderingServer.set_default_clear_color(Color.hex((int(background) << 8) | 0xff))
 	walker.set_walls(current.sidecar.get("walls", []))
+	if guide_hud != null:
+		guide_hud.station_changed(id)
 	return true
 
 
@@ -130,6 +138,8 @@ func place_at_spawn(index: int) -> bool:
 		walker.pitch = Walker.DEFAULT_PITCH
 		camera.follow(walker, 0.0, true)
 		print("spawn %d/%d %s %s" % [spawn_index + 1, current.spawn_points.size(), spawn.node_id, spawn.label])
+		if guide_hud != null:
+			guide_hud.refresh_labels()
 	else:
 		printerr("No walkable ground at spawn %s" % spawn.node_id)
 	_placing = false
@@ -172,8 +182,13 @@ func _physics_process(delta: float) -> void:
 	var right := Vector2(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X), Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y))
 	if right.length() > STICK_DEADZONE:
 		look += right * STICK_LOOK_SPEED * delta
+	if guide_hud != null and guide_hud.typing():
+		move = Vector2.ZERO
 	walker.apply_look(look.x, look.y, _zoom)
 	_look = Vector2.ZERO
 	_zoom = 0.0
+	# G-3: guided walking moves the avatar along the route itself; any movement key hands control back.
+	if guide_hud != null and guide_hud.physics(delta, move):
+		return
 	walker.step(delta, move, Input.is_physical_key_pressed(KEY_SHIFT))
 	camera.follow(walker, delta)
