@@ -17,7 +17,7 @@ The plugin also cannot match an inlined file to a declaration today: `generateBu
 
 All four are imported by `stations/ikebukuro/scene/scene.ts` (lines 12-15). A grep of `scene/*.ts` and `gteki/scene.ts` finds no other data imports. The other JSON the scene imports is already covered: `../gteki/graph.json` is a contract file, and `../gteki/assets/ikebukuro_b1_lit.meta.json` is already in asset `b1`'s `files[]`.
 
-Source ids: `P` = `plateau-ubld-13116` (CC BY 4.0, modified), `T` = `toshima-underground-guide-2022` (facts-only), `M` = `tokyometro-ikebukuro-yardmap-2026-03` (facts-only).
+Source ids: `P` = `plateau-ubld-13116` (PLATEAU Site Policy, modified), `T` = `toshima-underground-guide-2022` (facts-only), `M` = `tokyometro-ikebukuro-yardmap-2026-03` (facts-only).
 
 | File (relative to `stations/ikebukuro/`) | Size | Source ids | Modified | Derivation | Generator (`pnpm --filter @gteki/station-ikebukuro build:data` runs all) |
 |---|---|---|---|---|---|
