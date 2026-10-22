@@ -50,7 +50,7 @@ No names on rooms or passages, no ticket gates, no paid/unpaid boundary, no oper
 
 - **Facts and works are separated.** Exit numbers, gate names and access facts (which passage is public, which opening is which exit or gate) that can be checked independently may be used and published. The protected works themselves (map images, drawings, layout, pictograms, logos, typefaces, tracings) are not reproduced. This is how the two REFERENCE_ONLY sources above are used.
 - **JR East:** traced as above. It was not used, so no source entry is added.
-- **Public release:** cleared ("ship directly"). Field verification stays a stated gap. The UI says the data is desk-verified, not field-verified, and that hours are unknown.
+- **Merge authorization:** "ship directly" once the rights check, deployment isolation, Codex review and integration tests pass ([#26 comment](https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404), relayed by the lane from the Owner's instructions); an Owner acceptance of the public release itself is not recorded. Field verification stays a stated gap. The UI says the data is desk-verified, not field-verified, and that hours are unknown.
 
 ## Verification standard used by this lane
 
@@ -70,6 +70,6 @@ Hours stay `null` (unknown) unless an official source states them. This is **des
 | CRS, axis order and vertical datum | PASS (EPSG:6697 lat/lon/H; ENU frame documented in extractor) |
 | Geometry coverage enumerated | PASS (B1 free passages; paid areas absent) |
 | Topology / access / hours in open data | **GAP**: hand-authored graph with per-edge evidence, hours unknown |
-| Field verification | **HOLD**: none performed; survey brief in `coverage-gaps.md` (not a release blocker per the Owner, 2026-10-21) |
-| Facts from REFERENCE_ONLY sources in a public, commercial product | PASS (Owner decision 2026-10-21: facts/works separation) |
+| Field verification | **HOLD**: none performed; survey brief in `coverage-gaps.md` |
+| Facts from REFERENCE_ONLY sources in a public, commercial product | PASS (Owner decision relayed by the lane, 2026-10-21: facts/works separation, [#26 comment](https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404)) |
 | JR East sources | PASS (traced: not used) |
