@@ -1,8 +1,10 @@
 extends SceneTree
-## G-5a: headless evidence walks (#164). For four Ikebukuro routes plus a flat control it does two things and writes
-## the result as a Markdown evidence table:
+## G-5a: headless evidence walks (#164). For a station's routes it does two things and writes the result as a Markdown
+## evidence table:
 ##   1. route check: ask the real bridge (gteki_bridge.gd -> packages/cli/src/route.ts, the same TypeScript router the
-##      web explorer runs) for the route and compare it, exactly, with tests/e2e/specs/__goldens__/.../ikebukuro-routes.json;
+##      web explorer runs) for the route and compare it, exactly, with the web's golden
+##      (tests/e2e/specs/__goldens__/02-navigation.spec.ts/<station>-routes.json); a scenario the router must refuse is
+##      checked as a refusal with the golden's own reason;
 ##   2. walk check: spawn the web-rule walker (gteki_walker.gd) at the route start and drive it along the route polyline,
 ##      recording walked length, stalls, body-block episodes, the floors it actually visited (y bands), the arrival
 ##      distance and the time at the web's walk speed.
@@ -28,8 +30,7 @@ const LEG_BUDGET_STEPS := 600
 const LEG_BUDGET_FACTOR := 2.0
 ## The golden the web's 02-navigation spec writes; every expected value (distance, seconds, node count, floor changes,
 ## step list) is read from it, never copied into this file.
-const GOLDEN := "tests/e2e/specs/__goldens__/02-navigation.spec.ts/ikebukuro-routes.json"
-const EVIDENCE := "res://docs/evidence/g5-ikebukuro.md"
+const GOLDEN_DIR := "tests/e2e/specs/__goldens__/02-navigation.spec.ts"
 ## Walked 3D length must match the route's own length within `max(LENGTH_TOLERANCE_M, vertices * WAYPOINT_REACH)`. The
 ## walk ties every vertex, so each one can add or cut less than the reach of path, and the ground height it follows is
 ## damped (~0.2 m lag on a stair): the error is bounded per vertex, not proportionally to the route. The measured worst
@@ -37,14 +38,42 @@ const EVIDENCE := "res://docs/evidence/g5-ikebukuro.md"
 const LENGTH_TOLERANCE_M := 0.5
 const LENGTH_TOLERANCE_PER_VERTEX := WAYPOINT_REACH
 
-## Evidence route label -> the golden scenario it replays. W2 is the flat control (no floor change).
-const ROUTES := [
-	{"label": "W1", "golden": "I1"},
-	{"label": "W2", "golden": "I2"},
-	{"label": "W3", "golden": "I3"},
-	{"label": "W4", "golden": "I4"},
-	{"label": "I7", "golden": "I7"},
-]
+## What the evidence run does at each station: the golden it replays, the table it writes, and the golden scenarios it
+## covers (evidence label -> scenario id, with the reason it is in the set). A scenario whose golden route is ok is
+## walked; one the router must refuse is checked as a refusal, from the same bridge and the same profile flags.
+const PLANS := {
+	"ikebukuro": {
+		"golden": "ikebukuro-routes.json",
+		"evidence": "res://docs/evidence/g5-ikebukuro.md",
+		# W2 is the flat control (no floor change); the rest cover a stair each way and the two deepest routes.
+		"routes": [
+			{"label": "W1", "golden": "I1"},
+			{"label": "W2", "golden": "I2"},
+			{"label": "W3", "golden": "I3"},
+			{"label": "W4", "golden": "I4"},
+			{"label": "I7", "golden": "I7"},
+		],
+	},
+	"shinjuku": {
+		"golden": "shinjuku-routes.json",
+		"evidence": "res://docs/evidence/g5-shinjuku.md",
+		"selection": [
+			"All nine scenarios of the golden are replayed here: four route and are walked, five are refusals the router",
+			"must make and are checked against the bridge (a refused route has no polyline to walk).",
+		],
+		"routes": [
+			{"label": "S1", "golden": "S1", "why": "street to the Oedo platform: the longest route, four floor changes and the fare line"},
+			{"label": "S2", "golden": "S2", "why": "Oedo platform to the street (north-west) via the stacked switchback: four floor changes"},
+			{"label": "S3", "golden": "S3", "why": "B1 exit to the B3 toilets inside the paid area: the paid-area way down"},
+			{"label": "S4", "golden": "S4", "why": "street to B1 south, outside the gates: the shortest route (13 m), one floor change"},
+			{"label": "S5", "golden": "S5", "why": "step-free profile: the router must refuse, the connection uses stairs"},
+			{"label": "SN1", "golden": "SN1", "why": "outside-gates profile: the platform is paid, so the router must refuse"},
+			{"label": "SN2", "golden": "SN2", "why": "outside-gates profile: the toilets are paid, so the router must refuse"},
+			{"label": "SN3", "golden": "SN3", "why": "require-known-hours profile: unknown hours, so the router must refuse"},
+			{"label": "SN4", "golden": "SN4", "why": "start equals goal: the router must refuse with its own reason"},
+		],
+	},
+}
 
 var checks := 0
 var failures: Array[String] = []
