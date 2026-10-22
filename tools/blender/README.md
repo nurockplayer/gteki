@@ -36,6 +36,10 @@ Godot screenshots: `sh tools/blender/godot_import/run_import_test.sh --screensho
 Blender round-trip renders (re-imports the GLBs, lights them from `LIGHTHINT_*`):
 `blender -b --factory-startup -P tools/blender/render_preview.py -- --layout <layout.json> --out shot.png`.
 
+Showcase GLB (a layout as one file with its reference cameras, for Godot):
+`blender -b --factory-startup -P tools/blender/showcase_export.py -- --layout tools/blender/showcase/vertical_demo.json --out <dir>/vertical_demo.glb [--library-root <scratch library>]`.
+It reuses `render_preview.py` placement and camera maths, so Godot sees the same views. Everything sits under one empty `SHOWCASE_<layout>` (extras `gteki_showcase`), and each entry of `cameras` (and `camera`) becomes a camera named by its key with extras `gteki_camera` (`lens_mm`, `look_at`, `source_layout`). `LIGHTHINT_*` / `SOCKET_*` empties and `*-colonly` nodes are kept. Studio lights, hint area lights, world and floor are not exported.
+
 Editable sources: add `--save-blend <dir>` to `build.py` to save a `.blend` per asset (keep outside Git), or change parameters in a catalog and rebuild — the catalog plus code is the source of truth.
 
 ## Layout
