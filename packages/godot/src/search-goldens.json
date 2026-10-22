@@ -215,11 +215,11 @@
             "score": 105
           },
           {
-            "poiId": "metro-m-central-gate",
+            "poiId": "metro-m-central-east-gate",
             "score": 60
           },
           {
-            "poiId": "metro-m-central-east-gate",
+            "poiId": "metro-m-central-west-gate",
             "score": 60
           }
         ]
@@ -231,6 +231,14 @@
           {
             "poiId": "central-passage",
             "score": 105
+          },
+          {
+            "poiId": "metro-m-central-west-gate",
+            "score": 60
+          },
+          {
+            "poiId": "metro-m-central-east-gate",
+            "score": 60
           }
         ]
       },
@@ -243,11 +251,11 @@
             "score": 105
           },
           {
-            "poiId": "metro-m-central-gate",
+            "poiId": "metro-m-central-east-gate",
             "score": 60
           },
           {
-            "poiId": "metro-m-central-east-gate",
+            "poiId": "metro-m-central-west-gate",
             "score": 60
           }
         ]
@@ -261,11 +269,11 @@
             "score": 85
           },
           {
-            "poiId": "exit-37",
+            "poiId": "exit-38",
             "score": 85
           },
           {
-            "poiId": "exit-38",
+            "poiId": "east-exit-b1",
             "score": 85
           }
         ]
@@ -275,11 +283,11 @@
         "normalized": "eastexit",
         "top": [
           {
-            "poiId": "exit-22",
+            "poiId": "east-exit-b1",
             "score": 85
           },
           {
-            "poiId": "exit-37",
+            "poiId": "exit-22",
             "score": 85
           },
           {
@@ -325,11 +333,11 @@
         "normalized": "丸の内線",
         "top": [
           {
-            "poiId": "metro-m-central-gate",
+            "poiId": "metro-m-central-east-gate",
             "score": 100
           },
           {
-            "poiId": "metro-m-central-east-gate",
+            "poiId": "metro-m-central-gate",
             "score": 100
           },
           {
@@ -368,7 +376,7 @@
             "score": 85
           },
           {
-            "poiId": "poi:exit:3",
+            "poiId": "poi:exit:4",
             "score": 85
           }
         ]
@@ -504,15 +512,15 @@
         "normalized": "toilet",
         "top": [
           {
+            "poiId": "poi:toilet:3",
+            "score": 85
+          },
+          {
             "poiId": "poi:toilet:1",
             "score": 85
           },
           {
             "poiId": "poi:toilet:2",
-            "score": 85
-          },
-          {
-            "poiId": "poi:toilet:3",
             "score": 85
           }
         ]

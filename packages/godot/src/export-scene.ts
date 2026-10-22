@@ -19,7 +19,7 @@ import { enuToRenderer } from "@gteki/geo";
 import { parseStationFiles } from "@gteki/schema";
 import { glbPrimitivePlugin, type SceneContext, type StationScene, type StationSceneModule } from "@gteki/scene-api";
 import { headlessThree, installHeadlessDom, newShimUsage, stubRenderer, type ShimUsage } from "./headless-dom.ts";
-import { bakeInstancedMeshes, categoryOf, dropDynamicObjects, stripTextures, tagSceneRoles, type RoleSummary } from "./scene-roles.ts";
+import { bakeInstancedMeshes, categoryOf, dropDynamicObjects, stripTextures, tagLightmaps, tagSceneRoles, type LightmapInfo, type RoleSummary } from "./scene-roles.ts";
 
 export const SIDECAR_SCHEMA = "gteki.godot-scene/0.1" as const;
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -45,6 +45,8 @@ export interface SceneSidecar {
     /** World AABB (renderer frame) of all meshes whose exported role is walkable / collider. */
     bounds: { walkable: Bounds | null; collider: Bounds | null };
   };
+  /** The scene's baked lightmap, when it has one (three material state recorded before textures are stripped). */
+  lightmap?: LightmapInfo;
   /** Everything a shim degraded or the exporter dropped. Empty only if nothing was. */
   warnings: string[];
 }
@@ -108,11 +110,13 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
       const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).register(glbPrimitivePlugin);
       return new Promise<GLTF>((ok, fail) => loader.parse(ab, "", ok, fail));
     },
-    // Image decoding needs a browser: a blank texture stands in (the file must still exist).
+    // Image decoding needs a browser: a blank texture stands in (the file must still exist). The URI is kept on the
+    // placeholder so tagLightmaps can record which file the scene put on a material (the lightmap).
     loadTexture: async (uri, opts = {}) => {
       await readFile(inStation(uri));
       usage.placeholderTextures.push(uri);
       const tex = new THREE.Texture();
+      tex.userData.gteki_uri = uri;
       tex.colorSpace = opts.colorSpace === "linear" ? THREE.LinearSRGBColorSpace : THREE.SRGBColorSpace;
       tex.flipY = opts.flipY ?? true;
       return tex;
@@ -137,8 +141,10 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
   if (baked > 0) warnings.push(`${baked} InstancedMesh object(s) (escalator steps, platform-door leaves) baked into static merged meshes at their update(0, 0) pose; Godot 4.7 has no EXT_mesh_gpu_instancing import, per-instance colours and per-frame animation are not exported`);
   const roles = tagSceneRoles(scene);
   warnings.push(...roles.warnings);
+  // Before stripTextures: the lightmap lives on the material and would otherwise vanish with every other texture.
+  const lightmap = tagLightmaps(scene.root);
   const stripped = stripTextures(scene.root);
-  warnings.push(`all material textures omitted (${stripped} slot(s)); only base colours, names and UVs (incl. TEXCOORD_1) are kept, so the snapshot is untextured and unlit`);
+  warnings.push(`all material textures omitted (${stripped} slot(s)); only base colours, names and UVs (incl. TEXCOORD_1) are kept, so the snapshot is untextured and unlit${lightmap === null ? "" : "; the baked lightmap is described in the lightmap block and re-applied by the Godot client (G-4a)"}`);
   if (usage.canvases > 0) warnings.push(`${usage.canvases} canvas(es) were no-op 2D contexts (blank): procedural textures and sign faces are placeholders, and ${usage.measuredTexts} measureText call(s) used an em-width estimate that may size signs differently from the browser`);
   if (usage.imageDataReads > 0) warnings.push(`${usage.imageDataReads} canvas getImageData read(s) returned zeros`);
   if (usage.pmremEnvironments > 0) warnings.push(`${usage.pmremEnvironments} PMREM environment map(s) stubbed (no GPU): reflections absent`);
@@ -169,6 +175,7 @@ export async function exportStationScene(stationId: string): Promise<ExportResul
     spawnPoints: spawns,
     environment: scene.environment ?? {},
     counts,
+    ...(lightmap === null ? {} : { lightmap }),
     reference: {
       spawnPointsRenderer: spawns.map((p) => enuToRenderer(p)),
       wallSamplesRenderer: wallSamples,

@@ -96,27 +96,37 @@ Walkable HQ client work starts by loading both stations in Godot without Godot o
   uses), else its own role, else `visual`. Listed meshes that are never drawn (Shinjuku's walk proxies, Ikebukuro's
   raycast tiles) also carry `gteki_collision_only`. Every mesh the source scene does not draw (invisible itself, under an invisible ancestor, or with only invisible
   materials) is flagged `gteki_hidden`, listed or not, and the loader never draws it: Ikebukuro's access-fence collider,
-  solid door/window panels, portal "beyond" mesh and walk-bridge strips stay in the file as hidden originals while their
-  collision comes from the exported tiles (the walk bridges are walkable tiles with `gteki_source_role` `walk_bridges`).
-  Drawn meshes whose source role says walkable/collider but that the
+  solid door/window panels, the `portals` GLB mesh and walk-bridge strips stay in the file as hidden originals while
+  their collision comes from the exported tiles (the walk bridges are walkable tiles with `gteki_source_role`
+  `walk_bridges`). The `portal_beyond` mesh split out of `portals` is drawn, as on the web, and is the collider across
+  the openings (`stations/ikebukuro/scene/scene.ts:312` hides the original). A multi-material mesh with only some
+  materials visible keeps its drawn groups on the original and moves the invisible groups to a hidden sibling
+  (`<name>_hidden_materials`), so neither the drawn geometry nor its collision triangles are lost. Drawn meshes whose
+  source role says walkable/collider but that the
   scene replaces with its own collision (Ikebukuro's GLB floor vs. its tiles) are exported as `visual`, original role in
   `gteki_source_role`, so nothing collides twice. Material names, base colours and both UV sets (TEXCOORD_1) are kept.
 - `scene.json` (`gteki.godot-scene/0.1`): `stationId`, `sourceCommit` (+ `sourceDirty`), `walls` and `spawnPoints` in
-  ENU exactly as returned, `environment`, `counts` per role, a `reference` block (TypeScript-computed renderer-frame
-  values the Godot tests compare against; an oracle, not scene truth), and `warnings`.
+  ENU exactly as returned, `environment`, `counts` per role, `lightmap` (only when the scene has a baked one: the URI
+  it loaded, channel, colour space, `lightMapIntensity` and the flagged mesh/surface counts — see G-4a), a `reference`
+  block (TypeScript-computed renderer-frame values the Godot tests compare against; an oracle, not scene truth), and
+  `warnings`. The counts describe what the GLB can carry: a mesh with no drawable geometry (an empty `BufferGeometry`,
+  such as Shinjuku's viewer probe) is skipped by three's exporter, so it is left out of every count and named in a
+  warning instead of inflating the sidecar past the file.
 
 The browser-only parts are **shims, listed in `warnings`**: a no-op 2D canvas (blank textures; `measureText` is an
 em-width estimate, so sign sizes can differ), stubbed PMREM (no reflections), `loadTexture` returning blank textures
-(the Ikebukuro lightmap is not decoded), no audio. All material textures are omitted, so snapshots are **untextured
-and unlit**: this is geometry, roles and colours, not the #94 look (G-4 re-materials). `update()` runs once at `(0, 0)`;
-`InstancedMesh` (escalator steps, platform-door leaves) is baked into static merged meshes at that pose (Godot 4.7 cannot
-import `EXT_mesh_gpu_instancing`), and the Ikebukuro crowd (`ambient_crowd`) is dropped. The only added dependency is
+(the lightmap is a blank placeholder in the snapshot itself; G-4a re-loads the real file on the Godot side), no audio.
+All material textures are omitted, so snapshots are **untextured and unlit**: this is geometry, roles and colours, not
+the #94 look (G-4 re-materials). The one exception is the baked lightmap, whose material state is recorded in the
+sidecar and re-applied on the Godot side (G-4a, below). `update()` runs once at `(0, 0)`; `InstancedMesh` (escalator
+steps, platform-door leaves) is baked into static merged meshes at that pose (Godot 4.7 cannot import
+`EXT_mesh_gpu_instancing`), and the Ikebukuro crowd (`ambient_crowd`) is dropped. The only added dependency is
 `three` (same version as the stations, so the station modules share the exporter's instance); no canvas library.
 
 ```sh
 bash packages/godot/run-scenes.sh                 # export both stations, then the headless Godot snapshot tests
 bash packages/godot/run-scenes.sh shinjuku        # one station
-godot --path packages/godot res://hq/hq.tscn -- --station=ikebukuro   # HQ skeleton (windowed; Tab cycles stations)
+godot --path packages/godot res://hq/hq.tscn -- --station=ikebukuro [--lightmap=on|off]   # HQ skeleton (windowed; Tab cycles stations)
 godot --headless --path packages/godot res://hq/hq.tscn -- --station=shinjuku --check
 ```
 
@@ -124,7 +134,9 @@ Godot side: `addons/gteki/gteki_scene.gd` loads a snapshot with `gteki_assets.gd
 code), adds trimesh bodies for walkable meshes on `GROUND_LAYER` (value 4, backface collision on) next to the
 asset loader's collider bodies (layer 1) and camera blockers (layer 2, hidden), hides collision-only proxies, builds
 one thin box per wall segment between `zMin` and `zMax` (ENU `(x, y, z)` to Godot `(x, z, -y)`), and exposes spawn
-points and the environment. `hq/hq.gd` is a skeleton that picks a station and places a camera at its first spawn;
+points and the environment. A hidden mesh hides as a whole (`visible = false`) unless it carries drawn children: then
+the children stay and the mesh's own surfaces get a fully transparent, unshaded, shadow-free override material, because
+`layers = 0` only keeps the node out of every camera. `hq/hq.gd` is a skeleton that picks a station and places a camera at its first spawn;
 there is no walking, HUD or HQ renderer yet (`project.godot` still uses `gl_compatibility`).
 
 `tests/run_scene_tests.gd` checks, for each station: role counts equal the sidecar's, at least one walkable mesh and one
@@ -139,7 +151,98 @@ Known gaps and traps for later milestones:
 - Ikebukuro returns no `walls`; its collision is the 656 collider tiles (including ceilings, as on the web).
 - Shinjuku has no `collider`/`camera_blocker`/sign roles of its own (walls only); signs there are unlabelled `visual`.
 - Spawn `z` is the graph node's elevation; the tests confirm ground within 1 m, not that the point is legal to stand on.
-- Per-mesh geometry only: no textures, lightmap, lights, crowd, animation or audio (see the sidecar `warnings`).
+- Per-mesh geometry only: no textures, lights, crowd, animation or audio (see the sidecar `warnings`). The baked
+  lightmap is the one lighting term carried across (G-4a); everything else is lit by the HQ skeleton light.
+
+## Baked lightmap (G-4a of #164)
+
+The Ikebukuro scene bakes its lighting (`stations/ikebukuro/pipeline/blender_bake_lighting.py`) into a WebP that the
+web explorer samples on TEXCOORD_1. three keeps it on the material (`MeshStandardMaterial.lightMap`), which neither
+glTF nor the Godot importer carries, so the exporter records what `buildScene` actually did instead of guessing from a
+role or a name: every material slot whose material has a `lightMap` gets its surface index in
+`userData.gteki_lightmap_surfaces` (glTF extras), and the sidecar's `lightmap` block records the texture URI, the
+channel (1 = TEXCOORD_1 → Godot UV2), the colour space, `flipY` and `lightMapIntensity`. The exporter throws rather
+than pick one when a scene carries two textures, two intensities, or a texture whose source URI was not recorded.
+
+`addons/gteki/gteki_lightmap.gd` loads that WebP from the station's own `gteki/` folder (the snapshot has no
+textures), and replaces the flagged surfaces with a `ShaderMaterial` that samples UV2 and mirrors three's
+`lights_fragment_maps` path: the bake's stated decode `(byte/255)^2.2`, times `lightMapIntensity / PI` (three adds
+`texel × lightMapIntensity` to the irradiance and the physical BRDF applies `RECIPROCAL_PI`), times
+`albedo × (1 − metalness)`, added as EMISSION. The albedo uniform is declared `source_color` because the importer
+stores `StandardMaterial3D.albedo_color` in sRGB (glTF `baseColorFactor` is linear and Godot encodes it); without the
+hint every lightmapped surface, and the emission it scales, would be too bright. The net factor is `(byte/255)^2.2 × scale × LIGHTMAP_GAIN`; scale and
+gain stay in `scene.ts`, the sidecar only carries their product. `hq.gd` takes `--lightmap=on|off` (default on).
+The avatar draws on its own render layer (`gteki_walker.gd` `AVATAR_LAYER`, Godot layer 2); while the bake is applied
+`gteki_hq_lights.gd` masks the client's key + fill lights to that layer, so station meshes stay unlit by any added
+light (as the web, whose `lighting: "scene"` adds no scene lights and lights only its own avatar with a per-material
+environment map) and the avatar stays clearly shaded rather than a black silhouette. With `--lightmap=off` or a
+station without a bake (Shinjuku) the same lights reach every layer and light the unlit snapshot. Shinjuku has no
+lightmap block, so the flag changes nothing there. Not mirrored:
+three's dielectric multi-scattering energy compensation (a few percent) and the envMap specular (no reflections in
+the snapshot); the light rig will be settled in the G-4 look pass.
+
+`tests/run_scene_tests.gd` checks that the texture decodes at the size the bake metadata declares, that the sidecar's
+mesh and surface counts equal the applied ones, that each flagged surface keeps UV2 and carries the shader material,
+that `lightMapIntensity / (scale × PI)` equals the scene's `LIGHTMAP_GAIN` (0.09), that 36 sampled texel channels
+decode within 1e-3 of `(byte/255)^2.2 × scale × gain`, that the shader declares `albedo_color : source_color` and its
+uniform equals the source material's own `albedo_color`, and that `--lightmap=off` applies nothing.
+`tests/run_walk_tests.gd` checks the light masks on the helper: the avatar meshes sit on `AVATAR_LAYER`, with the bake
+applied at least one light reaches that layer and no light's cull mask includes the station's layer, and with it off
+every light does. The real wiring is asserted by the client itself: `run-scenes.sh` runs
+`hq.tscn --station=<id> --check` for each station, where `hq.gd` `check_lighting` compares every light's
+`light_cull_mask` with `gteki_hq_lights.cull_mask(lightmap_applied)`, requires every drawing station mesh to be on
+`WORLD_LAYER`, and requires a light on `AVATAR_LAYER` whenever a bake is applied. Layer 2 is reserved for the avatar.
+
+## HQ look profile (G-4b of #164)
+
+`addons/gteki/gteki_look.gd` has two profiles, picked with `--look=` on `hq.tscn`. **`baseline` is the default** and is
+today's look: no `WorldEnvironment`, no material changes. **`hq`** is the style-bible look and stays opt-in until the lead
+approves it visually.
+
+With `hq`, the client builds one `WorldEnvironment` and re-configures it for each station load from that station's own
+sidecar (`environment`), never from hard-coded values:
+
+- Tonemap AgX (the style references' tonemap, `docs/assets/style.md` §7) with `tonemap_exposure` from
+  `environment.exposure` (Shinjuku 0.92, Ikebukuro 1.0; three's own value).
+- SSAO on, glow off (§7's contact AO is what makes the equipment read; the references have no bloom).
+- Fog: three's `fog { color, near, far }` is linear in distance, so it maps to Godot depth fog with
+  `fog_mode = FOG_MODE_DEPTH`, `fog_depth_begin = near`, `fog_depth_end = far`, `fog_depth_curve = 1.0`, and the
+  sidecar's sRGB colour as is (`fog_light_color` takes sRGB and Godot linearises it — converting here as well would
+  apply the transform twice, leaving the fog almost black). Ikebukuro has fog (25..180 m), Shinjuku does not.
+- Ambient: a station whose bake is applied gets **no ambient** (`AMBIENT_SOURCE_DISABLED`), because the bake is its
+  light. An unbaked station (Shinjuku) gets `AMBIENT_SOURCE_COLOR` at §7's studio world grey
+  `(0.55, 0.58, 0.62)` linear, encoded once to sRGB (`linear_to_srgb()`, because Environment colours are sRGB), and
+  scaled to a 0.25 fill so the client's key + fill stay dominant. The web's Shinjuku rule
+  (hemisphere + RoomEnvironment 0.55, §8) is a scene light; Godot gets this ambient plus the same key + fill lights.
+- SDFGI is off; `--gi=sdfgi` turns it on for the GPU review slot. SSAO and SDFGI only render on Forward+/Mobile this
+  project runs `gl_compatibility`, where Godot ignores both (it prints a warning for SDFGI); they are set for the visual
+  pass, not for the headless gate.
+
+`looks/materials.json` maps snapshot material names to style-bible materials. Each mapping carries a `from` block with
+the snapshot evidence (colour, metal, roughness, surface count, roles, optionally the sample mesh names) and a one-line
+`evidence` note, because the snapshot loses the scene's own material names (three's exporter names unnamed materials
+`material_<n>`). Those names are positional, so the loader re-checks every mapping before applying it: a mapping is
+applied only while its material still has the recorded sRGB albedo exactly, metal and roughness within 0.01, and every
+recorded sample mesh still carries it. A mapping that no longer matches is skipped with a warning instead of repainting
+whatever took the name (#254/#257), and `run_look_tests.gd` fails on it. A station's
+`unmapped` array lists every material the table leaves alone and why; anything ambiguous stays there rather than being
+guessed. Shinjuku has 13 mapped materials (floors, walls, ceiling, tactile paving, stair nosings, gate bodies/caps,
+steel plates, light housings, the Oedo accent band, handrails); Ikebukuro is listed as entirely unmapped because its lightmap
+shader owns its surfaces and that decision belongs to the lead. The table sets only albedo (sRGB, written to
+`albedo_color` exactly as the glTF importer writes it), roughness and metal; it never touches emission, transparency or
+textures, and it only ever overrides surfaces whose material it names.
+
+Two mappings are **provisional, not E27 facts**: `material_2` (wall field → `steel_painted_light`, a grey painted steel
+per OD-30 via R10 #234) and `material_37` (stair nosings → `vertical_safety_yellow`, a representative style-bible finish;
+R10 found no source). `material_11` maps to `oedo_accent`, a style marked `local: true` with a `note`: GTEki's chosen
+Oedo magenta per OD-29 (#222), not the operator's official colour. The optional `local`, `note` and `provisional` fields
+are documentation; the loader ignores them, and the source's faint emission survives because the override duplicates the
+snapshot material.
+
+`tests/run_look_tests.gd` (run by `run-scenes.sh`) checks the profile selection and its errors, the Environment against
+each station's sidecar (AgX, exposure, SSAO, glow off, SDFGI on/off, depth fog near/far/curve/colour, the ambient rule),
+that every mapped name exists in the snapshot, that mapped albedo/roughness/metal equal the table, and that unmapped
+surfaces keep the snapshot material and take no override. `hq.gd --check --look=hq` prints the same profile summary the client renders.
 
 ## Third-person walk and follow camera (G-2 of #164)
 
@@ -181,7 +284,7 @@ without being blocked.
 
 It also replays **every verified edge** of `stations/ikebukuro/gteki/graph.json` with the selection and sampling of
 `stations/ikebukuro/pipeline/godot_colliders.gd` (`check:godot`: verified edges with a polyline, sampled every 0.25 m
-keeping each vertex, so edge and sample counts compare 1:1 with that script's 63 / 7,140). Per sample the snapshot must
+keeping each vertex, so edge and sample counts compare 1:1 with that script's `EDGES verified=… samples=…` line; 67 / 7,150 since #245). Per sample the snapshot must
 have walkable ground; between samples, horizontal rays at 0.2/0.6/1.0/1.4/1.7 m (that script's rule) and the walker's
 own body test must find no collider. A negative control makes the asset's `doors`/`windows`/`portals` meshes collide
 again (what `--control` does there) and the same replay must then report blocked edges; the test prints whether

@@ -21,22 +21,6 @@ const DT := 1.0 / 60.0
 const STALL_POINT := 8
 
 
-## The `--look=hq` environment: AgX tone mapping, SSAO on, glow off and one ambient source. Nothing else changes.
-static func hq_environment() -> WorldEnvironment:
-	var env := Environment.new()
-	env.background_mode = Environment.BG_CLEAR_COLOR
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.85, 0.9, 1.0)
-	env.ambient_light_energy = 0.6
-	env.tonemap_mode = Environment.TONE_MAPPER_AGX
-	env.ssao_enabled = true
-	env.glow_enabled = false
-	var node := WorldEnvironment.new()
-	node.name = "hq_environment"
-	node.environment = env
-	return node
-
-
 func run(hq: Node3D, out_dir: String, poses_file: String, look: String) -> int:
 	var started := Time.get_ticks_msec()
 	var dir := out_dir if out_dir.is_absolute_path() else ProjectSettings.globalize_path("res://").path_join(out_dir)
