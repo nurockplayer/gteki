@@ -13,6 +13,8 @@ export interface AvatarRig {
   /** speedMps: actual horizontal speed this frame (0 idle, ~1.45 walk, ~3.4 run). */
   update(dt: number, speedMps: number): void;
   setEnvMap(env: THREE.Texture | null, intensity?: number): void;
+  /** Screen-door fade of the whole body: 1 opaque, 0 hidden. Sets a uniform only (no program rebuild, no transparency). */
+  setFade(opacity: number): void;
   dispose(): void;
 }
 
@@ -383,9 +385,34 @@ function tube(points: readonly THREE.Vector3[], radius: number, d: Detail, close
 /* materials                                                                                   */
 /* ------------------------------------------------------------------------------------------ */
 
-function makeMaterials() {
-  const std = (color: number, roughness: number, side: THREE.Side = THREE.FrontSide, metalness = 0): THREE.MeshStandardMaterial =>
-    new THREE.MeshStandardMaterial({ color, roughness, metalness, side, envMapIntensity: 0.6, vertexColors: true });
+/**
+ * Screen-door dither: fragments whose noise exceeds the fade uniform are discarded, so a near camera sees
+ * through the body without alpha blending or sorting. Patched in at build, one program per material, shared
+ * by every avatar material; the shadow pass uses the depth material, so the body shadow does not fade.
+ */
+function ditherFade(material: THREE.MeshStandardMaterial, uniform: { value: number }): void {
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uAvatarFade = uniform;
+    shader.fragmentShader = shader.fragmentShader
+      .replace("void main() {", "uniform float uAvatarFade;\nvoid main() {")
+      .replace(
+        "#include <clipping_planes_fragment>",
+        `#include <clipping_planes_fragment>
+  if (uAvatarFade < 0.999) {
+    float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+    if (ign >= uAvatarFade) discard;
+  }`,
+      );
+  };
+  material.customProgramCacheKey = () => "avatar-dither-fade";
+}
+
+function makeMaterials(fade: { value: number }) {
+  const std = (color: number, roughness: number, side: THREE.Side = THREE.FrontSide, metalness = 0): THREE.MeshStandardMaterial => {
+    const material = new THREE.MeshStandardMaterial({ color, roughness, metalness, side, envMapIntensity: 0.6, vertexColors: true });
+    ditherFade(material, fade);
+    return material;
+  };
   return {
     skin: std(0xcfa283, 0.55),
     hair: std(0x2a2523, 0.72),
@@ -511,9 +538,10 @@ class Avatar implements AvatarRig {
   private readonly q2 = new THREE.Quaternion();
   private readonly e1 = new THREE.Euler();
   private disposed = false;
+  private readonly fade = { value: 1 };
 
   constructor(private readonly d: Detail) {
-    this.materials = makeMaterials();
+    this.materials = makeMaterials(this.fade);
     this.root.name = "avatar";
     this.build();
     this.hips.rotation.order = "YXZ";
@@ -909,6 +937,10 @@ class Avatar implements AvatarRig {
       mat.envMapIntensity = intensity;
       mat.needsUpdate = true;
     }
+  }
+
+  setFade(opacity: number): void {
+    this.fade.value = clamp(Number.isFinite(opacity) ? opacity : 1, 0, 1);
   }
 
   dispose(): void {

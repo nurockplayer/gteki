@@ -20,7 +20,7 @@ import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers 
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
-import { FOLLOW, followBoom, followDistance, followPose } from "./followCamera.ts";
+import { FOLLOW, avatarFade, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
@@ -193,6 +193,10 @@ export class Explorer {
   private yaw = 0; // radians; 0 = facing north (-Z)
   private pitch = -0.12;
   private camDistance: number = FOLLOW.defaultDistance;
+  /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
+  private boomRaise = 0;
+  private readonly raiseScratch = new THREE.Vector3();
+  private readonly raisedBoom = new THREE.Vector3();
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
@@ -1109,12 +1113,22 @@ export class Explorer {
       };
       // Under a camera-only blocker (a hanging sign box, a low cap) the boom slides lower before the camera is pulled in.
       ({ back, distance: dist } = this.blockerTargets.size ? followBoom(this.camDistance, pose.back, cast) : { back: pose.back, distance: followDistance(this.camDistance, cast(pose.back)) });
+      // Squeezed under the comfortable distance (a shaft wall behind, a slab above): look over the shoulder from
+      // higher up if some raised boom clears it (at most FOLLOW.raiseSteps extra rays, none when open).
+      const wantedRaise = constrainedPitch(this.camDistance, back, dist, cast, this.raiseScratch);
+      this.boomRaise = easeRaise(this.boomRaise, wantedRaise, dt, snap);
+      if (this.boomRaise > 0) {
+        back = raisedBack(back, this.boomRaise, this.raisedBoom);
+        dist = followDistance(this.camDistance, cast(back));
+      }
     }
     const desired = pose.pivot.clone().addScaledVector(back, dist);
     this.camera.position.lerp(desired, snap ? 1 : 1 - Math.exp(-dt * 10));
     // The smoothed position, not only the target, stays below camera-only blockers.
     if (this.blockerTargets.size) keepBelowBlockers(pose.pivot, this.camera.position, [...this.blockerTargets], FOLLOW.clearance, this.ray);
     this.camera.lookAt(pose.target);
+    // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
+    this.avatarRig?.setFade(avatarFade(this.camera.position.distanceTo(pose.pivot)));
   }
 
   private ensureAudio(): boolean {
