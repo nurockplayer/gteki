@@ -210,11 +210,14 @@ row({
     }),
     check("11 framing", PROJECTS, (p) => {
       const j = ev(p, `${station}-overview.json`); if (!j) return;
-      const sp = j.framing?.routable?.spread;
+      // #114's overviewFrame().extentShare when the build has it, else 11's label-anchor proxy.
+      const direct = j.framing?.framingDirect?.source === "overviewFrame" ? j.framing.framingDirect.value?.extentShare : undefined;
+      const sp = typeof direct === "number" ? direct : j.framing?.routable?.spread;
+      const what = typeof direct === "number" ? "routable extent (overviewFrame)" : "routable label spread (proxy)";
       const bad = [];
       if (j.mode !== "overview") bad.push(`opens in ${j.mode}`);
-      if (typeof sp === "number" && (sp < FRAMING.min || sp > FRAMING.max)) bad.push(`routable label spread ${num(sp, 2)} outside ${FRAMING.min}-${FRAMING.max}`);
-      return { ok: !bad.length, text: bad.length ? bad.join(", ") : `overview mode, routable label spread ${num(sp, 2)} of the shorter side (proxy)` };
+      if (typeof sp === "number" && (sp < FRAMING.min || sp > FRAMING.max)) bad.push(`${what} ${num(sp, 2)} outside ${FRAMING.min}-${FRAMING.max}`);
+      return { ok: !bad.length, text: bad.length ? bad.join(", ") : `overview mode, ${what} ${num(sp, 2)} of the shorter side` };
     }),
     check("09 labels", PROJECTS, (p) => {
       const j = ev(p, `${station}-label-fade.json`); if (!j) return;
@@ -326,24 +329,31 @@ row({
   groups: eyes("ui", "overview", "walk"),
 });
 
-if (station === "ikebukuro") row({
+row({
   id: "U1", criterion: "Freshness notice on the route card (stale source)",
-  rule: "Ikebukuro's source guide is from 2022 and the core default window is 730 days, so route.stale is true today and the card must show the 'Possibly outdated' badge. 02 records route.stale per scenario (navigation.json) but no spec captures the card text, so the card half is n/a (not captured); only the 03-route-card frame shows it.",
+  rule: "The core marks a route stale when a source is older than staleAfterDays (730 by default); Ikebukuro's 2022 guide is past it today. 02's search-UI test saves `<station>-search-ui.json` { stale, staleBadge }: when stale is true the card must show the 'Possibly outdated' badge. Older evidence without that file falls back to 02's per-scenario route.stale, with the card half n/a.",
   checks: [],
   info: () => {
     const lines = ran.map((p) => {
+      const ui = ev(p, `${station}-search-ui.json`);
+      if (ui) return `${SHORT[p]} stale ${ui.stale}, badge ${ui.staleBadge ? "shown" : "not shown"}`;
       const j = ev(p, `${station}-navigation.json`);
       if (!j) return `${SHORT[p]} ${NOT_RUN}`;
       const ok = Object.values(j).filter((s) => s?.result?.ok);
-      return `${SHORT[p]} route.stale true on ${ok.filter((s) => s.result.stale === true).length}/${ok.length} routed scenarios`;
+      return `${SHORT[p]} route.stale true on ${ok.filter((s) => s.result.stale === true).length}/${ok.length} routed scenarios (card not captured)`;
     });
-    return [`02 navigation.json: ${lines.join("; ")}`, "Card shows the notice: n/a (not captured by any spec; judge on the route-card frame)"];
+    return [`02: ${lines.join("; ")}`];
   },
   verdict: () => {
+    const ui = ran.map((p) => ev(p, `${station}-search-ui.json`)).filter(Boolean);
+    if (ui.length) {
+      if (ui.some((u) => u.stale === true && !u.staleBadge)) return "FAIL (stale route without the card notice)";
+      return ui.some((u) => u.stale === true) ? "PASS (stale route shows the notice)" : "info (route not stale; no notice expected)";
+    }
     const any = ran.map((p) => ev(p, `${station}-navigation.json`)).filter(Boolean);
     if (!any.length) return NOT_RUN;
     const stale = any.some((j) => Object.values(j).some((s) => s?.result?.ok && s.result.stale === true));
-    return stale ? "GAP (route.stale is true; card notice not captured by any spec)" : "info (route.stale not true in this evidence; no notice expected)";
+    return stale ? "GAP (route.stale is true; card notice not captured in this evidence)" : "info (route.stale not true in this evidence; no notice expected)";
   },
   humanText: "Open the route-card frame: with a stale route the card must show the 'Possibly outdated' (ja: 情報が古い可能性) badge near the freshness line, and the coverage dialog must state the source date. Reviewer judgement.",
   groups: eyes("ui"),
