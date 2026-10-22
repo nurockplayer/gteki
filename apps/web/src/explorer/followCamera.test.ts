@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW, clampDistance, followBoom, followDistance, followPose, viewDirection } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, clampDistance, followBoom, followDistance, followPose, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("stays under a 2.6 m ceiling at the default pitch and distance", () => {
@@ -142,5 +142,92 @@ describe("followBoom", () => {
     expect(out.distance).toBe(followDistance(wanted, cast(out.back)));
     // Never reports a distance past what is clear along the chosen boom.
     for (const h of cast(out.back)) expect(out.distance).toBeLessThanOrEqual(Math.max(FOLLOW.minDistance, h.distance - FOLLOW.clearance) + 1e-9);
+  });
+});
+
+describe("follow camera FOV", () => {
+  it("narrows third person only; first person and overview keep 60", () => {
+    expect(targetFov("walk", false)).toBe(FOV.follow);
+    expect(targetFov("guide", false)).toBe(FOV.follow);
+    expect(FOV.follow).toBe(50);
+    expect(targetFov("walk", true)).toBe(60);
+    expect(targetFov("guide", true)).toBe(60);
+    expect(targetFov("overview", false)).toBe(60);
+    expect(targetFov("overview", true)).toBe(60);
+  });
+
+  it("eases the same over one second at 30, 60 and 144 Hz", () => {
+    const after = (hz: number, seconds: number) => {
+      let f = 60;
+      for (let i = 0; i < Math.round(hz * seconds); i++) f = approachFov(f, 50, 1 / hz);
+      return f;
+    };
+    const at60 = after(60, 0.2);
+    expect(after(30, 0.2)).toBeCloseTo(at60, 6);
+    expect(after(144, 0.2)).toBeCloseTo(at60, 1);
+    // One time constant covers about 63% of the way.
+    expect(after(60, FOV.settle)).toBeCloseTo(50 + 10 * Math.exp(-1), 1);
+  });
+
+  it("never overshoots and lands exactly on the target", () => {
+    for (const [from, to] of [[60, 50], [50, 60]] as const) {
+      let f: number = from;
+      for (let i = 0; i < 240; i++) {
+        const next = approachFov(f, to, 1 / 60);
+        expect(Math.abs(next - to)).toBeLessThanOrEqual(Math.abs(f - to));
+        expect(Math.sign(next - to) * Math.sign(from - to)).toBeGreaterThanOrEqual(0);
+        f = next;
+      }
+      expect(f).toBe(to);
+    }
+  });
+
+  it("holds still for a zero or negative frame time", () => {
+    expect(approachFov(55, 50, 0)).toBe(55);
+    expect(approachFov(55, 50, -1)).toBe(55);
+  });
+});
+
+describe("slope lens", () => {
+  it("widens third person to 60 on a slope; overview is unchanged", () => {
+    expect(targetFov("guide", false, true)).toBe(FOV.firstPerson);
+    expect(targetFov("walk", false, true)).toBe(FOV.firstPerson);
+    expect(targetFov("guide", false, false)).toBe(FOV.follow);
+    expect(targetFov("overview", false, true)).toBe(FOV.overview);
+  });
+
+  const run = (state: typeof NO_SLOPE, vy: number, seconds: number, dt = 1 / 60) => {
+    for (let i = 0; i < Math.round(seconds / dt); i++) state = stepSlope(state, vy * dt, dt);
+    return state;
+  };
+
+  it("turns on for a climb or descent and off on level ground after the hold", () => {
+    let s = run(NO_SLOPE, 0.8, 0.5);
+    expect(s.on).toBe(true);
+    s = run(s, -0.8, 0.5);
+    expect(s.on).toBe(true);
+    s = run(s, 0, SLOPE.hold * 0.5);
+    expect(s.on).toBe(true);
+    s = run(s, 0, 1.5);
+    expect(s.on).toBe(false);
+  });
+
+  it("ignores slow drift and a single step-height blip", () => {
+    expect(run(NO_SLOPE, 0.1, 5).on).toBe(false);
+    const blip = stepSlope(NO_SLOPE, 0.15, 1 / 60);
+    expect(stepSlope(run(NO_SLOPE, 0, 1), 0.02, 1 / 60).on).toBe(false);
+  });
+
+  it("does not flutter when a landing dips just under the exit speed briefly", () => {
+    let s = run(NO_SLOPE, 0.8, 0.5);
+    s = run(s, 0, 0.3);
+    s = run(s, 0.8, 0.3);
+    expect(s.on).toBe(true);
+    expect(s.level).toBe(0);
+  });
+
+  it("is frame-rate independent", () => {
+    const at = (hz: number) => run(NO_SLOPE, 0.5, 0.3, 1 / hz).speed;
+    expect(at(30)).toBeCloseTo(at(144), 1);
   });
 });
