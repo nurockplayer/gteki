@@ -275,7 +275,7 @@ def toilet_entrance(asset_id, params, tex_res):
         raise ValueError("wall_depth_mm >= 0, screen_gap_mm >= 600 (a walker must fit), screen_t_mm > 0, screen_overlap_mm >= 0")
     if not 1.0 <= p["sign_centre_mm"] / 1000 <= 1.8 or not 150 <= p["sign_mm"] <= 600:
         raise ValueError("sign_centre_mm must be 1.0-1.8 m and sign_mm 150-600")
-    if not 1200 <= p["screen_h_mm"] <= p["opening_h_mm"]:
+    if p["screen"] == "maze" and not 1200 <= p["screen_h_mm"] <= p["opening_h_mm"]:
         raise ValueError("screen_h_mm must be 1.2 m up to the opening height")
     w, h = p["opening_w_mm"] / 1000, p["opening_h_mm"] / 1000
     tw, proud, depth = p["trim_w_mm"] / 1000, p["trim_proud_mm"] / 1000, p["wall_depth_mm"] / 1000
