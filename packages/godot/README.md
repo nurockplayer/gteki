@@ -320,3 +320,22 @@ on first use). `normalizeJa` is not ported, so matches are not highlighted.
 
 Tests: `lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-guide.sh` (golden searches on both stations, Ikebukuro
 `jr-central-gate-2` to `exit-35` ribbon, Shinjuku `poi:platform:oedo` to `poi:exit:1` symbolic, negative route, guided walk, HUD state).
+
+## Evidence walks (G-5a of #164)
+
+```sh
+lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-evidence.sh     # export, then the evidence walks
+```
+
+`tests/run_evidence_tests.gd` produces `docs/evidence/g5-ikebukuro.md`: a headless physics walk (no rendering) of four
+Ikebukuro guided routes (W1 Central Gate 2 to Exit 35, W3 Central Gate 1 to Exit 22, W4 South Gate to Exit 18, I7
+Exit 26 to Exit 10) plus a flat control (W2, West Exit B1 to Exit 4). For each route it asks the real bridge for the
+route and compares distance, time, node count, floor changes and the ordered step list with the web's golden
+(`tests/e2e/specs/__goldens__/02-navigation.spec.ts/ikebukuro-routes.json`) exactly, then walks the route polyline
+with `gteki_walker.gd` and records walked length against the route's, stops, body-block episodes, the floor changes the
+walker's own height trace shows, the arrival distance and the time at 1.45 m/s. The table carries the commit and Godot
+versions; it is committed with the change it describes.
+
+The walk stops W4 and I7 at the same passage (polyline point 13 / 46): the verified edge `w_c__w_n` passes 0.29 m from
+a collision-only proxy (`Mesh825_col`), inside the 0.3 m body radius. A probe 0.2 m west of the line walks cleanly, so
+the guide line (or the proxy) has to move; the test records the block as evidence and fails if it changes.
