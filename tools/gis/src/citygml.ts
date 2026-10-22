@@ -8,6 +8,8 @@ import type { SaxesAttributeNS, SaxesTagNS } from 'saxes';
 import { docsRoot, getStoredSource, getStoreRoot, writeJson } from './common.js';
 import { readZip } from './zip.js';
 import { project, type Point3 } from './crs.js';
+import { publicInventorySummary } from './literal-public.js';
+import { reportCredit, type ReportCredit } from './literal-classes.js';
 
 export interface CityPolygon {
   owner_key: string;
@@ -548,8 +550,12 @@ export async function inspectCityGml(sourceId: string): Promise<CityInventory> {
   };
   delete (summary as unknown as Partial<CityInventory>).features;
   const out = join(docsRoot, 'gis', 'inventory'); await mkdir(out, { recursive: true });
-  await writeJson(join(out, `${sourceId}.inventory.json`), summary);
-  const md = inventoryMarkdown(summary);
+  // Class (b) codelist labels (rights unknown, issue #129) stay in the store detail; the committed form carries their hashes.
+  // Class (a) values (gml:id, gml:name) stay with the credit recorded for the source (issue #129).
+  const credit = await reportCredit([sourceId]);
+  const publicSummary = { ...(publicInventorySummary(summary) as unknown as PublicInventorySummary), ...(credit ? { credit } : {}) } as PublicInventorySummary;
+  await writeJson(join(out, `${sourceId}.inventory.json`), publicSummary);
+  const md = inventoryMarkdown(publicSummary);
   await writeFile(join(out, `${sourceId}.md`), md, 'utf8');
   return inventory;
 }
@@ -569,10 +575,11 @@ export async function loadInventoryDetail(sourceId: string): Promise<CityInvento
   return inventory;
 }
 
-function inventoryMarkdown(inv: CityInventorySummary): string {
+type PublicInventorySummary = Omit<CityInventorySummary, 'compact_features'> & { credit?: ReportCredit; compact_features: Array<Omit<CityInventorySummary['compact_features'][number], 'function_label'> & { function_label_hash: { value_sha256: string; value_type: string } | null }> };
+function inventoryMarkdown(inv: PublicInventorySummary): string {
   const rows = Object.entries(inv.semantic_presence).map(([name, entry]) => `| ${name} | ${entry.status} | ${entry.count ?? 'unknown'} | ${entry.evidence.replaceAll('|', '\\|')} |`).join('\n');
   const types = Object.entries(inv.feature_type_counts).sort(([a], [b]) => a.localeCompare(b)).map(([type, count]) => `| ${type} | ${count} |`).join('\n');
-  const features = inv.compact_features.map(feature => `| ${feature.gml_id} | ${feature.type} | ${feature.names?.join('; ') || 'unknown'} | ${feature.function_code ?? 'unknown'} | ${feature.function_label ?? 'unknown'} |`).join('\n');
+  const features = inv.compact_features.map(feature => `| ${feature.gml_id} | ${feature.type} | ${feature.names?.join('; ') || 'unknown'} | ${feature.function_code ?? 'unknown'} | ${feature.function_label_hash ? `\`${feature.function_label_hash.value_sha256}\`` : 'unknown'} |`).join('\n');
   const codelists = inv.codelist_inputs.map(input => `- ${input.source_id} SHA-256 \`${input.sha256}\`, member \`${input.member}\` SHA-256 \`${input.member_sha256}\``).join('\n') || '- No codelist members loaded.';
-  return `# CityGML inventory: ${inv.source_id}\n\nVerification: \`${inv.verification}\` · SHA-256: \`${inv.source_sha256}\`\n\n- Features: ${inv.totals.feature_count}\n- Polygon definitions: ${inv.totals.polygon_definition_count}\n- Resolved geometry uses: ${inv.geometry_reference_summary.resolved} (inventory polygon records counted: ${inv.totals.polygon_count})\n- Rings / interior rings: ${inv.totals.ring_count} / ${inv.totals.interior_ring_count}\n- Vertices: ${inv.totals.vertex_count}\n- SRS: ${inv.srs_names.join(', ') || 'unknown'}; serialized coordinates are interpreted as latitude, longitude, height only for EPSG:6697.\n- Envelope: ${JSON.stringify(inv.envelope)}\n- Geometry CRS fallback: ${inv.crs_inheritance ?? 'none'}\n- Unsupported geometry references: ${inv.unsupported_geometry_references.count} (${inv.unsupported_geometry_references.truncated ? 'sample truncated' : 'all shown in full detail'})\n- Full feature detail: store path \`${inv.feature_tree.store_path}\`, SHA-256 \`${inv.feature_tree.sha256}\`, ${inv.feature_tree.bytes} bytes.\n\n## Codelist inputs\n\nStatus: \`${inv.codelist_status}\`\n\n${codelists}\n\n## Feature type counts\n\n| Type | Count |\n| --- | ---: |\n${types}\n\n## Compact room, name, code, and group table\n\nShowing ${inv.compact_features.length} of ${inv.compact_features_total} matching records. The full tree is in the store detail file above.\n\n| gml:id | Type | Literal names | Function code | Resolved label |\n| --- | --- | --- | --- | --- |\n${features}\n\n## Semantic presence\n\n| Item | Status | Count | Evidence |\n| --- | --- | ---: | --- |\n${rows}\n\n## Unknowns\n\n${inv.unknowns.map(x => `- ${x}`).join('\n')}\n`;
+  return `# CityGML inventory: ${inv.source_id}\n\nVerification: \`${inv.verification}\` · SHA-256: \`${inv.source_sha256}\`\n\n${inv.credit ? `Credit: ${inv.credit.attribution_text} (see ${inv.credit.classification})\n\n` : ''}- Features: ${inv.totals.feature_count}\n- Polygon definitions: ${inv.totals.polygon_definition_count}\n- Resolved geometry uses: ${inv.geometry_reference_summary.resolved} (inventory polygon records counted: ${inv.totals.polygon_count})\n- Rings / interior rings: ${inv.totals.ring_count} / ${inv.totals.interior_ring_count}\n- Vertices: ${inv.totals.vertex_count}\n- SRS: ${inv.srs_names.join(', ') || 'unknown'}; serialized coordinates are interpreted as latitude, longitude, height only for EPSG:6697.\n- Envelope: ${JSON.stringify(inv.envelope)}\n- Geometry CRS fallback: ${inv.crs_inheritance ?? 'none'}\n- Unsupported geometry references: ${inv.unsupported_geometry_references.count} (${inv.unsupported_geometry_references.truncated ? 'sample truncated' : 'all shown in full detail'})\n- Full feature detail: store path \`${inv.feature_tree.store_path}\`, SHA-256 \`${inv.feature_tree.sha256}\`, ${inv.feature_tree.bytes} bytes.\n\n## Codelist inputs\n\nStatus: \`${inv.codelist_status}\`\n\n${codelists}\n\n## Feature type counts\n\n| Type | Count |\n| --- | ---: |\n${types}\n\n## Compact room, name, code, and group table\n\nShowing ${inv.compact_features.length} of ${inv.compact_features_total} matching records. The full tree is in the store detail file above.\n\n| gml:id | Type | Literal names | Function code | Resolved label (value_sha256) |\n| --- | --- | --- | --- | --- |\n${features}\n\n## Semantic presence\n\n| Item | Status | Count | Evidence |\n| --- | --- | ---: | --- |\n${rows}\n\n## Unknowns\n\n${inv.unknowns.map(x => `- ${x}`).join('\n')}\n`;
 }
