@@ -13,7 +13,7 @@ Updated 2026-10-21 · contract `gteki-asset/0.1` (additive changes only) · lane
 | **Aspect-matched sign faces.** A 4.6:1 bar sign gets 1024×256 instead of 1024², and a map totem gets 512×1024, at the same texels per metre. | `signage._face_shape` | 33 MiB less unique GPU memory across the kit |
 | **Kit bundle** (`gteki-kit-bundle/0.1`). One GLB per scene, with images, samplers, textures and materials stored once. Placements are clones that share GPU resources. | `tools/blender/bundle_kit.py`, [contract §7](asset-contract.md#7-kit-bundles--gteki-kit-bundle01-derived-optional) | cross-asset dedupe without external files, so the Lane C fence and Godot's self-contained rule still hold |
 
-The manifest records each textured material's plan, for example `"textures": {"gteki_floor_terrazzo": {"res": 1024, "maps": ["albedo", "orm"]}}`, and the validator checks the GLBs against it.
+The manifest records each textured material's plan, for example `"textures": {"gteki_floor_terrazzo": {"res": 1024, "maps": ["albedo", "orm"]}}`, and the validator checks the GLBs against it. An asset with a baked occlusion map ([contract §4](asset-contract.md#4-materials-and-textures)) lists `occlusion` among every material's maps (also factor-only ones, whose `res` is 0) and gives its size as `occlusion_res` (128, 256 or 512), which the image-size rule checks instead of `res`.
 
 ### Options evaluated and not adopted (yet)
 
@@ -109,6 +109,12 @@ Renders are Blender EEVEE round-trips of the GLBs (`render_preview.py`, 1920×10
 ![Close-ups, baseline (left) and now (right): perforated bench, tactile dots, escalator treads](img/texture_budget_closeups.jpg)
 
 The lowest close-up scores belong to the bench (perforated steel at 512) and the tactile and tread textures (512 and 256). At pixel level they are indistinguishable in side-by-side crops: no moiré, no lost holes or dots.
+
+## AO pilot (2026-10-22)
+
+The pilot bakes AO into `gteki_gate_array_2` and `gteki_escalator_s1000_r5000_up` only, and adds one occlusion PNG to each. Full-tier unique image bytes go from 2.5x to 2.65 MiB, so `budget.json` `unique_image_mib` rises from 2.55 to 2.8 MiB, the measured value plus about 5%. Library download is 21.92 MiB against the 22.0 limit. The AO rebuild of the whole library adds a PNG to every asset, so it re-measures every limit on both tiers and raises them in the same PR.
+
+Assets with a bounds extent of 6 m or more get a third AO size, 1024 px on full and 512 px on mobile (`ao.HUGE_EXTENT_M`). The escalator's many small parts share one atlas. At 512 or 256 px with 5 px margins, they pack so small that thin bevel slivers collapse in UV1 and fail `validate_glb`. The lightmap layer is also quantised on a 2^-20 grid instead of 2^-16. That is still 16 float32 ULPs below 1.0, so byte reproducibility holds. UV0 keeps the 2^-16 grid.
 
 ## Regression tests
 

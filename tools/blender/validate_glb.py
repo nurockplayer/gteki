@@ -156,14 +156,16 @@ def uv_overlaps(tris, eps=1e-10):
         a = _area(t)
         if abs(a) > 1e-14:
             ccw[i] = tuple(t) if a > 0 else tuple(t[::-1])
-    # cells no smaller than the largest triangle, so a huge one cannot enumerate millions of cells
-    extent = max((max(p[k] for p in t) - min(p[k] for p in t) for t in ccw.values() for k in (0, 1)), default=0)
-    cell = max(1 / 64, extent)
+    boxes = {i: (min(p[0] for p in t), min(p[1] for p in t), max(p[0] for p in t), max(p[1] for p in t)) for i, t in ccw.items()}
+    # 1/64 cells, unless that enumerates millions of them (a huge triangle): then no smaller than the largest triangle
+    cell = 1 / 64
+    if sum((math.floor(b[2] / cell) - math.floor(b[0] / cell) + 1) * (math.floor(b[3] / cell) - math.floor(b[1] / cell) + 1)
+           for b in boxes.values()) > 4_000_000:
+        cell = max(cell, max((max(b[2] - b[0], b[3] - b[1]) for b in boxes.values()), default=0))
     grid = {}
-    for i, t in ccw.items():
-        xs, ys = [p[0] for p in t], [p[1] for p in t]
-        for gx in range(math.floor(min(xs) / cell), math.floor(max(xs) / cell) + 1):
-            for gy in range(math.floor(min(ys) / cell), math.floor(max(ys) / cell) + 1):
+    for i, (x0, y0, x1, y1) in boxes.items():
+        for gx in range(math.floor(x0 / cell), math.floor(x1 / cell) + 1):
+            for gy in range(math.floor(y0 / cell), math.floor(y1 / cell) + 1):
                 grid.setdefault((gx, gy), []).append(i)
     pairs = set()
     tested = set()
@@ -174,6 +176,9 @@ def uv_overlaps(tris, eps=1e-10):
                 if pair in tested:
                     continue
                 tested.add(pair)
+                a, b = boxes[pair[0]], boxes[pair[1]]
+                if a[2] <= b[0] or b[2] <= a[0] or a[3] <= b[1] or b[3] <= a[1]:
+                    continue  # boxes only touch or are apart
                 poly = _clip(ccw[pair[0]], ccw[pair[1]])
                 if len(poly) >= 3 and _area(poly) > eps:
                     pairs.add(pair)
@@ -211,9 +216,10 @@ def parse_glb(data):
 
 
 class Validator:
-    def __init__(self, name, data):
+    def __init__(self, name, data, require_occlusion=False):
         self.name = name
         self.data = data
+        self.require_occlusion = require_occlusion  # opt-in: every visual material needs the baked AO map
         self.result = dict(file=name, bytes=len(data), triangles=0, materials=0,
                            images=0, image_bytes=0, nodes=0, sockets=[], aabb=None,
                            messages=[])
@@ -350,6 +356,8 @@ class Validator:
             if material.get("name") in PALETTES:
                 # 4x4 swatches in a 64x64 atlas: any mip below 16x16 averages unrelated swatches
                 for slot, info in texture_infos(material):
+                    if slot == "occlusionTexture":
+                        continue  # the per-asset baked map is mipmapped; only the swatch atlas must not be
                     texture = self.index(doc.get("textures", []), info["index"])
                     sampler = (self.index(doc.get("samplers", []), texture["sampler"]) if "sampler" in texture else {})
                     if sampler.get("minFilter") not in (9728, 9729):
@@ -364,6 +372,23 @@ class Validator:
                 self.result["image_bytes"] += len(base64.b64decode(img["uri"].split(",", 1)[1], validate=True))
             else:
                 self.message("FAIL", "canonical GLB images must be embedded")
+        for material in materials:
+            occlusion = material.get("occlusionTexture")
+            if occlusion is None:
+                continue
+            # baked ambient occlusion: R channel of a per-asset PNG on the lightmap layer, strength 1
+            if effective_texcoord(occlusion) != 1:
+                self.message("FAIL", f"material {material.get('name')!r} occlusionTexture must use texCoord 1 "
+                             f"(the UVLightmap layer), got {effective_texcoord(occlusion)!r}")
+            if occlusion.get("strength", 1.0) != 1.0:
+                self.message("FAIL", f"material {material.get('name')!r} occlusionTexture strength must be 1.0")
+            image = self.index(doc.get("images", []), self.index(doc.get("textures", []), occlusion["index"]).get("source"))
+            raw = (binary[self.index(views, image["bufferView"]).get("byteOffset", 0):][:24] if "bufferView" in image else b"")
+            if image.get("mimeType") != "image/png" or raw[:8] != b"\x89PNG\r\n\x1a\n":
+                self.message("FAIL", f"material {material.get('name')!r} occlusion map must be an embedded PNG")
+            elif struct.unpack(">II", raw[16:24]) not in ((128, 128), (256, 256), (512, 512), (1024, 1024)):
+                self.message("FAIL", f"material {material.get('name')!r} occlusion map must be 128x128, 256x256, 512x512 or 1024x1024, "
+                             f"got {'x'.join(map(str, struct.unpack('>II', raw[16:24])))}")
         # Check all nodes, including unused nodes, for transform/naming violations.
         locals_ = []
         for index, node in enumerate(nodes):
@@ -387,15 +412,21 @@ class Validator:
         visited = set()
         collision_count = 0
 
-        checked_meshes = set()
+        visual_materials = set()
+        textures = doc.get("textures", [])
+        shared_atlas = any("occlusionTexture" in m for m in materials)
+        mesh_tris = {}  # mesh index -> lightmap triangles of its primitives
+        atlas = []  # visual node instances sharing the occlusion map: one UV space for all of them
 
         def lightmap_overlap(node):
             """TEXCOORD_1 is a lightmap: one UV space per mesh, shared by its primitives, inside the
-            unit square and without overlap. Mobile builds carry it on every visual triangle primitive."""
-            if node["mesh"] in checked_meshes:
+            unit square and without overlap. Mobile builds carry it on every visual triangle primitive.
+            With an occlusion map the whole asset shares one UV space (checked after the walk)."""
+            if node["mesh"] in mesh_tris:
+                if shared_atlas:
+                    atlas.append((node, mesh_tris[node["mesh"]]))
                 return
-            checked_meshes.add(node["mesh"])
-            tris = []
+            tris = mesh_tris[node["mesh"]] = []
             collapsed = 0
             for primitive in meshes[node["mesh"]].get("primitives", []):
                 mode = primitive.get("mode", 4)
@@ -440,6 +471,9 @@ class Validator:
             if collapsed:
                 self.message("FAIL", f"node {node.get('name')!r} has {collapsed} lightmap UV (TEXCOORD_1) triangles "
                              "collapsed to a point or line although their geometry is at least 1 mm^2")
+            if shared_atlas:
+                atlas.append((node, tris))
+                return
             overlapping = uv_overlaps(tris)
             if overlapping:
                 self.message("FAIL", f"node {node.get('name')!r} lightmap UV (TEXCOORD_1) has "
@@ -502,6 +536,8 @@ class Validator:
                             raise ValueError(f"invalid primitive mode {mode}")
                     if "material" in primitive:
                         material = self.index(materials, primitive["material"])
+                        if not collision:
+                            visual_materials.add(primitive["material"])
                         # core slots and extension slots alike, with KHR_texture_transform overrides
                         for slot, info in texture_infos(material):
                             coord = effective_texcoord(info)
@@ -515,6 +551,20 @@ class Validator:
                 visit(child, world, collision)
 
         visit(root_index, IDENTITY)
+        if shared_atlas:
+            # one occlusion map for the whole asset: every visual node lays its islands out in the same
+            # UV space, so they must not overlap across nodes (a mesh instanced twice overlaps itself)
+            overlapping = uv_overlaps([tri for _, tris in atlas for tri in tris])
+            if overlapping:
+                self.message("FAIL", f"visual nodes share one lightmap atlas (occlusion map) but their UV1 has "
+                             f"{len(overlapping)} overlapping triangle pairs")
+        if shared_atlas or self.require_occlusion:
+            lit = {m: (materials[m].get("occlusionTexture") or {}).get("index") for m in visual_materials}
+            if any(i is None for i in lit.values()) and (shared_atlas or visual_materials):
+                names = sorted(materials[m].get("name") for m, i in lit.items() if i is None)
+                self.message("FAIL", f"visual materials without occlusionTexture: {names}")
+            elif len({textures[i].get("source") for i in lit.values() if i is not None}) > 1:
+                self.message("FAIL", "visual materials must share one occlusion map")
         if not collision_count:
             self.message("WARN", "no collision node in active scene")
         if not all(math.isfinite(x) for x in low+high):
@@ -694,8 +744,48 @@ def self_test():
     assert lightmapped(None, uv_bytes=vec3, type="VEC3") == "FAIL"  # six valid UVs, wrong type only
     assert lightmapped(apart, count=5) == "FAIL"  # one UV per vertex
     assert lightmapped(tuple(c + 2 * (k % 2 == 0) for k, c in enumerate(apart))) == "FAIL"  # outside the unit square
+    def occluded(uv_a, uv_b, coord=1, attrs_b=("POSITION", "TEXCOORD_1"), same_mesh=False, side=256, strength=None,
+                 second_material=False, require=False):
+        """Two visual triangles (meshes A and B) whose material carries an occlusionTexture on `coord`."""
+        png = b"\x89PNG\r\n\x1a\n" + struct.pack(">I4sII", 13, b"IHDR", side, side) + b"\x08\x00\x00\x00\x00"
+        data = struct.pack("<9f", -1, 0, 0, 1, 0, 0, 0, 1, -1) + struct.pack("<6f", *uv_a) + struct.pack("<6f", *uv_b)
+        offsets = [0, 36, 60, 84]
+        data += png
+        occ = dict(index=0, texCoord=coord, **({"strength": strength} if strength is not None else {}))
+        oc = copy.deepcopy(doc)
+        oc["buffers"][0]["byteLength"] = len(data)
+        oc["bufferViews"] = [dict(buffer=0, byteOffset=o, byteLength=n) for o, n in zip(offsets, (36, 24, 24, len(png)))]
+        oc["accessors"] = [dict(bufferView=0, componentType=5126, count=3, type="VEC3", min=[-1, 0, -1], max=[1, 1, 0]),
+                           dict(bufferView=1, componentType=5126, count=3, type="VEC2"),
+                           dict(bufferView=2, componentType=5126, count=3, type="VEC2")]
+        oc["materials"] = [dict(name="gteki_test", occlusionTexture=occ)] + ([dict(name="gteki_other")] if second_material else [])
+        oc["textures"], oc["images"] = [dict(source=0)], [dict(bufferView=3, mimeType="image/png")]
+        mesh_b = {a: (2 if a == "TEXCOORD_1" else 0) for a in attrs_b}
+        oc["meshes"] = [dict(primitives=[dict(attributes=dict(POSITION=0, TEXCOORD_1=1), material=0)]),
+                        dict(primitives=[dict(attributes=mesh_b, material=1 if second_material else 0)])]
+        oc["nodes"] = [oc["nodes"][0], dict(name="VIS_a", mesh=0), dict(name="VIS_b", mesh=0 if same_mesh else 1),
+                       dict(name="COL_test-colonly", mesh=0)]
+        oc["nodes"][0]["children"] = [1, 2, 3]
+        oc["nodes"][0]["extras"]["gteki"]["triangles"] = 2
+        return Validator("tiny.glb", encode_glb(oc, data), require_occlusion=require).check()["status"]
+
+    # baked occlusion: texCoord 1, TEXCOORD_1 on every primitive, one lightmap atlas across all visual nodes
+    left, right = (0, 0, .5, 0, 0, 1), (.5, 0, 1, 0, .5, 1)
+    assert occluded(left, right) == "PASS"
+    assert occluded(left, right, coord=0) == "FAIL"  # occlusion must sample the lightmap layer
+    assert occluded(left, right, attrs_b=("POSITION",)) == "FAIL"  # a primitive without TEXCOORD_1
+    assert occluded(left, left) == "FAIL" and occluded(left, (.25, 0, .75, 0, .25, 1)) == "FAIL"  # overlap across two meshes
+    assert occluded(left, right, same_mesh=True) == "FAIL"  # one mesh instanced twice overlaps itself
+    assert occluded(left, right, strength=0.5) == "FAIL" and occluded(left, right, strength=1.0) == "PASS"
+    assert occluded(left, right, side=300) == "FAIL" and occluded(left, right, side=512) == "PASS"
+    assert occluded(left, right, side=128) == "PASS" and occluded(left, right, side=64) == "FAIL"
+    assert occluded(left, right, second_material=True) == "FAIL"  # one visual material lacks the shared map
+    assert occluded(left, left, coord=1) == "FAIL" and occluded(left, right, attrs_b=("POSITION",), coord=1) == "FAIL"
+    assert lightmapped(apart) == "PASS"  # no occlusion map: neither required nor warned about ...
+    assert Validator("tiny.glb", encode_glb(doc, binary)).check()["status"] == "PASS"
+    assert Validator("tiny.glb", encode_glb(doc, binary), require_occlusion=True).check()["status"] == "FAIL"  # ... unless asked
     print("PASS self-test: valid, broken, truncated, NaN, out-of-range index, sparse, transformed, strip and fan GLBs, "
-          "root identity, extensions, triangle count, below floor, texCoord (core, extension, transform, extras), palette mipmaps, lightmap (overlap, strips, fans, range, NaN, collapsed, mobile UV1)")
+          "root identity, extensions, triangle count, below floor, texCoord (core, extension, transform, extras), palette mipmaps, lightmap (overlap, strips, fans, range, NaN, collapsed, mobile UV1), occlusion (texCoord, TEXCOORD_1, joint atlas overlap, strength, size, shared map)")
 
 
 def main():
@@ -703,6 +793,8 @@ def main():
     parser.add_argument("files", nargs="*", type=Path)
     parser.add_argument("--report", type=Path)
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument("--require-occlusion", action="store_true",
+                        help="FAIL a GLB whose visual materials lack the baked occlusion map (default: allowed during the rollout)")
     args = parser.parse_args()
     if args.self_test:
         self_test()
@@ -711,7 +803,7 @@ def main():
     results = []
     for path in args.files:
         try:
-            result = Validator(str(path), path.read_bytes()).check()
+            result = Validator(str(path), path.read_bytes(), args.require_occlusion).check()
         except OSError as error:
             result = dict(file=str(path), status="FAIL", messages=[dict(level="FAIL", message=str(error))])
         results.append(result)

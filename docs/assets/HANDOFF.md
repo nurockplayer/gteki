@@ -42,6 +42,15 @@ Measured in your own scenes, on scratch copies of the station branches with prob
 
 Which gates, how many aisles, and where they stand is the station lead's decision.
 
+**Station manifests: `uri` and `uriMobile`** (Explorer contract, lands with #134). A station manifest asset can set an optional `uriMobile` next to `uri`. It follows the same canonical-path and `.glb` rules. On the low tier (phones) the explorer loads `uriMobile` when it is set, and `uri` otherwise. For kit placements, ship two bundles made from the same id list or layout:
+
+```sh
+python3 tools/blender/bundle_kit.py bundle --library assets/library        --ids <ids> --out stations/<id>/gteki/assets/kit/full.glb    # -> uri
+python3 tools/blender/bundle_kit.py bundle --library assets/library/mobile --ids <ids> --out stations/<id>/gteki/assets/kit/mobile.glb  # -> uriMobile
+```
+
+`--library` is the directory that holds `manifest.json`, not its `glb/` subdirectory. The two bundles carry the same asset ids, sockets and node names (the `extras.gteki_name` values included), so station code treats them the same way. Each one carries the per-asset AO material clones (`<material>~<asset id>`). Rebuild both from the same library commit, because a mobile palette change (a new colour-only material) moves the swatch UVs in every mobile GLB.
+
 ## Placing pieces
 
 Units are metres, glTF +Y is up, and the root carries `extras.gteki` (contract, params, `placement`, bounds, licence). The **placement class** tells you where the origin sits:
