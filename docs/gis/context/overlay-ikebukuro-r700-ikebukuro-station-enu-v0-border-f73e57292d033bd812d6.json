@@ -1,5 +1,5 @@
 {
-  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-border-b4c25e52b41f22b570ea",
+  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-border-f73e57292d033bd812d6",
   "command": "context-overlay",
   "policy_version": "context-overlay-v1",
   "station_id": "ikebukuro",
@@ -7,7 +7,7 @@
   "navigation_use": "NOT_FOR_ROUTING",
   "visual_only": true,
   "verification": "UNVERIFIED",
-  "note": "Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; the border layer ships the ring lines of the municipality the station origin falls in, and that municipality's name and code are not copied; the geometry is clipped to a 700 m disc around the station frame origin and is not the full source line; feature_hash is the hash of the whole source feature. No feature of this source meets the window: no GeoJSON and no GLB are written for this run, and the layer counts record where each source feature left the selection.",
+  "note": "Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; the border layer ships the ring lines of the municipality configured for the station (selected by code in the overlay config; the station origin need not fall inside it), and that municipality's name and code are not copied; the geometry is clipped to a 700 m disc around the station frame origin and is not the full source line; feature_hash is the hash of the whole source feature. No feature of this source meets the window: no GeoJSON and no GLB are written for this run, and the layer counts record where each source feature left the selection.",
   "clip": {
     "kind": "origin_disc",
     "radius_m": 700,
@@ -89,6 +89,6 @@
   },
   "bbox_local_ENU": null,
   "outputs": {},
-  "tool_input_sha256": "22380e52ba53d088346bc9c6bb3683ef3905f6941dcb1be304e454e0d7a59ad6",
+  "tool_input_sha256": "05c016fe8b36291c29988e08f0fc27fb7f75b2e23a950ec8da4ac55f5bfcfa55",
   "tool_version": "0.1.0"
 }

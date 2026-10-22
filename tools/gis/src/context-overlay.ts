@@ -364,7 +364,7 @@ export function publicOverlayReceipt(input: OverlayReceiptInput, sourceValues: R
     gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, verification: 'UNVERIFIED',
     note: 'Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied;' +
       (input.layers.some((l) => l.kind === 'railway') ? ' no railway class or track level is shown (the source has no underground versus at-grade field);' : '') +
-      (input.layers.some((l) => l.kind === 'border') ? ' the border layer ships the ring lines of the municipality the station origin falls in, and that municipality\'s name and code are not copied;' : '') +
+      (input.layers.some((l) => l.kind === 'border') ? ' the border layer ships the ring lines of the municipality configured for the station (selected by code in the overlay config; the station origin need not fall inside it), and that municipality\'s name and code are not copied;' : '') +
       (clipActive ? ` the geometry is clipped to a ${input.clip.radius_m} m disc around the station frame origin and is not the full source line; feature_hash is the hash of the whole source feature.` : ' the geometry is not clipped (clip disabled for this run); selected features are kept whole.') +
       (totals.selected === 0 ? ' No feature of this source meets the window: no GeoJSON and no GLB are written for this run, and the layer counts record where each source feature left the selection.' : ''),
     clip,

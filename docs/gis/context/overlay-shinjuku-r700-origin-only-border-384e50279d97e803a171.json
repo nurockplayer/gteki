@@ -1,5 +1,5 @@
 {
-  "run_id": "overlay-shinjuku-r700-origin-only-border-a700b8108f7093dba998",
+  "run_id": "overlay-shinjuku-r700-origin-only-border-384e50279d97e803a171",
   "command": "context-overlay",
   "policy_version": "context-overlay-v1",
   "station_id": "shinjuku",
@@ -7,7 +7,7 @@
   "navigation_use": "NOT_FOR_ROUTING",
   "visual_only": true,
   "verification": "UNVERIFIED",
-  "note": "Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; the border layer ships the ring lines of the municipality the station origin falls in, and that municipality's name and code are not copied; the geometry is clipped to a 700 m disc around the station frame origin and is not the full source line; feature_hash is the hash of the whole source feature.",
+  "note": "Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; the border layer ships the ring lines of the municipality configured for the station (selected by code in the overlay config; the station origin need not fall inside it), and that municipality's name and code are not copied; the geometry is clipped to a 700 m disc around the station frame origin and is not the full source line; feature_hash is the hash of the whole source feature.",
   "clip": {
     "kind": "origin_disc",
     "radius_m": 700,
@@ -103,12 +103,12 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/overlay-shinjuku-r700-origin-only-border-a700b8108f7093dba998.geojson",
+      "store_path": "out/overlay-shinjuku-r700-origin-only-border-384e50279d97e803a171.geojson",
       "sha256": "26ccc80da88d20866be5681def25a8b89b4817b23b6420ad94bb150819b623c5",
       "bytes": 2630
     },
     "glb": {
-      "store_path": "out/overlay-shinjuku-r700-origin-only-border-a700b8108f7093dba998.glb",
+      "store_path": "out/overlay-shinjuku-r700-origin-only-border-384e50279d97e803a171.glb",
       "sha256": "7a360df52c629129f5466a13874a497c8ef24cb9e87593cff2af54c18f4ecc8b",
       "bytes": 11728,
       "nodes": [
@@ -128,6 +128,6 @@
       "segments_skipped_zero_length": 0
     }
   },
-  "tool_input_sha256": "22380e52ba53d088346bc9c6bb3683ef3905f6941dcb1be304e454e0d7a59ad6",
+  "tool_input_sha256": "05c016fe8b36291c29988e08f0fc27fb7f75b2e23a950ec8da4ac55f5bfcfa55",
   "tool_version": "0.1.0"
 }
