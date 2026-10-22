@@ -239,10 +239,10 @@ describe("freshness (stale data)", () => {
     return r;
   };
 
-  it("reports its evidence dates: oldest source 2022-01 (Toshima guide), checked 2026-10-21, no undated or expired source", () => {
+  it("reports its evidence dates: oldest source 2022-01 (Toshima guide), checked 2026-10-22, no undated or expired source", () => {
     const r = at("2026-10-22");
     expect(r.oldestSourceDate).toBe("2022-01");
-    expect(r.evidenceCheckedDate).toBe("2026-10-21");
+    expect(r.evidenceCheckedDate).toBe("2026-10-22");
     expect(r.undatedSourceIds).toEqual([]);
     expect(r.expiredSourceIds).toEqual([]);
   });
