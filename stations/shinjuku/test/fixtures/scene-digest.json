@@ -466,7 +466,7 @@
     false
    ],
    "walls": "a714c93a0a556bf7eee01bef060c9de986e65f219a4130791c2533cd307a5dd1",
-   "spawnPoints": "f5e9807b6f27738f93660133b4db6b2f5e50ad341fc698395c4d8c953b18d9df",
+   "spawnPoints": "c757237e26c5c8f96b5fc5f610c52ac9902aeaa861bf7e1270cd2aef4a1e855a",
    "visual": {
     "[\"MeshBasicMaterial\",\"\",\"60754b\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
      "triangles": 6960,
@@ -1609,7 +1609,7 @@
     false
    ],
    "walls": "a714c93a0a556bf7eee01bef060c9de986e65f219a4130791c2533cd307a5dd1",
-   "spawnPoints": "f5e9807b6f27738f93660133b4db6b2f5e50ad341fc698395c4d8c953b18d9df",
+   "spawnPoints": "c757237e26c5c8f96b5fc5f610c52ac9902aeaa861bf7e1270cd2aef4a1e855a",
    "visual": {
     "[\"MeshBasicMaterial\",\"\",\"60754b\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=true": {
      "triangles": 6960,
