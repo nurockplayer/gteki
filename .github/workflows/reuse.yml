@@ -1,0 +1,29 @@
+name: REUSE licence lint
+
+# Runs `reuse lint` against REUSE.toml (Issue #123). Not a required check.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: reuse-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  reuse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # The third-party block in REUSE.toml is a draft until Lane D (GIS) completes the mapping,
+    # and the licence texts in LICENSES/ may still be placeholders, so lint can fail for now.
+    # TODO: remove `continue-on-error` once GIS completes the mapping and `reuse lint` is green.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      # fsfe/reuse-action: v5 is the latest major tag known when this was written; check the
+      # action's releases before bumping.
+      - uses: fsfe/reuse-action@v6
