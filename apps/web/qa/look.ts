@@ -16,6 +16,8 @@
 //   quality=low|high      force the explorer quality tier (patches matchMedia/screen before construction)
 //   old=1                 preset: tm=aces exp=0 env=0 hemi=1.1 bloomT=1 bloomS=0.32 contrast=1.08 sat=1.06 (each still overridable)
 //   env=room[:n]|n|0      environment light intensity n (default 1 if given bare); 0 removes scene.environment
+//                         (on the low tier this scales the SH probe that stands in for it, unless envVia=envMap)
+//   envVia=envMap|probe   low tier only: A/B the PMREM environment (the old phone path) against the SH probe
 //   tm=agx|aces|neutral   tone mapping (aces resets exposure to 1 unless exp is given)
 //   exp=<EV>|blender      exposure = 2^EV (replaces the explorer's); "blender" = the layout's own exposure (-0.2 / -0.35)
 //   shadows=1             the explorer's own sun shadow (shadows.ts policy + followShadow frustum), focused on the camera's
@@ -213,10 +215,19 @@ function applyLook(box: THREE.Box3): void {
 
   // Environment (image based light on top of the explorer's hemisphere + sun, exactly as a candidate would be).
   const env = param("env");
+  const probe = (ex as any).envProbe as THREE.LightProbe;
+  const via = param("envVia");
+  if (via === "envMap" && probe.visible) {
+    probe.visible = false;
+    (ex as any).probeWanted = false;
+    scene.environment = (ex as any).coreEnv();
+    applied.envVia = via;
+  }
   if (env !== null && env !== "") {
     const n = env === "off" ? 0 : env === "room" ? 1 : Number(env.replace(/^room:/, ""));
     if (!Number.isFinite(n)) fail(new Error(`bad env ${env}`));
-    if (n === 0) scene.environment = null;
+    if (probe.visible) { probe.visible = n > 0; probe.intensity = n; scene.environmentIntensity = n; (ex as any).probeWanted = n > 0; }
+    else if (n === 0) scene.environment = null;
     else {
       if (!scene.environment) { // the explorer keeps its own map for station lighting; reuse it
         const pmrem = new THREE.PMREMGenerator(renderer);
@@ -340,7 +351,7 @@ function info() {
     fov: camera.fov,
     size: [size.x, size.y], pixelRatio: renderer.getPixelRatio(),
     shadowMapEnabled: renderer.shadowMap.enabled, sunCastShadow: sun.castShadow,
-    hasEnvironment: !!scene.environment, environmentIntensity: scene.environmentIntensity, hemi: hemi.intensity,
+    hasEnvironment: !!scene.environment || ((ex as any).envProbe as THREE.LightProbe).visible, environment: ((ex as any).envProbe as THREE.LightProbe).visible ? "probe" : scene.environment ? "envMap" : null, environmentIntensity: scene.environmentIntensity, hemi: hemi.intensity,
     post: ex.composer ? (() => { const ps = ex.composer.passes as any[]; const b = ps.find((p) => p instanceof UnrealBloomPass), g = ps.find((p) => p.uniforms?.uContrast); return { bloomThreshold: b?.threshold, bloomStrength: b?.strength, contrast: g?.uniforms.uContrast.value, saturation: g?.uniforms.uSaturation.value, vignette: g?.uniforms.uVignette.value }; })() : null,
         drawCalls: frame.drawCalls, triangles: frame.triangles,
     programs: ri.programs?.length ?? 0,
@@ -397,6 +408,8 @@ function lumaStats(emissive: boolean, thresholds = [1, 1.5, 2, 2.5, 3, 4, 6]) {
 
 // ---- boot --------------------------------------------------------------------------------------------
 const ready = (async () => {
+  // The low tier's SH probe bakes asynchronously; apply the look only once it is in, so env params act on it.
+  for (let i = 0; i < 100 && (ex as any).probeBake === "baking"; i++) await new Promise((r) => setTimeout(r, 50));
   await loadKit();
   addGround();
   applyLook(new THREE.Box3().setFromObject(kit));
