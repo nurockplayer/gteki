@@ -77,6 +77,14 @@ const STRINGS = {
     touchHint: "左で移動（端まで倒すと走る）・右ドラッグで視点",
     noIndoorPositioning: "屋内測位は行いません。出発地を選んでください。",
     operators: "事業者",
+    options: "オプション",
+    close: "閉じる",
+    searchCount: (n: number) => `${n}件の候補`,
+    routeFound: (m: number, min: number) => `ルートが見つかりました：${m}m、約${min}分`,
+    liveSeparator: "。",
+    coverageStatus: { routable: "経路あり", visual_only: "表示のみ", unverified: "未確認", excluded: "対象外" } as Record<string, string>,
+    /** Short Coverage-dialog tag; the full #122 wording is `factsOnly`. */
+    factsOnlyTag: "事実確認のみ",
     language: "English",
   },
   en: {
@@ -152,6 +160,14 @@ const STRINGS = {
     touchHint: "Left thumb to move (push to the edge to run) · drag right side to look",
     noIndoorPositioning: "No indoor positioning. Choose where you start.",
     operators: "Operators",
+    options: "Options",
+    close: "Close",
+    searchCount: (n: number) => `${n} result${n === 1 ? "" : "s"}`,
+    routeFound: (m: number, min: number) => `Route found: ${m} m, about ${min} minute${min === 1 ? "" : "s"}`,
+    liveSeparator: ". ",
+    coverageStatus: { routable: "routable", visual_only: "visual only", unverified: "unverified", excluded: "excluded" } as Record<string, string>,
+    /** Short Coverage-dialog tag; the full #122 wording is `factsOnly`. */
+    factsOnlyTag: "facts-only",
     language: "日本語",
   },
 };

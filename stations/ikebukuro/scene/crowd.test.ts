@@ -391,5 +391,5 @@ describe("ikebukuro crowd stays on the routable floor", () => {
     expect(samples).toBeGreaterThan(7000);
     expect(outside).toBe(0);
     c.dispose();
-  });
+  }, 60_000); // 9000 simulated frames: ~2 s alone, over vitest's 5 s default when other files run in parallel
 });
