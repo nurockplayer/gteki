@@ -2,6 +2,7 @@
  * Procedural canvas textures — all original, generated at runtime (no third-party imagery).
  */
 import * as THREE from "three";
+import { OEDO_MAGENTA } from "./palette.ts";
 
 function canvas(w: number, h: number) {
   const c = document.createElement("canvas");
@@ -238,7 +239,7 @@ export function signTexture(lines: { arrow?: "left" | "right" | "up" | "down" | 
     let x = 24;
     // icon tile
     if (l.icon !== "none") {
-      g.fillStyle = light ? "#121212" : l.icon === "train" ? "#b6007a" : "#ffffff";
+      g.fillStyle = light ? "#121212" : l.icon === "train" ? OEDO_MAGENTA : "#ffffff";
       g.beginPath();
       g.roundRect(x, y0 + 14, 100, 100, 12);
       g.fill();
@@ -313,7 +314,7 @@ function drawIcon(g: CanvasRenderingContext2D, icon: SignIcon, x: number, y: num
     g.beginPath();
     g.roundRect(24 * u, 14 * u, 52 * u, 60 * u, 14 * u);
     g.fill();
-    g.fillStyle = "#b6007a";
+    g.fillStyle = OEDO_MAGENTA;
     g.fillRect(31 * u, 24 * u, 38 * u, 20 * u);
     g.beginPath();
     g.arc(36 * u, 60 * u, 5 * u, 0, Math.PI * 2);
