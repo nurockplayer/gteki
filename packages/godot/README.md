@@ -324,23 +324,44 @@ Tests: `lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-guide.sh` (g
 ## Evidence walks (G-5a of #164)
 
 ```sh
-lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-evidence.sh     # export, then the evidence walks
+lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-evidence.sh              # Ikebukuro -> docs/evidence/g5-ikebukuro.md
+lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-evidence.sh shinjuku     # Shinjuku  -> docs/evidence/g5-shinjuku.md
 ```
 
-`tests/run_evidence_tests.gd` produces `docs/evidence/g5-ikebukuro.md`: a headless physics walk (no rendering) of four
-Ikebukuro guided routes (W1 Central Gate 2 to Exit 35, W3 Central Gate 1 to Exit 22, W4 South Gate to Exit 18, I7
-Exit 26 to Exit 10) plus a flat control (W2, West Exit B1 to Exit 4). For each route it asks the real bridge for the
-route and compares distance, time, node count, floor changes and the ordered step list with the web's golden
-(`tests/e2e/specs/__goldens__/02-navigation.spec.ts/ikebukuro-routes.json`) exactly, then walks the route polyline
-with `gteki_walker.gd` and records walked length against the route's, stops, body-block episodes, the floor changes the
-walker's own height trace shows, the arrival distance and the time at 1.45 m/s. The table carries the commit and Godot
-versions; it is committed with the change it describes.
+`tests/run_evidence_tests.gd` holds one plan per station (`PLANS`): the golden it replays, the table it writes and the
+golden scenarios it covers. Ikebukuro walks four guided routes (W1 Central Gate 2 to Exit 35, W3 Central Gate 1 to Exit
+22, W4 South Gate to Exit 18, I7 Exit 26 to Exit 10) plus a flat control (W2, West Exit B1 to Exit 4); Shinjuku replays
+all nine scenarios of its golden. For each scenario it asks the real bridge for the route and compares distance, time,
+node count, floor changes and the ordered step list with the web's golden
+(`tests/e2e/specs/__goldens__/02-navigation.spec.ts/<station>-routes.json`) exactly. A scenario the golden refuses must
+be refused by the router, with the golden's own reason (and the scenario's `profile` toggles passed as `--step-free`,
+`--unpaid-only`, `--strict-hours`); a refused route has no polyline and is not walked. A scenario the golden routes is
+walked along the polyline with `gteki_walker.gd`, recording walked length against the route's, stops, body-block
+episodes, the floor bands the walker's own height trace crosses, the arrival distance and the time at 1.45 m/s. The
+table carries the commit and Godot versions; it is committed with the change it describes.
+
+Two comparisons follow the router's own definitions rather than one fixed notion:
+- **Length**: the router measures an edge in 3D when its heights are known and in plan when they are symbolic
+  (`geometryLength(geometry, symbolicZ)` in `packages/navigation/src/router.ts`), so the walk compares its flat figure
+  for a symbolic route (all of Shinjuku's are) and its 3D figure otherwise (Ikebukuro's). The table shows both and its
+  **Length basis** column names the figure that was compared, route by route.
+- **Floors**: `floorChanges` counts graph floor transitions, while the walker's height trace counts rendered floor bands.
+  A stair edge can span floors the route has no node on, so the walker crosses rendered bands the stair passes through
+  that the route never visits. The walk must start on the route's first floor, reach every floor the route names in
+  order and end on its goal floor, and every band crossed in between must lie strictly between the two route floors
+  being travelled between and move toward the second — a band outside that range, a reversal or an ending elsewhere
+  fails. The table shows the walker's crossings beside the route's count.
+- **Lifts**: a route with an `elevator` step that changes floor is checked against the golden but not walked, because
+  the walker has no lift model. The row says so, and the test asserts the route really has elevator steps, so the
+  exemption cannot stand in for a walk that failed.
 
 The walk follows the polyline itself: it turns toward the next vertex only once it is within 0.05 m of the current one,
-so it never cuts a corner the line does not cut. A larger reach turned ~0.2 m short of a ~50° vertex and the chord put
-the body into a wall corner; that was the walk, not the station (#284), and with the vertex reach the five routes walk
-with no stop and no body block. Any block, anywhere, fails the test and is reported with the collider that refused the
-step, the walker's feet where it stood and the clearance to the surface's plane.
+so by construction it never cuts a corner the line does not cut. A larger reach cut a corner at a sharp vertex and the
+chord put the body into a wall corner; that was the walk, not the station (#284), and with the vertex reach the
+Ikebukuro routes walk with no stop and no body block. Any block, anywhere, fails the test and is reported with the
+collider that refused the step, the walker's feet where it stood and the clearance to the surface's plane. A stall with
+no refused step reports where the ground ends instead, because a step can also be refused for having no ground to land
+on (a lift opening).
 
 The table is written only by a run in which every check passed; a failing run prints the table it would have written
 instead and leaves the committed one untouched.

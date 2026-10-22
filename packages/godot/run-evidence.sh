@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# G-5a: export the station snapshot and run the headless evidence walks (#164): the bridge's route for four Ikebukuro
-# routes plus a flat control, compared with the web's routes golden, and the same routes walked by the web-rule walker.
-# Writes packages/godot/docs/evidence/g5-ikebukuro.md (commit it with the change it describes).
-# Usage: bash packages/godot/run-evidence.sh [stationId]      (default: ikebukuro)
+# G-5a: export the station snapshot and run the headless evidence walks (#164): for each scenario in the station's plan
+# (run_evidence_tests.gd `PLANS`), the bridge's route compared with the web's routes golden and, where the golden has a
+# route, the same route walked by the web-rule walker.
+# Writes packages/godot/docs/evidence/g5-<station>.md (commit it with the change it describes).
+# Usage: bash packages/godot/run-evidence.sh [stationId]      (default: ikebukuro; shinjuku is the other plan)
 # Output (gitignored): packages/godot/.cache/scenes. GODOT_BIN overrides the executable.
 # On the shared host run it through the lock:  lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-evidence.sh
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

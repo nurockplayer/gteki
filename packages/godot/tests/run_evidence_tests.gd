@@ -1,8 +1,10 @@
 extends SceneTree
-## G-5a: headless evidence walks (#164). For four Ikebukuro routes plus a flat control it does two things and writes
-## the result as a Markdown evidence table:
+## G-5a: headless evidence walks (#164). For a station's routes it does two things and writes the result as a Markdown
+## evidence table:
 ##   1. route check: ask the real bridge (gteki_bridge.gd -> packages/cli/src/route.ts, the same TypeScript router the
-##      web explorer runs) for the route and compare it, exactly, with tests/e2e/specs/__goldens__/.../ikebukuro-routes.json;
+##      web explorer runs) for the route and compare it, exactly, with the web's golden
+##      (tests/e2e/specs/__goldens__/02-navigation.spec.ts/<station>-routes.json); a scenario the router must refuse is
+##      checked as a refusal with the golden's own reason;
 ##   2. walk check: spawn the web-rule walker (gteki_walker.gd) at the route start and drive it along the route polyline,
 ##      recording walked length, stalls, body-block episodes, the floors it actually visited (y bands), the arrival
 ##      distance and the time at the web's walk speed.
@@ -28,8 +30,7 @@ const LEG_BUDGET_STEPS := 600
 const LEG_BUDGET_FACTOR := 2.0
 ## The golden the web's 02-navigation spec writes; every expected value (distance, seconds, node count, floor changes,
 ## step list) is read from it, never copied into this file.
-const GOLDEN := "tests/e2e/specs/__goldens__/02-navigation.spec.ts/ikebukuro-routes.json"
-const EVIDENCE := "res://docs/evidence/g5-ikebukuro.md"
+const GOLDEN_DIR := "tests/e2e/specs/__goldens__/02-navigation.spec.ts"
 ## Walked 3D length must match the route's own length within `max(LENGTH_TOLERANCE_M, vertices * WAYPOINT_REACH)`. The
 ## walk ties every vertex from inside the reach, so by construction each one can add or cut less than `WAYPOINT_REACH` of
 ## path: the error is bounded per vertex, not proportionally to the route. The measured worst case is in the table; a
@@ -37,14 +38,44 @@ const EVIDENCE := "res://docs/evidence/g5-ikebukuro.md"
 const LENGTH_TOLERANCE_M := 0.5
 const LENGTH_TOLERANCE_PER_VERTEX := WAYPOINT_REACH
 
-## Evidence route label -> the golden scenario it replays. W2 is the flat control (no floor change).
-const ROUTES := [
-	{"label": "W1", "golden": "I1"},
-	{"label": "W2", "golden": "I2"},
-	{"label": "W3", "golden": "I3"},
-	{"label": "W4", "golden": "I4"},
-	{"label": "I7", "golden": "I7"},
-]
+## What the evidence run does at each station: the golden it replays, the table it writes, and the golden scenarios it
+## covers (evidence label -> scenario id, with the reason it is in the set). A scenario whose golden route is ok is
+## walked; one the router must refuse is checked as a refusal, from the same bridge and the same profile flags.
+const PLANS := {
+	"ikebukuro": {
+		"golden": "ikebukuro-routes.json",
+		"evidence": "res://docs/evidence/g5-ikebukuro.md",
+		# W2 is the flat control (no floor change); the rest cover a stair each way and the two deepest routes.
+		"routes": [
+			{"label": "W1", "golden": "I1"},
+			{"label": "W2", "golden": "I2"},
+			{"label": "W3", "golden": "I3"},
+			{"label": "W4", "golden": "I4"},
+			{"label": "I7", "golden": "I7"},
+		],
+	},
+	"shinjuku": {
+		"golden": "shinjuku-routes.json",
+		"evidence": "res://docs/evidence/g5-shinjuku.md",
+		"selection": [
+			"All nine scenarios of the golden are replayed here — the golden has nine, so none had to be picked out. Three",
+			"route and are walked; a fourth routes but is checked only, because it rides a lift and the walker has no lift",
+			"model; the remaining five are refusals the router must make, checked against the bridge (a refused route has no",
+			"polyline to walk), each with the profile toggle its scenario sets.",
+		],
+		"routes": [
+			{"label": "S1", "golden": "S1", "why": "street (north) down to the B6 Oedo platform: four floor changes, and it crosses the fare line"},
+			{"label": "S2", "golden": "S2", "why": "the Oedo platform back up to the north-west street via the stacked switchback: the longest route, four floor changes"},
+			{"label": "S3", "golden": "S3", "why": "B1 exit to the B3 toilets inside the paid area: the paid-area way down"},
+			{"label": "S4", "golden": "S4", "why": "the shortest route (13 m): street to B1 south, outside the gates — it rides a lift, so it is checked but not walked", "lift": true},
+			{"label": "S5", "golden": "S5", "why": "step-free profile: the router must refuse, the connection uses stairs"},
+			{"label": "SN1", "golden": "SN1", "why": "outside-gates profile: the platform is paid, so the router must refuse"},
+			{"label": "SN2", "golden": "SN2", "why": "outside-gates profile: the toilets are paid, so the router must refuse"},
+			{"label": "SN3", "golden": "SN3", "why": "require-known-hours profile: unknown hours, so the router must refuse"},
+			{"label": "SN4", "golden": "SN4", "why": "start equals goal: the router must refuse with its own reason"},
+		],
+	},
+}
 
 var checks := 0
 var failures: Array[String] = []
@@ -53,6 +84,8 @@ var rows: Array[Dictionary] = []
 ## The floors' own provenance, read with the elevations so the table states it from the data rather than from memory.
 var floor_sources: Array[String] = []
 var floor_elevation_m_missing := false
+## Floor id -> rendered elevation (m), so a route's own floor ids can be compared with the walker's height trace.
+var floor_band_by_id: Dictionary = {}
 
 
 func _initialize() -> void:
@@ -75,11 +108,16 @@ func run() -> void:
 	var scenes_dir: String = args[0]
 	var station_id: String = args[1] if args.size() > 1 else "ikebukuro"
 	check_self()
+	var plan: Dictionary = PLANS.get(station_id, {})
+	check(not plan.is_empty(), "station %s has an evidence plan" % station_id)
+	if plan.is_empty():
+		finish()
+		return
 	var bridge := Bridge.new()
 	repo_root = bridge.repo_root
 	check(not repo_root.is_empty(), "the repository root is found above the project")
-	var golden := load_golden()
-	check(not golden.is_empty(), "the routes golden loads from %s" % GOLDEN)
+	var golden := load_golden(plan)
+	check(not golden.is_empty(), "the routes golden loads from %s" % golden_path(plan))
 
 	var holder := Node3D.new()
 	root.add_child(holder)
@@ -97,39 +135,73 @@ func run() -> void:
 	await physics_frame
 
 	var elevations := floor_elevations(bridge.station_dir(station_id))
-	for spec in ROUTES:
+	for spec in plan.routes:
 		var label := str(spec.label)
 		var scenario: Variant = golden.get(str(spec.golden))
 		check(scenario is Dictionary, "%s: golden scenario %s exists" % [label, str(spec.golden)])
 		if not scenario is Dictionary:
 			continue
-		var row := {"label": label, "golden_id": str(spec.golden), "from": str(scenario.from), "to": str(scenario.to)}
-		row["expected"] = scenario.result
-		var routed := bridge.route(station_id, str(scenario.from), str(scenario.to), true, true)
+		var expected: Dictionary = scenario.result
+		var row := {"label": label, "golden_id": str(spec.golden), "from": str(scenario.from), "to": str(scenario.to), "why": str(spec.get("why", ""))}
+		row["expected"] = expected
+		row["expect_refusal"] = expected.get("ok", true) == false
+		var routed := bridge.route(station_id, str(scenario.from), str(scenario.to), true, true, profile_args(scenario.get("profile", {})))
+		if routed.has("doc"):
+			row["doc"] = routed.doc
+		if row.expect_refusal:
+			row["route_diff"] = check_refusal(label, expected, routed)
+			rows.append(row)
+			continue
 		check(routed.ok, "%s: the router answers %s -> %s: %s" % [label, str(scenario.from), str(scenario.to), str(routed.get("error", ""))])
 		if not routed.ok:
+			# A route the golden has and the router refuses is a finding of its own; the row still goes into the table,
+			# marked as a mismatch, rather than silently missing.
+			row["route_diff"] = ["router refused: %s" % str(routed.get("reason", routed.get("error", "?")))]
+			rows.append(row)
 			continue
 		var doc: Dictionary = routed.doc
 		row["doc"] = doc
-		row["route_diff"] = check_route(label, scenario.result, doc)
+		row["route_diff"] = check_route(label, expected, doc)
+		if bool(spec.get("lift", false)):
+			# A route the walk cannot make on foot is checked, not walked — and the exemption is only honest if the
+			# route really rides a lift, which is asserted from its own steps.
+			row["lift"] = check_lift_route(label, doc)
+			rows.append(row)
+			continue
 		walk_route(walker, label, doc, elevations, row)
 		rows.append(row)
 
 	holder.queue_free()
-	write_evidence(station_id, scene, elevations)
+	write_evidence(station_id, scene, plan, elevations)
 	finish()
 
 
 # ---- route check ----------------------------------------------------------------------------------------------
 
-func load_golden() -> Dictionary:
+static func golden_path(plan: Dictionary) -> String:
+	return GOLDEN_DIR.path_join(str(plan.golden))
+
+
+func load_golden(plan: Dictionary) -> Dictionary:
 	if repo_root.is_empty():
 		return {}
-	var path := repo_root.path_join(GOLDEN)
 	var errors: Array[String] = []
-	var data := Station.read_json(path, errors)
+	var data := Station.read_json(repo_root.path_join(golden_path(plan)), errors)
 	check(errors.is_empty(), "the golden parses (%s)" % str(errors))
 	return data if errors.is_empty() else {}
+
+
+## The route.ts flags for a golden scenario's `profile` block — the same three toggles the web's 02-navigation spec sets.
+## A scenario without a profile block runs on the router's defaults.
+static func profile_args(profile: Dictionary) -> Array:
+	var args: Array = []
+	if bool(profile.get("stepFree", false)):
+		args.append("--step-free")
+	if bool(profile.get("unpaidOnly", false)):
+		args.append("--unpaid-only")
+	if bool(profile.get("strictHours", false)):
+		args.append("--strict-hours")
+	return args
 
 
 ## The route the bridge returns must equal the golden exactly: it is the same TypeScript router, so a difference is a
@@ -173,6 +245,48 @@ func check_route(label: String, expected: Dictionary, doc: Dictionary) -> Array[
 	return diffs
 
 
+## A scenario the golden refuses: the bridge must refuse it too, with the golden's own reason. Anything else — a route
+## where the golden refuses one, or a different reason — is a difference. Pure, like route_compare.
+static func refusal_diff(expected: Dictionary, routed: Dictionary) -> Array[String]:
+	var diffs: Array[String] = []
+	var want := str(expected.get("reason", "?"))
+	if routed.ok:
+		diffs.append("router answered a route, golden refuses (%s)" % want)
+	elif not routed.has("reason"):
+		diffs.append("the bridge failed: %s" % str(routed.get("error", "?")))
+	elif str(routed.get("reason")) != want:
+		diffs.append("refused (%s), golden (%s)" % [str(routed.get("reason")), want])
+	return diffs
+
+
+func check_refusal(label: String, expected: Dictionary, routed: Dictionary) -> Array[String]:
+	var diffs := refusal_diff(expected, routed)
+	check(diffs.is_empty(), "%s: the router refuses the scenario as the golden does (%s)" % [label, "match" if diffs.is_empty() else "; ".join(diffs)])
+	var answer := "answered a route" if routed.ok else str(routed.get("reason", routed.get("error", "?")))
+	print("%s: router %s, golden %s%s" % [label, answer, str(expected.get("reason", "?")), "" if diffs.is_empty() else " MISMATCH"])
+	return diffs
+
+
+## The elevator steps that change floor in a route: what makes a route a lift ride rather than a walk. A lift edge has
+## plan length only (router.ts measures an elevator's walk in/out, not the ride), so the ground a walker follows stops at
+## the shaft. Pure, so the self-checks can state routes with and without one.
+static func lift_steps(doc: Dictionary) -> int:
+	var lifts := 0
+	for step in doc.get("result", {}).get("steps", []):
+		if str(step.get("mode", "")) != "elevator":
+			continue
+		if str(step.get("fromFloorId", "")) != str(step.get("toFloorId", "")):
+			lifts += 1
+	return lifts
+
+
+func check_lift_route(label: String, doc: Dictionary) -> bool:
+	var lifts := lift_steps(doc)
+	check(lifts > 0, "%s: the route really rides a lift, so not walking it is an exemption and not a silent gap (%d elevator steps change floor)" % [label, lifts])
+	print("%s: route match; not walked: the route rides a lift (%d elevator steps change floor), the HQ walker has no lift model" % [label, lifts])
+	return lifts > 0
+
+
 # ---- walk check -----------------------------------------------------------------------------------------------
 
 ## The station's floor elevations in metres, from its own station.json. The walk compares the walker's height with
@@ -184,9 +298,11 @@ func floor_elevations(station_dir: String) -> Array[float]:
 	var floors: Array = station.get("floors", [])
 	var elevations: Array[float] = []
 	floor_sources.clear()
+	floor_band_by_id.clear()
 	floor_elevation_m_missing = not floors.is_empty()
 	for floor_record in floors:
 		elevations.append(float(floor_record.renderElevationM))
+		floor_band_by_id[str(floor_record.get("id", ""))] = float(floor_record.renderElevationM)
 		var source := str(floor_record.get("elevationSource", "UNKNOWN"))
 		if not floor_sources.has(source):
 			floor_sources.append(source)
@@ -225,9 +341,15 @@ static func band_sentence(elevations: Array[float]) -> String:
 ## says which of that is in the station data it was given.
 func floor_band_lines(elevations: Array[float]) -> Array[String]:
 	var lines: Array[String] = []
-	lines.append("- **Floor changes**: every sample of the walker's own height is put in the band of the station floor whose")
-	lines.append("  elevation is nearest (`floorChanges` counts graph floor transitions, so this is an independent observation")
-	lines.append("  of the same thing, not a copy of the route). The elevation is the station's *rendered floor band*")
+	lines.append("- **Floor-band crossings**: every sample of the walker's own height is put in the band of the station floor")
+	lines.append("  whose elevation is nearest, and every change of band is counted (`floorChanges` counts graph floor transitions,")
+	lines.append("  so this is an independent observation, not a copy of the route). The walk must start on the route's first")
+	lines.append("  floor, reach every floor the route names in the order it names them, and end on the route's goal floor. It may")
+	lines.append("  cross more bands than `floorChanges`, because a stair edge can span floors the route has no node on; every")
+	lines.append("  such band is one the stair passes through, so it must lie strictly between the elevations of the two")
+	lines.append("  consecutive route floors being travelled between and move toward the second. A band outside that range, a")
+	lines.append("  reversal, or a walk that ends on another band fails. The crossed count is shown beside the route's so that")
+	lines.append("  difference is visible, not averaged away. The elevation is the station's *rendered floor band*")
 	lines.append("  (`renderElevationM` in `station.json`), not the physical floor level:")
 	if floor_elevation_m_missing:
 		lines.append("  `elevationM` is null on every floor and `elevationSource` is %s." % ", ".join(PackedStringArray(floor_sources)))
@@ -244,9 +366,21 @@ static func heading_to_yaw(forward_x: float, forward_z: float) -> float:
 	return atan2(-forward_x, -forward_z)
 
 
+## The router measures an edge in 3D when its heights are known and in plan (x, z) when they are symbolic
+## (`geometryLength(geometry, symbolicZ)` in packages/navigation/src/router.ts); a route's length is the sum of those.
+## The polyline's own `zKnown` flags say which: a route with a symbolic height is measured without that climb, so the
+## walk must compare its plan length to it, not the 3D one. Pure, so the self-checks can state both cases.
+static func route_measures_plan(doc: Dictionary) -> bool:
+	for p in doc.get("polyline", []):
+		if not bool(p.get("zKnown", true)):
+			return true
+	return false
+
+
 ## Drives the walker along the route polyline, one waypoint at a time, at the web's walk speed. Fills `row` with the
-## measurements and checks them: arrival within 1 m, no stall or body block outside KNOWN_BLOCKS, the floor changes
-## the walker actually makes equal the route's, and the walked length within the stated tolerance of the route's.
+## measurements and checks them: arrival within 1 m, no stall or body block outside KNOWN_BLOCKS, the walk reaching the
+## route's floors in order with every band in between one the transit passes through (`bands_follow_route`), and the
+## walked length within the stated tolerance of the route's, compared in the basis the router measured it in.
 func walk_route(walker: Walker, label: String, doc: Dictionary, elevations: Array[float], row: Dictionary) -> void:
 	var points: Array[Vector3] = []
 	for p in doc.polyline:
@@ -264,6 +398,10 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, elevations: Arra
 	var walked_3d := 0.0
 	var walked_flat := 0.0
 	var heights: Array[float] = [walker.feet().y]
+	# Every change of floor band in the walker's own height trace, with where it happened: printed when the count
+	# disagrees with the route, so a finding can be read without a rerun.
+	var crossings: Array[Dictionary] = []
+	var current_band := nearest_floor(walker.feet().y, elevations) if not elevations.is_empty() else 0.0
 	var stalls: Array[int] = []
 	var blocks := 0
 	var in_block := false
@@ -290,6 +428,11 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, elevations: Arra
 			walked_3d += here.distance_to(after)
 			walked_flat += Vector2(after.x - here.x, after.z - here.z).length()
 			heights.append(after.y)
+			if not elevations.is_empty():
+				var band := nearest_floor(after.y, elevations)
+				if band != current_band:
+					crossings.append({"step": steps, "at": after, "from": current_band, "to": band})
+					current_band = band
 			if not moved:
 				refused += 1
 				if not walker.last_block.is_empty():
@@ -310,7 +453,10 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, elevations: Arra
 			if stalled > STALL_STEPS or guard > budget:
 				stopped_at = i
 				stopped_because = "stalls at polyline point %d (%s, stage %s)" % [i, str(goal), walker.last_block] if stalled > STALL_STEPS else "runs out of its step budget at polyline point %d (%s)" % [i, str(goal)]
-				print("  %s: %s, from %s after %d steps in this leg; ground ahead %s" % [label, stopped_because, str(after), guard, str(walker.ground_at(after.x, after.y + 0.5, after.z, 1.45))])
+				# A stall without a refused step is usually ground that ends (a stairwell edge, a lift opening) rather than a
+				# wall, so the report probes the nearest ground beyond the body, where the next step would have landed.
+				var ahead := after + Vector3(-sin(walker.yaw), 0.0, -cos(walker.yaw)) * (Walker.RADIUS + 0.05)
+				print("  %s: %s, from %s after %d steps in this leg; ground under the feet %s, under %s (%.2f m ahead) %s" % [label, stopped_because, str(after), guard, str(walker.ground_at(after.x, after.y + 0.5, after.z, 1.45)), str(ahead), Walker.RADIUS + 0.05, str(walker.ground_at(ahead.x, after.y + 0.5, ahead.z, 1.45))])
 				break
 		if stopped_at >= 0:
 			stalls.append(i)
@@ -321,6 +467,15 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, elevations: Arra
 	var route_length := float(row.expected.lengthM)
 	var tolerance := length_tolerance(points.size())
 	var levels := count_level_changes(heights, elevations)
+	var route_floors := route_bands(doc)
+	var named: Array[float] = route_floors.bands
+	var walked_bands: Array[float] = []
+	if not elevations.is_empty():
+		walked_bands.append(nearest_floor(heights[0], elevations))
+	for crossing in crossings:
+		walked_bands.append(float(crossing.to))
+	var plan_length := route_measures_plan(doc)
+	var compared_length := walked_flat if plan_length else walked_3d
 	row["walk"] = {
 		"points": points.size(),
 		"steps": steps,
@@ -330,21 +485,32 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, elevations: Arra
 		"stalls": stalls,
 		"blocks": blocks,
 		"levels": levels,
+		"route_floors": named,
+		"walked_bands": walked_bands,
+		"plan_length": plan_length,
+		"compared_length": compared_length,
 		"miss": miss,
 		"seconds": steps * DT,
 		"stopped_at": stopped_at,
 		"stopped_because": stopped_because,
 		"refusal": refusal,
+		"crossings": crossings,
 		"end": end,
 	}
 	# No route may be blocked anywhere. A refusal is reported with what actually refused the step — the collider, where
 	# the body stood and how far the surface was — so a block can be handed back as a finding (#284) without a rerun.
 	check(stopped_at < 0, "%s: the walk follows the whole polyline (%s)%s" % [label, stopped_because, refusal_note(refusal)])
 	check(blocks == 0, "%s: the walker body is blocked nowhere (%d block episodes)%s" % [label, blocks, refusal_note(refusal)])
-	check(levels == int(row.expected.floorChanges), "%s: the walker changes floors %d time(s), the route %d" % [label, levels, int(row.expected.floorChanges)])
+	check((route_floors.unknown as Array).is_empty(), "%s: every floor the route names is in the station data (%s)" % [label, str(route_floors.unknown)])
+	var band_error := bands_follow_route(named, walked_bands)
+	check(band_error.is_empty(), "%s: the walk follows the route's floors through the rendered bands (route %s, walked %s): %s" % [label, str(named), str(walked_bands), band_error])
+	if not band_error.is_empty():
+		# The trace behind the failure, so a band outside the transit can be read without a rerun.
+		for crossing in crossings:
+			print("  %s: band %.2f -> %.2f at step %d (%s)" % [label, float(crossing.from), float(crossing.to), int(crossing.step), str(crossing.at)])
 	check(miss < 1.0, "%s: the walk ends within 1 m of the goal (%.2f m)" % [label, miss])
-	check(absf(walked_3d - route_length) <= tolerance, "%s: the walked %.1f m is within %.1f m of the route's %.1f m" % [label, walked_3d, tolerance, route_length])
-	print("%s: walk %d waypoints, %d steps, %.1f m walked (route %.1f m), %d stopped, %d block episodes, %d floor changes, %.0f s at %.2f m/s, %s" % [label, points.size(), steps, walked_3d, route_length, stalls.size(), blocks, levels, steps * DT, Walker.WALK, ("arrived %.2f m from the goal" % miss) if stopped_at < 0 else ("stopped %.2f m short of the goal at %s, height %.2f..%.2f" % [miss, str(end), heights.min(), heights.max()])])
+	check(absf(compared_length - route_length) <= tolerance, "%s: the walked %s length %.1f m is within %.1f m of the route's %.1f m" % [label, "plan" if plan_length else "3D", compared_length, tolerance, route_length])
+	print("%s: walk %d waypoints, %d steps, %.1f m walked (flat %.1f m, router's %s length %.1f m), %d stopped, %d block episodes, %d band crossings (route %d floor changes), %.0f s at %.2f m/s, %s" % [label, points.size(), steps, walked_3d, walked_flat, "plan" if plan_length else "3D", route_length, stalls.size(), blocks, levels, int(row.expected.floorChanges), steps * DT, Walker.WALK, ("arrived %.2f m from the goal" % miss) if stopped_at < 0 else ("stopped %.2f m short of the goal at %s, height %.2f..%.2f" % [miss, str(end), heights.min(), heights.max()])])
 
 
 ## The refusal in words for a failure message: the stage, the collider, the feet position (renderer frame) and the
@@ -373,10 +539,30 @@ func check_self() -> void:
 	check(not route_compare(altered_steps, doc).diffs.is_empty(), "self: a golden step list with a flipped edge is reported as a mismatch")
 	check(refusal_note({"collider": "Mesh1", "feet": Vector3(1.0, 2.0, 3.0), "stage": "ahead h=0.5 d=0.290", "clearance": 0.29}).contains("Mesh1"), "self: a block's failure note names the collider, the place and the clearance")
 	check(refusal_note({}).is_empty(), "self: a walk with no refusal has no note")
+	var refused := {"ok": false, "reason": "no_path"}
+	check(refusal_diff({"reason": "no_path"}, refused).is_empty(), "self: a refusal with the golden's reason compares as a match")
+	check(not refusal_diff({"reason": "start_equals_goal"}, refused).is_empty(), "self: a refusal with another reason is reported as a mismatch")
+	check(not refusal_diff({"reason": "no_path"}, {"ok": true}).is_empty(), "self: a route where the golden refuses one is reported as a mismatch")
+	check(not refusal_diff({"reason": "no_path"}, {"ok": false, "error": "Cannot launch pnpm"}).is_empty(), "self: a bridge failure is never written as a refusal match")
+	check(profile_args({}).is_empty(), "self: a scenario without a profile passes no profile flag")
+	check(profile_args({"stepFree": true, "unpaidOnly": true, "strictHours": true}) == ["--step-free", "--unpaid-only", "--strict-hours"], "self: a scenario's profile toggles become the router's own flags")
 	check(is_equal_approx(floor_band_separation([0.0, 4.6]), 4.6), "self: the band separation is the gap between rendered elevations")
 	check(is_equal_approx(floor_band_separation([0.0, 0.0, 4.6]), 4.6), "self: two floors drawn at one elevation are one band, not a zero gap")
 	check("\n".join(floor_band_lines([0.0, 0.0, 4.6])).contains("4.6"), "self: the table states the band separation it was given")
 	check("\n".join(floor_band_lines([2.0, 2.0])).contains("single"), "self: a station with one band says so instead of quoting 0 m")
+	check(route_measures_plan({"polyline": [{"zKnown": false}]}), "self: a route with a symbolic height is measured in plan")
+	check(not route_measures_plan({"polyline": [{"zKnown": true}, {"zKnown": true}]}), "self: a route with known heights is measured in 3D")
+	check(bands_follow_route([0.0, -7.8], [0.0, -7.8]).is_empty(), "self: the floors a route names, reached in order, match")
+	check(not bands_follow_route([0.0, -7.8], [-7.8, 0.0]).is_empty(), "self: the same floors in the wrong order do not match")
+	check(bands_follow_route([0.0, -23.74], [0.0, -6.19, -7.8, -23.74]).is_empty(), "self: bands strictly between the two route floors are the stair's transit and match")
+	check(not bands_follow_route([0.0, -23.74], [0.0, -7.8, -6.19, -23.74]).is_empty(), "self: a band crossed back up in the transit is a reversal and does not match")
+	check(not bands_follow_route([0.0, -23.74], [0.0, -6.19, -30.0, -23.74]).is_empty(), "self: a band outside the 0 -> -23.74 transit does not match")
+	check(not bands_follow_route([0.0, -7.8], [0.0, -7.8, -16.2]).is_empty(), "self: a walk that leaves the goal floor does not match")
+	check(not bands_follow_route([0.0, -7.8], [0.0, -16.2]).is_empty(), "self: a floor the route names that the walk never reaches does not match")
+	check(not bands_follow_route([0.0, -7.8], [-7.8, 0.0, -7.8]).is_empty(), "self: a walk that starts on another band does not match")
+	check(not bands_follow_route([], [0.0]).is_empty(), "self: a route that names no floor cannot be followed")
+	check(lift_steps({"result": {"steps": [{"mode": "elevator", "fromFloorId": "a", "toFloorId": "b"}, {"mode": "walk", "fromFloorId": "b", "toFloorId": "b"}]}}) == 1, "self: an elevator step that changes floor is a lift")
+	check(lift_steps({"result": {"steps": [{"mode": "elevator", "fromFloorId": "b", "toFloorId": "b"}, {"mode": "walk", "fromFloorId": "b", "toFloorId": "c"}]}}) == 0, "self: an elevator step that stays on one floor is not a lift ride")
 
 	check(not writes_table(["a check failed"]), "self: a failing run does not write the table")
 	check(writes_table([]), "self: a passing run writes the table")
@@ -395,6 +581,61 @@ func check_self() -> void:
 ## a lag smaller than half of the narrowest rendered floor-band separation cannot add or lose a crossing; the lag itself
 ## is not measured here. A dip that stays on one floor (W1 dips 1.0 m inside B1) stays in its band and is not counted,
 ## while a route that goes up and comes back down counts both crossings.
+## The floors the route names, in order: every step's from/to floor mapped to its rendered band, consecutive repeats
+## dropped. A floor id the station data does not know is returned in `unknown` rather than being skipped silently.
+func route_bands(doc: Dictionary) -> Dictionary:
+	var bands: Array[float] = []
+	var unknown: Array[String] = []
+	for step in doc.get("result", {}).get("steps", []):
+		for key in ["fromFloorId", "toFloorId"]:
+			var id := str(step.get(key, ""))
+			if not floor_band_by_id.has(id):
+				if not unknown.has(id):
+					unknown.append(id)
+				continue
+			var band: float = floor_band_by_id[id]
+			if bands.is_empty() or not is_equal_approx(bands[-1], band):
+				bands.append(band)
+	return {"bands": bands, "unknown": unknown}
+
+
+## "" when the walk's floor trace follows the route's floors, else the first reason it does not. The walk starts on the
+## route's first floor and reaches every floor the route names, in the order it names them. A band in between must be
+## one the stair passes through: strictly between the two route floors it is travelling between, moving toward the
+## second. A band outside that range, a reversal, leaving the goal floor or ending anywhere else fails — so a fall to
+## a wrong level cannot pass as an extra crossing.
+static func bands_follow_route(named: Array[float], walked: Array[float]) -> String:
+	if named.is_empty():
+		return "the route names no floor"
+	if walked.is_empty():
+		return "the walk recorded no floor band"
+	if not is_equal_approx(walked[0], named[0]):
+		return "the walk starts in band %.2f, the route on %.2f" % [walked[0], named[0]]
+	var next := 1
+	var previous := named[0]
+	for k in range(1, walked.size()):
+		var band := walked[k]
+		if next < named.size() and is_equal_approx(band, named[next]):
+			previous = band
+			next += 1
+			continue
+		if next >= named.size():
+			return "the walk leaves the goal floor %.2f (band %.2f at sample %d)" % [named[-1], band, k]
+		var from_band := named[next - 1]
+		var to_band := named[next]
+		var lo := minf(from_band, to_band)
+		var hi := maxf(from_band, to_band)
+		if band <= lo or band >= hi:
+			return "band %.2f at sample %d is outside the %.2f -> %.2f it is travelling between" % [band, k, from_band, to_band]
+		var direction := signf(to_band - from_band)
+		if direction == 0.0 or (band - previous) * direction <= 0.0:
+			return "band %.2f at sample %d reverses the %.2f -> %.2f transit" % [band, k, from_band, to_band]
+		previous = band
+	if next != named.size():
+		return "the walk never reaches %.2f (route floors %s, walked bands %s)" % [named[next], str(named), str(walked)]
+	return ""
+
+
 static func count_level_changes(heights: Array[float], elevations: Array[float]) -> int:
 	if heights.is_empty() or elevations.is_empty():
 		return 0
@@ -453,8 +694,8 @@ static func writes_table(failure_list: Array[String]) -> bool:
 	return failure_list.is_empty()
 
 
-func write_evidence(station_id: String, scene: Scene, elevations: Array[float]) -> void:
-	var path := ProjectSettings.globalize_path(EVIDENCE)
+func write_evidence(station_id: String, scene: Scene, plan: Dictionary, elevations: Array[float]) -> void:
+	var path := ProjectSettings.globalize_path(str(plan.evidence))
 	DirAccess.make_dir_recursive_absolute(path.get_base_dir())
 	var version: Dictionary = Engine.get_version_info()
 	var lines: Array[String] = []
@@ -472,17 +713,20 @@ func write_evidence(station_id: String, scene: Scene, elevations: Array[float]) 
 	lines.append("| Snapshot meshes | %d (walkable %d, collider %d) |" % [int(scene.counts.get("meshes", 0)), int(scene.counts.get("walkable", 0)), int(scene.counts.get("collider", 0))])
 	lines.append("")
 	lines.append("Routes compared: the bridge (`gteki_bridge.gd` -> `packages/cli/src/route.ts`, the same TypeScript router")
-	lines.append("the web explorer runs) against the web's golden `%s`." % GOLDEN)
+	lines.append("the web explorer runs) against the web's golden `%s`." % golden_path(plan))
 	lines.append("Distances, times, node counts, floor changes and the ordered step list are read from the golden and must")
-	lines.append("match exactly (length at the golden's 0.1 m and seconds at its whole-second presentation).")
+	lines.append("match exactly (length at the golden's 0.1 m and seconds at its whole-second presentation). A scenario the")
+	lines.append("golden refuses must be refused by the router, with the golden's own reason, and is not walked.")
 	lines.append("")
-	lines.append("| Route | From -> To | Golden (length / time / nodes / floor changes) | Route check | Walked 3D / flat | Length tolerance | Stopped | Body-block episodes | Floor changes walked / route | Arrival miss | Walk time |")
-	lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
+	lines.append("| Route | From -> To | Golden (length / time / nodes / floor changes) | Route check | Walked 3D / flat | Length basis | Length tolerance | Stopped | Body-block episodes | Floor-band crossings walked / route floor changes | Arrival miss | Walk time |")
+	lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
 	for row in rows:
 		var expected: Dictionary = row.expected
-		var golden := "%.1f m / %d s / %d / %d" % [float(expected.lengthM), int(expected.seconds), int(expected.nodes), int(expected.floorChanges)]
+		var refused := bool(row.get("expect_refusal", false))
+		var golden := "refused: %s" % str(expected.get("reason", "?")) if refused else "%.1f m / %d s / %d / %d" % [float(expected.lengthM), int(expected.seconds), int(expected.nodes), int(expected.floorChanges)]
 		var walk: Dictionary = row.get("walk", {})
-		var walked := "did not walk"
+		var walked := "not walked (the router refuses)" if refused else "did not walk"
+		var basis := "-"
 		var tolerance := "-"
 		var stopped := "-"
 		var blocks := "-"
@@ -490,7 +734,10 @@ func write_evidence(station_id: String, scene: Scene, elevations: Array[float]) 
 		var miss := "-"
 		var seconds := "-"
 		var verdict := evidence_verdict(row)
-		if row.has("doc"):
+		if row.has("doc") and not refused:
+			basis = "plan" if route_measures_plan(row.doc) else "3D"
+			if bool(row.get("lift", false)) and walk.is_empty():
+				walked = "not walked: the route rides a lift (elevator steps); the HQ walker has no lift model"
 			if not walk.is_empty():
 				walked = "%.1f m / %.1f m" % [float(walk.walked_3d), float(walk.walked_flat)]
 				tolerance = "±%.1f m" % length_tolerance(int(walk.points))
@@ -500,8 +747,21 @@ func write_evidence(station_id: String, scene: Scene, elevations: Array[float]) 
 				levels = "%d / %d" % [int(walk.levels), int(expected.floorChanges)]
 				miss = ("%.2f m" % float(walk.miss)) if stopped_at < 0 else "-"
 				seconds = "%.0f s" % float(walk.seconds)
-		lines.append("| %s | `%s` -> `%s` | %s | %s | %s | %s | %s | %s | %s | %s | %s |" % [row.label, row.from, row.to, golden, verdict, walked, tolerance, stopped, blocks, levels, miss, seconds])
+		lines.append("| %s | `%s` -> `%s` | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |" % [row.label, row.from, row.to, golden, verdict, walked, basis, tolerance, stopped, blocks, levels, miss, seconds])
 	lines.append("")
+	var has_why := false
+	for spec in plan.routes:
+		if not str(spec.get("why", "")).is_empty():
+			has_why = true
+	if plan.has("selection") or has_why:
+		lines.append("## Why these routes")
+		lines.append("")
+		for line in plan.get("selection", []):
+			lines.append(str(line))
+		for row in rows:
+			if not str(row.get("why", "")).is_empty():
+				lines.append("- **%s** (`%s` -> `%s`): %s" % [row.label, row.from, row.to, str(row.why)])
+		lines.append("")
 	lines.append("## How the walk numbers are made")
 	lines.append("")
 	lines.append("- **Steering**: the walker walks the route polyline itself: it turns toward the next vertex only once it is")
@@ -509,10 +769,15 @@ func write_evidence(station_id: String, scene: Scene, elevations: Array[float]) 
 	lines.append("  plan and the walk never takes a chord across a corner that the line does not take. The same rule is used on")
 	lines.append("  every route.")
 	lines.append("- **Walked length**: summed 3D distance the walker's feet travel while following the route polyline waypoint")
-	lines.append("  by waypoint. Every vertex is tied from inside the vertex reach, so by construction of that reach it can add or")
-	lines.append("  cut less than %.2f m of path; the error is bounded per vertex, not proportionally to the route. The tolerance is" % WAYPOINT_REACH)
-	lines.append("  therefore `max(%.1f m, %.2f m x polyline vertices)`: the measured value is in the table and a route outside the" % [LENGTH_TOLERANCE_M, LENGTH_TOLERANCE_PER_VERTEX])
-	lines.append("  band is a finding, not tolerance noise.")
+	lines.append("  by waypoint (and the same sum in plan, which is the *flat* figure). The router measures an edge in 3D when its")
+	lines.append("  heights are known and in plan when they are symbolic (`geometryLength(geometry, symbolicZ)` in")
+	lines.append("  `packages/navigation/src/router.ts`), so the walk compares the figure the route was measured in: the flat one")
+	lines.append("  when the route has a symbolic height, the 3D one otherwise. The **Length basis** column names that figure per")
+	lines.append("  route, so a plan length is never read as a walked 3D one.")
+	lines.append("  Every vertex is tied from inside the vertex reach, so by construction of that reach it can add or cut less than")
+	lines.append("  %.2f m of path; the error is bounded per vertex, not proportionally to the route. The tolerance is therefore" % WAYPOINT_REACH)
+	lines.append("  `max(%.1f m, %.2f m x polyline vertices)`: the measured value is in the table and a route outside the band is a" % [LENGTH_TOLERANCE_M, LENGTH_TOLERANCE_PER_VERTEX])
+	lines.append("  finding, not tolerance noise.")
 	lines.append("- **Stopped**: a leg that makes no horizontal progress for %d steps (%.0f s) or that exceeds twice its" % [STALL_STEPS, STALL_STEPS * DT])
 	lines.append("  straight-line walking time plus %d steps. No route may stop: a stopped route fails the test." % LEG_BUDGET_STEPS)
 	lines.append("- **Body-block episodes**: runs of steps the walker's own body test (`bodyBlock`: radius %.1f m, rays at %.1f / %.1f m)"
