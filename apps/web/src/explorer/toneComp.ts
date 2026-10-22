@@ -139,8 +139,19 @@ function lm(target: Vec3, exposure: number, grade: GradeParams | undefined, min:
   return { x, err };
 }
 
-/** Lower linear clamp the explorer's overlays use: enough negative headroom to reach AgX's saturated corners. */
-export const OVERLAY_INPUT_MIN = -3;
+/**
+ * Lower linear clamp the explorer's overlays use: physical colours only. Slightly negative channels (about -3)
+ * would reach AgX's saturated corners exactly, but alpha blending can then drive destination pixels negative
+ * (log2 of a negative is NaN/black) and bloom, GTAO and the floor reflection read the same buffer. Kept as a
+ * constant so a GPU check can revisit it.
+ */
+export const OVERLAY_INPUT_MIN = 0;
+
+/** Rec.709 luma, as three's `luminance()` in UnrealBloomPass's LuminosityHighPassShader. */
+export const lumaOf = (c: Vec3): number => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+
+/** Share of the bloom threshold an overlay's luma may reach (the high-pass smoothstep width is only 0.01). */
+export const BLOOM_HEADROOM = 0.9;
 
 export interface CompensateOptions {
   grade?: GradeParams;
@@ -149,6 +160,8 @@ export interface CompensateOptions {
    * display colours are only reachable with slightly negative linear channels (a float target and blend keep them).
    */
   min?: number;
+  /** Cap on the result's Rec.709 luma: a brighter solution is scaled down uniformly, trading colour accuracy so the overlay never blooms (the authored colour wins if scaling ends up further off and it does not bloom). */
+  maxLuma?: number;
 }
 
 /**
@@ -157,7 +170,7 @@ export interface CompensateOptions {
  * AgX's clamps leave flat spots; well under 1 ms per colour.
  */
 export function compensate(target: Vec3, exposure: number, opts: CompensateOptions = {}): ToneCompensation {
-  const { grade, min = IN_MIN } = opts;
+  const { grade, min = IN_MIN, maxLuma } = opts;
   const naive = target.map((v) => srgbToLinear(v) / exposure) as Vec3;
   let best = lm(target, exposure, grade, min, naive);
   for (const k of [2, 6, 20]) {
@@ -165,7 +178,17 @@ export function compensate(target: Vec3, exposure: number, opts: CompensateOptio
     const r = lm(target, exposure, grade, min, naive.map((v) => v * k) as Vec3);
     if (r.err < best.err) best = r;
   }
-  return { linear: best.x, residual: displayError(forwardDisplay(best.x, exposure, grade), target) };
+  let linear = best.x;
+  const luma = lumaOf(linear);
+  if (maxLuma !== undefined && luma > maxLuma) linear = linear.map((v) => (v * maxLuma) / luma) as Vec3;
+  let residual = displayError(forwardDisplay(linear, exposure, grade), target);
+  if (maxLuma !== undefined && linear !== best.x) {
+    // Scaling can leave a colour further off than doing nothing: then keep the authored colour if it does not bloom.
+    const authored = target.map(srgbToLinear) as Vec3;
+    const authoredErr = displayError(forwardDisplay(authored, exposure, grade), target);
+    if (lumaOf(authored) <= maxLuma && authoredErr < residual) { linear = authored; residual = authoredErr; }
+  }
+  return { linear, residual };
 }
 
 /** Display error when an overlay is NOT compensated: authored linear colour straight through the pipeline. */

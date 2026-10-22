@@ -34,7 +34,7 @@ import { OcclusionSweep, labelState, onFocusFloor, type LabelState } from "./lab
 import { TriangleBvh, segmentHitsBox, type Cull } from "./triangleBvh.ts";
 import { cacheBvh, currentBvh, prepareRayTrees } from "./meshBvh.ts";
 import { occludedLineStyle, type OccludedLineStyle } from "./occludedLine.ts";
-import { OVERLAY_INPUT_MIN, compensate, linearToSrgb, type Vec3 } from "./toneComp.ts";
+import { BLOOM_HEADROOM, OVERLAY_INPUT_MIN, compensate, linearToSrgb, type Vec3 } from "./toneComp.ts";
 
 export type ExplorerMode = "overview" | "walk" | "guide";
 
@@ -358,14 +358,15 @@ export class Explorer {
    * display colour (toneComp.ts). Always derived from the stored authored colour, never from the current one, so
    * repeated calls do not compound; the low tier honours `toneMapped: false`, so there it restores the authored colours.
    * A mapped overlay (the route ribbon) gets compensated / texel per channel: exact for the texel colour only.
-   * Runs on exposure/composer changes and route creation, never per frame.
+   * Each colour's luma is capped below the bloom threshold (a lit overlay must not glow); the cap follows the lighting plan.
+   * Runs on exposure/composer/plan changes and route creation, never per frame.
    */
   private applyOverlayTone(): void {
     const comp = this.composer;
     let worst = 0;
     for (const t of this.overlayTints) {
       if (!comp) { t.mat.color.copy(t.authored); continue; }
-      const c = compensate(t.target, this.renderer.toneMappingExposure, { grade: comp.settings.grade, min: OVERLAY_INPUT_MIN });
+      const c = compensate(t.target, this.renderer.toneMappingExposure, { grade: comp.settings.grade, min: OVERLAY_INPUT_MIN, maxLuma: BLOOM_HEADROOM * this.bloomThreshold });
       t.mat.color.setRGB(c.linear[0] / Math.max(t.texel.r, 1e-3), c.linear[1] / Math.max(t.texel.g, 1e-3), c.linear[2] / Math.max(t.texel.b, 1e-3));
       worst = Math.max(worst, c.residual);
     }

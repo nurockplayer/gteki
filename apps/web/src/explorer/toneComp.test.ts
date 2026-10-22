@@ -1,14 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { AGX_EXPOSURE_GAIN } from "./lighting.ts";
 import { POSTFX_HIGH } from "./postfx.ts";
-import { OVERLAY_INPUT_MIN, agxToneMap, compensate, displayError, forwardDisplay, hexToSrgb, linearToSrgb, srgbToLinear, uncompensatedError, type Vec3 } from "./toneComp.ts";
+import { BLOOM_HEADROOM, OVERLAY_INPUT_MIN, agxToneMap, compensate, displayError, forwardDisplay, hexToSrgb, linearToSrgb, lumaOf, srgbToLinear, uncompensatedError, type Vec3 } from "./toneComp.ts";
 
 const EXPOSURES = [1, AGX_EXPOSURE_GAIN, 1.4];
 const GRADE = POSTFX_HIGH.grade;
 /** The overlay colours the explorer compensates (route, x-ray ribbon, guide start/end beacons). */
 const OVERLAYS = { cyan: 0x5ef0ff, xray: 0xb8f8ff, start: 0x7dffa0, end: 0xffc857 };
-/** Slightly negative linear channels reach AgX's saturated corner; the explorer allows them (see applyOverlayTone in explorer.ts). */
-const NEG = { min: OVERLAY_INPUT_MIN };
+/** Slightly negative linear channels reach AgX's saturated corner exactly; the explorer does not use them (see OVERLAY_INPUT_MIN). */
+const NEG = { min: -3 };
+/** Bloom thresholds of the lighting plans (lighting.ts BLOOM_THRESHOLD). */
+const THRESHOLDS = [1.0, 2.5];
 
 describe("AgX forward port", () => {
   // Reference values computed independently from three r186's GLSL (python transcription).
@@ -64,13 +66,31 @@ describe("compensate", () => {
     }
   });
 
+  it("the explorer's physical clamp keeps every channel non-negative", () => {
+    expect(OVERLAY_INPUT_MIN).toBe(0);
+    for (const hex of Object.values(OVERLAYS)) for (const v of compensate(hexToSrgb(hex), 1.15, { grade: GRADE, min: OVERLAY_INPUT_MIN }).linear) expect(v).toBeGreaterThanOrEqual(0);
+  });
+
+  it("caps luma below the bloom threshold, scaling uniformly, and still beats the uncompensated colour", () => {
+    for (const threshold of THRESHOLDS) for (const ex of EXPOSURES) for (const hex of Object.values(OVERLAYS)) {
+      const t = hexToSrgb(hex);
+      const opts = { grade: GRADE, min: OVERLAY_INPUT_MIN };
+      const free = compensate(t, ex, opts);
+      const capped = compensate(t, ex, { ...opts, maxLuma: BLOOM_HEADROOM * threshold });
+      expect(lumaOf(capped.linear)).toBeLessThanOrEqual(BLOOM_HEADROOM * threshold + 1e-9);
+      if (lumaOf(free.linear) <= BLOOM_HEADROOM * threshold) expect(capped.linear).toEqual(free.linear);
+      else if (capped.linear.some((v, i) => Math.abs(v - srgbToLinear(t[i]!)) > 1e-12)) free.linear.forEach((v, i) => expect(capped.linear[i]!).toBeCloseTo(v * BLOOM_HEADROOM * threshold / lumaOf(free.linear), 9));
+      expect(capped.residual).toBeLessThanOrEqual(uncompensatedError(t, ex, GRADE));
+    }
+  });
+
   it("with slightly negative channels allowed, the overlay colours land within 2/255 (grade modelled or not)", () => {
     for (const ex of EXPOSURES) for (const grade of [undefined, GRADE]) for (const hex of Object.values(OVERLAYS)) {
       const t = hexToSrgb(hex);
       const c = compensate(t, ex, { ...NEG, grade });
       expect(c.residual).toBeLessThan(2);
       expect(uncompensatedError(t, ex, grade)).toBeGreaterThan(25);
-      for (const v of c.linear) expect(v).toBeGreaterThanOrEqual(OVERLAY_INPUT_MIN);
+      for (const v of c.linear) expect(v).toBeGreaterThanOrEqual(-3);
     }
   });
 
