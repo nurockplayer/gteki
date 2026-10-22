@@ -10,7 +10,7 @@ import type { Router, PolylinePoint } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
-import { WALKER_BODY, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
+import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
@@ -18,7 +18,7 @@ import { CameraCut } from "./cameraCut.ts";
 import { manifestScene } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
-import { advanceGuide } from "./guideStops.ts";
+import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, avatarFade, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
@@ -46,8 +46,8 @@ export interface ExplorerEvents {
 
 const EYE = WALKER_BODY.eyeM;
 const RADIUS = WALKER_BODY.radiusM;
-const WALK = 1.45;
-const RUN = 3.4;
+const WALK = WALKER_SPEED.walkMps;
+const RUN = WALKER_SPEED.runMps;
 /** POI labels float this high above their entrance. */
 const LABEL_LIFT = 2.4;
 
@@ -131,6 +131,8 @@ export class Explorer {
   private teleported = false;
   /** A teleport made while already walking/guiding: the follow camera jumps with the walker instead of gliding. */
   private snapCamera = false;
+  /** prefers-reduced-motion: the follow camera and orbit damping cut instead of gliding, and decorative route motion stops. */
+  private reducedMotion = false;
   private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
   private readonly probeDown = new THREE.Vector3(0, -1, 0);
   private readonly probeNormal = new THREE.Vector3();
@@ -200,6 +202,8 @@ export class Explorer {
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
+  /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
+  private guideAllStops: { s: number; index: number }[] = [];
   /** The user's guide speed tier; kept across instruction changes and later guides. */
   private tier: GuideTierId = DEFAULT_GUIDE_TIER;
   private poiLabels: PoiLabel[] = [];
@@ -431,6 +435,7 @@ export class Explorer {
         .filter((n) => streets.some((f) => f.id === n.floorId))
         .map((n) => R(n.position.x, n.position.y, nodeDisplayZ(n, streets.find((f) => f.id === n.floorId)).z));
       this.stationScene.root.updateMatrixWorld(true);
+      this.street.attach(this.stationScene.root);
     } else {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
@@ -470,6 +475,7 @@ export class Explorer {
 
   private clearStation(): void {
     this.street.restore(this.scene);
+    this.street.attach(null);
     this.streetY = null;
     this.streetTops = [];
     this.streetProbe.at.set(Infinity, 0, 0);
@@ -872,6 +878,7 @@ export class Explorer {
     const cum = cumulativeLengths(pts);
     const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
     this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
+    this.guideAllStops = stops.slice();
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
     this.teleported = true;
@@ -880,6 +887,25 @@ export class Explorer {
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
     this.setMode("guide");
+  }
+
+  /**
+   * Jump the running guide to distance `s` (m) along its path as a teleport: stepGuide places the avatar there and the
+   * follow camera snaps with it, as for any placement made while guiding. Pause state is kept. Stops numbered below
+   * `firstStop` count as passed; the others (including one at `s`) apply, again if they were reached before.
+   */
+  seekGuide(s: number, firstStop = 0): void {
+    const g = this.guide;
+    if (!g) return;
+    const total = g.cum[g.cum.length - 1]!;
+    seekGuideState(g, this.guideAllStops, total, s, firstStop);
+    const p = samplePolyline(g.pts, g.cum, g.s);
+    this.pos.set(p.x, p.y, p.z);
+    this.teleported = true;
+    this.snapCamera = true;
+    if (p.tx || p.tz) this.yaw = Math.atan2(-p.tx, -p.tz);
+    this.lastAvatarPos.copy(this.pos);
+    this.bodyYaw = this.yaw;
   }
 
   setGuidePaused(paused: boolean): void {
@@ -894,6 +920,11 @@ export class Explorer {
 
   setGuideTier(id: GuideTierId): void {
     this.tier = id;
+  }
+
+  setReducedMotion(on: boolean): void {
+    this.reducedMotion = on;
+    this.orbit.enableDamping = !on;
   }
 
   /** The user's guide speed tier, so a re-rendered HUD shows the real state. */
@@ -960,10 +991,10 @@ export class Explorer {
   }
 
   private step(dt: number, t: number): void {
-    if (this.routeTexture) this.routeTexture.offset.x -= dt * 0.9;
+    if (this.routeTexture && !this.reducedMotion) this.routeTexture.offset.x -= dt * 0.9;
     for (const g of this.routeGroup.children) {
       const ring = g.userData.pulse as THREE.Mesh | undefined;
-      if (ring) ring.scale.setScalar(1 + 0.25 * Math.sin(t * 3));
+      if (ring) ring.scale.setScalar(this.reducedMotion ? 1 : 1 + 0.25 * Math.sin(t * 3));
     }
     this.stationScene?.update?.(dt, t);
 
@@ -1123,7 +1154,7 @@ export class Explorer {
       }
     }
     const desired = pose.pivot.clone().addScaledVector(back, dist);
-    this.camera.position.lerp(desired, snap ? 1 : 1 - Math.exp(-dt * 10));
+    this.camera.position.lerp(desired, snap || this.reducedMotion ? 1 : 1 - Math.exp(-dt * 10));
     // The smoothed position, not only the target, stays below camera-only blockers.
     if (this.blockerTargets.size) keepBelowBlockers(pose.pivot, this.camera.position, [...this.blockerTargets], FOLLOW.clearance, this.ray);
     this.camera.lookAt(pose.target);
