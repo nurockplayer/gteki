@@ -1,4 +1,5 @@
 import type { Source } from "@gteki/schema";
+import type { Strings } from "./i18n.ts";
 
 /** A source's credit as shown to users: link, licence (with its link) and the modification notice. */
 export interface SourceCredit {
@@ -28,5 +29,21 @@ export function sourceCredit(s: Source): SourceCredit {
     license: s.license ? { name: s.license.name, href: safeHref(s.license.url) } : null,
     attribution: s.attribution,
     modified: s.modified,
+  };
+}
+
+/** The extra line a facts-only source carries instead of a licence: the #26 wording and, when safe, the decision link. */
+export interface FactsOnlyCredit {
+  text: string;
+  decision: { label: string; href: string } | null;
+}
+
+/** null unless `usage === "facts-only"`; the decision link needs `decision.url` to be an http(s) URL. */
+export function factsOnlyCredit(s: Source, t: Pick<Strings, "factsOnly" | "rightsDecision">): FactsOnlyCredit | null {
+  if (s.usage !== "facts-only") return null;
+  const href = safeHref(s.decision?.url);
+  return {
+    text: t.factsOnly,
+    decision: s.decision && href ? { label: `${t.rightsDecision} ${s.decision.date}`, href } : null,
   };
 }
