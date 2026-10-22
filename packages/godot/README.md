@@ -160,7 +160,9 @@ than pick one when a scene carries two textures, two intensities, or a texture w
 textures), and replaces the flagged surfaces with a `ShaderMaterial` that samples UV2 and mirrors three's
 `lights_fragment_maps` path: the bake's stated decode `(byte/255)^2.2`, times `lightMapIntensity / PI` (three adds
 `texel × lightMapIntensity` to the irradiance and the physical BRDF applies `RECIPROCAL_PI`), times
-`albedo × (1 − metalness)`, added as EMISSION. The net factor is `(byte/255)^2.2 × scale × LIGHTMAP_GAIN`; scale and
+`albedo × (1 − metalness)`, added as EMISSION. The albedo uniform is declared `source_color` because the importer
+stores `StandardMaterial3D.albedo_color` in sRGB (glTF `baseColorFactor` is linear and Godot encodes it); without the
+hint every lightmapped surface, and the emission it scales, would be too bright. The net factor is `(byte/255)^2.2 × scale × LIGHTMAP_GAIN`; scale and
 gain stay in `scene.ts`, the sidecar only carries their product. `hq.gd` takes `--lightmap=on|off` (default on) and,
 when the bake is applied, hides its skeleton directional light — the web scene has no directional light, and the bake
 is the light for those meshes. Shinjuku has no lightmap block, so the flag changes nothing there. Not mirrored:
@@ -170,7 +172,8 @@ the snapshot); the light rig will be settled in the G-4 look pass.
 `tests/run_scene_tests.gd` checks that the texture decodes at the size the bake metadata declares, that the sidecar's
 mesh and surface counts equal the applied ones, that each flagged surface keeps UV2 and carries the shader material,
 that `lightMapIntensity / (scale × PI)` equals the scene's `LIGHTMAP_GAIN` (0.09), that 36 sampled texel channels
-decode within 1e-3 of `(byte/255)^2.2 × scale × gain`, and that `--lightmap=off` applies nothing.
+decode within 1e-3 of `(byte/255)^2.2 × scale × gain`, that the shader declares `albedo_color : source_color` and its
+uniform equals the source material's own `albedo_color`, and that `--lightmap=off` applies nothing.
 
 ## Third-person walk and follow camera (G-2 of #164)
 
