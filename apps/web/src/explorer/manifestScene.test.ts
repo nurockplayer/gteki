@@ -54,6 +54,17 @@ describe("manifestScene", () => {
     }
   });
 
+  it("falls back to uri when the mobile variant fails, and says so", async () => {
+    const withMobile: Asset = { ...asset("assets/kit.glb"), uriMobile: "assets/kit.mobile.glb" };
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const loadGlb = vi.fn(async (uri: string) => { if (uri.includes("mobile")) throw new Error("404"); return glb("floor").gltf; });
+    const scene = await manifestScene([withMobile], { loadGlb, quality: "low" });
+    expect(loadGlb.mock.calls.map((c) => c[0])).toEqual(["assets/kit.mobile.glb", "assets/kit.glb"]);
+    expect(scene.root.children[0]!.userData.gtekiAsset).toEqual({ id: withMobile.id, variant: "full", uri: "assets/kit.glb", mobileFailed: true });
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
+  });
+
   it("tags each asset root with the variant it loaded, for sceneInfo().assets", async () => {
     const withMobile: Asset = { ...asset("assets/kit.glb"), uriMobile: "assets/kit.mobile.glb" };
     for (const [quality, variant, uri] of [["low", "mobile", "assets/kit.mobile.glb"], ["high", "full", "assets/kit.glb"]] as const) {
