@@ -14,8 +14,8 @@
  * What the key cannot cover is the derivation CODE: hashing source files at load is impractical (no file access
  * in the browser build, and minified function text differs). Instead `sourceKey` (a hash of the derivation
  * sources and the polygon-clipping version, written by bake:surface) is checked by surface-bake.test.ts and
- * `bake:surface --check`, which fail if any derivation source changed without a rebake. Those run locally
- * today and in CI once the root suite does (pending root CI). See docs/stations/shinjuku/surface-bake.md.
+ * `bake:surface --check`, which fail if any derivation source changed without a rebake. The test runs in root
+ * CI (`root-test`, #148) and locally; `--check` runs locally. See docs/stations/shinjuku/surface-bake.md.
  */
 import type { StationBundle } from "@gteki/schema";
 import { contentKey } from "./content-key.ts";

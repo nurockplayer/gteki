@@ -4,7 +4,7 @@
  *   pnpm --filter ./stations/shinjuku bake:surface -- --check # fail if the file would change
  *
  * Reads only committed files (surface.json, the station bundle, plan.json), so it needs no raw data and can run
- * in CI (pending root CI). Run it after import:e27 or import:surface, or after changing scene/surface-*.ts or scene/layout.ts.
+ * in CI. Run it after import:e27 or import:surface, or after changing scene/surface-*.ts or scene/layout.ts.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";

@@ -44,8 +44,8 @@ export interface BuildOptions {
    * reopen). Output is byte-identical; see build-cache.ts. */
   reuseLayout?: boolean;
   /** Default true, and buildScene keeps it true: the restricted-area input fingerprint (~90 ms cold) is the only
-   * load-time guard against a stale generated fence table, because the root test suite does not run in CI yet
-   * (pending root CI). false is for tests that exercise the unchecked path. */
+   * load-time guard against a stale generated fence table; root CI (`root-test`, #148) also fails on one.
+   * false is for tests that exercise the unchecked path. */
   verifyRestrictedInput?: boolean;
   /** false derives the street layer's polygons instead of reading data/surface-baked.ts. Default true; the
    * baked table is used only if it was made from exactly this surface, bundle and plan (surface-bake.ts). */

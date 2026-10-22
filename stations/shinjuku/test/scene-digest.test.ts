@@ -106,9 +106,9 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
     expect(verified.cacheHit).toBe(true); // the key matched, so the table was used
     expect(protectOnly(bundle, plan, { verifyGeneratedInput: false })).toEqual(verified);
     expect(verified).toEqual(base.protect);
-    // Shipped code still verifies at load (buildScene passes verifyRestrictedInput: true) because the root test
-    // suite is not run in CI yet (pending root CI). This test is the second guard once it is: a fresh derivation
-    // reproduces the table and its key exactly, so a stale table fails here too.
+    // Shipped code still verifies at load (buildScene passes verifyRestrictedInput: true) as defence in depth.
+    // Root CI (`root-test`, #148) runs this file: a fresh derivation that reproduces the table and its key
+    // exactly is the CI guard, so a stale table fails here too.
     let fresh: { inputKey: string } | undefined;
     protectFareAndAccess(buildLayout(bundle, plan), plan, bundle, { recomputeRestricted: true, onRestricted: (r) => { fresh = r; } });
     expect(fresh?.inputKey).toBe(generated.inputKey);
