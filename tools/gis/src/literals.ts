@@ -4,7 +4,7 @@ import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { getStoreRoot, getStoredSource, packageRoot } from './common.js';
 import { checkPoiLiterals, detailLiterals, type DetailProblem } from './poi-literals.js';
 import { buildMatcher, isWording, literalsInProse, nfkc, redactProse, wholeValueLiteral, type LiteralMatcher } from './literal-match.js';
-import { LITERAL_CLASSES } from './literal-classes.js';
+import { LITERAL_CLASSES, classACredit } from './literal-classes.js';
 import { parseCsv } from './network.js';
 import { readZip } from './zip.js';
 import { valueSha256 } from './poi.js';
@@ -56,13 +56,32 @@ const problemOf = (sourceId: string, error: unknown): DetailProblem => ({ source
  * Class (b) literals from the hash-verified store copies. `getStoredSource` re-hashes the stored bytes against the
  * recorded acquisition, so a missing, altered or never-acquired copy surfaces as a problem for that source.
  */
-export async function loadClassBLiterals(): Promise<ClassBResult> {
+export const loadClassBLiterals = (): Promise<ClassBResult> => loadLiterals('b');
+/**
+ * A word that is also class (a) wording is public through that source (for example a PLATEAU codelist description that is
+ * identical to an MLIT specification label), so it cannot be a class (b) secret. Returns the class (b) literals without those,
+ * and the overlap that was removed.
+ */
+export function withoutClassA(classB: ClassBResult, classA: ClassBResult): ClassBResult & { overlap: string[] } {
+  const publicKeys = new Set([...classA.literals.keys()].map(literal => nfkc(literal).trim()));
+  const literals = new Map<string, string[]>(), overlap: string[] = [];
+  for (const [literal, ids] of classB.literals) { if (publicKeys.has(nfkc(literal).trim())) overlap.push(literal); else literals.set(literal, ids); }
+  return { literals, problems: classB.problems, per_source: classB.per_source.map(row => ({ ...row, literal_count: [...literals.values()].filter(ids => ids.includes(row.source_id)).length })), overlap: overlap.sort() };
+}
+
+/** Class (b) literals for the guard and the scrub: store-derived, without words that class (a) sources make public. */
+export async function loadClassBMinusA(): Promise<ClassBResult & { overlap: string[] }> { return withoutClassA(await loadClassBLiterals(), await loadClassALiterals()); }
+
+/** Class (a) source wording read from the store (Ikebukuro Hokonavi values, MLIT specification labels); CityGML names come from the committed inventories. */
+export const loadClassALiterals = (): Promise<ClassBResult> => loadLiterals('a');
+
+async function loadLiterals(cls: 'a' | 'b'): Promise<ClassBResult> {
   const literals = new Map<string, string[]>(), problems: DetailProblem[] = [], perSource: ClassBResult['per_source'] = [];
   const record = (sourceId: string, found: Set<string>): void => {
     perSource.push({ source_id: sourceId, literal_count: add(literals, sourceId, found) });
     if (found.size === 0) problems.push({ source_id: sourceId, reason: 'missing', detail: 'no literals extracted from the stored source' });
   };
-  for (const entry of LITERAL_CLASSES.filter(item => item.class === 'b')) {
+  for (const entry of LITERAL_CLASSES.filter(item => item.class === cls && item.kind !== 'citygml')) {
     try {
       const stored = await getStoredSource(entry.source_id);
       if (entry.kind === 'hokonavi') {
@@ -190,55 +209,67 @@ export async function verifyRegistered(docsGisDir: string, registered: ReadonlyS
 
 type Credit = { source_id: string; attribution_text: string };
 
-/** Class (a) wording kept in committed inventories: gml:name text and literal floor-label observations. */
-export function classAWording(inventories: Iterable<unknown>): Set<string> {
-  const found = new Set<string>();
+/** Class (a) wording kept in committed inventories: gml:name text and literal floor-label observations, by source. */
+export function classAWording(inventories: Iterable<unknown>): Map<string, string[]> {
+  const found = new Map<string, string[]>();
+  const add = (value: string, sourceId: string): void => { const key = nfkc(value).trim(); if (key.length >= 4) found.set(key, [...new Set([...found.get(key) ?? [], sourceId])]); };
   for (const doc of inventories) {
     if (!isRecord(doc)) continue;
-    if (Array.isArray(doc.floor_label_observations)) for (const row of doc.floor_label_observations) if (isRecord(row) && typeof row.value === 'string') found.add(row.value);
-    if (Array.isArray(doc.compact_features)) for (const row of doc.compact_features) if (isRecord(row) && Array.isArray(row.names)) for (const name of row.names) if (typeof name === 'string') found.add(name);
+    const sourceId = typeof doc.source_id === 'string' ? doc.source_id : '';
+    if (Array.isArray(doc.floor_label_observations)) for (const row of doc.floor_label_observations) if (isRecord(row) && typeof row.value === 'string') add(row.value, sourceId);
+    if (Array.isArray(doc.compact_features)) for (const row of doc.compact_features) if (isRecord(row) && Array.isArray(row.names)) for (const name of row.names) if (typeof name === 'string') add(name, sourceId);
   }
-  return new Set([...found].filter(value => nfkc(value).trim().length >= 4));
+  return found;
 }
 
 /**
- * Class (a) values stay in committed files only with their credit. Every file that keeps one must carry the recorded
- * attribution text or point at the classification file; generated inventory and gap reports carry a structured `credit`
- * field in the JSON and the text in the Markdown companion. Frozen history snapshots are covered by history/README.md.
+ * Class (a) values stay in committed files only with their credit. A file that keeps any class (a) wording (inventory
+ * names, Ikebukuro Hokonavi values, MLIT specification labels) must carry the recorded credit of the source(s) behind that
+ * wording or point at the classification file. Generated reports (inventory, gaps, networks) must carry the credit text
+ * itself, in the Markdown companion and in a structured `credit` field of the JSON. Frozen history snapshots are covered
+ * by history/README.md. Only wording of four or more characters is used to detect a file, and allowlisted generic terms
+ * never count, so common short words cannot demand a credit.
  */
-export async function verifyClassACredits(docsGisDir: string, credits: ReadonlyArray<Credit>): Promise<Array<{ file: string; reason: string }>> {
+export async function verifyClassACredits(docsGisDir: string, credits: ReadonlyArray<Credit>, options: { classA?: ReadonlyMap<string, string[]>; allowlist?: ReadonlySet<string> } = {}): Promise<Array<{ file: string; reason: string }>> {
   const problems: Array<{ file: string; reason: string }> = [];
-  const texts = credits.map(credit => credit.attribution_text).filter(text => text && text !== 'unknown');
-  const covered = (text: string): boolean => text.includes(CREDIT_POINTER) || texts.some(item => text.includes(item));
+  const textOf = (sourceId: string): string => credits.find(credit => credit.source_id === sourceId)?.attribution_text ?? '';
   const inventories: unknown[] = [];
   for (const name of (await readdir(join(docsGisDir, 'inventory')).catch(() => [] as string[])).filter(entry => entry.endsWith('.inventory.json')).sort()) inventories.push(await readJsonOrNull(join(docsGisDir, 'inventory', name)));
-  const wording = classAWording(inventories);
-  if (wording.size === 0) return problems;
-  const matcher = buildMatcher(wording);
+  const owners = classAWording(inventories);
+  for (const [literal, ids] of options.classA ?? []) { const key = nfkc(literal).trim(); if (key.length >= 4) owners.set(key, [...new Set([...owners.get(key) ?? [], ...ids])]); }
+  if (owners.size === 0) return problems;
+  const allow = options.allowlist ?? new Set<string>();
+  const matcher = buildMatcher(owners.keys(), allow, allow);
   const history = await readFile(join(docsGisDir, 'history', 'README.md'), 'utf8').catch(() => '');
-  const structured = (file: string, doc: unknown, source: unknown): void => {
-    const credit = isRecord(doc) && isRecord(doc.credit) ? doc.credit : null;
-    const expected = credits.find(item => item.source_id === source)?.attribution_text;
-    if (!credit || typeof credit.attribution_text !== 'string' || (expected !== undefined && credit.attribution_text !== expected) || typeof credit.classification !== 'string' || !credit.classification.includes(CREDIT_POINTER)) problems.push({ file, reason: 'class (a) values without a `credit` field (attribution_text and classification) matching the recorded credit' });
-  };
+  const generated = /^(?:inventory|gaps|networks)\//u;
   for await (const path of textFiles(docsGisDir)) {
     const file = path.slice(docsGisDir.length + 1).split(sep).join('/');
     if (file === CREDIT_POINTER) continue;
     const text = await readFile(path, 'utf8');
     const hits = literalsInFile(path, text, matcher);
     if (hits.length === 0) continue;
-    if (file.startsWith('history/') ? !covered(text) && !covered(history) : !covered(text)) problems.push({ file, reason: 'keeps class (a) values without the credit or a pointer to docs/gis/rights/non-poi-literals.md' });
-    if (/^inventory\/[^/]+\.inventory\.json$/u.test(file)) { const doc = JSON.parse(text) as Record<string, unknown>; structured(file, doc, doc.source_id); }
-    if (/^gaps\/[^/]+\.json$/u.test(file)) { const doc = JSON.parse(text) as Record<string, unknown>; structured(file, doc, isRecord(doc.source_ids) ? doc.source_ids.citygml : undefined); }
+    // A hit is credited when any source that owns the wording has its credit text in the file (or, for hand-written and frozen files, a pointer).
+    const credited = (haystack: string): boolean => hits.every(hit => (owners.get(hit) ?? []).some(id => { const credit = textOf(id); return credit !== '' && haystack.includes(credit); }));
+    if (generated.test(file)) {
+      if (!credited(text)) problems.push({ file, reason: 'keeps class (a) values without the recorded credit text of their source' });
+      if (JSON_FILE.test(file)) {
+        const doc = JSON.parse(text) as Record<string, unknown>, credit = isRecord(doc.credit) ? doc.credit : null;
+        if (!credit || typeof credit.attribution_text !== 'string' || typeof credit.classification !== 'string' || !credit.classification.includes(CREDIT_POINTER) || !credited(credit.attribution_text)) problems.push({ file, reason: 'class (a) values without a `credit` field (attribution_text and classification) naming the recorded credit' });
+      }
+    } else if (!(text.includes(CREDIT_POINTER) || credited(text) || (file.startsWith('history/') && (history.includes(CREDIT_POINTER) || credited(history))))) {
+      problems.push({ file, reason: 'keeps class (a) values without the credit or a pointer to docs/gis/rights/non-poi-literals.md' });
+    }
   }
-  return problems.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0));
+  return problems.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : cmpText(a.reason, b.reason)));
 }
+const cmpText = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 export type CheckLiteralsOptions = {
   classB?: () => Promise<ClassBResult>;
   credits?: ReadonlyArray<Credit>;
   classificationFile?: string;
   registered?: ReadonlySet<string>;
+  classA?: () => Promise<ClassBResult>;
   /** Allowlisted terms that are also exempt as whole JSON values (codebooks `structural_values`). */
   structural?: ReadonlySet<string>;
   skipPoi?: boolean;
@@ -250,27 +281,29 @@ export type CheckLiteralsOptions = {
  */
 export async function checkLiterals(docsGisDir: string, storeRoot: string = getStoreRoot(), allowlist: ReadonlySet<string> = new Set(), options: CheckLiteralsOptions = {}) {
   const poi = options.skipPoi ? null : await checkPoiLiterals(docsGisDir, storeRoot, allowlist);
-  const classB = await (options.classB ?? loadClassBLiterals)();
+  // Injected class (b) literals (tests) come without a store, so class (a) wording is empty unless injected too.
+  const classAResult = await (options.classA ?? (options.classB ? async (): Promise<ClassBResult> => ({ literals: new Map(), problems: [], per_source: [] }) : loadClassALiterals))();
+  const classB = withoutClassA(await (options.classB ?? loadClassBLiterals)(), classAResult);
   const reportProblems = await verifyReportDetails(docsGisDir, storeRoot);
   const unregistered = await verifyRegistered(docsGisDir, options.registered);
   const matcher = buildMatcher(classB.literals.keys(), allowlist, options.structural);
   const leaks = await scanTreeForClassB(docsGisDir, matcher);
   const credits = options.credits ?? await defaultCredits();
   const creditProblems = [...await verifyCredits(options.classificationFile ?? join(docsGisDir, 'rights', 'non-poi-literals.md'), credits)];
-  const fileCredits = await verifyClassACredits(docsGisDir, credits);
-  const nonPoiProblems = [...classB.problems, ...reportProblems, ...unregistered];
+  const fileCredits = await verifyClassACredits(docsGisDir, credits, { classA: classAResult.literals, allowlist });
+  const nonPoiProblems = [...classB.problems, ...classAResult.problems, ...reportProblems, ...unregistered];
   const nonPoi = {
     status: leaks.length || nonPoiProblems.length || creditProblems.length || fileCredits.length || classB.literals.size === 0 ? 'FAIL' as const : 'PASS' as const,
-    scanned_literals: classB.literals.size, per_source: classB.per_source, detail_problems: nonPoiProblems, credit_problems: creditProblems, file_credit_problems: fileCredits,
+    scanned_literals: classB.literals.size, per_source: classB.per_source, public_through_class_a: classB.overlap, detail_problems: nonPoiProblems, credit_problems: creditProblems, file_credit_problems: fileCredits,
     ...(classB.literals.size === 0 ? { error: 'no class (b) literals scanned' } : {}), leaking_files: leaks };
   const status = nonPoi.status === 'FAIL' || (poi !== null && poi.status === 'FAIL') ? 'FAIL' as const : 'PASS' as const;
   return { status, poi, non_poi: nonPoi };
 }
 
 async function defaultCredits(): Promise<Credit[]> {
-  const { loadSources } = await import('./acquire.js');
-  const sources = loadSources();
-  return LITERAL_CLASSES.filter(entry => entry.class === 'a').map(entry => ({ source_id: entry.source_id, attribution_text: sources.find(source => source.source_id === entry.source_id)?.attribution_text ?? '' }));
+  const credits: Credit[] = [];
+  for (const entry of LITERAL_CLASSES.filter(item => item.class === 'a')) { const credit = await classACredit(entry.source_id); credits.push({ source_id: entry.source_id, attribution_text: credit?.attribution_text ?? '' }); }
+  return credits;
 }
 
 /** Replace class (b) literals in a JSON document (whole strings and keys) or prose; used by `scrubLiterals`. */
@@ -309,7 +342,7 @@ async function* scrubTargets(path: string): AsyncGenerator<string> {
  * The fresh generators (inventory, network, summarize) write the structured `{ value_sha256, value_type, count }` form.
  */
 export async function scrubLiterals(docsGisDir: string, targets: string[], allowlist: ReadonlySet<string>, classB?: ClassBResult, structural: ReadonlySet<string> = new Set()): Promise<Array<{ file: string; replaced: number }>> {
-  const loaded = classB ?? await loadClassBLiterals();
+  const loaded = classB ?? await loadClassBMinusA();
   if (loaded.problems.length) throw new Error(`Class (b) literals unavailable: ${loaded.problems.map(problem => `${problem.source_id} ${problem.reason}`).join('; ')}`);
   const matcher = buildMatcher(loaded.literals.keys(), allowlist, structural), token = (original: string): string => `value_sha256:${valueSha256(original)}`;
   const changed: Array<{ file: string; replaced: number }> = [];

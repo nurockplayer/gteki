@@ -10,6 +10,7 @@ import { readZip } from './zip.js';
 import { attributeDecoding,codebookInputs } from './attributes.js';
 import { compareNetworkRepresentations, r1GeoEvidence } from './r1.js';
 import { publicNetworkReport } from './literal-public.js';
+import { reportCredit, reportKeepsSourceValues, reportSourceIds } from './literal-classes.js';
 
 type RawRow = Record<string, string>;
 type XY = [number, number];
@@ -481,7 +482,7 @@ function geoJsonObjects(data: Buffer): any[] {
 
 function renderNetworkMarkdown(report: any): string {
   const inventoryOnly = report.source_id.includes('stationmap');
-  return `# Network inventory: ${report.source_id}\n\n- Files: ${JSON.stringify(report.files ?? report.members?.map((m: any) => m.file) ?? report.file)}\n- Counts: ${JSON.stringify(report.counts ?? report.totals ?? { features: report.feature_count })}\n- CRS: ${JSON.stringify(report.crs ?? report.network_inventory?.crs)}\n- Bbox: ${JSON.stringify(report.bbox ?? report.network_inventory?.bbox)}\n- Topology summary: ${JSON.stringify(report.topology ?? null)}\n- Attribute decoding: literal lookups only; applicable spec ${JSON.stringify(report.attribute_decoding?.applicable_spec_version??null)}. Full distributions and rank checks are in the companion JSON.\n- Distance consistency: ${JSON.stringify(report.distance_consistency??null)}\n\n${inventoryOnly ? 'Station-map files are listed as layer inventory only.' : 'All exported candidate records remain UNVERIFIED and non-routable. The inspector adds no connections.'}\n`;
+  return `# Network inventory: ${report.source_id}\n\n${report.credit ? `Credit: ${report.credit.attribution_text} (see ${report.credit.classification})\n\n` : ''}- Files: ${JSON.stringify(report.files ?? report.members?.map((m: any) => m.file) ?? report.file)}\n- Counts: ${JSON.stringify(report.counts ?? report.totals ?? { features: report.feature_count })}\n- CRS: ${JSON.stringify(report.crs ?? report.network_inventory?.crs)}\n- Bbox: ${JSON.stringify(report.bbox ?? report.network_inventory?.bbox)}\n- Topology summary: ${JSON.stringify(report.topology ?? null)}\n- Attribute decoding: literal lookups only; applicable spec ${JSON.stringify(report.attribute_decoding?.applicable_spec_version??null)}. Full distributions and rank checks are in the companion JSON.\n- Distance consistency: ${JSON.stringify(report.distance_consistency??null)}\n\n${inventoryOnly ? 'Station-map files are listed as layer inventory only.' : 'All exported candidate records remain UNVERIFIED and non-routable. The inspector adds no connections.'}\n`;
 }
 
 async function getSourcePair(sourceId: string) {
@@ -506,7 +507,10 @@ async function writeNetworkReport(sourceId: string, literalReport: any): Promise
   const storePath = `out/networks/${sourceId}-${detailSha256.slice(0, 12)}.network-detail.json`;
   await mkdir(path.dirname(path.join(getStoreRoot(), storePath)), { recursive: true });
   await writeFile(path.join(getStoreRoot(), storePath), detailBytes);
-  const report = { ...publicNetworkReport(literalReport), detail: { store_path: storePath, sha256: detailSha256, bytes: detailBytes.length } };
+  // A class (a) network (Ikebukuro) keeps its values; any class (b) source (E27) is committed as hashes only. MLIT specification
+  // labels (decoded) are class (a) in both. Every class (a) value travels with its credit (issue #129).
+  const credit = await reportCredit(reportSourceIds(literalReport));
+  const report = { ...(reportKeepsSourceValues(literalReport) ? literalReport : publicNetworkReport(literalReport)), detail: { store_path: storePath, sha256: detailSha256, bytes: detailBytes.length }, ...(credit ? { credit } : {}) };
   await writeJson(path.join(docsRoot, 'gis', 'networks', `${sourceId}.json`), report);
   await writeFile(path.join(docsRoot, 'gis', 'networks', `${sourceId}.md`), renderNetworkMarkdown(report));
   return report;

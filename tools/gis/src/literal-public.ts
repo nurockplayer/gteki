@@ -7,6 +7,9 @@ import { isCodeValue } from './literal-match.js';
  * a literal becomes `{ value_sha256, value_type[, count] }` exactly as for POI values. The verbatim form is kept only in
  * the git-ignored store detail report.
  *
+ * This is the form of a report whose source is class (b), now only Hokonavi E27. MLIT specification labels (`decoded_label_counts`)
+ * are class (a) and stay in every network report with their credit; a class (a) network (Ikebukuro) keeps all its values.
+ *
  * Source codes are not free text. A value that is purely numeric, one of our own markers, or a short ASCII token (at most
  * three characters, e.g. rank `SBS`) stays as the code: hashing it would make the code distributions unreadable and it
  * carries no source wording. Short non-ASCII wording (`1階`, `階段`, `あり`) is wording and is hashed like any label.
@@ -52,8 +55,6 @@ function redact(value: unknown, key: string | null, parent: string | null): unkn
   if (!isRecord(value)) return value;
   const out: Array<[string, unknown]> = [];
   for (const [name, entry] of Object.entries(value)) {
-    // Rank triplets are our own rendering of the code letters (S / A / B), not specification wording: they stay.
-    if (name === 'decoded_label_counts' && isCountMap(entry) && !Object.keys(entry).every(label => /^[SABCZX](?: \/ [SABCZX])*$/u.test(label))) { out.push(['decoded_label_value_hash_distribution', hashedDistribution(entry)]); continue; }
     if (name === 'floor_labels_present_literally' && Array.isArray(entry) && entry.every(item => typeof item === 'string')) {
       const counts = isCountMap(value.floor_label_counts) ? value.floor_label_counts : null;
       const rows: Array<HashedValue & { count?: number }> = (entry as string[]).map(label => counts && typeof counts[label] === 'number' ? { ...hashedValue(label), count: counts[label]! } : hashedValue(label));

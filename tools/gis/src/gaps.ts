@@ -5,7 +5,7 @@ import path from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import { docsRoot, readJson, writeJson } from './common.js';
 import { loadSources } from './acquire.js';
-import { classACredit } from './literal-classes.js';
+import { reportCredit, reportSourceIds } from './literal-classes.js';
 import type { StationOverlapReport } from './overlap.js';
 
 const STATIONS = [
@@ -86,7 +86,7 @@ function describeNetwork(report: any): string[] {
   const members = report.members ?? [];
   if (members.length) return [
     ...members.map((m: any) => `- ${m.file}: ${m.feature_count} features; CRS ${JSON.stringify(m.crs)}; bbox ${JSON.stringify(m.bbox)}.`),
-    ...(report.network_inventory ? [`- Combined source layers: ${report.network_inventory.feature_count} features; source floor labels as value_sha256 + count ${JSON.stringify(report.network_inventory.floor_label_value_hash_distribution ?? null)}.`] : []),
+    ...(report.network_inventory ? [`- Combined source layers: ${report.network_inventory.feature_count} features; source floor labels ${report.network_inventory.floor_label_value_hash_distribution ? `as value_sha256 + count ${JSON.stringify(report.network_inventory.floor_label_value_hash_distribution)}` : JSON.stringify(report.network_inventory.floor_labels_present_literally ?? null)}.`] : []),
     ...(report.topology ? [`- Combined network source topology: ${report.topology.weak_component_count} weak components, ${report.topology.dangling_links?.length ?? 'UNKNOWN'} dangling references, ${report.topology.geometry_endpoint_mismatches_over_0_5m?.length ?? 'UNKNOWN'} endpoint mismatches above 0.5 m.`] : []),
   ];
   return [`- The source report contains ${report.totals?.features ?? 'UNKNOWN'} features; spatial topology remains unverified.`];
@@ -155,14 +155,15 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
     holds.push('POI, S03 and related-layer publish gates remain HOLD. Rights clearance never establishes navigability.');
     for (const row of rightsContent) if(row.verdict !== 'CLEARED_WITH_CONDITIONS') holds.push(`${row.source_id}${row.layer ? ` / ${row.layer}` : ''}: ${row.verdict}; ${row.reason}; ${rightsScopeMarkdown(row)}`);
     holds.push(...missingEvidenceHolds(station.id, poiById, rightsById, manifestStations, admittedPoiIds));
-    const credit = inventory ? await classACredit(station.gml) : null;
+    // Class (a) values quoted in this packet (CityGML names, Ikebukuro network values, MLIT specification labels) keep their credit.
+    const credit = await reportCredit([...(inventory ? [station.gml] : []), ...(network ? reportSourceIds({ source_id: network.source_id ?? station.network, attribute_decoding: network.attribute_decoding }) : [])]);
     const markdown = [
       `# ${station.id[0]!.toUpperCase()}${station.id.slice(1)} evidence-gap packet`,
       '',
       'This packet is generated from the current inventory and network report files. Missing reports and fields are UNKNOWN.',
       '',
       '## What the source files report',
-      ...(inventory ? [`- CityGML source: ${station.gml}.`, ...(credit ? [`- Credit: ${credit.attribution_text} (${credit.license_name}; see ${credit.classification}).`] : []), ...semanticFacts] : ['- CityGML inventory: unavailable; contents UNKNOWN.']),
+      ...(inventory ? [`- CityGML source: ${station.gml}.`, ...(credit ? [`- Credit: ${credit.attribution_text} (see ${credit.classification}).`] : []), ...semanticFacts] : ['- CityGML inventory: unavailable; contents UNKNOWN.']),
       ...describeNetwork(network),
       '',
       '## Spatial bbox comparison',
