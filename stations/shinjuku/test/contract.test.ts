@@ -29,6 +29,17 @@ describe("Shinjuku gteki/ contract files", () => {
     expect(Object.keys(p?.sha256 ?? {}).length).toBe(8);
   });
 
+  it("ships both E27 resources under the Owner's recorded #16 override, never as a confirmed licence (#130, #39 Q11)", () => {
+    const e27 = bundle.sources.filter((s) => s.id.startsWith("mlit-hokonavi-e27-"));
+    expect(e27.map((s) => s.id).sort()).toEqual(["mlit-hokonavi-e27-nwd", "mlit-hokonavi-e27-stationmap"]);
+    for (const s of e27) {
+      expect(s.rights, s.id).toBe("PUBLISHED_UNDER_OWNER_OVERRIDE");
+      expect(s.override, s.id).toEqual({ decision: "https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757", date: "2026-10-21" });
+      expect(s.license?.name, s.id).toMatch(/unconfirmed/i);
+      expect(s.license?.name, s.id).not.toMatch(/PDL|CC[ -]?BY/i);
+    }
+  });
+
   it("never claims measured heights", () => {
     for (const f of bundle.floors) expect(f.elevationM).toBeNull();
     for (const n of bundle.nodes) {
