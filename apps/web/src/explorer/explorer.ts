@@ -10,7 +10,7 @@ import type { Router, PolylinePoint } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
-import { WALKER_BODY, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
+import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
@@ -46,8 +46,8 @@ export interface ExplorerEvents {
 
 const EYE = WALKER_BODY.eyeM;
 const RADIUS = WALKER_BODY.radiusM;
-const WALK = 1.45;
-const RUN = 3.4;
+const WALK = WALKER_SPEED.walkMps;
+const RUN = WALKER_SPEED.runMps;
 /** POI labels float this high above their entrance. */
 const LABEL_LIFT = 2.4;
 
@@ -431,6 +431,7 @@ export class Explorer {
         .filter((n) => streets.some((f) => f.id === n.floorId))
         .map((n) => R(n.position.x, n.position.y, nodeDisplayZ(n, streets.find((f) => f.id === n.floorId)).z));
       this.stationScene.root.updateMatrixWorld(true);
+      this.street.attach(this.stationScene.root);
     } else {
       this.world.add(this.graph.root);
       this.walkable = this.graph.walkable;
@@ -470,6 +471,7 @@ export class Explorer {
 
   private clearStation(): void {
     this.street.restore(this.scene);
+    this.street.attach(null);
     this.streetY = null;
     this.streetTops = [];
     this.streetProbe.at.set(Infinity, 0, 0);
