@@ -3,6 +3,7 @@
 // rights are involved. Textures assume UV0 is metric (1 unit = 1 m), which the
 // Blender build guarantees (box projection): horizontal faces uv = (x, y), vertical faces uv = (along, elevation).
 import type * as THREE_NS from "three";
+import type { FinishPack, FinishPacks } from "./finishes.ts";
 type ThreeNS = typeof THREE_NS;
 
 /** Roles whose material draws both faces; every other role is front-face only. The scene's ray-test tiles
@@ -623,20 +624,41 @@ export interface StationMaterials {
   dispose(): void;
 }
 
-export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMaterials {
+/**
+ * Material parameters from a finish pack (scene/finishes.ts). With a roughness map the factor is 1, as for the
+ * canvas floor; without one it is `roughness`. The pack's colour tints its textures. A pack with no albedo keeps
+ * `color` (the role's own base colour) unless the pack sets one.
+ */
+function fromPack(pack: FinishPack, roughness: number, color?: number): THREE_NS.MeshStandardMaterialParameters {
+  return {
+    ...(pack.map ? { map: pack.map } : {}),
+    ...(pack.normalMap ? { normalMap: pack.normalMap } : {}),
+    ...(pack.roughnessMap ? { roughnessMap: pack.roughnessMap, roughness: 1 } : { roughness }),
+    ...(pack.color !== null ? { color: pack.color } : color !== undefined && !pack.map ? { color } : {}),
+  };
+}
+
+/**
+ * Surface materials per mesh role. `packs` swaps a role's procedural texture for a kit texture set; a role
+ * without a pack (and so an empty `packs`) builds exactly the procedural material. Pack textures are owned
+ * by the caller (LoadedFinishes.dispose), not by this object.
+ */
+export function createMaterials(THREE: ThreeNS, mobile: boolean, packs: FinishPacks = {}): StationMaterials {
   const size = mobile ? 512 : 1024;
   const half = size / 2;
   const tex: THREE_NS.Texture[] = [];
   const keep = <T extends THREE_NS.Texture>(t: T) => (tex.push(t), t);
-  const floorMap = keep(canvasTexture(THREE, size, 2.4, floorPaint(false), 11));
-  const floorRough = keep(canvasTexture(THREE, half, 2.4, floorPaint(true), 11, false));
-  const ceilMap = keep(canvasTexture(THREE, size, 2.4, ceilingPaint, 31));
-  const stairMap = keep(canvasTexture(THREE, half, 1.2, stairPaint, 41));
-  const shopMap = keep(canvasTexture(THREE, 256, 2.4, shopPaint, 61));
+  // Procedural textures are only painted for roles without a pack.
+  const proc = <T>(role: keyof FinishPacks, make: () => T): T | null => (packs[role] ? null : make());
+  const floorMap = proc("floor", () => keep(canvasTexture(THREE, size, 2.4, floorPaint(false), 11)));
+  const floorRough = proc("floor", () => keep(canvasTexture(THREE, half, 2.4, floorPaint(true), 11, false)));
+  const ceilMap = proc("ceiling", () => keep(canvasTexture(THREE, size, 2.4, ceilingPaint, 31)));
+  const stairMap = proc("stairs_ramps", () => keep(canvasTexture(THREE, half, 1.2, stairPaint, 41)));
+  const shopMap = proc("shopfront", () => keep(canvasTexture(THREE, 256, 2.4, shopPaint, 61)));
   // Relief maps are generated from height canvases; skipped on low quality, where the shader relief is a no-op.
-  const floorNormal = mobile ? null : keep(normalTexture(THREE, size, 2.4, floorHeightPaint, 12, 0.0065, 0.02));
-  const ceilNormal = mobile ? null : keep(normalTexture(THREE, half, 2.4, ceilingHeightPaint, 32, 0.012));
-  const stairNormal = mobile ? null : keep(normalTexture(THREE, half, 1.2, stairHeightPaint, 42, 0.0016));
+  const floorNormal = mobile ? null : proc("floor", () => keep(normalTexture(THREE, size, 2.4, floorHeightPaint, 12, 0.0065, 0.02)));
+  const ceilNormal = mobile ? null : proc("ceiling", () => keep(normalTexture(THREE, half, 2.4, ceilingHeightPaint, 32, 0.012)));
+  const stairNormal = mobile ? null : proc("stairs_ramps", () => keep(normalTexture(THREE, half, 1.2, stairHeightPaint, 42, 0.0016)));
 
   const lit: THREE_NS.MeshStandardMaterial[] = [];
   const std = (p: THREE_NS.MeshStandardMaterialParameters, baked = true) => {
@@ -644,12 +666,25 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     if (baked) lit.push(m);
     return m;
   };
-  const floor = std({ map: floorMap, roughnessMap: floorRough, roughness: 1, metalness: 0, normalMap: floorNormal, envMapIntensity: ENV_INTENSITY.floor });
-  const wall = std({ color: 0xdedee0, // cooler than the warm bake, never brighter than the old 0xe2e0da (luminance 0.731 vs 0.745)
-    roughness: 0.42, metalness: 0, side: roleSide(THREE, "wall") });
-  const ceiling = std({ map: ceilMap, normalMap: ceilNormal, roughness: 0.95, side: roleSide(THREE, "ceiling") });
-  const stairs = std({ map: stairMap, normalMap: stairNormal, roughness: 0.7 });
-  const barriers = std({ color: 0xc6cacf, roughness: 0.3, metalness: 0, side: roleSide(THREE, "barriers") });
+  const floor = std(packs.floor
+    ? { ...fromPack(packs.floor, 0.4), metalness: 0, envMapIntensity: ENV_INTENSITY.floor }
+    : { map: floorMap, roughnessMap: floorRough, roughness: 1, metalness: 0, normalMap: floorNormal, envMapIntensity: ENV_INTENSITY.floor });
+  const wall = std(packs.wall
+    ? { ...fromPack(packs.wall, 0.42, 0xdedee0), metalness: 0, side: roleSide(THREE, "wall") }
+    : { color: 0xdedee0, // cooler than the warm bake, never brighter than the old 0xe2e0da (luminance 0.731 vs 0.745)
+        roughness: 0.42, metalness: 0, side: roleSide(THREE, "wall") });
+  const ceiling = std(packs.ceiling
+    ? { ...fromPack(packs.ceiling, 0.95), side: roleSide(THREE, "ceiling") }
+    : { map: ceilMap, normalMap: ceilNormal, roughness: 0.95, side: roleSide(THREE, "ceiling") });
+  const stairs = std(packs.stairs_ramps ? fromPack(packs.stairs_ramps, 0.7) : { map: stairMap, normalMap: stairNormal, roughness: 0.7 });
+  const barriers = std(packs.barriers
+    ? { ...fromPack(packs.barriers, 0.3, 0xc6cacf), metalness: 0, side: roleSide(THREE, "barriers") }
+    : { color: 0xc6cacf, roughness: 0.3, metalness: 0, side: roleSide(THREE, "barriers") });
+  // One shopfront pack drives both glazed roles: the albedo is also the emissive map, as the canvas is.
+  const shop = packs.shopfront
+    ? { ...fromPack(packs.shopfront, 0.18), ...(packs.shopfront.map ? { emissiveMap: packs.shopfront.map } : {}) }
+    : { map: shopMap, emissiveMap: shopMap };
+  const shopRough = (r: number): THREE_NS.MeshStandardMaterialParameters => (packs.shopfront?.roughnessMap ? {} : { roughness: r });
   patchLit(floor, "floor", 0.9);
   patchLit(wall, "wall", 0.9, WALL_CLAD);
   patchLit(ceiling, "ceiling", 0.6);
@@ -664,8 +699,8 @@ export function createMaterials(THREE: ThreeNS, mobile: boolean): StationMateria
     barriers,
     floor_elements: std({ color: 0x9b958c, roughness: 0.6 }),
     transport: std({ color: 0x9aa0a7, roughness: 0.38, metalness: 0.35 }),
-    windows: std({ map: shopMap, emissiveMap: shopMap, emissive: 0xffffff, emissiveIntensity: 1.15, roughness: 0.15, side: roleSide(THREE, "windows") }, false),
-    doors: std({ map: shopMap, emissiveMap: shopMap, emissive: 0xffffff, emissiveIntensity: 1.35, roughness: 0.2, side: roleSide(THREE, "doors") }, false),
+    windows: std({ ...shop, emissive: 0xffffff, emissiveIntensity: 1.15, ...shopRough(0.15), side: roleSide(THREE, "windows") }, false),
+    doors: std({ ...shop, emissive: 0xffffff, emissiveIntensity: 1.35, ...shopRough(0.2), side: roleSide(THREE, "doors") }, false),
     light_fixtures: new THREE.MeshBasicMaterial({ color: new THREE.Color(1.0, 0.97, 0.92).multiplyScalar(2.2) }),
     // Openings to the street at the top of exit stairs: daylight.
     portal_sky: skyMaterial(THREE),

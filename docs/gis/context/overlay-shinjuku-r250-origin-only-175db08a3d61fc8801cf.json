@@ -1,0 +1,175 @@
+{
+  "run_id": "overlay-shinjuku-r250-origin-only-175db08a3d61fc8801cf",
+  "command": "context-overlay",
+  "policy_version": "context-overlay-v1",
+  "station_id": "shinjuku",
+  "gteki_role": "context",
+  "navigation_use": "NOT_FOR_ROUTING",
+  "visual_only": true,
+  "verification": "UNVERIFIED",
+  "note": "Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; no railway class or track level is shown (the source has no underground versus at-grade field). The geometry is clipped to a 700 m disc around the station frame origin and is not the full source line; feature_hash is the hash of the whole source feature.",
+  "clip": {
+    "kind": "origin_disc",
+    "radius_m": 700,
+    "center": "station frame origin",
+    "features_clipped": 2,
+    "vertices_before": 165,
+    "vertices_after": 134
+  },
+  "frame": {
+    "mode": "origin-only",
+    "note": "horizontal ENU at the station.json origin (evaluated at height 0; no vertical anchor exists and none is asserted); same x/y as the station-enu frame would give to well under a millimetre",
+    "station_json_path": "stations/shinjuku/gteki/station.json",
+    "station_json_sha256": "9d7c6be8d400932622693b23e98c7b70c640b4459fee6715ce866f1a9752684f",
+    "origin_crs": "EPSG:6668"
+  },
+  "window": {
+    "r_origin_m": 250,
+    "r_exit_m": 0,
+    "disc_count": 1,
+    "mesh_margin_m": 0,
+    "node_rule": null,
+    "graph_sha256": null,
+    "pois_sha256": null,
+    "selection_rule": "A feature is selected when any segment of its projected polyline meets a closed disc of the window; selected features are then clipped to the clip disc (when one is configured), after projection; without a clip they are kept whole."
+  },
+  "z_basis": {
+    "mode": "constant",
+    "z_m": 0,
+    "basis": "symbolic street z = 0 (no datum asserted)",
+    "datum_asserted": false,
+    "drape": "none",
+    "baked_offset_m": 0,
+    "evidence_path": "stations/shinjuku/gteki/station.json",
+    "evidence_sha256": "9d7c6be8d400932622693b23e98c7b70c640b4459fee6715ce866f1a9752684f",
+    "evidence_field": "floors[ordinal 0].renderElevationM"
+  },
+  "credit": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成",
+  "source": {
+    "source_id": "ksj-n02-2025",
+    "source_sha256": "aaf76af133b2e771e538fabc4646d2e443dc1d5a67b221382a28d744e706cc9f",
+    "bytes": 14903774,
+    "license_name": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "publish_gate": "CONDITIONAL"
+  },
+  "layers": [
+    {
+      "kind": "railway",
+      "source_id": "ksj-n02-2025",
+      "member": "N02-25_GML/UTF-8/N02-25_RailroadSection.geojson",
+      "member_sha256": "4269b076c0689db13cadf0d07801418b7215b2160ebf1278c508031cd08c4da2",
+      "axis_order": "lon,lat",
+      "crs": "urn:ogc:def:crs:EPSG::6668",
+      "features_in_source": 21933,
+      "outside_prefilter": 21914,
+      "outside_window": 4,
+      "selected_before_clip": 15,
+      "dropped_by_clip": 0,
+      "selected": 15,
+      "features_clipped": 2,
+      "vertices_before_clip": 149,
+      "vertices": 118
+    },
+    {
+      "kind": "station",
+      "source_id": "ksj-n02-2025",
+      "member": "N02-25_GML/UTF-8/N02-25_Station.geojson",
+      "member_sha256": "908e2c3036e9c80760ae3514be3682c77f81f0bd60ab5fb1b3da1aa9352bbd94",
+      "axis_order": "lon,lat",
+      "crs": "urn:ogc:def:crs:EPSG::6668",
+      "features_in_source": 10234,
+      "outside_prefilter": 10226,
+      "outside_window": 3,
+      "selected_before_clip": 5,
+      "dropped_by_clip": 0,
+      "selected": 5,
+      "features_clipped": 0,
+      "vertices_before_clip": 16,
+      "vertices": 16
+    }
+  ],
+  "totals": {
+    "features_in_source": 32167,
+    "outside_prefilter": 32140,
+    "outside_window": 7,
+    "selected_before_clip": 20,
+    "dropped_by_clip": 0,
+    "selected": 20,
+    "vertices_before_clip": 165,
+    "vertices": 134
+  },
+  "feature_hashes_sha256": {
+    "railway": "2665bda3d5d97d65f4861a7a84e30fade85e584f45662f70d3a045020300662d",
+    "station": "237e27cf1859c614fd65558606247d407e62e55b82f8b83abd27f26b7a91edb7"
+  },
+  "feature_hashes": {
+    "railway": [
+      "041960d4c77aab3cbaaa40e215417793cfa6336f93f5fba9b026e41a37b07355",
+      "0f6d5f01de94723de9d3e5d227b4887b4c728b1543e77fc19828306f1bfa264d",
+      "121ec9ef6fd5abc48fcb5ad2fa112eb0e3d135403d87f7f56f4d8c9cf0afc934",
+      "250fe0a71d5a9519526f727a65f748a28ab848e3ad8706aba80e698aa0a3a043",
+      "2df4225e5da8028cd03f1ad65ad5c756dcda77658f2910f6c6cfd52240fecb52",
+      "4f1260f3632f9b64a9ac51075ae981740316a841a86f79e3e2815d2556bba840",
+      "569583b8ca7726cbb60c536ed43d518ecaf47f35e7b0b815be4d2e15ccf09f70",
+      "5b9d35ab7f28995e76fd1131f74d22e44cbb9d1b56ac54714bad0d28c0417734",
+      "872b4ca311fbfa6cf9c30eb6f842615c01d6f6b5504be4268a834afbcde2a4ae",
+      "b309129d016c3588cd79001bd686eddf2a9ef9910f46e7313e9a7f99c62bbbb5",
+      "c32d46bf00d9fb04ad2eb9f5e51a99776ece8ebadb254341e1898a42b8c124a6",
+      "c3ff0afa5bed73cc175b7be4beb1af966c984191316f08bdfb09b6d960b3233d",
+      "dd9a9dc96fd6fcc51bfb3e006899f018a55304ad5620229902b94be767ac8955",
+      "dedc684752cb5d68008973d5387849f4efa96e18b8c4e6a595cc312e8246176d",
+      "e535158c9b0ab83acec2045581cf39abb01b61489149f4fdf47a484ae9a98f61"
+    ],
+    "station": [
+      "520ad0095e11d278c8f16388d42d3d3ea91912be1013e0fae6866dc25aca728e",
+      "800d5455182f4a95058ad09cae94dbfc618ef60492e22e9cab378fbc958727b7",
+      "8c61d930fe275bb18b633a3fab0536c86276445f8dd0ad5960a0d470eb4c372b",
+      "8dd8d9c6e9c37abf93b5c73ee652536ec825550124574f26d69452324be3f278",
+      "fc22397abecd6193cc5ccd1b03209ca58d45cf4f7a5f4c358e7453d80935ea68"
+    ]
+  },
+  "bbox_local_ENU": {
+    "min": [
+      -663.639,
+      -485.97,
+      0
+    ],
+    "max": [
+      559.38,
+      451.58,
+      0
+    ]
+  },
+  "outputs": {
+    "geojson": {
+      "store_path": "out/overlay-shinjuku-r250-origin-only-175db08a3d61fc8801cf.geojson",
+      "sha256": "7e19c8e6f4a2e08bb98212a6fcda3258a3b42ea2fad47a0b937131d02a9a7ab1",
+      "bytes": 14366
+    },
+    "glb": {
+      "store_path": "out/overlay-shinjuku-r250-origin-only-175db08a3d61fc8801cf.glb",
+      "sha256": "eb03739d7d01556db891955b9f571cedafe7998bda827ffd0ff6185f42924067",
+      "bytes": 19212,
+      "nodes": [
+        "ctx_rail_all",
+        "ctx_station_all"
+      ],
+      "triangles": {
+        "ctx_rail_all": 206,
+        "ctx_station_all": 22
+      },
+      "readback": {
+        "status": "PASS",
+        "node_count": 2,
+        "triangle_count": 228,
+        "expected_triangle_count": 228,
+        "bbox_max_error_m": 0.00000767647975408181,
+        "tolerance_m": 0.001
+      },
+      "segments_skipped_zero_length": 0
+    }
+  },
+  "tool_input_sha256": "507b98bfe41d3382e5954393106337c443158ecc5a8c91258e2161682b6a65c3",
+  "tool_version": "0.1.0"
+}
