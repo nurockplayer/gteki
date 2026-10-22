@@ -86,6 +86,7 @@ Every rights verdict is about reuse terms only. It never makes data routable or 
 - Next targeted research: S03 `v5_nav.json` and level geometry for Shinjuku (verify the CRS against an independent control, decode the local Path/drawing transforms, compare with E27 and PLATEAU, and keep everything non-routable until verified).
 - Open test item: on merged main, the first `test:real` run once failed 2/6 (log not captured), and three reruns passed 6/6. The rights-research runs have passed 10/10. Capture the log if it recurs.
 - Cosmetic: `rights/README.md` cells show raw JSON for the exclusion objects; a readable rendering is a follow-up.
+- Facts-only credit wording (#122, from the #26 decision): [decisions/facts-only-credit-wording.md](decisions/facts-only-credit-wording.md) records the wording 「ライセンスなし・事実のみ参照（複製なし）」 (English equivalent proposed), the 2 facts-only sources (both Ikebukuro; per-source Owner statement UNKNOWN), and proposals for core (`Source.decision`, rule `source.decision`, shape spec), Lane C (UI strings) and the Ikebukuro station lead (`graph.src.json` plus regenerated `station.json`); diffs in `decisions/proposals/`. Nothing outside `docs/gis/**` is applied; `tools/gis` has no facts-only check to extend.
 - Use the operator-permission/field-survey template: [gaps/operator-survey-questions.md](gaps/operator-survey-questions.md).
 
 ## Gap research (2026-10-21, stacked on PR #18)
