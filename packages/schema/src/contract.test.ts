@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { asRealStation, createSyntheticBundle, syntheticEdge as edge } from "../../navigation/src/fixtures.ts";
-import { isOpenAt, parseHm, parseStationFiles, validateBundle } from "./index.ts";
-import type { GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
+import { dataFileFactsOnlySources, isOpenAt, parseHm, parseStationFiles, validateBundle } from "./index.ts";
+import type { DataFile, GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
 
 const ev = { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" };
+const DECISION = { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" };
 const errors = (b: StationBundle) => validateBundle(b).filter((i) => i.level === "error").map((i) => i.code);
 const warnings = (b: StationBundle) => validateBundle(b).filter((i) => i.level === "warning").map((i) => i.code);
 
@@ -111,6 +112,7 @@ describe("validator truth rules added in v0.1 core", () => {
     ref.rights = "REFERENCE_ONLY";
     expect(warnings(b)).toContain("source.rights");
     ref.usage = "facts-only";
+    ref.decision = DECISION;
     expect(warnings(b)).not.toContain("source.rights");
     expect(errors(b)).toEqual([]);
     b.edges[0]!.geometryEvidence = { ...b.edges[0]!.geometryEvidence, sourceIds: ["fixture-access"] };
@@ -293,6 +295,7 @@ describe("review regressions: nested fail-closed shape and rights", () => {
       b.edges = [];
       for (const n of b.nodes) n.sourceRefs = [{ sourceId: "fixture-geometry", featureId: n.id }];
       b.sources.find((s) => s.id === "fixture-access")!.usage = "facts-only";
+      b.sources.find((s) => s.id === "fixture-access")!.decision = DECISION;
       b.sources.find((s) => s.id === "fixture-access")!.rights = "REFERENCE_ONLY";
       b.coverage.areas = [{ id: "area", floorId: "concourse", status: "routable", label: [], polygon: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }], sourceIds: ["fixture-geometry", "fixture-access"] }];
       return b;
@@ -324,15 +327,19 @@ describe("review regressions: nested fail-closed shape and rights", () => {
   });
 
   it("gives declared data files the asset source and rights gate, and refuses bad paths", () => {
-    const withData = (dataFiles: { id: string; path: string; sourceIds: string[] }[], real = false) => {
+    const withData = (dataFiles: DataFile[], real = false) => {
       const b = createSyntheticBundle();
       b.dataFiles = dataFiles;
       return errors(real ? asRealStation(b) : b);
     };
-    const ok = { id: "plan", path: "data/plan.json", sourceIds: ["fixture-geometry"] };
+    const ok: DataFile = { id: "plan", path: "data/plan.json", sourceIds: ["fixture-geometry"], modified: false };
     expect(withData([ok])).toEqual([]);
-    for (const bad of ["../x.json", "data//x.json", "data/x#1.json", "/abs.json", "data/x.ts", "gteki/station.json", "gteki/graph.json"])
+    // dataFiles live outside gteki/: contract files and anything else under it are refused (assets[] covers that folder).
+    for (const bad of ["../x.json", "data//x.json", "data/x#1.json", "/abs.json", "data/x.ts", "gteki/station.json", "gteki/graph.json", "gteki/assets/b1.meta.json"])
       expect(withData([{ ...ok, path: bad }]), bad).toContain("data.path");
+    // ?raw imports of svg/shader text can be declared.
+    for (const good of ["scene/sign.svg", "scene/fog.glsl", "scene/a.vert", "scene/a.frag", "scene/a.wgsl"])
+      expect(withData([{ ...ok, path: good }]), good).toEqual([]);
     expect(withData([ok, { ...ok, path: "data/other.json" }])).toContain("data.dup");
     expect(withData([ok, { ...ok, id: "plan2" }])).toContain("data.dup");
     expect(withData([{ ...ok, sourceIds: ["nope"] }])).toContain("data.source");
@@ -346,13 +353,71 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     expect(errors(traced)).toContain("data.rights");
   });
 
+  it("accepts a source under the Owner override for data files, like isShippableRights elsewhere", () => {
+    const b = createSyntheticBundle();
+    b.station.synthetic = false;
+    b.edges = [];
+    const src = b.sources[0]!;
+    src.rights = "PUBLISHED_UNDER_OWNER_OVERRIDE";
+    src.override = { decision: "#130", date: "2026-10-22" };
+    src.license = { name: "unconfirmed", url: "https://example.org/terms" };
+    b.dataFiles = [{ id: "plan", path: "data/plan.json", sourceIds: [src.id], modified: false }];
+    expect(errors(b)).not.toContain("data.rights");
+  });
+
+  it("lets data files cite facts-only sources, but only with a derivation (#186/#26)", () => {
+    const real = () => {
+      const b = createSyntheticBundle();
+      b.station.synthetic = false;
+      b.edges = [];
+      b.sources.push({ ...b.sources[0]!, id: "facts", usage: "facts-only", rights: "REFERENCE_ONLY", decision: DECISION });
+      b.sources.push({ ...b.sources[0]!, id: "ref", rights: "REFERENCE_ONLY" });
+      return b;
+    };
+    const file: DataFile = { id: "signage", path: "scene/signage.json", sourceIds: ["fixture-geometry", "facts"], modified: true, derivation: "pipeline/build_signage.py: measured positions; labels are facts from the guide." };
+    const b = real();
+    b.dataFiles = [file];
+    expect(errors(b)).not.toContain("data.rights");
+    expect(errors(b)).not.toContain("data.derivation");
+    // Derivation is required and non-empty when modified or when a facts-only source is cited.
+    for (const derivation of [undefined, "", "  "]) {
+      for (const modified of [true, false]) {
+        b.dataFiles = [{ ...file, modified, derivation }];
+        expect(errors(b), `${modified} ${JSON.stringify(derivation)}`).toContain("data.derivation");
+      }
+    }
+    b.dataFiles = [{ id: "d", path: "scene/d.json", sourceIds: ["fixture-geometry"], modified: true }];
+    expect(errors(b)).toContain("data.derivation");
+    b.dataFiles = [{ id: "d", path: "scene/d.json", sourceIds: ["fixture-geometry"], modified: false }];
+    expect(errors(b)).not.toContain("data.derivation");
+    // Any other non-shippable source is still refused, alongside a facts-only one.
+    b.dataFiles = [{ ...file, sourceIds: ["facts", "ref"] }];
+    expect(errors(b).filter((c) => c === "data.rights")).toHaveLength(1);
+  });
+
+  it("lists data files that cite facts-only sources for the build log", () => {
+    const b = createSyntheticBundle();
+    b.sources.push({ ...b.sources[0]!, id: "facts-a", usage: "facts-only" }, { ...b.sources[0]!, id: "facts-b", usage: "facts-only" });
+    expect(dataFileFactsOnlySources(b)).toEqual([]);
+    b.dataFiles = [
+      { id: "plain", path: "scene/plain.json", sourceIds: ["fixture-geometry"], modified: false },
+      { id: "signage", path: "scene/signage.json", sourceIds: ["fixture-geometry", "facts-a", "facts-b", "facts-a"], modified: true, derivation: "d" },
+      { id: "lanes", path: "scene/lanes.json", sourceIds: ["facts-b"], modified: false, derivation: "d" },
+    ];
+    expect(dataFileFactsOnlySources(b)).toEqual([
+      { dataFileId: "signage", path: "scene/signage.json", factsOnlySourceIds: ["facts-a", "facts-b"] },
+      { dataFileId: "lanes", path: "scene/lanes.json", factsOnlySourceIds: ["facts-b"] },
+    ]);
+  });
+
   it("round-trips dataFiles through parseStationFiles and rejects malformed entries", () => {
     const b = createSyntheticBundle();
     const [manifest, graph, pois] = split(b);
-    const withData = { ...manifest, dataFiles: [{ id: "plan", path: "data/plan.json", sourceIds: ["fixture-geometry"] }] };
+    const withData = { ...manifest, dataFiles: [{ id: "plan", path: "data/plan.json", sourceIds: ["fixture-geometry"], modified: false }] };
     const ok = parseStationFiles(withData, graph, pois);
     expect(ok.ok && ok.bundle.dataFiles).toEqual(withData.dataFiles);
-    expect(parseStationFiles({ ...manifest, dataFiles: [{ id: "plan", path: 3, sourceIds: [] }] }, graph, pois).ok).toBe(false);
+    expect(parseStationFiles({ ...manifest, dataFiles: [{ id: "plan", path: 3, sourceIds: [], modified: false }] }, graph, pois).ok).toBe(false);
+    expect(parseStationFiles({ ...manifest, dataFiles: [{ id: "plan", path: "data/plan.json", sourceIds: [] }] }, graph, pois).ok).toBe(false);
     expect(parseStationFiles({ ...manifest, dataFiles: "plan.json" }, graph, pois).ok).toBe(false);
   });
 
@@ -414,6 +479,55 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     // ...but it is still cited, so it still needs a landing URL.
     b.sources[1]!.url = "";
     expect(errors(b)).toContain("source.url");
+  });
+
+  it("requires the #26 decision reference on a real facts-only source", () => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    const src = b.sources.find((s) => s.id === "fixture-access")!;
+    src.rights = "REFERENCE_ONLY";
+    src.license = null;
+    src.usage = "facts-only";
+    expect(errors(b)).toContain("source.decision");
+    src.decision = DECISION;
+    expect(errors(b)).not.toContain("source.decision");
+    // A malformed decision is an error and no longer satisfies the rule.
+    for (const bad of [{ url: "javascript:alert(1)", date: "2026-10-21" }, { url: DECISION.url, date: "2026-10" }, { url: DECISION.url, date: "2026-02-30" }]) {
+      src.decision = bad;
+      expect(errors(b)).toContain("source.decision");
+    }
+    // Synthetic stations and licensed data sources are not asked for it.
+    src.decision = undefined;
+    b.station.synthetic = true;
+    expect(errors(b)).not.toContain("source.decision");
+    const data = asRealStation(createSyntheticBundle());
+    data.edges = [];
+    expect(errors(data)).not.toContain("source.decision");
+    // A decision on a non-facts-only source is still shape-checked.
+    data.sources[0]!.decision = { url: "ftp://example.org/x", date: "2026-10-21" };
+    expect(errors(data)).toContain("source.decision");
+  });
+
+  it("fails closed on a malformed source decision instead of throwing", () => {
+    const parse = (decision: unknown) => {
+      const [m, g, p] = split(createSyntheticBundle());
+      (m.sources[0] as { decision?: unknown }).decision = decision;
+      return parseStationFiles(m, g, p);
+    };
+    expect(parse(DECISION).ok).toBe(true);
+    for (const bad of [null, "x", [], {}, { url: DECISION.url }, { url: 1, date: "2026-10-21" }, { url: DECISION.url, date: null }]) {
+      const parsed = parse(bad);
+      expect(parsed.ok).toBe(false);
+      expect(parsed.issues.map((i) => i.code)).toEqual(expect.arrayContaining([expect.stringMatching(/^shape\./)]));
+    }
+    // validateBundle itself must not throw on a hand-built bundle with a wrong-typed decision.
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    for (const bad of [null, "x", 5]) {
+      (b.sources[0] as { decision?: unknown }).decision = bad;
+      expect(() => validateBundle(b)).not.toThrow();
+      expect(errors(b)).toContain("source.decision");
+    }
   });
 
   it("rejects origin coordinates outside the geodetic range", () => {
@@ -601,5 +715,45 @@ describe("late-opening windows (PR #15 Codex review 6)", () => {
     expect(isOpenAt(w("24:00", "00:00"), { weekday: "mon", minutes: 60 })).toBeNull();
     const b = createSyntheticBundle([edge("h", "start", "goal", { hours: w("24:00", "00:00") })]);
     expect(errors(b)).toContain("edge.hours");
+  });
+});
+
+describe("PUBLISHED_UNDER_OWNER_OVERRIDE rights (#130)", () => {
+  const OVERRIDE = { decision: "https://github.com/nurockplayer/gteki/issues/130", date: "2026-10-22" };
+  const overridden = (override?: unknown, license: { name: string; url: string } | null = { name: "Licence unconfirmed", url: "https://example.org/terms" }) => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    const src = b.sources.find((s) => s.id === "fixture-access")!;
+    src.rights = "PUBLISHED_UNDER_OWNER_OVERRIDE";
+    src.license = license;
+    (src as { override?: unknown }).override = override;
+    return b;
+  };
+
+  it("ships like REUSABLE_WITH_CONDITIONS when the override is recorded", () => {
+    const b = overridden(OVERRIDE);
+    expect(errors(b)).not.toContain("source.override");
+    expect(errors(b)).not.toContain("source.rights.value");
+    expect(warnings(b)).not.toContain("source.rights");
+    // An issue reference is accepted as well as a URL.
+    for (const decision of ["#130", "nurockplayer/gteki#130"]) expect(errors(overridden({ ...OVERRIDE, decision }))).not.toContain("source.override");
+  });
+
+  it("is an error without an override reference or with a malformed one", () => {
+    expect(errors(overridden(undefined))).toContain("source.override");
+    for (const bad of [null, "x", {}, { decision: "see chat", date: "2026-10-22" }, { decision: OVERRIDE.decision }, { decision: OVERRIDE.decision, date: "2026-10" }, { decision: OVERRIDE.decision, date: "2026-02-30" }])
+      expect(errors(overridden(bad))).toContain("source.override");
+  });
+
+  it("needs licence text", () => {
+    expect(errors(overridden(OVERRIDE, null))).toContain("source.override");
+    expect(errors(overridden(OVERRIDE, { name: " ", url: "https://example.org/terms" }))).toContain("source.override");
+  });
+
+  it("fails closed on a wrong-shaped override at parse time", () => {
+    const [m, g, p] = split(overridden(OVERRIDE));
+    expect(parseStationFiles(m, g, p).ok).toBe(true);
+    (m.sources.find((s) => s.id === "fixture-access") as { override?: unknown }).override = "x";
+    expect(parseStationFiles(m, g, p).ok).toBe(false);
   });
 });

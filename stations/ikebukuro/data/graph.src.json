@@ -161,7 +161,8 @@
    "retrievedAt": "2026-10-20T10:52:00Z",
    "datasetDate": "2022-01",
    "notes": "Used only to identify which PLATEAU openings are which named passage, exit or gate. No image, layout or pictogram is reproduced.",
-   "usage": "facts-only"
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   },
   {
    "id": "tokyometro-ikebukuro-yardmap-2026-03",
@@ -175,7 +176,8 @@
    "retrievedAt": "2026-10-20T10:49:00Z",
    "datasetDate": "2026-03",
    "notes": "Exit numbers and the public status of B1 passages were read from the official map. Nothing is reproduced.",
-   "usage": "facts-only"
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   }
  ],
  "floors": [

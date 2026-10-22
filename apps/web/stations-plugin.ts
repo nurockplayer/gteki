@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Plugin } from "vite";
 // Relative (not @gteki/schema) so Vite's config loader bundles the TypeScript source.
-import { parseStationFiles, validateBundle } from "../../packages/schema/src/index.ts";
+import { dataFileFactsOnlySources, parseStationFiles, validateBundle } from "../../packages/schema/src/index.ts";
 
 /**
  * Discovers station folders without any station-specific code in the explorer:
@@ -27,11 +27,13 @@ const ASSET_EXT = /\.(glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|ogg|mp3|m4a|json)$/i;
  */
 const PUBLICATION_RULES = new Set([
   "node.source.rights", "edge.geometry.rights", "floor.elevation.rights", "poi.position.rights",
-  "coverage.polygon.rights", "asset.rights", "asset.source", "data.rights", "data.source", "data.path", "data.dup",
-  "source.attribution", "source.license", "source.url",
+  "coverage.polygon.rights", "asset.rights", "asset.source", "data.rights", "data.source", "data.path", "data.dup", "data.derivation",
+  "source.attribution", "source.license", "source.url", "source.override",
 ]);
 /** The contract files are loaded as data, not served as assets. */
 const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json"]);
+
+const isInside = (real: string, fence: string) => real === fence || real.startsWith(fence + path.sep);
 
 /**
  * Asset files under `dir`, following symlinks only when they resolve inside `fence`
@@ -42,7 +44,7 @@ function walk(dir: string, fence: string, base = dir, depth = 0): string[] {
   return fs.readdirSync(dir).sort().flatMap((name) => {
     const full = path.join(dir, name);
     const real = fs.realpathSync(full);
-    if (real !== fence && !real.startsWith(fence + path.sep)) return [];
+    if (!isInside(real, fence)) return [];
     const stat = fs.statSync(full);
     if (stat.isDirectory()) return walk(full, fence, base, depth + 1);
     const rel = path.relative(base, full).split(path.sep).join("/");
@@ -103,8 +105,14 @@ export function publishableAssets(stations: DiscoveredStation[]): Map<string, Se
     // A canonical name may still link to a target whose real path Vite would read as a query or fragment.
     const odd = [...declared].filter((f) => found.has(f) && /[?#]/.test(path.relative(path.dirname(s.gtekiDir), fs.realpathSync(path.join(s.gtekiDir, f)))));
     if (odd.length) failures.push(`${s.dir}: declared asset files resolve to paths containing ? or #: ${odd.join(", ")}`);
-    const noData = (parsed.bundle.dataFiles ?? []).map((d) => d.path).filter((p) => !fs.existsSync(path.join(path.dirname(s.gtekiDir), p)));
+    const folder = path.dirname(s.gtekiDir);
+    const dataPaths = (parsed.bundle.dataFiles ?? []).map((d) => d.path);
+    const noData = dataPaths.filter((p) => !fs.existsSync(path.join(folder, p)));
     if (noData.length) failures.push(`${s.dir}: declared data files not found: ${noData.join(", ")}`);
+    // Like walk() for assets: a declared data file that is a symlink out of the station folder is refused.
+    const fence = fs.realpathSync(folder);
+    const escaping = dataPaths.filter((p) => !noData.includes(p) && !isInside(fs.realpathSync(path.join(folder, p)), fence));
+    if (escaping.length) failures.push(`${s.dir}: declared data files resolve outside the station folder: ${escaping.join(", ")}`);
     const undeclared = s.assets.filter((f) => !declared.has(f));
     if (missing.length) failures.push(`${s.dir}: declared asset files not found: ${missing.join(", ")}`);
     if (undeclared.length) failures.push(`${s.dir}: undeclared asset files (declare them in assets[].files or remove them): ${undeclared.join(", ")}`);
@@ -121,6 +129,25 @@ export interface DeclaredStationFiles {
   folder: string;
   /** Real paths: assets[].uri, assets[].files (relative to gteki/) and dataFiles[].path (relative to the folder). */
   declared: ReadonlySet<string>;
+  /**
+   * Symlinks inside the station folder that resolve outside it: real target (file or directory) -> the link's
+   * path relative to the folder. Vite reports the target, which would otherwise look like a file elsewhere.
+   */
+  escapes: ReadonlyMap<string, string>;
+}
+
+/** Symlinks under `dir` (not `node_modules`) whose real target lies outside `fence`, as real target -> link path relative to `fence`. */
+function symlinkEscapes(dir: string, fence: string, depth = 0, out = new Map<string, string>()): Map<string, string> {
+  if (depth > 8 || !fs.existsSync(dir)) return out;
+  for (const name of fs.readdirSync(dir).sort()) {
+    if (name === "node_modules") continue;
+    const full = path.join(dir, name);
+    let real: string;
+    try { real = fs.realpathSync(full); } catch { continue; }
+    if (!isInside(real, fence)) out.set(real, path.relative(fence, full).split(path.sep).join("/"));
+    else if (fs.statSync(full).isDirectory()) symlinkEscapes(full, fence, depth + 1, out);
+  }
+  return out;
 }
 
 /**
@@ -139,27 +166,34 @@ export function declaredStationFiles(stations: DiscoveredStation[]): DeclaredSta
       for (const f of [...strings([a?.uri]), ...strings(a?.files)]) { const r = real(path.join(s.gtekiDir, f)); if (r) declared.add(r); }
     for (const d of Array.isArray(manifest.dataFiles) ? manifest.dataFiles : [])
       for (const f of strings([d?.path])) { const r = real(path.join(folder, f)); if (r) declared.add(r); }
-    return { dir: s.dir, folder: real(folder) ?? folder, declared };
+    const fence = real(folder) ?? folder;
+    return { dir: s.dir, folder: fence, declared, escapes: symlinkEscapes(folder, fence) };
   });
 }
 
 /** Contract files the loader reads as data (station.json, graph.json, pois.json), inside a station's gteki/. */
 const CONTRACT_PATH = /^gteki\/(station|graph|pois)\.json$/;
 
+/** A trailing Vite query such as `?raw`, `?url`, `?v=1&inline`; a real path with a `?` or `#` of its own is left whole. */
+const VITE_QUERY = /\?[\w-]+(?:=[^&#?]*)?(?:&[\w-]+(?:=[^&#?]*)?)*$/;
+
 /**
  * Module ids of a production build that inline a non-code data file from a station folder without the
  * station's manifest declaring it (`assets[].uri`/`files` or `dataFiles[]`, each with a source id that
- * `PUBLICATION_RULES` checks). Pure: ids are real file paths as Vite reports them (a `?query` is ignored;
- * virtual `\0` ids and anything outside every station folder, or under a `node_modules`, are not station data).
- * Code and stylesheets pass, as do the contract files.
+ * `PUBLICATION_RULES` checks), or that reach one through a symlink resolving outside the station folder
+ * (refused even when declared, as `walk()` refuses such assets). Pure: ids are real file paths as Vite
+ * reports them (only a trailing Vite `?query` is ignored; virtual `\0` ids and anything outside every station
+ * folder, or under a `node_modules`, are not station data). Code and stylesheets pass, as do the contract files.
  */
 export function undeclaredInlinedData(moduleIds: Iterable<string>, stations: readonly DeclaredStationFiles[]): string[] {
   const failures = new Set<string>();
   for (const raw of moduleIds) {
     if (raw.startsWith("\0")) continue;
-    const id = raw.split(/[?#]/)[0]!;
+    const id = raw.replace(VITE_QUERY, "");
     if (CODE_EXT.test(id)) continue;
     for (const s of stations) {
+      const link = [...s.escapes].find(([target]) => id === target || id.startsWith(target + path.sep));
+      if (link) { failures.add(`${s.dir}: ${link[1]} (symlink resolving outside the station folder)`); break; }
       if (!id.startsWith(s.folder + path.sep)) continue;
       const rel = path.relative(s.folder, id).split(path.sep).join("/");
       if (rel.split("/").includes("node_modules") || CONTRACT_PATH.test(rel) || s.declared.has(id)) break;
@@ -168,6 +202,21 @@ export function undeclaredInlinedData(moduleIds: Iterable<string>, stations: rea
     }
   }
   return [...failures].sort();
+}
+
+/**
+ * One audit line per declared data file that cites facts-only sources (the #186/#26 allowance), for the build log.
+ * Stations that fail to parse are skipped here; `publishableAssets` is what refuses them.
+ */
+export function factsOnlyDataLines(stations: DiscoveredStation[]): string[] {
+  return stations.flatMap((s) => {
+    const read = (name: string): unknown => {
+      try { return JSON.parse(fs.readFileSync(path.join(s.gtekiDir, name), "utf8")); } catch { return undefined; }
+    };
+    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"));
+    if (!parsed.ok) return [];
+    return dataFileFactsOnlySources(parsed.bundle).map((d) => `[gteki] ${s.dir} ${d.path} cites facts-only: ${d.factsOnlySourceIds.join(", ")}`);
+  });
 }
 
 /** `GTEKI_INLINE_DATA_GATE=error` fails the build on undeclared inlined data; anything else only warns (the default). */
@@ -182,6 +231,7 @@ export function gtekiStations(roots: string[]): Plugin {
   const fsPath = (p: string) => JSON.stringify(p.split(path.sep).join("/"));
   let serve = false;
   let appRoot = "";
+  let info: (message: string) => void = () => {};
   /** Real paths a production build may emit from station folders (filled when the virtual module loads). */
   let declaredReal = new Set<string>();
   /**
@@ -198,6 +248,12 @@ export function gtekiStations(roots: string[]): Plugin {
     configResolved(config) {
       serve = config.command === "serve";
       appRoot = fs.realpathSync(config.root);
+      info = (message) => config.logger.info(message);
+    },
+    /** Audit trail: which declared data files cite facts-only sources, once per build. */
+    buildStart() {
+      if (serve) return;
+      for (const line of factsOnlyDataLines(discoverStations(roots))) info(line);
     },
     resolveId(id) {
       return id === VIRTUAL ? RESOLVED : null;
@@ -237,7 +293,7 @@ export function gtekiStations(roots: string[]): Plugin {
       if (serve || error) return;
       const undeclared = undeclaredInlinedData(this.getModuleIds(), declaredStationFiles(discoverStations(roots)));
       if (undeclared.length === 0) return;
-      const message = `gteki-stations: station data inlined into the bundle without a manifest declaration (add it to assets[].files or dataFiles[] with source ids): ${undeclared.join(", ")}`;
+      const message = `gteki-stations: station data inlined into the bundle without a manifest declaration (add it to assets[].files or dataFiles[] with source ids; a symlink leaving the station folder is refused even if declared): ${undeclared.join(", ")}`;
       if (inlineDataGateMode() === "error") this.error(message);
       else this.warn(`${message} [GTEKI_INLINE_DATA_GATE=warn: not failing the build]`);
     },

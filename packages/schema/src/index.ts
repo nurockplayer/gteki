@@ -28,7 +28,7 @@ export interface LocalizedText {
   text: string;
 }
 
-export type RightsStatus = "REUSABLE_WITH_CONDITIONS" | "REFERENCE_ONLY" | "RESTRICTED" | "UNVERIFIED";
+export type RightsStatus = "REUSABLE_WITH_CONDITIONS" | "PUBLISHED_UNDER_OWNER_OVERRIDE" | "REFERENCE_ONLY" | "RESTRICTED" | "UNVERIFIED";
 
 export interface Source {
   id: string;
@@ -46,6 +46,16 @@ export interface Source {
    * Omitted = "data" (contents or derivatives may ship).
    */
   usage?: "data" | "facts-only";
+  /**
+   * The Owner decision that permits using this source (#26 per-source clearance record). A real
+   * facts-only source must carry one; the web UI shows the #26 credit line for every facts-only source.
+   */
+  decision?: { url: string; date: string };
+  /**
+   * Required when `rights` is PUBLISHED_UNDER_OWNER_OVERRIDE (#130): the Owner decision that lets the
+   * source ship although its licence is unconfirmed. `decision` is an issue/comment URL or `#ref`.
+   */
+  override?: { decision: string; date: string };
   /** Credit line to display wherever derived data is shown. */
   attribution: string;
   /** True when GTEki modified/derived the data (must be disclosed for PDL/CC BY). */
@@ -313,7 +323,12 @@ export interface DataFile {
   path: string;
   /** Sources the data is derived from; their rights gate public distribution. */
   sourceIds: string[];
-  /** Disclosure of modification, e.g. "Simplified wall polylines traced from GSI 構内地図データ". */
+  /** True when GTEki generated or modified the data. */
+  modified: boolean;
+  /**
+   * How it was made, naming the generating script. Required and non-empty when `modified` is true or when
+   * any cited source is facts-only (the data then states facts without reproducing the source; #186/#26).
+   */
   derivation?: string;
 }
 
@@ -359,6 +374,6 @@ export interface PoiFile {
   pois: Poi[];
 }
 
-export { ASSET_FILE_EXT, DATA_FILE_EXT, isCanonicalAssetPath, validateBundle, type ValidationIssue } from "./validate.ts";
+export { ASSET_FILE_EXT, DATA_FILE_EXT, dataFileFactsOnlySources, isCanonicalAssetPath, validateBundle, type ValidationIssue } from "./validate.ts";
 export { checkShape, composeBundle, parseStationFiles, type ParseResult } from "./parse.ts";
 export { parseHm, isOpenAt, type LocalTime } from "./hours.ts";

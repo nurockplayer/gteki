@@ -16,7 +16,7 @@ type Spec = Record<string, Kind | `${Kind}?`>;
 const SPECS = {
   station: { id: "string", names: "array", codes: "array?", operators: "array", origin: "object", frame: "string", datasetVersion: "string", generatedAt: "string", synthetic: "boolean" },
   origin: { lat: "number", lon: "number", hM: "number|null", datum: "string", crs: "string" },
-  source: { id: "string", title: "string", publisher: "string", url: "string", license: "object|null", rights: "string", attribution: "string", modified: "boolean", retrievedAt: "string|null", datasetDate: "string|null", downloadUrls: "array?", usage: "string?", sha256: "object?", validUntil: "string|null?", notes: "string?" },
+  source: { id: "string", title: "string", publisher: "string", url: "string", license: "object|null", rights: "string", attribution: "string", modified: "boolean", retrievedAt: "string|null", datasetDate: "string|null", downloadUrls: "array?", usage: "string?", decision: "object?", override: "object?", sha256: "object?", validUntil: "string|null?", notes: "string?" },
   floor: { id: "string", operatorId: "string", sourceLabels: "array", ordinal: "number|null", intermediate: "boolean", elevationM: "number|null", elevationSource: "string", renderElevationM: "number", displayNames: "array?" },
   node: { id: "string", floorId: "string", position: "object", kind: "string", inOut: "string|null", sourceRefs: "array", renderZ: "number?" },
   position: { x: "number", y: "number", z: "number|null" },
@@ -27,6 +27,8 @@ const SPECS = {
   operator: { id: "string", names: "array" },
   code: { operatorId: "string", code: "string" },
   license: { name: "string", url: "string" },
+  decision: { url: "string", date: "string" },
+  override: { decision: "string", date: "string" },
   sourceLabel: { operatorId: "string", label: "string", sourceId: "string" },
   featureRef: { sourceId: "string", featureId: "string" },
   hoursAlways: { kind: "string", evidence: "object" },
@@ -36,7 +38,7 @@ const SPECS = {
   point2: { x: "number", y: "number" },
   coverage: { summary: "array", areas: "array", gaps: "array", freshness: "string|null" },
   asset: { id: "string", uri: "string", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?", files: "array?" },
-  dataFile: { id: "string", path: "string", sourceIds: "array", derivation: "string?" },
+  dataFile: { id: "string", path: "string", sourceIds: "array", modified: "boolean", derivation: "string?" },
 } satisfies Record<string, Spec>;
 
 function kindOf(v: unknown): string {
@@ -145,6 +147,8 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
     }
     c.each(m.sources, SPECS.source, "sources", (src, where) => {
       if (src.license !== null) c.check(src.license, SPECS.license, `${where}.license`);
+      if (src.decision !== undefined) c.check(src.decision, SPECS.decision, `${where}.decision`);
+      if (src.override !== undefined) c.check(src.override, SPECS.override, `${where}.override`);
       c.strings(src.downloadUrls, `${where}.downloadUrls`);
       if (kindOf(src.sha256) === "object") c.strings(Object.values(src.sha256 as object), `${where}.sha256`);
     });
