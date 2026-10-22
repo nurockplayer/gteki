@@ -44,7 +44,9 @@ if ( cd "$cand" && pnpm install --frozen-lockfile ) > "$log/install.log" 2>&1; t
 else lock=out-of-date; ( cd "$cand" && pnpm install ) >> "$log/install.log" 2>&1; fi
 ( cd "$cand" && pnpm -r --include-workspace-root typecheck ) > "$log/typecheck.log" 2>&1 && tc=pass || { tc=fail; failed="$failed typecheck"; }
 # Default suites only (heavy ones run in the box via test:heavy:box); one worker on a shared 16 GB host.
-( cd "$cand" && pnpm vitest run --maxWorkers=1 ) > "$log/unit.log" 2>&1 && unit=pass || { unit=fail; failed="$failed unit"; }
+# QA_UNIT=0 skips them when CI's root-test already ran them at this SHA (recorded as "skipped").
+if [ "${QA_UNIT:-1}" = 0 ]; then unit=skipped
+else ( cd "$cand" && pnpm vitest run --maxWorkers=1 ) > "$log/unit.log" 2>&1 && unit=pass || { unit=fail; failed="$failed unit"; }; fi
 ( cd "$cand" && pnpm build ) > "$log/build.log" 2>&1 || { echo "build failed: $log/build.log" >&2; exit 1; }
 
 pids=""

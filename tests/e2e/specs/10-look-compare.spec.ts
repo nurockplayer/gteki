@@ -49,6 +49,9 @@ const tiers = [
   { id: "phone", params: "quality=low&tier=full", phone: true },
   { id: "phone-kit", params: "quality=low&tier=mobile", phone: true },
 ];
+// Extra look.html switches to A/B on top of every tier, comma-separated (e.g. GTEKI_LOOK_VARIANTS="aoMap=0,aoMapI=1"
+// for the baked-AO scale); each adds a case "<tier>+<switch>". Empty: the baseline cases only.
+const variants = ["", ...(process.env.GTEKI_LOOK_VARIANTS ?? "").split(",").map((v) => v.trim()).filter(Boolean)];
 
 // The reference JPGs live in the repo's docs; prefer the candidate under test, else the harness checkout.
 const roots = [process.env.GTEKI_ROOT, path.resolve(import.meta.dirname, "../../..")].filter((r): r is string => !!r);
@@ -123,7 +126,8 @@ async function newPage(browser: Browser) {
 }
 
 for (const scene of scenes) {
-  for (const tier of tiers) {
+  for (const t of tiers) for (const v of variants) {
+    const tier = v ? { ...t, id: `${t.id}+${v}`, params: `${t.params}&${v}` } : t;
     test(`look compare: ${scene.id} / ${tier.id}${tier.phone ? " @phone" : ""}`, async ({ browser }, testInfo) => {
       test.skip(!lookUrl, "GTEKI_LOOK_URL not set (tools/qa/run-candidate.sh serves the look harness when the candidate has apps/web/qa/look.html)");
       test.skip(!tier.phone && testInfo.project.name !== "desktop-chromium", "desktop tier runs in the desktop project only");
@@ -131,7 +135,7 @@ for (const scene of scenes) {
 
       const project = testInfo.project.name;
       const url = `${lookUrl}/qa/look.html?layout=${scene.layout}&camera=${scene.camera}&${tier.params}`;
-      const base = `look-${scene.id}-${tier.id}`;
+      const base = `look-${scene.id}-${tier.id.replace(/[^\w.-]+/g, "_")}`;
       const rec: CaseRecord = {
         scene: scene.id, camera: scene.camera, tier: tier.id, url,
         ready: false, error: null, rmse: null, rmseNote: null,
