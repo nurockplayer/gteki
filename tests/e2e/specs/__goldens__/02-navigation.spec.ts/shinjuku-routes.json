@@ -288,7 +288,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showNo verified route with \"Outside gates only\" on.Turn off \"Outside gates only\""
+      "uiCard": "No verified route to showThe destination is inside the ticket gates. \"Outside gates only\" only routes between points known to be outside the gates.Turn off \"Outside gates only\""
     }
   },
   "SN2": {
@@ -303,7 +303,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showNo verified route with \"Outside gates only\" on.Turn off \"Outside gates only\""
+      "uiCard": "No verified route to showThe destination is inside the ticket gates. \"Outside gates only\" only routes between points known to be outside the gates.Turn off \"Outside gates only\""
     }
   },
   "SN3": {
