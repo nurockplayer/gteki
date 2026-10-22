@@ -85,10 +85,15 @@ describe("roofed sloped street stairs: roof caps, glazing and the follow camera 
           cam.lookAt(pose.target); cam.updateMatrixWorld(true);
           const ndcY = (v: THREE.Vector3) => v.clone().project(cam).y;
           const sole = ndcY(foot), crown = ndcY(foot.clone().setY(foot.y + WALKER_BODY.bodyTopM)), chest = ndcY(foot.clone().setY(foot.y + WALKER_BODY.bodyTopM - 0.45));
+          // A roof cap limits the camera when removing the cap hits (and only those) changes the settled distance.
+          const isCap = (h: THREE.Intersection) => h.object.name === CEILING && h.point.y > 2.5;
+          const toHit = (h: THREE.Intersection) => ({ distance: h.distance, cameraOnly: targets.blockers.has(h.object) });
+          const withoutCaps = followDistance(FOLLOW.defaultDistance, all.filter((h) => !isCap(h)).map(toHit));
+          const capLimits = Math.abs(withoutCaps - dist) > 1e-6;
           const limiting = dist < FOLLOW.defaultDistance ? all[0] : undefined;
           rows.push({
             edge: run.edgeId.slice(2, 8), dir, pitch, z: foot.y, clearance: cap?.distance ?? Infinity, glassFaces, dist,
-            capLimits: !!limiting && limiting.object.name === CEILING && limiting.point.y > 2.5,
+            capLimits,
             limiter: limiting ? `${limiting.object.name.replace(" (invisible)", "")}@y${limiting.point.y.toFixed(2)}` : "-",
             share: (crown - sole) / 2, headShare: (crown - chest) / 2,
           });
@@ -111,15 +116,42 @@ describe("roofed sloped street stairs: roof caps, glazing and the follow camera 
     expect(rows.filter((r) => r.glassFaces !== 1).map((r) => `${r.edge} z${r.z.toFixed(2)} faces${r.glassFaces}`)).toEqual([]);
   }, 120_000);
 
+  it("has no coincident parallel glazing faces anywhere (canopies included): no horizontal sheet pair closer than 0.05 m", () => {
+    const g = (scene.root.getObjectByName("surface-glass") as THREE.Mesh).geometry;
+    const pos = g.attributes.position!, idx = g.index!;
+    const tris: { y: number; p: [number, number][] }[] = [];
+    for (let i = 0; i < idx.count; i += 3) {
+      const v = [0, 1, 2].map((k) => new THREE.Vector3().fromBufferAttribute(pos, idx.getX(i + k)));
+      if (v.every((q) => Math.abs(q.y - v[0]!.y) < 1e-4)) tris.push({ y: v[0]!.y, p: v.map((q) => [q.x, q.z] as [number, number]) });
+    }
+    expect(tris.length).toBeGreaterThanOrEqual(12); // 2 triangles per sheet, 4 canopies + 2 roofed runs
+    const within = (pt: [number, number], t: [number, number][]) => {
+      const s = (a: [number, number], b: [number, number], c: [number, number]) => (a[0] - c[0]) * (b[1] - c[1]) - (b[0] - c[0]) * (a[1] - c[1]);
+      const d = [s(pt, t[0]!, t[1]!), s(pt, t[1]!, t[2]!), s(pt, t[2]!, t[0]!)];
+      return !(d.some((x) => x < 0) && d.some((x) => x > 0));
+    };
+    const pairs: string[] = [];
+    for (const a of tris) for (const b of tris) {
+      const dy = b.y - a.y;
+      if (dy <= 1e-4 || dy >= 0.05) continue;
+      const c: [number, number] = [(a.p[0]![0] + a.p[1]![0] + a.p[2]![0]) / 3, (a.p[0]![1] + a.p[1]![1] + a.p[2]![1]) / 3];
+      if (within(c, b.p)) pairs.push(`y${a.y.toFixed(3)}/${b.y.toFixed(3)} at ${c[0].toFixed(1)},${(-c[1]).toFixed(1)}`);
+    }
+    expect(pairs).toEqual([]);
+  });
+
   it("is not limited by a roof cap at the explorer's default pitch; reports camera distance and avatar share", () => {
+    const report = !!process.env.GTEKI_ROOF_CAM_REPORT;
     for (const pitch of [DEFAULT_PITCH, -0.3, -0.5, 0.2]) {
       const rows = replay(pitch);
       for (const key of [...new Set(rows.map((r) => `${r.edge}-${r.dir}`))]) {
         const v = rows.filter((r) => `${r.edge}-${r.dir}` === key);
-        console.log(`SUM pitch${pitch} ${key} n${v.length} capLimits${v.filter((r) => r.capLimits).length} minDist${Math.min(...v.map((r) => r.dist)).toFixed(2)} maxShare${Math.max(...v.map((r) => r.share)).toFixed(2)} maxHeadShare${Math.max(...v.map((r) => r.headShare)).toFixed(2)} minClear${Math.min(...v.map((r) => r.clearance)).toFixed(2)} maxGlassFaces${Math.max(...v.map((r) => r.glassFaces))}`);
+        if (report) console.log(`SUM pitch${pitch} ${key} n${v.length} capLimits${v.filter((r) => r.capLimits).length} minDist${Math.min(...v.map((r) => r.dist)).toFixed(2)} maxShare${Math.max(...v.map((r) => r.share)).toFixed(2)} maxHeadShare${Math.max(...v.map((r) => r.headShare)).toFixed(2)} minClear${Math.min(...v.map((r) => r.clearance)).toFixed(2)} maxGlassFaces${Math.max(...v.map((r) => r.glassFaces))}`);
       }
+      // Positive control for the cap detector: a steep look-down near the stair tops does meet the caps.
+      if (pitch === -0.5) expect(rows.some((r) => r.capLimits)).toBe(true);
       if (pitch !== DEFAULT_PITCH) continue;
-      if (process.env.GTEKI_ROOF_CAM_REPORT) for (const r of rows) console.log(`ROW ${r.edge} ${r.dir.padEnd(4)} z${r.z.toFixed(2).padStart(6)} clear${r.clearance.toFixed(2)} faces${r.glassFaces} dist${r.dist.toFixed(2)} share${r.share.toFixed(3)} head${r.headShare.toFixed(3)} ${r.limiter}`);
+      if (report) for (const r of rows) console.log(`ROW ${r.edge} ${r.dir.padEnd(4)} z${r.z.toFixed(2).padStart(6)} clear${r.clearance.toFixed(2)} faces${r.glassFaces} dist${r.dist.toFixed(2)} share${r.share.toFixed(3)} head${r.headShare.toFixed(3)} ${r.limiter}`);
       expect(rows.filter((r) => r.capLimits).map((r) => `${r.edge} ${r.dir} ${r.z.toFixed(2)}`)).toEqual([]);
     }
   }, 240_000);

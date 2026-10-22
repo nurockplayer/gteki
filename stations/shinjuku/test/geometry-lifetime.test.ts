@@ -45,9 +45,11 @@ describe("station geometry lifetime", () => {
     expect(result.retired).toBeGreaterThan(30_000); // exercise the real PLATEAU and station merges
     expect(result.retained).toBe(0);
     expect(result.live).toBe(136);
-    expect(result.bytes).toBe(13_288_866);
+    expect(result.bytes).toBe(13_284_666);
     // Glazing over roofed (E27 roof = 2) exit runs open beyond the canopies; regenerated with
     // test/helpers/retained-geometry.ts. Retired arrays must still be collectible.
-    expect(result.geometryHash).toBe("2b3a94baf32629b9d6371d6f365c808fd67efcb924a7ae00dc27daebdecb48b4");
+    // #70: the six roof glazing boxes (4 entrance canopies + 2 roofed runs) became single sheets, so only the
+    // surface-glass mesh changed (per-mesh hashes compared before/after): -4,200 B = 6 x (840 - 140).
+    expect(result.geometryHash).toBe("b915570cb8defd5623c128a1d80353c5f6283d6fc7b4413ed7f4ff536b0abb42");
   }, 60_000);
 });
