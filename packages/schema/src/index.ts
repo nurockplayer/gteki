@@ -286,6 +286,12 @@ export interface Asset {
   id: string;
   /** Path relative to stations/<id>/gteki/ (no "..", no scheme). */
   uri: string;
+  /**
+   * Optional lighter-weight variant of `uri` (same scene, smaller textures; e.g. a `PROFILE=mobile` kit
+   * bundle). The explorer loads it instead of `uri` on the low quality tier. Same rules as `uri`; it
+   * shares the asset's `sourceIds` and rights, and a production build publishes it as a declared file.
+   */
+  uriMobile?: string;
   format: "glb";
   floorIds: string[];
   /** Column-major 4x4 from asset space to the renderer frame; omitted = identity (authored in renderer frame). */

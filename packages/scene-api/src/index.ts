@@ -87,7 +87,9 @@ export interface SceneContext {
   assetUrl(uri: string): string | null;
   /**
    * Load a GLB from the station folder via the explorer's GLTFLoader (Meshopt supported; Draco/KTX2
-   * not configured yet). External buffers/images must resolve inside the station folder.
+   * not configured yet). External buffers/images must resolve inside the station folder. A scene module that
+   * loads its own GLBs should pick the tier by `ctx.quality` (e.g. the manifest's `uriMobile` on "low"), as
+   * the explorer does for manifest assets.
    */
   loadGlb(uri: string): Promise<GLTF>;
   /**

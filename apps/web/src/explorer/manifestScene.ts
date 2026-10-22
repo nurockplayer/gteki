@@ -6,16 +6,17 @@ import { sceneFromGlbRoles } from "@gteki/scene-api";
 /**
  * A station without a scene module: load its manifest GLBs and classify meshes by gteki_role.
  * If any asset fails, the ones already loaded are disposed before the error propagates (no
- * StationScene, and so no disposer, reaches the caller).
+ * StationScene, and so no disposer, reaches the caller). An asset with a `uriMobile` loads that lighter variant
+ * on the low quality tier, `uri` otherwise.
  */
-export async function manifestScene(assets: readonly Asset[], ctx: Pick<SceneContext, "loadGlb">): Promise<StationScene> {
+export async function manifestScene(assets: readonly Asset[], ctx: Pick<SceneContext, "loadGlb" | "quality">): Promise<StationScene> {
   const root = new THREE.Group();
   const walkable: THREE.Object3D[] = [];
   const colliders: THREE.Object3D[] = [];
   const cameraBlockers: THREE.Object3D[] = [];
   try {
     for (const asset of assets) {
-      const gltf = await ctx.loadGlb(asset.uri);
+      const gltf = await ctx.loadGlb(ctx.quality === "low" && asset.uriMobile ? asset.uriMobile : asset.uri);
       // Attach first, so a failure below still disposes this asset with the others.
       root.add(gltf.scene);
       if (asset.transform) gltf.scene.applyMatrix4(new THREE.Matrix4().fromArray(asset.transform));

@@ -25,7 +25,7 @@ describe("manifestScene", () => {
       if (uri === "assets/a.glb") return first.gltf;
       throw new Error(`cannot load ${uri}`);
     });
-    await expect(manifestScene([asset("assets/a.glb"), asset("assets/b.glb")], { loadGlb })).rejects.toThrow("cannot load assets/b.glb");
+    await expect(manifestScene([asset("assets/a.glb"), asset("assets/b.glb")], { loadGlb, quality: "high" })).rejects.toThrow("cannot load assets/b.glb");
     expect(first.disposed.geometry).toHaveBeenCalled();
     expect(first.disposed.material).toHaveBeenCalled();
     expect(first.disposed.texture).toHaveBeenCalled();
@@ -35,12 +35,22 @@ describe("manifestScene", () => {
     const a = glb("floor");
     const b = glb("wall");
     const loads = [a.gltf, b.gltf];
-    const scene = await manifestScene([asset("assets/a.glb"), asset("assets/b.glb")], { loadGlb: async () => loads.shift()! });
+    const scene = await manifestScene([asset("assets/a.glb"), asset("assets/b.glb")], { loadGlb: async () => loads.shift()!, quality: "high" });
     expect(scene.walkable).toHaveLength(1);
     expect(scene.colliders).toHaveLength(1);
     expect(a.disposed.geometry).not.toHaveBeenCalled();
     scene.dispose();
     expect(a.disposed.geometry).toHaveBeenCalled();
     expect(b.disposed.texture).toHaveBeenCalled();
+  });
+
+  it("loads uriMobile on the low tier only, and uri when there is no variant", async () => {
+    const withMobile: Asset = { ...asset("assets/kit.glb"), uriMobile: "assets/kit.mobile.glb" };
+    const plain = asset("assets/plain.glb");
+    for (const [quality, expected] of [["low", ["assets/kit.mobile.glb", "assets/plain.glb"]], ["high", ["assets/kit.glb", "assets/plain.glb"]]] as const) {
+      const loadGlb = vi.fn(async (_uri: string) => glb("floor").gltf);
+      await manifestScene([withMobile, plain], { loadGlb, quality });
+      expect(loadGlb.mock.calls.map((c) => c[0])).toEqual(expected);
+    }
   });
 });

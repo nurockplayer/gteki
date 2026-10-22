@@ -133,7 +133,7 @@ function applyCamera(): void {
 // ---- kit loading --------------------------------------------------------------------------------------
 const assetId = (item: ItemDef): string => item.glb.split("/").pop()!.replace(/\.glb$/, "");
 
-let bakedAo: BakedAoCounts = { materials: 0, scaled: 0, disabled: 0 };
+let bakedAo: BakedAoCounts = { materials: 0, scaled: 0, disabled: 0, textureBytes: 0 };
 
 async function loadKit(): Promise<void> {
   const table = GLB_URLS[tier];

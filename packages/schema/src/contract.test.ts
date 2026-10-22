@@ -159,6 +159,14 @@ describe("parseStationFiles (fail-closed JSON loading)", () => {
     expect(parseStationFiles(m, g, p).issues[0]).toMatchObject({ code: "shape.missing" });
   });
 
+  it("accepts an optional string uriMobile on an asset and refuses other types", () => {
+    const [m, g, p] = split(createSyntheticBundle());
+    m.assets = [{ id: "a", uri: "assets/a.glb", format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-geometry"], uriMobile: "assets/a.mobile.glb" }];
+    expect(parseStationFiles(m, g, p).ok).toBe(true);
+    (m.assets[0] as { uriMobile: unknown }).uriMobile = 3;
+    expect(parseStationFiles(m, g, p).issues[0]).toMatchObject({ code: "shape.type" });
+  });
+
   it("refuses files from different stations or schema versions", () => {
     const [m, g, p] = split(createSyntheticBundle());
     g.stationId = "other";
@@ -333,6 +341,17 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     for (const bad of ["../x.webp", "assets//x.webp", "assets/x#1.webp", "assets/x?.webp", "/abs.webp", "station.json", "assets/x.exe"])
       expect(withFiles("assets/a.glb", [bad])).toContain("asset.files");
     for (const bad of ["assets/roof#west.glb", "assets/roof?west.glb"]) expect(withFiles(bad, [])).toContain("asset.uri");
+  });
+
+  it("checks uriMobile like the asset uri", () => {
+    const withMobile = (uriMobile: string) => {
+      const b = createSyntheticBundle();
+      b.assets = [{ id: "a", uri: "assets/a.glb", uriMobile, format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-geometry"] }];
+      return errors(b);
+    };
+    expect(withMobile("assets/mobile/a.glb")).toEqual([]);
+    for (const bad of ["../a.glb", "assets//a.glb", "assets/a#1.glb", "/abs.glb", "assets/a.gltf", "assets/a.webp"])
+      expect(withMobile(bad), bad).toContain("asset.uri");
   });
 
   it("gates known floor heights on reusable sources and drawing them as known", () => {

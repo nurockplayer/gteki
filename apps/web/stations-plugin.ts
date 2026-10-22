@@ -75,7 +75,7 @@ export function fsUrl(realPath: string): string {
 
 /**
  * What a production build may publish for each station: the manifest's declared asset files
- * (`assets[].uri` and `assets[].files`), keyed by station folder. Throws, refusing the build, when a
+ * (`assets[].uri`, `assets[].uriMobile` and `assets[].files`), keyed by station folder. Throws, refusing the build, when a
  * station fails `parseStationFiles`, declares a file that isn't there, or holds an asset file it
  * doesn't declare (rights are only checked for declared assets).
  */
@@ -96,7 +96,7 @@ export function publishableAssets(stations: DiscoveredStation[]): Map<string, Se
     const asPublished = { ...parsed.bundle, station: { ...parsed.bundle.station, synthetic: false } };
     for (const i of validateBundle(asPublished))
       if (i.level === "error" && PUBLICATION_RULES.has(i.code)) failures.push(`${s.dir}: ${i.code}${i.ref ? ` (${i.ref})` : ""}: ${i.message}`);
-    const declared = new Set((parsed.bundle.assets ?? []).flatMap((a) => [a.uri, ...(a.files ?? [])]));
+    const declared = new Set((parsed.bundle.assets ?? []).flatMap((a) => [a.uri, ...(a.uriMobile ? [a.uriMobile] : []), ...(a.files ?? [])]));
     const found = new Set(s.assets);
     const missing = [...declared].filter((f) => !found.has(f));
     // A canonical name may still link to a target whose real path Vite would read as a query or fragment.

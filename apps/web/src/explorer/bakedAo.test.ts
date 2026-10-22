@@ -26,14 +26,14 @@ describe("baked AO policy", () => {
     const m = aoMat(1);
     const c = applyBakedAo(rootOf(new THREE.Mesh(geo(), m)), "low");
     expect(m.aoMapIntensity).toBe(1);
-    expect(c).toEqual({ materials: 1, scaled: 0, disabled: 0 });
+    expect(c).toEqual({ materials: 1, scaled: 0, disabled: 0, textureBytes: 0 });
   });
 
   it("scales by AO_MAP_HIGH_SCALE on high, where GTAO stacks with it", () => {
     const m = aoMat(1);
     const c = applyBakedAo(rootOf(new THREE.Mesh(geo(), m)), "high");
     expect(m.aoMapIntensity).toBeCloseTo(AO_MAP_HIGH_SCALE);
-    expect(c).toEqual({ materials: 1, scaled: 1, disabled: 0 });
+    expect(c).toEqual({ materials: 1, scaled: 1, disabled: 0, textureBytes: 0 });
     expect(bakedAoScale("high")).toBe(AO_MAP_HIGH_SCALE);
     expect(bakedAoScale("low")).toBe(1);
   });
@@ -73,10 +73,10 @@ describe("baked AO policy", () => {
     const c = applyBakedAo(rootOf(new THREE.Mesh(geo(), [a, plain, b])), "high");
     expect(a.aoMapIntensity).toBeCloseTo(AO_MAP_HIGH_SCALE);
     expect(b.aoMapIntensity).toBeCloseTo(0.8 * AO_MAP_HIGH_SCALE);
-    expect(c).toEqual({ materials: 2, scaled: 2, disabled: 0 });
+    expect(c).toEqual({ materials: 2, scaled: 2, disabled: 0, textureBytes: 0 });
   });
 
-  it("disables a UV1 aoMap used by a geometry without uv1, warning once per material name", () => {
+  it("disables a UV1 aoMap used by a geometry without uv1, warning once per material", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const bad = aoMat(1, 1, "nouv1-a");
     const ok = aoMat(1, 1, "has-uv1");
@@ -85,13 +85,33 @@ describe("baked AO policy", () => {
     expect(bad.aoMap).toBeNull();
     expect(ok.aoMap).not.toBeNull();
     expect(ok.aoMapIntensity).toBeCloseTo(AO_MAP_HIGH_SCALE);
-    expect(c).toEqual({ materials: 2, scaled: 1, disabled: 1 });
+    expect(c).toEqual({ materials: 2, scaled: 1, disabled: 1, textureBytes: 0 });
     expect(warn).toHaveBeenCalledTimes(1);
-    // a second material with the same name does not warn again
+    // another material is warned about even with the same name (or none)...
     const twin = aoMat(1, 1, "nouv1-a");
     applyBakedAo(rootOf(new THREE.Mesh(geo(false), twin)), "high");
     expect(twin.aoMap).toBeNull();
-    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledTimes(2);
+    const unnamedA = aoMat(1, 1, ""), unnamedB = aoMat(1, 1, "");
+    applyBakedAo(rootOf(new THREE.Mesh(geo(false), unnamedA), new THREE.Mesh(geo(false), unnamedB)), "high");
+    expect(warn).toHaveBeenCalledTimes(4);
+    // ...but the same material never warns twice
+    unnamedA.aoMap = new THREE.Texture();
+    unnamedA.aoMap.channel = 1;
+    applyBakedAo(rootOf(new THREE.Mesh(geo(false), unnamedA)), "high");
+    expect(warn).toHaveBeenCalledTimes(4);
+  });
+
+  it("reports the estimated bytes of each distinct aoMap texture once", () => {
+    const sized = (w: number, h: number) => { const t = new THREE.Texture({ width: w, height: h } as unknown as HTMLImageElement); t.channel = 1; return t; };
+    const shared = sized(512, 512);
+    const a = aoMat(1, 1, "a"), b = aoMat(1, 1, "b"), c = aoMat(1, 1, "c");
+    a.aoMap = shared;
+    b.aoMap = shared; // two materials, one texture
+    c.aoMap = sized(256, 256);
+    const counts = applyBakedAo(rootOf(new THREE.Mesh(geo(), a), new THREE.Mesh(geo(), b), new THREE.Mesh(geo(), c)), "low");
+    expect(counts.materials).toBe(3);
+    expect(counts.textureBytes).toBe(Math.round((512 * 512 * 16) / 3) + Math.round((256 * 256 * 16) / 3));
   });
 
   it("disables the map when any one of a shared material's geometries lacks uv1", () => {
@@ -99,7 +119,7 @@ describe("baked AO policy", () => {
     const m = aoMat(1, 1, "shared-partial");
     const c = applyBakedAo(rootOf(new THREE.Mesh(geo(true), m), new THREE.Mesh(geo(false), m)), "high");
     expect(m.aoMap).toBeNull();
-    expect(c).toEqual({ materials: 1, scaled: 0, disabled: 1 });
+    expect(c).toEqual({ materials: 1, scaled: 0, disabled: 1, textureBytes: 0 });
   });
 
   it("leaves an aoMap on channel 0 alone when uv1 is absent (it samples uv)", () => {
@@ -114,6 +134,6 @@ describe("baked AO policy", () => {
     m.aoMapIntensity = 0.7;
     const c = applyBakedAo(rootOf(new THREE.Mesh(geo(), m), new THREE.Mesh(geo(), new THREE.MeshBasicMaterial())), "high");
     expect(m.aoMapIntensity).toBe(0.7);
-    expect(c).toEqual({ materials: 0, scaled: 0, disabled: 0 });
+    expect(c).toEqual({ materials: 0, scaled: 0, disabled: 0, textureBytes: 0 });
   });
 });

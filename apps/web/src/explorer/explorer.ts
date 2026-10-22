@@ -175,7 +175,7 @@ export class Explorer {
   private walls: Segment2[] = [];
   /** Visual-only signage the follow camera sees through (never walkable or a collider), as actually cut. */
   private seeThrough: THREE.Object3D[] = [];
-  private bakedAo: BakedAoCounts = { materials: 0, scaled: 0, disabled: 0 };
+  private bakedAo: BakedAoCounts = { materials: 0, scaled: 0, disabled: 0, textureBytes: 0 };
   private readonly cameraCut = new CameraCut();
   private routeTexture: THREE.CanvasTexture | null = null;
   private routeLines: OccludedLineStyle | null = null;
@@ -513,7 +513,7 @@ export class Explorer {
     }
     this.buildOccluders(this.stationScene?.root ?? this.graph.root);
     // Baked aoMaps (kit GLBs and stations' own): per-tier intensity, once per attach (idempotent per material).
-    this.bakedAo = this.stationScene ? applyBakedAo(this.stationScene.root, this.quality) : { materials: 0, scaled: 0, disabled: 0 };
+    this.bakedAo = this.stationScene ? applyBakedAo(this.stationScene.root, this.quality) : { materials: 0, scaled: 0, disabled: 0, textureBytes: 0 };
     this.phase = "composer";
     this.setupComposer();
     this.frameAll();

@@ -242,6 +242,10 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
     // Canonical form only: the Web loader keys assets by their exact relative path and Godot refuses ":" and "\\".
     if (!isCanonicalAssetPath(a.uri)) err("asset.uri", CANONICAL_MESSAGE, a.id);
     else if (!a.uri.toLowerCase().endsWith(".glb")) err("asset.uri", "glb asset uri must end in .glb", a.id);
+    if (a.uriMobile !== undefined) {
+      if (!isCanonicalAssetPath(a.uriMobile)) err("asset.uri", `uriMobile: ${CANONICAL_MESSAGE}`, a.id);
+      else if (!a.uriMobile.toLowerCase().endsWith(".glb")) err("asset.uri", "glb asset uriMobile must end in .glb", a.id);
+    }
     for (const f of a.files ?? []) {
       if (!isCanonicalAssetPath(f)) err("asset.files", `${f}: ${CANONICAL_MESSAGE}`, a.id);
       else if (!ASSET_FILE_EXT.test(f) || CONTRACT_FILES.has(f)) err("asset.files", `${f}: not a publishable asset file type`, a.id);

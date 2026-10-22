@@ -103,6 +103,17 @@ describe("virtual station module asset URLs", () => {
     expect(load([valid(tree())], "build")).toMatch(/import\("[^"]*\/b1\.glb\?url"\)/);
   });
 
+  it("publishes a declared uriMobile variant, and refuses it when it is missing", () => {
+    const root = valid(tree());
+    const dir = path.join(root, "alpha", "gteki");
+    const [m] = createDemoFiles();
+    m.assets = [{ id: "b1", uri: "assets/b1.glb", uriMobile: "assets/b1.mobile.glb", format: "glb", floorIds: [], role: "visual", sourceIds: ["demo-synthetic"], files: ["assets/b1.meta.json"] }];
+    fs.writeFileSync(path.join(dir, "station.json"), JSON.stringify(m));
+    expect(() => publishableAssets(discoverStations([root]))).toThrow(/declared asset files not found: assets\/b1\.mobile\.glb/);
+    fs.writeFileSync(path.join(dir, "assets", "b1.mobile.glb"), "x");
+    expect([...publishableAssets(discoverStations([root])).get("alpha")!].sort()).toEqual(["assets/b1.glb", "assets/b1.meta.json", "assets/b1.mobile.glb"]);
+  });
+
   it("refuses a production build from a station that fails the contract, but still serves it in dev", () => {
     const root = tree();
     expect(() => load([root], "build")).toThrow(/refusing a production build with invalid stations: alpha/);
