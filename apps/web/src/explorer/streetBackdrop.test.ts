@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
+import { StreetBackdrop, atStreetTop, collectStreetContext, footingLevel, isOutdoors, roleOf, stationDrawsGround } from "./streetBackdrop.ts";
 
 describe("street backdrop", () => {
   it("is outdoors only with a street floor, open sky and a walker near street height", () => {
@@ -82,6 +82,73 @@ describe("level footing", () => {
     expect(roleOf(mesh)).toBe("stairs_ramps");
     mesh.userData.gteki_role = "floor";
     expect(roleOf(mesh)).toBe("floor");
+  });
+});
+
+describe("pavement plane yields to the station's street context", () => {
+  const ctxMesh = () => {
+    const m = new THREE.Mesh();
+    m.userData.gteki_role = "context";
+    return m;
+  };
+
+  it("finds a street-context group, or loose context-role meshes, once at attach", () => {
+    const root = new THREE.Group();
+    expect(collectStreetContext(root)).toEqual([]);
+    expect(collectStreetContext(null)).toEqual([]);
+    const group = new THREE.Group();
+    group.name = "street-context";
+    const inside = ctxMesh();
+    group.add(inside);
+    const loose = ctxMesh();
+    root.add(group, loose, new THREE.Mesh());
+    const found = collectStreetContext(root);
+    expect(found).toContain(group);
+    expect(found).toContain(loose);
+    expect(found).not.toContain(inside); // already covered by its group
+    expect(found).toHaveLength(2);
+  });
+
+  it("is true only while a context object and all its ancestors are visible", () => {
+    expect(stationDrawsGround([])).toBe(false);
+    const root = new THREE.Group();
+    const group = new THREE.Group();
+    group.name = "street-context";
+    root.add(group);
+    const found = collectStreetContext(root);
+    expect(stationDrawsGround(found)).toBe(true);
+    group.visible = false;
+    expect(stationDrawsGround(found)).toBe(false);
+    group.visible = true;
+    root.visible = false;
+    expect(stationDrawsGround(found)).toBe(false);
+  });
+
+  it("hides the plane while the context shows, and brings it back when the context is hidden", () => {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera();
+    const walker = new THREE.Vector3(0, 32.65, 0);
+    const root = new THREE.Group();
+    const ctx = new THREE.Group();
+    ctx.name = "street-context";
+    root.add(ctx);
+    const b = new StreetBackdrop();
+    const ground = () => b.group.getObjectByName("street-backdrop-ground")!;
+    // Without a station context the plane shows on level street.
+    b.attach(new THREE.Group());
+    b.update(scene, camera, walker, true, 1 / 60, true, true);
+    expect(ground().visible).toBe(true);
+    // With a visible context it stays hidden, while the sky and fade carry on.
+    b.attach(root);
+    b.update(scene, camera, walker, true, 1 / 60, true, true);
+    expect(ground().visible).toBe(false);
+    expect(b.group.visible).toBe(true);
+    expect(b.opacity).toBe(1);
+    // Hiding the context group returns the plane.
+    ctx.visible = false;
+    b.update(scene, camera, walker, true, 1 / 60, true, true);
+    expect(ground().visible).toBe(true);
+    b.dispose();
   });
 });
 

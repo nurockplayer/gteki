@@ -69,6 +69,48 @@ export function roleOf(o: THREE.Object3D | null): string | null {
   return o?.name || null;
 }
 
+/** Name of the station group that carries its own surface context (roads, pavement): see docs/core/contract.md. */
+export const STREET_CONTEXT_NAME = "street-context";
+
+/** Visible in the render sense: the object and every ancestor have `visible` set. */
+function visibleInHierarchy(o: THREE.Object3D): boolean {
+  for (let x: THREE.Object3D | null = o; x; x = x.parent) if (!x.visible) return false;
+  return true;
+}
+
+/**
+ * Finds a station scene's own street context once, at attach: the `street-context` group, plus any mesh
+ * tagged `gteki_role: "context"` that is not already inside one. Returns the objects to watch for visibility;
+ * empty when the station draws no ground of its own.
+ */
+export function collectStreetContext(root: THREE.Object3D | null): THREE.Object3D[] {
+  const found: THREE.Object3D[] = [];
+  if (!root) return found;
+  const named = new Set<THREE.Object3D>();
+  root.traverse((o) => {
+    if (o.name === STREET_CONTEXT_NAME) {
+      named.add(o);
+      found.push(o);
+    }
+  });
+  root.traverse((o) => {
+    if (!(o as THREE.Mesh).isMesh || o.userData.gteki_role !== "context") return;
+    for (let x: THREE.Object3D | null = o; x; x = x.parent) if (named.has(x)) return;
+    found.push(o);
+  });
+  return found;
+}
+
+/**
+ * The core pavement plane yields wherever the station draws its own ground: true while any of the station's
+ * street-context objects (see collectStreetContext) is visible. The plane sits just under the walker's feet
+ * and, being transparent, would otherwise hide real road surfaces a few cm below it. Cheap enough per frame:
+ * a handful of cached objects, each checked up its (shallow) parent chain; no scene traversal.
+ */
+export function stationDrawsGround(contexts: readonly THREE.Object3D[]): boolean {
+  return contexts.some(visibleInHierarchy);
+}
+
 const SKY_VERT = /* glsl */ `
   varying vec3 vDir;
   void main() {
@@ -130,6 +172,7 @@ export class StreetBackdrop {
   private saved: { fog: THREE.Scene["fog"] } | null = null;
   private blend = 0;
   private groundBlend = 0;
+  private contexts: THREE.Object3D[] = [];
 
   constructor() {
     this.group.name = "street-backdrop";
@@ -160,6 +203,14 @@ export class StreetBackdrop {
     this.ground.userData.gteki_role = "backdrop";
     this.group.add(this.sky, this.ground);
     this.group.visible = false;
+  }
+
+  /**
+   * Point the backdrop at the loaded station scene (or null on unload): the street context it draws is looked
+   * up once here, and its visibility alone decides whether the pavement plane shows (see stationDrawsGround).
+   */
+  attach(root: THREE.Object3D | null): void {
+    this.contexts = collectStreetContext(root);
   }
 
   get active(): boolean {
@@ -197,7 +248,8 @@ export class StreetBackdrop {
     this.sky.material.uniforms.uOpacity!.value = b;
     // The plane follows the walker's feet and shows only on level ground: on a stair (or at the lip of a
     // stairwell) it would cut across the flight below, so there the stair geometry stays visible.
-    const up = outdoors && level;
+    // It also yields entirely wherever the station draws its own street (real road surfaces can sit below it).
+    const up = outdoors && level && !stationDrawsGround(this.contexts);
     // Fades in on arrival; clears at once when footing stops being level, so it never covers a stair going down.
     this.groundBlend = up ? (teleport ? 1 : THREE.MathUtils.damp(this.groundBlend, 1, 8, dt)) : 0;
     this.ground.visible = this.groundBlend > 0.01;
