@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { type Fence, committed, read } from "../pipeline/access_seal.ts";
 import { RADIUS, ReplayWalker, SPEED, type Start, buildWorld, fenceStarts, replay, thin, yawToward } from "../pipeline/walker_replay.ts";
-import { WALKER_BODY } from "@gteki/scene-api";
+import { WALKER_BODY, WALKER_SPEED } from "@gteki/scene-api";
 
 const SAMPLE = { spacing: 0.5, offsets: [0.05, 0.3, 0.8], ringRadii: [0.1, 0.4], ringPoints: 12 };
 const REPLAY = { stepM: 0.05, maxSteps: 40, headings: 24, wanders: 2, seed: 20261022 };
@@ -15,8 +15,9 @@ const length = (f: Fence) => Math.hypot(f.b[0]! - f.a[0]!, f.b[1]! - f.a[1]!);
 describe("ikebukuro walker replay (scene colliders, explorer rules)", () => {
   const fences = committed();
 
-  it("steps like the explorer: radius from WALKER_BODY, WALK and RUN read from explorer.ts, and it really walks", async () => {
+  it("steps like the explorer: radius from WALKER_BODY, WALK and RUN from WALKER_SPEED, and it really walks", async () => {
     expect(RADIUS).toBe(WALKER_BODY.radiusM);
+    expect(SPEED).toEqual({ walk: WALKER_SPEED.walkMps, run: WALKER_SPEED.runMps });
     expect(SPEED.walk).toBeGreaterThan(0);
     expect(SPEED.run).toBeGreaterThan(SPEED.walk);
     // Vacuity guard: from the central passage's node along the scene's own spawn heading (compass 100 degrees),

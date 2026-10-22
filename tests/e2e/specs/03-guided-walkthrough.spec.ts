@@ -45,13 +45,17 @@ for (const key of STATIONS) {
       await page.locator(".sheet .card.route button.primary").click();
       await expect.poll(() => hooks.mode(page)).toBe("guide");
 
-      // The fast tier (6.8 m/s, close to the old ×4 at 1.6 m/s) keeps recordings reviewable; other tiers narrate the same instructions.
+      // The fast tier (top speed FAST_MPS, close to the old ×4 at 1.6 m/s) keeps recordings reviewable; other tiers narrate the same instructions.
       // The tier persists across sessions, so read it and click (cycle order run, fast, walk) until it is "fast".
       const speed = page.locator(".hud button.guide-speed");
       for (let n = 0; n < 3 && (await hooks.guideControls(page)).tier !== "fast"; n++) await speed.click();
       const guideTier = (await hooks.guideControls(page)).tier;
       expect(guideTier, "guide speed tier").toBe("fast");
-      await expect(speed).toContainText(`${FAST_MPS} m/s`);
+      // The button shows this route's effective pace (#92): connectors keep believable speeds, so it is at most the top speed.
+      await expect(speed).toContainText(/fast|早送り/i);
+      const pace = Number((await speed.textContent())?.match(/(\d+(?:\.\d+)?)\s*m\/s/)?.[1]);
+      expect(pace, "effective guide pace (m/s)").toBeGreaterThan(0);
+      expect(pace, "effective guide pace (m/s)").toBeLessThanOrEqual(FAST_MPS);
 
       const frames: { t: number; instruction: string | null; avatar: unknown; stats: unknown; overlaps: unknown }[] = [];
       const seen = new Set<string>();
