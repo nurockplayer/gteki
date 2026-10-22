@@ -1,0 +1,71 @@
+{
+  "source_id": "hokonavi-oedo-shinjuku-package",
+  "resolved_url": "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=station_oedo_shinjuku",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-22T06:24:21.199Z",
+  "completed_at": "2026-10-22T06:24:22.645Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/json;charset=utf-8",
+    "content-length": "17954",
+    "etag": null,
+    "last-modified": null,
+    "date": "Thu, 22 Oct 2026 06:24:22 GMT"
+  },
+  "bytes": 17954,
+  "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
+  "store_path": "raw/d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88/package_show",
+  "tool_version": "0.1.0",
+  "git_commit": "dc59b38553e577386bea2eefdab91ed7be5b2add",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "dataset-page",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjuku",
+      "url": "https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjuku",
+      "http_status": 200,
+      "sha256": "b236fcee790fd56339d8c29d694ecc638e870bf52fa6a32e308c7c17a667a109",
+      "bytes": 29352,
+      "store_path": "raw/b236fcee790fd56339d8c29d694ecc638e870bf52fa6a32e308c7c17a667a109/station_oedo_shinjuku"
+    },
+    {
+      "id": "resource-network-geojson-page",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjuku/resource/d4519a9a-917a-4de8-9104-83e21246c04c",
+      "url": "https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjuku/resource/d4519a9a-917a-4de8-9104-83e21246c04c",
+      "http_status": 200,
+      "sha256": "a2ab1b5543b0c5720237657422165d339ab968fa3f55e8fbe70d7e77e4564553",
+      "bytes": 18727,
+      "store_path": "raw/a2ab1b5543b0c5720237657422165d339ab968fa3f55e8fbe70d7e77e4564553/d4519a9a-917a-4de8-9104-83e21246c04c"
+    },
+    {
+      "id": "resource-stationmap-geojson-page",
+      "requested_url": "https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjuku/resource/9c5ecc7b-a6e4-4d92-978c-9b66ca642172",
+      "url": "https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjuku/resource/9c5ecc7b-a6e4-4d92-978c-9b66ca642172",
+      "http_status": 200,
+      "sha256": "6a38a1b3bebb803b85c5d46b50d72921030385102e384bcd00b4643fab608712",
+      "bytes": 18523,
+      "store_path": "raw/6a38a1b3bebb803b85c5d46b50d72921030385102e384bcd00b4643fab608712/9c5ecc7b-a6e4-4d92-978c-9b66ca642172"
+    },
+    {
+      "id": "hokonavi-site-terms",
+      "requested_url": "https://www.hokonavi.go.jp/terms/",
+      "url": "https://www.hokonavi.go.jp/terms/",
+      "http_status": 200,
+      "sha256": "479ce0b33324fc6dd3ee7ba75fdb9de2a2a5f2095ab1cbacc790ad1cfe4a9aa6",
+      "bytes": 55246,
+      "store_path": "raw/479ce0b33324fc6dd3ee7ba75fdb9de2a2a5f2095ab1cbacc790ad1cfe4a9aa6/terms"
+    },
+    {
+      "id": "pdl-1-0-text",
+      "requested_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0",
+      "http_status": 200,
+      "sha256": "4d4c4cc5e8ac952f640cdf9c8242de648e36995667a361302589d468fd1e12a0",
+      "bytes": 59216,
+      "store_path": "raw/4d4c4cc5e8ac952f640cdf9c8242de648e36995667a361302589d468fd1e12a0/public_data_license_v1.0"
+    }
+  ]
+}

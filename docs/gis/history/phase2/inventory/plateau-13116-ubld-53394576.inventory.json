@@ -84,25 +84,25 @@
     {
       "code": "EF_25",
       "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "label": "壁およびバリア（バリケード）エレメント",
+      "label": "value_sha256:c7a9775bd6feabde179a1470f7ac0f08cebed673870b8c4464e161129bd387c9",
       "status": "RESOLVED"
     },
     {
       "code": "EF_30",
       "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "label": "屋根、床、舗装エレメント",
+      "label": "value_sha256:66c68648b5487923cfbc6ca49fd4e687f1a44f4bac5c45fb95fb17e8de7fc274",
       "status": "RESOLVED"
     },
     {
       "code": "EF_35",
       "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "label": "階段および傾斜路（スロープ）エレメント",
+      "label": "value_sha256:f3e12c8759e6155c83dc9bdd12427b5399b612a768cef5613b12a30757953e81",
       "status": "RESOLVED"
     },
     {
       "code": "EF_80",
       "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "label": "輸送機能",
+      "label": "value_sha256:feef0259985a457ff6d630d25b1a7e36aa1805b186d1ddd0a1ccf8c9cf89853e",
       "status": "RESOLVED"
     }
   ],
@@ -646,7 +646,7 @@
       "names": null,
       "function_code": "EF_25",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "壁およびバリア（バリケード）エレメント"
+      "function_label": "value_sha256:c7a9775bd6feabde179a1470f7ac0f08cebed673870b8c4464e161129bd387c9"
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_80",
@@ -655,7 +655,7 @@
       "names": null,
       "function_code": "EF_80",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "輸送機能"
+      "function_label": "value_sha256:feef0259985a457ff6d630d25b1a7e36aa1805b186d1ddd0a1ccf8c9cf89853e"
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
@@ -673,7 +673,7 @@
       "names": null,
       "function_code": "EF_25",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "壁およびバリア（バリケード）エレメント"
+      "function_label": "value_sha256:c7a9775bd6feabde179a1470f7ac0f08cebed673870b8c4464e161129bd387c9"
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35",
@@ -682,7 +682,7 @@
       "names": null,
       "function_code": "EF_35",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "階段および傾斜路（スロープ）エレメント"
+      "function_label": "value_sha256:f3e12c8759e6155c83dc9bdd12427b5399b612a768cef5613b12a30757953e81"
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_80",
@@ -691,7 +691,7 @@
       "names": null,
       "function_code": "EF_80",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "輸送機能"
+      "function_label": "value_sha256:feef0259985a457ff6d630d25b1a7e36aa1805b186d1ddd0a1ccf8c9cf89853e"
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_30",
@@ -700,7 +700,7 @@
       "names": null,
       "function_code": "EF_30",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "屋根、床、舗装エレメント"
+      "function_label": "value_sha256:66c68648b5487923cfbc6ca49fd4e687f1a44f4bac5c45fb95fb17e8de7fc274"
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2",
@@ -727,7 +727,7 @@
       "names": null,
       "function_code": "EF_35",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "階段および傾斜路（スロープ）エレメント"
+      "function_label": "value_sha256:f3e12c8759e6155c83dc9bdd12427b5399b612a768cef5613b12a30757953e81"
     }
   ],
   "compact_features_total": 11,

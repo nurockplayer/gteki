@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer } from "./walker.ts";
-import { WALKER_BODY } from "@gteki/scene-api";
+import { WALKER_BODY, WALKER_SPEED } from "@gteki/scene-api";
 
 describe("walker", () => {
   const wall = wallToRenderer({ a: { x: 0, y: 0 }, b: { x: 10, y: 0 }, zMin: 0, zMax: 3 });
@@ -45,6 +45,10 @@ describe("walker", () => {
 describe("walker body is part of the scene contract", () => {
   it("pins the published constants station scenes author against", () => {
     expect(WALKER_BODY).toEqual({ radiusM: 0.3, bodyBottomM: 0.2, bodyTopM: 1.7, eyeM: 1.62, stepUpM: 0.45, stepDownM: 0.9 });
+  });
+
+  it("pins the walker ground speeds replay tools import", () => {
+    expect(WALKER_SPEED).toEqual({ walkMps: 1.45, runMps: 3.4 });
   });
 
   it("blocks only walls whose band overlaps feet+0.2 … feet+1.7 (a railing above a stair run does not)", () => {

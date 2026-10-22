@@ -4,6 +4,7 @@ This packet is generated from the current inventory and network report files. Mi
 
 ## What the source files report
 - CityGML source: plateau-13116-ubld-53394576.
+- Credit: 出典：国土交通省「ほこナビDP」／加工して作成 ; 出典：国土交通省「歩行空間ネットワークデータ等整備仕様 平成30年3月」（版 2018-03、https://www.mlit.go.jp/common/001244374.pdf、SHA-256 9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974）／加工して作成 ; 出典：国土交通省「歩行空間ネットワークデータ整備仕様 令和6年7月」（版 2024-07、https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf、SHA-256 963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4）／加工して作成 ; 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成 (see docs/gis/rights/non-poi-literals.md).
 - floors: PRESENT. Count in file: 3. Example gml:id values: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_FloorSurface, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_FloorSurface, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_FloorSurface.
 - doors: PRESENT. Count in file: 3. Example gml:id values: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Door, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2_Door, ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_Door.
 - windows: PRESENT. Count in file: 1. Example gml:id values: ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_Window.
