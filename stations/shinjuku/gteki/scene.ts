@@ -10,25 +10,26 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
 import { surfaceEntrances, surfaceRoofs } from "../scene/surface-layout.ts";
-import { contextGlbFor, contextVariant, prepareContext } from "../scene/context.ts";
+import { contextGlbFor, contextVariant, disposeContextScene, loadContextScenes, prepareContext } from "../scene/context.ts";
 import plan from "../data/plan.json" with { type: "json" };
 
 /**
  * The PLATEAU street-context GLB for this quality (low on low, high on high), or null: station.json does not
- * declare it, the explorer does not bundle it, or it fails to load or is not what tools/gis writes. Any null
+ * declare it, the explorer does not bundle it, or it fails to load (or takes longer than CONTEXT_LOAD_TIMEOUT_MS) or is not what tools/gis writes. Any null
  * leaves the procedural LOD1 street untouched. Loaded before the build so no LOD1 geometry is made to be thrown away.
  */
 async function loadStreetContext(ctx: SceneContext): Promise<THREE.Object3D | null> {
   const uri = contextGlbFor(ctx);
   if (!uri) return null;
-  try {
-    const loaded = await ctx.loadGlb(uri);
-    if (prepareContext(loaded.scene, contextVariant(uri))) return loaded.scene;
-    console.warn(`[gteki] shinjuku street context ${uri} is not the visual-only ctx_bldg_* file context-omit.json was written for; using the procedural street`);
-    loaded.scene.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
-  } catch (err) {
-    console.warn(`[gteki] shinjuku street context ${uri} failed to load; using the procedural street`, err);
+  const result = await loadContextScenes((u) => ctx.loadGlb(u), [uri]);
+  if ("error" in result) {
+    console.warn(`[gteki] shinjuku street context ${uri} failed to load; using the procedural street`, result.error);
+    return null;
   }
+  const scene = result.scenes[0]!;
+  if (prepareContext(scene, contextVariant(uri))) return scene;
+  console.warn(`[gteki] shinjuku street context ${uri} is not the visual-only ctx_bldg_* file context-omit.json was written for; using the procedural street`);
+  disposeContextScene(scene);
   return null;
 }
 

@@ -12,7 +12,7 @@ import type { SurfaceData } from "./surface-data.ts";
 import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfaceGround, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceVisibleAt } from "./surface-layout.ts";
 import { daylight, facadeTexture, hash, pavingTexture, skyMaterial } from "./surface-materials.ts";
 import { inside, strip, surfaceStreets } from "./surface-street.ts";
-import { contextMeshes, createContextMaterial, CONTEXT_ATTRIBUTION } from "./context.ts";
+import { contextMeshes, createContextMaterial, disposeMaterial, CONTEXT_ATTRIBUTION } from "./context.ts";
 export { surfaceWalls } from "./surface-layout.ts";
 export type { SurfaceData } from "./surface-data.ts";
 
@@ -173,7 +173,7 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   const buildings=contextParts?[]:surfaceBuildingFootprints(surface,layout,opts.bundle);
   if(contextParts){
     const material=track(createContextMaterial());
-    for(const mesh of contextParts){const loaded=mesh.material;mesh.material=material;for(const m of [loaded].flat())m.dispose();mesh.castShadow=false;mesh.receiveShadow=false;track(mesh.geometry);}
+    for(const mesh of contextParts){const loaded=mesh.material;mesh.material=material;for(const m of [loaded].flat())disposeMaterial(m);mesh.castShadow=false;mesh.receiveShadow=false;track(mesh.geometry);}
     opts.streetContext!.name="street-context";opts.streetContext!.userData.attribution=CONTEXT_ATTRIBUTION;
     root.add(opts.streetContext!);
   }

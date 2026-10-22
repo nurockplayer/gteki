@@ -75,6 +75,51 @@ export function createContextMaterial(): THREE.MeshBasicMaterial {
   return m;
 }
 
+/** A texture owned by a material dies with it; a loaded GLB's materials are disposed with everything they hold. */
+export function disposeMaterial(material: THREE.Material): void {
+  for (const value of Object.values(material)) if ((value as THREE.Texture | null)?.isTexture) (value as THREE.Texture).dispose();
+  material.dispose();
+}
+
+/** Release a loaded context scene that is not (or no longer) in use: every geometry, material and texture under it. */
+export function disposeContextScene(root: THREE.Object3D): void {
+  root.traverse((o) => {
+    const mesh = o as THREE.Mesh;
+    mesh.geometry?.dispose();
+    for (const m of [mesh.material].flat()) if (m) disposeMaterial(m);
+  });
+}
+
+/** How long the station waits for the context files before it draws the procedural street without them. */
+export const CONTEXT_LOAD_TIMEOUT_MS = 20_000;
+
+export type ContextLoad = { scenes: THREE.Object3D[] } | { error: unknown };
+
+/**
+ * Load every context file at once (they are independent), within `timeoutMs`. All or nothing: when any file
+ * throws, or the time runs out, nothing is returned and every scene that has already loaded, or that lands
+ * later, is disposed, so a failed context leaves no GPU-bound geometry behind. The context is visual only,
+ * so the caller carries on with the procedural street on `error`.
+ */
+export async function loadContextScenes(loadGlb: (uri: string) => Promise<{ scene: THREE.Object3D }>, uris: readonly string[], timeoutMs = CONTEXT_LOAD_TIMEOUT_MS): Promise<ContextLoad> {
+  const pending = uris.map((uri) => Promise.resolve().then(() => loadGlb(uri)));
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<"timeout">((resolve) => { timer = setTimeout(() => resolve("timeout"), timeoutMs); });
+  const first = await Promise.race([Promise.allSettled(pending), timeout]);
+  clearTimeout(timer);
+  if (first === "timeout") {
+    for (const p of pending) p.then((g) => disposeContextScene(g.scene), () => undefined);
+    return { error: new Error(`street context did not load within ${timeoutMs} ms`) };
+  }
+  const loaded = first.flatMap((r) => (r.status === "fulfilled" ? [r.value.scene] : []));
+  const failed = first.find((r): r is PromiseRejectedResult => r.status === "rejected");
+  if (failed) {
+    loaded.forEach(disposeContextScene);
+    return { error: failed.reason };
+  }
+  return { scenes: loaded };
+}
+
 /** Which file a uri names. */
 export const contextVariant = (uri: string): "low" | "high" => (uri === CONTEXT_GLB.high ? "high" : "low");
 
