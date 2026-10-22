@@ -27,6 +27,7 @@ func run() -> void:
 		quit(1)
 		return
 	check_args()
+	check_guard()
 	var table := Look.load_table()
 	check_table(table)
 	for i in range(1, args.size()):
@@ -47,6 +48,21 @@ func check_args() -> void:
 	check(sdfgi.gi == "sdfgi" and (sdfgi.errors as Array).is_empty(), "--gi=sdfgi is accepted")
 	var bad := Look.parse_args(PackedStringArray(["--look=pretty", "--gi=lumen"]))
 	check((bad.errors as Array).size() == 2 and bad.profile == "baseline", "unknown --look / --gi values are errors and never a silent fallback")
+
+
+## The evidence guard on its own, against a fabricated snapshot material (#254/#257): the mapping applies only while
+## the albedo is exact, metal and roughness stay within 0.01, and every recorded sample mesh still uses the material.
+func check_guard() -> void:
+	var actual := {"color": "ff0000", "metal": 0.5, "roughness": 0.5, "meshes": {"Mesh7": true}}
+	var from := {"color": "#ff0000", "metal": 0.5, "roughness": 0.5}
+	check(Look.fingerprint_mismatch(from, actual) == "", "guard: identical evidence matches")
+	check(not Look.fingerprint_mismatch({"color": "#fe0000", "metal": 0.5, "roughness": 0.5}, actual).is_empty(), "guard: a one-step albedo shift is a mismatch")
+	check(not Look.fingerprint_mismatch({"color": "#ff0000", "metal": 0.52, "roughness": 0.5}, actual).is_empty(), "guard: metal beyond 0.01 is a mismatch")
+	check(Look.fingerprint_mismatch({"color": "#ff0000", "metal": 0.5, "roughness": 0.49}, actual) == "", "guard: roughness within 0.01 matches")
+	check(not Look.fingerprint_mismatch({"color": "#ff0000", "metal": 0.5, "roughness": 0.52}, actual).is_empty(), "guard: roughness beyond 0.01 is a mismatch")
+	check(not Look.fingerprint_mismatch({"color": "#ff0000", "metal": 0.5, "roughness": 0.5, "meshes": ["Mesh7", "Gone"]}, actual).is_empty(), "guard: a recorded sample mesh that no longer uses the material is a mismatch")
+	check(not Look.fingerprint_mismatch({"color": "#ff0000"}, actual).is_empty(), "guard: evidence missing metal never applies")
+	check(not Look.fingerprint_mismatch(null, actual).is_empty(), "guard: a mapping without `from` evidence never applies")
 
 
 ## The IEC 61966-2-1 sRGB transfer function (linear → sRGB), written out here so the expectations do not come from
@@ -84,6 +100,13 @@ func check_table(table: Dictionary) -> void:
 			var from: Dictionary = mapping.get("from", {})
 			for key in ["color", "metal", "roughness", "surfaces", "evidence"]:
 				check(from.has(key), "%s/%s: `from` carries %s evidence" % [id, name, key])
+			# Optional: sample mesh names the guard re-checks against the snapshot.
+			if from.has("meshes"):
+				var meshes: Variant = from.meshes
+				check(meshes is Array and not (meshes as Array).is_empty(), "%s/%s: sample meshes are a non-empty list" % [id, name])
+				if meshes is Array:
+					for mesh_name in meshes:
+						check(mesh_name is String and not str(mesh_name).is_empty(), "%s/%s: sample mesh names are non-empty strings" % [id, name])
 			# Optional: a mapping that is not E27 fact says so in its own field.
 			if mapping.has("provisional"):
 				check(mapping.provisional is String and not str(mapping.provisional).is_empty(), "%s/%s: provisional is a non-empty string" % [id, name])
@@ -162,6 +185,9 @@ func check_materials(holder: Node3D, table: Dictionary, id: String) -> void:
 	var result := Look.apply_materials(holder, table, id)
 	check((result.missing as Array).is_empty(), "%s: every mapped material name exists in the snapshot (%s)" % [id, str(result.missing)])
 	check((result.unknown_style as Array).is_empty(), "%s: every mapping names a declared style (%s)" % [id, str(result.unknown_style)])
+	# The evidence guard (#254/#257): a mapping whose snapshot material no longer matches its `from` fingerprint is
+	# skipped rather than repainting whatever took the name, so any mismatch is a failure here, never a quiet skip.
+	check((result.mismatched as Array).is_empty(), "%s: every mapping still matches its recorded evidence (%s)" % [id, str(result.mismatched)])
 	check(int(result.applied) > 0 or mappings.is_empty(), "%s: the table maps surfaces (%d)" % [id, result.applied])
 	var after := surface_materials(holder)
 	var checked := {}

@@ -62,6 +62,16 @@ function triangles(mesh: THREE.Mesh): number {
   return Math.floor((g.index ? g.index.count : (g.getAttribute("position")?.count ?? 0)) / 3);
 }
 
+/**
+ * True when the GLB can carry the mesh. GLTFExporter skips geometry with no position data, so a draw-nothing helper
+ * (Shinjuku's viewer probe, which only reports the rendering camera) reaches neither snapshot nor Godot; counting it
+ * in the sidecar would make the two disagree (#272).
+ */
+function drawable(mesh: THREE.Mesh): boolean {
+  const position = (mesh.geometry as THREE.BufferGeometry | undefined)?.getAttribute("position");
+  return position !== undefined && position.count > 0;
+}
+
 function materialsOf(mesh: THREE.Mesh): THREE.Material[] {
   return Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 }
@@ -235,10 +245,14 @@ export function tagSceneRoles(scene: StationScene): RoleSummary {
   if (proxies.children.length > 0) scene.root.add(proxies);
 
   const summary: RoleSummary = { meshes: 0, triangles: 0, byRole: {}, walkable: 0, collider: 0, camera_blocker: 0, see_through: 0, collisionOnly: 0, hidden: 0, replacedByCollision: 0, warnings };
+  const undrawable: string[] = [];
   const visit = (object: THREE.Object3D, inherited: string | null) => {
     const own = roleOf(object);
     const role = own ?? inherited;
-    if (isMesh(object)) {
+    if (isMesh(object) && !drawable(object)) {
+      // Counted by the scene but never by the snapshot: keep it out of every count so the sidecar describes the GLB.
+      undrawable.push(object.name || "(unnamed mesh)");
+    } else if (isMesh(object)) {
       const category = categories.get(object);
       // Visibility is a property of the source mesh, whatever lists it is in: GLTFExporter (onlyVisible: false) would
       // otherwise draw scene helpers (access-fence collider, solid doors, portal and walk-bridge meshes) that the
@@ -272,6 +286,9 @@ export function tagSceneRoles(scene: StationScene): RoleSummary {
     for (const child of object.children) visit(child, role);
   };
   visit(scene.root, null);
+  if (undrawable.length > 0) {
+    warnings.push(`${undrawable.length} mesh(es) have no drawable geometry and cannot reach the GLB, so they are left out of the counts: ${undrawable.join(", ")}`);
+  }
   return summary;
 }
 

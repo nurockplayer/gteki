@@ -205,6 +205,10 @@ func load_station(id: String) -> bool:
 		materials_applied = int(table.applied)
 		if not (table.missing as Array).is_empty():
 			printerr("%s: material table names %s, absent from the snapshot" % [id, str(table.missing)])
+		# The snapshot's material names are positional, so a mapping that no longer matches its recorded evidence is
+		# skipped instead of repainting whatever took the name (#254/#257).
+		if not (table.mismatched as Array).is_empty():
+			printerr("%s: material mappings skipped, evidence no longer matches: %s" % [id, str(table.mismatched)])
 	print("%s: %d meshes (walkable %d, collider %d), %d walls, %d spawn points, %d export warnings, %s, %s" % [id, current.counts.meshes, current.counts.walkable, current.counts.collider, current.wall_shapes, current.spawn_points.size(), current.sidecar.warnings.size(), lightmap_summary(), look_summary()])
 	var background: Variant = current.environment.get("background")
 	if background is float or background is int:
