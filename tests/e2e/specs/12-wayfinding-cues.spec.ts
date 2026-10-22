@@ -86,7 +86,11 @@ for (const w of walks) {
     for (let n = 0; n < 3 && (await hooks.guideControls(page)).tier !== "fast"; n++) await speed.click();
     const guideTier = (await hooks.guideControls(page)).tier;
     expect(guideTier, "guide speed tier").toBe("fast");
-    await expect(speed).toContainText(`${FAST_MPS} m/s`);
+    // The button shows this route's effective pace (#92), at most the fast tier's top speed (as in 03).
+    await expect(speed).toContainText(/fast|早送り/i);
+    const pace = Number((await speed.textContent())?.match(/(\d+(?:\.\d+)?)\s*m\/s/)?.[1]);
+    expect(pace, "effective guide pace (m/s)").toBeGreaterThan(0);
+    expect(pace, "effective guide pace (m/s)").toBeLessThanOrEqual(FAST_MPS);
 
     const samples: { i: number; tMs: number; instruction: string | null; avatar: { x: number; y: number; z: number }; sM: number; lateralM: number; ahead: string[]; nextCue: { id: string; type: string; aheadM: number } | null; key: string; frame: string | null }[] = [];
     const seen = new Set<string>();
