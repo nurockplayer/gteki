@@ -1,0 +1,59 @@
+{
+  "note": "Reject and fix log for the AI style rounds behind art batch 1 (Owner review in chat, 2026-10-22). Images the Owner simply did not pick are not listed; only screening rejects, fixes and exceptions.",
+  "entries": [
+    {
+      "round": "ai_batch1",
+      "id": "tile_10_accent_seamless",
+      "outcome": "rejected",
+      "reason": "not seamless (edge L/R 33.4, T/B 79.5 vs interior 9.3 8-bit levels); tileable surfaces stay procedural"
+    },
+    {
+      "round": "ai_batch2",
+      "id": "b1_shj_manners",
+      "outcome": "rejected",
+      "reason": "background train stripe close to a real JR line livery (operator colours); replaced by m01_manners_mascot without a train"
+    },
+    {
+      "round": "ai_batch2",
+      "id": "b1_shj_cram_school",
+      "outcome": "not shipped",
+      "reason": "digits on a calculator key pad (removed only by cropping); not picked"
+    },
+    {
+      "round": "ai_batch3",
+      "id": "w10_cloud_sea_garden",
+      "outcome": "not shipped",
+      "reason": "a horizon spire resembles a famous real supertall after one regeneration"
+    },
+    {
+      "round": "ai_batch5",
+      "id": "j03_matsuri_lanterns",
+      "outcome": "fixed",
+      "reason": "faint marks on paper strips; blanked by image edit (ai_fix1)"
+    },
+    {
+      "round": "ai_batch5",
+      "id": "s10_sento_mural",
+      "outcome": "exception",
+      "reason": "reads as Mt Fuji; Owner accepted it as the only landmark exception"
+    },
+    {
+      "round": "ai_batch6",
+      "id": "k01_mascot_cool_cat",
+      "outcome": "fixed",
+      "reason": "'zz' sleep letters; removed by image edit (ai_fix1)"
+    },
+    {
+      "round": "ai_batch6",
+      "id": "k03_mascot_duo",
+      "outcome": "fixed",
+      "reason": "'zz' sleep letters; removed by image edit (ai_fix1)"
+    },
+    {
+      "round": "ai_batch6",
+      "id": "k05_manners_escalator",
+      "outcome": "fixed",
+      "reason": "copy says hold the handrail but the cat pointed; corrected by image edit (ai_fix1)"
+    }
+  ]
+}
