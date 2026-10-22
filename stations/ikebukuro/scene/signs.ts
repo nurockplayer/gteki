@@ -339,7 +339,7 @@ export function buildSigns(
 ) {
   const group = new THREE.Group();
   group.name = "ikebukuro_signs";
-  type Face = { canvas: HTMLCanvasElement; widthM: number; h: number; bg: string; local: THREE_NS.Matrix4; sign: THREE_NS.Matrix4 };
+  type Face = { id: string; side: "front" | "back"; scale: number; canvas: HTMLCanvasElement; widthM: number; h: number; bg: string; local: THREE_NS.Matrix4; sign: THREE_NS.Matrix4 };
   const faces: Face[] = [];
   const boxes: { geo: THREE_NS.BufferGeometry; matrix: THREE_NS.Matrix4 }[] = [];
   const face = (content: SignContent[], maxW: number, theme: Theme) => {
@@ -363,8 +363,8 @@ export function buildSigns(
       new THREE.Vector3(scale, scale, scale),
     );
     boxes.push({ geo: new THREE.BoxGeometry(width + 0.06, H + 0.06, 0.08), matrix: signM });
-    faces.push({ ...front, local: new THREE.Matrix4().makeTranslation(0, 0, 0.041), sign: signM });
-    if (back) faces.push({ ...back, local: new THREE.Matrix4().makeRotationY(Math.PI).setPosition(0, 0, -0.041), sign: signM });
+    faces.push({ ...front, id: s.id, side: "front", scale, local: new THREE.Matrix4().makeTranslation(0, 0, 0.041), sign: signM });
+    if (back) faces.push({ ...back, id: s.id, side: "back", scale, local: new THREE.Matrix4().makeRotationY(Math.PI).setPosition(0, 0, -0.041), sign: signM });
   }
 
   // Unlit: the station has no dynamic lights (baked lighting only).
@@ -393,7 +393,8 @@ export function buildSigns(
     mat.color.setScalar(1.1);
     group.add(new THREE.Mesh(merge(THREE, parts, true), mat));
   });
-  group.userData = { gteki_role: "sign" };
+  // Face sizes (m, before the sign's own scale) for the QA probe's on-screen measurements; not read by the app.
+  group.userData = { gteki_role: "sign", faces: faces.map((f) => ({ id: f.id, side: f.side, scale: f.scale, widthM: f.widthM, heightM: f.h, canvasPx: { w: f.canvas.width, h: f.canvas.height } })) };
 
   return {
     group,

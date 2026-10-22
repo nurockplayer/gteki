@@ -72,5 +72,13 @@ export default defineConfig({
       grep: /@phone/,
       use: { ...devices["Pixel 7"], launchOptions: chromiumLaunch, video: { mode: "on", size: { width: 412, height: 915 } } },
     },
+    {
+      // iPhone 15 geometry (393x852, DPR 3, isMobile, hasTouch) in Brave/Chromium, for the sign-readability probe
+      // (specs/11): the low tier is chosen by (pointer: coarse) and the render ratio is capped at 1.5, so this is the
+      // phone-tier look at iPhone size without Safari. Not Safari: phone-webkit is the WebKit project. No video.
+      name: "phone-iphone15-chromium",
+      grep: /@phone/,
+      use: { ...devices["iPhone 15"], browserName: "chromium", userAgent: devices["Pixel 7"].userAgent, launchOptions: chromiumLaunch, video: "off" },
+    },
   ],
 });

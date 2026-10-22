@@ -762,6 +762,8 @@ export class App {
       quality: () => this.explorer.qualityLevel,
       avatar: () => this.explorer.avatarEnu,
       sceneInfo: () => this.explorer.sceneInfo(),
+      projectEnu: (points: { x: number; y: number; z: number }[]) => this.explorer.projectEnu(points),
+      signFaces: () => this.explorer.signFaces(),
       phase: () => this.explorer.phase,
       audio: () => this.explorer.audioInfo(),
       walkFromNode: (nodeId: string) => (this.s.loaded ? this.explorer.walkFromNode(this.s.loaded.bundle, nodeId) : false),

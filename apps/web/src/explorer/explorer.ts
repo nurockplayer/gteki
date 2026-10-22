@@ -263,6 +263,29 @@ export class Explorer {
     };
   }
 
+  /** QA probe: project station-ENU points to canvas CSS pixels with the camera as last rendered. `behind`: not in front of the camera. */
+  projectEnu(points: { x: number; y: number; z: number }[]): { x: number; y: number; behind: boolean }[] {
+    this.camera.updateMatrixWorld();
+    const el = this.renderer.domElement;
+    const w = el.clientWidth, h = el.clientHeight;
+    return points.map((p) => {
+      const world = R(p.x, p.y, p.z);
+      const behind = world.clone().applyMatrix4(this.camera.matrixWorldInverse).z >= 0;
+      const v = world.project(this.camera);
+      return { x: ((v.x + 1) / 2) * w, y: ((1 - v.y) / 2) * h, behind };
+    });
+  }
+
+  /** QA probe: face sizes recorded by the sign builder (empty when the station has no signs). */
+  signFaces(): unknown[] {
+    const out: unknown[] = [];
+    this.scene.traverse((o) => {
+      const faces = o.userData?.faces;
+      if (o.userData?.gteki_role === "sign" && Array.isArray(faces)) out.push(...faces);
+    });
+    return out;
+  }
+
   /** POI label states for automated visual checks. */
   labelInfo(): { shown: number; faded: number; hidden: number } {
     const n = { shown: 0, faded: 0, hidden: 0 };
