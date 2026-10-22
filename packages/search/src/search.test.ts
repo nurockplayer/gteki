@@ -167,6 +167,17 @@ describe("station POI search", () => {
     ]));
     expect(ja.search("東口").map((hit) => hit.poi.id)).toEqual(["b", "d", "c", "a"]);
   });
+
+  it("picks each POI's best matching text on equal score, so name/alias order does not change ranking", () => {
+    const name = { lang: "en", text: "East Gate Plaza Annex" };
+    const alias = { lang: "en", text: "East Gate Hall" };
+    const lobby = poi("b", "East Gate Lobby");
+    const order = (a: Poi) => indexFor(bundleWith([a, lobby])).search("east gate").map((hit) => [hit.poi.id, hit.score, hit.matched]);
+    const expected = [["a", 80, "East Gate Hall"], ["b", 80, "East Gate Lobby"]];
+    expect(order(poi("a", "East Gate Plaza Annex", { aliases: [alias] }))).toEqual(expected);
+    expect(order(poi("a", "East Gate Hall", { aliases: [name] }))).toEqual(expected);
+    expect(order(poi("a", "x", { names: [{ lang: "en", text: name.text }, { lang: "en", text: alias.text }] }))).toEqual(expected);
+  });
 });
 
 describe("short-query fuzz floor", () => {

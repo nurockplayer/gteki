@@ -162,6 +162,18 @@ function scoreText(q: QueryForm, candidate: string): number {
   return Math.max(tokenScore, q.fuzzy ? fuzzyScore(q.chars, [...candidate]) : 0);
 }
 
+/** Match quality for ties: exact name > name starts with the query > anything else; then the shorter matched name. */
+type Quality = { rank: number; length: number };
+
+function qualityOf(text: string, form: QueryForm): Quality {
+  return { rank: text === form.normalized ? 2 : text.startsWith(form.normalized) ? 1 : 0, length: text.length };
+}
+
+/** Negative when `a` is the better match. Shared by the per-POI text choice and the result sorter. */
+function compareQuality(a: Quality, b: Quality): number {
+  return b.rank - a.rank || a.length - b.length;
+}
+
 export function createSearchIndex(bundle: StationBundle): SearchIndex {
   const entries: IndexedPoi[] = bundle.pois.map((poi) => ({
     poi,
@@ -183,34 +195,33 @@ export function createSearchIndex(bundle: StationBundle): SearchIndex {
       if (stripped) forms.push(stripped);
       const categories = opts.categories === undefined ? null : new Set(opts.categories);
       const floors = opts.floorIds === undefined ? null : new Set(opts.floorIds);
-      const hits: { hit: SearchHit; rank: number; length: number }[] = [];
+      const hits: { hit: SearchHit; quality: Quality }[] = [];
       for (const entry of entries) {
         if (categories && !categories.has(entry.poi.category)) continue;
         if (floors && (entry.poi.floorId === null || !floors.has(entry.poi.floorId))) continue;
         let score = 0;
         let matched = "";
-        let rank = 0;
-        let length = 0;
+        let quality: Quality = { rank: 0, length: 0 };
         for (const text of entry.texts) {
           for (const form of forms) {
             const raw = scoreText(form, text.normalized);
             const candidateScore = raw > 0 ? raw - form.penalty : 0;
-            if (candidateScore > score) {
+            if (candidateScore <= 0) continue;
+            const candidateQuality = qualityOf(text.normalized, form);
+            if (candidateScore > score || (candidateScore === score && compareQuality(candidateQuality, quality) < 0)) {
               score = candidateScore;
               matched = text.original;
-              // Match quality for ties: exact name > name starts with the query > anything else.
-              rank = text.normalized === form.normalized ? 2 : text.normalized.startsWith(form.normalized) ? 1 : 0;
-              length = text.normalized.length;
+              quality = candidateQuality;
             }
           }
         }
         if (score > 0) hits.push({
           hit: { poi: entry.poi, score: score + (entry.routable ? 5 : 0), matched, routable: entry.routable },
-          rank, length,
+          quality,
         });
       }
       // Ties: better match quality, then the shorter matched name, then id (stable regardless of bundle order).
-      hits.sort((a, b) => b.hit.score - a.hit.score || b.rank - a.rank || a.length - b.length || compareText(a.hit.poi.id, b.hit.poi.id));
+      hits.sort((a, b) => b.hit.score - a.hit.score || compareQuality(a.quality, b.quality) || compareText(a.hit.poi.id, b.hit.poi.id));
       return hits.slice(0, Math.max(0, opts.limit ?? 10)).map(({ hit }) => hit);
     },
   };
