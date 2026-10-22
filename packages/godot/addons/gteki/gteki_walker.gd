@@ -49,6 +49,9 @@ const DEFAULT_PITCH := -0.12
 ## Wall grid cell size (m) and padding. Padding exceeds 2 * RADIUS so a 3x3 cell lookup holds every wall in reach.
 const CELL := 4.0
 const WALL_PAD := 0.7
+## Render layer the avatar draws on (Godot layer 2). Station meshes stay on the default layer 1, so the HQ lights can
+## be masked to this layer alone while a station's baked lightmap is the station's light (gteki_hq_lights.gd, #251).
+const AVATAR_LAYER := 1 << 1
 
 ## Camera yaw (radians, 0 = -Z, as the web's `yaw`) and pitch; movement is camera-relative.
 var yaw := 0.0
@@ -85,6 +88,7 @@ func _init() -> void:
 
 
 ## Neutral placeholder figure (no asset, no mascot): a capsule body and a small nose box showing where it faces.
+## Both meshes draw on AVATAR_LAYER, so the HQ lights can reach the avatar while leaving the station unlit.
 func _build_avatar() -> void:
 	avatar = Node3D.new()
 	avatar.name = "avatar"
@@ -98,6 +102,7 @@ func _build_avatar() -> void:
 	capsule.height = 1.7
 	body.mesh = capsule
 	body.material_override = material
+	body.layers = AVATAR_LAYER
 	body.position = Vector3(0.0, 0.85, 0.0)
 	avatar.add_child(body)
 	var nose := MeshInstance3D.new()
@@ -105,6 +110,7 @@ func _build_avatar() -> void:
 	box.size = Vector3(0.12, 0.12, 0.2)
 	nose.mesh = box
 	nose.material_override = material
+	nose.layers = AVATAR_LAYER
 	nose.position = Vector3(0.0, 1.45, -0.28)
 	avatar.add_child(nose)
 

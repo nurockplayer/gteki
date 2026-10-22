@@ -45,12 +45,12 @@ Run by the lead on the host, one heavy job at a time, memory gate first. Candida
 
 | Walk | URL (shared explorer) | Viewpoints and frames | Tier and device |
 |---|---|---|---|
-| W1 JR Central Gate 2 to Exit 35 (199 m, 9 edges, 1 floor change) | `?station=ikebukuro&from=jr-central-gate-2&to=exit-35` | Guided walk at the fast tier, full recording; a frame every 3 s; extra stills: the Gate 2 sign cluster, the stairs down at `e_hall`, the turn at `e_low`, the stair climb from below, the stair top, the arrival frame | desktop-chromium at 1440x900 (Brave, ANGLE Metal), then phone-webkit (iPhone 15 profile) and phone-chromium (Pixel 7 profile) |
+| W1 JR Central Gate 2 to Exit 35 (199 m, 11 edges, 1 floor change) | `?station=ikebukuro&from=jr-central-gate-2&to=exit-35` | Guided walk at the fast tier, full recording; a frame every 3 s; extra stills: the Gate 2 sign cluster, the stairs down at `e_hall`, the turn at `e_low`, the stair climb from below, the stair top, the arrival frame | desktop-chromium at 1440x900 (Brave, ANGLE Metal), then phone-webkit (iPhone 15 profile) and phone-chromium (Pixel 7 profile) |
 | W2 West Exit (B1) to Exit 4 stair foot (187 m) | `?station=ikebukuro&from=west-exit-b1&to=exit-4` | Same; read both faces of each repeater when walking south; stills at the three leg changes | same |
 | W3 JR Central Gate 1 to Exit 22 (187 m, Lane F I3) | `?station=ikebukuro&from=jr-central-gate-1&to=exit-22` | One more route with a different turn pattern | desktop only |
 | W4 JR South Gate to Exit 18 (288 m, Lane F I4) | `?station=ikebukuro&from=jr-south-gate&to=exit-18` | The three-flight U-stair; full descent from the top as well (Lane F's open item) | desktop only |
 
-Record on each: the `__gteki.sceneInfo()` camera blocker count, the `jrc2-exit35-07` frame (is the camera ever above the stair cover), and whether the route card shows the stale flag (the route is stale under core's 730-day default today, `routing.test.ts:241`).
+Record on each: the `__gteki.sceneInfo()` camera blocker count, the `jrc2-exit35-07` frame (is the camera ever above the stair cover), and whether the route card shows the stale flag (the route is stale under core's 730-day default today, `routing.test.ts:241`). Part of the reason is that the node sourceRefs cite PLATEAU 2023, whose datasetDate is itself past the 730-day default, so field capture alone cannot clear the flag; the PLATEAU data version has to be updated.
 
 ## 2. Independent side-by-side review, and the deliberate simplifications
 

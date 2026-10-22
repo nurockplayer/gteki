@@ -28,7 +28,7 @@ export interface LocalizedText {
   text: string;
 }
 
-export type RightsStatus = "REUSABLE_WITH_CONDITIONS" | "REFERENCE_ONLY" | "RESTRICTED" | "UNVERIFIED";
+export type RightsStatus = "REUSABLE_WITH_CONDITIONS" | "PUBLISHED_UNDER_OWNER_OVERRIDE" | "REFERENCE_ONLY" | "RESTRICTED" | "UNVERIFIED";
 
 export interface Source {
   id: string;
@@ -51,6 +51,11 @@ export interface Source {
    * facts-only source must carry one; the web UI shows the #26 credit line for every facts-only source.
    */
   decision?: { url: string; date: string };
+  /**
+   * Required when `rights` is PUBLISHED_UNDER_OWNER_OVERRIDE (#130): the Owner decision that lets the
+   * source ship although its licence is unconfirmed. `decision` is an issue/comment URL or `#ref`.
+   */
+  override?: { decision: string; date: string };
   /** Credit line to display wherever derived data is shown. */
   attribution: string;
   /** True when GTEki modified/derived the data (must be disclosed for PDL/CC BY). */
@@ -307,6 +312,26 @@ export interface Asset {
   derivation?: string;
 }
 
+/**
+ * A non-code data file (JSON, CSV, …) that station code reads or inlines into the bundle without it being a
+ * runtime asset (render geometry, signage tables, crowd lanes). Declaring it gives it the same source and
+ * rights gate as an asset; a production build refuses inlined data that no `dataFiles[]`/`assets[]` entry declares.
+ */
+export interface DataFile {
+  id: string;
+  /** Path relative to the station folder stations/<id>/ (not gteki/): canonical, no "..", no scheme. */
+  path: string;
+  /** Sources the data is derived from; their rights gate public distribution. */
+  sourceIds: string[];
+  /** True when GTEki generated or modified the data. */
+  modified: boolean;
+  /**
+   * How it was made, naming the generating script. Required and non-empty when `modified` is true or when
+   * any cited source is facts-only (the data then states facts without reproducing the source; #186/#26).
+   */
+  derivation?: string;
+}
+
 export interface StationBundle {
   schema: typeof SCHEMA_VERSION;
   station: Station;
@@ -319,6 +344,7 @@ export interface StationBundle {
   /** Suggested user-choosable start nodes (no indoor positioning is claimed). */
   spawnNodeIds?: string[];
   assets?: Asset[];
+  dataFiles?: DataFile[];
 }
 
 /** stations/<id>/gteki/station.json */
@@ -330,6 +356,7 @@ export interface StationManifestFile {
   coverage: Coverage;
   spawnNodeIds?: string[];
   assets?: Asset[];
+  dataFiles?: DataFile[];
 }
 
 /** stations/<id>/gteki/graph.json */
@@ -347,6 +374,6 @@ export interface PoiFile {
   pois: Poi[];
 }
 
-export { ASSET_FILE_EXT, isCanonicalAssetPath, validateBundle, type ValidationIssue } from "./validate.ts";
+export { ASSET_FILE_EXT, DATA_FILE_EXT, dataFileFactsOnlySources, isCanonicalAssetPath, validateBundle, type ValidationIssue } from "./validate.ts";
 export { checkShape, composeBundle, parseStationFiles, type ParseResult } from "./parse.ts";
 export { parseHm, isOpenAt, type LocalTime } from "./hours.ts";

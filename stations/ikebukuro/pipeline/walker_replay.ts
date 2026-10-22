@@ -145,7 +145,7 @@ export class ReplayWalker {
  * target whose bounding sphere lies farther than that is out of every ray's reach, so dropping it changes no hit.
  * (castAll tests all ~1400 whole-station tiles per ray; this only skips the ones its own sphere test would skip.)
  */
-function nearby(world: World, center: THREE.Vector3, reach: number): World {
+export function nearby(world: World, center: THREE.Vector3, reach: number): World {
   const sphere = new THREE.Sphere();
   const keep = (list: THREE.Object3D[]) =>
     list.filter((o) => {

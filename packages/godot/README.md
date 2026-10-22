@@ -102,21 +102,25 @@ Walkable HQ client work starts by loading both stations in Godot without Godot o
   scene replaces with its own collision (Ikebukuro's GLB floor vs. its tiles) are exported as `visual`, original role in
   `gteki_source_role`, so nothing collides twice. Material names, base colours and both UV sets (TEXCOORD_1) are kept.
 - `scene.json` (`gteki.godot-scene/0.1`): `stationId`, `sourceCommit` (+ `sourceDirty`), `walls` and `spawnPoints` in
-  ENU exactly as returned, `environment`, `counts` per role, a `reference` block (TypeScript-computed renderer-frame
-  values the Godot tests compare against; an oracle, not scene truth), and `warnings`.
+  ENU exactly as returned, `environment`, `counts` per role, `lightmap` (only when the scene has a baked one: the URI
+  it loaded, channel, colour space, `lightMapIntensity` and the flagged mesh/surface counts — see G-4a), a `reference`
+  block (TypeScript-computed renderer-frame values the Godot tests compare against; an oracle, not scene truth), and
+  `warnings`.
 
 The browser-only parts are **shims, listed in `warnings`**: a no-op 2D canvas (blank textures; `measureText` is an
 em-width estimate, so sign sizes can differ), stubbed PMREM (no reflections), `loadTexture` returning blank textures
-(the Ikebukuro lightmap is not decoded), no audio. All material textures are omitted, so snapshots are **untextured
-and unlit**: this is geometry, roles and colours, not the #94 look (G-4 re-materials). `update()` runs once at `(0, 0)`;
-`InstancedMesh` (escalator steps, platform-door leaves) is baked into static merged meshes at that pose (Godot 4.7 cannot
-import `EXT_mesh_gpu_instancing`), and the Ikebukuro crowd (`ambient_crowd`) is dropped. The only added dependency is
+(the lightmap is a blank placeholder in the snapshot itself; G-4a re-loads the real file on the Godot side), no audio.
+All material textures are omitted, so snapshots are **untextured and unlit**: this is geometry, roles and colours, not
+the #94 look (G-4 re-materials). The one exception is the baked lightmap, whose material state is recorded in the
+sidecar and re-applied on the Godot side (G-4a, below). `update()` runs once at `(0, 0)`; `InstancedMesh` (escalator
+steps, platform-door leaves) is baked into static merged meshes at that pose (Godot 4.7 cannot import
+`EXT_mesh_gpu_instancing`), and the Ikebukuro crowd (`ambient_crowd`) is dropped. The only added dependency is
 `three` (same version as the stations, so the station modules share the exporter's instance); no canvas library.
 
 ```sh
 bash packages/godot/run-scenes.sh                 # export both stations, then the headless Godot snapshot tests
 bash packages/godot/run-scenes.sh shinjuku        # one station
-godot --path packages/godot res://hq/hq.tscn -- --station=ikebukuro   # HQ skeleton (windowed; Tab cycles stations)
+godot --path packages/godot res://hq/hq.tscn -- --station=ikebukuro [--lightmap=on|off]   # HQ skeleton (windowed; Tab cycles stations)
 godot --headless --path packages/godot res://hq/hq.tscn -- --station=shinjuku --check
 ```
 
@@ -139,7 +143,44 @@ Known gaps and traps for later milestones:
 - Ikebukuro returns no `walls`; its collision is the 656 collider tiles (including ceilings, as on the web).
 - Shinjuku has no `collider`/`camera_blocker`/sign roles of its own (walls only); signs there are unlabelled `visual`.
 - Spawn `z` is the graph node's elevation; the tests confirm ground within 1 m, not that the point is legal to stand on.
-- Per-mesh geometry only: no textures, lightmap, lights, crowd, animation or audio (see the sidecar `warnings`).
+- Per-mesh geometry only: no textures, lights, crowd, animation or audio (see the sidecar `warnings`). The baked
+  lightmap is the one lighting term carried across (G-4a); everything else is lit by the HQ skeleton light.
+
+## Baked lightmap (G-4a of #164)
+
+The Ikebukuro scene bakes its lighting (`stations/ikebukuro/pipeline/blender_bake_lighting.py`) into a WebP that the
+web explorer samples on TEXCOORD_1. three keeps it on the material (`MeshStandardMaterial.lightMap`), which neither
+glTF nor the Godot importer carries, so the exporter records what `buildScene` actually did instead of guessing from a
+role or a name: every material slot whose material has a `lightMap` gets its surface index in
+`userData.gteki_lightmap_surfaces` (glTF extras), and the sidecar's `lightmap` block records the texture URI, the
+channel (1 = TEXCOORD_1 → Godot UV2), the colour space, `flipY` and `lightMapIntensity`. The exporter throws rather
+than pick one when a scene carries two textures, two intensities, or a texture whose source URI was not recorded.
+
+`addons/gteki/gteki_lightmap.gd` loads that WebP from the station's own `gteki/` folder (the snapshot has no
+textures), and replaces the flagged surfaces with a `ShaderMaterial` that samples UV2 and mirrors three's
+`lights_fragment_maps` path: the bake's stated decode `(byte/255)^2.2`, times `lightMapIntensity / PI` (three adds
+`texel × lightMapIntensity` to the irradiance and the physical BRDF applies `RECIPROCAL_PI`), times
+`albedo × (1 − metalness)`, added as EMISSION. The albedo uniform is declared `source_color` because the importer
+stores `StandardMaterial3D.albedo_color` in sRGB (glTF `baseColorFactor` is linear and Godot encodes it); without the
+hint every lightmapped surface, and the emission it scales, would be too bright. The net factor is `(byte/255)^2.2 × scale × LIGHTMAP_GAIN`; scale and
+gain stay in `scene.ts`, the sidecar only carries their product. `hq.gd` takes `--lightmap=on|off` (default on).
+The avatar draws on its own render layer (`gteki_walker.gd` `AVATAR_LAYER`, Godot layer 2); while the bake is applied
+`gteki_hq_lights.gd` masks the client's key + fill lights to that layer, so station meshes stay unlit by any added
+light (as the web, whose `lighting: "scene"` adds no scene lights and lights only its own avatar with a per-material
+environment map) and the avatar stays clearly shaded rather than a black silhouette. With `--lightmap=off` or a
+station without a bake (Shinjuku) the same lights reach every layer and light the unlit snapshot. Shinjuku has no
+lightmap block, so the flag changes nothing there. Not mirrored:
+three's dielectric multi-scattering energy compensation (a few percent) and the envMap specular (no reflections in
+the snapshot); the light rig will be settled in the G-4 look pass.
+
+`tests/run_scene_tests.gd` checks that the texture decodes at the size the bake metadata declares, that the sidecar's
+mesh and surface counts equal the applied ones, that each flagged surface keeps UV2 and carries the shader material,
+that `lightMapIntensity / (scale × PI)` equals the scene's `LIGHTMAP_GAIN` (0.09), that 36 sampled texel channels
+decode within 1e-3 of `(byte/255)^2.2 × scale × gain`, that the shader declares `albedo_color : source_color` and its
+uniform equals the source material's own `albedo_color`, and that `--lightmap=off` applies nothing.
+`tests/run_walk_tests.gd` checks the light masks: the avatar meshes sit on `AVATAR_LAYER`, with the bake applied at
+least one light reaches that layer and no light's cull mask includes the station's layer, and with it off every light
+does.
 
 ## Third-person walk and follow camera (G-2 of #164)
 
@@ -181,7 +222,7 @@ without being blocked.
 
 It also replays **every verified edge** of `stations/ikebukuro/gteki/graph.json` with the selection and sampling of
 `stations/ikebukuro/pipeline/godot_colliders.gd` (`check:godot`: verified edges with a polyline, sampled every 0.25 m
-keeping each vertex, so edge and sample counts compare 1:1 with that script's 63 / 7,140). Per sample the snapshot must
+keeping each vertex, so edge and sample counts compare 1:1 with that script's `EDGES verified=… samples=…` line; 67 / 7,150 since #245). Per sample the snapshot must
 have walkable ground; between samples, horizontal rays at 0.2/0.6/1.0/1.4/1.7 m (that script's rule) and the walker's
 own body test must find no collider. A negative control makes the asset's `doors`/`windows`/`portals` meshes collide
 again (what `--control` does there) and the same replay must then report blocked edges; the test prints whether
