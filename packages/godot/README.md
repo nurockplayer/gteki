@@ -336,6 +336,11 @@ with `gteki_walker.gd` and records walked length against the route's, stops, bod
 walker's own height trace shows, the arrival distance and the time at 1.45 m/s. The table carries the commit and Godot
 versions; it is committed with the change it describes.
 
-The walk stops W4 and I7 at the same passage (polyline point 13 / 46): the verified edge `w_c__w_n` passes 0.29 m from
-a collision-only proxy (`Mesh825_col`), inside the 0.3 m body radius. A probe 0.2 m west of the line walks cleanly, so
-the guide line (or the proxy) has to move; the test records the block as evidence and fails if it changes.
+The walk follows the polyline itself: it turns toward the next vertex only once it is within 0.05 m of the current one,
+so it never cuts a corner the line does not cut. A larger reach turned ~0.2 m short of a ~50° vertex and the chord put
+the body into a wall corner; that was the walk, not the station (#284), and with the vertex reach the five routes walk
+with no stop and no body block. Any block, anywhere, fails the test and is reported with the collider that refused the
+step, the walker's feet where it stood and the clearance to the surface's plane.
+
+The table is written only by a run in which every check passed; a failing run prints the table it would have written
+instead and leaves the committed one untouched.

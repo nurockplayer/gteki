@@ -75,6 +75,11 @@ var _grid: Dictionary = {}
 var inverted_walls := 0
 ## Which body_block stage refused the last blocked move (diagnostics for tests).
 var last_block := ""
+## What that refusal hit: the collider's node name, the hit point and the clearance from the body's axis to the
+## surface's plane (horizontal metres). Empty until a move is refused; the tests report a block with these.
+var last_block_collider := ""
+var last_block_point := Vector3.ZERO
+var last_block_clearance := 0.0
 
 
 func _init() -> void:
@@ -261,6 +266,22 @@ func _touches(x: float, y: float, z: float) -> bool:
 	return false
 
 
+## Records a refusal: the stage, the collider's node name, the hit point and the clearance from the body's axis at
+## `feet` to the surface's plane (horizontal, along the hit normal), so a test can say *what* refused the move at
+## *which* place, not just that something did. The plane distance is the body clearance whatever probe found the hit;
+## an axis distance would read high for the side and radial probes, which start away from the axis.
+func _refuse(stage: String, hit: Dictionary, feet: Vector3) -> void:
+	last_block = stage
+	var collider: Variant = hit.get("collider", null)
+	last_block_collider = str(collider.name) if collider is Node else str(collider)
+	var point: Vector3 = hit.get("point", Vector3.ZERO)
+	var normal: Vector3 = hit.get("normal", Vector3.ZERO)
+	last_block_point = point
+	var offset := Vector2(point.x - feet.x, point.z - feet.z)
+	var horizontal := Vector2(normal.x, normal.z)
+	last_block_clearance = absf(offset.dot(horizontal.normalized())) if horizontal.length() > 1e-6 else offset.length()
+
+
 ## The normal of the collider surface that stops the body going from `from` to `to`, or null when the move is free.
 func body_block(from: Vector3, to: Vector3) -> Variant:
 	var m := to - from
@@ -272,7 +293,7 @@ func body_block(from: Vector3, to: Vector3) -> Variant:
 	for h in BODY_HEIGHTS:
 		var ahead := cast(from + Vector3(0.0, h, 0.0), along_dir, length + RADIUS, Scene.COLLIDER_LAYER)
 		if not ahead.is_empty():
-			last_block = "ahead h=%.1f d=%.3f" % [h, ahead.distance]
+			_refuse("ahead h=%.1f d=%.3f" % [h, ahead.distance], ahead, from)
 			return ahead.normal
 		if flat <= 1e-6:
 			continue
@@ -285,13 +306,14 @@ func body_block(from: Vector3, to: Vector3) -> Variant:
 				continue
 			var beside := cast(Vector3(from.x + px * side, from.y + h, from.z + pz * side), along_dir, length, Scene.COLLIDER_LAYER)
 			if not beside.is_empty():
-				last_block = "beside h=%.1f side=%d d=%.3f" % [h, int(side), beside.distance]
+				_refuse("beside h=%.1f side=%d d=%.3f" % [h, int(side), beside.distance], beside, from)
 				return beside.normal
 		# Radial rays at the target: the surface the motion goes most directly into.
 		var touched := Vector3.ZERO
 		var have := false
 		var deepest := INF
 		var target_origin := Vector3(to.x, to.y + h, to.z)
+		var deepest_hit := {}
 		for dir in _radial:
 			var hit := cast(target_origin, dir, RADIUS, Scene.COLLIDER_LAYER)
 			if hit.is_empty():
@@ -300,15 +322,16 @@ func body_block(from: Vector3, to: Vector3) -> Variant:
 			if along < deepest:
 				deepest = along
 				touched = hit.normal
+				deepest_hit = hit
 				have = true
 		if not have:
 			continue
 		if deepest < INTO:
-			last_block = "pushed-into h=%.1f along=%.3f" % [h, deepest]
+			_refuse("pushed-into h=%.1f along=%.3f" % [h, deepest], deepest_hit, from)
 			return touched
 		# A body that was clear must not slip into touching (rounding a corner).
 		if not _touches(from.x, from.y + h, from.z):
-			last_block = "slipped-into-touch h=%.1f" % h
+			_refuse("slipped-into-touch h=%.1f" % h, deepest_hit, from)
 			return touched
 	return null
 
