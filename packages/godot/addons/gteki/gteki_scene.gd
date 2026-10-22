@@ -13,6 +13,9 @@ const SCHEMA := "gteki.godot-scene/0.1"
 ## Ground has its own layer so "is there walkable ground here" can be asked without walls or ceilings answering.
 const COLLIDER_LAYER := 1 << 0
 const GROUND_LAYER := 1 << 2
+## The wall boxes built from the sidecar `walls`. Kept off the walker's masks: like the web, the walker applies the
+## wall band rule analytically (gteki_walker.gd), and the web's camera never stops at walls.
+const WALL_LAYER := 1 << 3
 ## Wall segments are zero-thickness in the web walker; the box only needs to be a solid for a trimesh-free test.
 const WALL_THICKNESS := 0.05
 ## Extras flag set by the exporter on collision proxies the scene never draws.
@@ -93,6 +96,7 @@ func _visit(node: Node) -> void:
 			_add_ground(mesh)
 		if node.has_meta("gteki_collider"):
 			counts.collider += 1
+			_apply_collider_side(mesh)
 		if node.has_meta("gteki_camera_blocker"):
 			counts.camera_blocker += 1
 		if node.has_meta("gteki_see_through"):
@@ -102,6 +106,23 @@ func _visit(node: Node) -> void:
 			mesh.visible = false
 	for child in node.get_children():
 		_visit(child)
+
+
+## The web ray-tests a collider mesh against its material's `side` (a FrontSide wall can be walked through from
+## behind; an array of materials counts as double-sided). Godot's trimesh is single-sided by winding unless asked
+## otherwise, so make it double-sided exactly where the exported material is (glTF `doubleSided` = cull disabled).
+func _apply_collider_side(mesh: MeshInstance3D) -> void:
+	if mesh.mesh == null:
+		return
+	var double_sided := mesh.mesh.get_surface_count() > 1
+	if not double_sided and mesh.mesh.get_surface_count() == 1:
+		var material: Variant = mesh.get_active_material(0)
+		double_sided = material is BaseMaterial3D and material.cull_mode == BaseMaterial3D.CULL_DISABLED
+	for body in mesh.get_children():
+		if body is StaticBody3D and body.collision_layer == COLLIDER_LAYER:
+			for shape_node in body.get_children():
+				if shape_node is CollisionShape3D and shape_node.shape is ConcavePolygonShape3D:
+					shape_node.shape.backface_collision = double_sided
 
 
 func _add_ground(mesh: MeshInstance3D) -> void:
@@ -123,7 +144,7 @@ func _add_ground(mesh: MeshInstance3D) -> void:
 func _build_walls() -> void:
 	walls_body = StaticBody3D.new()
 	walls_body.name = "walls"
-	walls_body.collision_layer = COLLIDER_LAYER
+	walls_body.collision_layer = WALL_LAYER
 	walls_body.collision_mask = 0
 	root.add_child(walls_body)
 	wall_shapes = 0

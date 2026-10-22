@@ -130,11 +130,54 @@ collider meshes against three.js, and, by physics raycast, walkable ground withi
 Known gaps and traps for later milestones:
 
 - Wall `zMin`/`zMax` are walker-feet bands (see `WALKER_BODY`): Shinjuku has 92 segments with `zMax < zMin` that still
-  block the web walker. They get **no** shape in Godot; the G-2 walk must apply the band rule to `sidecar.walls`.
+  block the web walker. They get **no** box shape in Godot; the G-2 walker applies the band rule to `sidecar.walls`
+  itself (below).
 - Ikebukuro returns no `walls`; its collision is the 656 collider tiles (including ceilings, as on the web).
 - Shinjuku has no `collider`/`camera_blocker`/sign roles of its own (walls only); signs there are unlabelled `visual`.
 - Spawn `z` is the graph node's elevation; the tests confirm ground within 1 m, not that the point is legal to stand on.
 - Per-mesh geometry only: no textures, lightmap, lights, crowd, animation or audio (see the sidecar `warnings`).
+
+## Third-person walk and follow camera (G-2 of #164)
+
+`addons/gteki/gteki_walker.gd` is a `CharacterBody3D` that moves by the **web explorer's rules, not Godot's slide
+physics** (a Godot capsule would resolve walls and steps differently, and "walkable" must mean the same on both
+clients). It is a port of `apps/web/src/explorer/walker.ts`, `bodyCollision.ts` and `explorer.ts` `stepWalk`; the file
+header lists every mirrored function with its source lines. The physics server only answers ray tests:
+
+- body radius 0.3, wall band 0.2..1.7 m above the feet, step-up <= 0.45 m, step-down <= 0.9 m (else the move is
+  refused), walk 1.45 m/s, run 3.4 m/s, camera-relative movement;
+- ground = ray from 0.5 m above the feet, 1.45 m down, against walkable (layer 4); colliders = the web's body test
+  (rays at 0.5 and 1.2 m, 12 radial rays, side sweeps, slide along the blocking surface) against layer 1;
+- sidecar `walls` are applied analytically as in `resolveWalls`: a wall is skipped when `zMax < feet + 0.2` or
+  `zMin > feet + 1.7`. So the 92 Shinjuku segments with `zMax < zMin` are **not** empty: they block while the feet are
+  within `[zMin - 1.7, zMax - 0.2]`, exactly as on the web (tests cover this). The wall boxes from G-1 moved to physics
+  layer 8 (`WALL_LAYER`) and are not used by the walker or camera;
+- collider trimeshes are double-sided exactly where the exported material is (the web ray-tests each material's
+  `side`); ground trimeshes are always double-sided (the web honours the side; this is more permissive).
+
+`gteki_follow_camera.gd` ports `followCamera.ts` and the camera part of `placeCamera`: over-the-shoulder pivot (0.42 m),
+distance 3.4 m (wheel 1.8..9), pitch -1.1..0.5, FOV 60 (a plain `fov` property; the Owner may narrow it later), camera
+rays against colliders + camera blockers + walkable (layers 1|2|4), boom lowering under camera-only blockers,
+`keepBelowBlockers`, 10/s smoothing. The avatar is a neutral capsule with a nose box (no asset, no mascot).
+
+`hq/hq.tscn`: WASD/arrows move, Shift runs, left/right-drag or right stick orbits, wheel zooms, Tab switches station,
+N cycles spawn points (heading `yaw = -heading`). Spawn is on the sidecar spawn points.
+
+```sh
+lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-walk.sh       # export, then the headless walk replay
+```
+
+`tests/run_walk_tests.gd` (fixed 60 Hz steps, no rendering) checks: the step-up/step-down limits and the wall band rule
+(including an inverted band) on synthetic slabs; per spawn, four headings of running stay on walkable ground; walking into
+real Shinjuku wall segments never enters the 0.3 m radius and stops at it; walking into the nearest collider from each
+Ikebukuro spawn never crosses a surface (an independent ray at 0.8 m); camera poses (spawn x 4 yaws x 3 pitches) never
+cross a wall, floor or ceiling beyond the web's own minimum-distance floor; and the replay of the TypeScript route
+Ikebukuro `g_jr_c2` to `x35` (`packages/cli/src/route.ts`, merged from the G-3 data bridge branch) reaches the goal
+without being blocked.
+
+Limits: not the web's `avatarMotion` (the avatar just turns toward travel), no sign see-through fading (`cameraCut`),
+no first-person mode, no touch joystick, no guided-walk mode (`stepGuide`), no street/sky probes. Stairs and escalators are
+walked by the same step rules as on the web, nothing more. Camera and walker feel on a real display is unchecked.
 
 Runtime APIs: [GLTFDocument](https://docs.godotengine.org/en/latest/classes/class_gltfdocument.html)
 and [Godot glTF scene export](https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/exporting_3d_scenes.html).
