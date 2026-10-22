@@ -189,6 +189,8 @@ func test_station(dir: String, id: String, route_path: String) -> void:
 		check(real.ray_blocked.is_empty(), "%s: no verified edge is blocked by the 5-height ray rule (%d blocked)" % [id, real.ray_blocked.size()])
 		check(real.body_blocked.is_empty(), "%s: the walker's body test finds no verified edge blocked (%d blocked)" % [id, real.body_blocked.size()])
 		check(real.no_ground.is_empty(), "%s: every verified-edge sample has walkable ground (%d without)" % [id, real.no_ground.size()])
+		for b in real.body_blocked:
+			print("  body blocked: %s" % JSON.stringify(b))
 		print("%s: edge replay: edges=%d samples=%d rayBlocked=%d bodyBlocked=%d noGround=%d (check:godot reports 63 / 7140 / 0)" % [id, real.edges, real.samples, real.ray_blocked.size(), real.body_blocked.size(), real.no_ground.size()])
 		# Last: the control changes the world.
 		await test_edge_control(scene, walker, id, graph_path)
@@ -393,6 +395,17 @@ func test_route(scene: Scene, walker: Walker, id: String, route_path: String) ->
 			stalled = stalled + 1 if before.distance_to(after) < 1e-4 else 0
 			if stalled > 60 or guard > 4000:
 				blocked_at = i
+				var here2 := walker.feet()
+				var probe: Vector3 = Vector3(goal.x - here2.x, 0.0, goal.z - here2.z).normalized() * 0.03
+				var why: Variant = walker.body_block(here2, here2 + probe)
+				var ahead: Variant = walker.ground_at(here2.x + probe.x, here2.y + 0.5, here2.z + probe.z, 1.45)
+				for h2 in [0.5, 1.2]:
+					for sd in [1.0, -1.0]:
+						var perp: Vector3 = Vector3(-probe.z, 0.0, probe.x).normalized() * sd
+						var side_hit := walker.cast(here2 + Vector3(0.0, h2, 0.0), perp, 1.0, Scene.COLLIDER_LAYER)
+						print("  stall side ray h=%.1f side=%d: %s" % [h2, int(sd), str(side_hit.get("distance", "none"))])
+				print("  stall stage: %s" % walker.last_block)
+				print("  route stall at %s point %d: body_block normal=%s ground_ahead=%s walls_resolve=%s" % [here2, i, str(why), str(ahead), str(walker.resolve_walls(here2.x + probe.x, here2.z + probe.z, here2.y))])
 				break
 		if blocked_at >= 0:
 			break
@@ -453,8 +466,10 @@ func replay_edges(walker: Walker, graph_path: String, id: String) -> Dictionary:
 			for h in RAY_HEIGHTS:
 				if not walker.cast(here + Vector3(0.0, h, 0.0), dir, span, Scene.COLLIDER_LAYER).is_empty():
 					ray_blocked.append({"edge": edge.id, "index": i, "height": h})
-			if walker.body_block(here, next) != null:
-				body_blocked.append({"edge": edge.id, "index": i})
+			var block: Variant = walker.body_block(here, next)
+			if block != null:
+				var probe := walker.cast(here + Vector3(0.0, 0.5, 0.0), (next - here).normalized(), span + Walker.RADIUS, Scene.COLLIDER_LAYER)
+				body_blocked.append({"edge": edge.id, "index": i, "at": [snappedf(here.x, 0.01), snappedf(here.y, 0.01), snappedf(here.z, 0.01)], "normal": [snappedf(block.x, 0.01), snappedf(block.y, 0.01), snappedf(block.z, 0.01)], "ahead_hit": not probe.is_empty()})
 	return {"edges": edges, "samples": samples, "ray_blocked": ray_blocked, "body_blocked": body_blocked, "no_ground": no_ground}
 
 

@@ -70,6 +70,8 @@ var _ymax := PackedFloat64Array()
 var _grid: Dictionary = {}
 ## Wall segments with zMax < zMin (92 in Shinjuku). They are walls like any other here, see `blocks_wall`.
 var inverted_walls := 0
+## Which body_block stage refused the last blocked move (diagnostics for tests).
+var last_block := ""
 
 
 func _init() -> void:
@@ -264,6 +266,7 @@ func body_block(from: Vector3, to: Vector3) -> Variant:
 	for h in BODY_HEIGHTS:
 		var ahead := cast(from + Vector3(0.0, h, 0.0), along_dir, length + RADIUS, Scene.COLLIDER_LAYER)
 		if not ahead.is_empty():
+			last_block = "ahead h=%.1f d=%.3f" % [h, ahead.distance]
 			return ahead.normal
 		if flat <= 1e-6:
 			continue
@@ -276,6 +279,7 @@ func body_block(from: Vector3, to: Vector3) -> Variant:
 				continue
 			var beside := cast(Vector3(from.x + px * side, from.y + h, from.z + pz * side), along_dir, length, Scene.COLLIDER_LAYER)
 			if not beside.is_empty():
+				last_block = "beside h=%.1f side=%d d=%.3f" % [h, int(side), beside.distance]
 				return beside.normal
 		# Radial rays at the target: the surface the motion goes most directly into.
 		var touched := Vector3.ZERO
@@ -294,9 +298,11 @@ func body_block(from: Vector3, to: Vector3) -> Variant:
 		if not have:
 			continue
 		if deepest < INTO:
+			last_block = "pushed-into h=%.1f along=%.3f" % [h, deepest]
 			return touched
 		# A body that was clear must not slip into touching (rounding a corner).
 		if not _touches(from.x, from.y + h, from.z):
+			last_block = "slipped-into-touch h=%.1f" % h
 			return touched
 	return null
 
