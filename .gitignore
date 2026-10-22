@@ -11,3 +11,6 @@ data-cache/
 stations/*/build/
 __pycache__/
 /.qa/
+
+# Godot HQ client: generated scene snapshots (never committed)
+/packages/godot/.cache/

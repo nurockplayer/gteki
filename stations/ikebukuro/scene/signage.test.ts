@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { buildSigns, LOW_TEXEL_SCALE, type SignSpec } from "./signs.ts";
+import { parseStationFiles } from "@gteki/schema";
+import { createRouter, routeBetween } from "../../../packages/navigation/src/index.ts";
 
 const here = (p: string) => new URL(p, import.meta.url);
 const json = (p: string) => JSON.parse(readFileSync(here(p), "utf8"));
@@ -23,17 +25,27 @@ type Sign = SignSpec & { basis?: string[]; atNode: string };
 const graph = json("../gteki/graph.json") as { nodes: { id: string; kind: string }[]; edges: Edge[] };
 const pois = json("../gteki/pois.json").pois as Poi[];
 const signs = json("./signage.json").signs as Sign[];
-const golden = json("../../../tests/e2e/specs/__goldens__/02-navigation.spec.ts/ikebukuro-routes.json") as Record<
-  string,
-  { from: string; to: string; result: { ok: boolean; steps: string[] } }
->;
+// The two guided legs, routed live with the shared router (the same POI pairs as Lane F's I1 and I2 goldens), so a
+// graph rebuild never leaves this test reading a stale e2e golden. Steps keep the golden's ">edge" / "<edge" form.
+const bundle = (() => {
+  const parsed = parseStationFiles(json("../gteki/station.json"), json("../gteki/graph.json"), json("../gteki/pois.json"));
+  if (!parsed.ok || !parsed.bundle) throw new Error("Ikebukuro bundle failed to parse");
+  return parsed.bundle;
+})();
+const router = createRouter(bundle);
+function guided(from: string, to: string) {
+  const poi = (id: string) => bundle.pois.find((p) => p.id === id)!;
+  const r = routeBetween(router, { kind: "poi", poi: poi(from) }, poi(to), { fare: "ticketed", stepFree: false });
+  if (!r.ok) throw new Error(`${from} -> ${to}: ${r.reason}`);
+  return { from, to, result: { ok: true, steps: r.steps.map((s) => `${s.reversed ? "<" : ">"}${s.edgeId}`) } };
+}
 const edges = new Map(graph.edges.map((e) => [e.id, e]));
 const REPEAT_EDGE = "sw_h__w_cj";
 
 /** The two guided legs of #108: Lane F golden routes West Exit B1 -> Exit 4 and JR Central Gate 2 -> Exit 35. */
 const LEGS = {
-  "westb1-exit4": golden.I2!,
-  "jrc2-exit35": golden.I1!,
+  "westb1-exit4": guided("west-exit-b1", "exit-4"),
+  "jrc2-exit35": guided("jr-central-gate-2", "exit-35"),
 };
 
 type Pt = { x: number; y: number; cum: number };
@@ -116,7 +128,7 @@ function maxGap(anchors: number[], lo: number, hi: number) {
 describe("ikebukuro wayfinding cues along the guided legs (#108)", () => {
   const legs = Object.fromEntries(Object.entries(LEGS).map(([k, g]) => [k, leg(g.result.steps)]));
 
-  it("uses the Lane F golden legs", () => {
+  it("routes the same legs as Lane F's I1/I2 goldens", () => {
     expect(LEGS["westb1-exit4"]).toMatchObject({ from: "west-exit-b1", to: "exit-4" });
     expect(LEGS["jrc2-exit35"]).toMatchObject({ from: "jr-central-gate-2", to: "exit-35" });
     expect(legs["westb1-exit4"]!.length).toBeCloseTo(186.8, 0);

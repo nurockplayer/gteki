@@ -238,7 +238,7 @@ function step(dt: number, render = true) {
   fpsAcc += dt; fpsN++;
   if (fpsAcc > 0.5) { fps = fpsN / fpsAcc; fpsAcc = 0; fpsN = 0; }
   const p = player.position;
-  hud.textContent = `${fps.toFixed(0)} fps  ENU x=${p.x.toFixed(1)} y=${(-p.z).toFixed(1)} z=${p.y.toFixed(2)} m TP\nWASD/drag · Shift run · data: PLATEAU (MLIT) CC BY 4.0, modified`;
+  hud.textContent = `${fps.toFixed(0)} fps  ENU x=${p.x.toFixed(1)} y=${(-p.z).toFixed(1)} z=${p.y.toFixed(2)} m TP\nWASD/drag · Shift run · 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成`;
 }
 frame();
 addEventListener("resize", () => {

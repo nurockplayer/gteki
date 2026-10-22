@@ -1,0 +1,35 @@
+{
+  "source_id": "mlit-indoor-shinjuku-r2-package",
+  "resolved_url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=mlit-indoor-shinjuku-r2",
+  "resolution_evidence": null,
+  "requested_at": "2026-10-22T07:04:40.352Z",
+  "completed_at": "2026-10-22T07:04:40.515Z",
+  "http_status": 200,
+  "response_headers": {
+    "content-type": "application/json;charset=utf-8",
+    "content-length": null,
+    "etag": null,
+    "last-modified": null,
+    "date": "Thu, 22 Oct 2026 07:04:40 GMT"
+  },
+  "bytes": 151647,
+  "sha256": "3f4757fd0942a8dbdfb3a0fe72880d257f6b5ed4498d7abc322b153117b5aab3",
+  "store_path": "raw/3f4757fd0942a8dbdfb3a0fe72880d257f6b5ed4498d7abc322b153117b5aab3/package_show",
+  "tool_version": "0.1.0",
+  "git_commit": "13d8d0a51a5ce970037e46167c8bc3307a6889e0",
+  "expected_bytes": null,
+  "expected_url_match": true,
+  "size_check": "NOT_SPECIFIED",
+  "mode": "online",
+  "supporting_documents": [
+    {
+      "id": "dataset-page",
+      "requested_url": "https://www.geospatial.jp/ckan/dataset/mlit-indoor-shinjuku-r2",
+      "url": "https://www.geospatial.jp/ckan/dataset/mlit-indoor-shinjuku-r2",
+      "http_status": 200,
+      "sha256": "4f754544295fbbfb5f76cb02d9b0e34362f08521a0889ee5350fc1b331e9afa7",
+      "bytes": 177120,
+      "store_path": "raw/4f754544295fbbfb5f76cb02d9b0e34362f08521a0889ee5350fc1b331e9afa7/mlit-indoor-shinjuku-r2"
+    }
+  ]
+}
