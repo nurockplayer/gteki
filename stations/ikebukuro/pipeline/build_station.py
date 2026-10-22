@@ -13,12 +13,13 @@ import datetime
 import json
 import math
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from floorquery import Surfaces  # noqa: E402
-from gridnav import RES, Grid, _seg_dist  # noqa: E402
+from gridnav import FLOOR_EDGE_BAND, RES, Grid, _seg_dist, _seg_seg_dist  # noqa: E402
 
 ROOT = os.path.dirname(HERE)
 SRC = os.path.join(ROOT, "data", "graph.src.json")
@@ -31,14 +32,29 @@ STATION_TZ = datetime.timezone(datetime.timedelta(hours=9), "JST")  # Japan: no 
 
 
 WALL_PIECE = 0.5  # m
+EDGE_CLEAR = 0.35  # m: least plan distance from a polyline to a collider (walker radius 0.3 m + margin), #227
+# A wall whose top is within FLOOR_EDGE_TOL of a walking surface no more than FLOOR_EDGE_REACH away (in plan)
+# is that surface's edge (a stairwell wall ending flush with the floor above), not a body obstacle. The
+# tolerance is fixed and small: a top 0.1 m above the neighbouring floor is a kerb and stays a collider.
+FLOOR_EDGE_TOL = 0.05  # m
+FLOOR_EDGE_REACH = 0.5  # m
+# Per-edge clearance floors below EDGE_CLEAR, each one reviewed. ne_j__x26: near the head of the Exit 26 stairs a side
+# wall's top (TP 32.25 m) is about 0.44 m above the tread at the narrowest point (TP 31.81 m), at the bottom of the
+# 0.4-1.8 m body band; the explorer's bodyBlock walks
+# the polyline (scene/route_clearance.test.ts). An edge below its own floor fails, and so does an entry whose edge
+# already clears EDGE_CLEAR, so an exception never outlives the geometry it excuses. Refs #227.
+CLEARANCE_EXCEPTIONS = {"ne_j__x26": 0.33}
 
 
 def write_json(path, obj, indent=None):
     """Write via a temp file and rename, so a watching dev server never reads a half-written file."""
     tmp = path + ".tmp"
+    text = json.dumps(obj, ensure_ascii=False, indent=indent)
+    if indent is not None:  # source decisions stay one line, as in the hand-authored graph.src.json
+        text = re.sub(r'"decision": \{\n\s+"url": ("[^"]*"),\n\s+"date": ("[^"]*")\n\s+\}', r'"decision": { "url": \1, "date": \2 }', text)
     try:
         with open(tmp, "w") as f:
-            json.dump(obj, f, ensure_ascii=False, indent=indent)
+            f.write(text)
         os.replace(tmp, path)
     finally:
         if os.path.exists(tmp):
@@ -57,8 +73,12 @@ def _z_at(tz, t):
     return out
 
 
-def wall_segments(enu):
-    """Vertical wall/barrier faces as 2D segments with a z band."""
+def wall_segments(enu, colliders=False):
+    """Vertical wall/barrier faces as 2D segments with a z band.
+
+    colliders=True adds what the explorer also collides with (scene.ts `assembleCollision`): escalators
+    (EF_80, role `transport`) and the building-scope EF_25 barriers, so route clearance is measured against
+    the walker's real colliders. Signage keeps the default set."""
     segs = []
     d = json.load(open(enu))
     polys = []
@@ -67,7 +87,7 @@ def wall_segments(enu):
             if s["type"] == "InteriorWallSurface":
                 polys += s["polygons"]
     for i in d["installations"]:
-        if i["function"] == "EF_25" and i["scope"] != "building":
+        if (i["function"] == "EF_25" and (colliders or i["scope"] != "building")) or (colliders and i["function"] == "EF_80"):
             polys += i["polygons"]
     for p in polys:
         o = p["outer"]
@@ -112,6 +132,52 @@ def wall_segments(enu):
             for gy in range(int(math.floor(min(y1, y2) / 4)), int(math.floor(max(y1, y2) / 4)) + 1):
                 grid.setdefault((gx, gy), []).append(k)
     return segs, grid
+
+
+def floor_edges(segs, surf):
+    """Indices of wall pieces whose top is the edge of a walkable surface: a PLATEAU floor or stair tread
+    within FLOOR_EDGE_REACH m (in plan) of the piece lies within FLOOR_EDGE_TOL m of the piece's top, as a
+    stairwell wall ends flush with the floor at the head of the stairs. Such a top is where the walking
+    surface begins, not something the body runs into, so for these pieces the grid and the clearance check start
+    the body band at gridnav.FLOOR_EDGE_BAND above the feet instead of 0.4 m (#227): the top only drops out for
+    feet within that height below it. Walls that stand above any neighbouring walking surface stay in."""
+    probes = [k * FLOOR_EDGE_REACH / 5 for k in range(1, 6)]
+    zr = [(min(q[2] for q in p[1]), max(q[2] for q in p[1])) for p in surf.polys]
+    out = set()
+    for k, (x1, y1, x2, y2, _, hi) in enumerate(segs):
+        # cheap filter: some walking polygon indexed within reach of the piece spans the top height
+        near = set()
+        for gx in range(int(math.floor((min(x1, x2) - FLOOR_EDGE_REACH) / 4)), int(math.floor((max(x1, x2) + FLOOR_EDGE_REACH) / 4)) + 1):
+            for gy in range(int(math.floor((min(y1, y2) - FLOOR_EDGE_REACH) / 4)), int(math.floor((max(y1, y2) + FLOOR_EDGE_REACH) / 4)) + 1):
+                near.update(surf.grid.get((gx, gy), []))
+        if not any(zr[i][0] - FLOOR_EDGE_TOL <= hi <= zr[i][1] + FLOOR_EDGE_TOL for i in near):
+            continue
+        # probe rings (8 directions) around both ends and the middle of the piece, out to FLOOR_EDGE_REACH
+        hit = False
+        for t in (0.0, 0.5, 1.0):
+            px, py = x1 + (x2 - x1) * t, y1 + (y2 - y1) * t
+            for d in probes:
+                for a in range(8):
+                    ux, uy = math.cos(a * math.pi / 4), math.sin(a * math.pi / 4)
+                    if any(abs(z - hi) <= FLOOR_EDGE_TOL for z, _ in surf.heights(px + d * ux, py + d * uy)):
+                        hit = True
+                        break
+                if hit:
+                    break
+            if hit:
+                break
+        if hit:
+            out.add(k)
+    return out
+
+
+def collider_segments(enu, surf=None):
+    """wall_segments with the explorer's full collider set: used by the grid and the clearance check.
+    With `surf`, also the floor-edge pieces (see floor_edges) as a third value."""
+    segs, grid = wall_segments(enu, colliders=True)
+    if surf is None:
+        return segs, grid
+    return segs, grid, floor_edges(segs, surf)
 
 
 def _cross(ax, ay, bx, by, cx, cy, dx, dy):
@@ -271,15 +337,46 @@ def build_instant(src):
     return max(stamps).astimezone(datetime.timezone.utc)
 
 
+def edge_clearance(grid, surf, pts):
+    """Least plan distance (m) from an edge polyline to the colliders reaching its body band, and where.
+    The band stands on the surveyed surface under each piece (on stairs a straight polyline runs below the
+    treads), as in gridnav's `_line_ok`."""
+    best = (math.inf, None)
+    excluded = {}
+    for p, q in zip(pts, pts[1:]):
+        n = max(1, math.ceil(math.dist(p[:2], q[:2]) / 0.25))  # short pieces: the band follows the stairs
+        for k in range(n):
+            a = [p[c] + (q[c] - p[c]) * k / n for c in range(3)]
+            b = [p[c] + (q[c] - p[c]) * (k + 1) / n for c in range(3)]
+            zs = []
+            for v in (a, b):
+                hit = surf.height_near(v[0], v[1], v[2], 0.6)
+                zs.append(hit[0] if hit else v[2])
+            z = sum(zs) / 2
+            d = grid.clearance(a[0], a[1], b[0], b[1], z)
+            if d < best[0]:
+                best = (d, [round((a[0] + b[0]) / 2, 2), round((a[1] + b[1]) / 2, 2), round((a[2] + b[2]) / 2, 2)])
+            # audit: floor-edge pieces within EDGE_CLEAR that the ordinary band (from 0.4 m) would count and the
+            # floor-edge band (from FLOOR_EDGE_BAND) lets pass
+            for s in (grid._near_segs(a[0], a[1]) | grid._near_segs(b[0], b[1])) & grid.floor_edge:
+                x1, y1, x2, y2, smin, smax = grid.segs[s]
+                if smax < z + 0.4 or smax >= z + FLOOR_EDGE_BAND or smin > z + 1.8:
+                    continue
+                if _seg_seg_dist(a[0], a[1], b[0], b[1], x1, y1, x2, y2) < EDGE_CLEAR:
+                    excluded[s] = smax
+    return round(best[0], 3), best[1], [{"zTop": excluded[s], "piece": [round(v, 2) for v in grid.segs[s][:4]]} for s in sorted(excluded)]
+
+
 def main():
+    report_path = sys.argv[sys.argv.index("--report") + 1] if "--report" in sys.argv else None
     src = json.load(open(SRC))
     surf = Surfaces(ENU)
-    segs, sgrid = wall_segments(ENU)
+    segs, sgrid, floor_edge = collider_segments(ENU, surf)
     built = build_instant(src)
     today = built.astimezone(STATION_TZ).date().isoformat()  # station-local date, like the access facts
     problems = []
 
-    grid = Grid(surf, segs, sgrid, tuple(src["gridBBox"]))
+    grid = Grid(surf, segs, sgrid, tuple(src["gridBBox"]), floor_edge)
     nodes = {}
     for n in src["nodes"]:
         x, y = n["xy"]
@@ -295,6 +392,7 @@ def main():
 
     access = {a["id"]: a for a in src["accessFacts"]}
     edges_out = []
+    clearance_report = {}
     for e in src["edges"]:
         a, b = nodes.get(e["from"]), nodes.get(e["to"])
         if a is None or b is None:
@@ -339,13 +437,14 @@ def main():
             if mode not in ("elevator",):
                 for k in cand:
                     x1, y1, x2, y2, smin, smax = segs[k]
-                    if smax < zlo or smin > zhi:
+                    lo = grid.band_lo(k)  # a floor-edge piece's band starts higher (gridnav.FLOOR_EDGE_BAND)
+                    if smax < zlo - 0.4 + lo or smin > zhi:
                         continue
                     t = _cross_t(p[0], p[1], q[0], q[1], x1, y1, x2, y2)
                     if t is None:
                         continue
                     zc = p[2] + (q[2] - p[2]) * t  # body height band at the crossing point
-                    if smax >= zc + 0.4 and smin <= zc + 1.8:
+                    if smax >= zc + lo and smin <= zc + 1.8:
                         fails += 1
                         first_fail = first_fail or ("wall", round(x1, 1), round(y1, 1), round(x2, 1), round(y2, 1))
                         break
@@ -353,6 +452,16 @@ def main():
         geom.append({"x": round(pts[-1][0], 3), "y": round(pts[-1][1], 3), "z": round(pts[-1][2], 3)})
         if fails:
             problems.append(f"edge {e['from']}->{e['to']} ({mode}): {fails} failing samples, first {first_fail}")
+        clear_m, clear_at, edge_floor = edge_clearance(grid, surf, pts)
+        eid = f"{e['from']}__{e['to']}"
+        need = CLEARANCE_EXCEPTIONS.get(eid, EDGE_CLEAR)
+        clearance_report[eid] = {"minClearanceM": clear_m, "at": clear_at, "floorEdgeExcluded": edge_floor,
+                                 **({"exception": True, "floorM": need} if eid in CLEARANCE_EXCEPTIONS else {})}
+        if clear_m < need and mode != "elevator":
+            fails += 1
+            problems.append(f"edge {e['from']}->{e['to']} ({mode}): passes {clear_m} m from a collider at {clear_at} (needs {need} m)")
+        elif eid in CLEARANCE_EXCEPTIONS and clear_m >= EDGE_CLEAR:
+            problems.append(f"edge {eid}: clears {clear_m} m >= {EDGE_CLEAR} m; drop it from CLEARANCE_EXCEPTIONS")
         acc_fact = access.get(e.get("access"))
         verified = fails == 0 and acc_fact is not None and mode != "elevator"
         edges_out.append({
@@ -364,7 +473,7 @@ def main():
             "geometry": geom,
             "paid": e.get("paid", False if acc_fact else None),
             "crossesFareBoundary": e.get("crossesFareBoundary", False if acc_fact else None),
-            "wheelchair": e.get("wheelchair", None),
+            "wheelchair": e.get("wheelchair", False if mode == "stairs" else None),  # stairs are never step-free (#203 A6)
             "steps": e.get("steps", True if mode == "stairs" else (False if mode in ("walk", "ramp") else None)),
             "hours": None,
             "closed": False,
@@ -383,7 +492,11 @@ def main():
             "attributes": {k: v for k, v in e.items() if k in ("note",)},
         })
 
+    problems += [f"CLEARANCE_EXCEPTIONS: no edge {k}" for k in CLEARANCE_EXCEPTIONS if k not in clearance_report]
     problems += outside_coverage(edges_out, src["coverage"]["areas"])
+    if report_path:
+        write_json(report_path, {"edgeClearM": EDGE_CLEAR, "floorEdgeTolM": FLOOR_EDGE_TOL, "floorEdgeReachM": FLOOR_EDGE_REACH,
+                                 "floorEdgeBandM": FLOOR_EDGE_BAND, "floorEdgePieces": len(floor_edge), "edges": clearance_report}, indent=1)
     if problems:
         print("\n".join(problems))
         print(f"FAIL: {len(problems)} problem(s); station.json not written")
