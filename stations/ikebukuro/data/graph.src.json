@@ -176,7 +176,8 @@
    "retrievedAt": "2026-10-22T00:00:00+09:00",
    "datasetDate": "2026-03",
    "notes": "Draft (案, 草案) Ver1.3, 第14回 委員会 (2026-03-25), 資料3-3 p20 text layer only (p21 figure not read); listed on https://www.city.toshima.lg.jp/405/kuse/shingi/kaigichiran/006335.html. Used only for the names-to-number mapping of main exits (東口(北)=22, 東口(中央)=37, 東口(南)=38, 西口(北)=20a, 西口(中央)=19, 西口(南)=4), never as route evidence (OD-22, PR #222). Freshness check: replace when the final guideline is published.",
-   "usage": "facts-only"
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/165#issuecomment-6340635823", "date": "2026-10-22" }
   },
   {
    "id": "tokyometro-ikebukuro-yardmap-2026-03",
