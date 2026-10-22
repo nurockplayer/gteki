@@ -94,26 +94,38 @@
     {
       "code": "EF_25",
       "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "label": "壁およびバリア（バリケード）エレメント",
-      "status": "RESOLVED"
+      "status": "RESOLVED",
+      "label_hash": {
+        "value_sha256": "c7a9775bd6feabde179a1470f7ac0f08cebed673870b8c4464e161129bd387c9",
+        "value_type": "string"
+      }
     },
     {
       "code": "EF_30",
       "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "label": "屋根、床、舗装エレメント",
-      "status": "RESOLVED"
+      "status": "RESOLVED",
+      "label_hash": {
+        "value_sha256": "66c68648b5487923cfbc6ca49fd4e687f1a44f4bac5c45fb95fb17e8de7fc274",
+        "value_type": "string"
+      }
     },
     {
       "code": "EF_35",
       "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "label": "階段および傾斜路（スロープ）エレメント",
-      "status": "RESOLVED"
+      "status": "RESOLVED",
+      "label_hash": {
+        "value_sha256": "f3e12c8759e6155c83dc9bdd12427b5399b612a768cef5613b12a30757953e81",
+        "value_type": "string"
+      }
     },
     {
       "code": "EF_80",
       "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "label": "輸送機能",
-      "status": "RESOLVED"
+      "status": "RESOLVED",
+      "label_hash": {
+        "value_sha256": "feef0259985a457ff6d630d25b1a7e36aa1805b186d1ddd0a1ccf8c9cf89853e",
+        "value_type": "string"
+      }
     }
   ],
   "codelist_inputs": [
@@ -671,7 +683,7 @@
       ],
       "function_code": null,
       "function_code_space": null,
-      "function_label": null
+      "function_label_hash": null
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_25",
@@ -680,7 +692,10 @@
       "names": null,
       "function_code": "EF_25",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "壁およびバリア（バリケード）エレメント"
+      "function_label_hash": {
+        "value_sha256": "c7a9775bd6feabde179a1470f7ac0f08cebed673870b8c4464e161129bd387c9",
+        "value_type": "string"
+      }
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_IntInstallation_EF_80",
@@ -689,7 +704,10 @@
       "names": null,
       "function_code": "EF_80",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "輸送機能"
+      "function_label_hash": {
+        "value_sha256": "feef0259985a457ff6d630d25b1a7e36aa1805b186d1ddd0a1ccf8c9cf89853e",
+        "value_type": "string"
+      }
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1",
@@ -698,7 +716,7 @@
       "names": null,
       "function_code": null,
       "function_code_space": null,
-      "function_label": null
+      "function_label_hash": null
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_25",
@@ -707,7 +725,10 @@
       "names": null,
       "function_code": "EF_25",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "壁およびバリア（バリケード）エレメント"
+      "function_label_hash": {
+        "value_sha256": "c7a9775bd6feabde179a1470f7ac0f08cebed673870b8c4464e161129bd387c9",
+        "value_type": "string"
+      }
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35",
@@ -716,7 +737,10 @@
       "names": null,
       "function_code": "EF_35",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "階段および傾斜路（スロープ）エレメント"
+      "function_label_hash": {
+        "value_sha256": "f3e12c8759e6155c83dc9bdd12427b5399b612a768cef5613b12a30757953e81",
+        "value_type": "string"
+      }
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_80",
@@ -725,7 +749,10 @@
       "names": null,
       "function_code": "EF_80",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "輸送機能"
+      "function_label_hash": {
+        "value_sha256": "feef0259985a457ff6d630d25b1a7e36aa1805b186d1ddd0a1ccf8c9cf89853e",
+        "value_type": "string"
+      }
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_30",
@@ -734,7 +761,10 @@
       "names": null,
       "function_code": "EF_30",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "屋根、床、舗装エレメント"
+      "function_label_hash": {
+        "value_sha256": "66c68648b5487923cfbc6ca49fd4e687f1a44f4bac5c45fb95fb17e8de7fc274",
+        "value_type": "string"
+      }
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room2",
@@ -743,7 +773,7 @@
       "names": null,
       "function_code": null,
       "function_code_space": null,
-      "function_label": null
+      "function_label_hash": null
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3",
@@ -752,7 +782,7 @@
       "names": null,
       "function_code": null,
       "function_code_space": null,
-      "function_label": null
+      "function_label_hash": null
     },
     {
       "gml_id": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room3_IntInstallation_EF_35",
@@ -761,10 +791,25 @@
       "names": null,
       "function_code": "EF_35",
       "function_code_space": "../../codelists/IntBuildingInstallation_function.xml",
-      "function_label": "階段および傾斜路（スロープ）エレメント"
+      "function_label_hash": {
+        "value_sha256": "f3e12c8759e6155c83dc9bdd12427b5399b612a768cef5613b12a30757953e81",
+        "value_type": "string"
+      }
     }
   ],
   "compact_features_total": 11,
   "group_membership_count": 4,
-  "group_memberships_truncated": false
+  "group_memberships_truncated": false,
+  "credit": {
+    "attribution_text": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+    "sources": [
+      {
+        "source_id": "plateau-13116-ubld-53394576",
+        "attribution_text": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+        "license_name": "CC BY 4.0",
+        "license_url": "https://creativecommons.org/licenses/by/4.0/"
+      }
+    ],
+    "classification": "docs/gis/rights/non-poi-literals.md"
+  }
 }

@@ -112,13 +112,22 @@ describe("no path / refusals", () => {
 
   it("a search-only POI (no verified connector) refuses to route rather than guessing an entrance", () => {
     const searchOnly = bundle.pois.filter((p) => p.connectorNodeIds.length === 0);
-    expect(searchOnly.length).toBe(20); // 5 gates and 15 exit numbers, per the gap list
+    expect(searchOnly.length).toBe(21); // 6 gates (incl. Yurakucho South Passage West Gate) and 15 exit numbers, per the gap list
     const exit35 = bundle.pois.find((p) => p.id === "exit-35")!;
     const gate = bundle.pois.find((p) => p.id === "jr-central-gate-2")!;
     const tobu = bundle.pois.find((p) => p.id === "tobu-central-gate-2")!;
     expect(routeBetween(router, { kind: "poi", poi: gate }, tobu, TICKETED)).toMatchObject({ ok: false, reason: "unknown_goal" });
     expect(routeBetween(router, { kind: "poi", poi: tobu }, exit35, TICKETED)).toMatchObject({ ok: false, reason: "unknown_start" });
     expect(routeBetween(router, { kind: "poi", poi: gate }, exit35, TICKETED)).toMatchObject({ ok: true });
+  });
+
+  it("Yurakucho South Passage West Gate is searchable but has no edge, so it refuses to route to Exit 4", () => {
+    const gate = bundle.pois.find((p) => p.id === "metro-y-south-west-gate")!;
+    const exit4 = bundle.pois.find((p) => p.id === "exit-4")!;
+    expect(gate.names.some((n) => n.text === "有楽町線 南通路西改札")).toBe(true);
+    expect(gate.connectorNodeIds).toEqual([]);
+    expect(routeBetween(router, { kind: "poi", poi: gate }, exit4, TICKETED)).toMatchObject({ ok: false, reason: "unknown_start" });
+    expect(routeBetween(router, { kind: "poi", poi: exit4 }, gate, TICKETED)).toMatchObject({ ok: false, reason: "unknown_goal" });
   });
 
   it("an unreachable goal is no_path, not search_limit (the only way to Exit 35's stair foot is cut)", () => {
@@ -230,10 +239,10 @@ describe("freshness (stale data)", () => {
     return r;
   };
 
-  it("reports its evidence dates: oldest source 2022-01 (Toshima guide), checked 2026-10-21, no undated or expired source", () => {
+  it("reports its evidence dates: oldest source 2022-01 (Toshima guide), checked 2026-10-22, no undated or expired source", () => {
     const r = at("2026-10-22");
     expect(r.oldestSourceDate).toBe("2022-01");
-    expect(r.evidenceCheckedDate).toBe("2026-10-21");
+    expect(r.evidenceCheckedDate).toBe("2026-10-22");
     expect(r.undatedSourceIds).toEqual([]);
     expect(r.expiredSourceIds).toEqual([]);
   });
@@ -293,5 +302,19 @@ describe("matrix rows that do not apply to Ikebukuro (premise asserted, no routi
     const r = createRouter(bundle).route(FROM, TO, TICKETED);
     if (!r.ok) throw new Error(r.message);
     expect(r.operatorIds).toEqual(["public"]);
+  });
+});
+
+// #161: the in-app PLATEAU credit is the Owner's Q10 Option A string (Ikebukuro keeps real TP heights, so no
+// base-adjustment parenthetical), and the unverified "CC BY 4.0" label is never shown.
+describe("PLATEAU source credit (#161)", () => {
+  const source = load().sources.find((s) => s.id === "plateau-ubld-13116")!;
+
+  it("uses the Option A string, with no CC BY label and no Shinjuku base-adjustment parenthetical", () => {
+    expect(source.attribution).toBe("出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成");
+    expect(source.attribution).not.toMatch(/CC[ -]?BY/i);
+    expect(source.attribution).not.toContain("建物の基部");
+    expect(source.license?.name ?? "").not.toMatch(/CC[ -]?BY/i);
+    expect(source.license?.url).toBe("https://www.mlit.go.jp/plateau/site-policy/");
   });
 });
