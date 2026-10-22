@@ -1114,7 +1114,7 @@ export class Explorer {
       // Under a camera-only blocker (a hanging sign box, a low cap) the boom slides lower before the camera is pulled in.
       ({ back, distance: dist } = this.blockerTargets.size ? followBoom(this.camDistance, pose.back, cast) : { back: pose.back, distance: followDistance(this.camDistance, cast(pose.back)) });
       // Squeezed under the comfortable distance (a shaft wall behind, a slab above): look over the shoulder from
-      // higher up if some raised boom clears it (at most FOLLOW.raiseSteps extra rays, none when open).
+      // higher up if some raised boom clears it (at most FOLLOW.raiseSteps raise casts + 1 recast = 6 extra rays, none when open).
       const wantedRaise = constrainedPitch(this.camDistance, back, dist, cast, this.raiseScratch);
       this.boomRaise = easeRaise(this.boomRaise, wantedRaise, dt, snap);
       if (this.boomRaise > 0) {
@@ -1128,7 +1128,9 @@ export class Explorer {
     if (this.blockerTargets.size) keepBelowBlockers(pose.pivot, this.camera.position, [...this.blockerTargets], FOLLOW.clearance, this.ray);
     this.camera.lookAt(pose.target);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
-    this.avatarRig?.setFade(avatarFade(this.camera.position.distanceTo(pose.pivot)));
+    const fade = avatarFade(this.camera.position.distanceTo(pose.pivot));
+    this.avatarRig?.setFade(fade);
+    this.composer?.setAvatarFade(this.avatarRig?.root ?? null, fade);
   }
 
   private ensureAudio(): boolean {

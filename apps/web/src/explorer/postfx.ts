@@ -67,9 +67,48 @@ export const GradeShader = {
     }`,
 };
 
+/** A dithered avatar leaves GTAO (and so the floor reflection) once its fade drops below this... */
+export const AO_AVATAR_HIDE_BELOW = 0.85;
+/** ...and comes back once it recovers to this, so a camera hovering at the edge does not flicker the occlusion. */
+export const AO_AVATAR_SHOW_FROM = 0.9;
+
+/**
+ * Whether the avatar stays out of the depth/normal pass for this `fade` (1 opaque). That pass draws with an
+ * override material that ignores the body's screen-door `discard`, so a half-faded body would still cast its
+ * full silhouette into GTAO (a dark halo on the walls behind) and into the floor reflection's depth. Fully
+ * opaque keeps today's contact darkening; `wasSkipped` adds the hysteresis between the two thresholds.
+ */
+export function aoSkipsAvatar(fade: number, wasSkipped: boolean): boolean {
+  return fade < (wasSkipped ? AO_AVATAR_SHOW_FROM : AO_AVATAR_HIDE_BELOW);
+}
+
+/**
+ * GTAOPass that leaves one object (the avatar body) out of its depth/normal render while that object is
+ * dithered out. Only that pass's scene draw is affected: the main render and the shadow pass still see the
+ * body, and a visibility flip allocates nothing and rebuilds no program.
+ */
+export class FadeAwareGTAOPass extends GTAOPass {
+  private faded: THREE.Object3D | null = null;
+  private skipped = false;
+
+  /** Call once per frame before the composer renders; `fade` is the object's opacity (1 opaque). */
+  setFade(object: THREE.Object3D | null, fade: number): void {
+    this.faded = object;
+    this.skipped = object !== null && aoSkipsAvatar(fade, this.skipped);
+  }
+
+  override render(...args: Parameters<GTAOPass["render"]>): void {
+    const object = this.faded;
+    if (!object || !this.skipped) return super.render(...args);
+    const visible = object.visible;
+    object.visible = false;
+    try { super.render(...args); } finally { object.visible = visible; }
+  }
+}
+
 export class PostFx {
   readonly composer: EffectComposer;
-  private readonly gtao: GTAOPass;
+  private readonly gtao: FadeAwareGTAOPass;
   private readonly bloom: UnrealBloomPass;
   private readonly grade: ShaderPass;
 
@@ -86,7 +125,7 @@ export class PostFx {
     // below are not scaled by the pixel ratio a second time.
     this.composer.setSize(size.x, size.y);
     this.composer.addPass(new RenderPass(scene, camera));
-    this.gtao = new GTAOPass(scene, camera, size.x, size.y);
+    this.gtao = new FadeAwareGTAOPass(scene, camera, size.x, size.y);
     this.gtao.blendIntensity = settings.ao.blend;
     this.gtao.updateGtaoMaterial({ radius: settings.ao.radius, distanceFallOff: settings.ao.distanceFallOff, thickness: settings.ao.thickness });
     this.composer.addPass(this.gtao);
@@ -112,6 +151,11 @@ export class PostFx {
   setSize(w: number, h: number): void {
     this.composer.setSize(w, h);
     this.grade.uniforms.uAspect!.value = w / Math.max(1, h);
+  }
+
+  /** Keeps a dithered `avatar` out of GTAO and the floor reflection (both read GTAO's depth/normals); null clears it. */
+  setAvatarFade(avatar: THREE.Object3D | null, fade: number): void {
+    this.gtao.setFade(avatar, fade);
   }
 
   render(dt: number): void {

@@ -199,6 +199,40 @@ describe("constrainedPitch", () => {
     expect(calls.n).toBe(FOLLOW.raiseSteps);
   });
 
+  /** Elevation raise (radians) of a candidate boom over `back0`. */
+  const raiseOf = (b: THREE.Vector3) => Math.asin(b.y) - Math.asin(back0.y);
+  const deg = (r: number) => (r * 180) / Math.PI;
+
+  it("finds a raise that clears only at a steep angle (distance is not monotonic in the raise)", () => {
+    let n = 0;
+    // blocked at every middling angle, clear only in a 44-51 degree window
+    const cast = (b: THREE.Vector3): Hit[] => {
+      n++;
+      const r = deg(raiseOf(b));
+      return [{ distance: r > 44 && r < 51 ? 6 : 1.0, cameraOnly: false }];
+    };
+    const raise = constrainedPitch(wanted, back0, 0.74, cast, new THREE.Vector3());
+    expect(deg(raise)).toBeGreaterThanOrEqual(45 - 1e-6);
+    expect(deg(raise)).toBeLessThanOrEqual(50 + 1e-6);
+    expect(n).toBeLessThanOrEqual(FOLLOW.raiseSteps);
+  });
+
+  it("takes the longest raised boom when none is comfortable, if it beats the unraised one", () => {
+    // booms of 0.9, 1.1, 1.3 (best), 1.2, 1.0 m at 10..50 degrees; 0.7 m unraised
+    const table = [0.9, 1.1, 1.3, 1.2, 1.0];
+    const cast = (b: THREE.Vector3): Hit[] => {
+      const step = Math.round(deg(raiseOf(b)) / 10);
+      return [{ distance: table[step - 1]! + FOLLOW.clearance, cameraOnly: false }];
+    };
+    const raise = constrainedPitch(wanted, back0, 0.7, cast, new THREE.Vector3());
+    expect(deg(raise)).toBeCloseTo(30, 6);
+  });
+
+  it("stays unraised when no raised boom beats the unraised one", () => {
+    const cast = (): Hit[] => [{ distance: 0.5 + FOLLOW.clearance, cameraOnly: false }];
+    expect(constrainedPitch(wanted, back0, 0.8, cast, new THREE.Vector3())).toBe(0);
+  });
+
   it("eases the raise toward its target and snaps on request", () => {
     expect(easeRaise(0, 0.5, 0.016, true)).toBe(0.5);
     const a = easeRaise(0, 0.5, 0.016);
@@ -209,11 +243,11 @@ describe("constrainedPitch", () => {
 });
 
 describe("avatarFade", () => {
-  it("is opaque from 1.0 m out, 0.25 at 0.4 m, and never below that", () => {
+  it("is opaque from 1.0 m out, fadeMin at the closest camera distance, and never below that", () => {
     expect(avatarFade(FOLLOW.defaultDistance)).toBe(1);
     expect(avatarFade(FOLLOW.fadeStart)).toBe(1);
-    expect(avatarFade(0.4)).toBeCloseTo(0.25, 9);
-    expect(avatarFade(0)).toBeCloseTo(0.25, 9);
+    expect(avatarFade(FOLLOW.minDistance)).toBeCloseTo(FOLLOW.fadeMin, 9);
+    expect(avatarFade(0)).toBeCloseTo(FOLLOW.fadeMin, 9);
   });
 
   it("is monotonic non-decreasing with distance", () => {
