@@ -91,6 +91,10 @@ for (const key of STATIONS) {
     await expect(card).toBeVisible();
     await expect(card.locator(".route-head")).toContainText(/min/);
     await expect(card.locator(".instructions li").first()).toBeVisible();
+    // Freshness is a calendar verdict (sources older than the core's staleAfterDays, 730 by default), so a
+    // stale route must say so on the card; Ikebukuro's 2022 guide is past it.
+    const stale = (await hooks.route(page))?.stale;
+    if (stale === true) await expect.soft(card.locator(".badge.warn", { hasText: /Possibly outdated|情報が古い可能性/ }), "stale route says so on the card").toBeVisible();
     await page.waitForTimeout(1200);
     await page.screenshot({ path: shotPath(testInfo, `${key}-03-route-card.png`) });
     // Clicking an instruction frames that segment in the overview.
