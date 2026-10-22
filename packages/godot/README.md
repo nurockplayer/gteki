@@ -333,6 +333,79 @@ on first use). `normalizeJa` is not ported, so matches are not highlighted.
   (`evidenceCheckedDate`, `oldestSourceDate`, `stale`, `unknowns`, ...) are printed as the JSON gives them, with `hours: UNKNOWN`.
 - "Guided walk" moves the avatar along the polyline at 3.4 m/s (web guide tier "run"), no collisions, with the follow camera; any
   movement key returns to free walking at that spot.
+- A route that states a lift can be ridden (#287): guided walking walks up to the shaft and waits there — `Guide.advance`
+  never carries the avatar past a shaft the route has not ridden — and, while standing on that route's `elevator` step
+  (or, for the last 1.0 m of the approach that ends at it, the same step through `Guide.step_at`), the HUD offers
+  `E: ride the lift` (or the gamepad's A). Taking it fades out for 0.3 s, puts the feet down through
+  `gteki_walker.gd`'s own rules (`ride_to`: `accept_ground`, the exit's level, forward along the route inside a ±30°
+  cone and at most 1.0 m, body fits and a clear body-height line — on S4, 0.75 m forward of the exit vertex, which sits
+  over the opening), snaps the follow camera to the landing while the screen is black, fades back in and resumes guided
+  walking from the landing, never from the vertex over the shaft. If nothing qualifies the ride is refused, the HUD
+  says so and the avatar stays at the shaft. The yaw is kept, free walking is never offered a lift, and no other step or
+  key can start one: the ride is read from the route's own steps, never guessed from the geometry. The HUD asks
+  `Guide.ride_near`, the same predicate the evidence walk checks.
 
 Tests: `lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-guide.sh` (golden searches on both stations, Ikebukuro
-`jr-central-gate-2` to `exit-35` ribbon, Shinjuku `poi:platform:oedo` to `poi:exit:1` symbolic, negative route, guided walk, HUD state).
+`jr-central-gate-2` to `exit-35` ribbon, Shinjuku `poi:platform:oedo` to `poi:exit:1` symbolic, the S4 lift ride and its
+negatives, the landing rules against a synthetic floor — behind the shaft, off the exit's level, across a wall, into a
+wall, nothing at all — negative route, guided walk, HUD state, the HUD ride flow and a refused ride). The evidence run
+additionally drives the client's HUD with the real walker on the real S4 snapshot: wait at the shaft, E, the camera on
+the landing while black, then guided ticks that must keep the feet on accepted ground.
+
+## Evidence walks (G-5a of #164)
+
+```sh
+lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-evidence.sh              # Ikebukuro -> docs/evidence/g5-ikebukuro.md
+lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-evidence.sh shinjuku     # Shinjuku  -> docs/evidence/g5-shinjuku.md
+```
+
+`tests/run_evidence_tests.gd` holds one plan per station (`PLANS`): the golden it replays, the table it writes and the
+golden scenarios it covers. Ikebukuro walks four guided routes (W1 Central Gate 2 to Exit 35, W3 Central Gate 1 to Exit
+22, W4 South Gate to Exit 18, I7 Exit 26 to Exit 10) plus a flat control (W2, West Exit B1 to Exit 4); Shinjuku replays
+all nine scenarios of its golden. For each scenario it asks the real bridge for the route and compares distance, time,
+node count, floor changes and the ordered step list with the web's golden
+(`tests/e2e/specs/__goldens__/02-navigation.spec.ts/<station>-routes.json`) exactly. A scenario the golden refuses must
+be refused by the router, with the golden's own reason (and the scenario's `profile` toggles passed as `--step-free`,
+`--unpaid-only`, `--strict-hours`); a refused route has no polyline and is not walked. A scenario the golden routes is
+walked along the polyline with `gteki_walker.gd`, recording walked length against the route's, stops, body-block
+episodes, the floor bands the walker's own height trace crosses, the rides it took, the arrival distance and the time
+at 1.45 m/s. The table carries the commit and Godot versions; it is committed with the change it describes.
+
+Two comparisons follow the router's own definitions rather than one fixed notion:
+- **Length**: the router measures an edge in 3D when its heights are known and in plan when they are symbolic
+  (`geometryLength(geometry, symbolicZ)` in `packages/navigation/src/router.ts`), so the walk compares its flat figure
+  for a symbolic route (all of Shinjuku's are) and its 3D figure otherwise (Ikebukuro's). The table shows both and its
+  **Length basis** column names the figure that was compared, route by route.
+- **Floors**: `floorChanges` counts graph floor transitions, while the walker's height trace counts rendered floor bands.
+  A stair edge can span floors the route has no node on, so the walker crosses rendered bands the stair passes through
+  that the route never visits. The walk must start on the route's first floor, reach every floor the route names in
+  order and end on its goal floor, and every band crossed in between must lie strictly between the two route floors
+  being travelled between and move toward the second — a band outside that range, a reversal or an ending elsewhere
+  fails. The table shows the walker's crossings beside the route's count.
+- **Rides**: a route that states a lift is walked, and the ride is read from the route itself (#287). Inside an
+  `elevator` step, a consecutive polyline pair that moves under 0.5 m horizontally while changing height by more than
+  1.0 m is the shaft (`RIDE_MAX_FLAT` / `RIDE_MIN_DROP` in `gteki_guide.gd`); the same vertical span under `walk` or
+  `stairs` is never a ride. The walk states that explicitly before it starts: a vertical jump no step calls a lift is
+  neither walkable nor rideable, so a route with one fails as a route the walk cannot take rather than as the stall it
+  would cause. Shinjuku S4's one shaft is 0.473 m wide with a 7.8 m drop — inside the gate with a visible margin. The
+  walk takes it through the same `Guide.take_ride()` the HQ client's E prompt uses, and only once the walker has
+  actually stalled at the shaft's edge (the ground ends at the opening), so the approach gap is the measured unwalkable
+  ground, not the 1.0 m offer distance. A shaft's exit vertex is over the opening (the car's floor is the hole), so the
+  feet are set down on the first ground forward along the route's own continuation — within 1.0 m of the vertex, inside
+  a ±30° cone of the direction to the next point, straight ahead first, on the exit's level, with the body fitting and
+  a clear body-height line (on S4 that is 0.75 m out); nothing qualifying refuses the ride and fails, so no landing is
+  ever behind the shaft or across a wall. The table's **Rides** column shows the count, each shaft's width and drop and
+  the total height, **Approach** and **Landing** the two measured stretches, and **Excluded** the ridden span plus
+  both, held to the ride span plus 1.0 m approach and 1.0 m landing per ride. All of it is excluded from the walked
+  length, and a route that states a ride the walk did not take fails.
+
+The walk follows the polyline itself: it turns toward the next vertex only once it is within 0.05 m of the current one,
+so by construction it never cuts a corner the line does not cut. A larger reach cut a corner at a sharp vertex and the
+chord put the body into a wall corner; that was the walk, not the station (#284), and with the vertex reach the
+Ikebukuro routes walk with no stop and no body block. Any block, anywhere, fails the test and is reported with the
+collider that refused the step, the walker's feet where it stood and the clearance to the surface's plane. A stall with
+no refused step reports where the ground ends instead, because a step can also be refused for having no ground to land
+on (a lift opening).
+
+The table is written only by a run in which every check passed; a failing run prints the table it would have written
+instead and leaves the committed one untouched.

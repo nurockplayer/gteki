@@ -369,15 +369,15 @@
         "top": [
           {
             "poiId": "poi:exit:1",
-            "score": 85
+            "score": 105
           },
           {
             "poiId": "poi:exit:2",
-            "score": 85
+            "score": 105
           },
           {
-            "poiId": "poi:exit:4",
-            "score": 85
+            "poiId": "poi:exit:3",
+            "score": 105
           }
         ]
       },
@@ -531,7 +531,7 @@
         "top": [
           {
             "poiId": "poi:platform:oedo",
-            "score": 85
+            "score": 105
           }
         ]
       },
@@ -541,7 +541,15 @@
         "top": [
           {
             "poiId": "poi:platform:oedo",
-            "score": 85
+            "score": 105
+          },
+          {
+            "poiId": "poi:exit:2",
+            "score": 7.666666666666666
+          },
+          {
+            "poiId": "poi:exit:5",
+            "score": 6.739130434782608
           }
         ]
       },
