@@ -1,7 +1,7 @@
 extends SceneTree
 ## Headless walk replay (G-2): drives the web-rule walker (gteki_walker.gd) and follow camera (gteki_follow_camera.gd)
 ## with scripted input on a fixed step, against the exported station snapshots.
-## Usage: --script res://tests/run_walk_tests.gd -- <scenesDir> <routesDir> <stationId> [<stationId> ...]
+## Usage: --script res://tests/run_walk_tests.gd -- [--stations-dir=<dir>] <scenesDir> <routesDir> <stationId> [...]
 ## <routesDir>/<stationId>.route.json (optional) is `packages/cli/src/route.ts` output (gteki.route/0.1); when present
 ## the walker replays its polyline.
 
@@ -12,7 +12,17 @@ const Station = preload("res://addons/gteki/gteki_station.gd")
 
 const DT := 1.0 / 60.0
 const EPSILON := 0.001
+## stations/ikebukuro/pipeline/godot_colliders.gd: verified edges are sampled every STEP_M and tested with horizontal
+## rays at these heights above the sample, from each sample to the next.
+const STEP_M := 0.25
+const RAY_HEIGHTS: Array[float] = [0.2, 0.6, 1.0, 1.4, 1.7]
+## Stations whose verified edges carry known heights, so the edge replay is meaningful (Shinjuku's are symbolic).
+const EDGE_REPLAY_STATIONS: Array[String] = ["ikebukuro"]
+## The edge that script's --control reports as blocked once door/window/portal meshes collide again.
+const CONTROL_EDGE := "w_n__x18"
 
+## Where stations/<id>/gteki/graph.json lives (default: the repo's stations/ next to packages/).
+var stations_dir := ProjectSettings.globalize_path("res://").path_join("../../stations").simplify_path()
 var checks := 0
 var failures: Array[String] = []
 
@@ -29,9 +39,14 @@ func check(condition: bool, message: String) -> void:
 
 
 func run() -> void:
-	var args := OS.get_cmdline_user_args()
+	var args: Array[String] = []
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--stations-dir="):
+			stations_dir = arg.trim_prefix("--stations-dir=")
+		else:
+			args.append(arg)
 	if args.size() < 3:
-		printerr("Usage: -- <scenesDir> <routesDir> <stationId> [<stationId> ...]")
+		printerr("Usage: -- [--stations-dir=<dir>] <scenesDir> <routesDir> <stationId> [<stationId> ...]")
 		quit(1)
 		return
 	test_rules()
@@ -167,6 +182,16 @@ func test_station(dir: String, id: String, route_path: String) -> void:
 		test_route(scene, walker, id, route_path)
 	else:
 		print("%s: no route file at %s, route replay skipped" % [id, route_path])
+	if id in EDGE_REPLAY_STATIONS:
+		var graph_path := stations_dir.path_join(id).path_join("gteki/graph.json")
+		var real := replay_edges(walker, graph_path, id)
+		check(int(real.edges) > 0, "%s: verified edges were replayed" % id)
+		check(real.ray_blocked.is_empty(), "%s: no verified edge is blocked by the 5-height ray rule (%d blocked)" % [id, real.ray_blocked.size()])
+		check(real.body_blocked.is_empty(), "%s: the walker's body test finds no verified edge blocked (%d blocked)" % [id, real.body_blocked.size()])
+		check(real.no_ground.is_empty(), "%s: every verified-edge sample has walkable ground (%d without)" % [id, real.no_ground.size()])
+		print("%s: edge replay: edges=%d samples=%d rayBlocked=%d bodyBlocked=%d noGround=%d (check:godot reports 63 / 7140 / 0)" % [id, real.edges, real.samples, real.ray_blocked.size(), real.body_blocked.size(), real.no_ground.size()])
+		# Last: the control changes the world.
+		await test_edge_control(scene, walker, id, graph_path)
 	holder.queue_free()
 	await process_frame
 
@@ -378,6 +403,84 @@ func test_route(scene: Scene, walker: Walker, id: String, route_path: String) ->
 	check(blocked_at >= 0 or miss < 1.0, "%s: route replay ends within 1 m of the goal (%.2f m)" % [id, miss])
 	check(blocked_at >= 0 or abs(end.y - goal_point.y) < 1.5, "%s: route replay ends at the goal's height (dy %.2f)" % [id, end.y - goal_point.y])
 	print("%s: route replay %d points, %d steps (%.0f s), ended %.2f m from the goal" % [id, points.size(), total_steps, total_steps * DT, miss])
+
+
+# ---- verified-edge replay (mirrors stations/ikebukuro/pipeline/godot_colliders.gd) ------------------------------
+
+## Every `verification == "verified"` edge of graph.json with a polyline, sampled at <= STEP_M keeping each vertex (the
+## same selection and sampling as godot_colliders.gd, so edge and sample counts compare 1:1). Per sample: walkable ground
+## must exist; between consecutive samples, horizontal rays at RAY_HEIGHTS (that script's rule) and the walker's own body
+## test (gteki_walker.gd body_block) must find nothing on the collider layer.
+func replay_edges(walker: Walker, graph_path: String, id: String) -> Dictionary:
+	var errors: Array[String] = []
+	var graph: Dictionary = Station.read_json(graph_path, errors)
+	check(errors.is_empty(), "%s: graph.json loads (%s)" % [id, str(errors)])
+	var edges := 0
+	var samples := 0
+	var ray_blocked: Array = []
+	var body_blocked: Array = []
+	var no_ground: Array = []
+	for edge in graph.get("edges", []):
+		if edge.get("verification") != "verified":
+			continue
+		var geometry: Array = edge.get("geometry", [])
+		if geometry.size() < 2:
+			check(false, "%s: verified edge %s has no polyline" % [id, edge.get("id")])
+			continue
+		edges += 1
+		var points: Array[Vector3] = []
+		for g in geometry:
+			points.append(Vector3(float(g.x), float(g.z), -float(g.y)))
+		var dense: Array[Vector3] = [points[0]]
+		for i in range(1, points.size()):
+			var a := points[i - 1]
+			var b := points[i]
+			var n := maxi(1, int(ceil(a.distance_to(b) / STEP_M)))
+			for k in range(1, n + 1):
+				dense.append(a.lerp(b, float(k) / n))
+		samples += dense.size()
+		for i in range(dense.size()):
+			var here := dense[i]
+			if walker.ground_at(here.x, here.y + 1.0, here.z, 2.0) == null:
+				no_ground.append({"edge": edge.id, "index": i})
+			if i + 1 >= dense.size():
+				continue
+			var next := dense[i + 1]
+			var span := here.distance_to(next)
+			if span < 1e-6:
+				continue
+			var dir := (next - here) / span
+			for h in RAY_HEIGHTS:
+				if not walker.cast(here + Vector3(0.0, h, 0.0), dir, span, Scene.COLLIDER_LAYER).is_empty():
+					ray_blocked.append({"edge": edge.id, "index": i, "height": h})
+			if walker.body_block(here, next) != null:
+				body_blocked.append({"edge": edge.id, "index": i})
+	return {"edges": edges, "samples": samples, "ray_blocked": ray_blocked, "body_blocked": body_blocked, "no_ground": no_ground}
+
+
+## Negative control (godot_colliders.gd --control makes the asset's doors/windows/portals collide again, the old
+## "visual+collision" role). The same replay must then report blocked edges, proving it can fail.
+func test_edge_control(scene: Scene, walker: Walker, id: String, graph_path: String) -> void:
+	var enabled := 0
+	var stack: Array[Node] = [scene.root]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		stack.append_array(node.get_children())
+		if node is MeshInstance3D and node.mesh != null:
+			var extras: Variant = node.get_meta("extras", {})
+			if extras is Dictionary and str(extras.get("gteki_role", "")) in ["doors", "windows", "portals"]:
+				node.create_trimesh_collision()
+				enabled += 1
+	check(enabled > 0, "%s: control found door/window/portal meshes to make solid" % id)
+	await physics_frame
+	await physics_frame
+	var result := replay_edges(walker, graph_path, id)
+	var blocked_edges := {}
+	for b in result.ray_blocked + result.body_blocked:
+		blocked_edges[b.edge] = true
+	check(not result.ray_blocked.is_empty(), "%s: control: the ray rule detects blocked edges (%d rays)" % [id, result.ray_blocked.size()])
+	check(not result.body_blocked.is_empty(), "%s: control: the walker body test detects blocked edges (%d moves)" % [id, result.body_blocked.size()])
+	print("%s: edge control (doors/windows/portals solid): %d edges blocked: %s; %s blocked: %s" % [id, blocked_edges.size(), str(blocked_edges.keys().slice(0, 12)), CONTROL_EDGE, str(blocked_edges.has(CONTROL_EDGE))])
 
 
 func finish() -> void:

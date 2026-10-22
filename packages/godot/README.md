@@ -179,6 +179,15 @@ cross a wall, floor or ceiling beyond the web's own minimum-distance floor; and 
 Ikebukuro `g_jr_c2` to `x35` (`packages/cli/src/route.ts`, merged from the G-3 data bridge branch) reaches the goal
 without being blocked.
 
+It also replays **every verified edge** of `stations/ikebukuro/gteki/graph.json` with the selection and sampling of
+`stations/ikebukuro/pipeline/godot_colliders.gd` (`check:godot`: verified edges with a polyline, sampled every 0.25 m
+keeping each vertex, so edge and sample counts compare 1:1 with that script's 63 / 7,140). Per sample the snapshot must
+have walkable ground; between samples, horizontal rays at 0.2/0.6/1.0/1.4/1.7 m (that script's rule) and the walker's
+own body test must find no collider. A negative control makes the asset's `doors`/`windows`/`portals` meshes collide
+again (what `--control` does there) and the same replay must then report blocked edges; the test prints whether
+`w_n__x18` is among them. The collision world differs from `check:godot`'s: it is the TypeScript scene's own tiles
+(including the access fences and solid doors the web walker collides with), not the raw GLB roles.
+
 Limits: not the web's `avatarMotion` (the avatar just turns toward travel), no sign see-through fading (`cameraCut`),
 no first-person mode, no touch joystick, no guided-walk mode (`stepGuide`), no street/sky probes. Stairs and escalators are
 walked by the same step rules as on the web, nothing more. Camera and walker feel on a real display is unchecked.
