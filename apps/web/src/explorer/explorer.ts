@@ -22,7 +22,7 @@ import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, followBoom, followDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
-import { OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, pointsBounds, routablePoints, screenBox } from "./overviewFraming.ts";
+import { OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
@@ -238,6 +238,9 @@ export class Explorer {
   private routablePts: THREE.Vector3[] = [];
   /** What the overview is framed on, so a resize can refit; cleared by the user's own orbit/zoom/pan. */
   private framed: THREE.Box3 | null = null;
+  /** The HUD/search panel the overview must not frame under; its rect is read, never drawn. */
+  private panelEl: HTMLElement | null = null;
+  private panelResize: ResizeObserver | null = null;
   private quality: "low" | "high";
   /** Why the station's own scene could not be shown (L0 fallback is in use), if any. */
   sceneError: string | null = null;
@@ -306,12 +309,14 @@ export class Explorer {
 
   /**
    * Where the routable network sits on screen now (CSS px, page coordinates like label rects) and how
-   * big it is: `extentShare` = larger bbox side / the viewport's shorter side (about 0.65 right after
-   * the fit; the bbox of the network's own points, so a little below the fit target, which is
-   * measured on the slice box). `fitShare` is that box's share (the fit target, about 0.65).
-   * Null outside overview or without a routable network.
+   * big it is, measured against the FREE area — the part of the canvas the search panel leaves uncovered:
+   * `extentShare` = larger bbox side / the free area's shorter side (about 0.65 right after the fit; the
+   * bbox of the network's own points, so a little below the fit target, which is measured on the slice
+   * box). `fitShare` is that box's share against the same free area (the fit target, about 0.65).
+   * `visibleRect` is that free area itself (page CSS px), so a spec can check `bbox` lies outside the
+   * panel. Null outside overview or without a routable network.
    */
-  overviewFrame(): { extentShare: number; fitShare: number | null; bbox: { x0: number; y0: number; x1: number; y1: number } } | null {
+  overviewFrame(): { extentShare: number; fitShare: number | null; bbox: { x0: number; y0: number; x1: number; y1: number }; visibleRect: { x: number; y: number; w: number; h: number } } | null {
     if (this.mode !== "overview" || this.routablePts.length === 0) return null;
     const { w, h } = this.viewSize;
     this.camera.updateMatrixWorld();
@@ -319,11 +324,13 @@ export class Explorer {
     if (!net) return null;
     const slice = this.framed ?? this.routableBox;
     const fit = slice ? screenBox(boxCorners({ min: slice.min, max: slice.max }), this.camera, w, h) : null;
+    const free = this.freeRect();
     const at = this.host.getBoundingClientRect();
     return {
-      extentShare: extentShare(net, w, h),
-      fitShare: fit ? extentShare(fit, w, h) : null,
+      extentShare: extentShare(net, free.w, free.h),
+      fitShare: fit ? extentShare(fit, free.w, free.h) : null,
       bbox: { x0: net.x0 + at.left, y0: net.y0 + at.top, x1: net.x1 + at.left, y1: net.y1 + at.top },
+      visibleRect: { x: free.x + at.left, y: free.y + at.top, w: free.w, h: free.h },
     };
   }
 
@@ -582,10 +589,51 @@ export class Explorer {
     this.fitOverview();
   }
 
-  /** Put the camera on the fit of `framed` for the current aspect. */
+  /**
+   * Name the UI panel the overview must stay clear of (the app's search panel). The fit then fills the
+   * unobstructed area — below the panel on a phone, to the right of it on a desktop — and a panel that
+   * collapses, expands or changes size refits an overview the user has not moved. Null: the whole view.
+   */
+  setPanel(el: HTMLElement | null): void {
+    this.panelEl = el;
+    this.panelResize?.disconnect();
+    this.panelResize = null;
+    if (el && typeof ResizeObserver !== "undefined") {
+      this.panelResize = new ResizeObserver(() => this.refitOverview());
+      this.panelResize.observe(el);
+    }
+    this.refitOverview();
+  }
+
+  /** Re-measure the panel and refit an automatic overview (never a camera the user has moved). */
+  refitOverview(): void {
+    if (this.mode === "overview" && this.framed) this.fitOverview();
+  }
+
+  /**
+   * The canvas area no panel covers (CSS px, canvas-relative). The panel's own page rect is measured here,
+   * on a resize or a panel change — never per frame.
+   */
+  private freeRect(): ViewRect {
+    const { w, h } = this.viewSize;
+    const el = this.panelEl;
+    // display:none (walk/guide on a phone), a collapsed element or none at all leaves the canvas free.
+    if (!el || el.getClientRects().length === 0) return { x: 0, y: 0, w, h };
+    const host = this.host.getBoundingClientRect();
+    const p = el.getBoundingClientRect();
+    return freeArea({ w, h }, { x: p.left - host.left, y: p.top - host.top, w: p.width, h: p.height });
+  }
+
+  /** Put the camera on the fit of `framed` for the current aspect, inside the panel-free area. */
   private fitOverview(): void {
     if (!this.framed) return;
-    const pose = frameBounds(this.framed, { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near }, undefined, OVERVIEW_OFFSET);
+    const { w, h } = this.viewSize;
+    const pose = frameBounds(
+      this.framed,
+      { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near, viewport: { w, h }, free: this.freeRect() },
+      undefined,
+      OVERVIEW_OFFSET,
+    );
     this.orbit.target.copy(pose.target);
     this.camera.position.copy(pose.position);
     this.camera.updateProjectionMatrix();
@@ -1334,6 +1382,8 @@ export class Explorer {
 
   dispose(): void {
     this.disposed = true;
+    this.panelResize?.disconnect();
+    this.panelResize = null;
     this.removeAudioUnlock();
     this.disconnectStationAudio();
     void this.audio?.context.close();

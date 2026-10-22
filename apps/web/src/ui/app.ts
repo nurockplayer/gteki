@@ -111,6 +111,9 @@ export class App {
         if (poi) this.setDestination(poi);
       },
     });
+    // The overview is framed into the part of the view the search panel leaves free (below it on a phone,
+    // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
+    this.explorer.setPanel(this.ui.panel);
     this.explorer.setGuideTier(readGuideTier());
     this.bindGuideKeys();
     watchReducedMotion((reduce) => this.explorer.setReducedMotion(reduce));

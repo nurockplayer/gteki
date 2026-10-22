@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import type { Edge, StationBundle } from "@gteki/schema";
-import { MIN_SLICE_M, OVERVIEW_FILL, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, pointsBounds, routableBounds, routablePoints, screenBox, type Aabb } from "./overviewFraming.ts";
+import { MIN_SLICE_M, OVERVIEW_FILL, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, pointsBounds, routableBounds, routablePoints, screenBox, type Aabb } from "./overviewFraming.ts";
 
 const VIEWPORTS = [
   { name: "desktop 1440x900", w: 1440, h: 900 },
@@ -98,6 +98,73 @@ describe("frameBounds", () => {
     const pose = frameBounds(box, { fovDeg: 60, aspect: 1.6 }, 0.5);
     const e = screenExtent(box, camera(1440, 900, pose), 1440, 900);
     expect(Math.max(e.widthPx, e.heightPx) / 900).toBeCloseTo(0.5, 2);
+  });
+});
+
+describe("freeArea: what the search panel leaves unobstructed", () => {
+  const PHONE = { w: 393, h: 852 };
+  const DESKTOP = { w: 1440, h: 900 };
+
+  it("is the whole canvas without a panel (or a panel entirely off it)", () => {
+    expect(freeArea(PHONE, null)).toEqual({ x: 0, y: 0, w: 393, h: 852 });
+    expect(freeArea(PHONE, { x: 400, y: 0, w: 300, h: 900 })).toEqual({ x: 0, y: 0, w: 393, h: 852 });
+  });
+
+  it("is below a phone's full-width top panel", () => {
+    // 393x852, panel 16..377 x 58..610 (the opaque sheet Lane F measured, ~65% of the height).
+    expect(freeArea(PHONE, { x: 16, y: 58, w: 361, h: 552 })).toEqual({ x: 0, y: 610, w: 393, h: 242 });
+  });
+
+  it("is to the right of a desktop's left column, whether expanded or collapsed", () => {
+    for (const h of [260, 96]) expect(freeArea(DESKTOP, { x: 16, y: 58, w: 400, h })).toEqual({ x: 416, y: 0, w: 1024, h: 900 });
+  });
+
+  it("is above a bottom sheet and left of a right-hand column", () => {
+    expect(freeArea(PHONE, { x: 0, y: 600, w: 393, h: 252 })).toEqual({ x: 0, y: 0, w: 393, h: 600 });
+    expect(freeArea(DESKTOP, { x: 1100, y: 0, w: 340, h: 900 })).toEqual({ x: 0, y: 0, w: 1100, h: 900 });
+  });
+
+  it("clips a panel that hangs off the canvas, and falls back to the canvas when it covers it", () => {
+    expect(freeArea(PHONE, { x: 16, y: 58, w: 500, h: 552 })).toEqual({ x: 0, y: 610, w: 393, h: 242 });
+    expect(freeArea(PHONE, { x: -10, y: -20, w: 500, h: 900 })).toEqual({ x: 0, y: 0, w: 393, h: 852 });
+  });
+});
+
+describe("frameBounds inside the free area", () => {
+  const layouts = [
+    { name: "phone 393x852 with a top panel", w: 393, h: 852, panel: { x: 16, y: 58, w: 361, h: 552 } },
+    { name: "desktop 1440x900 with a left column", w: 1440, h: 900, panel: { x: 16, y: 58, w: 400, h: 260 } },
+  ];
+
+  for (const lay of layouts) {
+    for (const name of ["Ikebukuro, compact", "Shinjuku, flat and long"]) {
+      it(`${lay.name}, ${name}: 50-80% of the free area's short side, centred in it, clear of the panel`, () => {
+        const free = freeArea({ w: lay.w, h: lay.h }, lay.panel);
+        const raw = BOXES[name]!;
+        const pose = frameBounds(raw, { fovDeg: 60, aspect: lay.w / lay.h, viewport: { w: lay.w, h: lay.h }, free });
+        const cam = camera(lay.w, lay.h, pose);
+        const e = screenExtent(fitted(raw), cam, lay.w, lay.h); // NDC
+        // To px against the free area's own origin.
+        const box = { x0: (e.x0 * 0.5 + 0.5) * lay.w, x1: (e.x1 * 0.5 + 0.5) * lay.w, y0: (-e.y1 * 0.5 + 0.5) * lay.h, y1: (-e.y0 * 0.5 + 0.5) * lay.h };
+        const share = Math.max(box.x1 - box.x0, box.y1 - box.y0) / Math.min(free.w, free.h);
+        expect(share).toBeGreaterThanOrEqual(0.5);
+        expect(share).toBeLessThanOrEqual(0.8);
+        expect(share).toBeCloseTo(OVERVIEW_FILL, 2);
+        // Centred in the free area, inside it, and never under the panel.
+        expect((box.x0 + box.x1) / 2).toBeCloseTo(free.x + free.w / 2, 0);
+        expect((box.y0 + box.y1) / 2).toBeCloseTo(free.y + free.h / 2, 0);
+        expect(box.x0).toBeGreaterThanOrEqual(free.x);
+        expect(box.x1).toBeLessThanOrEqual(free.x + free.w);
+        expect(box.y0).toBeGreaterThanOrEqual(free.y);
+        expect(box.y1).toBeLessThanOrEqual(free.y + free.h);
+      });
+    }
+  }
+
+  it("keeps the viewing direction when it is pushed off centre", () => {
+    const free = freeArea({ w: 393, h: 852 }, { x: 16, y: 58, w: 361, h: 552 });
+    const pose = frameBounds(BOXES["Ikebukuro, compact"]!, { fovDeg: 60, aspect: 393 / 852, viewport: { w: 393, h: 852 }, free });
+    expect(pose.position.clone().sub(pose.target).normalize().distanceTo(OVERVIEW_OFFSET)).toBeLessThan(1e-9);
   });
 });
 

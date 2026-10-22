@@ -62,6 +62,41 @@ export function pointsBounds(points: readonly THREE.Vector3[]): Aabb | null {
 
 export interface ScreenBox { x0: number; y0: number; x1: number; y1: number }
 
+/** A rectangle in CSS px, top-left origin. */
+export interface ViewRect { x: number; y: number; w: number; h: number }
+
+/**
+ * The part of the canvas a UI panel leaves unobstructed. The panel is a top bar on a phone (so the free
+ * area is below it) and a left column on a desktop (so it is to the right); rather than sniff the layout,
+ * this tries the four rectangles the panel's edges leave and keeps the one with the largest usable short
+ * side — which is also the one that lets the slice be framed biggest. A panel over the whole canvas (or
+ * none at all) leaves the canvas as it is.
+ */
+export function freeArea(viewport: { w: number; h: number }, panel: ViewRect | null): ViewRect {
+  const full: ViewRect = { x: 0, y: 0, w: viewport.w, h: viewport.h };
+  if (!panel) return full;
+  // The panel may hang off the canvas (safe areas, a slide-in): only its part over the canvas blocks.
+  const x0 = Math.max(0, panel.x), y0 = Math.max(0, panel.y);
+  const x1 = Math.min(viewport.w, panel.x + panel.w), y1 = Math.min(viewport.h, panel.y + panel.h);
+  if (x1 <= x0 || y1 <= y0) return full;
+  const candidates: ViewRect[] = [
+    { x: 0, y: y1, w: viewport.w, h: viewport.h - y1 },          // below a top bar
+    { x: x1, y: 0, w: viewport.w - x1, h: viewport.h },          // right of a left column
+    { x: 0, y: 0, w: viewport.w, h: y0 },                        // above a bottom bar
+    { x: 0, y: 0, w: x0, h: viewport.h },                        // left of a right column
+  ];
+  let best = full;
+  let bestKey = -Infinity;
+  for (const c of candidates) {
+    if (c.w <= 0 || c.h <= 0) continue;
+    // Largest short side first (the fit target), then the larger area.
+    const key = Math.min(c.w, c.h) * 1e6 + c.w * c.h;
+    if (key > bestKey) { bestKey = key; best = c; }
+  }
+  return best;
+}
+
+
 /**
  * Screen-space bounding box (px, origin top-left of the viewport) of `points` as `camera` sees them now.
  * Points behind the camera or past the far plane are ignored; null when none is in view range.
@@ -98,6 +133,14 @@ export interface FrameView {
   aspect: number;
   /** Camera near plane (m): the fit keeps the whole box farther than this. */
   near?: number;
+  /** Canvas size in CSS px; only read to place `free`. Defaults to `aspect` × 1 (the whole view is free). */
+  viewport?: { w: number; h: number };
+  /**
+   * The unobstructed part of the view to fit into (CSS px, top-left origin, e.g. `freeArea(...)`). The fit
+   * fills a share of this rect's shorter side and centres the slice in it, so the slice never sits under
+   * the search panel. Default: the whole viewport.
+   */
+  free?: ViewRect;
 }
 
 export interface FramePose { target: THREE.Vector3; position: THREE.Vector3; distance: number }
@@ -121,9 +164,10 @@ function projectCorners(corners: readonly THREE.Vector3[], eye: THREE.Vector3, f
 
 /**
  * Fit the camera to `box` along `offsetDir` (target to camera). The box's larger projected extent
- * (width or height on screen) lands at `fill` of the viewport's shorter side, and the box is centred on
- * screen, so with `fill` at most 0.8 nothing is clipped at any aspect. Uses the real perspective
- * projection of the 8 corners (not a bounding sphere), so a flat, long slice is framed tightly.
+ * (width or height on screen) lands at `fill` of the free area's shorter side, and the box is centred in
+ * that area, so with `fill` at most 0.8 nothing is clipped (nor hidden under a UI panel) at any aspect.
+ * Uses the real perspective projection of the 8 corners (not a bounding sphere), so a flat, long slice
+ * is framed tightly. Only the target and the distance change; the viewing direction never does.
  *
  * Pure: no camera is touched. The caller puts `position` and `target` on the camera and orbit controls.
  */
@@ -134,6 +178,13 @@ export function frameBounds(box: Aabb, view: FrameView, fill = OVERVIEW_FILL, of
   const up = new THREE.Vector3().crossVectors(right, forward).normalize();
   const tanV = Math.tan(THREE.MathUtils.degToRad(view.fovDeg) / 2);
   const near = view.near ?? 0.1;
+  // Where the slice goes: the free area's centre in NDC, and `fill` of its shorter side. The canvas is
+  // `vw × vh`; the free area is given in its px. Extents below are in viewport-height units.
+  const vw = view.viewport?.w ?? view.aspect;
+  const vh = view.viewport?.h ?? 1;
+  const free = view.free ?? { x: 0, y: 0, w: vw, h: vh };
+  const cx = (2 * (free.x + free.w / 2)) / vw - 1;
+  const cy = 1 - (2 * (free.y + free.h / 2)) / vh;
 
   // Enlarge a tiny slice around its centre (per ground axis), so the fit stays sane.
   const size = new THREE.Vector3().subVectors(box.max, box.min);
@@ -142,7 +193,8 @@ export function frameBounds(box: Aabb, view: FrameView, fill = OVERVIEW_FILL, of
   const corners: THREE.Vector3[] = [];
   for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) corners.push(new THREE.Vector3(sx * half.x, sy * half.y, sz * half.z));
 
-  const goal = fill * Math.min(view.aspect, 1);
+  // Extent units are viewport heights: the free width in those units is (free.w / vw) * aspect.
+  const goal = fill * Math.min((free.w / vw) * view.aspect, free.h / vh);
   const target = centre.clone();
   const world = corners.map((c) => c.clone().add(centre));
   const eyeAt = (dist: number): THREE.Vector3 => target.clone().addScaledVector(dir, dist);
@@ -166,12 +218,13 @@ export function frameBounds(box: Aabb, view: FrameView, fill = OVERVIEW_FILL, of
     return hi;
   };
   // The perspective outline's centre differs from the 3D centre; pan the target sideways until the outline
-  // is centred on screen (the camera keeps its direction, so this is a pure pan), re-solving the distance.
+  // sits where the free area wants it (the camera keeps its direction, so this is a pure pan), re-solving
+  // the distance.
   let distance = solve();
   for (let pass = 0; pass < 12; pass++) {
     const e = outline(distance);
-    if (!e || (Math.abs(e.cx) < 1e-4 && Math.abs(e.cy) < 1e-4)) break;
-    target.addScaledVector(right, e.cx * distance * tanV * view.aspect).addScaledVector(up, e.cy * distance * tanV);
+    if (!e || (Math.abs(e.cx - cx) < 1e-4 && Math.abs(e.cy - cy) < 1e-4)) break;
+    target.addScaledVector(right, (e.cx - cx) * distance * tanV * view.aspect).addScaledVector(up, (e.cy - cy) * distance * tanV);
     distance = solve();
   }
   return { target, position: eyeAt(distance), distance };
