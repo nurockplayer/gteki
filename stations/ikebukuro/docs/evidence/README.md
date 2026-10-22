@@ -19,7 +19,7 @@ Everything in the 3D views is either the PLATEAU-derived station geometry or con
 
 ## Review of the images
 
-Checked with an image viewer, 12 of the 34 JPEGs (`02`, `06`, `11`, `13`, `16`, `19`, `22`, `25`, `28`, `33`, `explorer-route-jrc2-exit35`, `m01-central-passage-mobile`) and one frame from each of the two MP4s:
+Checked by eye, 12 of the 34 JPEGs (`02`, `06`, `11`, `13`, `16`, `19`, `22`, `25`, `28`, `33`, `explorer-route-jrc2-exit35`, `m01-central-passage-mobile`) and one frame from each of the two MP4s:
 
 - No real photographs.
 - No operator maps (Toshima, Tokyo Metro, JR or other) and no operator logos or pictograms.
@@ -27,7 +27,7 @@ Checked with an image viewer, 12 of the 34 JPEGs (`02`, `06`, `11`, `13`, `16`, 
 
 The remaining 22 JPEGs were not opened one by one. They come from the same captures and share filenames and viewpoints with the reviewed ones, but a full review has not been done. Treat the statements above as covering the sampled files.
 
-Open point for a human: the generated signs use a generic dark-panel, yellow-chip wayfinding look. I did not compare them against operator signage styles. If a reviewer judges the styling too close to a specific operator's, that is a design call for the Ikebukuro lane, not a PLATEAU credit matter.
+Open point for a human: the generated signs use a generic dark-panel, yellow-chip wayfinding look. They have not been compared against operator signage styles. If a reviewer judges the styling too close to a specific operator's, that is a design call for the Ikebukuro lane, not a PLATEAU credit matter.
 
 ## Files
 
