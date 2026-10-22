@@ -20,7 +20,7 @@ export function projectPoiContent(report: any, stationId: string): any | null {
   return {
     source_id: report.source_id, source_sha256: report.source_sha256, routable: false, coordinates: report.coordinates,
     members: report.members.map((member: any) => ({ file: member.file, populated_row_count: member.populated_row_count ?? null, feature_count: member.feature_count ?? null, crs: member.crs, bbox: member.bbox,
-      geometry_types: member.geometry_types, literal_location_time_fields: member.literal_location_time_fields ?? {}, route_structure: member.route_structure?.start_end_fields ?? [] })),
+      geometry_types: member.geometry_types, location_time_fields: member.location_time_fields ?? {}, route_structure: member.route_structure?.start_end_fields ?? [] })),
     station_relevance: report.station_relevance.filter((item: any) => item.station_id === stationId), detail: report.detail,
   };
 }
