@@ -178,7 +178,8 @@ export async function perfWindow(page: Page, seconds: number) {
 /** Overlap of floating POI labels with the app's own UI (labels must never cover controls). */
 export async function labelUiOverlaps(page: Page) {
   return page.evaluate(() => {
-    const ui = [".topbar", ".panel", ".sheet.open", ".hud"].flatMap((sel) => [...document.querySelectorAll<HTMLElement>(sel)]).filter((e) => e.offsetParent !== null);
+    // .credit-line: the persistent data-credit strip (#187), absent on builds without it.
+    const ui = [".topbar", ".panel", ".sheet.open", ".hud", ".credit-line"].flatMap((sel) => [...document.querySelectorAll<HTMLElement>(sel)]).filter((e) => e.offsetParent !== null);
     const labels = [...document.querySelectorAll<HTMLElement>(".gteki-labels > *")].filter((e) => e.style.display !== "none" && e.getBoundingClientRect().width > 0);
     const hits: { label: string; over: string; labelOnTop: boolean }[] = [];
     for (const l of labels) {
