@@ -224,6 +224,8 @@ const TEXT = {
       return hints.length === 0 ? `${text}、${turns}` : [text, ...hints, turns].join("。");
     },
     arrive: () => "目的地に到着",
+    /** A ticket gate is reached from the public side: the paid concourse behind it is not modelled (#203 B7). */
+    gateArrive: () => "改札外側に到着（改札内は未モデル化）",
     /** `name` null = the destination has no display name: say "目的地". `ridden` = the route ended by using this connector. */
     connectorArrive: (kind: ConnectorEndKind, name: string | null, ridden: boolean) => {
       const via = { stair_end: "階段", escalator_end: "エスカレーター", ramp_end: "スロープ" }[kind];
@@ -262,6 +264,7 @@ const TEXT = {
       return `${[text, ...hints, ...(trail.length === 0 ? [] : [`After ~${m} m, ${lowerFirst(TEXT.en.turns(trail))}`])].join(". ")}.`;
     },
     arrive: () => "Arrive at destination",
+    gateArrive: () => "Arrived at the public side of the gate (inside the gate is not modelled)",
     connectorArrive: (kind: ConnectorEndKind, name: string | null, ridden: boolean) => {
       const via = { stair_end: "stairs", escalator_end: "escalator", ramp_end: "ramp" }[kind];
       const to = name ?? "your destination";
@@ -480,10 +483,18 @@ function departuresByNode(bundle: StationBundle, route: RouteResult): Map<string
   return out;
 }
 
-/** Display name of the first POI (bundle order) reached from each node: requested language, then ja, then any. */
+/**
+ * Display names for junction hints: only exits and ticket gates name a junction. Naming it after a hall or
+ * service POI reads backwards when the route itself goes into that area ("continue straight past West Exit"
+ * for a route heading into it), so any other category stays "the junction" (#203 B9).
+ */
+const NAMES_JUNCTIONS: ReadonlySet<Poi["category"]> = new Set(["exit", "ticket_gate"]);
+
+/** Display name of the first exit or ticket-gate POI (bundle order) reached from each node: requested language, then ja, then any. */
 function junctionNames(bundle: StationBundle, lang: "ja" | "en"): Map<string, string> {
   const out = new Map<string, string>();
   for (const poi of bundle.pois) {
+    if (!NAMES_JUNCTIONS.has(poi.category)) continue;
     const named = poi.names.find((t) => t.lang === lang) ?? poi.names.find((t) => t.lang === "ja") ?? poi.names[0];
     if (!named || named.text.trim() === "") continue;
     for (const nodeId of poi.connectorNodeIds) if (!out.has(nodeId)) out.set(nodeId, named.text);
@@ -577,6 +588,15 @@ function poiDisplayName(poi: Poi, lang: "ja" | "en"): string | null {
   const names = poi.names.map((n) => ({ lang: n.lang, text: n.text.trim() })).filter((n) => n.text !== "");
   const named = names.find((n) => n.lang === lang) ?? names.find((n) => n.lang === "ja") ?? names[0];
   return named?.text ?? null;
+}
+
+/**
+ * The POI's own note in the requested language only (null when it has none): a note is a statement by the
+ * station data, and one written in another language is not shown as if it were the requested one.
+ */
+function poiNote(poi: Poi, lang: "ja" | "en"): string | null {
+  const note = poi.notes?.find((n) => n.lang === lang);
+  return note && note.text.trim() !== "" ? note.text.trim() : null;
 }
 
 /**
@@ -787,7 +807,12 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     const ridden = route.steps[route.steps.length - 1]?.mode === end.mode;
     out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, connector: kind, text: t.connectorArrive(kind, poiDisplayName(destination, lang), ridden), label: null });
   } else {
-    out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, text: t.arrive(), label: null });
+    // A gate (or any non-exit destination) says where the route stops: its own note in this language when it
+    // has one, else a gate says the paid side is not modelled. A note in another language is never shown as
+    // if it were this one; exits keep the plain arrival (#203 B7).
+    const note = destination && destination.category !== "exit" ? poiNote(destination, lang) : null;
+    const text = note ?? (destination?.category === "ticket_gate" ? t.gateArrive() : t.arrive());
+    out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, text, label: null });
   }
 
   return foldShortLegs(out).map(({ label, ownM, ownSteps, ...ins }, k, all) => {
