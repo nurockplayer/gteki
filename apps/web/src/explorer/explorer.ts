@@ -131,6 +131,8 @@ export class Explorer {
   private teleported = false;
   /** A teleport made while already walking/guiding: the follow camera jumps with the walker instead of gliding. */
   private snapCamera = false;
+  /** prefers-reduced-motion: the follow camera and orbit damping cut instead of gliding, and decorative route motion stops. */
+  private reducedMotion = false;
   private readonly streetProbe = { at: new THREE.Vector3(Infinity, 0, 0), wait: 0, outdoors: false, level: true };
   private readonly probeDown = new THREE.Vector3(0, -1, 0);
   private readonly probeNormal = new THREE.Vector3();
@@ -914,6 +916,11 @@ export class Explorer {
     this.tier = id;
   }
 
+  setReducedMotion(on: boolean): void {
+    this.reducedMotion = on;
+    this.orbit.enableDamping = !on;
+  }
+
   /** The user's guide speed tier, so a re-rendered HUD shows the real state. */
   get guideTier(): GuideTierId {
     return this.tier;
@@ -978,10 +985,10 @@ export class Explorer {
   }
 
   private step(dt: number, t: number): void {
-    if (this.routeTexture) this.routeTexture.offset.x -= dt * 0.9;
+    if (this.routeTexture && !this.reducedMotion) this.routeTexture.offset.x -= dt * 0.9;
     for (const g of this.routeGroup.children) {
       const ring = g.userData.pulse as THREE.Mesh | undefined;
-      if (ring) ring.scale.setScalar(1 + 0.25 * Math.sin(t * 3));
+      if (ring) ring.scale.setScalar(this.reducedMotion ? 1 : 1 + 0.25 * Math.sin(t * 3));
     }
     this.stationScene?.update?.(dt, t);
 
@@ -1133,7 +1140,7 @@ export class Explorer {
       ({ back, distance: dist } = this.blockerTargets.size ? followBoom(this.camDistance, pose.back, cast) : { back: pose.back, distance: followDistance(this.camDistance, cast(pose.back)) });
     }
     const desired = pose.pivot.clone().addScaledVector(back, dist);
-    this.camera.position.lerp(desired, snap ? 1 : 1 - Math.exp(-dt * 10));
+    this.camera.position.lerp(desired, snap || this.reducedMotion ? 1 : 1 - Math.exp(-dt * 10));
     // The smoothed position, not only the target, stays below camera-only blockers.
     if (this.blockerTargets.size) keepBelowBlockers(pose.pivot, this.camera.position, [...this.blockerTargets], FOLLOW.clearance, this.ray);
     this.camera.lookAt(pose.target);

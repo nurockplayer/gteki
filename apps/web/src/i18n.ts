@@ -1,4 +1,7 @@
 import type { LocalizedText } from "@gteki/schema";
+import type { paceReadout } from "./explorer/guidePace.ts";
+
+type PaceReadout = ReturnType<typeof paceReadout>;
 
 export type Lang = "ja" | "en";
 
@@ -36,8 +39,11 @@ const STRINGS = {
     reverseRoute: "逆向きのルート",
     searchAgain: "もう一度検索",
     guideTier: { walk: "歩く", run: "走る", fast: "早送り" },
-    guideSpeedLabel: (tier: string, mps: number) => `${tier} ${mps} m/s`,
-    guideSpeedAria: (tier: string) => `ガイド速度: ${tier}`,
+    guideSpeedLabel: (tier: string, r: PaceReadout) => `${tier} ${r.approx ? "≈" : ""}${r.pace} m/s`,
+    guideSpeedAria: (tier: string, r: PaceReadout) =>
+      r.approx
+        ? `ガイド速度: ${tier}。通路では最大${r.top} m/s、このルートの平均は約${r.pace} m/s（エスカレーター・階段・改札は現実的な速度）`
+        : `ガイド速度: ${tier}。最大${r.top} m/s`,
     firstPerson: "一人称",
     graphOverlay: "経路網",
     soundOn: "音声オン",
@@ -80,6 +86,13 @@ const STRINGS = {
     touchHint: "左で移動（端まで倒すと走る）・右ドラッグで視点",
     noIndoorPositioning: "屋内測位は行いません。出発地を選んでください。",
     operators: "事業者",
+    options: "オプション",
+    close: "閉じる",
+    searchCount: (n: number) => `${n}件の候補`,
+    routeFound: (m: number, min: number) => `ルートが見つかりました：${m}m、約${min}分`,
+    liveSeparator: "。",
+    coverageStatus: { routable: "経路あり", visual_only: "表示のみ", unverified: "未確認", excluded: "対象外" } as Record<string, string>,
+    factsOnly: "事実確認のみ",
     language: "English",
   },
   en: {
@@ -115,8 +128,11 @@ const STRINGS = {
     reverseRoute: "Reverse route",
     searchAgain: "Search again",
     guideTier: { walk: "Walk", run: "Run", fast: "Fast" },
-    guideSpeedLabel: (tier: string, mps: number) => `${tier} ${mps} m/s`,
-    guideSpeedAria: (tier: string) => `Guide speed: ${tier}`,
+    guideSpeedLabel: (tier: string, r: PaceReadout) => `${tier} ${r.approx ? "≈" : ""}${r.pace} m/s`,
+    guideSpeedAria: (tier: string, r: PaceReadout) =>
+      r.approx
+        ? `Guide speed, ${tier}: up to ${r.top} m/s in open corridors; this route averages about ${r.pace} m/s (escalators, stairs and gates keep realistic speeds)`
+        : `Guide speed, ${tier}: ${r.top} m/s`,
     firstPerson: "First person",
     graphOverlay: "Network",
     soundOn: "Sound on",
@@ -158,6 +174,13 @@ const STRINGS = {
     touchHint: "Left thumb to move (push to the edge to run) · drag right side to look",
     noIndoorPositioning: "No indoor positioning. Choose where you start.",
     operators: "Operators",
+    options: "Options",
+    close: "Close",
+    searchCount: (n: number) => `${n} result${n === 1 ? "" : "s"}`,
+    routeFound: (m: number, min: number) => `Route found: ${m} m, about ${min} minute${min === 1 ? "" : "s"}`,
+    liveSeparator: ". ",
+    coverageStatus: { routable: "routable", visual_only: "visual only", unverified: "unverified", excluded: "excluded" } as Record<string, string>,
+    factsOnly: "facts-only",
     language: "日本語",
   },
 };
