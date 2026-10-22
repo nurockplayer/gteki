@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { mergeGeometries, mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { ditherFade, sanitizeAvatarFade } from "./avatarDither.ts";
 
 /**
  * Procedural third-person player avatar: a ~1.70 m modern Tokyo commuter (navy jacket over a light
@@ -384,28 +385,6 @@ function tube(points: readonly THREE.Vector3[], radius: number, d: Detail, close
 /* ------------------------------------------------------------------------------------------ */
 /* materials                                                                                   */
 /* ------------------------------------------------------------------------------------------ */
-
-/**
- * Screen-door dither: fragments whose noise exceeds the fade uniform are discarded, so a near camera sees
- * through the body without alpha blending or sorting. Patched in at build, one program per material, shared
- * by every avatar material; the shadow pass uses the depth material, so the body shadow does not fade.
- */
-function ditherFade(material: THREE.MeshStandardMaterial, uniform: { value: number }): void {
-  material.onBeforeCompile = (shader) => {
-    shader.uniforms.uAvatarFade = uniform;
-    shader.fragmentShader = shader.fragmentShader
-      .replace("void main() {", "uniform float uAvatarFade;\nvoid main() {")
-      .replace(
-        "#include <clipping_planes_fragment>",
-        `#include <clipping_planes_fragment>
-  if (uAvatarFade < 0.999) {
-    float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
-    if (ign >= uAvatarFade) discard;
-  }`,
-      );
-  };
-  material.customProgramCacheKey = () => "avatar-dither-fade";
-}
 
 function makeMaterials(fade: { value: number }) {
   const std = (color: number, roughness: number, side: THREE.Side = THREE.FrontSide, metalness = 0): THREE.MeshStandardMaterial => {
@@ -940,7 +919,7 @@ class Avatar implements AvatarRig {
   }
 
   setFade(opacity: number): void {
-    this.fade.value = clamp(Number.isFinite(opacity) ? opacity : 1, 0, 1);
+    this.fade.value = sanitizeAvatarFade(opacity);
   }
 
   dispose(): void {
