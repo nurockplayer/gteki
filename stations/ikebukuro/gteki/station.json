@@ -119,7 +119,7 @@
   "frame": "ENU",
   "datasetVersion": "ikebukuro-b1-slice5.4",
   "synthetic": false,
-  "generatedAt": "2026-10-20T15:00:00+00:00"
+  "generatedAt": "2026-10-21T15:00:00+00:00"
  },
  "sources": [
   {
@@ -156,7 +156,23 @@
    "retrievedAt": "2026-10-20T10:52:00Z",
    "datasetDate": "2022-01",
    "notes": "Used only to identify which PLATEAU openings are which named passage, exit or gate. No image, layout or pictogram is reproduced.",
-   "usage": "facts-only"
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+  },
+  {
+   "id": "toshima-terminal-sign-guideline-draft-v1.3",
+   "title": "池袋ターミナル案内サインガイドライン（案） Ver1.3 (資料3-3 p20 主要出入口)",
+   "publisher": "豊島区",
+   "url": "https://www.city.toshima.lg.jp/documents/56546/20260519131956.pdf",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "attribution": "豊島区「池袋ターミナル案内サインガイドライン（案）Ver1.3」(facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-22T00:00:00+09:00",
+   "datasetDate": "2026-03",
+   "notes": "Draft (案, 草案) Ver1.3, 第14回 委員会 (2026-03-25), 資料3-3 p20 text layer only (p21 figure not read); listed on https://www.city.toshima.lg.jp/405/kuse/shingi/kaigichiran/006335.html. Used only for the names-to-number mapping of main exits (東口(北)=22, 東口(中央)=37, 東口(南)=38, 西口(北)=20a, 西口(中央)=19, 西口(南)=4), never as route evidence (OD-22, PR #222). Freshness check: replace when the final guideline is published.",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/165#issuecomment-6340635823", "date": "2026-10-22" }
   },
   {
    "id": "tokyometro-ikebukuro-yardmap-2026-03",
@@ -170,7 +186,23 @@
    "retrievedAt": "2026-10-20T10:49:00Z",
    "datasetDate": "2026-03",
    "notes": "Exit numbers and the public status of B1 passages were read from the official map. Nothing is reproduced.",
-   "usage": "facts-only"
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
+  },
+  {
+   "id": "tokyometro-ikebukuro-accessibility-2026-10",
+   "title": "東京メトロ 池袋駅 バリアフリー設備",
+   "publisher": "東京地下鉄",
+   "url": "https://www.tokyometro.jp/station/ikebukuro/accessibility/index.html",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "attribution": "東京メトロ 池袋駅 バリアフリー設備 (facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-22T00:00:00+09:00",
+   "datasetDate": null,
+   "notes": "ライセンスなし・事実のみ参照（複製なし）。Owner decision #26 (FACTS_ONLY_REFERENCE). Terms: all rights reserved, no use beyond private use/quotation without permission (https://www.tokyometro.jp/terms/index.html). Read only for names and lift/escalator connections; no text block, map or graphic is copied. Fact used: under the 改札外 lift and escalator lists, 南通路西改札～４番出入口（エソラ）. Hours not stated. Same record as DR-IK-02 / M-acc in docs/research/gaps/DR-IK-station-facts.md (PR #177).",
+   "usage": "facts-only",
+   "decision": { "url": "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", "date": "2026-10-21" }
   }
  ],
  "floors": [
@@ -238,11 +270,11 @@
   "summary": [
    {
     "lang": "en",
-    "text": "Routable (desk-verified against the PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown): slice 1, the B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43; slice 2, the passage along the JR east side to the South Passage east end and the south-east corridor to Exits 38/39/40/41; slice 3, the passage along the JR east side north to the North Passage (Exit 22, 東口（北）) and the passage between the Ikebukuro Shopping Park blocks to Exits 26/28/32/33; slice 4, the Central Passage west to the West Exit (西口) underground hall and its passages to Exits 10/11/15/17/18; slice 5, the South Passage west past the JR South Gate to the West Exit (South) hall (Exit 4, routed to the foot of its stairs, which are outside the survey) and the passage north to the West Exit hall. The rest of the PLATEAU B1 passage network is visible but not accessible (access unverified); access fences stop free walking there. Fare-paid concourses and platforms are not modelled."
+    "text": "Routable (desk-verified against the PLATEAU 2023 survey geometry and official 2022/2026 maps; not field-verified; opening hours unknown): slice 1, the B1 Central Passage from the JR Central Gates east to Exits 27/34/35/36/37/42/43; slice 2, the passage along the JR east side to the South Passage east end and the south-east corridor to Exits 38/39/40/41; slice 3, the passage along the JR east side north to the North Passage (Exit 22, 東口（北）) and the passage between the Ikebukuro Shopping Park blocks to Exits 26/28/32/33; slice 4, the Central Passage west to the West Exit (西口) underground hall and its passages to Exits 10/11/15/17/18; slice 5, the South Passage west past the JR South Gate to the West Exit (South) hall (Exit 4, routed to the foot of its stairs, which are outside the survey) and the passage north to the West Exit hall. The rest of the PLATEAU B1 passage network is visible but not accessible (access unverified); access fences stop free walking there. Exits 4, 13 and 36 are routed only to the foot of their stairs; the stairs themselves are not part of the route. Fare-paid concourses and platforms are not modelled."
    },
    {
     "lang": "ja",
-    "text": "ルート案内対象（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）：第1区画 中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43；第2区画 JR東側通路から南通路東端、南東通路の出口38・39・40・41；第3区画 JR東側通路から北通路（出口22・東口（北））、池袋ショッピングパーク間の通路の出口26・28・32・33；第4区画 中央通路（西）から西口地下広場、出口10・11・15・17・18；第5区画 南通路（西）・JR南改札から西口（南）地下広場（出口4は計測範囲外の階段の下まで案内）、西口地下広場への通路。その他のB1地下通路は表示のみで立入不可（アクセス未確認のため、フェンスで進入を止めています）。改札内・ホームは未モデル化。"
+    "text": "ルート案内対象（PLATEAU 2023年計測形状と公式案内図による机上検証。現地未確認、営業時間不明）：第1区画 中央通路（JR中央改札付近）から東側出口27・34・35・36・37・42・43；第2区画 JR東側通路から南通路東端、南東通路の出口38・39・40・41；第3区画 JR東側通路から北通路（出口22・東口（北））、池袋ショッピングパーク間の通路の出口26・28・32・33；第4区画 中央通路（西）から西口地下広場、出口10・11・15・17・18；第5区画 南通路（西）・JR南改札から西口（南）地下広場（出口4は計測範囲外の階段の下まで案内）、西口地下広場への通路。その他のB1地下通路は表示のみで立入不可（アクセス未確認のため、フェンスで進入を止めています）。出口4・13・36は階段の下までの案内で、階段自体はルートに含まれません。改札内・ホームは未モデル化。"
    }
   ],
   "areas": [
@@ -965,7 +997,7 @@
     "id": "gap-south-west",
     "floorId": "b1",
     "zone": "South Passage, south side between the JR South Gate and the West Exit (South) hall",
-    "missingFact": "Which PLATEAU features are the Yurakucho Line South Passage East and West Gates: the gate machines on the official map sit inside surveyed floor with no gate-line opening, so their exact lines and the paid side are not established",
+    "missingFact": "Which PLATEAU features are the Yurakucho Line South Passage East and West Gates: the gate machines on the official map sit inside surveyed floor with no gate-line opening, so their exact lines and the paid side are not established. Tokyo Metro's accessibility page does state a lift and escalator connection 南通路西改札～４番出入口（エソラ） (改札外), but it gives neither the gate's position nor the passage geometry, so 南通路西改札 is a search-only POI (metro-y-south-west-gate) and the link to Exit 4 is not an edge",
     "fieldWorkNeeded": "on-site check of both Yurakucho gate lines against column positions"
    },
    {

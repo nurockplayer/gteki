@@ -10,7 +10,7 @@ import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGu
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
-import { sourceCredit } from "../credits.ts";
+import { factsOnlyCredit, sourceCredit } from "../credits.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { LiveRegion, routeLiveMessage, searchLiveMessage } from "./live.ts";
 import { watchReducedMotion } from "./motion.ts";
@@ -899,6 +899,12 @@ export class App {
     li.append(link(c.title, c.href), el("span", "muted", ` — ${c.attribution}`));
     if (c.license) li.append(el("span", "muted", " ("), link(c.license.name, c.license.href), el("span", "muted", ")"));
     if (c.modified) li.append(el("span", "muted", ` · ${this.t.modified}`));
+    // Facts-only sources have no licence to show: say so (Coverage dialog and the route card's 出典 both use this).
+    const facts = factsOnlyCredit(s, this.t);
+    if (facts) {
+      li.append(el("span", "muted", ` · ${facts.text}`));
+      if (facts.decision) li.append(el("span", "muted", " ("), link(facts.decision.label, facts.decision.href), el("span", "muted", ")"));
+    }
     return li;
   }
 
@@ -928,7 +934,7 @@ export class App {
       // Every source, including those cited only by assets or coverage: link, licence and modification notice.
       for (const s of b.sources) {
         const li = this.creditItem(s);
-        li.append(el("span", "muted", ` [${s.rights}${s.usage === "facts-only" ? `, ${this.t.factsOnly}` : ""}]`));
+        li.append(el("span", "muted", ` [${s.rights}${s.usage === "facts-only" ? `, ${this.t.factsOnlyTag}` : ""}]`));
         src.append(li);
       }
       d.append(src);
