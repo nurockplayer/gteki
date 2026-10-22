@@ -1039,9 +1039,10 @@ describe('Shinjuku: window of 300 m discs around ground-level exits 1-4 (node_ru
     if (graphBytes === null) return; // standalone checkout without stations/
     const config = await loadContextConfig('shinjuku');
     const window = await buildContextWindow({ r_origin_m: config.window!.r_origin_m!, r_exit_m: config.window!.r_exit_m, node_rule: config.window!.node_rule!, mesh_margin_m: config.window!.mesh_margin_m! }, { stationId: 'shinjuku' });
-    expect(window.graph!.selected.map((n) => [n.id, n.floor_id, n.x, n.y])).toEqual([
-      ['n:4423521d79e54865b7c41e4aec29826d', 'toei-nwd-0', -58.1, 146.84], ['n:a06f3d191885497bac197b666c4daef9', 'toei-nwd-0', -59.9, 211.96],
-      ['n:e4cfe61e944e4f5e8ad8caeb6d521750', 'toei-nwd-0', 2.85, -9.56], ['n:e6feaa2cc7514b68be2758b956baeb28', 'toei-nwd-1', -2.59, 3.56],
+    // E27 node ids are class (b) (#129): the test pins their sha256, never the id text.
+    expect(window.graph!.selected.map((n) => [createHash('sha256').update(n.id, 'utf8').digest('hex'), n.floor_id, n.x, n.y])).toEqual([
+      ['7a090306c4bfb3754cd2f625b346d48a4c4cc8a1cb5330e4dde2c45d677c46b8', 'toei-nwd-0', -58.1, 146.84], ['0c2933b4d01db6d6e1bffd0b8d38f0bb040e7a35459b56f98f7190f47f90b027', 'toei-nwd-0', -59.9, 211.96],
+      ['7f4ca2a2cb13598a58cabc1f5e2394bb79967ce2dacfa8d851d7e6c64d326c04', 'toei-nwd-0', 2.85, -9.56], ['d0a9d2c55f4ed45eccc2cdb76a46a1c161880f9f69b4e5b67e65d6aca8998445', 'toei-nwd-1', -2.59, 3.56],
     ]);
     expect(window.graph!.selected.map((n) => n.poi_ids![0]).sort()).toEqual(SJ_EXIT_IDS);
     expect(window.graph!.graph_sha256).toBe(createHash('sha256').update(graphBytes).digest('hex'));
@@ -1146,7 +1147,17 @@ describe('Shinjuku: config, sources and the full command wrapper', () => {
     }
     const graphExists = async (): Promise<boolean> => (await readFile(join(fileURLToPath(new URL('../../../stations/shinjuku/gteki/', import.meta.url)), 'graph.json')).catch(() => null)) !== null;
     const hashOf = (id: string): { value_sha256: string; value_type: 'string' } => ({ value_sha256: createHash('sha256').update(id, 'utf8').digest('hex'), value_type: 'string' });
-    const SJ_NODE_IDS = ['n:4423521d79e54865b7c41e4aec29826d', 'n:a06f3d191885497bac197b666c4daef9', 'n:e4cfe61e944e4f5e8ad8caeb6d521750', 'n:e6feaa2cc7514b68be2758b956baeb28'];
+    // The 4 connector ids are E27 (class (b)): pinned here by sha256 only and read verbatim from the committed graph at run time.
+    const SJ_NODE_ID_SHA256 = ['7a090306c4bfb3754cd2f625b346d48a4c4cc8a1cb5330e4dde2c45d677c46b8', '0c2933b4d01db6d6e1bffd0b8d38f0bb040e7a35459b56f98f7190f47f90b027', '7f4ca2a2cb13598a58cabc1f5e2394bb79967ce2dacfa8d851d7e6c64d326c04', 'd0a9d2c55f4ed45eccc2cdb76a46a1c161880f9f69b4e5b67e65d6aca8998445'];
+    const sha = (id: string): string => createHash('sha256').update(id, 'utf8').digest('hex');
+    const hashed = (digest: string): { value_sha256: string; value_type: 'string' } => ({ value_sha256: digest, value_type: 'string' });
+    const sjNodeIds = async (): Promise<string[]> => {
+      const config = await loadContextConfig('shinjuku');
+      const window = await buildContextWindow({ r_origin_m: config.window!.r_origin_m!, r_exit_m: config.window!.r_exit_m, node_rule: config.window!.node_rule!, mesh_margin_m: config.window!.mesh_margin_m! }, { stationId: 'shinjuku' });
+      const ids = window.graph!.selected.map((n) => n.id);
+      expect(ids.map(sha)).toEqual(SJ_NODE_ID_SHA256);
+      return ids;
+    };
 
     it('is configured per station: Shinjuku names the class (b) E27 network source, Ikebukuro its hand-authored graph', async () => {
       const shinjuku = await loadContextConfig('shinjuku'), ikebukuro = await loadContextConfig('ikebukuro');
@@ -1193,13 +1204,14 @@ describe('Shinjuku: config, sources and the full command wrapper', () => {
 
     it('class (b) config: the receipt carries the 4 connector ids only as { value_sha256, value_type } (selected, connector_node_ids); the sidecar keeps them verbatim', async () => {
       if (!(await graphExists())) return;
+      const SJ_NODE_IDS = await sjNodeIds();
       const { summary, receipt, receiptText, sidecar, sidecarText } = await runShinjuku('hokonavi-oedo-shinjuku-network-geojson');
       expect(receiptText).not.toMatch(E27_ID);
       expect(JSON.stringify(summary)).not.toMatch(E27_ID); // the returned object is the committed form
       expect(receipt.window.graph.selected.map((n: { id: unknown }) => n.id)).toEqual(SJ_NODE_IDS.map(hashOf));
       expect(receipt.window.graph.selected.map((n: { kind: string; floor_id: string; matched_by: string[]; poi_ids: string[] }) => [n.kind, n.floor_id, n.matched_by, n.poi_ids.length])).toEqual([['exit', 'toei-nwd-0', ['poi_id'], 1], ['exit', 'toei-nwd-0', ['poi_id'], 1], ['exit', 'toei-nwd-0', ['poi_id'], 1], ['exit', 'toei-nwd-1', ['poi_id'], 1]]);
       const connectors = receipt.exit_neighbours.pois.map((p: { poi_id: string; connector_node_ids: unknown[] }) => [p.poi_id, p.connector_node_ids]);
-      expect(connectors).toEqual([['poi:exit:1', [hashOf('n:a06f3d191885497bac197b666c4daef9')]], ['poi:exit:2', [hashOf('n:4423521d79e54865b7c41e4aec29826d')]], ['poi:exit:3', [hashOf('n:e6feaa2cc7514b68be2758b956baeb28')]], ['poi:exit:4', [hashOf('n:e4cfe61e944e4f5e8ad8caeb6d521750')]]]);
+      expect(connectors).toEqual([['poi:exit:1', [hashed('0c2933b4d01db6d6e1bffd0b8d38f0bb040e7a35459b56f98f7190f47f90b027')]], ['poi:exit:2', [hashed('7a090306c4bfb3754cd2f625b346d48a4c4cc8a1cb5330e4dde2c45d677c46b8')]], ['poi:exit:3', [hashed('d0a9d2c55f4ed45eccc2cdb76a46a1c161880f9f69b4e5b67e65d6aca8998445')]], ['poi:exit:4', [hashed('7f4ca2a2cb13598a58cabc1f5e2394bb79967ce2dacfa8d851d7e6c64d326c04')]]]);
       expect(receipt.window.graph.graph_sha256).toMatch(/^[0-9a-f]{64}$/); // file hash, not a literal
       expect(sidecar.window.graph.selected.map((n: { id: string }) => n.id)).toEqual(SJ_NODE_IDS);
       expect(sidecar.exit_neighbours.pois.flatMap((p: { connector_node_ids: string[] }) => p.connector_node_ids).sort()).toEqual(SJ_NODE_IDS);
@@ -1211,6 +1223,7 @@ describe('Shinjuku: config, sources and the full command wrapper', () => {
 
     it('class (a) or GTEki-authored config keeps the ids verbatim in the receipt', async () => {
       if (!(await graphExists())) return;
+      const SJ_NODE_IDS = await sjNodeIds();
       for (const source of ['hokonavi-ikebukuro-walk-node-csv', GRAPH_LITERALS_GTEKI_AUTHORED]) {
         const { receipt, receiptText } = await runShinjuku(source);
         expect(receipt.window.graph.selected.map((n: { id: string }) => n.id), source).toEqual(SJ_NODE_IDS);
@@ -1222,6 +1235,7 @@ describe('Shinjuku: config, sources and the full command wrapper', () => {
 
     it('missing config hashes, as do unknown ids and class (b) sources other than the network one', async () => {
       if (!(await graphExists())) return;
+      const SJ_NODE_IDS = await sjNodeIds();
       for (const source of [null, 'not-a-listed-source', 'hokonavi-oedo-shinjuku-stationmap-geojson', 'plateau-13104-codelists']) {
         const { receipt, receiptText } = await runShinjuku(source);
         expect(receiptText, String(source)).not.toMatch(E27_ID);
