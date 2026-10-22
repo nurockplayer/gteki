@@ -183,14 +183,14 @@
         "material_11": {
           "style": "oedo_accent",
           "from": {
-            "color": "#b6007a",
+            "color": "#b0186f",
             "metal": 0.0,
             "roughness": 0.4,
             "surfaces": 5,
             "roles": {
               "visual": 5
             },
-            "evidence": "source mat.accent (OEDO_MAGENTA #b6007a, roughness 0.4, faint emission): the 40 mm identity bands along the walls. The train stripe primitives share this source material and are repainted with it. Kept as the station-identity cue; the override is a duplicate, so the source's emission survives"
+            "evidence": "source mat.accent (OEDO_MAGENTA #b0186f, the GTEki-chosen value since #264 / OD-29 (was #b6007a), roughness 0.4, faint emission): the 40 mm identity bands along the walls. The train stripe primitives share this source material and are repainted with it. Kept as the station-identity cue; the override is a duplicate, so the source's emission survives"
           }
         },
         "material_34": {
@@ -283,9 +283,9 @@
               "visual": 1
             },
             "meshes": [
-              "elevator-portal_finish2"
+              "static-steel-finishes"
             ],
-            "evidence": "source mat.steel (#aab2b5, metal 0.6, roughness 0.58): lift-portal frames and handrails. The source changed in main (it was #c7ccd1, metal 0.85, roughness 0.28, a polished stainless); the darker, rougher finish is brushed steel, so the mapping follows it (lead's decision, 2026-10-23)"
+            "evidence": "source mat.steel (#aab2b5, metal 0.6, roughness 0.58): lift-portal frames and handrails, merged into static-steel-finishes by #72 (was elevator-portal_finish2). The source changed in main (it was #c7ccd1, metal 0.85, roughness 0.28, a polished stainless); the darker, rougher finish is brushed steel, so the mapping follows it (lead's decision, 2026-10-23)"
           }
         }
       },
