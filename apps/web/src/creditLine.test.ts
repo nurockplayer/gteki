@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Asset, Source } from "@gteki/schema";
-import { composeCreditLine, creditLineFor, drawnSources, groupByAttribution, groupLicenses } from "./creditLine.ts";
+import { composeCreditLine, creditEntries, creditLineFor, drawnSources, entryRightsLabels, groupByAttribution, groupLicenses } from "./creditLine.ts";
+import { strings } from "./i18n.ts";
 
 const PLATEAU = "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成";
 const src = (id: string, attribution: string, extra: Partial<Source> = {}): Source => ({
@@ -60,5 +61,41 @@ describe("groupByAttribution", () => {
       { name: "CC BY 4.0", href: "https://creativecommons.org/licenses/by/4.0/" },
       { name: "PDL 1.0", href: null },
     ]);
+  });
+});
+
+describe("creditEntries (the credits dialog)", () => {
+  const facts = (id: string, attribution: string) => src(id, attribution, { usage: "facts-only", rights: "REFERENCE_ONLY", license: null });
+
+  it("never merges a facts-only source, even when it shares an attribution with a data source", () => {
+    const sources = [src("a", PLATEAU), facts("f", PLATEAU), src("b", PLATEAU)];
+    expect(groupByAttribution(sources).map((g) => g.sources.map((s) => s.id))).toEqual([["a", "b"]]);
+    expect(creditEntries(sources).map((g) => g.sources.map((s) => s.id))).toEqual([["a", "b"], ["f"]]);
+  });
+
+  it("keeps a source with a blank attribution as its own entry instead of dropping it", () => {
+    const sources = [src("a", "A"), src("blank", "  "), src("empty", ""), src("b", "A")];
+    expect(creditEntries(sources).map((g) => g.sources.map((s) => s.id))).toEqual([["a", "b"], ["blank"], ["empty"]]);
+    // The persistent line still skips them: there is no text to show.
+    expect(composeCreditLine(sources)).toBe("A");
+  });
+
+  it("lists every source exactly once, in bundle order", () => {
+    const sources = [src("a", "A"), facts("f", "F"), src("blank", ""), src("b", "A"), src("c", "C")];
+    const ids = creditEntries(sources).flatMap((g) => g.sources.map((s) => s.id));
+    expect(ids.sort()).toEqual(["a", "b", "blank", "c", "f"]);
+    expect(creditEntries(sources).map((g) => g.sources[0]!.id)).toEqual(["a", "f", "blank", "c"]);
+  });
+});
+
+describe("entryRightsLabels", () => {
+  it("words rights in plain language, once each, and leaves facts-only to its own line", () => {
+    const t = strings("en");
+    const a = src("a", "A");
+    const o = src("o", "A", { rights: "PUBLISHED_UNDER_OWNER_OVERRIDE" });
+    const f = src("f", "A", { rights: "REFERENCE_ONLY", usage: "facts-only" });
+    expect(entryRightsLabels([a, src("a2", "A"), o], t)).toEqual([t.rightsReusable, t.rightsOwnerOverride]);
+    expect(entryRightsLabels([f], t)).toEqual([]);
+    for (const label of entryRightsLabels([a, o, f], t)) expect(label).not.toMatch(/[A-Z]{3,}_[A-Z_]+/);
   });
 });

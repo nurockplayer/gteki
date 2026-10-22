@@ -9,8 +9,8 @@ import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGu
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
-import { sourceCredit } from "../credits.ts";
-import { creditLineFor, groupByAttribution, groupLicenses } from "../creditLine.ts";
+import { factsOnlyCredit, sourceCredit } from "../credits.ts";
+import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -678,9 +678,12 @@ export class App {
     }
   }
 
-  /** A source's credit line: title (linked), attribution, licence (linked) and the modification notice. */
-  private creditItem(s: Source): HTMLLIElement {
-    const c = sourceCredit(s);
+  /**
+   * A credit line for one source, or for several sources sharing an attribution: titles (linked), the attribution once,
+   * the distinct licences (linked) and the modification notice; a facts-only source adds the #26 wording and decision link
+   * (Coverage dialog and the route card's 出典 both use this).
+   */
+  private creditItem(...sources: Source[]): HTMLLIElement {
     const link = (text: string, href: string | null): HTMLElement => {
       if (!href) return el("span", undefined, text);
       const a = el("a", undefined, text);
@@ -690,9 +693,26 @@ export class App {
       return a;
     };
     const li = el("li");
-    li.append(link(c.title, c.href), el("span", "muted", ` — ${c.attribution}`));
-    if (c.license) li.append(el("span", "muted", " ("), link(c.license.name, c.license.href), el("span", "muted", ")"));
-    if (c.modified) li.append(el("span", "muted", ` · ${this.t.modified}`));
+    sources.forEach((s, i) => {
+      const c = sourceCredit(s);
+      if (i) li.append(el("span", "muted", "、"));
+      li.append(link(c.title, c.href));
+    });
+    const attribution = sources[0]?.attribution.replace(/\s+/g, " ").trim() ?? "";
+    if (attribution) li.append(el("span", "muted", ` — ${attribution}`));
+    const licenses = groupLicenses(sources);
+    if (licenses.length) {
+      li.append(el("span", "muted", " ("));
+      licenses.forEach((l, i) => { if (i) li.append(el("span", "muted", ", ")); li.append(link(l.name, l.href)); });
+      li.append(el("span", "muted", ")"));
+    }
+    if (sources.some((s) => s.modified)) li.append(el("span", "muted", ` · ${this.t.modified}`));
+    for (const s of sources) {
+      const facts = factsOnlyCredit(s, this.t);
+      if (!facts) continue;
+      li.append(el("span", "muted", ` · ${facts.text}`));
+      if (facts.decision) li.append(el("span", "muted", " ("), link(facts.decision.label, facts.decision.href), el("span", "muted", ")"));
+    }
     return li;
   }
 
@@ -709,43 +729,11 @@ export class App {
     const line = el("span", "credit-text", text);
     line.title = text;
     const btn = el("button", "ghost credit-btn", this.t.credits);
+    // The text does not take pointer events (joystick area), so the button carries the full text as its tooltip too.
+    btn.title = text;
     btn.setAttribute("aria-haspopup", "dialog");
     btn.addEventListener("click", () => this.openCoverage());
     box.append(line, btn);
-  }
-
-  /** One credits-dialog item for sources sharing an attribution: titles (linked), the attribution once, distinct licences, modification and rights notes. */
-  private creditGroupItem(attribution: string, sources: Source[]): HTMLLIElement {
-    const rights = `${[...new Set(sources.map((s) => s.rights))].join(" / ")}${sources.some((s) => s.usage === "facts-only") ? ", facts-only" : ""}`;
-    if (sources.length === 1) {
-      const li = this.creditItem(sources[0]!);
-      li.append(el("span", "muted", ` [${rights}]`));
-      return li;
-    }
-    const link = (text: string, href: string | null): HTMLElement => {
-      if (!href) return el("span", undefined, text);
-      const a = el("a", undefined, text);
-      a.href = href;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      return a;
-    };
-    const li = el("li");
-    sources.forEach((s, i) => {
-      const c = sourceCredit(s);
-      if (i) li.append(el("span", "muted", "、"));
-      li.append(link(c.title, c.href));
-    });
-    li.append(el("span", "muted", ` — ${attribution}`));
-    const licenses = groupLicenses(sources);
-    if (licenses.length) {
-      li.append(el("span", "muted", " ("));
-      licenses.forEach((l, i) => { if (i) li.append(el("span", "muted", ", ")); li.append(link(l.name, l.href)); });
-      li.append(el("span", "muted", ")"));
-    }
-    if (sources.some((s) => s.modified)) li.append(el("span", "muted", ` · ${this.t.modified}`));
-    li.append(el("span", "muted", ` [${rights}]`));
-    return li;
   }
 
   // ---- Coverage --------------------------------------------------------------------
@@ -770,8 +758,14 @@ export class App {
       if (!b.coverage.gaps.length) gaps.append(el("li", "muted", "—"));
       d.append(gaps, el("h3", undefined, this.t.sources));
       const src = el("ul");
-      // Every source, including those cited only by assets or coverage; sources sharing one attribution text form one item.
-      for (const g of groupByAttribution(b.sources)) src.append(this.creditGroupItem(g.attribution, g.sources));
+      // Every source exactly once, including those cited only by assets or coverage. Sources sharing an attribution form one item;
+      // facts-only and blank-attribution sources stay single. Rights are plain language (#130), never the internal enum.
+      for (const g of creditEntries(b.sources)) {
+        const li = this.creditItem(...g.sources);
+        const rights = entryRightsLabels(g.sources, this.t);
+        if (rights.length) li.append(el("span", "muted", ` · ${rights.join(" / ")}`));
+        src.append(li);
+      }
       d.append(src);
       // Asset modification notices (e.g. "Blender build from PLATEAU …") disclose how sources were processed.
       const derived = (b.assets ?? []).filter((a) => a.derivation);

@@ -4,6 +4,7 @@ import { isOpenAt, parseHm, parseStationFiles, validateBundle } from "./index.ts
 import type { GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
 
 const ev = { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" };
+const DECISION = { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" };
 const errors = (b: StationBundle) => validateBundle(b).filter((i) => i.level === "error").map((i) => i.code);
 const warnings = (b: StationBundle) => validateBundle(b).filter((i) => i.level === "warning").map((i) => i.code);
 
@@ -111,6 +112,7 @@ describe("validator truth rules added in v0.1 core", () => {
     ref.rights = "REFERENCE_ONLY";
     expect(warnings(b)).toContain("source.rights");
     ref.usage = "facts-only";
+    ref.decision = DECISION;
     expect(warnings(b)).not.toContain("source.rights");
     expect(errors(b)).toEqual([]);
     b.edges[0]!.geometryEvidence = { ...b.edges[0]!.geometryEvidence, sourceIds: ["fixture-access"] };
@@ -293,6 +295,7 @@ describe("review regressions: nested fail-closed shape and rights", () => {
       b.edges = [];
       for (const n of b.nodes) n.sourceRefs = [{ sourceId: "fixture-geometry", featureId: n.id }];
       b.sources.find((s) => s.id === "fixture-access")!.usage = "facts-only";
+      b.sources.find((s) => s.id === "fixture-access")!.decision = DECISION;
       b.sources.find((s) => s.id === "fixture-access")!.rights = "REFERENCE_ONLY";
       b.coverage.areas = [{ id: "area", floorId: "concourse", status: "routable", label: [], polygon: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }], sourceIds: ["fixture-geometry", "fixture-access"] }];
       return b;
@@ -381,6 +384,55 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     // ...but it is still cited, so it still needs a landing URL.
     b.sources[1]!.url = "";
     expect(errors(b)).toContain("source.url");
+  });
+
+  it("requires the #26 decision reference on a real facts-only source", () => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    const src = b.sources.find((s) => s.id === "fixture-access")!;
+    src.rights = "REFERENCE_ONLY";
+    src.license = null;
+    src.usage = "facts-only";
+    expect(errors(b)).toContain("source.decision");
+    src.decision = DECISION;
+    expect(errors(b)).not.toContain("source.decision");
+    // A malformed decision is an error and no longer satisfies the rule.
+    for (const bad of [{ url: "javascript:alert(1)", date: "2026-10-21" }, { url: DECISION.url, date: "2026-10" }, { url: DECISION.url, date: "2026-02-30" }]) {
+      src.decision = bad;
+      expect(errors(b)).toContain("source.decision");
+    }
+    // Synthetic stations and licensed data sources are not asked for it.
+    src.decision = undefined;
+    b.station.synthetic = true;
+    expect(errors(b)).not.toContain("source.decision");
+    const data = asRealStation(createSyntheticBundle());
+    data.edges = [];
+    expect(errors(data)).not.toContain("source.decision");
+    // A decision on a non-facts-only source is still shape-checked.
+    data.sources[0]!.decision = { url: "ftp://example.org/x", date: "2026-10-21" };
+    expect(errors(data)).toContain("source.decision");
+  });
+
+  it("fails closed on a malformed source decision instead of throwing", () => {
+    const parse = (decision: unknown) => {
+      const [m, g, p] = split(createSyntheticBundle());
+      (m.sources[0] as { decision?: unknown }).decision = decision;
+      return parseStationFiles(m, g, p);
+    };
+    expect(parse(DECISION).ok).toBe(true);
+    for (const bad of [null, "x", [], {}, { url: DECISION.url }, { url: 1, date: "2026-10-21" }, { url: DECISION.url, date: null }]) {
+      const parsed = parse(bad);
+      expect(parsed.ok).toBe(false);
+      expect(parsed.issues.map((i) => i.code)).toEqual(expect.arrayContaining([expect.stringMatching(/^shape\./)]));
+    }
+    // validateBundle itself must not throw on a hand-built bundle with a wrong-typed decision.
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    for (const bad of [null, "x", 5]) {
+      (b.sources[0] as { decision?: unknown }).decision = bad;
+      expect(() => validateBundle(b)).not.toThrow();
+      expect(errors(b)).toContain("source.decision");
+    }
   });
 
   it("rejects origin coordinates outside the geodetic range", () => {
@@ -568,5 +620,74 @@ describe("late-opening windows (PR #15 Codex review 6)", () => {
     expect(isOpenAt(w("24:00", "00:00"), { weekday: "mon", minutes: 60 })).toBeNull();
     const b = createSyntheticBundle([edge("h", "start", "goal", { hours: w("24:00", "00:00") })]);
     expect(errors(b)).toContain("edge.hours");
+  });
+});
+
+describe("PUBLISHED_UNDER_OWNER_OVERRIDE rights (#130)", () => {
+  const OVERRIDE = { decision: "https://github.com/nurockplayer/gteki/issues/130", date: "2026-10-22" };
+  const overridden = (override?: unknown, license: { name: string; url: string } | null = { name: "Licence unconfirmed", url: "https://example.org/terms" }) => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    const src = b.sources.find((s) => s.id === "fixture-access")!;
+    src.rights = "PUBLISHED_UNDER_OWNER_OVERRIDE";
+    src.license = license;
+    (src as { override?: unknown }).override = override;
+    return b;
+  };
+
+  it("ships like REUSABLE_WITH_CONDITIONS when the override is recorded", () => {
+    const b = overridden(OVERRIDE);
+    expect(errors(b)).not.toContain("source.override");
+    expect(errors(b)).not.toContain("source.rights.value");
+    expect(warnings(b)).not.toContain("source.rights");
+    // An issue reference is accepted as well as a URL.
+    for (const decision of ["#130", "nurockplayer/gteki#130"]) expect(errors(overridden({ ...OVERRIDE, decision }))).not.toContain("source.override");
+  });
+
+  it("is an error without an override reference or with a malformed one", () => {
+    expect(errors(overridden(undefined))).toContain("source.override");
+    for (const bad of [null, "x", {}, { decision: "see chat", date: "2026-10-22" }, { decision: OVERRIDE.decision }, { decision: OVERRIDE.decision, date: "2026-10" }, { decision: OVERRIDE.decision, date: "2026-02-30" }])
+      expect(errors(overridden(bad))).toContain("source.override");
+  });
+
+  it("needs licence text", () => {
+    expect(errors(overridden(OVERRIDE, null))).toContain("source.override");
+    expect(errors(overridden(OVERRIDE, { name: " ", url: "https://example.org/terms" }))).toContain("source.override");
+  });
+
+  it("lets geometry ship: nodes, edges, assets, POIs and coverage polygons derived from an override source validate clean", () => {
+    const geometry = (rights: "PUBLISHED_UNDER_OWNER_OVERRIDE" | "UNVERIFIED") => {
+      const b = asRealStation(createSyntheticBundle([edge("v", "start", "goal", { verification: "verified" })]));
+      const src = b.sources.find((s) => s.id === "fixture-geometry")!;
+      src.rights = rights;
+      if (rights === "PUBLISHED_UNDER_OWNER_OVERRIDE") (src as { override?: unknown }).override = OVERRIDE;
+      b.assets = [{ id: "x", uri: "assets/x.glb", format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-geometry"] }];
+      b.coverage.areas = [{ id: "area", floorId: "concourse", status: "routable", label: [], polygon: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }], sourceIds: ["fixture-geometry"] }];
+      return b;
+    };
+    expect(errors(geometry("PUBLISHED_UNDER_OWNER_OVERRIDE"))).toEqual([]);
+    // The same bundle with an unverified source is refused at every geometry gate.
+    expect(errors(geometry("UNVERIFIED"))).toEqual(expect.arrayContaining([
+      "node.source.rights", "edge.geometry.rights", "asset.rights", "poi.position.rights", "coverage.polygon.rights",
+    ]));
+  });
+
+  it("warns, without erroring, when an override is recorded on a source whose rights is not the override value", () => {
+    const b = overridden(OVERRIDE);
+    b.sources.find((s) => s.id === "fixture-access")!.rights = "REUSABLE_WITH_CONDITIONS";
+    expect(errors(b)).toEqual([]);
+    expect(warnings(b)).toContain("source.override");
+    expect(warnings(overridden(OVERRIDE))).not.toContain("source.override");
+    // A malformed record on a non-override source is still an error.
+    const bad = overridden({ decision: "see chat", date: "2026-10-22" });
+    bad.sources.find((s) => s.id === "fixture-access")!.rights = "REUSABLE_WITH_CONDITIONS";
+    expect(errors(bad)).toContain("source.override");
+  });
+
+  it("fails closed on a wrong-shaped override at parse time", () => {
+    const [m, g, p] = split(overridden(OVERRIDE));
+    expect(parseStationFiles(m, g, p).ok).toBe(true);
+    (m.sources.find((s) => s.id === "fixture-access") as { override?: unknown }).override = "x";
+    expect(parseStationFiles(m, g, p).ok).toBe(false);
   });
 });

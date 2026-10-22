@@ -28,7 +28,7 @@ export interface LocalizedText {
   text: string;
 }
 
-export type RightsStatus = "REUSABLE_WITH_CONDITIONS" | "REFERENCE_ONLY" | "RESTRICTED" | "UNVERIFIED";
+export type RightsStatus = "REUSABLE_WITH_CONDITIONS" | "PUBLISHED_UNDER_OWNER_OVERRIDE" | "REFERENCE_ONLY" | "RESTRICTED" | "UNVERIFIED";
 
 export interface Source {
   id: string;
@@ -46,6 +46,16 @@ export interface Source {
    * Omitted = "data" (contents or derivatives may ship).
    */
   usage?: "data" | "facts-only";
+  /**
+   * The Owner decision that permits using this source (#26 per-source clearance record). A real
+   * facts-only source must carry one; the web UI shows the #26 credit line for every facts-only source.
+   */
+  decision?: { url: string; date: string };
+  /**
+   * Required when `rights` is PUBLISHED_UNDER_OWNER_OVERRIDE (#130): the Owner decision that lets the
+   * source ship although its licence is unconfirmed. `decision` is an issue/comment URL or `#ref`.
+   */
+  override?: { decision: string; date: string };
   /** Credit line to display wherever derived data is shown. */
   attribution: string;
   /** True when GTEki modified/derived the data (must be disclosed for PDL/CC BY). */

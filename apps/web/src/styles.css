@@ -160,10 +160,12 @@ button.on { border-color: var(--accent); color: var(--accent); }
   height: calc(var(--credit-extra) + env(safe-area-inset-bottom)); padding: 0 8px env(safe-area-inset-bottom) 12px;
   font-size: 11px; line-height: 1.3; color: #c3cedb;
   background: rgba(11, 16, 24, 0.68); border-top-right-radius: 8px;
+  /* Touches on the text fall through to the canvas (the left-thumb joystick starts at the bottom); only the Credits button is live. */
+  pointer-events: none;
 }
 .credit-line[hidden] { display: none; }
 .credit-text { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.credit-btn { flex: none; min-height: 24px; padding: 2px 8px; font-size: 11px; line-height: 1.2; border-radius: 7px; }
+.credit-btn { pointer-events: auto; flex: none; min-height: 24px; padding: 2px 8px; font-size: 11px; line-height: 1.2; border-radius: 7px; }
 
 /* ---- POI labels ---- */
 .poi-label {

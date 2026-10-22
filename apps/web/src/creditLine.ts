@@ -1,5 +1,5 @@
 import type { Asset, Source } from "@gteki/schema";
-import { sourceCredit, type SourceCredit } from "./credits.ts";
+import { rightsLabel, sourceCredit, type SourceCredit } from "./credits.ts";
 
 /** The part of a station bundle the credit line reads. */
 export interface CreditBundle {
@@ -24,22 +24,49 @@ export function drawnSources(bundle: CreditBundle): Source[] {
 }
 
 export interface CreditGroup {
-  /** The shared attribution text (whitespace-normalised). */
+  /** The shared attribution text (whitespace-normalised); empty for a source with none. */
   attribution: string;
   sources: Source[];
 }
 
-/** Group sources whose attribution text is identical (ignoring whitespace), in order of first appearance. */
+/**
+ * Facts-only sources always credit on their own (the #26 wording and decision link belong to one source),
+ * and a source with no attribution text has nothing to merge on.
+ */
+const mergeable = (s: Source): boolean => s.usage !== "facts-only" && norm(s.attribution) !== "";
+
+/** Group sources whose attribution text is identical (ignoring whitespace), in order of first appearance. Unmergeable sources are left out. */
 export function groupByAttribution(sources: readonly Source[]): CreditGroup[] {
-  const groups = new Map<string, CreditGroup>();
+  return creditEntries(sources.filter(mergeable));
+}
+
+/**
+ * What the credits dialog lists: every source exactly once, in bundle order. Sources sharing an attribution
+ * merge into one entry (at the first one's position); facts-only and blank-attribution sources stay single entries.
+ */
+export function creditEntries(sources: readonly Source[]): CreditGroup[] {
+  const entries: CreditGroup[] = [];
+  const merged = new Map<string, CreditGroup>();
   for (const s of sources) {
-    const key = norm(s.attribution);
-    if (!key) continue;
-    const g = groups.get(key);
+    const attribution = norm(s.attribution);
+    if (!mergeable(s)) {
+      entries.push({ attribution, sources: [s] });
+      continue;
+    }
+    const g = merged.get(attribution);
     if (g) g.sources.push(s);
-    else groups.set(key, { attribution: key, sources: [s] });
+    else {
+      const entry = { attribution, sources: [s] };
+      merged.set(attribution, entry);
+      entries.push(entry);
+    }
   }
-  return [...groups.values()];
+  return entries;
+}
+
+/** Plain-language rights of an entry's sources, each once (#130); facts-only sources say so through their own #26 line instead. */
+export function entryRightsLabels(sources: readonly Source[], t: Parameters<typeof rightsLabel>[1]): string[] {
+  return [...new Set(sources.filter((s) => s.usage !== "facts-only").map((s) => rightsLabel(s.rights, t)))];
 }
 
 /** Distinct licences of a group (by name and link), in order. */
