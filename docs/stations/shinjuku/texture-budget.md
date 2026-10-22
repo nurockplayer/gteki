@@ -1,6 +1,12 @@
 # Shinjuku GPU texture memory: measurement and phone budget (#72 follow-up)
 
-Status: **measured, with a proposed budget.** The limits in §3 are a GTEki proposal. No cited source sets them (see §2); they have to be confirmed on a real phone (#46).
+Status: **measured; §3 is a provisional warning line (director, 2026-10-23), not a merge gate.**
+
+1. The §3 numbers are **GTEki's own choice, with no cited source** (see §2).
+2. They must be **calibrated by the real-phone test (#46)**.
+3. Going over them **only raises a warning**; it never blocks a merge.
+
+A PR that raises the phone-tier texture total states the increase in MiB in its description, measured with `test/helpers/texture-memory.ts` or the same method.
 
 ## 1. Measurement
 
@@ -33,7 +39,7 @@ What the estimate leaves out:
 - Compressed textures: devices report ASTC and ETC support, but maintainers report iOS falling back to RGBA for KTX in some versions (DR-MW-12/14). This is unresolved, so the budget assumes uncompressed RGBA8.
 - No engine or vendor (PlayCanvas, Babylon, three.js, Google, Unity, Apple) publishes a phone texture budget: **GAP**.
 
-## 3. Proposed phone (low tier) budget, GTEki proposal, not sourced
+## 3. Phone (low tier) warning line: GTEki's choice, not sourced, warning only
 
 Reasoning:
 - The texture total has to share the page's roughly 1.5 GB with the JS heap (about 45 MB after GC), geometry buffers (about 13 MB), the browser itself, and possibly a second copy of every texture (GAP).
@@ -51,9 +57,11 @@ Reasoning:
 
 How to check it: run `texture-memory.test.ts`, or the same helper on another station's scene, and compare the low-tier rows with this table.
 
-Ikebukuro #180's sign atlas, 53–64 MiB on the phone, is above the 40 MiB signage line. That is a call for the director; a hard limit is not justified without a device test.
+Ikebukuro #180's sign atlas, 53–64 MiB on the phone, is above the 40 MiB signage line. Per the director it is **not blocked** by this line; the Friday real-phone shots decide it.
 
 ## 4. Follow-ups
+
+The root problem is that `quality` does not change texture sizes. A shared follow-up issue, #276, covers both stations.
 
 1. **Low tier: halve the sign atlas resolution.** That is a quarter of the bytes, about 93 → 23 MiB. Readability must be rechecked on a phone (the #180 small-text concern).
 2. **Low tier: halve the finish maps,** or share one set across materials that repeat them.
