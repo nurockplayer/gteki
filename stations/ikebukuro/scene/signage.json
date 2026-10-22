@@ -10046,7 +10046,7 @@
      "label": "17",
      "ja": "17番出口",
      "en": "Exit 17",
-     "distanceM": 165
+     "distanceM": 170
     },
     {
      "id": "exit-15",
@@ -10247,7 +10247,7 @@
      "label": "15",
      "ja": "15番出口",
      "en": "Exit 15",
-     "distanceM": 120
+     "distanceM": 125
     }
    ],
    "gates": [
