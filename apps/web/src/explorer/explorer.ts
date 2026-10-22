@@ -116,10 +116,13 @@ interface PoiLabel {
   state: LabelState;
 }
 
+/** Default camera far plane (m); only an overview of a very large box pushes it out (frameAll). */
+const CAMERA_FAR_M = 2000;
+
 export class Explorer {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
-  readonly camera = new THREE.PerspectiveCamera(FOV.overview, 1, 0.05, 2000);
+  readonly camera = new THREE.PerspectiveCamera(FOV.overview, 1, 0.05, CAMERA_FAR_M);
   private readonly labels = new CSS2DRenderer();
   private readonly orbit: OrbitControls;
   private composer: PostFx | null = null;
@@ -526,7 +529,7 @@ export class Explorer {
     this.camera.near = 0.1;
     // The overview camera sits ~1.3 radii out: keep the far plane beyond the whole box so nothing is culled (a box
     // that is huge or unfit for the default 2000 draws nothing, so no projection is uploaded at all).
-    this.camera.far = Math.max(2000, radius * 4);
+    this.camera.far = Math.max(CAMERA_FAR_M, radius * 4);
     this.camera.updateProjectionMatrix();
     this.orbit.update();
   }
@@ -543,6 +546,8 @@ export class Explorer {
     this.routeLines?.setXray(mode === "overview");
     this.graph?.setXray(mode === "overview");
     if (mode === "overview") { this.street.restore(this.scene); this.snapCamera = false; this.setFov(FOV.overview, true); }
+    // frameAll may have pushed the far plane out for a large box; walking keeps the default for depth precision.
+    else if (this.camera.far !== CAMERA_FAR_M) { this.camera.far = CAMERA_FAR_M; this.camera.updateProjectionMatrix(); }
     this.overviewLook.set(this.scene, this.world, mode === "overview");
     this.events.onMode?.(mode);
   }
