@@ -36,8 +36,12 @@ Method and limits of this audit:
 - Result: **all 20 stay search-only. No node, edge, accessFact or coverage text changed.** For every
   one the missing piece is the identification (which opening or stair is which gate or exit), which
   no document in the repo supplies. Geometry alone cannot supply it, and inventing it is not allowed.
-- The two Yurakucho South Passage gates (`gap-south-west`) have no POI today, so they are not among
-  the 20; they stay a gap for the same reason (the map's gate machines sit inside surveyed floor with
+- The two Yurakucho South Passage gates (`gap-south-west`) had no POI at the time of this audit, so
+  they are not among the 20. 南通路西改札 has since been added as a 21st search-only POI
+  (`metro-y-south-west-gate`, 2026-10-22): Tokyo Metro's accessibility page (facts only) states a
+  lift and escalator connection 南通路西改札～４番出入口（エソラ） outside the fare gates, but the gate
+  cannot be placed and the passage to Exit 4 is not modelled, so there is no node and no edge. The
+  gates stay a gap for the same reason (the map's gate machines sit inside surveyed floor with
   no gate-line opening). `gap-tobu-jr-link` is a passage, not a POI; it touches only Tobu Central Gate 1.
 
 PLATEAU stair flights that no exit claims (West Exit area; all three end at a vertical closure about
