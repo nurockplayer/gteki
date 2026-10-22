@@ -1,0 +1,168 @@
+{
+  "run_id": "overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-7bbbf67915cb0bd6e193",
+  "command": "context-overlay",
+  "policy_version": "context-overlay-v1",
+  "station_id": "ikebukuro",
+  "gteki_role": "context",
+  "navigation_use": "NOT_FOR_ROUTING",
+  "visual_only": true,
+  "verification": "UNVERIFIED",
+  "note": "Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; no railway class or track level is shown (the source has no underground versus at-grade field).",
+  "frame": {
+    "mode": "station-enu-frame",
+    "frame_id": "ikebukuro-station-enu-v0",
+    "station_json_path": "stations/ikebukuro/gteki/station.json",
+    "station_json_sha256": "5791be1694a291fe0a328e5e728e06c5f87c0269f01619a61bc888d257de07b7",
+    "origin_crs": "EPSG:6697"
+  },
+  "window": {
+    "r_origin_m": 250,
+    "r_exit_m": 120,
+    "disc_count": 24,
+    "mesh_margin_m": 50,
+    "node_rule": {
+      "graph": "stations/ikebukuro/gteki/graph.json",
+      "exit_kinds": [
+        "exit"
+      ],
+      "street_floor_ids": [
+        "street"
+      ],
+      "exit_poi_connectors": true
+    },
+    "graph_sha256": "8e8c34f30101921f754beaf505111c0794f60888cda263e936880352b35c59e0",
+    "pois_sha256": "fad15a3cbf257ba14fc8373ffabd95680f7983f2bcbf66d885f0f33764d0b17a",
+    "selection_rule": "A feature is selected when any segment of its projected polyline meets a closed disc of the window; selected features are kept whole (never cut at the window edge)."
+  },
+  "z_basis": {
+    "mode": "constant",
+    "z_m": 32.5,
+    "basis": "render z = street floor renderElevationM",
+    "datum_asserted": false,
+    "drape": "none",
+    "baked_offset_m": 0,
+    "evidence_path": "stations/ikebukuro/gteki/station.json",
+    "evidence_sha256": "5791be1694a291fe0a328e5e728e06c5f87c0269f01619a61bc888d257de07b7",
+    "evidence_field": "floors[ordinal 0].renderElevationM"
+  },
+  "credit": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成",
+  "source": {
+    "source_id": "ksj-n02-2025",
+    "source_sha256": "aaf76af133b2e771e538fabc4646d2e443dc1d5a67b221382a28d744e706cc9f",
+    "bytes": 14903774,
+    "license_name": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "publish_gate": "CONDITIONAL"
+  },
+  "layers": [
+    {
+      "kind": "railway",
+      "source_id": "ksj-n02-2025",
+      "member": "N02-25_GML/UTF-8/N02-25_RailroadSection.geojson",
+      "member_sha256": "4269b076c0689db13cadf0d07801418b7215b2160ebf1278c508031cd08c4da2",
+      "axis_order": "lon,lat",
+      "crs": "urn:ogc:def:crs:EPSG::6668",
+      "features_in_source": 21933,
+      "outside_prefilter": 21915,
+      "outside_window": 2,
+      "selected": 16,
+      "vertices": 108
+    },
+    {
+      "kind": "station",
+      "source_id": "ksj-n02-2025",
+      "member": "N02-25_GML/UTF-8/N02-25_Station.geojson",
+      "member_sha256": "908e2c3036e9c80760ae3514be3682c77f81f0bd60ab5fb1b3da1aa9352bbd94",
+      "axis_order": "lon,lat",
+      "crs": "urn:ogc:def:crs:EPSG::6668",
+      "features_in_source": 10234,
+      "outside_prefilter": 10227,
+      "outside_window": 0,
+      "selected": 7,
+      "vertices": 14
+    }
+  ],
+  "totals": {
+    "features_in_source": 32167,
+    "outside_prefilter": 32142,
+    "outside_window": 2,
+    "selected": 23,
+    "vertices": 122
+  },
+  "feature_hashes_sha256": {
+    "railway": "92496aebed59acdc6fa57361fe86ac447e63444dfe2f1e2cf7b2c3017f1318fb",
+    "station": "18cfc45cdc53ea982cf2d7e70976e5f7abb7e6b39bcc61a86d534b236cf993ce"
+  },
+  "feature_hashes": {
+    "railway": [
+      "0e3b23bda3fd79aa54b5776610238f5574728c67292caae0ee3e25a7fa1995d4",
+      "15ac331dce37475aa1930e97fa28841c9e8dc1513b1fa61f002552263fa2f936",
+      "19bad2ec5857bbe1b960114bd7ea6b72e88a78bc9e364a6b8daa3532694c329d",
+      "49a88c8f96b0bca3fc243c324af0196d4ebd81a8722b1b8b2968238745b1018b",
+      "4a8d73e62e3c5bb461758b30c857a733b4733731d837980c221e063d0af526fe",
+      "8195434aab2bd92cfe27e2f6d3b765d751a580930119956ee3c9441f8145bfe8",
+      "946fb0a1e7543ca2d08a0f2ca2f7512d81bbb2ed16ee642261aa76ed4cffc5df",
+      "9c8a3ce019463b9ad825fb6526d8c547b59f75d49a392c0268f1de06d15a1733",
+      "a2ab983dfae9fbd4004011ba0ce4b2ace0eda454ffdbb70a195f8779c3e8b2e0",
+      "a81ec75caa0663645966bffc2dc5d7c7c8c775d00a277a71e89ba8303419f57f",
+      "b34558ae8b97911d3b06488716bec17a1250fc0896ab6f195c7fda55319bd770",
+      "d249b1234ce32fa109fe8d1727b22da9abefbef149a382a2cc750921c1313a7a",
+      "de87a39b4da414254facdff2ca6047467edb2fec9a4f0c83497c5cd98b591c54",
+      "e5695744c74dfb5d868ef151c60206e058154094dfb51e2d88870f66d1988ec9",
+      "ec1d40d5a0f9985831968cc66a0c0fd779944e90227fb1ecb802eafeec9024bf",
+      "f436aaac0f5c0d398f4e59c608fa8f0f05fce29a4008c32a74c1d1f56a82d5dd"
+    ],
+    "station": [
+      "0b07f79a3e2e55bbac8c49756825a82cb860b043498e60bbfb72953dfaa25d65",
+      "108d1d74e09d438d0ed2a392cfb1742f1129bed5f275c53130d08ea7c5dbab16",
+      "3c312a3ff0099f23964b6e073bd840e192fa786049772050bb715ddf3008214c",
+      "60a0178415c8dba80376cad191f7e66a9472148c9dda7927a648776f862a75f8",
+      "80f043872034d6e9ac453c02db841d6d9e1921557c69ce447d136d929d46c875",
+      "90f27ff43f9af6b7980325c98fb2799357826ef0a55a1d9d5c2e47e170d6009b",
+      "fb532900f05681d2d2ff61fe4ab5f6bd822f39495ef4e921322e4960682b6c76"
+    ]
+  },
+  "bbox_local_ENU": {
+    "min": [
+      -570.85,
+      -922.019,
+      32.5
+    ],
+    "max": [
+      1574.247,
+      1606.64,
+      32.5
+    ]
+  },
+  "outputs": {
+    "geojson": {
+      "store_path": "out/overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-7bbbf67915cb0bd6e193.geojson",
+      "sha256": "626cffac2c246bf0b363f105260596f0d078d0e69f4775af9ffdd38491931b8f",
+      "bytes": 15802
+    },
+    "glb": {
+      "store_path": "out/overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-7bbbf67915cb0bd6e193.glb",
+      "sha256": "cd47c73bec423bd1bb782a8cd6cf239c3c0dec8b076bcb7fb342b9d62f0c5999",
+      "bytes": 17512,
+      "nodes": [
+        "ctx_rail_all",
+        "ctx_station_all"
+      ],
+      "triangles": {
+        "ctx_rail_all": 184,
+        "ctx_station_all": 14
+      },
+      "readback": {
+        "status": "PASS",
+        "node_count": 2,
+        "triangle_count": 198,
+        "expected_triangle_count": 198,
+        "bbox_max_error_m": 0.000013749393019679701,
+        "tolerance_m": 0.001
+      },
+      "segments_skipped_zero_length": 0
+    }
+  },
+  "tool_input_sha256": "25a02af568193220c138f9727135fb598ac9b1367a2a94fb69ed1c22f74871d5",
+  "tool_version": "0.1.0"
+}

@@ -283,3 +283,10 @@ Lane D does not edit `stations/**`. After the lead produces the GLB (store path 
 ```
 
 The GLB is authored directly in the renderer frame `(x, z, -y)` of the station frame, so no `transform` is needed. Nodes carry `gteki_role: "context"`, which the explorer ignores (not walkable, collider, see-through or camera blocker), and `role: "visual"` adds no collision.
+
+## Context overlay: KSJ N02 station and railway lines (PR 1 of the overlay plan)
+
+- **What:** `gis context-overlay <station>` writes visual-only 2D station and railway lines (KSJ N02-2025, `ksj-n02-2025`, CC BY 4.0, gate CONDITIONAL, class (b) literals) in the station frame. Geometry, `kind` and a per-feature source hash only; no name, code or attribute is shipped. Details: `tools/gis/README.md`, "Context overlay".
+- **Status:** Ikebukuro and Shinjuku both run. Receipts in `docs/gis/context/overlay-*.json` (counts below). Outputs (GeoJSON, GLB, sidecar) are in the private store; nothing is wired into `stations/**` by Lane D.
+- **Real-run counts (selected features):** see the receipts. Ikebukuro: 16 railway, 7 station (of 21,933 and 10,234). Shinjuku: 15 railway, 5 station.
+- **UNKNOWN / limits:** the ZIP members and axis order were UNKNOWN before acquisition and are now read from the file (`[lon, lat]`, EPSG:6668). N02 has no underground versus at-grade field, so ribbons do not show track level. Ikebukuro z 32.5 is the street floor render anchor (`renderElevationM`), not a TP height; Shinjuku z 0 is symbolic with no datum, and Shinjuku has no station-enu frame (`origin.hM` null), so its overlay is projected from the `station.json` origin only. Selected lines are kept whole, so a long railway section extends far beyond the window (Ikebukuro bbox spans about 2.1 km by 2.5 km). The scene owns depth offset, draw order and z-fighting. The spec note named `stations/shinjuku/tools/import-surface.ts` as the Shinjuku z evidence; that file is not on this branch, so the z check reads the ordinal-0 floor `renderElevationM` of `station.json` instead.

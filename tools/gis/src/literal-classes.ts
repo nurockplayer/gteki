@@ -131,6 +131,11 @@ export const LITERAL_CLASSES: LiteralClassEntry[] = [
   unquotedUnknown('plateau-catalog-ubld-13116-13104', 'catalog API snapshot'), unquotedUnknown('plateau-catalog-ubld-mesh-533945', 'catalog API snapshot'),
   unquotedUnknown('plateau-catalog-bldg-tran-13116-13104', 'catalog API snapshot'),
   unquotedUnknown('hokonavi-oedo-shinjuku-package', 'CKAN package metadata and terms pages'),
+  {
+    source_id: 'ksj-n02-2025', class: 'b', kind: 'unquoted', values: 'none quoted (KSJ N02-2025 station and railway line features; the context overlay ships geometry, kind and a feature hash only)',
+    basis: 'The record names CC BY 4.0 at product level (publish gate CONDITIONAL), but the overlay is context-only: no station, line or operator name, no code and no attribute of this source is copied, and no committed report quotes its text. Class (b) is kept so that any future quote must be hashed; adding N02 names is a separate decision.',
+    evidence: [SOURCES, 'https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html', 'docs/gis/acquisitions/ksj-n02-2025.json'],
+  },
 ];
 
 /**
