@@ -1,0 +1,973 @@
+[
+  {
+    "file": "b1_ike_anime_duo.png",
+    "station_feel": "Ikebukuro",
+    "kind": "B1 poster (tall), pair with the above",
+    "prompt": "Create ONE ORIGINAL finished advertising artwork (background plate only) for the 3D game GTEki, which recreates the feel of real Tokyo railway station concourses such as Ikebukuro and Shinjuku. It must look like a real, professionally produced Japanese station advertisement of today, not a game asset. The artwork fills the entire image edge to edge: no frame, no lightbox, no wall, no station mockup, no perspective, opaque. Leave the stated copy area calm and uncluttered: text will be typeset later by the game, so the image itself contains absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, logos, trademarks, brand marks, real branded products or packaging, QR codes, watermarks or signatures. No photorealistic people or human faces. No identifiable real places, landmarks, stations, shops or railway operators, and no operator colours or liveries. Entirely original: do not imitate any existing campaign, artist, studio, franchise, character, brand or game. Style: polished Japanese anime key-visual illustration. Two ORIGINAL characters (not from any existing franchise) back to back, one with short silver hair and a teal coat, one with long dark hair and a red scarf, in a stylised night city of glowing generic windows, rim-lit, dynamic diagonal composition. Fictional new anime series announcement. Keep the bottom 25% darker and calm for the title and broadcast date.",
+    "requested_size": "1024x1536",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T19:57:28+00:00",
+    "sha256": "e6f2f520a5cad9b6fcefa104cdbc8bb8649eaf76006d4690d798ff2734766051",
+    "bytes": 2463844,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "crop": "2:3 portrait centre-crop at x=0.33 (tool returned landscape)",
+      "typeset": [
+        "夜明けのリフレイン",
+        "TVアニメ　2027年1月　放送開始"
+      ],
+      "fictional_brand": "夜明けのリフレイン (fictional)",
+      "font": "Noto Sans JP Regular/Bold, notofonts/noto-cjk tag Sans2.004 (commit 523d033), SIL OFL 1.1",
+      "tool": "ImageMagick annotate (typeset.py)",
+      "final": "b1_ike_anime_duo.jpg",
+      "final_sha256": "5621086e6cbfea406e77408778f119e1748217e8c1bb23b9268320ba48e958a4"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, real places or photoreal faces",
+    "batch": "ai_batch2",
+    "shipped": {
+      "file": "b1_ike_anime_duo.jpg",
+      "width": 683,
+      "height": 1024,
+      "bytes": 162939,
+      "sha256": "c6277bfdf7ec33fc7e71c205c0227ae47da7a3cc6c01ebb058b55e12f30f901b"
+    }
+  },
+  {
+    "file": "j02_hanabi_grand.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor should feel 'I never knew this place could be this beautiful'. The image fills edge to edge: no frame, no light-box, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs or lanterns with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces (illustrated characters are fine). No identifiable real landmarks, shrines, bridges, buildings, stations, shops, railway operators or train liveries; generic places only. Entirely original: do not imitate any existing artist, studio, film, franchise, character, campaign or historical advertisement. Mood: 唯美, luminous and poetic, cinematic soft light, very high-quality painterly illustration with a photographic quality of light, fine detail. A grand summer fireworks festival over a wide generic river at night: huge chrysanthemum fireworks in gold, red and blue, their reflections shimmering on the water, rows of small glowing paper lanterns along the bank, tiny silhouettes of an ORIGINAL anime-style couple in yukata seen from behind in the foreground, warm humid summer air. Composition: wide, survives a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:20:19+00:00",
+    "sha256": "5bb9bd6e71f127aef00a7766981b1a83944d53665a47c48f730ed4cdba465415",
+    "bytes": 3366976,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [],
+      "fictional_brand": null,
+      "font": null,
+      "final": "j02_hanabi_grand.jpg",
+      "final_sha256": "7731c56d65aed0aa8cd9ba502577c9e4ac126f3d46e43c122e5ee875dbf2d0aa"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch5",
+    "shipped": {
+      "file": "j02_hanabi_grand.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 249475,
+      "sha256": "3f002577b41a6c7de015c4ec2505e80497d94f145476b7bd4e14b716dcf0e04a"
+    }
+  },
+  {
+    "file": "j03_matsuri_lanterns.png",
+    "kind": "tall",
+    "prompt": "Create ONE ORIGINAL artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor should feel 'I never knew this place could be this beautiful'. The image fills edge to edge: no frame, no light-box, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs or lanterns with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces (illustrated characters are fine). No identifiable real landmarks, shrines, bridges, buildings, stations, shops, railway operators or train liveries; generic places only. Entirely original: do not imitate any existing artist, studio, film, franchise, character, campaign or historical advertisement. Mood: 唯美, luminous and poetic, cinematic soft light, very high-quality painterly illustration with a photographic quality of light, fine detail. A narrow summer-festival lane at dusk lined with glowing red and white paper lanterns (blank, no writing) and food-stall awnings, an ORIGINAL anime-style girl in a yukata seen from behind holding a fan, lantern light reflected on stone paving, indigo sky. Composition: keep the main subject inside the central 40% of the width (2:3 poster).",
+    "requested_size": "1024x1536",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:20:19+00:00",
+    "sha256": "954eb36c59a52d58770bcb2489bc1bbae9273e4edd427a678d168294634a18b6",
+    "bytes": 2760879,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [],
+      "fictional_brand": null,
+      "font": null,
+      "final": "j03_matsuri_lanterns.jpg",
+      "final_sha256": "4c697f5c444cb92d3c5f3ce23a24271a3a3dfb54660f6c15cf9f81157ee60ad7"
+    },
+    "review": "fixed by edit; re-inspected: no AI-drawn text, logos, real brands or photoreal faces",
+    "batch": "ai_batch5",
+    "edit": {
+      "tool": "Codex built-in image edit (same generator)",
+      "brief": "ai_fix1/codex_brief.txt",
+      "edited_sha256": "4c28447dd6cc8112580855c47607ccfb58078a452a6930ae2750b541ab16ff40",
+      "edited_bytes": 2512614,
+      "change": "paper strips made blank"
+    },
+    "shipped": {
+      "file": "j03_matsuri_lanterns.jpg",
+      "width": 683,
+      "height": 1024,
+      "bytes": 203207,
+      "sha256": "d75723f4ae59eb287f806b329f895299902585a7ec383cec24fb48a940ab5efc"
+    }
+  },
+  {
+    "file": "j04_kingyo_furin.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor should feel 'I never knew this place could be this beautiful'. The image fills edge to edge: no frame, no light-box, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs or lanterns with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces (illustrated characters are fine). No identifiable real landmarks, shrines, bridges, buildings, stations, shops, railway operators or train liveries; generic places only. Entirely original: do not imitate any existing artist, studio, film, franchise, character, campaign or historical advertisement. Mood: 唯美, luminous and poetic, cinematic soft light, very high-quality painterly illustration with a photographic quality of light, fine detail. Summer still life by an open veranda: glass wind chimes with painted goldfish-free plain glass and paper strips without writing, a glass bowl with red goldfish, morning glory flowers, sunlight sparkling through glass and water, cool aqua and vermilion. Composition: wide, survives a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:20:19+00:00",
+    "sha256": "8f009e90ba09b2b1a2d86c854fe1b5e8897acb858c183fe5ea1155149d1080b8",
+    "bytes": 3015035,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [],
+      "fictional_brand": null,
+      "font": null,
+      "final": "j04_kingyo_furin.jpg",
+      "final_sha256": "75ee5b94c5e5e1a223f889382b6c1f5b53129a28a3cc8da12fc787ed17a6b401"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch5",
+    "shipped": {
+      "file": "j04_kingyo_furin.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 209607,
+      "sha256": "230e155b364b804cc6d3c90284db6463382746d9b26d97bc3e1f3910385072f1"
+    }
+  },
+  {
+    "file": "j05_toro_nagashi.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor should feel 'I never knew this place could be this beautiful'. The image fills edge to edge: no frame, no light-box, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs or lanterns with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces (illustrated characters are fine). No identifiable real landmarks, shrines, bridges, buildings, stations, shops, railway operators or train liveries; generic places only. Entirely original: do not imitate any existing artist, studio, film, franchise, character, campaign or historical advertisement. Mood: 唯美, luminous and poetic, cinematic soft light, very high-quality painterly illustration with a photographic quality of light, fine detail. Floating paper lanterns drifting on a calm generic river at twilight, each glowing warm orange, reflections stretching across dark blue water, soft mist, peaceful and contemplative. Composition: wide, survives a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:20:19+00:00",
+    "sha256": "33c6e2ac403412138b89a8915a33625275e286f8354665a9565bfe8dc14e9fb2",
+    "bytes": 2657133,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [],
+      "fictional_brand": null,
+      "font": null,
+      "final": "j05_toro_nagashi.jpg",
+      "final_sha256": "5b4a19912eeb920555aa0981361ae4ba54cc2b791f6c356253c82cdd8056b4ec"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch5",
+    "shipped": {
+      "file": "j05_toro_nagashi.jpg",
+      "width": 1024,
+      "height": 570,
+      "bytes": 184971,
+      "sha256": "30e5c845479657297a1a23690d0b63e8b71f82f952acc2000e3df34abf61446c"
+    }
+  },
+  {
+    "file": "j06_tanabata.png",
+    "kind": "tall",
+    "prompt": "Create ONE ORIGINAL artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor should feel 'I never knew this place could be this beautiful'. The image fills edge to edge: no frame, no light-box, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs or lanterns with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces (illustrated characters are fine). No identifiable real landmarks, shrines, bridges, buildings, stations, shops, railway operators or train liveries; generic places only. Entirely original: do not imitate any existing artist, studio, film, franchise, character, campaign or historical advertisement. Mood: 唯美, luminous and poetic, cinematic soft light, very high-quality painterly illustration with a photographic quality of light, fine detail. Tanabata: tall green bamboo branches hung with colourful paper streamers and paper ornaments (no writing on any paper), under a sky full of stars and a bright milky way, a gentle breeze, deep blue and rainbow pastel. Composition: keep the main subject inside the central 40% of the width (2:3 poster).",
+    "requested_size": "1024x1536",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:20:19+00:00",
+    "sha256": "0f64041a1f9103257581cdbd1461930e5296441558adac9fb6ec41739c05573c",
+    "bytes": 3473595,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [],
+      "fictional_brand": null,
+      "font": null,
+      "final": "j06_tanabata.jpg",
+      "final_sha256": "ada0af74fca5ba1a5be213bc3d36484831b0d5d126c75306fca4a5b38d7221c4"
+    },
+    "review": "regenerated once by Codex; paper strips blank at sheet scale",
+    "batch": "ai_batch5",
+    "shipped": {
+      "file": "j06_tanabata.jpg",
+      "width": 683,
+      "height": 1024,
+      "bytes": 274523,
+      "sha256": "ad47d3ce4922b349622746cd884c9b9d2ca84a96b3694d5bb850f8ccefe5c076"
+    }
+  },
+  {
+    "file": "j07_onsen_snow_town.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor should feel 'I never knew this place could be this beautiful'. The image fills edge to edge: no frame, no light-box, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs or lanterns with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces (illustrated characters are fine). No identifiable real landmarks, shrines, bridges, buildings, stations, shops, railway operators or train liveries; generic places only. Entirely original: do not imitate any existing artist, studio, film, franchise, character, campaign or historical advertisement. Mood: 唯美, luminous and poetic, cinematic soft light, very high-quality painterly illustration with a photographic quality of light, fine detail. A generic hot-spring town street on a snowy winter night: wooden two-storey inns with warm windows, steam rising from a stream running down the middle of the street, stone lanterns with snow caps, gentle falling snow, warm amber against deep blue. Composition: wide, survives a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:20:19+00:00",
+    "sha256": "2e8f9b5338626e7f4b1283a145e73c2a4c88e53b65e135922f6f6fb88473120a",
+    "bytes": 3096669,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [],
+      "fictional_brand": null,
+      "font": null,
+      "final": "j07_onsen_snow_town.jpg",
+      "final_sha256": "4815762a1495e9b8d4300ea186ba8b19daf053d41524c04571c293fc675e963b"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch5",
+    "shipped": {
+      "file": "j07_onsen_snow_town.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 212279,
+      "sha256": "3a6c70c8ec9c8d922a864ffa77885187db377de1dfea35933e1c05abc73a5a4e"
+    }
+  },
+  {
+    "file": "k01_mascot_cool_cat.png",
+    "kind": "square",
+    "prompt": "Create ONE ORIGINAL artwork for the 3D game GTEki, set in idealised, beautiful Tokyo railway stations (Shinjuku, Ikebukuro); the audience is mainly young women who get lost easily, so it should feel cute, warm, reassuring and a little funny. The image fills edge to edge: no frame, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, speech bubbles with writing, logos, trademarks, brands, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, stations, railway operators or train liveries. CHARACTERS MUST BE ENTIRELY ORIGINAL: they must NOT resemble Capoo / BugCat Capoo, 臭跩貓, Pusheen, Hello Kitty or any Sanrio character, Chiikawa, Rilakkuma, Doraemon, Pokemon, Kumamon, Snoopy, Miffy or any other existing mascot, sticker character or franchise; do not imitate any artist or studio. Character style: chubby rounded shapes, simple clean thick soft outlines, flat pastel colours with gentle shading, big expressive but simple eyes, sticker-like charm with a bit of deadpan or smug humour. Character design sheet for ONE original mascot: a slightly smug, cool, reliable cat guide with a small navy station-staff-style neckerchief (no badge, no logo), shown front view, side view, back view and four expressions (smug, surprised, proud pointing, sleepy), consistent design, colour swatches as plain circles. Composition: square sheet on a plain off-white background.",
+    "requested_size": "1024x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:23:34+00:00",
+    "sha256": "a3b359c285e845a4ba0514a125c06cc6be0ba3ed409518c7bcacc6e5a3fb951d",
+    "bytes": 1597567,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "characters": "original GTEki guide cat and dog; prompt forbids resemblance to Capoo, 臭跩貓, Pusheen, Sanrio, Chiikawa and other existing mascots",
+    "post": {
+      "typeset": [],
+      "font": null,
+      "final": "k01_mascot_cool_cat.jpg",
+      "final_sha256": "cbea8c01036282a8a802be5708db1aca9f5f34213aaa5e5a42a852ad1b7dc9b6"
+    },
+    "review": "fixed by edit; re-inspected: no AI-drawn text, logos, real brands or photoreal faces",
+    "batch": "ai_batch6",
+    "edit": {
+      "tool": "Codex built-in image edit (same generator)",
+      "brief": "ai_fix1/codex_brief.txt",
+      "edited_sha256": "817a2dbf611dcea2db904ea4edf897f2095cbfdff2a6fb160c46f07d2207d933",
+      "edited_bytes": 1758419,
+      "change": "removed 'zz' sleep letters"
+    },
+    "shipped": {
+      "file": "k01_mascot_cool_cat.jpg",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 140517,
+      "sha256": "a53ab5a37ba7ccfafa78cf44b4b977be7935768b7208196314820dc7fb5a1223"
+    }
+  },
+  {
+    "file": "k02_mascot_helpful_dog.png",
+    "kind": "square",
+    "prompt": "Create ONE ORIGINAL artwork for the 3D game GTEki, set in idealised, beautiful Tokyo railway stations (Shinjuku, Ikebukuro); the audience is mainly young women who get lost easily, so it should feel cute, warm, reassuring and a little funny. The image fills edge to edge: no frame, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, speech bubbles with writing, logos, trademarks, brands, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, stations, railway operators or train liveries. CHARACTERS MUST BE ENTIRELY ORIGINAL: they must NOT resemble Capoo / BugCat Capoo, 臭跩貓, Pusheen, Hello Kitty or any Sanrio character, Chiikawa, Rilakkuma, Doraemon, Pokemon, Kumamon, Snoopy, Miffy or any other existing mascot, sticker character or franchise; do not imitate any artist or studio. Character style: chubby rounded shapes, simple clean thick soft outlines, flat pastel colours with gentle shading, big expressive but simple eyes, sticker-like charm with a bit of deadpan or smug humour. Character design sheet for ONE original mascot: an eager, kind, helpful round dog guide (cream and light brown, floppy ears) with a tiny yellow backpack, shown front, side, back and four expressions (happy, worried, excited running, apologetic bow), consistent design, colour swatches as plain circles. Composition: square sheet on a plain off-white background.",
+    "requested_size": "1024x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:23:34+00:00",
+    "sha256": "60d02d9630bee561a0ca49a9f9dbb4d059aa854abeb4d6e368b3cafe14ebe7d0",
+    "bytes": 1588817,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "characters": "original GTEki guide cat and dog; prompt forbids resemblance to Capoo, 臭跩貓, Pusheen, Sanrio, Chiikawa and other existing mascots",
+    "post": {
+      "typeset": [],
+      "font": null,
+      "final": "k02_mascot_helpful_dog.jpg",
+      "final_sha256": "4e6f602f6604d21a6771ecbed5ecbfee9a2b51b0a842157c0affbad5610ad72d"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch6",
+    "shipped": {
+      "file": "k02_mascot_helpful_dog.jpg",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 137960,
+      "sha256": "5ffc942daffbcb429190fa18c2cd9f94ab98f40e4b75920d7339c44aa781b6ac"
+    }
+  },
+  {
+    "file": "k03_mascot_duo.png",
+    "kind": "square",
+    "prompt": "Create ONE ORIGINAL artwork for the 3D game GTEki, set in idealised, beautiful Tokyo railway stations (Shinjuku, Ikebukuro); the audience is mainly young women who get lost easily, so it should feel cute, warm, reassuring and a little funny. The image fills edge to edge: no frame, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, speech bubbles with writing, logos, trademarks, brands, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, stations, railway operators or train liveries. CHARACTERS MUST BE ENTIRELY ORIGINAL: they must NOT resemble Capoo / BugCat Capoo, 臭跩貓, Pusheen, Hello Kitty or any Sanrio character, Chiikawa, Rilakkuma, Doraemon, Pokemon, Kumamon, Snoopy, Miffy or any other existing mascot, sticker character or franchise; do not imitate any artist or studio. Character style: chubby rounded shapes, simple clean thick soft outlines, flat pastel colours with gentle shading, big expressive but simple eyes, sticker-like charm with a bit of deadpan or smug humour. Character line-up of an original guide duo: the cool cat and the helpful dog standing side by side in a friendly pose, plus three small vignettes: the cat calmly pointing the way while the dog bounces, both bowing politely, both sleeping on a bench. Plain off-white background. Composition: square sheet on a plain off-white background.",
+    "requested_size": "1024x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:23:34+00:00",
+    "sha256": "98274fca591e5915d1893e1a6fc55fe6947c591ced3f91b83d7cef3e2be7b687",
+    "bytes": 1657637,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "characters": "original GTEki guide cat and dog; prompt forbids resemblance to Capoo, 臭跩貓, Pusheen, Sanrio, Chiikawa and other existing mascots",
+    "post": {
+      "typeset": [],
+      "font": null,
+      "final": "k03_mascot_duo.jpg",
+      "final_sha256": "5c781a892758058e578ce48131188011ea0981f0c57d3341918dc932e8ed12cc"
+    },
+    "review": "fixed by edit; re-inspected: no AI-drawn text, logos, real brands or photoreal faces",
+    "batch": "ai_batch6",
+    "edit": {
+      "tool": "Codex built-in image edit (same generator)",
+      "brief": "ai_fix1/codex_brief.txt",
+      "edited_sha256": "576131e97fbf571d698596ca1d9a47ec41ec22163e44082a9a20103654d6fe26",
+      "edited_bytes": 1853838,
+      "change": "removed 'zz' sleep letters"
+    },
+    "shipped": {
+      "file": "k03_mascot_duo.jpg",
+      "width": 1024,
+      "height": 1024,
+      "bytes": 150513,
+      "sha256": "ff901d43b0b6fa9cd37f76b842ed99d338fafc8b7bdfb53c237f2ae8f38be41e"
+    }
+  },
+  {
+    "file": "k04_manners_backpack.png",
+    "kind": "tall",
+    "prompt": "Create ONE ORIGINAL artwork for the 3D game GTEki, set in idealised, beautiful Tokyo railway stations (Shinjuku, Ikebukuro); the audience is mainly young women who get lost easily, so it should feel cute, warm, reassuring and a little funny. The image fills edge to edge: no frame, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, speech bubbles with writing, logos, trademarks, brands, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, stations, railway operators or train liveries. CHARACTERS MUST BE ENTIRELY ORIGINAL: they must NOT resemble Capoo / BugCat Capoo, 臭跩貓, Pusheen, Hello Kitty or any Sanrio character, Chiikawa, Rilakkuma, Doraemon, Pokemon, Kumamon, Snoopy, Miffy or any other existing mascot, sticker character or franchise; do not imitate any artist or studio. Character style: chubby rounded shapes, simple clean thick soft outlines, flat pastel colours with gentle shading, big expressive but simple eyes, sticker-like charm with a bit of deadpan or smug humour. Public-manners poster: the original round dog wearing its backpack on its FRONT on a crowded-looking but empty generic platform, while the original cat gives an approving smug nod; pastel mint and cream; leave the top 25% plain for typeset text. No train. Composition: keep the main subject inside the central 40% of the width (2:3 poster).",
+    "requested_size": "1024x1536",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:23:34+00:00",
+    "sha256": "8261e2888a0892fd181085abcb0033bc6fd6f65941906c4a43ad0f5366490d64",
+    "bytes": 1514576,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "characters": "original GTEki guide cat and dog; prompt forbids resemblance to Capoo, 臭跩貓, Pusheen, Sanrio, Chiikawa and other existing mascots",
+    "post": {
+      "typeset": [
+        "リュックは、前に。",
+        "ちいさな気づかいで、みんな快適。"
+      ],
+      "font": "Noto Sans JP, notofonts/noto-cjk Sans2.004 (523d033), OFL-1.1",
+      "final": "k04_manners_backpack.jpg",
+      "final_sha256": "c42041c000bf318c3a23647f7f100f339e46f0c924128365c27be6ddf028d893"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch6",
+    "shipped": {
+      "file": "k04_manners_backpack.jpg",
+      "width": 683,
+      "height": 1024,
+      "bytes": 93064,
+      "sha256": "ecba6ea772cda11d68e0463b41dcf1c9058a6092a4ea83a1a3f5a2065e34ff7f"
+    }
+  },
+  {
+    "file": "k05_manners_escalator.png",
+    "kind": "tall",
+    "prompt": "Create ONE ORIGINAL artwork for the 3D game GTEki, set in idealised, beautiful Tokyo railway stations (Shinjuku, Ikebukuro); the audience is mainly young women who get lost easily, so it should feel cute, warm, reassuring and a little funny. The image fills edge to edge: no frame, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, speech bubbles with writing, logos, trademarks, brands, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, stations, railway operators or train liveries. CHARACTERS MUST BE ENTIRELY ORIGINAL: they must NOT resemble Capoo / BugCat Capoo, 臭跩貓, Pusheen, Hello Kitty or any Sanrio character, Chiikawa, Rilakkuma, Doraemon, Pokemon, Kumamon, Snoopy, Miffy or any other existing mascot, sticker character or franchise; do not imitate any artist or studio. Character style: chubby rounded shapes, simple clean thick soft outlines, flat pastel colours with gentle shading, big expressive but simple eyes, sticker-like charm with a bit of deadpan or smug humour. Public-manners poster: the original cat and dog standing still on an escalator, both holding the handrail properly, the dog slightly nervous, clean generic station, pastel lavender and cream; leave the top 25% plain for typeset text. Composition: keep the main subject inside the central 40% of the width (2:3 poster).",
+    "requested_size": "1024x1536",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:23:34+00:00",
+    "sha256": "b9bbb0b5fb9d423c0a9ff387f781be66cf49ff79073cb712e6482ce3232834aa",
+    "bytes": 1747812,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "characters": "original GTEki guide cat and dog; prompt forbids resemblance to Capoo, 臭跩貓, Pusheen, Sanrio, Chiikawa and other existing mascots",
+    "post": {
+      "typeset": [
+        "手すりにつかまって、",
+        "ひと休み。"
+      ],
+      "font": "Noto Sans JP, notofonts/noto-cjk Sans2.004 (523d033), OFL-1.1",
+      "final": "k05_manners_escalator.jpg",
+      "final_sha256": "3f30adfe3ef6ee37341f30e32775c45d8594e2fa272bfbc503ac32c6fff244b7"
+    },
+    "review": "fixed by edit; re-inspected: no AI-drawn text, logos, real brands or photoreal faces",
+    "batch": "ai_batch6",
+    "edit": {
+      "tool": "Codex built-in image edit (same generator)",
+      "brief": "ai_fix1/codex_brief.txt",
+      "edited_sha256": "6b5dda33b572e9ff221d16e9b8472f9de3b13f1153b6d329ea4edbfc4272bfeb",
+      "edited_bytes": 1695941,
+      "change": "cat and dog now hold the handrail"
+    },
+    "shipped": {
+      "file": "k05_manners_escalator.jpg",
+      "width": 683,
+      "height": 1024,
+      "bytes": 109744,
+      "sha256": "8006c4d1826fbc6cff3933efa412d003bfb6f79e276e151cbb50bbc3acdc6678"
+    }
+  },
+  {
+    "file": "k06_manners_phone.png",
+    "kind": "tall",
+    "prompt": "Create ONE ORIGINAL artwork for the 3D game GTEki, set in idealised, beautiful Tokyo railway stations (Shinjuku, Ikebukuro); the audience is mainly young women who get lost easily, so it should feel cute, warm, reassuring and a little funny. The image fills edge to edge: no frame, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, speech bubbles with writing, logos, trademarks, brands, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, stations, railway operators or train liveries. CHARACTERS MUST BE ENTIRELY ORIGINAL: they must NOT resemble Capoo / BugCat Capoo, 臭跩貓, Pusheen, Hello Kitty or any Sanrio character, Chiikawa, Rilakkuma, Doraemon, Pokemon, Kumamon, Snoopy, Miffy or any other existing mascot, sticker character or franchise; do not imitate any artist or studio. Character style: chubby rounded shapes, simple clean thick soft outlines, flat pastel colours with gentle shading, big expressive but simple eyes, sticker-like charm with a bit of deadpan or smug humour. Public-manners poster: the original dog walking while staring at a phone and about to bump into a pillar, while the original cat gently stops it with one paw, funny but kind, pastel peach and blue; leave the top 25% plain for typeset text. The phone screen is blank. Composition: keep the main subject inside the central 40% of the width (2:3 poster).",
+    "requested_size": "1024x1536",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:23:34+00:00",
+    "sha256": "d6f79ef96103776cea85e7fd05f5cb4846973f6b10051fc72b504f81224ac388",
+    "bytes": 1661989,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "characters": "original GTEki guide cat and dog; prompt forbids resemblance to Capoo, 臭跩貓, Pusheen, Sanrio, Chiikawa and other existing mascots",
+    "post": {
+      "typeset": [
+        "スマホは、",
+        "立ち止まってから。"
+      ],
+      "font": "Noto Sans JP, notofonts/noto-cjk Sans2.004 (523d033), OFL-1.1",
+      "final": "k06_manners_phone.jpg",
+      "final_sha256": "0775954b938329cd7dd371d71757ff7571f6942e200dd530b9616aa8a9c9a1a5"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch6",
+    "shipped": {
+      "file": "k06_manners_phone.jpg",
+      "width": 683,
+      "height": 1024,
+      "bytes": 92341,
+      "sha256": "89b0e68ef28264deec160e44cc5994183a2bdab8202eed575a4703ad8b3927d4"
+    }
+  },
+  {
+    "file": "k07_cat_hanabi.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL artwork for the 3D game GTEki, set in idealised, beautiful Tokyo railway stations (Shinjuku, Ikebukuro); the audience is mainly young women who get lost easily, so it should feel cute, warm, reassuring and a little funny. The image fills edge to edge: no frame, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, speech bubbles with writing, logos, trademarks, brands, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, stations, railway operators or train liveries. CHARACTERS MUST BE ENTIRELY ORIGINAL: they must NOT resemble Capoo / BugCat Capoo, 臭跩貓, Pusheen, Hello Kitty or any Sanrio character, Chiikawa, Rilakkuma, Doraemon, Pokemon, Kumamon, Snoopy, Miffy or any other existing mascot, sticker character or franchise; do not imitate any artist or studio. Mood: 唯美, luminous and poetic, cinematic soft light, painterly. Character style: chubby rounded shapes, simple clean thick soft outlines, flat pastel colours with gentle shading, big expressive but simple eyes, sticker-like charm with a bit of deadpan or smug humour. The original cat in a tiny yukata sitting on a riverbank at night watching huge golden and blue fireworks bloom over the river, reflections on the water, glowing lanterns, cosy and magical. Composition: wide, survives a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:23:34+00:00",
+    "sha256": "f4c0257592594ac073d7a92044a9ae448a38ab6d4837bf9701942404a8814703",
+    "bytes": 2687915,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "characters": "original GTEki guide cat and dog; prompt forbids resemblance to Capoo, 臭跩貓, Pusheen, Sanrio, Chiikawa and other existing mascots",
+    "post": {
+      "typeset": [],
+      "font": null,
+      "final": "k07_cat_hanabi.jpg",
+      "final_sha256": "61a4cc9b1d62a4e75c550a0e0d8ed545391e4e4daa09d331c90fd7ceff359f5d"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch6",
+    "shipped": {
+      "file": "k07_cat_hanabi.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 208849,
+      "sha256": "17651b78c056680592cf7dad5f347a7032a620ca0b1a3fda755455e176109fb1"
+    }
+  },
+  {
+    "file": "k08_dog_sakura.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL artwork for the 3D game GTEki, set in idealised, beautiful Tokyo railway stations (Shinjuku, Ikebukuro); the audience is mainly young women who get lost easily, so it should feel cute, warm, reassuring and a little funny. The image fills edge to edge: no frame, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, speech bubbles with writing, logos, trademarks, brands, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, stations, railway operators or train liveries. CHARACTERS MUST BE ENTIRELY ORIGINAL: they must NOT resemble Capoo / BugCat Capoo, 臭跩貓, Pusheen, Hello Kitty or any Sanrio character, Chiikawa, Rilakkuma, Doraemon, Pokemon, Kumamon, Snoopy, Miffy or any other existing mascot, sticker character or franchise; do not imitate any artist or studio. Mood: 唯美, luminous and poetic, cinematic soft light, painterly. Character style: chubby rounded shapes, simple clean thick soft outlines, flat pastel colours with gentle shading, big expressive but simple eyes, sticker-like charm with a bit of deadpan or smug humour. The original dog happily trotting down a path under a tunnel of cherry blossoms at golden hour, petals swirling, soft pink and gold light. Composition: wide, survives a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:23:34+00:00",
+    "sha256": "f1ba2420db65fa21b16f92393946402f41dcad93761162a5cc994dcdfdc2d8e9",
+    "bytes": 2246856,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "characters": "original GTEki guide cat and dog; prompt forbids resemblance to Capoo, 臭跩貓, Pusheen, Sanrio, Chiikawa and other existing mascots",
+    "post": {
+      "typeset": [],
+      "font": null,
+      "final": "k08_dog_sakura.jpg",
+      "final_sha256": "eb7ecd13fbb3fad629b04f84b9a26d8d6273a6f038b1ffafa8eab1e5566c47f7"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch6",
+    "shipped": {
+      "file": "k08_dog_sakura.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 145484,
+      "sha256": "b7690d4e2b6913dc1be33f30d02dd20c480e4ca0b55e964f8dd3a53dc19cc857"
+    }
+  },
+  {
+    "file": "k09_duo_snow_night.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL artwork for the 3D game GTEki, set in idealised, beautiful Tokyo railway stations (Shinjuku, Ikebukuro); the audience is mainly young women who get lost easily, so it should feel cute, warm, reassuring and a little funny. The image fills edge to edge: no frame, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, speech bubbles with writing, logos, trademarks, brands, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, stations, railway operators or train liveries. CHARACTERS MUST BE ENTIRELY ORIGINAL: they must NOT resemble Capoo / BugCat Capoo, 臭跩貓, Pusheen, Hello Kitty or any Sanrio character, Chiikawa, Rilakkuma, Doraemon, Pokemon, Kumamon, Snoopy, Miffy or any other existing mascot, sticker character or franchise; do not imitate any artist or studio. Mood: 唯美, luminous and poetic, cinematic soft light, painterly. Character style: chubby rounded shapes, simple clean thick soft outlines, flat pastel colours with gentle shading, big expressive but simple eyes, sticker-like charm with a bit of deadpan or smug humour. The original cat and dog sharing a scarf on a snowy night street with warm paper lanterns (blank) and fairy lights in bare trees, gentle falling snow, the cat pretending not to enjoy it. Composition: wide, survives a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:23:34+00:00",
+    "sha256": "f83e488df8be8587faeff2864b4a1e33369e3f0c1dc26dc1243e49c05bf99815",
+    "bytes": 2343227,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "characters": "original GTEki guide cat and dog; prompt forbids resemblance to Capoo, 臭跩貓, Pusheen, Sanrio, Chiikawa and other existing mascots",
+    "post": {
+      "typeset": [],
+      "font": null,
+      "final": "k09_duo_snow_night.jpg",
+      "final_sha256": "d6bb240c56aa60a4c54645ee46d2f8db6d8d29c8d7b239c0be4bcaaa36fbe8b3"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch6",
+    "shipped": {
+      "file": "k09_duo_snow_night.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 150734,
+      "sha256": "11d8a9739fe4eaf164a9c4ce58681029969d120b46734c75e9710cdd0431e432"
+    }
+  },
+  {
+    "file": "k10_cat_ginkgo.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL artwork for the 3D game GTEki, set in idealised, beautiful Tokyo railway stations (Shinjuku, Ikebukuro); the audience is mainly young women who get lost easily, so it should feel cute, warm, reassuring and a little funny. The image fills edge to edge: no frame, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, speech bubbles with writing, logos, trademarks, brands, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, stations, railway operators or train liveries. CHARACTERS MUST BE ENTIRELY ORIGINAL: they must NOT resemble Capoo / BugCat Capoo, 臭跩貓, Pusheen, Hello Kitty or any Sanrio character, Chiikawa, Rilakkuma, Doraemon, Pokemon, Kumamon, Snoopy, Miffy or any other existing mascot, sticker character or franchise; do not imitate any artist or studio. Mood: 唯美, luminous and poetic, cinematic soft light, painterly. Character style: chubby rounded shapes, simple clean thick soft outlines, flat pastel colours with gentle shading, big expressive but simple eyes, sticker-like charm with a bit of deadpan or smug humour. The original cat sitting smugly on a bench in a golden ginkgo avenue in morning haze, leaves drifting, one leaf landing on its head, sunbeams. Composition: wide, survives a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:23:34+00:00",
+    "sha256": "bc3d68d49d57f47ab682eeec9263ba48d9776eb423f4172508e5429a330d8a2b",
+    "bytes": 1982056,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "characters": "original GTEki guide cat and dog; prompt forbids resemblance to Capoo, 臭跩貓, Pusheen, Sanrio, Chiikawa and other existing mascots",
+    "post": {
+      "typeset": [],
+      "font": null,
+      "final": "k10_cat_ginkgo.jpg",
+      "final_sha256": "5d5140594bc649050c10072a3b9d1ebbe44a2f478035ca3826bc9ea49bbf9494"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch6",
+    "shipped": {
+      "file": "k10_cat_ginkgo.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 117190,
+      "sha256": "36eb2f81f4e67425b642283cdae0d3da045894f02c1b069badee91798b08353d"
+    }
+  },
+  {
+    "file": "k11_lost_cat_comic.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL artwork for the 3D game GTEki, set in idealised, beautiful Tokyo railway stations (Shinjuku, Ikebukuro); the audience is mainly young women who get lost easily, so it should feel cute, warm, reassuring and a little funny. The image fills edge to edge: no frame, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, speech bubbles with writing, logos, trademarks, brands, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, stations, railway operators or train liveries. CHARACTERS MUST BE ENTIRELY ORIGINAL: they must NOT resemble Capoo / BugCat Capoo, 臭跩貓, Pusheen, Hello Kitty or any Sanrio character, Chiikawa, Rilakkuma, Doraemon, Pokemon, Kumamon, Snoopy, Miffy or any other existing mascot, sticker character or franchise; do not imitate any artist or studio. Character style: chubby rounded shapes, simple clean thick soft outlines, flat pastel colours with gentle shading, big expressive but simple eyes, sticker-like charm with a bit of deadpan or smug humour. A four-panel sticker-style mini comic WITHOUT any text: panel 1 the original cat confidently walks into a big generic underground concourse; panel 2 it looks around, confused by many corridors; panel 3 it sits down, defeated; panel 4 the original dog arrives happily pointing the way, cat pretends it knew all along. Clean panel borders, pastel colours. Composition: wide, survives a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:23:34+00:00",
+    "sha256": "ea800f87ef83e2b97135861dfc31802d5e91936773d411cbe374c6cff451dff0",
+    "bytes": 1934408,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "characters": "original GTEki guide cat and dog; prompt forbids resemblance to Capoo, 臭跩貓, Pusheen, Sanrio, Chiikawa and other existing mascots",
+    "post": {
+      "typeset": [],
+      "font": null,
+      "final": "k11_lost_cat_comic.jpg",
+      "final_sha256": "fe8659567c42860c5374404bc1e043637309fecb3dd653dde99da6fca669ac95"
+    },
+    "review": "arrow and '?' pictograms on generic signs (no text); regenerated once.",
+    "batch": "ai_batch6",
+    "shipped": {
+      "file": "k11_lost_cat_comic.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 130318,
+      "sha256": "d98f40495b49745b4325e038ccf5c887c2e84049984fbd9be503b7368d4d68a1"
+    }
+  },
+  {
+    "file": "k12_found_exit.png",
+    "kind": "tall",
+    "prompt": "Create ONE ORIGINAL artwork for the 3D game GTEki, set in idealised, beautiful Tokyo railway stations (Shinjuku, Ikebukuro); the audience is mainly young women who get lost easily, so it should feel cute, warm, reassuring and a little funny. The image fills edge to edge: no frame, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, speech bubbles with writing, logos, trademarks, brands, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, stations, railway operators or train liveries. CHARACTERS MUST BE ENTIRELY ORIGINAL: they must NOT resemble Capoo / BugCat Capoo, 臭跩貓, Pusheen, Hello Kitty or any Sanrio character, Chiikawa, Rilakkuma, Doraemon, Pokemon, Kumamon, Snoopy, Miffy or any other existing mascot, sticker character or franchise; do not imitate any artist or studio. Mood: 唯美, warm and reassuring. Character style: chubby rounded shapes, simple clean thick soft outlines, flat pastel colours with gentle shading, big expressive but simple eyes, sticker-like charm with a bit of deadpan or smug humour. The original dog and cat stepping out of a station exit stairway into soft morning light, a gentle sunrise city beyond, relieved happy expressions, warm golden light; leave the top 20% plain sky for typeset text. Composition: keep the main subject inside the central 40% of the width (2:3 poster).",
+    "requested_size": "1024x1536",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:23:34+00:00",
+    "sha256": "acd12b2485981213857bfddfacb6281b3b77532340c6dba0d0bc19b71f089f17",
+    "bytes": 2109656,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "characters": "original GTEki guide cat and dog; prompt forbids resemblance to Capoo, 臭跩貓, Pusheen, Sanrio, Chiikawa and other existing mascots",
+    "post": {
+      "typeset": [
+        "出口、見つけた！",
+        "迷っても、だいじょうぶ。"
+      ],
+      "font": "Noto Sans JP, notofonts/noto-cjk Sans2.004 (523d033), OFL-1.1",
+      "final": "k12_found_exit.jpg",
+      "final_sha256": "b65940ad88af744a50f396976654d529ecd17869cf59ebd0871a5257570febd5"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch6",
+    "shipped": {
+      "file": "k12_found_exit.jpg",
+      "width": 683,
+      "height": 1024,
+      "bytes": 155197,
+      "sha256": "f4e3973add2bb90e4d4578b06fa25cc7cde34d3107f9400b0683edfffd205668"
+    }
+  },
+  {
+    "file": "m01_manners_mascot.png",
+    "kind": "tall",
+    "prompt": "Create ONE ORIGINAL artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor should feel 'I never knew this place could be this beautiful'. The image fills edge to edge: no frame, no light-box, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs or lanterns with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces (illustrated characters are fine). No identifiable real landmarks, shrines, bridges, buildings, stations, shops, railway operators or train liveries; generic places only. Entirely original: do not imitate any existing artist, studio, film, franchise, character, campaign or historical advertisement. Style: friendly Japanese public-manners poster, flat vector illustration with soft shading. The same kind of ORIGINAL cute round yellow bird mascot (simple, not based on any existing mascot) politely holding a small mint-green backpack in front of its body, standing on a clean generic station platform with a yellow tactile strip. NO train and no railway car anywhere in the picture. Pastel yellow and mint palette. Leave the top 25% plain pale yellow and the bottom 15% plain mint for typeset text. Composition: keep the main subject inside the central 40% of the width (2:3 poster).",
+    "requested_size": "1024x1536",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:14:32+00:00",
+    "sha256": "4b3c8fb21997460860c04bd0203bbabee1eb343eeed668dee7aa707a447454bd",
+    "bytes": 1524401,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [
+        "リュックは前に。",
+        "みんなが気持ちよく乗れるように"
+      ],
+      "fictional_brand": "(generic manners poster)",
+      "font": "Noto Sans JP, notofonts/noto-cjk Sans2.004 (523d033), OFL-1.1",
+      "final": "m01_manners_mascot.jpg",
+      "final_sha256": "e7ac65c1a584ccf220c06874eb30888c80a477fab4a96ce00428f418e6c1543e"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch5",
+    "shipped": {
+      "file": "m01_manners_mascot.jpg",
+      "width": 683,
+      "height": 1024,
+      "bytes": 94909,
+      "sha256": "38b1f81e9548f6a339a7bda91c75934e768e64a81b951fae869d0835b33a5df8"
+    }
+  },
+  {
+    "file": "s08_showa_travel_poster.png",
+    "kind": "tall",
+    "prompt": "Create ONE ORIGINAL artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor should feel 'I never knew this place could be this beautiful'. The image fills edge to edge: no frame, no light-box, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs or lanterns with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces (illustrated characters are fine). No identifiable real landmarks, shrines, bridges, buildings, stations, shops, railway operators or train liveries; generic places only. Entirely original: do not imitate any existing artist, studio, film, franchise, character, campaign or historical advertisement. Style: an ORIGINAL Showa-retro (Japan, about 1955-1975) look: slightly faded warm colours, gentle film grain or offset-print texture, mid-century illustration or photo tone, nostalgic and warm, still beautiful and clean. A Showa-retro railway travel poster illustration: a generic unnamed coastal resort with a white beach hotel, palm-like pines and a turquoise sea under a bright sky, a cheerful illustrated woman in a sun hat seen from behind, offset-print texture. Leave the top 20% plain sky and bottom 15% calm for typeset text. Composition: keep the main subject inside the central 40% of the width (2:3 poster).",
+    "requested_size": "1024x1536",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:20:19+00:00",
+    "sha256": "c06a81fd8569c594ea09f04e3a9cbd9286962103316ec58586f1ac223f4693d4",
+    "bytes": 3024273,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [
+        "青い海へ、夏休み。",
+        "特急でゆく 南の浜辺"
+      ],
+      "fictional_brand": "(fictional rail travel campaign)",
+      "font": "Noto Sans JP, notofonts/noto-cjk Sans2.004 (523d033), OFL-1.1",
+      "final": "s08_showa_travel_poster.jpg",
+      "final_sha256": "5fc007033940ab4ced84b46c193cec048840a1b00f2e46799812babc25624bc2"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch5",
+    "shipped": {
+      "file": "s08_showa_travel_poster.jpg",
+      "width": 683,
+      "height": 1024,
+      "bytes": 189139,
+      "sha256": "0f3632e78f96ec046562489ee1a36807cc24e91f6e20891e5c333e6f07ed703b"
+    }
+  },
+  {
+    "file": "s09_kissaten_front.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor should feel 'I never knew this place could be this beautiful'. The image fills edge to edge: no frame, no light-box, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs or lanterns with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces (illustrated characters are fine). No identifiable real landmarks, shrines, bridges, buildings, stations, shops, railway operators or train liveries; generic places only. Entirely original: do not imitate any existing artist, studio, film, franchise, character, campaign or historical advertisement. Style: an ORIGINAL Showa-retro (Japan, about 1955-1975) look: slightly faded warm colours, gentle film grain or offset-print texture, mid-century illustration or photo tone, nostalgic and warm, still beautiful and clean. The front of an ORIGINAL Showa-retro kissaten coffee shop at dusk set into a station arcade: brick and dark wood, a warm-lit window with lace curtains, a cream-soda glass and coffee cup on the window sill, round frosted-glass lamp, empty blank signboard, nostalgic warm glow. Composition: wide, survives a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:20:19+00:00",
+    "sha256": "96c045591a7db1cc780943957ec340b5ae5b369590cba3c1385f137a5544f233",
+    "bytes": 3197541,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [],
+      "fictional_brand": null,
+      "font": null,
+      "final": "s09_kissaten_front.jpg",
+      "final_sha256": "07012b66603d024d478375bd55f873f32ecc6a1cfec00dc872841a5ff2229fc0"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch5",
+    "shipped": {
+      "file": "s09_kissaten_front.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 186314,
+      "sha256": "14be88b4726decb5a98d5050f3f037de6367993844625c8d080b555bd4470b06"
+    }
+  },
+  {
+    "file": "s10_sento_mural.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor should feel 'I never knew this place could be this beautiful'. The image fills edge to edge: no frame, no light-box, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs or lanterns with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces (illustrated characters are fine). No identifiable real landmarks, shrines, bridges, buildings, stations, shops, railway operators or train liveries; generic places only. Entirely original: do not imitate any existing artist, studio, film, franchise, character, campaign or historical advertisement. Style: an ORIGINAL Showa-retro (Japan, about 1955-1975) look: slightly faded warm colours, gentle film grain or offset-print texture, mid-century illustration or photo tone, nostalgic and warm, still beautiful and clean. A front-on public-bath style painted tile mural: a majestic GENERIC snow-capped volcano (not resembling any specific real mountain's exact outline), blue sea with white sails, pine trees on a shore, painted in classic bathhouse mural style on square tiles with thin grout lines. Composition: wide, survives a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:20:19+00:00",
+    "sha256": "0e54523481c6abdad334b53bf0f891d9205ff2fdb0e7b7e9ff2e5cd426ead60b",
+    "bytes": 3373171,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [],
+      "fictional_brand": null,
+      "font": null,
+      "final": "s10_sento_mural.jpg",
+      "final_sha256": "ade284cfd2a8e31e2c65c6bc60cd98e261fdb617a8394db50d8adf1458268dcc"
+    },
+    "review": "Owner accepted Mt Fuji (2026-10-22): natural landmark, bathhouse-mural tradition; the only landmark exception",
+    "batch": "ai_batch5",
+    "shipped": {
+      "file": "s10_sento_mural.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 201835,
+      "sha256": "98b2a24f033f76f2ca60a5240fda26842db183d13619e7e92d4a6866b8547e2c"
+    }
+  },
+  {
+    "file": "s11_neon_shotengai.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor should feel 'I never knew this place could be this beautiful'. The image fills edge to edge: no frame, no light-box, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs or lanterns with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces (illustrated characters are fine). No identifiable real landmarks, shrines, bridges, buildings, stations, shops, railway operators or train liveries; generic places only. Entirely original: do not imitate any existing artist, studio, film, franchise, character, campaign or historical advertisement. Style: an ORIGINAL Showa-retro (Japan, about 1955-1975) look: slightly faded warm colours, gentle film grain or offset-print texture, mid-century illustration or photo tone, nostalgic and warm, still beautiful and clean. A Showa-retro shopping arcade (shotengai) at blue hour seen from the street: glowing neon tubes in pink, cyan and green forming only abstract shapes and arrows, blank signboards, paper lanterns, a bicycle parked, wet street reflections, nostalgic and beautiful. Composition: wide, survives a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:20:19+00:00",
+    "sha256": "fada3e65ff049ac5950e4eec1a0b16c0a6db651d395cb2f8bd3cd399e2ae7f45",
+    "bytes": 3406668,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [],
+      "fictional_brand": null,
+      "font": null,
+      "final": "s11_neon_shotengai.jpg",
+      "final_sha256": "51c2d4a3d65df98dcc68bdadd203b19075b3a35db2d77f4b56456939879d5314"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch5",
+    "shipped": {
+      "file": "s11_neon_shotengai.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 214720,
+      "sha256": "aa3870560a4874db77d8391ca3166113d7a0e769ed6c76dd1fe1a7f18f26e9f2"
+    }
+  },
+  {
+    "file": "s12_showa_ad_illust.png",
+    "kind": "tall",
+    "prompt": "Create ONE ORIGINAL artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor should feel 'I never knew this place could be this beautiful'. The image fills edge to edge: no frame, no light-box, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs or lanterns with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces (illustrated characters are fine). No identifiable real landmarks, shrines, bridges, buildings, stations, shops, railway operators or train liveries; generic places only. Entirely original: do not imitate any existing artist, studio, film, franchise, character, campaign or historical advertisement. Style: an ORIGINAL Showa-retro (Japan, about 1955-1975) look: slightly faded warm colours, gentle film grain or offset-print texture, mid-century illustration or photo tone, nostalgic and warm, still beautiful and clean. A Showa-retro advertising illustration for a fictional soda brand with no product label and no bottle shape copied from any real brand: a plain clear glass of bubbling melon-green soda with ice on a red-and-white checked table, sunlight, summer clouds behind, offset-print texture. Leave the top 25% plain sky for typeset text. Composition: keep the main subject inside the central 40% of the width (2:3 poster).",
+    "requested_size": "1024x1536",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:20:19+00:00",
+    "sha256": "9aa0bce5dea240e3c0bf4ed58d268584fb293ccbef33b39913b519bf8b856fbc",
+    "bytes": 2959161,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [
+        "夏は、メロンソーダ。",
+        "純喫茶 みどり堂"
+      ],
+      "fictional_brand": "みどり堂 (fictional)",
+      "font": "Noto Sans JP, notofonts/noto-cjk Sans2.004 (523d033), OFL-1.1",
+      "final": "s12_showa_ad_illust.jpg",
+      "final_sha256": "79e8d152b256df9e9cc1f49ef49b839310264b6f9ae0da711a5b02c389fa9d0a"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch5",
+    "shipped": {
+      "file": "s12_showa_ad_illust.jpg",
+      "width": 683,
+      "height": 1024,
+      "bytes": 172770,
+      "sha256": "dd0b04af8bad64da7dfe9f345914760cd2fac1951966289a5982b901315cebfa"
+    }
+  },
+  {
+    "file": "t09_layered_dawn.png",
+    "kind": "tall",
+    "prompt": "Create ONE ORIGINAL finished artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor walking into the station should feel 'I never knew this place could be this beautiful'. Aesthetic: 唯美 — luminous, poetic and serene; cinematic soft light, delicate atmosphere, gentle bloom and haze, rich but harmonious colour, very high-quality painterly digital illustration with a photographic quality of light, fine detail, calm composition with generous negative space. The artwork fills the image edge to edge: no frame, no light-box, no wall, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, buildings, stations, shops, railway operators or train liveries (generic city silhouettes are fine). Entirely original: do not imitate any existing artist, studio, film, franchise, character or campaign. An art poster: a generic city skyline at dawn made of layered translucent glass-like planes in rose, apricot and pale blue, sun rising behind, birds as tiny silhouettes. Composition: keep the main subject inside the central 40% of the width so the image can be cropped to a 2:3 portrait poster without losing it.",
+    "requested_size": "1024x1536",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:08:00+00:00",
+    "sha256": "3b0f10cdf24df49a6f61943dc2a935de881ba491e5d5829c4247c68d8bfa437b",
+    "bytes": 2489158,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [],
+      "fictional_brand": null,
+      "font": null,
+      "final": "t09_layered_dawn.jpg",
+      "final_sha256": "c589242e5b8e9f3124843961b046fe6df7070f2fab6a713c27844f68c151eaf8"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch3",
+    "shipped": {
+      "file": "t09_layered_dawn.jpg",
+      "width": 683,
+      "height": 1024,
+      "bytes": 167823,
+      "sha256": "fe729acdb72f40bc0ab30ba23a88353b820cc4cbee3ec0d649087d8335d481a1"
+    }
+  },
+  {
+    "file": "w05_ginkgo_morning.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL finished artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor walking into the station should feel 'I never knew this place could be this beautiful'. Aesthetic: 唯美 — luminous, poetic and serene; cinematic soft light, delicate atmosphere, gentle bloom and haze, rich but harmonious colour, very high-quality painterly digital illustration with a photographic quality of light, fine detail, calm composition with generous negative space. The artwork fills the image edge to edge: no frame, no light-box, no wall, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, buildings, stations, shops, railway operators or train liveries (generic city silhouettes are fine). Entirely original: do not imitate any existing artist, studio, film, franchise, character or campaign. A long avenue of golden ginkgo trees in morning haze, leaves drifting down, a single empty bench, sunbeams through the canopy, warm gold and soft blue shadows. Composition: wide, must survive a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:08:00+00:00",
+    "sha256": "5708ae87187c58a12b7b72de29f677112d44e3cbc800dd41902adf486a92a510",
+    "bytes": 2909894,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [],
+      "fictional_brand": null,
+      "font": null,
+      "final": "w05_ginkgo_morning.jpg",
+      "final_sha256": "cd1daef7c12637392d5f16439678042b0eda11f0026e7786e40653b5747f53a1"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch3",
+    "shipped": {
+      "file": "w05_ginkgo_morning.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 194688,
+      "sha256": "454dd3c75b40fab7c7132a69d292a3c0b3e13c8bc80dd4b986cf39f3adb295a0"
+    }
+  },
+  {
+    "file": "w06_snow_lanterns.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL finished artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor walking into the station should feel 'I never knew this place could be this beautiful'. Aesthetic: 唯美 — luminous, poetic and serene; cinematic soft light, delicate atmosphere, gentle bloom and haze, rich but harmonious colour, very high-quality painterly digital illustration with a photographic quality of light, fine detail, calm composition with generous negative space. The artwork fills the image edge to edge: no frame, no light-box, no wall, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, buildings, stations, shops, railway operators or train liveries (generic city silhouettes are fine). Entirely original: do not imitate any existing artist, studio, film, franchise, character or campaign. A quiet generic shopping street on a winter night under gentle falling snow, warm paper lanterns and small white fairy lights in bare trees, footprints in fresh snow, deep blue and warm amber. Composition: wide, must survive a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:08:00+00:00",
+    "sha256": "06992c875a58bf4fe0895b1d415b0d6c29c6562c4feb29dd387d67f3fb5fcb6f",
+    "bytes": 3063984,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [],
+      "fictional_brand": null,
+      "font": null,
+      "final": "w06_snow_lanterns.jpg",
+      "final_sha256": "de119e858401ee4a2535f3c43ffbc4d4ccda2ea74d06dedae60ef1e2c1d13585"
+    },
+    "review": "regenerated once by Codex; lanterns blank (checked at 100%)",
+    "batch": "ai_batch3",
+    "shipped": {
+      "file": "w06_snow_lanterns.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 225958,
+      "sha256": "f4dd6ab85558b5d0b7c98f7d0842ccf4e2ea8cf6b6b56209b139f433c13127e4"
+    }
+  },
+  {
+    "file": "w08_light_installation.png",
+    "kind": "wide",
+    "prompt": "Create ONE ORIGINAL finished artwork for a light-box or poster inside the 3D game GTEki, set in idealised Tokyo railway stations (Shinjuku, Ikebukuro). Goal: a visitor walking into the station should feel 'I never knew this place could be this beautiful'. Aesthetic: 唯美 — luminous, poetic and serene; cinematic soft light, delicate atmosphere, gentle bloom and haze, rich but harmonious colour, very high-quality painterly digital illustration with a photographic quality of light, fine detail, calm composition with generous negative space. The artwork fills the image edge to edge: no frame, no light-box, no wall, no mockup, opaque. Absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, signs with writing, logos, trademarks, brands, branded products, QR codes, watermarks or signatures. No photorealistic people or faces. No identifiable real landmarks, buildings, stations, shops, railway operators or train liveries (generic city silhouettes are fine). Entirely original: do not imitate any existing artist, studio, film, franchise, character or campaign. A public-art light installation for a station passage: flowing translucent ribbons of light in pale blue, white and soft gold floating above a still mirror-like floor of water, abstract, serene, gallery-like. Composition: wide, must survive a centre crop to 16:9.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T20:08:00+00:00",
+    "sha256": "1fa62f7adf0c8368edd5fece1fa20bd9ee94e88fb04f977c57456ea4a6e3a3bd",
+    "bytes": 2667134,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "typeset": [
+        "光の回廊",
+        "地下通路アートプロジェクト"
+      ],
+      "fictional_brand": "光の回廊 (fictional public-art exhibition)",
+      "font": "Noto Sans JP Regular, notofonts/noto-cjk tag Sans2.004 (commit 523d033), SIL OFL 1.1",
+      "final": "w08_light_installation.jpg",
+      "final_sha256": "00bb479d50e47f3b3a0cd38b6728acfc0a10f50ffa62e9cdb2ce424e0af5483c"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, landmarks or photoreal faces",
+    "batch": "ai_batch3",
+    "shipped": {
+      "file": "w08_light_installation.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 162456,
+      "sha256": "4741ff884004c3c02bb32c11e5f635ae2973b8e72d0b385d697988b0691d1591"
+    }
+  },
+  {
+    "file": "wide_ike_aquarium.png",
+    "station_feel": "Ikebukuro",
+    "kind": "wide lightbox 16:9",
+    "prompt": "Create ONE ORIGINAL finished advertising artwork (background plate only) for the 3D game GTEki, which recreates the feel of real Tokyo railway station concourses such as Ikebukuro and Shinjuku. It must look like a real, professionally produced Japanese station advertisement of today, not a game asset. The artwork fills the entire image edge to edge: no frame, no lightbox, no wall, no station mockup, no perspective, opaque. Leave the stated copy area calm and uncluttered: text will be typeset later by the game, so the image itself contains absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, logos, trademarks, brand marks, real branded products or packaging, QR codes, watermarks or signatures. No photorealistic people or human faces. No identifiable real places, landmarks, stations, shops or railway operators, and no operator colours or liveries. Entirely original: do not imitate any existing campaign, artist, studio, franchise, character, brand or game. Style: high-end photographic advertising, realistic. A huge dim blue aquarium tank with a ray gliding overhead and schools of small silver fish catching light beams, deep blue gradient, no visitors, no signage. Fictional rooftop aquarium night-opening campaign. Keep the left 35% darker and calm for copy.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T19:57:28+00:00",
+    "sha256": "5f7b61c828b9d9ad4fa772e2ff9cc7078180c1ba27a1cd22d900361a887e72d7",
+    "bytes": 2156649,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "crop": "none",
+      "typeset": [
+        "夜の水族館、",
+        "はじめました。",
+        "アクアテラス　ナイトオープン　18:00─22:00"
+      ],
+      "fictional_brand": "アクアテラス (fictional)",
+      "font": "Noto Sans JP Regular/Bold, notofonts/noto-cjk tag Sans2.004 (commit 523d033), SIL OFL 1.1",
+      "tool": "ImageMagick annotate (typeset.py)",
+      "final": "wide_ike_aquarium.jpg",
+      "final_sha256": "7d96679056b486d98c2a5141ef839df1acf89f0c4af3ae44018cef9f2f8302c1"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, real places or photoreal faces",
+    "batch": "ai_batch2",
+    "shipped": {
+      "file": "wide_ike_aquarium.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 118914,
+      "sha256": "d1eec13fb362046306be683b3beac4b2196c0c320d8d5cb03b58fd97aa8ddc61"
+    }
+  },
+  {
+    "file": "wide_shj_travel.png",
+    "station_feel": "Shinjuku",
+    "kind": "wide lightbox 16:9",
+    "prompt": "Create ONE ORIGINAL finished advertising artwork (background plate only) for the 3D game GTEki, which recreates the feel of real Tokyo railway station concourses such as Ikebukuro and Shinjuku. It must look like a real, professionally produced Japanese station advertisement of today, not a game asset. The artwork fills the entire image edge to edge: no frame, no lightbox, no wall, no station mockup, no perspective, opaque. Leave the stated copy area calm and uncluttered: text will be typeset later by the game, so the image itself contains absolutely NO text, letters, numbers, kana, kanji, pseudo-writing, logos, trademarks, brand marks, real branded products or packaging, QR codes, watermarks or signatures. No photorealistic people or human faces. No identifiable real places, landmarks, stations, shops or railway operators, and no operator colours or liveries. Entirely original: do not imitate any existing campaign, artist, studio, franchise, character, brand or game. Style: Japanese domestic travel campaign photography, realistic and cinematic. A generic unnamed mountain hot-spring valley in autumn: steam rising from a wooden open-air bath (empty), red and gold maples, misty ridges, early morning light. Not any identifiable real location. Keep the left 35% sky-calm for copy.",
+    "requested_size": "1536x1024",
+    "generator": "Codex CLI 0.163.0 built-in image generation; embedded C2PA: ChatGPT gpt-image, OpenAI Media Service API (trainedAlgorithmicMedia)",
+    "generated_at": "2026-10-21T19:57:28+00:00",
+    "sha256": "acf9db537716570fe317d4d3a2d5d5c23e6dc3616cf7ce3046f6c048fa10b16a",
+    "bytes": 2637313,
+    "license_spdx": "CC0-1.0",
+    "ai_generated": true,
+    "brands": "none (fictional only)",
+    "post": {
+      "crop": "none",
+      "typeset": [
+        "湯けむりの、",
+        "朝へ。",
+        "秋の温泉旅キャンペーン　ゆけむり紀行"
+      ],
+      "fictional_brand": "ゆけむり紀行 (fictional)",
+      "font": "Noto Sans JP Regular/Bold, notofonts/noto-cjk tag Sans2.004 (commit 523d033), SIL OFL 1.1",
+      "tool": "ImageMagick annotate (typeset.py)",
+      "final": "wide_shj_travel.jpg",
+      "final_sha256": "a2438066ec744a4621787ebc6cc7bf2237d685957991d6b7244d7905f64d14a7"
+    },
+    "review": "inspected: no AI-drawn text, logos, real brands, real places or photoreal faces",
+    "batch": "ai_batch2",
+    "shipped": {
+      "file": "wide_shj_travel.jpg",
+      "width": 1024,
+      "height": 576,
+      "bytes": 158226,
+      "sha256": "df4fa41ec47d6c10be2b2b47dc68ccc79c8fac9c59522bdac07cd1b9b8966ecf"
+    }
+  }
+]

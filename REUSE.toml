@@ -1,0 +1,260 @@
+# REUSE configuration (https://reuse.software, REUSE spec 3.x REUSE.toml).
+#
+# Owner licensing decision, Issue #123 (2026-10-22):
+#   - Code and repo default ............... Apache-2.0
+#   - Original project art (Lane E assets) . CC-BY-4.0, credit "GTEki contributors"
+#   - AI-generated 2D images .............. CC0-1.0 (provenance sidecar kept, labelled AI-generated)
+#   - Third-party data and derived files .. keep their own terms; listed in NOTICE; never relicensed
+#
+# Rule used here: every annotation uses precedence = "override" and a LATER
+# annotation wins over an EARLIER one for the same path. So the order is:
+# default first, then original art, then AI images, then the third-party block.
+# Hard rule: nothing third-party may resolve to Apache-2.0, CC-BY-4.0 or CC0-1.0.
+# Licence texts live in LICENSES/ (LicenseRef-* files are pointers, not texts).
+
+version = 1
+
+# --- 1. Default: code, docs text, configs --------------------------------------------------
+
+[[annotations]]
+path = "**"
+precedence = "override"
+SPDX-FileCopyrightText = "GTEki contributors"
+SPDX-License-Identifier = "Apache-2.0"
+
+# --- 2. Original project art: CC-BY-4.0 ----------------------------------------------------
+# Lane E procedural assets: Blender-built GLBs (full + mobile), textures embedded in them,
+# manifests, the library provenance note, plus the contact sheets and renders in docs/assets/img.
+# assets/library/** includes the provenance sidecar and manifests; the AI posters are carved
+# out in section 3 below.
+
+[[annotations]]
+path = ["assets/library/**", "docs/assets/img/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "GTEki contributors"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# #94 look-gap captures: renders of the Lane E kit (showcase layouts) in the web explorer.
+[[annotations]]
+path = "docs/qa/reports/2026-10-22-art-94/*.jpg"
+precedence = "override"
+SPDX-FileCopyrightText = "GTEki contributors"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# --- 3. AI-generated 2D images: CC0-1.0 ----------------------------------------------------
+# Generated 2026-10-20 with OpenAI image generation through Codex; prompts, hashes and the
+# "AI-generated" label are in assets/library/source/posters/provenance.json. Fictional only:
+# no real brands, logos, trademarks, people or places.
+
+[[annotations]]
+path = "assets/library/source/posters/*.jpg"
+precedence = "override"
+SPDX-FileCopyrightText = "GTEki contributors (AI-generated image, dedicated to the public domain)"
+SPDX-License-Identifier = "CC0-1.0"
+
+# Art batch 1 (2026-10-22): 31 Owner-approved AI images, their provenance.json and catalog.json,
+# and the contact sheet that shows only those images. Placed after the section 2 CC-BY block so it
+# overrides assets/library/** and docs/assets/img/** (last matching annotation wins).
+# Fictional brands only; the text layer is typeset afterwards in Noto Sans JP (SIL OFL 1.1; the
+# font is not committed). The JPEGs are the source of record.
+[[annotations]]
+path = ["assets/library/source/art2d/**", "docs/assets/img/art2d_batch1.jpg"]
+precedence = "override"
+SPDX-FileCopyrightText = "GTEki contributors (AI-generated; see provenance.json)"
+SPDX-License-Identifier = "CC0-1.0"
+
+# =============================================================================================
+# 4. THIRD-PARTY: draft for GIS review (Lane D owns the final entries and the path mapping)
+# =============================================================================================
+# Source: GIS inventory for Issue #123, Part A (paths) and Part B (credits), against main f8ce063.
+# Every entry keeps the source's own terms and is NOT relicensed by GTEki. These annotations
+# label provenance so that `reuse lint` sees an identifier; they grant nothing, and none of them
+# uses Apache-2.0, CC-BY-4.0 or CC0-1.0 (hard rule), even where the upstream record says CC BY 4.0
+# (Deliberate exception, director decision: project-made screenshots in 4h carry CC-BY-4.0 AND the
+# third-party id for the content they show; the third-party content itself is not relicensed.)
+# GTEki-authored records that stay at the Apache-2.0 default (acquisition receipts, conversion and
+# context receipts, rights assessments, tools/gis/sources, shinjuku sources/manifest.json) describe
+# third-party sources; they do not relicense them.
+# The LicenseRef files in LICENSES/ are pointers (URL + recorded snapshot sha256), not texts.
+# The SPDX-FileCopyrightText values name the PUBLISHER as the repo records it, not a copyright
+# holder (GIS open item 11); "modified by GTEki contributors" is added where the data was modified.
+# Re-run GIS's list after the pending PRs land: #110, #115 (context GLBs), #117, #127, #61.
+
+# --- 4a. MLIT Project PLATEAU ubld 53394576 (Ikebukuro) and files derived from it -------------
+# Credit (Ikebukuro): 「出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成」
+# Shinjuku context (only where building bases are flattened, Owner option A, #39 comment
+# 6324813261): the same string plus 「（建物の基部を地表面の高さにそろえて表示）」.
+# Road (tran) geometry: Owner risk acceptance, NOT a licence finding
+# (docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md); keeps its own terms.
+# Context GLBs from #110 land under stations/ikebukuro/gteki/assets/ and are covered by the first
+# glob. #115's Shinjuku context GLB path is not known yet: add it here when it lands.
+[[annotations]]
+path = [
+  "stations/ikebukuro/gteki/assets/**",
+  "stations/ikebukuro/scene/*.json",
+  "tools/gis/test/fixtures/plateau-catalog-meshes-13116-13104.json",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-PLATEAU-site-policy"
+
+# Inventories quote PLATEAU codelist labels (rights UNKNOWN, committed as labels inside the
+# inventories; #129 will trim or reclassify) and MLIT walk-network code labels.
+[[annotations]]
+path = [
+  "docs/gis/inventory/*",
+  "docs/gis/history/**/inventory/*",
+  # Also carry MLIT walk-network code labels and the PLATEAU group label (#129 tracks them).
+  "docs/gis/gaps/ikebukuro.*",
+  "docs/gis/history/**/gaps/ikebukuro.*",
+  "docs/gis/real-data-summary.*",
+  "docs/gis/history/**/real-data-summary.*",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; 国土交通省; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-PLATEAU-site-policy AND LicenseRef-MLIT-site-terms"
+
+# --- 4b. Ikebukuro graph and POIs: PLATEAU-derived coordinates plus facts-only maps -----------
+# Names, exit numbers and access facts come from the Toshima underground guide and the Tokyo
+# Metro yard map: licence null, REFERENCE_ONLY, facts-only (policy F26); nothing is reproduced.
+# station.json carries the PLATEAU group label, PLATEAU-derived heights and the credits (GIS P2-2).
+[[annotations]]
+path = [
+  "stations/ikebukuro/gteki/station.json",
+  "stations/ikebukuro/gteki/graph.json",
+  "stations/ikebukuro/gteki/pois.json",
+  "stations/ikebukuro/data/graph.src.json",
+  "tests/e2e/specs/__goldens__/02-navigation.spec.ts/ikebukuro-routes.json",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省 Project PLATEAU; modified by GTEki contributors; also cites facts-only sources (豊島区, 東京地下鉄)"
+SPDX-License-Identifier = "LicenseRef-PLATEAU-site-policy AND LicenseRef-facts-only-no-licence"
+
+# --- 4c. Hokonavi E27 (Toei Oedo, Shinjuku): shipped under the Owner's override ---------------
+# The package says PDL 1.0 but the resources carry no licence (null). Owner answered Q11 = No and
+# chose option (a) (#39 comment 6325100917): resource licence unconfirmed, package PDL 1.0 not
+# inherited, not relicensed. They ship under the Owner's merge override on PR #16, an accepted
+# risk, not a licence finding and not a rights PASS (PR #127 aligns the GIS docs). So E27 paths
+# carry ONLY the marker LicenseRef-Hokonavi-E27-Owner-override, never LicenseRef-PDL-1.0-JP.
+# Publication period ends 2027-03-12; reuse after that date is unconfirmed.
+# Credits:
+#   「歩行空間ネットワークデータ（都営地下鉄大江戸線 新宿駅）」（国土交通省）を加工して作成
+#   「構内地図データ（都営地下鉄大江戸線 新宿駅）」（国土交通省）を加工して作成
+# station.json is E27-derived (coverage polygons, floor labels, node ids; GIS P1). Its own
+# "license: PDL 1.0" line is stale against Q11 = No; the Shinjuku lead owns that file.
+# stations/shinjuku/sources/manifest.json stays at the default (GTEki-authored provenance list).
+# #61 will add stations/shinjuku/data/surface.json.
+[[annotations]]
+path = [
+  "stations/shinjuku/gteki/station.json",
+  "stations/shinjuku/gteki/graph.json",
+  "stations/shinjuku/gteki/pois.json",
+  "stations/shinjuku/data/plan.json",
+  "stations/shinjuku/data/import-report.json",
+  "stations/shinjuku/data/surface.json",
+  "docs/gis/networks/hokonavi-oedo-shinjuku-*",
+  "docs/gis/history/**/networks/hokonavi-oedo-shinjuku-*",
+  "tests/e2e/specs/__goldens__/02-navigation.spec.ts/shinjuku-routes.json",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省（ほこナビDP）; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-Hokonavi-E27-Owner-override"
+
+# --- 4d. Ikebukuro Hokonavi walking network (historic, not used, nothing ships) ---------------
+# Only inventories are committed. CSV entries cite the digital.go.jp PDL 1.0 URL; GeoJSON
+# entries cite https://www.mlit.go.jp/link.html.
+[[annotations]]
+path = [
+  "docs/gis/networks/hokonavi-ikebukuro-walk-node-csv.*",
+  "docs/gis/history/**/networks/hokonavi-ikebukuro-walk-node-csv.*",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省（ほこナビDP）; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-PDL-1.0-JP"
+
+[[annotations]]
+path = "docs/gis/networks/hokonavi-ikebukuro-walk-node-geojson.*"
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省; modified by GTEki contributors"
+SPDX-License-Identifier = "LicenseRef-MLIT-site-terms"
+
+# --- 4e. MLIT walking-network specification code tables ---------------------------------------
+# Literal transcription of MLIT's labels; licence URL https://www.mlit.go.jp/link.html with "PDL
+# 1.0" as the recorded basis, applicability UNKNOWN.
+[[annotations]]
+path = "tools/gis/codebooks/*.json"
+precedence = "override"
+SPDX-FileCopyrightText = "国土交通省"
+SPDX-License-Identifier = "LicenseRef-MLIT-site-terms"
+
+# --- 4f. GSI Survey Calculation Site control values -------------------------------------------
+# The two bl2xy responses in the fixture and in docs/gis/crs/*.json (independent_controls expected
+# E/N values). No licence is recorded for the values. (crs/*.md holds only computed deltas.)
+[[annotations]]
+path = [
+  "tools/gis/test/fixtures/gsi-bl2xy-controls.json",
+  "docs/gis/crs/*.json",
+  "docs/gis/history/**/crs/*.json",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "国土地理院"
+SPDX-License-Identifier = "LicenseRef-GSI-terms"
+
+# --- 4g. NO LICENCE GRANT: values scheduled for removal or with no recorded source ------------
+# #124: the Owner decided to remove no-release values from the current tree (git history is not
+# rewritten). Until GIS PR #128 lands, these files embed S10/S03/KSJ/PLATEAU-related literal values
+# and must not receive any repository licence. Tokyo S10 and S03 are CC BY 4.0 at dataset level and
+# were accepted by the Owner for facts-only use with credit (#39 comment 6324726321), but the
+# poi files also carry phone numbers, URLs and addresses, and the modification notices are still
+# placeholders, so they get no grant here either.
+[[annotations]]
+path = [
+  "docs/gis/poi/*.json",
+  "docs/gis/gaps/shinjuku.json",
+  "docs/gis/gaps/shinjuku.md",
+  "docs/gis/history/**/gaps/shinjuku.json",  # archived copies: same E27-derived floor labels and bounds
+  "docs/gis/history/**/gaps/shinjuku.md",
+  "docs/gis/research/poi-rights-s10-s03-related.md",
+]
+precedence = "override"
+SPDX-FileCopyrightText = "No licence granted: third-party values or unrecorded source (see NOTICE)"
+SPDX-License-Identifier = "LicenseRef-facts-only-no-licence"
+
+# --- 4h. docs/visual/evidence: project-made screenshots (director decision via GIS) ------------
+# Project-made screenshots are CC-BY-4.0 (repo licence). The ones that show Ikebukuro PLATEAU ubld
+# 53394576-derived geometry also carry the PLATEAU credit
+# 「出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成」 with the PLATEAU terms as a second
+# licence entry. All files except crowd-lineup.jpg are Ikebukuro station renders (decided from
+# file names, the commits that added them and a spot check of five images); crowd-lineup.jpg shows
+# only the procedural avatars on a flat ground plane, so it is CC-BY-4.0 only (next annotation).
+# Same pattern for the other project-made screenshots (GIS open item 4, director decision):
+# Ikebukuro captures show PLATEAU-derived geometry; the five Shinjuku Lane F captures show
+# E27-derived geometry (director decision on PR #131: CC-BY-4.0 AND the E27 marker; the E27 content
+# is not relicensed, only the GTEki rendering work is CC BY).
+[[annotations]]
+path = [
+  "stations/ikebukuro/docs/evidence/**",
+  "docs/qa/reports/2026-10-21-evidence/ikebukuro-*.jpg",
+  "docs/qa/reports/2026-10-21-evidence/phone-webkit-ikebukuro-*.jpg",
+  "docs/visual/evidence/**",
+]
+precedence = "override"
+SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省 Project PLATEAU; modified by GTEki contributors"]
+SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-PLATEAU-site-policy"
+
+[[annotations]]
+path = "docs/qa/reports/2026-10-21-evidence/shinjuku-*.jpg"
+precedence = "override"
+SPDX-FileCopyrightText = ["GTEki contributors", "国土交通省（ほこナビDP）; modified by GTEki contributors"]
+SPDX-License-Identifier = "CC-BY-4.0 AND LicenseRef-Hokonavi-E27-Owner-override"
+
+[[annotations]]
+path = "docs/visual/evidence/crowd-lineup.jpg"
+precedence = "override"
+SPDX-FileCopyrightText = "GTEki contributors"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# docs/gis/poi/plateau-*-related.json hold RESTRICTED KSJ-origin values (shelter, park, emergency
+# route; scheduled for removal under #124) and get the same no-grant marker as the other POI files.
+
+# OSM: no OSM data is committed (cross-check only), so there is no ODbL annotation.

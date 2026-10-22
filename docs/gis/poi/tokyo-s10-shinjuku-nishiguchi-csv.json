@@ -1,7 +1,7 @@
 {
   "source_id": "tokyo-s10-shinjuku-nishiguchi-csv",
   "source_sha256": "71930f167c2fa1815e9bae8a5d8c9da4e19130344345e853524c32b583c547a6",
-  "tool_input_sha256": "ca9ef46e121b7da44432c6b39e75b87bfc5be56e7e661fdd04e6bfbaefcbf403",
+  "tool_input_sha256": "b07ff35a92d73bcdedb3a19ccdbc94ac11240547db3a0de65b53f0c38109854c",
   "input_sources": [
     {
       "source_id": "tokyo-s10-shinjuku-nishiguchi-csv",
@@ -84,25 +84,30 @@
             "string"
           ],
           "distinct_count": 10,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "A",
+              "value_sha256": "333e0a1e27815d0ceee55c473fe3dc93d56c63e3bee2b3b4aee8eed6d70191a3",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "B",
+              "value_sha256": "3f39d5c348e5b79d06e842c114e6cc571583bbf44e4b0ebfda1a01ec05745d43",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "C",
+              "value_sha256": "44bd7ae60f478fae1061e11a7739f4b94d1daf917982d33b6fc8a01a63f89c21",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "D",
+              "value_sha256": "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "E",
+              "value_sha256": "6b23c0d5f35d1b11f9b683f0b0a617355deb11277d91ae091d399c655b87940d",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -115,25 +120,30 @@
             "string"
           ],
           "distinct_count": 8,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "コインロッカー",
+              "value_sha256": "b1456c4c007d1e939ec7cf308950b9f746798beb9a29db106f2cc0334324d63a",
+              "value_type": "string",
               "count": 3
             },
             {
-              "value": "ATM（セブン銀行）",
+              "value_sha256": "1428c8c916db3d626a27800a9ccdf7e27f759e34c05b91974eaef86ad7920155",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "ATM（みずほ銀行）",
+              "value_sha256": "20d2995ea7d397035c33f23cc6b4fa83b59441f1313f711d0686e7a45c6ffad3",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "ATM（ゆうちょ銀行）",
+              "value_sha256": "30eea2d0d7ca581f7ea2a449e036067e23c63e8e71b703a62ba457562eb7203e",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "ファミリーマート（ミニ・コンビニ）",
+              "value_sha256": "6f8bb9af27059ffd1556f8254cd5c88d1c0f00869f91fb054a31b1fa85d3eed5",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -146,25 +156,30 @@
             "string"
           ],
           "distinct_count": 5,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "B1階改札外コンコース（D1出口付近）",
+              "value_sha256": "3bfd7c021401a613ceb9598a61a58a236475c515c87cd06617cbe0cb0c79f89e",
+              "value_type": "string",
               "count": 4
             },
             {
-              "value": "B3階改札外コンコース（駅務室横）",
+              "value_sha256": "7fef71dbf7d639d6a47eb63e81d70ce9140a614434414a27b75c3fbe8d3a1300",
+              "value_type": "string",
               "count": 3
             },
             {
-              "value": "B1階改札外コンコース（D2出口付近）",
+              "value_sha256": "0403e91967432756d1595e2daef8d8dfd561e30e578f27b105bcc6207614dca5",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "B3階改札外コンコース（D5出口方）",
+              "value_sha256": "d64f0187db1a1a910662e96026e1b02006be475dd86bc7238751459fa3711e67",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "B3階改札外コンコース（JR新宿駅方面改札付近）",
+              "value_sha256": "f66acfa8cc782e7dbf049b5471dbc4e5104adca24840db31c28dd107db36cb40",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -177,25 +192,30 @@
             "string"
           ],
           "distinct_count": 8,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "【全日】5時から24時まで",
+              "value_sha256": "3eef2589041f25ee18401cca258d53675cbe879759e69fc65337ed4818808f98",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "【全日】7時から23時まで",
+              "value_sha256": "6100bbd809e140ac8b670295f254595efea3861fbc7806c5f81ba76e7c8f145c",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "【全日】8時から21時まで",
+              "value_sha256": "61074ff5aacf08179e450595c3db83d6437c0be75ae8ad899c9ef738318ab0a3",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "※1【中型】3口【標準】11口",
+              "value_sha256": "61b488d7cdb65b2e0792d24e99dfbc0ee2ea94e396912a56c885da93a6305922",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "※1【標準】20口",
+              "value_sha256": "b1b86e247c2b4fbe15058caced53b80fdc9a80cc120410db82013710ee1b8415",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -208,7 +228,7 @@
             "string"
           ],
           "distinct_count": 0,
-          "literal_distribution": [],
+          "value_hash_distribution": [],
           "omitted_distinct": 0
         },
         "座席": {
@@ -218,7 +238,7 @@
             "string"
           ],
           "distinct_count": 0,
-          "literal_distribution": [],
+          "value_hash_distribution": [],
           "omitted_distinct": 0
         },
         "電話番号": {
@@ -228,9 +248,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "03-5338-1277",
+              "value_sha256": "8e9b54f9901863d9025b80bb9122f82621605531d0b0d3d9072937027d96b81d",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -243,9 +264,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "http://www.family.co.jp/",
+              "value_sha256": "91989e5748173ad6adecc7d2a5efc9e1c6a91d16a63361e0e11ea37552ed7e38",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -258,9 +280,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "○",
+              "value_sha256": "1f444cd5d56c5aa0895aaeecc7a4ab9dde91b1b16bb1bb2fa4a7a1bc44619cc5",
+              "value_type": "string",
               "count": 3
             }
           ],
@@ -273,13 +296,15 @@
             "string"
           ],
           "distinct_count": 2,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "★宅配受取サービス（利用時間：5時から24時まで）",
+              "value_sha256": "1cd2b239e24f97e074120d521d4d64c0759a1ea897a09e84cf4172de16fafa67",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "ベビー用紙おむつ、菓子、飲料（乳児用液体ミルクなど）を販売",
+              "value_sha256": "f8311ea135b6c1553023d3465b175d18476fb58b86c87f215ce9b62942d3eb4c",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -291,7 +316,7 @@
       "crs": "UNKNOWN",
       "bbox": null,
       "geometry_types": {},
-      "literal_location_time_fields": {
+      "location_time_fields": {
         "設置場所": {
           "blank_count": 7,
           "missing_count": 0,
@@ -299,25 +324,30 @@
             "string"
           ],
           "distinct_count": 5,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "B1階改札外コンコース（D1出口付近）",
+              "value_sha256": "3bfd7c021401a613ceb9598a61a58a236475c515c87cd06617cbe0cb0c79f89e",
+              "value_type": "string",
               "count": 4
             },
             {
-              "value": "B3階改札外コンコース（駅務室横）",
+              "value_sha256": "7fef71dbf7d639d6a47eb63e81d70ce9140a614434414a27b75c3fbe8d3a1300",
+              "value_type": "string",
               "count": 3
             },
             {
-              "value": "B1階改札外コンコース（D2出口付近）",
+              "value_sha256": "0403e91967432756d1595e2daef8d8dfd561e30e578f27b105bcc6207614dca5",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "B3階改札外コンコース（D5出口方）",
+              "value_sha256": "d64f0187db1a1a910662e96026e1b02006be475dd86bc7238751459fa3711e67",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "B3階改札外コンコース（JR新宿駅方面改札付近）",
+              "value_sha256": "f66acfa8cc782e7dbf049b5471dbc4e5104adca24840db31c28dd107db36cb40",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -330,25 +360,30 @@
             "string"
           ],
           "distinct_count": 8,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "【全日】5時から24時まで",
+              "value_sha256": "3eef2589041f25ee18401cca258d53675cbe879759e69fc65337ed4818808f98",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "【全日】7時から23時まで",
+              "value_sha256": "6100bbd809e140ac8b670295f254595efea3861fbc7806c5f81ba76e7c8f145c",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "【全日】8時から21時まで",
+              "value_sha256": "61074ff5aacf08179e450595c3db83d6437c0be75ae8ad899c9ef738318ab0a3",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "※1【中型】3口【標準】11口",
+              "value_sha256": "61b488d7cdb65b2e0792d24e99dfbc0ee2ea94e396912a56c885da93a6305922",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "※1【標準】20口",
+              "value_sha256": "b1b86e247c2b4fbe15058caced53b80fdc9a80cc120410db82013710ee1b8415",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -597,7 +632,7 @@
   "publish_gate": "HOLD",
   "limitations": [
     "No POI becomes a node, edge, door or floor.",
-    "Literal location, opening-hour and level fields remain verbatim in the hashed detail.",
+    "Location, opening-hour, level and every other source field value appear in this committed report only as SHA-256 + count (no release permission for some sources); the verbatim values stay in the git-ignored external detail.",
     "No source currency, operator permission, complete coverage or navigability established."
   ]
 }
