@@ -3,6 +3,16 @@
   "spec_source_id": "mlit-walk-network-spec-2018-03",
   "spec_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
   "status": "LITERAL_LABEL_LOOKUP_ONLY",
+  "source_note": {
+    "specification": "歩行空間ネットワークデータ等整備仕様 平成30年3月",
+    "publisher": "MLIT 国土交通省",
+    "version": "2018-03",
+    "url": "https://www.mlit.go.jp/common/001244374.pdf",
+    "snapshot_sha256": "9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974",
+    "acquisition_record": "docs/gis/acquisitions/mlit-walk-network-spec-2018-03.json",
+    "credit": "出典：国土交通省「歩行空間ネットワークデータ等整備仕様 平成30年3月」（版 2018-03、https://www.mlit.go.jp/common/001244374.pdf、SHA-256 9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974）／加工して作成",
+    "public_basis": "Public per the Owner decision (ii) at https://github.com/nurockplayer/gteki/pull/147#issuecomment-6330792563 (2026-10-22, relayed by gteki-80). The labels are a literal transcription of the specification tables; the recorded terms of the specification are PDL 1.0 by the MLIT site terms (https://www.mlit.go.jp/link.html), publish gate HOLD, and no separate rights notice was found in the PDF text."
+  },
   "link": {
     "rt_struct": {
       "spec_source_id": "mlit-walk-network-spec-2018-03",
