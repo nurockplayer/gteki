@@ -168,3 +168,11 @@ Priority items:
 - The S03 inventory report records station relevance as conditional numeric bbox arithmetic. That limit applies here too.
 - Dates in this file come from #174 and #175. Their sources were desk-read there, not re-opened here.
 - The one placed item is placed at the stairs that the repo already models, not at any change. Nothing in this file says a stair, exit or passage is open or closed today.
+
+## 9. Update from data-research R8 (PR [#197](https://github.com/nurockplayer/gteki/pull/197), DR-RT-01..29)
+
+None of these changes a result in section 4 or a count in section 6. Placement is still bounded by the datasets in section 2.
+
+- **CH-IK-06:** the abolition (廃止) of 地下道第3号線 / 第4号線 is now confirmed in an opened document: the ward-hosted 東京都市計画道路の変更, 告示 令和6年11月11日. It is a planning designation that names no passage or exit. The result stays UNKNOWN, because no repo object or dataset feature carries the designation.
+- **Metro exits 1a and C4:** Toshima 資料2 (2026-03-25) reports them back in service from 3月6日. Neither exit id is modelled in `stations/ikebukuro/gteki/pois.json` or the graph. This is not placed, and it is recorded as a dated fact only. Whether to add the exits is the Ikebukuro route lane's decision (ikb-route-ac).
+- **CH-IK-01, exit C1b:** still planned-only (2024年11月下旬). R8 did not find the actual opening date. The result stays UNKNOWN.
