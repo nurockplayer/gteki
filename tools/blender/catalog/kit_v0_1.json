@@ -50,6 +50,12 @@
     {"id": "gteki_barrier_rail_2400_solid", "generator": "barrier_rail", "params": {"length": 2.4, "infill": "solid", "end_posts": "start"}, "tags": ["prop"]},
     {"id": "gteki_barrier_rail_2400_rails", "generator": "barrier_rail", "params": {"length": 2.4, "infill": "rails"}, "tags": ["prop"]},
     {"id": "gteki_ticket_kiosk", "generator": "ticket_kiosk", "params": {}, "tags": ["prop"]},
-    {"id": "gteki_escalator_s1000_r5000_down", "generator": "escalator", "params": {"direction": "down"}, "tags": ["vertical"]}
+    {"id": "gteki_escalator_s1000_r5000_down", "generator": "escalator", "params": {"direction": "down"}, "tags": ["vertical"]},
+    {"id": "gteki_toilet_entrance_male", "generator": "toilet_entrance", "params": {"kind": "male"}, "tags": ["toilet", "entrance", "male"], "notes": "Opening 1.2 x 2.1 m: generic-typical shared maze entrance; trim, sign and reveal sizes are look-dev. No fixtures, door or room."},
+    {"id": "gteki_toilet_entrance_female", "generator": "toilet_entrance", "params": {"kind": "female"}, "tags": ["toilet", "entrance", "female"], "notes": "Opening 1.2 x 2.1 m: generic-typical shared maze entrance; trim, sign and reveal sizes are look-dev. No fixtures, door or room."},
+    {"id": "gteki_toilet_entrance_unisex", "generator": "toilet_entrance", "params": {"kind": "unisex", "opening_w_mm": 1000, "trim": "dark"}, "tags": ["toilet", "entrance", "unisex"], "notes": "Opening 1.0 x 2.1 m: generic-typical single-user door (clear width >= 0.8 m); trim and sign sizes are look-dev. No fixtures, door or room."},
+    {"id": "gteki_toilet_entrance_accessible", "generator": "toilet_entrance", "params": {"kind": "accessible", "opening_w_mm": 1000, "trim": "accent", "sign_pos": "right"}, "tags": ["toilet", "entrance", "accessible", "unisex"], "notes": "Opening 1.0 x 2.1 m: generic-typical wheelchair-accessible door (clear width >= 0.8 m); sign beside the opening with its centre at 1.45 m. Multi-purpose rooms: station leads choose this or the unisex variant. No fixtures, door or room."},
+    {"id": "gteki_toilet_entrance_pair", "generator": "toilet_entrance", "params": {"kind": "pair", "opening_w_mm": 1800, "trim": "brushed"}, "tags": ["toilet", "entrance", "male", "female"], "notes": "Opening 1.8 x 2.1 m: one shared lobby entrance for a male and a female room; combined male | female plate. Sizes are look-dev. No fixtures, door or room."},
+    {"id": "gteki_toilet_entrance_male_maze", "generator": "toilet_entrance", "params": {"kind": "male", "screen": "maze"}, "tags": ["toilet", "entrance", "male"], "notes": "Male entrance with a generic privacy screen stub 0.9 m behind the wall (collides; the rest of the piece leaves the opening clear). Sizes are look-dev."}
   ]
 }

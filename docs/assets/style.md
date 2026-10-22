@@ -123,6 +123,11 @@ W1 needs its own generator and an Owner look check before any piece uses it.
 - A sign face is one emissive quad in a recessed aluminium frame (28–35 mm bar) with a 4 mm dark gasket.
 - **No text, digits, pictograms or typefaces are generated.** Art is a colour field, a thin inner rule, an optional geometric arrow block and a blank text panel. Stations add their own wording at runtime (see [HANDOFF](HANDOFF.md)).
 - Arrow directions are left, right, up or none. The back face carries the mirrored arrow.
+- **Exception: facility pictograms (batch P1).** The toilet entrance sign (`toilet_entrance`) carries a procedurally drawn figure:
+  - It is GTEki's own geometric shape, in the general manner of public-information symbols; no artwork is copied.
+  - It only restates the facility the source names. A station places it only at a source facility point (Shinjuku GSI F001 / F002 / F003), with the matching `kind`.
+  - The `accessible` figure claims an accessible toilet, so it is used only where the source says so.
+  - Still no text or digits.
 
 | Tone | Field | Panel | Rim | Ink | Emission |
 | --- | --- | --- | --- | --- | --- |

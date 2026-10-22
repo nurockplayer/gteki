@@ -114,3 +114,16 @@ Each batch is one PR with 5–10 pieces, a contact sheet and both tiers passing 
 - Kit pieces are visual-only.
 - The line band is a runtime-tinted `line_accent` slot.
 - The station sends placement mapping after #61 and #72, once it has the piece list with dimensions.
+
+## P1 status
+
+**Built (generator code, batch `claude/lane-e-p1-toilet-anchor`):** `toilet_entrance` in `tools/blender/gteki_assets/families/facilities.py`, six catalog variants (`gteki_toilet_entrance_` + `male`, `female`, `unisex`, `accessible`, `pair`, `male_maze`) and `tools/blender/showcase/facilities_demo.json`.
+- **What it is:** jamb and lintel trim around an opening the station already has, a reveal lining, a pictogram sign above or beside the opening, and an optional privacy screen stub behind the wall. Placement `wall`; sockets `SOCKET_wall` and `SOCKET_sign`; tags `toilet`, `entrance` and the kind.
+- **Facility kind:** `params.kind` mirrors the GSI codes (F001 `male`, F002 `female`, F003 `unisex`). `accessible` and `pair` are extra kinds: a multi-purpose room at F003 can use `unisex` or `accessible` (the station lead chooses), and `pair` is for a shared entrance to a male and a female room.
+- **Anchors:** each GSI point is a representative point of a space, so the station places the piece on the room's wall, not at the point. The kit holds no station measurement; opening sizes are generic-typical (1.0 and 1.2 m wide, 2.1 m high) and are parameters.
+- **Not modelled:** toilets, sinks, door leaves, floors and ceilings. The kit does not invent the room.
+- **Collision:** jamb trims and, for `screen: maze`, the screen; the opening is clear. A kit piece for Shinjuku is visual-only in practice, so those colliders can be dropped there.
+- **Style exception:** [style.md](style.md) §6 says signs carry no pictograms. These sign faces are the one exception, as requested for P1: own geometric figures in the spirit of ISO 7001 / JIS Z8210 symbols, no traced artwork, no text, no operator marks. §6 should be updated when the Owner approves the batch.
+- **Still open in P1:** bench, bin, vending and locker stay with the existing props; no new piece is added without station geometry that backs it.
+- **Checks to run with Blender (not run yet):** `build.sh` for both tiers, `repro`, `godot`, `web`, and the contact sheet.
+
