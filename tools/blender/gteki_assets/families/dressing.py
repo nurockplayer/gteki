@@ -1,8 +1,8 @@
 """Dressing for geometry a station already has: escalator, stair and railing pieces.
 
 Generators:
-  escalator_dressing  balustrade (glass or panel), moving handrail, newel ends, comb plates,
-                      optional side skirts and static treads
+  escalator_dressing  balustrade (glass or panel), moving handrail, newel ends, comb plates
+                      (any subset, by ``parts``), optional side skirts and static treads
   stair_dressing      yellow nosing strips, handrail run along the pitch line, side skirts
   railing_run         glass or steel guard / fare-fence run along a 2D polyline
 
@@ -44,9 +44,12 @@ GEN = "tools/blender/gteki_assets/families/dressing.py"
 DARK_STEEL = "gteki_steel_painted_dark"
 GLASS = "gteki_glass_clear"
 
-# Escalator groups of vertical.escalator() that stay, by param. The rest (truss, landing
-# plates) is the station's own structure.
-ESCALATOR_GROUPS = ("balustrades", "balustrade_shoes", "moving_handrails", "newel_bases", "comb_plates")
+# Escalator groups of vertical.escalator() that stay, by part and by param. The rest (truss,
+# landing plates) is the station's own structure.
+ESCALATOR_PARTS = {"balustrade": ("balustrades", "balustrade_shoes"),
+                   "handrail": ("moving_handrails",),
+                   "newel": ("newel_bases",),
+                   "comb": ("comb_plates",)}
 ESCALATOR_OPTIONAL = {"skirts": ("skirts", "skirt_brushes", "deck_boards"),
                       "treads": ("steps", "demarcation"),
                       "indicators": ("indicators",)}
@@ -54,6 +57,7 @@ ESCALATOR_OPTIONAL = {"skirts": ("skirts", "skirt_brushes", "deck_boards"),
 ESCALATOR_DRESSING = dict(
     rise_mm=4000, width_mm=1000, angle_deg=30.0, landing_mm=800, flat_steps=2,
     balustrade="glass", direction="up", skirts=False, treads=False, indicators=False,
+    parts=("balustrade", "handrail", "newel", "comb"),
 )
 
 STAIR_DRESSING = dict(
@@ -108,6 +112,9 @@ def escalator_dressing(asset_id, params, tex_res):
     _positive(p, "rise_mm", "width_mm", "landing_mm")
     for key in ("skirts", "treads", "indicators"):
         _choice(p, key, (True, False))
+    p["parts"] = list(p["parts"])
+    if not p["parts"] or any(part not in ESCALATOR_PARTS for part in p["parts"]) or len(set(p["parts"])) != len(p["parts"]):
+        raise ValueError(f"parts must be a non-empty list of distinct values from {tuple(ESCALATOR_PARTS)}")
     if "run_mm" in p:  # optional; IDProperties cannot hold None, so it has no default
         if "angle_deg" in (params or {}):
             raise ValueError("give run_mm or angle_deg, not both")
@@ -120,7 +127,7 @@ def escalator_dressing(asset_id, params, tex_res):
         flat_steps=p["flat_steps"], direction=p["direction"], balustrade=p["balustrade"],
         landing=p["landing_mm"] / 1000), tex_res, handrail_segments=8, handrail_corner=0.0)
     inner = a.params
-    keep = set(ESCALATOR_GROUPS)
+    keep = {group for part in p["parts"] for group in ESCALATOR_PARTS[part]}
     for key, groups in ESCALATOR_OPTIONAL.items():
         if p[key]:
             keep.update(groups)
