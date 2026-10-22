@@ -159,7 +159,7 @@ extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressi
 the anchors and PLATEAU GML sha256 plus the flight or lane ids it serves. Each stair flight becomes two
 `stair_dressing` entries so every GLB has one bake role: `..._nosing` (`stairs_ramps`) and `..._rails_{post,wall}`
 (handrails, `barriers`). `step_count` is the surveyed nosing count, `riser_mm` = rise / (steps - 1), `tread_mm` the mean
-nosing run, and riser, tread and width are snapped to 5 mm so near-identical flights share one id and are instanced.
+nosing run, and riser, tread and width are rounded to whole mm (coarser snapping accumulated up to 40 mm by the top of a long flight); identical flights share one id and are instanced.
 `rail_mount` is `wall` when the base GLB's wall mesh lies within 0.3 m of both stair sides, else `post`. Flights with
 an implausible riser (outside 100-220 mm) or tread (under 200 mm) and single-step flights are skipped and listed with
 their reason. Escalators carry `rise_mm`, `run_mm` (between the flat sections), clear `width_mm` and the default 800 mm

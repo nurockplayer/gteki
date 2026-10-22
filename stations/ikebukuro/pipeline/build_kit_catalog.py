@@ -41,7 +41,7 @@ PLACEMENTS_SCHEMA = "gteki.ikebukuro.kit-placements/0"
 SOURCE_ID = "plateau-ubld-13116"
 ID_PREFIX = "gteki_ik_"
 
-QUANT_MM = 5                  # riser, tread, width and escalator rise / run / width are snapped to this
+QUANT_MM = 1                  # whole mm: flights are nearly all unique anyway, and coarser snapping accumulates over a flight
 RISER_MM = (100, 220)         # a plausible stair riser, on the unquantised value
 MIN_TREAD_MM = 200
 STEP_COUNT = (2, 80)          # the generator's own limit
