@@ -99,7 +99,7 @@ describe("pavement plane yields to the station's street surfaces", () => {
     const ground = () => b.group.getObjectByName("street-backdrop-ground")!;
     // One frame outdoors on level street; `dt` is the backdrop's clock (the re-scan period counts it).
     const frame = (dt = 1 / 60, teleport = false) => b.update(scene, camera, walker, true, dt, true, teleport);
-    return { root, b, ground, frame };
+    return { root, b, ground, frame, scene, camera };
   };
 
   it("collects flagged groups and meshes; names and roles alone never count", () => {
@@ -206,6 +206,31 @@ describe("pavement plane yields to the station's street surfaces", () => {
     buildings.add(deep);
     frame(STREET_RESCAN_S);
     expect(ground().visible).toBe(false); // a nested flagged mesh counts, even under an unflagged group
+    b.dispose();
+  });
+
+  it("cancels a fading-in plane the frame after a surface arrives, without waiting for the 0.5 s re-scan", () => {
+    const { root, b, ground, frame } = setup();
+    b.attach(root);
+    frame(); // comes out onto level street: the plane starts to fade in
+    frame();
+    frame();
+    expect(ground().visible).toBe(true);
+    root.add(flagged(new THREE.Group())); // e.g. #110 adding its context as the camera reaches street height
+    frame();
+    expect(ground().visible).toBe(false);
+    b.dispose();
+  });
+
+  it("re-scans on the frame the walker comes out onto level street, not only on the 0.5 s cadence", () => {
+    const { root, b, ground, scene, camera } = setup();
+    b.attach(root);
+    for (let i = 0; i < 120; i++) b.update(scene, camera, walker, true, 1 / 60, true, false); // street, fully shown
+    b.update(scene, camera, walker, true, 1 / 60, false, false); // steps onto a stair: plane cleared, still outdoors
+    expect(ground().visible).toBe(false);
+    root.add(flagged(new THREE.Group())); // arrives while the plane is down, between scheduled re-scans
+    b.update(scene, camera, walker, true, 1 / 60, true, false); // level again (rising edge)
+    expect(ground().visible).toBe(false); // never flashes in
     b.dispose();
   });
 });

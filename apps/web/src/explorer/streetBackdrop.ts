@@ -182,6 +182,8 @@ export class StreetBackdrop {
   private surfaces: THREE.Object3D[] = [];
   /** Backdrop time (s) since the attached scene was last scanned for street surfaces. */
   private sinceScan = 0;
+  /** Whether the previous frame was outdoors on level ground (the plane's candidate state), for the rising edge. */
+  private wasLevelOutdoors = false;
 
   constructor() {
     this.group.name = "street-backdrop";
@@ -216,13 +218,27 @@ export class StreetBackdrop {
 
   /**
    * Point the backdrop at the loaded station scene (or null on unload) and scan it for street surfaces. A
-   * station may add its surfaces later (async GLB, toggled with camera height), so while outdoors on level
-   * ground the scene is re-scanned every STREET_RESCAN_S; the visibility of the known ones is re-read every frame.
+   * station may add its surfaces later (async GLB, toggled with camera height), so the scene is re-scanned
+   * every STREET_RESCAN_S, on the frame the walker comes out onto level street, and every frame while the
+   * plane fades in (so a surface arriving mid-fade cancels it before it shows). The visibility of the known
+   * ones is re-read every frame.
    */
   attach(root: THREE.Object3D | null): void {
     this.root = root;
     this.surfaces = collectStreetSurfaces(root);
     this.sinceScan = 0;
+    this.wasLevelOutdoors = false;
+  }
+
+  /** Re-scan the attached scene for street surfaces when due: see attach for the schedule. */
+  private rescan(levelOutdoors: boolean, teleport: boolean, dt: number): void {
+    this.sinceScan += dt;
+    const fadingIn = levelOutdoors && this.groundBlend < 0.99 && !stationDrawsGround(this.surfaces, this.root);
+    if (teleport || this.sinceScan >= STREET_RESCAN_S || (levelOutdoors && !this.wasLevelOutdoors) || fadingIn) {
+      this.surfaces = collectStreetSurfaces(this.root);
+      this.sinceScan = 0;
+    }
+    this.wasLevelOutdoors = levelOutdoors;
   }
 
   get active(): boolean {
@@ -240,6 +256,7 @@ export class StreetBackdrop {
    * straight to the target instead of easing, so a walker placed underground never sees daylight.
    */
   update(scene: THREE.Scene, camera: THREE.Camera, walker: THREE.Vector3, outdoors: boolean, dt: number, level = true, teleport = false): void {
+    this.rescan(outdoors && level, teleport, dt);
     this.blend = teleport ? (outdoors ? 1 : 0) : THREE.MathUtils.damp(this.blend, outdoors ? 1 : 0, 4, dt);
     if (this.blend < 0.002) {
       this.restore(scene);
@@ -261,11 +278,6 @@ export class StreetBackdrop {
     // The plane follows the walker's feet and shows only on level ground: on a stair (or at the lip of a
     // stairwell) it would cut across the flight below, so there the stair geometry stays visible.
     // It also yields entirely wherever the station draws its own street (real road surfaces can sit below it).
-    this.sinceScan += dt;
-    if (outdoors && level && (teleport || this.sinceScan >= STREET_RESCAN_S)) {
-      this.surfaces = collectStreetSurfaces(this.root);
-      this.sinceScan = 0;
-    }
     const up = outdoors && level && !stationDrawsGround(this.surfaces, this.root);
     // Fades in on arrival; clears at once when footing stops being level, so it never covers a stair going down.
     this.groundBlend = up ? (teleport ? 1 : THREE.MathUtils.damp(this.groundBlend, 1, 8, dt)) : 0;
