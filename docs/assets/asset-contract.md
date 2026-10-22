@@ -116,18 +116,24 @@ python3 tools/blender/bundle_kit.py info --bundle kit.glb
 
 Dressing pieces (`family: "dressing"`, generators in `families/dressing.py`) go on geometry a station already has: an escalator slab or truss, a stair's treads, a floor plan. They are **visual only** (no `COL_*-colonly` nodes) and carry no structure of their own. Every size is a catalog param, in millimetres, so a station gets a piece that fits its geometry while the kit holds no station measurements.
 
-**Station role.** A dressing piece may carry `gteki_role`, a string, so a station bake can sort it without reading the id:
+**Station role.** A dressing piece may carry `gteki_role`, a string. It is the same key the runtime loaders read, so it is **not a passive tag**: a station that loads the GLB directly gets the behaviour below. `packages/scene-api/src/index.ts` (`roleOf`, `sceneFromGlbRoles`, with the `WALKABLE_ROLES` and `COLLIDER_ROLES` sets) and `packages/godot/addons/gteki/gteki_assets.gd` (`_own_role`, `_tag_roles`, with the `WALKABLE` and `COLLIDER` lists) share one vocabulary and one rule set:
 
-| Value | Pieces |
-| --- | --- |
-| `barriers` | railings, fare fences, stair handrails and side skirts |
-| `transport` | escalator parts (balustrade, moving handrail, newels, comb plates, optional skirts and static treads) |
-| `stairs_ramps` | only pieces that lie on a walkable surface, such as stair nosing strips |
+| Value | What the runtime does with every mesh under the node | Pieces |
+| --- | --- | --- |
+| `barriers` | counts as a **collider**: scene-api adds it to `colliders`, Godot sets `gteki_collider` and builds a trimesh `StaticBody3D` from it. Stays drawn (only the role `collider` hides its own geometry) | railings, fare fences, stair handrails and side skirts |
+| `transport` | the same as `barriers` (collider, drawn) | escalator parts (balustrade, moving handrail, newels, comb plates, optional skirts and static treads) |
+| `stairs_ramps` | counts as a **walkable surface**: scene-api adds it to `walkable`, Godot sets `gteki_walkable`. No collision body is made | only pieces that lie on a walkable surface, such as stair nosing strips |
 
-- The key sits in the extras of the root node and of every `VIS_*` node (`extras.gteki_role`), next to `extras.gteki`, not inside it. The manifest entry has `role`.
+- Both loaders read `extras.gteki_role` after trimming and lower-casing it; an empty string counts as absent. **Children inherit the nearest ancestor's role**, so one value on the root would cover the whole piece. The kit still writes it on the root and on every `VIS_*` node (`extras.gteki_role`), next to `extras.gteki`, not inside it, so a bake that reads either level sees the same value. The manifest entry has `gteki_role` (not `role`: a station manifest's asset `role` is the separate `visual`, `collision` or `visual+collision` of `packages/schema`, which the loaders also read).
 - A GLB has one role. A stair kit that mixes nosing strips with rails or skirts has no single role and omits the key. Catalog entries that a station bakes should keep walkable and non-walkable parts in separate pieces.
-- Both profiles carry it: mobile merges the static groups into `VIS_body`, and that node and the root carry the same value.
-- The role is a tag only. It changes no geometry, collision or navigation; the kit still claims no navigation truth.
+- Both profiles carry it: mobile merges the static groups into `VIS_body`, and that node and the root carry the same value. `validate_glb.py` fails a `gteki_role` outside `barriers`, `transport` and `stairs_ramps`, a root and `VIS_*` nodes (`VIS_body` too) that do not all carry the same value, and a tagged GLB with a `VIS_*` node or root left without it.
+- What the role does **not** do is change the GLB's geometry or add `COL_*-colonly` nodes (dressing stays visual only) or navigation: the kit still claims no navigation truth. The collider and walkable behaviour is the *station runtime's* reading of the tag when it loads the GLB as is.
+
+**Default and opt-out.** The generators set a default role (escalator parts `transport`, railings and fare fences `barriers`, stair nosing `stairs_ramps`, stair rails and skirts `barriers`, a nosing-and-rails mix none), because Ikebukuro's bake sorts pieces by it. A station that places the same piece as pure decoration and does not want it to collide or become walkable sets `gteki_role` in its catalog entry, which overrides the generator default (`tools/blender/build.py`, next to `dimension_basis` and `notes`):
+
+- `"gteki_role": null` drops the role: no `gteki_role` extras, no manifest key, and the loaders treat the piece as plain visual geometry. Shinjuku's visual-only dressing uses this.
+- `"gteki_role": "<role>"` sets another allowed value (`barriers`, `transport` or `stairs_ramps`). Anything else fails the build.
+- Leaving the key out keeps the generator default.
 
 **Origins.** The origin is the point a station anchors to, in the §1 frame (the exporter turns the authored +Y into −Z). Anything that reaches in front of the origin (`z > 0` in glTF) is allowed, like an approach apron.
 

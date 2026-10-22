@@ -291,7 +291,7 @@ class Asset:
             "generator": self.generator,
         }
         if self.role:  # keeps the manifest of role-less assets byte-identical
-            entry["role"] = self.role
+            entry["gteki_role"] = self.role
         return entry
 
 
