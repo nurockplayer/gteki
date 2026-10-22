@@ -18,8 +18,14 @@ Generator conventions (tools/blender/gteki_assets/families/dressing.py, PR #143)
   tread = the mean nosing-to-nosing run. A stair kit that mixes nosings with rails has no bake role, so every
   flight becomes two entries: `..._nosing` (parts [nosing], role stairs_ramps) and `..._rails` (parts [handrail],
   role barriers).
-* escalator_dressing: origin on the bottom comb line, rising toward +Y. `run_mm` is the horizontal run between
-  the two flat sections (eased ends included); the resolved angle is atan2(rise, run - 800) and must be 15-35 deg.
+* escalator_dressing (Lane E, from vertical._escalator_path: transition run 0.8 m, flat run 0.8 m at each end):
+  origin on the bottom comb line, rising toward +Y. The surveyed quad is the straight incline between the floors,
+  so the entry passes `angle_deg` = atan2(rise, quad run) (no `run_mm`) and the kit's straight middle incline lies
+  on the slab line. The bottom comb is ESC_COMB_OFFSET_M (1.2 m) before the quad's lower line along the travel
+  direction, at the lower floor height; the top comb is 1.2 m past the upper line, so comb to comb is run + 2.4 m.
+  Near the corners the easing rides up to ~6 cm off the slab corner. `width_mm` is the tread (step) width, read as
+  the clear gap between the surveyed truss plates; the kit adds skirt +-(w/2 + 12), glass +-(w/2 + 160), overall
+  w + 600. `direction` is not surveyed and is left out of the params (the generator default applies).
 
 Frame of a placement: ENU metres. The piece's local +Y (travel, up the flight) maps to `dir`, local +X (width)
 to the right of `dir`; `yaw_deg` is the counter-clockwise rotation about +Z that does that.
@@ -46,9 +52,8 @@ RISER_MM = (100, 220)         # a plausible stair riser, on the unquantised valu
 MIN_TREAD_MM = 200
 STEP_COUNT = (2, 80)          # the generator's own limit
 ESC_ANGLE_DEG = (15.0, 35.0)  # the generator's accepted incline
-ESC_TRANSITION_MM = 800       # vertical.ESCALATOR_DEFAULTS transition_run: run_mm = rise / tan(angle) + this
+ESC_COMB_OFFSET_M = 1.2       # bottom comb line before the quad's lower line (and top comb past the upper line)
 ESC_LANDING_MM = 800          # the generator default; the anchors say nothing different
-ESC_DIRECTION = "up"          # not surveyed; geometry is direction-agnostic (indicators are off)
 ESC_PARTS = ["balustrade", "handrail", "newel", "comb"]
 WALL_NEAR_M = 0.3
 WALL_SIDE_SHARE = 0.5         # a side counts as walled when this share of its nosings has a wall within WALL_NEAR_M
@@ -206,17 +211,13 @@ def plan_stair(flight, walls):
 
 
 def plan_escalator(lane):
-    rise, run, width = lane["rise_m"] * 1000.0, lane["run_m"] * 1000.0, lane["width_m"] * 1000.0
-    params = {"rise_mm": quant(rise), "run_mm": quant(run), "width_mm": quant(width), "landing_mm": ESC_LANDING_MM}
-    straight = params["run_mm"] - ESC_TRANSITION_MM
-    if straight <= 0:
-        return None, f"run {params['run_mm']} mm does not exceed the eased transition run {ESC_TRANSITION_MM} mm"
-    angle = math.degrees(math.atan2(params["rise_mm"], straight))
+    rise, width = lane["rise_m"] * 1000.0, lane["width_m"] * 1000.0
+    angle = round(math.degrees(math.atan2(lane["rise_m"], lane["run_m"])), 2)
     if not ESC_ANGLE_DEG[0] <= angle <= ESC_ANGLE_DEG[1]:
-        return None, f"incline {angle:.1f} deg outside {ESC_ANGLE_DEG[0]:g}-{ESC_ANGLE_DEG[1]:g} deg"
-    err = {"rise_mm": round(abs(params["rise_mm"] - rise), 3), "run_mm": round(abs(params["run_mm"] - run), 3),
-           "width_mm": round(abs(params["width_mm"] - width), 3)}
-    return (params, round(angle, 2), err), None
+        return None, f"incline {angle} deg outside {ESC_ANGLE_DEG[0]:g}-{ESC_ANGLE_DEG[1]:g} deg"
+    params = {"rise_mm": quant(rise), "width_mm": quant(width), "angle_deg": angle, "landing_mm": ESC_LANDING_MM}
+    err = {"rise_mm": round(abs(params["rise_mm"] - rise), 3), "width_mm": round(abs(params["width_mm"] - width), 3)}
+    return (params, angle, err), None
 
 
 def main(argv=None):
@@ -311,32 +312,37 @@ def main(argv=None):
             skipped.append({"anchor": lane["id"], "kind": "escalator", "reason": reason})
             continue
         params, angle, err = res
-        key = (params["rise_mm"], params["run_mm"], params["width_mm"])
+        key = (params["rise_mm"], params["width_mm"], angle)
         esc_groups.setdefault(key, []).append((lane, params, angle, err))
         esc_angles[key] = angle
     for key in sorted(esc_groups):
-        rise, run, width = key
-        eid = f"{ID_PREFIX}escalator_w{width}_rise{rise}_run{run}"
+        rise, width, angle = key
+        eid = f"{ID_PREFIX}escalator_w{width}_rise{rise}_a{int(round(angle * 100))}"
         lanes = sorted(l["id"] for l, *_ in esc_groups[key])
-        _, params, angle, _ = esc_groups[key][0]
         entries[eid] = {
             "id": eid, "generator": "escalator_dressing",
-            "params": {"rise_mm": rise, "run_mm": run, "width_mm": width, "landing_mm": ESC_LANDING_MM,
-                       "direction": ESC_DIRECTION, "treads": True, "parts": list(ESC_PARTS)},
+            "params": {"rise_mm": rise, "width_mm": width, "angle_deg": angle, "landing_mm": ESC_LANDING_MM,
+                       "treads": True, "parts": list(ESC_PARTS)},
             "dimension_basis": "station-verified",
             "notes": (f"Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the "
-                      f"PLATEAU survey: {cite}. Lanes: {', '.join(lanes)} (rise and run between the surveyed landing lines, "
-                      f"clear width between truss plates; each snapped to {QUANT_MM} mm). Resolved incline {angle} deg. "
-                      f"landing_mm {ESC_LANDING_MM} is the generator default (not surveyed). Direction unknown (not surveyed); "
-                      f"geometry is direction-agnostic (direction only flips indicators, which are off), '{ESC_DIRECTION}' is a placeholder."),
+                      f"PLATEAU survey: {cite}. Lanes: {', '.join(lanes)} (rise and quad run between the surveyed landing "
+                      f"lines; rise snapped to {QUANT_MM} mm). angle_deg = atan2(rise, quad run) = {angle}: the surveyed quad is the straight "
+                      f"incline between the floors, so the kit's straight middle incline lies on the slab line; origin (bottom comb) is "
+                      f"{ESC_COMB_OFFSET_M} m before the quad's lower line, comb to comb is quad run + {2 * ESC_COMB_OFFSET_M:g} m. "
+                      f"Tread width read as the clear gap between surveyed truss plates; S600-class at 710 mm. landing_mm {ESC_LANDING_MM} "
+                      f"is the generator default (not surveyed). Direction not surveyed and left out of the params; geometry is "
+                      f"direction-agnostic."),
             "tags": ["dressing", "escalator", "ikebukuro"],
         }
         for lane, params, angle, err in esc_groups[key]:
             lower = lane["lower"]
+            dx, dy = lower["dir"]
+            origin = [round(lower["position"][0] - ESC_COMB_OFFSET_M * dx, 3) + 0.0,
+                      round(lower["position"][1] - ESC_COMB_OFFSET_M * dy, 3) + 0.0, lower["position"][2]]
             placements.append({
                 "anchor": lane["id"], "kind": "escalator", "scope": lane["scope"], "bank": lane["bank"],
                 "ids": {"dressing": eid},
-                "origin": list(lower["position"]), "dir": lower["dir"], "yaw_deg": yaw_deg(lower["dir"]), "mirror": False,
+                "origin": origin, "dir": lower["dir"], "yaw_deg": yaw_deg(lower["dir"]), "mirror": False,
                 "incline_deg": angle, "quantisation_mm": err,
             })
 
@@ -374,7 +380,8 @@ def main(argv=None):
                    "wall_probe_glb_sha256": glb_sha},
         "frame": {"axes": "ENU metres: x east, y north, z TP height (as dressing_anchors.json)",
                   "origin": "stair: floor under the first nosing line (centre of the line, nosing z less one riser); "
-                            "escalator: centre of the lower landing line, treated as the bottom comb line",
+                            f"escalator: bottom comb line, {ESC_COMB_OFFSET_M} m before the centre of the surveyed lower line along dir, "
+                            "at the lower floor height",
                   "dir": "horizontal unit vector (east, north) up the flight or escalator",
                   "yaw_deg": "counter-clockwise rotation about +Z taking the piece's local +Y (travel) to dir",
                   "mirror": "false everywhere: rails are on both sides, escalators are symmetric"},
@@ -398,7 +405,7 @@ def main(argv=None):
 
 def esc_angles_for(entry, esc_angles):
     p = entry["params"]
-    return esc_angles[(p["rise_mm"], p["run_mm"], p["width_mm"])]
+    return esc_angles[(p["rise_mm"], p["width_mm"], p["angle_deg"])]
 
 
 if __name__ == "__main__":

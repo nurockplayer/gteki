@@ -37,7 +37,7 @@ interface Skipped { anchor: string; kind: string; reason: string }
 interface Anchors {
   source: { gml: string; gml_sha256: string };
   stair_flights: { id: string; steps: number; rise_m: number; bottom: { position: V3 } }[];
-  escalator_lanes: { id: string; lower: { position: V3 } }[];
+  escalator_lanes: { id: string; rise_m: number; run_m: number; lower: { position: V3; dir: [number, number] } }[];
 }
 
 const anchors = JSON.parse(read("dressing_anchors.json")) as Anchors;
@@ -102,24 +102,29 @@ describe("kit_catalog.json", () => {
         }
         for (const k of Object.keys(p)) expect(["step_count", "riser_mm", "tread_mm", "width_mm", "parts", "handrail_sides", "rail_mount"]).toContain(k);
       } else {
-        positive("rise_mm", "width_mm", "run_mm", "landing_mm");
-        expect(p.angle_deg).toBeUndefined(); // run_mm or angle_deg, not both
-        expect(["up", "down"]).toContain(p.direction);
+        positive("rise_mm", "width_mm", "angle_deg", "landing_mm");
+        expect(p.run_mm).toBeUndefined(); // run_mm or angle_deg, not both: the surveyed quad gives the angle
+        expect(p.direction).toBeUndefined(); // not surveyed
         expect(p.treads).toBe(true);
         expect(p.parts).toEqual(["balustrade", "handrail", "newel", "comb"]);
-        expect(a.notes).toContain("Direction unknown (not surveyed); geometry is direction-agnostic");
-        const angle = angleDeg(p.rise_mm as number, p.run_mm as number);
-        expect(angle).toBeGreaterThanOrEqual(15);
-        expect(angle).toBeLessThanOrEqual(35);
+        expect(a.notes).toContain("Direction not surveyed");
+        expect(a.notes).toContain("clear gap between surveyed truss plates");
+        expect(p.angle_deg as number).toBeGreaterThanOrEqual(15);
+        expect(p.angle_deg as number).toBeLessThanOrEqual(35);
+        expect(a.id).toBe(`gteki_ik_escalator_w${p.width_mm}_rise${p.rise_mm}_a${Math.round((p.angle_deg as number) * 100)}`);
+        for (const k of Object.keys(p)) expect(["rise_mm", "width_mm", "angle_deg", "landing_mm", "treads", "parts"]).toContain(k);
       }
     }
   });
 });
 
-/** vertical.py eases the incline over one 800 mm transition_run: run_mm = rise / tan(angle) + 800. */
+/** The surveyed quad is the straight incline between the floors: angle = atan2(rise, horizontal run). */
 function angleDeg(rise: number, run: number): number {
-  return (Math.atan2(rise, run - 800) * 180) / Math.PI;
+  return (Math.atan2(rise, run) * 180) / Math.PI;
 }
+
+/** Lane E: the bottom comb (asset origin) is 1.2 m before the quad's lower line along dir, at the lower floor height. */
+const COMB_OFFSET_M = 1.2;
 
 describe("kit_placements.json", () => {
   const placements = new Map(placed.placements.map((p) => [p.anchor, p]));
@@ -157,7 +162,10 @@ describe("kit_placements.json", () => {
     for (const l of anchors.escalator_lanes) {
       const p = placements.get(l.id);
       if (!p) continue;
-      for (let k = 0; k < 3; k++) expect(Math.abs(p.origin[k]! - l.lower.position[k]!)).toBeLessThanOrEqual(0.005);
+      const expected: V3 = [l.lower.position[0] - COMB_OFFSET_M * l.lower.dir[0], l.lower.position[1] - COMB_OFFSET_M * l.lower.dir[1], l.lower.position[2]];
+      for (let k = 0; k < 3; k++) expect(Math.abs(p.origin[k]! - expected[k]!)).toBeLessThanOrEqual(0.005);
+      const e = byId.get(p.ids.dressing!)!;
+      expect(Math.abs((e.params.angle_deg as number) - angleDeg(l.rise_m, l.run_m))).toBeLessThanOrEqual(0.005);
     }
   });
 
@@ -170,8 +178,8 @@ describe("kit_placements.json", () => {
       expect(Math.cos(yaw)).toBeCloseTo(p.dir[1], 2);
       if (p.kind !== "escalator") continue;
       const e = byId.get(p.ids.dressing!)!;
-      const angle = angleDeg(e.params.rise_mm as number, e.params.run_mm as number);
-      expect(p.incline_deg).toBeCloseTo(angle, 1);
+      const angle = e.params.angle_deg as number;
+      expect(p.incline_deg).toBe(angle);
       expect(angle).toBeGreaterThanOrEqual(15);
       expect(angle).toBeLessThanOrEqual(35);
     }

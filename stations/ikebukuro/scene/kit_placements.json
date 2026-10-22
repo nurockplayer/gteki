@@ -13,7 +13,7 @@
  },
  "frame": {
   "axes": "ENU metres: x east, y north, z TP height (as dressing_anchors.json)",
-  "origin": "stair: floor under the first nosing line (centre of the line, nosing z less one riser); escalator: centre of the lower landing line, treated as the bottom comb line",
+  "origin": "stair: floor under the first nosing line (centre of the line, nosing z less one riser); escalator: bottom comb line, 1.2 m before the centre of the surveyed lower line along dir, at the lower floor height",
   "dir": "horizontal unit vector (east, north) up the flight or escalator",
   "yaw_deg": "counter-clockwise rotation about +Z taking the piece's local +Y (travel) to dir",
   "mirror": "false everywhere: rails are on both sides, escalators are symmetric"
@@ -60,11 +60,11 @@
    }
   },
   "escalator_incline_deg": {
-   "gteki_ik_escalator_w1009_rise2210_run5489": 25.24,
-   "gteki_ik_escalator_w1093_rise5838_run10796": 30.29,
-   "gteki_ik_escalator_w709_rise4388_run8060": 31.15,
-   "gteki_ik_escalator_w986_rise4388_run8060": 31.15,
-   "gteki_ik_escalator_w990_rise2210_run5489": 25.24
+   "gteki_ik_escalator_w1009_rise2210_a2193": 21.93,
+   "gteki_ik_escalator_w1093_rise5838_a2840": 28.4,
+   "gteki_ik_escalator_w709_rise4388_a2856": 28.56,
+   "gteki_ik_escalator_w986_rise4388_a2856": 28.56,
+   "gteki_ik_escalator_w990_rise2210_a2193": 21.93
   },
   "skipped": [
    {
@@ -91,11 +91,11 @@
    "scope": "building",
    "bank": "esc01",
    "ids": {
-    "dressing": "gteki_ik_escalator_w709_rise4388_run8060"
+    "dressing": "gteki_ik_escalator_w709_rise4388_a2856"
    },
    "origin": [
-    144.786,
-    21.966,
+    143.836,
+    22.699,
     26.88
    ],
    "dir": [
@@ -104,10 +104,9 @@
    ],
    "yaw_deg": -127.675,
    "mirror": false,
-   "incline_deg": 31.15,
+   "incline_deg": 28.56,
    "quantisation_mm": {
     "rise_mm": 0.0,
-    "run_mm": 0.0,
     "width_mm": 0.0
    }
   },
@@ -117,11 +116,11 @@
    "scope": "building",
    "bank": "esc01",
    "ids": {
-    "dressing": "gteki_ik_escalator_w986_rise4388_run8060"
+    "dressing": "gteki_ik_escalator_w986_rise4388_a2856"
    },
    "origin": [
-    145.536,
-    22.938,
+    144.586,
+    23.671,
     26.88
    ],
    "dir": [
@@ -130,10 +129,9 @@
    ],
    "yaw_deg": -127.675,
    "mirror": false,
-   "incline_deg": 31.15,
+   "incline_deg": 28.56,
    "quantisation_mm": {
     "rise_mm": 0.0,
-    "run_mm": 0.0,
     "width_mm": 0.0
    }
   },
@@ -143,11 +141,11 @@
    "scope": "building",
    "bank": "esc02",
    "ids": {
-    "dressing": "gteki_ik_escalator_w1093_rise5838_run10796"
+    "dressing": "gteki_ik_escalator_w1093_rise5838_a2840"
    },
    "origin": [
-    153.273,
-    82.733,
+    153.726,
+    83.844,
     26.24
    ],
    "dir": [
@@ -156,10 +154,9 @@
    ],
    "yaw_deg": 157.816,
    "mirror": false,
-   "incline_deg": 30.29,
+   "incline_deg": 28.4,
    "quantisation_mm": {
     "rise_mm": 0.0,
-    "run_mm": 0.0,
     "width_mm": 0.0
    }
   },
@@ -169,11 +166,11 @@
    "scope": "room1",
    "bank": "esc03",
    "ids": {
-    "dressing": "gteki_ik_escalator_w990_rise2210_run5489"
+    "dressing": "gteki_ik_escalator_w990_rise2210_a2193"
    },
    "origin": [
-    106.957,
-    108.404,
+    108.068,
+    107.951,
     26.24
    ],
    "dir": [
@@ -182,10 +179,9 @@
    ],
    "yaw_deg": 67.808,
    "mirror": false,
-   "incline_deg": 25.24,
+   "incline_deg": 21.93,
    "quantisation_mm": {
     "rise_mm": 0.0,
-    "run_mm": 0.0,
     "width_mm": 0.0
    }
   },
@@ -195,11 +191,11 @@
    "scope": "room1",
    "bank": "esc03",
    "ids": {
-    "dressing": "gteki_ik_escalator_w1009_rise2210_run5489"
+    "dressing": "gteki_ik_escalator_w1009_rise2210_a2193"
    },
    "origin": [
-    106.35,
-    106.917,
+    107.461,
+    106.464,
     26.24
    ],
    "dir": [
@@ -208,10 +204,9 @@
    ],
    "yaw_deg": 67.808,
    "mirror": false,
-   "incline_deg": 25.24,
+   "incline_deg": 21.93,
    "quantisation_mm": {
     "rise_mm": 0.0,
-    "run_mm": 0.0,
     "width_mm": 0.0
    }
   },

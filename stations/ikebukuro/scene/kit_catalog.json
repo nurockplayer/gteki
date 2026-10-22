@@ -4,14 +4,13 @@
  "notes": "Ikebukuro stair and escalator dressing, parameterised from scene/dressing_anchors.json by stations/ikebukuro/pipeline/build_kit_catalog.py (do not edit by hand). Every entry is station-verified and cites its anchors and PLATEAU GML hashes. Stairs are split into a nosing GLB (one bake role) and a rails GLB. Origins and yaw per anchor are in kit_placements.json. Contains PLATEAU data (MLIT), CC BY 4.0, modified.",
  "assets": [
   {
-   "id": "gteki_ik_escalator_w1009_rise2210_run5489",
+   "id": "gteki_ik_escalator_w1009_rise2210_a2193",
    "generator": "escalator_dressing",
    "params": {
     "rise_mm": 2210,
-    "run_mm": 5489,
     "width_mm": 1009,
+    "angle_deg": 21.93,
     "landing_mm": 800,
-    "direction": "up",
     "treads": true,
     "parts": [
      "balustrade",
@@ -21,7 +20,7 @@
     ]
    },
    "dimension_basis": "station-verified",
-   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 ee8ef7c63da6c22e9ee2d1cf8041ff23b49acc20f1196608720114b095abae7e; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc03_l2 (rise and run between the surveyed landing lines, clear width between truss plates; each snapped to 1 mm). Resolved incline 25.24 deg. landing_mm 800 is the generator default (not surveyed). Direction unknown (not surveyed); geometry is direction-agnostic (direction only flips indicators, which are off), 'up' is a placeholder.",
+   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 ee8ef7c63da6c22e9ee2d1cf8041ff23b49acc20f1196608720114b095abae7e; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc03_l2 (rise and quad run between the surveyed landing lines; rise snapped to 1 mm). angle_deg = atan2(rise, quad run) = 21.93: the surveyed quad is the straight incline between the floors, so the kit's straight middle incline lies on the slab line; origin (bottom comb) is 1.2 m before the quad's lower line, comb to comb is quad run + 2.4 m. Tread width read as the clear gap between surveyed truss plates; S600-class at 710 mm. landing_mm 800 is the generator default (not surveyed). Direction not surveyed and left out of the params; geometry is direction-agnostic.",
    "tags": [
     "dressing",
     "escalator",
@@ -29,14 +28,13 @@
    ]
   },
   {
-   "id": "gteki_ik_escalator_w1093_rise5838_run10796",
+   "id": "gteki_ik_escalator_w1093_rise5838_a2840",
    "generator": "escalator_dressing",
    "params": {
     "rise_mm": 5838,
-    "run_mm": 10796,
     "width_mm": 1093,
+    "angle_deg": 28.4,
     "landing_mm": 800,
-    "direction": "up",
     "treads": true,
     "parts": [
      "balustrade",
@@ -46,7 +44,7 @@
     ]
    },
    "dimension_basis": "station-verified",
-   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 ee8ef7c63da6c22e9ee2d1cf8041ff23b49acc20f1196608720114b095abae7e; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc02_l1 (rise and run between the surveyed landing lines, clear width between truss plates; each snapped to 1 mm). Resolved incline 30.29 deg. landing_mm 800 is the generator default (not surveyed). Direction unknown (not surveyed); geometry is direction-agnostic (direction only flips indicators, which are off), 'up' is a placeholder.",
+   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 ee8ef7c63da6c22e9ee2d1cf8041ff23b49acc20f1196608720114b095abae7e; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc02_l1 (rise and quad run between the surveyed landing lines; rise snapped to 1 mm). angle_deg = atan2(rise, quad run) = 28.4: the surveyed quad is the straight incline between the floors, so the kit's straight middle incline lies on the slab line; origin (bottom comb) is 1.2 m before the quad's lower line, comb to comb is quad run + 2.4 m. Tread width read as the clear gap between surveyed truss plates; S600-class at 710 mm. landing_mm 800 is the generator default (not surveyed). Direction not surveyed and left out of the params; geometry is direction-agnostic.",
    "tags": [
     "dressing",
     "escalator",
@@ -54,14 +52,13 @@
    ]
   },
   {
-   "id": "gteki_ik_escalator_w709_rise4388_run8060",
+   "id": "gteki_ik_escalator_w709_rise4388_a2856",
    "generator": "escalator_dressing",
    "params": {
     "rise_mm": 4388,
-    "run_mm": 8060,
     "width_mm": 709,
+    "angle_deg": 28.56,
     "landing_mm": 800,
-    "direction": "up",
     "treads": true,
     "parts": [
      "balustrade",
@@ -71,7 +68,7 @@
     ]
    },
    "dimension_basis": "station-verified",
-   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 ee8ef7c63da6c22e9ee2d1cf8041ff23b49acc20f1196608720114b095abae7e; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc01_l1 (rise and run between the surveyed landing lines, clear width between truss plates; each snapped to 1 mm). Resolved incline 31.15 deg. landing_mm 800 is the generator default (not surveyed). Direction unknown (not surveyed); geometry is direction-agnostic (direction only flips indicators, which are off), 'up' is a placeholder.",
+   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 ee8ef7c63da6c22e9ee2d1cf8041ff23b49acc20f1196608720114b095abae7e; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc01_l1 (rise and quad run between the surveyed landing lines; rise snapped to 1 mm). angle_deg = atan2(rise, quad run) = 28.56: the surveyed quad is the straight incline between the floors, so the kit's straight middle incline lies on the slab line; origin (bottom comb) is 1.2 m before the quad's lower line, comb to comb is quad run + 2.4 m. Tread width read as the clear gap between surveyed truss plates; S600-class at 710 mm. landing_mm 800 is the generator default (not surveyed). Direction not surveyed and left out of the params; geometry is direction-agnostic.",
    "tags": [
     "dressing",
     "escalator",
@@ -79,14 +76,13 @@
    ]
   },
   {
-   "id": "gteki_ik_escalator_w986_rise4388_run8060",
+   "id": "gteki_ik_escalator_w986_rise4388_a2856",
    "generator": "escalator_dressing",
    "params": {
     "rise_mm": 4388,
-    "run_mm": 8060,
     "width_mm": 986,
+    "angle_deg": 28.56,
     "landing_mm": 800,
-    "direction": "up",
     "treads": true,
     "parts": [
      "balustrade",
@@ -96,7 +92,7 @@
     ]
    },
    "dimension_basis": "station-verified",
-   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 ee8ef7c63da6c22e9ee2d1cf8041ff23b49acc20f1196608720114b095abae7e; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc01_l2 (rise and run between the surveyed landing lines, clear width between truss plates; each snapped to 1 mm). Resolved incline 31.15 deg. landing_mm 800 is the generator default (not surveyed). Direction unknown (not surveyed); geometry is direction-agnostic (direction only flips indicators, which are off), 'up' is a placeholder.",
+   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 ee8ef7c63da6c22e9ee2d1cf8041ff23b49acc20f1196608720114b095abae7e; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc01_l2 (rise and quad run between the surveyed landing lines; rise snapped to 1 mm). angle_deg = atan2(rise, quad run) = 28.56: the surveyed quad is the straight incline between the floors, so the kit's straight middle incline lies on the slab line; origin (bottom comb) is 1.2 m before the quad's lower line, comb to comb is quad run + 2.4 m. Tread width read as the clear gap between surveyed truss plates; S600-class at 710 mm. landing_mm 800 is the generator default (not surveyed). Direction not surveyed and left out of the params; geometry is direction-agnostic.",
    "tags": [
     "dressing",
     "escalator",
@@ -104,14 +100,13 @@
    ]
   },
   {
-   "id": "gteki_ik_escalator_w990_rise2210_run5489",
+   "id": "gteki_ik_escalator_w990_rise2210_a2193",
    "generator": "escalator_dressing",
    "params": {
     "rise_mm": 2210,
-    "run_mm": 5489,
     "width_mm": 990,
+    "angle_deg": 21.93,
     "landing_mm": 800,
-    "direction": "up",
     "treads": true,
     "parts": [
      "balustrade",
@@ -121,7 +116,7 @@
     ]
    },
    "dimension_basis": "station-verified",
-   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 ee8ef7c63da6c22e9ee2d1cf8041ff23b49acc20f1196608720114b095abae7e; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc03_l1 (rise and run between the surveyed landing lines, clear width between truss plates; each snapped to 1 mm). Resolved incline 25.24 deg. landing_mm 800 is the generator default (not surveyed). Direction unknown (not surveyed); geometry is direction-agnostic (direction only flips indicators, which are off), 'up' is a placeholder.",
+   "notes": "Escalator balustrade, handrail, newels, comb plates and treads (role transport). Station-verified from the PLATEAU survey: dressing_anchors.json sha256 ee8ef7c63da6c22e9ee2d1cf8041ff23b49acc20f1196608720114b095abae7e; PLATEAU ubld GML 53394576_ubld_6697_op.gml sha256 38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09 (station.json source plateau-ubld-13116). Lanes: esc03_l1 (rise and quad run between the surveyed landing lines; rise snapped to 1 mm). angle_deg = atan2(rise, quad run) = 21.93: the surveyed quad is the straight incline between the floors, so the kit's straight middle incline lies on the slab line; origin (bottom comb) is 1.2 m before the quad's lower line, comb to comb is quad run + 2.4 m. Tread width read as the clear gap between surveyed truss plates; S600-class at 710 mm. landing_mm 800 is the generator default (not surveyed). Direction not surveyed and left out of the params; geometry is direction-agnostic.",
    "tags": [
     "dressing",
     "escalator",
