@@ -100,18 +100,31 @@ blender_version() {
     "$BLENDER" --version 2>/dev/null | sed -n '1s/^Blender \([0-9]*\.[0-9]*\).*/\1/p'
 }
 
+# sha256 of every file in a finish pack. The manifest's "catalog" line is a path relative to the
+# output directory, so it differs between a temp build and the library: hash the manifest without it.
+pack_sha() {
+    (cd "$1" && find . -type f | LC_ALL=C sort | while IFS= read -r f; do
+        if [ "$f" = ./manifest.json ]; then
+            printf '%s  %s\n' "$(grep -v '^  "catalog":' "$f" | shasum -a 256 | cut -d' ' -f1)" "$f"
+        else
+            shasum -a 256 "$f"
+        fi
+    done)
+}
+
 repro_finishes() {
     # two clean builds of the finish pack: every file (maps, finish.json, sample GLBs, manifest)
-    # must be byte-identical, and with the canonical Blender identical to the checked-in pack
+    # must be byte-identical (bar the manifest's catalog path), and with the canonical Blender
+    # identical to the checked-in pack
     tmp=$(mktemp -d)
     version=$(blender_version)
     committed=$FINISH_OUT  # the per-run FINISH_OUT assignments below may outlive the call
     for run in a b; do
         GTEKI_TEX_CACHE="$tmp/tex_$run" FINISH_OUT="$tmp/$run" build_finishes >/dev/null
-        (cd "$tmp/$run" && find . -type f | LC_ALL=C sort | xargs shasum -a 256) >"$tmp/$run.sha"
+        pack_sha "$tmp/$run" >"$tmp/$run.sha"
     done
     if [ "$version" = "$CANONICAL_BLENDER" ]; then
-        (cd "$committed" && find . -type f | LC_ALL=C sort | xargs shasum -a 256) >"$tmp/library.sha"
+        pack_sha "$committed" >"$tmp/library.sha"
         against="two clean builds and $committed"
     else
         cp "$tmp/a.sha" "$tmp/library.sha"

@@ -16,7 +16,9 @@ seamless texture scores about 1; a texture that was cropped or generated without
 much higher. This guards against gross seams, not against noise that merely looks alike.
 """
 import argparse
+import contextlib
 import hashlib
+import io
 import json
 import math
 from pathlib import Path
@@ -684,6 +686,13 @@ def self_test():
         root = _write_pack(Path(tmp) / "extra")
         (root / "gteki_finish_stray").mkdir()
         assert any("differ from the manifest" in x for x in check_pack(root)[0])
+        # ... which fails the command even though every finish passes
+        argv, sys.argv = sys.argv, ["validate_finish.py", str(root)]
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                assert main() == 1
+        finally:
+            sys.argv = argv
     print("validate_finish self-test: PASS")
 
 
@@ -709,7 +718,7 @@ def main():
         for p in problems:
             print(f"  FAIL {p}")
         bad = sum(r["status"] == "FAIL" for r in rows)
-        failed += bad + (not rows)
+        failed += bad + (not rows) + bool(problems)
         print(f"{pack}: {len(rows)} finishes, {len(rows) - bad} PASS, {bad} FAIL" + ("" if rows else " (nothing to check)"))
         report[str(pack)] = {"problems": problems, "finishes": rows}
     if args.report:
