@@ -130,24 +130,53 @@ func step_at(at: float) -> int:
 	if at >= total():
 		return step_index[step_index.size() - 1]
 	var seg: int = sample(clampf(at, 0.0, total())).segment
-	return step_index[mini(step_index.size() - 1, seg + 1)]
+	var step := step_index[mini(step_index.size() - 1, seg + 1)]
+	# A lift ride belongs to its approach too (#287): on the segment that ends at the ride's start the ride's own
+	# elevator step is already the active one. The ground walker stops short of the shaft (the ground ends there), so
+	# without this the lift's step would never be showing where a player is actually standing when the lift is offered.
+	if ride_on_step(step).is_empty() and seg + 2 < step_index.size():
+		var ahead := ride_on_step(step_index[seg + 2])
+		if not ahead.is_empty() and int(ahead.from_point) == seg + 1:
+			return step_index[seg + 2]
+	return step
 
 
-## The ride the walker may take now: a ride on `step` whose start is within RIDE_TRIGGER of `position` (3D). {} when
-## none — a ride is offered only on its own elevator step, so no other step can trigger a teleport.
-func ride_at(position: Vector3, step: int) -> Dictionary:
+## The ride stated on `step`, or {} when that step is not a lift ride.
+func ride_on_step(step: int) -> Dictionary:
 	for ride in rides:
-		if int(ride.step) == step and position.distance_to(ride.from) <= RIDE_TRIGGER:
+		if int(ride.step) == step:
 			return ride
 	return {}
 
 
-## Take a detected ride: the walker's feet go to the shaft's exit by its own ground rule (`walker.ride_to`, which
-## accepts the landing only through accept_ground) and the guide moves to the exit, so the next tick continues from
-## where the lift put the walker. False when the exit has no trustworthy ground: a ride never lands on nothing.
-## Shared by the HQ HUD and the evidence walk, so both ride through the same code.
+## The ride the walker may take now: a ride on `step` whose start is within RIDE_TRIGGER of `position` (3D). {} when
+## none — a ride is offered only on its own elevator step (or the approach that ends at its start), so no other step can
+## trigger a teleport.
+func ride_at(position: Vector3, step: int) -> Dictionary:
+	var ride := ride_on_step(step)
+	if ride.is_empty() or position.distance_to(ride.from) > RIDE_TRIGGER:
+		return {}
+	return ride
+
+
+## The ride offered at distance `at` along the path, from where the walker stands. The one predicate the HQ HUD's prompt
+## and the evidence walk both read, so the client and the replay can never disagree about when a lift is offered.
+func ride_near(position: Vector3, at: float) -> Dictionary:
+	return ride_at(position, step_at(at))
+
+
+## Take a detected ride: the walker's feet go to the shaft's exit by its own rules (`walker.ride_to`, which accepts only
+## ground `accept_ground` allows, on the exit's level, forward along the route and in the clear) and the guide moves to
+## the exit, so the next tick continues from where the lift put the walker. False when nothing qualifies: a ride never
+## lands on nothing, across a wall or behind the shaft. Shared by the HQ HUD and the evidence walk.
 func take_ride(walker: Object, ride: Dictionary) -> bool:
-	if not walker.ride_to(ride.to):
+	var to_point := int(ride.to_point)
+	var forward := Vector3.ZERO
+	if to_point + 1 < points.size():
+		forward = points[to_point + 1] - points[to_point]
+	elif to_point > 0:
+		forward = points[to_point] - points[to_point - 1]
+	if not walker.ride_to(ride.to, forward):
 		return false
 	s = clampf(float(ride.to_s), 0.0, total())
 	return true

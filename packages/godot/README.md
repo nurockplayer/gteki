@@ -317,12 +317,14 @@ on first use). `normalizeJa` is not ported, so matches are not highlighted.
   (`evidenceCheckedDate`, `oldestSourceDate`, `stale`, `unknowns`, ...) are printed as the JSON gives them, with `hours: UNKNOWN`.
 - "Guided walk" moves the avatar along the polyline at 3.4 m/s (web guide tier "run"), no collisions, with the follow camera; any
   movement key returns to free walking at that spot.
-- A route that states a lift can be ridden (#287): while guided walking stands on that route's `elevator` step and
-  within 1.0 m of the shaft's start, the HUD offers `E: ride the lift` (or the gamepad's A). Taking it fades out for
-  0.3 s, puts the feet on the shaft's exit through `gteki_walker.gd`'s own ground rule (`ride_to`, which only lands
-  where `accept_ground` passes and the body fits), fades back in and carries on from the exit. The yaw is kept, free
-  walking is never offered a lift, and no other step or key can start one: the ride is read from the route's own
-  steps, never guessed from the geometry.
+- A route that states a lift can be ridden (#287): while guided walking stands on that route's `elevator` step — or on
+  the approach that ends at the shaft, which the ride's step takes over (`Guide.step_at`) so a player standing where
+  the ground ends is offered it — and within 1.0 m of the shaft's start, the HUD offers `E: ride the lift` (or the
+  gamepad's A). Taking it fades out for 0.3 s, puts the feet on the shaft's exit through `gteki_walker.gd`'s own ground
+  rule (`ride_to`: `accept_ground`, the exit's level, forward along the route, body fits, clear line), fades back in and
+  carries on from the exit. The yaw is kept, free walking is never offered a lift, and no other step or key can start
+  one: the ride is read from the route's own steps, never guessed from the geometry. The HUD asks `Guide.ride_near`,
+  the same predicate the evidence walk checks.
 
 Tests: `lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-guide.sh` (golden searches on both stations, Ikebukuro
 `jr-central-gate-2` to `exit-35` ribbon, Shinjuku `poi:platform:oedo` to `poi:exit:1` symbolic, the S4 lift ride and its
@@ -363,11 +365,13 @@ Two comparisons follow the router's own definitions rather than one fixed notion
   1.0 m is the shaft (`RIDE_MAX_FLAT` / `RIDE_MIN_DROP` in `gteki_guide.gd`); the same vertical span under `walk` or
   `stairs` is never a ride, so nothing is ridden that the route does not call a lift. Shinjuku S4's one shaft is
   0.473 m wide with a 7.8 m drop — inside the gate with a visible margin. The walk takes it through the same
-  `Guide.take_ride()` the HQ client's E prompt uses: the feet land on the shaft's exit by the walker's own
-  `accept_ground`, on ground the body fits on (the exit vertex is over the opening, so on S4 the feet are set down
-  0.50 m out, never on the lip). The table's **Rides** column shows the count, each shaft's width and drop and the total
-  height; the ridden span and the approach the walking walker could not step are excluded from the walked length, and a
-  route that states a ride the walk did not take fails.
+  `Guide.take_ride()` the HQ client's E prompt uses. A shaft's exit vertex is over the opening (the car's floor is the
+  hole), so the feet are set down on the first ground forward along the route's own continuation — within 1.0 m of the
+  vertex, inside a ±30° cone of the direction to the next point, on the exit's level, with the body fitting and a clear
+  body-height line (on S4 that is 0.75 m out); nothing qualifying refuses the ride and fails, so no landing is ever
+  behind the shaft or across a wall. The table's **Rides** column shows the count, each shaft's width and drop and the
+  total height; the ridden span, the approach the walking walker could not step and the stretch the landing covered are
+  excluded from the walked length, and a route that states a ride the walk did not take fails.
 
 The walk follows the polyline itself: it turns toward the next vertex only once it is within 0.05 m of the current one,
 so by construction it never cuts a corner the line does not cut. A larger reach cut a corner at a sharp vertex and the

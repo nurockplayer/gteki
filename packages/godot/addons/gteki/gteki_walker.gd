@@ -368,18 +368,26 @@ func walk_from(position_godot: Vector3, heading_deg: float = 0.0) -> bool:
 	return true
 
 
-## How far from a shaft's exit point a ride may put its feet down (m), nearest ring first: an opening in the floor is a
-## hole by construction, so the route's exit vertex often sits over the shaft itself — on Shinjuku S4 it does, and the
-## B1 floor starts 0.2 m away. Each ring is eight compass directions; the first acceptable ground found wins.
-const RIDE_LANDING_RINGS: Array[float] = [0.0, 0.25, 0.5]
+## Where a ride may put its feet down (#287): an opening in the floor is a hole by construction, so a shaft's exit
+## vertex often sits over the car's floor — on Shinjuku S4 it does. The landing is searched forward along the route's
+## own continuation only, ring by ring from the vertex, inside a cone of RIDE_LANDING_CONE degrees either side of the
+## direction to the route's next point, and no further than RIDE_LANDING_REACH: a ride may step out of the lift, never
+## across a wall, into another room or back the way it came. The ground must be on the exit's own level to within
+## RIDE_LANDING_LEVEL (the narrowest rendered floor band here is 1.6 m, so a stair or another floor is never mistaken
+## for it), the body must fit, and the line from the vertex at body height must be clear of colliders.
+const RIDE_LANDING_RINGS: Array[float] = [0.0, 0.25, 0.5, 0.75, 1.0]
+const RIDE_LANDING_CONE := 30.0
+const RIDE_LANDING_REACH := 1.0
+const RIDE_LANDING_LEVEL := 0.2
+const RIDE_LANDING_SPOKES := 7
 
 
-## A lift ride's landing (#287): the feet go down only on ground the walker's own rule accepts — `accept_ground` against
-## the exit's own height, the same rule a step uses — at `target` (the route's shaft exit) or the nearest such ground
-## inside RIDE_LANDING_RINGS of it. The yaw is kept: a ride does not change where the walker faces. False when no
-## acceptable ground is found, so the caller reports it instead of dropping the avatar into the shaft.
-func ride_to(target: Vector3) -> bool:
-	var landing: Variant = ride_landing(target)
+## A lift ride's landing (#287): the feet go down only where `ride_landing` finds ground the walker's own rules accept.
+## `forward` is the route's continuation from the exit vertex (flattened, unit length or zero); the yaw is kept: a ride
+## does not change where the walker faces. False when nothing qualifies, so the caller reports it instead of dropping
+## the avatar into the shaft or through a wall.
+func ride_to(target: Vector3, forward: Vector3) -> bool:
+	var landing: Variant = ride_landing(target, forward)
 	if landing == null:
 		return false
 	global_position = landing
@@ -388,22 +396,45 @@ func ride_to(target: Vector3) -> bool:
 	return true
 
 
-## The first point, from `target` outward ring by ring, where the walker can actually stand: ground that passes
-## `accept_ground` against the exit's height *and* ground the body's radius reaches in every direction, so a ride never
-## sets the avatar down on the lip of the opening with the next step falling in. Null when no such point is found.
-## Pure in the scene under the walker, so a caller can tell "the shaft's floor is 0.2 m off the vertex" from "there is
-## no floor there at all".
-func ride_landing(target: Vector3) -> Variant:
+## The first point, from `target` outward ring by ring and spoke by spoke, where the walker can actually stand: see the
+## rules above. Null when none does, so a caller can tell "the shaft's floor is 0.5 m forward" from "there is no floor
+## ahead at all". Pure in the scene under the walker.
+func ride_landing(target: Vector3, forward: Vector3) -> Variant:
+	var flat := Vector3(forward.x, 0.0, forward.z)
+	var heading := flat.normalized() if flat.length() > 1e-6 else Vector3.ZERO
 	for ring in RIDE_LANDING_RINGS:
-		var count := 1 if ring == 0.0 else 8
-		for k in count:
-			var angle := TAU * float(k) / 8.0
-			var at := target + Vector3(cos(angle), 0.0, sin(angle)) * ring
+		if ring > RIDE_LANDING_REACH + 1e-6:
+			continue
+		for k in RIDE_LANDING_SPOKES:
+			var at := target
+			if ring > 0.0:
+				if heading == Vector3.ZERO:
+					break
+				var spread := deg_to_rad(RIDE_LANDING_CONE) * (2.0 * float(k) / float(RIDE_LANDING_SPOKES - 1) - 1.0)
+				at = target + heading.rotated(Vector3.UP, spread) * ring
 			var ground: Variant = _ground_near(at, target.y)
-			if not accept_ground(target.y, ground) or not _body_fits(at, target.y):
+			if not accept_ground(target.y, ground) or absf(float(ground) - target.y) > RIDE_LANDING_LEVEL:
+				continue
+			if not _body_fits(at, target.y):
+				continue
+			if ring > 0.0 and not _line_clear(target, at):
 				continue
 			return Vector3(at.x, float(ground), at.z)
 	return null
+
+
+## True when a body-height line from `from` to `to` meets no collider: nothing stands between the shaft's mouth and
+## the ground the ride would put the walker on.
+func _line_clear(from: Vector3, to: Vector3) -> bool:
+	var flat := Vector3(to.x - from.x, 0.0, to.z - from.z)
+	var distance := flat.length()
+	if distance < 1e-6:
+		return true
+	var direction := flat / distance
+	for height in BODY_HEIGHTS:
+		if not cast(from + Vector3(0.0, height, 0.0), direction, distance, Scene.COLLIDER_LAYER).is_empty():
+			return false
+	return true
 
 
 func _ground_near(at: Vector3, feet_y: float) -> Variant:

@@ -161,6 +161,10 @@ func test_rides() -> void:
 	check(guide.ride_at(ride.from + Vector3(2.0, 0.0, 0.0), int(ride.step)).is_empty(), "shinjuku S4: 2 m from the shaft start the ride is not offered")
 	check(guide.ride_at(near, int(ride.step) + 1).is_empty(), "shinjuku S4: off the ride's step the ride is not offered")
 	check(guide.ride_at(near, int(ride.step) - 1).is_empty(), "shinjuku S4: the step before the ride does not offer it")
+	# The step progression: on the approach that ends at the shaft the ride's step is already the active one, so a
+	# walker stopped short of the edge has the lift showing where it stands.
+	check(guide.step_at(float(ride.from_s) - 0.3) == int(ride.step), "shinjuku S4: on the approach to the shaft the ride's step is the active one")
+	check(guide.step_at(float(ride.from_s) + 0.3) == int(ride.step), "shinjuku S4: on the shaft itself the ride's step is the active one")
 	# A route with no elevator step states no rides (Ikebukuro's W1 is all walk).
 	var flat := bridge.route("ikebukuro", "jr-central-gate-2", "exit-35", true, true)
 	var flat_guide := Guide.new()
@@ -200,7 +204,7 @@ func test_ride_hud() -> void:
 	}
 	var walker_script := GDScript.new()
 	# A real Walker with only the landing stubbed: there is no snapshot under the synthetic exit to accept ground from.
-	walker_script.source_code = "extends \"res://addons/gteki/gteki_walker.gd\"\nvar rides: Array[Vector3] = []\nfunc ride_to(target: Vector3) -> bool:\n\trides.append(target)\n\tglobal_position = target\n\tbody_yaw = yaw\n\treturn true\n"
+	walker_script.source_code = "extends \"res://addons/gteki/gteki_walker.gd\"\nvar rides: Array[Vector3] = []\nfunc ride_to(target: Vector3, _forward: Vector3) -> bool:\n\trides.append(target)\n\tglobal_position = target\n\tbody_yaw = yaw\n\treturn true\n"
 	walker_script.reload()
 	var hq_script := GDScript.new()
 	hq_script.source_code = "extends Node3D\nvar walker\nvar camera\nvar current\n"
@@ -225,16 +229,19 @@ func test_ride_hud() -> void:
 	walker.global_position = Vector3(0.0, 0.0, 0.0)
 	walker.yaw = 0.42
 	hud.set_guided(true)
-	# On the flat entry (the step before the shaft) nothing is offered, even within reach of the shaft's start.
+	# Two metres short of the shaft, on the entry step: nothing is offered.
 	hud.guide.start_guide(0.0)
-	walker.global_position = Vector3(1.5, 0.0, 0.0)
+	walker.global_position = Vector3(-0.8, 0.0, 0.0)
 	hud.update_ride_prompt()
-	check(hud._prompt.text.is_empty() and hud._ride.is_empty(), "hud ride: standing on the step before the shaft offers nothing")
+	check(hud._prompt.text.is_empty() and hud._ride.is_empty(), "hud ride: 2 m before the shaft nothing is offered")
 	check(not hud.ride_pressed(), "hud ride: with nothing offered, the ride key does nothing")
-	# On the shaft's own step and within 1 m: the prompt appears.
-	hud.guide.start_guide(float(hud.guide.cumulative[1]) + 0.01)
+	# A player walking this route stops 0.3 m short of the shaft (the ground ends): the approach segment already carries
+	# the ride's own elevator step, so the prompt shows at the place the player actually stands (#287 review).
+	hud.guide.start_guide(float(hud.guide.cumulative[1]) - 0.3)
+	walker.global_position = Vector3(0.9, 0.0, 0.0)
+	check(hud.guide.step_at(hud.guide.s) == int(hud.guide.rides[0].step), "hud ride: 0.3 m short of the shaft, the ride's elevator step is the active one")
 	hud.update_ride_prompt()
-	check(hud._prompt.text == Hud.RIDE_PROMPT and not hud._ride.is_empty(), "hud ride: the prompt appears on the ride's step, within reach (%s)" % hud._prompt.text)
+	check(hud._prompt.text == Hud.RIDE_PROMPT and not hud._ride.is_empty(), "hud ride: the prompt appears where a player stands when the ground ends (%s)" % hud._prompt.text)
 	# The real key path: an E press starts it; a second press during the fade does nothing.
 	var key := InputEventKey.new()
 	key.keycode = KEY_E

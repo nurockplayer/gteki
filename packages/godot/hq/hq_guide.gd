@@ -421,14 +421,15 @@ func physics(delta: float, move: Vector2) -> bool:
 	return false
 
 
-## Offer the lift only while guided walking stands on the ride's own elevator step and within reach of its start; the
-## prompt clears itself the moment either stops being true, and no other step can offer one.
+## Offer the lift only while guided walking stands on the ride's own elevator step (or its approach) and within reach of
+## its start; the prompt clears itself the moment either stops being true, and no other step can offer one. The
+## predicate is Guide.ride_near, the same one the evidence walk uses.
 func update_ride_prompt() -> void:
 	_ride = {}
 	if not guide.guiding:
 		_prompt.text = ""
 		return
-	_ride = guide.ride_at(hq.walker.global_position, guide.step_at(guide.s))
+	_ride = guide.ride_near(hq.walker.global_position, guide.s)
 	_prompt.text = RIDE_PROMPT if not _ride.is_empty() else ""
 
 

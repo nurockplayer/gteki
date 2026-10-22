@@ -170,6 +170,7 @@ func run() -> void:
 		check(guided.load_doc(doc), "%s: the route loads in the guide (%s)" % [label, str(guided.issues)])
 		row["rides"] = guided.rides
 		walk_route(walker, label, doc, guided, elevations, row)
+		check_shaft_edge(walker, label, guided)
 		rows.append(row)
 
 	holder.queue_free()
@@ -411,6 +412,7 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, guided: Guide, e
 	var ride_plan := 0.0
 	var approach_gap := 0.0
 	var ride_landing := 0.0
+	var ride_landing_sum := 0.0
 	var i := 1
 	while i < points.size():
 		var goal := points[i]
@@ -423,6 +425,11 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, guided: Guide, e
 			# The shaft's edge is not walkable ground, so the last stretch before it cannot be stepped: the walker takes
 			# the ride the route states when it is within RIDE_TRIGGER of the shaft, exactly as the HUD offers it.
 			if not ride.is_empty() and here.distance_to(ride.from) <= Guide.RIDE_TRIGGER:
+				# The client's own predicate, asked at the place a player stands when the lift is offered: the active
+				# step there must be the ride's elevator step (Guide.step_at carries the ride back through its
+				# approach), so the HUD's prompt shows without widening it to other steps.
+				var offered := guided.ride_near(here, guided.project(here).s)
+				check(not offered.is_empty(), "%s: %.2f m from the shaft the guide offers the ride on step %d, as the HUD asks it" % [label, here.distance_to(ride.from), int(ride.step)])
 				approach_gap += Vector2(ride.from.x - here.x, ride.from.z - here.z).length()
 				print("%s: takes the lift at %s (%.2f m from the shaft start), exit %s" % [label, str(here), here.distance_to(ride.from), str(ride.to)])
 				if not guided.take_ride(walker, ride):
@@ -437,8 +444,9 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, guided: Guide, e
 				var exit_point: Vector3 = ride.to
 				var landing_offset := Vector2(landed.x - exit_point.x, landed.z - exit_point.z).length()
 				ride_landing = maxf(ride_landing, landing_offset)
+				ride_landing_sum += landing_offset
 				if landing_offset > 0.01:
-					print("%s: the shaft's exit vertex is over the opening; the feet are set down %.2f m from it on the floor" % [label, landing_offset])
+					print("%s: the shaft's exit vertex is over the opening; the feet are set down %.2f m forward of it, on the exit's level" % [label, landing_offset])
 				heights.append(landed.y)
 				if not elevations.is_empty():
 					var landing_band := nearest_floor(landed.y, elevations)
@@ -508,9 +516,9 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, guided: Guide, e
 		walked_bands.append(float(crossing.to))
 	var plan_length := route_measures_plan(doc)
 	var compared_length := walked_flat if plan_length else walked_3d
-	# What the walk was supposed to cover on foot: the route minus the span it rode, minus the measured approach the
-	# walker could not step because the ground ends at the shaft.
-	var expected_walk := route_length - ride_plan - approach_gap
+	# What the walk was supposed to cover on foot: the route minus the span it rode, minus the approach the walker could
+	# not step because the ground ends at the shaft, and minus the stretch forward the ride's own landing covered.
+	var expected_walk := route_length - ride_plan - approach_gap - ride_landing_sum
 	row["walk"] = {
 		"points": points.size(),
 		"steps": steps,
@@ -553,11 +561,57 @@ func walk_route(walker: Walker, label: String, doc: Dictionary, guided: Guide, e
 	# No silent teleport: every ride the route states must have been taken by the shared take_ride() path, and the walked
 	# length is held to the route's own minus that ridden span and the approach the ground did not allow.
 	check(rides_taken.size() == ride_at_point.size(), "%s: every lift the route states is ridden (route states %d, the walk took %d)" % [label, ride_at_point.size(), rides_taken.size()])
-	check(absf(compared_length - expected_walk) <= tolerance, "%s: the walked %s length %.1f m is within %.1f m of the route's %.1f m less %.2f m ridden and %.2f m unstepable approach (%.1f m)" % [label, "plan" if plan_length else "3D", compared_length, tolerance, route_length, ride_plan, approach_gap, expected_walk])
+	check(absf(compared_length - expected_walk) <= tolerance, "%s: the walked %s length %.1f m is within %.1f m of the route's %.1f m less %.2f m ridden, %.2f m unstepable approach and %.2f m landed forward (%.1f m)" % [label, "plan" if plan_length else "3D", compared_length, tolerance, route_length, ride_plan, approach_gap, ride_landing_sum, expected_walk])
 	var ride_note := ""
 	if not rides_taken.is_empty():
-		ride_note = ", %d lift ride(s) totalling %.2f m of rise/fall excluded from the walked length (ridden spans %s, approach %.2f m)" % [rides_taken.size(), ride_drop, str(rides_taken.map(func(r): return "%.2f m" % float(r.plan_m))), approach_gap]
+		ride_note = ", %d lift ride(s) totalling %.2f m of rise/fall excluded from the walked length (ridden spans %s, approach %.2f m, landed %.2f m forward)" % [rides_taken.size(), ride_drop, str(rides_taken.map(func(r): return "%.2f m" % float(r.plan_m))), approach_gap, ride_landing_sum]
 	print("%s: walk %d waypoints, %d steps, %.1f m walked (flat %.1f m, router's %s length %.1f m)%s, %d stopped, %d block episodes, %d band crossings (route %d floor changes), %.0f s at %.2f m/s, %s" % [label, points.size(), steps, walked_3d, walked_flat, "plan" if plan_length else "3D", route_length, ride_note, stalls.size(), blocks, levels, int(row.expected.floorChanges), steps * DT, Walker.WALK, ("arrived %.2f m from the goal" % miss) if stopped_at < 0 else ("stopped %.2f m short of the goal at %s, height %.2f..%.2f" % [miss, str(end), heights.min(), heights.max()])])
+
+
+## A player walking up to the lift on foot (#287 review): the ground ends at the opening, so the walker stops short of
+## the shaft. At that spot the guide's active step must already be the ride's elevator step and it must offer the ride —
+## the same Guide.ride_near the HUD's prompt asks — and taking it must land the feet through the real ground rules. No
+## ride in the route, no probe.
+func check_shaft_edge(walker: Walker, label: String, guided: Guide) -> void:
+	if guided.rides.is_empty():
+		return
+	var ride: Dictionary = guided.rides[0]
+	var to_point := int(ride.from_point)
+	var start := guided.points[0]
+	if not walker.walk_from(start, 0.0):
+		check(false, "%s: the route start has walkable ground for the shaft-edge probe" % label)
+		return
+	for i in range(1, mini(to_point + 1, guided.points.size())):
+		var goal := guided.points[i]
+		var stalled := 0
+		for _k in 4000:
+			var here := walker.feet()
+			var to_goal := Vector2(goal.x - here.x, goal.z - here.z)
+			if to_goal.length() < WAYPOINT_REACH:
+				break
+			walker.yaw = heading_to_yaw(to_goal.x / to_goal.length(), to_goal.y / to_goal.length())
+			walker.step(DT, Vector2(0, 1), false)
+			var after := walker.feet()
+			stalled = (stalled + 1) if Vector2(after.x - here.x, after.z - here.z).length() < 1e-4 else 0
+			if stalled > 30:
+				break
+	var feet := walker.feet()
+	var reach := feet.distance_to(ride.from)
+	var s := float(guided.project(feet).s)
+	var step := guided.step_at(s)
+	var offered := guided.ride_near(feet, s)
+	print("%s: a player walking up to the lift stops %.2f m from the shaft; the active step there is %d (ride %d) and the ride is %s" % [label, reach, step, int(ride.step), "offered" if not offered.is_empty() else "NOT offered"])
+	check(reach > 0.0 and reach <= Guide.RIDE_TRIGGER, "%s: walking up to it, the walker stops %.2f m from the shaft, inside the ride's reach" % [label, reach])
+	check(step == int(ride.step), "%s: at the shaft's edge the guide's active step is the ride's elevator step (%d, ride %d)" % [label, step, int(ride.step)])
+	check(not offered.is_empty(), "%s: at the shaft's edge the guide offers the ride, so the HUD's prompt shows" % label)
+	if offered.is_empty():
+		return
+	var yaw_before := walker.yaw
+	check(guided.take_ride(walker, offered), "%s: taking the offered ride lands the feet through the walker's own ground rules" % label)
+	var landed := walker.feet()
+	check(absf(landed.y - float(ride.to.y)) <= 0.01, "%s: the ride lands on the shaft's exit level (%.2f m)" % [label, landed.y])
+	check(Vector2(landed.x - ride.to.x, landed.z - ride.to.z).length() <= 1.05, "%s: the landing is within a metre of the shaft's exit vertex" % label)
+	check(is_equal_approx(walker.yaw, yaw_before), "%s: the ride keeps the yaw" % label)
 
 
 ## The refusal in words for a failure message: the stage, the collider, the feet position (renderer frame) and the
@@ -892,8 +946,10 @@ func write_evidence(station_id: String, scene: Scene, plan: Dictionary, elevatio
 	else:
 		lines.append("  On this run %s — inside the gate with a visible margin," % "; ".join(ridden))
 		lines.append("  while a flat elevator step's entry walk and any stair are outside it. The shaft's exit vertex sits over")
-		lines.append("  the opening (the car's floor is the hole), so the feet are set down on the nearest ground the walker's")
-		lines.append("  own body fits on — %.2f m away — never on the lip." % landing_max)
+		lines.append("  the opening (the car's floor is the hole), so the feet are set down on the first ground forward along the")
+		lines.append("  route's own continuation — inside a ±%.0f° cone of the direction to the next point, within %.1f m of the" % [Walker.RIDE_LANDING_CONE, Walker.RIDE_LANDING_REACH])
+		lines.append("  vertex, on the exit's own level and with a clear body-height line from it — %.2f m out on this run. Never" % landing_max)
+		lines.append("  behind the shaft, across a wall or into another room; with nothing qualifying the ride is refused and fails.")
 	lines.append("- **Stopped**: a leg that makes no horizontal progress for %d steps (%.0f s) or that exceeds twice its" % [STALL_STEPS, STALL_STEPS * DT])
 	lines.append("  straight-line walking time plus %d steps. No route may stop: a stopped route fails the test." % LEG_BUDGET_STEPS)
 	lines.append("- **Body-block episodes**: runs of steps the walker's own body test (`bodyBlock`: radius %.1f m, rays at %.1f / %.1f m)"
