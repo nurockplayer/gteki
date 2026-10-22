@@ -207,6 +207,9 @@ button.on { border-color: var(--accent); color: var(--accent); }
 
 /* ---- phone ---- */
 @media (max-width: 720px) {
+  /* Credit strip: the text wraps to two lines (11px * 1.3 = ~29px + padding), so the sheet and HUD rise by 38px instead of 30px. */
+  .app.has-credit { --credit-extra: 38px; }
+  .credit-text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; overflow: hidden; }
   .tagline { display: none; }
   .topbar { gap: 8px; }
   .logo { font-size: 17px; }
