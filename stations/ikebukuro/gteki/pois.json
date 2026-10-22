@@ -470,7 +470,7 @@
      "text": "36號出口"
     }
    ],
-   "floorId": "b1",
+   "floorId": "street",
    "displayPosition": null,
    "connectorNodeIds": [
     "x36f"
@@ -2684,7 +2684,7 @@
      "text": "Nishiguchi (Minami)"
     }
    ],
-   "floorId": "b1",
+   "floorId": "street",
    "displayPosition": null,
    "connectorNodeIds": [
     "x4f"
@@ -2736,7 +2736,7 @@
      "text": "13號出口"
     }
    ],
-   "floorId": "b1",
+   "floorId": "street",
    "displayPosition": null,
    "connectorNodeIds": [
     "x13f"

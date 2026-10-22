@@ -9,6 +9,7 @@ const Scene = preload("res://addons/gteki/gteki_scene.gd")
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
 const FollowCamera = preload("res://addons/gteki/gteki_follow_camera.gd")
 const Station = preload("res://addons/gteki/gteki_station.gd")
+const HqLights = preload("res://addons/gteki/gteki_hq_lights.gd")
 
 const DT := 1.0 / 60.0
 const EPSILON := 0.001
@@ -20,17 +21,13 @@ const RAY_HEIGHTS: Array[float] = [0.2, 0.6, 1.0, 1.4, 1.7]
 const EDGE_REPLAY_STATIONS: Array[String] = ["ikebukuro"]
 ## The edge that script's --control reports as blocked once door/window/portal meshes collide again.
 const CONTROL_EDGE := "w_n__x18"
-## Known findings, issue #227: the web's own bodyBlock (radius 0.3, 12 radial rays) refuses these verified-edge samples
-## because the polyline runs within ~0.3 m of a collider (checked against the TS walker at the first stall point).
+## Verified-edge samples the walker body test (web bodyBlock: radius 0.3, 12 radial rays) is known to refuse.
 ## Exact set: the test fails on any new blocked sample and when one of these stops being blocked.
-const KNOWN_BODY_BLOCKED: Array[String] = [
-	"e_low__x35:122", "e_low__x35:123", "e_low__x35:124", "e_low__x35:125", "e_low__x35:126", "e_low__x35:127",
-	"e_low__x35:128", "e_low__x35:129", "ne_e__x33:44", "ne_e__x33:45", "ne_e__x33:46", "w_c__w_n:42", "sp_m__g_jr_s:38",
-]
-## #227: the strict route replay (g_jr_c2 -> x35, aiming straight at each polyline point) stalls at this point index.
-## The web has no steering variant: its guided walk (explorer.ts stepGuide) sets the position straight from
-## samplePolyline with no collision test, so there is nothing to mirror for a "guided" variant.
-const KNOWN_ROUTE_STALL := {"ikebukuro": 8}
+## gate-line end: g_jr_s sits 0.13 m from the access fence it routes to; same 0.6 m end allowance as build_access.py
+## END_ALLOW and scene/route_clearance.test.ts (sample 38 is 0.25 m from g_jr_s; blocked by access fence #68, 0.31 m away).
+const KNOWN_BODY_BLOCKED: Array[String] = ["sp_m__g_jr_s:38"]
+## #227 fixed by #245: the strict g_jr_c2 -> x35 replay no longer stalls (-1 = never blocked).
+const KNOWN_ROUTE_STALL := {"ikebukuro": -1}
 
 ## Where stations/<id>/gteki/graph.json lives (default: the repo's stations/ next to packages/).
 var stations_dir := ProjectSettings.globalize_path("res://").path_join("../../stations").simplify_path()
@@ -82,6 +79,52 @@ func test_rules() -> void:
 	var slid: Variant = Walker.slide_along(Vector3.ZERO, Vector3(1, 0, 1), Vector3(0, 0, -1))
 	check(slid != null and slid.distance_to(Vector3(1, 0, 0)) < EPSILON, "slide_along keeps the component along the surface")
 	check(Walker.slide_along(Vector3.ZERO, Vector3(0, 0, 1), Vector3(0, 0, -1)) == null, "a head-on move slides nowhere")
+	check_avatar_lighting()
+
+
+## #251 review: with a station bake applied the added lights must reach the avatar and no station mesh; the unlit
+## snapshot keeps them on every layer.
+func check_avatar_lighting() -> void:
+	var host := Node3D.new()
+	root.add_child(host)
+	var lights := HqLights.build(host)
+	var walker := Walker.new()
+	host.add_child(walker)
+	var meshes: Array[MeshInstance3D] = []
+	var stack: Array[Node] = [walker.avatar]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		stack.append_array(node.get_children())
+		if node is MeshInstance3D:
+			var mesh: MeshInstance3D = node
+			meshes.append(mesh)
+	check(meshes.size() >= 2, "avatar: body and nose meshes exist")
+	var off_layer := 0
+	for mesh in meshes:
+		if mesh.layers != Walker.AVATAR_LAYER:
+			off_layer += 1
+	check(off_layer == 0, "avatar: every mesh draws on AVATAR_LAYER")
+	check((Walker.AVATAR_LAYER & HqLights.WORLD_LAYER) == 0, "avatar: AVATAR_LAYER is not a station layer")
+	var camera := FollowCamera.new()
+	check((camera.cull_mask & Walker.AVATAR_LAYER) != 0, "avatar: the camera renders the avatar layer")
+	camera.free()
+	HqLights.apply(lights, true)
+	var on_avatar := 0
+	var on_station := 0
+	for light in lights:
+		if (light.light_cull_mask & Walker.AVATAR_LAYER) != 0:
+			on_avatar += 1
+		if (light.light_cull_mask & HqLights.WORLD_LAYER) != 0:
+			on_station += 1
+	check(on_avatar >= 1, "lightmap on: a light affects the avatar layer")
+	check(on_station == 0, "lightmap on: no light's cull mask includes a station mesh layer")
+	HqLights.apply(lights, false)
+	var lit_world := 0
+	for light in lights:
+		if (light.light_cull_mask & HqLights.WORLD_LAYER) != 0:
+			lit_world += 1
+	check(lit_world == lights.size(), "lightmap off: the unlit snapshot is lit")
+	host.queue_free()
 
 
 # ---- synthetic world: ground rules and the wall band rule on known geometry ------------------------------------
@@ -214,7 +257,7 @@ func test_station(dir: String, id: String, route_path: String) -> void:
 		check(real.no_ground.is_empty(), "%s: every verified-edge sample has walkable ground (%d without)" % [id, real.no_ground.size()])
 		for b in real.body_blocked:
 			print("  body blocked: %s" % JSON.stringify(b))
-		print("%s: edge replay: edges=%d samples=%d rayBlocked=%d bodyBlocked=%d noGround=%d (check:godot reports 63 / 7140 / 0)" % [id, real.edges, real.samples, real.ray_blocked.size(), real.body_blocked.size(), real.no_ground.size()])
+		print("%s: edge replay: edges=%d samples=%d rayBlocked=%d bodyBlocked=%d noGround=%d (compare check:godot EDGES verified/samples/rayBlocked)" % [id, real.edges, real.samples, real.ray_blocked.size(), real.body_blocked.size(), real.no_ground.size()])
 		# Last: the control changes the world.
 		await test_edge_control(scene, walker, id, graph_path)
 	holder.queue_free()
