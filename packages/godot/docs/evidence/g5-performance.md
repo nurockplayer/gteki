@@ -13,5 +13,6 @@ godot --headless --path packages/godot --script res://tests/perf_report.gd -- \
 ```
 
 The generator (`packages/godot/tests/perf_report.gd`) prints each run's own `report.json`: the machine, renderer,
-driver and adapter it recorded, and per pose the frame-time p50/p95/max, the engine's process-time p50/p95/max, draw
-calls, primitives and video memory.
+driver and adapter it recorded, and per pose the frame-interval p50/p95/max, the renderer setup time p50/p95/max, draw
+calls, primitives and video memory — plus, once per run, the engine's `Performance.TIME_PROCESS` interval maximum, which
+is not a per-frame figure.

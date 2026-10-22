@@ -7,12 +7,13 @@ extends RefCounted
 ##         [--poses=<file>] [--look=baseline|hq] [--gi=off|sdfgi] [--perf=<seconds>]
 ## Poses file: JSON array of {name, position:[x,y,z] (Godot frame, near the ground), yaw_deg (walker yaw, 0 faces -Z,
 ## positive turns left), pitch?, distance?}. Default poses: each spawn point x 4 yaws; Ikebukuro adds the
-## g_jr_c2 -> x35 route every 15 m and the #227 stall area (.cache/routes/ikebukuro.route.json, written by run-walk.sh),
-## Shinjuku its inverted-band walls; then the G-5 evidence poses — the start, the mid-stair point and the goal of every
-## route the evidence walk covers, plus each lift's landing (the one shaft in the goldens is Shinjuku S4's) — asked from
-## the router through gteki_bridge.gd, the same call the evidence walk makes.
+## g_jr_c2 -> x35 route every 15 m and the #227 stall area (.cache/routes/ikebukuro.route.json, written by run-walk.sh;
+## a missing route file is a failure of the run — it goes into `pose_problems` and the run exits non-zero — never a
+## quietly shorter pose list), Shinjuku its inverted-band walls; then the G-5 evidence poses — the start, the mid-stair
+## point and the goal of every route the evidence walk covers, plus each lift's landing (the one shaft in the goldens is
+## Shinjuku S4's) — asked from the router through gteki_bridge.gd, the same call the evidence walk makes.
 ## Writes <outDir>/report.json (`gteki.capture/0.1`): station, look, GI, renderer, driver, GPU, window, machine and, per
-## pose, the PNG, the camera, RenderingServer stats and (with --perf) the frame-time percentiles.
+## pose, the PNG, the camera, RenderingServer stats and (with --perf) the frame-interval and renderer-setup percentiles.
 
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
 const Guide = preload("res://addons/gteki/gteki_guide.gd")
@@ -31,6 +32,7 @@ const TIMEOUT_MS := 10 * 60 * 1000
 ## 30 rendered frames a second when the timeout decides whether a pose still fits.
 const POSE_OVERHEAD_MS := 5000
 const ROUTE_STEP := 15.0
+const ROUTE_FILE := "res://.cache/routes/ikebukuro.route.json"
 const DT := 1.0 / 60.0
 ## Index of the #227 stall in the deduped Ikebukuro polyline.
 const STALL_POINT := 8
@@ -41,6 +43,9 @@ const MID_STAIR_FRACTIONS: Array[float] = [0.5, 0.4, 0.6, 0.3, 0.7]
 ## Why the default pose list is shorter than the evidence routes call for (a route the router refuses, a stair span with
 ## no walkable mid point, a missing route file). Reported in report.json: a pose is missing loudly, never silently.
 var pose_problems: Array[String] = []
+## The Ikebukuro route file the G-4 route poses sample is missing or unreadable: the run still captures every other
+## pose, but it exits non-zero, because a route list without them is not the capture the runbook asked for.
+var route_file_missing := false
 
 
 func run(hq: Node3D, out_dir: String, poses_file: String, look: String, gi: String, perf_seconds: float) -> int:
@@ -102,8 +107,17 @@ func run(hq: Node3D, out_dir: String, poses_file: String, look: String, gi: Stri
 		return 1
 	file.store_string(JSON.stringify(report, "\t"))
 	file.close()
-	print("captured %d poses (%d failed%s) in %.1f s -> %s" % [results.size(), failures, ", TIMED OUT" if timed_out else "", report.elapsed_s, dir])
-	return 1 if (failures > 0 or timed_out) else 0
+	var notes := ""
+	if failures > 0:
+		notes += ", %d failed" % failures
+	if timed_out:
+		notes += ", TIMED OUT"
+	if route_file_missing:
+		notes += ", ROUTE FILE MISSING (see pose_problems)"
+	print("captured %d poses%s in %.1f s -> %s" % [results.size(), notes, report.elapsed_s, dir])
+	if route_file_missing:
+		printerr("The Ikebukuro route poses are missing (%s); this run is not a complete capture" % ROUTE_FILE)
+	return 1 if (failures > 0 or timed_out or route_file_missing) else 0
 
 
 func capture_pose(hq: Node3D, pose: Dictionary, index: int, dir: String, station: String, perf_seconds := 0.0) -> Dictionary:
@@ -170,14 +184,18 @@ func capture_pose(hq: Node3D, pose: Dictionary, index: int, dir: String, station
 	return result
 
 
-## Measure one settled pose: PERF_WARMUP_FRAMES rendered frames first, then rendered frames until `seconds` of wall
-## clock have passed. Frame time is recorded two ways — `Performance.TIME_PROCESS`, the engine's own figure for the
-## frame's process step, and the real interval between rendered frames, which also carries vsync, the presenter and the
-## compositor — and the RenderingServer counters are read at the end of the same window.
+## Measure one settled pose: PERF_WARMUP_FRAMES rendered frames first (shader compilation, first-use uploads), then
+## rendered frames until `seconds` of wall clock have passed. The warm-up frames are awaited before any series starts,
+## so no warm-up frame is in one. Each measured frame records
+##  - `frame_ms`: the wall-clock interval between consecutive rendered frames — vsync, presenter and compositor included;
+##  - `setup_ms`: `RenderingServer.get_frame_setup_time_cpu()`, the CPU time the renderer spent setting up that frame.
+## `Performance.TIME_PROCESS` is not a per-frame figure: the engine refreshes it about once a second with the largest
+## process time seen in that second, so it is one scalar for the window (`process_interval_max_ms`), never a percentile
+## series. The RenderingServer counters are read at the end of the same window.
 func sample_perf(seconds: float) -> Dictionary:
 	for i in PERF_WARMUP_FRAMES:
 		await RenderingServer.frame_post_draw
-	var process_ms: Array[float] = []
+	var setup_ms: Array[float] = []
 	var frame_ms: Array[float] = []
 	var start := Time.get_ticks_usec()
 	var last := start
@@ -186,15 +204,21 @@ func sample_perf(seconds: float) -> Dictionary:
 		var now := Time.get_ticks_usec()
 		frame_ms.append((now - last) / 1000.0)
 		last = now
-		process_ms.append(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0)
+		setup_ms.append(RenderingServer.get_frame_setup_time_cpu())
 		if now - start >= int(seconds * 1000000.0):
 			break
+	var setup := percentiles(setup_ms)
+	if float(setup.get("max", 0.0)) <= 0.0:
+		# A renderer that reports no setup time reports nothing, rather than a wall of 0.00 ms frames.
+		setup = {}
 	return {
 		"warmup_frames": PERF_WARMUP_FRAMES,
 		"seconds": seconds,
 		"frames": frame_ms.size(),
 		"frame_ms": percentiles(frame_ms),
-		"process_ms": percentiles(process_ms),
+		"setup_ms": setup,
+		# One figure for the whole window: see the note above on why this is not per-frame.
+		"process_interval_max_ms": snappedf(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0, 0.001),
 		"draw_calls": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
 		"primitives": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME),
 		"objects": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME),
@@ -297,7 +321,7 @@ func build_poses(hq: Node3D, station: String) -> Array:
 				"yaw_deg": base_yaw + k * 90.0,
 			})
 	if station == "ikebukuro":
-		poses.append_array(route_poses(hq))
+		poses.append_array(route_poses(ROUTE_FILE))
 	elif station == "shinjuku":
 		poses.append_array(inverted_wall_poses(hq))
 	poses.append_array(evidence_poses(hq.walker, station))
@@ -305,11 +329,16 @@ func build_poses(hq: Node3D, station: String) -> Array:
 
 
 ## Follow-camera poses every ROUTE_STEP metres along the g_jr_c2 -> x35 polyline, plus the #227 stall area.
-func route_poses(hq: Node3D) -> Array:
-	var path := ProjectSettings.globalize_path("res://.cache/routes/ikebukuro.route.json")
-	var route: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
+## A missing or unreadable route file is a failure of the run, not a shorter pose list: it is recorded in
+## `pose_problems` and `route_file_missing`, and the run exits non-zero (the other poses still capture).
+func route_poses(path: String) -> Array:
+	var text := FileAccess.get_file_as_string(path)
+	var route: Variant = JSON.parse_string(text) if not text.is_empty() else null
 	if not (route is Dictionary) or not route.has("polyline"):
-		pose_problems.append("No route file at %s, skipping the route poses (see README, G-4)" % path)
+		route_file_missing = true
+		var message := "No route file at %s, so the G-4 route poses are not captured (see README, G-4)" % path
+		pose_problems.append(message)
+		printerr(message)
 		return []
 	var points: Array[Vector3] = []
 	for p in route.polyline:

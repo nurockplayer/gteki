@@ -311,8 +311,9 @@ Per pose it places the walker, settles the follow camera for 45 physics frames, 
 PNG and writes its camera transform, FOV and `RenderingServer` counts into `<outDir>/report.json` (`gteki.capture/0.1`),
 together with the run's station, look, GI, renderer, driver, adapter, window size, machine, and any pose it could not
 take (`pose_problems`). Default poses: each spawn point x 4 yaws; Ikebukuro adds the `g_jr_c2` -> `x35` route every 15 m
-(needs `.cache/routes/ikebukuro.route.json`, written by `run-walk.sh` or by the router command in the runbook below) and
-the #227 stall area; Shinjuku adds 3 poses at inverted-band walls. Then the **G-5 evidence poses**: for every route the
+(needs `.cache/routes/ikebukuro.route.json`, written by `run-walk.sh` or by the router command in the runbook below; a
+missing route file is recorded in `pose_problems` and makes the run exit non-zero, with the other poses still captured,
+rather than quietly shortening the list) and the #227 stall area; Shinjuku adds 3 poses at inverted-band walls. Then the **G-5 evidence poses**: for every route the
 evidence walk covers (`addons/gteki/gteki_evidence.gd`; `run-capture.sh` fails if that list and the walk's own plan
 ever disagree) its start,
 its mid-stair point and its goal — the route comes from the real router through the bridge, the mid-stair point is the
@@ -323,15 +324,21 @@ ride rules put the feet (Shinjuku S4's is the one shaft in the goldens). `--pose
 window about to start.
 
 `--perf=<seconds>` measures every settled pose: 60 rendered warm-up frames first (shader compilation, first-use uploads),
-then rendered frames until the window has passed, recording per frame both `Performance.TIME_PROCESS` (the engine's own
-process figure) and the real interval between rendered frames, and reporting p50/p95/max of each (nearest rank), the
-frame's draw calls, primitives and video memory, and the run's window size, renderer, driver and
-`RenderingServer.get_video_adapter_name()`. `--perf` needs `--capture=<dir>`, because the figures go into that report.
+then rendered frames until the window has passed. No warm-up frame is in any series. Per measured frame it records the
+real interval between rendered frames (vsync, presenter and compositor included) and
+`RenderingServer.get_frame_setup_time_cpu()` (the CPU time the renderer spent setting up that frame), reporting
+p50/p95/max of each (nearest rank), the frame's draw calls, primitives and video memory, and the run's window size,
+renderer, driver and
+`RenderingServer.get_video_adapter_name()`. `Performance.TIME_PROCESS` is not sampled as a series: the engine refreshes
+it about once a second with the largest process time seen in that second, so it is recorded once per pose as
+`process_interval_max_ms` and the report keeps it out of every percentile. `--perf` needs `--capture=<dir>`, because the
+figures go into that report.
 **On a headless display `--capture` says "capture needs a display" and exits 0 after loading the station, and `--perf`
 says "perf needs a display" and exits 0 before anything is loaded; neither writes a report or a perf figure.** An
 argument that makes no sense (`--perf=0`, `--perf=soon`, `--perf` without `--capture`) exits 2.
 
-`tests/run_capture_tests.gd` (run by `run-capture.sh`) checks the argument rules, the percentiles, that the capture's
+`tests/run_capture_tests.gd` (run by `run-capture.sh`) checks the argument rules, the percentiles, that a missing route
+file fails the run instead of shortening it, that the capture's
 route list is exactly the evidence walk's routable routes, that every route has its start and goal (and its mid-stair
 point where it has a `stairs` step, standing on a stairs step inside that step's own span), that S4's lift landing is
 captured within the ride's reach on the exit's level, that every pose stands on ground the real walker accepts, and the
@@ -352,6 +359,7 @@ figures go into `docs/evidence/g5-performance.md`. In order, from the workspace 
 # 0. the snapshots the client loads, and the route file the Ikebukuro G-4 poses sample (skip if already fresh)
 pnpm tsx packages/godot/src/export-scene.ts ikebukuro packages/godot/.cache/scenes/ikebukuro
 pnpm tsx packages/godot/src/export-scene.ts shinjuku packages/godot/.cache/scenes/shinjuku
+mkdir -p packages/godot/.cache/routes
 pnpm tsx packages/cli/src/route.ts stations/ikebukuro g_jr_c2 x35 > packages/godot/.cache/routes/ikebukuro.route.json
 
 # 1. Ikebukuro, baseline look (53 poses, ~6 min)
@@ -381,7 +389,9 @@ godot --headless --path packages/godot --script res://tests/perf_report.gd -- \
 
 Each capture command has its own 10-minute bound (`hq_capture.gd` `TIMEOUT_MS`) and stops before starting a pose the
 bound could not hold. At `--perf=5` and 60 rendered frames a second the five runs take about 22 minutes; at half that
-frame rate each pose spends twice as long in its 60-frame warm-up and the whole set takes about 25. The captures write only
+frame rate each pose spends twice as long in its 60-frame warm-up and the whole set takes about 25. A capture that exits
+non-zero still wrote its `report.json`: the reason is in its `pose_problems` (a missing route file, a pose with no
+walkable ground, the timeout), and the table below lists it. The captures write only
 under `packages/godot/.cache/g5/` (gitignored): each run's `report.json` and its PNGs. The generated
 `docs/evidence/g5-performance.md` is the one file to commit; every line of it is a report's own, labelled with the
 machine and the GPU slot it was measured in.

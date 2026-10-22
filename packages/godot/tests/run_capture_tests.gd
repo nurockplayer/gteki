@@ -1,5 +1,6 @@
 extends SceneTree
-## G-5b headless checks: the capture/perf argument rules, the frame-time percentiles, the G-5 evidence pose list asked
+## G-5b headless checks: the capture/perf argument rules, the percentiles, the missing-route-file failure, the G-5
+## evidence pose list asked
 ## from the real router and placed on the real station snapshot, and the performance report generator on fixture
 ## reports. Nothing renders: the capture itself is windowed (the lead's GPU slot), so no frame time is measured here.
 ## Usage: -- <scenesDir> <stationId> [<stationId>...]
@@ -39,6 +40,7 @@ func run() -> void:
 	var scenes_dir := str(args[0])
 	check_arguments()
 	check_percentiles()
+	check_missing_route_file()
 	var bridge := Bridge.new()
 	repo_root = bridge.repo_root
 	check(not repo_root.is_empty(), "the repository root is found above the project")
@@ -88,6 +90,17 @@ func check_percentiles() -> void:
 	var single: Array[float] = [3.0]
 	var one := Capture.percentiles(single)
 	check(is_equal_approx(float(one.p50), 3.0) and is_equal_approx(float(one.p95), 3.0), "self: one sample is its own p50 and p95")
+
+
+## A missing route file is a failed run, not a quietly shorter pose list: `route_poses` records it and the client's exit
+## code follows `route_file_missing` (see `run`).
+func check_missing_route_file() -> void:
+	var capture := Capture.new()
+	check(not capture.route_file_missing, "self: a fresh capture has not failed on the route file")
+	var poses := capture.route_poses("res://.cache/routes/does-not-exist-%d.route.json" % Time.get_ticks_usec())
+	check(poses.is_empty(), "self: a missing route file gives no route poses")
+	check(capture.route_file_missing, "self: a missing route file marks the capture as failed")
+	check(capture.pose_problems.size() == 1 and String(capture.pose_problems[0]).contains("route poses are not captured"), "self: a missing route file is stated in pose_problems (%s)" % str(capture.pose_problems))
 
 
 # ---- the pose list --------------------------------------------------------------------------------------------------
@@ -252,8 +265,13 @@ func check_report_generator() -> void:
 	var text := FileAccess.get_file_as_string(out)
 	check(text.contains("Measured on Fixture GPU (forward_plus via metal, FixtureOS 1.0, Fixture CPU) in the lead's GPU slot."), "self: the table names the machine and the GPU slot it was measured in")
 	check(text.contains("## shinjuku — look hq, GI sdfgi"), "self: the run names its station, look and GI")
+	check(text.contains("| Frame interval ms p50 | p95 | max | Renderer setup ms p50 | p95 | max |"), "self: each column names the series it prints")
 	check(text.contains("| g5_S4_start | 300 | 16.70 | 18.20 | 40.50 | 4.20 | 5.10 | 9.90 | 412 | 120401 | 512.0 |"), "self: a pose's percentiles, draw calls, primitives and video memory are printed as measured")
-	check(text.contains("Worst pose by frame-time p95: g5_S4_start (18.20 ms)."), "self: the worst pose is named from the sampled p95")
+	check(text.contains("**Renderer setup ms** — `RenderingServer.get_frame_setup_time_cpu()`"), "self: the table says what the renderer setup series is")
+	check(text.contains("not a per-frame figure"), "self: the table says the engine process figure is not per-frame")
+	check(text.contains("Engine process-time interval maximum (`Performance.TIME_PROCESS`: about once a second, that second's largest process time, not a per-frame figure): 11.40 ms"), "self: the engine process figure is reported once per run as an interval maximum, not as percentiles")
+	check(not text.contains("| Process ms p50 |") and not text.contains("process_ms"), "self: no per-frame percentiles are printed from the engine's once-a-second process figure")
+	check(text.contains("Worst pose by frame-interval p95: g5_S4_start (18.20 ms)."), "self: the worst pose is named from the sampled p95")
 	check(text.contains("Failed poses: g5_S4_goal (no walkable ground)."), "self: a pose that failed is listed, not dropped")
 	check(text.contains("Poses not taken: W2: no stairs step, so no mid-stair pose."), "self: a pose the run says it could not take is listed")
 
@@ -292,7 +310,8 @@ static func sample_report(with_perf := true) -> Dictionary:
 		poses[0]["perf"] = {
 			"warmup_frames": 60, "seconds": 5.0, "frames": 300,
 			"frame_ms": {"p50": 16.7, "p95": 18.2, "max": 40.5},
-			"process_ms": {"p50": 4.2, "p95": 5.1, "max": 9.9},
+			"setup_ms": {"p50": 4.2, "p95": 5.1, "max": 9.9},
+			"process_interval_max_ms": 11.4,
 			"draw_calls": 412, "primitives": 120401, "video_mem_bytes": 536870912,
 		}
 	return {

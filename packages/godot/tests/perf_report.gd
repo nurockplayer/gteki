@@ -58,12 +58,30 @@ static func render(reports: Array) -> String:
 	lines.append("`tests/perf_report.gd`. Every figure is the report's own: nothing here is estimated, and a run captured")
 	lines.append("without `--perf` says so instead of showing zeroes.")
 	lines.append("")
+	var legend := legend_lines(reports)
+	if not legend.is_empty():
+		lines.append_array(legend)
+		lines.append("")
 	for line in machine_lines(reports):
 		lines.append(line)
 	lines.append("")
 	for report in reports:
 		lines.append_array(run_lines(report))
 	return "\n".join(lines)
+
+
+## What each measured series is, printed once when some run sampled frames: the column names alone cannot say whether a
+## millisecond figure is the frame interval or a CPU step, and `Performance.TIME_PROCESS` is not per-frame at all.
+static func legend_lines(reports: Array) -> Array[String]:
+	var lines: Array[String] = []
+	for report in reports:
+		for pose in report.get("poses", []):
+			if pose is Dictionary and pose.get("perf") is Dictionary:
+				lines.append("- **Frame interval ms** — the wall-clock gap between consecutive rendered frames, so vsync, the presenter and the compositor are in it.")
+				lines.append("- **Renderer setup ms** — `RenderingServer.get_frame_setup_time_cpu()`: the CPU time the renderer spent setting up that frame.")
+				lines.append("- `Performance.TIME_PROCESS` is not a per-frame figure (the engine refreshes it about once a second, with the largest process time seen in that second), so it is reported per run as one interval maximum, never as percentiles.")
+				return lines
+	return lines
 
 
 ## One sentence per distinct machine the reports were measured on; the adapter and OS come from each report's own
@@ -135,7 +153,11 @@ static func run_lines(report: Dictionary) -> Array[String]:
 		var worst := worst_pose(sampled)
 		if not worst.is_empty():
 			lines.append("")
-			lines.append("Worst pose by frame-time p95: %s (%.2f ms)." % [str(worst.name), float(worst.value)])
+			lines.append("Worst pose by frame-interval p95: %s (%.2f ms)." % [str(worst.name), float(worst.value)])
+		var process_max: Variant = process_interval_max(sampled)
+		if process_max != null:
+			lines.append("")
+			lines.append("- Engine process-time interval maximum (`Performance.TIME_PROCESS`: about once a second, that second's largest process time, not a per-frame figure): %.2f ms" % float(process_max))
 	if not without_perf.is_empty():
 		lines.append("")
 		lines.append("Captured without perf: %s." % ", ".join(without_perf))
@@ -154,24 +176,37 @@ static func run_lines(report: Dictionary) -> Array[String]:
 
 static func table_lines(sampled: Array) -> Array[String]:
 	var lines: Array[String] = [
-		"| Pose | Frames | Frame ms p50 | p95 | max | Process ms p50 | p95 | max | Draw calls | Primitives | Video MB |",
+		"| Pose | Frames | Frame interval ms p50 | p95 | max | Renderer setup ms p50 | p95 | max | Draw calls | Primitives | Video MB |",
 		"| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
 	]
 	for pose in sampled:
 		var perf: Dictionary = pose.perf
 		var frame: Dictionary = perf.frame_ms if perf.get("frame_ms") is Dictionary else {}
-		var process: Dictionary = perf.process_ms if perf.get("process_ms") is Dictionary else {}
+		var setup: Dictionary = perf.setup_ms if perf.get("setup_ms") is Dictionary else {}
 		lines.append("| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |" % [
 			str(pose.get("name", "?")),
 			_count(perf.get("frames")),
 			_ms(frame.get("p50")), _ms(frame.get("p95")), _ms(frame.get("max")),
-			_ms(process.get("p50")), _ms(process.get("p95")), _ms(process.get("max")),
+			_ms(setup.get("p50")), _ms(setup.get("p95")), _ms(setup.get("max")),
 			_count(perf.get("draw_calls")), _count(perf.get("primitives")), _megabytes(perf.get("video_mem_bytes")),
 		])
 	return lines
 
 
-## The pose with the largest frame-time p95, for a one-line summary; {} when no pose has one (never a 0 ms stand-in).
+## The largest `process_interval_max_ms` any pose recorded, or null when none did (an older report, a renderer that
+## reports nothing): null, never a 0 ms stand-in.
+static func process_interval_max(sampled: Array) -> Variant:
+	var found: Variant = null
+	for pose in sampled:
+		var value: Variant = pose.perf.get("process_interval_max_ms")
+		if value == null:
+			continue
+		if found == null or float(value) > float(found):
+			found = value
+	return found
+
+
+## The pose with the largest frame-interval p95, for a one-line summary; {} when no pose has one (never a 0 ms stand-in).
 static func worst_pose(sampled: Array) -> Dictionary:
 	var found := {}
 	for pose in sampled:
