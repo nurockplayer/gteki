@@ -7,14 +7,27 @@ import { WALKER_BODY, type BuildScene, type SpawnPoint, type StationScene, type 
 import type * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
+import { OEDO_MAGENTA, buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
+import { kitSwapRequested, prepareKitSwap, type KitSwap } from "../scene/kit/index.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
 import { surfaceEntrances, surfaceRoofs } from "../scene/surface-layout.ts";
 import plan from "../data/plan.json" with { type: "json" };
 
+/**
+ * The explorer hook. The Lane E kit swap (Issue #94) is OFF by default: with no opt-in this is the same
+ * synchronous build as before. `?kit=1` (or `kit=mobile|full`) opts in for QA; the swap then loads the
+ * kit bundle from the station folder and, if that fails for any reason, keeps every placeholder.
+ */
 export const buildScene: BuildScene = (ctx) => {
+  const request = kitSwapRequested(typeof location === "undefined" ? undefined : location.search);
+  if (!request.enabled) return assembleScene(ctx);
+  return prepareKitSwap(ctx, { lineColour: OEDO_MAGENTA, ...(request.tier ? { tier: request.tier } : {}) }).then((kit) => assembleScene(ctx, kit ?? undefined));
+};
+
+/** The scene build itself, with an optional, already prepared kit swap. Exported for tests. */
+export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap): StationScene => {
   const T = ctx.THREE;
-  const built = buildStation(ctx.bundle, plan as unknown as Plan, { quality: ctx.quality });
+  const built = buildStation(ctx.bundle, plan as unknown as Plan, { quality: ctx.quality, ...(kit ? { kit } : {}) });
   const { layout } = built;
 
   // Invisible walk proxies: the explorer raycasts these from above (non-recursive), so each is a Mesh.

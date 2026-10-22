@@ -12,6 +12,8 @@ import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture,
 import { protectFareAndAccess, gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
 import surfaceJson from "../data/surface.json";
 import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "./surface.ts";
+import { PlaceholderLedger } from "./kit/ledger.ts";
+import type { KitSwap, KitSwapReport, LiftAnchor } from "./kit/types.ts";
 
 export const OEDO_MAGENTA = "#b6007a"; // public line colour of the Oedo Line
 
@@ -31,11 +33,20 @@ export interface BuiltStation {
   setViewer?(pos: XYZ): void;
   /** QA readout of the decorative train cycle per platform track. */
   trainStatus(): { tt: number; present: boolean; doorsOpen: boolean }[];
+  /** Present only when the optional Lane E kit swap ran (Issue #94). */
+  kitSwap?: KitSwapReport;
   dispose(): void;
 }
 
 export interface BuildOptions {
   quality: "low" | "high";
+  /**
+   * Optional Lane E kit swap (Issue #94). Absent = the station is built exactly as before. Present, it is
+   * applied once after every placeholder exists and before the static finishes merge; it adds visual
+   * meshes and hides the placeholder triangles it replaces, and changes no collider, wall, floor,
+   * camera blocker or fence.
+   */
+  kit?: KitSwap;
 }
 
 // ---------------------------------------------------------------- helpers
@@ -309,6 +320,9 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   root.name = "shinjuku-e27";
   const disposables: { dispose(): void }[] = [];
   const track = <T extends { dispose(): void }>(x: T) => (disposables.push(x), x);
+  // Bookkeeping for the optional kit swap: records which placeholder triangles belong to which anchor.
+  // Recording only reads geometry, so a build without a kit swap is byte-identical.
+  const ledger = opts.kit ? new PlaceholderLedger(track) : null;
   const aniso = opts.quality === "high" ? 8 : 4;
 
   // ---- materials
@@ -445,7 +459,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
 
   // ---- underground fixtures, kept in a separate helper for the surface lane's hook
   buildUndergroundLighting(bundle, layout, levelGroups, root, track);
-  buildElevatorPortals(bundle, layout, root, mat, track);
+  const liftAnchors = buildElevatorPortals(bundle, layout, root, mat, track, ledger);
 
   // ---- existing surface ceiling lights (street scene is owned by W2)
   {
@@ -645,20 +659,21 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     const okGeos: THREE.BufferGeometry[] = [];
     for (const gl of protection.gates) {
       const yaw = Math.atan2(gl.dir.y, gl.dir.x);
+      const tag = <G extends THREE.BufferGeometry>(g: G): G => (ledger ? ledger.tag("gate-machines", gl.edgeId, g) : g);
       for (const c of gateMachines(gl)) {
         const body = new THREE.BoxGeometry(1.5, 0.95, 0.2);
         body.rotateY(yaw);
         body.translate(c.x, gl.center.z + 0.475, -c.y);
-        bodyGeos.push(body);
+        bodyGeos.push(tag(body));
         const top = new THREE.BoxGeometry(1.52, 0.04, 0.22);
         top.rotateY(yaw);
         top.translate(c.x, gl.center.z + 0.97, -c.y);
-        topGeos.push(top);
+        topGeos.push(tag(top));
         for (const end of [-1, 1]) {
           const ic = new THREE.BoxGeometry(0.16, 0.012, 0.16);
           ic.rotateY(yaw);
           ic.translate(c.x + gl.dir.x * 0.55 * end, gl.center.z + 0.995, -(c.y + gl.dir.y * 0.55 * end));
-          (end > 0 ? icGeos : okGeos).push(ic);
+          (end > 0 ? icGeos : okGeos).push(tag(ic));
         }
         propWalls.push({ a: { x: c.x - gl.dir.x * 0.75, y: c.y - gl.dir.y * 0.75 }, b: { x: c.x + gl.dir.x * 0.75, y: c.y + gl.dir.y * 0.75 }, zMin: gl.center.z - 0.1, zMax: gl.center.z + 1.0, side: 1, kind: "wall", bodyMin: gl.center.z - 0.5 });
       }
@@ -670,7 +685,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       [okGeos, mat.gateOk],
     ] as const) {
       const geo = merged(geos);
-      if (geo) root.add(new THREE.Mesh(track(geo), m));
+      if (!geo) continue;
+      const mesh = new THREE.Mesh(track(geo), m);
+      root.add(mesh);
+      ledger?.bind("gate-machines", mesh, geos);
     }
   }
 
@@ -794,6 +812,10 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
 
   // ---- wayfinding signs from the verified graph
   const signs = buildSigns(bundle, layout, root, track);
+  // ---- optional Lane E kit swap (Issue #94): off unless a KitSwap was passed in
+  const kitSwap = opts.kit && ledger
+    ? opts.kit.apply({ THREE, bundle, plan, layout, protection, liftAnchors, root, ledger, levelGroups, track })
+    : undefined;
   addWallBackFaces(root, mat.wall, track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
   mergeRootFinishes(root, [mat.steel, mat.glass], track, true);
@@ -1090,6 +1112,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     update(dt, t) { update(dt, t); surface.update(dt, t); },
     setViewer: surface.setViewer,
     trainStatus,
+    ...(kitSwap ? { kitSwap } : {}),
     dispose() {
       for (const d of disposables) d.dispose();
       root.traverse((o) => {
@@ -1129,9 +1152,11 @@ function buildElevatorPortals(
   bundle: StationBundle, layout: Layout, root: THREE.Group,
   mat: { wall: THREE.Material; steel: THREE.Material; darkSteel: THREE.Material; gateOk: THREE.Material; accent: THREE.Material },
   track: <T extends { dispose(): void }>(x: T) => T,
-) {
+  ledger: PlaceholderLedger | null = null,
+): LiftAnchor[] {
   const buckets = new Map<THREE.Material, THREE.BufferGeometry[]>();
   const portals: { nodeIds: string[]; center: XYZ; a: XY; b: XY }[] = [];
+  const anchors: LiftAnchor[] = [];
   const nodes = bundle.nodes.filter((n) => n.kind === "elevator" && (layout.nodeZ.get(n.id) ?? 0) < -0.5);
   const groups: (typeof nodes)[] = [];
   for (const n of nodes) {
@@ -1213,7 +1238,7 @@ function buildElevatorPortals(
       const g = new THREE.BoxGeometry(width, h, depth).rotateY(yaw);
       g.translate(p.x + u.x * x + normal.x * inset, z + height, -(p.y + u.y * x + normal.y * inset));
       const list = buckets.get(m) ?? [];
-      list.push(g);
+      list.push(ledger ? ledger.tag("lift-portals", String(portals.length), g) : g);
       buckets.set(m, list);
     };
     // Recess, paired door leaves, narrow joints, brushed surround, sill and call plate.
@@ -1232,6 +1257,7 @@ function buildElevatorPortals(
     // Abstract two-bar status indicator: no invented floor number/direction/status claim.
     for (const x of [-0.045, 0.045]) box(x, 2.43, 0.022, 0.05, 0.045, mat.gateOk);
     box(0, 2.58, 1.64, 0.045, 0.025, mat.accent);
+    anchors.push({ role: "lift", key: String(portals.length), nodeIds: group.map((n) => n.id), wallPoint: { x: p.x, y: p.y }, z, u: { x: u.x, y: u.y }, normal, floorId: lv.floorId });
     portals.push({ nodeIds: group.map((n) => n.id), center: { ...p, z }, a: w.a, b: w.b });
   }
   for (const [material, geos] of buckets) {
@@ -1239,7 +1265,9 @@ function buildElevatorPortals(
     mesh.name = "elevator-portal:finish";
     mesh.userData.portals = portals;
     root.add(mesh);
+    ledger?.bind("lift-portals", mesh, geos);
   }
+  return anchors;
 }
 
 /**
