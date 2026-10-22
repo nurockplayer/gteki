@@ -321,7 +321,8 @@ export class Explorer {
     this.scene.environmentIntensity = plan.environmentIntensity;
     this.avatar.traverse((o) => {
       const m = (o as THREE.Mesh).material;
-      if (m instanceof THREE.MeshStandardMaterial) { m.envMap = plan.avatarEnvMap ? this.coreEnvMap : null; m.needsUpdate = true; }
+      const next = plan.avatarEnvMap ? this.coreEnvMap : null;
+      if (m instanceof THREE.MeshStandardMaterial && m.envMap !== next) { m.envMap = next; m.needsUpdate = true; }
     });
   }
 
