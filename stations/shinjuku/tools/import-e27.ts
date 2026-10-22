@@ -956,6 +956,8 @@ const assets: Asset[] = [];
     const hash = createHash("sha256").update(bytes).digest("hex");
     if (hash !== a.outputSha256 || bytes.length !== a.outputBytes) throw new Error(`${a.uri} does not match sources/context-manifest.json (sha256 ${hash}, ${bytes.length} B)`);
   }
+  // One credit for all PLATEAU sources: the Owner's Q10 Option A string lives in tools/import-surface.ts (SURFACE_CREDIT).
+  if (m.attribution !== SURFACE_CREDIT) throw new Error("sources/context-manifest.json attribution differs from SURFACE_CREDIT (the Owner's Q10 Option A credit)");
   for (const f of m.sources) {
     sources.push({
       id: f.id,
@@ -983,7 +985,7 @@ const assets: Asset[] = [];
     floorIds: [floorId(0)],
     sourceIds: m.sources.map((f) => f.id),
     role: "visual",
-    derivation: `PLATEAU bldg (LOD1 low / LOD2 high) -> tools/gis: \`${low.command}\` (${low.uri}, ${low.drawCalls} mesh, ${low.triangles.toLocaleString("en-US")} tris, ${low.features} buildings, receipt ${low.receipt}) and \`${high.command}\` (${high.uri}, ${high.drawCalls} meshes, ${high.triangles.toLocaleString("en-US")} tris, receipt ${high.receipt}); the high file is listed in files, not a second asset, so loaders that load every asset never stack both. Committed bytes equal the receipts: ${low.uri} sha256 ${low.outputSha256} (${low.outputBytes.toLocaleString("en-US")} B), ${high.uri} sha256 ${high.outputSha256} (${high.outputBytes.toLocaleString("en-US")} B). Frame shinjuku-station-enu-v0 (horizontal only, origin = this station's origin), each building flattened to street z = 0, whole features, no textures, buildings only (no roads). Every node is gteki_role=context, named ctx_bldg_*, NOT_FOR_ROUTING, visual_only: never walkable, never a collider, never a camera blocker. gteki/scene.ts loads the variant matching ctx.quality (low on low, high on high) and, when it loads, draws it instead of the LOD1 building extrusions of the procedural street layer.`,
+    derivation: `PLATEAU bldg (LOD1 low / LOD2 high) -> tools/gis: \`${low.command}\` (${low.uri}, ${low.drawCalls} mesh, ${low.triangles.toLocaleString("en-US")} tris, ${low.features} buildings, receipt ${low.receipt}) and \`${high.command}\` (${high.uri}, ${high.drawCalls} meshes, ${high.triangles.toLocaleString("en-US")} tris, receipt ${high.receipt}); the high file is listed in files, not a second asset, so loaders that load every asset never stack both. Committed bytes equal the receipts: ${low.uri} sha256 ${low.outputSha256} (${low.outputBytes.toLocaleString("en-US")} B), ${high.uri} sha256 ${high.outputSha256} (${high.outputBytes.toLocaleString("en-US")} B). Frame shinjuku-station-enu-v0 (horizontal only, origin = this station's origin), each building flattened to street z = 0, whole features, no textures, buildings only (no roads). Every node is gteki_role=context, named ctx_bldg_*, NOT_FOR_ROUTING, visual_only: never walkable, never a collider, never a camera blocker. Two of these buildings are NOT DRAWN: the ones whose PLATEAU footprint contains this station's poi:exit:2 stair mouth, canopy and route and its poi:exit:3 lift top (the record's own exit ids, not official exit numbers). The context is a solid mass with no modelled opening, so drawing them would put the exit inside a wall; scene/context.ts drops their triangles at load by the ranges in sources/context-omit.json. A visual omission, not a claim that those buildings are absent. gteki/scene.ts loads the variant matching ctx.quality (low on low, high on high) and, when it loads, draws it instead of the LOD1 building extrusions of the procedural street layer.`,
     files: [high.uri],
   });
 }
@@ -1061,7 +1063,7 @@ const bundle: StationBundle = {
 // ---------------------------------------------------------------- plan (render geometry)
 const plan = {
   note: "Render-only geometry derived from 構内地図データ（都営地下鉄大江戸線 新宿駅）（国土交通省）, published under the Owner's #16 override; licence basis unconfirmed. Not routing truth. Heights are symbolic.",
-  attribution: sources.map((s) => s.attribution),
+  attribution: [...new Set(sources.map((s) => s.attribution))], // one entry per distinct credit: the PLATEAU sources share the Owner's Q10 string
   levels: mapLevels.map((ml) => {
     const nwdOrd = ml.ordinal === -5 ? -4.5 : ml.ordinal;
     return {
