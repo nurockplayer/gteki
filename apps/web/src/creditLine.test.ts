@@ -1,0 +1,64 @@
+import { describe, expect, it } from "vitest";
+import type { Asset, Source } from "@gteki/schema";
+import { composeCreditLine, creditLineFor, drawnSources, groupByAttribution, groupLicenses } from "./creditLine.ts";
+
+const PLATEAU = "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成";
+const src = (id: string, attribution: string, extra: Partial<Source> = {}): Source => ({
+  id, title: `title ${id}`, publisher: "MLIT", url: "https://example.org/", license: { name: "CC BY 4.0", url: "https://creativecommons.org/licenses/by/4.0/" },
+  rights: "REUSABLE_WITH_CONDITIONS", attribution, modified: true, retrievedAt: null, datasetDate: null, ...extra,
+} as Source);
+const asset = (id: string, role: Asset["role"], sourceIds: string[]): Asset => ({ id, uri: `${id}.glb`, format: "glb", floorIds: ["f"], role, sourceIds });
+
+describe("drawnSources", () => {
+  const sources = [src("a", PLATEAU), src("b", PLATEAU), src("c", "other"), src("f", "facts", { usage: "facts-only" })];
+
+  it("keeps only the sources cited by visual assets", () => {
+    const assets = [asset("v", "visual", ["a"]), asset("vc", "visual+collision", ["b"]), asset("col", "collision", ["c"])];
+    expect(drawnSources({ sources, assets }).map((s) => s.id)).toEqual(["a", "b"]);
+  });
+
+  it("never counts facts-only sources, even when an asset cites them", () => {
+    expect(drawnSources({ sources, assets: [asset("v", "visual", ["a", "f"])] }).map((s) => s.id)).toEqual(["a"]);
+  });
+
+  it("falls back to every non-facts-only source for a graph-only station", () => {
+    expect(drawnSources({ sources }).map((s) => s.id)).toEqual(["a", "b", "c"]);
+    expect(drawnSources({ sources, assets: [asset("col", "collision", ["c"])] }).map((s) => s.id)).toEqual(["a", "b", "c"]);
+  });
+});
+
+describe("credit line", () => {
+  it("shows an attribution shared by several sources once", () => {
+    const five = ["1", "2", "3", "4", "5"].map((i) => src(`p${i}`, PLATEAU));
+    expect(composeCreditLine(five)).toBe(PLATEAU);
+  });
+
+  it("joins distinct attributions in order and ignores whitespace differences and blanks", () => {
+    const line = composeCreditLine([src("a", "A"), src("b", " B  x "), src("c", "A"), src("d", "B x"), src("e", "  ")]);
+    expect(line).toBe("A / B x");
+  });
+
+  it("is empty when nothing is drawn", () => {
+    expect(composeCreditLine([])).toBe("");
+    expect(creditLineFor({ sources: [src("f", "facts", { usage: "facts-only" })] })).toBe("");
+  });
+
+  it("composes from a bundle's drawn sources", () => {
+    expect(creditLineFor({ sources: [src("a", PLATEAU), src("b", "unused")], assets: [asset("v", "visual", ["a"])] })).toBe(PLATEAU);
+  });
+});
+
+describe("groupByAttribution", () => {
+  it("groups identical attribution text and keeps ids in order", () => {
+    const groups = groupByAttribution([src("a", PLATEAU), src("x", "X"), src("b", PLATEAU), src("c", PLATEAU)]);
+    expect(groups.map((g) => [g.attribution, g.sources.map((s) => s.id)])).toEqual([[PLATEAU, ["a", "b", "c"]], ["X", ["x"]]]);
+  });
+
+  it("lists a group's licences once", () => {
+    const g = groupByAttribution([src("a", PLATEAU), src("b", PLATEAU), src("c", PLATEAU, { license: { name: "PDL 1.0", url: "" } })])[0]!;
+    expect(groupLicenses(g.sources)).toEqual([
+      { name: "CC BY 4.0", href: "https://creativecommons.org/licenses/by/4.0/" },
+      { name: "PDL 1.0", href: null },
+    ]);
+  });
+});

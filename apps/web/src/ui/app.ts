@@ -10,6 +10,7 @@ import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
 import { sourceCredit } from "../credits.ts";
+import { creditLineFor, groupByAttribution, groupLicenses } from "../creditLine.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -77,6 +78,7 @@ export class App {
     langBtn: el("button", "ghost lang"),
     coverageBtn: el("button", "ghost"),
     hint: el("div", "hint"),
+    credit: el("footer", "credit-line"),
     panel: el("section", "panel"),
     more: el("button", "ghost more", "⋯"),
   };
@@ -147,7 +149,7 @@ export class App {
     panel.append(this.ui.banner, fields, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
-    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.ui.coverage, this.ui.hint);
+    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.ui.coverage, this.ui.hint, this.ui.credit);
     this.layoutText();
   }
 
@@ -216,6 +218,7 @@ export class App {
     this.s.route = null;
     this.s.polyline = [];
     this.s.instructions = [];
+    this.renderCredit();
     this.ui.fromInput.value = "";
     this.ui.toInput.value = "";
     this.ui.fromResults.innerHTML = "";
@@ -273,6 +276,7 @@ export class App {
 
   private refreshAll(): void {
     this.updatePanelCollapse();
+    this.renderCredit();
     const b = this.s.loaded?.bundle;
     this.renderBanner(b);
     this.renderSpawnChips(b);
@@ -692,6 +696,58 @@ export class App {
     return li;
   }
 
+  /** The persistent credit line (bottom strip, above the safe-area inset): drawn sources' attributions, each once; "Credits" opens the full list. */
+  private renderCredit(): void {
+    const b = this.s.loaded?.bundle;
+    const text = b ? creditLineFor(b) : "";
+    const box = this.ui.credit;
+    box.innerHTML = "";
+    box.hidden = !text;
+    this.root.classList.toggle("has-credit", Boolean(text));
+    if (!text) return;
+    box.setAttribute("aria-label", this.t.creditsLabel);
+    const line = el("span", "credit-text", text);
+    line.title = text;
+    const btn = el("button", "ghost credit-btn", this.t.credits);
+    btn.setAttribute("aria-haspopup", "dialog");
+    btn.addEventListener("click", () => this.openCoverage());
+    box.append(line, btn);
+  }
+
+  /** One credits-dialog item for sources sharing an attribution: titles (linked), the attribution once, distinct licences, modification and rights notes. */
+  private creditGroupItem(attribution: string, sources: Source[]): HTMLLIElement {
+    const rights = `${[...new Set(sources.map((s) => s.rights))].join(" / ")}${sources.some((s) => s.usage === "facts-only") ? ", facts-only" : ""}`;
+    if (sources.length === 1) {
+      const li = this.creditItem(sources[0]!);
+      li.append(el("span", "muted", ` [${rights}]`));
+      return li;
+    }
+    const link = (text: string, href: string | null): HTMLElement => {
+      if (!href) return el("span", undefined, text);
+      const a = el("a", undefined, text);
+      a.href = href;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      return a;
+    };
+    const li = el("li");
+    sources.forEach((s, i) => {
+      const c = sourceCredit(s);
+      if (i) li.append(el("span", "muted", "、"));
+      li.append(link(c.title, c.href));
+    });
+    li.append(el("span", "muted", ` — ${attribution}`));
+    const licenses = groupLicenses(sources);
+    if (licenses.length) {
+      li.append(el("span", "muted", " ("));
+      licenses.forEach((l, i) => { if (i) li.append(el("span", "muted", ", ")); li.append(link(l.name, l.href)); });
+      li.append(el("span", "muted", ")"));
+    }
+    if (sources.some((s) => s.modified)) li.append(el("span", "muted", ` · ${this.t.modified}`));
+    li.append(el("span", "muted", ` [${rights}]`));
+    return li;
+  }
+
   // ---- Coverage --------------------------------------------------------------------
 
   private openCoverage(): void {
@@ -714,12 +770,8 @@ export class App {
       if (!b.coverage.gaps.length) gaps.append(el("li", "muted", "—"));
       d.append(gaps, el("h3", undefined, this.t.sources));
       const src = el("ul");
-      // Every source, including those cited only by assets or coverage: link, licence and modification notice.
-      for (const s of b.sources) {
-        const li = this.creditItem(s);
-        li.append(el("span", "muted", ` [${s.rights}${s.usage === "facts-only" ? ", facts-only" : ""}]`));
-        src.append(li);
-      }
+      // Every source, including those cited only by assets or coverage; sources sharing one attribution text form one item.
+      for (const g of groupByAttribution(b.sources)) src.append(this.creditGroupItem(g.attribution, g.sources));
       d.append(src);
       // Asset modification notices (e.g. "Blender build from PLATEAU …") disclose how sources were processed.
       const derived = (b.assets ?? []).filter((a) => a.derivation);

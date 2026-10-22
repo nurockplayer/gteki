@@ -61,6 +61,8 @@ const STRINGS = {
     realCandidate: "公開データ由来・現地未確認を含む",
     freshness: "データ時点",
     sources: "出典",
+    credits: "出典",
+    creditsLabel: "データの出典表示",
     /** Modification disclosure required by PDL / CC BY when a source was processed. */
     modified: "加工して作成",
     assetDerivations: "3D素材の加工内容",
@@ -134,6 +136,8 @@ const STRINGS = {
     realCandidate: "From open data; parts not field-verified",
     freshness: "Data as of",
     sources: "Sources",
+    credits: "Credits",
+    creditsLabel: "Data credits",
     modified: "modified",
     assetDerivations: "3D asset derivations",
     symbolicHeight: "Heights are display estimates",
