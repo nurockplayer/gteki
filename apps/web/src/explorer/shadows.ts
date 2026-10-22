@@ -20,8 +20,8 @@ export const SHADOW_Y_PAD_M = 0.5;
 export const CAST_HEADROOM_M = 2.2;
 /** The caster set is recomputed only when the walker's floor Y moves more than this (m): a level change, stairs or an escalator. */
 export const CAST_RETUNE_M = 0.5;
-/** Largest half-width (m) the overview fit may use; a station wider than this gets coarser shadows rather than none. */
-export const SHADOW_OVERVIEW_MAX_HALF_M = 300;
+/** A caster whose world box is taller than this (m) spans more than two levels: a merged mesh a station should split. */
+export const TALL_CANDIDATE_SPAN_M = 6;
 
 /** Shadows exist on the high tier and while the core sun is on (default lighting); a scene-lit station owns its shadows. */
 export function shadowsActive(quality: "low" | "high", lighting: "default" | "scene"): boolean {
@@ -52,10 +52,11 @@ export function meshShadowFlags(mesh: THREE.Object3D): MeshShadowFlags {
   return { cast: drawn, receive: drawn && mats.every(isLit) };
 }
 
-/** A mesh the policy accepted as a caster, with the lowest Y of its world box. */
+/** A mesh the policy accepted as a caster, with the lowest and highest Y of its world box (-Infinity both when it has none). */
 export interface ShadowCandidate {
   mesh: THREE.Mesh;
   minY: number;
+  maxY: number;
 }
 
 export interface StationShadows {
@@ -64,6 +65,8 @@ export interface StationShadows {
   receivers: number;
   /** The casting candidates, fixed at attach. */
   candidates: ShadowCandidate[];
+  /** Candidates taller than TALL_CANDIDATE_SPAN_M: merged meshes spanning several levels, for stations to split. */
+  tallCandidates: number;
   /** World box of those meshes (empty when there are none): its Y span is the frustum's depth range. */
   bounds: THREE.Box3;
 }
@@ -73,29 +76,34 @@ export interface StationShadows {
  * what it set. Does nothing (and touches nothing) unless `shadowsActive(quality, lighting)`. Subtrees with
  * `visible === false` (hidden colliders, camera blockers) are skipped whole; nothing outside `root` is visited, so
  * the route, the overlays and the avatar are never touched. A mesh that fails the policy has castShadow cleared;
- * a `receiveShadow = true` the station set is always kept.
+ * a `receiveShadow = true` the station set is always kept. A node with `userData.gteki_shadow === "none"` (a glTF
+ * extra lands there too) never casts, nor does anything under it; receiving follows the usual rule.
  */
 export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high", lighting: "default" | "scene"): StationShadows {
-  const out: StationShadows = { casters: 0, receivers: 0, candidates: [], bounds: new THREE.Box3() };
+  const out: StationShadows = { casters: 0, receivers: 0, candidates: [], tallCandidates: 0, bounds: new THREE.Box3() };
   if (!shadowsActive(quality, lighting)) return out;
   root.updateMatrixWorld(true);
   const box = new THREE.Box3();
-  const visit = (o: THREE.Object3D): void => {
+  const visit = (o: THREE.Object3D, optOut: boolean): void => {
     if (!o.visible) return;
+    const optedOut = optOut || o.userData?.gteki_shadow === "none";
     const m = o as THREE.Mesh;
     if (m.isMesh) {
       const f = meshShadowFlags(m);
-      m.castShadow = f.cast;
+      m.castShadow = f.cast && !optedOut;
       if (f.receive) m.receiveShadow = true;
       if (m.castShadow) out.casters++;
       if (m.receiveShadow) out.receivers++;
       const hasBox = (m.castShadow || m.receiveShadow) && meshWorldBox(m, box);
       if (hasBox) out.bounds.union(box);
-      if (m.castShadow) out.candidates.push({ mesh: m, minY: hasBox ? box.min.y : -Infinity });
+      if (m.castShadow) {
+        out.candidates.push({ mesh: m, minY: hasBox ? box.min.y : -Infinity, maxY: hasBox ? box.max.y : -Infinity });
+        if (hasBox && box.max.y - box.min.y > TALL_CANDIDATE_SPAN_M) out.tallCandidates++;
+      }
     }
-    for (const c of o.children) visit(c);
+    for (const c of o.children) visit(c, optedOut);
   };
-  visit(root);
+  visit(root, false);
   return out;
 }
 
@@ -130,15 +138,4 @@ function meshWorldBox(mesh: THREE.Mesh, out: THREE.Box3): boolean {
 /** The frustum depth range for a station's drawn geometry: its Y span, padded. */
 export function shadowYRange(bounds: THREE.Box3): [number, number] {
   return [bounds.min.y - SHADOW_Y_PAD_M, bounds.max.y + SHADOW_Y_PAD_M];
-}
-
-/**
- * Half-width of a frustum that covers the whole station from above. The shadow camera is square in light space,
- * which is not aligned with the station and shears with height, so this takes the footprint's half-diagonal plus half
- * the height span, with a little slack, capped at SHADOW_OVERVIEW_MAX_HALF_M. Never below the walking half-extent.
- */
-export function overviewHalfExtent(bounds: THREE.Box3): number {
-  const sx = bounds.max.x - bounds.min.x, sy = bounds.max.y - bounds.min.y, sz = bounds.max.z - bounds.min.z;
-  const half = 0.5 * Math.hypot(sx, sz) + 0.5 * sy + 2;
-  return Math.min(SHADOW_OVERVIEW_MAX_HALF_M, Math.max(SHADOW_HALF_EXTENT_M, half));
 }

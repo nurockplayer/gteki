@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { CAST_HEADROOM_M, SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_OVERVIEW_MAX_HALF_M, SHADOW_RADIUS, SHADOW_Y_PAD_M, applyStationShadows, meshShadowFlags, overviewHalfExtent, setCasters, shadowYRange, shadowsActive } from "./shadows.ts";
+import { CAST_HEADROOM_M, SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, SHADOW_Y_PAD_M, TALL_CANDIDATE_SPAN_M, applyStationShadows, meshShadowFlags, setCasters, shadowYRange, shadowsActive } from "./shadows.ts";
 
 const box = (mat: THREE.Material | THREE.Material[] = new THREE.MeshStandardMaterial(), at: [number, number, number] = [0, 0, 0]) => {
   const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat);
@@ -141,16 +141,58 @@ describe("applyStationShadows", () => {
   });
 });
 
+describe("gteki_shadow opt-out", () => {
+  it("drops a marked mesh and its whole subtree from the casters and candidates", () => {
+    const solo = box(), group = new THREE.Group(), under = box(), deep = box(undefined, [2, 0, 0]), keep = box(undefined, [5, 0, 0]);
+    solo.userData.gteki_shadow = "none";
+    group.userData.gteki_shadow = "none";
+    const mid = new THREE.Group();
+    mid.add(deep);
+    group.add(under, mid);
+    solo.castShadow = true; // a station-set flag is cleared too
+    const r = apply(rootOf(solo, group, keep));
+    expect([solo.castShadow, under.castShadow, deep.castShadow, keep.castShadow]).toEqual([false, false, false, true]);
+    expect(r.casters).toBe(1);
+    expect(r.candidates.map((c) => c.mesh)).toEqual([keep]);
+  });
+
+  it("works for a glTF extra (userData) and leaves receiving on its usual rule", () => {
+    const m = box();
+    m.userData = { gteki_shadow: "none", other: 1 };
+    const r = apply(rootOf(m));
+    expect([m.castShadow, m.receiveShadow]).toEqual([false, true]);
+    expect(r).toMatchObject({ casters: 0, receivers: 1 });
+  });
+
+  it("ignores other values", () => {
+    const m = box();
+    m.userData.gteki_shadow = "cast";
+    expect(apply(rootOf(m)).casters).toBe(1);
+  });
+});
+
+describe("tallCandidates", () => {
+  it("counts casters whose box spans more than 6 m and records maxY", () => {
+    const tall = new THREE.Mesh(new THREE.BoxGeometry(1, 6.5, 1), new THREE.MeshStandardMaterial());
+    const exact = new THREE.Mesh(new THREE.BoxGeometry(1, TALL_CANDIDATE_SPAN_M, 1), new THREE.MeshStandardMaterial());
+    const hiddenTall = new THREE.Mesh(new THREE.BoxGeometry(1, 20, 1), new THREE.MeshStandardMaterial());
+    const optedOut = new THREE.Mesh(new THREE.BoxGeometry(1, 20, 1), new THREE.MeshStandardMaterial());
+    hiddenTall.visible = false;
+    optedOut.userData.gteki_shadow = "none";
+    const r = apply(rootOf(tall, exact, box(), hiddenTall, optedOut));
+    expect(TALL_CANDIDATE_SPAN_M).toBe(6);
+    expect(r.tallCandidates).toBe(1);
+    expect(r.candidates.map((c) => +c.maxY.toFixed(2))).toEqual([3.25, 3, 0.5]);
+  });
+
+  it("is 0 when shadows are inactive", () => {
+    expect(apply(rootOf(new THREE.Mesh(new THREE.BoxGeometry(1, 20, 1), new THREE.MeshStandardMaterial())), "low").tallCandidates).toBe(0);
+  });
+});
+
 describe("fit helpers", () => {
   it("pads the Y range", () => {
     expect(shadowYRange(new THREE.Box3(new THREE.Vector3(0, -3, 0), new THREE.Vector3(1, 9, 1)))).toEqual([-3 - SHADOW_Y_PAD_M, 9 + SHADOW_Y_PAD_M]);
-  });
-
-  it("covers the station footprint and height from above, within the cap and above the walking extent", () => {
-    const b = (x: number, y: number, z: number) => new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(x, y, z));
-    expect(overviewHalfExtent(b(100, 10, 100))).toBeGreaterThanOrEqual(0.5 * Math.hypot(100, 100));
-    expect(overviewHalfExtent(b(4, 3, 4))).toBe(SHADOW_HALF_EXTENT_M);
-    expect(overviewHalfExtent(b(5000, 10, 5000))).toBe(SHADOW_OVERVIEW_MAX_HALF_M);
   });
 });
 
