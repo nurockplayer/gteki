@@ -36,6 +36,7 @@ const SPECS = {
   point2: { x: "number", y: "number" },
   coverage: { summary: "array", areas: "array", gaps: "array", freshness: "string|null" },
   asset: { id: "string", uri: "string", format: "string", floorIds: "array", role: "string", sourceIds: "array", transform: "array?", derivation: "string?", files: "array?" },
+  dataFile: { id: "string", path: "string", sourceIds: "array", derivation: "string?" },
 } satisfies Record<string, Spec>;
 
 function kindOf(v: unknown): string {
@@ -133,7 +134,7 @@ function idOf(item: unknown): string {
 /** Structural check of the three station files. Returns issues; empty = shape-valid. */
 export function checkShape(manifest: unknown, graph: unknown, pois: unknown): ValidationIssue[] {
   const c = new ShapeChecker();
-  if (c.check(manifest, { schema: "string", station: "object", sources: "array", floors: "array", coverage: "object", spawnNodeIds: "array?", assets: "array?" }, "station.json")) {
+  if (c.check(manifest, { schema: "string", station: "object", sources: "array", floors: "array", coverage: "object", spawnNodeIds: "array?", assets: "array?", dataFiles: "array?" }, "station.json")) {
     const m = manifest as Record<string, unknown>;
     if (c.check(m.station, SPECS.station, "station.json.station")) {
       const st = m.station as Record<string, unknown>;
@@ -162,6 +163,7 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
       c.each(cov.gaps, SPECS.gap, "coverage.gaps");
     }
     c.strings(m.spawnNodeIds, "spawnNodeIds");
+    c.each(m.dataFiles, SPECS.dataFile, "dataFiles", (file, where) => c.strings(file.sourceIds, `${where}.sourceIds`));
     c.each(m.assets, SPECS.asset, "assets", (asset, where) => {
       c.strings(asset.floorIds, `${where}.floorIds`);
       c.strings(asset.sourceIds, `${where}.sourceIds`);
@@ -216,6 +218,7 @@ export function composeBundle(manifest: StationManifestFile, graph: GraphFile, p
   };
   if (manifest.spawnNodeIds) bundle.spawnNodeIds = manifest.spawnNodeIds;
   if (manifest.assets) bundle.assets = manifest.assets;
+  if (manifest.dataFiles) bundle.dataFiles = manifest.dataFiles;
   return bundle;
 }
 

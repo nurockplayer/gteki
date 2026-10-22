@@ -27,7 +27,8 @@ const ASSET_EXT = /\.(glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|ogg|mp3|m4a|json)$/i;
  */
 const PUBLICATION_RULES = new Set([
   "node.source.rights", "edge.geometry.rights", "floor.elevation.rights", "poi.position.rights",
-  "coverage.polygon.rights", "asset.rights", "asset.source", "source.attribution", "source.license", "source.url",
+  "coverage.polygon.rights", "asset.rights", "asset.source", "data.rights", "data.source", "data.path", "data.dup",
+  "source.attribution", "source.license", "source.url",
 ]);
 /** The contract files are loaded as data, not served as assets. */
 const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json"]);
@@ -102,6 +103,8 @@ export function publishableAssets(stations: DiscoveredStation[]): Map<string, Se
     // A canonical name may still link to a target whose real path Vite would read as a query or fragment.
     const odd = [...declared].filter((f) => found.has(f) && /[?#]/.test(path.relative(path.dirname(s.gtekiDir), fs.realpathSync(path.join(s.gtekiDir, f)))));
     if (odd.length) failures.push(`${s.dir}: declared asset files resolve to paths containing ? or #: ${odd.join(", ")}`);
+    const noData = (parsed.bundle.dataFiles ?? []).map((d) => d.path).filter((p) => !fs.existsSync(path.join(path.dirname(s.gtekiDir), p)));
+    if (noData.length) failures.push(`${s.dir}: declared data files not found: ${noData.join(", ")}`);
     const undeclared = s.assets.filter((f) => !declared.has(f));
     if (missing.length) failures.push(`${s.dir}: declared asset files not found: ${missing.join(", ")}`);
     if (undeclared.length) failures.push(`${s.dir}: undeclared asset files (declare them in assets[].files or remove them): ${undeclared.join(", ")}`);
@@ -109,6 +112,67 @@ export function publishableAssets(stations: DiscoveredStation[]): Map<string, Se
   }
   if (failures.length) throw new Error(`gteki-stations: refusing a production build with invalid stations: ${failures.join("; ")}`);
   return allowed;
+}
+
+/** A station's folder and the real paths of every data file its manifest declares. */
+export interface DeclaredStationFiles {
+  dir: string;
+  /** Real path of stations/<dir>/. */
+  folder: string;
+  /** Real paths: assets[].uri, assets[].files (relative to gteki/) and dataFiles[].path (relative to the folder). */
+  declared: ReadonlySet<string>;
+}
+
+/**
+ * Real paths of the files each station's manifest declares (lenient read; `publishableAssets` is what
+ * refuses an invalid manifest). A declared file that doesn't exist is simply absent.
+ */
+export function declaredStationFiles(stations: DiscoveredStation[]): DeclaredStationFiles[] {
+  return stations.map((s) => {
+    const folder = path.dirname(s.gtekiDir);
+    let manifest: { assets?: { uri?: unknown; files?: unknown }[]; dataFiles?: { path?: unknown }[] } = {};
+    try { manifest = JSON.parse(fs.readFileSync(path.join(s.gtekiDir, "station.json"), "utf8")); } catch { /* invalid: publishableAssets refuses it */ }
+    const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
+    const real = (p: string) => { try { return fs.realpathSync(p); } catch { return null; } };
+    const declared = new Set<string>();
+    for (const a of Array.isArray(manifest.assets) ? manifest.assets : [])
+      for (const f of [...strings([a?.uri]), ...strings(a?.files)]) { const r = real(path.join(s.gtekiDir, f)); if (r) declared.add(r); }
+    for (const d of Array.isArray(manifest.dataFiles) ? manifest.dataFiles : [])
+      for (const f of strings([d?.path])) { const r = real(path.join(folder, f)); if (r) declared.add(r); }
+    return { dir: s.dir, folder: real(folder) ?? folder, declared };
+  });
+}
+
+/** Contract files the loader reads as data (station.json, graph.json, pois.json), inside a station's gteki/. */
+const CONTRACT_PATH = /^gteki\/(station|graph|pois)\.json$/;
+
+/**
+ * Module ids of a production build that inline a non-code data file from a station folder without the
+ * station's manifest declaring it (`assets[].uri`/`files` or `dataFiles[]`, each with a source id that
+ * `PUBLICATION_RULES` checks). Pure: ids are real file paths as Vite reports them (a `?query` is ignored;
+ * virtual `\0` ids and anything outside every station folder, or under a `node_modules`, are not station data).
+ * Code and stylesheets pass, as do the contract files.
+ */
+export function undeclaredInlinedData(moduleIds: Iterable<string>, stations: readonly DeclaredStationFiles[]): string[] {
+  const failures = new Set<string>();
+  for (const raw of moduleIds) {
+    if (raw.startsWith("\0")) continue;
+    const id = raw.split(/[?#]/)[0]!;
+    if (CODE_EXT.test(id)) continue;
+    for (const s of stations) {
+      if (!id.startsWith(s.folder + path.sep)) continue;
+      const rel = path.relative(s.folder, id).split(path.sep).join("/");
+      if (rel.split("/").includes("node_modules") || CONTRACT_PATH.test(rel) || s.declared.has(id)) break;
+      failures.add(`${s.dir}: ${rel}`);
+      break;
+    }
+  }
+  return [...failures].sort();
+}
+
+/** `GTEKI_INLINE_DATA_GATE=error` fails the build on undeclared inlined data; anything else only warns (the default). */
+export function inlineDataGateMode(env: Record<string, string | undefined> = process.env): "warn" | "error" {
+  return env.GTEKI_INLINE_DATA_GATE === "error" ? "error" : "warn";
 }
 
 const VIRTUAL = "virtual:gteki-stations";
@@ -164,10 +228,24 @@ export function gtekiStations(roots: string[]): Plugin {
       return lines.join("\n");
     },
     /**
+     * Bytes a scene module inlines into code (a JSON import, `?raw`) are never emitted as files, so
+     * `generateBundle` can't see them: check every module id of the build instead. Data under a station
+     * folder must be declared in its manifest with sources (see `undeclaredInlinedData`). Mode is
+     * `GTEKI_INLINE_DATA_GATE`: `warn` (default) logs the list, `error` fails the build.
+     */
+    buildEnd(error) {
+      if (serve || error) return;
+      const undeclared = undeclaredInlinedData(this.getModuleIds(), declaredStationFiles(discoverStations(roots)));
+      if (undeclared.length === 0) return;
+      const message = `gteki-stations: station data inlined into the bundle without a manifest declaration (add it to assets[].files or dataFiles[] with source ids): ${undeclared.join(", ")}`;
+      if (inlineDataGateMode() === "error") this.error(message);
+      else this.warn(`${message} [GTEKI_INLINE_DATA_GATE=warn: not failing the build]`);
+    },
+    /**
      * Defence in depth for files scene code imports directly (`?url`, `new URL(…, import.meta.url)`,
      * symlinks): every emitted file that isn't code or a stylesheet must be a declared station file
      * or belong to the web app, and one whose origin Vite doesn't record is refused. Bytes a scene
-     * module embeds in code (inlined imports, `?raw`) are station code, covered by station PR review.
+     * module inlines into code are covered by the `buildEnd` data gate above.
      */
     generateBundle(_options, bundle) {
       if (serve) return;

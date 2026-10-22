@@ -302,6 +302,21 @@ export interface Asset {
   derivation?: string;
 }
 
+/**
+ * A non-code data file (JSON, CSV, …) that station code reads or inlines into the bundle without it being a
+ * runtime asset (render geometry, signage tables, crowd lanes). Declaring it gives it the same source and
+ * rights gate as an asset; a production build refuses inlined data that no `dataFiles[]`/`assets[]` entry declares.
+ */
+export interface DataFile {
+  id: string;
+  /** Path relative to the station folder stations/<id>/ (not gteki/): canonical, no "..", no scheme. */
+  path: string;
+  /** Sources the data is derived from; their rights gate public distribution. */
+  sourceIds: string[];
+  /** Disclosure of modification, e.g. "Simplified wall polylines traced from GSI 構内地図データ". */
+  derivation?: string;
+}
+
 export interface StationBundle {
   schema: typeof SCHEMA_VERSION;
   station: Station;
@@ -314,6 +329,7 @@ export interface StationBundle {
   /** Suggested user-choosable start nodes (no indoor positioning is claimed). */
   spawnNodeIds?: string[];
   assets?: Asset[];
+  dataFiles?: DataFile[];
 }
 
 /** stations/<id>/gteki/station.json */
@@ -325,6 +341,7 @@ export interface StationManifestFile {
   coverage: Coverage;
   spawnNodeIds?: string[];
   assets?: Asset[];
+  dataFiles?: DataFile[];
 }
 
 /** stations/<id>/gteki/graph.json */
@@ -342,6 +359,6 @@ export interface PoiFile {
   pois: Poi[];
 }
 
-export { ASSET_FILE_EXT, isCanonicalAssetPath, validateBundle, type ValidationIssue } from "./validate.ts";
+export { ASSET_FILE_EXT, DATA_FILE_EXT, isCanonicalAssetPath, validateBundle, type ValidationIssue } from "./validate.ts";
 export { checkShape, composeBundle, parseStationFiles, type ParseResult } from "./parse.ts";
 export { parseHm, isOpenAt, type LocalTime } from "./hours.ts";

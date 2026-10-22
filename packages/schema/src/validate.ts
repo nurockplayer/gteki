@@ -20,6 +20,8 @@ const POI_CATEGORIES = new Set(["exit", "ticket_gate", "platform", "elevator", "
 const WEEKDAYS = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
 /** File types a station may publish next to its GLBs (same list the web build discovers). */
 export const ASSET_FILE_EXT = /\.(glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|ogg|mp3|m4a|json)$/i;
+/** Extensions a station may declare in `dataFiles[]`; code (.ts/.js) is never data and needs no declaration. */
+export const DATA_FILE_EXT = /\.(json|geojson|csv|tsv|txt|xml|yaml|yml|bin|dat)$/i;
 const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json"]);
 const CANONICAL_MESSAGE = "asset paths must be canonical slash-separated relative paths inside the station folder (no ., .. or empty segments; no colon, backslash, ? or #)";
 
@@ -259,6 +261,27 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
         err("asset.rights", `asset derives from source ${s} with rights ${rights}; it cannot ship in the public bundle`, a.id);
     }
     if (a.sourceIds.length === 0 && !b.station.synthetic) err("asset.source", "asset without source provenance", a.id);
+  }
+
+  // Data files: the same source and rights gate as assets. Contract files are loaded as data and never declared.
+  const dataIds = new Set<string>();
+  const dataPaths = new Set<string>();
+  for (const d of b.dataFiles ?? []) {
+    if (dataIds.has(d.id)) err("data.dup", "duplicate data file id", d.id);
+    dataIds.add(d.id);
+    if (!isCanonicalAssetPath(d.path)) err("data.path", CANONICAL_MESSAGE.replace("asset paths", "data file paths"), d.id);
+    else if (!DATA_FILE_EXT.test(d.path)) err("data.path", `${d.path}: not a data file type`, d.id);
+    else if (/^gteki\/(station|graph|pois)\.json$/.test(d.path)) err("data.path", `${d.path}: contract files are loaded as data and are never declared`, d.id);
+    if (dataPaths.has(d.path)) err("data.dup", `${d.path}: declared twice`, d.id);
+    dataPaths.add(d.path);
+    for (const s of d.sourceIds) {
+      if (!sourceIds.has(s)) err("data.source", `unknown source ${s}`, d.id);
+      if (factsOnly.has(s)) err("data.rights", `data derives from facts-only source ${s}`, d.id);
+      const rights = sourceRights.get(s);
+      if (rights !== undefined && rights !== "REUSABLE_WITH_CONDITIONS" && !b.station.synthetic)
+        err("data.rights", `data derives from source ${s} with rights ${rights}; it cannot ship in the public bundle`, d.id);
+    }
+    if (d.sourceIds.length === 0 && !b.station.synthetic) err("data.source", "data file without source provenance", d.id);
   }
 
   const poiIds = new Set<string>();

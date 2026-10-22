@@ -323,6 +323,39 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     expect(errors(bad)).toContain("floor.elevation");
   });
 
+  it("gives declared data files the asset source and rights gate, and refuses bad paths", () => {
+    const withData = (dataFiles: { id: string; path: string; sourceIds: string[] }[], real = false) => {
+      const b = createSyntheticBundle();
+      b.dataFiles = dataFiles;
+      return errors(real ? asRealStation(b) : b);
+    };
+    const ok = { id: "plan", path: "data/plan.json", sourceIds: ["fixture-geometry"] };
+    expect(withData([ok])).toEqual([]);
+    for (const bad of ["../x.json", "data//x.json", "data/x#1.json", "/abs.json", "data/x.ts", "gteki/station.json", "gteki/graph.json"])
+      expect(withData([{ ...ok, path: bad }]), bad).toContain("data.path");
+    expect(withData([ok, { ...ok, path: "data/other.json" }])).toContain("data.dup");
+    expect(withData([ok, { ...ok, id: "plan2" }])).toContain("data.dup");
+    expect(withData([{ ...ok, sourceIds: ["nope"] }])).toContain("data.source");
+    // A real station's data needs a source, and public data cannot derive from a reference-only one.
+    expect(withData([{ ...ok, sourceIds: [] }], true)).toContain("data.source");
+    const traced = createSyntheticBundle();
+    traced.station.synthetic = false;
+    traced.edges = [];
+    traced.sources[0]!.rights = "REFERENCE_ONLY";
+    traced.dataFiles = [ok];
+    expect(errors(traced)).toContain("data.rights");
+  });
+
+  it("round-trips dataFiles through parseStationFiles and rejects malformed entries", () => {
+    const b = createSyntheticBundle();
+    const [manifest, graph, pois] = split(b);
+    const withData = { ...manifest, dataFiles: [{ id: "plan", path: "data/plan.json", sourceIds: ["fixture-geometry"] }] };
+    const ok = parseStationFiles(withData, graph, pois);
+    expect(ok.ok && ok.bundle.dataFiles).toEqual(withData.dataFiles);
+    expect(parseStationFiles({ ...manifest, dataFiles: [{ id: "plan", path: 3, sourceIds: [] }] }, graph, pois).ok).toBe(false);
+    expect(parseStationFiles({ ...manifest, dataFiles: "plan.json" }, graph, pois).ok).toBe(false);
+  });
+
   it("checks declared asset files like the asset uri, and refuses ? and # in either", () => {
     const withFiles = (uri: string, files: string[]) => {
       const b = createSyntheticBundle();
