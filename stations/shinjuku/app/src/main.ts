@@ -18,6 +18,7 @@ import { CROWD_LIMIT, createCrowd } from "./crowd.ts";
 
 import { placeProjectedLabel, type HudRect } from "./hud-layout.ts";
 import { createStartupTimings, paintStartupFrame } from "./hud-startup.ts";
+import { installMovementKeys } from "./movement-keys.ts";
 
 const startup = createStartupTimings();
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -301,21 +302,17 @@ function updateCamera(dt: number, t: number) {
 }
 
 // ------------------------------------------------------------ input
-const keys = new Set<string>();
-addEventListener("keydown", (e) => {
-  if (e.key === "Escape") { setPanel(false); canvas.focus(); }
-  if ((e.target as HTMLElement).matches("input, button, summary, [contenteditable=true]") || document.querySelector("dialog[open]")) {
-    return;
-  }
-  keys.add(e.code);
-  if (e.code === "Slash") (e.preventDefault(), setPanel(true, true));
-  if (e.code === "KeyV") cam.firstPerson = !cam.firstPerson;
-  if (e.code === "KeyG") toggleGuide();
-  if (e.code === "KeyM") toggleMap();
-  if (e.code === "KeyE") interact();
+const keys = installMovementKeys(window, {
+  onEscape: () => { setPanel(false); canvas.focus(); },
+  dialogOpen: () => !!document.querySelector("dialog[open]"),
+  onShortcut: (e) => {
+    if (e.code === "Slash") (e.preventDefault(), setPanel(true, true));
+    if (e.code === "KeyV") cam.firstPerson = !cam.firstPerson;
+    if (e.code === "KeyG") toggleGuide();
+    if (e.code === "KeyM") toggleMap();
+    if (e.code === "KeyE") interact();
+  },
 });
-addEventListener("keyup", (e) => keys.delete(e.code));
-addEventListener("blur", () => keys.clear());
 
 let dragging: { id: number; x: number; y: number } | null = null;
 canvas.addEventListener("pointerdown", (e) => {
