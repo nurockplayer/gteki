@@ -1,4 +1,58 @@
 {
+  "credit": {
+    "attribution_text": "出典：国土交通省「ほこナビDP」／加工して作成 ; 出典：国土交通省／加工して作成 ; 出典：国土交通省「歩行空間ネットワークデータ等整備仕様 平成30年3月」（版 2018-03、https://www.mlit.go.jp/common/001244374.pdf、SHA-256 9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974）／加工して作成 ; 出典：国土交通省「歩行空間ネットワークデータ整備仕様 令和6年7月」（版 2024-07、https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf、SHA-256 963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4）／加工して作成 ; 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+    "sources": [
+      {
+        "source_id": "hokonavi-ikebukuro-walk-link-csv",
+        "attribution_text": "出典：国土交通省「ほこナビDP」／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0"
+      },
+      {
+        "source_id": "hokonavi-ikebukuro-walk-link-geojson",
+        "attribution_text": "出典：国土交通省／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.mlit.go.jp/link.html"
+      },
+      {
+        "source_id": "hokonavi-ikebukuro-walk-node-csv",
+        "attribution_text": "出典：国土交通省「ほこナビDP」／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0"
+      },
+      {
+        "source_id": "hokonavi-ikebukuro-walk-node-geojson",
+        "attribution_text": "出典：国土交通省／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.mlit.go.jp/link.html"
+      },
+      {
+        "source_id": "mlit-walk-network-spec-2018-03",
+        "attribution_text": "出典：国土交通省「歩行空間ネットワークデータ等整備仕様 平成30年3月」（版 2018-03、https://www.mlit.go.jp/common/001244374.pdf、SHA-256 9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974）／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.mlit.go.jp/link.html"
+      },
+      {
+        "source_id": "mlit-walk-network-spec-2024-07",
+        "attribution_text": "出典：国土交通省「歩行空間ネットワークデータ整備仕様 令和6年7月」（版 2024-07、https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf、SHA-256 963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4）／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.mlit.go.jp/link.html"
+      },
+      {
+        "source_id": "plateau-13104-ubld-53394536",
+        "attribution_text": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+        "license_name": "CC BY 4.0",
+        "license_url": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      {
+        "source_id": "plateau-13116-ubld-53394576",
+        "attribution_text": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+        "license_name": "CC BY 4.0",
+        "license_url": "https://creativecommons.org/licenses/by/4.0/"
+      }
+    ],
+    "classification": "docs/gis/rights/non-poi-literals.md"
+  },
   "tool_input_sha256": "ca9ef46e121b7da44432c6b39e75b87bfc5be56e7e661fdd04e6bfbaefcbf403",
   "verification": "UNVERIFIED",
   "navigation_use": "NOT_FOR_ROUTING",
@@ -2669,25 +2723,25 @@
         {
           "code": "EF_25",
           "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-          "label": "壁およびバリア（バリケード）エレメント",
+          "label": "value_sha256:c7a9775bd6feabde179a1470f7ac0f08cebed673870b8c4464e161129bd387c9",
           "status": "RESOLVED"
         },
         {
           "code": "EF_30",
           "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-          "label": "屋根、床、舗装エレメント",
+          "label": "value_sha256:66c68648b5487923cfbc6ca49fd4e687f1a44f4bac5c45fb95fb17e8de7fc274",
           "status": "RESOLVED"
         },
         {
           "code": "EF_35",
           "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-          "label": "階段および傾斜路（スロープ）エレメント",
+          "label": "value_sha256:f3e12c8759e6155c83dc9bdd12427b5399b612a768cef5613b12a30757953e81",
           "status": "RESOLVED"
         },
         {
           "code": "EF_80",
           "code_space": "../../codelists/IntBuildingInstallation_function.xml",
-          "label": "輸送機能",
+          "label": "value_sha256:feef0259985a457ff6d630d25b1a7e36aa1805b186d1ddd0a1ccf8c9cf89853e",
           "status": "RESOLVED"
         }
       ],
@@ -6496,7 +6550,7 @@
           "not_checkable": 0,
           "method_unknown": 0,
           "inconsistent_link_ids": [
-            "b80b3f4aef474ac2aa25c6680b26177a"
+            "value_sha256:a9b08f56f1dd49af2654254d40f9a2a3f24392feee109025bcb3796744810e74"
           ],
           "inconsistent_link_ids_truncated": 0,
           "inconsistent_link_ids_unavailable": 0,
@@ -6522,7 +6576,7 @@
               "not_checkable": 0,
               "method_unknown": 0,
               "inconsistent_link_ids": [
-                "b80b3f4aef474ac2aa25c6680b26177a"
+                "value_sha256:a9b08f56f1dd49af2654254d40f9a2a3f24392feee109025bcb3796744810e74"
               ],
               "inconsistent_link_ids_truncated": 0,
               "inconsistent_link_ids_unavailable": 0,
@@ -6754,12 +6808,12 @@
       "endpoint_check_status": "UNKNOWN",
       "endpoint_coverage": null,
       "floor_labels": [
-        "1階",
-        "地下1階",
-        "地下2階",
-        "地下3階",
-        "地下5階",
-        "地下6階"
+        "value_sha256:c86b35ff294bed1ceee8cda02b57630479fce5c3c93557efd786105e43245d3c",
+        "value_sha256:541f4bbc612294c0f7951e58215a8f4002090729f30dfd429c255ec12d7d079b",
+        "value_sha256:c0836dff4714db1e120615df114e789a33e801b9706330dc44c5f16827a0ba46",
+        "value_sha256:2f2d864b68d26ac9634202a415e0f7ee274b100914327fce73298a5e14f7954f",
+        "value_sha256:27a651ea63fba300793d9bcf3a39e29e0328550778395490c73fee1c3dde9512",
+        "value_sha256:317a1a345f26128a5ebe72df6725f57f6f4aa1f3f462358dff1d503ce48a0db8"
       ],
       "csv_in_out": null,
       "csv_elevation": null,

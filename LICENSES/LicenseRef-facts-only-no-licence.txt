@@ -1,0 +1,8 @@
+MARKER, NOT A LICENCE: facts-only or no-release content, no grant
+
+Pointer: Owner facts-only policy, #26 comment 6302797404 (F26).
+
+Files carrying this identifier cite facts from sources that grant no licence
+(works are not reproduced), or contain values scheduled for removal as
+no-release (#124), or have no recorded source. No licence is granted to anyone
+by this repository for that content: it is NOT Apache-2.0, CC-BY-4.0 or CC0-1.0.
