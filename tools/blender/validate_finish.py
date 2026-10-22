@@ -413,8 +413,13 @@ def _check_sample(root, fid, rec, doc, loose):
     names = [m.get("name") for m in gdoc.get("materials", [])]
     if names != [fid]:
         p.append(f"{fid}: sample GLB materials are {names}, expected exactly [{fid!r}]")
+    # the sample's own baked occlusion map (contract §4, one per asset) is not a finish map
+    occlusion = {gdoc["textures"][m["occlusionTexture"]["index"]]["source"]
+                 for m in gdoc.get("materials", []) if "occlusionTexture" in m}
     shas = set()
-    for im in gdoc.get("images", []):
+    for i, im in enumerate(gdoc.get("images", [])):
+        if i in occlusion:
+            continue
         view = gdoc["bufferViews"][im["bufferView"]]
         start = view.get("byteOffset", 0)
         shas.add(hashlib.sha256(binary[start:start + view["byteLength"]]).hexdigest())

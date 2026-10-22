@@ -146,7 +146,7 @@ assets/library/finishes/                  full tier   (mobile: assets/library/mo
 
 - **The pack is separate from the kit manifest** so the kit's 48 records, its catalog and its budget stay as they are. `catalog/finishes_v0_1.json` defines the pack; `kind: "finish-pack"` makes `build.py` write the directories and the `finishes` section.
 - **Sample GLBs sit in a flat `glb/` directory** because the existing tools take a library root with `glb/` and `manifest.json`: `validate_glb.py`, `build.sh godot`, `build.sh web`, `texture_budget.py` and `bundle_kit.py` all work on the pack unchanged. A `<id>/sample.glb` layout would need a change in every one of them.
-- The sample GLB embeds the **same JPEG bytes** as the loose maps, and `validate_finish.py` checks that. So the pipeline that loads the sample GLB is loading the finish.
+- The sample GLB embeds the **same JPEG bytes** as the loose maps, and `validate_finish.py` checks that. Its baked occlusion map (§4, the image its `occlusionTexture` uses) belongs to the sample, not to the finish, and is not compared. So the pipeline that loads the sample GLB is loading the finish.
 
 ### `manifest.json`
 
