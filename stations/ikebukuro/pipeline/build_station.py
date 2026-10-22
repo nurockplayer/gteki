@@ -19,7 +19,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from floorquery import Surfaces  # noqa: E402
-from gridnav import RES, Grid, _seg_dist, _seg_seg_dist  # noqa: E402
+from gridnav import FLOOR_EDGE_BAND, RES, Grid, _seg_dist, _seg_seg_dist  # noqa: E402
 
 ROOT = os.path.dirname(HERE)
 SRC = os.path.join(ROOT, "data", "graph.src.json")
@@ -138,8 +138,9 @@ def floor_edges(segs, surf):
     """Indices of wall pieces whose top is the edge of a walkable surface: a PLATEAU floor or stair tread
     within FLOOR_EDGE_REACH m (in plan) of the piece lies within FLOOR_EDGE_TOL m of the piece's top, as a
     stairwell wall ends flush with the floor at the head of the stairs. Such a top is where the walking
-    surface begins, not something the body runs into, so the grid and the clearance check leave these
-    pieces out of the body band (#227). Walls that stand above any neighbouring walking surface stay in."""
+    surface begins, not something the body runs into, so for these pieces the grid and the clearance check start
+    the body band at gridnav.FLOOR_EDGE_BAND above the feet instead of 0.4 m (#227): the top only drops out for
+    feet within that height below it. Walls that stand above any neighbouring walking surface stay in."""
     probes = [k * FLOOR_EDGE_REACH / 5 for k in range(1, 6)]
     zr = [(min(q[2] for q in p[1]), max(q[2] for q in p[1])) for p in surf.polys]
     out = set()
@@ -355,10 +356,11 @@ def edge_clearance(grid, surf, pts):
             d = grid.clearance(a[0], a[1], b[0], b[1], z)
             if d < best[0]:
                 best = (d, [round((a[0] + b[0]) / 2, 2), round((a[1] + b[1]) / 2, 2), round((a[2] + b[2]) / 2, 2)])
-            # audit: floor-edge pieces in the band within EDGE_CLEAR, which only the floor-edge rule lets pass
+            # audit: floor-edge pieces within EDGE_CLEAR that the ordinary band (from 0.4 m) would count and the
+            # floor-edge band (from FLOOR_EDGE_BAND) lets pass
             for s in (grid._near_segs(a[0], a[1]) | grid._near_segs(b[0], b[1])) & grid.floor_edge:
                 x1, y1, x2, y2, smin, smax = grid.segs[s]
-                if smax < z + 0.4 or smin > z + 1.8:
+                if smax < z + 0.4 or smax >= z + FLOOR_EDGE_BAND or smin > z + 1.8:
                     continue
                 if _seg_seg_dist(a[0], a[1], b[0], b[1], x1, y1, x2, y2) < EDGE_CLEAR:
                     excluded[s] = smax
@@ -435,13 +437,14 @@ def main():
             if mode not in ("elevator",):
                 for k in cand:
                     x1, y1, x2, y2, smin, smax = segs[k]
-                    if k in floor_edge or smax < zlo or smin > zhi:
+                    lo = grid.band_lo(k)  # a floor-edge piece's band starts higher (gridnav.FLOOR_EDGE_BAND)
+                    if smax < zlo - 0.4 + lo or smin > zhi:
                         continue
                     t = _cross_t(p[0], p[1], q[0], q[1], x1, y1, x2, y2)
                     if t is None:
                         continue
                     zc = p[2] + (q[2] - p[2]) * t  # body height band at the crossing point
-                    if smax >= zc + 0.4 and smin <= zc + 1.8:
+                    if smax >= zc + lo and smin <= zc + 1.8:
                         fails += 1
                         first_fail = first_fail or ("wall", round(x1, 1), round(y1, 1), round(x2, 1), round(y2, 1))
                         break
@@ -493,7 +496,7 @@ def main():
     problems += outside_coverage(edges_out, src["coverage"]["areas"])
     if report_path:
         write_json(report_path, {"edgeClearM": EDGE_CLEAR, "floorEdgeTolM": FLOOR_EDGE_TOL, "floorEdgeReachM": FLOOR_EDGE_REACH,
-                                 "floorEdgePieces": len(floor_edge), "edges": clearance_report}, indent=1)
+                                 "floorEdgeBandM": FLOOR_EDGE_BAND, "floorEdgePieces": len(floor_edge), "edges": clearance_report}, indent=1)
     if problems:
         print("\n".join(problems))
         print(f"FAIL: {len(problems)} problem(s); station.json not written")

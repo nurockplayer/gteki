@@ -15,6 +15,11 @@ CLEAR = 0.35
 WALK_STEP = 0.12   # max height change per 0.5 m on floor (ramps up to ~1:4)
 STAIR_STEP = 0.45  # per 0.5 m on stairs
 RISER = 0.22       # a single step modelled as two floor levels (landings); stairs edges only
+# Lower edge of the body band (m above the feet) for a floor-edge wall piece (build_station.floor_edges), instead
+# of 0.4: such a piece only drops out when its top is within 0.5 m above the feet, i.e. at the head of the stairs
+# whose floor it edges. 0.5 m is the explorer bodyBlock's lowest ray (BODY_HEIGHTS), so a top below it is a step
+# the body passes over. Lower down the same wall is an ordinary collider.
+FLOOR_EDGE_BAND = 0.5
 
 
 def _seg_dist(px, py, x1, y1, x2, y2):
@@ -42,7 +47,7 @@ def _seg_seg_dist(ax, ay, bx, by, cx, cy, dx, dy):
 class Grid:
     def __init__(self, surf, segs, sgrid, bbox, floor_edge=frozenset()):
         # floor_edge: indices of wall pieces whose top is a walking surface's edge (build_station.floor_edges);
-        # they are left out of the body band everywhere the grid tests it
+        # everywhere the grid tests the body band, their band starts FLOOR_EDGE_BAND above the feet, not 0.4 m
         self.surf, self.segs, self.sgrid, self.floor_edge = surf, segs, sgrid, floor_edge
         x0, x1, y0, y1 = bbox
         self.x0, self.y0 = x0, y0
@@ -68,11 +73,15 @@ class Grid:
     def _clear(self, x, y, z):
         for k in self._near_segs(x, y):
             x1, y1, x2, y2, smin, smax = self.segs[k]
-            if k in self.floor_edge or smax < z + 0.4 or smin > z + 1.8:
+            if smax < z + self.band_lo(k) or smin > z + 1.8:
                 continue
             if _seg_dist(x, y, x1, y1, x2, y2) < CLEAR:
                 return False
         return True
+
+    def band_lo(self, k):
+        """Lower edge of the body band (m above the feet) for wall piece k."""
+        return FLOOR_EDGE_BAND if k in self.floor_edge else 0.4
 
     def xy(self, i, j):
         return self.x0 + i * RES, self.y0 + j * RES
@@ -124,7 +133,7 @@ class Grid:
         best = 4.0
         for k in self._near_segs(x, y) | self._near_segs(nx, ny):
             x1, y1, x2, y2, smin, smax = self.segs[k]
-            if k in self.floor_edge or smax < z + 0.4 or smin > z + 1.8:
+            if smax < z + self.band_lo(k) or smin > z + 1.8:
                 continue
             best = min(best, _seg_seg_dist(x, y, nx, ny, x1, y1, x2, y2))
         return best
@@ -132,7 +141,7 @@ class Grid:
     def _blocked(self, x, y, nx, ny, z):
         for k in self._near_segs(x, y):
             x1, y1, x2, y2, smin, smax = self.segs[k]
-            if k in self.floor_edge or smax < z + 0.4 or smin > z + 1.8:
+            if smax < z + self.band_lo(k) or smin > z + 1.8:
                 continue
             if _cross(x, y, nx, ny, x1, y1, x2, y2):
                 return True
