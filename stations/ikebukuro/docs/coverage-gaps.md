@@ -18,6 +18,65 @@ for facts only and never published).
 | `gap-west-stairs` | West Exit area | PLATEAU models only the lower flights of Exit 9 and of two stairwells near (-181, 126) and (-165, 113) (to TP ~30 m; street ~33 m). Exit 9's flight is ~9 m from its map position; the (-181, 126) flight sits beside the wide stair to the Fukutoshin Line West Passage, and the (-165, 113) flight runs into the Hope Center block towards Exit 7's map position, so neither is matched. Exit 8's stairs are ~12 m beyond the surveyed floor at the passage's west end. Exits 14, 16 and 19 (西口（中央）) have no stair in the survey. (Exit 13's lower flight matches its map position within ~3 m and is routed to its foot.) | a survey source for the upper flights and the passage west to Exit 8 (or a later PLATEAU release); on-site check of which stairwell is which exit | routing to Exits 7, 8, 9 and the upper flight of 13 |
 | `gap-freshness` | whole slice | geometry is a 2023 survey; later construction unknown | dated walk-through comparing columns, exits and openings with the GLB | lifts the stale flag for slice 1 |
 
+## Per-POI evidence: the 20 search-only POIs (audit 2026-10-22)
+
+Question asked of each: can it be routed truthfully from the documented evidence now? An edge is
+`verified` only with PLATEAU geometry (sampled on the surveyed floor, no wall crossing) **and** an
+`accessFacts` entry from a documented source; a stair-foot route additionally needs the stair or
+wall opening to be matched to the exit (Exit 13: the only flight within ~3 m of the map position;
+stair-top exits: one-to-one by order, 1-9 m).
+
+Method and limits of this audit:
+
+- Geometry checked against `build/ubld_enu.json` (source sha256 `38f17964...901ac09`, equal to the
+  `plateau-ubld-13116` entry in `station.json`), using the build's own surface and wall queries.
+- The Toshima 2022 guide and the Tokyo Metro 2026-03 yard map are REFERENCE_ONLY and are not
+  stored in the repo, so no map position was re-read. Map-position facts below are the ones already
+  recorded in `graph.src.json`, this file and `field-checklist.md`; none was added.
+- Result: **all 20 stay search-only. No node, edge, accessFact or coverage text changed.** For every
+  one the missing piece is the identification (which opening or stair is which gate or exit), which
+  no document in the repo supplies. Geometry alone cannot supply it, and inventing it is not allowed.
+- The two Yurakucho South Passage gates (`gap-south-west`) have no POI today, so they are not among
+  the 20; they stay a gap for the same reason (the map's gate machines sit inside surveyed floor with
+  no gate-line opening). `gap-tobu-jr-link` is a passage, not a POI; it touches only Tobu Central Gate 1.
+
+PLATEAU stair flights that no exit claims (West Exit area; all three end at a vertical closure about
+3 m below street level, TP ~30.0 m, so none can be an `exit` node, only a `stair_end` foot). Their
+feet are reachable on surveyed B1 floor from the hall (A* detour 1.02-1.45, no wall crossing), so the
+geometry test would pass; what is missing is the exit number:
+
+| Flight | Foot to top (ENU, TP) | Notes |
+|---|---|---|
+| F1 | (-177.8, 124.6) to (-180.8, 126.3), 27.9 to 30.0 m | beside the wide stair to the Fukutoshin Line West Passage; no map exit recorded |
+| F2 | (-165.8, 140.8) via a short 0.5 m lower flight to (-168.7, 145.6), to 30.0 m | the Exit 9 candidate: ~9 m from the map position (see Exit 9) |
+| F3 | (-166.1, 114.2) to (-163.0, 112.7), 27.9 to 30.0 m | runs into the Hope Center block towards Exit 7's map position; not matched |
+
+| POI id | Names | Gap | What the sources say | What PLATEAU has | Verdict |
+|---|---|---|---|---|---|
+| `metro-m-central-west-gate` | 丸ノ内線 中央通路西改札 / Marunouchi Line Central Passage West Gate | `gap-metro-tobu-gates` | `af-central-passage-west`: the Central Passage passes the Marunouchi and Tobu central gates. Toshima guide lists the gate; no position, side or order is recorded (POI evidence: "exact opening not yet identified"). | 22 vertical openings (Closure/Window/Door, 2-7 m wide, no gate semantics) within 12 m of the c_w to w_c route, only 3 within 6 m; two floor-level openings look like stairwells. G0: PLATEAU has no ticket gates. | STAY: no fact says which opening is the gate line |
+| `metro-m-central-gate` | 丸ノ内線 中央通路中央改札 / ... Central Gate | `gap-metro-tobu-gates` | as above | as above | STAY, same reason |
+| `metro-m-central-east-gate` | 丸ノ内線 中央通路東改札 / ... East Gate | `gap-metro-tobu-gates` | as above | as above | STAY, same reason |
+| `tobu-central-gate-1` | 東武東上線 中央1改札 / Tobu Tojo Line Central Gate 1 | `gap-metro-tobu-gates`, `gap-tobu-jr-link` | as above; the guide puts it at the north end of the JR-Tobu link passage, which is itself unresolved (public or transfer concourse). | the link passage is surveyed floor outside every routable area (fenced); no opening matched | STAY |
+| `tobu-central-gate-2` | 東武東上線 中央2改札 / ... Central Gate 2 | `gap-metro-tobu-gates` | as above | as above | STAY |
+| `exit-5` | 5番出口 / Exit 5 | `gap-west-corridor-exits` | exit exists (both maps). No fact ties it to an opening. | stairs outside the survey. West corridor (sw_h to w_cj, 152 m) has 24 vertical openings wider than 2 m within 9 m, 17 of them along its northern 60 m; recorded: two candidates 6 and 13 m from the map position | STAY: two candidates, no way to choose (a foot route would guess) |
+| `exit-6a` | 6a番出口 / Exit 6a | `gap-west-corridor-exits` | exit exists | inside the unsurveyed Hope Center block; no stair or opening | STAY |
+| `exit-6b` | 6b番出口 / Exit 6b | `gap-west-corridor-exits` | exit exists | nearest opening 11 m from the map position and raised | STAY |
+| `exit-7` | 7番出口 / Exit 7 | `gap-west-corridor-exits`, `gap-west-stairs` | exit exists; `af-west-passages`: passages lead west towards Exits 7-13 | inside the unsurveyed Hope Center block; flight F3 runs towards its map position but is not matched | STAY |
+| `exit-8` | 8番出口 / Exit 8 | `gap-west-stairs` | exit exists | stairs ~12 m beyond the surveyed floor at the passage's west end (no surveyed floor or tread lies west of x = -182.1); no closure or stair | STAY: nothing surveyed to route to |
+| `exit-9` | 9番出口 / Exit 9 | `gap-west-stairs` | `af-exit-13`: Exit 13 lies between the hall and the stairs of Exits 9 and 10. The order fits F2 (x -166, west of Exits 13 at -139 and 10 at -155), but that is a consistency check, not a match. | only F2 (lower flight) is a candidate, ~9 m from the map position, three times the 3 m that justified Exit 13; F1 and F3 are also unclaimed | STAY (closest call): a foot route would assert an unproven match. Flips to FOOT with a map-position re-measurement within ~3 m or the on-site answer to checklist B2 |
+| `exit-14` | 14番出口 / Exit 14 | `gap-west-stairs` | exit exists | no stair in the survey; no stair-top closure near the hall other than Exits 10, 11, 15, 17, 18 | STAY |
+| `exit-16` | 16番出口 / Exit 16 | `gap-west-stairs` | exit exists | as Exit 14 | STAY |
+| `exit-19` | 19番出口 西口（中央） / Exit 19 West Exit (Central) | `gap-west-stairs` | exit exists | as Exit 14 | STAY |
+| `exit-23` | 23番出口 / Exit 23 | `gap-ne-north` | exit exists | outside the surveyed geometry | STAY |
+| `exit-24` | 24番出口 / Exit 24 | `gap-ne-north` | the official map shows two stairs for 24 and 25 | one stair (foot (110.2, 111.6) to top (112.6, 122.6), TP 26.2 to 32.3 m, closure at 32.3 m); which number it is, is unknown | STAY: routing it as 24 or 25 is a coin flip; routing both to one stair is invented |
+| `exit-25` | 25番出口 / Exit 25 | `gap-ne-north` | as Exit 24 | as Exit 24 | STAY |
+| `exit-29` | 29番出口 / Exit 29 | `gap-ne-north` | exit exists | outside the surveyed geometry | STAY |
+| `exit-30` | 30番出口 / Exit 30 | `gap-ne-north` | exit exists | outside the surveyed geometry | STAY |
+| `exit-31` | 31番出口 / Exit 31 | `gap-ne-north` | exit exists | outside the surveyed geometry | STAY |
+
+Cheapest unlocks, in order: checklist B2 (Exit 9, one stair, geometry already passes), A1 to A3
+(the five gates, one visit), D1 and G1.
+
 Surveyed floor outside the routable areas, including every area above, has no verified access:
 the scene fences the outline of the routable areas with panels marked 「通行可否 未確認」/"Access
 unverified" (`scene/access_fences.json`, built by `pipeline/build_access.py`, checked by
