@@ -9,7 +9,9 @@
   "dressing_anchors_sha256": "ee8ef7c63da6c22e9ee2d1cf8041ff23b49acc20f1196608720114b095abae7e",
   "gml": "53394576_ubld_6697_op.gml",
   "gml_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
-  "wall_probe_glb_sha256": "aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8"
+  "wall_probe_glb_sha256": "aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8",
+  "golden_routes_sha256": "8dae98c5d4d724c2d180c6f521f89518befb7bf9ab83eeeffb27c16e6ce476a1",
+  "graph_sha256": "8e8c34f30101921f754beaf505111c0794f60888cda263e936880352b35c59e0"
  },
  "frame": {
   "axes": "ENU metres: x east, y north, z TP height (as dressing_anchors.json)",
@@ -66,6 +68,123 @@
    "gteki_ik_escalator_w986_rise4388_a2856": 28.56,
    "gteki_ik_escalator_w990_rise2210_a2193": 21.93
   },
+  "main_route": {
+   "flights": [
+    "stair002",
+    "stair004",
+    "stair006",
+    "stair010",
+    "stair016",
+    "stair017",
+    "stair020",
+    "stair022",
+    "stair032",
+    "stair037",
+    "stair041",
+    "stair043",
+    "stair050",
+    "stair051",
+    "stair057",
+    "stair058",
+    "stair060",
+    "stair062",
+    "stair070",
+    "stair071",
+    "stair072"
+   ],
+   "flight_count": 21,
+   "rails_ids": 21,
+   "routes": {
+    "I1": {
+     "stairs_edge": true,
+     "flights": [
+      "stair016",
+      "stair017",
+      "stair051"
+     ],
+     "fallback_radius_m": null
+    },
+    "I2": {
+     "stairs_edge": false,
+     "flights": [],
+     "fallback_radius_m": null
+    },
+    "I3": {
+     "stairs_edge": true,
+     "flights": [
+      "stair041",
+      "stair060"
+     ],
+     "fallback_radius_m": 4.0
+    },
+    "I4": {
+     "stairs_edge": true,
+     "flights": [
+      "stair070",
+      "stair071",
+      "stair072"
+     ],
+     "fallback_radius_m": null
+    },
+    "I5": {
+     "stairs_edge": true,
+     "flights": [
+      "stair002",
+      "stair004",
+      "stair037",
+      "stair050",
+      "stair058"
+     ],
+     "fallback_radius_m": null
+    },
+    "I6": {
+     "stairs_edge": true,
+     "flights": [
+      "stair022",
+      "stair043"
+     ],
+     "fallback_radius_m": null
+    },
+    "I7": {
+     "stairs_edge": true,
+     "flights": [
+      "stair006",
+      "stair010",
+      "stair020",
+      "stair032",
+      "stair057",
+      "stair062"
+     ],
+     "fallback_radius_m": null
+    }
+   },
+   "tiers": {
+    "low": {
+     "nosing_ids": 61,
+     "rails_ids": 0,
+     "escalator_ids": 0
+    },
+    "high": {
+     "nosing_ids": 61,
+     "rails_ids": 21,
+     "escalator_ids": 5,
+     "rails_placements_dropped_vs_all": 48
+    }
+   },
+   "triangle_estimate": {
+    "basis": "Lane E (#143): mobile 20.3k escalators over 5 ids and 7.2k nosings over 61 ids; full 153k for all 61 rails ids at rail_segments 6; per-id scaling is even, so rails are rough (they grow with step_count). Unique GLB triangles, not instanced draw totals.",
+    "low": {
+     "nosing_mobile": 7200,
+     "total": 7200
+    },
+    "high": {
+     "nosing_mobile": 7200,
+     "escalators_mobile": 20300,
+     "rails_full": 52672,
+     "rails_full_if_all_61": 153000
+    }
+   }
+  },
   "skipped": [
    {
     "anchor": "stair040",
@@ -104,6 +223,11 @@
    ],
    "yaw_deg": -127.675,
    "mirror": false,
+   "tiers": {
+    "dressing": [
+     "high"
+    ]
+   },
    "incline_deg": 28.56,
    "quantisation_mm": {
     "rise_mm": 0.0,
@@ -129,6 +253,11 @@
    ],
    "yaw_deg": -127.675,
    "mirror": false,
+   "tiers": {
+    "dressing": [
+     "high"
+    ]
+   },
    "incline_deg": 28.56,
    "quantisation_mm": {
     "rise_mm": 0.0,
@@ -154,6 +283,11 @@
    ],
    "yaw_deg": 157.816,
    "mirror": false,
+   "tiers": {
+    "dressing": [
+     "high"
+    ]
+   },
    "incline_deg": 28.4,
    "quantisation_mm": {
     "rise_mm": 0.0,
@@ -179,6 +313,11 @@
    ],
    "yaw_deg": 67.808,
    "mirror": false,
+   "tiers": {
+    "dressing": [
+     "high"
+    ]
+   },
    "incline_deg": 21.93,
    "quantisation_mm": {
     "rise_mm": 0.0,
@@ -204,6 +343,11 @@
    ],
    "yaw_deg": 67.808,
    "mirror": false,
+   "tiers": {
+    "dressing": [
+     "high"
+    ]
+   },
    "incline_deg": 21.93,
    "quantisation_mm": {
     "rise_mm": 0.0,
@@ -229,6 +373,14 @@
    ],
    "yaw_deg": -4.698,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -261,6 +413,16 @@
    ],
    "yaw_deg": 85.302,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -293,6 +455,14 @@
    ],
    "yaw_deg": 144.019,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -325,6 +495,16 @@
    ],
    "yaw_deg": -36.755,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -357,6 +537,14 @@
    ],
    "yaw_deg": -22.197,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -389,6 +577,16 @@
    ],
    "yaw_deg": 157.816,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -421,6 +619,14 @@
    ],
    "yaw_deg": 157.828,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -453,6 +659,14 @@
    ],
    "yaw_deg": 157.808,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -485,6 +699,14 @@
    ],
    "yaw_deg": 67.821,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "post",
    "wall_share": {
     "left": 1.0,
@@ -517,6 +739,16 @@
    ],
    "yaw_deg": 67.816,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "post",
    "wall_share": {
     "left": 0.0,
@@ -549,6 +781,14 @@
    ],
    "yaw_deg": -13.35,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -581,6 +821,14 @@
    ],
    "yaw_deg": 157.821,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "post",
    "wall_share": {
     "left": 0.0,
@@ -613,6 +861,14 @@
    ],
    "yaw_deg": -167.883,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -645,6 +901,14 @@
    ],
    "yaw_deg": 8.505,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -677,6 +941,14 @@
    ],
    "yaw_deg": -35.114,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -709,6 +981,16 @@
    ],
    "yaw_deg": 102.487,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -741,6 +1023,16 @@
    ],
    "yaw_deg": -127.663,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "post",
    "wall_share": {
     "left": 1.0,
@@ -773,6 +1065,14 @@
    ],
    "yaw_deg": -0.527,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -805,6 +1105,14 @@
    ],
    "yaw_deg": 67.803,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "post",
    "wall_share": {
     "left": 1.0,
@@ -837,6 +1145,16 @@
    ],
    "yaw_deg": 67.816,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "post",
    "wall_share": {
     "left": 0.0,
@@ -869,6 +1187,14 @@
    ],
    "yaw_deg": 142.958,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -901,6 +1227,16 @@
    ],
    "yaw_deg": -37.042,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -933,6 +1269,14 @@
    ],
    "yaw_deg": -170.758,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -965,6 +1309,14 @@
    ],
    "yaw_deg": -94.698,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -997,6 +1349,14 @@
    ],
    "yaw_deg": -113.266,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "post",
    "wall_share": {
     "left": 0.0,
@@ -1029,6 +1389,14 @@
    ],
    "yaw_deg": -31.306,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1061,6 +1429,14 @@
    ],
    "yaw_deg": -31.306,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1093,6 +1469,14 @@
    ],
    "yaw_deg": 58.548,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1125,6 +1509,14 @@
    ],
    "yaw_deg": -22.068,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1157,6 +1549,14 @@
    ],
    "yaw_deg": 148.702,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1189,6 +1589,14 @@
    ],
    "yaw_deg": -112.074,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1221,6 +1629,16 @@
    ],
    "yaw_deg": 157.921,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1253,6 +1671,14 @@
    ],
    "yaw_deg": -22.061,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1285,6 +1711,14 @@
    ],
    "yaw_deg": -22.079,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1317,6 +1751,14 @@
    ],
    "yaw_deg": 157.921,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1349,6 +1791,14 @@
    ],
    "yaw_deg": -22.087,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1381,6 +1831,16 @@
    ],
    "yaw_deg": -36.743,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1413,6 +1873,14 @@
    ],
    "yaw_deg": -22.081,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1445,6 +1913,14 @@
    ],
    "yaw_deg": -113.278,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1477,6 +1953,16 @@
    ],
    "yaw_deg": -113.266,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1509,6 +1995,14 @@
    ],
    "yaw_deg": 156.734,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1541,6 +2035,16 @@
    ],
    "yaw_deg": -37.021,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.789,
@@ -1573,6 +2077,14 @@
    ],
    "yaw_deg": -35.09,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.81,
@@ -1605,6 +2117,14 @@
    ],
    "yaw_deg": -22.531,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.778,
@@ -1637,6 +2157,14 @@
    ],
    "yaw_deg": 142.958,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.778,
@@ -1669,6 +2197,14 @@
    ],
    "yaw_deg": -22.179,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.789,
@@ -1701,6 +2237,14 @@
    ],
    "yaw_deg": -22.184,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.789,
@@ -1733,6 +2277,14 @@
    ],
    "yaw_deg": -4.692,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1765,6 +2317,16 @@
    ],
    "yaw_deg": 143.245,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1797,6 +2359,16 @@
    ],
    "yaw_deg": -127.663,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "post",
    "wall_share": {
     "left": 0.692,
@@ -1829,6 +2401,14 @@
    ],
    "yaw_deg": -13.35,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.778,
@@ -1861,6 +2441,14 @@
    ],
    "yaw_deg": 157.821,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "post",
    "wall_share": {
     "left": 0.0,
@@ -1893,6 +2481,14 @@
    ],
    "yaw_deg": -22.081,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.789,
@@ -1925,6 +2521,14 @@
    ],
    "yaw_deg": 142.692,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -1957,6 +2561,14 @@
    ],
    "yaw_deg": 8.511,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.762,
@@ -1989,6 +2601,16 @@
    ],
    "yaw_deg": 157.816,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.75,
@@ -2021,6 +2643,16 @@
    ],
    "yaw_deg": 143.261,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.765,
@@ -2053,6 +2685,16 @@
    ],
    "yaw_deg": -113.26,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.733,
@@ -2085,6 +2727,14 @@
    ],
    "yaw_deg": 52.893,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -2117,6 +2767,16 @@
    ],
    "yaw_deg": 157.921,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.789,
@@ -2149,6 +2809,14 @@
    ],
    "yaw_deg": -22.087,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.789,
@@ -2181,6 +2849,14 @@
    ],
    "yaw_deg": 157.921,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.789,
@@ -2213,6 +2889,14 @@
    ],
    "yaw_deg": -22.087,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.789,
@@ -2245,6 +2929,14 @@
    ],
    "yaw_deg": -113.284,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.769,
@@ -2277,6 +2969,14 @@
    ],
    "yaw_deg": -31.306,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.733,
@@ -2309,6 +3009,14 @@
    ],
    "yaw_deg": -4.704,
    "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.667,
@@ -2341,6 +3049,16 @@
    ],
    "yaw_deg": -23.273,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -2373,6 +3091,16 @@
    ],
    "yaw_deg": -113.26,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 1.0,
@@ -2405,6 +3133,16 @@
    ],
    "yaw_deg": 66.747,
    "mirror": false,
+   "main_route": true,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": [
+     "high"
+    ]
+   },
    "rail_mount": "wall",
    "wall_share": {
     "left": 0.75,

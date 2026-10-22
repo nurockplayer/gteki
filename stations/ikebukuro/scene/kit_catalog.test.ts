@@ -32,6 +32,8 @@ interface Placement {
   yaw_deg: number;
   mirror: boolean;
   incline_deg?: number;
+  main_route?: boolean;
+  tiers: Record<string, string[]>;
 }
 interface Skipped { anchor: string; kind: string; reason: string }
 interface Anchors {
@@ -45,7 +47,13 @@ const anchorsSha = createHash("sha256").update(readFileSync(join(HERE, "dressing
 const catalog = JSON.parse(read("kit_catalog.json")) as { catalog: string; version: string; notes: string; assets: Entry[] };
 const placed = JSON.parse(read("kit_placements.json")) as {
   source: { dressing_anchors_sha256: string; gml_sha256: string };
-  summary: { unique_ids: number; skipped: Skipped[]; stair_flights: Record<string, number>; escalator_lanes: Record<string, number> };
+  summary: {
+    unique_ids: number;
+    skipped: Skipped[];
+    stair_flights: Record<string, number>;
+    escalator_lanes: Record<string, number>;
+    main_route: { flights: string[]; flight_count: number; rails_ids: number; routes: Record<string, { stairs_edge: boolean; flights: string[] }> };
+  };
   placements: Placement[];
 };
 const station = JSON.parse(readFileSync(join(STATION, "gteki", "station.json"), "utf8")) as { sources: { id: string; sha256?: Record<string, string> }[] };
@@ -99,8 +107,11 @@ describe("kit_catalog.json", () => {
           expect(a.id).toMatch(/_rails_(post|wall)$/);
           expect(p.handrail_sides).toBe("both");
           expect(p.rail_mount).toBe(a.id.endsWith("_wall") ? "wall" : "post");
+          expect(Number.isInteger(p.rail_segments) && (p.rail_segments as number) >= 6 && (p.rail_segments as number) <= 16).toBe(true);
+          expect(p.rail_segments).toBe(6);
+          expect(p.post_spacing_mm).toBeUndefined(); // generator default
         }
-        for (const k of Object.keys(p)) expect(["step_count", "riser_mm", "tread_mm", "width_mm", "parts", "handrail_sides", "rail_mount"]).toContain(k);
+        for (const k of Object.keys(p)) expect(["step_count", "riser_mm", "tread_mm", "width_mm", "parts", "handrail_sides", "rail_mount", "rail_segments"]).toContain(k);
       } else {
         positive("rise_mm", "width_mm", "angle_deg", "landing_mm");
         expect(p.run_mm).toBeUndefined(); // run_mm or angle_deg, not both: the surveyed quad gives the angle
@@ -183,6 +194,49 @@ describe("kit_placements.json", () => {
       expect(angle).toBeGreaterThanOrEqual(15);
       expect(angle).toBeLessThanOrEqual(35);
     }
+  });
+});
+
+describe("per-tier dressing subsets", () => {
+  const stairs = placed.placements.filter((p) => p.kind === "stair");
+  const mainFlights = placed.summary.main_route.flights;
+  const goldens = JSON.parse(
+    readFileSync(join(STATION, "..", "..", "tests", "e2e", "specs", "__goldens__", "02-navigation.spec.ts", "ikebukuro-routes.json"), "utf8"),
+  ) as Record<string, { result?: { steps?: string[] } }>;
+  const graph = JSON.parse(readFileSync(join(STATION, "gteki", "graph.json"), "utf8")) as { edges: { id: string; mode: string }[] };
+  const mode = new Map(graph.edges.map((e) => [e.id, e.mode]));
+
+  it("marks main-route flights among the covered ones, with nosings on both tiers and rails on high only", () => {
+    const covered = new Set(stairs.map((p) => p.anchor));
+    expect(mainFlights.length).toBe(placed.summary.main_route.flight_count);
+    for (const id of mainFlights) expect(covered.has(id)).toBe(true);
+    expect(stairs.filter((p) => p.main_route).map((p) => p.anchor).sort()).toEqual([...mainFlights].sort());
+    for (const p of stairs) {
+      expect(typeof p.main_route).toBe("boolean");
+      expect(p.tiers.nosing).toEqual(["low", "high"]);
+      expect(p.tiers.rails).toEqual(p.main_route ? ["high"] : []);
+    }
+    for (const p of placed.placements) for (const tiers of Object.values(p.tiers)) for (const tier of tiers) expect(["low", "high"]).toContain(tier);
+    // no rails and no escalators on the low tier
+    for (const p of placed.placements) {
+      if (p.kind === "stair") expect(p.tiers.rails).not.toContain("low");
+      else expect(p.tiers).toEqual({ dressing: ["high"] });
+    }
+    expect(new Set(stairs.filter((p) => p.main_route).map((p) => p.ids.rails)).size).toBe(placed.summary.main_route.rails_ids);
+  });
+
+  it("has a main-route flight for every golden route that walks a stairs edge", () => {
+    const withStairs = Object.entries(goldens)
+      .filter(([, r]) => (r.result?.steps ?? []).some((s) => mode.get(s.slice(1)) === "stairs"))
+      .map(([id]) => id);
+    expect(withStairs.length).toBeGreaterThan(0);
+    for (const id of withStairs) {
+      const route = placed.summary.main_route.routes[id]!;
+      expect(route.stairs_edge).toBe(true);
+      expect(route.flights.length).toBeGreaterThan(0);
+      for (const f of route.flights) expect(mainFlights).toContain(f);
+    }
+    for (const [id, route] of Object.entries(placed.summary.main_route.routes)) if (!withStairs.includes(id)) expect(route.flights).toEqual([]);
   });
 });
 

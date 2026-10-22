@@ -27,6 +27,16 @@ Generator conventions (tools/blender/gteki_assets/families/dressing.py, PR #143)
   the clear gap between the surveyed truss plates; the kit adds skirt +-(w/2 + 12), glass +-(w/2 + 160), overall
   w + 600. `direction` is not surveyed and is left out of the params (the generator default applies).
 
+Rails entries carry `rail_segments` 6 (Lane E #143: integer 6-16, default 10) and leave `post_spacing_mm` at the
+default. Placements carry `tiers` (per catalog id role: the quality tiers that draw it) and, for stairs, `main_route`:
+true when a polyline of one of Lane F's golden guided routes (tests/e2e/specs/__goldens__/02-navigation.spec.ts/
+ikebukuro-routes.json, built from the edges' `geometry` in gteki/graph.json) passes within 1.0 m horizontally of the
+flight's centre line, between its bottom and top, at a height within the flight's z range +- 0.3 m (a route
+whose stairs edge matches no flight, because the graph edge is a coarse straight segment, falls back to flights within
+4 m of that edge, recorded as `fallback_radius_m` in the summary). Nosings draw on
+low and high, escalators on high only (low waits for phone measurement), rails on high only and only on main-route
+flights.
+
 Frame of a placement: ENU metres. The piece's local +Y (travel, up the flight) maps to `dir`, local +X (width)
 to the right of `dir`; `yaw_deg` is the counter-clockwise rotation about +Z that does that.
 """
@@ -57,6 +67,17 @@ ESC_LANDING_MM = 800          # the generator default; the anchors say nothing d
 ESC_PARTS = ["balustrade", "handrail", "newel", "comb"]
 WALL_NEAR_M = 0.3
 WALL_SIDE_SHARE = 0.5         # a side counts as walled when this share of its nosings has a wall within WALL_NEAR_M
+RAIL_SEGMENTS = 6             # rail_segments param of the rails entries (generator range 6-16, default 10)
+ROUTE_NEAR_M = 1.0            # a golden route polyline within this of the flight's centre line uses the flight
+ROUTE_FALLBACK_M = 4.0        # a route with a stairs edge but no flight within ROUTE_NEAR_M: flights this close to that edge
+ROUTE_Z_PAD_M = 0.3
+ROUTE_SAMPLE_M = 0.25
+# Lane E triangle counts (#143): mobile profile, escalators 20.3k over the 5 ids and nosings 7.2k over the 61 ids;
+# full profile, all 61 rails ids at rail_segments 6 153k. Per-id estimates scale these evenly.
+TRIS_ESCALATORS_MOBILE = 20300
+TRIS_NOSING_MOBILE = 7200
+TRIS_RAILS_FULL_ALL = 153000
+ROUTES_REL = os.path.join("tests", "e2e", "specs", "__goldens__", "02-navigation.spec.ts", "ikebukuro-routes.json")
 RAIL_PROBE_M = 0.9            # height above the tread at which the wall probe is taken
 
 
@@ -176,6 +197,51 @@ def wall_share(flight, walls):
     return left / n, right / n
 
 
+# ------------------------------------------------------------------------------------------ main route
+
+def route_polylines(routes, graph):
+    """Golden route id -> (ENU polyline built from the walked edges' geometry, polyline of its stairs edges only)."""
+    edges = {e["id"]: e for e in graph["edges"]}
+    out = {}
+    for rid in sorted(routes):
+        steps = (routes[rid].get("result") or {}).get("steps") or []
+        pts, stair_pts = [], []
+        for step in steps:  # ">edge_id" walks the edge as drawn, "<edge_id" reversed
+            edge = edges[step[1:]]
+            line = [(g["x"], g["y"], g["z"]) for g in edge["geometry"]]
+            if step[0] == "<":
+                line.reverse()
+            if edge["mode"] == "stairs":
+                stair_pts.append(line)
+            pts.extend(line if not pts or pts[-1] != line[0] else line[1:])
+        if pts:
+            out[rid] = (pts, stair_pts)
+    return out
+
+
+def densify(pts, step=ROUTE_SAMPLE_M):
+    out = [pts[0]]
+    for a, b in zip(pts, pts[1:]):
+        n = max(1, int(math.ceil(math.dist(a, b) / step)))
+        out.extend(tuple(a[k] + (b[k] - a[k]) * i / n for k in range(3)) for i in range(1, n + 1))
+    return out
+
+
+def flight_on_route(flight, samples, near=ROUTE_NEAR_M):
+    ax, ay, az = flight["bottom"]["position"]
+    bx, by, bz = flight["top"]["position"]
+    dx, dy = bx - ax, by - ay
+    len2 = dx * dx + dy * dy
+    lo, hi = min(az, bz) - ROUTE_Z_PAD_M, max(az, bz) + ROUTE_Z_PAD_M
+    for x, y, z in samples:
+        if not lo <= z <= hi:
+            continue
+        t = ((x - ax) * dx + (y - ay) * dy) / len2 if len2 else 0.0
+        if 0.0 <= t <= 1.0 and math.hypot(x - (ax + t * dx), y - (ay + t * dy)) <= near:
+            return True
+    return False
+
+
 # --------------------------------------------------------------------------------------------- planning
 
 def plan_stair(flight, walls):
@@ -220,10 +286,44 @@ def plan_escalator(lane):
     return (params, angle, err), None
 
 
+def tier_summary(placements, entries, route_flights, polylines, route_fallback):
+    stairs = [p for p in placements if p["kind"] == "stair"]
+    main = sorted(p["anchor"] for p in stairs if p["main_route"])
+    rails_main = sorted({p["ids"]["rails"] for p in stairs if p["main_route"]})
+    n_nosing = sum(1 for e in entries.values() if e["id"].endswith("_nosing"))
+    n_rails = sum(1 for e in entries.values() if "_rails_" in e["id"])
+    n_esc = sum(1 for e in entries.values() if e["generator"] == "escalator_dressing")
+    nosing = round(TRIS_NOSING_MOBILE)
+    esc = round(TRIS_ESCALATORS_MOBILE)
+    rails = round(TRIS_RAILS_FULL_ALL * len(rails_main) / n_rails)
+    return {
+        "flights": main,
+        "flight_count": len(main),
+        "rails_ids": len(rails_main),
+        "routes": {rid: {"stairs_edge": bool(polylines[rid][1]), "flights": route_flights[rid],
+                                  "fallback_radius_m": ROUTE_FALLBACK_M if rid in route_fallback else None} for rid in sorted(route_flights)},
+        "tiers": {
+            "low": {"nosing_ids": n_nosing, "rails_ids": 0, "escalator_ids": 0},
+            "high": {"nosing_ids": n_nosing, "rails_ids": len(rails_main), "escalator_ids": n_esc,
+                     "rails_placements_dropped_vs_all": sum(1 for p in stairs if not p["main_route"])},
+        },
+        "triangle_estimate": {
+            "basis": "Lane E (#143): mobile 20.3k escalators over 5 ids and 7.2k nosings over 61 ids; full 153k for all 61 "
+                     "rails ids at rail_segments 6; per-id scaling is even, so rails are rough (they grow with step_count). "
+                     "Unique GLB triangles, not instanced draw totals.",
+            "low": {"nosing_mobile": nosing, "total": nosing},
+            "high": {"nosing_mobile": nosing, "escalators_mobile": esc, "rails_full": rails,
+                     "rails_full_if_all_61": TRIS_RAILS_FULL_ALL},
+        },
+    }
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--anchors", default=os.path.join(ROOT, "scene", "dressing_anchors.json"))
     ap.add_argument("--station", default=os.path.join(ROOT, "gteki", "station.json"))
+    ap.add_argument("--graph", default=os.path.join(ROOT, "gteki", "graph.json"))
+    ap.add_argument("--routes", default=os.path.join(os.path.dirname(os.path.dirname(ROOT)), ROUTES_REL))
     ap.add_argument("--glb", default=os.path.join(ROOT, "gteki", "assets", "ikebukuro_b1.glb"))
     ap.add_argument("--out-dir", default=os.path.join(ROOT, "scene"))
     args = ap.parse_args(argv)
@@ -237,6 +337,22 @@ def main(argv=None):
     gml, gml_sha = anchors["source"]["gml"], anchors["source"]["gml_sha256"]
     if pinned.get(gml) != gml_sha:
         sys.exit(f"build_kit_catalog: {gml} sha256 in {args.anchors} differs from {args.station}")
+
+    with open(args.graph, encoding="utf8") as f:
+        graph = json.load(f)
+    with open(args.routes, encoding="utf8") as f:
+        routes = json.load(f)
+    polylines = route_polylines(routes, graph)
+    samples = {rid: densify(pts) for rid, (pts, _) in polylines.items()}
+    route_flights = {rid: sorted(fl["id"] for fl in anchors["stair_flights"] if flight_on_route(fl, samples[rid]))
+                     for rid in samples}
+    route_fallback = set()
+    for rid, (_, stair_lines) in polylines.items():
+        if stair_lines and not route_flights[rid]:  # the graph's stairs edge is coarse: widen around that edge only
+            near = [pt for line in stair_lines for pt in densify(line)]
+            route_flights[rid] = sorted(fl["id"] for fl in anchors["stair_flights"] if flight_on_route(fl, near, ROUTE_FALLBACK_M))
+            route_fallback.add(rid)
+    main_route_ids = {fid for ids in route_flights.values() for fid in ids}
 
     walls, glb_sha = None, None
     if os.path.exists(args.glb):
@@ -286,7 +402,8 @@ def main(argv=None):
                 entries[rails_id] = {
                     "id": rails_id, "generator": "stair_dressing",
                     "params": {"step_count": n, "riser_mm": r, "tread_mm": t, "width_mm": w, "parts": ["handrail"],
-                               "handrail_sides": "both", "rail_mount": mount},
+                               "handrail_sides": "both", "rail_mount": mount,
+                               "rail_segments": RAIL_SEGMENTS},
                     "dimension_basis": "station-verified",
                     "notes": None, "tags": ["dressing", "stair", "ikebukuro", "rails"],
                 }
@@ -297,6 +414,8 @@ def main(argv=None):
                 # floor under the first nosing: nosing z less one riser (the generator's nosing 0 is at z = riser)
                 "origin": [bottom["position"][0], bottom["position"][1], round(bottom["position"][2] - r / 1000.0, 3)],
                 "dir": bottom["dir"], "yaw_deg": yaw_deg(bottom["dir"]), "mirror": False,
+                "main_route": flight["id"] in main_route_ids,
+                "tiers": {"nosing": ["low", "high"], "rails": ["high"] if flight["id"] in main_route_ids else []},
                 "rail_mount": mount, "wall_share": extra["wall_share"], "quantisation_mm": err,
             })
     for rails_id, flights in rails_key_flights.items():
@@ -343,6 +462,7 @@ def main(argv=None):
                 "anchor": lane["id"], "kind": "escalator", "scope": lane["scope"], "bank": lane["bank"],
                 "ids": {"dressing": eid},
                 "origin": origin, "dir": lower["dir"], "yaw_deg": yaw_deg(lower["dir"]), "mirror": False,
+                "tiers": {"dressing": ["high"]},
                 "incline_deg": angle, "quantisation_mm": err,
             })
 
@@ -371,13 +491,15 @@ def main(argv=None):
         "rail_mount": {m: sum(1 for p in placements if p.get("rail_mount") == m) for m in ("post", "wall")},
         "quantisation_max": {k: {"mm": v, "anchor": a} for k, (v, a) in quant_max.items()},
         "escalator_incline_deg": {eid: ang for eid, ang in sorted((e["id"], esc_angles_for(e, esc_angles)) for e in assets if e["generator"] == "escalator_dressing")},
+        "main_route": tier_summary(placements, entries, route_flights, polylines, route_fallback),
         "skipped": skipped,
     }
     out = {
         "schema": PLACEMENTS_SCHEMA,
         "catalog": {"file": "kit_catalog.json", "name": CATALOG_NAME, "version": CATALOG_VERSION},
         "source": {"dressing_anchors_sha256": anchors_sha, "gml": gml, "gml_sha256": gml_sha,
-                   "wall_probe_glb_sha256": glb_sha},
+                   "wall_probe_glb_sha256": glb_sha,
+                   "golden_routes_sha256": sha256_file(args.routes), "graph_sha256": sha256_file(args.graph)},
         "frame": {"axes": "ENU metres: x east, y north, z TP height (as dressing_anchors.json)",
                   "origin": "stair: floor under the first nosing line (centre of the line, nosing z less one riser); "
                             f"escalator: bottom comb line, {ESC_COMB_OFFSET_M} m before the centre of the surveyed lower line along dir, "

@@ -165,7 +165,7 @@ an implausible riser (outside 100-220 mm) or tread (under 200 mm) and single-ste
 their reason. Escalators carry `rise_mm`, `angle_deg` = atan2(rise, quad run) (the surveyed quad is the straight incline between the
 floors, so no `run_mm`), `width_mm` (tread width, read as the clear gap between the truss plates) and the default 800 mm
 landing. The placement origin is the bottom comb, 1.2 m before the quad's lower line along `dir` at the lower floor height
-(the top comb is 1.2 m past the upper line). Direction is not surveyed and is left out of the params.
+(the top comb is 1.2 m past the upper line). Direction is not surveyed and is left out of the params. Placements carry `tiers`: nosings draw on `low` and `high`, escalators on `high` only (low waits for a phone measurement), and rails (6 segments) on `high` only and only for `main_route` flights, those a Lane F golden guided route walks (a polyline within 1 m of the flight's centre line at a matching height).
 
 **How the bake will take a kit GLB in** (not built yet; `blender_bake_lighting.py` is unchanged):
 
