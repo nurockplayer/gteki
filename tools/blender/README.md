@@ -1,6 +1,6 @@
 # GTEki Blender asset factory (Lane E)
 
-Reproducible, parametric generators for a **generic, reusable station kit** (passages, junctions, fare-gate arrays, stairs, escalators, lift portals, wayfinding signs, props). Output is contract GLB (`docs/assets/asset-contract.md`) for the Three.js Web client and Godot 4. The kit carries no navigation truth and does not replicate any operator's equipment or any specific Ikebukuro/Shinjuku location; station leads decide placement and art direction.
+Reproducible, parametric generators for a **generic, reusable station kit** (passages, junctions, fare-gate arrays, stairs, escalators, lift portals, wayfinding signs, props, and dressing fitted to a station's own stairs, escalators and floor plan). Output is contract GLB (`docs/assets/asset-contract.md`) for the Three.js Web client and Godot 4. The kit carries no navigation truth and does not replicate any operator's equipment or any specific Ikebukuro/Shinjuku location; station leads decide placement and art direction.
 
 ## Requirements
 
@@ -54,7 +54,7 @@ Editable sources: add `--save-blend <dir>` to `build.py` to save a `.blend` per 
 | `gteki_assets/materials.py` | Stable `gteki_*` PBR material library |
 | `gteki_assets/finishes.py` | Finish materials (`gteki_finish_*`) and the pack writer (maps, `finish.json`) |
 | `gteki_assets/ao.py` | Baked ambient occlusion: one Cycles-CPU map per asset (joint `UVLightmap` atlas), deterministic blur/dilate, PNG attached as `occlusionTexture` on `texCoord` 1 |
-| `gteki_assets/families/*.py` | Generators by family |
+| `gteki_assets/families/*.py` | Generators by family (`dressing.py`: see below) |
 | `render_preview.py` | GLB round-trip renders |
 | `validate_glb.py` | Stdlib contract validator (`--self-test` included) |
 | `validate_finish.py` | Stdlib finish-pack validator (schema, sha256, sizes, tiling, tint base; includes a baseline JPEG decoder; `--self-test`) |
@@ -77,3 +77,17 @@ A generator is `fn(asset_id, params, tex_res) -> Asset` registered in its module
 Every asset gets one baked AO map in both tiers (`gteki_assets/ao.py`, contract §4); generators need nothing for it. The bake uses Cycles on the CPU (about 30–60 s per asset), so full-library builds and `repro` take correspondingly longer.
 
 Determinism: all randomness is seeded, textures are cached by content hash, UVs are quantized after modifiers; `build.sh repro` guards it.
+
+## Dressing family
+
+`families/dressing.py` makes pieces that go on geometry a station already has. They have no `COL_*` collision nodes, carry `gteki_role` (contract §10; the station runtime treats `barriers` and `transport` as colliders and `stairs_ramps` as walkable) and take every size as a catalog param in millimetres, so the kit holds no station measurements. The escalator and stair generators reuse `vertical.py`.
+
+| Generator | Params (defaults) | Origin |
+| --- | --- | --- |
+| `escalator_dressing` | `rise_mm` 4000, `width_mm` 1000, `angle_deg` 30 or `run_mm` (horizontal run between the flat sections, eased ends included), `landing_mm` 800 (newel clearance and skirt length, both ends), `flat_steps` 2, `balustrade` glass or panel, `direction`, `parts` of balustrade, handrail, newel, comb (all four; e.g. `["comb", "newel"]` for a station that keeps its own balustrade), `skirts` false, `treads` false (static treads for flat slabs), `indicators` false; `gteki_role` `transport` (catalog override: `null` or another role) | bottom comb plate line |
+| `stair_dressing` | `step_count` 18, `riser_mm` 160, `tread_mm` 300, `width_mm` 2400, `parts` of nosing, handrail, skirt, `handrail_sides` / `skirt_sides` both, left, right or none, `rail_mount` post or wall, `post_spacing_mm` 1800 (post or wall-bracket spacing), `rail_segments` 10 (handrail tube sides, 6–16; brackets use at most 8; mobile halves to at least 6), `skirt_mm` 140, `skirt_drop_mm` 200; `gteki_role` `stairs_ramps` for nosing only, `barriers` for rails and skirts, none for a mix (catalog override: `null` or another role) | floor under the bottom nosing |
+| `railing_run` | `points` (`[[x_mm, y_mm], ...]`), `height_mm` 1100 (guard; 1150 for a fare fence), `style` glass or steel, `post_spacing_mm` 1200, `mid_rails` 2 (steel); `gteki_role` `barriers` (catalog override: `null` or another role) | plan origin of `points` |
+
+A catalog entry may set `"gteki_role"` to override a generator's default role: `null` drops it, or another of `barriers`, `transport`, `stairs_ramps` (contract §10).
+
+Variants are the `gteki_escalator_dress_*`, `gteki_stair_*`, `gteki_railing_run_*` and `gteki_fare_fence_*` ids in the catalog. Build them with `ONLY=<ids> tools/blender/build.sh build`.

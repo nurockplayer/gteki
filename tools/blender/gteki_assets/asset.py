@@ -58,6 +58,8 @@ class Asset:
         self.license = contract.LICENSE
         self.license_spdx = contract.LICENSE_SPDX  # written only when contract.EMBED_SPDX
         self.placement = "free"
+        self.role = None  # station bake role (contract §10); dressing generators set it
+        self.anchor = None  # catalog `anchor` class (contract §10), for the Godot origin check
         self.ao_res_override = None  # catalog `ao_res`, applied to both tiers
         self.materials = []
         self.parts = []  # (group, Part)
@@ -165,6 +167,13 @@ class Asset:
             self.export_materials = list(self.materials)
             for m in mats:  # two UV layers: bind every texture to the base one (see _bind_uv)
                 _bind_uv(m, "UVMap")
+        if self.role:
+            if self.role not in contract.ROLES:
+                raise ValueError(f"role {self.role!r} must be one of {contract.ROLES}")
+            # custom properties export as node extras: a station reads the root or any VIS_* node
+            root["gteki_role"] = self.role
+            for o in vis_objs:
+                o["gteki_role"] = self.role
         bpy.context.view_layer.update()
 
         # one shared occlusion map per asset; baked before the colliders exist, so they never occlude
@@ -230,6 +239,7 @@ class Asset:
             "triangles": tris,
             "dimension_basis": self.dimension_basis,
             "placement": self.placement,
+            **({"anchor": self.anchor} if self.anchor else {}),
             "fidelity": contract.FIDELITY,
             "navigation": contract.NAVIGATION,
             "provenance": self.provenance,
@@ -286,7 +296,7 @@ class Asset:
             bpy.ops.wm.save_as_mainfile(filepath=os.path.join(save_blend_dir, f"{self.id}.blend"), compress=True)
         with open(path, "rb") as f:
             data = f.read()
-        return {
+        entry = {
             "id": self.id,
             "family": self.family,
             "variant": self.variant,
@@ -310,6 +320,11 @@ class Asset:
             "generator": self.generator,
             **contract.rights_fields(self.license_spdx),  # {} while contract.EMBED_SPDX is off
         }
+        if self.role:  # keeps the manifest of role-less assets byte-identical
+            entry["gteki_role"] = self.role
+        if self.anchor:  # likewise for assets without an anchor class
+            entry["anchor"] = self.anchor
+        return entry
 
 
 NEAREST, NEAREST_MIPMAP_NEAREST = 9728, 9984  # glTF sampler filters

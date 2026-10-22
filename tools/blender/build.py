@@ -117,6 +117,12 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
                 asset.dimension_basis = item["dimension_basis"]
             if item.get("notes"):
                 asset.notes = item["notes"]
+            if "gteki_role" in item:  # a station overrides the generator's default role; null drops it (contract §10)
+                asset.role = item["gteki_role"]
+            if item.get("anchor"):  # contract §10: how the origin sits on the piece
+                if item["anchor"] not in contract.ANCHORS:
+                    raise ValueError(f"anchor {item['anchor']!r} must be one of {contract.ANCHORS}")
+                asset.anchor = item["anchor"]
             if "ao_res" in item:
                 if item["ao_res"] not in ao.SIZES:
                     raise ValueError(f"ao_res must be one of {ao.SIZES}, got {item['ao_res']!r}")

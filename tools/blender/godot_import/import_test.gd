@@ -86,7 +86,26 @@ func _inspect(scene_root: Node) -> Dictionary:
 		var floor_ok := absf(merged.position.y) <= 0.05 or below_ok
 		result.placement = placement
 		result.checks = {"gteki_extras_imported": not meta.is_empty()}
-		match placement:
+		# a catalog `anchor` class (contract §10) replaces the placement's origin checks
+		var anchor: String = str(meta.get("anchor", ""))
+		if anchor != "":
+			result.anchor = anchor
+		match anchor if anchor != "" else placement:
+			"linear_run":
+				# entry line at z=0, run toward -Z; newels, handrail ends and post caps may reach
+				# up to 1 m in front, and a piece mounted on its host may start up to one riser up
+				result.checks.extends_negative_z = merged.position.z < -0.01
+				result.checks.front_reach_within_1m = merged.end.z <= 1.0
+				result.checks.base_between_slab_and_first_riser = (merged.position.y >= -0.1 or below_ok) and merged.position.y <= 0.5
+			"surface":
+				# a flat finish sample lying on its wall plane (z=0) instead of projecting from it
+				result.checks.floor_min_y_near_zero = floor_ok
+				result.checks.lies_on_wall_plane = merged.position.z >= -0.01 and merged.end.z <= 0.01
+			"edge_anchored":
+				# origin at one end or at the foot of the piece, which extends from there
+				result.checks.floor_min_y_near_zero = floor_ok
+				result.checks.origin_on_footprint = (merged.position.x <= 0.06 and merged.end.x >= -0.06
+					and merged.position.z <= 0.06 and merged.end.z >= -0.06)
 			"linear":
 				result.checks.floor_min_y_near_zero = floor_ok
 				result.checks.entry_at_z_zero_extends_negative = entry_ok
@@ -171,6 +190,7 @@ func _write_report() -> void:
 			"aabb": report.aabb,
 			"checks": report.checks,
 			"placement": report.get("placement", "unknown"),
+			"anchor": report.get("anchor", ""),
 		})
 		_check_against_manifest(rows[-1], item.report)
 	var report_doc := {"godot_version": Engine.get_version_info().string, "assets": rows}
@@ -193,7 +213,8 @@ func _write_report() -> void:
 			status, row.id, row.node_count, row.mesh_instance_3d_count, row.materials.size(),
 			row.static_body_3d_count, row.collision_shape_3d_count, row.sockets.size(), str(row.aabb)])
 		for check in bad:
-			print("FAIL %s placement=%s check failed: %s" % [row.id, row.get("placement", "?"), check])
+			var how: String = row.get("placement", "?") + ("/" + row.anchor if row.anchor != "" else "")
+			print("FAIL %s placement=%s check failed: %s" % [row.id, how, check])
 	if manifest.is_empty():
 		print("WARN no GTEKI_MANIFEST: collision/socket parity was not checked")
 	# the library is incomplete if a manifest asset was never imported
