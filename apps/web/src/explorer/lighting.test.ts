@@ -36,4 +36,28 @@ describe("core lighting plan", () => {
     expect(resolveLighting({ lighting: "scene" }).bloomThreshold).toBe(BLOOM_THRESHOLD.scene);
     expect(resolveLighting({ lighting: "scene", envIntensity: 0.2 }).bloomThreshold).toBe(BLOOM_THRESHOLD.environment);
   });
+
+  it("routes the environment through an envMap on the high tier and a probe on the low tier", () => {
+    expect(resolveLighting().environmentVia).toBe("envMap");
+    expect(resolveLighting({}, "high").environmentVia).toBe("envMap");
+    expect(resolveLighting({}, "low")).toMatchObject({ environmentVia: "probe", sceneEnvironment: true, environmentIntensity: DEFAULT_ENV_INTENSITY });
+    expect(resolveLighting({ envIntensity: 0.3 }, "low")).toMatchObject({ environmentVia: "probe", environmentIntensity: 0.3 });
+  });
+
+  it("has no environment path when the scene has no environment, on either tier", () => {
+    for (const quality of ["low", "high"] as const) {
+      expect(resolveLighting({ lighting: "scene" }, quality)).toMatchObject({ environmentVia: null, sceneEnvironment: false, avatarEnvMap: true });
+      expect(resolveLighting({ lighting: "scene", envIntensity: 0 }, quality).environmentVia).toBeNull();
+    }
+  });
+
+  it("lets a scene-lit station opt into the probe on the low tier, and keeps the avatar off its own envMap then", () => {
+    expect(resolveLighting({ lighting: "scene", envIntensity: 0.25 }, "low")).toMatchObject({ environmentVia: "probe", environmentIntensity: 0.25, avatarEnvMap: false });
+  });
+
+  it("does not change the rest of the plan with quality", () => {
+    const { environmentVia: _a, ...high } = resolveLighting({ exposure: 0.9 }, "high");
+    const { environmentVia: _b, ...low } = resolveLighting({ exposure: 0.9 }, "low");
+    expect(low).toEqual(high);
+  });
 });

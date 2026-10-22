@@ -4,6 +4,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 import { CSS2DObject, CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { LightProbeGenerator } from "three/examples/jsm/lights/LightProbeGenerator.js";
 import { ASSET_SCHEME, fencedUrlResolver, stationDir } from "./assetFence.ts";
 import { enuToRenderer } from "@gteki/geo";
 import type { Router, PolylinePoint } from "@gteki/navigation";
@@ -213,8 +214,13 @@ export class Explorer {
   /** Core hemisphere + sun; hidden when a scene declares `environment.lighting: "scene"`. */
   private readonly coreLights: THREE.Light[] = [];
   private hemi: THREE.HemisphereLight | null = null;
-  /** PMREM of RoomEnvironment, built once on first use: `scene.environment` in default lighting, the avatar's envMap in scene lighting. */
+  /** PMREM of RoomEnvironment, built lazily on first use: `scene.environment` on the high tier, the avatar's envMap in scene lighting. */
   private coreEnvMap: THREE.Texture | null = null;
+  /** Low tier: SH probe baked from the same RoomEnvironment. It replaces `scene.environment` (diffuse only) and is hidden until baked. */
+  private readonly envProbe = new THREE.LightProbe();
+  private probeBake: "idle" | "baking" | "ready" | "failed" = "idle";
+  /** What the latest lighting plan wants, read when the async bake resolves so a station switch in between wins. */
+  private probeWanted = false;
   private lighting: "default" | "scene" = "default";
   private sun: THREE.DirectionalLight | null = null;
   /**
@@ -277,7 +283,8 @@ export class Explorer {
     this.orbit.screenSpacePanning = false;
 
     this.input = new Input(this.renderer.domElement, host);
-    this.scene.add(this.world, this.overlays, this.avatar, this.street.group);
+    this.envProbe.visible = false;
+    this.scene.add(this.world, this.overlays, this.avatar, this.street.group, this.envProbe);
     this.overlays.add(this.routeGroup, this.poiGroup);
     this.buildAvatar();
     this.defaultEnvironment();
@@ -297,7 +304,7 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "overview" | null; texelM: number; halfExtent: number; casters: number; candidates: number; receivers: number } } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "overview" | null; texelM: number; halfExtent: number; casters: number; candidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
@@ -305,7 +312,8 @@ export class Explorer {
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
-      environmentIntensity: this.scene.environment ? this.scene.environmentIntensity : null, exposure: this.renderer.toneMappingExposure, overlayToneResidual: this.overlayResidual === null ? null : Math.round(this.overlayResidual * 100) / 100,
+      environment: this.envProbe.visible ? "probe" : this.scene.environment ? "envMap" : null,
+      environmentIntensity: this.envProbe.visible || this.scene.environment ? this.scene.environmentIntensity : null, exposure: this.renderer.toneMappingExposure, overlayToneResidual: this.overlayResidual === null ? null : Math.round(this.overlayResidual * 100) / 100,
       street: { active: this.street.active, opacity: Math.round(this.street.opacity * 1000) / 1000 },
       shadows: { following: this.shadowFit !== null, fit: this.shadowFit?.fitted ?? null, texelM: this.shadowFit?.fitted ? this.shadowOut.texelM : 0, halfExtent: this.shadowFit?.half ?? 0, casters: this.shadowFit?.casters ?? 0, candidates: this.shadowFit?.candidates.length ?? 0, receivers: this.shadowFit?.receivers ?? 0 },
     };
@@ -402,7 +410,7 @@ export class Explorer {
    * Called with no env for the L0 graph view, which gets default lighting.
    */
   private applyLighting(env?: LightingEnv): void {
-    const plan = resolveLighting(env);
+    const plan = resolveLighting(env, this.quality);
     this.lighting = plan.mode;
     for (const l of this.coreLights) l.visible = plan.coreLights;
     if (this.hemi) this.hemi.intensity = plan.hemiIntensity;
@@ -410,18 +418,60 @@ export class Explorer {
     this.bloomThreshold = plan.bloomThreshold;
     this.composer?.setBloomThreshold(plan.bloomThreshold);
     this.applyOverlayTone();
-    if (!this.coreEnvMap) {
-      const pmrem = new THREE.PMREMGenerator(this.renderer);
-      this.coreEnvMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-      pmrem.dispose();
-    }
-    this.scene.environment = plan.sceneEnvironment ? this.coreEnvMap : null;
+    // The PMREM is only built when something samples it: the high tier's scene.environment, or a scene-lit station's avatar.
+    const envMap = plan.environmentVia === "envMap" || plan.avatarEnvMap ? this.coreEnv() : null;
+    this.scene.environment = plan.environmentVia === "envMap" ? envMap : null;
     this.scene.environmentIntensity = plan.environmentIntensity;
+    this.probeWanted = plan.environmentVia === "probe";
+    this.envProbe.intensity = plan.environmentIntensity;
+    this.envProbe.visible = this.probeWanted && this.probeBake === "ready";
+    if (this.probeWanted && this.probeBake === "idle") this.bakeEnvProbe();
     this.avatar.traverse((o) => {
       const m = (o as THREE.Mesh).material;
-      const next = plan.avatarEnvMap ? this.coreEnvMap : null;
+      const next = plan.avatarEnvMap ? envMap : null;
       if (m instanceof THREE.MeshStandardMaterial && m.envMap !== next) { m.envMap = next; m.needsUpdate = true; }
     });
+  }
+
+  private coreEnv(): THREE.Texture {
+    if (!this.coreEnvMap) {
+      const pmrem = new THREE.PMREMGenerator(this.renderer);
+      const room = new RoomEnvironment();
+      this.coreEnvMap = pmrem.fromScene(room, 0.04).texture;
+      room.dispose();
+      pmrem.dispose();
+    }
+    return this.coreEnvMap;
+  }
+
+  /**
+   * Low tier: bakes `envProbe` once from RoomEnvironment (one tiny cube render, then an async readback; ~ms). Tries a
+   * HalfFloat target first because the room's light boxes exceed 1.0 and a byte target would clip them, then Float, then bytes;
+   * a readback that throws or comes back black is skipped. Until it resolves the station is lit without the environment;
+   * on resolve the probe shows only if the current plan still wants it. A failed bake leaves the probe off for good.
+   */
+  private bakeEnvProbe(): void {
+    this.probeBake = "baking";
+    void (async () => {
+      const room = new RoomEnvironment();
+      try {
+        for (const type of [THREE.HalfFloatType, THREE.FloatType, THREE.UnsignedByteType]) {
+          if (this.disposed) return;
+          const target = new THREE.WebGLCubeRenderTarget(PROBE_FACE_PX, { type });
+          try {
+            new THREE.CubeCamera(0.1, 100, target).update(this.renderer, room);
+            const baked = await LightProbeGenerator.fromCubeRenderTarget(this.renderer, target);
+            const dc = baked.sh.coefficients[0]?.toArray().reduce((a, v) => a + v, 0) ?? 0;
+            if (this.disposed || !(dc > 0) || !Number.isFinite(dc)) continue;
+            this.envProbe.sh.copy(baked.sh);
+            this.probeBake = "ready";
+            this.envProbe.visible = this.probeWanted;
+            return;
+          } catch { /* unreadable on this GPU: try the next type */ } finally { target.dispose(); }
+        }
+        this.probeBake = "failed";
+      } finally { room.dispose(); }
+    })();
   }
 
   private disposeComposer(): void {
@@ -1356,6 +1406,9 @@ export class Explorer {
     this.renderer.dispose();
   }
 }
+
+/** Face size of the cube the environment probe is baked from: 9 SH coefficients need little more. */
+const PROBE_FACE_PX = 32;
 
 const AUDIO_UNLOCK_EVENTS = ["pointerdown", "keydown", "touchend"] as const;
 
