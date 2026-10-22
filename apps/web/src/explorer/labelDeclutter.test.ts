@@ -124,6 +124,29 @@ describe("declutter", () => {
   });
 });
 
+describe("selected labels bypass the declutter", () => {
+  it("an exit hidden under others reappears once it is picked as from/to (class endpoint)", () => {
+    const crowd = [
+      item("exit-a", 0, 0, { klass: LABEL_CLASS.exit }),
+      item("exit-b", 10, 0, { klass: labelClass(false, "exit") }),
+      item("exit-c", 20, 0, { klass: labelClass(false, "exit") }),
+    ];
+    expect(declutter(crowd).has("exit-c")).toBe(false);
+    // The same label, now selected: labelClass puts it first, and it is kept.
+    const picked = crowd.map((i) => (i.id === "exit-c" ? { ...i, klass: labelClass(true, "exit"), wasVisible: false } : i));
+    const keep = declutter(picked);
+    expect(keep.has("exit-c")).toBe(true);
+    // ... and it takes the place, not the other way round: the exits it covers give way.
+    expect(keep.has("exit-a")).toBe(false);
+  });
+
+  it("selected labels are kept even when faded, search-only, unmeasured or covering each other", () => {
+    const sel = { klass: labelClass(true, "shop"), faded: true, routable: false, measured: false } as const;
+    const items = [item("from", 0, 0, sel), item("to", 3, 0, sel), item("exit", 0, 0, { klass: LABEL_CLASS.exit })];
+    expect([...declutter(items)].sort()).toEqual(["from", "to"]);
+  });
+});
+
 describe("estimateLabelBox", () => {
   it("counts full-width characters as one em and ASCII as 0.55 em at 12 px", () => {
     expect(estimateLabelBox("").w).toBe(31);

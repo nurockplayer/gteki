@@ -22,7 +22,7 @@ import { advanceGuide } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, followBoom, followDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
-import { OVERVIEW_OFFSET, frameBounds, routableBounds } from "./overviewFraming.ts";
+import { OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, pointsBounds, routablePoints, screenBox } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
@@ -230,6 +230,8 @@ export class Explorer {
   private readonly viewSize = { w: 1, h: 1 };
   /** The routable slice's bounds (renderer frame), or null when the bundle has no usable edge. */
   private routableBox: THREE.Box3 | null = null;
+  /** The routable network's points (the bounds' source), for the overviewFrame QA hook. */
+  private routablePts: THREE.Vector3[] = [];
   /** What the overview is framed on, so a resize can refit; cleared by the user's own orbit/zoom/pan. */
   private framed: THREE.Box3 | null = null;
   private quality: "low" | "high";
@@ -291,10 +293,34 @@ export class Explorer {
   }
 
   /** POI label states for automated visual checks. */
-  labelInfo(): { shown: number; faded: number; hidden: number } {
-    const n = { shown: 0, faded: 0, hidden: 0 };
-    for (const l of this.poiLabels) n[l.state]++;
+  labelInfo(): { shown: number; faded: number; hidden: number; decluttered: number } {
+    const n = { shown: 0, faded: 0, hidden: 0, decluttered: 0 };
+    // A label dropped by the overview declutter is off screen: counted there, not as shown or faded.
+    for (const l of this.poiLabels) { if (l.decluttered && l.state !== "hidden") n.decluttered++; else n[l.state]++; }
     return n;
+  }
+
+  /**
+   * Where the routable network sits on screen now (CSS px, page coordinates like label rects) and how
+   * big it is: `extentShare` = larger bbox side / the viewport's shorter side (about 0.65 right after
+   * the fit; the bbox of the network's own points, so a little below the fit target, which is
+   * measured on the slice box). `fitShare` is that box's share (the fit target, about 0.65).
+   * Null outside overview or without a routable network.
+   */
+  overviewFrame(): { extentShare: number; fitShare: number | null; bbox: { x0: number; y0: number; x1: number; y1: number } } | null {
+    if (this.mode !== "overview" || this.routablePts.length === 0) return null;
+    const { w, h } = this.viewSize;
+    this.camera.updateMatrixWorld();
+    const net = screenBox(this.routablePts, this.camera, w, h);
+    if (!net) return null;
+    const slice = this.framed ?? this.routableBox;
+    const fit = slice ? screenBox(boxCorners({ min: slice.min, max: slice.max }), this.camera, w, h) : null;
+    const at = this.host.getBoundingClientRect();
+    return {
+      extentShare: extentShare(net, w, h),
+      fitShare: fit ? extentShare(fit, w, h) : null,
+      bbox: { x0: net.x0 + at.left, y0: net.y0 + at.top, x1: net.x1 + at.left, y1: net.y1 + at.top },
+    };
   }
 
   /** Avatar position in station ENU (a virtual position, never the user's real location). */
@@ -378,7 +404,8 @@ export class Explorer {
     this.station = station;
     const bundle = station.bundle;
     this.graph = buildGraphView(bundle, router);
-    this.routableBox = toBox3(routableBounds(bundle, (e) => router.isTraversable(e, DEFAULT_PROFILE)));
+    this.routablePts = routablePoints(bundle, (e) => router.isTraversable(e, DEFAULT_PROFILE));
+    this.routableBox = toBox3(pointsBounds(this.routablePts));
     // One loading manager per station: every request (GLB, its external buffers/images, textures)
     // must resolve through this station's fenced asset map.
     const refused: string[] = [];
@@ -505,6 +532,7 @@ export class Explorer {
     if (this.stationScene) { this.world.remove(this.stationScene.root); this.stationScene.dispose(); this.stationScene = null; }
     if (this.graph) { this.world.remove(this.graph.root); this.overlays.remove(this.graph.overlay); this.graph.dispose(); this.graph = null; }
     this.routableBox = null;
+    this.routablePts = [];
     this.framed = null;
     this.walkable = [];
     this.colliders = [];

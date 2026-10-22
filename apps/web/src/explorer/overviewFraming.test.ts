@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
 import type { Edge, StationBundle } from "@gteki/schema";
-import { MIN_SLICE_M, OVERVIEW_FILL, OVERVIEW_OFFSET, frameBounds, routableBounds, type Aabb } from "./overviewFraming.ts";
+import { MIN_SLICE_M, OVERVIEW_FILL, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, pointsBounds, routableBounds, routablePoints, screenBox, type Aabb } from "./overviewFraming.ts";
 
 const VIEWPORTS = [
   { name: "desktop 1440x900", w: 1440, h: 900 },
@@ -122,5 +122,57 @@ describe("routableBounds", () => {
 
   it("is null when nothing is routable", () => {
     expect(routableBounds(bundle, () => false)).toBeNull();
+  });
+
+  it("routablePoints are the points the bounds come from", () => {
+    const pts = routablePoints(bundle, (e) => e.id !== "closed");
+    expect(pts.length).toBe(4); // two edges, two points each
+    const box = pointsBounds(pts)!;
+    const direct = routableBounds(bundle, (e) => e.id !== "closed")!;
+    expect(box.min.equals(direct.min) && box.max.equals(direct.max)).toBe(true);
+    expect(pointsBounds([])).toBeNull();
+  });
+});
+
+describe("screen extent of the network (overviewFrame hook math)", () => {
+  for (const vp of VIEWPORTS) {
+    it(`${vp.name}: the fitted slice box shares 65%, and its inner network points no more than that`, () => {
+      const raw = BOXES["Ikebukuro, compact"]!;
+      const pose = frameBounds(raw, { fovDeg: 60, aspect: vp.w / vp.h });
+      const cam = camera(vp.w, vp.h, pose);
+      const boxShare = extentShare(screenBox(boxCorners(raw), cam, vp.w, vp.h)!, vp.w, vp.h);
+      expect(boxShare).toBeCloseTo(OVERVIEW_FILL, 2);
+      // A network that spans only part of the box (the corners are extremes) is no bigger on screen.
+      const inner = [raw.min.clone().lerp(raw.max, 0.1), raw.min.clone().lerp(raw.max, 0.9), raw.min.clone().lerp(raw.max, 0.5)];
+      const box = screenBox(inner, cam, vp.w, vp.h)!;
+      expect(extentShare(box, vp.w, vp.h)).toBeLessThanOrEqual(boxShare + 1e-9);
+      expect(box.x0).toBeGreaterThanOrEqual(0);
+      expect(box.y1).toBeLessThanOrEqual(vp.h);
+    });
+  }
+
+  it("computes the bbox in pixels and the share against the shorter side", () => {
+    const cam = new THREE.PerspectiveCamera(60, 2, 0.1, 100);
+    cam.position.set(0, 0, 10);
+    cam.lookAt(0, 0, 0);
+    cam.updateMatrixWorld(true);
+    // At z=0 and distance 10 the half-height is 10*tan(30deg) = 5.7735 m, the half-width twice that.
+    const half = 10 * Math.tan(Math.PI / 6);
+    const b = screenBox([new THREE.Vector3(-half, -half / 2, 0), new THREE.Vector3(half, half / 2, 0)], cam, 800, 400)!;
+    expect(b.x0).toBeCloseTo(200, 3); // 800 * (1 - 0.5) / 2
+    expect(b.x1).toBeCloseTo(600, 3);
+    expect(b.y0).toBeCloseTo(100, 3);
+    expect(b.y1).toBeCloseTo(300, 3);
+    expect(extentShare(b, 800, 400)).toBeCloseTo(1, 6); // 400 px wide... larger side 400 / shorter side 400
+  });
+
+  it("ignores points behind the camera and is null when nothing is in range", () => {
+    const cam = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
+    cam.position.set(0, 0, 10);
+    cam.lookAt(0, 0, 0);
+    cam.updateMatrixWorld(true);
+    expect(screenBox([new THREE.Vector3(0, 0, 20)], cam, 100, 100)).toBeNull();
+    expect(screenBox([], cam, 100, 100)).toBeNull();
+    expect(screenBox([new THREE.Vector3(0, 0, 20), new THREE.Vector3(0, 0, 0)], cam, 100, 100)).not.toBeNull();
   });
 });

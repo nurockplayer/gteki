@@ -33,20 +33,62 @@ export function routableBounds(
   bundle: StationBundle,
   isTraversable: (edge: Edge) => boolean,
 ): Aabb | null {
+  return pointsBounds(routablePoints(bundle, isTraversable));
+}
+
+/** The routable network's points (renderer frame): every point of every traversable edge, with display heights. */
+export function routablePoints(bundle: StationBundle, isTraversable: (edge: Edge) => boolean): THREE.Vector3[] {
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
+  const out: THREE.Vector3[] = [];
+  for (const edge of bundle.edges) {
+    if (isTraversable(edge)) out.push(...edgePoints(bundle, edge, nodes, floors));
+  }
+  return out;
+}
+
+/** The slice box of `points`, lifted by the label height; null for no points. */
+export function pointsBounds(points: readonly THREE.Vector3[]): Aabb | null {
   const min = new THREE.Vector3(Infinity, Infinity, Infinity);
   const max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
-  for (const edge of bundle.edges) {
-    if (!isTraversable(edge)) continue;
-    for (const p of edgePoints(bundle, edge, nodes, floors)) {
-      min.min(p);
-      max.max(p);
-    }
+  for (const p of points) {
+    min.min(p);
+    max.max(p);
   }
   if (!(min.x <= max.x)) return null;
   max.y += LABEL_LIFT_M;
   return { min, max };
+}
+
+export interface ScreenBox { x0: number; y0: number; x1: number; y1: number }
+
+/**
+ * Screen-space bounding box (px, origin top-left of the viewport) of `points` as `camera` sees them now.
+ * Points behind the camera or past the far plane are ignored; null when none is in view range.
+ * `camera` must have current world matrices (`updateMatrixWorld`) and projection.
+ */
+export function screenBox(points: readonly THREE.Vector3[], camera: THREE.Camera, width: number, height: number): ScreenBox | null {
+  const p = new THREE.Vector3();
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const q of points) {
+    p.copy(q).project(camera);
+    if (p.z < -1 || p.z > 1) continue;
+    const x = (p.x * 0.5 + 0.5) * width, y = (-p.y * 0.5 + 0.5) * height;
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+  }
+  return x0 <= x1 ? { x0, y0, x1, y1 } : null;
+}
+
+/** The box's larger side as a share of the viewport's shorter side (the quantity the fit targets). */
+export function extentShare(box: ScreenBox, width: number, height: number): number {
+  return Math.max(box.x1 - box.x0, box.y1 - box.y0) / Math.min(width, height);
+}
+
+/** The 8 corners of an Aabb. */
+export function boxCorners(box: Aabb): THREE.Vector3[] {
+  const out: THREE.Vector3[] = [];
+  for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) out.push(new THREE.Vector3(x, y, z));
+  return out;
 }
 
 export interface FrameView {

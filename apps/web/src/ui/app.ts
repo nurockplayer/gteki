@@ -759,6 +759,7 @@ export class App {
       guideControls: () => ({ paused: this.explorer.guidePaused, tier: this.explorer.guideTier, speed: guideTierSpeed(this.explorer.guideTier) }),
       hud: () => [...this.ui.hud.querySelectorAll("button")].map((b) => b.textContent),
       labels: () => this.explorer.labelInfo(),
+      overviewFrame: () => this.explorer.overviewFrame(),
       quality: () => this.explorer.qualityLevel,
       avatar: () => this.explorer.avatarEnu,
       sceneInfo: () => this.explorer.sceneInfo(),
