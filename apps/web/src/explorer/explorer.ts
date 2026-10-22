@@ -22,6 +22,7 @@ import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, avatarFade, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
+import { StationCaches } from "./stationCaches.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
 import { avatarMotion } from "./avatarMotion.ts";
@@ -340,6 +341,14 @@ export class Explorer {
 
   private loadGeneration = 0;
 
+  /** The station module whose retained caches must be dropped when the explorer leaves it (see StationCaches). */
+  private readonly stationCaches = new StationCaches();
+
+  /** Run the previous station's cache-release hook when `nextId` is a different station (null: disposing). */
+  private releaseStationCaches(nextId: string | null): void {
+    this.stationCaches.releaseFor(nextId);
+  }
+
   /**
    * Abandon any in-flight load and show nothing: called as soon as another station is selected, so a
    * slow previous station can never appear under the new selection (even if the new one fails to load).
@@ -355,8 +364,11 @@ export class Explorer {
   async loadStation(station: LoadedStation, router: Router): Promise<boolean> {
     const generation = ++this.loadGeneration;
     this.phase = "graph";
+    // Leaving another station drops its retained caches first; the same station reopening keeps them.
+    this.releaseStationCaches(station.key);
     this.clearStation();
     this.station = station;
+    this.stationCaches.remember(station.key, station.scene);
     const bundle = station.bundle;
     this.graph = buildGraphView(bundle, router);
     // One loading manager per station: every request (GLB, its external buffers/images, textures)
@@ -1227,6 +1239,7 @@ export class Explorer {
     void this.audio?.context.close();
     this.audio = null;
     this.renderer.setAnimationLoop(null);
+    this.releaseStationCaches(null);
     this.clearStation();
     this.input.dispose();
     this.disposeComposer();
