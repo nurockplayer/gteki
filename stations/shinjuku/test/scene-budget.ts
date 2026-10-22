@@ -20,10 +20,13 @@ export function measure(root: THREE.Object3D, include: (o: THREE.Object3D) => bo
     triangles += perDraw * count;
     geometries.add(g);
   });
-  let geometryBytes = 0;
+  // Each underlying array once: an interleaved attribute's position and normal share one buffer.
+  const arrays = new Set<ArrayBufferView>();
   for (const g of geometries) {
-    for (const a of Object.values(g.attributes)) geometryBytes += (a as THREE.BufferAttribute).array.byteLength;
-    if (g.index) geometryBytes += g.index.array.byteLength;
+    for (const a of Object.values(g.attributes)) arrays.add((a as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute ? (a as THREE.InterleavedBufferAttribute).data.array : (a as THREE.BufferAttribute).array);
+    if (g.index) arrays.add(g.index.array);
   }
+  let geometryBytes = 0;
+  for (const a of arrays) geometryBytes += a.byteLength;
   return { draws, triangles: Math.round(triangles), geometryBytes, meshes };
 }

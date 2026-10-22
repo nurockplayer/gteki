@@ -16,7 +16,7 @@ import planJson from "../data/plan.json";
 import surfaceJson from "../data/surface.json";
 import { buildLayout, type Plan } from "../scene/layout.ts";
 import type { SurfaceData } from "../scene/surface-data.ts";
-import { CONTEXT_ASSET_ID, CONTEXT_ATTRIBUTION, CONTEXT_GLB, contextGlbFor, contextMeshes } from "../scene/context.ts";
+import { CONTEXT_ASSET_ID, CONTEXT_ATTRIBUTION, CONTEXT_GLB, CONTEXT_OMIT, contextGlbFor, contextMeshes, prepareContext } from "../scene/context.ts";
 import { buildScene } from "../gteki/scene.ts";
 import { explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { sourceCredit } from "../../../apps/web/src/credits.ts";
@@ -40,7 +40,7 @@ const manifest = JSON.parse(readFileSync(join(SOURCES_DIR, "context-manifest.jso
   attribution: string;
   assets: Record<"low" | "high", { uri: string; outputSha256: string; outputBytes: number; triangles: number; drawCalls: number; features: number }>;
 };
-const VARIANT = { low: { uri: CONTEXT_GLB.low, draws: 1, triangles: 14_260, geometryBytes: 1_345_296, meshNames: ["ctx_bldg_all"] }, high: { uri: CONTEXT_GLB.high, draws: 6, triangles: 83_705, geometryBytes: 9_635_100, meshNames: ["ctx_bldg_t00_00", "ctx_bldg_t00_01", "ctx_bldg_t00_02", "ctx_bldg_t01_00", "ctx_bldg_t01_01", "ctx_bldg_t01_02"] } } as const;
+const VARIANT = { low: { uri: CONTEXT_GLB.low, draws: 1, triangles: 14_260, drawnTriangles: 14_220, geometryBytes: 672_408, meshNames: ["ctx_bldg_all"] }, high: { uri: CONTEXT_GLB.high, draws: 6, triangles: 83_705, drawnTriangles: 83_543, geometryBytes: 5_088_132, meshNames: ["ctx_bldg_t00_00", "ctx_bldg_t00_01", "ctx_bldg_t00_02", "ctx_bldg_t01_00", "ctx_bldg_t01_01", "ctx_bldg_t01_02"] } } as const;
 
 const withContext = (quality: "low" | "high", over: Record<string, unknown> = {}) => ({
   THREE, bundle, quality, assetUrl: (uri: string) => `/@fs/${uri}`, loadGlb: nodeLoadGlb(), ...over,
@@ -247,7 +247,7 @@ describe("street context: scene wiring", () => {
         const meshes: THREE.Mesh[] = [];
         ctx.traverse((o) => { if ((o as THREE.Mesh).isMesh) meshes.push(o as THREE.Mesh); });
         expect(meshes.map((m) => m.name)).toEqual([...VARIANT[quality].meshNames]);
-        expect(measure(ctx)).toMatchObject({ draws: VARIANT[quality].draws, triangles: VARIANT[quality].triangles });
+        expect(measure(ctx)).toMatchObject({ draws: VARIANT[quality].draws, triangles: VARIANT[quality].drawnTriangles });
         // The other quality's file is not in the scene.
         const other = quality === "low" ? VARIANT.high : VARIANT.low;
         expect(meshes.some((m) => other.meshNames.includes(m.name as never))).toBe(false);
@@ -258,7 +258,7 @@ describe("street context: scene wiring", () => {
         const scene = built[key]!;
         const now = measure(scene.root), v = VARIANT[quality];
         expect(now.draws).toBe(BASELINE_BUDGET.draws - LOD1_BUILDINGS.draws + v.draws);
-        expect(now.triangles).toBe(BASELINE_BUDGET.triangles - LOD1_BUILDINGS.triangles + v.triangles);
+        expect(now.triangles).toBe(BASELINE_BUDGET.triangles - LOD1_BUILDINGS.triangles + v.drawnTriangles);
         expect(now.geometryBytes).toBe(BASELINE_BUDGET.geometryBytes - LOD1_BUILDINGS.geometryBytes + v.geometryBytes);
       });
       it("leaves colliders, walls, walkable surfaces, camera blockers and spawn points byte-identical to fe8d3b6", () => {
@@ -289,23 +289,15 @@ describe("street context: scene wiring", () => {
 
 describe("street context: clearance from our walkable street", () => {
   /**
-   * Every building whose footprint (roofs included) covers more than TOLERANCE of a walkable or opened street
-   * zone. Nothing is deleted or moved: an intrusion is reported here by gml_id so the director can decide
-   * (exclude it in tools/gis, or accept it). The list below is that report, pinned: a new intruder, or a
-   * larger one, fails; a fixed one must leave the list. Areas are m^2 of the building footprint inside the zone.
+   * A building whose footprint (roofs included) covers more than TOLERANCE of a walkable or opened street zone
+   * intrudes. Nothing is moved or edited in the GLB: the buildings found are listed, by gml_id, in
+   * sources/context-omit.json and left out of the drawing by triangle range (a visual omission, not a claim that
+   * the building is absent). The omit list must equal exactly the intruders found without it, so it cannot grow
+   * silently, and with it applied there are none.
    */
   const TOLERANCE_M2 = 0.05;
-  const KNOWN: Record<string, { why: string; maxAreaM2: Partial<Record<string, number>> }> = {
-    "bldg_a532cf2b-a084-43fa-a2eb-7c94f89ee0c3": {
-      why: "35.6 m building (LOD1 31.5 m) whose footprint overlaps the exit 2 canopy, stair opening and street pad; the LOD1 layer clipped it away there",
-      maxAreaM2: { street: 42.1, opening: 33.0, roof: 21.5, canopy: 21.1, route: 13.5 },
-    },
-    "bldg_2707a581-4f65-4a20-b576-708bb21cf3af": {
-      why: "5.3 m low building (LOD1 5.3 m) with exit 3 (the lift exit) inside its footprint; the LOD1 layer clipped it away there",
-      maxAreaM2: { street: 4.4, opening: 6.0, canopy: 2.3, route: 3.4 },
-    },
-  };
   const zones = walkableZones(layout, bundle);
+  const omitted = new Set(CONTEXT_OMIT.omit.map((o) => o.gmlId));
 
   it("the zones are the real street: pads, exit tops, openings, the four canopies, roofed runs and street-height corridors", () => {
     expect(zones.street.length).toBeGreaterThan(0);
@@ -315,15 +307,59 @@ describe("street context: clearance from our walkable street", () => {
   });
 
   for (const v of ["low", "high"] as const) {
-    it(`${v}: only the reported buildings intrude, by no more than the reported areas`, () => {
-      const rows = contextIntrusions(parseGlb(readGlbBytes(VARIANT[v].uri)).meshes, featureRows(v), zones, TOLERANCE_M2);
-      const unexpected = rows.filter((r) => {
-        const known = KNOWN[r.gmlId];
-        return !known || r.areaM2 > (known.maxAreaM2[r.zone] ?? 0) + 0.5;
-      });
-      expect(unexpected).toEqual([]);
-      // The report is not stale: every listed building still intrudes.
-      expect(new Set(rows.map((r) => r.gmlId))).toEqual(new Set(Object.keys(KNOWN)));
+    it(`${v}: the intruders without the omit list are exactly the omit list, and none remain with it applied`, () => {
+      const meshes = parseGlb(readGlbBytes(VARIANT[v].uri)).meshes;
+      const rows = featureRows(v);
+      const found = contextIntrusions(meshes, rows, zones, TOLERANCE_M2);
+      expect([...new Set(found.map((r) => r.gmlId))].sort()).toEqual([...omitted].sort());
+      // Reported overlaps in the list are the measured ones.
+      for (const o of CONTEXT_OMIT.omit) for (const r of found.filter((f) => f.gmlId === o.gmlId)) expect(r.areaM2, `${o.gmlId} ${r.zone}`).toBeCloseTo(o.overlapM2[r.zone]!, 2);
+      expect(contextIntrusions(meshes, rows.filter((r) => !omitted.has(r.gmlId)), zones, TOLERANCE_M2)).toEqual([]);
+    });
+  }
+
+  it("every omitted id and triangle range is in the features table of both files, and the list is for these GLBs", () => {
+    const man = JSON.parse(readFileSync(join(SOURCES_DIR, "context-omit.json"), "utf8")) as { glbSha256: Record<"low" | "high", string>; reason: string };
+    expect(man.reason).toBe("E27 exit opening lies inside this building's footprint; the context is a solid visual mass with no modelled opening, so drawing it would put the exit inside a wall. Omitted visually; not a claim that the building is absent.");
+    for (const v of ["low", "high"] as const) {
+      expect(man.glbSha256[v]).toBe(manifest.assets[v].outputSha256);
+      expect(CONTEXT_OMIT.glbTriangles[v]).toBe(VARIANT[v].triangles);
+      const rows = featureRows(v);
+      for (const o of CONTEXT_OMIT.omit) {
+        const row = rows.find((r) => r.gmlId === o.gmlId);
+        expect(row, `${v} ${o.gmlId}`).toBeDefined();
+        expect({ mesh: row!.mesh, triStart: row!.triStart, triCount: row!.triCount }, `${v} ${o.gmlId}`).toEqual(o.ranges[v]);
+      }
+    }
+  });
+
+  for (const v of ["low", "high"] as const) {
+    it(`${v}: prepareContext removes exactly the omitted triangles and leaves the rest in order; a file it was not written for is refused`, async () => {
+      const load = nodeLoadGlb();
+      const original = parseGlb(readGlbBytes(VARIANT[v].uri)).meshes;
+      const gltf = await load(VARIANT[v].uri);
+      expect(prepareContext(gltf.scene, v)).toBe(true);
+      const meshes = contextMeshes(gltf.scene)!;
+      let removed = 0;
+      for (const mesh of meshes) {
+        const before = original.find((m) => m.name === mesh.name)!.indices;
+        const ranges = CONTEXT_OMIT.omit.map((o) => o.ranges[v]).filter((r) => r.mesh === mesh.name).sort((a, b) => a.triStart - b.triStart);
+        const expected: number[] = [];
+        for (let t = 0; t < before.length / 3; t++) if (!ranges.some((r) => t >= r.triStart && t < r.triStart + r.triCount)) expected.push(before[t * 3]!, before[t * 3 + 1]!, before[t * 3 + 2]!);
+        expect(Array.from(mesh.geometry.index!.array), mesh.name).toEqual(expected);
+        removed += (before.length - expected.length) / 3;
+        // Uint16 index exactly when the mesh has fewer than 65,536 vertices.
+        expect(mesh.geometry.index!.array instanceof Uint16Array, mesh.name).toBe(mesh.geometry.attributes.position!.count < 65_536);
+      }
+      expect(removed).toBe(CONTEXT_OMIT.omit.reduce((n, o) => n + o.ranges[v].triCount, 0));
+      // The other variant's file does not fit this list.
+      const other = await load(VARIANT[v === "low" ? "high" : "low"].uri);
+      expect(prepareContext(other.scene, v)).toBe(false);
+      // A range that no longer fits (a replaced GLB with fewer triangles) is refused, not applied.
+      const stale = await load(VARIANT[v].uri);
+      const first = contextMeshes(stale.scene)![0]!;
+      first.geometry.setIndex(Array.from(first.geometry.index!.array).slice(0, 30));
+      expect(prepareContext(stale.scene, v)).toBe(false);
     });
   }
 

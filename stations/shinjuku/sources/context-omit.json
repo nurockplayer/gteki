@@ -1,0 +1,59 @@
+{
+ "note": "Buildings the PLATEAU context does not draw. A visual omission, not a data claim. Applied at load by scene/context.ts by triangle range of the GLB's own mesh; the ranges are the receipts' feature table (context-features.json) and must match it. test/context.test.ts requires this list to equal exactly the buildings whose footprint overlaps our walkable street (so it cannot grow silently), requires every id and range to exist in the features table, and requires the GLBs to be the ones named here. Refresh together with the GLBs.",
+ "reason": "E27 exit opening lies inside this building's footprint; the context is a solid visual mass with no modelled opening, so drawing it would put the exit inside a wall. Omitted visually; not a claim that the building is absent.",
+ "glbSha256": {
+  "low": "304e1cd5074973175ae7c9bb37cf3c70c8fb12d18e8fc3b20477a6780eea70a3",
+  "high": "21fd23e3538b8bf4b84eed5a9c541064a766e5119de6799623f5d790730d3585"
+ },
+ "glbTriangles": {
+  "low": 14260,
+  "high": 83705
+ },
+ "omit": [
+  {
+   "gmlId": "bldg_a532cf2b-a084-43fa-a2eb-7c94f89ee0c3",
+   "where": "exit 2 (poi:exit:2): stair mouth, canopy and route",
+   "overlapM2": {
+    "street": 42.055,
+    "opening": 32.994,
+    "roof": 21.466,
+    "canopy": 21.078,
+    "route": 13.465
+   },
+   "ranges": {
+    "low": {
+     "mesh": "ctx_bldg_all",
+     "triStart": 11184,
+     "triCount": 12
+    },
+    "high": {
+     "mesh": "ctx_bldg_t00_01",
+     "triStart": 44153,
+     "triCount": 128
+    }
+   }
+  },
+  {
+   "gmlId": "bldg_2707a581-4f65-4a20-b576-708bb21cf3af",
+   "where": "exit 3 (poi:exit:3, the lift exit): lift top inside the footprint",
+   "overlapM2": {
+    "street": 4.329,
+    "opening": 5.979,
+    "canopy": 2.229,
+    "route": 3.302
+   },
+   "ranges": {
+    "low": {
+     "mesh": "ctx_bldg_all",
+     "triStart": 4120,
+     "triCount": 28
+    },
+    "high": {
+     "mesh": "ctx_bldg_t00_01",
+     "triStart": 14807,
+     "triCount": 34
+    }
+   }
+  }
+ ]
+}

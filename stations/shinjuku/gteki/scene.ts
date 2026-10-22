@@ -10,7 +10,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
 import { surfaceEntrances, surfaceRoofs } from "../scene/surface-layout.ts";
-import { contextGlbFor, contextMeshes } from "../scene/context.ts";
+import { contextGlbFor, contextVariant, prepareContext } from "../scene/context.ts";
 import plan from "../data/plan.json" with { type: "json" };
 
 /**
@@ -23,8 +23,8 @@ async function loadStreetContext(ctx: SceneContext): Promise<THREE.Object3D | nu
   if (!uri) return null;
   try {
     const loaded = await ctx.loadGlb(uri);
-    if (contextMeshes(loaded.scene)) return loaded.scene;
-    console.warn(`[gteki] shinjuku street context ${uri} is not a visual-only ctx_bldg_* file; using the procedural street`);
+    if (prepareContext(loaded.scene, contextVariant(uri))) return loaded.scene;
+    console.warn(`[gteki] shinjuku street context ${uri} is not the visual-only ctx_bldg_* file context-omit.json was written for; using the procedural street`);
     loaded.scene.traverse((o) => (o as THREE.Mesh).geometry?.dispose());
   } catch (err) {
     console.warn(`[gteki] shinjuku street context ${uri} failed to load; using the procedural street`, err);

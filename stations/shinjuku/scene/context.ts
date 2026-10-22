@@ -8,9 +8,10 @@
  * flattened to street z = 0, and z is -north: the scene's own ENU to three.js mapping (X = x, Y = z, Z = -y),
  * so the GLB needs no transform.
  */
-import type * as THREE from "three";
+import * as THREE from "three";
 import type { StationBundle } from "@gteki/schema";
 import { daylight } from "./surface-materials.ts";
+import omitJson from "../sources/context-omit.json" with { type: "json" };
 
 /** The asset id station.json declares (written by tools/import-e27.ts from sources/context-manifest.json). */
 export const CONTEXT_ASSET_ID = "street-context";
@@ -72,4 +73,49 @@ export function createContextMaterial(): THREE.MeshBasicMaterial {
   const m = daylight("#d3cfc5");
   m.name = "ctx_concrete";
   return m;
+}
+
+/** Which file a uri names. */
+export const contextVariant = (uri: string): "low" | "high" => (uri === CONTEXT_GLB.high ? "high" : "low");
+
+interface OmitRange { mesh: string; triStart: number; triCount: number }
+export const CONTEXT_OMIT = omitJson as unknown as {
+  glbTriangles: Record<"low" | "high", number>;
+  omit: { gmlId: string; where: string; overlapM2: Record<string, number>; ranges: Record<"low" | "high", OmitRange> }[];
+};
+
+/**
+ * Prepare a loaded, accepted context for drawing: drop the triangles of the buildings listed in
+ * sources/context-omit.json (visual omission by triangle range; their exit openings lie inside the PLATEAU
+ * footprint), and store each index as Uint16 where the mesh has under 65,536 vertices. Returns false, touching
+ * nothing, when the file is not the one the list was written for (triangle total or a range does not fit): the
+ * caller then draws the procedural street instead of a context whose omissions would be wrong.
+ */
+export function prepareContext(gltfScene: THREE.Object3D, variant: "low" | "high"): boolean {
+  const meshes = contextMeshes(gltfScene);
+  if (!meshes) return false;
+  const total = meshes.reduce((n, m) => n + (m.geometry.index?.count ?? 0) / 3, 0);
+  if (total !== CONTEXT_OMIT.glbTriangles[variant]) return false;
+  const cut = new Map<THREE.Mesh, OmitRange[]>();
+  for (const { ranges } of CONTEXT_OMIT.omit) {
+    const r = ranges[variant];
+    const mesh = meshes.find((m) => m.name === r.mesh);
+    if (!mesh || r.triStart < 0 || r.triCount <= 0 || (r.triStart + r.triCount) * 3 > mesh.geometry.index!.count) return false;
+    (cut.get(mesh) ?? cut.set(mesh, []).get(mesh)!).push(r);
+  }
+  for (const mesh of meshes) {
+    const g = mesh.geometry, old = g.index!.array;
+    const ranges = (cut.get(mesh) ?? []).sort((a, b) => a.triStart - b.triStart);
+    const kept = new Uint32Array(old.length - ranges.reduce((n, r) => n + r.triCount * 3, 0));
+    let at = 0, from = 0;
+    for (const r of ranges) {
+      kept.set(old.subarray(from, r.triStart * 3), at); at += r.triStart * 3 - from;
+      from = (r.triStart + r.triCount) * 3;
+    }
+    kept.set(old.subarray(from), at);
+    g.setIndex(new THREE.BufferAttribute(g.attributes.position!.count < 65_536 ? Uint16Array.from(kept) : kept, 1));
+    g.computeBoundingBox();
+    g.computeBoundingSphere();
+  }
+  return true;
 }
