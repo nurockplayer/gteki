@@ -52,11 +52,14 @@ Root node `extras.gteki` (object):
   "fidelity": "generic kit; not a replica of any operator equipment or station",
   "navigation": "none — visual/physical only; routing truth lives in the station graph",
   "provenance": "original procedural geometry and textures; see assets/library/PROVENANCE.md",
-  "license": "UNDECIDED — original GTEki work; repository licence pending Owner decision"
+  "license": "CC-BY-4.0 — original GTEki work; attribution: GTEki contributors",
+  "license_spdx": "CC-BY-4.0",
+  "rights_class": "original",
+  "attribution": "GTEki contributors"
 }
 ```
 
-**Rights fields (decided, rollout pending).** The Owner decided the licences in Issue #123: the kit's original procedural assets are CC BY 4.0 (attribution "GTEki contributors") and AI-generated 2D images are CC0 1.0. The schema has a rights class `original` and three further keys, all defined in `tools/blender/gteki_assets/contract.py`:
+**Rights fields.** The Owner decided the licences in Issue #123: the kit's original procedural assets are CC BY 4.0 (attribution "GTEki contributors") and AI-generated 2D images are CC0 1.0. The schema has a rights class `original` and three further keys, all defined in `tools/blender/gteki_assets/contract.py`:
 
 | Key | Value | Notes |
 | --- | --- | --- |
@@ -64,11 +67,12 @@ Root node `extras.gteki` (object):
 | `rights_class` | `original` | The class for everything the kit generates itself. Third-party material never uses this class. |
 | `attribution` | `GTEki contributors` | The credit line. |
 
-The existing `license` string above is what the 96 committed GLBs (48 full, 48 mobile) and both manifests embed today. `build.sh repro` compares rebuilds byte-for-byte with that library, so none of the rights fields is written yet. One switch, `contract.EMBED_SPDX` (default `False`), controls all of it:
+One switch, `contract.EMBED_SPDX`, controls all of it. It is **on** since the AO rollout rebuild (#160):
 
-- **Off (now):** `contract.LICENSE` keeps its `UNDECIDED` text, the GLB `asset.copyright` keeps its old text, and `license_spdx` / `rights_class` / `attribution` are written nowhere. No byte changes.
-- **On (the next full library rebuild, the AO rollout):** the three keys are written into every GLB's `extras.gteki` and every manifest, at the top level of both `manifest.json` files and in each asset's record. `contract.LICENSE` becomes `CC-BY-4.0 — original GTEki work; attribution: GTEki contributors`, and the GLB `asset.copyright` becomes `GTEki contributors. CC-BY-4.0`. Flip the switch in the same change that regenerates `assets/library/` and `assets/library/mobile/` (GLBs, manifests, hashes), then re-run `build.sh repro` for both profiles.
-- `validate_glb.py` already accepts the three keys: if any is present, all three must be non-empty strings and `rights_class` must be `original`.
+- The three keys are written into every GLB's `extras.gteki` and every manifest, at the top level of both `manifest.json` files and in each asset's record.
+- `contract.LICENSE` is `CC-BY-4.0 — original GTEki work; attribution: GTEki contributors`, and the GLB `asset.copyright` is `GTEki contributors. CC-BY-4.0`.
+- Libraries built before the rollout carry the old `UNDECIDED` string and no rights keys. `REUSE.toml` records the decided licence for them.
+- `validate_glb.py` checks the three keys: if any is present, all three must be non-empty strings and `rights_class` must be `original`.
 - Path-level licences for files that are not GLBs (posters, contact sheets, third-party data) are in the root `REUSE.toml`; the credits are in `NOTICE`.
 
 `SOCKET_*` extras: `{ "socket": "start" | "end" | "left" | "right" | ..., "width": m, "height": m }`. Two modules join when sockets coincide with opposite facing (socket local −Z points out of the module).
