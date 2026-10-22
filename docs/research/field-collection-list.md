@@ -13,7 +13,7 @@ Consolidated 2026-10-22 from the five research files (R1 to R5) and the existing
 > - Record the date and time on every note.
 > - No measurement inside a paid area unless the item says a ticket is needed (column "Paid?").
 > - Contact no one (Owner decision of 2026-10-22, recorded on #165). Items that need an operator are in "Not collectable by the Owner alone" and are blocked.
-> - The Owner's own surface close-ups ship as CC BY 4.0, attribution "GTEki contributors" (OD-13, decided 2026-10-22, [`owner-decisions-pending.md`](owner-decisions-pending.md)). Photos showing operator logos or ads ship only with those regions removed or blurred (OD-14). Operator photography rules were not checked (`gaps/DR-imagery-materials.md` section 7).
+> - The Owner's own surface close-ups ship as CC BY 4.0, attribution "GTEki contributors" (OD-13, decided 2026-10-22, [`owner-decisions-pending.md`](owner-decisions-pending.md)). A surface close-up that unavoidably catches the edge of an operator logo or ad ships only with that region removed or blurred (OD-14, applied narrowly). A photo that frames a sign, logo or ad is a sign photo and never ships, even blurred. Operator photography rules were not checked (`gaps/DR-imagery-materials.md` section 7).
 
 ## How to read this
 
