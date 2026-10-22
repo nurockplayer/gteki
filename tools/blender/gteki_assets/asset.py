@@ -121,8 +121,9 @@ class Asset:
     def build(self):
         reset_scene()
         coll = bpy.context.scene.collection
-        # mobile: content textures (sign faces) as JPEG; the palette stays PNG
-        mats = [materials.get(m, self.tex_res, jpeg=self.profile == "mobile") for m in self.materials]
+        # mobile: content as JPEG; palette and declared finish normals keep their PNG bytes
+        normal_png = self.family == "finish" and materials.finish_normal_png(self.params, self.profile)
+        mats = [materials.get(m, self.tex_res, jpeg=self.profile == "mobile", normal_png=normal_png) for m in self.materials]
 
         root = bpy.data.objects.new(self.id, None)
         coll.objects.link(root)

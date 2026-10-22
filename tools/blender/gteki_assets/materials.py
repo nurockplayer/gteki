@@ -246,10 +246,18 @@ def _load_image(path, non_color, jpeg=False):
     return img
 
 
-def get(name, tex_res, jpeg=False):
+def finish_normal_png(params, profile):
+    """The declared mobile finish exception; never changes the generator spec/cache key."""
+    if "mobile_normal_format" in params and params["mobile_normal_format"] != "png":
+        raise ValueError("mobile_normal_format must be png when present")
+    return profile == "mobile" and params.get("mobile_normal_format") == "png"
+
+
+def get(name, tex_res, jpeg=False, normal_png=False):
     """Return (creating once per Blender session) the bpy material for `name`.
     `jpeg`: load generated PNG maps as cached JPEG copies (for exports that keep
-    source formats, i.e. the mobile profile)."""
+    source formats, i.e. the mobile profile). `normal_png` keeps a declared finish
+    normal's cached generator PNG unchanged."""
     mat = bpy.data.materials.get(name)
     if mat is not None:
         return mat
@@ -303,7 +311,7 @@ def get(name, tex_res, jpeg=False):
             bsdf.inputs["Metallic"].default_value = fac["metal"]
         if "normal" in maps:
             nrm = nt.nodes.new("ShaderNodeTexImage")
-            nrm.image = _load_image(maps["normal"], True, jpeg)
+            nrm.image = _load_image(maps["normal"], True, jpeg and not normal_png)
             nrm.location = (-500, -250)
             nmap = nt.nodes.new("ShaderNodeNormalMap")
             nmap.location = (-200, -250)

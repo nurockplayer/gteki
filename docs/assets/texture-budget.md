@@ -114,6 +114,8 @@ The lowest close-up scores belong to the bench (perforated steel at 512) and the
 
 The finish pack ([contract §9](asset-contract.md#9-finish-packs--gteki-finish01)) is checked by the same command: `texture_budget.py --check` reads `limits.finishes_mib` (loose map bytes) and `limits.finishes_gpu_mib` (estimated GPU memory, each unique file once) from the budget file of the library it checks, and fails if the pack is of the other tier. **Both tiers' finish limits are provisional until the first measured build.** The pack has not been built yet; the numbers below are derived from the sizes and maps the generators will produce, and are to be replaced by measured values plus about 5 % headroom (like the kit limits) in the PR that commits the built pack.
 
+The director approved keeping the mobile granite-tile and tile600 normals at 512 px as lossless PNG (`mobile_normal_format: "png"`; see §9). Blender's JPEG encoder always uses 4:2:0, which breaks the wrap of thin grout on the texture edge at 512 px. The loose normal and sample GLB embed the same cached PNG bytes. PNG increases download slightly and leaves the RGBA8 GPU estimate unchanged. Other finish maps and the full tier stay JPEG; the download estimates below need a measured build with the two PNGs. No budget limit changes with this exception.
+
 | Tier | Map size per finish (px) | Worst-case maps | GPU est. | Download est. | Limit |
 | --- | --- | --- | ---: | ---: | --- |
 | `full` (`--tex-res 1024`) | 1024 for terrazzo, granite, tile, both panels and the spandrel; 512 kick plate; 256 tint band | 3 per finish, 24 | 101 MiB | 0.98 MiB | `budget.json`: 1.6 MiB, 100 MiB |

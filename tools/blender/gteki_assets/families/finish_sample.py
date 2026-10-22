@@ -17,6 +17,9 @@ def finish_sample(asset_id, params, tex_res):
     if asset_id not in finishes.SOURCE:
         raise KeyError(f"unknown finish {asset_id}")
     p = _merge(dict(role="floor"), params)
+    materials.finish_normal_png(p, Asset.profile)  # reject an unsupported catalog format
+    if Asset.profile == "full":
+        p.pop("mobile_normal_format", None)  # preserve full-tier extras (and GLB bytes)
     if p["role"] not in finishes.ROLES:
         raise ValueError(f"role must be one of {finishes.ROLES}, got {p['role']!r}")
     rep = finishes.repeat_m(asset_id)

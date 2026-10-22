@@ -2,7 +2,7 @@
 
 A finish is one `gteki_finish_*` material (tileable albedo / ORM / normal, repeat in metres) shipped
 twice: as loose files plus `finish.json` (what a station loads) and inside a flat sample GLB (what the
-validate / Godot / web pipeline checks). Both carry the same JPEG bytes. The materials derive from the
+validate / Godot / web pipeline checks). Both carry the same map bytes. The materials derive from the
 kit's own (`SOURCE`); this module only changes what a finish needs: the baked panel joint, the neutral
 tint base, and keeping the maps a runtime tint multiplies.
 """
@@ -95,14 +95,17 @@ def stage_pack(catalog, entries, tex_res, profile, staging):
         d = os.path.join(staging, fid)
         os.makedirs(d, exist_ok=True)
         maps = {}
+        normal_png = materials.finish_normal_png(p, profile)
         for key in MAPS:
             if key in plan["maps"]:
-                dst = os.path.join(d, f"{key}.jpg")
-                src = materials._jpeg_copy(plan["maps"][key])
+                png = key == "normal" and normal_png
+                filename = f"{key}.{'png' if png else 'jpg'}"
+                dst = os.path.join(d, filename)
+                src = plan["maps"][key] if png else materials._jpeg_copy(plan["maps"][key])
                 with open(src, "rb") as f, open(dst, "wb") as g:
                     g.write(f.read())
                 sha, size = _sha(dst)
-                maps[key] = {"file": f"{key}.jpg", "size": [plan["res"], plan["res"]], "bytes": size, "sha256": sha}
+                maps[key] = {"file": filename, "size": [plan["res"], plan["res"]], "bytes": size, "sha256": sha}
         fac = plan["factors"]
         lin = materials._srgb_to_linear(fac["color"]) if "color" in fac else (1.0, 1.0, 1.0)
         factors = {"baseColorFactor": [round(v, 6) for v in lin] + [1.0],
@@ -135,6 +138,8 @@ def stage_pack(catalog, entries, tex_res, profile, staging):
             "license": contract.LICENSE,
             "provenance": contract.PROVENANCE,
         }
+        if normal_png:
+            doc["mobile_normal_format"] = "png"
         if doc["tint"]:
             doc["tint_info"] = tint_info(fid, plan)
         _write_json(os.path.join(d, "finish.json"), doc)

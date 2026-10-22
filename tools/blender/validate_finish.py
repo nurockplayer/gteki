@@ -5,7 +5,7 @@
   python3 tools/blender/validate_finish.py --self-test
 
 Per finish: finish.json schema, files present with the sha256 / bytes that finish.json and the
-manifest record, power-of-two sizes that match the JPEG headers (and the pack's texture cap),
+manifest record, power-of-two sizes that match the JPEG/PNG headers (and the pack's texture cap),
 seamless tiling of albedo and normal (opposite edges compared), a near-white neutral base for
 `tint` finishes, and a sample GLB that embeds exactly the loose map files under the finish's name.
 The sample GLB itself is checked by validate_glb.py.
@@ -25,6 +25,7 @@ from pathlib import Path
 import re
 import struct
 import sys
+import zlib
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from validate_glb import encode_glb, parse_glb  # noqa: E402
@@ -243,6 +244,88 @@ class Decoded:
                 m[0] + 1.772 * (m[1] - 128.0)]
 
 
+# --------------------------------------------------------------------------- PNG decoding
+
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+
+
+def _paeth(a, b, c):
+    p = a + b - c
+    da, db, dc = abs(p - a), abs(p - b), abs(p - c)
+    return a if da <= db and da <= dc else b if db <= dc else c
+
+
+class PNGDecoded:
+    """8-bit, non-interlaced RGB/RGBA PNG, including all five scanline filters.
+
+    texsynth.write_png writes RGB/RGBA with filter 0. Alpha is ignored for seam/tint checks.
+    """
+
+    def __init__(self, data):
+        if data[:8] != PNG_SIGNATURE:
+            raise ValueError("not a PNG")
+        pos, header, compressed, ended = 8, None, bytearray(), False
+        while pos + 12 <= len(data):
+            n, tag = struct.unpack_from(">I4s", data, pos)
+            if pos + n + 12 > len(data):
+                raise ValueError("truncated PNG chunk")
+            body = data[pos + 8:pos + 8 + n]
+            crc = struct.unpack_from(">I", data, pos + 8 + n)[0]
+            if zlib.crc32(tag + body) & 0xFFFFFFFF != crc:
+                raise ValueError("PNG chunk CRC mismatch")
+            if header is None and tag != b"IHDR":
+                raise ValueError("PNG must start with IHDR")
+            if tag == b"IHDR":
+                if header is not None or n != 13:
+                    raise ValueError("invalid PNG IHDR")
+                header = struct.unpack(">IIBBBBB", body)
+            elif tag == b"IDAT":
+                compressed.extend(body)
+            elif tag == b"IEND":
+                if n:
+                    raise ValueError("invalid PNG IEND")
+                ended = True
+                break
+            pos += n + 12
+        if not header or not ended or not compressed:
+            raise ValueError("incomplete PNG")
+        self.w, self.h, depth, ctype, compression, filtering, interlace = header
+        if not self.w or not self.h or depth != 8 or ctype not in (2, 6) or compression or filtering or interlace:
+            raise ValueError("only 8-bit RGB/RGBA non-interlaced PNG is supported")
+        self.channels = 3 if ctype == 2 else 4
+        stride = self.w * self.channels
+        try:
+            raw = zlib.decompress(compressed)
+        except zlib.error as e:
+            raise ValueError(f"invalid PNG zlib data: {e}") from e
+        if len(raw) != (stride + 1) * self.h:
+            raise ValueError("PNG scanline size mismatch")
+        self.rows = []
+        previous = bytes(stride)
+        for y in range(self.h):
+            start = y * (stride + 1)
+            kind = raw[start]
+            row = bytearray(raw[start + 1:start + 1 + stride])
+            if kind not in range(5):
+                raise ValueError(f"unsupported PNG filter {kind}")
+            if kind:
+                for i in range(stride):
+                    a = row[i - self.channels] if i >= self.channels else 0
+                    b = previous[i]
+                    c = previous[i - self.channels] if i >= self.channels else 0
+                    predictor = a if kind == 1 else b if kind == 2 else (a + b) // 2 if kind == 3 else _paeth(a, b, c)
+                    row[i] = (row[i] + predictor) & 255
+            previous = bytes(row)
+            self.rows.append(previous)
+
+    def pixel(self, x, y):
+        start = x * self.channels
+        return list(self.rows[y][start:start + 3])
+
+    def mean_rgb(self):
+        return [sum(sum(row[c::self.channels]) for row in self.rows) / (self.w * self.h) for c in range(3)]
+
+
 def seam_score(img):
     """Worst of the two wrap-around scores (see the module docstring)."""
     def diff(a, b):
@@ -299,12 +382,16 @@ def check_doc(doc, fid, tier):
     if not isinstance(maps, dict) or not maps or not set(maps) <= set(MAPS):
         p.append(f"maps must hold a non-empty subset of {MAPS}")
         maps = {}
+    if "mobile_normal_format" in doc:
+        if doc["mobile_normal_format"] != "png" or tier != "mobile" or "normal" not in maps:
+            p.append("mobile_normal_format requires png, tier mobile and a shipped normal map")
     for key, m in maps.items():
-        ok = (isinstance(m, dict) and m.get("file") == f"{key}.jpg" and isinstance(m.get("bytes"), int) and m["bytes"] > 0
+        filename = _map_file(doc, key)
+        ok = (isinstance(m, dict) and m.get("file") == filename and isinstance(m.get("bytes"), int) and m["bytes"] > 0
               and isinstance(m.get("sha256"), str) and HEX64.fullmatch(m["sha256"])
               and isinstance(m.get("size"), list) and len(m["size"]) == 2 and all(isinstance(x, int) for x in m["size"]))
         if not ok:
-            p.append(f"maps.{key} must have file {key}.jpg, size [w, h], bytes and sha256")
+            p.append(f"maps.{key} must have file {filename}, size [w, h], bytes and sha256")
     if sorted(doc.get("omitted_maps") or []) != sorted(set(MAPS) - set(maps)):
         p.append("omitted_maps must list exactly the maps that are not shipped")
     fa = doc.get("factors")
@@ -326,6 +413,11 @@ def check_doc(doc, fid, tier):
     elif doc["tint"] and not isinstance(doc.get("tint_info"), dict):
         p.append("a tint finish needs tint_info (mode, formula, set)")
     return p
+
+
+def _map_file(doc, key):
+    png = key == "normal" and doc.get("tier") == "mobile" and doc.get("mobile_normal_format") == "png"
+    return f"{key}.{'png' if png else 'jpg'}"
 
 
 def _sha(path):
@@ -351,39 +443,44 @@ def check_finish(root, rec, cap, tier):
         return p + [f"{fid}: finish.json is not valid JSON ({e})"], info
     p += [f"{fid}: {x}" for x in check_doc(doc, fid, tier)]
     maps = doc.get("maps") if isinstance(doc.get("maps"), dict) else {}
+    expected_pngs = {_map_file(doc, key) for key in maps if _map_file(doc, key).endswith(".png")}
+    for f in d.glob("*.png"):
+        if f.name not in expected_pngs:
+            p.append(f"{fid}: undeclared PNG {f.name}")
     loose = {}
     decoded = {}
     for key, m in maps.items():
-        f = d / f"{key}.jpg"
+        filename = _map_file(doc, key)
+        f = d / filename
         if not isinstance(m, dict) or not f.is_file():
-            p.append(f"{fid}: {key}.jpg is missing")
+            p.append(f"{fid}: {filename} is missing")
             continue
         sha, size = _sha(f)
         loose[sha] = key
         if (sha, size) != (m.get("sha256"), m.get("bytes")):
-            p.append(f"{fid}: {key}.jpg sha256 / bytes differ from finish.json")
+            p.append(f"{fid}: {filename} sha256 / bytes differ from finish.json")
         mf = rec.get("files", {}).get(key, {})
-        if (mf.get("sha256"), mf.get("bytes")) != (sha, size):
-            p.append(f"{fid}: {key}.jpg differs from the manifest record")
+        if (mf.get("file"), mf.get("sha256"), mf.get("bytes")) != (f"{fid}/{filename}", sha, size):
+            p.append(f"{fid}: {filename} differs from the manifest record")
         try:
-            img = Decoded(f.read_bytes())
-        except (ValueError, IndexError, KeyError) as e:
-            p.append(f"{fid}: {key}.jpg cannot be decoded ({e})")
+            img = (PNGDecoded if filename.endswith(".png") else Decoded)(f.read_bytes())
+        except (ValueError, IndexError, KeyError, struct.error) as e:
+            p.append(f"{fid}: {filename} cannot be decoded ({e})")
             continue
         decoded[key] = img
         if [img.w, img.h] != m.get("size"):
-            p.append(f"{fid}: {key}.jpg is {img.w}x{img.h}, finish.json says {m.get('size')}")
+            p.append(f"{fid}: {filename} is {img.w}x{img.h}, finish.json says {m.get('size')}")
         for side in (img.w, img.h):
             if side & (side - 1):
-                p.append(f"{fid}: {key}.jpg is {img.w}x{img.h}: sizes must be powers of two")
+                p.append(f"{fid}: {filename} is {img.w}x{img.h}: sizes must be powers of two")
                 break
         if cap and max(img.w, img.h) > cap:
-            p.append(f"{fid}: {key}.jpg is {img.w}x{img.h}, above the pack's cap {cap}")
+            p.append(f"{fid}: {filename} is {img.w}x{img.h}, above the pack's cap {cap}")
         if key in ("albedo", "normal"):
             score = seam_score(img)
             info[f"seam_{key}"] = round(score, 2)
             if score > SEAM_MAX:
-                p.append(f"{fid}: {key}.jpg does not tile (seam score {score:.1f} > {SEAM_MAX})")
+                p.append(f"{fid}: {filename} does not tile (seam score {score:.1f} > {SEAM_MAX})")
     info["bytes"] = sum(m.get("bytes", 0) for m in maps.values() if isinstance(m, dict))
     if doc.get("tint") is True:
         if "albedo" in decoded:
@@ -422,7 +519,13 @@ def _check_sample(root, fid, rec, doc, loose):
             continue
         view = gdoc["bufferViews"][im["bufferView"]]
         start = view.get("byteOffset", 0)
-        shas.add(hashlib.sha256(binary[start:start + view["byteLength"]]).hexdigest())
+        sha = hashlib.sha256(binary[start:start + view["byteLength"]]).hexdigest()
+        shas.add(sha)
+        if sha in loose:
+            filename = _map_file(doc, loose[sha])
+            mime = "image/png" if filename.endswith(".png") else "image/jpeg"
+            if im.get("mimeType") != mime:
+                p.append(f"{fid}: sample GLB {filename} must have mimeType {mime}")
     if shas != set(loose):
         p.append(f"{fid}: the sample GLB embeds different images than the loose maps")
     return p
@@ -466,6 +569,31 @@ def check_pack(root):
 
 
 # --------------------------------------------------------------------------- self-test
+
+def _encode_png(w, h, pix, channels=3, filters=(0,)):
+    """Small stdlib PNG fixture writer; can exercise RGB/RGBA and every scanline filter."""
+    def chunk(tag, body):
+        return struct.pack(">I", len(body)) + tag + body + struct.pack(">I", zlib.crc32(tag + body) & 0xFFFFFFFF)
+
+    raw, previous = bytearray(), bytes(w * channels)
+    for y, pixels in enumerate(pix):
+        row = bytes(c for pixel in pixels for c in (tuple(pixel[:3]) + (((y * 37) % 256,) if channels == 4 else ())))
+        kind = filters[y % len(filters)]
+        raw.append(kind)
+        for i, value in enumerate(row):
+            a = row[i - channels] if i >= channels else 0
+            b = previous[i]
+            c = previous[i - channels] if i >= channels else 0
+            # Independent Paeth reference: first candidate wins ties (left, up, upper-left).
+            paeth = min((a, b, c), key=lambda v: abs(a + b - c - v))
+            prediction = (0, a, b, (a + b) // 2, paeth)[kind]
+            raw.append((value - prediction) & 255)
+        previous = row
+    compressed = zlib.compress(raw, 9)
+    mid = len(compressed) // 2  # exercise concatenated IDAT chunks
+    return (PNG_SIGNATURE + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2 if channels == 3 else 6, 0, 0, 0))
+            + chunk(b"IDAT", compressed[:mid]) + chunk(b"IDAT", compressed[mid:]) + chunk(b"IEND", b""))
+
 
 def _fdct(block):
     return [[sum(_T[x][u] * sum(_T[y][v] * block[y][x] for y in range(8)) for x in range(8)) for u in range(8)] for v in range(8)]
@@ -573,7 +701,8 @@ def _image(n, kind):
     return pix
 
 
-def _write_pack(root, fid="gteki_finish_test", albedo="tile", size=64, tint=False, role="wall", mutate=None):
+def _write_pack(root, fid="gteki_finish_test", albedo="tile", size=64, tint=False, role="wall", mutate=None,
+                normal_format="jpg", declare_png=False, tier="full"):
     """A complete valid pack with one finish; `mutate(files, doc, man)` may break it."""
     root.mkdir(parents=True, exist_ok=True)
     d = root / fid
@@ -581,6 +710,8 @@ def _write_pack(root, fid="gteki_finish_test", albedo="tile", size=64, tint=Fals
     files = {"albedo": _encode_jpeg(size, size, _image(size, albedo)),
              "orm": _encode_jpeg(size, size, _image(size, "tile")),
              "normal": _encode_jpeg(size, size, _image(size, "normal"))}
+    if normal_format == "png":
+        files["normal"] = _encode_png(size, size, _image(size, "normal"))
     doc = {"format": FORMAT, "id": fid, "kit_version": "0.1.0", "tier": "full", "role": role, "gteki_role": "wall",
            "facility": ["passage"], "use": "test", "pattern": "test", "source_material": None, "repeat_m": [1.0, 1.0],
            "uv": {"u": "along the wall", "v": "up", "surface": "wall face", "origin": "repeat starts at 0"},
@@ -588,19 +719,22 @@ def _write_pack(root, fid="gteki_finish_test", albedo="tile", size=64, tint=Fals
            "generator": "x", "factors": {"baseColorFactor": [1.0, 1.0, 1.0, 1.0], "roughnessFactor": 1.0, "metallicFactor": 1.0}}
     if tint:
         doc["tint_info"] = {"mode": "multiply"}
-    man = {"finish_pack": FORMAT, "texture_resolution": 64}
+    doc["tier"] = tier
+    if declare_png:
+        doc["mobile_normal_format"] = "png"
+    man = {"finish_pack": FORMAT, "texture_resolution": 64, "profile": tier}
     if mutate:
         mutate(files, doc, man)
     maps = {}
     for key, raw in files.items():
+        filename = f"{key}.{normal_format if key == 'normal' else 'jpg'}"
         if raw is not None:
-            (d / f"{key}.jpg").write_bytes(raw)
-        maps[key] = {"file": f"{key}.jpg", "size": [size, size], "bytes": len(raw or b""),
+            (d / filename).write_bytes(raw)
+        maps[key] = {"file": filename, "size": [size, size], "bytes": len(raw or b""),
                      "sha256": hashlib.sha256(raw or b"").hexdigest()}
     doc["maps"] = maps
     (d / "finish.json").write_text(json.dumps(doc, indent=2))
     fj = (d / "finish.json").read_bytes()
-    loose = {m["sha256"]: k for k, m in maps.items()}
     (root / "glb").mkdir()
     images = [files[k] for k in MAPS if files[k] is not None]
     binary, views = b"", []
@@ -608,12 +742,13 @@ def _write_pack(root, fid="gteki_finish_test", albedo="tile", size=64, tint=Fals
         views.append({"buffer": 0, "byteOffset": len(binary), "byteLength": len(raw)})
         binary += raw + b"\0" * (-len(raw) % 4)
     gdoc = {"asset": {"version": "2.0"}, "buffers": [{"byteLength": len(binary)}], "bufferViews": views,
-            "images": [{"bufferView": i, "mimeType": "image/jpeg"} for i in range(len(images))],
+            "images": [{"bufferView": i, "mimeType": "image/png" if raw.startswith(PNG_SIGNATURE) else "image/jpeg"}
+                       for i, raw in enumerate(images)],
             "textures": [{"source": i} for i in range(len(images))], "materials": [{"name": fid}]}
     glb = encode_glb(gdoc, binary)
     (root / "glb" / f"{fid}.glb").write_bytes(glb)
     rec = {"id": fid, "finish_json": {"file": f"{fid}/finish.json", "bytes": len(fj), "sha256": hashlib.sha256(fj).hexdigest()},
-           "files": {k: {"file": f"{fid}/{k}.jpg", "bytes": m["bytes"], "sha256": m["sha256"]} for k, m in maps.items()},
+           "files": {k: {"file": f"{fid}/{m['file']}", "bytes": m["bytes"], "sha256": m["sha256"]} for k, m in maps.items()},
            "sample_glb": f"glb/{fid}.glb"}
     man.update(finishes=[rec], assets=[{"id": fid, "sha256": hashlib.sha256(glb).hexdigest(), "bytes": len(glb)}])
     (root / "manifest.json").write_text(json.dumps(man))
@@ -633,6 +768,26 @@ def self_test():
     assert seam_score(Decoded(_encode_jpeg(64, 64, _image(64, "ramp")))) > 10
     assert all(abs(m - 242) <= 3 for m in Decoded(_encode_jpeg(64, 64, _image(64, "light"))).mean_rgb())
 
+    for channels in (3, 4):
+        for filters in ((0,), (1,), (2,), (3,), (4,), (0, 1, 2, 3, 4)):
+            png = PNGDecoded(_encode_png(64, 64, want, channels, filters))
+            assert png.w == png.h == 64
+            assert all(png.pixel(x, y) == list(want[y][x]) for y in range(64) for x in range(64)), (channels, filters)
+            expected_mean = [sum(p[c] for row in want for p in row) / 4096 for c in range(3)]
+            assert png.mean_rgb() == expected_mean
+    png_tile = seam_score(png)
+    png_ramp = seam_score(PNGDecoded(_encode_png(64, 64, _image(64, "ramp"))))
+    assert 0.7 < png_tile < 1.3, png_tile
+    assert png_ramp > 10, png_ramp
+    for raw in (_encode_png(64, 64, want)[:-12], _encode_png(64, 64, want)[:50],
+                _encode_png(64, 64, want)[:-1] + b"\x01"):
+        try:
+            PNGDecoded(raw)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("corrupt PNG passed")
+
     def drop(files, doc, man):
         files["orm"] = None
 
@@ -651,6 +806,17 @@ def self_test():
     def corrupt(files, doc, man):
         files["normal"] = files["normal"][:200]
 
+    def jpeg_as_png(files, doc, man):
+        files["normal"] = _encode_jpeg(64, 64, _image(64, "normal"))
+
+    def png_as_jpeg(files, doc, man):
+        files["normal"] = _encode_png(64, 64, _image(64, "normal"))
+
+    def png_ramp_map(files, doc, man):
+        files["normal"] = _encode_png(64, 64, _image(64, "ramp"))
+
+    png_kw = dict(normal_format="png", declare_png=True, tier="mobile")
+
     cases = {
         "good": (dict(), None, ""),
         "good tint": (dict(albedo="light", tint=True), None, ""),
@@ -664,6 +830,14 @@ def self_test():
         "bad role": (dict(), bad_role, "role must be"),
         "double factor": (dict(), factor, "roughnessFactor must be 1"),
         "truncated jpeg": (dict(), corrupt, "cannot be decoded"),
+        "declared PNG": (png_kw, None, ""),
+        "undeclared PNG": (dict(normal_format="png", tier="mobile"), None, "undeclared PNG"),
+        "declared but JPEG": (dict(declare_png=True, tier="mobile"), None, "file normal.png"),
+        "JPEG bytes named PNG": (png_kw, jpeg_as_png, "not a PNG"),
+        "PNG bytes named JPEG": (dict(), png_as_jpeg, "not a JPEG"),
+        "PNG normal seam": (png_kw, png_ramp_map, "does not tile"),
+        "PNG normal size": ({**png_kw, "size": 72}, None, "powers of two"),
+        "full PNG rejected": ({**png_kw, "tier": "full"}, None, "requires png, tier mobile"),
     }
     with tempfile.TemporaryDirectory() as tmp:
         for i, (name, (kw, mutate, expect)) in enumerate(cases.items()):
@@ -687,6 +861,15 @@ def self_test():
             {"asset": {"version": "2.0"}, "materials": [{"name": "gteki_finish_test"}]}, b""))
         problems, _ = check_pack(root)
         assert any("embeds different images" in x for x in problems), problems
+        root = _write_pack(Path(tmp) / "png-mime", **png_kw)
+        glb = root / "glb" / "gteki_finish_test.glb"
+        gdoc, binary = parse_glb(glb.read_bytes())
+        gdoc["images"][-1]["mimeType"] = "image/jpeg"
+        glb.write_bytes(encode_glb(gdoc, binary))
+        assert any("must have mimeType image/png" in x for x in check_pack(root)[0])
+        root = _write_pack(Path(tmp) / "stray-png")
+        (root / "gteki_finish_test" / "normal.png").write_bytes(_encode_png(64, 64, want))
+        assert any("undeclared PNG" in x for x in check_pack(root)[0])
         # a directory the manifest does not list
         root = _write_pack(Path(tmp) / "extra")
         (root / "gteki_finish_stray").mkdir()
@@ -698,7 +881,8 @@ def self_test():
                 assert main() == 1
         finally:
             sys.argv = argv
-    print("validate_finish self-test: PASS")
+    print(f"validate_finish self-test: PASS (JPEG; RGB/RGBA PNG filters 0-4; declarations; MIME; "
+          f"PNG seam wrapped {png_tile:.2f}, ramp {png_ramp:.2f})")
 
 
 def main():

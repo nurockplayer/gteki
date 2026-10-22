@@ -140,13 +140,13 @@ assets/library/finishes/                  full tier   (mobile: assets/library/mo
   manifest.json                           pack manifest (below)
   glb/gteki_finish_<name>.glb             sample GLB, one per finish
   gteki_finish_<name>/
-    albedo.jpg  orm.jpg  normal.jpg       the maps that are not flat (any subset)
+    albedo.jpg  orm.jpg  normal.jpg       the maps that are not flat (any subset; declared mobile normals: normal.png)
     finish.json                           everything a station needs to apply the finish
 ```
 
 - **The pack is separate from the kit manifest** so the kit's 48 records, its catalog and its budget stay as they are. `catalog/finishes_v0_1.json` defines the pack; `kind: "finish-pack"` makes `build.py` write the directories and the `finishes` section.
 - **Sample GLBs sit in a flat `glb/` directory** because the existing tools take a library root with `glb/` and `manifest.json`: `validate_glb.py`, `build.sh godot`, `build.sh web`, `texture_budget.py` and `bundle_kit.py` all work on the pack unchanged. A `<id>/sample.glb` layout would need a change in every one of them.
-- The sample GLB embeds the **same JPEG bytes** as the loose maps, and `validate_finish.py` checks that. Its baked occlusion map (§4, the image its `occlusionTexture` uses) belongs to the sample, not to the finish, and is not compared. So the pipeline that loads the sample GLB is loading the finish.
+- The sample GLB embeds the **same map bytes** as the loose files (JPEG, or the declared mobile normal PNG), and `validate_finish.py` checks that, including the image MIME type. Its baked occlusion map (§4, the image its `occlusionTexture` uses) belongs to the sample, not to the finish, and is not compared. So the pipeline that loads the sample GLB is loading the finish.
 
 ### `manifest.json`
 
@@ -169,6 +169,7 @@ The same fields as the kit manifest (`contract`, `kit_version`, `catalog`, `text
 | `repeat_m` | `[u, v]`: the size in metres of one texture repeat |
 | `uv` | orientation (below) |
 | `maps.albedo`, `maps.orm`, `maps.normal` | `file`, `size` `[w, h]`, `bytes`, `sha256`. A map is listed only if it ships |
+| `mobile_normal_format` | optional `"png"`, copied from the catalog param only in the mobile tier: requires `maps.normal.file = "normal.png"`. Without it, all maps are JPEG. Full-tier files omit this field |
 | `factors` | `baseColorFactor` (linear RGBA), `roughnessFactor`, `metallicFactor`: exactly what the sample GLB's material carries. A shipped map has a neutral factor (`[1,1,1,1]`, 1, 1); an omitted map is replaced by its value here |
 | `omitted_maps` | the maps replaced by a factor |
 | `texel_density_px_per_m` | `size / repeat_m` |
@@ -178,8 +179,9 @@ The same fields as the kit manifest (`contract`, `kit_version`, `catalog`, `text
 
 ### Maps
 
-- `albedo.jpg` is sRGB. `orm.jpg` is linear: R = 1 (no baked AO), G = roughness, B = metallic. `normal.jpg` is linear, tangent space, **OpenGL (+Y up)**, as in the kit.
+- `albedo.jpg` is sRGB. `orm.jpg` is linear: R = 1 (no baked AO), G = roughness, B = metallic. `normal.jpg` (or declared `normal.png`) is linear, tangent space, **OpenGL (+Y up)**, as in the kit.
 - JPEG quality 88, square, power-of-two sizes, tileable on both axes. They are the kit generators (`texsynth.py`) with the kit's seeds, so a finish looks like the same kit material.
+- **Director-approved mobile exception:** `gteki_finish_floor_granite_tile` and `gteki_finish_floor_tile600` declare `mobile_normal_format: "png"` in the catalog. Only their mobile normal maps use the cached generator PNG unchanged, at 512 px; the sample GLB embeds those identical bytes as `image/png`. Blender's JPEG encoder always uses 4:2:0 chroma subsampling, which breaks the wrap of the thin grout on the texture edge at 512 px. Lossless PNG preserves it. GPU memory is unchanged; download grows slightly. All other maps and the full tier keep JPEG.
 - **Flat maps become factors**, by the kit rule ([§4](#4-materials-and-textures)): a finish may ship any subset of the three. Terrazzo has no normal map; the tint base's ORM is a roughness of 0.30.
 - **Size follows the repeat**: the smallest power of two giving at least `repeat_m` x 1024 px per repeat, at most 1024, at least 128. The mobile tier halves the density (`--tex-res 512`): at most 512, at least 128. The mobile palette fold does **not** apply: finishes are textures by nature and keep their own material.
 
@@ -211,7 +213,7 @@ The base is about 0.89 in linear light, so the stripe renders about 11 % darker 
 
 ### Validation
 
-- `tools/blender/validate_finish.py <pack>` (stdlib only; `build.sh validate` runs it) checks, per finish: the manifest and `finish.json` schema; every listed file exists with the sha256 and bytes in `finish.json` and in the manifest; sizes are powers of two, match the JPEG headers and stay within the pack's `texture_resolution`; factors are neutral where a map ships; directories, manifest and sample GLBs list the same ids; the sample GLB has exactly one material named like the finish and embeds exactly the loose maps; **tiling** and **tint base**.
+- `tools/blender/validate_finish.py <pack>` (stdlib only; `build.sh validate` runs it) checks, per finish: the manifest and `finish.json` schema; every listed file exists with the sha256 and bytes in `finish.json` and in the manifest; sizes are powers of two, match the JPEG/PNG headers and stay within the pack's `texture_resolution`; factors are neutral where a map ships; directories, manifest and sample GLBs list the same ids; the sample GLB has exactly one material named like the finish and embeds exactly the loose maps; **tiling** and **tint base**. PNG normals require the mobile declaration; an undeclared PNG or a declared PNG shipped as JPEG fails. The stdlib decoder handles 8-bit RGB/RGBA PNG and filters 0–4; generator PNGs use filter 0.
 - **Tiling** compares opposite edges of the albedo and normal maps. For each axis it divides the mean absolute difference across the wrap by the mean difference between neighbouring rows at the edges (never less than 8 levels). A seamless texture scores about 1 (0.1 to 1.0 on the pack); more than 2 fails. It catches cropped or unwrapped textures, not subtle mismatches.
 - **Tint base:** a tint finish's mean albedo must be at least 225 in every sRGB channel and within 8 levels across channels.
 - The sample GLBs go through `validate_glb.py` like any asset. They have no collision, so each gets the same `no collision node` WARN as the signs and tactile strips.
@@ -227,4 +229,4 @@ The base is about 0.89 in linear light, so the stripe renders about 11 % darker 
 - **Ikebukuro:** pick the finish by `gteki_role` (and `facility`) for the matching surface in `scene/materials.ts`, set the UV scale from `repeat_m`, and use the mobile tier (at most 512 px) on the low tier.
 - **Shinjuku:** the tint finish is the separate `line_accent` slot. Everything else is a plain glTF metal-rough material, so it needs no lightmap and no baked AO.
 - Which finish goes where, and whether the wall is dressed at all, is the station lead's decision.
-- **Licence (#131 merged).** The pack is original kit output under CC BY 4.0 (attribution "GTEki contributors"). `REUSE.toml` covers its loose `*.jpg` maps and sample GLBs through `assets/library/**`. The strings embedded in `finish.json`, the manifest and the sample GLBs still read `UNDECIDED` (`contract.LICENSE`) until the `EMBED_SPDX` rebuild of the library, which rewrites the pack along with the kit. `REUSE.toml` is the record until then.
+- **Licence (#131 merged).** The pack is original kit output under CC BY 4.0 (attribution "GTEki contributors"). `REUSE.toml` covers its loose maps and sample GLBs through `assets/library/**`. The strings embedded in `finish.json`, the manifest and the sample GLBs still read `UNDECIDED` (`contract.LICENSE`) until the `EMBED_SPDX` rebuild of the library, which rewrites the pack along with the kit. `REUSE.toml` is the record until then.

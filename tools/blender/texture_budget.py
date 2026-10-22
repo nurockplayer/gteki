@@ -270,7 +270,8 @@ def _fake_glb(images, material_refs):
     if len(material_refs) > 2:
         material["normalTexture"] = {"index": material_refs[2]}
     doc = {"asset": {"version": "2.0"}, "buffers": [{"byteLength": len(binary)}], "bufferViews": views,
-           "images": [{"bufferView": i, "mimeType": "image/png"} for i in range(len(images))],
+           "images": [{"bufferView": i, "mimeType": "image/jpeg" if raw.startswith(b"\xff\xd8") else "image/png"}
+                      for i, raw in enumerate(images)],
            "textures": [{"source": i} for i in range(len(images))], "materials": [material]}
     return encode_glb(doc, binary)
 
@@ -365,6 +366,18 @@ def self_test():
         assert check_finishes(lib, tight) == []
         (lib / "finishes" / "manifest.json").write_text(json.dumps(pack_manifest))
         assert any("tier" in p for p in check_finishes(lib, mobile))
+    # Mixed JPEG/PNG finish sample: a lossless normal changes download bytes, not GPU cost.
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "gteki_finish_test.glb"
+        jpeg = b"\xff\xd8\xff\xc0\x00\x11\x08" + struct.pack(">HH", 512, 512) + bytes(10)
+        normal = _png_header(512, 512, b"normal")
+        path.write_bytes(_fake_glb([jpeg, jpeg + b"orm", normal], [0, 1, 2]))
+        glb = scan_glb(path)
+        plan = {"gteki_test": {"res": 512, "maps": ["albedo", "orm", "normal"]}}
+        manifest = {path.stem: {"sha256": glb["sha256"], "bytes": glb["bytes"], "textures": plan}}
+        assert check({path.stem: glb}, manifest, {}, {"profile": "mobile", "texture_resolution": 512}) == []
+        assert [im["kind"] for im in glb["images"]] == ["jpeg", "jpeg", "png"]
+        assert len({im["gpu"] for im in glb["images"]}) == 1
     # both shipped budget files cap the finish pack (the mobile one used to omit the limits)
     for name in ("budget.json", "budget_mobile.json"):
         shipped = json.loads((Path(__file__).resolve().parent / "catalog" / name).read_text())["limits"]
