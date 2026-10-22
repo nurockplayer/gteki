@@ -318,8 +318,8 @@ describe('graph-derived exit / street-level rule', () => {
     if (bytes === null) return; // standalone checkout without stations/
     const { facts, nodes } = await readGraphWindowNodes(IKEBUKURO_RULE, { stationId: 'ikebukuro' });
     expect(facts.graph_sha256).toBe(createHash('sha256').update(bytes).digest('hex'));
-    expect(facts).toMatchObject({ graph_path: 'stations/ikebukuro/gteki/graph.json', nodes_total: 62, exit_connectors: 20, street_level_nodes: 20, matched_by_both: 20, selected_nodes: 20 });
-    expect(facts.kinds_by_floor).toEqual({ 'exit@street': 20, 'junction@b1': 36, 'stair_end@b1': 3, 'ticket_gate@b1': 3 });
+    expect(facts).toMatchObject({ graph_path: 'stations/ikebukuro/gteki/graph.json', nodes_total: 66, exit_connectors: 20, street_level_nodes: 20, matched_by_both: 20, selected_nodes: 20 });
+    expect(facts.kinds_by_floor).toEqual({ 'exit@street': 20, 'junction@b1': 40, 'stair_end@b1': 3, 'ticket_gate@b1': 3 });
     expect(nodes.every((n) => n.kind === 'exit' && n.floor_id === 'street')).toBe(true);
     expect(facts.max_selected_distance_m).toBeGreaterThan(248); expect(facts.max_selected_distance_m).toBeLessThan(249); // x39: the 249 m exit
   });
@@ -359,7 +359,7 @@ describe('exit_poi_connectors: graph nodes that exit POIs name as connectors', (
     const base = await readGraphWindowNodes(IKEBUKURO_RULE, { stationId: 'ikebukuro' });
     const { facts, nodes } = await readGraphWindowNodes(POI_RULE, { stationId: 'ikebukuro' });
     expect(base.facts.pois).toBeNull(); // off unless configured
-    expect(facts.pois).toMatchObject({ pois_path: 'stations/ikebukuro/gteki/pois.json', categories: ['exit'], pois_total: 52, exit_pois: 38, exit_pois_with_connectors: 23, connector_nodes: 23, added_beyond_kind_and_floor: ['x13f', 'x36f', 'x4f'] });
+    expect(facts.pois).toMatchObject({ pois_path: 'stations/ikebukuro/gteki/pois.json', categories: ['exit'], pois_total: 53, exit_pois: 38, exit_pois_with_connectors: 23, connector_nodes: 23, added_beyond_kind_and_floor: ['x13f', 'x36f', 'x4f'] });
     expect(facts.pois!.pois_sha256).toBe(createHash('sha256').update(poisBytes).digest('hex'));
     expect(facts.graph_sha256).toBe(base.facts.graph_sha256);
     expect(facts).toMatchObject({ exit_connectors: 20, street_level_nodes: 20, selected_nodes: 23 }); // the kind/floor counts are unchanged
@@ -709,8 +709,18 @@ describe('run-id digest', () => {
 });
 
 describe('--kinds (buildings-only context)', () => {
-  it('Ikebukuro defaults to buildings only while roads are on rights HOLD', async () => {
-    expect((await loadContextConfig('ikebukuro')).kinds).toEqual(['bldg']);
+  it('road meshes are geometry only: no tran attribute value or name reaches the GLB (Owner risk acceptance, #39)', async () => {
+    for (const merge of [{ mode: 'none' }, { mode: 'kind' }, { mode: 'tiles', sizeM: 380 }] as MergeSpec[]) {
+      const { document } = await buildWith({ merge });
+      const roads = document.getRoot().listMeshes().filter((m) => m.getName().startsWith('ctx_road'));
+      expect(roads.length).toBeGreaterThan(0);
+      for (const mesh of roads) {
+        for (const prim of mesh.listPrimitives()) expect(prim.listSemantics().sort()).toEqual(['NORMAL', 'POSITION']);
+        const nodes = document.getRoot().listNodes().filter((n) => n.getMesh() === mesh);
+        const text = JSON.stringify([mesh.getExtras(), ...nodes.map((n) => n.getExtras())]);
+        expect(text).not.toMatch(/tran:|"function"|"usage"|"class"|TrafficArea_function|codeSpace/);
+      }
+    }
   });
 
   const all4 = ['plateau-13116-bldg-53394576', 'plateau-13116-bldg-53394577', 'plateau-13116-tran-53394576', 'plateau-13116-tran-53394577'];
@@ -765,7 +775,7 @@ describe('--kinds (buildings-only context)', () => {
     expect(tran.totals.triangles_by_kind).toEqual({ building: 0, road: 4 });
   });
 
-  it('refuses invalid kinds; the Ikebukuro config defaults to buildings only (roads on rights HOLD)', async () => {
+  it('refuses invalid kinds; the Ikebukuro config defaults to both kinds (roads: Owner risk acceptance, geometry only)', async () => {
     expect(parseKinds('tran,bldg')).toEqual(['bldg', 'tran']); // canonical order, so the same run id either way
     expect(parseKinds('bldg,bldg')).toEqual(['bldg']);
     for (const bad of ['', 'ubld', 'bldg,road', 'all', ',']) expect(() => parseKinds(bad)).toThrow(/Invalid --kinds/);
@@ -775,7 +785,7 @@ describe('--kinds (buildings-only context)', () => {
     await expect(contextGlb('ikebukuro', { sourceIds: all4, kinds: 'road' })).rejects.toThrow(/Invalid --kinds "road"/);
     expect(stored).not.toHaveBeenCalled();
     const config = await loadContextConfig('ikebukuro');
-    expect(config.kinds).toEqual(['bldg']);
+    expect(config.kinds).toBeUndefined();
     await expect(buildContextGlb({ frame: await stationFrame(), radiusM: 250, inputs, outputPath: join(dir, 'x.glb'), kinds: ['bldg', 'x' as never] })).rejects.toThrow(/Invalid --kinds/);
     await expect(buildContextGlb({ frame: await stationFrame(), radiusM: 250, inputs: [inputs[0]!], outputPath: join(dir, 'y.glb'), kinds: ['tran'] })).rejects.toThrow(/at least one source of kind tran/);
   });
