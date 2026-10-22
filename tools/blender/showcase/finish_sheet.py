@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
-"""Contact sheet helper for a finish pack (stdlib + ImageMagick; no Blender).
+"""Contact sheet helper for a finish pack (stdlib; `assemble` needs ImageMagick, the `magick` command; no Blender).
 
   finish_sheet.py layouts --pack assets/library/finishes --dir DIR [--mock DIR/finish_passage_mock.glb]
       writes DIR/studio_<id>.json for every finish and DIR/passage.json (render_preview.py layouts)
-  finish_sheet.py assemble --pack assets/library/finishes --dir DIR --out docs/assets/img/batch1_finishes.jpg
+  finish_sheet.py assemble --pack assets/library/finishes --dir DIR --out docs/assets/img/batch1_finishes.jpg [--font FONT.ttf]
       labels DIR/studio_<id>.png (800x450 each) in two columns under DIR/passage.png (1600x900)
+
+`assemble` needs ImageMagick (`brew install imagemagick`). The label font is `--font`, else the GTEKI_FONT
+environment variable, else the first of Arial (macOS) or DejaVu Sans (Linux) that exists, else ImageMagick's
+own default font.
 
 Render each layout with the reference setup (docs/assets/style.md section 7), e.g.
   blender -b --factory-startup -P tools/blender/render_preview.py -- --layout DIR/studio_<id>.json --res 800x450 --out DIR/studio_<id>.png
@@ -15,7 +19,8 @@ import os
 import subprocess
 import sys
 
-FONT = "/System/Library/Fonts/Supplemental/Arial.ttf"
+FONT_CANDIDATES = ("/System/Library/Fonts/Supplemental/Arial.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                   "/usr/share/fonts/dejavu/DejaVuSans.ttf")
 LENS = 24
 TAN_H = 18.0 / LENS  # half horizontal field of view (36 mm sensor)
 
@@ -64,12 +69,23 @@ def magick(*args):
     subprocess.run(["magick", *args], check=True)
 
 
-def label(src, dst, text, size):
-    magick(src, "-font", FONT, "-pointsize", str(size), "-fill", "white", "-undercolor", "#000000c0",
+def pick_font(arg):
+    """The label font file: --font, GTEKI_FONT, a known system font, else None (ImageMagick's default)."""
+    wanted = arg or os.environ.get("GTEKI_FONT")
+    if wanted:
+        if not os.path.isfile(wanted):
+            sys.exit(f"font not found: {wanted}")
+        return wanted
+    return next((path for path in FONT_CANDIDATES if os.path.isfile(path)), None)
+
+
+def label(src, dst, text, size, font=None):
+    magick(src, *(["-font", font] if font else []), "-pointsize", str(size), "-fill", "white", "-undercolor", "#000000c0",
            "-gravity", "northwest", "-annotate", "+10+8", f" {text} ", dst)
 
 
 def cmd_assemble(a):
+    font = pick_font(a.font)
     tiles = []
     for rec, doc in finishes(a.pack):
         res = doc["maps"][next(iter(doc["maps"]))]["size"][0]
@@ -78,7 +94,7 @@ def cmd_assemble(a):
         text = (f"{doc['id'].replace('gteki_finish_', '')}  |  {doc['role']}  |  repeat {ru:g} x {rv:g} m  |  {res} px  |  {kib:.0f} KiB"
                 + ("  |  tint" if doc["tint"] else ""))
         dst = os.path.join(a.dir, f"label_{doc['id']}.png")
-        label(os.path.join(a.dir, f"studio_{doc['id']}.png"), dst, text, 17)
+        label(os.path.join(a.dir, f"studio_{doc['id']}.png"), dst, text, 17, font)
         tiles.append(dst)
     rows = []
     for i in range(0, len(tiles), 2):
@@ -87,7 +103,7 @@ def cmd_assemble(a):
         rows.append(row)
     passage = os.path.join(a.dir, "passage_label.png")
     label(os.path.join(a.dir, "passage.png"), passage,
-          "in context: terrazzo + granite border, kick plate, wainscot blue, enamel, line_accent band tinted #b6007a, spandrel ceiling", 20)
+          "in context: terrazzo + granite border, kick plate, wainscot blue, enamel, line_accent band tinted #b6007a, spandrel ceiling", 20, font)
     magick(passage, *rows, "-append", "-strip", "-sampling-factor", "4:2:0", "-quality", str(a.quality), a.out)
 
 
@@ -102,6 +118,7 @@ def main():
     sub.choices["layouts"].add_argument("--kit", help="kit glb directory (default: <pack>/../glb)")
     sub.choices["assemble"].add_argument("--out", required=True)
     sub.choices["assemble"].add_argument("--quality", type=int, default=82)
+    sub.choices["assemble"].add_argument("--font", help="label font file (default: $GTEKI_FONT, else Arial or DejaVu Sans if present)")
     a = ap.parse_args()
     {"layouts": cmd_layouts, "assemble": cmd_assemble}[a.cmd](a)
 

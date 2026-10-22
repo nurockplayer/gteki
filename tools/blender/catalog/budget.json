@@ -1,5 +1,5 @@
 {
-  "_comment": "Regression budget for the committed kit library (tools/blender/texture_budget.py --check). Limits are MiB, measured values plus ~5% headroom; raise them deliberately in the same PR that adds assets, with the before/after numbers in docs/assets/texture-budget.md.",
+  "_comment": "Regression budget for the committed kit library (tools/blender/texture_budget.py --check). Limits are MiB, measured values plus ~5% headroom; raise them deliberately in the same PR that adds assets, with the before/after numbers in docs/assets/texture-budget.md. The finishes_* limits are provisional (derived, not measured; same doc) until the first build.",
   "applies_to": {
     "catalog": "kit_v0_1.json",
     "texture_resolution": 1024

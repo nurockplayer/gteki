@@ -143,7 +143,11 @@ def check_finishes(root, budget):
     glbs, manifest, meta = scan_library(pack)
     problems = [f"finishes: {p}" for p in check(glbs, manifest, {}, meta)]
     fin = scan_finishes(root)
-    if budget_applies(budget, json.loads((Path(root) / "manifest.json").read_text())):
+    kit_meta = json.loads((Path(root) / "manifest.json").read_text())
+    tier = kit_meta.get("profile", "full")
+    if fin["tier"] != tier:  # a pack of the other tier would be judged against the wrong limits
+        problems.append(f"finishes: pack is the {fin['tier']} tier in a {tier} library")
+    if budget_applies(budget, kit_meta):
         limits = budget.get("limits", {})
         for key, value in (("finishes_mib", fin["bytes"] / MIB), ("finishes_gpu_mib", fin["gpu"] / MIB)):
             if key in limits and value > limits[key]:
@@ -346,6 +350,25 @@ def self_test():
         tight = {"applies_to": {"catalog": "kit.json", "texture_resolution": 1024}, "limits": {"finishes_gpu_mib": 0.001}}
         assert any("finishes_gpu_mib" in p for p in check_finishes(lib, tight))
         assert scan_finishes(lib / "finishes") is None
+        # the phone pack is held to the mobile budget: a mobile library and pack, limits scoped to profile mobile
+        mobile = {"applies_to": {"catalog": "kit.json", "texture_resolution": 1024, "profile": "mobile"},
+                  "limits": {"finishes_mib": 0.00001, "finishes_gpu_mib": 4.0}}
+        pack_manifest = json.loads((lib / "finishes" / "manifest.json").read_text())
+        (lib / "finishes" / "manifest.json").write_text(json.dumps({**pack_manifest, "profile": "mobile"}))
+        (lib / "manifest.json").write_text(json.dumps({**meta, "profile": "mobile"}))
+        assert scan_finishes(lib)["tier"] == "mobile"
+        got = check_finishes(lib, mobile)
+        assert [p.split(":")[0] for p in got] == ["budget finishes_mib"], got  # bytes over, GPU (2.0 MiB) within
+        assert check_finishes(lib, {**mobile, "limits": {"finishes_mib": 1.0, "finishes_gpu_mib": 4.0}}) == []
+        assert [p.split(":")[0] for p in check_finishes(lib, {**mobile, "limits": {"finishes_gpu_mib": 1.0}})] == ["budget finishes_gpu_mib"]
+        # the full budget does not apply to the mobile library, and a full pack in a mobile library is a problem
+        assert check_finishes(lib, tight) == []
+        (lib / "finishes" / "manifest.json").write_text(json.dumps(pack_manifest))
+        assert any("tier" in p for p in check_finishes(lib, mobile))
+    # both shipped budget files cap the finish pack (the mobile one used to omit the limits)
+    for name in ("budget.json", "budget_mobile.json"):
+        shipped = json.loads((Path(__file__).resolve().parent / "catalog" / name).read_text())["limits"]
+        assert shipped.get("finishes_mib", 0) > 0 and shipped.get("finishes_gpu_mib", 0) > 0, name
     for w, h in ((512, 256), (1024, 1024)):
         assert image_size(_png_header(w, h)) == (w, h, "png")
     print("texture_budget self-test: PASS")

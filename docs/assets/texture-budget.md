@@ -110,6 +110,21 @@ Renders are Blender EEVEE round-trips of the GLBs (`render_preview.py`, 1920×10
 
 The lowest close-up scores belong to the bench (perforated steel at 512) and the tactile and tread textures (512 and 256). At pixel level they are indistinguishable in side-by-side crops: no moiré, no lost holes or dots.
 
+## Finish pack limits (provisional)
+
+The finish pack ([contract §9](asset-contract.md#9-finish-packs--gteki-finish01)) is checked by the same command: `texture_budget.py --check` reads `limits.finishes_mib` (loose map bytes) and `limits.finishes_gpu_mib` (estimated GPU memory, each unique file once) from the budget file of the library it checks, and fails if the pack is of the other tier. **Both tiers' finish limits are provisional until the first measured build.** The pack has not been built yet; the numbers below are derived from the sizes and maps the generators will produce, and are to be replaced by measured values plus about 5 % headroom (like the kit limits) in the PR that commits the built pack.
+
+| Tier | Map size per finish (px) | Worst-case maps | GPU est. | Download est. | Limit |
+| --- | --- | --- | ---: | ---: | --- |
+| `full` (`--tex-res 1024`) | 1024 for terrazzo, granite, tile, both panels and the spandrel; 512 kick plate; 256 tint band | 3 per finish, 24 | 101 MiB | 0.98 MiB | `budget.json`: 1.6 MiB, 100 MiB |
+| `mobile` (`--tex-res 512`) | 512 for the same six; 256 kick plate; 128 tint band | 3 per finish, 24 | 25.25 MiB | 0.33 to 0.49 MiB | `budget_mobile.json`: 0.6 MiB, 28 MiB |
+
+Arithmetic, for the phone pack. The size follows `materials.texture_res`: the smallest power of two giving `repeat_m` x 512 px, from 128 up to 512 (repeats 1.0 or 1.2 m give 512, the kick plate's 0.5 m gives 256, the band's 0.25 m gives 128).
+
+- **GPU:** width x height x 4 bytes x 4/3 per map = 1.333 MiB for 512 px, 0.333 MiB for 256 px, 0.083 MiB for 128 px. Six 512 px finishes with three maps each: 18 x 1.333 = 24.0 MiB. The kick plate adds 3 x 0.333 = 1.0 and the band 3 x 0.083 = 0.25. Worst case 25.25 MiB, and 23.8 MiB with the maps the contract already drops (terrazzo has no normal, the tint band's ORM is flat). The limit is 28 MiB, 11 % above the worst case.
+- **Download:** the kit's own full-tier JPEGs for the same materials (terrazzo 361 KB, granite 155, tile 104, the two panels at most 96 each, spandrel 126, kick plate 34, band at most 30) sum to about 0.98 MiB; that is the basis of the full limit, which has about 60 % headroom. A 512 px map has a quarter of the pixels; JPEG noise textures do not compress better at lower resolution, so the phone estimate takes one third to one half of the full bytes: 0.33 to 0.49 MiB. The limit is 0.6 MiB.
+- The full tier's GPU limit (100 MiB) sits 5 % above the expected 95.3 MiB (maps dropped as documented) and just under the 101 MiB worst case, so a build that ships every map of every finish fails it on purpose.
+
 ## Regression tests
 
 - **`tools/blender/build.sh validate`** runs `texture_budget.py --check tools/blender/catalog/budget.json` after the contract validator. It fails when:
@@ -120,7 +135,7 @@ The lowest close-up scores belong to the bench (perforated steel at 512) and the
   - a GLB and the manifest disagree (missing on either side, or a different `sha256` or byte size);
   - the committed library exceeds the byte or GPU limits.
 
-  The limits only apply to the library they were measured on (`kit_v0_1.json` at 1024, profile `full`), so station catalogs and HQ builds are checked by the rules alone. The mobile tier has its own limits in `budget_mobile.json` ([mobile-profile.md](mobile-profile.md)). Raise a limit deliberately, in the PR that needs it, with numbers.
+  The limits only apply to the library they were measured on (`kit_v0_1.json` at 1024, profile `full`), so station catalogs and HQ builds are checked by the rules alone. The mobile tier has its own limits in `budget_mobile.json` ([mobile-profile.md](mobile-profile.md)), the finish pack's included (provisional, see above). Raise a limit deliberately, in the PR that needs it, with numbers.
 - **`tools/blender/build.sh selftest`** runs the stdlib self-tests: the validator, the budget checker (each rule plus the scoping), and the bundle tool. The bundle tool's test covers dedupe, the material-name conflict, repeated-name tags, determinism, extraction fidelity, alternate image sources and image headers.
 - **`tools/blender/build.sh repro`**: two clean builds (fresh texture caches) are byte-identical to each other and to the committed library.
 - **Bundle round trip:** `bundle --all`, then `extract` for each of the 48 assets. Every extract validates exactly like its source (`validate_glb.py` reports identical apart from file size), with identical node names, extras and TRS.

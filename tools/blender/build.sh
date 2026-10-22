@@ -10,7 +10,7 @@
 #      PROFILE (full | mobile; mobile defaults OUT to assets/library/mobile).
 # The finish pack (catalog/finishes_v0_1.json) goes to $OUT/finishes: build, validate, godot, web and
 # repro cover it too. It is built with the kit's default catalog only, and not for ONLY subsets.
-# Mobile finishes use half the texture size (512 at most).
+# Mobile finishes use half the texture size (512 at most); finish maps never exceed 1024 px.
 # Installs only via Homebrew/pnpm (README); never npm/npx/yarn.
 set -eu
 
@@ -27,10 +27,23 @@ mkdir -p "$REPORTS"
 FINISHES=${FINISHES:-$HERE/catalog/finishes_v0_1.json}
 FINISH_OUT=$OUT/finishes
 if [ "$PROFILE" = mobile ]; then FINISH_TEX_RES=${FINISH_TEX_RES:-$((TEX_RES / 2 > 512 ? 512 : TEX_RES / 2))}; else FINISH_TEX_RES=${FINISH_TEX_RES:-$TEX_RES}; fi
+# contract section 9: finish maps are at most 1024 px, whatever TEX_RES (an HQ kit build) says
+if [ "$FINISH_TEX_RES" -gt 1024 ]; then FINISH_TEX_RES=1024; fi
 
-# the finish pack accompanies the default kit catalog (not a station catalog or an ONLY subset)
+# absolute, symlink-free form of a file path (the file need not exist, its directory must)
+abs_path() {
+    abs_dir=$(dirname -- "$1")
+    if abs_dir=$(CDPATH= cd -- "$abs_dir" 2>/dev/null && pwd -P); then
+        printf '%s/%s\n' "$abs_dir" "$(basename -- "$1")"
+    else
+        printf '%s\n' "$1"
+    fi
+}
+
+# the finish pack accompanies the default kit catalog (not a station catalog or an ONLY subset);
+# a relative CATALOG= is resolved first, so it matches the default however it is spelled
 with_finishes() {
-    [ -z "${ONLY:-}" ] && [ "$CATALOG" = "$HERE/catalog/kit_v0_1.json" ]
+    [ -z "${ONLY:-}" ] && [ "$(abs_path "$CATALOG")" = "$(abs_path "$HERE/catalog/kit_v0_1.json")" ]
 }
 
 build_finishes() {
