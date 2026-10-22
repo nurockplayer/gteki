@@ -5,7 +5,7 @@ import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
 import { guideStops } from "../explorer/guideStops.ts";
-import { firstStopFor, guideKeyAction, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
+import { firstStopFor, guideKeyActionGuarded, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
@@ -93,6 +93,8 @@ export class App {
   /** Listbox state of the two search comboboxes. */
   private readonly combo: Record<"from" | "to", ComboState> = { from: COMBO_CLOSED, to: COMBO_CLOSED };
   private panelExpanded = false;
+  /** When the last IME composition ended anywhere on the page; the guide keys ignore its confirming keys. */
+  private compositionEndMs = -Infinity;
 
   constructor(private readonly root: HTMLElement) {}
 
@@ -869,8 +871,11 @@ export class App {
 
   /** `[` / `]` or PageUp / PageDown step the guide; never while typing in a field or with a dialog open. */
   private bindGuideKeys(): void {
+    // IME composition can start anywhere on the page, and Safari can land the confirming keydown on a
+    // non-input target. Track the end of composition document-wide so no guide shortcut fires from it.
+    document.addEventListener("compositionend", () => { this.compositionEndMs = performance.now(); }, true);
     window.addEventListener("keydown", (e) => {
-      const action = guideKeyAction(e);
+      const action = guideKeyActionGuarded(e, this.compositionEndMs, performance.now());
       if (!action || this.explorer.currentMode !== "guide" || this.ui.coverage.open) return;
       if ((e.target as HTMLElement | null)?.closest?.("input, textarea, select, [contenteditable]")) return;
       e.preventDefault();
