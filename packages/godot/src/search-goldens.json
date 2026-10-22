@@ -231,6 +231,14 @@
           {
             "poiId": "central-passage",
             "score": 105
+          },
+          {
+            "poiId": "metro-m-central-gate",
+            "score": 60
+          },
+          {
+            "poiId": "metro-m-central-east-gate",
+            "score": 60
           }
         ]
       },

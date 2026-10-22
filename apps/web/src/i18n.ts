@@ -1,4 +1,7 @@
 import type { LocalizedText } from "@gteki/schema";
+import type { paceReadout } from "./explorer/guidePace.ts";
+
+type PaceReadout = ReturnType<typeof paceReadout>;
 
 export type Lang = "ja" | "en";
 
@@ -29,9 +32,18 @@ const STRINGS = {
     pause: "一時停止",
     resume: "再開",
     exitGuide: "ガイド終了",
+    guidePrev: "前の案内",
+    guideNext: "次の案内",
+    guidePrevTitle: "前の案内（[ / PageUp）",
+    guideNextTitle: "次の案内（] / PageDown）",
+    reverseRoute: "逆向きのルート",
+    searchAgain: "もう一度検索",
     guideTier: { walk: "歩く", run: "走る", fast: "早送り" },
-    guideSpeedLabel: (tier: string, mps: number) => `${tier} ${mps} m/s`,
-    guideSpeedAria: (tier: string) => `ガイド速度: ${tier}`,
+    guideSpeedLabel: (tier: string, r: PaceReadout) => `${tier} ${r.approx ? "≈" : ""}${r.pace} m/s`,
+    guideSpeedAria: (tier: string, r: PaceReadout) =>
+      r.approx
+        ? `ガイド速度: ${tier}。通路では最大${r.top} m/s、このルートの平均は約${r.pace} m/s（エスカレーター・階段・改札は現実的な速度）`
+        : `ガイド速度: ${tier}。最大${r.top} m/s`,
     firstPerson: "一人称",
     graphOverlay: "経路網",
     soundOn: "音声オン",
@@ -63,6 +75,9 @@ const STRINGS = {
     sources: "出典",
     /** Modification disclosure required by PDL / CC BY when a source was processed. */
     modified: "加工して作成",
+    /** #26 / #122: facts-only sources have no licence to show; the wording specified in #122. */
+    factsOnly: "ライセンスなし・事実のみ参照（複製なし）",
+    rightsDecision: "権利判断",
     assetDerivations: "3D素材の加工内容",
     symbolicHeight: "高さは表示用の推定です",
     coverage: "カバー範囲",
@@ -80,7 +95,8 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `ルートが見つかりました：${m}m、約${min}分`,
     liveSeparator: "。",
     coverageStatus: { routable: "経路あり", visual_only: "表示のみ", unverified: "未確認", excluded: "対象外" } as Record<string, string>,
-    factsOnly: "事実確認のみ",
+    /** Short Coverage-dialog tag; the full #122 wording is `factsOnly`. */
+    factsOnlyTag: "事実確認のみ",
     language: "English",
   },
   en: {
@@ -109,9 +125,18 @@ const STRINGS = {
     pause: "Pause",
     resume: "Resume",
     exitGuide: "End guide",
+    guidePrev: "Previous instruction",
+    guideNext: "Next instruction",
+    guidePrevTitle: "Previous instruction ([ or PageUp)",
+    guideNextTitle: "Next instruction (] or PageDown)",
+    reverseRoute: "Reverse route",
+    searchAgain: "Search again",
     guideTier: { walk: "Walk", run: "Run", fast: "Fast" },
-    guideSpeedLabel: (tier: string, mps: number) => `${tier} ${mps} m/s`,
-    guideSpeedAria: (tier: string) => `Guide speed: ${tier}`,
+    guideSpeedLabel: (tier: string, r: PaceReadout) => `${tier} ${r.approx ? "≈" : ""}${r.pace} m/s`,
+    guideSpeedAria: (tier: string, r: PaceReadout) =>
+      r.approx
+        ? `Guide speed, ${tier}: up to ${r.top} m/s in open corridors; this route averages about ${r.pace} m/s (escalators, stairs and gates keep realistic speeds)`
+        : `Guide speed, ${tier}: ${r.top} m/s`,
     firstPerson: "First person",
     graphOverlay: "Network",
     soundOn: "Sound on",
@@ -142,6 +167,9 @@ const STRINGS = {
     freshness: "Data as of",
     sources: "Sources",
     modified: "modified",
+    /** Proposed English equivalent of the #26 line; adds no claim beyond the Japanese. */
+    factsOnly: "No licence; cited for facts only (not reproduced)",
+    rightsDecision: "Rights decision",
     assetDerivations: "3D asset derivations",
     symbolicHeight: "Heights are display estimates",
     coverage: "Coverage",
@@ -159,7 +187,8 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `Route found: ${m} m, about ${min} minute${min === 1 ? "" : "s"}`,
     liveSeparator: ". ",
     coverageStatus: { routable: "routable", visual_only: "visual only", unverified: "unverified", excluded: "excluded" } as Record<string, string>,
-    factsOnly: "facts-only",
+    /** Short Coverage-dialog tag; the full #122 wording is `factsOnly`. */
+    factsOnlyTag: "facts-only",
     language: "日本語",
   },
 };

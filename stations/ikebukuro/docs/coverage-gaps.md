@@ -66,7 +66,7 @@ geometry test would pass; what is missing is the exit number:
 | `exit-9` | 9番出口 / Exit 9 | `gap-west-stairs` | `af-exit-13`: Exit 13 lies between the hall and the stairs of Exits 9 and 10. The order fits F2 (x -166, west of Exits 13 at -139 and 10 at -155), but that is a consistency check, not a match. | only F2 (lower flight) is a candidate, ~9 m from the map position, three times the 3 m that justified Exit 13; F1 and F3 are also unclaimed | STAY (closest call): a foot route would assert an unproven match. Flips to FOOT with a map-position re-measurement within ~3 m or the on-site answer to checklist B2 | Stays search-only. Metro's list (rev. 2026-03) names only nearby landmarks; the 10, 9, 8 order is a consistency check, not a measurement. FC: B2 (add a sign photo at the stair head) |
 | `exit-14` | 14番出口 / Exit 14 | `gap-west-stairs` | exit exists | no stair in the survey; no stair-top closure near the hall other than Exits 10, 11, 15, 17, 18 | STAY | Stays search-only. Not in Metro's list. FC: B3 |
 | `exit-16` | 16番出口 / Exit 16 | `gap-west-stairs` | exit exists | as Exit 14 | STAY | Stays search-only. Not in Metro's list. FC: B3 |
-| `exit-19` | 19番出口 西口（中央） / Exit 19 West Exit (Central) | `gap-west-stairs` | exit exists | as Exit 14 | STAY | Stays search-only. Not in Metro's list or accessibility page. FC: B4, FC-IK-01 (lift near exit 19) |
+| `exit-19` | 19番出口 西口（中央） / Exit 19 West Exit (Central) | `gap-west-stairs` | exit exists | as Exit 14 | STAY | Stays search-only. Not in Metro's list or accessibility page. FC: B4, I1 (plain on-site check of the passage west of Tobu 中央1 toward the West Exit stairs and Exit 19: lift, levels, hours, exit number on signs) |
 | `exit-23` | 23番出口 / Exit 23 | `gap-ne-north` | exit exists | outside the surveyed geometry | STAY | Stays search-only. FC: G2 |
 | `exit-24` | 24番出口 / Exit 24 | `gap-ne-north` | the official map shows two stairs for 24 and 25 | one stair (foot (110.2, 111.6) to top (112.6, 122.6), TP 26.2 to 32.3 m, closure at 32.3 m); which number it is, is unknown | STAY: routing it as 24 or 25 is a coin flip; routing both to one stair is invented | Stays search-only. FC: G1 |
 | `exit-25` | 25番出口 / Exit 25 | `gap-ne-north` | as Exit 24 | as Exit 24 | STAY | Stays search-only. FC: G1 |
@@ -80,8 +80,8 @@ all 20 stay search-only. One is a candidate, not wireable yet: `metro-m-central-
 names both ends, but Metro's exit list puts the ground lift on exit 35 rather than 34; field item FC-IK-02). For
 `metro-m-central-west-gate` only a lift inside the fare zone is stated. Exit 9 stays a field check (B2): Metro's list
 (revised 2026-03) names only nearby landmarks. New field items FC-IK-01 to 03 and the freshness checks from PR #174 are in
-[field-checklist.md](field-checklist.md) section I. Metro facts are `FACTS_ONLY_REFERENCE` (#26). Using JR East facts
-(JR's terms bar all use) and the Tobu terms (article 8) are Owner decisions; neither was used here. **No node, edge,
+[field-checklist.md](field-checklist.md) section I. Metro facts are `FACTS_ONLY_REFERENCE` (#26). JR East facts are barred
+(Owner decision OD-02, [#165 comment](https://github.com/nurockplayer/gteki/issues/165#issuecomment-6335071234)) and Tobu station-map gate names are not used (OD-01 B, same comment); neither was used here, and no JR East-derived lead is in the field checklist. **No node, edge,
 accessFact, POI or coverage text changed.** Not one of the 20: the Yurakucho 南通路西改札 to Exit 4 pair is stated with
 both endpoints, but the west gate had no POI when #177 was written (`gap-south-west`). PR #185 adds it as a 21st
 search-only POI (`metro-y-south-west-gate`, no node, no edge); the on-site check is field-checklist I8.

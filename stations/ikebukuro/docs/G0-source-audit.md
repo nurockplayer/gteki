@@ -40,7 +40,7 @@ No names on rooms or passages, no ticket gates, no paid/unpaid boundary, no oper
 
 ## Rights
 
-- PLATEAU 3D city model: **CC BY 4.0** (metadata). GTEki may redistribute derived geometry (GLB) with attribution and modification notice: *"Contains PLATEAU data (MLIT), CC BY 4.0. Modified: reprojected to a local ENU frame, triangulated and re-encoded as glTF by GTEki."*
+- PLATEAU 3D city model: licence is the catalogue's **PLATEAU Site Policy 「３．著作権について」**; a "CC BY 4.0" clause in the metadata is unconfirmed and is not shown in the app (#161). GTEki may redistribute derived geometry (GLB) with attribution and modification notice: *"出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成"*, with the modification detail (reprojected to a local ENU frame, triangulated and re-encoded as glTF by GTEki) kept in the source `notes`.
 - MLIT ほこナビ R1: PDL 1.0, 2019 data, all nodes `in_out=1` (outside), no elevation. **Not used for the indoor graph.**
 - Toshima 2022 underground guide and Tokyo Metro Ikebukuro yard map: **REFERENCE_ONLY**, `usage: facts-only`. Read only to establish facts (which openings are which gate or exit, which passages are public). No image, tracing, layout, pictogram or logo is copied into the repository or the build. The Toshima PDF is kept in the git-ignored `data-cache/ikebukuro/reference_only/` folder. The Tokyo Metro map images returned *Access Denied*, so its facts were read from the official page.
 - JR East station maps: **not used.** The research dossier listed them (I-01), but the official map images returned HTTP 403 and were never obtained, read or cached, and JR East's site terms forbid reuse. No fact in `data/graph.src.json` cites JR East. The JR gate names and positions (JR 中央1改札, JR 中央2改札, JR 南改札) come from the Toshima guide (`af-jr-central-gates`, `af-jr-south-gate`). Traced 2026-10-21 across the cache, the pipeline, the graph source and the session record; `jreast` appears only as an operator id for gate POIs.
@@ -50,7 +50,7 @@ No names on rooms or passages, no ticket gates, no paid/unpaid boundary, no oper
 
 - **Facts and works are separated.** Exit numbers, gate names and access facts (which passage is public, which opening is which exit or gate) that can be checked independently may be used and published. The protected works themselves (map images, drawings, layout, pictograms, logos, typefaces, tracings) are not reproduced. This is how the two REFERENCE_ONLY sources above are used.
 - **JR East:** traced as above. It was not used, so no source entry is added.
-- **Public release:** cleared ("ship directly"). Field verification stays a stated gap. The UI says the data is desk-verified, not field-verified, and that hours are unknown.
+- **Merge authorization:** "ship directly" once the rights check, deployment isolation, Codex review and integration tests pass ([#26 comment](https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404), relayed by the lane from the Owner's instructions); an Owner acceptance of the public release itself is not recorded. Field verification stays a stated gap. The UI says the data is desk-verified, not field-verified, and that hours are unknown.
 
 ## Verification standard used by this lane
 
@@ -66,10 +66,10 @@ Hours stay `null` (unknown) unless an official source states them. This is **des
 | Item | Status |
 | --- | --- |
 | Exact resource, version, hash, retrieval time | PASS |
-| License and redistribution of derived geometry | PASS (CC BY 4.0 with attribution) |
+| License and redistribution of derived geometry | PASS (PLATEAU Site Policy with attribution, #161) |
 | CRS, axis order and vertical datum | PASS (EPSG:6697 lat/lon/H; ENU frame documented in extractor) |
 | Geometry coverage enumerated | PASS (B1 free passages; paid areas absent) |
 | Topology / access / hours in open data | **GAP**: hand-authored graph with per-edge evidence, hours unknown |
-| Field verification | **HOLD**: none performed; survey brief in `coverage-gaps.md` (not a release blocker per the Owner, 2026-10-21) |
-| Facts from REFERENCE_ONLY sources in a public, commercial product | PASS (Owner decision 2026-10-21: facts/works separation) |
+| Field verification | **HOLD**: none performed; survey brief in `coverage-gaps.md` |
+| Facts from REFERENCE_ONLY sources in a public, commercial product | PASS (Owner decision relayed by the lane, 2026-10-21: facts/works separation, [#26 comment](https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404)) |
 | JR East sources | PASS (traced: not used) |
