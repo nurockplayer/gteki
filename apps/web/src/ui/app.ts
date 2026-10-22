@@ -1,15 +1,21 @@
-import { createRouter, describeRoute, floorDisplayName, instructionPoints, routeBetween, routePolyline } from "@gteki/navigation";
-import type { Instruction, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
+import { createRouter, describeRoute, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline } from "@gteki/navigation";
+import type { Instruction, NoPathCause, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
 import type { Poi, Source, StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
 import { guideStops } from "../explorer/guideStops.ts";
-import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, type GuideTierId } from "../explorer/guidePace.ts";
+import { firstStopFor, guideKeyAction, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
+import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
+import { noPathView } from "../noPath.ts";
 import { stationClock } from "../stationClock.ts";
-import { sourceCredit } from "../credits.ts";
+import { factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
+import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
+import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
+import { LiveRegion, routeLiveMessage, searchLiveMessage } from "./live.ts";
+import { watchReducedMotion } from "./motion.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -28,6 +34,8 @@ interface State {
   destination: Poi | null;
   profile: { stepFree: boolean; unpaidOnly: boolean; strictHours: boolean };
   route: RouteResult | RouteFailure | null;
+  /** Which enabled option made the last `no_path` refuse (null = not a no_path). */
+  noPath: NoPathCause | null;
   polyline: PolylinePoint[];
   instructions: Instruction[];
   activeInstruction: number;
@@ -58,7 +66,7 @@ export class App {
   private readonly s: State = {
     lang: initialLang(), entries: [], entry: null, loaded: null, router: null, search: null,
     origin: null, destination: null, profile: { stepFree: false, unpaidOnly: false, strictHours: false },
-    route: null, polyline: [], instructions: [], activeInstruction: 0,
+    route: null, noPath: null, polyline: [], instructions: [], activeInstruction: 0,
   };
   private explorer!: Explorer;
   private readonly ui = {
@@ -77,9 +85,13 @@ export class App {
     langBtn: el("button", "ghost lang"),
     coverageBtn: el("button", "ghost"),
     hint: el("div", "hint"),
+    credit: el("footer", "credit-line"),
     panel: el("section", "panel"),
     more: el("button", "ghost more", "⋯"),
+    live: new LiveRegion(() => this.t),
   };
+  /** Listbox state of the two search comboboxes. */
+  private readonly combo: Record<"from" | "to", ComboState> = { from: COMBO_CLOSED, to: COMBO_CLOSED };
   private panelExpanded = false;
 
   constructor(private readonly root: HTMLElement) {}
@@ -100,6 +112,8 @@ export class App {
       },
     });
     this.explorer.setGuideTier(readGuideTier());
+    this.bindGuideKeys();
+    watchReducedMotion((reduce) => this.explorer.setReducedMotion(reduce));
     this.exposeTestHooks();
     this.s.entries = await listStations();
     this.renderStationSelect();
@@ -134,7 +148,6 @@ export class App {
     top.append(brand, this.ui.stationSelect, actions);
 
     const panel = this.ui.panel;
-    this.ui.more.setAttribute("aria-label", "options");
     this.ui.more.addEventListener("click", () => { this.panelExpanded = !this.panelExpanded; this.updatePanelCollapse(); });
     const fromRow = this.field("from", this.ui.fromInput, this.ui.fromResults);
     const toRow = this.field("to", this.ui.toInput, this.ui.toResults);
@@ -147,7 +160,7 @@ export class App {
     panel.append(this.ui.banner, fields, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
-    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.ui.coverage, this.ui.hint);
+    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
     this.layoutText();
   }
 
@@ -157,6 +170,7 @@ export class App {
     this.ui.langBtn.textContent = t.language;
     this.ui.langBtn.dataset.short = this.s.lang === "ja" ? "EN" : "日本語";
     this.ui.coverageBtn.textContent = t.coverage;
+    this.ui.more.setAttribute("aria-label", t.options);
     this.ui.fromInput.placeholder = t.fromPlaceholder;
     this.ui.toInput.placeholder = t.toPlaceholder;
     this.root.querySelectorAll<HTMLElement>("[data-label]").forEach((n) => { n.textContent = t[n.dataset.label as "from" | "to"]; });
@@ -172,13 +186,24 @@ export class App {
     input.spellcheck = false;
     input.id = `gteki-${which}`;
     label.htmlFor = input.id;
+    results.id = `gteki-${which}-listbox`;
+    applyAria(input, inputAria(COMBO_CLOSED, results.id));
     input.addEventListener("input", () => this.renderResults(which));
     input.addEventListener("focus", () => this.renderResults(which));
+    let compositionEndMs = -Infinity;
+    input.addEventListener("compositionend", () => { compositionEndMs = performance.now(); });
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") (results.querySelector("button") as HTMLButtonElement | null)?.click();
-      if (e.key === "Escape") { results.innerHTML = ""; input.blur(); }
+      // The Enter that confirms an IME conversion is not a pick (Safari reports it as not composing).
+      if (isImeKeydown(e, compositionEndMs, performance.now())) return;
+      // Arrows reopen a closed list.
+      if (!this.combo[which].open && (e.key === "ArrowDown" || e.key === "ArrowUp")) this.renderResults(which);
+      const out = comboboxKeys(this.combo[which], e.key);
+      if (!out.handled) return;
+      e.preventDefault();
+      if (out.pick !== null) results.querySelectorAll<HTMLElement>('[role="option"]')[out.pick]?.click();
+      else this.setCombo(which, out);
     });
-    input.addEventListener("blur", () => setTimeout(() => { results.innerHTML = ""; }, 160));
+    input.addEventListener("blur", () => setTimeout(() => this.closeResults(which), 160));
     row.append(label, input, results);
     return row;
   }
@@ -216,10 +241,11 @@ export class App {
     this.s.route = null;
     this.s.polyline = [];
     this.s.instructions = [];
+    this.renderCredit();
     this.ui.fromInput.value = "";
     this.ui.toInput.value = "";
-    this.ui.fromResults.innerHTML = "";
-    this.ui.toResults.innerHTML = "";
+    this.closeResults("from");
+    this.closeResults("to");
     this.ui.sheet.innerHTML = "";
     this.renderSpawnChips(undefined);
     this.toast(this.t.loading);
@@ -269,14 +295,19 @@ export class App {
     this.ui.panel.classList.toggle("collapsed", ready && !this.panelExpanded);
     this.ui.more.classList.toggle("hidden", !ready);
     this.ui.more.textContent = this.panelExpanded ? "︿" : "⋯";
+    this.ui.more.setAttribute("aria-expanded", String(this.panelExpanded));
   }
 
   private refreshAll(): void {
     this.updatePanelCollapse();
+    this.renderCredit();
     const b = this.s.loaded?.bundle;
     this.renderBanner(b);
     this.renderSpawnChips(b);
     this.renderProfile();
+    // The lists show the previous language / selection: drop them.
+    this.closeResults("from");
+    this.closeResults("to");
     this.ui.fromInput.value = this.originLabel();
     this.ui.toInput.value = this.s.destination ? this.poiName(this.s.destination) : "";
     if (b) this.explorer.showPois(b, (p) => this.poiName(p), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
@@ -344,28 +375,65 @@ export class App {
   private renderResults(which: "from" | "to"): void {
     const input = which === "from" ? this.ui.fromInput : this.ui.toInput;
     const box = which === "from" ? this.ui.fromResults : this.ui.toResults;
-    box.innerHTML = "";
+    this.closeResults(which);
     if (!this.s.search || !this.s.loaded) return;
     const q = input.value.trim();
     const hits: SearchHit[] = q ? this.s.search.search(q, { limit: 8 }) : this.s.loaded.bundle.pois.slice(0, 8).map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
-    if (hits.length === 0) { box.append(el("div", "result empty", this.t.noResults)); return; }
+    this.ui.live.announce(searchLiveMessage(this.t, hits.length));
+    if (hits.length === 0) {
+      const none = el("div", "result empty", this.t.noResults);
+      none.setAttribute("role", "option");
+      none.setAttribute("aria-disabled", "true");
+      box.append(none);
+      this.setCombo(which, { open: true, count: 0, active: -1 });
+      return;
+    }
     const floors = new Map(this.s.loaded.bundle.floors.map((f) => [f.id, f]));
-    for (const h of hits) {
+    hits.forEach((h, i) => {
       const b = el("button", `result cat-${h.poi.category}${h.routable ? "" : " disabled"}`);
+      const dot = el("span", "dot");
+      dot.setAttribute("aria-hidden", "true");
       const name = el("span", "result-name", this.poiName(h.poi));
       const meta = el("span", "result-meta");
       const floor = h.poi.floorId ? floorDisplayName(floors.get(h.poi.floorId), this.s.lang) : null;
-      meta.textContent = [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null, h.routable ? null : this.t.searchOnly].filter(Boolean).join(" · ");
-      b.append(el("span", "dot"), name, meta);
+      const tags = [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null, h.routable ? null : this.t.searchOnly].filter(Boolean) as string[];
+      meta.textContent = tags.join(" · ");
+      b.append(dot, name, meta);
+      // The accessible name carries the visible tags, so "search only" is heard too.
+      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags].join(", ")));
       b.addEventListener("mousedown", (e) => e.preventDefault());
       b.addEventListener("click", () => {
-        box.innerHTML = "";
+        this.closeResults(which);
         input.blur();
         if (which === "from") this.setOrigin({ kind: "poi", poi: h.poi });
         else this.setDestination(h.poi);
       });
       box.append(b);
-    }
+    });
+    this.setCombo(which, { open: true, count: hits.length, active: -1 });
+  }
+
+  /** Close one results list (focus is left alone). */
+  private closeResults(which: "from" | "to"): void {
+    this.setCombo(which, COMBO_CLOSED);
+  }
+
+  /**
+   * The one place the popup and its ARIA state are kept in step: store the state, drop the options of a
+   * closed list (`.results:empty` hides the box), set the listbox role and the input's
+   * aria-expanded / aria-activedescendant, and mark the active option. Visible popup <=> aria-expanded.
+   */
+  private setCombo(which: "from" | "to", st: ComboState): void {
+    const state = normalizeCombo(st);
+    this.combo[which] = state;
+    const input = which === "from" ? this.ui.fromInput : this.ui.toInput;
+    const box = which === "from" ? this.ui.fromResults : this.ui.toResults;
+    if (!state.open) box.replaceChildren();
+    const role = listboxRole(state);
+    if (role) box.setAttribute("role", role);
+    else box.removeAttribute("role");
+    applyAria(input, inputAria(state, box.id));
+    box.querySelectorAll('[role="option"]').forEach((o, i) => o.setAttribute("aria-selected", String(i === state.active)));
   }
 
   /** Endpoints must come from the station that is loaded now (a stale result list may still be clickable). */
@@ -396,6 +464,37 @@ export class App {
     this.s.origin = d ? { kind: "poi", poi: d } : null;
     this.refreshAll();
     this.updateUrl();
+  }
+
+  /** The origin as a POI a reversed route can end at: a POI origin, or a graph-node origin that is a POI's connector. */
+  private originPoi(): Poi | null {
+    const o = this.s.origin;
+    if (!o) return null;
+    return o.kind === "poi" ? o.poi : (this.s.loaded?.bundle.pois.find((p) => p.connectorNodeIds.includes(o.nodeId)) ?? null);
+  }
+
+  /** After arrival: back to the overview with origin and destination swapped and the route recomputed. */
+  private reverseRoute(): void {
+    const from = this.originPoi();
+    const to = this.s.destination;
+    if (!from || !to) return;
+    this.leaveGuide();
+    this.s.origin = { kind: "poi", poi: to };
+    this.s.destination = from;
+    this.refreshAll();
+    this.updateUrl();
+  }
+
+  /** After arrival: back to the overview with the destination search focused (its text selected, so typing replaces it). */
+  private searchAgain(): void {
+    this.leaveGuide();
+    this.ui.toInput.focus();
+    this.ui.toInput.select();
+  }
+
+  private leaveGuide(): void {
+    this.explorer.stopGuide();
+    this.explorer.frameAll();
   }
 
   /** Nearest graph node to the avatar (on the avatar's level band). Virtual, never GPS. */
@@ -440,14 +539,19 @@ export class App {
   private computeRoute(): void {
     const { router, loaded, origin, destination } = this.s;
     this.s.route = null;
+    this.s.noPath = null;
     this.s.polyline = [];
     this.s.instructions = [];
     this.explorer.clearRoute();
     if (!router || !loaded || !origin || !destination) { this.renderSheet(); return; }
     // One multi-source query: the router ranks entrances by its own cost and keeps "already there";
     // routeBetween also applies the fare policy to the POIs themselves.
-    const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, this.profile());
+    const profile = this.profile();
+    const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, profile);
     this.s.route = best;
+    this.ui.live.announce(routeLiveMessage(this.t, best));
+    // Only after a no_path: re-ask with the user's own options relaxed to say which one refused.
+    if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
     if (best.ok) {
       this.s.polyline = routePolyline(loaded.bundle, best);
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination);
@@ -468,7 +572,24 @@ export class App {
     const t = this.t;
     if (!r.ok) {
       const card = el("div", "card no-route");
-      card.append(el("h2", undefined, t.noRoute), el("p", undefined, t.noRouteWhy[r.reason] ?? r.message));
+      const view = r.reason === "no_path" && this.s.noPath ? noPathView(t, this.s.noPath) : null;
+      card.append(el("h2", undefined, t.noRoute), el("p", undefined, view?.text ?? t.noRouteWhy[r.reason] ?? r.message));
+      if (view && view.relax.length > 0) {
+        const relax = el("div", "actions");
+        const relaxOff = (keys: typeof view.relax) => { for (const k of keys) this.s.profile[k] = false; this.renderProfile(); this.computeRoute(); };
+        if (view.all) {
+          const b = el("button", "chip accent", t.noPath.relaxAll);
+          b.addEventListener("click", () => relaxOff(view.relax));
+          relax.append(b);
+        } else {
+          for (const k of view.relax) {
+            const b = el("button", "chip accent", t.noPath.relax(t[k]));
+            b.addEventListener("click", () => relaxOff([k]));
+            relax.append(b);
+          }
+        }
+        card.append(relax);
+      }
       sheet.append(card);
       return;
     }
@@ -550,6 +671,7 @@ export class App {
     const hud = this.ui.hud;
     hud.innerHTML = "";
     const mode = this.explorer.currentMode;
+    this.announceInstruction();
     if (mode === "overview") { this.trackInstruction(); return; }
     const t = this.t;
     const ins = this.s.instructions[this.s.activeInstruction];
@@ -567,9 +689,10 @@ export class App {
       const showSpeed = (): void => {
         const tier = this.explorer.guideTier;
         const name = t.guideTier[tier];
-        speed.textContent = t.guideSpeedLabel(name, guideTierSpeed(tier));
-        speed.setAttribute("aria-label", t.guideSpeedAria(name));
-        speed.title = t.guideSpeedAria(name);
+        const readout = paceReadout(this.guidePace.totalM, tier, this.guidePace.spans);
+        speed.textContent = t.guideSpeedLabel(name, readout);
+        speed.setAttribute("aria-label", t.guideSpeedAria(name, readout));
+        speed.title = t.guideSpeedAria(name, readout);
       };
       showSpeed();
       speed.addEventListener("click", () => {
@@ -580,7 +703,18 @@ export class App {
       });
       const stop = el("button", "ghost", t.exitGuide);
       stop.addEventListener("click", () => this.explorer.stopGuide());
-      row.append(pause, speed, stop);
+      const prev = el("button", "ghost guide-step guide-prev", "‹");
+      const next = el("button", "ghost guide-step guide-next", "›");
+      for (const [b, label, title, dir] of [[prev, t.guidePrev, t.guidePrevTitle, -1], [next, t.guideNext, t.guideNextTitle, 1]] as const) {
+        b.setAttribute("aria-label", label);
+        b.setAttribute("aria-keyshortcuts", dir < 0 ? "[ PageUp" : "] PageDown");
+        b.title = title;
+        b.addEventListener("click", () => this.jumpGuide(dir));
+      }
+      // One no-wrap group, so the phone row never splits the playback controls (the other buttons may wrap below it).
+      const group = el("div", "hud-guide");
+      group.append(prev, pause, next, speed, stop);
+      row.append(group);
     }
     const fp = el("button", "ghost", t.firstPerson);
     fp.classList.toggle("on", this.explorer.firstPersonOn);
@@ -601,7 +735,32 @@ export class App {
     });
     row.append(fp, net, ov, snd);
     hud.append(row);
+    this.syncGuideStep();
     this.trackInstruction();
+  }
+
+  /** Next is disabled on the last instruction (arrival); the arrival follow-up row shows only once the guide has arrived. */
+  private syncGuideStep(): void {
+    const hud = this.ui.hud;
+    const guiding = this.explorer.currentMode === "guide";
+    const next = hud.querySelector<HTMLButtonElement>("button.guide-next");
+    if (next) next.disabled = this.s.activeInstruction >= this.s.instructions.length - 1;
+    hud.querySelector(".hud-arrival")?.remove();
+    const row = hud.querySelector(".hud-row");
+    if (!guiding || !this.arrived || !row) return;
+    const t = this.t;
+    const after = el("div", "hud-row hud-arrival");
+    const again = el("button", "ghost search-again", t.searchAgain);
+    again.addEventListener("click", () => this.searchAgain());
+    // Not offered where the destination was not reached (the arrival toast says so): there is nothing to reverse back from.
+    if (!this.endsOnConnector()) {
+      const reverse = el("button", "reverse-route", t.reverseRoute);
+      reverse.disabled = !this.originPoi() || !this.s.destination;
+      reverse.addEventListener("click", () => this.reverseRoute());
+      after.append(reverse);
+    }
+    after.append(again);
+    row.before(after);
   }
 
   private instructionEl: Element | null = null;
@@ -631,8 +790,23 @@ export class App {
     else if (cur) cur.textContent = ins.text;
     else hud.prepend(el("div", "hud-instruction", ins.text));
     pause.textContent = this.explorer.guidePaused ? this.t.resume : this.t.pause;
+    this.syncGuideStep();
+    this.announceInstruction();
     this.trackInstruction();
   }
+
+  private spokenInstruction: Instruction | null = null;
+
+  /** Announce the guide's active instruction once per change (not per progress tick); forgotten outside the guide. */
+  private announceInstruction(): void {
+    const ins = this.explorer.currentMode === "guide" ? this.s.instructions[this.s.activeInstruction] ?? null : null;
+    if (ins === this.spokenInstruction) return;
+    this.spokenInstruction = ins;
+    if (ins) this.ui.live.announce(ins.text);
+  }
+
+  /** The running guide's length and pace spans: the speed button's effective pace is read from them on each tier change, not per frame. */
+  private guidePace: { totalM: number; spans: readonly PaceSpan[] } = { totalM: 0, spans: [] };
 
   /** Guide along the route, stopping where each wait for an opening happens. */
   private startGuide(): void {
@@ -644,7 +818,64 @@ export class App {
       this.s.activeInstruction = 1;
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === 1));
     }
+    this.guideStarts = instructionStartsM(this.s.polyline, this.s.instructions);
+    this.guideFirst = this.s.instructions[0]?.kind === "start" && this.s.instructions.length > 1 ? 1 : 0;
+    this.guideS = 0;
+    this.insClock.reset();
+    this.jumpPin = null;
+    this.arrived = false;
+    this.guidePace = { totalM: polylineLengthM(this.s.polyline), spans };
     this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans);
+  }
+
+  /** Per guide run: where each instruction starts (m), the first one the guide shows, and how far the guide has got. */
+  private guideStarts: number[] = [];
+  private guideFirst = 0;
+  private guideS = 0;
+  /** Guide time (not counting pauses or arrival) spent in the active instruction, for Previous's restart rule. */
+  private readonly insClock = new StepClock();
+  /** After a jump: the distance the guide landed at; the active instruction stays as chosen until the guide moves off it. */
+  private jumpPin: number | null = null;
+  private arrived = false;
+
+  /**
+   * Previous / Next: jump the guide to an instruction's start. Only the guide distance moves (explorer.seekGuide); the
+   * avatar, camera and wait stops follow through the guide's normal per-frame path. Pause state is kept.
+   */
+  private jumpGuide(dir: 1 | -1): void {
+    if (this.explorer.currentMode !== "guide") return;
+    const j = jumpTarget(this.guideS, this.guideStarts, dir, this.insClock.elapsedS, this.s.activeInstruction, this.guideFirst);
+    if (!j) return;
+    this.s.activeInstruction = j.index;
+    this.explorer.seekGuide(j.s, firstStopFor(this.guideWaits, j.index));
+    this.guideS = j.s;
+    this.insClock.reset();
+    this.jumpPin = j.s;
+    const last = this.s.instructions.length - 1;
+    this.arrived = j.index === last && this.s.instructions[last]?.kind === "arrive";
+    this.updateGuideHud();
+    this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === j.index));
+    if (this.arrived) this.toast(this.arrivalText(), 2500);
+  }
+
+  /** A route ending on a stair/escalator/ramp connector has not reached the destination: the last instruction says so. */
+  private endsOnConnector(): boolean {
+    return !!this.s.instructions[this.s.instructions.length - 1]?.connector;
+  }
+
+  private arrivalText(): string {
+    return this.endsOnConnector() ? this.s.instructions[this.s.instructions.length - 1]!.text : this.t.arrived;
+  }
+
+  /** `[` / `]` or PageUp / PageDown step the guide; never while typing in a field or with a dialog open. */
+  private bindGuideKeys(): void {
+    window.addEventListener("keydown", (e) => {
+      const action = guideKeyAction(e);
+      if (!action || this.explorer.currentMode !== "guide" || this.ui.coverage.open) return;
+      if ((e.target as HTMLElement | null)?.closest?.("input, textarea, select, [contenteditable]")) return;
+      e.preventDefault();
+      this.jumpGuide(action === "next" ? 1 : -1);
+    });
   }
 
   /** The guide reached a wait: it is paused there, and the wait stays the active instruction until resumed. */
@@ -652,31 +883,41 @@ export class App {
     const wait = this.guideWaits[index];
     if (wait === undefined) return;
     this.s.activeInstruction = wait;
+    this.insClock.reset();
     this.updateGuideHud();
     this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === wait));
     this.toast(this.s.instructions[wait]!.text, 4000);
   }
 
-  private onGuideProgress(p: { stepIndex: number; done: boolean }): void {
+  private onGuideProgress(p: { s: number; stepIndex: number; done: boolean }): void {
+    // Guide time stops while paused and at arrival (the guide stays in guide mode there; Previous must not read that as time spent).
+    this.insClock.tick(performance.now(), !this.explorer.guidePaused && !this.arrived && !p.done);
+    this.guideS = p.s;
+    // Just after a jump the guide stands on the instruction's first point, which still reports the previous step: keep the chosen one.
+    if (this.jumpPin !== null) {
+      if (!p.done && Math.abs(p.s - this.jumpPin) < 0.05) return;
+      this.jumpPin = null;
+    }
     // Stopped at a wait (onGuideStop): it stays the active instruction until the guide is resumed.
     if (this.s.instructions[this.s.activeInstruction]?.kind === "wait" && this.explorer.guidePaused) return;
     const idx = this.s.instructions.findIndex((ins) => ins.stepIndexes.includes(p.stepIndex));
     const next = p.done ? this.s.instructions.length - 1 : idx;
     if (next >= 0 && next !== this.s.activeInstruction) {
       this.s.activeInstruction = next;
+      this.insClock.reset();
+      this.arrived = p.done;
       this.updateGuideHud();
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === next));
-      if (p.done) {
-        // A route ending on a stair/escalator/ramp connector has not reached the destination: say so.
-        const last = this.s.instructions[this.s.instructions.length - 1];
-        this.toast(last?.connector ? last.text : this.t.arrived, 2500);
-      }
+      if (p.done) this.toast(this.arrivalText(), 2500);
     }
   }
 
-  /** A source's credit line: title (linked), attribution, licence (linked) and the modification notice. */
-  private creditItem(s: Source): HTMLLIElement {
-    const c = sourceCredit(s);
+  /**
+   * A credit line for one source, or for several sources sharing an attribution: titles (linked), the attribution once,
+   * the distinct licences (linked) and the modification notice; a facts-only source adds the #26 wording and decision link
+   * (Coverage dialog and the route card's 出典 both use this).
+   */
+  private creditItem(...sources: Source[]): HTMLLIElement {
     const link = (text: string, href: string | null): HTMLElement => {
       if (!href) return el("span", undefined, text);
       const a = el("a", undefined, text);
@@ -686,10 +927,47 @@ export class App {
       return a;
     };
     const li = el("li");
-    li.append(link(c.title, c.href), el("span", "muted", ` — ${c.attribution}`));
-    if (c.license) li.append(el("span", "muted", " ("), link(c.license.name, c.license.href), el("span", "muted", ")"));
-    if (c.modified) li.append(el("span", "muted", ` · ${this.t.modified}`));
+    sources.forEach((s, i) => {
+      const c = sourceCredit(s);
+      if (i) li.append(el("span", "muted", "、"));
+      li.append(link(c.title, c.href));
+    });
+    const attribution = sources[0]?.attribution.replace(/\s+/g, " ").trim() ?? "";
+    if (attribution) li.append(el("span", "muted", ` — ${attribution}`));
+    const licenses = groupLicenses(sources);
+    if (licenses.length) {
+      li.append(el("span", "muted", " ("));
+      licenses.forEach((l, i) => { if (i) li.append(el("span", "muted", ", ")); li.append(link(l.name, l.href)); });
+      li.append(el("span", "muted", ")"));
+    }
+    if (sources.some((s) => s.modified)) li.append(el("span", "muted", ` · ${this.t.modified}`));
+    for (const s of sources) {
+      const facts = factsOnlyCredit(s, this.t);
+      if (!facts) continue;
+      li.append(el("span", "muted", ` · ${facts.text}`));
+      if (facts.decision) li.append(el("span", "muted", " ("), link(facts.decision.label, facts.decision.href), el("span", "muted", ")"));
+    }
     return li;
+  }
+
+  /** The persistent credit line (bottom strip, above the safe-area inset): drawn sources' attributions, each once; "Credits" opens the full list. */
+  private renderCredit(): void {
+    const b = this.s.loaded?.bundle;
+    const text = b ? creditLineFor(b) : "";
+    const box = this.ui.credit;
+    box.innerHTML = "";
+    box.hidden = !text;
+    this.root.classList.toggle("has-credit", Boolean(text));
+    if (!text) return;
+    box.setAttribute("aria-label", this.t.creditsLabel);
+    const line = el("span", "credit-text", text);
+    line.title = text;
+    const btn = el("button", "ghost credit-btn", this.t.credits);
+    // The text does not take pointer events (joystick area), so the button carries the full text as its tooltip too.
+    btn.title = text;
+    btn.setAttribute("aria-haspopup", "dialog");
+    btn.addEventListener("click", () => this.openCoverage());
+    box.append(line, btn);
   }
 
   // ---- Coverage --------------------------------------------------------------------
@@ -699,13 +977,14 @@ export class App {
     const d = this.ui.coverage;
     d.innerHTML = "";
     const close = el("button", "ghost close", "×");
+    close.setAttribute("aria-label", this.t.close);
     close.addEventListener("click", () => d.close());
     d.append(close, el("h2", undefined, this.t.coverage));
     if (b) {
       d.append(el("p", undefined, pick(b.coverage.summary, this.s.lang)));
       if (b.coverage.areas.length) {
         const ul = el("ul");
-        for (const a of b.coverage.areas) ul.append(el("li", `cov-${a.status}`, `${a.status} · ${pick(a.label, this.s.lang)}${a.note ? ` — ${a.note}` : ""}`));
+        for (const a of b.coverage.areas) ul.append(el("li", `cov-${a.status}`, `${this.t.coverageStatus[a.status] ?? a.status} · ${pick(a.label, this.s.lang)}${a.note ? ` — ${a.note}` : ""}`));
         d.append(ul);
       }
       d.append(el("h3", undefined, this.t.gaps));
@@ -714,10 +993,12 @@ export class App {
       if (!b.coverage.gaps.length) gaps.append(el("li", "muted", "—"));
       d.append(gaps, el("h3", undefined, this.t.sources));
       const src = el("ul");
-      // Every source, including those cited only by assets or coverage: link, licence and modification notice.
-      for (const s of b.sources) {
-        const li = this.creditItem(s);
-        li.append(el("span", "muted", ` [${s.rights}${s.usage === "facts-only" ? ", facts-only" : ""}]`));
+      // Every source exactly once, including those cited only by assets or coverage. Sources sharing an attribution form one item;
+      // facts-only and blank-attribution sources stay single. Rights are plain language (#130), never the internal enum.
+      for (const g of creditEntries(b.sources)) {
+        const li = this.creditItem(...g.sources);
+        const rights = entryRightsLabels(g.sources, this.t);
+        if (rights.length) li.append(el("span", "muted", ` · ${rights.join(" / ")}`));
         src.append(li);
       }
       d.append(src);
@@ -739,6 +1020,7 @@ export class App {
   private toast(text: string, ms = 0): void {
     clearTimeout(this.toastTimer);
     this.ui.toast.textContent = text;
+    this.ui.live.announce(text);
     this.ui.toast.classList.toggle("show", Boolean(text));
     if (ms) this.toastTimer = window.setTimeout(() => this.ui.toast.classList.remove("show"), ms);
   }
@@ -756,7 +1038,7 @@ export class App {
       instructions: () => this.s.instructions.map((i) => i.text),
       mode: () => this.explorer.currentMode,
       startGuide: () => this.startGuide(),
-      guideControls: () => ({ paused: this.explorer.guidePaused, tier: this.explorer.guideTier, speed: guideTierSpeed(this.explorer.guideTier) }),
+      guideControls: () => ({ paused: this.explorer.guidePaused, tier: this.explorer.guideTier, speed: guideTierSpeed(this.explorer.guideTier), instruction: this.s.activeInstruction, distanceM: this.guideS, arrived: this.arrived }),
       hud: () => [...this.ui.hud.querySelectorAll("button")].map((b) => b.textContent),
       labels: () => this.explorer.labelInfo(),
       overviewFrame: () => this.explorer.overviewFrame(),
