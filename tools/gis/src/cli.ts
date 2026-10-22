@@ -1,5 +1,5 @@
 import { inspectPoi } from './poi.js';
-import { loadLiteralAllowlist } from './poi-literals.js';
+import { loadLiteralAllowlistFile } from './poi-literals.js';
 import { checkLiterals, scrubLiterals } from './literals.js';
 import { writeLiteralClassification } from './literal-classes.js';
 import { rightsReport } from './rights.js';
@@ -60,12 +60,13 @@ async function main() {
     case 'inspect-poi': { const report=await inspectPoi(requireArg(0)); result={source_id:report.source_id,member_count:report.members.length,report:`docs/gis/poi/${report.source_id}.json`}; break; }
     case 'check-literals': case 'check-poi-literals': {
       // Read-only leak guard (alias keeps the #128 name): no literal POI or class (b) non-POI source value may appear under docs/gis.
-      const checked=await checkLiterals(join(docsRoot,'gis'),undefined,await loadLiteralAllowlist());
+      const allowlist=await loadLiteralAllowlistFile();
+      const checked=await checkLiterals(join(docsRoot,'gis'),undefined,allowlist.terms,{structural:allowlist.structural});
       result=checked;
       if(checked.status!=='PASS')process.exitCode=1;break;
     }
     case 'literals-report': result=await writeLiteralClassification();break;
-    case 'scrub-literals': {if(!args.length)throw new Error('Provide paths under docs/gis');result=await scrubLiterals(join(docsRoot,'gis'),args,await loadLiteralAllowlist());break;}
+    case 'scrub-literals': {if(!args.length)throw new Error('Provide paths under docs/gis');const allowlist=await loadLiteralAllowlistFile();result=await scrubLiterals(join(docsRoot,'gis'),args,allowlist.terms,undefined,allowlist.structural);break;}
     case 'inspect-vintages': {
       const report=await inspectVintages();
       const relations=report.comparison.bbox_relations.reduce<Record<string,number>>((counts,row)=>({...counts,[row.relation]:(counts[row.relation]??0)+1}),{});

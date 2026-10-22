@@ -2191,5 +2191,12 @@
   ],
   "compact_features_total": 155,
   "group_membership_count": 1,
-  "group_memberships_truncated": false
+  "group_memberships_truncated": false,
+  "credit": {
+    "source_id": "plateau-13104-ubld-53394536",
+    "attribution_text": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+    "license_name": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "classification": "docs/gis/rights/non-poi-literals.md"
+  }
 }

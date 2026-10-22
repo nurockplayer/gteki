@@ -180,8 +180,8 @@
     }
   ],
   "invalidated": {
-    "at": "2026-10-21T23:48:13.634Z",
-    "by_command": "gis scrub-literals history real-data-summary.json real-data-summary.md HANDOFF.md research/network-codes-and-coverage.md research/lane-d-review-fixes.md",
+    "at": "2026-10-22T00:14:32.471Z",
+    "by_command": "gis literals-report",
     "reason": "Report-writing command run outside real-run; rerun real-run before summarizing"
   }
 }

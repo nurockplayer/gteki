@@ -1,6 +1,6 @@
 {
   "station_id": "shinjuku",
-  "tool_input_sha256": "abf79c7e825f8f81ba85a9c753732ef18b67ce0af05f56f38157b187c112fce9",
+  "tool_input_sha256": "7a598e382aeeb7496a064401a1607fe7d8607804e3974366190447b73d17dd64",
   "poi_content": [
     {
       "source_id": "tokyo-s10-shinjuku-csv",
@@ -9341,6 +9341,13 @@
   "source_ids": {
     "citygml": "plateau-13104-ubld-53394536",
     "network": "hokonavi-oedo-shinjuku-network-geojson"
+  },
+  "credit": {
+    "source_id": "plateau-13104-ubld-53394536",
+    "attribution_text": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+    "license_name": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "classification": "docs/gis/rights/non-poi-literals.md"
   },
   "input_status": {
     "citygml_inventory": "AVAILABLE",

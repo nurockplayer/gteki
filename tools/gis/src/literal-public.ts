@@ -1,5 +1,5 @@
 import { valueSha256 } from './poi.js';
-import { MIN_LITERAL_LENGTH } from './poi-literals.js';
+import { isCodeValue } from './literal-match.js';
 
 /**
  * Committed-report form of non-POI source literals (issue #129, follow-up to #124). Class (b) sources (unclear or
@@ -7,19 +7,15 @@ import { MIN_LITERAL_LENGTH } from './poi-literals.js';
  * a literal becomes `{ value_sha256, value_type[, count] }` exactly as for POI values. The verbatim form is kept only in
  * the git-ignored store detail report.
  *
- * Source codes are not free text. A value that is purely numeric, one of our own markers, or shorter than the leak
- * scan's minimum literal length (3 characters or less, e.g. rank `SBS`) stays as the code: the scan cannot test it,
- * hashing it would make the code distributions unreadable, and the code alone carries no source wording.
+ * Source codes are not free text. A value that is purely numeric, one of our own markers, or a short ASCII token (at most
+ * three characters, e.g. rank `SBS`) stays as the code: hashing it would make the code distributions unreadable and it
+ * carries no source wording. Short non-ASCII wording (`1階`, `階段`, `あり`) is wording and is hashed like any label.
  */
 export type HashedValue = { value_sha256: string; value_type: 'string' };
 export type HashedCount = HashedValue & { count: number };
 
-const MARKERS = new Set(['(blank)', '(unavailable)', '(unknown)']);
-/** True for a numeric, marker or very short code that is kept verbatim in committed reports. */
-export function isEnumeratedCode(value: string): boolean {
-  const trimmed = value.trim();
-  return MARKERS.has(trimmed) || /^[-+]?\d+(?:\.\d+)?$/u.test(trimmed) || trimmed.length < MIN_LITERAL_LENGTH;
-}
+/** True for a numeric, marker or short ASCII code (see literal-match.ts); every other value, however short, is source wording. */
+export const isEnumeratedCode = isCodeValue;
 
 export const hashedValue = (value: string): HashedValue => ({ value_sha256: valueSha256(value), value_type: 'string' });
 const compareHashed = (a: HashedCount, b: HashedCount): number => b.count - a.count || (a.value_sha256 < b.value_sha256 ? -1 : a.value_sha256 > b.value_sha256 ? 1 : 0);

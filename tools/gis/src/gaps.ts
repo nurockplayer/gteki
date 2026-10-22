@@ -5,6 +5,7 @@ import path from 'node:path';
 import { writeFile } from 'node:fs/promises';
 import { docsRoot, readJson, writeJson } from './common.js';
 import { loadSources } from './acquire.js';
+import { classACredit } from './literal-classes.js';
 import type { StationOverlapReport } from './overlap.js';
 
 const STATIONS = [
@@ -154,13 +155,14 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
     holds.push('POI, S03 and related-layer publish gates remain HOLD. Rights clearance never establishes navigability.');
     for (const row of rightsContent) if(row.verdict !== 'CLEARED_WITH_CONDITIONS') holds.push(`${row.source_id}${row.layer ? ` / ${row.layer}` : ''}: ${row.verdict}; ${row.reason}; ${rightsScopeMarkdown(row)}`);
     holds.push(...missingEvidenceHolds(station.id, poiById, rightsById, manifestStations, admittedPoiIds));
+    const credit = inventory ? await classACredit(station.gml) : null;
     const markdown = [
       `# ${station.id[0]!.toUpperCase()}${station.id.slice(1)} evidence-gap packet`,
       '',
       'This packet is generated from the current inventory and network report files. Missing reports and fields are UNKNOWN.',
       '',
       '## What the source files report',
-      ...(inventory ? [`- CityGML source: ${station.gml}.`, ...semanticFacts] : ['- CityGML inventory: unavailable; contents UNKNOWN.']),
+      ...(inventory ? [`- CityGML source: ${station.gml}.`, ...(credit ? [`- Credit: ${credit.attribution_text} (${credit.license_name}; see ${credit.classification}).`] : []), ...semanticFacts] : ['- CityGML inventory: unavailable; contents UNKNOWN.']),
       ...describeNetwork(network),
       '',
       '## Spatial bbox comparison',
@@ -196,6 +198,7 @@ export async function gapPacket(): Promise<Record<string, unknown>> {
       poi_content: poiContent,
       resource_rights: rightsContent,
       source_ids: { citygml: station.gml, network: station.network },
+      ...(credit ? { credit } : {}),
       input_status: { citygml_inventory: inventory ? 'AVAILABLE' : 'UNKNOWN', network_report: network ? 'AVAILABLE' : 'UNKNOWN' },
       semantic_presence: relevant,
       semantic_presence_rows: semanticFacts,

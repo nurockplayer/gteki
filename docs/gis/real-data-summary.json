@@ -3166,7 +3166,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "階層数": 1887
+                    "value_sha256:1415e29d83ccfcf8e119f902c78ce583eb06668600fdd257559798eb67066654": 1887
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3182,7 +3182,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "階層数": 1887
+                    "value_sha256:1415e29d83ccfcf8e119f902c78ce583eb06668600fdd257559798eb67066654": 1887
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3206,7 +3206,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "施設外": 1887
+                    "value_sha256:c9ceaae242cc49d4ac4993378e03c706cb1258b9e8b9f5435f927a194f8a8662": 1887
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3222,7 +3222,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "施設外": 1887
+                    "value_sha256:c9ceaae242cc49d4ac4993378e03c706cb1258b9e8b9f5435f927a194f8a8662": 1887
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3250,7 +3250,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:6c0aa67f72288f74bf38439fb3dbec5c0bf9c208c83b34c744578891456d1aa3": 596,
                     "value_sha256:ab290fad5a4bd566f80d7b3285909744a0e1ff0d0c47d7a41365bb315dc8ed76": 1599
                   },
@@ -3268,7 +3268,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:6c0aa67f72288f74bf38439fb3dbec5c0bf9c208c83b34c744578891456d1aa3": 596,
                     "value_sha256:ab290fad5a4bd566f80d7b3285909744a0e1ff0d0c47d7a41365bb315dc8ed76": 1599
                   },
@@ -3366,7 +3366,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "両方向": 2196
+                    "value_sha256:3cd7f7c0cad0b51cfe39e84eda960acd9079099920b138425604c4a437d9fdce": 2196
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3382,7 +3382,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "両方向": 2196
+                    "value_sha256:3cd7f7c0cad0b51cfe39e84eda960acd9079099920b138425604c4a437d9fdce": 2196
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3444,7 +3444,7 @@
                   "undefined_codes": [],
                   "decoded_label_counts": {
                     "value_sha256:7cfcad6aef8ea22b78ad6600e3fcc5487661317e97d14bd96792d235295b9ac4": 2195,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3461,7 +3461,7 @@
                   "undefined_codes": [],
                   "decoded_label_counts": {
                     "value_sha256:7cfcad6aef8ea22b78ad6600e3fcc5487661317e97d14bd96792d235295b9ac4": 2195,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3564,7 +3564,7 @@
                   ],
                   "decoded_label_counts": {
                     "value_sha256:23aa5e280ea77b66ccebf6658d3202ea35cc4581ab4227188bb47ed72b2bd48c": 2112,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3583,7 +3583,7 @@
                     "value_sha256:7f73041ea9b32ad17c85d243982bee7ddf38e7cbcb95625bc25e7d472001d5eb": 2112,
                     "value_sha256:eab3892b3000edb819a62532c04a1629b5b5f776cdfa9acf61cd634cf0d79d10": 24,
                     "value_sha256:0f26f5f89319bdd486cb1102d802b55d789f3d410e57b6234fc318b435953292": 59,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3779,9 +3779,9 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "あり": 3,
-                    "なし": 2192,
-                    "不明": 1
+                    "value_sha256:538fa5973853cacc8a87f28d8a795fde7c8f680dc3d245426f22cef197333705": 3,
+                    "value_sha256:868310e193d1af0b9a0a16b18d5826a5490fe3f9410defa30dc115829fc1db4a": 2192,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3797,9 +3797,9 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "あり": 3,
-                    "なし": 2192,
-                    "不明": 1
+                    "value_sha256:538fa5973853cacc8a87f28d8a795fde7c8f680dc3d245426f22cef197333705": 3,
+                    "value_sha256:868310e193d1af0b9a0a16b18d5826a5490fe3f9410defa30dc115829fc1db4a": 2192,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3826,10 +3826,10 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:6e95e0507555494331c24ce5bd13b436e5f13d1d21d67fa6bc60a783a2d8f2be": 2169,
-                    "踏切": 2,
-                    "階段": 24
+                    "value_sha256:f80626172d59da2f2d5b99c11abfb71399f31b4b1dfc0ccebb4d11f47045994c": 2,
+                    "value_sha256:44ec5ddfce336444ce0f950629b3780de9306d058d15076c9ba4f0cf53e81613": 24
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3845,10 +3845,10 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:6e95e0507555494331c24ce5bd13b436e5f13d1d21d67fa6bc60a783a2d8f2be": 2169,
-                    "踏切": 2,
-                    "階段": 24
+                    "value_sha256:f80626172d59da2f2d5b99c11abfb71399f31b4b1dfc0ccebb4d11f47045994c": 2,
+                    "value_sha256:44ec5ddfce336444ce0f950629b3780de9306d058d15076c9ba4f0cf53e81613": 24
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -3879,12 +3879,12 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
-                    "地下通路": 8,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
+                    "value_sha256:e98d89314843f05c38f076ab8809c4a1663a232dbe63b04d3fd81e8deda59606": 8,
                     "value_sha256:013082445fca160b20aa63c97a64a85624023cb2dd9e15f7e317511e00811757": 83,
                     "value_sha256:8f5ab70b827ca315bea0fd191126831309f408bba31dfdef79ce5d5eb99bf947": 584,
                     "value_sha256:fd4b452c49390aacf900d5547d26b8b14ef1d262870844456e403b3e2e3bf636": 142,
-                    "歩道橋": 16,
+                    "value_sha256:918b504b1a1098b7fcee2338638beb85836511351e0ac112be68119fff7f994f": 16,
                     "value_sha256:03665f75c27063c136963b37f4485d095782e686fb9b1b6f1f1d501753eb8366": 1241,
                     "value_sha256:dc8dc772b3ebf7b93eb7201520d3442ef922a4947a565faf504bac1d4b7b0e91": 121
                   },
@@ -3902,12 +3902,12 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
-                    "地下通路": 8,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
+                    "value_sha256:e98d89314843f05c38f076ab8809c4a1663a232dbe63b04d3fd81e8deda59606": 8,
                     "value_sha256:013082445fca160b20aa63c97a64a85624023cb2dd9e15f7e317511e00811757": 83,
                     "value_sha256:8f5ab70b827ca315bea0fd191126831309f408bba31dfdef79ce5d5eb99bf947": 584,
                     "value_sha256:fd4b452c49390aacf900d5547d26b8b14ef1d262870844456e403b3e2e3bf636": 142,
-                    "歩道橋": 16,
+                    "value_sha256:918b504b1a1098b7fcee2338638beb85836511351e0ac112be68119fff7f994f": 16,
                     "value_sha256:03665f75c27063c136963b37f4485d095782e686fb9b1b6f1f1d501753eb8366": 1241,
                     "value_sha256:dc8dc772b3ebf7b93eb7201520d3442ef922a4947a565faf504bac1d4b7b0e91": 121
                   },
@@ -3972,7 +3972,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:64fe993247f8462b44a1a4b6fba1c20406c381e97e8333556409705ecf6d791f": 50,
                     "value_sha256:4f8da13fd68f5e3571f3d548d55d4239ac7b608c4009cb5b7937e140b6c00601": 50,
                     "value_sha256:fe607296c9201675fa0f55fbed814c4173f492dac0482c1b9b031badf1620cb9": 2095
@@ -3991,7 +3991,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:64fe993247f8462b44a1a4b6fba1c20406c381e97e8333556409705ecf6d791f": 50,
                     "value_sha256:4f8da13fd68f5e3571f3d548d55d4239ac7b608c4009cb5b7937e140b6c00601": 50,
                     "value_sha256:fe607296c9201675fa0f55fbed814c4173f492dac0482c1b9b031badf1620cb9": 2095
@@ -4023,7 +4023,7 @@
                   "undefined_codes": [],
                   "decoded_label_counts": {
                     "value_sha256:c431cc15f84124988aca981c8ab97ef5fbd895d1307495ec6cf3c001570722c2": 222,
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:dd2e9da6a9c5c640df6428e6ba671b465a30b5a9e494f3ea1c35c9cf3d692c1c": 30,
                     "value_sha256:cef29c5ca8256affc3ad521633539bed8caca9060a3776c34d450370c0ab1c45": 1935,
                     "value_sha256:7399912f05d8d41ffe11c1f06508ae92b988d0de685358aa2b3d198f268934b1": 8
@@ -4043,7 +4043,7 @@
                   "undefined_codes": [],
                   "decoded_label_counts": {
                     "value_sha256:c431cc15f84124988aca981c8ab97ef5fbd895d1307495ec6cf3c001570722c2": 222,
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:dd2e9da6a9c5c640df6428e6ba671b465a30b5a9e494f3ea1c35c9cf3d692c1c": 30,
                     "value_sha256:cef29c5ca8256affc3ad521633539bed8caca9060a3776c34d450370c0ab1c45": 1935,
                     "value_sha256:7399912f05d8d41ffe11c1f06508ae92b988d0de685358aa2b3d198f268934b1": 8
@@ -4081,7 +4081,7 @@
                   "decoded_label_counts": {
                     "value_sha256:6b82c9333ef0c7b3d35edcd2755d390ec3a0aea1bb0f74927a3996429d969c7e": 172,
                     "value_sha256:740b521e7e47558a0a16d75b263e44230a4930d7c8b38362dcd734c0ad219a61": 1839,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -4102,7 +4102,7 @@
                     "value_sha256:958d3c601f13d327634458f1f265489029840b4b6b872d99a6500aabe59e359b": 8,
                     "value_sha256:804139cd391ac7b2d994e5139ca447c21c64c93cf62b9ba7e489dfc950294308": 160,
                     "value_sha256:f319984d7363a11283a4171abc0a695cd2d830d4fb9ce03b90ec5974cecac267": 172,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -4170,7 +4170,7 @@
                     "value_sha256:1c51e97288fb6e2f4478ab68f2e20c07a94b76588d1a5207f3c81603c3c89cd2": 37,
                     "value_sha256:e69e03554bf69eb9823f3cc7a05ae676bacc5f985fa7a4a028f10883a475d673": 322,
                     "value_sha256:df14694e6558c6d05ebfa415b310289689b4e3f3efc78e89c3a6dc46473d017f": 1597,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -4190,7 +4190,7 @@
                     "value_sha256:1c51e97288fb6e2f4478ab68f2e20c07a94b76588d1a5207f3c81603c3c89cd2": 37,
                     "value_sha256:e69e03554bf69eb9823f3cc7a05ae676bacc5f985fa7a4a028f10883a475d673": 322,
                     "value_sha256:df14694e6558c6d05ebfa415b310289689b4e3f3efc78e89c3a6dc46473d017f": 1597,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -4669,7 +4669,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "階層数": 1887
+                    "value_sha256:1415e29d83ccfcf8e119f902c78ce583eb06668600fdd257559798eb67066654": 1887
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -4685,7 +4685,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "階層数": 1887
+                    "value_sha256:1415e29d83ccfcf8e119f902c78ce583eb06668600fdd257559798eb67066654": 1887
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -4709,7 +4709,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "施設外": 1887
+                    "value_sha256:c9ceaae242cc49d4ac4993378e03c706cb1258b9e8b9f5435f927a194f8a8662": 1887
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -4725,7 +4725,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "施設外": 1887
+                    "value_sha256:c9ceaae242cc49d4ac4993378e03c706cb1258b9e8b9f5435f927a194f8a8662": 1887
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -4753,7 +4753,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:6c0aa67f72288f74bf38439fb3dbec5c0bf9c208c83b34c744578891456d1aa3": 596,
                     "value_sha256:ab290fad5a4bd566f80d7b3285909744a0e1ff0d0c47d7a41365bb315dc8ed76": 1599
                   },
@@ -4771,7 +4771,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:6c0aa67f72288f74bf38439fb3dbec5c0bf9c208c83b34c744578891456d1aa3": 596,
                     "value_sha256:ab290fad5a4bd566f80d7b3285909744a0e1ff0d0c47d7a41365bb315dc8ed76": 1599
                   },
@@ -4797,7 +4797,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "両方向": 2196
+                    "value_sha256:3cd7f7c0cad0b51cfe39e84eda960acd9079099920b138425604c4a437d9fdce": 2196
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -4813,7 +4813,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "両方向": 2196
+                    "value_sha256:3cd7f7c0cad0b51cfe39e84eda960acd9079099920b138425604c4a437d9fdce": 2196
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -4839,7 +4839,7 @@
                   "undefined_codes": [],
                   "decoded_label_counts": {
                     "value_sha256:7cfcad6aef8ea22b78ad6600e3fcc5487661317e97d14bd96792d235295b9ac4": 2195,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -4856,7 +4856,7 @@
                   "undefined_codes": [],
                   "decoded_label_counts": {
                     "value_sha256:7cfcad6aef8ea22b78ad6600e3fcc5487661317e97d14bd96792d235295b9ac4": 2195,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -4887,7 +4887,7 @@
                   ],
                   "decoded_label_counts": {
                     "value_sha256:23aa5e280ea77b66ccebf6658d3202ea35cc4581ab4227188bb47ed72b2bd48c": 2112,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -4906,7 +4906,7 @@
                     "value_sha256:7f73041ea9b32ad17c85d243982bee7ddf38e7cbcb95625bc25e7d472001d5eb": 2112,
                     "value_sha256:eab3892b3000edb819a62532c04a1629b5b5f776cdfa9acf61cd634cf0d79d10": 24,
                     "value_sha256:0f26f5f89319bdd486cb1102d802b55d789f3d410e57b6234fc318b435953292": 59,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -5001,9 +5001,9 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "あり": 3,
-                    "なし": 2192,
-                    "不明": 1
+                    "value_sha256:538fa5973853cacc8a87f28d8a795fde7c8f680dc3d245426f22cef197333705": 3,
+                    "value_sha256:868310e193d1af0b9a0a16b18d5826a5490fe3f9410defa30dc115829fc1db4a": 2192,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -5019,9 +5019,9 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "あり": 3,
-                    "なし": 2192,
-                    "不明": 1
+                    "value_sha256:538fa5973853cacc8a87f28d8a795fde7c8f680dc3d245426f22cef197333705": 3,
+                    "value_sha256:868310e193d1af0b9a0a16b18d5826a5490fe3f9410defa30dc115829fc1db4a": 2192,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -5048,10 +5048,10 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:6e95e0507555494331c24ce5bd13b436e5f13d1d21d67fa6bc60a783a2d8f2be": 2169,
-                    "踏切": 2,
-                    "階段": 24
+                    "value_sha256:f80626172d59da2f2d5b99c11abfb71399f31b4b1dfc0ccebb4d11f47045994c": 2,
+                    "value_sha256:44ec5ddfce336444ce0f950629b3780de9306d058d15076c9ba4f0cf53e81613": 24
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -5067,10 +5067,10 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:6e95e0507555494331c24ce5bd13b436e5f13d1d21d67fa6bc60a783a2d8f2be": 2169,
-                    "踏切": 2,
-                    "階段": 24
+                    "value_sha256:f80626172d59da2f2d5b99c11abfb71399f31b4b1dfc0ccebb4d11f47045994c": 2,
+                    "value_sha256:44ec5ddfce336444ce0f950629b3780de9306d058d15076c9ba4f0cf53e81613": 24
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -5101,12 +5101,12 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
-                    "地下通路": 8,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
+                    "value_sha256:e98d89314843f05c38f076ab8809c4a1663a232dbe63b04d3fd81e8deda59606": 8,
                     "value_sha256:013082445fca160b20aa63c97a64a85624023cb2dd9e15f7e317511e00811757": 83,
                     "value_sha256:8f5ab70b827ca315bea0fd191126831309f408bba31dfdef79ce5d5eb99bf947": 584,
                     "value_sha256:fd4b452c49390aacf900d5547d26b8b14ef1d262870844456e403b3e2e3bf636": 142,
-                    "歩道橋": 16,
+                    "value_sha256:918b504b1a1098b7fcee2338638beb85836511351e0ac112be68119fff7f994f": 16,
                     "value_sha256:03665f75c27063c136963b37f4485d095782e686fb9b1b6f1f1d501753eb8366": 1241,
                     "value_sha256:dc8dc772b3ebf7b93eb7201520d3442ef922a4947a565faf504bac1d4b7b0e91": 121
                   },
@@ -5124,12 +5124,12 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
-                    "地下通路": 8,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
+                    "value_sha256:e98d89314843f05c38f076ab8809c4a1663a232dbe63b04d3fd81e8deda59606": 8,
                     "value_sha256:013082445fca160b20aa63c97a64a85624023cb2dd9e15f7e317511e00811757": 83,
                     "value_sha256:8f5ab70b827ca315bea0fd191126831309f408bba31dfdef79ce5d5eb99bf947": 584,
                     "value_sha256:fd4b452c49390aacf900d5547d26b8b14ef1d262870844456e403b3e2e3bf636": 142,
-                    "歩道橋": 16,
+                    "value_sha256:918b504b1a1098b7fcee2338638beb85836511351e0ac112be68119fff7f994f": 16,
                     "value_sha256:03665f75c27063c136963b37f4485d095782e686fb9b1b6f1f1d501753eb8366": 1241,
                     "value_sha256:dc8dc772b3ebf7b93eb7201520d3442ef922a4947a565faf504bac1d4b7b0e91": 121
                   },
@@ -5158,7 +5158,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:64fe993247f8462b44a1a4b6fba1c20406c381e97e8333556409705ecf6d791f": 50,
                     "value_sha256:4f8da13fd68f5e3571f3d548d55d4239ac7b608c4009cb5b7937e140b6c00601": 50,
                     "value_sha256:fe607296c9201675fa0f55fbed814c4173f492dac0482c1b9b031badf1620cb9": 2095
@@ -5177,7 +5177,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:64fe993247f8462b44a1a4b6fba1c20406c381e97e8333556409705ecf6d791f": 50,
                     "value_sha256:4f8da13fd68f5e3571f3d548d55d4239ac7b608c4009cb5b7937e140b6c00601": 50,
                     "value_sha256:fe607296c9201675fa0f55fbed814c4173f492dac0482c1b9b031badf1620cb9": 2095
@@ -5209,7 +5209,7 @@
                   "undefined_codes": [],
                   "decoded_label_counts": {
                     "value_sha256:c431cc15f84124988aca981c8ab97ef5fbd895d1307495ec6cf3c001570722c2": 222,
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:dd2e9da6a9c5c640df6428e6ba671b465a30b5a9e494f3ea1c35c9cf3d692c1c": 30,
                     "value_sha256:cef29c5ca8256affc3ad521633539bed8caca9060a3776c34d450370c0ab1c45": 1935,
                     "value_sha256:7399912f05d8d41ffe11c1f06508ae92b988d0de685358aa2b3d198f268934b1": 8
@@ -5229,7 +5229,7 @@
                   "undefined_codes": [],
                   "decoded_label_counts": {
                     "value_sha256:c431cc15f84124988aca981c8ab97ef5fbd895d1307495ec6cf3c001570722c2": 222,
-                    "不明": 1,
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1,
                     "value_sha256:dd2e9da6a9c5c640df6428e6ba671b465a30b5a9e494f3ea1c35c9cf3d692c1c": 30,
                     "value_sha256:cef29c5ca8256affc3ad521633539bed8caca9060a3776c34d450370c0ab1c45": 1935,
                     "value_sha256:7399912f05d8d41ffe11c1f06508ae92b988d0de685358aa2b3d198f268934b1": 8
@@ -5267,7 +5267,7 @@
                   "decoded_label_counts": {
                     "value_sha256:6b82c9333ef0c7b3d35edcd2755d390ec3a0aea1bb0f74927a3996429d969c7e": 172,
                     "value_sha256:740b521e7e47558a0a16d75b263e44230a4930d7c8b38362dcd734c0ad219a61": 1839,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -5288,7 +5288,7 @@
                     "value_sha256:958d3c601f13d327634458f1f265489029840b4b6b872d99a6500aabe59e359b": 8,
                     "value_sha256:804139cd391ac7b2d994e5139ca447c21c64c93cf62b9ba7e489dfc950294308": 160,
                     "value_sha256:f319984d7363a11283a4171abc0a695cd2d830d4fb9ce03b90ec5974cecac267": 172,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -5320,7 +5320,7 @@
                     "value_sha256:1c51e97288fb6e2f4478ab68f2e20c07a94b76588d1a5207f3c81603c3c89cd2": 37,
                     "value_sha256:e69e03554bf69eb9823f3cc7a05ae676bacc5f985fa7a4a028f10883a475d673": 322,
                     "value_sha256:df14694e6558c6d05ebfa415b310289689b4e3f3efc78e89c3a6dc46473d017f": 1597,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -5340,7 +5340,7 @@
                     "value_sha256:1c51e97288fb6e2f4478ab68f2e20c07a94b76588d1a5207f3c81603c3c89cd2": 37,
                     "value_sha256:e69e03554bf69eb9823f3cc7a05ae676bacc5f985fa7a4a028f10883a475d673": 322,
                     "value_sha256:df14694e6558c6d05ebfa415b310289689b4e3f3efc78e89c3a6dc46473d017f": 1597,
-                    "不明": 1
+                    "value_sha256:bd5a8814a3635ecb4ebc9785cbc8223ae32444a5a07329a811526c29cd45f77c": 1
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -5807,7 +5807,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "階層数": 233
+                    "value_sha256:1415e29d83ccfcf8e119f902c78ce583eb06668600fdd257559798eb67066654": 233
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -5823,7 +5823,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "階層数": 233
+                    "value_sha256:1415e29d83ccfcf8e119f902c78ce583eb06668600fdd257559798eb67066654": 233
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -5849,9 +5849,9 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "施設内": 224,
+                    "value_sha256:45972792020e4eeed7fdf44a4599523c4042ace62e2a561d1cf5c5631f4ff73a": 224,
                     "value_sha256:141dbb42c32dd01ec6043eb26ea1c69a0e3ccae67c5f9f4d5309af6c490ebdea": 5,
-                    "施設外": 4
+                    "value_sha256:c9ceaae242cc49d4ac4993378e03c706cb1258b9e8b9f5435f927a194f8a8662": 4
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -5867,9 +5867,9 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "施設内": 224,
+                    "value_sha256:45972792020e4eeed7fdf44a4599523c4042ace62e2a561d1cf5c5631f4ff73a": 224,
                     "value_sha256:141dbb42c32dd01ec6043eb26ea1c69a0e3ccae67c5f9f4d5309af6c490ebdea": 5,
-                    "施設外": 4
+                    "value_sha256:c9ceaae242cc49d4ac4993378e03c706cb1258b9e8b9f5435f927a194f8a8662": 4
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -5939,7 +5939,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "両方向": 241,
+                    "value_sha256:3cd7f7c0cad0b51cfe39e84eda960acd9079099920b138425604c4a437d9fdce": 241,
                     "value_sha256:f215ba966d9de1ee14b598d831182d51dbe70bfb57d02f5add08b5138d954f23": 22
                   },
                   "defined_codes_without_label_count": 0,
@@ -5956,7 +5956,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "両方向": 241,
+                    "value_sha256:3cd7f7c0cad0b51cfe39e84eda960acd9079099920b138425604c4a437d9fdce": 241,
                     "value_sha256:f215ba966d9de1ee14b598d831182d51dbe70bfb57d02f5add08b5138d954f23": 22
                   },
                   "defined_codes_without_label_count": 0,
@@ -6156,8 +6156,8 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "あり": 259,
-                    "なし": 4
+                    "value_sha256:538fa5973853cacc8a87f28d8a795fde7c8f680dc3d245426f22cef197333705": 259,
+                    "value_sha256:868310e193d1af0b9a0a16b18d5826a5490fe3f9410defa30dc115829fc1db4a": 4
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -6173,8 +6173,8 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "あり": 259,
-                    "なし": 4
+                    "value_sha256:538fa5973853cacc8a87f28d8a795fde7c8f680dc3d245426f22cef197333705": 259,
+                    "value_sha256:868310e193d1af0b9a0a16b18d5826a5490fe3f9410defa30dc115829fc1db4a": 4
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -6202,11 +6202,11 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "value_sha256:3394135bd587cd1004d3183022530fc9675dc79da077596e63d9b44fe5a9265bー": 29,
-                    "value_sha256:7e11c4984c2701fa320293ae07933a6e7bc9824398538aaea3b8389b681f6192ー": 13,
-                    "スロープ": 5,
+                    "value_sha256:241046c62bb593897a95093f2a4088ef95b3c4097f3486922f0d8ba5dc5db06c": 29,
+                    "value_sha256:b47390ac87c3cce6c4c29512611461a995ca42f5e60665f5d04f9fdf444764a4": 13,
+                    "value_sha256:322bfa6137e69a5bd2364b589e3de6fdd34476c0dc97e896eb66292adac6ddef": 5,
                     "value_sha256:6e95e0507555494331c24ce5bd13b436e5f13d1d21d67fa6bc60a783a2d8f2be": 194,
-                    "階段": 22
+                    "value_sha256:44ec5ddfce336444ce0f950629b3780de9306d058d15076c9ba4f0cf53e81613": 22
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -6222,11 +6222,11 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "value_sha256:3394135bd587cd1004d3183022530fc9675dc79da077596e63d9b44fe5a9265bー": 29,
-                    "value_sha256:7e11c4984c2701fa320293ae07933a6e7bc9824398538aaea3b8389b681f6192ー": 13,
-                    "スロープ": 5,
+                    "value_sha256:241046c62bb593897a95093f2a4088ef95b3c4097f3486922f0d8ba5dc5db06c": 29,
+                    "value_sha256:b47390ac87c3cce6c4c29512611461a995ca42f5e60665f5d04f9fdf444764a4": 13,
+                    "value_sha256:322bfa6137e69a5bd2364b589e3de6fdd34476c0dc97e896eb66292adac6ddef": 5,
                     "value_sha256:6e95e0507555494331c24ce5bd13b436e5f13d1d21d67fa6bc60a783a2d8f2be": 194,
-                    "階段": 22
+                    "value_sha256:44ec5ddfce336444ce0f950629b3780de9306d058d15076c9ba4f0cf53e81613": 22
                   },
                   "defined_codes_without_label_count": 0,
                   "evidence": {
@@ -6251,7 +6251,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "地下通路": 259,
+                    "value_sha256:e98d89314843f05c38f076ab8809c4a1663a232dbe63b04d3fd81e8deda59606": 259,
                     "value_sha256:013082445fca160b20aa63c97a64a85624023cb2dd9e15f7e317511e00811757": 4
                   },
                   "defined_codes_without_label_count": 0,
@@ -6268,7 +6268,7 @@
                   "defined_in_spec": true,
                   "undefined_codes": [],
                   "decoded_label_counts": {
-                    "地下通路": 259,
+                    "value_sha256:e98d89314843f05c38f076ab8809c4a1663a232dbe63b04d3fd81e8deda59606": 259,
                     "value_sha256:013082445fca160b20aa63c97a64a85624023cb2dd9e15f7e317511e00811757": 4
                   },
                   "defined_codes_without_label_count": 0,
@@ -6754,9 +6754,9 @@
       "endpoint_check_status": "UNKNOWN",
       "endpoint_coverage": null,
       "floor_labels": [
-        "1階",
+        "value_sha256:c86b35ff294bed1ceee8cda02b57630479fce5c3c93557efd786105e43245d3c",
         "value_sha256:541f4bbc612294c0f7951e58215a8f4002090729f30dfd429c255ec12d7d079b",
-        "地下2階",
+        "value_sha256:c0836dff4714db1e120615df114e789a33e801b9706330dc44c5f16827a0ba46",
         "value_sha256:2f2d864b68d26ac9634202a415e0f7ee274b100914327fce73298a5e14f7954f",
         "value_sha256:27a651ea63fba300793d9bcf3a39e29e0328550778395490c73fee1c3dde9512",
         "value_sha256:317a1a345f26128a5ebe72df6725f57f6f4aa1f3f462358dff1d503ce48a0db8"

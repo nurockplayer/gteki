@@ -16,7 +16,7 @@ const OWNER_Q = 'docs/gis/decisions/owner-rights-questions.md';
 const CODES = 'docs/gis/research/network-codes-and-coverage.md';
 const ubld = (id: string): LiteralClassEntry => ({
   source_id: id, class: 'a', kind: 'citygml', values: 'gml:id and gml:name text',
-  basis: 'The record names a licence and credit for this resource; the credit stays with the values. Publish gate CONDITIONAL; Owner question 8 (identity of the catalog-API file) is open.',
+  basis: 'The record names a licence and credit for this resource; the credit stays with the values. Publish gate CONDITIONAL. Owner question 8 (identity of the catalog-API file versus the CKAN-listed upload): Accept, recorded on #39 comment 6324726321 and in docs/gis/decisions/2026-10-22-owner-rights-answers.md via #117 (not yet merged).',
   evidence: [SOURCES, `${RESEARCH}#G3`, `${OWNER_Q}#8-catalog-api-plateau-files-versus-the-ckan-listed-upload`, `docs/gis/acquisitions/${id}.json`],
 });
 const codelist = (id: string): LiteralClassEntry => ({
@@ -29,9 +29,12 @@ const e27 = (id: string): LiteralClassEntry => ({
   basis: 'The record names the package licence; Owner question 11 leaves the licence of the E27 resources unconfirmed. Its geometry ships under the Owner override of #16, which is not a licence record, so its values stay hashed in the docs reports.',
   evidence: [SOURCES, `${OWNER_Q}#11-e27-hokonavi-package-licence`, `${RESEARCH}#S01`, `docs/gis/acquisitions/${id}.json`],
 });
+const ikebukuroSnapshot = 'The acquired CKAN snapshot (supporting document ckan-metadata of hokonavi-ikebukuro-walk-node-geojson) carries a licence member on the package and none on the four resources, the same shape as E27 (Owner question 11).';
 const ikebukuro = (id: string): LiteralClassEntry => ({
   source_id: id, class: 'b', kind: 'hokonavi', values: 'link and node ids, source field values',
-  basis: 'The acquired CKAN snapshot (supporting document ckan-metadata of hokonavi-ikebukuro-walk-node-geojson) carries a licence member on the package and none on the four resources, the same shape as E27; the GeoJSON records give the MLIT site-terms page as licence URL and publish gate HOLD.',
+  basis: id.endsWith('-csv')
+    ? `This CSV record gives PDL 1.0 with the digital.go.jp licence page and publish gate CONDITIONAL, but it is not evidence that the licence covers this resource. ${ikebukuroSnapshot}`
+    : `This GeoJSON record gives PDL 1.0 but names the MLIT site-terms page (https://www.mlit.go.jp/link.html) as licence URL, publish gate HOLD. ${ikebukuroSnapshot}`,
   evidence: [SOURCES, `${RESEARCH}#R1`, CODES, 'docs/gis/acquisitions/hokonavi-ikebukuro-walk-node-geojson.json'],
 });
 const spec = (id: string): LiteralClassEntry => ({
@@ -39,6 +42,16 @@ const spec = (id: string): LiteralClassEntry => ({
   basis: 'The record names the MLIT site-terms page as licence URL, publish gate HOLD, and a note that no separate rights notice was found in the PDF text; nothing records that the site terms cover this resource.',
   evidence: [SOURCES, CODES, `docs/gis/acquisitions/${id}.json`],
 });
+
+export const CREDIT_FILE = 'docs/gis/rights/non-poi-literals.md';
+
+/** The recorded credit a class (a) source's committed report must carry (`credit` field / header line), or null for any other source. */
+export async function classACredit(sourceId: string): Promise<{ source_id: string; attribution_text: string; license_name: string; license_url: string | null; classification: string } | null> {
+  if (!LITERAL_CLASSES.some(entry => entry.source_id === sourceId && entry.class === 'a')) return null;
+  const { loadSources } = await import('./acquire.js');
+  const source = (loadSources() as unknown as Array<Record<string, any>>).find(item => item.source_id === sourceId);
+  return source ? { source_id: sourceId, attribution_text: source.attribution_text, license_name: source.license_name, license_url: source.license_url ?? null, classification: CREDIT_FILE } : null;
+}
 
 export const LITERAL_CLASSES: LiteralClassEntry[] = [
   ubld('plateau-13116-ubld-53394576'), ubld('plateau-13104-ubld-53394536'),
@@ -49,6 +62,7 @@ export const LITERAL_CLASSES: LiteralClassEntry[] = [
   spec('mlit-walk-network-spec-2018-03'), spec('mlit-walk-network-spec-2024-07'),
 ];
 
+const cmp = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 type Segment = string | number;
 type Row = { file: string; path: string; source_id: string; class: 'a' | 'b'; count: number };
 
@@ -109,7 +123,7 @@ export function literalRows(file: string, doc: unknown): Row[] {
     if (typeof ids?.citygml === 'string') keep('literal_floor_label_evidence[].value', Array.isArray(doc.literal_floor_label_evidence) ? doc.literal_floor_label_evidence.length : 0);
     for (const row of rows.values()) if (row.class === 'a') row.source_id = String(ids?.citygml ?? row.source_id);
   }
-  return [...rows.values()].sort((a, b) => a.file.localeCompare(b.file) || a.path.localeCompare(b.path) || a.source_id.localeCompare(b.source_id));
+  return [...rows.values()].sort((a, b) => cmp(a.file, b.file) || cmp(a.path, b.path) || cmp(a.source_id, b.source_id));
 }
 
 async function committedJson(gisDir: string): Promise<Array<{ file: string; doc: unknown }>> {
@@ -147,7 +161,7 @@ export async function literalClassificationMarkdown(gisDir: string, manifest: Re
     const source = manifest.find(item => item.source_id === entry.source_id);
     lines.push(`- ${entry.source_id}: ${source?.attribution_text ?? 'unknown'} (${source?.license_name ?? 'unknown'}, ${source?.license_url ?? 'null'})`);
   }
-  lines.push('', '## Fields in committed reports', '', 'Counts are read from the committed JSON (the Markdown companions are rendered from it). Class (b) rows count hashed values; class (a) rows count the literals kept.', '', '| File | Field path | Source id | Class | Count | Evidence |', '| --- | --- | --- | --- | ---: | --- |');
+  lines.push('', '## Fields in committed reports', '', 'Counts are read from the committed JSON of `inventory/`, `networks/`, `gaps/` and `real-data-summary.json` (the Markdown companions are rendered from it). Class (b) rows count hashed values; class (a) rows count the literals kept. Not tabulated: `history/**` (frozen snapshots of earlier runs, migrated with `gis scrub-literals` to `value_sha256:<hex>` tokens and kept under `history/README.md`, which carries the class (a) credit pointer), and `conversions/**` and `context/**` (they hold geometry statistics, no source labels; the leak scan covers them).', '', '| File | Field path | Source id | Class | Count | Evidence |', '| --- | --- | --- | --- | ---: | --- |');
   const evidenceOf = (id: string): string => (LITERAL_CLASSES.find(entry => entry.source_id === id)?.evidence ?? []).map(quote).join(', ');
   for (const { file, doc } of await committedJson(gisDir)) for (const row of literalRows(file, doc)) lines.push(`| ${file} | ${cell(row.path)} | ${row.source_id} | ${row.class} | ${row.count} | ${cell(evidenceOf(row.source_id))} |`);
   lines.push('', '## Not covered', '',

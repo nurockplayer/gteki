@@ -2,7 +2,8 @@ import { createHash } from 'node:crypto';
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { getStoreRoot, getStoredSource, packageRoot } from './common.js';
-import { checkPoiLiterals, detailLiterals, scanTreeForLiterals, MIN_LITERAL_LENGTH, type DetailProblem } from './poi-literals.js';
+import { checkPoiLiterals, detailLiterals, type DetailProblem } from './poi-literals.js';
+import { buildMatcher, isWording, literalsInProse, nfkc, redactProse, wholeValueLiteral, type LiteralMatcher } from './literal-match.js';
 import { LITERAL_CLASSES } from './literal-classes.js';
 import { parseCsv } from './network.js';
 import { readZip } from './zip.js';
@@ -24,9 +25,8 @@ const add = (into: Map<string, string[]>, sourceId: string, values: Iterable<str
 
 /** Free-text values of Hokonavi rows: CSV cells or GeoJSON feature and root properties. */
 export function hokonaviLiterals(name: string, bytes: Buffer): Set<string> {
-  if (/\.csv$/iu.test(name)) return detailLiterals(parseCsv(bytes).rows);
-  const parsed: unknown = JSON.parse(bytes.toString('utf8'));
-  return detailLiterals({ [name]: parsed });
+  const found = /\.csv$/iu.test(name) ? detailLiterals(parseCsv(bytes).rows, 1) : detailLiterals({ [name]: JSON.parse(bytes.toString('utf8')) as unknown }, 1);
+  return new Set([...found].filter(isWording));
 }
 
 /** Labels of one MLIT walking-network codebook (the transcription of the specification's code tables). */
@@ -35,7 +35,7 @@ export function codebookLabels(codebook: unknown): Set<string> {
   const visit = (value: unknown, depth = 0): void => {
     if (value === null || typeof value !== 'object' || depth > 8) return;
     for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
-      if (key === 'label' && typeof entry === 'string') { if (entry.trim().length >= MIN_LITERAL_LENGTH && !/^[-+]?\d+(?:\.\d+)?$/u.test(entry.trim())) labels.add(entry); }
+      if (key === 'label' && typeof entry === 'string') { if (isWording(entry)) labels.add(entry); }
       else visit(entry, depth + 1);
     }
   };
@@ -46,7 +46,7 @@ export function codebookLabels(codebook: unknown): Set<string> {
 /** Descriptions of PLATEAU codelist dictionaries, as the inventory resolves them. */
 export function codelistLabels(map: ReadonlyMap<string, string>): Set<string> {
   const labels = new Set<string>();
-  for (const label of map.values()) if (label.trim().length >= MIN_LITERAL_LENGTH && !/^[-+]?\d+(?:\.\d+)?$/u.test(label.trim())) labels.add(label);
+  for (const label of map.values()) if (isWording(label)) labels.add(label);
   return labels;
 }
 
@@ -123,83 +123,214 @@ export async function verifyCredits(classificationFile: string, credits: Readonl
   return credits.filter(credit => !credit.attribution_text || credit.attribution_text === 'unknown' || !text.includes(credit.attribution_text)).map(credit => ({ source_id: credit.source_id, reason: 'credit text absent from the classification file' }));
 }
 
+export const CREDIT_POINTER = 'rights/non-poi-literals.md';
+const TEXT_FILE = /\.(?:json|md|txt|csv|ya?ml|geojson)$/iu;
+const JSON_FILE = /\.(?:geo)?json$/iu;
+
+async function* textFiles(root: string): AsyncGenerator<string> {
+  for (const entry of (await readdir(root, { withFileTypes: true })).sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))) {
+    const path = join(root, entry.name);
+    if (entry.isDirectory()) yield* textFiles(path); else if (entry.isFile() && TEXT_FILE.test(entry.name)) yield path;
+  }
+}
+
+/** Every string key and string value of a parsed JSON document. */
+function jsonStrings(value: unknown, into: string[]): string[] {
+  if (typeof value === 'string') into.push(value);
+  else if (Array.isArray(value)) for (const item of value) jsonStrings(item, into);
+  else if (value !== null && typeof value === 'object') for (const [key, item] of Object.entries(value)) { into.push(key); jsonStrings(item, into); }
+  return into;
+}
+
+/** Class (b) literals found in one committed file: whole JSON strings and keys exactly, wording inside prose by the rules of literal-match.ts. */
+export function literalsInFile(name: string, text: string, matcher: LiteralMatcher): string[] {
+  if (JSON_FILE.test(name)) {
+    let parsed: unknown;
+    try { parsed = JSON.parse(text); } catch { return literalsInProse(text, matcher); }
+    const strings = jsonStrings(parsed, []), hits = new Set<string>();
+    for (const value of strings) { const whole = wholeValueLiteral(value, matcher); if (whole !== null) hits.add(whole); }
+    // One prose pass over all strings (newline-joined, so no word spans two strings) keeps large reports fast.
+    for (const hit of literalsInProse(strings.join('\n'), matcher)) hits.add(hit);
+    return [...hits];
+  }
+  return literalsInProse(text, matcher);
+}
+
+/** Files under `root` that contain any class (b) literal, with the number of distinct literals found in each. */
+export async function scanTreeForClassB(root: string, matcher: LiteralMatcher): Promise<Array<{ file: string; count: number }>> {
+  const leaks: Array<{ file: string; count: number }> = [];
+  for await (const path of textFiles(root)) {
+    const hits = literalsInFile(path, await readFile(path, 'utf8'), matcher);
+    if (hits.length) leaks.push({ file: path.slice(root.length + 1).split(sep).join('/'), count: hits.length });
+  }
+  return leaks.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0));
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value);
+const readJsonOrNull = async (path: string): Promise<unknown> => { try { return JSON.parse(await readFile(path, 'utf8')); } catch { return null; } };
+
+/**
+ * Every network and inventory report must name sources the classification knows. A new source that nobody classified
+ * would otherwise be scanned against nothing and pass.
+ */
+export async function verifyRegistered(docsGisDir: string, registered: ReadonlySet<string> = new Set(LITERAL_CLASSES.map(entry => entry.source_id))): Promise<DetailProblem[]> {
+  const problems: DetailProblem[] = [];
+  for (const [directory, suffix] of [['networks', '.json'], ['inventory', '.inventory.json']] as const) {
+    for (const name of (await readdir(join(docsGisDir, directory)).catch(() => [] as string[])).filter(entry => entry.endsWith(suffix)).sort()) {
+      const doc = await readJsonOrNull(join(docsGisDir, directory, name));
+      if (!isRecord(doc)) continue;
+      const ids = new Set<string>();
+      if (typeof doc.source_id === 'string') for (const id of doc.source_id.split('+')) ids.add(id);
+      if (Array.isArray(doc.members)) for (const member of doc.members) if (isRecord(member) && typeof member.source_id === 'string') ids.add(member.source_id);
+      for (const id of [...ids].sort()) if (!registered.has(id)) problems.push({ source_id: id, reason: 'unregistered', detail: `${directory}/${name} names a source that is not in LITERAL_CLASSES (docs/gis/rights/non-poi-literals.md)` });
+    }
+  }
+  return problems;
+}
+
+type Credit = { source_id: string; attribution_text: string };
+
+/** Class (a) wording kept in committed inventories: gml:name text and literal floor-label observations. */
+export function classAWording(inventories: Iterable<unknown>): Set<string> {
+  const found = new Set<string>();
+  for (const doc of inventories) {
+    if (!isRecord(doc)) continue;
+    if (Array.isArray(doc.floor_label_observations)) for (const row of doc.floor_label_observations) if (isRecord(row) && typeof row.value === 'string') found.add(row.value);
+    if (Array.isArray(doc.compact_features)) for (const row of doc.compact_features) if (isRecord(row) && Array.isArray(row.names)) for (const name of row.names) if (typeof name === 'string') found.add(name);
+  }
+  return new Set([...found].filter(value => nfkc(value).trim().length >= 4));
+}
+
+/**
+ * Class (a) values stay in committed files only with their credit. Every file that keeps one must carry the recorded
+ * attribution text or point at the classification file; generated inventory and gap reports carry a structured `credit`
+ * field in the JSON and the text in the Markdown companion. Frozen history snapshots are covered by history/README.md.
+ */
+export async function verifyClassACredits(docsGisDir: string, credits: ReadonlyArray<Credit>): Promise<Array<{ file: string; reason: string }>> {
+  const problems: Array<{ file: string; reason: string }> = [];
+  const texts = credits.map(credit => credit.attribution_text).filter(text => text && text !== 'unknown');
+  const covered = (text: string): boolean => text.includes(CREDIT_POINTER) || texts.some(item => text.includes(item));
+  const inventories: unknown[] = [];
+  for (const name of (await readdir(join(docsGisDir, 'inventory')).catch(() => [] as string[])).filter(entry => entry.endsWith('.inventory.json')).sort()) inventories.push(await readJsonOrNull(join(docsGisDir, 'inventory', name)));
+  const wording = classAWording(inventories);
+  if (wording.size === 0) return problems;
+  const matcher = buildMatcher(wording);
+  const history = await readFile(join(docsGisDir, 'history', 'README.md'), 'utf8').catch(() => '');
+  const structured = (file: string, doc: unknown, source: unknown): void => {
+    const credit = isRecord(doc) && isRecord(doc.credit) ? doc.credit : null;
+    const expected = credits.find(item => item.source_id === source)?.attribution_text;
+    if (!credit || typeof credit.attribution_text !== 'string' || (expected !== undefined && credit.attribution_text !== expected) || typeof credit.classification !== 'string' || !credit.classification.includes(CREDIT_POINTER)) problems.push({ file, reason: 'class (a) values without a `credit` field (attribution_text and classification) matching the recorded credit' });
+  };
+  for await (const path of textFiles(docsGisDir)) {
+    const file = path.slice(docsGisDir.length + 1).split(sep).join('/');
+    if (file === CREDIT_POINTER) continue;
+    const text = await readFile(path, 'utf8');
+    const hits = literalsInFile(path, text, matcher);
+    if (hits.length === 0) continue;
+    if (file.startsWith('history/') ? !covered(text) && !covered(history) : !covered(text)) problems.push({ file, reason: 'keeps class (a) values without the credit or a pointer to docs/gis/rights/non-poi-literals.md' });
+    if (/^inventory\/[^/]+\.inventory\.json$/u.test(file)) { const doc = JSON.parse(text) as Record<string, unknown>; structured(file, doc, doc.source_id); }
+    if (/^gaps\/[^/]+\.json$/u.test(file)) { const doc = JSON.parse(text) as Record<string, unknown>; structured(file, doc, isRecord(doc.source_ids) ? doc.source_ids.citygml : undefined); }
+  }
+  return problems.sort((a, b) => (a.file < b.file ? -1 : a.file > b.file ? 1 : 0));
+}
+
 export type CheckLiteralsOptions = {
   classB?: () => Promise<ClassBResult>;
-  credits?: ReadonlyArray<{ source_id: string; attribution_text: string }>;
+  credits?: ReadonlyArray<Credit>;
   classificationFile?: string;
+  registered?: ReadonlySet<string>;
+  /** Allowlisted terms that are also exempt as whole JSON values (codebooks `structural_values`). */
+  structural?: ReadonlySet<string>;
   skipPoi?: boolean;
 };
 
 /**
  * `gis check-literals` (alias `check-poi-literals`): the POI guard of #128 plus the class (b) guard of #129. FAIL on any
- * leak, missing or altered detail, empty literal set or missing credit.
+ * leak, missing or altered detail, unregistered source, empty literal set, or missing class (a) credit.
  */
 export async function checkLiterals(docsGisDir: string, storeRoot: string = getStoreRoot(), allowlist: ReadonlySet<string> = new Set(), options: CheckLiteralsOptions = {}) {
   const poi = options.skipPoi ? null : await checkPoiLiterals(docsGisDir, storeRoot, allowlist);
   const classB = await (options.classB ?? loadClassBLiterals)();
   const reportProblems = await verifyReportDetails(docsGisDir, storeRoot);
-  for (const term of allowlist) classB.literals.delete(term);
-  const leaks = await scanTreeForLiterals(docsGisDir, classB.literals.keys());
+  const unregistered = await verifyRegistered(docsGisDir, options.registered);
+  const matcher = buildMatcher(classB.literals.keys(), allowlist, options.structural);
+  const leaks = await scanTreeForClassB(docsGisDir, matcher);
   const credits = options.credits ?? await defaultCredits();
-  const creditProblems = await verifyCredits(options.classificationFile ?? join(docsGisDir, 'rights', 'non-poi-literals.md'), credits);
-  const nonPoiProblems = [...classB.problems, ...reportProblems];
+  const creditProblems = [...await verifyCredits(options.classificationFile ?? join(docsGisDir, 'rights', 'non-poi-literals.md'), credits)];
+  const fileCredits = await verifyClassACredits(docsGisDir, credits);
+  const nonPoiProblems = [...classB.problems, ...reportProblems, ...unregistered];
   const nonPoi = {
-    status: leaks.length || nonPoiProblems.length || creditProblems.length || classB.literals.size === 0 ? 'FAIL' as const : 'PASS' as const,
-    scanned_literals: classB.literals.size, per_source: classB.per_source, detail_problems: nonPoiProblems, credit_problems: creditProblems,
+    status: leaks.length || nonPoiProblems.length || creditProblems.length || fileCredits.length || classB.literals.size === 0 ? 'FAIL' as const : 'PASS' as const,
+    scanned_literals: classB.literals.size, per_source: classB.per_source, detail_problems: nonPoiProblems, credit_problems: creditProblems, file_credit_problems: fileCredits,
     ...(classB.literals.size === 0 ? { error: 'no class (b) literals scanned' } : {}), leaking_files: leaks };
   const status = nonPoi.status === 'FAIL' || (poi !== null && poi.status === 'FAIL') ? 'FAIL' as const : 'PASS' as const;
   return { status, poi, non_poi: nonPoi };
 }
 
-async function defaultCredits(): Promise<Array<{ source_id: string; attribution_text: string }>> {
+async function defaultCredits(): Promise<Credit[]> {
   const { loadSources } = await import('./acquire.js');
   const sources = loadSources();
   return LITERAL_CLASSES.filter(entry => entry.class === 'a').map(entry => ({ source_id: entry.source_id, attribution_text: sources.find(source => source.source_id === entry.source_id)?.attribution_text ?? '' }));
 }
 
+/** Replace class (b) literals in a JSON document (whole strings and keys) or prose; used by `scrubLiterals`. */
+function scrubJson(value: unknown, matcher: LiteralMatcher, token: (original: string) => string, count: { n: number }): unknown {
+  const text = (input: string): string => {
+    const whole = wholeValueLiteral(input, matcher);
+    if (whole !== null) { count.n++; return token(matcher.literals.get(whole)!); }
+    const result = redactProse(input, matcher, token);
+    count.n += result.replaced;
+    return result.text;
+  };
+  if (typeof value === 'string') return text(value);
+  if (Array.isArray(value)) return value.map(item => scrubJson(item, matcher, token, count));
+  if (value !== null && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [text(key), scrubJson(item, matcher, token, count)]));
+  return value;
+}
 
 /**
- * Replace every class (b) literal in `text` with `value_sha256:<hex>` (verbatim and JSON-escaped forms; longest literal
- * first so a shorter label never cuts into a longer one). Used for frozen snapshots that no generator can rebuild offline.
+ * Replace every class (b) literal in `text` (verbatim, NFKC-aware, longest first) with `value_sha256:<hex>`. A literal is
+ * never replaced inside a longer word (`エスカレータ` inside `エスカレーター`) or inside an allowlisted generic term.
  */
-export function scrubText(text: string, literals: Iterable<string>): { text: string; replaced: number } {
-  let result = text, replaced = 0;
-  for (const literal of [...new Set(literals)].sort((a, b) => b.length - a.length || (a < b ? -1 : 1))) {
-    const token = `value_sha256:${valueSha256(literal)}`;
-    for (const form of new Set([literal, JSON.stringify(literal).slice(1, -1)])) {
-      if (!form || !result.includes(form)) continue;
-      const parts = result.split(form);
-      replaced += parts.length - 1;
-      result = parts.join(token);
-    }
-  }
-  return { text: result, replaced };
+export function scrubText(text: string, literals: Iterable<string>, allowlist: Iterable<string> = [], structural: Iterable<string> = []): { text: string; replaced: number } {
+  return redactProse(text, buildMatcher(literals, allowlist, structural), original => `value_sha256:${valueSha256(original)}`);
 }
 
 async function* scrubTargets(path: string): AsyncGenerator<string> {
   if ((await stat(path)).isDirectory()) { for (const entry of (await readdir(path)).sort()) yield* scrubTargets(join(path, entry)); }
-  else if (/\.(?:json|md|txt|csv|ya?ml|geojson)$/iu.test(path)) yield path;
+  else if (TEXT_FILE.test(path)) yield path;
 }
 
 /**
  * `gis scrub-literals <path...>`: one-time offline migration of committed files that no generator rebuilds without a
- * real run (history snapshots, the real-data summary, prose that quotes an identifier). Deterministic and idempotent;
- * JSON files must still parse afterwards. The fresh generators (inventory, network, summarize) write the structured form.
+ * real run (history snapshots, the real-data summary, prose that quotes an identifier). Deterministic and idempotent.
+ * JSON is parsed and only whole string values, keys and wording inside strings are rewritten, then written back in the
+ * 2-space form the generators use; a JSON file that does not round-trip in that form is refused instead of reformatted.
+ * The fresh generators (inventory, network, summarize) write the structured `{ value_sha256, value_type, count }` form.
  */
-export async function scrubLiterals(docsGisDir: string, targets: string[], allowlist: ReadonlySet<string>, classB?: ClassBResult): Promise<Array<{ file: string; replaced: number }>> {
+export async function scrubLiterals(docsGisDir: string, targets: string[], allowlist: ReadonlySet<string>, classB?: ClassBResult, structural: ReadonlySet<string> = new Set()): Promise<Array<{ file: string; replaced: number }>> {
   const loaded = classB ?? await loadClassBLiterals();
   if (loaded.problems.length) throw new Error(`Class (b) literals unavailable: ${loaded.problems.map(problem => `${problem.source_id} ${problem.reason}`).join('; ')}`);
-  const literals = [...loaded.literals.keys()].filter(literal => !allowlist.has(literal));
+  const matcher = buildMatcher(loaded.literals.keys(), allowlist, structural), token = (original: string): string => `value_sha256:${valueSha256(original)}`;
   const changed: Array<{ file: string; replaced: number }> = [];
   for (const target of targets) {
     const absolute = resolve(docsGisDir, target);
     if (relative(resolve(docsGisDir), absolute).startsWith('..')) throw new Error(`Scrub target escapes docs/gis: ${target}`);
     for await (const file of scrubTargets(absolute)) {
-      const before = await readFile(file, 'utf8'), after = scrubText(before, literals);
-      if (after.replaced === 0) continue;
-      if (file.endsWith('.json')) JSON.parse(after.text);
-      await writeFile(file, after.text);
-      changed.push({ file: relative(resolve(docsGisDir), file).split(sep).join('/'), replaced: after.replaced });
+      const before = await readFile(file, 'utf8'), name = relative(resolve(docsGisDir), file).split(sep).join('/');
+      let after: string, replaced: number;
+      if (JSON_FILE.test(file)) {
+        const parsed: unknown = JSON.parse(before), count = { n: 0 };
+        if (`${JSON.stringify(parsed, null, 2)}\n` !== before) {
+          if (literalsInFile(file, before, matcher).length === 0) continue;
+          throw new Error(`Refusing to rewrite ${name}: it is not 2-space JSON with a trailing newline, so a structural rewrite would reformat it`);
+        }
+        const scrubbed = scrubJson(parsed, matcher, token, count);
+        after = `${JSON.stringify(scrubbed, null, 2)}\n`; replaced = count.n;
+      } else ({ text: after, replaced } = redactProse(before, matcher, token));
+      if (replaced === 0) continue;
+      await writeFile(file, after);
+      changed.push({ file: name, replaced });
     }
   }
   return changed;

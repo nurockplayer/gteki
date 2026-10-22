@@ -1,5 +1,5 @@
 {
-  "purpose": "Generic vocabulary exempt from the leak scan (gis check-literals, alias check-poi-literals): the POI values of #124 and the class (b) non-POI literals of #129 (docs/gis/rights/non-poi-literals.md). Each term is a common word or schema/file-name fragment that our own committed text, floor-label file names and non-POI sources use; none is a distinctive source value. Add a term only after confirming that, never to hide a leaked value. Every term added for #129 has its reason in `justifications`.",
+  "purpose": "Generic vocabulary exempt from the leak scan (gis check-literals, alias check-poi-literals): the POI values of #124 and the class (b) non-POI literals of #129 (docs/gis/rights/non-poi-literals.md). A term here is exempt only as a substring of our own prose. For class (b) literals a whole JSON string value or key equal to a term is still a leak, except the values listed in `structural_values`. Every term has its reason in `justifications`; add a term only after confirming it is a common word or schema fragment, never to hide a leaked value.",
   "terms": [
     "MB2F",
     "Stream",
@@ -29,21 +29,57 @@
     "unknown",
     "wall",
     "zone",
+    "その他",
     "エスカレーター",
     "エレベーター",
     "コインロッカー",
     "スロープ",
-    "地下2階",
-    "地下通路"
+    "地下通路",
+    "鉄道"
   ],
   "justifications": {
-    "exception": "Ordinary English word. It occurs inside our own evidence ids (plateau-related-provenance#ksj-exception-heading) in gaps and rights text; also a PLATEAU codelist description.",
-    "park": "Ordinary English word. It occurs in our own source ids and layer names (plateau-13104-related-park-asset) and HANDOFF prose; also a PLATEAU codelist description.",
-    "river": "Ordinary English word used in our own research prose (lane-d-review-fixes.md); also a PLATEAU codelist description.",
-    "road": "Ordinary English word. It is our own feature-kind name in context reports and HANDOFF prose (road tran layer); also a PLATEAU codelist description.",
-    "unknown": "Our own status marker (UNKNOWN stays unknown) written in lower case across reports; also a PLATEAU codelist description.",
-    "zone": "Ordinary English word in our own CRS reports (JGD2011 plane rectangular zone IX, query parameter zone=9); also a PLATEAU codelist description.",
-    "地下2階": "Generic floor word. fix-pass.md uses it as the name of a synthetic test case ('standalone B2, 地下2階, 階段室, 地下通路 cases'), not as a quote of a source floor label. Floor labels of the E27 station map are still hashed in the reports; this term only exempts that prose.",
-    "地下通路": "Common noun for an underground passage. It is part of the class (a) PLATEAU group name kept in the inventory (gml:name 「池袋駅_B1地下通路」), appears in our own HANDOFF and fix-pass prose and test-case names, and is also MLIT route-structure label 5; the exact label is not policed because the same word legitimately appears in class (a) text."
+    "MB2F": "Level name of the S03 drawing set (B5F...4F, M1F, MB2F) that our gaps, research and HANDOFF prose cite as a layer name; a level code, not descriptive wording.",
+    "Stream": "Fragment of the word 'Streams' in HANDOFF prose (Streams downloads into a content-addressed store); a POI source also has the value Stream. Exempt only as a substring of prose.",
+    "above": "Ordinary English word in our own notes (above/below ground, bounds) and a POI value in one source; exempt only as a substring of prose.",
+    "ange": "Three-letter fragment of ordinary words such as range and change that occur in most of our prose and JSON text; as a POI value it is a fragment of a longer string, so the scan would flag every file.",
+    "below": "Ordinary English word in our own notes (below ground, below threshold) and a POI value in one source; exempt only as a substring of prose.",
+    "building": "Schema word used throughout our own reports (building, bldg feature kind, building height) and a POI category value; exempt only as a substring of prose.",
+    "door": "Feature-kind word of our own CityGML reports (Door objects, bldg:Door semantic presence rows) and a value in a POI source; exempt only as a substring of prose.",
+    "elevator": "Feature-kind word of our own network and gap reports (elevator presence) and a value in a POI source; exempt only as a substring of prose.",
+    "entrance": "Ordinary English word in our own gap and research prose (station entrance) and a value in a POI source; exempt only as a substring of prose.",
+    "escalator": "Feature-kind word of our own network and gap reports (escalator presence) and a value in a POI source; exempt only as a substring of prose.",
+    "gate": "Part of our own field and gate names (publish_gate, verification gate) and of ordinary words such as aggregate; it occurs in most acquisition, rights and decision JSON, and is also a POI value. Exempt only as a substring of prose.",
+    "general": "Ordinary English word in our own decisions, rights and gap text (general rule, general terms) and a POI value; exempt only as a substring of prose.",
+    "indoor": "Ordinary English word in our own text (indoor graph, indoor map) and a POI value; exempt only as a substring of prose.",
+    "information": "Ordinary English word in our own gap and history text and a POI value; exempt only as a substring of prose.",
+    "locker": "Appears in HANDOFF prose as a feature-kind identifier (`locker`, the runtime asset kinds); a POI source also has the value locker. Exempt only as a substring of prose.",
+    "ramp": "Feature-kind identifier of our own HANDOFF/asset prose and network reports (`ramp`, slope) and a value in a POI source; exempt only as a substring of prose.",
+    "section": "Ordinary English word in our own reports (section, route section, SECTION headings) and a POI value; exempt only as a substring of prose.",
+    "stairs": "Feature-kind identifier of our own HANDOFF/asset prose and network reports (`stairs`) and a value in a POI source; exempt only as a substring of prose.",
+    "step": "Ordinary English word in our own reports (slope/step bounds, step) and a POI value; exempt only as a substring of prose.",
+    "true": "Appears in HANDOFF and report prose as the boolean value of settings (`visual_only: true`); a POI source also has the string value true. Exempt only as a substring of prose.",
+    "unit": "Ordinary English word in our own reports and research notes (unit tests, unit glyph, unit of measure) and a POI value; exempt only as a substring of prose.",
+    "wall": "Appears in HANDOFF prose as a feature-kind identifier (`wall`, `walls`, the runtime asset kinds); a POI source also has the value wall. Exempt only as a substring of prose.",
+    "exception": "Ordinary English word. It occurs inside our own evidence ids (plateau-related-provenance#ksj-exception-heading) in gaps and rights text; it is also a PLATEAU codelist description. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "park": "Ordinary English word. It occurs in our own source ids and layer names (plateau-13104-related-park-asset) and HANDOFF prose; it is also a PLATEAU codelist description. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "river": "Ordinary English word used in our own research prose (lane-d-review-fixes.md); it is also a PLATEAU codelist description. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "road": "Ordinary English word. It is our own feature-kind name in context reports (the PLATEAU tran layer) and HANDOFF prose; it is also a PLATEAU codelist description. Exempt as a substring of prose; as a whole JSON value it is exempt only through structural_values.",
+    "unknown": "Our own status marker (UNKNOWN stays unknown) written in lower case across reports; it is also a PLATEAU codelist description. Exempt as a substring of prose; as a whole JSON value it is exempt only through structural_values.",
+    "zone": "Ordinary English word in our own CRS reports (JGD2011 plane rectangular zone IX, query parameter zone=9); it is also a PLATEAU codelist description. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "地下通路": "Common noun for an underground passage. It is part of the class (a) PLATEAU group name kept in the inventories (gml:name 池袋駅_B1地下通路), so it must survive inside that name, and it occurs in our own HANDOFF and gap prose; it is also an MLIT route-structure label. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "エレベーター": "Common katakana noun (elevator) that our own HANDOFF/POI prose uses; it is also an MLIT specification label. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "エスカレーター": "Common katakana noun (escalator) that our own HANDOFF/POI prose uses; it is also an MLIT specification label. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "スロープ": "Common katakana noun (slope, ramp) that our own prose and the class (a) CityGML names use; it is also an MLIT specification label. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "コインロッカー": "Common noun (coin locker) that the POI reports name as a facility type in prose; a POI value in one source. Exempt only as a substring of prose.",
+    "鉄道": "Common noun (railway) inside the recorded KSJ attribution text 国土数値情報（鉄道・2024年） that rights/ reports quote, and in our theme names; it is also an MLIT specification label. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "その他": "Common word (other) in the recorded KSJ/PLATEAU related-dataset text that rights/ reports quote; it is also an MLIT specification label. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak."
+  },
+  "structural_values": [
+    "road",
+    "unknown"
+  ],
+  "structural_justifications": {
+    "road": "Our own context reports emit kind \"road\" (PLATEAU tran layer) as an enum value, and counts keyed by it; that is GTEki schema vocabulary, not a copied label. A genuine source label equal to it would be an English word without wording value.",
+    "unknown": "The status marker \"unknown\" is our own enum value in rights, acquisitions, overlap and gap JSON (commercial_use, bbox_axis_order, license_name...). A copied codelist description 'unknown' carries no wording value, so excluding it whole-value would only produce false positives on our own markers."
   }
 }

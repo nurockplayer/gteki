@@ -6,10 +6,11 @@ import { join } from 'node:path';
 import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 import { packageRoot, repoRoot } from '../src/common.js';
-import { codebookLabels, codelistLabels, checkLiterals, hokonaviLiterals, scrubLiterals, scrubText, verifyCredits, verifyReportDetails, type ClassBResult } from '../src/literals.js';
+import { classAWording, codebookLabels, codelistLabels, checkLiterals, hokonaviLiterals, literalsInFile, scrubLiterals, scrubText, verifyClassACredits, verifyCredits, verifyRegistered, verifyReportDetails, type ClassBResult } from '../src/literals.js';
+import { buildMatcher, isCodeValue, isWording } from '../src/literal-match.js';
 import { LITERAL_CLASSES, literalClassificationMarkdown, literalRows } from '../src/literal-classes.js';
 import { hashedDistribution, hashedValue, isEnumeratedCode, publicInventorySummary, publicNetworkReport } from '../src/literal-public.js';
-import { literalsInText } from '../src/poi-literals.js';
+import { literalsInText, loadLiteralAllowlistFile } from '../src/poi-literals.js';
 
 // SYNTHETIC values only. Every label, id and floor name below is invented and unique, so any occurrence in a public report is a leak.
 const sha = (text: string) => createHash('sha256').update(text, 'utf8').digest('hex');
@@ -75,9 +76,15 @@ describe('public form of class (b) network literals (#129)', () => {
     const pub = publicNetworkReport({ attribute_decoding: { fields: { link: { x: { versions: { v: { decoded_label_counts: JSON.parse('{"__proto__": 1}') } } } } } } }) as any;
     expect(pub.attribute_decoding.fields.link.x.versions.v.decoded_label_value_hash_distribution).toEqual([{ value_sha256: sha('__proto__'), value_type: 'string', count: 1 }]);
   });
-  it('classifies codes: numeric, markers and values under four characters stay, longer text is free', () => {
-    for (const code of ['5', '-0.5', '99', '(blank)', '(unavailable)', '(unknown)', 'SBS', 'あり']) expect(isEnumeratedCode(code)).toBe(true);
-    for (const free of ['SYNTH-LABEL', '横断歩道', 'synth-link-0000-aaaa']) expect(isEnumeratedCode(free)).toBe(false);
+  it('classifies codes: numbers, markers and short ASCII tokens stay; every other value, however short, is wording', () => {
+    for (const code of ['5', '-0.5', '99', '(blank)', '(unavailable)', '(unknown)', 'SBS', 'B1F', '0%', '１', '0.5']) expect(isEnumeratedCode(code), code).toBe(true);
+    for (const wording of ['あり', 'なし', '1階', '階段', '歩道橋', '地下2階', 'SYNTH-LABEL', '横断歩道', 'synth-link-0000-aaaa', 'ABCD']) expect(isEnumeratedCode(wording), wording).toBe(false);
+    expect(isWording('あり')).toBe(true); expect(isWording('SBS')).toBe(false); expect(isWording('  ')).toBe(false);
+  });
+  it('hashes short Japanese wording but keeps short ASCII codes in code maps and floor fields', () => {
+    const pub = publicNetworkReport({ categorical_values: { floor: { '1階': 2, B1F: 1, '0.0': 4 } }, topology: { dangling_links: [{ feature_index: 1, missing_node_id: '1階' }, { feature_index: 2, missing_node_id: 'n12' }] } }) as any;
+    expect(pub.categorical_values.floor).toEqual({ B1F: 1, '0.0': 4, value_hash_distribution: [{ value_sha256: sha('1階'), value_type: 'string', count: 2 }] });
+    expect(pub.topology.dangling_links.map((row: any) => row.missing_node_id)).toEqual([hashedValue('1階'), 'n12']);
   });
 });
 
@@ -101,13 +108,13 @@ describe('public form of a CityGML inventory summary (#129)', () => {
 
 describe('class (b) literal extraction', () => {
   it('reads CSV cells and GeoJSON properties but not keys, numbers or short codes', () => {
-    const csv = hokonaviLiterals('node.csv', Buffer.from('node_id,floor,name\nsynth-node-0001,-0.5,SYNTH-NODE-NAME\nsynth-node-0002,1.0,\n', 'utf8'));
-    expect([...csv].sort()).toEqual(['SYNTH-NODE-NAME', 'synth-node-0001', 'synth-node-0002']);
+    const csv = hokonaviLiterals('node.csv', Buffer.from('node_id,floor,name\nsynth-node-0001,-0.5,SYNTH-NODE-NAME\nsynth-node-0002,1.0,\nsynth-node-0003,SBS,あり\n', 'utf8'));
+    expect([...csv].sort()).toEqual(['SYNTH-NODE-NAME', 'synth-node-0001', 'synth-node-0002', 'synth-node-0003', 'あり'].sort());
     const geo = hokonaviLiterals('floor.geojson', Buffer.from(JSON.stringify({ type: 'FeatureCollection', properties: { title: 'SYNTH-ROOT-TITLE' }, features: [{ type: 'Feature', geometry: { type: 'Point', coordinates: [139.7, 35.6] }, properties: { name: FLOOR, floor_id: FLOOR_ID, rank: 'SBS' } }] }), 'utf8'));
     expect([...geo].sort()).toEqual([FLOOR, FLOOR_ID, 'SYNTH-ROOT-TITLE'].sort());
   });
   it('reads codebook labels and codelist descriptions', () => {
-    expect([...codebookLabels({ version: 'x', link: { rt_struct: { codes: { '1': { label: LABEL_A, transcription_check: 'TEXT' }, '2': { label: 'あり' }, '3': { label: '123456' } } } } })]).toEqual([LABEL_A]);
+    expect([...codebookLabels({ version: 'x', link: { rt_struct: { codes: { '1': { label: LABEL_A, transcription_check: 'TEXT' }, '2': { label: 'あり' }, '3': { label: '123456' }, '4': { label: 'SBS' } } } } })].sort()).toEqual([LABEL_A, 'あり'].sort());
     expect([...codelistLabels(new Map([['Synth_function.xml|1', LABEL_B], ['Synth_function.xml|2', '12']]))]).toEqual([LABEL_B]);
   });
 });
@@ -122,7 +129,8 @@ describe('gis check-literals fails closed (#129)', () => {
     for (const [name, text] of Object.entries(files)) { await mkdir(join(docs, name, '..'), { recursive: true }); await writeFile(join(docs, name), text); }
     return { root, docs, store };
   };
-  const run = (docs: string, store: string, provider: () => Promise<ClassBResult>, allowlist: ReadonlySet<string> = new Set(), extra = {}) => checkLiterals(docs, store, allowlist, { skipPoi: true, credits: credit, classB: provider, ...extra });
+  const registered = new Set(['synthetic', 'plateau-synth', 'undetailed', 'plateau-synth-ubld']);
+  const run = (docs: string, store: string, provider: () => Promise<ClassBResult>, allowlist: ReadonlySet<string> = new Set(), extra = {}) => checkLiterals(docs, store, allowlist, { skipPoi: true, credits: credit, classB: provider, registered, ...extra });
 
   it('passes a clean tree with credit', async () => {
     const { root, docs, store } = await setup({ 'gaps/a.json': JSON.stringify({ value_sha256: sha(LABEL_A), count: 1 }) });
@@ -141,7 +149,7 @@ describe('gis check-literals fails closed (#129)', () => {
     const { root, docs, store } = await setup({ 'x.md': 'a generic synth-road word' });
     try {
       expect((await run(docs, store, classB(['synth-road']))).status).toBe('FAIL');
-      expect((await run(docs, store, classB(['synth-road', LABEL_A]), new Set(['synth-road']))).non_poi).toMatchObject({ status: 'PASS', scanned_literals: 1 });
+      expect((await run(docs, store, classB(['synth-road', LABEL_A]), new Set(['synth-road']))).non_poi).toMatchObject({ status: 'PASS', scanned_literals: 2 });
     } finally { await rm(root, { recursive: true, force: true }); }
   });
   it('fails when a class (b) store copy is missing or altered, naming the source', async () => {
@@ -192,29 +200,45 @@ describe('gis check-literals fails closed (#129)', () => {
 });
 
 describe('scrub-literals (frozen snapshots)', () => {
-  it('replaces literals longest first, verbatim and JSON-escaped, and is idempotent', () => {
-    const text = `{"k":"${LABEL_A}","SYNTH-"QUOTED"":1,"s":"${LABEL_B} / ${LABEL_B}","long":"${LABEL_B}-LONGER"}`.replace('"SYNTH-"QUOTED""', '"SYNTH-\\"QUOTED\\""');
-    const out = scrubText(text, [LABEL_B, `${LABEL_B}-LONGER`, LABEL_A, 'SYNTH-"QUOTED"']);
+  const json = (value: unknown): string => `${JSON.stringify(value, null, 2)}\n`;
+  const provider = (literals: string[]): ClassBResult => ({ literals: new Map(literals.map(literal => [literal, ['s']])), problems: [], per_source: [] });
+  it('replaces literals longest first, never inside a longer word or an allowlisted term, and is idempotent', () => {
+    const text = `${LABEL_A} | ${LABEL_B}-LONGER | ${LABEL_B} | エスカレーター | エスカレータ | 階段室 | 階段・スロープ`;
+    const out = scrubText(text, [LABEL_B, `${LABEL_B}-LONGER`, LABEL_A, 'エスカレータ', 'エスカレーター', '階段'], ['エスカレーター']);
+    expect(out.text).toBe(`value_sha256:${sha(LABEL_A)} | value_sha256:${sha(`${LABEL_B}-LONGER`)} | value_sha256:${sha(LABEL_B)} | エスカレーター | value_sha256:${sha('エスカレータ')} | 階段室 | value_sha256:${sha('階段')}・スロープ`);
     expect(out.replaced).toBe(5);
-    expect(out.text).toContain(`"long":"value_sha256:${sha(`${LABEL_B}-LONGER`)}"`);
-    expect(out.text).not.toContain('SYNTH');
-    expect(() => JSON.parse(out.text)).not.toThrow();
-    expect(scrubText(out.text, [LABEL_B, LABEL_A]).replaced).toBe(0);
+    expect(scrubText(out.text, [LABEL_B, LABEL_A, 'エスカレータ', '階段'], ['エスカレーター']).replaced).toBe(0);
+    expect(out.text).not.toMatch(/value_sha256:[0-9a-f]{64}ー/u);
   });
-  it('rewrites only files that hold a literal, keeps JSON valid, and refuses unavailable literals or escaping targets', async () => {
+  it('folds full-width forms and keeps the original characters around a match', () => {
+    const out = scrubText('値 １階 と 2㎝ 以下', ['1階', '2cm']);
+    expect(out.text).toBe(`値 value_sha256:${sha('1階')} と value_sha256:${sha('2cm')} 以下`);
+  });
+  it('rewrites JSON structurally: whole values and keys, wording inside strings, same 2-space format, nothing else', async () => {
     const root = await mkdtemp(join(tmpdir(), 'literals-scrub-')), docs = join(root, 'docs-gis');
     try {
       await mkdir(join(docs, 'history'), { recursive: true });
-      await writeFile(join(docs, 'history', 'a.json'), JSON.stringify({ [FLOOR_ID]: 1, list: [LABEL_A] }));
+      const original = { [FLOOR_ID]: 1, list: [LABEL_A, 'エスカレーター', 'エスカレータ'], keep: { n: 1.5, ok: true, nothing: null }, 'エレベータ': 2, note: `see ${LABEL_B} here and エスカレーター` };
+      await writeFile(join(docs, 'history', 'a.json'), json(original));
       await writeFile(join(docs, 'history', 'b.md'), 'clean text');
-      const provider = await (async () => (await (async (): Promise<ClassBResult> => ({ literals: new Map([[FLOOR_ID, ['s']], [LABEL_A, ['s']], ['synth-generic', ['s']]]), problems: [], per_source: [] }))()))();
-      const changed = await scrubLiterals(docs, ['history'], new Set(['synth-generic']), provider);
-      expect(changed).toEqual([{ file: 'history/a.json', replaced: 2 }]);
-      const after = JSON.parse(await readFile(join(docs, 'history', 'a.json'), 'utf8'));
-      expect(after).toEqual({ [`value_sha256:${sha(FLOOR_ID)}`]: 1, list: [`value_sha256:${sha(LABEL_A)}`] });
-      expect(await scrubLiterals(docs, ['history'], new Set(), provider)).toEqual([]);
-      await expect(scrubLiterals(docs, ['..'], new Set(), provider)).rejects.toThrow(/escapes/);
-      await expect(scrubLiterals(docs, ['history'], new Set(), { ...provider, problems: [{ source_id: 's', reason: 'missing', detail: 'x' }] })).rejects.toThrow(/unavailable/);
+      const books = provider([FLOOR_ID, LABEL_A, LABEL_B, 'エスカレーター', 'エスカレータ', 'エレベータ']);
+      const changed = await scrubLiterals(docs, ['history'], new Set(['エスカレーター']), books);
+      expect(changed).toEqual([{ file: 'history/a.json', replaced: 6 }]);
+      const raw = await readFile(join(docs, 'history', 'a.json'), 'utf8');
+      expect(raw.endsWith('\n')).toBe(true);
+      expect(JSON.parse(raw)).toEqual({ [`value_sha256:${sha(FLOOR_ID)}`]: 1, list: [`value_sha256:${sha(LABEL_A)}`, `value_sha256:${sha('エスカレーター')}`, `value_sha256:${sha('エスカレータ')}`], keep: { n: 1.5, ok: true, nothing: null }, [`value_sha256:${sha('エレベータ')}`]: 2, note: `see value_sha256:${sha(LABEL_B)} here and エスカレーター` });
+      expect(raw).not.toMatch(/value_sha256:[0-9a-f]{64}ー/u);
+      expect(await scrubLiterals(docs, ['history'], new Set(['エスカレーター']), books)).toEqual([]);
+      await expect(scrubLiterals(docs, ['..'], new Set(), books)).rejects.toThrow(/escapes/);
+      await expect(scrubLiterals(docs, ['history'], new Set(), { ...books, problems: [{ source_id: 's', reason: 'missing', detail: 'x' }] })).rejects.toThrow(/unavailable/);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+  it('refuses to reformat JSON that is not in the generators 2-space form', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'literals-scrub-')), docs = join(root, 'docs-gis');
+    try {
+      await mkdir(docs, { recursive: true });
+      await writeFile(join(docs, 'compact.json'), JSON.stringify({ k: LABEL_A }));
+      await expect(scrubLiterals(docs, ['compact.json'], new Set(), provider([LABEL_A]))).rejects.toThrow(/not 2-space JSON/);
     } finally { await rm(root, { recursive: true, force: true }); }
   });
 });
@@ -274,13 +298,100 @@ describe('classification file (docs/gis/rights/non-poi-literals.md)', () => {
 });
 
 describe('generic-vocabulary allowlist justifications (#129)', () => {
-  const BASELINE = ['MB2F', 'Stream', 'above', 'ange', 'below', 'building', 'door', 'elevator', 'entrance', 'escalator', 'gate', 'general', 'indoor', 'information', 'locker', 'ramp', 'section', 'stairs', 'step', 'true', 'unit', 'wall', 'エスカレーター', 'エレベーター', 'コインロッカー', 'スロープ'];
-  it('gives every term added after #128 a written reason', async () => {
-    const file = JSON.parse(await readFile(join(packageRoot, 'codebooks', 'poi-literal-allowlist.json'), 'utf8')) as { terms: string[]; justifications?: Record<string, string> };
-    const added = file.terms.filter(term => !BASELINE.includes(term));
-    expect(added.length).toBeGreaterThan(0);
-    for (const term of added) expect(file.justifications?.[term]?.length ?? 0, term).toBeGreaterThanOrEqual(20);
-    for (const term of Object.keys(file.justifications ?? {})) expect(file.terms).toContain(term);
+  it('gives every term, old and new, a written reason, and every structural value its own', async () => {
+    const file = JSON.parse(await readFile(join(packageRoot, 'codebooks', 'poi-literal-allowlist.json'), 'utf8')) as { terms: string[]; justifications: Record<string, string>; structural_values: string[]; structural_justifications: Record<string, string> };
+    for (const term of file.terms) expect(file.justifications[term]?.length ?? 0, term).toBeGreaterThanOrEqual(40);
+    expect(Object.keys(file.justifications).sort()).toEqual([...file.terms].sort());
+    expect(file.structural_values.sort()).toEqual(Object.keys(file.structural_justifications).sort());
+    for (const term of file.structural_values) expect(file.terms).toContain(term);
+    // Real class (b) labels that are only generic prose words must not be whole-value exempt.
+    for (const term of ['地下2階', 'エレベーター', 'エスカレーター', 'スロープ', 'zone', 'park', 'river', 'exception']) expect(file.structural_values).not.toContain(term);
+    expect(file.terms).not.toContain('地下2階');
+    expect((await loadLiteralAllowlistFile()).terms.size).toBe(file.terms.length);
+  });
+});
+
+describe('class (b) matching rules (#129)', () => {
+  const matcher = (literals: string[], allow: string[] = [], structural: string[] = []) => buildMatcher(literals, allow, structural);
+  it('finds short Japanese wording as a whole JSON value or key or with word boundaries, never inside a longer word', () => {
+    const m = matcher(['階段', '歩道橋', '不明', '1階', 'あり']);
+    expect(literalsInFile('x.json', JSON.stringify({ '階段': 3, list: ['歩道橋', '階段室'], note: '階段室と歩道橋あり' }), m).sort()).toEqual(['歩道橋', '階段']);
+    expect(literalsInFile('x.md', '| 階段 | 不明 |\n階段室 here', m).sort()).toEqual(['不明', '階段'].sort());
+    expect(literalsInFile('x.md', '"1階", 地下1階, 1階建て', m)).toEqual(['1階']);
+    expect(literalsInFile('x.md', '階段室、歩道橋上り', m)).toEqual([]);
+  });
+  it('compares the NFKC form, so full-width digits and letters do not escape', () => {
+    const m = matcher(['1階', 'ABC-LABEL']);
+    expect(literalsInFile('x.md', '- １階 and ＡＢＣ－ＬＡＢＥＬ', m).sort()).toEqual(['1階', 'ABC-LABEL'].sort());
+    expect(literalsInFile('x.json', JSON.stringify({ '１階': 1 }), m)).toEqual(['1階']);
+  });
+  it('exempts allowlisted words only inside prose; a whole JSON value or key is a leak unless structural', () => {
+    const m = matcher(['zone', 'unknown', 'road', 'エレベーター'], ['zone', 'unknown', 'road', 'エレベーター'], ['unknown', 'road']);
+    expect(literalsInFile('x.md', 'JGD2011 zone IX, status unknown, road kind, エレベーター', m)).toEqual([]);
+    expect(literalsInFile('x.json', JSON.stringify({ note: 'zone IX', status: 'unknown', kind: 'road', road: 1 }), m)).toEqual([]);
+    expect(literalsInFile('x.json', JSON.stringify({ zone: 1, label: 'エレベーター' }), m).sort()).toEqual(['zone', 'エレベーター'].sort());
+  });
+  it('treats a longer literal as one word: the prefix literal does not match inside an allowlisted longer term', () => {
+    const m = matcher(['エスカレータ', 'エスカレーター'], ['エスカレーター']);
+    expect(literalsInFile('x.md', 'エスカレーター', m)).toEqual([]);
+    expect(literalsInFile('x.md', 'エスカレータ', m)).toEqual(['エスカレータ']);
+  });
+  it('scans real-data-summary.json keys and nested values', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'literals-rds-')), docs = join(root, 'docs-gis');
+    try {
+      await mkdir(join(docs, 'rights'), { recursive: true });
+      await writeFile(join(docs, 'rights', 'non-poi-literals.md'), 'Credit: SYNTH-CREDIT-TEXT\n');
+      await writeFile(join(docs, 'real-data-summary.json'), `${JSON.stringify({ networks: [{ attribute_decoding: { fields: { link: { x: { versions: { v: { decoded_label_counts: { '階段': 2, 'SBS': 1 }, list: ['歩道橋'] } } } } } } }] }, null, 2)}\n`);
+      const result = await checkLiterals(docs, root, new Set(), { skipPoi: true, credits: [{ source_id: 'plateau-synth-ubld', attribution_text: 'SYNTH-CREDIT-TEXT' }], classB: async () => ({ literals: new Map([['階段', ['s']], ['歩道橋', ['s']]]), problems: [], per_source: [] }), registered: new Set() });
+      expect(result.status).toBe('FAIL'); expect(result.non_poi.leaking_files).toEqual([{ file: 'real-data-summary.json', count: 2 }]);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+});
+
+describe('unregistered sources and class (a) credit pointers (#129)', () => {
+  const credit = { source_id: 'plateau-synth-ubld', attribution_text: 'SYNTH-CREDIT-TEXT' };
+  const NAME = 'SYNTH-GROUP-NAME-ALPHA';
+  const inventory = (extra: Record<string, unknown> = {}) => `${JSON.stringify({ source_id: 'plateau-synth-ubld', compact_features: [{ names: [NAME] }], floor_label_observations: [{ value: NAME }], ...extra }, null, 2)}\n`;
+  const tree = async (files: Record<string, string>) => {
+    const root = await mkdtemp(join(tmpdir(), 'literals-credit-')), docs = join(root, 'docs-gis');
+    for (const [name, text] of Object.entries(files)) { await mkdir(join(docs, name, '..'), { recursive: true }); await writeFile(join(docs, name), text); }
+    return { root, docs };
+  };
+  it('fails a network or inventory report whose source is not in LITERAL_CLASSES', async () => {
+    const { root, docs } = await tree({ 'networks/a.json': JSON.stringify({ source_id: 'hokonavi-oedo-shinjuku-network-geojson+brand-new-source', members: [{ source_id: 'another-new-source' }] }), 'inventory/b.inventory.json': JSON.stringify({ source_id: 'plateau-new-ubld' }) });
+    try {
+      const problems = await verifyRegistered(docs);
+      expect(problems.map(problem => problem.source_id)).toEqual(['another-new-source', 'brand-new-source', 'plateau-new-ubld']);
+      expect(problems.every(problem => problem.reason === 'unregistered')).toBe(true);
+      expect(await verifyRegistered(docs, new Set(['hokonavi-oedo-shinjuku-network-geojson', 'brand-new-source', 'another-new-source', 'plateau-new-ubld']))).toEqual([]);
+      const checked = await checkLiterals(docs, root, new Set(), { skipPoi: true, credits: [], classB: async () => ({ literals: new Map([['SYNTH-X-LABEL', ['s']]]), problems: [], per_source: [] }) });
+      expect(checked.status).toBe('FAIL'); expect(checked.non_poi.detail_problems.some(problem => problem.reason === 'unregistered')).toBe(true);
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+  it('extracts class (a) wording from inventory names and floor-label observations', () => {
+    expect([...classAWording([JSON.parse(inventory()), null, { compact_features: [{ names: null }, { names: ['abc'] }] }])]).toEqual([NAME]);
+  });
+  it('requires a structured credit in generated reports and a credit or pointer in every other file', async () => {
+    const { root, docs } = await tree({
+      'inventory/plateau-synth-ubld.inventory.json': inventory(), 'inventory/plateau-synth-ubld.md': `# x\n${NAME}\n`,
+      'gaps/station.json': JSON.stringify({ source_ids: { citygml: 'plateau-synth-ubld' }, literal_floor_label_evidence: [{ value: NAME }] }), 'gaps/station.md': `Gap ${NAME}\n`,
+      'HANDOFF.md': `The group ${NAME} is quoted here.\n`, 'history/phase1/old.md': `${NAME}\n`, 'history/README.md': 'history\n',
+      'rights/non-poi-literals.md': `${NAME} listed here\nSYNTH-CREDIT-TEXT\n`,
+    });
+    try {
+      const failing = await verifyClassACredits(docs, [credit]);
+      expect(failing.map(problem => problem.file)).toEqual(['HANDOFF.md', 'gaps/station.json', 'gaps/station.json', 'gaps/station.md', 'history/phase1/old.md', 'inventory/plateau-synth-ubld.inventory.json', 'inventory/plateau-synth-ubld.inventory.json', 'inventory/plateau-synth-ubld.md']);
+      const creditField = { attribution_text: 'SYNTH-CREDIT-TEXT', classification: 'docs/gis/rights/non-poi-literals.md' };
+      await writeFile(join(docs, 'inventory', 'plateau-synth-ubld.inventory.json'), inventory({ credit: creditField }));
+      await writeFile(join(docs, 'inventory', 'plateau-synth-ubld.md'), `# x\nCredit: SYNTH-CREDIT-TEXT\n${NAME}\n`);
+      await writeFile(join(docs, 'gaps', 'station.json'), JSON.stringify({ source_ids: { citygml: 'plateau-synth-ubld' }, credit: creditField, literal_floor_label_evidence: [{ value: NAME }] }));
+      await writeFile(join(docs, 'gaps', 'station.md'), `Credit: SYNTH-CREDIT-TEXT\nGap ${NAME}\n`);
+      await writeFile(join(docs, 'HANDOFF.md'), `The group ${NAME} is quoted here, see rights/non-poi-literals.md.\n`);
+      await writeFile(join(docs, 'history', 'README.md'), 'Credit pointer: rights/non-poi-literals.md\n');
+      expect(await verifyClassACredits(docs, [credit])).toEqual([]);
+      await writeFile(join(docs, 'inventory', 'plateau-synth-ubld.inventory.json'), inventory({ credit: { ...creditField, attribution_text: 'WRONG' } }));
+      expect((await verifyClassACredits(docs, [credit])).map(problem => problem.file)).toContain('inventory/plateau-synth-ubld.inventory.json');
+    } finally { await rm(root, { recursive: true, force: true }); }
   });
 });
 
@@ -294,5 +405,15 @@ describe('committed reports carry no class (b) wording keys (#129)', () => {
       for (const match of text.matchAll(/"decoded_label_counts": \{([^}]*)\}/gu)) for (const label of match[1]!.matchAll(/"([^"]+)":/gu)) expect(label[1], `${name} decoded_label_counts`).toMatch(/^[SABCZX](?: \/ [SABCZX])*$/u);
       if (name.startsWith('networks/')) expect(text, name).toContain('"detail"');
     }
+  });
+  it('keeps the recorded credit with the class (a) values of the ubld inventories and gap packets', () => {
+    const credit = 'PLATEAU';
+    for (const id of ['plateau-13116-ubld-53394576', 'plateau-13104-ubld-53394536']) {
+      const doc = JSON.parse(readFileSync(join(gis, 'inventory', `${id}.inventory.json`), 'utf8')) as { credit?: { attribution_text: string; classification: string } };
+      expect(doc.credit?.attribution_text, id).toContain(credit); expect(doc.credit?.classification).toBe('docs/gis/rights/non-poi-literals.md');
+      expect(readFileSync(join(gis, 'inventory', `${id}.md`), 'utf8'), id).toContain(doc.credit!.attribution_text);
+    }
+    const gap = JSON.parse(readFileSync(join(gis, 'gaps', 'ikebukuro.json'), 'utf8')) as { credit?: { attribution_text: string } };
+    expect(readFileSync(join(gis, 'gaps', 'ikebukuro.md'), 'utf8')).toContain(gap.credit!.attribution_text);
   });
 });

@@ -4,6 +4,7 @@ This packet is generated from the current inventory and network report files. Mi
 
 ## What the source files report
 - CityGML source: plateau-13104-ubld-53394536.
+- Credit: 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成 (CC BY 4.0; see docs/gis/rights/non-poi-literals.md).
 - floors: PRESENT. Count in file: 1911. Example gml:id values: bdry_d7c5c46c-bdec-4e4d-a08e-f919a6683b02, bdry_a43a8c2f-f699-43d4-beea-48f6631b79ec, bdry_185dd85a-f91e-49e8-85a9-5ccbf7c9bcce (1911 IDs in the full external inventory; this report shows a sample).
 - doors: PRESENT. Count in file: 1364. Example gml:id values: door_f87caf7a-2b2a-4d37-88dc-5caf0cb475f7, door_2ec9106b-1988-46eb-aefc-ae0cfbf31c7d, door_1e1d3134-c015-4aae-aa81-136704c5b86a (1364 IDs in the full external inventory; this report shows a sample).
 - windows: PRESENT. Count in file: 62. Example gml:id values: window_0086ea03-dc85-4422-ad6f-bd21bf6cb766, window_be43c409-b9c4-4411-8d22-95af374d109e, window_c96839f8-8f0d-4bf2-bc42-b4cf466be883 (62 IDs in the full external inventory; this report shows a sample).

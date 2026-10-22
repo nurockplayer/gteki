@@ -121,7 +121,7 @@
       },
       "categorical_values": {},
       "floor_labels_present_literally": [
-        "1階"
+        "value_sha256:c86b35ff294bed1ceee8cda02b57630479fce5c3c93557efd786105e43245d3c"
       ]
     },
     {
@@ -497,7 +497,7 @@
       },
       "categorical_values": {},
       "floor_labels_present_literally": [
-        "地下2階"
+        "value_sha256:c0836dff4714db1e120615df114e789a33e801b9706330dc44c5f16827a0ba46"
       ]
     },
     {

@@ -49,18 +49,30 @@ export async function storeDetailLiterals(storeRoot: string = getStoreRoot(), mi
   return literals;
 }
 
-/** Generic vocabulary that coincides with our own text (see codebooks/poi-literal-allowlist.json); it is not a source value. */
-export async function loadLiteralAllowlist(): Promise<Set<string>> {
-  const parsed = JSON.parse(await readFile(join(packageRoot, 'codebooks', 'poi-literal-allowlist.json'), 'utf8')) as { terms?: unknown; justifications?: unknown };
-  if (!Array.isArray(parsed.terms) || parsed.terms.some(term => typeof term !== 'string')) throw new Error('poi-literal-allowlist.json needs a string array `terms`');
-  const terms = new Set(parsed.terms as string[]);
-  // `justifications` states why a generic term is exempt (#129); a reason for a term outside `terms`, or an empty one, is a mistake.
-  if (parsed.justifications !== undefined) {
-    const entries = Object.entries(parsed.justifications !== null && typeof parsed.justifications === 'object' ? parsed.justifications : { invalid: null });
-    if (entries.some(([term, reason]) => !terms.has(term) || typeof reason !== 'string' || reason.trim().length < 20)) throw new Error('poi-literal-allowlist.json `justifications` must map listed terms to a reason of at least 20 characters');
-  }
-  return terms;
+export type LiteralAllowlist = { terms: Set<string>; structural: Set<string> };
+
+/**
+ * Generic vocabulary that coincides with our own text (see codebooks/poi-literal-allowlist.json); it is not a source value.
+ * Every term needs a written reason; `structural_values` (whole JSON values exempt for class (b), #129) need one too.
+ */
+export async function loadLiteralAllowlistFile(): Promise<LiteralAllowlist> {
+  const parsed = JSON.parse(await readFile(join(packageRoot, 'codebooks', 'poi-literal-allowlist.json'), 'utf8')) as { terms?: unknown; justifications?: unknown; structural_values?: unknown; structural_justifications?: unknown };
+  const strings = (value: unknown, name: string): string[] => { if (!Array.isArray(value) || value.some(entry => typeof entry !== 'string')) throw new Error(`poi-literal-allowlist.json needs a string array \`${name}\``); return value as string[]; };
+  const terms = new Set(strings(parsed.terms, 'terms')), structural = new Set(strings(parsed.structural_values ?? [], 'structural_values'));
+  const reasons = (value: unknown, name: string, required: ReadonlySet<string>): void => {
+    const entries = value !== null && typeof value === 'object' && !Array.isArray(value) ? Object.entries(value as Record<string, unknown>) : null;
+    if (!entries) throw new Error(`poi-literal-allowlist.json needs an object \`${name}\``);
+    const given = new Map(entries);
+    for (const term of required) { const reason = given.get(term); if (typeof reason !== 'string' || reason.trim().length < 20) throw new Error(`poi-literal-allowlist.json \`${name}\` needs a reason of at least 20 characters for "${term}"`); }
+    for (const term of given.keys()) if (!required.has(term)) throw new Error(`poi-literal-allowlist.json \`${name}\` explains "${term}", which is not listed`);
+  };
+  reasons(parsed.justifications, 'justifications', terms);
+  reasons(parsed.structural_justifications ?? {}, 'structural_justifications', structural);
+  for (const term of structural) if (!terms.has(term)) throw new Error(`poi-literal-allowlist.json structural value "${term}" must also be a listed term`);
+  return { terms, structural };
 }
+
+export async function loadLiteralAllowlist(): Promise<Set<string>> { return (await loadLiteralAllowlistFile()).terms; }
 
 /** Literals present in `text`, verbatim or as the JSON-escaped form a report writer would emit. */
 export function literalsInText(text: string, literals: Iterable<string>): string[] {
@@ -86,7 +98,7 @@ export async function scanTreeForLiterals(root: string, literals: Iterable<strin
   return leaks.sort((a, b) => a.file.localeCompare(b.file));
 }
 
-export type DetailProblem = { source_id: string; reason: 'missing' | 'hash_mismatch'; detail: string };
+export type DetailProblem = { source_id: string; reason: 'missing' | 'hash_mismatch' | 'unregistered'; detail: string };
 
 /**
  * Every committed POI report names its store detail (`detail.store_path`, `sha256`, `bytes`). A PASS is only meaningful when
