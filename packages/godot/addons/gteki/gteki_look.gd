@@ -233,10 +233,11 @@ static func fingerprint_mismatch(from: Variant, actual: Dictionary) -> String:
 		if absf(got - want) > FINGERPRINT_TOLERANCE:
 			return "%s %.2f, recorded %.2f" % [key, got, want]
 	var meshes: Variant = from.get("meshes", [])
-	if meshes is Array:
-		for mesh_name in meshes:
-			if not (actual.meshes as Dictionary).has(str(mesh_name)):
-				return "sample mesh %s no longer uses it" % str(mesh_name)
+	if not meshes is Array:
+		return "sample meshes are not a list"
+	for mesh_name in meshes:
+		if not (actual.meshes as Dictionary).has(str(mesh_name)):
+			return "sample mesh %s no longer uses it" % str(mesh_name)
 	return ""
 
 

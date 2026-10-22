@@ -61,6 +61,7 @@ func check_guard() -> void:
 	check(Look.fingerprint_mismatch({"color": "#ff0000", "metal": 0.5, "roughness": 0.49}, actual) == "", "guard: roughness within 0.01 matches")
 	check(not Look.fingerprint_mismatch({"color": "#ff0000", "metal": 0.5, "roughness": 0.52}, actual).is_empty(), "guard: roughness beyond 0.01 is a mismatch")
 	check(not Look.fingerprint_mismatch({"color": "#ff0000", "metal": 0.5, "roughness": 0.5, "meshes": ["Mesh7", "Gone"]}, actual).is_empty(), "guard: a recorded sample mesh that no longer uses the material is a mismatch")
+	check(not Look.fingerprint_mismatch({"color": "#ff0000", "metal": 0.5, "roughness": 0.5, "meshes": "Mesh7"}, actual).is_empty(), "guard: sample meshes that are not a list are a mismatch")
 	check(not Look.fingerprint_mismatch({"color": "#ff0000"}, actual).is_empty(), "guard: evidence missing metal never applies")
 	check(not Look.fingerprint_mismatch(null, actual).is_empty(), "guard: a mapping without `from` evidence never applies")
 
