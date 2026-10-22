@@ -47,10 +47,12 @@ const ROUTES := [
 ## (-112, 142.5), ENU) passes 0.29 m from the surface of `Mesh825_col`, a collision-only proxy (raycast tile under
 ## gteki_collision_proxies, material_22, 9.8 x 24.2 m, y 27.86..30.42), i.e. inside the walker's 0.3 m body radius. A
 ## player slides along it (the web's free-walk spec nudges past, and the browser walks I4); a strict replay is
-## refused. I7 is not walk-claimed by the web either (`walk: false` in tests/e2e/fixtures/scenarios.json). Reported to
-## the lead as a station-data finding: the line is the problem, not the walker — a probe 0.2 m west of the passage
-## walks all of its steps, so a small lateral shift of the guide (or a geometry check on the proxy) fixes it. It is
-## not accepted quality, and fixing it means deleting the entry, not widening it.
+## refused. I7 is not walk-claimed by the web either (`walk: false` in tests/e2e/fixtures/scenarios.json). G-2's static
+## edge replay (run_walk_tests.gd) samples this same edge every 0.25 m and finds no body block, so only the continuous
+## walk along the route polyline is refused — the cause is in the polyline or the body sweep, not the proxy alone.
+## Refs #284. The line is the problem, not the walker: a probe 0.2 m west of the passage walks all of its steps, so a
+## small lateral shift of the guide (or a geometry check on the proxy) fixes it. It is not accepted quality, and fixing
+## it means deleting the entry, not widening it.
 const KNOWN_BLOCKS := {
 	"W4": {"point": 13, "collider": "Mesh825_col", "edge": "w_c__w_n", "offset_m": 0.29},
 	"I7": {"point": 46, "collider": "Mesh825_col", "edge": "w_c__w_n", "offset_m": 0.29},
@@ -380,7 +382,11 @@ func write_evidence(station_id: String, scene: Scene) -> void:
 				% [str(record.collider), str(record.edge), float(record.offset_m)])
 			lines.append("  A player slides along it and the browser's free-walk spec nudges past; a strict replay cannot. The line is")
 			lines.append("  the problem, not the walker: a probe 0.2 m west of the passage walks its whole length. This is a station-data")
-			lines.append("  finding for the lead (shift the guide line or check the proxy), not accepted quality.")
+			lines.append("  finding for the lead (shift the guide line or check the proxy), not accepted quality. Refs #284.")
+		lines.append("")
+		lines.append("G-2's static edge replay (`run_walk_tests.gd`) samples the same edge every 0.25 m and finds no body block, so")
+		lines.append("only the continuous walk along the route polyline is refused: the cause is in the polyline or the body sweep,")
+		lines.append("not the proxy alone.")
 		lines.append("")
 	lines.append("## How the walk numbers are made")
 	lines.append("")
