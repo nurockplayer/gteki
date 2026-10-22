@@ -10,6 +10,9 @@ import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
 import { sourceCredit } from "../credits.ts";
+import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
+import { LiveRegion, routeLiveMessage, searchLiveMessage } from "./live.ts";
+import { watchReducedMotion } from "./motion.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -79,7 +82,10 @@ export class App {
     hint: el("div", "hint"),
     panel: el("section", "panel"),
     more: el("button", "ghost more", "⋯"),
+    live: new LiveRegion(() => this.t),
   };
+  /** Listbox state of the two search comboboxes. */
+  private readonly combo: Record<"from" | "to", ComboState> = { from: COMBO_CLOSED, to: COMBO_CLOSED };
   private panelExpanded = false;
 
   constructor(private readonly root: HTMLElement) {}
@@ -100,6 +106,7 @@ export class App {
       },
     });
     this.explorer.setGuideTier(readGuideTier());
+    watchReducedMotion((reduce) => this.explorer.setReducedMotion(reduce));
     this.exposeTestHooks();
     this.s.entries = await listStations();
     this.renderStationSelect();
@@ -134,7 +141,6 @@ export class App {
     top.append(brand, this.ui.stationSelect, actions);
 
     const panel = this.ui.panel;
-    this.ui.more.setAttribute("aria-label", "options");
     this.ui.more.addEventListener("click", () => { this.panelExpanded = !this.panelExpanded; this.updatePanelCollapse(); });
     const fromRow = this.field("from", this.ui.fromInput, this.ui.fromResults);
     const toRow = this.field("to", this.ui.toInput, this.ui.toResults);
@@ -147,7 +153,7 @@ export class App {
     panel.append(this.ui.banner, fields, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
-    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.ui.coverage, this.ui.hint);
+    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.ui.live.el, this.ui.coverage, this.ui.hint);
     this.layoutText();
   }
 
@@ -157,6 +163,7 @@ export class App {
     this.ui.langBtn.textContent = t.language;
     this.ui.langBtn.dataset.short = this.s.lang === "ja" ? "EN" : "日本語";
     this.ui.coverageBtn.textContent = t.coverage;
+    this.ui.more.setAttribute("aria-label", t.options);
     this.ui.fromInput.placeholder = t.fromPlaceholder;
     this.ui.toInput.placeholder = t.toPlaceholder;
     this.root.querySelectorAll<HTMLElement>("[data-label]").forEach((n) => { n.textContent = t[n.dataset.label as "from" | "to"]; });
@@ -172,13 +179,24 @@ export class App {
     input.spellcheck = false;
     input.id = `gteki-${which}`;
     label.htmlFor = input.id;
+    results.id = `gteki-${which}-listbox`;
+    applyAria(input, inputAria(COMBO_CLOSED, results.id));
     input.addEventListener("input", () => this.renderResults(which));
     input.addEventListener("focus", () => this.renderResults(which));
+    let compositionEndMs = -Infinity;
+    input.addEventListener("compositionend", () => { compositionEndMs = performance.now(); });
     input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") (results.querySelector("button") as HTMLButtonElement | null)?.click();
-      if (e.key === "Escape") { results.innerHTML = ""; input.blur(); }
+      // The Enter that confirms an IME conversion is not a pick (Safari reports it as not composing).
+      if (isImeKeydown(e, compositionEndMs, performance.now())) return;
+      // Arrows reopen a closed list.
+      if (!this.combo[which].open && (e.key === "ArrowDown" || e.key === "ArrowUp")) this.renderResults(which);
+      const out = comboboxKeys(this.combo[which], e.key);
+      if (!out.handled) return;
+      e.preventDefault();
+      if (out.pick !== null) results.querySelectorAll<HTMLElement>('[role="option"]')[out.pick]?.click();
+      else this.setCombo(which, out);
     });
-    input.addEventListener("blur", () => setTimeout(() => { results.innerHTML = ""; }, 160));
+    input.addEventListener("blur", () => setTimeout(() => this.closeResults(which), 160));
     row.append(label, input, results);
     return row;
   }
@@ -218,8 +236,8 @@ export class App {
     this.s.instructions = [];
     this.ui.fromInput.value = "";
     this.ui.toInput.value = "";
-    this.ui.fromResults.innerHTML = "";
-    this.ui.toResults.innerHTML = "";
+    this.closeResults("from");
+    this.closeResults("to");
     this.ui.sheet.innerHTML = "";
     this.renderSpawnChips(undefined);
     this.toast(this.t.loading);
@@ -269,6 +287,7 @@ export class App {
     this.ui.panel.classList.toggle("collapsed", ready && !this.panelExpanded);
     this.ui.more.classList.toggle("hidden", !ready);
     this.ui.more.textContent = this.panelExpanded ? "︿" : "⋯";
+    this.ui.more.setAttribute("aria-expanded", String(this.panelExpanded));
   }
 
   private refreshAll(): void {
@@ -277,6 +296,9 @@ export class App {
     this.renderBanner(b);
     this.renderSpawnChips(b);
     this.renderProfile();
+    // The lists show the previous language / selection: drop them.
+    this.closeResults("from");
+    this.closeResults("to");
     this.ui.fromInput.value = this.originLabel();
     this.ui.toInput.value = this.s.destination ? this.poiName(this.s.destination) : "";
     if (b) this.explorer.showPois(b, (p) => this.poiName(p), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
@@ -344,28 +366,65 @@ export class App {
   private renderResults(which: "from" | "to"): void {
     const input = which === "from" ? this.ui.fromInput : this.ui.toInput;
     const box = which === "from" ? this.ui.fromResults : this.ui.toResults;
-    box.innerHTML = "";
+    this.closeResults(which);
     if (!this.s.search || !this.s.loaded) return;
     const q = input.value.trim();
     const hits: SearchHit[] = q ? this.s.search.search(q, { limit: 8 }) : this.s.loaded.bundle.pois.slice(0, 8).map((poi) => ({ poi, score: 0, matched: "", routable: poi.connectorNodeIds.length > 0 }));
-    if (hits.length === 0) { box.append(el("div", "result empty", this.t.noResults)); return; }
+    this.ui.live.announce(searchLiveMessage(this.t, hits.length));
+    if (hits.length === 0) {
+      const none = el("div", "result empty", this.t.noResults);
+      none.setAttribute("role", "option");
+      none.setAttribute("aria-disabled", "true");
+      box.append(none);
+      this.setCombo(which, { open: true, count: 0, active: -1 });
+      return;
+    }
     const floors = new Map(this.s.loaded.bundle.floors.map((f) => [f.id, f]));
-    for (const h of hits) {
+    hits.forEach((h, i) => {
       const b = el("button", `result cat-${h.poi.category}${h.routable ? "" : " disabled"}`);
+      const dot = el("span", "dot");
+      dot.setAttribute("aria-hidden", "true");
       const name = el("span", "result-name", this.poiName(h.poi));
       const meta = el("span", "result-meta");
       const floor = h.poi.floorId ? floorDisplayName(floors.get(h.poi.floorId), this.s.lang) : null;
-      meta.textContent = [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null, h.routable ? null : this.t.searchOnly].filter(Boolean).join(" · ");
-      b.append(el("span", "dot"), name, meta);
+      const tags = [floor, h.matched && h.matched !== this.poiName(h.poi) ? `“${h.matched}”` : null, h.routable ? null : this.t.searchOnly].filter(Boolean) as string[];
+      meta.textContent = tags.join(" · ");
+      b.append(dot, name, meta);
+      // The accessible name carries the visible tags, so "search only" is heard too.
+      applyAria(b, optionAria(COMBO_CLOSED, box.id, i, [name.textContent, ...tags].join(", ")));
       b.addEventListener("mousedown", (e) => e.preventDefault());
       b.addEventListener("click", () => {
-        box.innerHTML = "";
+        this.closeResults(which);
         input.blur();
         if (which === "from") this.setOrigin({ kind: "poi", poi: h.poi });
         else this.setDestination(h.poi);
       });
       box.append(b);
-    }
+    });
+    this.setCombo(which, { open: true, count: hits.length, active: -1 });
+  }
+
+  /** Close one results list (focus is left alone). */
+  private closeResults(which: "from" | "to"): void {
+    this.setCombo(which, COMBO_CLOSED);
+  }
+
+  /**
+   * The one place the popup and its ARIA state are kept in step: store the state, drop the options of a
+   * closed list (`.results:empty` hides the box), set the listbox role and the input's
+   * aria-expanded / aria-activedescendant, and mark the active option. Visible popup <=> aria-expanded.
+   */
+  private setCombo(which: "from" | "to", st: ComboState): void {
+    const state = normalizeCombo(st);
+    this.combo[which] = state;
+    const input = which === "from" ? this.ui.fromInput : this.ui.toInput;
+    const box = which === "from" ? this.ui.fromResults : this.ui.toResults;
+    if (!state.open) box.replaceChildren();
+    const role = listboxRole(state);
+    if (role) box.setAttribute("role", role);
+    else box.removeAttribute("role");
+    applyAria(input, inputAria(state, box.id));
+    box.querySelectorAll('[role="option"]').forEach((o, i) => o.setAttribute("aria-selected", String(i === state.active)));
   }
 
   /** Endpoints must come from the station that is loaded now (a stale result list may still be clickable). */
@@ -448,6 +507,7 @@ export class App {
     // routeBetween also applies the fare policy to the POIs themselves.
     const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, this.profile());
     this.s.route = best;
+    this.ui.live.announce(routeLiveMessage(this.t, best));
     if (best.ok) {
       this.s.polyline = routePolyline(loaded.bundle, best);
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination);
@@ -550,6 +610,7 @@ export class App {
     const hud = this.ui.hud;
     hud.innerHTML = "";
     const mode = this.explorer.currentMode;
+    this.announceInstruction();
     if (mode === "overview") { this.trackInstruction(); return; }
     const t = this.t;
     const ins = this.s.instructions[this.s.activeInstruction];
@@ -631,7 +692,18 @@ export class App {
     else if (cur) cur.textContent = ins.text;
     else hud.prepend(el("div", "hud-instruction", ins.text));
     pause.textContent = this.explorer.guidePaused ? this.t.resume : this.t.pause;
+    this.announceInstruction();
     this.trackInstruction();
+  }
+
+  private spokenInstruction: Instruction | null = null;
+
+  /** Announce the guide's active instruction once per change (not per progress tick); forgotten outside the guide. */
+  private announceInstruction(): void {
+    const ins = this.explorer.currentMode === "guide" ? this.s.instructions[this.s.activeInstruction] ?? null : null;
+    if (ins === this.spokenInstruction) return;
+    this.spokenInstruction = ins;
+    if (ins) this.ui.live.announce(ins.text);
   }
 
   /** Guide along the route, stopping where each wait for an opening happens. */
@@ -699,13 +771,14 @@ export class App {
     const d = this.ui.coverage;
     d.innerHTML = "";
     const close = el("button", "ghost close", "×");
+    close.setAttribute("aria-label", this.t.close);
     close.addEventListener("click", () => d.close());
     d.append(close, el("h2", undefined, this.t.coverage));
     if (b) {
       d.append(el("p", undefined, pick(b.coverage.summary, this.s.lang)));
       if (b.coverage.areas.length) {
         const ul = el("ul");
-        for (const a of b.coverage.areas) ul.append(el("li", `cov-${a.status}`, `${a.status} · ${pick(a.label, this.s.lang)}${a.note ? ` — ${a.note}` : ""}`));
+        for (const a of b.coverage.areas) ul.append(el("li", `cov-${a.status}`, `${this.t.coverageStatus[a.status] ?? a.status} · ${pick(a.label, this.s.lang)}${a.note ? ` — ${a.note}` : ""}`));
         d.append(ul);
       }
       d.append(el("h3", undefined, this.t.gaps));
@@ -717,7 +790,7 @@ export class App {
       // Every source, including those cited only by assets or coverage: link, licence and modification notice.
       for (const s of b.sources) {
         const li = this.creditItem(s);
-        li.append(el("span", "muted", ` [${s.rights}${s.usage === "facts-only" ? ", facts-only" : ""}]`));
+        li.append(el("span", "muted", ` [${s.rights}${s.usage === "facts-only" ? `, ${this.t.factsOnly}` : ""}]`));
         src.append(li);
       }
       d.append(src);
@@ -739,6 +812,7 @@ export class App {
   private toast(text: string, ms = 0): void {
     clearTimeout(this.toastTimer);
     this.ui.toast.textContent = text;
+    this.ui.live.announce(text);
     this.ui.toast.classList.toggle("show", Boolean(text));
     if (ms) this.toastTimer = window.setTimeout(() => this.ui.toast.classList.remove("show"), ms);
   }
