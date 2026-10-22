@@ -73,6 +73,8 @@ const STRINGS = {
     realCandidate: "公開データ由来・現地未確認を含む",
     freshness: "データ時点",
     sources: "出典",
+    credits: "出典",
+    creditsLabel: "データの出典表示",
     /** Modification disclosure required by PDL / CC BY when a source was processed. */
     modified: "加工して作成",
     /** #26 / #122: facts-only sources have no licence to show; the wording specified in #122. */
@@ -170,6 +172,8 @@ const STRINGS = {
     realCandidate: "From open data; parts not field-verified",
     freshness: "Data as of",
     sources: "Sources",
+    credits: "Credits",
+    creditsLabel: "Data credits",
     modified: "modified",
     /** Proposed English equivalent of the #26 line; adds no claim beyond the Japanese. */
     factsOnly: "No licence; cited for facts only (not reproduced)",
