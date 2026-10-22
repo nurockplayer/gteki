@@ -50,6 +50,15 @@
     {"id": "gteki_barrier_rail_2400_solid", "generator": "barrier_rail", "params": {"length": 2.4, "infill": "solid", "end_posts": "start"}, "tags": ["prop"]},
     {"id": "gteki_barrier_rail_2400_rails", "generator": "barrier_rail", "params": {"length": 2.4, "infill": "rails"}, "tags": ["prop"]},
     {"id": "gteki_ticket_kiosk", "generator": "ticket_kiosk", "params": {}, "tags": ["prop"]},
-    {"id": "gteki_escalator_s1000_r5000_down", "generator": "escalator", "params": {"direction": "down"}, "tags": ["vertical"]}
+    {"id": "gteki_escalator_s1000_r5000_down", "generator": "escalator", "params": {"direction": "down"}, "tags": ["vertical"]},
+    {"id": "gteki_platform_edge_l6000_dots", "generator": "platform_edge", "params": {"length_mm": 6000}, "tags": ["platform", "floor"]},
+    {"id": "gteki_platform_edge_l3000_innerline", "generator": "platform_edge", "params": {"length_mm": 3000, "coping": "concrete", "tactile": "inner_line"}, "tags": ["platform", "floor"]},
+    {"id": "gteki_platform_edge_l6000_gap", "generator": "platform_edge", "params": {"length_mm": 6000, "tactile": "inner_line", "parts": ["coping", "line", "tactile", "gap_strip"]}, "tags": ["platform", "floor"]},
+    {"id": "gteki_platform_screen_door_l5600", "generator": "platform_screen_door", "params": {"length_mm": 5600}, "tags": ["platform"]},
+    {"id": "gteki_shopfront_glazing_w2400", "generator": "shopfront", "params": {"kind": "glazing", "bay_w_mm": 2400}, "tags": ["shopfront"]},
+    {"id": "gteki_shopfront_door_w2000", "generator": "shopfront", "params": {"kind": "door", "bay_w_mm": 2000}, "tags": ["shopfront"]},
+    {"id": "gteki_shopfront_shutter_w2400_closed", "generator": "shopfront", "params": {"kind": "shutter", "bay_w_mm": 2400, "shutter_open": 0.0}, "tags": ["shopfront"]},
+    {"id": "gteki_shopfront_shutter_w2400_half", "generator": "shopfront", "params": {"kind": "shutter", "bay_w_mm": 2400, "shutter_open": 0.5}, "tags": ["shopfront"]},
+    {"id": "gteki_shopfront_fascia_w4800", "generator": "shopfront", "params": {"kind": "fascia", "bay_w_mm": 4800}, "tags": ["shopfront"]}
   ]
 }

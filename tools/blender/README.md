@@ -69,3 +69,15 @@ A generator is `fn(asset_id, params, tex_res) -> Asset` registered in its module
 - Set `repeat_m` to the material's real repeat. Texture size follows from it (`materials.texture_res`), and maps that come out flat are exported as factors (`materials.texture_plan`), so do not pad a generator with invisible noise to "fill" a map. A face with a single 0–1 UV island that is not square (signs) should draw at its physical aspect (see `signage._face_shape`).
 
 Determinism: all randomness is seeded, textures are cached by content hash, UVs are quantized after modifiers; `build.sh repro` guards it.
+
+## Platform and shopfront families
+
+`families/platform.py` and `families/shopfront.py` are visual-only pieces for the station's own platform and walls. Every size is a catalog param in millimetres.
+
+| Generator | Params (defaults) | Placement and origin |
+| --- | --- | --- |
+| `platform_edge` | `length_mm` 6000, `coping_depth_mm` 600, `coping_h_mm` 10, `coping` granite or concrete, `line_offset_mm` 40, `line_w_mm` 100, `tactile` dots or inner_line, `tactile_setback_mm` 200 (the band is one 300 mm block wide), `gap_strip_w_mm` 50, `parts` of coping, line, tactile, gap_strip (default the first three) | `linear`; origin on the platform edge line (x = 0, track −X, platform +X) at floor level; sockets `start`, `end`. The derived layout is `params.strips_mm` |
+| `platform_screen_door` | `length_mm` 5600, `height_mm` 2000, `header_h_mm` 400, `inset_mm` 60, `depth_mm` 180, `opening_mm` 2000, `fixed_panels_per_side` 2, `open_mm` 0 | `linear`; origin on the edge line, module along +Y; sockets `start`, `end` |
+| `shopfront` | `kind` glazing, door, shutter or fascia; `bay_w_mm` 2400, `height_mm` 2800 (including the fascia), `fascia_h_mm` 600, `mullion_mm` 60, `frame_depth_mm` 90, `sill_mm` 300, `panes` 0 (by width), `door_h_mm` 2100, `shutter_open` 0 to 0.9, `housing_h_mm` 250, `fascia` true, `backing` true, `fascia_u` [0, 1] | `wall`; back plane at y = 0, origin on the floor under the bay centre; sockets `left`, `right` |
+
+The fascia art face of a `shopfront` uses the material `gteki_fascia_art`, which is also the one place a station or a later 2D pass swaps in sign art by name (see `docs/assets/gap-list.md`, D3 status). Variants are the `gteki_platform_*` and `gteki_shopfront_*` ids in the catalog; `showcase/platform_shop_demo.json` places all of them. Build them with `ONLY=<ids> tools/blender/build.sh build`.
