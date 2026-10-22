@@ -18,7 +18,7 @@ import { CameraCut } from "./cameraCut.ts";
 import { manifestScene } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
-import { advanceGuide } from "./guideStops.ts";
+import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, followBoom, followDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
@@ -198,6 +198,8 @@ export class Explorer {
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
+  /** Every stop of the running guide (`guide.stops` is consumed as they are reached; a seek restores the ones still ahead). */
+  private guideAllStops: { s: number; index: number }[] = [];
   /** The user's guide speed tier; kept across instruction changes and later guides. */
   private tier: GuideTierId = DEFAULT_GUIDE_TIER;
   private poiLabels: PoiLabel[] = [];
@@ -870,6 +872,7 @@ export class Explorer {
     const cum = cumulativeLengths(pts);
     const stops = stopAtPoints.map((point, index) => ({ s: cum[point] ?? 0, index })).filter((x) => x.s >= fromS).sort((a, b) => a.s - b.s || a.index - b.index);
     this.guide = { pts, cum, steps: polyline.map((p) => p.stepIndex), s: fromS, paused: false, stops, holding: false, spans: paceSpans };
+    this.guideAllStops = stops.slice();
     const first = samplePolyline(pts, this.guide.cum, fromS);
     this.pos.set(first.x, first.y, first.z);
     this.teleported = true;
@@ -878,6 +881,25 @@ export class Explorer {
     this.lastAvatarPos.copy(this.pos);
     this.bodyYaw = this.yaw;
     this.setMode("guide");
+  }
+
+  /**
+   * Jump the running guide to distance `s` (m) along its path as a teleport: stepGuide places the avatar there and the
+   * follow camera snaps with it, as for any placement made while guiding. Pause state is kept. Stops numbered below
+   * `firstStop` count as passed; the others (including one at `s`) apply, again if they were reached before.
+   */
+  seekGuide(s: number, firstStop = 0): void {
+    const g = this.guide;
+    if (!g) return;
+    const total = g.cum[g.cum.length - 1]!;
+    seekGuideState(g, this.guideAllStops, total, s, firstStop);
+    const p = samplePolyline(g.pts, g.cum, g.s);
+    this.pos.set(p.x, p.y, p.z);
+    this.teleported = true;
+    this.snapCamera = true;
+    if (p.tx || p.tz) this.yaw = Math.atan2(-p.tx, -p.tz);
+    this.lastAvatarPos.copy(this.pos);
+    this.bodyYaw = this.yaw;
   }
 
   setGuidePaused(paused: boolean): void {

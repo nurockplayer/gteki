@@ -5,6 +5,7 @@ import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
 import { guideStops } from "../explorer/guideStops.ts";
+import { firstStopFor, guideKeyAction, instructionStartsM, jumpTarget, StepClock } from "../explorer/guideSteps.ts";
 import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
@@ -106,6 +107,7 @@ export class App {
       },
     });
     this.explorer.setGuideTier(readGuideTier());
+    this.bindGuideKeys();
     watchReducedMotion((reduce) => this.explorer.setReducedMotion(reduce));
     this.exposeTestHooks();
     this.s.entries = await listStations();
@@ -457,6 +459,37 @@ export class App {
     this.updateUrl();
   }
 
+  /** The origin as a POI a reversed route can end at: a POI origin, or a graph-node origin that is a POI's connector. */
+  private originPoi(): Poi | null {
+    const o = this.s.origin;
+    if (!o) return null;
+    return o.kind === "poi" ? o.poi : (this.s.loaded?.bundle.pois.find((p) => p.connectorNodeIds.includes(o.nodeId)) ?? null);
+  }
+
+  /** After arrival: back to the overview with origin and destination swapped and the route recomputed. */
+  private reverseRoute(): void {
+    const from = this.originPoi();
+    const to = this.s.destination;
+    if (!from || !to) return;
+    this.leaveGuide();
+    this.s.origin = { kind: "poi", poi: to };
+    this.s.destination = from;
+    this.refreshAll();
+    this.updateUrl();
+  }
+
+  /** After arrival: back to the overview with the destination search focused (its text selected, so typing replaces it). */
+  private searchAgain(): void {
+    this.leaveGuide();
+    this.ui.toInput.focus();
+    this.ui.toInput.select();
+  }
+
+  private leaveGuide(): void {
+    this.explorer.stopGuide();
+    this.explorer.frameAll();
+  }
+
   /** Nearest graph node to the avatar (on the avatar's level band). Virtual, never GPS. */
   private originFromAvatar(): void {
     // The avatar belongs to the scene: until the new station's scene is up it still stands in the old one.
@@ -642,7 +675,18 @@ export class App {
       });
       const stop = el("button", "ghost", t.exitGuide);
       stop.addEventListener("click", () => this.explorer.stopGuide());
-      row.append(pause, speed, stop);
+      const prev = el("button", "ghost guide-step guide-prev", "‹");
+      const next = el("button", "ghost guide-step guide-next", "›");
+      for (const [b, label, title, dir] of [[prev, t.guidePrev, t.guidePrevTitle, -1], [next, t.guideNext, t.guideNextTitle, 1]] as const) {
+        b.setAttribute("aria-label", label);
+        b.setAttribute("aria-keyshortcuts", dir < 0 ? "[ PageUp" : "] PageDown");
+        b.title = title;
+        b.addEventListener("click", () => this.jumpGuide(dir));
+      }
+      // One no-wrap group, so the phone row never splits the playback controls (the other buttons may wrap below it).
+      const group = el("div", "hud-guide");
+      group.append(prev, pause, next, speed, stop);
+      row.append(group);
     }
     const fp = el("button", "ghost", t.firstPerson);
     fp.classList.toggle("on", this.explorer.firstPersonOn);
@@ -663,7 +707,32 @@ export class App {
     });
     row.append(fp, net, ov, snd);
     hud.append(row);
+    this.syncGuideStep();
     this.trackInstruction();
+  }
+
+  /** Next is disabled on the last instruction (arrival); the arrival follow-up row shows only once the guide has arrived. */
+  private syncGuideStep(): void {
+    const hud = this.ui.hud;
+    const guiding = this.explorer.currentMode === "guide";
+    const next = hud.querySelector<HTMLButtonElement>("button.guide-next");
+    if (next) next.disabled = this.s.activeInstruction >= this.s.instructions.length - 1;
+    hud.querySelector(".hud-arrival")?.remove();
+    const row = hud.querySelector(".hud-row");
+    if (!guiding || !this.arrived || !row) return;
+    const t = this.t;
+    const after = el("div", "hud-row hud-arrival");
+    const again = el("button", "ghost search-again", t.searchAgain);
+    again.addEventListener("click", () => this.searchAgain());
+    // Not offered where the destination was not reached (the arrival toast says so): there is nothing to reverse back from.
+    if (!this.endsOnConnector()) {
+      const reverse = el("button", "reverse-route", t.reverseRoute);
+      reverse.disabled = !this.originPoi() || !this.s.destination;
+      reverse.addEventListener("click", () => this.reverseRoute());
+      after.append(reverse);
+    }
+    after.append(again);
+    row.before(after);
   }
 
   private instructionEl: Element | null = null;
@@ -693,6 +762,7 @@ export class App {
     else if (cur) cur.textContent = ins.text;
     else hud.prepend(el("div", "hud-instruction", ins.text));
     pause.textContent = this.explorer.guidePaused ? this.t.resume : this.t.pause;
+    this.syncGuideStep();
     this.announceInstruction();
     this.trackInstruction();
   }
@@ -720,8 +790,64 @@ export class App {
       this.s.activeInstruction = 1;
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === 1));
     }
+    this.guideStarts = instructionStartsM(this.s.polyline, this.s.instructions);
+    this.guideFirst = this.s.instructions[0]?.kind === "start" && this.s.instructions.length > 1 ? 1 : 0;
+    this.guideS = 0;
+    this.insClock.reset();
+    this.jumpPin = null;
+    this.arrived = false;
     this.guidePace = { totalM: polylineLengthM(this.s.polyline), spans };
     this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans);
+  }
+
+  /** Per guide run: where each instruction starts (m), the first one the guide shows, and how far the guide has got. */
+  private guideStarts: number[] = [];
+  private guideFirst = 0;
+  private guideS = 0;
+  /** Guide time (not counting pauses or arrival) spent in the active instruction, for Previous's restart rule. */
+  private readonly insClock = new StepClock();
+  /** After a jump: the distance the guide landed at; the active instruction stays as chosen until the guide moves off it. */
+  private jumpPin: number | null = null;
+  private arrived = false;
+
+  /**
+   * Previous / Next: jump the guide to an instruction's start. Only the guide distance moves (explorer.seekGuide); the
+   * avatar, camera and wait stops follow through the guide's normal per-frame path. Pause state is kept.
+   */
+  private jumpGuide(dir: 1 | -1): void {
+    if (this.explorer.currentMode !== "guide") return;
+    const j = jumpTarget(this.guideS, this.guideStarts, dir, this.insClock.elapsedS, this.s.activeInstruction, this.guideFirst);
+    if (!j) return;
+    this.s.activeInstruction = j.index;
+    this.explorer.seekGuide(j.s, firstStopFor(this.guideWaits, j.index));
+    this.guideS = j.s;
+    this.insClock.reset();
+    this.jumpPin = j.s;
+    const last = this.s.instructions.length - 1;
+    this.arrived = j.index === last && this.s.instructions[last]?.kind === "arrive";
+    this.updateGuideHud();
+    this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === j.index));
+    if (this.arrived) this.toast(this.arrivalText(), 2500);
+  }
+
+  /** A route ending on a stair/escalator/ramp connector has not reached the destination: the last instruction says so. */
+  private endsOnConnector(): boolean {
+    return !!this.s.instructions[this.s.instructions.length - 1]?.connector;
+  }
+
+  private arrivalText(): string {
+    return this.endsOnConnector() ? this.s.instructions[this.s.instructions.length - 1]!.text : this.t.arrived;
+  }
+
+  /** `[` / `]` or PageUp / PageDown step the guide; never while typing in a field or with a dialog open. */
+  private bindGuideKeys(): void {
+    window.addEventListener("keydown", (e) => {
+      const action = guideKeyAction(e);
+      if (!action || this.explorer.currentMode !== "guide" || this.ui.coverage.open) return;
+      if ((e.target as HTMLElement | null)?.closest?.("input, textarea, select, [contenteditable]")) return;
+      e.preventDefault();
+      this.jumpGuide(action === "next" ? 1 : -1);
+    });
   }
 
   /** The guide reached a wait: it is paused there, and the wait stays the active instruction until resumed. */
@@ -729,25 +855,32 @@ export class App {
     const wait = this.guideWaits[index];
     if (wait === undefined) return;
     this.s.activeInstruction = wait;
+    this.insClock.reset();
     this.updateGuideHud();
     this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === wait));
     this.toast(this.s.instructions[wait]!.text, 4000);
   }
 
-  private onGuideProgress(p: { stepIndex: number; done: boolean }): void {
+  private onGuideProgress(p: { s: number; stepIndex: number; done: boolean }): void {
+    // Guide time stops while paused and at arrival (the guide stays in guide mode there; Previous must not read that as time spent).
+    this.insClock.tick(performance.now(), !this.explorer.guidePaused && !this.arrived && !p.done);
+    this.guideS = p.s;
+    // Just after a jump the guide stands on the instruction's first point, which still reports the previous step: keep the chosen one.
+    if (this.jumpPin !== null) {
+      if (!p.done && Math.abs(p.s - this.jumpPin) < 0.05) return;
+      this.jumpPin = null;
+    }
     // Stopped at a wait (onGuideStop): it stays the active instruction until the guide is resumed.
     if (this.s.instructions[this.s.activeInstruction]?.kind === "wait" && this.explorer.guidePaused) return;
     const idx = this.s.instructions.findIndex((ins) => ins.stepIndexes.includes(p.stepIndex));
     const next = p.done ? this.s.instructions.length - 1 : idx;
     if (next >= 0 && next !== this.s.activeInstruction) {
       this.s.activeInstruction = next;
+      this.insClock.reset();
+      this.arrived = p.done;
       this.updateGuideHud();
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === next));
-      if (p.done) {
-        // A route ending on a stair/escalator/ramp connector has not reached the destination: say so.
-        const last = this.s.instructions[this.s.instructions.length - 1];
-        this.toast(last?.connector ? last.text : this.t.arrived, 2500);
-      }
+      if (p.done) this.toast(this.arrivalText(), 2500);
     }
   }
 
@@ -835,7 +968,7 @@ export class App {
       instructions: () => this.s.instructions.map((i) => i.text),
       mode: () => this.explorer.currentMode,
       startGuide: () => this.startGuide(),
-      guideControls: () => ({ paused: this.explorer.guidePaused, tier: this.explorer.guideTier, speed: guideTierSpeed(this.explorer.guideTier) }),
+      guideControls: () => ({ paused: this.explorer.guidePaused, tier: this.explorer.guideTier, speed: guideTierSpeed(this.explorer.guideTier), instruction: this.s.activeInstruction, distanceM: this.guideS, arrived: this.arrived }),
       hud: () => [...this.ui.hud.querySelectorAll("button")].map((b) => b.textContent),
       labels: () => this.explorer.labelInfo(),
       quality: () => this.explorer.qualityLevel,
