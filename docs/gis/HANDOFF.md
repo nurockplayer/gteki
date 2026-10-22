@@ -280,6 +280,8 @@ Decision (station lead, GitHub #39 comment 6324045059), implemented as written. 
 
 ### Shinjuku: committed receipts
 
+**Graph ids (#129).** Receipts are public, so graph node ids (`window.graph.selected[].id`, `connector_node_ids`, `added_beyond_kind_and_floor`) are hashes (`{ value_sha256, value_type }`) unless the station context config sets `graph_literal_source_id` to a class (a) source or `gteki-authored`; missing or unknown config hashes. Shinjuku = the class (b) E27 network source (hashed), Ikebukuro = `gteki-authored` (its graph is hand-authored; unchanged). The sidecar in the store keeps the verbatim ids. Until the next container run regenerates the four Shinjuku receipts below, they carry the ids in the `gis scrub-literals` form (`n:value_sha256:<hash of the E27 node_id>` strings), which `check-literals` accepts; the regenerated receipts use the object form.
+
 Four receipts from a capped-container run (`docs/gis/context/context-shinjuku-r0-x300-shinjuku-station-enu-v0-*.json`, tool fingerprint `2c04ead5…`, frame `shinjuku-station-enu-v0`, `kinds ["bldg"]`, `exit_neighbour_radius_m` 30, credit 「…（建物の基部を地表面の高さにそろえて表示）」 with `attribution_decision` #39 comment 6324813261). 8,794 buildings in the four meshes, 8,274 outside the window, 520 converted, 0 excluded, all from `53394525` (430) and `53394526` (90); `53394535`/`53394536` are read (the discs plus margin touch them) but select none.
 
 | variant | merge | draws | triangles | max per draw | bytes | sha256 | run id suffix |

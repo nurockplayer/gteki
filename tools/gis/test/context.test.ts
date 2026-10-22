@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NodeIO } from '@gltf-transform/core';
 import * as common from '../src/common.js';
-import { assertMeshCoverage, bboxIntersectsDisc, HEIGHT_BASIS_FLATTENED, HEIGHT_BASIS_TP, GROUND_BASES, groundOffsetStats, spreadStats, buildContextGlb, contextGlb, contextMergedName, contextRunDigest, contextNodeName, EXPLORER_ROLE_WORDS, explorerRoleFromName, loadContextConfig, parseKinds, parseMergeSpec, type ContextInput, type ContextVariant, type MergeSpec } from '../src/context.js';
+import { assertMeshCoverage, bboxIntersectsDisc, HEIGHT_BASIS_FLATTENED, HEIGHT_BASIS_TP, GROUND_BASES, groundOffsetStats, spreadStats, buildContextGlb, contextGlb, contextMergedName, contextRunDigest, contextNodeName, EXPLORER_ROLE_WORDS, explorerRoleFromName, loadContextConfig, graphIdsMayStayVerbatim, GRAPH_LITERALS_GTEKI_AUTHORED, publicContextReceipt, parseKinds, parseMergeSpec, type ContextInput, type ContextVariant, type MergeSpec } from '../src/context.js';
 import { bboxIntersectsAnyDisc, buildContextWindow, meshCellBounds, meshCode3, meshesTouchedByWindow, readGraphWindowNodes, type NodeRule } from '../src/context-window.js';
 import { scanContextFeatures, type ContextFeatureRecord, type ContextKind } from '../src/context-scan.js';
 import { loadFrame } from '../src/crs.js';
@@ -1121,6 +1121,122 @@ describe('Shinjuku: config, sources and the full command wrapper', () => {
     // exit_neighbour_radius_m 30 from the config: one entry per window POI; no fixture building lies within 30 m of the real connectors.
     expect(receipt.exit_neighbours).toMatchObject({ radius_m: 30 });
     expect(receipt.exit_neighbours.pois.map((p: { poi_id: string; count: number }) => [p.poi_id, p.count])).toEqual(SJ_EXIT_IDS.map((id) => [id, 0]));
+  });
+
+  describe('graph node ids in the committed receipt (class (b) E27 ids are hashed, issue #129)', () => {
+    const E27_ID = /n:[0-9a-f]{32}/;
+    /** One Shinjuku run on the fixture building mesh with the config field replaced (`null` removes it). Returns the receipt as written and the store sidecar. */
+    async function runShinjuku(graphLiteralSourceId: string | null) {
+      const dir = await mkdtemp(join(tmpdir(), 'gteki-context-sj-ids-')); dirs.push(dir);
+      const manifest = new Map(loadSources().map((s) => [s.source_id, s]));
+      vi.spyOn(common, 'getStoredSource').mockImplementation(async (id: string) => ({ path: fixture('context-bldg-shinjuku.xml'), record: { source_id: id, sha256: createHash('sha256').update(id).digest('hex') }, source: manifest.get(id)! }) as Awaited<ReturnType<typeof common.getStoredSource>>);
+      vi.spyOn(common, 'getStoreRoot').mockReturnValue(dir);
+      const originalRead = common.readJson, originalWrite = common.writeJson;
+      vi.spyOn(common, 'readJson').mockImplementation((async (path: string) => {
+        const value = await originalRead<Record<string, unknown>>(path);
+        if (!path.endsWith(join('sources', 'context', 'shinjuku.json'))) return value;
+        const { graph_literal_source_id: _removed, ...rest } = value;
+        return graphLiteralSourceId === null ? rest : { ...rest, graph_literal_source_id: graphLiteralSourceId };
+      }) as typeof common.readJson);
+      vi.spyOn(common, 'writeJson').mockImplementation(async (path, value) => originalWrite(path.startsWith(common.docsRoot) ? join(dir, 'docs', relative(common.docsRoot, path)) : path, value));
+      const summary = await contextGlb('shinjuku');
+      const receiptText = await readFile(join(dir, 'docs', 'gis', 'context', `${summary.run_id}.json`), 'utf8');
+      const sidecarText = await readFile(join(dir, summary.sidecar_path), 'utf8');
+      return { summary, receipt: JSON.parse(receiptText), receiptText, sidecar: JSON.parse(sidecarText), sidecarText };
+    }
+    const graphExists = async (): Promise<boolean> => (await readFile(join(fileURLToPath(new URL('../../../stations/shinjuku/gteki/', import.meta.url)), 'graph.json')).catch(() => null)) !== null;
+    const hashOf = (id: string): { value_sha256: string; value_type: 'string' } => ({ value_sha256: createHash('sha256').update(id, 'utf8').digest('hex'), value_type: 'string' });
+    const SJ_NODE_IDS = ['n:4423521d79e54865b7c41e4aec29826d', 'n:a06f3d191885497bac197b666c4daef9', 'n:e4cfe61e944e4f5e8ad8caeb6d521750', 'n:e6feaa2cc7514b68be2758b956baeb28'];
+
+    it('is configured per station: Shinjuku names the class (b) E27 network source, Ikebukuro its hand-authored graph', async () => {
+      const shinjuku = await loadContextConfig('shinjuku'), ikebukuro = await loadContextConfig('ikebukuro');
+      expect(shinjuku.graph_literal_source_id).toBe('hokonavi-oedo-shinjuku-network-geojson');
+      expect(graphIdsMayStayVerbatim(shinjuku.graph_literal_source_id)).toBe(false);
+      expect(ikebukuro.graph_literal_source_id).toBe(GRAPH_LITERALS_GTEKI_AUTHORED);
+      expect(graphIdsMayStayVerbatim(ikebukuro.graph_literal_source_id)).toBe(true);
+    });
+
+    it('keeps ids verbatim only for GTEki-authored or a class (a) source; missing, class (b), unknown or empty text hash', () => {
+      expect(graphIdsMayStayVerbatim(GRAPH_LITERALS_GTEKI_AUTHORED)).toBe(true);
+      expect(graphIdsMayStayVerbatim('hokonavi-ikebukuro-walk-node-csv')).toBe(true); // class (a)
+      expect(graphIdsMayStayVerbatim(undefined)).toBe(false);
+      expect(graphIdsMayStayVerbatim('hokonavi-oedo-shinjuku-network-geojson')).toBe(false); // class (b)
+      expect(graphIdsMayStayVerbatim('plateau-13104-codelists')).toBe(false); // class (b)
+      expect(graphIdsMayStayVerbatim('not-a-listed-source')).toBe(false);
+      expect(graphIdsMayStayVerbatim('')).toBe(false);
+      expect(graphIdsMayStayVerbatim('GTEKI-AUTHORED')).toBe(false);
+    });
+
+    it('rejects a non-string or blank graph_literal_source_id in a config file at load time', async () => {
+      const original = common.readJson;
+      for (const bad of [7, '  ', null]) {
+        vi.spyOn(common, 'readJson').mockImplementation((async (path: string) => ({ ...(await original<Record<string, unknown>>(path)), graph_literal_source_id: bad })) as typeof common.readJson);
+        await expect(loadContextConfig('shinjuku')).rejects.toThrow(/graph_literal_source_id must be a non-empty string/);
+        vi.restoreAllMocks();
+      }
+    });
+
+    it('publicContextReceipt hashes whole-string ids anywhere (values, arrays, nested), is deterministic and leaves everything else alone', () => {
+      const receipt = { a: 'n:keep', ids: ['n:x1', 'n:x2'], deep: { list: [{ id: 'n:x1', floor_id: 'toei-nwd-0', note: 'text' }] }, number: 3 };
+      const out = publicContextReceipt(receipt, ['n:x1', 'n:x2'], false);
+      expect(out).toEqual({ a: 'n:keep', ids: [hashOf('n:x1'), hashOf('n:x2')], deep: { list: [{ id: hashOf('n:x1'), floor_id: 'toei-nwd-0', note: 'text' }] }, number: 3 });
+      expect(JSON.stringify(publicContextReceipt(receipt, ['n:x2', 'n:x1'], false))).toBe(JSON.stringify(out));
+      expect(receipt.ids).toEqual(['n:x1', 'n:x2']); // the input (the sidecar's data) is not mutated
+      expect(publicContextReceipt(receipt, ['n:x1'], true)).toBe(receipt);
+      expect(publicContextReceipt(receipt, [], false)).toBe(receipt);
+    });
+
+    it('publicContextReceipt refuses to write when an id would survive inside a longer string or as a key', () => {
+      expect(() => publicContextReceipt({ message: 'node n:x1 is dangling' }, ['n:x1'], false)).toThrow(/still contains a graph node id/);
+      expect(() => publicContextReceipt({ 'n:x1': 1 }, ['n:x1'], false)).toThrow(/still contains a graph node id/);
+    });
+
+    it('class (b) config: the receipt carries the 4 connector ids only as { value_sha256, value_type } (selected, connector_node_ids); the sidecar keeps them verbatim', async () => {
+      if (!(await graphExists())) return;
+      const { summary, receipt, receiptText, sidecar, sidecarText } = await runShinjuku('hokonavi-oedo-shinjuku-network-geojson');
+      expect(receiptText).not.toMatch(E27_ID);
+      expect(JSON.stringify(summary)).not.toMatch(E27_ID); // the returned object is the committed form
+      expect(receipt.window.graph.selected.map((n: { id: unknown }) => n.id)).toEqual(SJ_NODE_IDS.map(hashOf));
+      expect(receipt.window.graph.selected.map((n: { kind: string; floor_id: string; matched_by: string[]; poi_ids: string[] }) => [n.kind, n.floor_id, n.matched_by, n.poi_ids.length])).toEqual([['exit', 'toei-nwd-0', ['poi_id'], 1], ['exit', 'toei-nwd-0', ['poi_id'], 1], ['exit', 'toei-nwd-0', ['poi_id'], 1], ['exit', 'toei-nwd-1', ['poi_id'], 1]]);
+      const connectors = receipt.exit_neighbours.pois.map((p: { poi_id: string; connector_node_ids: unknown[] }) => [p.poi_id, p.connector_node_ids]);
+      expect(connectors).toEqual([['poi:exit:1', [hashOf('n:a06f3d191885497bac197b666c4daef9')]], ['poi:exit:2', [hashOf('n:4423521d79e54865b7c41e4aec29826d')]], ['poi:exit:3', [hashOf('n:e6feaa2cc7514b68be2758b956baeb28')]], ['poi:exit:4', [hashOf('n:e4cfe61e944e4f5e8ad8caeb6d521750')]]]);
+      expect(receipt.window.graph.graph_sha256).toMatch(/^[0-9a-f]{64}$/); // file hash, not a literal
+      expect(sidecar.window.graph.selected.map((n: { id: string }) => n.id)).toEqual(SJ_NODE_IDS);
+      expect(sidecar.exit_neighbours.pois.flatMap((p: { connector_node_ids: string[] }) => p.connector_node_ids).sort()).toEqual(SJ_NODE_IDS);
+      for (const id of SJ_NODE_IDS) { expect(sidecarText).toContain(id); expect(receiptText).not.toContain(id); }
+      // Everything but the ids is identical: the receipt is the sidecar's data with the ids replaced.
+      expect(receipt.feature_table_sha256).toBe(sidecar.feature_table_sha256);
+      expect(receipt.run_id).toBe(sidecar.run_id);
+    });
+
+    it('class (a) or GTEki-authored config keeps the ids verbatim in the receipt', async () => {
+      if (!(await graphExists())) return;
+      for (const source of ['hokonavi-ikebukuro-walk-node-csv', GRAPH_LITERALS_GTEKI_AUTHORED]) {
+        const { receipt, receiptText } = await runShinjuku(source);
+        expect(receipt.window.graph.selected.map((n: { id: string }) => n.id), source).toEqual(SJ_NODE_IDS);
+        expect(receipt.exit_neighbours.pois.flatMap((p: { connector_node_ids: string[] }) => p.connector_node_ids).sort(), source).toEqual(SJ_NODE_IDS);
+        expect(receiptText, source).toContain(SJ_NODE_IDS[0]!);
+        vi.restoreAllMocks();
+      }
+    });
+
+    it('missing config hashes, as do unknown ids and class (b) sources other than the network one', async () => {
+      if (!(await graphExists())) return;
+      for (const source of [null, 'not-a-listed-source', 'hokonavi-oedo-shinjuku-stationmap-geojson', 'plateau-13104-codelists']) {
+        const { receipt, receiptText } = await runShinjuku(source);
+        expect(receiptText, String(source)).not.toMatch(E27_ID);
+        expect(receipt.window.graph.selected.map((n: { id: unknown }) => n.id), String(source)).toEqual(SJ_NODE_IDS.map(hashOf));
+        vi.restoreAllMocks();
+      }
+    });
+
+    it('the run id does not depend on the receipt form: the graph file hash is already in the digest, so class (b) and class (a) runs name the same artifact', async () => {
+      if (!(await graphExists())) return;
+      const hashed = await runShinjuku('hokonavi-oedo-shinjuku-network-geojson'); vi.restoreAllMocks();
+      const kept = await runShinjuku(GRAPH_LITERALS_GTEKI_AUTHORED);
+      expect(hashed.summary.run_id).toBe(kept.summary.run_id);
+      expect(hashed.receipt.output_sha256).toBe(kept.receipt.output_sha256);
+    });
   });
 
   it('fails closed before reading any source when a needed Shinjuku mesh source is missing from the run', async () => {

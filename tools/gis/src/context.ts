@@ -8,6 +8,8 @@ import { stationEnuProjector, stationHorizontal, stationLocal, projectorOrigin, 
 import { scanContextFeatures, type ContextFeatureRecord, type ContextKind, type RetainedPolygon, type ContextScanSummary, type LodDigit } from './context-scan.js';
 import { triangulate } from './triangulate.js';
 import { toolFingerprint } from './provenance.js';
+import { LITERAL_CLASSES } from './literal-classes.js';
+import { hashedValue } from './literal-public.js';
 import { bboxIntersectsAnyDisc, bboxIntersectsCircle, buildContextWindow, meshesTouchedByWindow, missingMeshSources, windowRuleFor, WINDOW_RULE, WINDOW_RULE_POI_IDS, type ContextWindow, type Disc, type NodeRule } from './context-window.js';
 
 /** Bump when the selection, LOD, window or merge rules change; part of the run id. */
@@ -484,6 +486,34 @@ export interface StationContextConfig {
   attribution_text?: string;
   /** https URL of the decision that fixed attribution_text (recorded in the receipt). */
   attribution_decision?: string;
+  /**
+   * Who owns the text of the station graph's node ids (`graph.json` `nodes[].id`), so the committed receipt knows whether it may quote them.
+   * Either a `source_id` of LITERAL_CLASSES (class (a): ids stay verbatim in the receipt; class (b) or an id that is not listed: ids become
+   * `{ value_sha256, value_type }`) or `gteki-authored` (the ids are names GTEki minted; no third-party text). Absent or anything else = hashed.
+   */
+  graph_literal_source_id?: string;
+}
+/** `graph_literal_source_id` value for a graph whose ids GTEki wrote itself (Ikebukuro: hand-authored `data/graph.src.json`). */
+export const GRAPH_LITERALS_GTEKI_AUTHORED = 'gteki-authored';
+/** True only when the configured source is GTEki-authored or listed as class (a) in LITERAL_CLASSES. Missing, class (b) or unknown: false (hash). */
+export function graphIdsMayStayVerbatim(sourceId: string | undefined): boolean {
+  if (sourceId === undefined) return false;
+  return sourceId === GRAPH_LITERALS_GTEKI_AUTHORED || LITERAL_CLASSES.some((entry) => entry.source_id === sourceId && entry.class === 'a');
+}
+/**
+ * Committed form of a context receipt (docs/gis, public): every string that equals a graph node id of the window becomes `hashedValue(id)`
+ * unless `keepVerbatim`. The store sidecar and GLB keep the verbatim ids. Fails closed: if an id is still in the JSON text afterwards
+ * (as a key or inside a longer string), nothing is written.
+ */
+export function publicContextReceipt<T>(receipt: T, graphNodeIds: readonly string[], keepVerbatim: boolean): T {
+  const ids = new Set(graphNodeIds.filter((id) => id !== ''));
+  if (keepVerbatim || ids.size === 0) return receipt;
+  const walk = (value: unknown): unknown => typeof value === 'string' ? (ids.has(value) ? hashedValue(value) : value)
+    : Array.isArray(value) ? value.map(walk)
+    : value !== null && typeof value === 'object' ? Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, entry]) => [key, walk(entry)])) : value;
+  const out = walk(receipt), text = JSON.stringify(out);
+  for (const id of ids) if (text.includes(id)) throw new Error('The context receipt still contains a graph node id outside a whole-string value; refusing to write a verbatim class (b) id to docs/gis');
+  return out as T;
 }
 export async function loadContextConfig(station: string): Promise<StationContextConfig> {
   if (!STATION_ENU_FRAME_ID_PATTERN.test(station)) throw new Error(`Invalid station id: ${station}`);
@@ -497,6 +527,7 @@ export async function loadContextConfig(station: string): Promise<StationContext
   if (config.kinds !== undefined) parseKinds(config.kinds);
   if (config.ground_height_attributes !== undefined && (!Array.isArray(config.ground_height_attributes) || config.ground_height_attributes.some((n) => typeof n !== 'string' || n === ''))) throw new Error(`Context config for ${station}: ground_height_attributes must be an array of attribute names`);
   if (config.exit_neighbour_radius_m !== undefined && (typeof config.exit_neighbour_radius_m !== 'number' || !Number.isFinite(config.exit_neighbour_radius_m) || config.exit_neighbour_radius_m <= 0 || config.exit_neighbour_radius_m > 500)) throw new Error(`Context config for ${station}: exit_neighbour_radius_m must be a number of metres in (0, 500]`);
+  if (config.graph_literal_source_id !== undefined && (typeof config.graph_literal_source_id !== 'string' || !config.graph_literal_source_id.trim())) throw new Error(`Context config for ${station}: graph_literal_source_id must be a non-empty string`);
   if ((config.attribution_text === undefined) !== (config.attribution_decision === undefined)) throw new Error(`Context config for ${station}: attribution_text and attribution_decision must be given together`);
   if (config.attribution_text !== undefined && (typeof config.attribution_text !== 'string' || !config.attribution_text.trim() || typeof config.attribution_decision !== 'string' || !/^https:\/\/\S+$/.test(config.attribution_decision))) throw new Error(`Context config for ${station}: attribution_text must be a non-empty string and attribution_decision an https URL`);
   return config;
@@ -594,6 +625,8 @@ export async function contextGlb(station: string, options: ContextRunOptions = {
     elapsed_ms: Math.round(performance.now() - started), peak_rss_bytes: process.resourceUsage().maxRSS * 1024,
   };
   // Context receipts live beside, not inside, docs/gis/conversions so real-run/summarize never mistake them for ubld conversions.
-  await writeJson(join(docsRoot, 'gis', 'context', `${runId}.json`), summary);
-  return summary;
+  // Graph node ids are Hokonavi E27 text for Shinjuku (class (b)): the committed receipt carries them as hashes, the sidecar above keeps them.
+  const receipt = publicContextReceipt(summary, (window.graph?.selected ?? []).map((n) => n.id), graphIdsMayStayVerbatim(config.graph_literal_source_id));
+  await writeJson(join(docsRoot, 'gis', 'context', `${runId}.json`), receipt);
+  return receipt;
 }

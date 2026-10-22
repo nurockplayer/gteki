@@ -114,7 +114,7 @@
       },
       "selected": [
         {
-          "id": "n:4423521d79e54865b7c41e4aec29826d",
+          "id": "n:value_sha256:f99dfe3d77cc6abf154aad9e53298a422d6bc1c3078e17c01e3ba11ad36dcdec",
           "kind": "exit",
           "floor_id": "toei-nwd-0",
           "x": -58.1,
@@ -128,7 +128,7 @@
           ]
         },
         {
-          "id": "n:a06f3d191885497bac197b666c4daef9",
+          "id": "n:value_sha256:0f85d03a840463d557f7232a5e15737028fdb75ec09f9f9c4ba148154fefc7c3",
           "kind": "exit",
           "floor_id": "toei-nwd-0",
           "x": -59.9,
@@ -142,7 +142,7 @@
           ]
         },
         {
-          "id": "n:e4cfe61e944e4f5e8ad8caeb6d521750",
+          "id": "n:value_sha256:6e5fef8ec599a4bf8d33242c1361d34e348dbda2001e2c645ca088b511d57e72",
           "kind": "exit",
           "floor_id": "toei-nwd-0",
           "x": 2.85,
@@ -156,7 +156,7 @@
           ]
         },
         {
-          "id": "n:e6feaa2cc7514b68be2758b956baeb28",
+          "id": "n:value_sha256:9a8d2b3d6baddce67203ac3a648b94512b8494135a2a20260eef920cddd76eb4",
           "kind": "exit",
           "floor_id": "toei-nwd-1",
           "x": -2.59,
@@ -445,7 +445,7 @@
       {
         "poi_id": "poi:exit:1",
         "connector_node_ids": [
-          "n:a06f3d191885497bac197b666c4daef9"
+          "n:value_sha256:0f85d03a840463d557f7232a5e15737028fdb75ec09f9f9c4ba148154fefc7c3"
         ],
         "count": 10,
         "ground_height_m": {
@@ -476,7 +476,7 @@
       {
         "poi_id": "poi:exit:2",
         "connector_node_ids": [
-          "n:4423521d79e54865b7c41e4aec29826d"
+          "n:value_sha256:f99dfe3d77cc6abf154aad9e53298a422d6bc1c3078e17c01e3ba11ad36dcdec"
         ],
         "count": 3,
         "ground_height_m": {
@@ -500,7 +500,7 @@
       {
         "poi_id": "poi:exit:3",
         "connector_node_ids": [
-          "n:e6feaa2cc7514b68be2758b956baeb28"
+          "n:value_sha256:9a8d2b3d6baddce67203ac3a648b94512b8494135a2a20260eef920cddd76eb4"
         ],
         "count": 6,
         "ground_height_m": {
@@ -527,7 +527,7 @@
       {
         "poi_id": "poi:exit:4",
         "connector_node_ids": [
-          "n:e4cfe61e944e4f5e8ad8caeb6d521750"
+          "n:value_sha256:6e5fef8ec599a4bf8d33242c1361d34e348dbda2001e2c645ca088b511d57e72"
         ],
         "count": 6,
         "ground_height_m": {
