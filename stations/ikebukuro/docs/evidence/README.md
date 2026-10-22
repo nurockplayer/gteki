@@ -2,7 +2,7 @@
 
 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成
 
-Contains PLATEAU data (MLIT), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), modified by GTEki (reprojected to a local ENU frame, triangulated and re-encoded; see `station.json` source `plateau-ubld-13116`).
+Modified by GTEki (reprojected to a local ENU frame, triangulated and re-encoded; see `station.json` source `plateau-ubld-13116`).
 
 ## What these are
 
