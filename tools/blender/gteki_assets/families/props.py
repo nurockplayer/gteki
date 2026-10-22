@@ -281,6 +281,8 @@ def poster_lightbox(asset_id, params, tex_res):
     materials.register(mname, image=rel, emit_image=True, emit_strength=1.2, rough=0.15)
     a = _asset(asset_id, "gteki_", p, tex_res, basis=contract.GENERIC_TYPICAL,
                notes="Poster area defaults to the widely published B1 sheet (0.73 x 1.03 m) inside a 35 mm frame; poster art maps with cover-fit crop of a 2:3 image. Back plane at y=0.")
+    if not rights:  # the kit's own AI posters (CC0-1.0) inside original CC-BY-4.0 geometry
+        a.license_spdx = f"{contract.LICENSE_SPDX} AND {contract.AI_IMAGE_SPDX}"
     if rights:
         a.provenance = f"{contract.PROVENANCE}; poster image {rel}: {rights[0]}"
         a.license = f"poster image: {rights[1]}; everything else: {contract.LICENSE}"
