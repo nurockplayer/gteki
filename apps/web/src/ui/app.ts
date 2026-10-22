@@ -14,6 +14,8 @@ import { factsOnlyCredit, sourceCredit } from "../credits.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { LiveRegion, routeLiveMessage, searchLiveMessage } from "./live.ts";
 import { watchReducedMotion } from "./motion.ts";
+import { railDemoLink } from "./railTravel.ts";
+import { RailRideDemo } from "./railRideDemo.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -65,6 +67,7 @@ export class App {
     route: null, polyline: [], instructions: [], activeInstruction: 0,
   };
   private explorer!: Explorer;
+  private railRide: RailRideDemo | null = null;
   private readonly ui = {
     stationSelect: el("select", "station-select"),
     banner: el("div", "banner"),
@@ -80,6 +83,7 @@ export class App {
     toast: el("div", "toast"),
     langBtn: el("button", "ghost lang"),
     coverageBtn: el("button", "ghost"),
+    railBtn: el("button", "ghost rail-launch"),
     hint: el("div", "hint"),
     panel: el("section", "panel"),
     more: el("button", "ghost more", "⋯"),
@@ -138,8 +142,10 @@ export class App {
       this.refreshAll();
     });
     this.ui.coverageBtn.addEventListener("click", () => this.openCoverage());
+    this.ui.railBtn.hidden = true;
+    this.ui.railBtn.addEventListener("click", () => this.startRailRide());
     const actions = el("div", "top-actions");
-    actions.append(this.ui.coverageBtn, this.ui.langBtn);
+    actions.append(this.ui.railBtn, this.ui.coverageBtn, this.ui.langBtn);
     top.append(brand, this.ui.stationSelect, actions);
 
     const panel = this.ui.panel;
@@ -165,6 +171,8 @@ export class App {
     this.ui.langBtn.textContent = t.language;
     this.ui.langBtn.dataset.short = this.s.lang === "ja" ? "EN" : "日本語";
     this.ui.coverageBtn.textContent = t.coverage;
+    this.ui.railBtn.textContent = this.s.lang === "ja" ? "電車に乗る" : "Ride train";
+    this.ui.railBtn.title = this.s.lang === "ja" ? "埼京線 乗車デモ（仮設ホーム）" : "JR Saikyo ride demo (temporary platform)";
     this.ui.more.setAttribute("aria-label", t.options);
     this.ui.fromInput.placeholder = t.fromPlaceholder;
     this.ui.toInput.placeholder = t.toPlaceholder;
@@ -218,7 +226,9 @@ export class App {
   /** True only once the selected station's data and scene are both current; endpoint controls wait for it. */
   private stationReady = false;
 
-  private async openStation(entry: StationEntry, fromId?: string | null, toId?: string | null): Promise<void> {
+  private async openStation(entry: StationEntry, fromId?: string | null, toId?: string | null, fromRide = false): Promise<void> {
+    if (!fromRide) { this.railRide?.dispose(); this.railRide = null; }
+    this.ui.railBtn.hidden = true;
     // A later selection supersedes this one: never let a slow station overwrite the one now selected.
     const generation = ++this.openGeneration;
     const current = () => generation === this.openGeneration;
@@ -260,6 +270,7 @@ export class App {
       return;
     }
     this.stationReady = true;
+    this.ui.railBtn.hidden = railDemoLink(entry.key) === null;
     const pois = this.s.loaded.bundle.pois;
     const from = pois.find((p) => p.id === fromId);
     const to = pois.find((p) => p.id === toId);
@@ -267,6 +278,32 @@ export class App {
     if (to) this.s.destination = to;
     this.refreshAll();
     this.updateUrl();
+  }
+
+  /** Short playable JR Saikyo demo: a ride scene, not a surveyed station-to-platform path. */
+  private startRailRide(): void {
+    if (!this.stationReady || this.railRide) return;
+    const link = railDemoLink(this.s.entry?.key ?? "");
+    const destination = this.s.entries.find((e) => e.key === link?.to);
+    if (!link || !destination) return;
+    try {
+      this.railRide = new RailRideDemo(
+        this.root, link, this.s.lang,
+        async () => {
+          await this.openStation(destination, undefined, undefined, true);
+          if (!this.stationReady || this.s.entry?.key !== destination.key || !this.s.loaded) return false;
+          // Arrive at a known playable station spawn, NOT at an invented JR platform coordinate.
+          const node = this.s.loaded.bundle.spawnNodeIds?.[0];
+          if (node) this.explorer.walkFromNode(this.s.loaded.bundle, node);
+          return true;
+        },
+        () => { this.railRide = null; },
+      );
+    } catch (error) {
+      this.railRide?.dispose();
+      this.railRide = null;
+      this.toast(String(error), 5000);
+    }
   }
 
   private showLoadError(err: unknown): void {
