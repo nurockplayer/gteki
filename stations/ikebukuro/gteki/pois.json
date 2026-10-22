@@ -43,6 +43,22 @@
     {
      "lang": "zh-Hant",
      "text": "22號出口"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ひがしぐち"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ひがしぐちきた"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Higashiguchi"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Higashiguchi (Kita)"
     }
    ],
    "floorId": "street",
@@ -510,6 +526,22 @@
     {
      "lang": "zh-Hant",
      "text": "37號出口"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ひがしぐち"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ひがしぐちちゅうおう"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Higashiguchi"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Higashiguchi (Chuo)"
     }
    ],
    "floorId": "street",
@@ -722,6 +754,22 @@
     {
      "lang": "zh-Hant",
      "text": "38號出口"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ひがしぐち"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ひがしぐちみなみ"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Higashiguchi"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Higashiguchi (Minami)"
     }
    ],
    "floorId": "street",
@@ -883,6 +931,22 @@
     {
      "lang": "zh-Hant",
      "text": "19號出口"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "にしぐち"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "にしぐちちゅうおう"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Nishiguchi"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Nishiguchi (Chuo)"
     }
    ],
    "floorId": null,
@@ -1622,6 +1686,30 @@
     {
      "lang": "zh-Hant",
      "text": "JR 中央2號剪票口"
+    },
+    {
+     "lang": "ja",
+     "text": "JR東日本"
+    },
+    {
+     "lang": "en",
+     "text": "JR East"
+    },
+    {
+     "lang": "ja",
+     "text": "JR山手線"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "JR Chuo 2 kaisatsu"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Chuo 2 kaisatsu"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Chuo ni kaisatsu"
     }
    ],
    "floorId": "b1",
@@ -1678,6 +1766,26 @@
     {
      "lang": "zh-Hant",
      "text": "JR 中央1號剪票口"
+    },
+    {
+     "lang": "ja",
+     "text": "JR東日本"
+    },
+    {
+     "lang": "en",
+     "text": "JR East"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "JR Chuo 1 kaisatsu"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Chuo 1 kaisatsu"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Chuo ichi kaisatsu"
     }
    ],
    "floorId": "b1",
@@ -1722,6 +1830,54 @@
     {
      "lang": "en",
      "text": "Marunouchi"
+    },
+    {
+     "lang": "ja",
+     "text": "東京メトロ"
+    },
+    {
+     "lang": "ja",
+     "text": "メトロ"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro"
+    },
+    {
+     "lang": "en",
+     "text": "Metro"
+    },
+    {
+     "lang": "en",
+     "text": "M"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "まるのうちせん"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "丸之內線"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東京地下鐵"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東京Metro"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Marunouchi-sen Chuo-tsuro Nishi kaisatsu"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "まるのうちせんちゅうおうつうろにしかいさつ"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "丸之內線 中央通道西剪票口"
     }
    ],
    "floorId": "b1",
@@ -1757,6 +1913,54 @@
     {
      "lang": "en",
      "text": "Marunouchi"
+    },
+    {
+     "lang": "ja",
+     "text": "東京メトロ"
+    },
+    {
+     "lang": "ja",
+     "text": "メトロ"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro"
+    },
+    {
+     "lang": "en",
+     "text": "Metro"
+    },
+    {
+     "lang": "en",
+     "text": "M"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "まるのうちせん"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "丸之內線"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東京地下鐵"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東京Metro"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Marunouchi-sen Chuo-tsuro Chuo kaisatsu"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "まるのうちせんちゅうおうつうろちゅうおうかいさつ"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "丸之內線 中央通道中央剪票口"
     }
    ],
    "floorId": "b1",
@@ -1792,6 +1996,54 @@
     {
      "lang": "en",
      "text": "Marunouchi"
+    },
+    {
+     "lang": "ja",
+     "text": "東京メトロ"
+    },
+    {
+     "lang": "ja",
+     "text": "メトロ"
+    },
+    {
+     "lang": "en",
+     "text": "Tokyo Metro"
+    },
+    {
+     "lang": "en",
+     "text": "Metro"
+    },
+    {
+     "lang": "en",
+     "text": "M"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "まるのうちせん"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "丸之內線"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東京地下鐵"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東京Metro"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Marunouchi-sen Chuo-tsuro Higashi kaisatsu"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "まるのうちせんちゅうおうつうろひがしかいさつ"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "丸之內線 中央通道東剪票口"
     }
    ],
    "floorId": "b1",
@@ -1827,6 +2079,58 @@
     {
      "lang": "en",
      "text": "Tobu"
+    },
+    {
+     "lang": "ja",
+     "text": "東武鉄道"
+    },
+    {
+     "lang": "ja",
+     "text": "東上線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Railway"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo"
+    },
+    {
+     "lang": "en",
+     "text": "Tojo Line"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "とうぶとうじょうせん"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "とうじょうせん"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東武鐵道"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東武東上線"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Tobu Chuo 1 kaisatsu"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Tobu Tojo-sen Chuo 1 kaisatsu"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "とうぶとうじょうせんちゅうおういちかいさつ"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東武東上線 中央1號剪票口"
     }
    ],
    "floorId": "b1",
@@ -1862,6 +2166,58 @@
     {
      "lang": "en",
      "text": "Tobu"
+    },
+    {
+     "lang": "ja",
+     "text": "東武鉄道"
+    },
+    {
+     "lang": "ja",
+     "text": "東上線"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Railway"
+    },
+    {
+     "lang": "en",
+     "text": "Tobu Tojo"
+    },
+    {
+     "lang": "en",
+     "text": "Tojo Line"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "とうぶとうじょうせん"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "とうじょうせん"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東武鐵道"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東武東上線"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Tobu Chuo 2 kaisatsu"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Tobu Tojo-sen Chuo 2 kaisatsu"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "とうぶとうじょうせんちゅうおうにかいさつ"
+    },
+    {
+     "lang": "zh-Hant",
+     "text": "東武東上線 中央2號剪票口"
     }
    ],
    "floorId": "b1",
@@ -1905,6 +2261,10 @@
     {
      "lang": "zh-Hant",
      "text": "中央通道"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Chuo tsuro"
     }
    ],
    "floorId": "b1",
@@ -2218,6 +2578,22 @@
     {
      "lang": "zh-Hant",
      "text": "4號出口"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "にしぐち"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "にしぐちみなみ"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Nishiguchi"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Nishiguchi (Minami)"
     }
    ],
    "floorId": "b1",
@@ -2324,6 +2700,26 @@
     {
      "lang": "zh-Hant",
      "text": "JR 南剪票口"
+    },
+    {
+     "lang": "ja",
+     "text": "JR東日本"
+    },
+    {
+     "lang": "en",
+     "text": "JR East"
+    },
+    {
+     "lang": "ja",
+     "text": "JR山手線"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "JR Minami kaisatsu"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Minami kaisatsu"
     }
    ],
    "floorId": "b1",
@@ -2362,6 +2758,10 @@
     {
      "lang": "zh-Hant",
      "text": "北通道"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Kita tsuro"
     }
    ],
    "floorId": "b1",
@@ -2399,6 +2799,10 @@
     {
      "lang": "zh-Hant",
      "text": "南通道"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Minami tsuro"
     }
    ],
    "floorId": "b1",
@@ -2436,6 +2840,18 @@
     {
      "lang": "zh-Hant",
      "text": "東口（地下）"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Higashiguchi"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Higashiguchi (chika)"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "ひがしぐちちか"
     }
    ],
    "floorId": "b1",
@@ -2473,6 +2889,18 @@
     {
      "lang": "zh-Hant",
      "text": "西口（地下）"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Nishiguchi"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Nishiguchi (chika)"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "にしぐちちか"
     }
    ],
    "floorId": "b1",
@@ -2510,6 +2938,18 @@
     {
      "lang": "zh-Hant",
      "text": "西口（南）（地下）"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Nishiguchi Minami"
+    },
+    {
+     "lang": "ja-Latn",
+     "text": "Nishiguchi Minami (chika)"
+    },
+    {
+     "lang": "ja-Hrkt",
+     "text": "にしぐちみなみちか"
     }
    ],
    "floorId": "b1",
