@@ -77,7 +77,11 @@ async function selectFastTier(page: Page): Promise<string> {
   for (let n = 0; n < 3 && (await hooks.guideControls(page)).tier !== "fast"; n++) await speed.click();
   const tier = (await hooks.guideControls(page)).tier;
   expect(tier, "guide speed tier").toBe("fast");
-  await expect(speed).toContainText(`${FAST_MPS} m/s`);
+  // The button shows this route's effective pace (#92), at most the fast tier's top speed (as in 03).
+  await expect(speed).toContainText(/fast|早送り/i);
+  const pace = Number((await speed.textContent())?.match(/(\d+(?:\.\d+)?)\s*m\/s/)?.[1]);
+  expect(pace, "effective guide pace (m/s)").toBeGreaterThan(0);
+  expect(pace, "effective guide pace (m/s)").toBeLessThanOrEqual(FAST_MPS);
   return tier;
 }
 
