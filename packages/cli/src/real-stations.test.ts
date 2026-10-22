@@ -9,7 +9,7 @@ const stationDir = (id: string) => fileURLToPath(new URL(`../../../stations/${id
 interface RouteOutput {
   contract: string;
   stationId: string;
-  result: { ok: boolean; nodeIds?: string[]; reason?: string };
+  result: { ok: boolean; nodeIds?: string[]; reason?: string; message?: string };
   path: { nodeId: string; renderer: number[]; heightSymbolic: boolean }[];
   polyline: { renderer: number[]; zKnown: boolean; stepIndex: number }[];
   instructions: { ja: { kind: string; text: string }[]; en: { kind: string; text: string }[] };
@@ -78,20 +78,48 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     expect(out.instructions).toEqual({ ja: [], en: [] });
   });
 
-  // Endpoint fare policy must match routeBetween for every POI/node mix: poi:elevator:1 has paid: null (unknown).
-  const EXIT_NODE = "n:a06f3d191885497bac197b666c4daef9";
+  // Endpoint fare policy must match routeBetween for every POI/node mix. poi:elevator:1 has paid: null (unknown).
+  // The endpoints below are connected over edges that --unpaid-only itself allows (paid=false, crossesFareBoundary=false,
+  // accessEvidence present, verified, no hours): poi:elevator:1's six connectors, poi:exit:4 (n:e4cf..., paid false),
+  // poi:exit:6 and poi:gate:3 all lie in the same 47-node unpaid component, so the router alone WOULD route them.
+  // The asserted message proves the fare check fired, not a missing edge. (poi:exit:1 is in a different unpaid
+  // component and is deliberately not used here.)
+  const E4_NODE = "n:e4cfe61e944e4f5e8ad8caeb6d521750"; // connector of poi:exit:4
+  const E6_NODE = "n:5cbcddf0b6e34fb89c2b7ee1220b35b2"; // connector of poi:exit:6
+  const GATE3_NODE = "n:4b5ce9646e484f8485cee4bd66f187c7"; // connector of poi:gate:3
+  const NOT_OUTSIDE = "not known to be outside the paid area";
+
   it.each([
-    ["POI origin, node goal", ["poi:elevator:1", EXIT_NODE, "--from-poi"]],
-    ["node origin, POI goal", [EXIT_NODE, "poi:elevator:1", "--goal-poi"]],
-    ["POI origin, POI goal", ["poi:elevator:1", "poi:exit:1", "--from-poi", "--goal-poi"]],
-  ] as const)("Shinjuku --unpaid-only with a paid-unknown POI fails closed (%s)", (_label, args) => {
+    ["POI origin, node goal", ["poi:elevator:1", E4_NODE, "--from-poi"], "origin poi:elevator:1"],
+    ["node origin, POI goal", [E4_NODE, "poi:elevator:1", "--goal-poi"], "destination poi:elevator:1"],
+    ["POI origin, POI goal", ["poi:elevator:1", "poi:exit:4", "--from-poi", "--goal-poi"], "origin poi:elevator:1"],
+    ["POI origin, POI goal (unknown goal)", ["poi:exit:4", "poi:elevator:1", "--from-poi", "--goal-poi"], "destination poi:elevator:1"],
+  ] as const)("Shinjuku --unpaid-only with a paid-unknown POI fails closed by the fare check (%s)", (_label, args, who) => {
     const open = route("shinjuku", [...args]);
     expect(open.status, open.stderr).toBe(0); // routable under the default profile
+    expect(open.out.result.ok).toBe(true);
+    expect(open.out.path.length).toBeGreaterThan(1);
+
     const { status, out } = route("shinjuku", [...args, "--unpaid-only"]);
     expect(status).toBe(1);
     expect(out.result).toMatchObject({ ok: false, reason: "no_path" });
+    expect(out.result.message).toContain(NOT_OUTSIDE);
+    expect(out.result.message).toContain(who);
     expect(out.path).toEqual([]);
     expect(out.polyline).toEqual([]);
     expect(out.instructions).toEqual({ ja: [], en: [] });
+  });
+
+  it.each([
+    ["POI origin, node goal", ["poi:exit:4", GATE3_NODE, "--from-poi"]],
+    ["node origin, POI goal", [GATE3_NODE, "poi:exit:4", "--goal-poi"]],
+    ["POI origin, POI goal", ["poi:exit:4", "poi:exit:6", "--from-poi", "--goal-poi"]],
+    ["POI origin, node goal (exit 6)", ["poi:exit:4", E6_NODE, "--from-poi"]],
+  ] as const)("Shinjuku --unpaid-only routes between paid:false POIs over unpaid edges (positive control: %s)", (_label, args) => {
+    const { status, stderr, out } = route("shinjuku", [...args, "--unpaid-only"]);
+    expect(status, stderr).toBe(0);
+    expect(out.result.ok).toBe(true);
+    expect(out.path.length).toBeGreaterThan(1);
+    expect(out.instructions.en.at(-1)!.kind).toBe("arrive");
   });
 });
