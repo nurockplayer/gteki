@@ -155,8 +155,12 @@ describe("kit_placements.json", () => {
     for (const id of catalog.assets.map((a) => a.id)) expect(placed.placements.some((p) => Object.values(p.ids).includes(id))).toBe(true);
     expect(placed.summary.stair_flights.covered).toBe(placed.placements.filter((p) => p.kind === "stair").length);
     expect(placed.summary.escalator_lanes.covered).toBe(placed.placements.filter((p) => p.kind === "escalator").length);
-    // the flights the planner flagged as implausible stay out
-    for (const id of ["stair040", "stair059"]) expect(skipped.has(id)).toBe(true);
+    // the only flight the planner flags is the 196 mm tread; stair040 (two overlapping survey solids, once read as
+    // a 19-step flight with an 82 mm riser) and the 1-step stair059 fragment are now one 10-step flight that is covered
+    expect([...skipped]).toEqual(["stair068"]);
+    expect(placed.summary.skipped[0]!.reason).toMatch(/implausible tread 196 mm/);
+    expect(placements.has("stair040")).toBe(true);
+    expect(anchors.stair_flights.find((f) => f.id === "stair040")!.steps).toBe(10);
   });
 
   it("puts each origin within 5 mm of the anchor's first-nosing floor point or bottom comb line", () => {

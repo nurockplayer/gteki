@@ -6,7 +6,7 @@
   "version": "0.1.0"
  },
  "source": {
-  "dressing_anchors_sha256": "ee8ef7c63da6c22e9ee2d1cf8041ff23b49acc20f1196608720114b095abae7e",
+  "dressing_anchors_sha256": "d64a77e814fbc98da7cd8ea44fbe4963bd71dbcee007f8f90691f141568022cc",
   "gml": "53394576_ubld_6697_op.gml",
   "gml_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
   "wall_probe_glb_sha256": "aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8",
@@ -21,14 +21,14 @@
   "mirror": "false everywhere: rails are on both sides, escalators are symmetric"
  },
  "summary": {
-  "unique_ids": 127,
-  "stair_nosing_ids": 61,
-  "stair_rails_ids": 61,
+  "unique_ids": 129,
+  "stair_nosing_ids": 62,
+  "stair_rails_ids": 62,
   "escalator_ids": 5,
   "stair_flights": {
-   "total": 72,
-   "covered": 69,
-   "skipped": 3
+   "total": 71,
+   "covered": 70,
+   "skipped": 1
   },
   "escalator_lanes": {
    "total": 5,
@@ -37,7 +37,7 @@
   },
   "rail_mount": {
    "post": 9,
-   "wall": 60
+   "wall": 61
   },
   "quantisation_max": {
    "riser_mm": {
@@ -86,11 +86,11 @@
     "stair051",
     "stair057",
     "stair058",
-    "stair060",
-    "stair062",
+    "stair059",
+    "stair061",
+    "stair069",
     "stair070",
-    "stair071",
-    "stair072"
+    "stair071"
    ],
    "flight_count": 21,
    "rails_ids": 21,
@@ -113,16 +113,16 @@
      "stairs_edge": true,
      "flights": [
       "stair041",
-      "stair060"
+      "stair059"
      ],
      "fallback_radius_m": 4.0
     },
     "I4": {
      "stairs_edge": true,
      "flights": [
+      "stair069",
       "stair070",
-      "stair071",
-      "stair072"
+      "stair071"
      ],
      "fallback_radius_m": null
     },
@@ -153,22 +153,22 @@
       "stair020",
       "stair032",
       "stair057",
-      "stair062"
+      "stair061"
      ],
      "fallback_radius_m": null
     }
    },
    "tiers": {
     "low": {
-     "nosing_ids": 61,
+     "nosing_ids": 62,
      "rails_ids": 0,
      "escalator_ids": 0
     },
     "high": {
-     "nosing_ids": 61,
+     "nosing_ids": 62,
      "rails_ids": 21,
      "escalator_ids": 5,
-     "rails_placements_dropped_vs_all": 48
+     "rails_placements_dropped_vs_all": 49
     }
    },
    "triangle_estimate": {
@@ -180,24 +180,14 @@
     "high": {
      "nosing_mobile": 7200,
      "escalators_mobile": 20300,
-     "rails_full": 52672,
+     "rails_full": 51823,
      "rails_full_if_all_61": 153000
     }
    }
   },
   "skipped": [
    {
-    "anchor": "stair040",
-    "kind": "stair",
-    "reason": "implausible riser 82 mm (19 steps, rise 1.483 m); outside 100-220 mm"
-   },
-   {
-    "anchor": "stair059",
-    "kind": "stair",
-    "reason": "1-step flight: no riser or tread to measure (generator needs step_count >= 2)"
-   },
-   {
-    "anchor": "stair069",
+    "anchor": "stair068",
     "kind": "stair",
     "reason": "implausible tread 196 mm (run 0.196 m per step); under 200 mm"
    }
@@ -1935,6 +1925,46 @@
    }
   },
   {
+   "anchor": "stair040",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n10_r161_t307_w3512_nosing",
+    "rails": "gteki_ik_stair_n10_r161_t307_w3512_rails_wall"
+   },
+   "origin": [
+    -166.365,
+    144.212,
+    28.388
+   ],
+   "dir": [
+    -0.8656,
+    0.5007
+   ],
+   "yaw_deg": 59.953,
+   "mirror": false,
+   "main_route": false,
+   "tiers": {
+    "nosing": [
+     "low",
+     "high"
+    ],
+    "rails": []
+   },
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.111,
+    "tread_mm": 0.0,
+    "width_mm": 0.469,
+    "top_height_mm": 1.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
    "anchor": "stair041",
    "kind": "stair",
    "scope": "room1",
@@ -2667,7 +2697,7 @@
    }
   },
   {
-   "anchor": "stair060",
+   "anchor": "stair059",
    "kind": "stair",
    "scope": "room1",
    "ids": {
@@ -2709,7 +2739,7 @@
    }
   },
   {
-   "anchor": "stair061",
+   "anchor": "stair060",
    "kind": "stair",
    "scope": "room1",
    "ids": {
@@ -2749,7 +2779,7 @@
    }
   },
   {
-   "anchor": "stair062",
+   "anchor": "stair061",
    "kind": "stair",
    "scope": "room1",
    "ids": {
@@ -2791,7 +2821,7 @@
    }
   },
   {
-   "anchor": "stair063",
+   "anchor": "stair062",
    "kind": "stair",
    "scope": "room1",
    "ids": {
@@ -2831,7 +2861,7 @@
    }
   },
   {
-   "anchor": "stair064",
+   "anchor": "stair063",
    "kind": "stair",
    "scope": "room1",
    "ids": {
@@ -2871,7 +2901,7 @@
    }
   },
   {
-   "anchor": "stair065",
+   "anchor": "stair064",
    "kind": "stair",
    "scope": "room1",
    "ids": {
@@ -2911,7 +2941,7 @@
    }
   },
   {
-   "anchor": "stair066",
+   "anchor": "stair065",
    "kind": "stair",
    "scope": "room1",
    "ids": {
@@ -2951,7 +2981,7 @@
    }
   },
   {
-   "anchor": "stair067",
+   "anchor": "stair066",
    "kind": "stair",
    "scope": "room1",
    "ids": {
@@ -2991,7 +3021,7 @@
    }
   },
   {
-   "anchor": "stair068",
+   "anchor": "stair067",
    "kind": "stair",
    "scope": "room1",
    "ids": {
@@ -3031,7 +3061,7 @@
    }
   },
   {
-   "anchor": "stair070",
+   "anchor": "stair069",
    "kind": "stair",
    "scope": "room3",
    "ids": {
@@ -3073,7 +3103,7 @@
    }
   },
   {
-   "anchor": "stair071",
+   "anchor": "stair070",
    "kind": "stair",
    "scope": "room3",
    "ids": {
@@ -3115,7 +3145,7 @@
    }
   },
   {
-   "anchor": "stair072",
+   "anchor": "stair071",
    "kind": "stair",
    "scope": "room3",
    "ids": {

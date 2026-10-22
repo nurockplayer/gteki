@@ -152,7 +152,9 @@ extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressi
 1 mm, deterministic. Facts only, derived from the surveyed EF_35 and EF_80 triangles:
 
 - `stair_flights[]`: a riser's top edge is the nosing line of the tread above; nosings one rise and one tread apart
-  chain into a flight. Each has `bottom` and `top` (`position`, `dir` = horizontal up-stair unit vector, `width_m`,
+  chain into a flight, one-to-one (each nosing has at most one successor and one predecessor; a stair the survey models
+  twice as two overlapping solids is kept as one of them, and `counts.duplicate_nosings_dropped` says how many nosings
+  that dropped). Each has `bottom` and `top` (`position`, `dir` = horizontal up-stair unit vector, `width_m`,
   end points `a` left and `b` right facing up), `steps`, `rise_m`, `run_m`, and every `nosings` row `[ax, ay, bx, by, z]`.
 - `escalator_lanes[]`: the bank's sloped walking quad gives the landing lines (low edge = `lower`, high edge =
   `upper`); the thin truss plates inside pair into lanes. Each lane has `lower` and `upper` anchors
