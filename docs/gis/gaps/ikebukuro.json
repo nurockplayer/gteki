@@ -1,6 +1,6 @@
 {
   "station_id": "ikebukuro",
-  "tool_input_sha256": "ca9ef46e121b7da44432c6b39e75b87bfc5be56e7e661fdd04e6bfbaefcbf403",
+  "tool_input_sha256": "8a27c33a3c99e92e9c7d27de0731e64f8ca52aa9e7a4b17937814c272649f578",
   "poi_content": [
     {
       "source_id": "plateau-13104-related",
@@ -22,7 +22,7 @@
           "geometry_types": {
             "Point": 110
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -39,7 +39,7 @@
           "geometry_types": {
             "Point": 168
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -56,7 +56,7 @@
           "geometry_types": {
             "Point": 201
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -73,7 +73,7 @@
           "geometry_types": {
             "Point": 48
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -91,7 +91,7 @@
             "LineString": 103,
             "MultiLineString": 5
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -109,7 +109,7 @@
             "MultiLineString": 6,
             "LineString": 39
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -126,7 +126,7 @@
           "geometry_types": {
             "LineString": 1
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         }
       ],
@@ -410,7 +410,7 @@
           "geometry_types": {
             "Point": 42
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -427,7 +427,7 @@
           "geometry_types": {
             "Point": 62
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -444,7 +444,7 @@
           "geometry_types": {
             "Point": 143
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -461,7 +461,7 @@
           "geometry_types": {
             "Point": 35
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -479,7 +479,7 @@
             "LineString": 79,
             "MultiLineString": 2
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -497,7 +497,7 @@
             "LineString": 24,
             "MultiLineString": 2
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         },
         {
@@ -514,7 +514,7 @@
           "geometry_types": {
             "LineString": 1
           },
-          "literal_location_time_fields": {},
+          "location_time_fields": {},
           "route_structure": []
         }
       ],
@@ -1560,6 +1560,42 @@
   "source_ids": {
     "citygml": "plateau-13116-ubld-53394576",
     "network": "hokonavi-ikebukuro-walk-node-csv"
+  },
+  "credit": {
+    "attribution_text": "出典：国土交通省「ほこナビDP」／加工して作成 ; 出典：国土交通省「歩行空間ネットワークデータ等整備仕様 平成30年3月」（版 2018-03、https://www.mlit.go.jp/common/001244374.pdf、SHA-256 9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974）／加工して作成 ; 出典：国土交通省「歩行空間ネットワークデータ整備仕様 令和6年7月」（版 2024-07、https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf、SHA-256 963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4）／加工して作成 ; 出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+    "sources": [
+      {
+        "source_id": "hokonavi-ikebukuro-walk-link-csv",
+        "attribution_text": "出典：国土交通省「ほこナビDP」／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0"
+      },
+      {
+        "source_id": "hokonavi-ikebukuro-walk-node-csv",
+        "attribution_text": "出典：国土交通省「ほこナビDP」／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.digital.go.jp/resources/open_data/public_data_license_v1.0"
+      },
+      {
+        "source_id": "mlit-walk-network-spec-2018-03",
+        "attribution_text": "出典：国土交通省「歩行空間ネットワークデータ等整備仕様 平成30年3月」（版 2018-03、https://www.mlit.go.jp/common/001244374.pdf、SHA-256 9825cf98bb8c069f9717dd8215d54c61e89d66090e266502c7221219136fb974）／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.mlit.go.jp/link.html"
+      },
+      {
+        "source_id": "mlit-walk-network-spec-2024-07",
+        "attribution_text": "出典：国土交通省「歩行空間ネットワークデータ整備仕様 令和6年7月」（版 2024-07、https://www.mlit.go.jp/sogoseisaku/soukou/content/001757259.pdf、SHA-256 963f2f85791b9ff1199c0980a4e99f39c98ec26fc376de6dc9f343d10522c0a4）／加工して作成",
+        "license_name": "PDL 1.0",
+        "license_url": "https://www.mlit.go.jp/link.html"
+      },
+      {
+        "source_id": "plateau-13116-ubld-53394576",
+        "attribution_text": "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成",
+        "license_name": "CC BY 4.0",
+        "license_url": "https://creativecommons.org/licenses/by/4.0/"
+      }
+    ],
+    "classification": "docs/gis/rights/non-poi-literals.md"
   },
   "input_status": {
     "citygml_inventory": "AVAILABLE",
