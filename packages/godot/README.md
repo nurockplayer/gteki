@@ -194,3 +194,26 @@ walked by the same step rules as on the web, nothing more. Camera and walker fee
 
 Runtime APIs: [GLTFDocument](https://docs.godotengine.org/en/latest/classes/class_gltfdocument.html)
 and [Godot glTF scene export](https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/exporting_3d_scenes.html).
+
+## Search, route and guided walk (G-3 of #164)
+
+`hq.tscn` now has a HUD (left panel, built for 1600x900): search box, results with name (ja/en toggle), category, floor and a
+routable marker, a start picker, a route button, step list and a guided-walk toggle. Godot ranks and routes nothing:
+`addons/gteki/gteki_bridge.gd` runs `pnpm --dir <root> --silent tsx packages/godot/src/search-query.ts <stationDir> <query> --limit 8`
+and `packages/cli/src/route.ts <stationDir> <from> <goal> [--from-poi] [--goal-poi]` through `OS.execute` (blocking, 1-3 s per call;
+needs `pnpm install`) and parses their JSON. A bridge or router failure shows its error and draws nothing. Display names, floor
+labels and categories come from the exported `gteki.search/0.1` index (`export-search.ts`, written to `.cache/search/<id>.search.json`
+on first use). `normalizeJa` is not ported, so matches are not highlighted.
+
+- Non-routable hits are listed greyed out and cannot be picked as start or goal. The start is always your choice: a result
+  ("Use as start") or the spawn point nearest the avatar; the client never claims to know where you are.
+- The route polyline is drawn as a ribbon 6 cm above the floor in `renderer` coordinates with an animated chevron shader.
+  Segments with `zKnown: false` form a second, orange dashed surface and the HUD says the heights are symbolic (all of the
+  Shinjuku data is). A failed route (`ok: false`) shows `reason: message` (for example `no_path`) and never a partial line.
+- The step list follows the avatar's position along the polyline (same step rule as the web guide). The route facts
+  (`evidenceCheckedDate`, `oldestSourceDate`, `stale`, `unknowns`, ...) are printed as the JSON gives them, with `hours: UNKNOWN`.
+- "Guided walk" moves the avatar along the polyline at 3.4 m/s (web guide tier "run"), no collisions, with the follow camera; any
+  movement key returns to free walking at that spot.
+
+Tests: `lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-guide.sh` (golden searches on both stations, Ikebukuro
+`jr-central-gate-2` to `exit-35` ribbon, Shinjuku `poi:platform:oedo` to `poi:exit:1` symbolic, negative route, guided walk, HUD state).
