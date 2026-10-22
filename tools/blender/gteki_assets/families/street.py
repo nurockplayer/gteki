@@ -218,10 +218,11 @@ def street_canopy(asset_id, params, tex_res):
             if p["screens"] not in ("both", name):
                 continue
             xc = s * (W / 2 - POST_W / 2)
-            prof = [(sy0, 0.06), (sy1, 0.06), (sy1, under(sy1))] + [(y, z) for y, z in reversed(inner)] + [(sy0, under(sy0))]
+            top = [(sy1, under(sy1))] + [(y, z) for y, z in reversed(inner)] + [(sy0, under(sy0))]
+            prof = [(sy0, 0.06), (sy1, 0.06)] + top
             screens.extrude_x(prof, xc - GLASS_T / 2, xc + GLASS_T / 2, GLASS)
             rails.box((xc - 0.03, sy0, 0.0), (xc + 0.03, sy1, 0.06), ALU)
-            low = min(z for _, z in prof)
+            low = min(z for _, z in top)  # up to the lowest point of the glass's top edge, not its bottom rail
             a.col_box(f"screen_{name}", (xc - 0.03, sy0, 0.0), (xc + 0.03, sy1, low))
 
     # fascia: aluminium frame, blank backlit sign face, steel back plate
