@@ -1,7 +1,7 @@
 {
   "source_id": "plateau-13116-related",
   "source_sha256": "df356f6e0ca6821b3fbda10d50e8def8fdc16c7f526cdc623b16128b78ff1787",
-  "tool_input_sha256": "ca9ef46e121b7da44432c6b39e75b87bfc5be56e7e661fdd04e6bfbaefcbf403",
+  "tool_input_sha256": "b07ff35a92d73bcdedb3a19ccdbc94ac11240547db3a0de65b53f0c38109854c",
   "input_sources": [
     {
       "source_id": "plateau-13116-related",
@@ -107,13 +107,15 @@
             "number"
           ],
           "distinct_count": 2,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": 1,
+              "value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+              "value_type": "number",
               "count": 33
             },
             {
-              "value": 3,
+              "value_sha256": "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+              "value_type": "number",
               "count": 9
             }
           ],
@@ -126,25 +128,30 @@
             "string"
           ],
           "distinct_count": 38,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "東京都豊島区",
+              "value_sha256": "da880451cc39cff1616f803b20e3379ae9ef61faeafb051d706dba0745b6be46",
+              "value_type": "string",
               "count": 5
             },
             {
-              "value": "東京都北区",
+              "value_sha256": "142c2993ff226279519d828ae34a64e154b146bdc4883d745e98ac63461b8ebe",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "東京都豊島区上池袋1-18-24",
+              "value_sha256": "186abae7f7ad5c9bac4d2597102fd1ff0f349374335a370dd6a177ed242a0b48",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "東京都豊島区上池袋4-28-1",
+              "value_sha256": "1d2c39b0e53b7527f46d1e45fb5bf1adf7e0b10cb7796d350fe01afd75f2a552",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "東京都豊島区千早2-39-3",
+              "value_sha256": "1f0c6a008c43ec4d5546ee3cfb5fe5e34429e551daf4b4641da4efc892080d7f",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -158,25 +165,30 @@
             "number"
           ],
           "distinct_count": 5,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": 18500,
+              "value_sha256": "0b31c0155c83c5fdbff532bfe3e43dfe547938df26dd9092df0eb46bd7900b0c",
+              "value_type": "number",
               "count": 1
             },
             {
-              "value": 45200,
+              "value_sha256": "0e727d3a4f4cd926559e2691ba87a06e33c4f78bd7647bfa535e67457a80d99b",
+              "value_type": "number",
               "count": 1
             },
             {
-              "value": 56300,
+              "value_sha256": "788659e5563b7920e2ccac809e791c8fb440174813d0507f6d481e719b488982",
+              "value_type": "number",
               "count": 1
             },
             {
-              "value": 70300,
+              "value_sha256": "905482a1ea93d5af34835b61cc9e59024dbe92242c2a191803456aa9cf3f9b5d",
+              "value_type": "number",
               "count": 1
             },
             {
-              "value": 86200,
+              "value_sha256": "cb2057e2e356734ca78f5f8fa5e0345da6cc93c19d2a2ed69240f74c260e546e",
+              "value_type": "number",
               "count": 1
             }
           ],
@@ -189,25 +201,30 @@
             "string"
           ],
           "distinct_count": 42,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "（旧）千川小学校",
+              "value_sha256": "077e065f862450082f4aa8d812bf2da87a4704ff663b8dae79b213108eb5670e",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "（旧）高田小学校",
+              "value_sha256": "0b77af0edb697abce3f208f3a7cf9552e0a179cdf93f70b8b72bf3858833efa0",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "さくら小学校",
+              "value_sha256": "15773c9e0c816d7f253682fd69820e0aaf16159c4e52bfa6e5953004b4413e66",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "みらい館大明",
+              "value_sha256": "2435dccc180318b90d029c3e2d7bc3a691a8dc973ca21475bddeb4f9bcc74d5f",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "仰高小学校",
+              "value_sha256": "2a825597d16981f3a04ed552996eadf171020fc632f81e68ed4e74e106e30f27",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -220,13 +237,15 @@
             "string"
           ],
           "distinct_count": 2,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "指定なし",
+              "value_sha256": "2b491b92218927ed549302055de21e4929ead44295f99c160f41679639254cf7",
+              "value_type": "string",
               "count": 41
             },
             {
-              "value": "地震災害",
+              "value_sha256": "526e96a7db58ae30048a6c204af4fcfac8ba3199cd71b7b6dbd12c824f66a9f4",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -239,13 +258,15 @@
             "string"
           ],
           "distinct_count": 2,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "救援センター",
+              "value_sha256": "667a3a4aa4aa48325e0933a36f8ec27e32f357eac34e6fc5874900d823194b2b",
+              "value_type": "string",
               "count": 35
             },
             {
-              "value": "避難場所",
+              "value_sha256": "142b547a4a756c22a1b289d7a7af563c8073b88a1228de2c4d6f239ca2ed82d3",
+              "value_type": "string",
               "count": 7
             }
           ],
@@ -259,25 +280,30 @@
             "number"
           ],
           "distinct_count": 5,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": 115000,
+              "value_sha256": "4da67d06406feb98b9daac35c426a80caf2a7ecb31fab02c50fd16124a94c203",
+              "value_type": "number",
               "count": 1
             },
             {
-              "value": 130800,
+              "value_sha256": "a353b6c85019521b0dcd2d69379b28acf6215c503b0c0819fe620adfaaffbb1f",
+              "value_type": "number",
               "count": 1
             },
             {
-              "value": 51900,
+              "value_sha256": "c8cbd4a9c6e59296524f91b03786cd826b97436d1c01db110dc1484837543c0b",
+              "value_type": "number",
               "count": 1
             },
             {
-              "value": 53000,
+              "value_sha256": "e87a4332df26b70036694c1d8b662156c25f2c60947db33d3bce0797d7ddfb80",
+              "value_type": "number",
               "count": 1
             },
             {
-              "value": 66800,
+              "value_sha256": "f190a3d0c04e5b2b3f4ee16d2df26597720b8d1c09179d2a0dad7e4605776875",
+              "value_type": "number",
               "count": 1
             }
           ],
@@ -290,13 +316,15 @@
             "number"
           ],
           "distinct_count": 2,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": 13116,
+              "value_sha256": "22067cf703f398fe8445be8c50491689d267a55f8990ca9359242adf54a69331",
+              "value_type": "number",
               "count": 41
             },
             {
-              "value": 13117,
+              "value_sha256": "4a5a354449e862e8e5597b99f298b1e07ac0ff56b8eec50f785c2d85b173e5ff",
+              "value_type": "number",
               "count": 1
             }
           ],
@@ -310,25 +338,30 @@
             "string"
           ],
           "distinct_count": 30,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "16.6",
+              "value_sha256": "ae8077b3a8781c118c10b869a06fb420228ee4fa00401fbb652cd88adf3b3bd9",
+              "value_type": "string",
               "count": 3
             },
             {
-              "value": "16.0",
+              "value_sha256": "36ce4028850a1b72bcf8c70132670c708527a5e4e45f803772bcb19a22a83f54",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "18.3",
+              "value_sha256": "6f24b198287104833a652f3b37450d5ab5702f79cd958edca94b60e66b267957",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "20.1",
+              "value_sha256": "a73eb0b28b640cc004418290253ec0a8d88aa7c923bdcd9f4a736e260b161612",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "21.2",
+              "value_sha256": "e38e216cb55bf07f1b4188684ef9d47945ad0247c1bb6314fe03f2b99a0c7145",
+              "value_type": "string",
               "count": 2
             }
           ],
@@ -360,7 +393,7 @@
         "approval_notice": null
       },
       "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
-      "literal_location_time_fields": {},
+      "location_time_fields": {},
       "route_structure": {
         "exported_edges": 0,
         "source_link_count": 0,
@@ -393,25 +426,30 @@
             "number"
           ],
           "distinct_count": 62,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": 1013,
+              "value_sha256": "02ede7e8caf71df40a5bb6495f5fcbc092cf7c87de6beed5d7813910d82ba3bd",
+              "value_type": "number",
               "count": 1
             },
             {
-              "value": 1021,
+              "value_sha256": "072ba5cc0e81ff74b6578c3d7291a0d3d9ad0396afb9cc3a7d3143bca54b0a23",
+              "value_type": "number",
               "count": 1
             },
             {
-              "value": 1057,
+              "value_sha256": "0ca1dddf381990ebcb2515032c48916f5aed5809e00ef2a2162cf2662da924b4",
+              "value_type": "number",
               "count": 1
             },
             {
-              "value": 1071,
+              "value_sha256": "12e967ca0f368d0d8511518c58c6929146650bb1babce4448263e67722dd0161",
+              "value_type": "number",
               "count": 1
             },
             {
-              "value": 1084,
+              "value_sha256": "15310fd04ea64483103071a114d24163331cf0f957bf55bad9760b69b33b2aa0",
+              "value_type": "number",
               "count": 1
             }
           ],
@@ -424,25 +462,30 @@
             "number"
           ],
           "distinct_count": 40,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": 1987,
+              "value_sha256": "0985b889a1fe4f4e1fb925061ac6fb2247f10875f5fcbe63eec2ab55ed68970e",
+              "value_type": "number",
               "count": 4
             },
             {
-              "value": 1991,
+              "value_sha256": "744b93f9950fc38dad705556931ea48193b99dcb191cc9bd77097f65fbe2f0b8",
+              "value_type": "number",
               "count": 4
             },
             {
-              "value": 1993,
+              "value_sha256": "8e71b24534e9f3fb3a71263359fed2b7ffb008265e0d34383e319f1b6f5c08f2",
+              "value_type": "number",
               "count": 4
             },
             {
-              "value": 1997,
+              "value_sha256": "8e9b669109df89620b94f2387dc53206a82ddc71d658f8f7a2b3a9b417370d3e",
+              "value_type": "number",
               "count": 4
             },
             {
-              "value": 1988,
+              "value_sha256": "8266498d969081c29737b8daeb5b51d60e56d008fff243a39d16c3032d42f6cf",
+              "value_type": "number",
               "count": 3
             }
           ],
@@ -455,25 +498,30 @@
             "string"
           ],
           "distinct_count": 62,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "上り屋敷",
+              "value_sha256": "02219836f18315d47bd0edabbdfd3d26d89fe90e228570696855fb63cde640b3",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "上池袋",
+              "value_sha256": "05bb64624d1a77badf80c1912c64f600cd208fa0bd46ced3ee06f292a4369606",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "上池袋さくら",
+              "value_sha256": "0792327cff453fa3f2a60d3ae6b30be8764968ee5e298d086fc4989c9d4bbe30",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "上池袋中央",
+              "value_sha256": "0b0f938355d2e834ca3367ae70c778d951f2c0160a1a76dcec3dfb0452cad2f9",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "上池袋東",
+              "value_sha256": "0cb989898794d5c82845bb3ae79f77da2606d2b4ca240addc5b43842c3a6e4a7",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -486,25 +534,30 @@
             "string"
           ],
           "distinct_count": 5,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "街区公園",
+              "value_sha256": "27bafa1873030c74c9ad77aa52b5a1fe9fab7b23722108397783f36e9d483d98",
+              "value_type": "string",
               "count": 47
             },
             {
-              "value": "都市緑地",
+              "value_sha256": "454fd1bbed6d81d0e910dca83a467477ec42d92e8fe9d450901181e53da21f43",
+              "value_type": "string",
               "count": 8
             },
             {
-              "value": "広場公園",
+              "value_sha256": "620e2f957599cb7d1e3105608151c9b2ddc9e14558dae2f21d6d9ac8708b64cf",
+              "value_type": "string",
               "count": 4
             },
             {
-              "value": "緑道",
+              "value_sha256": "e04be9e18869925c9005f674181ad95d1b5d421e21ac955b0de27248c5c3aa04",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "近隣公園",
+              "value_sha256": "2fee1b3bf62785af1447eb0bda36b4d4d13544cab5560223fe74f07de6d75574",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -517,9 +570,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "豊島区",
+              "value_sha256": "8f7343d8f57280bcdfad0090a8a3f5a6f82666fdf555382a18c8f01a0b1ed49c",
+              "value_type": "string",
               "count": 62
             }
           ],
@@ -532,9 +586,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "東京都",
+              "value_sha256": "ce76fe655d41af062f0ef4f53a509f84df667596a54921a88ac27c11a1a02db7",
+              "value_type": "string",
               "count": 62
             }
           ],
@@ -547,9 +602,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "豊島区",
+              "value_sha256": "8f7343d8f57280bcdfad0090a8a3f5a6f82666fdf555382a18c8f01a0b1ed49c",
+              "value_type": "string",
               "count": 62
             }
           ],
@@ -562,9 +618,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "東京都",
+              "value_sha256": "ce76fe655d41af062f0ef4f53a509f84df667596a54921a88ac27c11a1a02db7",
+              "value_type": "string",
               "count": 62
             }
           ],
@@ -577,13 +634,15 @@
             "number"
           ],
           "distinct_count": 2,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": 2,
+              "value_sha256": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+              "value_type": "number",
               "count": 34
             },
             {
-              "value": 1,
+              "value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+              "value_type": "number",
               "count": 28
             }
           ],
@@ -615,7 +674,7 @@
         "approval_notice": null
       },
       "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
-      "literal_location_time_fields": {},
+      "location_time_fields": {},
       "route_structure": {
         "exported_edges": 0,
         "source_link_count": 0,
@@ -648,25 +707,30 @@
             "string"
           ],
           "distinct_count": 143,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "ヴァンガードタワー",
+              "value_sha256": "017646fe12a75e9f613d9109fcc00659f99f8917b6b1e58650498bd0819723b3",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "グランドミレーニア",
+              "value_sha256": "02e5b8910408b1de4112b9a112eec01dad6343de9cb5846fff7c7f423e2bc41b",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "ザ・タワーグランディア",
+              "value_sha256": "042ab6ad7375622f07df2ea75a7a9ee3f7be70be17e42b5f3b501af2ca81a946",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "サンシャインシティ",
+              "value_sha256": "0620f0660f3130e726989ae13450676615dc2fc92fd687121124e37d4a91c9c9",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "としまエコミューゼタウン",
+              "value_sha256": "087a7f1a762ff1205bbcafadfd8a3560630225d39d532e95500e67622f3a56ff",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -679,25 +743,30 @@
             "string"
           ],
           "distinct_count": 11,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "学校",
+              "value_sha256": "dc6e2aafeb9e125b69d1b143f05c66414e6e1a4f46c163a52a6d289efeef27c7",
+              "value_type": "string",
               "count": 57
             },
             {
-              "value": "郵便局",
+              "value_sha256": "888076bf0cb69033d9427f0cf767486890c22cacf1b1f546fb001b56adf7e7ad",
+              "value_type": "string",
               "count": 30
             },
             {
-              "value": "警察署",
+              "value_sha256": "52a8e37b948936b7362ec27651d8d8ef04fc99ecfafe15d3174f0efc1b6fc681",
+              "value_type": "string",
               "count": 26
             },
             {
-              "value": "病院",
+              "value_sha256": "616b0d572eed3940783fdaa9511c7db450e468766b7d1aa00fd5b72ca4cdddcc",
+              "value_type": "string",
               "count": 11
             },
             {
-              "value": "消防署",
+              "value_sha256": "6a60a4bfd65665c438a8830864ef5c023f36f6a7e898aae89585d37770f72eab",
+              "value_type": "string",
               "count": 6
             }
           ],
@@ -710,25 +779,30 @@
             "number"
           ],
           "distinct_count": 106,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": 6.5,
+              "value_sha256": "3dcfb00c29b15a402da6c2ca2308157ba64ba500d09e8654328458c98c4b65e1",
+              "value_type": "number",
               "count": 4
             },
             {
-              "value": 7.3,
+              "value_sha256": "a22eea496bce0154f2e2dc5e652100cd8a0f9571b95ed89dd48599e76d339657",
+              "value_type": "number",
               "count": 4
             },
             {
-              "value": 10.7,
+              "value_sha256": "3f6bf2a266114e06322ddf38c95fdd24696e718e209458b45ab738522dba5bd3",
+              "value_type": "number",
               "count": 3
             },
             {
-              "value": 16.6,
+              "value_sha256": "6f24b198287104833a652f3b37450d5ab5702f79cd958edca94b60e66b267957",
+              "value_type": "number",
               "count": 3
             },
             {
-              "value": 18.3,
+              "value_sha256": "a73eb0b28b640cc004418290253ec0a8d88aa7c923bdcd9f4a736e260b161612",
+              "value_type": "number",
               "count": 3
             }
           ],
@@ -760,7 +834,7 @@
         "approval_notice": "令7関公第296号"
       },
       "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
-      "literal_location_time_fields": {},
+      "location_time_fields": {},
       "route_structure": {
         "exported_edges": 0,
         "source_link_count": 0,
@@ -793,17 +867,20 @@
             "string"
           ],
           "distinct_count": 3,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "民営鉄道",
+              "value_sha256": "fff05223edc49d7367c96c8a3c338793631454d405b5952656cad9807fad358c",
+              "value_type": "string",
               "count": 17
             },
             {
-              "value": "公営鉄道",
+              "value_sha256": "074654d066ff765b8f64905a8d5f87d6cae87eb825385e753e8fe0dde4af1601",
+              "value_type": "string",
               "count": 11
             },
             {
-              "value": "JR在来線",
+              "value_sha256": "9dc942fc1a5b9fd8d6e25835ec4ee7957b3a6da6c0de1cbacf196b31d510bc5e",
+              "value_type": "string",
               "count": 7
             }
           ],
@@ -816,25 +893,30 @@
             "string"
           ],
           "distinct_count": 10,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "荒川線",
+              "value_sha256": "de0e377f267928860ed0d2e83ef36d0303a88ae6d38e875f9561db28cb2a1477",
+              "value_type": "string",
               "count": 9
             },
             {
-              "value": "山手線",
+              "value_sha256": "514e9bded51d2e874201a79722b76638f3d2e7ce2f599079a0fcaebae2afc79c",
+              "value_type": "string",
               "count": 5
             },
             {
-              "value": "13号線副都心線",
+              "value_sha256": "d1c1628fea8273878dcafee1f5919a1cce50bc60ea269e481cacc16b27e662fa",
+              "value_type": "string",
               "count": 4
             },
             {
-              "value": "8号線有楽町線",
+              "value_sha256": "dcec6f6f5b0bb69150dfcdbbb974ddeb981b9f4e7ba75a9e756e6e71b02821e7",
+              "value_type": "string",
               "count": 4
             },
             {
-              "value": "東上本線",
+              "value_sha256": "8b9712cc7c2d8fd95d7112d3c2fd3e1072b5d9cb51abb6e46fec74c803f180ad",
+              "value_type": "string",
               "count": 3
             }
           ],
@@ -847,25 +929,30 @@
             "string"
           ],
           "distinct_count": 5,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "東京地下鉄",
+              "value_sha256": "ce76fe655d41af062f0ef4f53a509f84df667596a54921a88ac27c11a1a02db7",
+              "value_type": "string",
               "count": 11
             },
             {
-              "value": "東京都",
+              "value_sha256": "ece73918c13da6d4d72ac33fd848e8e5bf3a0e70d293881757822835aaa78b73",
+              "value_type": "string",
               "count": 11
             },
             {
-              "value": "東日本旅客鉄道",
+              "value_sha256": "57204e4edae136ec5c3cffb2e46971239bf92b1946908a05b9e727b49f5ae2b2",
+              "value_type": "string",
               "count": 7
             },
             {
-              "value": "東武鉄道",
+              "value_sha256": "26683f57b929b0efd83b15284ed3869daa4c9d2f7e9a6112622d37d931e4c7b3",
+              "value_type": "string",
               "count": 3
             },
             {
-              "value": "西武鉄道",
+              "value_sha256": "455cf55040c9b62acb436dd1830778ae160391245ec9393efa963c5d77d04924",
+              "value_type": "string",
               "count": 3
             }
           ],
@@ -878,17 +965,20 @@
             "string"
           ],
           "distinct_count": 3,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "普通鉄道",
+              "value_sha256": "7e140cc0ba0b3218f8ceb0bdda246963205349f81dfbdc85da0aafca060a98f1",
+              "value_type": "string",
               "count": 19
             },
             {
-              "value": "軌道",
+              "value_sha256": "ef6279f7044b1510063f0d725fd9ca409041d6733a51e9640d973a394e705be3",
+              "value_type": "string",
               "count": 9
             },
             {
-              "value": "普通鉄道JR",
+              "value_sha256": "9b5cff601aedfccb92a22a2f10b6b411e45f30afbca2d7cf9430bcd9e68af855",
+              "value_type": "string",
               "count": 7
             }
           ],
@@ -901,25 +991,30 @@
             "string"
           ],
           "distinct_count": 25,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "池袋駅",
+              "value_sha256": "abb9f3674d1c8e19b140006cbe173fa881dbd75426a24f84b41a6bc687e9a8a8",
+              "value_type": "string",
               "count": 7
             },
             {
-              "value": "千川駅",
+              "value_sha256": "0e06d957c9956d5a22f874195eb0ee3d4eade38afce775c44ca7aa09291885ba",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "巣鴨駅",
+              "value_sha256": "72b1ab5957434cadb38535a9fe0ffafd0d714df821b16fc4fcf98b0ba9eb8e48",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "要町駅",
+              "value_sha256": "b520db7d6300e54d707e1677a2c24b3af949143080a934651d363b3ef5afee35",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "駒込駅",
+              "value_sha256": "c631388b29e32531eefc37e9a2515c7875670160952780a21957fab73384333f",
+              "value_type": "string",
               "count": 2
             }
           ],
@@ -932,25 +1027,30 @@
             "number"
           ],
           "distinct_count": 22,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": 0,
+              "value_sha256": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9",
+              "value_type": "number",
               "count": 11
             },
             {
-              "value": 5.3,
+              "value_sha256": "f54f1e8b9a3810596ef045f25d69c96911a0f3bf616071e97262ed9c55462aff",
+              "value_type": "number",
               "count": 3
             },
             {
-              "value": 3.8,
+              "value_sha256": "0fa04adf7214e7f48f259079f7fae9332d5c37a43070769f3d052f1a98e2952f",
+              "value_type": "number",
               "count": 2
             },
             {
-              "value": 10.2,
+              "value_sha256": "01037eaa1fcec91500773550a3a47b59b2e19676af8702bce87db4aeebce7cb2",
+              "value_type": "number",
               "count": 1
             },
             {
-              "value": 11.2,
+              "value_sha256": "01a6025a620037fbbf1db59ef84258dc8028e5d50a40444a1801a53bbd6b33bc",
+              "value_type": "number",
               "count": 1
             }
           ],
@@ -982,7 +1082,7 @@
         "approval_notice": null
       },
       "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
-      "literal_location_time_fields": {},
+      "location_time_fields": {},
       "route_structure": {
         "exported_edges": 0,
         "source_link_count": 0,
@@ -1015,17 +1115,20 @@
             "string"
           ],
           "distinct_count": 3,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "民営鉄道",
+              "value_sha256": "fff05223edc49d7367c96c8a3c338793631454d405b5952656cad9807fad358c",
+              "value_type": "string",
               "count": 40
             },
             {
-              "value": "公営鉄道",
+              "value_sha256": "074654d066ff765b8f64905a8d5f87d6cae87eb825385e753e8fe0dde4af1601",
+              "value_type": "string",
               "count": 26
             },
             {
-              "value": "JR在来線",
+              "value_sha256": "9dc942fc1a5b9fd8d6e25835ec4ee7957b3a6da6c0de1cbacf196b31d510bc5e",
+              "value_type": "string",
               "count": 15
             }
           ],
@@ -1038,9 +1141,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "13116",
+              "value_sha256": "22067cf703f398fe8445be8c50491689d267a55f8990ca9359242adf54a69331",
+              "value_type": "string",
               "count": 81
             }
           ],
@@ -1053,25 +1157,30 @@
             "string"
           ],
           "distinct_count": 12,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "荒川線",
+              "value_sha256": "de0e377f267928860ed0d2e83ef36d0303a88ae6d38e875f9561db28cb2a1477",
+              "value_type": "string",
               "count": 19
             },
             {
-              "value": "山手線",
+              "value_sha256": "514e9bded51d2e874201a79722b76638f3d2e7ce2f599079a0fcaebae2afc79c",
+              "value_type": "string",
               "count": 11
             },
             {
-              "value": "13号線副都心線",
+              "value_sha256": "d1c1628fea8273878dcafee1f5919a1cce50bc60ea269e481cacc16b27e662fa",
+              "value_type": "string",
               "count": 10
             },
             {
-              "value": "8号線有楽町線",
+              "value_sha256": "dcec6f6f5b0bb69150dfcdbbb974ddeb981b9f4e7ba75a9e756e6e71b02821e7",
+              "value_type": "string",
               "count": 10
             },
             {
-              "value": "東上本線",
+              "value_sha256": "8b9712cc7c2d8fd95d7112d3c2fd3e1072b5d9cb51abb6e46fec74c803f180ad",
+              "value_type": "string",
               "count": 6
             }
           ],
@@ -1084,25 +1193,30 @@
             "string"
           ],
           "distinct_count": 5,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "東京地下鉄",
+              "value_sha256": "ece73918c13da6d4d72ac33fd848e8e5bf3a0e70d293881757822835aaa78b73",
+              "value_type": "string",
               "count": 27
             },
             {
-              "value": "東京都",
+              "value_sha256": "ce76fe655d41af062f0ef4f53a509f84df667596a54921a88ac27c11a1a02db7",
+              "value_type": "string",
               "count": 26
             },
             {
-              "value": "東日本旅客鉄道",
+              "value_sha256": "57204e4edae136ec5c3cffb2e46971239bf92b1946908a05b9e727b49f5ae2b2",
+              "value_type": "string",
               "count": 15
             },
             {
-              "value": "西武鉄道",
+              "value_sha256": "26683f57b929b0efd83b15284ed3869daa4c9d2f7e9a6112622d37d931e4c7b3",
+              "value_type": "string",
               "count": 7
             },
             {
-              "value": "東武鉄道",
+              "value_sha256": "455cf55040c9b62acb436dd1830778ae160391245ec9393efa963c5d77d04924",
+              "value_type": "string",
               "count": 6
             }
           ],
@@ -1115,17 +1229,20 @@
             "string"
           ],
           "distinct_count": 3,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "普通鉄道",
+              "value_sha256": "7e140cc0ba0b3218f8ceb0bdda246963205349f81dfbdc85da0aafca060a98f1",
+              "value_type": "string",
               "count": 47
             },
             {
-              "value": "軌道",
+              "value_sha256": "ef6279f7044b1510063f0d725fd9ca409041d6733a51e9640d973a394e705be3",
+              "value_type": "string",
               "count": 19
             },
             {
-              "value": "普通鉄道JR",
+              "value_sha256": "9b5cff601aedfccb92a22a2f10b6b411e45f30afbca2d7cf9430bcd9e68af855",
+              "value_type": "string",
               "count": 15
             }
           ],
@@ -1158,7 +1275,7 @@
         "approval_notice": null
       },
       "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
-      "literal_location_time_fields": {},
+      "location_time_fields": {},
       "route_structure": {
         "exported_edges": 0,
         "source_link_count": 0,
@@ -1191,25 +1308,30 @@
             "string"
           ],
           "distinct_count": 22,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "10",
+              "value_sha256": "4a44dc15364204a80fe80e9039455cc1608281820fe2b24f1e5233ade6af1dd5",
+              "value_type": "string",
               "count": 3
             },
             {
-              "value": "188",
+              "value_sha256": "2858dcd1057d3eae7f7d5f782167e24b61153c01551450a628cee722509f6529",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "53",
+              "value_sha256": "d6061bbee6cf13bd73765faaea7cdd0af1323e4b125342ac346047f7c4bda1fc",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "107",
+              "value_sha256": "20e9c64c05a54d199610fb7e38135361324b5ed5dcf39c23afe9b48926c07376",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "175",
+              "value_sha256": "226f76b55acb49701e06ded1d95165d179458f6fc37f5c6fc760ae30dec1c378",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -1222,17 +1344,20 @@
             "string"
           ],
           "distinct_count": 3,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "第２次緊急輸送道路",
+              "value_sha256": "2b19caef4ccc90b78a4ef6de1dede1a684e44eb25293e2027d08beeabf057357",
+              "value_type": "string",
               "count": 12
             },
             {
-              "value": "第１次緊急輸送道路",
+              "value_sha256": "31df3b52fc3c1bd1dc758a8fe20754880307875632e46a08653461129f196a36",
+              "value_type": "string",
               "count": 9
             },
             {
-              "value": "第３次緊急輸送道路",
+              "value_sha256": "85157ad484636dd8f7792e2822878408e7a1709e3a1549ef0688e74f72569741",
+              "value_type": "string",
               "count": 5
             }
           ],
@@ -1245,25 +1370,30 @@
             "string"
           ],
           "distinct_count": 5,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "1",
+              "value_sha256": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b",
+              "value_type": "string",
               "count": 18
             },
             {
-              "value": "2",
+              "value_sha256": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+              "value_type": "string",
               "count": 4
             },
             {
-              "value": "4",
+              "value_sha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "3",
+              "value_sha256": "2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "8",
+              "value_sha256": "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -1276,9 +1406,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "13116",
+              "value_sha256": "22067cf703f398fe8445be8c50491689d267a55f8990ca9359242adf54a69331",
+              "value_type": "string",
               "count": 26
             }
           ],
@@ -1291,9 +1422,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "東京都緊急輸送道路ネットワーク計",
+              "value_sha256": "6210be4b25798b4b1faf5815a2b662dbd3b036a230e700cb2a8b6dec3fe69695",
+              "value_type": "string",
               "count": 26
             }
           ],
@@ -1306,9 +1438,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "2019",
+              "value_sha256": "023e33504ab909cf87a6f4e4e545090e40bdc0a2153e5b68b19f7fad2b737904",
+              "value_type": "string",
               "count": 26
             }
           ],
@@ -1321,25 +1454,30 @@
             "string"
           ],
           "distinct_count": 22,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "都道首都高速5号線",
+              "value_sha256": "bb9f8cd69b5ccb050aeb8b85ffd618a674c79ee968cf00103dcaa6549f120997",
+              "value_type": "string",
               "count": 3
             },
             {
-              "value": "千代田練馬田無線",
+              "value_sha256": "0c0aa4e65859e5e62a03ba430f10c4ec5118ab2d3ad478ae0984289b592f6bec",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "池袋谷原線",
+              "value_sha256": "ecc630eb13e585de9cedf50fa316cb8ccca241a0a065825323d27d029f740774",
+              "value_type": "string",
               "count": 2
             },
             {
-              "value": "中央環状新宿線",
+              "value_sha256": "197ae651dbe48ac08286bfcc95069454659d04ea88039842e4e744f8a5a17d21",
+              "value_type": "string",
               "count": 1
             },
             {
-              "value": "国道122号",
+              "value_sha256": "405daeaed6fe1a7bfd3321529e1ebb85b88015e28b39db9e8389fc1cf61df1ba",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -1352,25 +1490,30 @@
             "string"
           ],
           "distinct_count": 5,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "一般都道府県道",
+              "value_sha256": "f4cdb52df2f16932dcb344fea312aef060b3b1f5bfb9ecc8afe53f95de44bcc2",
+              "value_type": "string",
               "count": 8
             },
             {
-              "value": "市町村道（認定道路）",
+              "value_sha256": "7b40ad0640850a02b8572cf128b122b425f3703a14ac22ad0f6cef28ac6e724a",
+              "value_type": "string",
               "count": 6
             },
             {
-              "value": "都市高速道路",
+              "value_sha256": "a07099af3c1313f5e829b1ee138d3bbf1a49c1d15343f59453d0e0c39a426b02",
+              "value_type": "string",
               "count": 5
             },
             {
-              "value": "主要地方道（都道府県道）",
+              "value_sha256": "00a2296d4d908e31badda00014821a86d6017c5beff4dd405998a1cb011b5e4b",
+              "value_type": "string",
               "count": 4
             },
             {
-              "value": "一般国道",
+              "value_sha256": "27ec38e3526916f495b1eb334664d6b3a0df7d8ac0f2504f465b1c71c3c833c2",
+              "value_type": "string",
               "count": 3
             }
           ],
@@ -1402,9 +1545,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "東京都緊急輸送道路ネットワーク計",
+              "value_sha256": "6210be4b25798b4b1faf5815a2b662dbd3b036a230e700cb2a8b6dec3fe69695",
+              "value_type": "string",
               "count": 26
             }
           ],
@@ -1417,9 +1561,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "2019",
+              "value_sha256": "023e33504ab909cf87a6f4e4e545090e40bdc0a2153e5b68b19f7fad2b737904",
+              "value_type": "string",
               "count": 26
             }
           ],
@@ -1434,7 +1579,7 @@
         "approval_notice": null
       },
       "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
-      "literal_location_time_fields": {},
+      "location_time_fields": {},
       "route_structure": {
         "exported_edges": 0,
         "source_link_count": 0,
@@ -1467,9 +1612,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "13116",
+              "value_sha256": "22067cf703f398fe8445be8c50491689d267a55f8990ca9359242adf54a69331",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -1482,9 +1628,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "豊島区",
+              "value_sha256": "8f7343d8f57280bcdfad0090a8a3f5a6f82666fdf555382a18c8f01a0b1ed49c",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -1497,9 +1644,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "13",
+              "value_sha256": "3fdba35f04dc8c462986c992bcf875546257113072a909c162f7e470e581e278",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -1512,9 +1660,10 @@
             "string"
           ],
           "distinct_count": 1,
-          "literal_distribution": [
+          "value_hash_distribution": [
             {
-              "value": "東京都",
+              "value_sha256": "ce76fe655d41af062f0ef4f53a509f84df667596a54921a88ac27c11a1a02db7",
+              "value_type": "string",
               "count": 1
             }
           ],
@@ -1546,7 +1695,7 @@
         "approval_notice": null
       },
       "origin_note": "Official catalog origin attached only after equal ZIP/direct feature arrays; terms assessed separately in rights record.",
-      "literal_location_time_fields": {},
+      "location_time_fields": {},
       "route_structure": {
         "exported_edges": 0,
         "source_link_count": 0,
@@ -3291,7 +3440,7 @@
   "publish_gate": "HOLD",
   "limitations": [
     "No POI becomes a node, edge, door or floor.",
-    "Literal location, opening-hour and level fields remain verbatim in the hashed detail.",
+    "Location, opening-hour, level and every other source field value appear in this committed report only as SHA-256 + count (no release permission for some sources); the verbatim values stay in the git-ignored external detail.",
     "No source currency, operator permission, complete coverage or navigability established."
   ]
 }

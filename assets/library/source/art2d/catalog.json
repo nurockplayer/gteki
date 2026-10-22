@@ -1,0 +1,515 @@
+{
+  "note": "The guide cat and dog are headed for the navigation UI (#132), but until the Owner approves their model sheets they are assets only, not the official mascot. Characters are original and must not resemble Capoo/咖波, 臭跩貓, Pusheen, Sanrio, Chiikawa or any other existing character. m01_manners_mascot uses a separate yellow bird, not the guide duo.",
+  "source": "Owner-approved AI 2D art batch 1 (2026-10-22). All images are CC0-1.0, AI-generated, fictional brands only; see provenance.json. Text is typeset afterwards (tools/blender/art2d/typeset.py); the AI drew no text.",
+  "vocab": {
+    "category": [
+      "lightbox_wide",
+      "poster_b1",
+      "manners_poster",
+      "mural",
+      "stained_glass",
+      "mascot_sheet",
+      "comic"
+    ],
+    "feel": [
+      "aesthetic",
+      "japanese_season",
+      "showa_retro",
+      "mascot",
+      "photo_ad",
+      "anime"
+    ],
+    "season": [
+      "spring",
+      "summer",
+      "autumn",
+      "winter",
+      "any"
+    ],
+    "station_hint": [
+      "ikebukuro",
+      "shinjuku",
+      "any"
+    ],
+    "aspect": "shipped aspect: 2:3 portrait, 16:9 wide, 1:1 square"
+  },
+  "entries": [
+    {
+      "id": "b1_ike_anime_duo",
+      "category": "poster_b1",
+      "aspect": "2:3",
+      "feel": "anime",
+      "season": "winter",
+      "station_hint": "ikebukuro",
+      "has_text": true,
+      "text_lines": [
+        "夜明けのリフレイン",
+        "TVアニメ　2027年1月　放送開始"
+      ],
+      "use": [
+        "B1 poster light box (Ikebukuro, anime/entertainment ad slot)",
+        "event hall or shop-front poster"
+      ]
+    },
+    {
+      "id": "j02_hanabi_grand",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "japanese_season",
+      "season": "summer",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "wide light box (summer festival campaign)",
+        "passage mural strip",
+        "loading or title backdrop"
+      ]
+    },
+    {
+      "id": "j03_matsuri_lanterns",
+      "category": "poster_b1",
+      "aspect": "2:3",
+      "feel": "japanese_season",
+      "season": "summer",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "B1 poster light box (festival)",
+        "pillar or corridor poster"
+      ]
+    },
+    {
+      "id": "j04_kingyo_furin",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "japanese_season",
+      "season": "summer",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "wide light box (summer, calm)",
+        "cafe or shop-front wide panel"
+      ]
+    },
+    {
+      "id": "j05_toro_nagashi",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "japanese_season",
+      "season": "spring",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "wide light box (spring evening)",
+        "passage mural strip"
+      ]
+    },
+    {
+      "id": "j06_tanabata",
+      "category": "poster_b1",
+      "aspect": "2:3",
+      "feel": "japanese_season",
+      "season": "summer",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "B1 poster light box (Tanabata)",
+        "seasonal event poster"
+      ]
+    },
+    {
+      "id": "j07_onsen_snow_town",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "japanese_season",
+      "season": "winter",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "wide light box (winter travel)",
+        "passage mural strip"
+      ]
+    },
+    {
+      "id": "k01_mascot_cool_cat",
+      "category": "mascot_sheet",
+      "aspect": "1:1",
+      "feel": "mascot",
+      "season": "any",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "reference only, not for in-game display"
+      ],
+      "guide_characters": true
+    },
+    {
+      "id": "k02_mascot_helpful_dog",
+      "category": "mascot_sheet",
+      "aspect": "1:1",
+      "feel": "mascot",
+      "season": "any",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "reference only, not for in-game display"
+      ],
+      "guide_characters": true
+    },
+    {
+      "id": "k03_mascot_duo",
+      "category": "mascot_sheet",
+      "aspect": "1:1",
+      "feel": "mascot",
+      "season": "any",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "reference only, not for in-game display"
+      ],
+      "guide_characters": true
+    },
+    {
+      "id": "k04_manners_backpack",
+      "category": "manners_poster",
+      "aspect": "2:3",
+      "feel": "mascot",
+      "season": "any",
+      "station_hint": "any",
+      "has_text": true,
+      "text_lines": [
+        "リュックは、前に。",
+        "ちいさな気づかいで、みんな快適。"
+      ],
+      "use": [
+        "manners poster (backpacks to the front), concourse or platform wall",
+        "wayfinding pillar poster"
+      ],
+      "guide_characters": true
+    },
+    {
+      "id": "k05_manners_escalator",
+      "category": "manners_poster",
+      "aspect": "2:3",
+      "feel": "mascot",
+      "season": "any",
+      "station_hint": "any",
+      "has_text": true,
+      "text_lines": [
+        "手すりにつかまって、",
+        "ひと休み。"
+      ],
+      "use": [
+        "manners poster (hold the handrail), near escalators"
+      ],
+      "guide_characters": true
+    },
+    {
+      "id": "k06_manners_phone",
+      "category": "manners_poster",
+      "aspect": "2:3",
+      "feel": "mascot",
+      "season": "any",
+      "station_hint": "any",
+      "has_text": true,
+      "text_lines": [
+        "スマホは、",
+        "立ち止まってから。"
+      ],
+      "use": [
+        "manners poster (phone: stop before you look), concourse or corridor wall"
+      ],
+      "guide_characters": true
+    },
+    {
+      "id": "k07_cat_hanabi",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "mascot",
+      "season": "summer",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "wide light box (summer, guide cat)",
+        "loading or title backdrop"
+      ],
+      "guide_characters": true
+    },
+    {
+      "id": "k08_dog_sakura",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "mascot",
+      "season": "spring",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "wide light box (spring, guide dog)",
+        "loading or title backdrop"
+      ],
+      "guide_characters": true
+    },
+    {
+      "id": "k09_duo_snow_night",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "mascot",
+      "season": "winter",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "wide light box (winter, guide duo)",
+        "loading or title backdrop"
+      ],
+      "guide_characters": true
+    },
+    {
+      "id": "k10_cat_ginkgo",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "mascot",
+      "season": "autumn",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "wide light box (autumn, guide cat)",
+        "loading or title backdrop"
+      ],
+      "guide_characters": true
+    },
+    {
+      "id": "k11_lost_cat_comic",
+      "category": "comic",
+      "aspect": "16:9",
+      "feel": "mascot",
+      "season": "any",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "4-panel comic wide light box (getting lost, then found)",
+        "help-desk or information-area panel"
+      ],
+      "guide_characters": true
+    },
+    {
+      "id": "k12_found_exit",
+      "category": "poster_b1",
+      "aspect": "2:3",
+      "feel": "mascot",
+      "season": "any",
+      "station_hint": "any",
+      "has_text": true,
+      "text_lines": [
+        "出口、見つけた！",
+        "迷っても、だいじょうぶ。"
+      ],
+      "use": [
+        "poster near exits (reassurance: it is fine to get lost)",
+        "B1 poster light box"
+      ],
+      "guide_characters": true
+    },
+    {
+      "id": "m01_manners_mascot",
+      "category": "manners_poster",
+      "aspect": "2:3",
+      "feel": "mascot",
+      "season": "any",
+      "station_hint": "any",
+      "has_text": true,
+      "text_lines": [
+        "リュックは前に。",
+        "みんなが気持ちよく乗れるように"
+      ],
+      "use": [
+        "manners poster (backpacks to the front), platform or concourse wall",
+        "uses a yellow bird, not the guide cat or dog"
+      ]
+    },
+    {
+      "id": "s08_showa_travel_poster",
+      "category": "poster_b1",
+      "aspect": "2:3",
+      "feel": "showa_retro",
+      "season": "summer",
+      "station_hint": "any",
+      "has_text": true,
+      "text_lines": [
+        "青い海へ、夏休み。",
+        "特急でゆく 南の浜辺"
+      ],
+      "use": [
+        "B1 poster light box (retro travel campaign)",
+        "Showa-themed shop-front poster"
+      ]
+    },
+    {
+      "id": "s09_kissaten_front",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "showa_retro",
+      "season": "any",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "wide light box (retro cafe)",
+        "shop-front or arcade wide panel"
+      ]
+    },
+    {
+      "id": "s10_sento_mural",
+      "category": "mural",
+      "aspect": "16:9",
+      "feel": "showa_retro",
+      "season": "any",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "tiled bathhouse-style mural wall (Mt Fuji, Owner exception)",
+        "wide light box"
+      ]
+    },
+    {
+      "id": "s11_neon_shotengai",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "showa_retro",
+      "season": "any",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "wide light box (retro shopping arcade, night)",
+        "passage mural strip"
+      ]
+    },
+    {
+      "id": "s12_showa_ad_illust",
+      "category": "poster_b1",
+      "aspect": "2:3",
+      "feel": "showa_retro",
+      "season": "summer",
+      "station_hint": "any",
+      "has_text": true,
+      "text_lines": [
+        "夏は、メロンソーダ。",
+        "純喫茶 みどり堂"
+      ],
+      "use": [
+        "B1 poster light box (retro soda ad, fictional brand)",
+        "cafe-front poster"
+      ]
+    },
+    {
+      "id": "t09_layered_dawn",
+      "category": "stained_glass",
+      "aspect": "2:3",
+      "feel": "aesthetic",
+      "season": "spring",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "stained-glass or glass-art panel (layered dawn city)",
+        "B1 art poster light box"
+      ]
+    },
+    {
+      "id": "w05_ginkgo_morning",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "aesthetic",
+      "season": "autumn",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "wide light box (autumn morning)",
+        "passage mural strip"
+      ]
+    },
+    {
+      "id": "w06_snow_lanterns",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "aesthetic",
+      "season": "winter",
+      "station_hint": "any",
+      "has_text": false,
+      "text_lines": [],
+      "use": [
+        "wide light box (winter night)",
+        "passage mural strip"
+      ]
+    },
+    {
+      "id": "w08_light_installation",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "aesthetic",
+      "season": "any",
+      "station_hint": "any",
+      "has_text": true,
+      "text_lines": [
+        "光の回廊",
+        "地下通路アートプロジェクト"
+      ],
+      "use": [
+        "wide light box (public-art passage exhibition)",
+        "underground passage wide panel"
+      ]
+    },
+    {
+      "id": "wide_ike_aquarium",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "photo_ad",
+      "season": "any",
+      "station_hint": "ikebukuro",
+      "has_text": true,
+      "text_lines": [
+        "夜の水族館、",
+        "はじめました。",
+        "アクアテラス　ナイトオープン　18:00─22:00"
+      ],
+      "use": [
+        "wide light box (Ikebukuro concourse, aquarium ad)",
+        "rooftop or event advertising slot"
+      ]
+    },
+    {
+      "id": "wide_shj_travel",
+      "category": "lightbox_wide",
+      "aspect": "16:9",
+      "feel": "photo_ad",
+      "season": "autumn",
+      "station_hint": "shinjuku",
+      "has_text": true,
+      "text_lines": [
+        "湯けむりの、",
+        "朝へ。",
+        "秋の温泉旅キャンペーン　ゆけむり紀行"
+      ],
+      "use": [
+        "wide light box (Shinjuku concourse, travel campaign)",
+        "travel-agency style advertising slot"
+      ]
+    }
+  ]
+}
