@@ -41,6 +41,9 @@ NAVIGATION = "none — visual/physical only; routing truth lives in the station 
 
 # Station bake roles (contract §10): optional `gteki_role` on the root and VIS_* nodes of dressing pieces.
 ROLES = ("barriers", "transport", "stairs_ramps")
+# Anchor classes (contract §10): optional `anchor` in a catalog entry, for pieces whose origin is
+# not the plain `placement` one; the Godot import test checks the origin by it when present.
+ANCHORS = ("linear_run", "edge_anchored")
 
 # dimension_basis values (contract §3). The kit never claims "station-verified".
 GENERIC_TYPICAL = "generic-typical"

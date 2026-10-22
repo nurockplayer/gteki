@@ -158,4 +158,13 @@ Dressing pieces (`family: "dressing"`, generators in `families/dressing.py`) go 
 | `stair_dressing` | `linear` | floor level under the first (bottom) nosing, centred in X. Risers climb toward −Z; the handrail's lower extension starts 0.75 m in front |
 | `railing_run` | `free` | the plan origin of `params.points` (`[x_mm, y_mm]`, +y is −Z), floor level. `start` and `end` sockets sit on the first and last point and face outward along the run |
 
+**Anchor class.** These origins differ from the plain §1 `placement` rules (an escalator newel reaches in front of a `linear` entry line; a railing run starts at its first point instead of being centred like other `free` pieces). The catalog entry says so with `"anchor"`, which the build copies to `extras.gteki.anchor` and to the manifest entry (omitted when absent, so other assets stay byte-identical). `placement` keeps its value, so loaders that branch on it see no change. The Godot import test checks the origin by the anchor class when there is one, and by `placement` otherwise:
+
+| `anchor` | Origin | Godot import checks |
+| --- | --- | --- |
+| `linear_run` | entry line at z=0, the run extends toward −Z; newels, handrail ends and post caps may reach up to 1 m in front, and a piece mounted on its host may start up to one riser above the floor | `extends_negative_z`, `front_reach_within_1m`, `base_between_slab_and_first_riser` (−0.1 m to 0.5 m, or lower with `allow_below_floor`) |
+| `edge_anchored` | one end or the foot of the piece, which extends from there (a run's first point, a lamp's pole) | `floor_min_y_near_zero`, `origin_on_footprint` (the origin lies within the plan footprint, 6 cm tolerance) |
+
+The kit catalog sets `linear_run` on every `escalator_dressing` and `stair_dressing` entry and `edge_anchored` on every `railing_run` entry. Any other value fails the build.
+
 `params.allow_below_floor` is set only where a piece sinks into the station's slab: escalator skirts (60 mm) and static treads (45 mm). Textures use the usual metric UV0; the mobile tier adds the TEXCOORD_1 lightmap layout. A station that bakes with its own second UV set uses UV0 for materials only.

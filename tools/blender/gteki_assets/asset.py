@@ -59,6 +59,7 @@ class Asset:
         self.license_spdx = contract.LICENSE_SPDX  # written only when contract.EMBED_SPDX
         self.placement = "free"
         self.role = None  # station bake role (contract §10); dressing generators set it
+        self.anchor = None  # catalog `anchor` class (contract §10), for the Godot origin check
         self.materials = []
         self.parts = []  # (group, Part)
         self.collision = []  # (name, Part)
@@ -215,6 +216,7 @@ class Asset:
             "triangles": tris,
             "dimension_basis": self.dimension_basis,
             "placement": self.placement,
+            **({"anchor": self.anchor} if self.anchor else {}),
             "fidelity": contract.FIDELITY,
             "navigation": contract.NAVIGATION,
             "provenance": self.provenance,
@@ -295,6 +297,8 @@ class Asset:
         }
         if self.role:  # keeps the manifest of role-less assets byte-identical
             entry["gteki_role"] = self.role
+        if self.anchor:  # likewise for assets without an anchor class
+            entry["anchor"] = self.anchor
         return entry
 
 
