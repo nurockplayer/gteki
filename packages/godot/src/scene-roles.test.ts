@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { sceneFromGlbRoles, seeThroughMeshes, type StationScene } from "@gteki/scene-api";
-import { AMBIENT_ROLES, CAMERA_ROLES, COLLIDER_ROLES, SEE_THROUGH_ROLES, WALKABLE_ROLES, bakeInstancedMeshes, categoryOf, dropDynamicObjects, stripTextures, tagSceneRoles } from "./scene-roles.ts";
+import { AMBIENT_ROLES, CAMERA_ROLES, COLLIDER_ROLES, SEE_THROUGH_ROLES, WALKABLE_ROLES, bakeInstancedMeshes, categoryOf, dropDynamicObjects, stripTextures, tagLightmaps, tagSceneRoles } from "./scene-roles.ts";
 import { approximateTextWidth } from "./headless-dom.ts";
 
 const named = (name: string, role?: string) => {
@@ -185,6 +185,49 @@ describe("multi-material visibility (#232)", () => {
     expect((part.material as THREE.Material[]).length).toBe(2);
     expect(part.userData).toMatchObject({ gteki_hidden: true, gteki_role: "collider", gteki_collision_only: true });
     expect(summary).toMatchObject({ meshes: 1, collider: 1, hidden: 1, collisionOnly: 1 });
+  });
+});
+
+describe("tagLightmaps", () => {
+  const lightmap = () => {
+    const texture = new THREE.Texture();
+    texture.userData.gteki_uri = "assets/lightmap.webp";
+    texture.channel = 1;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.flipY = false;
+    return texture;
+  };
+  const lit = (texture: THREE.Texture, intensity = 4.41) => new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ lightMap: texture, lightMapIntensity: intensity }));
+
+  it("records the material state: flagged surfaces and the one texture the scene used", () => {
+    const texture = lightmap();
+    const root = new THREE.Group();
+    const floor = lit(texture);
+    const mixed = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), [new THREE.MeshBasicMaterial(), new THREE.MeshStandardMaterial({ lightMap: texture, lightMapIntensity: 4.41 })]);
+    root.add(floor, mixed, named("wall"));
+    expect(tagLightmaps(root)).toEqual({ uri: "assets/lightmap.webp", channel: 1, color_space: "srgb", flip_y: false, light_map_intensity: 4.41, meshes: 2, surfaces: 2 });
+    expect(floor.userData.gteki_lightmap_surfaces).toEqual([0]);
+    expect(mixed.userData.gteki_lightmap_surfaces).toEqual([1]);
+    expect(root.children[2]!.userData.gteki_lightmap_surfaces).toBeUndefined();
+  });
+
+  it("returns null when no material carries a lightmap", () => {
+    const root = new THREE.Group();
+    root.add(named("wall"));
+    expect(tagLightmaps(root)).toBeNull();
+  });
+
+  it("throws rather than guess when the scene disagrees or the texture origin is unknown", () => {
+    const two = new THREE.Group();
+    two.add(lit(lightmap()), lit(lightmap()));
+    expect(() => tagLightmaps(two)).toThrow(/2 distinct lightmap textures/);
+    const disagreement = new THREE.Group();
+    const shared = lightmap();
+    disagreement.add(lit(shared, 1), lit(shared, 2));
+    expect(() => tagLightmaps(disagreement)).toThrow(/disagree on lightMapIntensity/);
+    const anonymous = new THREE.Group();
+    anonymous.add(lit(new THREE.Texture()));
+    expect(() => tagLightmaps(anonymous)).toThrow(/no recorded source URI/);
   });
 });
 

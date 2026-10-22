@@ -1,15 +1,18 @@
 extends Node3D
 ## HQ client (G-1 loader + G-2 walk): picks a station snapshot, loads it, and lets you walk it third-person.
 ## No search/route (G-3) and no HQ look (G-4) yet.
-## Run:  godot --path packages/godot res://hq/hq.tscn -- [--station=<id>] [--scenes=<dir>] [--check]
+## Run:  godot --path packages/godot res://hq/hq.tscn -- [--station=<id>] [--scenes=<dir>] [--lightmap=on|off] [--check]
 ## <dir> holds <stationId>/{scene.glb,scene.json} from packages/godot/src/export-scene.ts (default: .cache/scenes).
 ## Keys: WASD/arrows move, Shift runs, drag (left or right mouse) or right stick orbits, wheel zooms,
 ##       Tab switches station, N cycles the station's spawn points. --check loads, prints a summary and quits.
+##       --lightmap=on (default) applies the station's baked lightmap (G-4a); =off keeps the unlit snapshot. With the
+##       lightmap on, the added lights are masked to the avatar, as the web lights only its own avatar in "scene" mode.
 
 const Scene = preload("res://addons/gteki/gteki_scene.gd")
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
 const FollowCamera = preload("res://addons/gteki/gteki_follow_camera.gd")
 const GuideHud = preload("res://hq/hq_guide.gd")
+const HqLights = preload("res://addons/gteki/gteki_hq_lights.gd")
 
 ## Web wheel notch (deltaY) in the units apply_look expects, and stick look speed in pixels per second.
 const WHEEL_UNITS := 100.0
@@ -24,6 +27,9 @@ var walker: Walker
 var camera: FollowCamera
 var spawn_index := 0
 var guide_hud: GuideHud
+var lightmap := true
+## Key + fill, masked to the avatar layer while a station bake is applied (gteki_hq_lights.gd).
+var lights: Array[DirectionalLight3D] = []
 var _look := Vector2.ZERO
 var _zoom := 0.0
 var _placing := false
@@ -39,6 +45,13 @@ func _ready() -> void:
 			scenes_dir = arg.trim_prefix("--scenes=")
 		elif arg == "--check":
 			check_only = true
+		elif arg.begins_with("--lightmap="):
+			var value := arg.trim_prefix("--lightmap=")
+			if value != "on" and value != "off":
+				printerr("--lightmap must be on or off, not %s" % value)
+				get_tree().quit(2)
+				return
+			lightmap = value == "on"
 	station_ids = list_stations(scenes_dir)
 	if station_ids.is_empty():
 		printerr("No station snapshots in %s (run packages/godot/run-scenes.sh)" % scenes_dir)
@@ -51,9 +64,7 @@ func _ready() -> void:
 	camera.name = "camera"
 	add_child(camera)
 	camera.current = true
-	var light := DirectionalLight3D.new()
-	light.rotation_degrees = Vector3(-50, 30, 0)
-	add_child(light)
+	lights = HqLights.build(self)
 	if not check_only:
 		guide_hud = GuideHud.new()
 		add_child(guide_hud)
@@ -63,6 +74,14 @@ func _ready() -> void:
 		ok = await place_at_spawn(0)
 	if check_only:
 		get_tree().quit(0 if ok else 1)
+
+
+func lightmap_summary() -> String:
+	if not current.lightmap.is_empty() and not lightmap:
+		return "lightmap off (%d meshes recorded)" % int(current.lightmap.get("meshes", 0))
+	if current.lightmap_applied:
+		return "lightmap %d meshes / %d surfaces, %dx%d" % [current.lightmap_meshes, current.lightmap_surfaces, current.lightmap_texture_size.x, current.lightmap_texture_size.y]
+	return "no lightmap"
 
 
 static func list_stations(dir: String) -> Array[String]:
@@ -80,11 +99,15 @@ func load_station(id: String) -> bool:
 	holder = Node3D.new()
 	add_child(holder)
 	current = Scene.new()
-	var ok := current.load_snapshot(scenes_dir.path_join(id), holder)
+	var ok := current.load_snapshot(scenes_dir.path_join(id), holder, {"lightmap": lightmap})
 	if not ok:
 		printerr("Cannot load %s: %s" % [id, str(current.issues)])
 		return false
-	print("%s: %d meshes (walkable %d, collider %d), %d walls, %d spawn points, %d export warnings" % [id, current.counts.meshes, current.counts.walkable, current.counts.collider, current.wall_shapes, current.spawn_points.size(), current.sidecar.warnings.size()])
+	print("%s: %d meshes (walkable %d, collider %d), %d walls, %d spawn points, %d export warnings, %s" % [id, current.counts.meshes, current.counts.walkable, current.counts.collider, current.wall_shapes, current.spawn_points.size(), current.sidecar.warnings.size(), lightmap_summary()])
+	# The bake is the station's light and the web adds no scene lights: the added lights then reach the avatar layer
+	# only, so the avatar stays shaded instead of a black silhouette. The unlit snapshot (--lightmap=off or a station
+	# without a lightmap such as Shinjuku) keeps them on every layer.
+	HqLights.apply(lights, current.lightmap_applied)
 	var background: Variant = current.environment.get("background")
 	if background is float or background is int:
 		RenderingServer.set_default_clear_color(Color.hex((int(background) << 8) | 0xff))
