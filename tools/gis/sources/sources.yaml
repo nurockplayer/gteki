@@ -197,6 +197,35 @@
   availability_deadline: 2027-03-12
   notes: "Floor-map source. Shipped Shinjuku plan.json carries re-framed source polygons and attribute codes only, with no source styling, symbols or drawings. Shipping basis: the Owner's #16 override for the Shinjuku slice (which includes E27-derived data), not a licence finding; package PDL 1.0 is not taken as the resource licence basis (Owner Q11 = No, and Owner decision (a) on #39 comment 6325100917; see docs/gis/decisions/owner-rights-questions.md Q11). Resource-level licence is unconfirmed (CKAN resource license null); the package licence PDL 1.0 (https://www.digital.go.jp/resources/open_data/public_data_license_v1.0) is not inherited. Open: reuse after 2027-03-12."
   publish_gate: CONDITIONAL
+- source_id: hokonavi-oedo-shinjuku-package
+  title: Toei Oedo Shinjuku E27 CKAN package_show with dataset page, resource pages and terms snapshots
+  station_ids: [shinjuku]
+  publisher: MLIT Hokonavi DP
+  official_url: https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjuku
+  resolution: { kind: direct }
+  expected_url: https://ckan.hokonavi.go.jp/api/3/action/package_show?id=station_oedo_shinjuku
+  expected_bytes: null
+  license_name: unknown
+  license_url: null
+  attribution_text: unknown
+  commercial_use: { status: unknown, evidence: docs/gis/decisions/owner-rights-questions.md }
+  modification_allowed: { status: unknown, evidence: docs/gis/decisions/owner-rights-questions.md }
+  redistribution_allowed: { status: unknown, evidence: docs/gis/decisions/owner-rights-questions.md }
+  content_year: null
+  availability_deadline: 2027-03-12
+  notes: "Evidence snapshot for the two E27 ZIPs (M0-01 rank 9): the CKAN package metadata plus the dataset page, the two resource pages, the site terms and the PDL 1.0 text that applied on the acquisition date, each hashed. It is not a data source and nothing is converted from it. The two ZIP records (hokonavi-oedo-shinjuku-network-geojson, -stationmap-geojson) are unchanged and were not re-downloaded. The terms snapshots are archived, not interpreted as a rights decision: the shipping basis stays the Owner's #16 override (Owner Q11 = No). Open: reuse after 2027-03-12."
+  publish_gate: HOLD
+  supporting_documents:
+    - id: dataset-page
+      url: https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjuku
+    - id: resource-network-geojson-page
+      url: https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjuku/resource/d4519a9a-917a-4de8-9104-83e21246c04c
+    - id: resource-stationmap-geojson-page
+      url: https://ckan.hokonavi.go.jp/dataset/station_oedo_shinjuku/resource/9c5ecc7b-a6e4-4d92-978c-9b66ca642172
+    - id: hokonavi-site-terms
+      url: https://www.hokonavi.go.jp/terms/
+    - id: pdl-1-0-text
+      url: https://www.digital.go.jp/resources/open_data/public_data_license_v1.0
 - source_id: hokonavi-ikebukuro-walk-node-csv
   title: Hokonavi Ikebukuro walking network nodes CSV
   station_ids: [ikebukuro]
@@ -353,22 +382,22 @@
     kind: direct
   expected_url: https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku.csv
   expected_bytes: null
-  license_name: unknown
-  license_url: null
-  attribution_text: unknown
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: 出典：東京都交通局「駅構内のお店」
   commercial_use:
-    status: unknown
+    status: conditional
     evidence: docs/gis/rights/tokyo-s10-shinjuku-csv.json
   modification_allowed:
-    status: unknown
+    status: conditional
     evidence: docs/gis/rights/tokyo-s10-shinjuku-csv.json
   redistribution_allowed:
-    status: unknown
+    status: conditional
     evidence: docs/gis/rights/tokyo-s10-shinjuku-csv.json
   content_year: null
   availability_deadline: null
-  notes: Bounded Lane D evidence; reuse and navigability are separate. No graph conversion.
-  publish_gate: HOLD
+  notes: "Bounded Lane D evidence; reuse and navigability are separate. No graph conversion. Licence from the dataset record (package_show license_id CC-BY-4.0, exact resource covered; rights record above). Owner Q1 = Yes (#39 comment 6324726321, docs/gis/decisions/2026-10-22-owner-rights-answers.md): plain names, times and locations publish with this credit plus a change notice wherever GTEki edits, selects or reformats; no promotional prose, images, logos or trademarks. No coordinates exist, so nothing is placed from S10 alone."
+  publish_gate: CONDITIONAL
 - source_id: tokyo-s10-shinjuku-nishiguchi-csv
   title: S10 駅構内のお店 新宿西口
   station_ids:
@@ -379,22 +408,22 @@
     kind: direct
   expected_url: https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku-nishiguchi.csv
   expected_bytes: null
-  license_name: unknown
-  license_url: null
-  attribution_text: unknown
+  license_name: CC BY 4.0
+  license_url: https://creativecommons.org/licenses/by/4.0/legalcode.ja
+  attribution_text: 出典：東京都交通局「駅構内のお店」
   commercial_use:
-    status: unknown
+    status: conditional
     evidence: docs/gis/rights/tokyo-s10-shinjuku-nishiguchi-csv.json
   modification_allowed:
-    status: unknown
+    status: conditional
     evidence: docs/gis/rights/tokyo-s10-shinjuku-nishiguchi-csv.json
   redistribution_allowed:
-    status: unknown
+    status: conditional
     evidence: docs/gis/rights/tokyo-s10-shinjuku-nishiguchi-csv.json
   content_year: null
   availability_deadline: null
-  notes: Bounded Lane D evidence; reuse and navigability are separate. No graph conversion.
-  publish_gate: HOLD
+  notes: "Bounded Lane D evidence; reuse and navigability are separate. No graph conversion. Licence from the dataset record (package_show license_id CC-BY-4.0, exact resource covered; rights record above). Owner Q1 = Yes (#39 comment 6324726321, docs/gis/decisions/2026-10-22-owner-rights-answers.md): plain names, times and locations publish with this credit plus a change notice wherever GTEki edits, selects or reformats; no promotional prose, images, logos or trademarks. No coordinates exist, so nothing is placed from S10 alone."
+  publish_gate: CONDITIONAL
 - source_id: tokyo-s10-catalog
   title: S10 駅構内のお店 catalog package_show
   station_ids:

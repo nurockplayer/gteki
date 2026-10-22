@@ -36,10 +36,13 @@
     "スロープ",
     "公園",
     "地下通路",
+    "地下鉄",
     "島",
     "東京地下鉄",
     "通路",
     "道路",
+    "避難場所",
+    "避難所",
     "鉄道"
   ],
   "justifications": {
@@ -82,7 +85,10 @@
     "道路": "Ordinary Japanese noun in our own prose (道路, the road geometry decisions) and report keys (道路種別); a one-word PLATEAU codelist description that carries no source-specific wording. Exempt only as a substring of prose.",
     "鉄道": "Common noun (railway) inside the recorded KSJ attribution text 国土数値情報（鉄道・2024年） that rights/ reports quote, and in our theme names; it is also an MLIT specification label. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
     "東京地下鉄": "Publisher name (Tokyo Metro Co., Ltd.) that provenance and credit must record: the facts-only source tokyometro-ikebukuro-yardmap-2026-03 (decisions/facts-only-credit-wording.md, #122/#138) is published by it. It coincides with an operator value in the PLATEAU related layers, but naming a source's publisher is attribution, not reuse of a field value. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
-    "通路": "Ordinary Japanese noun (passage) inside station facility names that our own pois.json records as facts (ticket-gate names such as a 中央通路 gate, decisions/facts-only-credit-wording.md, #122/#138) and in 地下通路; a one-word PLATEAU codelist description that carries no source-specific wording. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak."
+    "通路": "Ordinary Japanese noun (passage) inside station facility names that our own pois.json records as facts (ticket-gate names such as a 中央通路 gate, decisions/facts-only-credit-wording.md, #122/#138) and in 地下通路; a one-word PLATEAU codelist description that carries no source-specific wording. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "避難所": "Common noun (evacuation shelter) inside the official titles of candidate replacement datasets (Tokyo and Shinjuku-ward shelter lists) that our research notes must name for provenance (research/2026-10-22-shinjuku-poi-next-gaps.md); also a one-word PLATEAU codelist description. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "避難場所": "Common noun (evacuation site) inside the official titles of candidate replacement datasets (Tokyo 避難所・避難場所 lists, the ward's 指定緊急避難場所 list) named for provenance in our research notes; it coincides with a PLATEAU related shelter value. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak.",
+    "地下鉄": "Common noun (subway) inside official publisher and dataset names our docs must cite (都営地下鉄, 東京地下鉄, 都営地下鉄駅基本情報); also a one-word PLATEAU codelist description. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak."
   },
   "structural_values": [
     "building",
