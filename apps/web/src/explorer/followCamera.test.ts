@@ -144,3 +144,46 @@ describe("followBoom", () => {
     for (const h of cast(out.back)) expect(out.distance).toBeLessThanOrEqual(Math.max(FOLLOW.minDistance, h.distance - FOLLOW.clearance) + 1e-9);
   });
 });
+
+describe("follow camera FOV", () => {
+  it("narrows third person only; first person and overview keep 60", () => {
+    expect(targetFov("walk", false)).toBe(FOV.follow);
+    expect(targetFov("guide", false)).toBe(FOV.follow);
+    expect(FOV.follow).toBe(50);
+    expect(targetFov("walk", true)).toBe(60);
+    expect(targetFov("guide", true)).toBe(60);
+    expect(targetFov("overview", false)).toBe(60);
+    expect(targetFov("overview", true)).toBe(60);
+  });
+
+  it("eases the same over one second at 30, 60 and 144 Hz", () => {
+    const after = (hz: number, seconds: number) => {
+      let f = 60;
+      for (let i = 0; i < Math.round(hz * seconds); i++) f = approachFov(f, 50, 1 / hz);
+      return f;
+    };
+    const at60 = after(60, 0.2);
+    expect(after(30, 0.2)).toBeCloseTo(at60, 6);
+    expect(after(144, 0.2)).toBeCloseTo(at60, 1);
+    // One time constant covers about 63% of the way.
+    expect(after(60, FOV.settle)).toBeCloseTo(50 + 10 * Math.exp(-1), 1);
+  });
+
+  it("never overshoots and lands exactly on the target", () => {
+    for (const [from, to] of [[60, 50], [50, 60]] as const) {
+      let f: number = from;
+      for (let i = 0; i < 240; i++) {
+        const next = approachFov(f, to, 1 / 60);
+        expect(Math.abs(next - to)).toBeLessThanOrEqual(Math.abs(f - to));
+        expect(Math.sign(next - to) * Math.sign(from - to)).toBeGreaterThanOrEqual(0);
+        f = next;
+      }
+      expect(f).toBe(to);
+    }
+  });
+
+  it("holds still for a zero or negative frame time", () => {
+    expect(approachFov(55, 50, 0)).toBe(55);
+    expect(approachFov(55, 50, -1)).toBe(55);
+  });
+});
