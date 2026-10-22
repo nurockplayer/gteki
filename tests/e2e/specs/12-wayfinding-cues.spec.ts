@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { chooseBySearch, hooks, openStation, save, shotPath, textIf, toasts } from "../lib/gteki.ts";
 import { aheadWithin, cuesAlong, gaps, project, round, routeLine, stagnantRuns } from "../lib/cues.ts";
+// Long guided walks: a retained trace would fill the disk (see protocol.md, host limits).
+test.use({ trace: "off" });
 
 /**
  * Ikebukuro wayfinding cues along the long B1 passages, #108 (A4: repetitive passages). Acceptance, for the

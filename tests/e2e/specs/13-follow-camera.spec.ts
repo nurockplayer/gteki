@@ -42,7 +42,7 @@ const CLAMP_RUN_MAX_MS = 1250;
 const FOV_JUMP_MAX_DEG = Number(process.env.GTEKI_FOV_JUMP_DEG ?? 5);
 /** Tolerance when comparing the measured FOV with the source's declared value (deg). */
 const FOV_TOL_DEG = 0.5;
-const MAX_SAVED_FRAMES = 30;
+const MAX_SAVED_FRAMES = 12;
 
 test.use({ trace: "off" });
 

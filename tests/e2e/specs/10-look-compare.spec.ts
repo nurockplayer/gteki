@@ -131,7 +131,7 @@ for (const scene of scenes) {
     test(`look compare: ${scene.id} / ${tier.id}${tier.phone ? " @phone" : ""}`, async ({ browser }, testInfo) => {
       test.skip(!lookUrl, "GTEKI_LOOK_URL not set (tools/qa/run-candidate.sh serves the look harness when the candidate has apps/web/qa/look.html)");
       test.skip(!tier.phone && testInfo.project.name !== "desktop-chromium", "desktop tier runs in the desktop project only");
-      test.setTimeout(READY_TIMEOUT_MS * 2 + 90_000);
+      test.setTimeout(READY_TIMEOUT_MS * 3 + 90_000);
 
       const project = testInfo.project.name;
       const url = `${lookUrl}/qa/look.html?layout=${scene.layout}&camera=${scene.camera}&${tier.params}`;

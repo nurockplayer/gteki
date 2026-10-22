@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { chooseBySearch, hooks, imageStats, labelUiOverlaps, openStation, save, shotPath, stationData, STATIONS } from "../lib/gteki.ts";
 import { anchorSpread, labelBoxes, overlapPairs, settleLabels } from "../lib/overview.ts";
+// Long guided walks: a retained trace would fill the disk (see protocol.md, host limits).
+test.use({ trace: "off" });
 
 /**
  * Explorer overview acceptance, #109 (C5: the opening view doesn't orient). The overview is the first
