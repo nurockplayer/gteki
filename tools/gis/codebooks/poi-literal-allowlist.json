@@ -1,5 +1,5 @@
 {
-  "purpose": "Generic vocabulary exempt from the leak scan (gis check-literals, alias check-poi-literals): the POI values of #124 and the class (b) non-POI literals of #129 (docs/gis/rights/non-poi-literals.md). A term here is exempt only as a substring of our own prose. For class (b) literals a whole JSON string value or key equal to a term is still a leak, except the values listed in `structural_values`. Every term has its reason in `justifications`; add a term only after confirming it is a common word or schema fragment, never to hide a leaked value.",
+  "purpose": "Generic vocabulary exempt from the leak scan (gis check-literals, alias check-poi-literals): the POI values of #124 and the class (b) non-POI literals of #129 (docs/gis/rights/non-poi-literals.md). A term here is exempt only as a substring of our own prose. For POI values and class (b) literals alike, a whole JSON string value or key equal to a term is still a leak, except the values listed in `structural_values` (our own enum values) and, for POI values, the credited MLIT specification labels (class (a), Owner decision (ii)). Every term has its reason in `justifications`, every structural value in `structural_justifications`; add a term only after confirming it is a common word or schema fragment, never to hide a leaked value.",
   "terms": [
     "MB2F",
     "Stream",
@@ -85,11 +85,25 @@
     "通路": "Ordinary Japanese noun (passage) inside station facility names that our own pois.json records as facts (ticket-gate names such as a 中央通路 gate, decisions/facts-only-credit-wording.md, #122/#138) and in 地下通路; a one-word PLATEAU codelist description that carries no source-specific wording. Exempt only as a substring of prose; a whole JSON value or key equal to it is still a leak."
   },
   "structural_values": [
+    "building",
+    "elevator",
+    "escalator",
+    "gate",
+    "ramp",
     "road",
+    "section",
+    "stairs",
     "unknown"
   ],
   "structural_justifications": {
     "road": "Our own context reports emit kind \"road\" (PLATEAU tran layer) as an enum value, and counts keyed by it; that is GTEki schema vocabulary, not a copied label. A genuine source label equal to it would be an English word without wording value.",
-    "unknown": "The status marker \"unknown\" is our own enum value in rights, acquisitions, overlap and gap JSON (commercial_use, bbox_axis_order, license_name...). A copied codelist description 'unknown' carries no wording value, so excluding it whole-value would only produce false positives on our own markers."
+    "unknown": "The status marker \"unknown\" is our own enum value in rights, acquisitions, overlap and gap JSON (commercial_use, bbox_axis_order, license_name...). A copied codelist description 'unknown' carries no wording value, so excluding it whole-value would only produce false positives on our own markers.",
+    "building": "Our own enum value: the feature kind / facility-presence key that GTEki's network, gap, context and summary reports emit (and counts keyed by it). That is GTEki schema vocabulary, not a copied POI label; a POI value equal to this English word carries no wording value.",
+    "elevator": "Our own enum value: the feature kind / facility-presence key that GTEki's network, gap, context and summary reports emit (and counts keyed by it). That is GTEki schema vocabulary, not a copied POI label; a POI value equal to this English word carries no wording value.",
+    "escalator": "Our own enum value: the feature kind / facility-presence key that GTEki's network, gap, context and summary reports emit (and counts keyed by it). That is GTEki schema vocabulary, not a copied POI label; a POI value equal to this English word carries no wording value.",
+    "gate": "Our own enum value: the feature kind / facility-presence key that GTEki's network, gap, context and summary reports emit (and counts keyed by it). That is GTEki schema vocabulary, not a copied POI label; a POI value equal to this English word carries no wording value.",
+    "ramp": "Our own enum value: the feature kind / facility-presence key that GTEki's network, gap, context and summary reports emit (and counts keyed by it). That is GTEki schema vocabulary, not a copied POI label; a POI value equal to this English word carries no wording value.",
+    "stairs": "Our own enum value: the feature kind / facility-presence key that GTEki's network, gap, context and summary reports emit (and counts keyed by it). That is GTEki schema vocabulary, not a copied POI label; a POI value equal to this English word carries no wording value.",
+    "section": "Our own report key (`section`, the network/POI report section a count belongs to); GTEki schema vocabulary, not a copied POI label. A POI value equal to this English word carries no wording value."
   }
 }

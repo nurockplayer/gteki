@@ -98,6 +98,35 @@ export async function scanTreeForLiterals(root: string, literals: Iterable<strin
   return leaks.sort((a, b) => a.file.localeCompare(b.file));
 }
 
+/** Every string key and string value of a parsed JSON document. */
+function jsonStrings(value: unknown, into: string[]): string[] {
+  if (typeof value === 'string') into.push(value);
+  else if (Array.isArray(value)) for (const item of value) jsonStrings(item, into);
+  else if (value !== null && typeof value === 'object') for (const [key, item] of Object.entries(value)) { into.push(key); jsonStrings(item, into); }
+  return into;
+}
+
+/** JSON files under `root` with a whole string value or key equal (NFKC, trimmed) to one of `terms`. */
+export async function scanTreeForWholeValues(root: string, terms: ReadonlySet<string>): Promise<Array<{ file: string; count: number }>> {
+  const leaks: Array<{ file: string; count: number }> = [];
+  if (terms.size === 0) return leaks;
+  const wanted = new Map([...terms].map(term => [term.normalize('NFKC').trim(), term]));
+  for await (const path of textFiles(root)) {
+    if (!/\.(?:json|geojson)$/iu.test(path)) continue;
+    let parsed: unknown;
+    try { parsed = JSON.parse(await readFile(path, 'utf8')); } catch { continue; }
+    const hits = new Set(jsonStrings(parsed, []).map(value => wanted.get(value.normalize('NFKC').trim())).filter((term): term is string => term !== undefined));
+    if (hits.size) leaks.push({ file: path.slice(root.length + 1), count: hits.size });
+  }
+  return leaks;
+}
+
+function mergeLeaks(...lists: Array<Array<{ file: string; count: number }>>): Array<{ file: string; count: number }> {
+  const byFile = new Map<string, number>();
+  for (const list of lists) for (const { file, count } of list) byFile.set(file, (byFile.get(file) ?? 0) + count);
+  return [...byFile].map(([file, count]) => ({ file, count })).sort((a, b) => a.file.localeCompare(b.file));
+}
+
 export type DetailProblem = { source_id: string; reason: 'missing' | 'hash_mismatch' | 'unregistered' | 'overlap'; detail: string };
 
 /**
@@ -127,11 +156,13 @@ export async function verifyPoiDetails(poiDocsDir: string, storeRoot: string = g
  * The full guard: verifies every referenced detail, then scans `docsGisDir` against every detail present in the store
  * (stale or unreferenced details are extra inputs). FAIL on any leak, any missing or mismatched detail, or zero literals.
  */
-export async function checkPoiLiterals(docsGisDir: string, storeRoot: string = getStoreRoot(), allowlist: ReadonlySet<string> = new Set()) {
+export async function checkPoiLiterals(docsGisDir: string, storeRoot: string = getStoreRoot(), allowlist: ReadonlySet<string> = new Set(), wholeValueExempt: ReadonlySet<string> = new Set()) {
   const detailProblems = await verifyPoiDetails(join(docsGisDir, 'poi'), storeRoot);
   const literals = await storeDetailLiterals(storeRoot);
-  for (const term of allowlist) literals.delete(term);
-  const leaks = await scanTreeForLiterals(docsGisDir, literals.keys());
+  // An allowlisted term is exempt only inside prose: as a whole JSON value or key it is still a leak, unless `wholeValueExempt` lists it.
+  const wholeOnly = new Set<string>();
+  for (const term of allowlist) if (literals.delete(term) && !wholeValueExempt.has(term)) wholeOnly.add(term);
+  const leaks = mergeLeaks(await scanTreeForLiterals(docsGisDir, literals.keys()), await scanTreeForWholeValues(docsGisDir, wholeOnly));
   const status = leaks.length || detailProblems.length || literals.size === 0 ? 'FAIL' as const : 'PASS' as const;
   return { status, scanned_literals: literals.size, allowlisted_generic_terms: allowlist.size, detail_problems: detailProblems,
     ...(literals.size === 0 ? { error: 'no literals scanned (store out/poi empty or without free-text values)' } : {}), leaking_files: leaks };

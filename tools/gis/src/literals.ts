@@ -310,9 +310,11 @@ export type CheckLiteralsOptions = {
  * leak, missing or altered detail, unregistered source, empty literal set, or missing class (a) credit.
  */
 export async function checkLiterals(docsGisDir: string, storeRoot: string = getStoreRoot(), allowlist: ReadonlySet<string> = new Set(), options: CheckLiteralsOptions = {}) {
-  const poi = options.skipPoi ? null : await checkPoiLiterals(docsGisDir, storeRoot, allowlist);
   // Injected class (b) literals (tests) come without a store, so class (a) wording is empty unless injected too.
   const classAResult = await (options.classA ?? (options.classB ? async (): Promise<ClassBResult> => ({ literals: new Map(), problems: [], per_source: [] }) : loadClassALiterals))();
+  // A whole POI value equal to an allowlisted term leaks unless structural or a credited MLIT specification label (public, Owner decision (ii)).
+  const mlitLabels = [...classAResult.literals].filter(([, ids]) => ids.some(isMlitOwner)).map(([literal]) => literal);
+  const poi = options.skipPoi ? null : await checkPoiLiterals(docsGisDir, storeRoot, allowlist, new Set([...options.structural ?? [], ...mlitLabels]));
   const classB = withoutClassA(await (options.classB ?? loadClassBLiterals)(), classAResult);
   const reportProblems = await verifyReportDetails(docsGisDir, storeRoot);
   const unregistered = await verifyRegistered(docsGisDir, options.registered);
