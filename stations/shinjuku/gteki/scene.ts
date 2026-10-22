@@ -36,7 +36,13 @@ async function loadStreetContext(ctx: SceneContext): Promise<THREE.Object3D | nu
 export const buildScene: BuildScene = async (ctx) => {
   const T = ctx.THREE;
   const streetContext = await loadStreetContext(ctx);
-  const built = buildStation(ctx.bundle, plan as unknown as Plan, { quality: ctx.quality, streetContext });
+  let built: ReturnType<typeof buildStation>;
+  try {
+    built = buildStation(ctx.bundle, plan as unknown as Plan, { quality: ctx.quality, streetContext });
+  } catch (err) {
+    if (streetContext) disposeContextScene(streetContext); // loaded but never handed to a scene that could release it
+    throw err;
+  }
   const { layout } = built;
 
   // Invisible walk proxies: the explorer raycasts these from above (non-recursive), so each is a Mesh.

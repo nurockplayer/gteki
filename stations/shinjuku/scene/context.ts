@@ -108,7 +108,7 @@ export async function loadContextScenes(loadGlb: (uri: string) => Promise<{ scen
   const first = await Promise.race([Promise.allSettled(pending), timeout]);
   clearTimeout(timer);
   if (first === "timeout") {
-    for (const p of pending) p.then((g) => disposeContextScene(g.scene), () => undefined);
+    for (const p of pending) p.then((g) => disposeContextScene(g.scene), () => undefined).catch(() => undefined);
     return { error: new Error(`street context did not load within ${timeoutMs} ms`) };
   }
   const loaded = first.flatMap((r) => (r.status === "fulfilled" ? [r.value.scene] : []));

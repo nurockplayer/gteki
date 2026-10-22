@@ -282,6 +282,19 @@ describe("street context: scene wiring", () => {
       expect(spy).toHaveBeenCalled();
     });
 
+    it("a build that throws after the context loaded disposes the loaded context and rethrows", async () => {
+      const disposed: ReturnType<typeof vi.spyOn>[] = [];
+      const load = nodeLoadGlb();
+      const loadGlb = async (uri: string) => {
+        const gltf = await load(uri);
+        gltf.scene.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) disposed.push(vi.spyOn(m.geometry, "dispose")); });
+        return gltf;
+      };
+      await expect(buildScene(withContext("low", { loadGlb, bundle: { ...bundle, nodes: undefined } }))).rejects.toThrow();
+      expect(disposed.length).toBeGreaterThan(0);
+      for (const spy of disposed) expect(spy).toHaveBeenCalled();
+    }, 120_000);
+
     it("a hanging context load times out and the station still builds, with the digest of fe8d3b6", async () => {
       vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
       try {
