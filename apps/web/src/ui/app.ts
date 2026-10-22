@@ -5,7 +5,7 @@ import { createSearchIndex } from "@gteki/search";
 import type { SearchHit, SearchIndex } from "@gteki/search";
 import { Explorer } from "../explorer/explorer.ts";
 import { guideStops } from "../explorer/guideStops.ts";
-import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, type GuideTierId } from "../explorer/guidePace.ts";
+import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGuideTier, paceReadout, polylineLengthM, type GuideTierId, type PaceSpan } from "../explorer/guidePace.ts";
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
@@ -628,9 +628,10 @@ export class App {
       const showSpeed = (): void => {
         const tier = this.explorer.guideTier;
         const name = t.guideTier[tier];
-        speed.textContent = t.guideSpeedLabel(name, guideTierSpeed(tier));
-        speed.setAttribute("aria-label", t.guideSpeedAria(name));
-        speed.title = t.guideSpeedAria(name);
+        const readout = paceReadout(this.guidePace.totalM, tier, this.guidePace.spans);
+        speed.textContent = t.guideSpeedLabel(name, readout);
+        speed.setAttribute("aria-label", t.guideSpeedAria(name, readout));
+        speed.title = t.guideSpeedAria(name, readout);
       };
       showSpeed();
       speed.addEventListener("click", () => {
@@ -706,6 +707,9 @@ export class App {
     if (ins) this.ui.live.announce(ins.text);
   }
 
+  /** The running guide's length and pace spans: the speed button's effective pace is read from them on each tier change, not per frame. */
+  private guidePace: { totalM: number; spans: readonly PaceSpan[] } = { totalM: 0, spans: [] };
+
   /** Guide along the route, stopping where each wait for an opening happens. */
   private startGuide(): void {
     const stops = guideStops(this.s.polyline, this.s.instructions);
@@ -716,6 +720,7 @@ export class App {
       this.s.activeInstruction = 1;
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === 1));
     }
+    this.guidePace = { totalM: polylineLengthM(this.s.polyline), spans };
     this.explorer.startGuide(this.s.polyline, 0, stops.map((x) => x.point), spans);
   }
 

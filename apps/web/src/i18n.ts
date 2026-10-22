@@ -1,4 +1,7 @@
 import type { LocalizedText } from "@gteki/schema";
+import type { paceReadout } from "./explorer/guidePace.ts";
+
+type PaceReadout = ReturnType<typeof paceReadout>;
 
 export type Lang = "ja" | "en";
 
@@ -30,8 +33,11 @@ const STRINGS = {
     resume: "再開",
     exitGuide: "ガイド終了",
     guideTier: { walk: "歩く", run: "走る", fast: "早送り" },
-    guideSpeedLabel: (tier: string, mps: number) => `${tier} ${mps} m/s`,
-    guideSpeedAria: (tier: string) => `ガイド速度: ${tier}`,
+    guideSpeedLabel: (tier: string, r: PaceReadout) => `${tier} ${r.approx ? "≈" : ""}${r.pace} m/s`,
+    guideSpeedAria: (tier: string, r: PaceReadout) =>
+      r.approx
+        ? `ガイド速度: ${tier}。通路では最大${r.top} m/s、このルートの平均は約${r.pace} m/s（エスカレーター・階段・改札は現実的な速度）`
+        : `ガイド速度: ${tier}。最大${r.top} m/s`,
     firstPerson: "一人称",
     graphOverlay: "経路網",
     soundOn: "音声オン",
@@ -110,8 +116,11 @@ const STRINGS = {
     resume: "Resume",
     exitGuide: "End guide",
     guideTier: { walk: "Walk", run: "Run", fast: "Fast" },
-    guideSpeedLabel: (tier: string, mps: number) => `${tier} ${mps} m/s`,
-    guideSpeedAria: (tier: string) => `Guide speed: ${tier}`,
+    guideSpeedLabel: (tier: string, r: PaceReadout) => `${tier} ${r.approx ? "≈" : ""}${r.pace} m/s`,
+    guideSpeedAria: (tier: string, r: PaceReadout) =>
+      r.approx
+        ? `Guide speed, ${tier}: up to ${r.top} m/s in open corridors; this route averages about ${r.pace} m/s (escalators, stairs and gates keep realistic speeds)`
+        : `Guide speed, ${tier}: ${r.top} m/s`,
     firstPerson: "First person",
     graphOverlay: "Network",
     soundOn: "Sound on",
