@@ -1,4 +1,7 @@
 import type { LocalizedText } from "@gteki/schema";
+import type { paceReadout } from "./explorer/guidePace.ts";
+
+type PaceReadout = ReturnType<typeof paceReadout>;
 
 export type Lang = "ja" | "en";
 
@@ -29,9 +32,18 @@ const STRINGS = {
     pause: "一時停止",
     resume: "再開",
     exitGuide: "ガイド終了",
+    guidePrev: "前の案内",
+    guideNext: "次の案内",
+    guidePrevTitle: "前の案内（[ / PageUp）",
+    guideNextTitle: "次の案内（] / PageDown）",
+    reverseRoute: "逆向きのルート",
+    searchAgain: "もう一度検索",
     guideTier: { walk: "歩く", run: "走る", fast: "早送り" },
-    guideSpeedLabel: (tier: string, mps: number) => `${tier} ${mps} m/s`,
-    guideSpeedAria: (tier: string) => `ガイド速度: ${tier}`,
+    guideSpeedLabel: (tier: string, r: PaceReadout) => `${tier} ${r.approx ? "≈" : ""}${r.pace} m/s`,
+    guideSpeedAria: (tier: string, r: PaceReadout) =>
+      r.approx
+        ? `ガイド速度: ${tier}。通路では最大${r.top} m/s、このルートの平均は約${r.pace} m/s（エスカレーター・階段・改札は現実的な速度）`
+        : `ガイド速度: ${tier}。最大${r.top} m/s`,
     firstPerson: "一人称",
     graphOverlay: "経路網",
     soundOn: "音声オン",
@@ -83,12 +95,23 @@ const STRINGS = {
     realCandidate: "公開データ由来・現地未確認を含む",
     freshness: "データ時点",
     sources: "出典",
+    credits: "出典",
+    creditsLabel: "データの出典表示",
     /** Modification disclosure required by PDL / CC BY when a source was processed. */
     modified: "加工して作成",
+    /** #26 / #122: facts-only sources have no licence to show; the wording specified in #122. */
+    factsOnly: "ライセンスなし・事実のみ参照（複製なし）",
+    rightsDecision: "権利判断",
     assetDerivations: "3D素材の加工内容",
     symbolicHeight: "高さは表示用の推定です",
     coverage: "カバー範囲",
     gaps: "未整備・要調査",
+    /** #130: plain-language rights labels for the Coverage dialog (the internal rights enum is never shown). */
+    rightsReusable: "条件付きで再利用可",
+    rightsOwnerOverride: "ライセンス未確認・オーナー判断により公開",
+    rightsReference: "参照のみ（公開データには使用しない）",
+    rightsRestricted: "利用制限あり（公開データには使用しない）",
+    rightsUnverified: "権利未確認（公開データには使用しない）",
     validationFailed: "駅データが検証に失敗したため表示しません（安全側）",
     loading: "読み込み中…",
     sceneFallback: "駅の3Dシーンを読み込めず、経路網表示（L0）に切り替えました",
@@ -96,6 +119,12 @@ const STRINGS = {
     touchHint: "左で移動（端まで倒すと走る）・右ドラッグで視点",
     noIndoorPositioning: "屋内測位は行いません。出発地を選んでください。",
     operators: "事業者",
+    options: "オプション",
+    close: "閉じる",
+    searchCount: (n: number) => `${n}件の候補`,
+    routeFound: (m: number, min: number) => `ルートが見つかりました：${m}m、約${min}分`,
+    liveSeparator: "。",
+    coverageStatus: { routable: "経路あり", visual_only: "表示のみ", unverified: "未確認", excluded: "対象外" } as Record<string, string>,
     language: "English",
   },
   en: {
@@ -124,9 +153,18 @@ const STRINGS = {
     pause: "Pause",
     resume: "Resume",
     exitGuide: "End guide",
+    guidePrev: "Previous instruction",
+    guideNext: "Next instruction",
+    guidePrevTitle: "Previous instruction ([ or PageUp)",
+    guideNextTitle: "Next instruction (] or PageDown)",
+    reverseRoute: "Reverse route",
+    searchAgain: "Search again",
     guideTier: { walk: "Walk", run: "Run", fast: "Fast" },
-    guideSpeedLabel: (tier: string, mps: number) => `${tier} ${mps} m/s`,
-    guideSpeedAria: (tier: string) => `Guide speed: ${tier}`,
+    guideSpeedLabel: (tier: string, r: PaceReadout) => `${tier} ${r.approx ? "≈" : ""}${r.pace} m/s`,
+    guideSpeedAria: (tier: string, r: PaceReadout) =>
+      r.approx
+        ? `Guide speed, ${tier}: up to ${r.top} m/s in open corridors; this route averages about ${r.pace} m/s (escalators, stairs and gates keep realistic speeds)`
+        : `Guide speed, ${tier}: ${r.top} m/s`,
     firstPerson: "First person",
     graphOverlay: "Network",
     soundOn: "Sound on",
@@ -178,11 +216,22 @@ const STRINGS = {
     realCandidate: "From open data; parts not field-verified",
     freshness: "Data as of",
     sources: "Sources",
+    credits: "Credits",
+    creditsLabel: "Data credits",
     modified: "modified",
+    /** Proposed English equivalent of the #26 line; adds no claim beyond the Japanese. */
+    factsOnly: "No licence; cited for facts only (not reproduced)",
+    rightsDecision: "Rights decision",
     assetDerivations: "3D asset derivations",
     symbolicHeight: "Heights are display estimates",
     coverage: "Coverage",
     gaps: "Gaps & survey needs",
+    /** #130: plain-language rights labels for the Coverage dialog (the internal rights enum is never shown). */
+    rightsReusable: "Reusable with conditions",
+    rightsOwnerOverride: "Published under the Owner's decision; licence unconfirmed",
+    rightsReference: "Reference only (not used in published data)",
+    rightsRestricted: "Restricted (not used in published data)",
+    rightsUnverified: "Rights unverified (not used in published data)",
     validationFailed: "Station data failed validation and is not shown (fail-safe)",
     loading: "Loading…",
     sceneFallback: "Station 3D scene failed; showing the network view (L0)",
@@ -190,6 +239,12 @@ const STRINGS = {
     touchHint: "Left thumb to move (push to the edge to run) · drag right side to look",
     noIndoorPositioning: "No indoor positioning. Choose where you start.",
     operators: "Operators",
+    options: "Options",
+    close: "Close",
+    searchCount: (n: number) => `${n} result${n === 1 ? "" : "s"}`,
+    routeFound: (m: number, min: number) => `Route found: ${m} m, about ${min} minute${min === 1 ? "" : "s"}`,
+    liveSeparator: ". ",
+    coverageStatus: { routable: "routable", visual_only: "visual only", unverified: "unverified", excluded: "excluded" } as Record<string, string>,
     language: "日本語",
   },
 };
