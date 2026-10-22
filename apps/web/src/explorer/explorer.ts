@@ -80,13 +80,13 @@ interface Occluder {
   seenInstances: string;
 }
 
-/** A drawn part of a mesh: its material and the index (or vertex) range it draws. */
 /** The chevron texture's dominant texel colour, linear (geometry.ts chevronTexture default). */
 const CHEVRON = new THREE.Color(0x5ef0ff);
 
 /** A `toneMapped: false` overlay: authored (uncompensated) colour, its map's texel colour, and the display sRGB it should show. */
 interface OverlayTint { mat: THREE.MeshBasicMaterial | THREE.LineBasicMaterial; authored: THREE.Color; texel: THREE.Color; target: Vec3 }
 
+/** A drawn part of a mesh: its material and the index (or vertex) range it draws. */
 interface MeshPart { material: THREE.Material; start: number; count: number }
 
 /**
