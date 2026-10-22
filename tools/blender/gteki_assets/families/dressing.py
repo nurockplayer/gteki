@@ -119,8 +119,12 @@ def escalator_dressing(asset_id, params, tex_res):
         if "angle_deg" in (params or {}):
             raise ValueError("give run_mm or angle_deg, not both")
         _positive(p, "run_mm")
-        # run_mm is the horizontal run of the incline between the two flat sections
-        p["angle_deg"] = round(math.degrees(math.atan2(p["rise_mm"], p["run_mm"])), 4)
+        # run_mm is the horizontal run between the two flat sections: vertical.py eases the incline
+        # in over one transition_run at each end, so the straight incline is rise / tan(angle) = run - one transition
+        straight_mm = p["run_mm"] - vertical.ESCALATOR_DEFAULTS["transition_run"] * 1000
+        if straight_mm <= 0:
+            raise ValueError("run_mm must exceed the escalator's eased transition run")
+        p["angle_deg"] = round(math.degrees(math.atan2(p["rise_mm"], straight_mm)), 4)
     _positive(p, "angle_deg")
     a = vertical.escalator(asset_id, dict(
         rise=p["rise_mm"] / 1000, step_width=p["width_mm"] / 1000, incline=p["angle_deg"],
