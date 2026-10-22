@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { parse } from 'csv-parse/sync';
 import { getStoreRoot, getStoredSource, repoRoot } from './common.js';
 import { buildContextWindow, type Disc, type WindowSpec } from './context-window.js';
+import { geometryPaths, pathMeetsDiscs, polygonMeetsDiscs, type Point as FramePoint } from './window-geometry.js';
 import { stationEnuProjector } from './station-enu.js';
 import proj4 from 'proj4';
 import { IX_PROJ } from './crs.js';
@@ -64,18 +65,33 @@ export function safeColumnName(name: string, index: number): string {
 
 const inBox = (lat: number, lon: number, b: { latMin: number; latMax: number; lonMin: number; lonMax: number }): boolean => lat >= b.latMin && lat <= b.latMax && lon >= b.lonMin && lon <= b.lonMax;
 
-/** Station windows: tools/gis/sources/context/<station>.json (window spec, else the radius) and stations/<id>/gteki/station.json origin. */
+/** `profile.window` (evidence-profile selection only): the director's single origin disc, independent of the building window. */
+export type ProfileWindow = { kind: 'origin_disc'; radius_m: number };
+export type ContextConfig = { radius_m?: number; window?: WindowSpec; profile?: { window?: ProfileWindow }; status?: string };
+
+/** The profile selection window from a context config: `profile.window` when present, else the building window spec. */
+export function profileWindowSpec(config: ContextConfig): { spec: WindowSpec; basis: string } {
+  const profile = config.profile?.window;
+  if (profile) {
+    if (profile.kind !== 'origin_disc') throw new Error(`profile.window.kind must be origin_disc, got ${JSON.stringify(profile.kind)}`);
+    return { spec: { r_origin_m: profile.radius_m, r_exit_m: 0 }, basis: `profile config window: ${profile.radius_m} m origin disc only (director decision; the same radius as the context overlay clip)` };
+  }
+  const spec: WindowSpec = config.window ?? { r_origin_m: config.radius_m ?? 250, r_exit_m: 0 };
+  return { spec, basis: config.window ? `context config window: ${spec.r_origin_m} m origin disc plus ${spec.r_exit_m} m exit discs` : `context config radius ${spec.r_origin_m} m origin disc only (no window spec; status ${config.status ?? 'unknown'})` };
+}
+
+/** Station windows: tools/gis/sources/context/<station>.json and stations/<id>/gteki/station.json origin. */
 export async function loadStationWindows(stations: string[] = ['ikebukuro', 'shinjuku']): Promise<StationWindow[]> {
   const out: StationWindow[] = [];
   for (const station of stations) {
-    const config = JSON.parse(await readFile(join(repoRoot, 'tools/gis/sources/context', `${station}.json`), 'utf8')) as { radius_m?: number; window?: WindowSpec; status?: string };
+    const config = JSON.parse(await readFile(join(repoRoot, 'tools/gis/sources/context', `${station}.json`), 'utf8')) as ContextConfig;
     const manifest = JSON.parse(await readFile(join(repoRoot, 'stations', station, 'gteki/station.json'), 'utf8')) as { station?: { origin?: { lat?: number; lon?: number } } };
     const origin = manifest.station?.origin;
     if (!origin || typeof origin.lat !== 'number' || typeof origin.lon !== 'number') throw new Error(`stations/${station}/gteki/station.json has no origin`);
-    const spec: WindowSpec = config.window ?? { r_origin_m: config.radius_m ?? 250, r_exit_m: 0 };
+    const { spec, basis } = profileWindowSpec(config);
     const built = await buildContextWindow(spec, { stationId: station });
     out.push({ station, origin: { lat: origin.lat, lon: origin.lon }, discs: built.discs, origin_radius_m: spec.r_origin_m,
-      basis: config.window ? `context config window: ${spec.r_origin_m} m origin disc plus ${spec.r_exit_m} m exit discs (${built.discs.length - 1} graph nodes)` : `context config radius ${spec.r_origin_m} m origin disc only (no window spec; status ${config.status ?? 'unknown'})` });
+      basis: config.profile?.window ? basis : config.window ? `${basis} (${built.discs.length - 1} graph nodes)` : basis });
   }
   return out;
 }
@@ -197,21 +213,33 @@ function visit(coords: unknown, fn: (lon: number, lat: number) => void): void {
   for (const c of coords) visit(c, fn);
 }
 
-function geojsonDetail(data: Buffer, windows: StationWindow[]): Record<string, unknown> {
+export function geojsonDetail(data: Buffer, windows: StationWindow[]): Record<string, unknown> {
   const doc = JSON.parse(data.toString('utf8')) as { type?: string; features?: Array<{ geometry?: { type?: string; coordinates?: unknown } | null }>; crs?: { properties?: { name?: string } } };
   const features = doc.type === 'FeatureCollection' && Array.isArray(doc.features) ? doc.features : [];
   const types: Record<string, number> = {};
-  const perWindow = windows.map((w) => ({ w, project: stationEnuProjector({ lat: w.origin.lat, lon: w.origin.lon, hM: 0 }), n: 0 }));
+  // Segment- and containment-based: a road crossing a disc with both endpoints outside, or a polygon
+  // enclosing a disc, still touches it (vertex inclusion alone missed both).
+  const perWindow = windows.map((w) => {
+    const project = stationEnuProjector({ lat: w.origin.lat, lon: w.origin.lon, hM: 0 });
+    return { w, discs: w.discs, toFrame: (lon: number, lat: number): FramePoint => { const [x, y] = project(lat, lon, 0); return [x, y]; }, n: 0 };
+  });
   let minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity, swapped = 0, asIs = 0;
   for (const f of features) {
     const t = f.geometry?.type ?? 'null';
     types[t] = (types[t] ?? 0) + 1;
+    let asIsVertices = 0;
     const hits = new Set<number>();
     visit(f.geometry?.coordinates, (lon, lat) => {
       minLon = Math.min(minLon, lon); maxLon = Math.max(maxLon, lon); minLat = Math.min(minLat, lat); maxLat = Math.max(maxLat, lat);
-      if (inBox(lat, lon, JAPAN_BOX)) asIs++; else if (inBox(lon, lat, JAPAN_BOX)) swapped++;
-      perWindow.forEach((p, i) => { if (inBox(lat, lon, JAPAN_BOX)) { const [x, y] = p.project(lat, lon, 0); if (p.w.discs.some((d) => Math.hypot(x - d.x, y - d.y) <= d.r)) hits.add(i); } });
+      if (inBox(lat, lon, JAPAN_BOX)) { asIs++; asIsVertices++; } else if (inBox(lon, lat, JAPAN_BOX)) swapped++;
     });
+    if (asIsVertices > 0) {
+      const paths = geometryPaths(f.geometry);
+      perWindow.forEach((p, i) => {
+        if (paths.lines.some((line) => pathMeetsDiscs(line.map(([lon, lat]) => p.toFrame(lon, lat)), p.discs))) hits.add(i);
+        else if (paths.polygons.some((rings) => polygonMeetsDiscs(rings.map((ring) => ring.map(([lon, lat]) => p.toFrame(lon, lat))), p.discs))) hits.add(i);
+      });
+    }
     hits.forEach((i) => { perWindow[i].n++; });
   }
   return { features: features.length, geometry_types: types, declared_crs_member: doc.crs?.properties?.name ?? null,
@@ -219,7 +247,7 @@ function geojsonDetail(data: Buffer, windows: StationWindow[]): Record<string, u
     features_touching_window: Object.fromEntries(perWindow.map((p) => [p.w.station, p.n])) };
 }
 
-function shpDetail(data: Buffer, prjText: string | null, windows: StationWindow[]): Record<string, unknown> {
+export function shpDetail(data: Buffer, prjText: string | null, windows: StationWindow[]): Record<string, unknown> {
   if (data.length < 100 || data.readInt32BE(0) !== 9994) return { header: 'not a shapefile header' };
   const shapeType = data.readInt32LE(32);
   const base: Record<string, unknown> = { shape_type_code: shapeType, bbox_native: { x_min: data.readDoubleLE(36), y_min: data.readDoubleLE(44), x_max: data.readDoubleLE(52), y_max: data.readDoubleLE(60) } };
@@ -227,7 +255,14 @@ function shpDetail(data: Buffer, prjText: string | null, windows: StationWindow[
   const zone9 = prjText !== null && /Zone_?9|Zone_IX|zone 9/iu.test(prjText);
   if (!geographic && !zone9) return { ...base, window_evaluation: 'not evaluated: CRS is not geographic and not Japan Plane Rectangular zone IX' };
   const toLonLat = (x: number, y: number): [number, number] => (geographic ? [x, y] : (proj4(IX_PROJ, '+proj=longlat +ellps=GRS80 +no_defs', [x, y]) as [number, number]));
-  const perWindow = windows.map((w) => ({ w, project: stationEnuProjector({ lat: w.origin.lat, lon: w.origin.lon, hM: 0 }), n: 0 }));
+  // Segment- and containment-based, like GeoJSON: a polyline crossing a disc with both endpoints outside
+  // still counts, and a polygon ring that encloses a disc counts too. Rings are kept per part, so no
+  // segment is invented between parts.
+  const perWindow = windows.map((w) => {
+    const project = stationEnuProjector({ lat: w.origin.lat, lon: w.origin.lon, hM: 0 });
+    return { w, discs: w.discs, toFrame: (lon: number, lat: number): FramePoint => { const [x, y] = project(lat, lon, 0); return [x, y]; }, n: 0 };
+  });
+  const areal = [13, 15, 25].includes(shapeType);
   let records = 0, minLon = Infinity, minLat = Infinity, maxLon = -Infinity, maxLat = -Infinity;
   if ([3, 5, 13, 15, 23, 25].includes(shapeType)) {
     for (let o = 100; o + 8 <= data.length;) {
@@ -235,14 +270,24 @@ function shpDetail(data: Buffer, prjText: string | null, windows: StationWindow[
       const rec = o + 8;
       if (rec + length > data.length || length < 44) break;
       const numParts = data.readInt32LE(rec + 36), numPoints = data.readInt32LE(rec + 40);
+      if (numPoints < 0 || numParts < 0 || rec + 44 + numParts * 4 > rec + length) break;
+      const parts: number[] = [];
+      for (let i = 0; i < numParts; i++) parts.push(data.readInt32LE(rec + 44 + i * 4));
       const pts = rec + 44 + numParts * 4;
-      const hits = new Set<number>();
+      const points: Array<[number, number]> = [];
       for (let i = 0; i < numPoints && pts + i * 16 + 16 <= data.length; i++) {
         const [lon, lat] = toLonLat(data.readDoubleLE(pts + i * 16), data.readDoubleLE(pts + i * 16 + 8));
         minLon = Math.min(minLon, lon); maxLon = Math.max(maxLon, lon); minLat = Math.min(minLat, lat); maxLat = Math.max(maxLat, lat);
-        perWindow.forEach((p, k) => { const [x, y] = p.project(lat, lon, 0); if (p.w.discs.some((d) => Math.hypot(x - d.x, y - d.y) <= d.r)) hits.add(k); });
+        points.push([lon, lat]);
       }
-      hits.forEach((k) => { perWindow[k].n++; });
+      const bounds = numParts ? [...parts, numPoints] : [0, numPoints];
+      // Per-window frames differ, so build each path in its own frame from the geographic points.
+      const geographic = bounds.slice(0, -1).map((start, k) => points.slice(start, bounds[k + 1]));
+      perWindow.forEach((p, k) => {
+        const rings = geographic.map((path) => path.map(([lon, lat]) => p.toFrame(lon, lat)));
+        const hit = areal ? polygonMeetsDiscs(rings, p.discs) : rings.some((ring) => pathMeetsDiscs(ring, p.discs));
+        if (hit) p.n++;
+      });
       records++;
       o = rec + length;
     }
@@ -330,6 +375,10 @@ export function verdictFor(profile: Profile | null, pkg: PackageFacts | null, op
   if (!pkg) return { verdict: 'UNKNOWN', reasons: ['no package_show snapshot'] };
   // The section 7 rule is a CC BY 4.0 rule. Any other dataset licence label is outside it: nothing is decided here.
   if (!ccBy) return { verdict: 'UNKNOWN', reasons: [`dataset licence label is ${pkg.license_id ?? 'absent'}, outside the CC BY 4.0 rule; the resource licence field is ${pkg.resource_licenses.length && pkg.resource_licenses.every((l) => l === null) ? 'null' : 'not all null'}; not assessed by this rule`] };
+  // CLEAN_CANDIDATE needs the portal terms to state CC BY 4.0 affirmatively; an absent snapshot or an
+  // unread terms page leaves the licence half-established, which is UNKNOWN, not a clean candidate.
+  if (pkg.terms_sha256 === null) return { verdict: 'UNKNOWN', reasons: ['no portal-terms supporting document in the snapshot; CC BY 4.0 is not affirmatively established by the terms'] };
+  if (pkg.terms_states_cc_by_4_0 === null) return { verdict: 'UNKNOWN', reasons: ['the portal-terms snapshot does not state CC BY 4.0; the licence is not affirmatively established by the terms'] };
   if (pkg.terms_is_closure_notice) reasons.push('portal terms snapshot is a closure notice');
   else if (pkg.terms_states_cc_by_4_0 === false) reasons.push('portal terms snapshot does not state CC BY 4.0');
   if (profile.kind === 'zip') {

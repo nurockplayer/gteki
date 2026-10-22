@@ -25,25 +25,25 @@ Findings that apply to every item:
 
 ## 2. Verdicts
 
-Rule (reassessment note 7.5 item 5, 4.5, 4.6): `CLEAN_CANDIDATE` needs dataset-level CC BY 4.0 in the snapshot (and the terms), lat/lon columns or vector members, a stated CRS or a passing bbox sanity check with the CRS recorded as UNKNOWN, and a window count above 0. Windows: Ikebukuro is the context-config window (250 m origin disc plus 120 m exit discs); Shinjuku has no window spec (its context config is BLOCKED), so it is the 250 m origin disc only. "Within 1,000 m" is context.
+Rule (reassessment note 7.5 item 5, 4.5, 4.6): `CLEAN_CANDIDATE` needs dataset-level CC BY 4.0 in the snapshot and the portal terms (an absent or silent terms snapshot is UNKNOWN), lat/lon columns or vector members, a stated CRS or a passing bbox sanity check with the CRS recorded as UNKNOWN, and a window count above 0. Windows: both stations use `profile.window`, one 700 m origin disc (the director's decision of 2026-10-23, the same radius as the context overlay clip). A vector feature is in the window when any segment meets the disc or a polygon encloses it, so a road crossing the disc with both endpoints outside counts. "Within 1,000 m" is context.
 
 | Source | Verdict | Reason (counts) | Decision |
 | --- | --- | --- | --- |
-| `tokyo-muni-toshima-public-facilities-csv` | `CLEAN_CANDIDATE` | Shift_JIS, 538 rows, lat/lon columns, no CRS column (CRS UNKNOWN), bbox sanity passes (1 row outside the Tokyo sanity box), 5 rows in the Ikebukuro window (2 in the origin disc), 0 in Shinjuku | HOLD; an Ikebukuro landmark layer is possible from this file |
-| `tokyo-muni-toshima-tourism-csv` | `CLEAN_CANDIDATE` | Shift_JIS, 5 rows, lat/lon columns, no CRS column (UNKNOWN), 2 rows in the Ikebukuro window | HOLD; adds at most 2 points |
+| `tokyo-muni-toshima-public-facilities-csv` | `CLEAN_CANDIDATE` | Shift_JIS, 538 rows, lat/lon columns, no CRS column (CRS UNKNOWN), bbox sanity passes (1 row outside the Tokyo sanity box), 53 rows in the Ikebukuro window (53 in the origin disc), 0 in Shinjuku | HOLD; an Ikebukuro landmark layer is possible from this file |
+| `tokyo-muni-toshima-tourism-csv` | `CLEAN_CANDIDATE` | Shift_JIS, 5 rows, lat/lon columns, no CRS column (UNKNOWN), 3 rows in the Ikebukuro window | HOLD; adds at most 3 points |
 | `tokyo-muni-toshima-cultural-properties-csv` | `NOT_CLEAN` | 409 rows; the column labelled latitude holds longitude-range values and the longitude column holds latitude-range values (header labels swapped); 0 rows in either window, as labelled or swapped | HOLD; no window coverage |
-| `tokyo-muni-shinjuku-public-facilities-csv` | `NOT_CLEAN` | UTF-16LE, 267 rows, lat/lon columns, no CRS column; 3 rows outside the Tokyo sanity box; 0 rows in the Shinjuku origin disc (11 within 1,000 m) | HOLD; no coverage inside the 250 m disc. A wider Shinjuku window is a director call |
+| `tokyo-muni-shinjuku-public-facilities-csv` | `NOT_CLEAN` | UTF-16LE, 267 rows, lat/lon columns, no CRS column; 3 rows outside the Tokyo sanity box; 0 rows in the Shinjuku 700 m window (11 within 1,000 m) | HOLD; no coverage inside the 700 m disc |
 | `tokyo-muni-shinjuku-tourism-csv` | `NOT_CLEAN` | UTF-16LE, 6 rows; the file has two CRS columns (name and code) but every row is blank, so no CRS is declared; 0 rows in the window (1 within 1,000 m) | HOLD |
-| `tokyo-muni-shinjuku-cultural-properties-csv` | `NOT_CLEAN` | UTF-16LE, 233 rows, lat/lon columns, no CRS; 0 rows in the window | HOLD |
-| `tokyo-muni-shinjuku-park-csv` | `NOT_CLEAN` | UTF-8, 178 rows, lat/lon columns, no CRS; 0 rows in either window (6 within 1,000 m of the Shinjuku origin) | HOLD; no park inside the Shinjuku origin disc |
+| `tokyo-muni-shinjuku-cultural-properties-csv` | `CLEAN_CANDIDATE` | UTF-16LE, 233 rows, lat/lon columns, no CRS (UNKNOWN); 5 rows in the Shinjuku 700 m window (3 within 500 m), 0 in Ikebukuro | HOLD; a Shinjuku landmark layer is possible from this file |
+| `tokyo-muni-shinjuku-park-csv` | `NOT_CLEAN` | UTF-8, 178 rows, lat/lon columns, no CRS; 0 rows in either window (6 within 1,000 m of the Shinjuku origin) | HOLD; no park inside the Shinjuku 700 m disc |
 | `tokyo-muni-shinjuku-shelter-csv` | `NOT_CLEAN` | UTF-16LE, 10 rows; lat/lon columns exist but every coordinate cell is blank | HOLD; B1 not met |
 | `tokyo-muni-toshima-shelter-csv` | `NOT_CLEAN` | OOXML workbook, 40 rows; lat/lon columns exist but every coordinate cell is blank | HOLD; B1 not met. Ikebukuro shelters stay out |
-| `tokyo-emergency-route-zip` | `CLEAN_CANDIDATE` | ZIP holds vector data: one polyline shapefile (2,255 records; two attribute fields, a road class and a road order; no name field) with `.prj` `JGD_2011_Japan_Zone_9`, plus ArcGIS metadata and index files; 3 records touch the Ikebukuro window and 1 the Shinjuku window; the metadata XML has no third-party or base-map notice wording | HOLD; vector and CRS conditions of decision 2 are met by the file contents. The remaining conditions are the field check (kept fields: geometry plus `kind: emergency_route_line`) and the director's go |
-| `tokyo-nishi-shinjuku-walk-zip` | `NOT_CLEAN` | ZIP holds no vector files: two CSV tables (a link table without coordinates and a node table with lon/lat, 1,249 rows, 107 inside the Shinjuku origin disc, 1,237 within 1,000 m) | HOLD; not vector data |
+| `tokyo-emergency-route-zip` | `CLEAN_CANDIDATE` | ZIP holds vector data: one polyline shapefile (2,255 records; two attribute fields, a road class and a road order; no name field) with `.prj` `JGD_2011_Japan_Zone_9`, plus ArcGIS metadata and index files; 13 records meet the Ikebukuro window and 10 the Shinjuku window (segments crossing the disc count); the metadata XML has no third-party or base-map notice wording | HOLD; vector and CRS conditions of decision 2 are met by the file contents. The remaining conditions are the field check (kept fields: geometry plus `kind: emergency_route_line`) and the director's go |
+| `tokyo-nishi-shinjuku-walk-zip` | `NOT_CLEAN` | ZIP holds no vector files: two CSV tables (a link table without coordinates and a node table with lon/lat, 1,249 rows, 1,537 nodes in the Shinjuku 700 m window, 2,631 within 1,000 m) | HOLD; not vector data |
 | `tokyo-toei-station-info-csv` | `NOT_CLEAN` | Shift_JIS, 108 rows, 13 columns, no lat/lon columns | HOLD; station facts only |
 | Hokonavi E01 and E28 package resources, `nwd_shibuya_sendagaya_shinjuku` link and node CSV | `UNKNOWN` | Dataset licence label `pdl-jp-1.0`, outside the CC BY 4.0 rule; resource licence null; see section 3 | HOLD |
 
-Hokonavi resource facts (profile note has the per-member detail): E01 holds GeoJSON and shapefile members with a declared EPSG:6668 or a `GCS_JGD_2011` projection file, a network CSV pair and a station-map set; its 225 network nodes sit within 1,000 m of the Shinjuku origin (none inside the 250 m disc); no E01 station-map feature touches either window. E28 is the adjacent station, not Shinjuku. `nwd_shibuya_sendagaya_shinjuku` holds a 7,921-row link table without coordinates and a 7,155-row node table with lon/lat, 247 nodes inside the Shinjuku origin disc, 2,631 within 1,000 m, none in Ikebukuro.
+Hokonavi resource facts (profile note has the per-member detail): E01 holds GeoJSON and shapefile members with a declared EPSG:6668 or a `GCS_JGD_2011` projection file, a network CSV pair and a station-map set; 123 of its 254 network link features meet the Shinjuku 700 m window, while the 225-node point layer has none inside it; of the E01 station-map members two polygon sets meet the window (19 and 54 features) while its point members do not. E28 is the adjacent station, not Shinjuku. `nwd_shibuya_sendagaya_shinjuku` holds a 7,921-row link table without coordinates and a 7,155-row node table with lon/lat, 1,537 nodes inside the Shinjuku 700 m window, 2,631 within 1,000 m, none in Ikebukuro.
 
 ## 3. R9 licence notes
 
@@ -52,10 +52,10 @@ Hokonavi resource facts (profile note has the per-member detail): E01 holds GeoJ
 
 ## 4. Consequences for the layers
 
-- Landmark (option (c)): Ikebukuro has two `CLEAN_CANDIDATE` lists (public facilities, 5 rows in window; tourism, 2 rows). Shinjuku has none in the 250 m origin disc; its lists reach the area only within 1,000 m. The credit pattern, the change notice and any exclusion note from the portal terms remain open.
+- Landmark (option (c)): Ikebukuro has two `CLEAN_CANDIDATE` lists (public facilities, 53 rows in the 700 m window; tourism, 3 rows). Shinjuku now has one (cultural properties, 5 rows in the 700 m window); its facilities, tourism and park lists stay empty even at 700 m and reach the area only within 1,000 m. The credit pattern, the change notice and any exclusion note from the portal terms remain open.
 - Shelters (4.5): neither ward file has a single coordinate, so the shelter replacements stay HOLD; Ikebukuro and Shinjuku keep no shelter layer.
 - Emergency routes (4.6): vector data is present, so the layer is not held on format grounds; it is a candidate for the implementation PR.
-- Parks (B3): no Shinjuku park inside the origin disc.
+- Parks (B3): no Shinjuku park inside the 700 m origin disc (6 within 1,000 m).
 
 ## 5. Not acquired
 
@@ -69,6 +69,6 @@ Hokonavi resource facts (profile note has the per-member detail): E01 holds GeoJ
 - Whether any dataset carries an individual 「注」 note under the portal terms that would override CC BY 4.0 (the dataset snapshots hold none).
 - The exact credit wording the Tokyo portal requires for these datasets.
 - Whether the Toshima files are current: the CKAN resource dates are 2022; the Shinjuku files 2023.
-- Whether a Shinjuku window larger than the 250 m origin disc is wanted (11 facilities, 6 parks and 1 tourism point lie within 1,000 m).
+- Whether a window wider than 700 m is wanted for Shinjuku: even at 700 m its facilities, tourism and park lists are empty (11 facilities, 6 parks and 1 tourism point lie only within 1,000 m).
 - Byte identity of the `0401` Shinjuku files with S02 (S02 is not stored) and the content of the `0401` terms PDF.
 - Floors and vertical anchors of E01 and E28 (not read; not evaluated here).

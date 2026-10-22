@@ -11,6 +11,22 @@ const cols = (names: string[]): string => names.map((c, i) => `\`${colName(c, i)
 const cell = (v: string): string => v.replace(/\|/gu, '\\|');
 const bbox = (b: CsvProfile['coordinates']['bbox']): string => (b ? `lon ${num(b.lon_min)} to ${num(b.lon_max)}, lat ${num(b.lat_min)} to ${num(b.lat_max)}` : 'none');
 
+/**
+ * ZIP member details carry text that never passed the CSV column guard: DBF `field_names`, a `.prj` CRS
+ * name, error strings. Every string (and object key) goes through `colName` before serialisation, so a
+ * guarded literal cannot be written to docs/gis through a ZIP member.
+ */
+function guardDetail(value: unknown, counter: { n: number }): unknown {
+  if (typeof value === 'string') return colName(value, counter.n++);
+  if (Array.isArray(value)) return value.map((v) => guardDetail(v, counter));
+  if (value !== null && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) out[colName(k, counter.n++)] = guardDetail(v, counter);
+    return out;
+  }
+  return value;
+}
+
 function csvSection(r: Result, p: CsvProfile): string[] {
   const out: string[] = [];
   out.push(`### ${r.spec}${r.catalog_id ? ` (${r.catalog_id})` : ''}`, '');
@@ -42,7 +58,7 @@ function zipSection(r: Result, p: ZipProfile): string[] {
     if (d?.profile) {
       const c = d.profile as CsvProfile;
       facts = `${c.encoding}; ${fmt(c.rows)} rows; ${c.columns.length} columns; valid coordinates ${c.coordinates.valid_rows}; bbox ${bbox(c.coordinates.bbox)}; axis ${c.axis_swap.verdict}; rows in window ${c.windows.map((w) => `${w.station} ${w.in_window}`).join(', ')}; within 1,000 m ${c.windows.map((w) => `${w.station} ${w.within_1000m_of_origin}`).join(', ')}; columns: ${cols(c.columns)}`;
-    } else if (d) facts = cell(JSON.stringify(d));
+    } else if (d) facts = cell(JSON.stringify(guardDetail(d, { n: 0 })));
     out.push(`| ${m.format} | ${fmt(m.bytes)} | ${cell(facts)} |`);
   }
   out.push('');
@@ -57,7 +73,7 @@ export function renderProfileMarkdown(results: Result[], windows: StationWindow[
   L.push('## Station windows used', '');
   L.push('| Station | Origin lat, lon (station.json) | Window basis |', '| --- | --- | --- |');
   for (const w of windows) L.push(`| ${w.station} | ${w.origin.lat}, ${w.origin.lon} | ${w.basis} |`);
-  L.push('', 'A point is in the window when it lies inside any disc, in the station ENU frame. "Origin disc" counts only the disc around the station origin. Counts "within 500 m / 1,000 m" are plain distance from the origin and are context, not a window rule. Shinjuku has no window spec yet (its context config is BLOCKED), so only its origin disc is used.', '');
+  L.push('', 'A CSV row is in the window when its point lies inside any disc; a vector feature is in it when any segment meets a disc (so a road crossing the disc with both ends outside counts) or a polygon ring encloses a disc, in the station ENU frame. "Origin disc" counts only the disc around the station origin. Counts "within 500 m / 1,000 m" are plain distance from the origin and are context, not a window rule. Both stations use their `profile.window`: one 700 m origin disc (the director\'s decision, the same radius as the context overlay clip). The building `window` spec is unchanged and not used here.', '');
   L.push('## Licence evidence in the snapshots', '');
   L.push('| Source | Dataset-level licence_id | Resource licence values | Portal terms snapshot (bytes, SHA-256) | Terms state CC BY 4.0 | Terms is a closure notice | Terms carry the note-exclusion clause |', '| --- | --- | --- | --- | --- | --- | --- |');
   for (const r of results) if (r.package) L.push(`| ${r.spec} | ${r.package.license_id ?? 'absent'} | ${r.package.resource_licenses.map((x) => x ?? 'null').join(', ')} | ${r.package.terms_bytes === null ? 'not snapshotted' : `${fmt(r.package.terms_bytes)}, \`${r.package.terms_sha256}\``} | ${r.package.terms_states_cc_by_4_0 ?? 'n/a'} | ${r.package.terms_is_closure_notice ?? 'n/a'} | ${r.package.terms_has_exclusion_note_clause ?? 'n/a'} |`);

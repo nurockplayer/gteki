@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decodeCsvBytes, loadStationWindows, profileCsv, safeColumnName, verdictFor, xlsxRecords, type StationWindow } from '../src/csv-profile.js';
+import { decodeCsvBytes, geojsonDetail, loadStationWindows, profileCsv, safeColumnName, shpDetail, verdictFor, xlsxRecords, type StationWindow, type ZipProfile } from '../src/csv-profile.js';
 import { renderProfileMarkdown } from '../src/csv-profile-md.js';
 
 // Shift_JIS bytes: 名称 = 96 BC 8F CC, 緯度 = 88 DC 93 78, 経度 = 8C 6F 93 78.
@@ -82,6 +82,49 @@ describe('csv-profile', () => {
     expect(verdictFor(inside, { ...pkg, terms_is_closure_notice: true }).verdict).toBe('NOT_CLEAN');
   });
 
+  it('keeps the verdict UNKNOWN when the CC BY 4.0 portal-terms evidence is absent or silent', () => {
+    const pkg = { license_id: 'CC-BY-4.0', resource_licenses: [null], resources: 1, terms_sha256: 'x', terms_bytes: 1, terms_states_cc_by_4_0: true, terms_is_closure_notice: false, terms_has_exclusion_note_clause: true };
+    const inside = profileCsv(Buffer.from('name,lat,lon\nA,35.7002,139.7002\n'), [STATION]);
+    // No portal-terms supporting document: the snapshot alone does not confirm the terms.
+    const missing = verdictFor(inside, { ...pkg, terms_sha256: null, terms_bytes: null, terms_states_cc_by_4_0: null, terms_is_closure_notice: null });
+    expect(missing.verdict).toBe('UNKNOWN');
+    expect(missing.reasons.join(';')).toContain('portal-terms');
+    // A terms page that does not state CC BY 4.0 is also not affirmative evidence.
+    expect(verdictFor(inside, { ...pkg, terms_states_cc_by_4_0: null }).verdict).toBe('UNKNOWN');
+    expect(verdictFor(inside, { ...pkg, terms_states_cc_by_4_0: false }).verdict).toBe('NOT_CLEAN');
+  });
+
+  it('counts a GeoJSON segment crossing a disc and a polygon enclosing one', () => {
+    // Both endpoints of the line are ~1 km from the origin, but the segment passes through the 250 m disc.
+    const crossing = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'LineString', coordinates: [[139.69, 35.7], [139.71, 35.7]] } }] }));
+    expect(geojsonDetail(crossing, [STATION]).features_touching_window).toEqual({ testville: 1 });
+    // Every edge of this box is about 500 m from the origin, and the disc (r 250 m) lies wholly inside it.
+    const enclosing = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'Polygon', coordinates: [[[139.695, 35.695], [139.705, 35.695], [139.705, 35.705], [139.695, 35.705], [139.695, 35.695]]] } }] }));
+    expect(geojsonDetail(enclosing, [STATION]).features_touching_window).toEqual({ testville: 1 });
+    // A feature far away is not counted.
+    const far = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: { type: 'LineString', coordinates: [[139.60, 35.60], [139.61, 35.61]] } }] }));
+    expect(geojsonDetail(far, [STATION]).features_touching_window).toEqual({ testville: 0 });
+  });
+
+  it('counts a shapefile polyline whose segment crosses a disc with both endpoints outside', () => {
+    const points: Array<[number, number]> = [[139.69, 35.7], [139.71, 35.7]];
+    const content = Buffer.alloc(44 + 4 + points.length * 16);
+    content.writeInt32LE(3, 0);
+    const xs = points.map((p) => p[0]), ys = points.map((p) => p[1]);
+    content.writeDoubleLE(Math.min(...xs), 4); content.writeDoubleLE(Math.min(...ys), 12);
+    content.writeDoubleLE(Math.max(...xs), 20); content.writeDoubleLE(Math.max(...ys), 28);
+    content.writeInt32LE(1, 36); content.writeInt32LE(points.length, 40); content.writeInt32LE(0, 44);
+    points.forEach(([x, y], i) => { content.writeDoubleLE(x, 48 + i * 16); content.writeDoubleLE(y, 56 + i * 16); });
+    const header = Buffer.alloc(100);
+    header.writeInt32BE(9994, 0); header.writeInt32BE((100 + 8 + content.length) / 2, 24);
+    header.writeInt32LE(1000, 28); header.writeInt32LE(3, 32);
+    const rec = Buffer.alloc(8);
+    rec.writeInt32BE(1, 0); rec.writeInt32BE(content.length / 2, 4);
+    const shape = Buffer.concat([header, rec, content]);
+    const detail = shpDetail(shape, 'GEOGCS["JGD2011",DATUM["JGD2011"]]', [STATION]);
+    expect(detail.records_touching_window).toEqual({ testville: 1 });
+  });
+
   it('describes long or blank headers instead of quoting them', () => {
     expect(safeColumnName('緯度', 0)).toBe('緯度');
     expect(safeColumnName('x'.repeat(41), 3)).toBe('(column 4: free-text header of 41 characters)');
@@ -105,11 +148,20 @@ describe('csv-profile', () => {
     expect(xlsxRecords(entries)).toEqual([['name', '緯度', '経度'], ['a', '', '139.7']]);
   });
 
-  it('builds the real station windows from the context configs and station.json origins', async () => {
+  it('withholds DBF field names that carry a guarded literal inside a ZIP member detail', () => {
+    const zip: ZipProfile = { kind: 'zip', members: [{ extension: 'dbf', bytes: 10, format: 'dbf', detail: { records: 1, field_count: 1, field_names: ['guarded term'] } }], vector_members: 0, holds_vector_data: false, coordinate_tables: 0, formats: { dbf: 1 } };
+    const md = renderProfileMarkdown([{ spec: 'synthetic-zip', catalog_id: null, sha256: 'a'.repeat(64), bytes: 10, profile: zip, error: null, package: null, verdict: { verdict: 'UNKNOWN', reasons: ['x'] } }], [STATION], new Set(['guarded term']));
+    expect(md).not.toContain('guarded term');
+    expect(md).toContain('withheld by the literal guard');
+  });
+
+  it('builds both station windows from the profile.window config: one 700 m origin disc', async () => {
     const windows = await loadStationWindows();
     expect(windows.map((w) => w.station)).toEqual(['ikebukuro', 'shinjuku']);
-    expect(windows[0].discs.length).toBeGreaterThan(1);
-    expect(windows[1].discs).toHaveLength(1);
-    expect(windows[1].discs[0].r).toBe(250);
+    for (const w of windows) {
+      expect(w.discs).toHaveLength(1);
+      expect(w.discs[0]).toMatchObject({ x: 0, y: 0, r: 700, origin: 'origin' });
+      expect(w.basis).toContain('700 m origin disc');
+    }
   });
 });
