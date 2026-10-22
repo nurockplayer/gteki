@@ -1,19 +1,19 @@
 # Ikebukuro: step-free (accessible) route coverage of the verified graph
 
-Read at `gteki/graph.json` (62 nodes, 63 edges, 1,744.1 m), `gteki/pois.json` and `gteki/station.json` on this branch, 2026-10-22. Desk analysis only: nothing here is field-verified, and **no graph, POI, accessFact or coverage text was changed**. This is a coverage report, not an acceptance and not a routing claim.
+Read at `gteki/graph.json` (66 nodes, 67 edges, 1,745.3 m; updated for the #227 / #203 A1 rebuild: two stair edges split into walk + stairs + walk), `gteki/pois.json` and `gteki/station.json` on this branch, 2026-10-22. Desk analysis only: nothing here is field-verified, and **no graph, POI, accessFact or coverage text was changed**. This is a coverage report, not an acceptance and not a routing claim.
 
 ## Result in one paragraph
 
-**Verified step-free coverage is 0 edges, 0 m of 63 edges, 1,744.1 m.** Wheelchair access is `null` (UNKNOWN) on every edge, so the `stepFree` profile fails closed: it finds no path, not even a flat walk between two halls. The PLATEAU geometry says 25 edges (504.4 m) are stairs, 12 edges (609.2 m) are walking edges that change level a little (up to 0.56 m), and 26 edges (630.5 m) are flat polylines. The last two groups are **geometry only**: a flat survey polyline does not show that there are no steps, thresholds, narrow gate openings or closed doors, so none of it counts as step-free. A "geometry-only candidate" below means "nothing in the PLATEAU geometry rules it out", never "accessible".
+**Verified step-free coverage is 0 edges, 0 m of 67 edges, 1,745.3 m.** Wheelchair access is `false` on the 25 `stairs` edges and `null` (UNKNOWN) on every other edge, so the `stepFree` profile fails closed: it finds no path, not even a flat walk between two halls. The PLATEAU geometry says 25 edges (457.6 m) are stairs, 12 edges (609.3 m) are walking edges that change level a little (up to 0.56 m), and 30 edges (678.4 m) are flat polylines. The last two groups are **geometry only**: a flat survey polyline does not show that there are no steps, thresholds, narrow gate openings or closed doors, so none of it counts as step-free. A "geometry-only candidate" below means "nothing in the PLATEAU geometry rules it out", never "accessible".
 
 ## 1. What the data says about step-free
 
 - The router refuses an edge for the step-free profile unless it is not a `stairs` or `escalator` edge, **and** `wheelchair === true`, **and** `steps !== true` (`packages/navigation/src/router.ts:284`, `NOT_STEP_FREE_MODES` at `:10`). Nothing in the graph sets `wheelchair` to `true`, so every edge is refused.
-- `routing.test.ts` pins this. `routing.test.ts:269-273`, test "step-free fails closed: wheelchair access is unknown (null) on every edge, so even the flat walk to the gate stair foot has none" (inside `describe("strict hours and step-free")`, `:249`): line 270 asserts `bundle.edges.every((e) => e.wheelchair === null)`; line 271 asserts `stepFree: true` from the golden start to Exit 35 gives `{ ok: false, reason: "no_path" }`; line 272 asserts the same for the flat walk to `c_e2` (East Exit B1). `g0-g4-status.md` G0 row 3 and G2 row 4 cite the same test.
-- No edge uses a vertical mode other than `stairs`: the schema allows `escalator`, `elevator`, `ramp` and others (`packages/schema/src/index.ts:170`), but the 63 edges are 38 `walk` and 25 `stairs`. `steps` is `true` on exactly the 25 `stairs` edges. The README notes that single risers modelled as two floor levels are passable on stair edges only, so walk edges are not "proven step-free" even by the data's own convention.
-- A test that no edge sets `wheelchair` without a cited `accessEvidence` source was considered and not added: the existing assertion at `routing.test.ts:270` is stricter (every edge is `null`), so a weaker "unless cited" test would add nothing today.
+- `routing.test.ts` pins this. `routing.test.ts:278-283`, test "step-free fails closed: wheelchair access is false on stairs and unknown (null) on every other edge, so even the flat walk to the gate stair foot has none" (inside `describe("strict hours and step-free")`, `:258`): line 279 asserts every `stairs` edge has `wheelchair: false` and every other edge `null`; line 281 asserts `stepFree: true` from the golden start to Exit 35 gives `{ ok: false, reason: "no_path" }`; line 282 asserts the same for the flat walk to `c_e2` (East Exit B1). `g0-g4-status.md` G0 row 3 and G2 row 4 cite the same test.
+- No edge uses a vertical mode other than `stairs`: the schema allows `escalator`, `elevator`, `ramp` and others (`packages/schema/src/index.ts:170`), but the 67 edges are 42 `walk` and 25 `stairs`. `steps` is `true` on exactly the 25 `stairs` edges. The README notes that single risers modelled as two floor levels are passable on stair edges only, so walk edges are not "proven step-free" even by the data's own convention.
+- A test that no edge sets `wheelchair` without a cited `accessEvidence` source was considered and not added: the existing assertion at `routing.test.ts:279` is stricter (`false` on stairs, `null` everywhere else), so a weaker "unless cited" test would add nothing today.
 
-## 2. Per-edge classification (all 63 verified edges)
+## 2. Per-edge classification (all 67 verified edges)
 
 Class rules (applied in this order):
 
@@ -23,23 +23,23 @@ Class rules (applied in this order):
 | `slope` | not a stair, and the polyline's z range is at least 0.01 m | PLATEAU z changes along the walk. **Geometry only, step-free NOT verified.** The grade is read from sampled geometry (surface sampled every 0.5 m, tolerance 0.35 m per `geometryEvidence.method`), so the larger values are at the size of the sampling tolerance: they are not measured ramp grades and not evidence that a ramp exists. |
 | `level-geometry` | not a stair, and the polyline is flat (z range under 0.01 m) | PLATEAU geometry shows no level change and no stair. **Geometry only, step-free NOT verified**: a flat polyline does not prove there are no steps, thresholds, door sills, gate or opening widths, or surface problems. |
 
-Columns: net level change is last vertex z minus first vertex z along `from` to `to`, in metres (TP height); z range is max minus min along the polyline; grade is the net change over the edge length, then the steepest single polyline segment (slope edges only). `wheelchair` is the value stored in `graph.json`. All 63 edges are `verified` (geometry and access evidence as in `station.json`), unpaid, two-way, with `hours: null`.
+Columns: net level change is last vertex z minus first vertex z along `from` to `to`, in metres (TP height); z range is max minus min along the polyline; grade is the net change over the edge length, then the steepest single polyline segment (slope edges only). `wheelchair` is the value stored in `graph.json`. All 67 edges are `verified` (geometry and access evidence as in `station.json`), unpaid, two-way, with `hours: null`.
 
 Summary:
 
-| Class | Edges | Metres | Share of 1,744.1 m |
+| Class | Edges | Metres | Share of 1,745.3 m |
 |---|---|---|---|
-| `stair` | 25 | 504.4 | 28.9 % |
-| `slope` (geometry only) | 12 | 609.2 | 34.9 % |
-| `level-geometry` (geometry only) | 26 | 630.5 | 36.2 % |
-| **Total** | **63** | **1,744.1** | 100 % |
+| `stair` | 25 | 457.6 | 26.2 % |
+| `slope` (geometry only) | 12 | 609.3 | 34.9 % |
+| `level-geometry` (geometry only) | 30 | 678.4 | 38.9 % |
+| **Total** | **67** | **1,745.3** | 100 % |
 | **Verified step-free** | **0** | **0.0** | **0 %** |
 
 Notes on the numbers:
 
-- The 25 stair edges climb or descend 0.83 m (`s41_j__s41_f`) to 6.61 m (`s39_f__x39`), 112.6 m in total (sum of the absolute net changes).
+- The 25 stair edges climb or descend 0.83 m (`s41_stair_foot__s41_stair_top`) to 6.61 m (`s39_f__x39`), 112.6 m in total (sum of the absolute net changes).
 - The 12 slope edges change level by 0.04 m (net, `c_n__n_h`, which rises and falls 0.14 m) to 0.56 m (`c_s__sp_j`, over 84.2 m); the largest net grade is 2.4 % (`c_e1__c_n`) and the steepest single polyline segment is 5.7 % (`se_1__se_j`). Six of them change by 0.20 m or less, which is inside the 0.35 m sampling tolerance; the field checks for them are in `field-checklist.md` I11.
-- Three short "stair" edges rise under 1.5 m (`s41_j__s41_f` 0.83 m, `e_hall__e_low` 0.91 m, `sp_e__s38_w` 1.47 m). The data treats them as stairs (the README and `af-south-passage` describe "one short flight up and another down"); they are the places where a ramp or lift beside the flight would matter most (I12).
+- Three short "stair" edges rise under 1.5 m (`s41_stair_foot__s41_stair_top` 0.83 m, `e_hall_stair_top__e_hall_stair_foot` 0.91 m, `sp_e__s38_w` 1.47 m). The first two were split out of `s41_j__s41_f` and `e_hall__e_low` (#203 A1), so they now cover only the flight (2.7 m and 3.5 m); the level walks on either side are `walk` edges. The data treats them as stairs (the README and `af-south-passage` describe "one short flight up and another down"); they are the places where a ramp or lift beside the flight would matter most (I12).
 
 ### Per-edge table
 
@@ -50,92 +50,96 @@ Notes on the numbers:
 | 3 | `c_mid__c_g2` | walk | false | +0.00 | 0.00 | - | 11.4 | `null` | `level-geometry` |
 | 4 | `c_mid__g_jr_c1` | walk | false | +0.00 | 0.00 | - | 10.5 | `null` | `level-geometry` |
 | 5 | `c_g2__c_c` | walk | false | +0.00 | 0.00 | - | 21.3 | `null` | `level-geometry` |
-| 6 | `c_c__c_e1` | walk | false | +0.16 | 0.16 | 0.5% / 2.8% | 33.1 | `null` | `slope` |
+| 6 | `c_c__c_e1` | walk | false | +0.16 | 0.16 | 0.5% / 2.8% | 33.2 | `null` | `slope` |
 | 7 | `c_e1__c_n` | walk | false | +0.42 | 0.42 | 2.4% / 2.8% | 17.8 | `null` | `slope` |
 | 8 | `c_n__c_e2` | walk | false | +0.00 | 0.00 | - | 16.4 | `null` | `level-geometry` |
 | 9 | `c_e1__c_s` | walk | false | +0.07 | 0.07 | 0.5% / 0.6% | 13.3 | `null` | `slope` |
-| 10 | `c_s__x37` | stairs | true | +4.20 | 4.20 | - | 18.6 | `null` | `stair` |
+| 10 | `c_s__x37` | stairs | true | +4.20 | 4.20 | - | 18.6 | `false` | `stair` |
 | 11 | `c_e2__x36f` | walk | false | +0.00 | 0.00 | - | 8.1 | `null` | `level-geometry` |
 | 12 | `c_e2__e_27j` | walk | false | -0.39 | 0.39 | 2.0% / 3.9% | 19.9 | `null` | `slope` |
 | 13 | `e_27j__e_hall` | walk | false | -0.31 | 0.31 | 2.2% / 3.0% | 14.1 | `null` | `slope` |
-| 14 | `e_27j__x27` | stairs | true | +4.17 | 4.17 | - | 16.1 | `null` | `stair` |
-| 15 | `e_hall__e_low` | stairs | true | -0.91 | 0.91 | - | 37.1 | `null` | `stair` |
-| 16 | `e_low__x34` | stairs | true | +5.01 | 5.01 | - | 25.4 | `null` | `stair` |
-| 17 | `e_low__x35` | stairs | true | +4.39 | 4.39 | - | 31.9 | `null` | `stair` |
-| 18 | `e_hall__se_1` | walk | false | -0.20 | 0.20 | 0.7% / 4.4% | 27.6 | `null` | `slope` |
-| 19 | `se_1__se_j` | walk | false | -0.51 | 0.51 | 1.8% / 5.7% | 27.6 | `null` | `slope` |
-| 20 | `se_j__x43` | stairs | true | +4.71 | 4.71 | - | 16.0 | `null` | `stair` |
-| 21 | `se_j__x42` | stairs | true | +4.89 | 4.89 | - | 18.0 | `null` | `stair` |
-| 22 | `c_s__sp_j` | walk | false | -0.56 | 0.56 | 0.7% / 1.8% | 84.2 | `null` | `slope` |
-| 23 | `sp_j__sp_e` | walk | false | +0.00 | 0.00 | - | 27.5 | `null` | `level-geometry` |
-| 24 | `sp_e__s38_w` | stairs | true | +1.47 | 1.47 | - | 11.4 | `null` | `stair` |
-| 25 | `s38_w__s38_j` | walk | false | +0.00 | 0.00 | - | 31.0 | `null` | `level-geometry` |
-| 26 | `s38_j__x38` | stairs | true | +3.59 | 3.59 | - | 13.4 | `null` | `stair` |
-| 27 | `s38_j__s41_j` | stairs | true | -3.19 | 3.19 | - | 25.8 | `null` | `stair` |
-| 28 | `s41_j__s41_f` | stairs | true | +0.83 | 0.83 | - | 16.2 | `null` | `stair` |
-| 29 | `s41_f__x41` | stairs | true | +5.46 | 5.46 | - | 20.2 | `null` | `stair` |
-| 30 | `s41_j__s40_j` | walk | false | +0.07 | 0.07 | 0.1% / 0.1% | 90.4 | `null` | `slope` |
-| 31 | `s40_j__x40` | stairs | true | +6.58 | 6.58 | - | 24.0 | `null` | `stair` |
-| 32 | `s40_j__s39_f` | walk | false | +0.11 | 0.11 | 0.2% / 0.2% | 53.2 | `null` | `slope` |
-| 33 | `s39_f__x39` | stairs | true | +6.61 | 6.61 | - | 26.5 | `null` | `stair` |
-| 34 | `c_n__n_h` | walk | false | -0.04 | 0.14 | 0.1% / 1.3% | 75.8 | `null` | `slope` |
-| 35 | `n_h__n_c` | walk | false | +0.00 | 0.00 | - | 6.5 | `null` | `level-geometry` |
-| 36 | `n_c__n_e` | walk | false | +0.00 | 0.00 | - | 27.5 | `null` | `level-geometry` |
-| 37 | `n_c__x22` | stairs | true | +3.97 | 3.97 | - | 11.0 | `null` | `stair` |
-| 38 | `n_e__ne_j` | stairs | true | -2.21 | 2.21 | - | 14.6 | `null` | `stair` |
-| 39 | `ne_j__x26` | stairs | true | +6.01 | 6.01 | - | 19.8 | `null` | `stair` |
-| 40 | `ne_j__ne_m` | walk | false | +0.00 | 0.00 | - | 19.7 | `null` | `level-geometry` |
-| 41 | `ne_m__x28` | stairs | true | +6.13 | 6.13 | - | 20.6 | `null` | `stair` |
-| 42 | `ne_m__ne_e` | walk | false | +0.00 | 0.00 | - | 22.3 | `null` | `level-geometry` |
-| 43 | `ne_e__ne_k` | walk | false | +0.00 | 0.00 | - | 9.4 | `null` | `level-geometry` |
-| 44 | `ne_k__x32` | stairs | true | +6.19 | 6.19 | - | 23.0 | `null` | `stair` |
-| 45 | `ne_e__x33` | stairs | true | +5.84 | 5.84 | - | 23.8 | `null` | `stair` |
-| 46 | `c_w__w_c` | walk | false | +0.00 | 0.00 | - | 63.1 | `null` | `level-geometry` |
-| 47 | `w_c__w_n` | walk | false | +0.00 | 0.00 | - | 31.4 | `null` | `level-geometry` |
-| 48 | `w_c__w_cj` | walk | false | +0.00 | 0.00 | - | 20.3 | `null` | `level-geometry` |
-| 49 | `w_cj__w_13j` | walk | false | +0.00 | 0.00 | - | 12.9 | `null` | `level-geometry` |
-| 50 | `w_13j__w_w` | walk | false | +0.00 | 0.00 | - | 12.9 | `null` | `level-geometry` |
-| 51 | `w_13j__x13f` | walk | false | +0.00 | 0.00 | - | 6.5 | `null` | `level-geometry` |
-| 52 | `w_w__w_nw` | walk | false | +0.00 | 0.00 | - | 43.9 | `null` | `level-geometry` |
-| 53 | `w_nw__w_n` | walk | false | +0.00 | 0.00 | - | 46.0 | `null` | `level-geometry` |
-| 54 | `w_n__x15` | stairs | true | +5.24 | 5.24 | - | 18.6 | `null` | `stair` |
-| 55 | `w_n__x17` | stairs | true | +5.24 | 5.24 | - | 16.2 | `null` | `stair` |
-| 56 | `w_n__x18` | stairs | true | +5.26 | 5.26 | - | 25.4 | `null` | `stair` |
-| 57 | `w_nw__x10` | stairs | true | +5.24 | 5.24 | - | 15.0 | `null` | `stair` |
-| 58 | `w_nw__x11` | stairs | true | +5.24 | 5.24 | - | 15.8 | `null` | `stair` |
-| 59 | `sp_j__sp_m` | walk | false | +0.00 | 0.00 | - | 64.9 | `null` | `level-geometry` |
-| 60 | `sp_m__g_jr_s` | walk | false | +0.00 | 0.00 | - | 9.7 | `null` | `level-geometry` |
-| 61 | `sp_m__sw_h` | walk | false | +0.00 | 0.00 | - | 48.7 | `null` | `level-geometry` |
-| 62 | `sw_h__x4f` | walk | false | +0.00 | 0.00 | - | 14.3 | `null` | `level-geometry` |
-| 63 | `sw_h__w_cj` | walk | false | +0.33 | 0.33 | 0.2% / 3.7% | 152.2 | `null` | `slope` |
+| 14 | `e_27j__x27` | stairs | true | +4.17 | 4.17 | - | 16.1 | `false` | `stair` |
+| 15 | `e_hall__e_hall_stair_top` | walk | false | +0.00 | 0.00 | - | 23.3 | `null` | `level-geometry` |
+| 16 | `e_hall_stair_top__e_hall_stair_foot` | stairs | true | -0.91 | 0.91 | - | 3.5 | `false` | `stair` |
+| 17 | `e_hall_stair_foot__e_low` | walk | false | +0.00 | 0.00 | - | 10.6 | `null` | `level-geometry` |
+| 18 | `e_low__x34` | stairs | true | +5.01 | 5.01 | - | 25.4 | `false` | `stair` |
+| 19 | `e_low__x35` | stairs | true | +4.39 | 4.39 | - | 32.0 | `false` | `stair` |
+| 20 | `e_hall__se_1` | walk | false | -0.20 | 0.20 | 0.7% / 4.4% | 27.6 | `null` | `slope` |
+| 21 | `se_1__se_j` | walk | false | -0.51 | 0.51 | 1.8% / 5.7% | 27.6 | `null` | `slope` |
+| 22 | `se_j__x43` | stairs | true | +4.71 | 4.71 | - | 16.0 | `false` | `stair` |
+| 23 | `se_j__x42` | stairs | true | +4.89 | 4.89 | - | 18.0 | `false` | `stair` |
+| 24 | `c_s__sp_j` | walk | false | -0.56 | 0.56 | 0.7% / 1.8% | 84.2 | `null` | `slope` |
+| 25 | `sp_j__sp_e` | walk | false | +0.00 | 0.00 | - | 27.5 | `null` | `level-geometry` |
+| 26 | `sp_e__s38_w` | stairs | true | +1.47 | 1.47 | - | 11.4 | `false` | `stair` |
+| 27 | `s38_w__s38_j` | walk | false | +0.00 | 0.00 | - | 31.0 | `null` | `level-geometry` |
+| 28 | `s38_j__x38` | stairs | true | +3.59 | 3.59 | - | 13.4 | `false` | `stair` |
+| 29 | `s38_j__s41_j` | stairs | true | -3.19 | 3.19 | - | 25.8 | `false` | `stair` |
+| 30 | `s41_j__s41_stair_foot` | walk | false | +0.00 | 0.00 | - | 1.0 | `null` | `level-geometry` |
+| 31 | `s41_stair_foot__s41_stair_top` | stairs | true | +0.83 | 0.83 | - | 2.7 | `false` | `stair` |
+| 32 | `s41_stair_top__s41_f` | walk | false | +0.00 | 0.00 | - | 12.5 | `null` | `level-geometry` |
+| 33 | `s41_f__x41` | stairs | true | +5.46 | 5.46 | - | 20.2 | `false` | `stair` |
+| 34 | `s41_j__s40_j` | walk | false | +0.07 | 0.07 | 0.1% / 0.1% | 90.4 | `null` | `slope` |
+| 35 | `s40_j__x40` | stairs | true | +6.58 | 6.58 | - | 24.0 | `false` | `stair` |
+| 36 | `s40_j__s39_f` | walk | false | +0.11 | 0.11 | 0.2% / 0.2% | 53.2 | `null` | `slope` |
+| 37 | `s39_f__x39` | stairs | true | +6.61 | 6.61 | - | 26.5 | `false` | `stair` |
+| 38 | `c_n__n_h` | walk | false | -0.04 | 0.14 | 0.1% / 1.3% | 75.8 | `null` | `slope` |
+| 39 | `n_h__n_c` | walk | false | +0.00 | 0.00 | - | 6.5 | `null` | `level-geometry` |
+| 40 | `n_c__n_e` | walk | false | +0.00 | 0.00 | - | 27.5 | `null` | `level-geometry` |
+| 41 | `n_c__x22` | stairs | true | +3.97 | 3.97 | - | 11.0 | `false` | `stair` |
+| 42 | `n_e__ne_j` | stairs | true | -2.21 | 2.21 | - | 14.7 | `false` | `stair` |
+| 43 | `ne_j__x26` | stairs | true | +6.01 | 6.01 | - | 19.8 | `false` | `stair` |
+| 44 | `ne_j__ne_m` | walk | false | +0.00 | 0.00 | - | 19.7 | `null` | `level-geometry` |
+| 45 | `ne_m__x28` | stairs | true | +6.13 | 6.13 | - | 20.6 | `false` | `stair` |
+| 46 | `ne_m__ne_e` | walk | false | +0.00 | 0.00 | - | 22.3 | `null` | `level-geometry` |
+| 47 | `ne_e__ne_k` | walk | false | +0.00 | 0.00 | - | 9.4 | `null` | `level-geometry` |
+| 48 | `ne_k__x32` | stairs | true | +6.19 | 6.19 | - | 23.1 | `false` | `stair` |
+| 49 | `ne_e__x33` | stairs | true | +5.84 | 5.84 | - | 23.8 | `false` | `stair` |
+| 50 | `c_w__w_c` | walk | false | +0.00 | 0.00 | - | 63.1 | `null` | `level-geometry` |
+| 51 | `w_c__w_n` | walk | false | +0.00 | 0.00 | - | 31.9 | `null` | `level-geometry` |
+| 52 | `w_c__w_cj` | walk | false | +0.00 | 0.00 | - | 20.3 | `null` | `level-geometry` |
+| 53 | `w_cj__w_13j` | walk | false | +0.00 | 0.00 | - | 12.9 | `null` | `level-geometry` |
+| 54 | `w_13j__w_w` | walk | false | +0.00 | 0.00 | - | 12.9 | `null` | `level-geometry` |
+| 55 | `w_13j__x13f` | walk | false | +0.00 | 0.00 | - | 6.5 | `null` | `level-geometry` |
+| 56 | `w_w__w_nw` | walk | false | +0.00 | 0.00 | - | 43.9 | `null` | `level-geometry` |
+| 57 | `w_nw__w_n` | walk | false | +0.00 | 0.00 | - | 46.0 | `null` | `level-geometry` |
+| 58 | `w_n__x15` | stairs | true | +5.24 | 5.24 | - | 18.6 | `false` | `stair` |
+| 59 | `w_n__x17` | stairs | true | +5.24 | 5.24 | - | 16.2 | `false` | `stair` |
+| 60 | `w_n__x18` | stairs | true | +5.26 | 5.26 | - | 25.4 | `false` | `stair` |
+| 61 | `w_nw__x10` | stairs | true | +5.24 | 5.24 | - | 15.0 | `false` | `stair` |
+| 62 | `w_nw__x11` | stairs | true | +5.24 | 5.24 | - | 15.8 | `false` | `stair` |
+| 63 | `sp_j__sp_m` | walk | false | +0.00 | 0.00 | - | 64.9 | `null` | `level-geometry` |
+| 64 | `sp_m__g_jr_s` | walk | false | +0.00 | 0.00 | - | 9.7 | `null` | `level-geometry` |
+| 65 | `sp_m__sw_h` | walk | false | +0.00 | 0.00 | - | 48.7 | `null` | `level-geometry` |
+| 66 | `sw_h__x4f` | walk | false | +0.00 | 0.00 | - | 14.3 | `null` | `level-geometry` |
+| 67 | `sw_h__w_cj` | walk | false | +0.33 | 0.33 | 0.2% / 3.7% | 152.2 | `null` | `slope` |
 
 
 ## 3. Which routable POIs are reachable on geometry-only edges?
 
 Question: starting from each JR gate or B1 hall, is there any path to the POI that uses only `level-geometry` and `slope` edges (no `stair` edge)? This is a **geometry-only candidate**, not a verified route: every edge on it still has `wheelchair: null`, and the step-free router would refuse all of them.
 
-Method (read-only, JSON only, not committed): take the 38 non-stair edges as an undirected graph (all 63 edges are two-way), find connected components, then run shortest paths from the nine origin nodes (the three JR gates `jr-central-gate-2`, `jr-central-gate-1`, `jr-south-gate`, and the six halls and passages `central-passage`, `north-passage`, `south-passage`, `east-exit-b1`, `west-exit-b1`, `west-exit-south-b1`). Origins are the public side of each gate; no gate is passed through and no fare area is entered. The 20 search-only POIs (5 gates, 15 exits; #185 adds a 21st, the Yurakucho 南通路西改札) have no node and are out of scope: they cannot be routed at all.
+Method (read-only, JSON only, not committed): take the 42 non-stair edges as an undirected graph (all 67 edges are two-way), find connected components, then run shortest paths from the nine origin nodes (the three JR gates `jr-central-gate-2`, `jr-central-gate-1`, `jr-south-gate`, and the six halls and passages `central-passage`, `north-passage`, `south-passage`, `east-exit-b1`, `west-exit-b1`, `west-exit-south-b1`). Origins are the public side of each gate; no gate is passed through and no fare area is entered. The 20 search-only POIs (5 gates, 15 exits; #185 adds a 21st, the Yurakucho 南通路西改札) have no node and are out of scope: they cannot be routed at all.
 
 Headline:
 
 - **32 routable POIs**: 23 exits, 3 JR gates, 6 halls and passages.
-- **All 9 origins sit in one geometry-only component** of 31 nodes and 32 edges (1,013.7 m). Every JR gate and B1 hall reaches every other one without a stair edge. That says nothing about step-free access.
+- **All 9 origins sit in one geometry-only component** of 32 nodes and 33 edges (1,037.6 m). Every JR gate and B1 hall reaches every other one without a stair edge. That says nothing about step-free access.
 - **0 of 23 exits** have a geometry-only candidate path to the exit itself. 20 exits have no such path from any origin: every route to them crosses at least one stair edge. 3 exits (4, 13, 36) are routed only to the **foot** of their stairs (`stair_end` nodes): the foot is reachable on geometry-only edges, but the stairs themselves are outside the survey (Exit 4) or only partly surveyed (Exits 13 and 36), and are not claimed as step-free.
-- 6 non-stair edges (226.0 m) lie in three islands that can only be reached by stairs: the north-east block (`ne_j__ne_m`, `ne_m__ne_e`, `ne_e__ne_k`), the south-east corridor start (`s38_w__s38_j`) and the south-east corridor (`s41_j__s40_j`, `s40_j__s39_f`).
+- 9 non-stair edges (250.1 m) lie in five islands that can only be reached by stairs: the north-east block (`ne_j__ne_m`, `ne_m__ne_e`, `ne_e__ne_k`), the south-east corridor start (`s38_w__s38_j`), the south-east corridor (`s41_j__s40_j`, `s40_j__s39_f`, `s41_j__s41_stair_foot`), the level walk below the east-hall flight (`e_hall_stair_foot__e_low`) and the level walk above the Exit 41 approach flight (`s41_stair_top__s41_f`). The last two and `s41_j__s41_stair_foot` come from the #203 A1 split.
 
 ### 3a. Halls, passages and JR gates (9)
 
 | POI | Connector node | Geometry-only path from every JR gate and B1 hall? | Metres from JR Central Gate 2 / Central Gate 1 / South Gate |
 |---|---|---|---|
-| `jr-central-gate-2` (JR Central Gate 2) | `g_jr_c2` | yes (same component as all 9 origins) | 0.0 / 28.9 / 233.5 |
-| `jr-central-gate-1` (JR Central Gate 1) | `g_jr_c1` | yes (same component as all 9 origins) | 28.9 / 0.0 / 248.4 |
-| `central-passage` (Central Passage) | `c_mid` | yes (same component as all 9 origins) | 18.4 / 10.5 / 237.9 |
-| `jr-south-gate` (JR South Gate) | `g_jr_s` | yes (same component as all 9 origins) | 233.5 / 248.4 / 0.0 |
-| `north-passage` (North Passage) | `n_h` | yes (same component as all 9 origins) | 155.0 / 169.9 / 265.7 |
-| `south-passage` (South Passage) | `sp_e` | yes (same component as all 9 origins) | 186.4 / 201.3 / 102.1 |
-| `east-exit-b1` (East Exit (B1)) | `c_e2` | yes (same component as all 9 origins) | 95.6 / 110.5 / 206.3 |
+| `jr-central-gate-2` (JR Central Gate 2) | `g_jr_c2` | yes (same component as all 9 origins) | 0.0 / 28.9 / 233.6 |
+| `jr-central-gate-1` (JR Central Gate 1) | `g_jr_c1` | yes (same component as all 9 origins) | 28.9 / 0.0 / 248.5 |
+| `central-passage` (Central Passage) | `c_mid` | yes (same component as all 9 origins) | 18.4 / 10.5 / 238.0 |
+| `jr-south-gate` (JR South Gate) | `g_jr_s` | yes (same component as all 9 origins) | 233.6 / 248.5 / 0.0 |
+| `north-passage` (North Passage) | `n_h` | yes (same component as all 9 origins) | 155.1 / 170.0 / 265.7 |
+| `south-passage` (South Passage) | `sp_e` | yes (same component as all 9 origins) | 186.5 / 201.4 / 102.1 |
+| `east-exit-b1` (East Exit (B1)) | `c_e2` | yes (same component as all 9 origins) | 95.7 / 110.6 / 206.3 |
 | `west-exit-b1` (West Exit (B1)) | `w_c` | yes (same component as all 9 origins) | 118.8 / 110.9 / 230.9 |
-| `west-exit-south-b1` (West Exit South (B1)) | `sw_h` | yes (same component as all 9 origins) | 272.5 / 283.4 / 58.4 |
+| `west-exit-south-b1` (West Exit South (B1)) | `sw_h` | yes (same component as all 9 origins) | 272.6 / 283.4 / 58.4 |
 
 ### 3b. Exits routed only to the foot of their stairs (3)
 
@@ -143,8 +147,8 @@ The foot is on surveyed B1 floor. The climb is not modelled and not claimed (REA
 
 | POI | Connector | Result | Metres from JR C2 / C1 / South |
 |---|---|---|---|
-| `exit-36` (Exit 36) | `x36f` (`stair_end`, B1) | reaches the stair foot only, from all 9 origins | 103.7 / 118.6 / 214.4 |
-| `exit-4` (Exit 4) | `x4f` (`stair_end`, B1) | reaches the stair foot only, from all 9 origins | 286.8 / 297.7 / 72.7 |
+| `exit-36` (Exit 36) | `x36f` (`stair_end`, B1) | reaches the stair foot only, from all 9 origins | 103.8 / 118.7 / 214.4 |
+| `exit-4` (Exit 4) | `x4f` (`stair_end`, B1) | reaches the stair foot only, from all 9 origins | 286.9 / 297.7 / 72.7 |
 | `exit-13` (Exit 13) | `x13f` (`stair_end`, B1) | reaches the stair foot only, from all 9 origins | 158.5 / 150.6 / 230.0 |
 
 ### 3c. Exits behind at least one stair edge (20)
@@ -159,12 +163,12 @@ Every route to these exits crosses a `stair` edge. The column lists the stair ed
 | `exit-32` (Exit 32) | `x32` | `n_e__ne_j`, `ne_k__x32` | none (0 of 9 origins) |
 | `exit-33` (Exit 33) | `x33` | `n_e__ne_j`, `ne_e__x33` | none (0 of 9 origins) |
 | `exit-27` (Exit 27) | `x27` | `e_27j__x27` | none (0 of 9 origins) |
-| `exit-34` (Exit 34) | `x34` | `e_hall__e_low`, `e_low__x34` | none (0 of 9 origins) |
-| `exit-35` (Exit 35) | `x35` | `e_hall__e_low`, `e_low__x35` | none (0 of 9 origins) |
+| `exit-34` (Exit 34) | `x34` | `e_hall_stair_top__e_hall_stair_foot`, `e_low__x34` | none (0 of 9 origins) |
+| `exit-35` (Exit 35) | `x35` | `e_hall_stair_top__e_hall_stair_foot`, `e_low__x35` | none (0 of 9 origins) |
 | `exit-37` (Exit 37) | `x37` | `c_s__x37` | none (0 of 9 origins) |
 | `exit-42` (Exit 42) | `x42` | `se_j__x42` | none (0 of 9 origins) |
 | `exit-43` (Exit 43) | `x43` | `se_j__x43` | none (0 of 9 origins) |
-| `exit-41` (Exit 41) | `x41` | `sp_e__s38_w`, `s38_j__s41_j`, `s41_j__s41_f`, `s41_f__x41` | none (0 of 9 origins) |
+| `exit-41` (Exit 41) | `x41` | `sp_e__s38_w`, `s38_j__s41_j`, `s41_stair_foot__s41_stair_top`, `s41_f__x41` | none (0 of 9 origins) |
 | `exit-38` (Exit 38) | `x38` | `sp_e__s38_w`, `s38_j__x38` | none (0 of 9 origins) |
 | `exit-39` (Exit 39) | `x39` | `sp_e__s38_w`, `s38_j__s41_j`, `s39_f__x39` | none (0 of 9 origins) |
 | `exit-40` (Exit 40) | `x40` | `sp_e__s38_w`, `s38_j__s41_j`, `s40_j__x40` | none (0 of 9 origins) |
@@ -209,9 +213,9 @@ PLATEAU escalator geometry that no edge uses (`scene/dressing_anchors.json`, 3 b
 | `gap-tobu-jr-link` | A second west-east link outside the gates | No | Public or transfer concourse is not stated in any source read. | F3 |
 | `gap-hours` | Hours for any step-free route (a lift that is closed at night is not a route) | **Partly yes** | Only Metro's own asterisks, lift outage notices and a few lift hours exist; read the rendered Metro exit list again (deferred in #197 until after the browser freeze) and the part of the 2026-03-25 committee 資料3 that was too large to read. Posted exit-level hours need the field. | H1, I1, I8, I9 |
 | `gap-freshness` | Evidence younger than the 2022 guide and the 2023 survey | No | Needs a dated walk-through. Desk reading of Metro and ward pages can only list reported changes (CH-IK-01 to 09). | H3, I4 to I7, I9 |
-| New, this report: no edge has any wheelchair evidence | `wheelchair` per edge | No | A value needs an observation or a source that names the edge's passage. Neither exists for any of the 63 edges. | I11, I12 |
+| New, this report: no edge has any wheelchair evidence | `wheelchair` per edge | No | A value needs an observation or a source that names the edge's passage. Neither exists for any of the 67 edges; the 25 `false` values come from the edges being stairs (#203 A6), not from a source. | I11, I12 |
 | New, this report: slope edges are read from sampled geometry | Real grade, step or ramp on the 12 `slope` edges | No | The PLATEAU surface is sampled every 0.5 m with 0.35 m tolerance, so level changes of 0.2 m or less cannot be told from noise. | I11 |
-| New, this report: short stair flights with a possible alternative | Ramp, lift or escalator beside `e_hall__e_low`, `sp_e__s38_w`, `s41_j__s41_f`, `n_e__ne_j` | No | Public text names no alternative at these flights. | I12, I13 |
+| New, this report: short stair flights with a possible alternative | Ramp, lift or escalator beside `e_hall_stair_top__e_hall_stair_foot`, `sp_e__s38_w`, `s41_stair_foot__s41_stair_top`, `n_e__ne_j` | No | Public text names no alternative at these flights. | I12, I13 |
 | New, this report: ODPT 駅情報 JSON may carry lift or exit fields | Machine-readable lift facts | **Yes** | DR-IK-15 did not read the payload. If it carries lift data, it still needs the on-site match; it does not give geometry. | none |
 
 ### Cheapest next steps
