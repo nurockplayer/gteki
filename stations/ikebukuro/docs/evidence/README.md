@@ -25,7 +25,7 @@ Checked by eye, 12 of the 34 JPEGs (`02`, `06`, `11`, `13`, `16`, `19`, `22`, `2
 - No operator maps (Toshima, Tokyo Metro, JR or other) and no operator logos or pictograms.
 - No operator signage is reproduced. The signs in the frames are the GTEki-generated ones listed above: a dark panel with an arrow, 出口 / Exit, and yellow rounded exit-number chips, or a "JR 南改札"-style label. Their text comes from GTEki's verified graph (facts only).
 
-The remaining 22 JPEGs were not opened one by one. They come from the same captures and share filenames and viewpoints with the reviewed ones, but a full review has not been done. Treat the statements above as covering the sampled files.
+Follow-up, 2026-10-22 (a Claude subagent, main `dc59b38`): the other 22 JPEGs (`01`, `03`, `04`, `05`, `07`-`10`, `12`, `15`, `17`, `18`, `20`, `21`, `23`, `24`, `26`, `27`, `29`-`32`) were opened one by one as well, so all 34 JPEGs have now been checked by eye with the same result: no real photographs, no operator maps, logos or typefaces, and the signs are GTEki's own. The MP4s are still covered by one frame each. One distant sign in `24-south-passage-west.jpg` carries a pictogram too small to read at this resolution; it belongs to the open point below.
 
 Open point for a human: the generated signs use a generic dark-panel, yellow-chip wayfinding look. They have not been compared against operator signage styles. If a reviewer judges the styling too close to a specific operator's, that is a design call for the Ikebukuro lane, not a PLATEAU credit matter.
 

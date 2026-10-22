@@ -130,6 +130,7 @@ export const LITERAL_CLASSES: LiteralClassEntry[] = [
   unquotedUnknown('plateau-13116-schemas', 'schemas ZIP'), unquotedUnknown('plateau-13104-schemas', 'schemas ZIP'),
   unquotedUnknown('plateau-catalog-ubld-13116-13104', 'catalog API snapshot'), unquotedUnknown('plateau-catalog-ubld-mesh-533945', 'catalog API snapshot'),
   unquotedUnknown('plateau-catalog-bldg-tran-13116-13104', 'catalog API snapshot'),
+  unquotedUnknown('hokonavi-oedo-shinjuku-package', 'CKAN package metadata and terms pages'),
 ];
 
 /**
