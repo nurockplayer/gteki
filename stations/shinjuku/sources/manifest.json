@@ -6,7 +6,7 @@
       "path": "e27/nwd_oedo_shinjuku_geojson.zip",
       "sha256": "f3d9c3224e042ba2919730136ddbd88c411fac0af58875085007f5ceaae497ff",
       "url": "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/d4519a9a-917a-4de8-9104-83e21246c04c/download/nwd_oedo_shinjuku_geojson.zip",
-      "license": "PDL 1.0",
+      "license": "unconfirmed; published under Owner override (#16); PDL 1.0 not treated as covering it (#39 Q11 = No); provider inquiry open",
       "use": "data (graph)",
       "validUntil": "2027-03-12"
     },
@@ -14,7 +14,7 @@
       "path": "e27/stationmap_oedo_shinjuku_geojson.zip",
       "sha256": "43a297c028a4ffca3d3bdb3fb1da486e97291a276eadca56801c3b00fa4a9090",
       "url": "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45/resource/9c5ecc7b-a6e4-4d92-978c-9b66ca642172/download/stationmap_oedo_shinjuku_geojson.zip",
-      "license": "PDL 1.0",
+      "license": "unconfirmed; published under Owner override (#16); PDL 1.0 not treated as covering it (#39 Q11 = No); provider inquiry open",
       "use": "data (render plan, fare zones, facilities)",
       "validUntil": "2027-03-12"
     },
@@ -22,14 +22,14 @@
       "path": "e27/dataset.json",
       "sha256": "d975c5953f74f9474cce262138ace6a676129025973f39c1119cfb21f6f3cd88",
       "url": "https://ckan.hokonavi.go.jp/api/3/action/package_show?id=2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45",
-      "license": "PDL 1.0",
+      "license": "unconfirmed; published under Owner override (#16); PDL 1.0 not treated as covering it (#39 Q11 = No); provider inquiry open",
       "use": "metadata (licence, dates)"
     },
     {
       "path": "e27/station_oedo_shinjuku.pdf",
       "sha256": "a150f39ef07028ca9eb382ef44a637bd399c24d8b7a457cccad76da3f57e36f8",
       "url": "(resource listed in dataset.json)",
-      "license": "PDL 1.0",
+      "license": "unconfirmed; published under Owner override (#16); PDL 1.0 not treated as covering it (#39 Q11 = No); provider inquiry open",
       "use": "visual cross-check only; not redistributed"
     },
     {
@@ -57,7 +57,7 @@
       "path": "s10/other_stores_shinjuku.csv",
       "sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
       "url": "ほこナビDP S10 store list",
-      "license": "PDL 1.0",
+      "license": "unconfirmed; published under Owner override (#16); PDL 1.0 not treated as covering it (#39 Q11 = No); provider inquiry open",
       "use": "evaluated; no coordinates → not imported"
     },
     {
