@@ -53,7 +53,9 @@ for (const key of STATIONS) {
         }
       }
       save(testInfo, `${key}-navigation.json`, summaries);
-      expect(JSON.stringify(summaries, null, 2)).toMatchSnapshot(`${key}-routes.json`);
+      // `stale` is a calendar verdict, so it stays in the evidence but not in the golden: a source ageing past
+      // staleAfterDays must not read as a routing change. The search-UI test checks the card says so instead.
+      expect(JSON.stringify(summaries, (k, v) => (k === "stale" ? undefined : v), 2)).toMatchSnapshot(`${key}-routes.json`);
     });
 
     test(`${key}: deep link restores the same route after reload`, async ({ page }) => {

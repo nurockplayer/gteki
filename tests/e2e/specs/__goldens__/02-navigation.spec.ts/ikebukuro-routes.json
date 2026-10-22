@@ -17,7 +17,6 @@
         "hours×9",
         "wheelchair×9"
       ],
-      "stale": true,
       "sources": 3,
       "nodes": 10,
       "modes": [
@@ -65,7 +64,6 @@
         "hours×3",
         "wheelchair×3"
       ],
-      "stale": true,
       "sources": 3,
       "nodes": 4,
       "modes": [
@@ -103,7 +101,6 @@
         "hours×8",
         "wheelchair×8"
       ],
-      "stale": true,
       "sources": 3,
       "nodes": 9,
       "modes": [
@@ -149,7 +146,6 @@
         "hours×6",
         "wheelchair×6"
       ],
-      "stale": true,
       "sources": 3,
       "nodes": 7,
       "modes": [
@@ -194,7 +190,6 @@
         "hours×11",
         "wheelchair×11"
       ],
-      "stale": true,
       "sources": 3,
       "nodes": 12,
       "modes": [
@@ -246,7 +241,6 @@
         "hours×15",
         "wheelchair×15"
       ],
-      "stale": true,
       "sources": 3,
       "nodes": 16,
       "modes": [
@@ -302,7 +296,6 @@
         "hours×14",
         "wheelchair×14"
       ],
-      "stale": true,
       "sources": 3,
       "nodes": 15,
       "modes": [
