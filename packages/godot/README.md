@@ -182,6 +182,44 @@ uniform equals the source material's own `albedo_color`, and that `--lightmap=of
 least one light reaches that layer and no light's cull mask includes the station's layer, and with it off every light
 does.
 
+## HQ look profile (G-4b of #164)
+
+`addons/gteki/gteki_look.gd` has two profiles, picked with `--look=` on `hq.tscn`. **`baseline` is the default** and is
+today's look: no `WorldEnvironment`, no material changes. **`hq`** is the style-bible look and stays opt-in until the lead
+approves it visually.
+
+With `hq`, the client builds one `WorldEnvironment` and re-configures it for each station load from that station's own
+sidecar (`environment`), never from hard-coded values:
+
+- Tonemap AgX (the style references' tonemap, `docs/assets/style.md` §7) with `tonemap_exposure` from
+  `environment.exposure` (Shinjuku 0.92, Ikebukuro 1.0; three's own value).
+- SSAO on, glow off (§7's contact AO is what makes the equipment read; the references have no bloom).
+- Fog: three's `fog { color, near, far }` is linear in distance, so it maps to Godot depth fog with
+  `fog_mode = FOG_MODE_DEPTH`, `fog_depth_begin = near`, `fog_depth_end = far`, `fog_depth_curve = 1.0`, and the
+  sidecar's sRGB colour converted to linear (`fog_light_color`). Ikebukuro has fog (25..180 m), Shinjuku does not.
+- Ambient: a station whose bake is applied gets **no ambient** (`AMBIENT_SOURCE_DISABLED`), because the bake is its
+  light. An unbaked station (Shinjuku) gets `AMBIENT_SOURCE_COLOR` at §7's studio world grey
+  `(0.55, 0.58, 0.62)` linear, scaled to a 0.25 fill so the client's key + fill stay dominant. The web's Shinjuku rule
+  (hemisphere + RoomEnvironment 0.55, §8) is a scene light; Godot gets this ambient plus the same key + fill lights.
+- SDFGI is off; `--gi=sdfgi` turns it on for the GPU review slot. SSAO and SDFGI only render on Forward+/Mobile this
+  project runs `gl_compatibility`, where Godot ignores both (it prints a warning for SDFGI); they are set for the visual
+  pass, not for the headless gate.
+
+`looks/materials.json` maps snapshot material names to style-bible materials. Each mapping carries a `from` block with
+the snapshot evidence (colour, metal, roughness, surface count, roles) and a one-line `evidence` note, because the
+snapshot loses the scene's own material names (three's exporter names unnamed materials `material_<n>`). A station's
+`unmapped` array lists every material the table leaves alone and why; anything ambiguous stays there rather than being
+guessed. Shinjuku has 13 mapped materials (floors, walls, ceiling, tactile paving, stair nosings, gate bodies/caps,
+steel plates, light housings, the accent band, handrails); Ikebukuro is listed as entirely unmapped because its lightmap
+shader owns its surfaces and that decision belongs to the lead. The table sets only albedo (sRGB, written to
+`albedo_color` exactly as the glTF importer writes it), roughness and metal; it never touches emission, transparency or
+textures, and it only ever overrides surfaces whose material it names.
+
+`tests/run_look_tests.gd` (run by `run-scenes.sh`) checks the profile selection and its errors, the Environment against
+each station's sidecar (AgX, exposure, SSAO, glow off, SDFGI on/off, depth fog near/far/curve/colour, the ambient rule),
+that every mapped name exists in the snapshot, that mapped albedo/roughness/metal equal the table, and that unmapped
+surfaces keep the snapshot material and take no override. `hq.gd --check --look=hq` prints the same profile summary the client renders.
+
 ## Third-person walk and follow camera (G-2 of #164)
 
 `addons/gteki/gteki_walker.gd` is a `CharacterBody3D` that moves by the **web explorer's rules, not Godot's slide

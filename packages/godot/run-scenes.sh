@@ -23,3 +23,5 @@ for station in "${stations[@]}"; do
 done
 # One headless Godot process at a time; the snapshots are loaded and freed one station after the other.
 "$godot_bin" --headless --path packages/godot --script res://tests/run_scene_tests.gd -- "$scenes_dir" "${stations[@]}"
+# G-4b: the look profile builds the Environment from the sidecar and the material table only touches mapped surfaces.
+"$godot_bin" --headless --path packages/godot --script res://tests/run_look_tests.gd -- "$scenes_dir" "${stations[@]}"

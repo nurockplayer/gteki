@@ -1,0 +1,725 @@
+{
+  "schema": "gteki.godot-look/0.1",
+  "style_source": "docs/assets/style.md §2 (sRGB authoring colours; written to StandardMaterial3D.albedo_color as the glTF importer writes albedo, i.e. sRGB values)",
+  "styles": {
+    "floor_terrazzo": {
+      "albedo": "#C7C2B8",
+      "roughness": 0.37,
+      "metal": 0.0,
+      "role": "field: public concourse floor"
+    },
+    "wall_panel_enamel": {
+      "albedo": "#DBDBD6",
+      "roughness": 0.28,
+      "metal": 0.0,
+      "role": "field: upper wall panels, column cladding"
+    },
+    "wall_tile_white": {
+      "albedo": "#DEDED6",
+      "roughness": 0.22,
+      "metal": 0.0,
+      "role": "field: 150 mm tile, lift surrounds"
+    },
+    "wall_panel_accent": {
+      "albedo": "#334F66",
+      "roughness": 0.3,
+      "metal": 0.0,
+      "role": "accent: wainscot"
+    },
+    "ceiling_spandrel": {
+      "albedo": "#DBDBD9",
+      "roughness": 0.42,
+      "metal": 0.85,
+      "role": "field: linear metal ceiling"
+    },
+    "gate_body": {
+      "albedo": "#D6D6D1",
+      "roughness": 0.22,
+      "metal": 0.0,
+      "role": "field: gate cabinets, equipment bodies"
+    },
+    "gate_top": {
+      "albedo": "#09090A",
+      "roughness": 0.18,
+      "metal": 0.0,
+      "role": "accent: gloss black caps"
+    },
+    "steel_brushed": {
+      "albedo": "#9EA1A3",
+      "roughness": 0.35,
+      "metal": 1.0,
+      "role": "metal: skirting, chair rail, handrails"
+    },
+    "aluminium_anodised": {
+      "albedo": "#B2B5B8",
+      "roughness": 0.38,
+      "metal": 1.0,
+      "role": "metal: sign frames, light trims"
+    },
+    "stainless_polished": {
+      "albedo": "#CCCFD1",
+      "roughness": 0.24,
+      "metal": 1.0,
+      "role": "metal: bench frames, corner guards"
+    },
+    "vertical_safety_yellow": {
+      "albedo": "#F5B009",
+      "roughness": 0.48,
+      "metal": 0.0,
+      "role": "signal: step edges, escalator demarcation"
+    },
+    "tactile_dots": {
+      "albedo": "#EDBD0F",
+      "roughness": 0.52,
+      "metal": 0.0,
+      "role": "signal: tactile paving"
+    },
+    "rubber_black": {
+      "albedo": "#060606",
+      "roughness": 0.55,
+      "metal": 0.0,
+      "role": "rubber: moving handrail, flap edge, pads"
+    }
+  },
+  "stations": {
+    "shinjuku": {
+      "materials": {
+        "material_0": {
+          "style": "floor_terrazzo",
+          "from": {
+            "color": "#ffffff",
+            "metal": 0.0,
+            "roughness": 0.55,
+            "surfaces": 4,
+            "roles": {
+              "visual": 4
+            },
+            "evidence": "source mat.floor (textured, texture stripped from the snapshot); the four merged concourse floor meshes that the scene replaced with walk proxies"
+          }
+        },
+        "material_1": {
+          "style": "ceiling_spandrel",
+          "from": {
+            "color": "#9ea2a6",
+            "metal": 0.0,
+            "roughness": 0.85,
+            "surfaces": 6,
+            "roles": {
+              "visual": 6
+            },
+            "evidence": "source mat.ceiling (#9ea2a6, roughness 0.85); six merged ceiling slabs"
+          }
+        },
+        "material_12": {
+          "style": "wall_panel_accent",
+          "from": {
+            "color": "#b6007a",
+            "metal": 0.0,
+            "roughness": 0.4,
+            "surfaces": 18,
+            "roles": {
+              "visual": 18
+            },
+            "evidence": "source mat.accent (OEDO_MAGENTA #b6007a, roughness 0.4, faint emission): long 40 mm bands along the walls, i.e. the accent band role"
+          }
+        },
+        "material_18": {
+          "style": "aluminium_anodised",
+          "from": {
+            "color": "#9a9ea2",
+            "metal": 0.6,
+            "roughness": 0.35,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "evidence": "source mat.lightHousing (#9a9ea2, roughness 0.35, metal 0.6); the merged light-fixture housings"
+          }
+        },
+        "material_19": {
+          "style": "tactile_dots",
+          "from": {
+            "color": "#ffffff",
+            "metal": 0.0,
+            "roughness": 0.6,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "evidence": "source mat.tactile (textured, texture stripped); the one merged tactile-paving mesh"
+          }
+        },
+        "material_2": {
+          "style": "wall_panel_enamel",
+          "from": {
+            "color": "#ffffff",
+            "metal": 0.05,
+            "roughness": 0.42,
+            "surfaces": 7,
+            "roles": {
+              "visual": 7
+            },
+            "evidence": "source mat.wall, roughness 0.42 and metal 0.05; seven merged wall meshes. The wall texture is the Oedo-magenta pattern, which this table drops for the style bible field finish"
+          }
+        },
+        "material_23": {
+          "style": "vertical_safety_yellow",
+          "from": {
+            "color": "#3a3a3a",
+            "metal": 0.0,
+            "roughness": 0.7,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "evidence": "source mat.nosing (#3a3a3a, roughness 0.7): stair nosings. The source is dark grey; the style bible gives stair nosings its safety-yellow signal"
+          }
+        },
+        "material_24": {
+          "style": "rubber_black",
+          "from": {
+            "color": "#121314",
+            "metal": 0.0,
+            "roughness": 0.55,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "evidence": "source mat.rubber (#121314, roughness 0.55); the merged handrail surfaces"
+          }
+        },
+        "material_25": {
+          "style": "gate_body",
+          "from": {
+            "color": "#e9ebec",
+            "metal": 0.15,
+            "roughness": 0.35,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "evidence": "source mat.gateBody (#e9ebec, roughness 0.35, metal 0.15); the merged gate cabinets"
+          }
+        },
+        "material_26": {
+          "style": "gate_top",
+          "from": {
+            "color": "#1b1d20",
+            "metal": 0.3,
+            "roughness": 0.3,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "evidence": "source mat.gateTop (#1b1d20, roughness 0.3, metal 0.3); the merged gloss-black gate caps"
+          }
+        },
+        "material_4": {
+          "style": "stainless_polished",
+          "from": {
+            "color": "#c7ccd1",
+            "metal": 0.85,
+            "roughness": 0.28,
+            "surfaces": 7,
+            "roles": {
+              "visual": 7
+            },
+            "evidence": "source mat.steel (#c7ccd1, roughness 0.28, metal 0.85); long 0.05 m plates (skirting, comb plates)"
+          }
+        },
+        "material_5": {
+          "style": "floor_terrazzo",
+          "from": {
+            "color": "#ffffff",
+            "metal": 0.0,
+            "roughness": 0.5,
+            "surfaces": 4,
+            "roles": {
+              "visual": 4
+            },
+            "evidence": "source mat.floorPaid (textured); the four merged paid-area floor meshes"
+          }
+        },
+        "material_6": {
+          "style": "floor_terrazzo",
+          "from": {
+            "color": "#ffffff",
+            "metal": 0.0,
+            "roughness": 0.62,
+            "surfaces": 1,
+            "roles": {
+              "visual": 1
+            },
+            "evidence": "source mat.floorPlatform (textured); the one merged platform floor mesh"
+          }
+        }
+      },
+      "unmapped": [
+        {
+          "materials": [
+            "material_141",
+            "material_29"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.9,
+          "surfaces": 432,
+          "why": "invisible walk proxy (KHR_materials_unlit, material.visible = false): drawn by nothing, so it has no finish"
+        },
+        {
+          "materials": [
+            "material_16"
+          ],
+          "color": "#b8bdc1",
+          "metal": 0.8,
+          "roughness": 0.25,
+          "surfaces": 48,
+          "why": "train door (rolling stock)"
+        },
+        {
+          "materials": [
+            "material_110",
+            "material_109",
+            "material_105",
+            "material_104",
+            "material_100",
+            "material_99",
+            "material_95",
+            "material_94",
+            "material_90",
+            "material_89",
+            "material_85",
+            "material_84",
+            "material_140",
+            "material_139",
+            "material_135",
+            "material_134",
+            "material_130",
+            "material_129",
+            "material_125",
+            "material_124",
+            "material_120",
+            "material_119",
+            "material_115",
+            "material_114",
+            "material_50",
+            "material_49",
+            "material_45",
+            "material_44",
+            "material_40",
+            "material_39",
+            "material_35",
+            "material_34",
+            "material_80",
+            "material_79",
+            "material_75",
+            "material_74",
+            "material_70",
+            "material_69",
+            "material_65",
+            "material_64",
+            "material_60",
+            "material_59",
+            "material_55",
+            "material_54"
+          ],
+          "color": "#888888",
+          "metal": 0.8,
+          "roughness": 0.3,
+          "surfaces": 44,
+          "why": "not identified from the snapshot (no source name or colour evidence); left unmapped"
+        },
+        {
+          "materials": [
+            "material_111",
+            "material_107",
+            "material_106",
+            "material_102",
+            "material_101",
+            "material_97",
+            "material_96",
+            "material_92",
+            "material_91",
+            "material_87",
+            "material_86",
+            "material_137",
+            "material_136",
+            "material_132",
+            "material_131",
+            "material_127",
+            "material_126",
+            "material_122",
+            "material_121",
+            "material_117",
+            "material_116",
+            "material_112",
+            "material_51",
+            "material_47",
+            "material_46",
+            "material_42",
+            "material_41",
+            "material_37",
+            "material_36",
+            "material_32",
+            "material_31",
+            "material_82",
+            "material_81",
+            "material_77",
+            "material_76",
+            "material_72",
+            "material_71",
+            "material_67",
+            "material_66",
+            "material_62",
+            "material_61",
+            "material_57",
+            "material_56",
+            "material_52"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.5,
+          "surfaces": 44,
+          "why": "not identified from the snapshot (no source name or colour evidence); left unmapped"
+        },
+        {
+          "materials": [
+            "material_108",
+            "material_103",
+            "material_98",
+            "material_93",
+            "material_88",
+            "material_83",
+            "material_138",
+            "material_133",
+            "material_128",
+            "material_123",
+            "material_118",
+            "material_113",
+            "material_48",
+            "material_43",
+            "material_38",
+            "material_33",
+            "material_78",
+            "material_73",
+            "material_68",
+            "material_63",
+            "material_58",
+            "material_53"
+          ],
+          "color": "#2b2d30",
+          "metal": 0.4,
+          "roughness": 0.5,
+          "surfaces": 22,
+          "why": "not identified from the snapshot (no source name or colour evidence); left unmapped"
+        },
+        {
+          "materials": [
+            "material_20"
+          ],
+          "color": "#2bd46b",
+          "metal": 0.0,
+          "roughness": 1.0,
+          "surfaces": 22,
+          "why": "emissive gate status lamp (signal)"
+        },
+        {
+          "materials": [
+            "material_142"
+          ],
+          "color": "#6d7177",
+          "metal": 0.7,
+          "roughness": 0.4,
+          "surfaces": 21,
+          "why": "escalator steps: mechanism, outside the station-finish palette"
+        },
+        {
+          "materials": [
+            "material_21"
+          ],
+          "color": "#e64060",
+          "metal": 0.0,
+          "roughness": 0.4,
+          "surfaces": 21,
+          "why": "semi-transparent gate flap; alpha would be lost"
+        },
+        {
+          "materials": [
+            "material_14"
+          ],
+          "color": "#1c232a",
+          "metal": 0.2,
+          "roughness": 0.08,
+          "surfaces": 16,
+          "why": "train window (rolling stock)"
+        },
+        {
+          "materials": [
+            "material_15"
+          ],
+          "color": "#3b3f44",
+          "metal": 0.6,
+          "roughness": 0.45,
+          "surfaces": 16,
+          "why": "train door frame (rolling stock)"
+        },
+        {
+          "materials": [
+            "material_13"
+          ],
+          "color": "#d9dcde",
+          "metal": 0.75,
+          "roughness": 0.3,
+          "surfaces": 16,
+          "why": "train body (rolling stock)"
+        },
+        {
+          "materials": [
+            "material_28"
+          ],
+          "color": "#7fd3ff",
+          "metal": 0.0,
+          "roughness": 0.9,
+          "surfaces": 13,
+          "why": "unlit transparent portal hint, not a surface finish"
+        },
+        {
+          "materials": [
+            "material_3"
+          ],
+          "color": "#cfe6ee",
+          "metal": 0.0,
+          "roughness": 0.05,
+          "surfaces": 5,
+          "why": "transmission glass; the table sets albedo/roughness/metal only and would drop the source alpha"
+        },
+        {
+          "materials": [
+            "material_10"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.4,
+          "surfaces": 3,
+          "why": "emissive light fixtures; the table would flatten their emission"
+        },
+        {
+          "materials": [
+            "material_7"
+          ],
+          "color": "#2a2826",
+          "metal": 0.0,
+          "roughness": 0.95,
+          "surfaces": 2,
+          "why": "track bed, outside the station finishe palette"
+        },
+        {
+          "materials": [
+            "material_9"
+          ],
+          "color": "#3a3b3d",
+          "metal": 0.0,
+          "roughness": 0.95,
+          "surfaces": 2,
+          "why": "tunnel lining, outside the station finish palette"
+        },
+        {
+          "materials": [
+            "material_8"
+          ],
+          "color": "#8d8f92",
+          "metal": 0.9,
+          "roughness": 0.3,
+          "surfaces": 2,
+          "why": "running rail, outside the station finish palette"
+        },
+        {
+          "materials": [
+            "material_17"
+          ],
+          "color": "#c9d6dd",
+          "metal": 0.4,
+          "roughness": 0.15,
+          "surfaces": 2,
+          "why": "semi-transparent platform-screen leaf; alpha would be lost"
+        },
+        {
+          "materials": [
+            "material_11"
+          ],
+          "color": "#d4d8dc",
+          "metal": 0.5,
+          "roughness": 0.3,
+          "surfaces": 2,
+          "why": "platform screen door panel: the bible covers it through ceramic tile, but its colour is a station decision"
+        },
+        {
+          "materials": [
+            "material_27"
+          ],
+          "color": "#2a7fff",
+          "metal": 0.0,
+          "roughness": 1.0,
+          "surfaces": 1,
+          "why": "emissive IC reader (signal)"
+        },
+        {
+          "materials": [
+            "material_30"
+          ],
+          "color": "#a39e96",
+          "metal": 0.0,
+          "roughness": 0.9,
+          "surfaces": 1,
+          "why": "street sidewalk, outside the station finish palette"
+        },
+        {
+          "materials": [
+            "material_22"
+          ],
+          "color": "#b9b4aa",
+          "metal": 0.0,
+          "roughness": 0.6,
+          "surfaces": 1,
+          "why": "stair treads: the style bible has no stair finish; the lead decides"
+        }
+      ]
+    },
+    "ikebukuro": {
+      "materials": {},
+      "unmapped": [
+        {
+          "materials": [
+            "material_19",
+            "material_22",
+            "material_20",
+            "material_21",
+            "material_11",
+            "material_18",
+            "material_17",
+            "material_15",
+            "material_14",
+            "material_13",
+            "material_12",
+            "material_5"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.9,
+          "surfaces": 1383,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "material_16"
+          ],
+          "color": "#4f565f",
+          "metal": 0.0,
+          "roughness": 0.9,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "material_8"
+          ],
+          "color": "#9aa0a7",
+          "metal": 0.35,
+          "roughness": 0.38,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "material_4"
+          ],
+          "color": "#9b958c",
+          "metal": 0.0,
+          "roughness": 0.6,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "material_0"
+          ],
+          "color": "#c6cacf",
+          "metal": 0.0,
+          "roughness": 0.3,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "material_9"
+          ],
+          "color": "#dedee0",
+          "metal": 0.0,
+          "roughness": 0.42,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "mat_portals"
+          ],
+          "color": "#ff00ff",
+          "metal": 0.0,
+          "roughness": 0.8,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "material_10"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.15,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "material_2"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.2,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "material_7"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.7,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "material_1"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 0.95,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        },
+        {
+          "materials": [
+            "material_3"
+          ],
+          "color": "#ffffff",
+          "metal": 0.0,
+          "roughness": 1.0,
+          "surfaces": 1,
+          "why": "its lightmap shader owns the station surfaces; the lead decides later"
+        }
+      ]
+    }
+  }
+}
