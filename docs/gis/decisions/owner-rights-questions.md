@@ -1,5 +1,7 @@
 # Owner rights questions (yes/no)
 
+> **Answered 2026-10-22.** All 12 have Owner answers ([#39 comment 6324726321](https://github.com/nurockplayer/gteki/issues/39#issuecomment-6324726321)); see `2026-10-22-owner-rights-answers.md`. The defaults below are kept for history; the Answer column is what applies now.
+
 Open rights questions from Issues #39 and #26 and the committed rights records. Only the Owner can decide these. Each is yes/no. Answer in the issue and the lead will record it under `docs/gis/decisions/`.
 
 - **Nothing here blocks visual prototyping.** The default for every item is the conservative one and is what applies today.
@@ -9,20 +11,20 @@ Open rights questions from Issues #39 and #26 and the committed rights records. 
 
 ## Quick table
 
-| # | Question (short) | Default if unanswered |
-| --- | --- | --- |
-| 1 | Ship Tokyo S10 factual fields? | No |
-| 2 | Ship Tokyo S03 geometry and factual fields? | No |
-| 3 | Does the S03 dataset grant control over the bureau site reservation? | No |
-| 4 | Ship S03 promotional prose, links and PDF illustration? | No |
-| 5 | Ship PLATEAU related station, railway and border layers? | No |
-| 6 | Ship PLATEAU related shelter, park and emergency-route layers? | No |
-| 7 | Ship PLATEAU related landmark layer? | No |
-| 8 | Accept catalog-API PLATEAU files as the release the licence covers? | No (nothing new ships on it) |
-| 9 | Keep textures out of every ship? | Yes |
-| 10 | Add the "building bases flattened" notice to the Shinjuku credit? | Yes |
-| 11 | Treat the E27 package PDL 1.0 as covering both E27 resources? | No |
-| 12 | Does road risk acceptance (b) also cover Shinjuku (13104) tran? | No |
+| # | Question (short) | Default if unanswered | Answer (2026-10-22) |
+| --- | --- | --- | --- |
+| 1 | Ship Tokyo S10 factual fields? | No | **Yes** |
+| 2 | Ship Tokyo S03 geometry and factual fields? | No | **Yes** |
+| 3 | Does the S03 dataset grant control over the bureau site reservation? | No | **Yes** |
+| 4 | Ship S03 promotional prose, links and PDF illustration? | No | No |
+| 5 | Ship PLATEAU related station, railway and border layers? | No | No |
+| 6 | Ship PLATEAU related shelter, park and emergency-route layers? | No | No |
+| 7 | Ship PLATEAU related landmark layer? | No | No |
+| 8 | Accept catalog-API PLATEAU files as the release the licence covers? | No (nothing new ships on it) | **Accept** |
+| 9 | Keep textures out of every ship? | Yes | Yes |
+| 10 | Add the "building bases flattened" notice to the Shinjuku credit? | Yes | Yes (Option A, Shinjuku only) |
+| 11 | Treat the E27 package PDL 1.0 as covering both E27 resources? | No | No |
+| 12 | Does road risk acceptance (b) also cover Shinjuku (13104) tran? | No | **Yes** |
 
 ## Questions
 
@@ -111,7 +113,8 @@ Open rights questions from Issues #39 and #26 and the committed rights records. 
 - **Question:** Do we treat the CKAN package's PDL 1.0 as covering both E27 resources, although each resource-level licence is `null`?
 - **Yes:** E27-derived candidate graphs have a licence basis, still needing attribution and a processing notice. They also stay `UNVERIFIED`.
 - **No:** E27 data stays internal. Nothing ships either way today.
-- **Evidence:** HANDOFF "Open question (rights, Hokonavi E27 scope)". The package snapshot is not acquired on this base; the cited SHA-256 comes from a reference run. No rights record exists. Source: HANDOFF; not raised in #39 or #26.
+- **Conflict, resolved by the Owner (recorded 2026-10-22 JST).** The Owner answered Q11 **No** (#39 comment 6324726321, 2026-10-21T19:31:08Z) against the option text above. Earlier, the Owner had already merged PR #16 (Owner comment 2026-10-21T10:31:49Z), overriding its HOLD and accepting publication of the Shinjuku slice, which includes E27-derived data. A literal reading of "No" conflicts with E27 already shipping. **Reading put to the Owner as option (a):** the #16 override stands as the shipping basis, and "No" means only that the package PDL 1.0 is not taken as a licence basis for the two resources. Not a rights PASS. **Owner confirmed (a) on 2026-10-22 JST** (https://github.com/nurockplayer/gteki/issues/39#issuecomment-6325100917, 2026-10-21T19:50:48Z): E27 keeps shipping under the #16 override, and Q11 "No" means only that PDL 1.0 is not treated as covering the two resources. Open: `gap:reuse-after-publication` (ほこナビDP inquiry about reuse after 2027-03-12).
+- **Evidence:** HANDOFF "Open question (rights, Hokonavi E27 scope)". Answered in #39 comment 6324726321 (see the conflict note above).
 - **Default:** No.
 
 ### 12. Roads (b) and Shinjuku
@@ -134,5 +137,5 @@ Open rights questions from Issues #39 and #26 and the committed rights records. 
 
 ## Engineering follow-ups from #26 (not Owner questions)
 
-- Make the facts-only credit say 「ライセンスなし・事實のみ參照（複製なし）」 explicitly.
+- Make the facts-only credit say 「ライセンスなし・事實のみ參照（複製なし）」 explicitly. Wording, source list and proposals for #122: [facts-only-credit-wording.md](facts-only-credit-wording.md).
 - Optional per-source clearance record with a decision reference and date. The issue says not to make it a merge gate.
