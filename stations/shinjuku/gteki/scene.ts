@@ -42,7 +42,7 @@ function sceneLifecycle(stepBuilt: (dt: number, t: number) => void, disposeBuilt
 
 export const buildScene: BuildScene = (ctx) => {
   const T = ctx.THREE;
-  const built = buildStation(ctx.bundle, plan as unknown as Plan, { quality: ctx.quality, reuseLayout: true, verifyRestrictedInput: false });
+  const built = buildStation(ctx.bundle, plan as unknown as Plan, { quality: ctx.quality, reuseLayout: true, verifyRestrictedInput: true });
   const { layout } = built;
 
   // Invisible walk proxies: the explorer raycasts these from above (non-recursive), so each is a Mesh.

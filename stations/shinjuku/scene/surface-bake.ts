@@ -7,8 +7,9 @@
  * drawn is unchanged by construction.
  *
  * A baked table is used only when its `inputKey` equals the key of the inputs in hand; otherwise the same
- * functions run as before. A stale table can therefore never be used silently, and CI (surface-bake.test.ts,
- * `bake:surface --check`) fails if it differs from a fresh derivation. See
+ * functions run as before. A stale table can therefore never be used silently for changed inputs; for changed
+ * derivation code, surface-bake.test.ts and `bake:surface --check` fail if the table differs from a fresh
+ * derivation (once root CI runs them: pending root CI). See
  * docs/stations/shinjuku/surface-bake.md.
  */
 import type { StationBundle } from "@gteki/schema";

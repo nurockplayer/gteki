@@ -292,7 +292,8 @@ export function protectFareAndAccess(
     onRestricted?: (geometry: RestrictedGeometry) => void;
     /** Default true: confirm the generated table was derived from exactly this input before using it.
      * `false` skips only that fingerprint (a pure check: its value never reaches the geometry, see
-     * restricted-access.test.ts); stale tables are then caught in CI, not at load. */
+     * scene-digest.test.ts). Shipped code keeps it true: the root test suite is not run in CI yet (pending
+     * root CI), so nothing else would catch a stale table. */
     verifyGeneratedInput?: boolean;
   } = {},
 ): FareProtection {

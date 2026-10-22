@@ -51,7 +51,7 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
   it("buildStation mutates its own copy: repeated cached builds never see each other's walls", () => {
     clearLayoutCache();
     const digests = [0, 1, 2].map(() => withCanvasStub(() => {
-      const built = buildStation(bundle, plan, { quality: "low", reuseLayout: true, verifyRestrictedInput: false });
+      const built = buildStation(bundle, plan, { quality: "low", reuseLayout: true, verifyRestrictedInput: true });
       const d = stationDigest(built);
       built.dispose();
       return d;
@@ -94,8 +94,9 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
     expect(verified.cacheHit).toBe(true); // the key matched, so the table was used
     expect(protectOnly(bundle, plan, { verifyGeneratedInput: false })).toEqual(verified);
     expect(verified).toEqual(base.protect);
-    // CI replaces the per-load check: a fresh derivation reproduces the table and its key exactly, so a
-    // stale table (changed bundle, plan or layout code) fails here instead of being trusted at load.
+    // Shipped code still verifies at load (buildScene passes verifyRestrictedInput: true) because the root test
+    // suite is not run in CI yet (pending root CI). This test is the second guard once it is: a fresh derivation
+    // reproduces the table and its key exactly, so a stale table fails here too.
     let fresh: { inputKey: string } | undefined;
     protectFareAndAccess(buildLayout(bundle, plan), plan, bundle, { recomputeRestricted: true, onRestricted: (r) => { fresh = r; } });
     expect(fresh?.inputKey).toBe(generated.inputKey);

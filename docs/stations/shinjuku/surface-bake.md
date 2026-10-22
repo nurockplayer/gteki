@@ -6,8 +6,8 @@ Implemented in `stations/shinjuku` only. Measurements are Node (`buildScene`, qu
 
 | | fe8d3b6 | now |
 | --- | --- | --- |
-| `buildScene` cold (first build in the process) | 1440 ms | 905 ms |
-| reopen (dispose, then `buildScene` again) | 1335 ms | 405 ms |
+| `buildScene` cold (first build in the process) | 1440 ms | 957 ms |
+| reopen (dispose, then `buildScene` again) | 1335 ms | 392 ms |
 | triangles / meshes / geometry | 219,349 / 572 / 14.4 MB | unchanged |
 | live scene heap after GC (JS, excl. geometry buffers) | 23.2 MB | 14.5 MB |
 | + reopen snapshot kept by the cache | none | 7.5 MB |
@@ -16,7 +16,7 @@ Implemented in `stations/shinjuku` only. Measurements are Node (`buildScene`, qu
 
 The issue's 261k triangles counts differently from the 219,349 indexed triangles counted here; both are unchanged by this work. The total heap did not fall: what the scene no longer leaks (8.7 MB) is spent on the reopen snapshot and the baked table. The snapshot can be dropped with `clearLayoutCache()` (`scene/build-cache.ts`) when the explorer leaves Shinjuku; calling it needs a hook in `apps/web` (Lane C), see "Requests" below.
 
-Per step, in order (cold / reopen): cache the layout and fences 1490 / 865; skip the restricted-input hash at load 1395 / 850 (cold −90 ms); release build intermediates from the live scene 1418 / 872 (heap −8.7 MB); compute street derivations once per build 1285 / 748; bake the street derivations 1060 / 535; bake kerbs and lamp rails 905 / 405.
+Per step, in order (cold / reopen): cache the layout and fences 1490 / 865; release build intermediates from the live scene 1418 / 872 (heap −8.7 MB); compute street derivations once per build 1285 / 748; bake the street derivations 1060 / 535; bake kerbs and lamp rails 905 / 405 with the restricted-input check skipped; with the check kept on (shipped), 957 / 392.
 
 ## What is baked
 
@@ -55,7 +55,7 @@ export default { version: 1, inputKey: "<length>:<128-bit hash>", valuesJson: "<
 
 - `inputKey = contentKey("surface-bake", SURFACE_BAKE_VERSION, surface, bundle, plan)`. `contentKey` (`scene/content-key.ts`) is four 32-bit integer hashes of the JSON text plus its length, so it is identical in every JS engine. It is not cryptographic; it only decides whether the table was made from the inputs in hand.
 - Runtime: `buildStation` computes that key (about 3 ms) and uses the table only if it matches. Otherwise the same functions run as before. A stale table is therefore never used silently; it costs time, not correctness.
-- The layout is a deterministic function of bundle and plan, so it is not hashed separately. A change to the **derivation code** (`layout.ts`, `surface-layout.ts`, `surface-street.ts`) does not change the key. For that, bump `SURFACE_BAKE_VERSION` and rebake; CI catches a forgotten rebake because `surface-bake.test.ts` compares the table with a fresh derivation and `bake:surface --check` compares the file text.
+- The layout is a deterministic function of bundle and plan, so it is not hashed separately. A change to the **derivation code** (`layout.ts`, `surface-layout.ts`, `surface-street.ts`) does not change the key. For that, bump `SURFACE_BAKE_VERSION` and rebake; a forgotten rebake is caught by `surface-bake.test.ts` (compares the table with a fresh derivation) and `bake:surface --check` (compares the file text); both run locally today and in CI once the root suite does (pending root CI).
 - polygon-clipping and the derivation code are deterministic for the same input. The bake, the test's fresh derivation and the whole-scene digest (with and without the table) all produce the same values.
 
 ## Proof that nothing else changed
@@ -99,3 +99,7 @@ The total triangle proposals are 9.6k of 219k (4%). The batch is not wasteful ge
 
 - `apps/web` (Lane C): a way to drop the reopen snapshot when the explorer leaves Shinjuku for another station, e.g. an optional `dispose` / `release` export next to `buildScene`, calling `clearLayoutCache()` from `stations/shinjuku/scene/build-cache.ts`. Without it the 7.5 MB snapshot stays for the session, which is the intended trade for the 3x faster reopen.
 - `apps/web` registry keeps one parsed bundle per station, so reopening passes the same object; the cache keys on content anyway, so a re-parsed equal bundle also hits.
+
+## Restricted-input check stays on at load
+
+The generated fence table (`scene/fare-restricted.generated.json`) is used only if its `inputKey` matches the current inputs. `protectFareAndAccess` can skip computing that key (`verifyGeneratedInput: false`, about 90 ms cold), and the output is identical (`scene-digest.test.ts`). We do **not** skip it in shipped code: the root test suite is not run in CI yet (pending root CI), so the load-time check is the only thing that would notice a stale table. `buildScene` passes `verifyRestrictedInput: true`; the option stays so tests can exercise both paths. Revisit once root CI runs `restricted-access.test.ts` and `scene-digest.test.ts`.
