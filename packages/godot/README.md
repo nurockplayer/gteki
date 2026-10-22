@@ -317,9 +317,16 @@ on first use). `normalizeJa` is not ported, so matches are not highlighted.
   (`evidenceCheckedDate`, `oldestSourceDate`, `stale`, `unknowns`, ...) are printed as the JSON gives them, with `hours: UNKNOWN`.
 - "Guided walk" moves the avatar along the polyline at 3.4 m/s (web guide tier "run"), no collisions, with the follow camera; any
   movement key returns to free walking at that spot.
+- A route that states a lift can be ridden (#287): while guided walking stands on that route's `elevator` step and
+  within 1.0 m of the shaft's start, the HUD offers `E: ride the lift` (or the gamepad's A). Taking it fades out for
+  0.3 s, puts the feet on the shaft's exit through `gteki_walker.gd`'s own ground rule (`ride_to`, which only lands
+  where `accept_ground` passes and the body fits), fades back in and carries on from the exit. The yaw is kept, free
+  walking is never offered a lift, and no other step or key can start one: the ride is read from the route's own
+  steps, never guessed from the geometry.
 
 Tests: `lockf -k /tmp/gteki-local-test.lock bash packages/godot/run-guide.sh` (golden searches on both stations, Ikebukuro
-`jr-central-gate-2` to `exit-35` ribbon, Shinjuku `poi:platform:oedo` to `poi:exit:1` symbolic, negative route, guided walk, HUD state).
+`jr-central-gate-2` to `exit-35` ribbon, Shinjuku `poi:platform:oedo` to `poi:exit:1` symbolic, the S4 lift ride and its
+negatives, negative route, guided walk, HUD state and the HUD ride flow).
 
 ## Evidence walks (G-5a of #164)
 
@@ -337,8 +344,8 @@ node count, floor changes and the ordered step list with the web's golden
 be refused by the router, with the golden's own reason (and the scenario's `profile` toggles passed as `--step-free`,
 `--unpaid-only`, `--strict-hours`); a refused route has no polyline and is not walked. A scenario the golden routes is
 walked along the polyline with `gteki_walker.gd`, recording walked length against the route's, stops, body-block
-episodes, the floor bands the walker's own height trace crosses, the arrival distance and the time at 1.45 m/s. The
-table carries the commit and Godot versions; it is committed with the change it describes.
+episodes, the floor bands the walker's own height trace crosses, the rides it took, the arrival distance and the time
+at 1.45 m/s. The table carries the commit and Godot versions; it is committed with the change it describes.
 
 Two comparisons follow the router's own definitions rather than one fixed notion:
 - **Length**: the router measures an edge in 3D when its heights are known and in plan when they are symbolic
@@ -351,9 +358,16 @@ Two comparisons follow the router's own definitions rather than one fixed notion
   order and end on its goal floor, and every band crossed in between must lie strictly between the two route floors
   being travelled between and move toward the second — a band outside that range, a reversal or an ending elsewhere
   fails. The table shows the walker's crossings beside the route's count.
-- **Lifts**: a route with an `elevator` step that changes floor is checked against the golden but not walked, because
-  the walker has no lift model. The row says so, and the test asserts the route really has elevator steps, so the
-  exemption cannot stand in for a walk that failed.
+- **Rides**: a route that states a lift is walked, and the ride is read from the route itself (#287). Inside an
+  `elevator` step, a consecutive polyline pair that moves under 0.5 m horizontally while changing height by more than
+  1.0 m is the shaft (`RIDE_MAX_FLAT` / `RIDE_MIN_DROP` in `gteki_guide.gd`); the same vertical span under `walk` or
+  `stairs` is never a ride, so nothing is ridden that the route does not call a lift. Shinjuku S4's one shaft is
+  0.473 m wide with a 7.8 m drop — inside the gate with a visible margin. The walk takes it through the same
+  `Guide.take_ride()` the HQ client's E prompt uses: the feet land on the shaft's exit by the walker's own
+  `accept_ground`, on ground the body fits on (the exit vertex is over the opening, so on S4 the feet are set down
+  0.50 m out, never on the lip). The table's **Rides** column shows the count, each shaft's width and drop and the total
+  height; the ridden span and the approach the walking walker could not step are excluded from the walked length, and a
+  route that states a ride the walk did not take fails.
 
 The walk follows the polyline itself: it turns toward the next vertex only once it is within 0.05 m of the current one,
 so by construction it never cuts a corner the line does not cut. A larger reach cut a corner at a sharp vertex and the

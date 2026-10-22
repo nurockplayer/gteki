@@ -368,6 +368,58 @@ func walk_from(position_godot: Vector3, heading_deg: float = 0.0) -> bool:
 	return true
 
 
+## How far from a shaft's exit point a ride may put its feet down (m), nearest ring first: an opening in the floor is a
+## hole by construction, so the route's exit vertex often sits over the shaft itself — on Shinjuku S4 it does, and the
+## B1 floor starts 0.2 m away. Each ring is eight compass directions; the first acceptable ground found wins.
+const RIDE_LANDING_RINGS: Array[float] = [0.0, 0.25, 0.5]
+
+
+## A lift ride's landing (#287): the feet go down only on ground the walker's own rule accepts — `accept_ground` against
+## the exit's own height, the same rule a step uses — at `target` (the route's shaft exit) or the nearest such ground
+## inside RIDE_LANDING_RINGS of it. The yaw is kept: a ride does not change where the walker faces. False when no
+## acceptable ground is found, so the caller reports it instead of dropping the avatar into the shaft.
+func ride_to(target: Vector3) -> bool:
+	var landing: Variant = ride_landing(target)
+	if landing == null:
+		return false
+	global_position = landing
+	body_yaw = yaw
+	_sync_avatar()
+	return true
+
+
+## The first point, from `target` outward ring by ring, where the walker can actually stand: ground that passes
+## `accept_ground` against the exit's height *and* ground the body's radius reaches in every direction, so a ride never
+## sets the avatar down on the lip of the opening with the next step falling in. Null when no such point is found.
+## Pure in the scene under the walker, so a caller can tell "the shaft's floor is 0.2 m off the vertex" from "there is
+## no floor there at all".
+func ride_landing(target: Vector3) -> Variant:
+	for ring in RIDE_LANDING_RINGS:
+		var count := 1 if ring == 0.0 else 8
+		for k in count:
+			var angle := TAU * float(k) / 8.0
+			var at := target + Vector3(cos(angle), 0.0, sin(angle)) * ring
+			var ground: Variant = _ground_near(at, target.y)
+			if not accept_ground(target.y, ground) or not _body_fits(at, target.y):
+				continue
+			return Vector3(at.x, float(ground), at.z)
+	return null
+
+
+func _ground_near(at: Vector3, feet_y: float) -> Variant:
+	return ground_at(at.x, feet_y + STEP_UP + 0.05, at.z, STEP_UP + STEP_DOWN + 0.1)
+
+
+## True when every ground probe the body's own radius reaches from `at` is acceptable at `feet_y`.
+func _body_fits(at: Vector3, feet_y: float) -> bool:
+	for k in 8:
+		var angle := TAU * float(k) / 8.0
+		var around := at + Vector3(cos(angle), 0.0, sin(angle)) * RADIUS
+		if not accept_ground(feet_y, _ground_near(around, feet_y)):
+			return false
+	return true
+
+
 func _sync_avatar() -> void:
 	avatar.rotation.y = body_yaw
 

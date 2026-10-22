@@ -32,8 +32,10 @@ func run() -> void:
 	test_search()
 	test_ikebukuro_route()
 	test_shinjuku_symbolic()
+	test_rides()
 	test_failures()
 	await test_hud()
+	await test_ride_hud()
 	finish()
 
 
@@ -136,6 +138,127 @@ func test_shinjuku_symbolic() -> void:
 	if ribbon != null:
 		check(ribbon.mesh.get_surface_count() == 1 and ribbon.surface_symbolic[0], "shinjuku: every segment is in the symbolic surface")
 		ribbon.instance.free()
+
+
+# (5) #287: a lift ride is read from the route itself — Shinjuku S4's one shaft — and only from an `elevator` step.
+func test_rides() -> void:
+	var answer := bridge.route("shinjuku", "poi:exit:3", "poi:exit:6", true, true)
+	check(answer.ok, "shinjuku S4: route runs: %s" % answer.get("error", ""))
+	if not answer.ok:
+		return
+	var guide := Guide.new()
+	check(guide.load_doc(answer.doc), "shinjuku S4: route loads: %s" % str(guide.issues))
+	check(guide.rides.size() == 1, "shinjuku S4: the route states exactly one lift ride (%d)" % guide.rides.size())
+	if guide.rides.size() != 1:
+		return
+	var ride: Dictionary = guide.rides[0]
+	check(str(answer.doc.result.steps[int(ride.step)].get("mode", "")) == "elevator", "shinjuku S4: the ride is on the route's elevator step %d" % int(ride.step))
+	check(float(ride.plan_m) < Guide.RIDE_MAX_FLAT and absf(float(ride.drop)) > Guide.RIDE_MIN_DROP, "shinjuku S4: the shaft is %.3f m wide with a %.1f m drop (gates %.1f / %.1f)" % [float(ride.plan_m), absf(float(ride.drop)), Guide.RIDE_MAX_FLAT, Guide.RIDE_MIN_DROP])
+	check(absf(float(ride.plan_m) - 0.473) < 0.002 and absf(absf(float(ride.drop)) - 7.8) < 0.01, "shinjuku S4: the measured shaft is the documented %.3f m wide / %.1f m drop" % [float(ride.plan_m), absf(float(ride.drop))])
+	# Offered on the ride's own step and within reach, nowhere else.
+	var near: Vector3 = ride.from + Vector3(0.3, 0.0, 0.0)
+	check(not guide.ride_at(near, int(ride.step)).is_empty(), "shinjuku S4: within 1 m of the shaft start, on its step, the ride is offered")
+	check(guide.ride_at(ride.from + Vector3(2.0, 0.0, 0.0), int(ride.step)).is_empty(), "shinjuku S4: 2 m from the shaft start the ride is not offered")
+	check(guide.ride_at(near, int(ride.step) + 1).is_empty(), "shinjuku S4: off the ride's step the ride is not offered")
+	check(guide.ride_at(near, int(ride.step) - 1).is_empty(), "shinjuku S4: the step before the ride does not offer it")
+	# A route with no elevator step states no rides (Ikebukuro's W1 is all walk).
+	var flat := bridge.route("ikebukuro", "jr-central-gate-2", "exit-35", true, true)
+	var flat_guide := Guide.new()
+	check(flat.ok and flat_guide.load_doc(flat.doc) and flat_guide.rides.is_empty(), "ikebukuro: a route with no elevator step states no rides")
+	# The mode gate on S4 itself: the same shaft geometry relabelled `walk` is no ride, so a vertical span nobody calls a
+	# lift can never be ridden.
+	var relabelled: Dictionary = answer.doc.duplicate(true)
+	for step in relabelled.result.steps:
+		if str(step.get("mode", "")) == "elevator":
+			step.mode = "walk"
+	var no_lift := Guide.new()
+	check(no_lift.load_doc(relabelled) and no_lift.rides.is_empty(), "shinjuku S4: the same shaft under walk steps is no ride (the mode gate)")
+	check(no_lift.ride_at(near, int(ride.step)).is_empty(), "shinjuku S4: with the elevator relabelled, standing on the shaft offers nothing")
+
+
+# HUD ride flow (#287) with a stub hq and a stub walker that records the landing, on a small synthetic route shaped like
+# S4: a flat elevator entry, a 0.473 m wide 7.8 m shaft, a flat exit.
+func test_ride_hud() -> void:
+	var doc := {
+		"contract": "gteki.route/0.1",
+		"result": {"ok": true, "totalLengthM": 5.3, "estimatedSeconds": 4, "floorChanges": 1, "steps": [
+			{"edgeId": "a", "mode": "walk"},
+			{"edgeId": "b", "mode": "elevator"},
+			{"edgeId": "c", "mode": "walk"},
+		]},
+		"polyline": [
+			{"renderer": [0.0, 0.0, 0.0], "zKnown": false, "stepIndex": 0},
+			{"renderer": [1.2, 0.0, 0.0], "zKnown": false, "stepIndex": 0},
+			{"renderer": [1.673, -7.8, 0.0], "zKnown": false, "stepIndex": 1},
+			{"renderer": [2.9, -7.8, 0.0], "zKnown": false, "stepIndex": 2},
+			{"renderer": [5.0, -7.8, 0.0], "zKnown": false, "stepIndex": 2},
+		],
+		"instructions": {
+			"ja": [{"stepIndexes": [0], "text": "出発"}, {"stepIndexes": [1], "text": "エレベーターで下へ"}, {"stepIndexes": [2], "text": "到着"}],
+			"en": [{"stepIndexes": [0], "text": "Start"}, {"stepIndexes": [1], "text": "Take the elevator down"}, {"stepIndexes": [2], "text": "Arrive"}],
+		},
+	}
+	var walker_script := GDScript.new()
+	# A real Walker with only the landing stubbed: there is no snapshot under the synthetic exit to accept ground from.
+	walker_script.source_code = "extends \"res://addons/gteki/gteki_walker.gd\"\nvar rides: Array[Vector3] = []\nfunc ride_to(target: Vector3) -> bool:\n\trides.append(target)\n\tglobal_position = target\n\tbody_yaw = yaw\n\treturn true\n"
+	walker_script.reload()
+	var hq_script := GDScript.new()
+	hq_script.source_code = "extends Node3D\nvar walker\nvar camera\nvar current\n"
+	hq_script.reload()
+	var stub := Node3D.new()
+	stub.set_script(hq_script)
+	var walker := CharacterBody3D.new()
+	walker.set_script(walker_script)
+	stub.add_child(walker)
+	stub.walker = walker
+	stub.camera = null
+	stub.current = {"spawn_points": []}
+	root.add_child(stub)
+	var hud := Hud.new()
+	stub.add_child(hud)
+	hud.setup(stub)
+	hud.apply_answer({"ok": true, "doc": doc})
+	check(hud.guide.ok and hud.guide.rides.size() == 1, "hud ride: the route states one ride (%d)" % hud.guide.rides.size())
+	if not hud.guide.ok or hud.guide.rides.size() != 1:
+		stub.queue_free()
+		return
+	walker.global_position = Vector3(0.0, 0.0, 0.0)
+	walker.yaw = 0.42
+	hud.set_guided(true)
+	# On the flat entry (the step before the shaft) nothing is offered, even within reach of the shaft's start.
+	hud.guide.start_guide(0.0)
+	walker.global_position = Vector3(1.5, 0.0, 0.0)
+	hud.update_ride_prompt()
+	check(hud._prompt.text.is_empty() and hud._ride.is_empty(), "hud ride: standing on the step before the shaft offers nothing")
+	check(not hud.ride_pressed(), "hud ride: with nothing offered, the ride key does nothing")
+	# On the shaft's own step and within 1 m: the prompt appears.
+	hud.guide.start_guide(float(hud.guide.cumulative[1]) + 0.01)
+	hud.update_ride_prompt()
+	check(hud._prompt.text == Hud.RIDE_PROMPT and not hud._ride.is_empty(), "hud ride: the prompt appears on the ride's step, within reach (%s)" % hud._prompt.text)
+	# The real key path: an E press starts it; a second press during the fade does nothing.
+	var key := InputEventKey.new()
+	key.keycode = KEY_E
+	key.pressed = true
+	hud._unhandled_input(key)
+	check(hud._ride_phase == "out", "hud ride: the E key starts the ride (%s)" % hud._ride_phase)
+	check(not hud.ride_pressed(), "hud ride: a second press during the fade is ignored")
+	var yaw_before: float = walker.yaw
+	check(hud.physics(Hud.RIDE_FADE, Vector2.ZERO), "hud ride: a ride in progress owns the tick")
+	check(walker.rides.size() == 1 and walker.rides[0].is_equal_approx(hud.guide.points[2]), "hud ride: the landing is the shaft's exit (%s)" % str(walker.rides))
+	check(walker.global_position.is_equal_approx(hud.guide.points[2]), "hud ride: the walker's feet are at the exit (%s)" % str(walker.global_position))
+	check(is_equal_approx(hud.guide.s, float(hud.guide.cumulative[2])), "hud ride: the guide moves to the exit (s=%.2f)" % hud.guide.s)
+	check(is_equal_approx(walker.yaw, yaw_before) and is_equal_approx(walker.body_yaw, yaw_before), "hud ride: the yaw is kept through the ride")
+	check(hud._ride_phase == "in" and hud._fade.color.a > 0.99, "hud ride: the fade back in starts from black")
+	hud.physics(Hud.RIDE_FADE, Vector2.ZERO)
+	check(hud._ride_phase.is_empty() and is_zero_approx(hud._fade.color.a) and hud._prompt.text.is_empty(), "hud ride: the fade in clears the ride and the prompt")
+	# Guided walking continues from the exit to the goal.
+	var ticks := 0
+	while not hud.guide.arrived and ticks < 600:
+		hud.physics(1.0 / 60.0, Vector2.ZERO)
+		ticks += 1
+	check(hud.guide.arrived and walker.global_position.is_equal_approx(hud.guide.points[hud.guide.points.size() - 1]), "hud ride: guided walking carries on from the exit to the goal after %d ticks" % ticks)
+	stub.queue_free()
+	await process_frame
 
 
 # (3) Failure states: a router "no route" answer and a broken bridge both leave no line and no fake result.

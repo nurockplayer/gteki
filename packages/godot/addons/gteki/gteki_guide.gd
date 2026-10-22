@@ -6,6 +6,15 @@ extends RefCounted
 ## Web guide tier "run" (guidePace.ts DEFAULT_GUIDE_TIER): 3.4 m/s along the path, no collisions.
 const GUIDE_SPEED := 3.4
 const YAW_FOLLOW := 4.0
+## A lift ride is read from the guided route itself (#287): inside an `elevator` step, a consecutive polyline pair that
+## moves horizontally less than RIDE_MAX_FLAT while changing height by more than RIDE_MIN_DROP is the shaft. Measured on
+## Shinjuku S4, the one shaft in the goldens: 0.473 m horizontal, 7.8 m drop (inside the 0.5 m gate; a flat elevator
+## step's 1.29 m entry walk and any stair are outside it). Nothing is ever ridden that is not an `elevator` step.
+const RIDE_MAX_FLAT := 0.5
+const RIDE_MIN_DROP := 1.0
+## How close the walker must be to a ride's start for it to be offered: the HQ walker cannot step onto the shaft's edge,
+## so the last stretch of ground before it is not walkable (0.62 m on S4, measured).
+const RIDE_TRIGGER := 1.0
 ## Result keys shown verbatim by the HUD (freshness / confidence); missing keys are skipped, nothing is invented.
 const FACT_KEYS := ["totalLengthM", "estimatedSeconds", "waitSeconds", "floorChanges", "crossesFareBoundary", "evidenceCheckedDate", "oldestSourceDate", "undatedSourceIds", "expiredSourceIds", "stale", "synthetic", "unknowns", "timeRestricted", "sourceIds"]
 
@@ -20,6 +29,9 @@ var step_index: Array[int] = []
 var cumulative := PackedFloat32Array()
 ## True when any polyline point has no surveyed height (zKnown false): heights are symbolic and drawn dashed.
 var symbolic := false
+## The rides this route states (#287), each {step, from_point, to_point, from, to, drop, plan_m, from_s, to_s}. Read
+## from the route's own `elevator` steps in load_doc; empty on a route with no shaft.
+var rides: Array = []
 var issues: Array[String] = []
 
 # Guided walk
@@ -36,6 +48,7 @@ func clear() -> void:
 	ok = false; reason = ""; message = ""; result = {}
 	instructions = {"ja": [], "en": []}
 	points = PackedVector3Array(); z_known.clear(); step_index.clear(); cumulative = PackedFloat32Array()
+	rides.clear()
 	symbolic = false; issues.clear(); guiding = false; arrived = false; s = 0.0
 
 
@@ -72,10 +85,71 @@ func load_doc(doc: Dictionary) -> bool:
 			cumulative.append(run)
 		prev = q
 	symbolic = z_known.has(false)
+	rides = find_rides(result.get("steps", []), points, step_index, cumulative)
 	var ins: Variant = doc.get("instructions")
 	if ins is Dictionary:
 		instructions = {"ja": ins.get("ja", []), "en": ins.get("en", [])}
 	ok = true
+	return true
+
+
+## The rides a route states: for each `elevator` step, every consecutive polyline pair inside that step's span that
+## moves horizontally < RIDE_MAX_FLAT and changes height by > RIDE_MIN_DROP. A step's span runs from the point before
+## its first point to its last point (a point's stepIndex names the step that ends there). Pure, so the tests can state
+## both gates: an elevator step with no vertical segment, and a vertical span under any other mode, both give no ride.
+static func find_rides(steps: Array, points: PackedVector3Array, point_steps: Array[int], cumulative: PackedFloat32Array) -> Array:
+	var found: Array = []
+	for step_id in range(steps.size()):
+		if str((steps[step_id] as Dictionary).get("mode", "")) != "elevator":
+			continue
+		var first := -1
+		var last := -1
+		for k in point_steps.size():
+			if point_steps[k] == step_id:
+				if first < 0:
+					first = k
+				last = k
+		if first < 0:
+			continue
+		var run := maxi(0, first - 1)
+		for k in range(run + 1, last + 1):
+			var p := points[k - 1]
+			var q := points[k]
+			var flat := Vector2(q.x - p.x, q.z - p.z).length()
+			var drop := q.y - p.y
+			if flat < RIDE_MAX_FLAT and absf(drop) > RIDE_MIN_DROP:
+				found.append({"step": step_id, "from_point": k - 1, "to_point": k, "from": p, "to": q, "drop": drop, "plan_m": flat, "from_s": cumulative[k - 1], "to_s": cumulative[k]})
+	return found
+
+
+## The route step whose span holds the path distance `at` (the segment's end point names the step, as the web guide's
+## highlight does); -1 for a route with no polyline.
+func step_at(at: float) -> int:
+	if step_index.is_empty() or points.size() < 2:
+		return -1
+	if at >= total():
+		return step_index[step_index.size() - 1]
+	var seg: int = sample(clampf(at, 0.0, total())).segment
+	return step_index[mini(step_index.size() - 1, seg + 1)]
+
+
+## The ride the walker may take now: a ride on `step` whose start is within RIDE_TRIGGER of `position` (3D). {} when
+## none — a ride is offered only on its own elevator step, so no other step can trigger a teleport.
+func ride_at(position: Vector3, step: int) -> Dictionary:
+	for ride in rides:
+		if int(ride.step) == step and position.distance_to(ride.from) <= RIDE_TRIGGER:
+			return ride
+	return {}
+
+
+## Take a detected ride: the walker's feet go to the shaft's exit by its own ground rule (`walker.ride_to`, which
+## accepts the landing only through accept_ground) and the guide moves to the exit, so the next tick continues from
+## where the lift put the walker. False when the exit has no trustworthy ground: a ride never lands on nothing.
+## Shared by the HQ HUD and the evidence walk, so both ride through the same code.
+func take_ride(walker: Object, ride: Dictionary) -> bool:
+	if not walker.ride_to(ride.to):
+		return false
+	s = clampf(float(ride.to_s), 0.0, total())
 	return true
 
 
@@ -121,8 +195,7 @@ func instruction_at(at: float, lang: String) -> int:
 		return -1
 	if at >= total() - 0.3:
 		return list.size() - 1
-	var seg: int = sample(at).segment
-	var step := step_index[mini(step_index.size() - 1, seg + 1)]
+	var step := step_at(at)
 	if step < 0:
 		return 0
 	for i in list.size():

@@ -13,6 +13,9 @@ const PANEL_WIDTH := 520
 const HIGHLIGHT_PERIOD := 0.25
 const NEAR_PATH := 6.0
 const LANGS := ["ja", "en"]
+## A lift ride (#287) fades out, lands and fades in; the walker is standing still throughout.
+const RIDE_FADE := 0.3
+const RIDE_PROMPT := "E: ride the lift"
 
 var hq: Node3D
 var bridge := Bridge.new()
@@ -40,6 +43,12 @@ var _facts: Label
 var _steps: ItemList
 var _guide_toggle: CheckButton
 var _route_button: Button
+var _prompt: Label
+var _fade: ColorRect
+## The ride being offered, and the fade state: "" (none), "out" (to black) or "in" (back).
+var _ride: Dictionary = {}
+var _ride_phase := ""
+var _ride_left := 0.0
 
 
 func setup(owner_hq: Node3D) -> void:
@@ -138,6 +147,16 @@ func setup(owner_hq: Node3D) -> void:
 	_facts.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 	_facts.add_theme_font_size_override("font_size", 13)
 	box.add_child(_facts)
+	_prompt = Label.new()
+	_prompt.add_theme_font_size_override("font_size", 20)
+	_prompt.add_theme_color_override("font_color", Color(1.0, 0.88, 0.3))
+	box.add_child(_prompt)
+	# The ride's fade, over the whole screen and never taking the mouse.
+	_fade = ColorRect.new()
+	_fade.color = Color(0.0, 0.0, 0.0, 0.0)
+	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(_fade)
 	refresh_labels()
 
 
@@ -147,6 +166,12 @@ func typing() -> bool:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# E or the gamepad's A takes the lift the HUD offers; no other input can start a ride.
+	var wants_ride: bool = (event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_E) \
+		or (event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_A)
+	if wants_ride and not typing() and ride_pressed():
+		hq.get_viewport().set_input_as_handled()
+		return
 	if (event is InputEventMouseButton and event.pressed) or (event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE):
 		var focus := hq.get_viewport().gui_get_focus_owner()
 		if focus != null:
@@ -307,6 +332,7 @@ func clear_route() -> void:
 	remove_ribbon()
 	set_guided(false)
 	guide.clear()
+	_end_ride()
 	if _steps != null:
 		show_route_text()
 
@@ -353,6 +379,7 @@ func set_guided(on: bool) -> void:
 	_syncing = true
 	_guide_toggle.button_pressed = on and guide.ok
 	_syncing = false
+	_end_ride()
 	if on and guide.ok:
 		var near := guide.project(hq.walker.global_position)
 		guide.start_guide(near.s if near.distance <= 2.0 else 0.0)
@@ -368,11 +395,18 @@ func set_guided(on: bool) -> void:
 func physics(delta: float, move: Vector2) -> bool:
 	if typing():
 		move = Vector2.ZERO
+	if guide.guiding and not _ride_phase.is_empty():
+		# A ride in progress owns the avatar: no walking, no cancellation.
+		ride_tick(delta)
+		_since_highlight += delta
+		return true
 	if guide.guiding and move != Vector2.ZERO:
 		set_guided(false)
 		return false
+	update_ride_prompt()
 	if guide.guiding:
 		guided_tick(hq.walker, hq.camera, delta)
+		update_ride_prompt()
 		_since_highlight += delta
 		if _since_highlight >= 0.1:
 			_since_highlight = 0.0
@@ -385,6 +419,60 @@ func physics(delta: float, move: Vector2) -> bool:
 		_since_highlight = 0.0
 		update_highlight()
 	return false
+
+
+## Offer the lift only while guided walking stands on the ride's own elevator step and within reach of its start; the
+## prompt clears itself the moment either stops being true, and no other step can offer one.
+func update_ride_prompt() -> void:
+	_ride = {}
+	if not guide.guiding:
+		_prompt.text = ""
+		return
+	_ride = guide.ride_at(hq.walker.global_position, guide.step_at(guide.s))
+	_prompt.text = RIDE_PROMPT if not _ride.is_empty() else ""
+
+
+## Start the ride the HUD offers. False when there is none (or one is already running), so the key does nothing else.
+func ride_pressed() -> bool:
+	if not _ride_phase.is_empty() or _ride.is_empty() or not guide.guiding:
+		return false
+	_ride_phase = "out"
+	_ride_left = RIDE_FADE
+	_prompt.text = ""
+	return true
+
+
+## The fade: RIDE_FADE out, then the shared Guide.take_ride() landing, then RIDE_FADE back in. The yaw is untouched and
+## the guide moves to the shaft's exit, so the next guided tick continues from where the lift put the walker.
+func ride_tick(delta: float) -> void:
+	_ride_left = maxf(0.0, _ride_left - delta)
+	if _ride_phase == "out":
+		_fade.color.a = 1.0 - _ride_left / RIDE_FADE
+		if _ride_left > 0.0:
+			return
+		var ride := _ride
+		_ride = {}
+		_ride_phase = "in"
+		_ride_left = RIDE_FADE
+		if ride.is_empty() or not guide.take_ride(hq.walker, ride):
+			set_status("The lift's exit has no walkable ground; the lift was not taken.", true)
+			return
+		snap_camera = true
+		return
+	_fade.color.a = _ride_left / RIDE_FADE
+	if _ride_left <= 0.0:
+		_end_ride()
+
+
+## Clear the prompt, the offered ride and the fade (cancelled guide, new route, finished ride).
+func _end_ride() -> void:
+	_ride_phase = ""
+	_ride_left = 0.0
+	_ride = {}
+	if _prompt != null:
+		_prompt.text = ""
+	if _fade != null:
+		_fade.color.a = 0.0
 
 
 ## Move the avatar along the polyline without collisions (explorer.ts stepGuide) and keep the follow camera on it.
