@@ -15,7 +15,7 @@ import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
-import { manifestScene } from "./manifestScene.ts";
+import { manifestScene, type LoadedAsset } from "./manifestScene.ts";
 import { castAll, castCamera, cuttableSigns, explorerTargets, keepBelowBlockers } from "./raycast.ts";
 import { DEFAULT_GUIDE_TIER, pacedDistance, type GuideTierId, type PaceSpan } from "./guidePace.ts";
 import { advanceGuide } from "./guideStops.ts";
@@ -176,6 +176,8 @@ export class Explorer {
   /** Visual-only signage the follow camera sees through (never walkable or a collider), as actually cut. */
   private seeThrough: THREE.Object3D[] = [];
   private bakedAo: BakedAoCounts = { materials: 0, scaled: 0, disabled: 0, textureBytes: 0 };
+  /** Manifest assets as loaded (tier variant and uri); empty for scene-module stations, which load their own GLBs. */
+  private loadedAssets: LoadedAsset[] = [];
   private readonly cameraCut = new CameraCut();
   private routeTexture: THREE.CanvasTexture | null = null;
   private routeLines: OccludedLineStyle | null = null;
@@ -269,13 +271,13 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; bakedAo: BakedAoCounts; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; street: { active: boolean; opacity: number } } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; bakedAo: BakedAoCounts; assets: LoadedAsset[]; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; street: { active: boolean; opacity: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
       walkable: this.walkable.length, colliders: this.colliders.length, cameraBlockers: this.cameraBlockers.length, seeThrough: this.seeThrough.length,
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
-      bakedAo: { ...this.bakedAo },
+      bakedAo: { ...this.bakedAo }, assets: this.loadedAssets.map((a) => ({ ...a })),
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
       environmentIntensity: this.scene.environment ? this.scene.environmentIntensity : null, exposure: this.renderer.toneMappingExposure, overlayToneResidual: this.overlayResidual === null ? null : Math.round(this.overlayResidual * 100) / 100,
@@ -514,6 +516,8 @@ export class Explorer {
     this.buildOccluders(this.stationScene?.root ?? this.graph.root);
     // Baked aoMaps (kit GLBs and stations' own): per-tier intensity, once per attach (idempotent per material).
     this.bakedAo = this.stationScene ? applyBakedAo(this.stationScene.root, this.quality) : { materials: 0, scaled: 0, disabled: 0, textureBytes: 0 };
+    this.loadedAssets = [];
+    this.stationScene?.root.traverse((o) => { if (o.userData.gtekiAsset) this.loadedAssets.push(o.userData.gtekiAsset as LoadedAsset); });
     this.phase = "composer";
     this.setupComposer();
     this.frameAll();
@@ -557,6 +561,7 @@ export class Explorer {
     this.cameraCut.clear();
     this.occluders = [];
     this.proxies.clear();
+    this.loadedAssets = [];
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
     this.applyLighting();

@@ -3,6 +3,9 @@ import type { Asset } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
 import { sceneFromGlbRoles } from "@gteki/scene-api";
 
+/** Which manifest variant an asset's root came from (`userData.gtekiAsset`), for `sceneInfo().assets`. */
+export interface LoadedAsset { id: string; variant: "full" | "mobile"; uri: string }
+
 /**
  * A station without a scene module: load its manifest GLBs and classify meshes by gteki_role.
  * If any asset fails, the ones already loaded are disposed before the error propagates (no
@@ -16,7 +19,10 @@ export async function manifestScene(assets: readonly Asset[], ctx: Pick<SceneCon
   const cameraBlockers: THREE.Object3D[] = [];
   try {
     for (const asset of assets) {
-      const gltf = await ctx.loadGlb(ctx.quality === "low" && asset.uriMobile ? asset.uriMobile : asset.uri);
+      const mobile = ctx.quality === "low" && !!asset.uriMobile;
+      const uri = mobile ? asset.uriMobile! : asset.uri;
+      const gltf = await ctx.loadGlb(uri);
+      gltf.scene.userData.gtekiAsset = { id: asset.id, variant: mobile ? "mobile" : "full", uri } satisfies LoadedAsset;
       // Attach first, so a failure below still disposes this asset with the others.
       root.add(gltf.scene);
       if (asset.transform) gltf.scene.applyMatrix4(new THREE.Matrix4().fromArray(asset.transform));

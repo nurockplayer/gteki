@@ -53,4 +53,12 @@ describe("manifestScene", () => {
       expect(loadGlb.mock.calls.map((c) => c[0])).toEqual(expected);
     }
   });
+
+  it("tags each asset root with the variant it loaded, for sceneInfo().assets", async () => {
+    const withMobile: Asset = { ...asset("assets/kit.glb"), uriMobile: "assets/kit.mobile.glb" };
+    for (const [quality, variant, uri] of [["low", "mobile", "assets/kit.mobile.glb"], ["high", "full", "assets/kit.glb"]] as const) {
+      const scene = await manifestScene([withMobile], { loadGlb: async () => glb("floor").gltf, quality });
+      expect(scene.root.children[0]!.userData.gtekiAsset).toEqual({ id: withMobile.id, variant, uri });
+    }
+  });
 });
