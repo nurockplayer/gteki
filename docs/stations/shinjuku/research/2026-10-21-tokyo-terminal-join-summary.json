@@ -1,0 +1,2353 @@
+{
+  "schemaVersion": 1,
+  "reportDate": "2026-10-21",
+  "scope": "Research only: proximity candidates, not approved join edges",
+  "inputSha256": {
+    "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-routes/shisetsu_root.zip": "fc3466270c08593a300e652c7997021f85151bf0f435e17ee9fcb7935ed4ba31",
+    "stations/shinjuku/gteki/graph.json": "37a24b303828755fbdbdb76f59d1b1a529e535cc16e9e3c19424468771cf928b",
+    "stations/shinjuku/gteki/station.json": "eb2915042a8a69417a58d1a05ed6425bb5de8fd9ef30c3e62d7b0caaf991e637",
+    "stations/shinjuku/gteki/pois.json": "4b83dbdac0363eb20d6e6d967565a1c4505547b7fa0a2bc52605a2329282603c",
+    "packages/geo/src/index.ts": "c5f6fb34cad344aed1ae33314e43f7232ef0c71733fd229b7317ff6c862b678d"
+  },
+  "transform": {
+    "origin": {
+      "lat": 35.687,
+      "lon": 139.6994,
+      "h": 0
+    },
+    "sourceDeclaredCrs": "WGS84 geographic for standard GeoJSON; nav uses published Mercator-to-map affine",
+    "navToMap": [
+      -0.5261574908047739,
+      3.18447322698136,
+      -3.18447322698136,
+      -0.5261574908047739,
+      57753293.566200204,
+      -87938701.3087139
+    ],
+    "mapToLonLat": [
+      -5.418711675485752e-07,
+      2.663778222735349e-06,
+      3.2795774187159253e-06,
+      4.401251842407263e-07,
+      139.696624,
+      35.685405
+    ],
+    "target": "EnuFrame GRS80 x east / y north, z unknown",
+    "datumTreatment": "WGS84 coordinates provisionally reused as JGD2011; no epoch or geodetic datum transformation asserted",
+    "fittedCorrection": null,
+    "renderer": "(x, symbolic-renderZ, -y); no measured Tokyo elevations"
+  },
+  "floors": [
+    {
+      "id": 64672,
+      "label": "B5F",
+      "sourceZlevel": -7,
+      "comparisonOrdinal": -5,
+      "nodeCount": 27
+    },
+    {
+      "id": 64673,
+      "label": "B4F",
+      "sourceZlevel": -6,
+      "comparisonOrdinal": -4,
+      "nodeCount": 50
+    },
+    {
+      "id": 64674,
+      "label": "B3F",
+      "sourceZlevel": -5,
+      "comparisonOrdinal": -3,
+      "nodeCount": 420
+    },
+    {
+      "id": 64688,
+      "label": "MB2F",
+      "sourceZlevel": -4,
+      "comparisonOrdinal": -2.5,
+      "nodeCount": 52
+    },
+    {
+      "id": 64675,
+      "label": "B2F",
+      "sourceZlevel": -3,
+      "comparisonOrdinal": -2,
+      "nodeCount": 278
+    },
+    {
+      "id": 64676,
+      "label": "B1F",
+      "sourceZlevel": -2,
+      "comparisonOrdinal": -1,
+      "nodeCount": 710
+    },
+    {
+      "id": 64689,
+      "label": "M1F",
+      "sourceZlevel": -1,
+      "comparisonOrdinal": -0.5,
+      "nodeCount": 97
+    },
+    {
+      "id": 64677,
+      "label": "1F",
+      "sourceZlevel": 0,
+      "comparisonOrdinal": 1,
+      "nodeCount": 363
+    },
+    {
+      "id": 64678,
+      "label": "2F",
+      "sourceZlevel": 1,
+      "comparisonOrdinal": 2,
+      "nodeCount": 295
+    },
+    {
+      "id": 64679,
+      "label": "3F",
+      "sourceZlevel": 2,
+      "comparisonOrdinal": 3,
+      "nodeCount": 96
+    },
+    {
+      "id": 64680,
+      "label": "4F",
+      "sourceZlevel": 3,
+      "comparisonOrdinal": 4,
+      "nodeCount": 118
+    }
+  ],
+  "counts": {
+    "e27Nodes": 233,
+    "e27Edges": 263,
+    "e27ExitPois": 6,
+    "primaryBoundaryNodes": 11,
+    "degreeOneNodes": 20,
+    "boundaryUnionNodes": 24,
+    "tokyoNodes": 2506,
+    "tokyoLinks": 2653,
+    "pairsWithin60m": 1610,
+    "primaryPairsWithin60m": 521,
+    "primaryCandidateFloorAgreement": {
+      "label-equal": 86,
+      "label-mismatch": 417,
+      "street-1F-equivalence": 18
+    },
+    "candidateFloorAgreement": {
+      "label-equal": 651,
+      "label-mismatch": 941,
+      "street-1F-equivalence": 18
+    }
+  },
+  "metrics": {
+    "e27RawReprojectionVsShippedRoundedXY": {
+      "count": 233,
+      "medianM": 0.004317657018306327,
+      "p90M": 0.005671384458680781,
+      "maxM": 0.006953621178684115
+    },
+    "allBoundaryNearestAny": {
+      "count": 24,
+      "medianM": 43.40904140363361,
+      "p90M": 148.3284137679721,
+      "maxM": 151.61412082275555
+    },
+    "allBoundaryNearestCompatibleWithin60m": {
+      "count": 11,
+      "medianM": 11.548591438821648,
+      "p90M": 56.04387464471519,
+      "maxM": 56.53859907586767
+    },
+    "primaryBoundaryNearestCompatibleWithin60m": {
+      "count": 4,
+      "medianM": 33.08586308449692,
+      "p90M": 56.390181746521925,
+      "maxM": 56.53859907586767
+    },
+    "allE27NearestCompatible": {
+      "count": 185,
+      "medianM": 191.8260172531619,
+      "p90M": 455.97603909178196,
+      "maxM": 510.93495602617355
+    },
+    "reciprocalCompatibleWithin5m": {
+      "count": 15,
+      "medianM": 1.8538693092193543,
+      "p90M": 3.3665106008491104,
+      "maxM": 3.418081058166239
+    },
+    "reciprocalWithin5mByFloor": {
+      "1F": {
+        "count": 1,
+        "medianM": 1.6643774107130749,
+        "p90M": 1.6643774107130749,
+        "maxM": 1.6643774107130749
+      },
+      "B1F": {
+        "count": 14,
+        "medianM": 1.9271986123044007,
+        "p90M": 3.379258828940401,
+        "maxM": 3.418081058166239
+      }
+    },
+    "reciprocalThresholdSensitivity": {
+      "1": {
+        "count": 4,
+        "medianM": 0.8355873914696399,
+        "p90M": 0.9340594992812228,
+        "maxM": 0.9733185393519653
+      },
+      "2": {
+        "count": 8,
+        "medianM": 1.0124286485518486,
+        "p90M": 1.7212249802649586,
+        "maxM": 1.8538693092193543
+      },
+      "3": {
+        "count": 12,
+        "medianM": 1.63277633953268,
+        "p90M": 2.6127956293133936,
+        "maxM": 2.861182970362414
+      },
+      "5": {
+        "count": 15,
+        "medianM": 1.8538693092193543,
+        "p90M": 3.3665106008491104,
+        "maxM": 3.418081058166239
+      }
+    }
+  },
+  "reciprocalPairs": [
+    {
+      "e27Node": "n:360c205d7f054953b7d25f0f17e3b99d",
+      "tokyoNode": 11115152,
+      "offsetM": 2.2755554341157427,
+      "eastDeltaM": 2.199088855996628,
+      "northDeltaM": 0.5849450719213962,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 29065190,
+      "tokyoNames": []
+    },
+    {
+      "e27Node": "n:fb5671d1edba4c91ad50438c830827a9",
+      "tokyoNode": 11115148,
+      "offsetM": 0.14570160991858472,
+      "eastDeltaM": 0.1342463652920145,
+      "northDeltaM": -0.056629255149175606,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 28994151,
+      "tokyoNames": []
+    },
+    {
+      "e27Node": "n:a06f3d191885497bac197b666c4daef9",
+      "tokyoNode": 11115537,
+      "offsetM": 1.6643774107130749,
+      "eastDeltaM": -0.5353252212045376,
+      "northDeltaM": 1.5759375218688945,
+      "e27Floor": "toei-nwd-0",
+      "tokyoFloor": "1F",
+      "floorAgreement": "street-1F-equivalence",
+      "tokyoGeometryId": 28994916,
+      "tokyoNames": [
+        "B"
+      ]
+    },
+    {
+      "e27Node": "n:fe13251e6885410b870179837c3832cf",
+      "tokyoNode": 11110333,
+      "offsetM": 3.4175035132142715,
+      "eastDeltaM": 1.482793252661807,
+      "northDeltaM": -3.0790671367627738,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 28993552,
+      "tokyoNames": []
+    },
+    {
+      "e27Node": "n:1ecbdf77f58f423fa3142d1b71e078bf",
+      "tokyoNode": 11110347,
+      "offsetM": 3.418081058166239,
+      "eastDeltaM": -0.13173463650901596,
+      "northDeltaM": 3.415541553800608,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 28993474,
+      "tokyoNames": []
+    },
+    {
+      "e27Node": "n:d92d2f120f7c4f69b630469fb9f8b375",
+      "tokyoNode": 11110361,
+      "offsetM": 2.0005279153894473,
+      "eastDeltaM": -0.1686689739041647,
+      "northDeltaM": 1.9934048052251114,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 28993474,
+      "tokyoNames": []
+    },
+    {
+      "e27Node": "n:3e77f0b2acc24044a02b0a2b24289c4e",
+      "tokyoNode": 11110332,
+      "offsetM": 1.6011752683522849,
+      "eastDeltaM": 1.5453241218611566,
+      "northDeltaM": 0.4192082995087958,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 28993474,
+      "tokyoNames": []
+    },
+    {
+      "e27Node": "n:bf71354b90b04a7aa2a85773b20aa230",
+      "tokyoNode": 11115155,
+      "offsetM": 2.861182970362414,
+      "eastDeltaM": 2.2031285422855404,
+      "northDeltaM": -1.825538993299972,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 28994151,
+      "tokyoNames": []
+    },
+    {
+      "e27Node": "n:38d4fc0b89684db39ae3ce5c49614a73",
+      "tokyoNode": 11110360,
+      "offsetM": 2.6502667621131324,
+      "eastDeltaM": 2.6118372595935213,
+      "northDeltaM": -0.44968882547894395,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 28993999,
+      "tokyoNames": []
+    },
+    {
+      "e27Node": "n:2e036b5969f34dd5b002cfb0f3597afb",
+      "tokyoNode": 11115150,
+      "offsetM": 0.8287197104897897,
+      "eastDeltaM": 0.7083646906311927,
+      "northDeltaM": -0.4301114083830555,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 28993474,
+      "tokyoNames": []
+    },
+    {
+      "e27Node": "n:1c1750334451430b83e23f9c5a60fab5",
+      "tokyoNode": 11126968,
+      "offsetM": 1.0515387577517317,
+      "eastDeltaM": -0.07113883979087632,
+      "northDeltaM": 1.0491296509618167,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 28993984,
+      "tokyoNames": [
+        "京王新線　京王新線口"
+      ]
+    },
+    {
+      "e27Node": "n:04f621bad4b54f868630c9ae2e57f066",
+      "tokyoNode": 11110331,
+      "offsetM": 1.8538693092193543,
+      "eastDeltaM": 1.400038220509856,
+      "northDeltaM": 1.2152054956989957,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 28993680,
+      "tokyoNames": []
+    },
+    {
+      "e27Node": "n:c01041e096fe4f6c8ed23520375ef2fd",
+      "tokyoNode": 11110367,
+      "offsetM": 0.9733185393519653,
+      "eastDeltaM": 0.7813845839038862,
+      "northDeltaM": 0.5803336205008236,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 28993486,
+      "tokyoNames": []
+    },
+    {
+      "e27Node": "n:ed8c26c582c64b57947cf5833f836e7a",
+      "tokyoNode": 11126933,
+      "offsetM": 0.8424550724494902,
+      "eastDeltaM": -0.4365543686142104,
+      "northDeltaM": -0.7205212226851643,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 29087926,
+      "tokyoNames": []
+    },
+    {
+      "e27Node": "n:46962c38fa2e4473b092d83fa804d6c5",
+      "tokyoNode": 11110322,
+      "offsetM": 3.2900212323013687,
+      "eastDeltaM": 2.2916267604613836,
+      "northDeltaM": -2.360653828864173,
+      "e27Floor": "toei-nwd-m1",
+      "tokyoFloor": "B1F",
+      "floorAgreement": "label-equal",
+      "tokyoGeometryId": 28993474,
+      "tokyoNames": []
+    }
+  ],
+  "boundaryResults": [
+    {
+      "e27Node": "n:032cf295875e4f1fa99164971cab0680",
+      "floor": "toei-nwd-m1",
+      "kind": "exit",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": true,
+      "exitPois": [
+        "poi:exit:5"
+      ],
+      "within60mCount": 176,
+      "floorAgreementCounts": {
+        "label-equal": 86,
+        "label-mismatch": 90
+      },
+      "nearestAny": {
+        "e27Node": "n:032cf295875e4f1fa99164971cab0680",
+        "tokyoNode": 11110360,
+        "offsetM": 10.127851524278658,
+        "eastDeltaM": -7.338162740406478,
+        "northDeltaM": 6.980311174521063,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-equal",
+        "tokyoGeometryId": 28993999,
+        "tokyoNames": []
+      },
+      "nearestCompatible": {
+        "e27Node": "n:032cf295875e4f1fa99164971cab0680",
+        "tokyoNode": 11110360,
+        "offsetM": 10.127851524278658,
+        "eastDeltaM": -7.338162740406478,
+        "northDeltaM": 6.980311174521063,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-equal",
+        "tokyoGeometryId": 28993999,
+        "tokyoNames": []
+      },
+      "nearestFive": [
+        {
+          "e27Node": "n:032cf295875e4f1fa99164971cab0680",
+          "tokyoNode": 11110360,
+          "offsetM": 10.127851524278658,
+          "eastDeltaM": -7.338162740406478,
+          "northDeltaM": 6.980311174521063,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993999,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:032cf295875e4f1fa99164971cab0680",
+          "tokyoNode": 11110361,
+          "offsetM": 11.104051604438004,
+          "eastDeltaM": -10.988668973904165,
+          "northDeltaM": -1.5965951947748636,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993474,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:032cf295875e4f1fa99164971cab0680",
+          "tokyoNode": 11110359,
+          "offsetM": 14.204388738105482,
+          "eastDeltaM": -4.796009806340077,
+          "northDeltaM": 13.370226226983135,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993507,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:032cf295875e4f1fa99164971cab0680",
+          "tokyoNode": 11110357,
+          "offsetM": 15.346702970899473,
+          "eastDeltaM": -8.290421701592319,
+          "northDeltaM": 12.914728029919246,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993507,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:032cf295875e4f1fa99164971cab0680",
+          "tokyoNode": 11110355,
+          "offsetM": 16.167724906269935,
+          "eastDeltaM": -10.018635546404244,
+          "northDeltaM": 12.68945508810944,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993507,
+          "tokyoNames": []
+        }
+      ]
+    },
+    {
+      "e27Node": "n:17e7f081779d4c65940d6f490486a8ba",
+      "floor": "toei-nwd-m1",
+      "kind": "junction",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": false,
+      "exitPois": [],
+      "within60mCount": 160,
+      "floorAgreementCounts": {
+        "label-mismatch": 67,
+        "label-equal": 93
+      },
+      "nearestAny": {
+        "e27Node": "n:17e7f081779d4c65940d6f490486a8ba",
+        "tokyoNode": 11109574,
+        "offsetM": 4.319473568680384,
+        "eastDeltaM": -1.5494415327574664,
+        "northDeltaM": -4.032007297500172,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B5F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 28993018,
+        "tokyoNames": []
+      },
+      "nearestCompatible": {
+        "e27Node": "n:17e7f081779d4c65940d6f490486a8ba",
+        "tokyoNode": 11126969,
+        "offsetM": 12.179164166078321,
+        "eastDeltaM": -10.41213067183342,
+        "northDeltaM": -6.318193939485553,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-equal",
+        "tokyoGeometryId": 28993983,
+        "tokyoNames": [
+          "京王新線　京王新線口"
+        ]
+      },
+      "nearestFive": [
+        {
+          "e27Node": "n:17e7f081779d4c65940d6f490486a8ba",
+          "tokyoNode": 11109574,
+          "offsetM": 4.319473568680384,
+          "eastDeltaM": -1.5494415327574664,
+          "northDeltaM": -4.032007297500172,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993018,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:17e7f081779d4c65940d6f490486a8ba",
+          "tokyoNode": 11109622,
+          "offsetM": 6.122124483442391,
+          "eastDeltaM": -0.06825637364719839,
+          "northDeltaM": -6.121743971959404,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B4F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993040,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:17e7f081779d4c65940d6f490486a8ba",
+          "tokyoNode": 11109577,
+          "offsetM": 6.196330669943374,
+          "eastDeltaM": 3.990515322876444,
+          "northDeltaM": -4.740284931221879,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993019,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:17e7f081779d4c65940d6f490486a8ba",
+          "tokyoNode": 11109575,
+          "offsetM": 6.727275356601182,
+          "eastDeltaM": 6.665884900013598,
+          "northDeltaM": -0.906759187052586,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993012,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:17e7f081779d4c65940d6f490486a8ba",
+          "tokyoNode": 11109623,
+          "offsetM": 8.281863992360975,
+          "eastDeltaM": -3.7109881979754924,
+          "northDeltaM": -7.403906926917159,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B4F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993032,
+          "tokyoNames": []
+        }
+      ]
+    },
+    {
+      "e27Node": "n:1dda661f6f1d40d792e91d56894ef902",
+      "floor": "toei-nwd-m3",
+      "kind": "junction",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": false,
+      "exitPois": [],
+      "within60mCount": 37,
+      "floorAgreementCounts": {
+        "label-mismatch": 37
+      },
+      "nearestAny": {
+        "e27Node": "n:1dda661f6f1d40d792e91d56894ef902",
+        "tokyoNode": 11115146,
+        "offsetM": 41.480411907799215,
+        "eastDeltaM": -31.62894411186202,
+        "northDeltaM": 26.837184397946814,
+        "e27Floor": "toei-nwd-m3",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 28994150,
+        "tokyoNames": []
+      },
+      "nearestCompatible": null,
+      "nearestFive": [
+        {
+          "e27Node": "n:1dda661f6f1d40d792e91d56894ef902",
+          "tokyoNode": 11115146,
+          "offsetM": 41.480411907799215,
+          "eastDeltaM": -31.62894411186202,
+          "northDeltaM": 26.837184397946814,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28994150,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:1dda661f6f1d40d792e91d56894ef902",
+          "tokyoNode": 11115153,
+          "offsetM": 42.29667516332267,
+          "eastDeltaM": -18.91784724831608,
+          "northDeltaM": 37.830196739655165,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993650,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:1dda661f6f1d40d792e91d56894ef902",
+          "tokyoNode": 11115147,
+          "offsetM": 43.434710189903484,
+          "eastDeltaM": -35.58851086657401,
+          "northDeltaM": 24.900440630250884,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 29065189,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:1dda661f6f1d40d792e91d56894ef902",
+          "tokyoNode": 11115149,
+          "offsetM": 44.17972915322054,
+          "eastDeltaM": -31.674778046887802,
+          "northDeltaM": 30.79865100507358,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 29065190,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:1dda661f6f1d40d792e91d56894ef902",
+          "tokyoNode": 11115151,
+          "offsetM": 44.244272312419184,
+          "eastDeltaM": -29.325718036427972,
+          "northDeltaM": 33.12941131537694,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28994149,
+          "tokyoNames": []
+        }
+      ]
+    },
+    {
+      "e27Node": "n:33910baaf1784dd69e2d98e23cb70f23",
+      "floor": "toei-nwd-0",
+      "kind": "escalator_end",
+      "inOut": "boundary",
+      "degree": 2,
+      "primaryExitOrBoundary": true,
+      "exitPois": [],
+      "within60mCount": 0,
+      "floorAgreementCounts": {},
+      "nearestAny": {
+        "e27Node": "n:33910baaf1784dd69e2d98e23cb70f23",
+        "tokyoNode": 11114767,
+        "offsetM": 150.93886804288223,
+        "eastDeltaM": 95.46048067600103,
+        "northDeltaM": 116.9180846369519,
+        "e27Floor": "toei-nwd-0",
+        "tokyoFloor": "2F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 29007954,
+        "tokyoNames": []
+      },
+      "nearestCompatible": null,
+      "nearestFive": []
+    },
+    {
+      "e27Node": "n:3af66366dc9f478ea4a6e509235a8799",
+      "floor": "toei-nwd-0",
+      "kind": "stair_end",
+      "inOut": "boundary",
+      "degree": 2,
+      "primaryExitOrBoundary": true,
+      "exitPois": [],
+      "within60mCount": 0,
+      "floorAgreementCounts": {},
+      "nearestAny": {
+        "e27Node": "n:3af66366dc9f478ea4a6e509235a8799",
+        "tokyoNode": 11114767,
+        "offsetM": 151.61412082275555,
+        "eastDeltaM": 94.49048067600103,
+        "northDeltaM": 118.56808463695191,
+        "e27Floor": "toei-nwd-0",
+        "tokyoFloor": "2F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 29007954,
+        "tokyoNames": []
+      },
+      "nearestCompatible": null,
+      "nearestFive": []
+    },
+    {
+      "e27Node": "n:3c15d8b3c62b42e9bcd253a64e289f30",
+      "floor": "toei-nwd-m2",
+      "kind": "junction",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": false,
+      "exitPois": [],
+      "within60mCount": 0,
+      "floorAgreementCounts": {},
+      "nearestAny": {
+        "e27Node": "n:3c15d8b3c62b42e9bcd253a64e289f30",
+        "tokyoNode": 11115146,
+        "offsetM": 77.01443854896851,
+        "eastDeltaM": -40.89894411186202,
+        "northDeltaM": 65.25718439794682,
+        "e27Floor": "toei-nwd-m2",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 28994150,
+        "tokyoNames": []
+      },
+      "nearestCompatible": null,
+      "nearestFive": []
+    },
+    {
+      "e27Node": "n:3c5c2ccdd1014dbcba9f287702b24823",
+      "floor": "toei-nwd-m3",
+      "kind": "junction",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": false,
+      "exitPois": [],
+      "within60mCount": 8,
+      "floorAgreementCounts": {
+        "label-mismatch": 8
+      },
+      "nearestAny": {
+        "e27Node": "n:3c5c2ccdd1014dbcba9f287702b24823",
+        "tokyoNode": 11115146,
+        "offsetM": 49.992889713067726,
+        "eastDeltaM": -34.22894411186202,
+        "northDeltaM": 36.43718439794682,
+        "e27Floor": "toei-nwd-m3",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 28994150,
+        "tokyoNames": []
+      },
+      "nearestCompatible": null,
+      "nearestFive": [
+        {
+          "e27Node": "n:3c5c2ccdd1014dbcba9f287702b24823",
+          "tokyoNode": 11115146,
+          "offsetM": 49.992889713067726,
+          "eastDeltaM": -34.22894411186202,
+          "northDeltaM": 36.43718439794682,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28994150,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:3c5c2ccdd1014dbcba9f287702b24823",
+          "tokyoNode": 11115147,
+          "offsetM": 51.464966393537146,
+          "eastDeltaM": -38.18851086657401,
+          "northDeltaM": 34.50044063025089,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 29065189,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:3c5c2ccdd1014dbcba9f287702b24823",
+          "tokyoNode": 11115153,
+          "offsetM": 52.08302327020063,
+          "eastDeltaM": -21.51784724831608,
+          "northDeltaM": 47.43019673965517,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993650,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:3c5c2ccdd1014dbcba9f287702b24823",
+          "tokyoNode": 11115149,
+          "offsetM": 52.97934893138227,
+          "eastDeltaM": -34.2747780468878,
+          "northDeltaM": 40.39865100507359,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 29065190,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:3c5c2ccdd1014dbcba9f287702b24823",
+          "tokyoNode": 11115151,
+          "offsetM": 53.33904820579541,
+          "eastDeltaM": -31.925718036427973,
+          "northDeltaM": 42.72941131537695,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28994149,
+          "tokyoNames": []
+        }
+      ]
+    },
+    {
+      "e27Node": "n:439c8890520a4c2ba8b95338a9991540",
+      "floor": "toei-nwd-m2",
+      "kind": "junction",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": false,
+      "exitPois": [],
+      "within60mCount": 0,
+      "floorAgreementCounts": {},
+      "nearestAny": {
+        "e27Node": "n:439c8890520a4c2ba8b95338a9991540",
+        "tokyoNode": 11115146,
+        "offsetM": 99.50367490669285,
+        "eastDeltaM": -55.678944111862016,
+        "northDeltaM": 82.46718439794682,
+        "e27Floor": "toei-nwd-m2",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 28994150,
+        "tokyoNames": []
+      },
+      "nearestCompatible": null,
+      "nearestFive": []
+    },
+    {
+      "e27Node": "n:4423521d79e54865b7c41e4aec29826d",
+      "floor": "toei-nwd-0",
+      "kind": "exit",
+      "inOut": "outside",
+      "degree": 1,
+      "primaryExitOrBoundary": true,
+      "exitPois": [
+        "poi:exit:2"
+      ],
+      "within60mCount": 103,
+      "floorAgreementCounts": {
+        "label-mismatch": 101,
+        "street-1F-equivalence": 2
+      },
+      "nearestAny": {
+        "e27Node": "n:4423521d79e54865b7c41e4aec29826d",
+        "tokyoNode": 11115148,
+        "offsetM": 5.376310014903947,
+        "eastDeltaM": 3.0942463652920154,
+        "northDeltaM": -4.396629255149179,
+        "e27Floor": "toei-nwd-0",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 28994151,
+        "tokyoNames": []
+      },
+      "nearestCompatible": {
+        "e27Node": "n:4423521d79e54865b7c41e4aec29826d",
+        "tokyoNode": 11115179,
+        "offsetM": 56.04387464471519,
+        "eastDeltaM": -1.24013660251304,
+        "northDeltaM": 56.03015211829839,
+        "e27Floor": "toei-nwd-0",
+        "tokyoFloor": "1F",
+        "floorAgreement": "street-1F-equivalence",
+        "tokyoGeometryId": 29007747,
+        "tokyoNames": []
+      },
+      "nearestFive": [
+        {
+          "e27Node": "n:4423521d79e54865b7c41e4aec29826d",
+          "tokyoNode": 11115148,
+          "offsetM": 5.376310014903947,
+          "eastDeltaM": 3.0942463652920154,
+          "northDeltaM": -4.396629255149179,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28994151,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:4423521d79e54865b7c41e4aec29826d",
+          "tokyoNode": 11115155,
+          "offsetM": 7.9077113246095525,
+          "eastDeltaM": 3.9431285422855424,
+          "northDeltaM": 6.854461006700035,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28994151,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:4423521d79e54865b7c41e4aec29826d",
+          "tokyoNode": 11115152,
+          "offsetM": 8.073540517050958,
+          "eastDeltaM": 8.039088855996631,
+          "northDeltaM": -0.7450549280786163,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 29065190,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:4423521d79e54865b7c41e4aec29826d",
+          "tokyoNode": 11115149,
+          "offsetM": 8.642984881179233,
+          "eastDeltaM": 8.4952219531122,
+          "northDeltaM": -1.5913489949264203,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 29065190,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:4423521d79e54865b7c41e4aec29826d",
+          "tokyoNode": 11115147,
+          "offsetM": 8.779723357412648,
+          "eastDeltaM": 4.58148913342599,
+          "northDeltaM": -7.4895593697491165,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 29065189,
+          "tokyoNames": []
+        }
+      ]
+    },
+    {
+      "e27Node": "n:46962c38fa2e4473b092d83fa804d6c5",
+      "floor": "toei-nwd-m1",
+      "kind": "junction",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": false,
+      "exitPois": [],
+      "within60mCount": 94,
+      "floorAgreementCounts": {
+        "label-equal": 62,
+        "label-mismatch": 32
+      },
+      "nearestAny": {
+        "e27Node": "n:46962c38fa2e4473b092d83fa804d6c5",
+        "tokyoNode": 11110322,
+        "offsetM": 3.2900212323013687,
+        "eastDeltaM": 2.2916267604613836,
+        "northDeltaM": -2.360653828864173,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-equal",
+        "tokyoGeometryId": 28993474,
+        "tokyoNames": []
+      },
+      "nearestCompatible": {
+        "e27Node": "n:46962c38fa2e4473b092d83fa804d6c5",
+        "tokyoNode": 11110322,
+        "offsetM": 3.2900212323013687,
+        "eastDeltaM": 2.2916267604613836,
+        "northDeltaM": -2.360653828864173,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-equal",
+        "tokyoGeometryId": 28993474,
+        "tokyoNames": []
+      },
+      "nearestFive": [
+        {
+          "e27Node": "n:46962c38fa2e4473b092d83fa804d6c5",
+          "tokyoNode": 11110322,
+          "offsetM": 3.2900212323013687,
+          "eastDeltaM": 2.2916267604613836,
+          "northDeltaM": -2.360653828864173,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993474,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:46962c38fa2e4473b092d83fa804d6c5",
+          "tokyoNode": 11110320,
+          "offsetM": 5.768015875080381,
+          "eastDeltaM": -2.816929241567564,
+          "northDeltaM": -5.033380254181168,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993474,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:46962c38fa2e4473b092d83fa804d6c5",
+          "tokyoNode": 11173158,
+          "offsetM": 6.950657848566272,
+          "eastDeltaM": 6.950234976661065,
+          "northDeltaM": 0.07667005303949281,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993474,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:46962c38fa2e4473b092d83fa804d6c5",
+          "tokyoNode": 11110321,
+          "offsetM": 7.820584426938331,
+          "eastDeltaM": 4.338649118411567,
+          "northDeltaM": -6.5067399368790575,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993745,
+          "tokyoNames": [
+            "スピード小顔"
+          ]
+        },
+        {
+          "e27Node": "n:46962c38fa2e4473b092d83fa804d6c5",
+          "tokyoNode": 11110319,
+          "offsetM": 9.405240015270364,
+          "eastDeltaM": -0.5762904043281196,
+          "northDeltaM": -9.387567795479413,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993773,
+          "tokyoNames": [
+            "ファミリーマート　京王モールアネックス店"
+          ]
+        }
+      ]
+    },
+    {
+      "e27Node": "n:4eb0fed0079349e5889eab0fd66e3fc8",
+      "floor": "toei-nwd-m1",
+      "kind": "junction",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": false,
+      "exitPois": [],
+      "within60mCount": 154,
+      "floorAgreementCounts": {
+        "label-mismatch": 75,
+        "label-equal": 79
+      },
+      "nearestAny": {
+        "e27Node": "n:4eb0fed0079349e5889eab0fd66e3fc8",
+        "tokyoNode": 11109578,
+        "offsetM": 6.204167326650802,
+        "eastDeltaM": -5.83902334268077,
+        "northDeltaM": -2.0970213686823627,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B5F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 28993012,
+        "tokyoNames": []
+      },
+      "nearestCompatible": {
+        "e27Node": "n:4eb0fed0079349e5889eab0fd66e3fc8",
+        "tokyoNode": 11110361,
+        "offsetM": 18.702037687798086,
+        "eastDeltaM": -11.868668973904166,
+        "northDeltaM": 14.45340480522512,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-equal",
+        "tokyoGeometryId": 28993474,
+        "tokyoNames": []
+      },
+      "nearestFive": [
+        {
+          "e27Node": "n:4eb0fed0079349e5889eab0fd66e3fc8",
+          "tokyoNode": 11109578,
+          "offsetM": 6.204167326650802,
+          "eastDeltaM": -5.83902334268077,
+          "northDeltaM": -2.0970213686823627,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993012,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:4eb0fed0079349e5889eab0fd66e3fc8",
+          "tokyoNode": 11109575,
+          "offsetM": 6.845703578063702,
+          "eastDeltaM": -6.824115099986402,
+          "northDeltaM": 0.5432408129474027,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993012,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:4eb0fed0079349e5889eab0fd66e3fc8",
+          "tokyoNode": 11109577,
+          "offsetM": 10.053167861899604,
+          "eastDeltaM": -9.499484677123556,
+          "northDeltaM": -3.2902849312218905,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993019,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:4eb0fed0079349e5889eab0fd66e3fc8",
+          "tokyoNode": 11109576,
+          "offsetM": 10.093534696556342,
+          "eastDeltaM": -3.029071330904509,
+          "northDeltaM": -9.628300449346142,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993012,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:4eb0fed0079349e5889eab0fd66e3fc8",
+          "tokyoNode": 11109622,
+          "offsetM": 14.34055464872555,
+          "eastDeltaM": -13.558256373647199,
+          "northDeltaM": -4.671743971959415,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B4F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993040,
+          "tokyoNames": []
+        }
+      ]
+    },
+    {
+      "e27Node": "n:57ea2c8b971f47a59cdfdc1344057e36",
+      "floor": "toei-nwd-m1",
+      "kind": "junction",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": false,
+      "exitPois": [],
+      "within60mCount": 168,
+      "floorAgreementCounts": {
+        "label-mismatch": 77,
+        "label-equal": 91
+      },
+      "nearestAny": {
+        "e27Node": "n:57ea2c8b971f47a59cdfdc1344057e36",
+        "tokyoNode": 11109575,
+        "offsetM": 3.3414895129901767,
+        "eastDeltaM": 1.7658849000135994,
+        "northDeltaM": -2.836759187052593,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B5F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 28993012,
+        "tokyoNames": []
+      },
+      "nearestCompatible": {
+        "e27Node": "n:57ea2c8b971f47a59cdfdc1344057e36",
+        "tokyoNode": 11110361,
+        "offsetM": 11.548591438821648,
+        "eastDeltaM": -3.278668973904164,
+        "northDeltaM": 11.073404805225124,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-equal",
+        "tokyoGeometryId": 28993474,
+        "tokyoNames": []
+      },
+      "nearestFive": [
+        {
+          "e27Node": "n:57ea2c8b971f47a59cdfdc1344057e36",
+          "tokyoNode": 11109575,
+          "offsetM": 3.3414895129901767,
+          "eastDeltaM": 1.7658849000135994,
+          "northDeltaM": -2.836759187052593,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993012,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:57ea2c8b971f47a59cdfdc1344057e36",
+          "tokyoNode": 11109578,
+          "offsetM": 6.12908114174698,
+          "eastDeltaM": 2.7509766573192316,
+          "northDeltaM": -5.477021368682358,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993012,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:57ea2c8b971f47a59cdfdc1344057e36",
+          "tokyoNode": 11109577,
+          "offsetM": 6.732002929411744,
+          "eastDeltaM": -0.9094846771235545,
+          "northDeltaM": -6.670284931221886,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993019,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:57ea2c8b971f47a59cdfdc1344057e36",
+          "tokyoNode": 11109574,
+          "offsetM": 8.782985090497554,
+          "eastDeltaM": -6.449441532757465,
+          "northDeltaM": -5.962007297500179,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993018,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:57ea2c8b971f47a59cdfdc1344057e36",
+          "tokyoNode": 11109622,
+          "offsetM": 9.461191911396297,
+          "eastDeltaM": -4.968256373647197,
+          "northDeltaM": -8.05174397195941,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B4F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993040,
+          "tokyoNames": []
+        }
+      ]
+    },
+    {
+      "e27Node": "n:5cbcddf0b6e34fb89c2b7ee1220b35b2",
+      "floor": "toei-nwd-m1",
+      "kind": "exit",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": true,
+      "exitPois": [
+        "poi:exit:6"
+      ],
+      "within60mCount": 0,
+      "floorAgreementCounts": {},
+      "nearestAny": {
+        "e27Node": "n:5cbcddf0b6e34fb89c2b7ee1220b35b2",
+        "tokyoNode": 11114767,
+        "offsetM": 147.0815035081737,
+        "eastDeltaM": 98.93048067600103,
+        "northDeltaM": 108.8380846369519,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "2F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 29007954,
+        "tokyoNames": []
+      },
+      "nearestCompatible": null,
+      "nearestFive": []
+    },
+    {
+      "e27Node": "n:6dff9addf7384aaabbbe0742d2e5a1ce",
+      "floor": "toei-nwd-m1",
+      "kind": "stair_end",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": false,
+      "exitPois": [],
+      "within60mCount": 169,
+      "floorAgreementCounts": {
+        "label-equal": 87,
+        "label-mismatch": 82
+      },
+      "nearestAny": {
+        "e27Node": "n:6dff9addf7384aaabbbe0742d2e5a1ce",
+        "tokyoNode": 11110360,
+        "offsetM": 2.8860989782836226,
+        "eastDeltaM": 1.0718372595935222,
+        "northDeltaM": -2.679688825478962,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-equal",
+        "tokyoGeometryId": 28993999,
+        "tokyoNames": []
+      },
+      "nearestCompatible": {
+        "e27Node": "n:6dff9addf7384aaabbbe0742d2e5a1ce",
+        "tokyoNode": 11110360,
+        "offsetM": 2.8860989782836226,
+        "eastDeltaM": 1.0718372595935222,
+        "northDeltaM": -2.679688825478962,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-equal",
+        "tokyoGeometryId": 28993999,
+        "tokyoNames": []
+      },
+      "nearestFive": [
+        {
+          "e27Node": "n:6dff9addf7384aaabbbe0742d2e5a1ce",
+          "tokyoNode": 11110360,
+          "offsetM": 2.8860989782836226,
+          "eastDeltaM": 1.0718372595935222,
+          "northDeltaM": -2.679688825478962,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993999,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:6dff9addf7384aaabbbe0742d2e5a1ce",
+          "tokyoNode": 11110357,
+          "offsetM": 3.2569239349717596,
+          "eastDeltaM": 0.11957829840768142,
+          "northDeltaM": 3.254728029919221,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993507,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:6dff9addf7384aaabbbe0742d2e5a1ce",
+          "tokyoNode": 11110355,
+          "offsetM": 3.4300592490549353,
+          "eastDeltaM": -1.608635546404244,
+          "northDeltaM": 3.0294550881094153,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993507,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:6dff9addf7384aaabbbe0742d2e5a1ce",
+          "tokyoNode": 11110353,
+          "offsetM": 4.301520188614757,
+          "eastDeltaM": -3.2523433105401693,
+          "northDeltaM": 2.815197848010854,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993507,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:6dff9addf7384aaabbbe0742d2e5a1ce",
+          "tokyoNode": 11110359,
+          "offsetM": 5.1794501421737245,
+          "eastDeltaM": 3.613990193659923,
+          "northDeltaM": 3.71022622698311,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993507,
+          "tokyoNames": []
+        }
+      ]
+    },
+    {
+      "e27Node": "n:6f508a29d637416b8765cccafa0260ad",
+      "floor": "toei-nwd-0",
+      "kind": "exit",
+      "inOut": "outside",
+      "degree": 1,
+      "primaryExitOrBoundary": true,
+      "exitPois": [],
+      "within60mCount": 0,
+      "floorAgreementCounts": {},
+      "nearestAny": {
+        "e27Node": "n:6f508a29d637416b8765cccafa0260ad",
+        "tokyoNode": 11114767,
+        "offsetM": 129.48658867110524,
+        "eastDeltaM": 92.65048067600104,
+        "northDeltaM": 90.45808463695191,
+        "e27Floor": "toei-nwd-0",
+        "tokyoFloor": "2F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 29007954,
+        "tokyoNames": []
+      },
+      "nearestCompatible": null,
+      "nearestFive": []
+    },
+    {
+      "e27Node": "n:71a6a3929b3d4875ad3dfa26456dd28b",
+      "floor": "toei-nwd-m1",
+      "kind": "stair_end",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": false,
+      "exitPois": [],
+      "within60mCount": 149,
+      "floorAgreementCounts": {
+        "label-mismatch": 70,
+        "label-equal": 79
+      },
+      "nearestAny": {
+        "e27Node": "n:71a6a3929b3d4875ad3dfa26456dd28b",
+        "tokyoNode": 11109576,
+        "offsetM": 4.314197239319037,
+        "eastDeltaM": -3.5590713309045086,
+        "northDeltaM": -2.438300449346144,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B5F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 28993012,
+        "tokyoNames": []
+      },
+      "nearestCompatible": {
+        "e27Node": "n:71a6a3929b3d4875ad3dfa26456dd28b",
+        "tokyoNode": 11115119,
+        "offsetM": 15.850317691591192,
+        "eastDeltaM": -10.55665090918486,
+        "northDeltaM": -11.823269112473724,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-equal",
+        "tokyoGeometryId": 28994010,
+        "tokyoNames": []
+      },
+      "nearestFive": [
+        {
+          "e27Node": "n:71a6a3929b3d4875ad3dfa26456dd28b",
+          "tokyoNode": 11109576,
+          "offsetM": 4.314197239319037,
+          "eastDeltaM": -3.5590713309045086,
+          "northDeltaM": -2.438300449346144,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993012,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:71a6a3929b3d4875ad3dfa26456dd28b",
+          "tokyoNode": 11109578,
+          "offsetM": 8.154930390792467,
+          "eastDeltaM": -6.369023342680769,
+          "northDeltaM": 5.092978631317635,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993012,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:71a6a3929b3d4875ad3dfa26456dd28b",
+          "tokyoNode": 11109575,
+          "offsetM": 10.671739425926937,
+          "eastDeltaM": -7.354115099986402,
+          "northDeltaM": 7.7332408129474,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993012,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:71a6a3929b3d4875ad3dfa26456dd28b",
+          "tokyoNode": 11109577,
+          "offsetM": 10.760963735015151,
+          "eastDeltaM": -10.029484677123556,
+          "northDeltaM": 3.8997150687781073,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B5F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993019,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:71a6a3929b3d4875ad3dfa26456dd28b",
+          "tokyoNode": 11109622,
+          "offsetM": 14.311554111010224,
+          "eastDeltaM": -14.088256373647198,
+          "northDeltaM": 2.5182560280405824,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B4F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993040,
+          "tokyoNames": []
+        }
+      ]
+    },
+    {
+      "e27Node": "n:a038802f480141c9881657496cfabf7d",
+      "floor": "toei-nwd-m2",
+      "kind": "junction",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": false,
+      "exitPois": [],
+      "within60mCount": 0,
+      "floorAgreementCounts": {},
+      "nearestAny": {
+        "e27Node": "n:a038802f480141c9881657496cfabf7d",
+        "tokyoNode": 11115146,
+        "offsetM": 75.44721765892449,
+        "eastDeltaM": -43.03894411186202,
+        "northDeltaM": 61.96718439794682,
+        "e27Floor": "toei-nwd-m2",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 28994150,
+        "tokyoNames": []
+      },
+      "nearestCompatible": null,
+      "nearestFive": []
+    },
+    {
+      "e27Node": "n:a06f3d191885497bac197b666c4daef9",
+      "floor": "toei-nwd-0",
+      "kind": "exit",
+      "inOut": "boundary",
+      "degree": 1,
+      "primaryExitOrBoundary": true,
+      "exitPois": [
+        "poi:exit:1"
+      ],
+      "within60mCount": 139,
+      "floorAgreementCounts": {
+        "street-1F-equivalence": 14,
+        "label-mismatch": 125
+      },
+      "nearestAny": {
+        "e27Node": "n:a06f3d191885497bac197b666c4daef9",
+        "tokyoNode": 11115537,
+        "offsetM": 1.6643774107130749,
+        "eastDeltaM": -0.5353252212045376,
+        "northDeltaM": 1.5759375218688945,
+        "e27Floor": "toei-nwd-0",
+        "tokyoFloor": "1F",
+        "floorAgreement": "street-1F-equivalence",
+        "tokyoGeometryId": 28994916,
+        "tokyoNames": [
+          "B"
+        ]
+      },
+      "nearestCompatible": {
+        "e27Node": "n:a06f3d191885497bac197b666c4daef9",
+        "tokyoNode": 11115537,
+        "offsetM": 1.6643774107130749,
+        "eastDeltaM": -0.5353252212045376,
+        "northDeltaM": 1.5759375218688945,
+        "e27Floor": "toei-nwd-0",
+        "tokyoFloor": "1F",
+        "floorAgreement": "street-1F-equivalence",
+        "tokyoGeometryId": 28994916,
+        "tokyoNames": [
+          "B"
+        ]
+      },
+      "nearestFive": [
+        {
+          "e27Node": "n:a06f3d191885497bac197b666c4daef9",
+          "tokyoNode": 11115537,
+          "offsetM": 1.6643774107130749,
+          "eastDeltaM": -0.5353252212045376,
+          "northDeltaM": 1.5759375218688945,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "1F",
+          "floorAgreement": "street-1F-equivalence",
+          "tokyoGeometryId": 28994916,
+          "tokyoNames": [
+            "B"
+          ]
+        },
+        {
+          "e27Node": "n:a06f3d191885497bac197b666c4daef9",
+          "tokyoNode": 11115180,
+          "offsetM": 4.131618304271183,
+          "eastDeltaM": -0.7899223315966495,
+          "northDeltaM": 4.0554028803848325,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "1F",
+          "floorAgreement": "street-1F-equivalence",
+          "tokyoGeometryId": 29007748,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:a06f3d191885497bac197b666c4daef9",
+          "tokyoNode": 11115538,
+          "offsetM": 7.112293480299767,
+          "eastDeltaM": 0.35588826587519407,
+          "northDeltaM": -7.103383848007013,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "1F",
+          "floorAgreement": "street-1F-equivalence",
+          "tokyoGeometryId": 28994915,
+          "tokyoNames": [
+            "3"
+          ]
+        },
+        {
+          "e27Node": "n:a06f3d191885497bac197b666c4daef9",
+          "tokyoNode": 11115179,
+          "offsetM": 9.107073159710588,
+          "eastDeltaM": 0.5598633974869571,
+          "northDeltaM": -9.089847881701616,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "1F",
+          "floorAgreement": "street-1F-equivalence",
+          "tokyoGeometryId": 29007747,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:a06f3d191885497bac197b666c4daef9",
+          "tokyoNode": 11110364,
+          "offsetM": 10.04439199860159,
+          "eastDeltaM": 9.654743905143668,
+          "northDeltaM": 2.7705109181634384,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993779,
+          "tokyoNames": [
+            "きもの鈴乃屋"
+          ]
+        }
+      ]
+    },
+    {
+      "e27Node": "n:b019a547edae4fa58d5122e950dbae14",
+      "floor": "toei-nwd-m3",
+      "kind": "junction",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": false,
+      "exitPois": [],
+      "within60mCount": 23,
+      "floorAgreementCounts": {
+        "label-mismatch": 23
+      },
+      "nearestAny": {
+        "e27Node": "n:b019a547edae4fa58d5122e950dbae14",
+        "tokyoNode": 11115146,
+        "offsetM": 45.337670899467994,
+        "eastDeltaM": -32.23894411186202,
+        "northDeltaM": 31.87718439794682,
+        "e27Floor": "toei-nwd-m3",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 28994150,
+        "tokyoNames": []
+      },
+      "nearestCompatible": null,
+      "nearestFive": [
+        {
+          "e27Node": "n:b019a547edae4fa58d5122e950dbae14",
+          "tokyoNode": 11115146,
+          "offsetM": 45.337670899467994,
+          "eastDeltaM": -32.23894411186202,
+          "northDeltaM": 31.87718439794682,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28994150,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:b019a547edae4fa58d5122e950dbae14",
+          "tokyoNode": 11115147,
+          "offsetM": 46.976187309008544,
+          "eastDeltaM": -36.19851086657401,
+          "northDeltaM": 29.94044063025089,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 29065189,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:b019a547edae4fa58d5122e950dbae14",
+          "tokyoNode": 11115153,
+          "offsetM": 47.108285753679326,
+          "eastDeltaM": -19.52784724831608,
+          "northDeltaM": 42.87019673965517,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28993650,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:b019a547edae4fa58d5122e950dbae14",
+          "tokyoNode": 11115149,
+          "offsetM": 48.236042534605495,
+          "eastDeltaM": -32.2847780468878,
+          "northDeltaM": 35.83865100507359,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 29065190,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:b019a547edae4fa58d5122e950dbae14",
+          "tokyoNode": 11115151,
+          "offsetM": 48.50825882794542,
+          "eastDeltaM": -29.93571803642797,
+          "northDeltaM": 38.16941131537695,
+          "e27Floor": "toei-nwd-m3",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28994149,
+          "tokyoNames": []
+        }
+      ]
+    },
+    {
+      "e27Node": "n:c01041e096fe4f6c8ed23520375ef2fd",
+      "floor": "toei-nwd-m1",
+      "kind": "junction",
+      "inOut": "inside",
+      "degree": 1,
+      "primaryExitOrBoundary": false,
+      "exitPois": [],
+      "within60mCount": 127,
+      "floorAgreementCounts": {
+        "label-equal": 74,
+        "label-mismatch": 53
+      },
+      "nearestAny": {
+        "e27Node": "n:c01041e096fe4f6c8ed23520375ef2fd",
+        "tokyoNode": 11110367,
+        "offsetM": 0.9733185393519653,
+        "eastDeltaM": 0.7813845839038862,
+        "northDeltaM": 0.5803336205008236,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-equal",
+        "tokyoGeometryId": 28993486,
+        "tokyoNames": []
+      },
+      "nearestCompatible": {
+        "e27Node": "n:c01041e096fe4f6c8ed23520375ef2fd",
+        "tokyoNode": 11110367,
+        "offsetM": 0.9733185393519653,
+        "eastDeltaM": 0.7813845839038862,
+        "northDeltaM": 0.5803336205008236,
+        "e27Floor": "toei-nwd-m1",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-equal",
+        "tokyoGeometryId": 28993486,
+        "tokyoNames": []
+      },
+      "nearestFive": [
+        {
+          "e27Node": "n:c01041e096fe4f6c8ed23520375ef2fd",
+          "tokyoNode": 11110367,
+          "offsetM": 0.9733185393519653,
+          "eastDeltaM": 0.7813845839038862,
+          "northDeltaM": 0.5803336205008236,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993486,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:c01041e096fe4f6c8ed23520375ef2fd",
+          "tokyoNode": 11110370,
+          "offsetM": 3.5370742275324303,
+          "eastDeltaM": 1.3027563201392098,
+          "northDeltaM": -3.288422123361215,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993486,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:c01041e096fe4f6c8ed23520375ef2fd",
+          "tokyoNode": 11110366,
+          "offsetM": 3.543632304155824,
+          "eastDeltaM": -3.5412135830433655,
+          "northDeltaM": -0.13090556262392283,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993780,
+          "tokyoNames": [
+            "アシックスウォーキング"
+          ]
+        },
+        {
+          "e27Node": "n:c01041e096fe4f6c8ed23520375ef2fd",
+          "tokyoNode": 11110371,
+          "offsetM": 6.829165724833351,
+          "eastDeltaM": 6.363525739235278,
+          "northDeltaM": -2.4785166255905438,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993782,
+          "tokyoNames": [
+            "リモーネプラス"
+          ]
+        },
+        {
+          "e27Node": "n:c01041e096fe4f6c8ed23520375ef2fd",
+          "tokyoNode": 11110365,
+          "offsetM": 8.842883914703323,
+          "eastDeltaM": 2.0197998194529774,
+          "northDeltaM": -8.609123336220506,
+          "e27Floor": "toei-nwd-m1",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-equal",
+          "tokyoGeometryId": 28993486,
+          "tokyoNames": []
+        }
+      ]
+    },
+    {
+      "e27Node": "n:e075f8131444484fb8e33296d594c679",
+      "floor": "toei-nwd-0",
+      "kind": "stair_end",
+      "inOut": "boundary",
+      "degree": 2,
+      "primaryExitOrBoundary": true,
+      "exitPois": [],
+      "within60mCount": 103,
+      "floorAgreementCounts": {
+        "label-mismatch": 101,
+        "street-1F-equivalence": 2
+      },
+      "nearestAny": {
+        "e27Node": "n:e075f8131444484fb8e33296d594c679",
+        "tokyoNode": 11115148,
+        "offsetM": 4.323013730610316,
+        "eastDeltaM": 1.764246365292017,
+        "northDeltaM": -3.946629255149162,
+        "e27Floor": "toei-nwd-0",
+        "tokyoFloor": "B1F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 28994151,
+        "tokyoNames": []
+      },
+      "nearestCompatible": {
+        "e27Node": "n:e075f8131444484fb8e33296d594c679",
+        "tokyoNode": 11115179,
+        "offsetM": 56.53859907586767,
+        "eastDeltaM": -2.5701366025130383,
+        "northDeltaM": 56.480152118298406,
+        "e27Floor": "toei-nwd-0",
+        "tokyoFloor": "1F",
+        "floorAgreement": "street-1F-equivalence",
+        "tokyoGeometryId": 29007747,
+        "tokyoNames": []
+      },
+      "nearestFive": [
+        {
+          "e27Node": "n:e075f8131444484fb8e33296d594c679",
+          "tokyoNode": 11115148,
+          "offsetM": 4.323013730610316,
+          "eastDeltaM": 1.764246365292017,
+          "northDeltaM": -3.946629255149162,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28994151,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:e075f8131444484fb8e33296d594c679",
+          "tokyoNode": 11115152,
+          "offsetM": 6.7155737422979485,
+          "eastDeltaM": 6.709088855996633,
+          "northDeltaM": -0.29505492807859923,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 29065190,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:e075f8131444484fb8e33296d594c679",
+          "tokyoNode": 11115149,
+          "offsetM": 7.255555331301702,
+          "eastDeltaM": 7.1652219531122014,
+          "northDeltaM": -1.1413489949264033,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 29065190,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:e075f8131444484fb8e33296d594c679",
+          "tokyoNode": 11115147,
+          "offsetM": 7.7541974249440955,
+          "eastDeltaM": 3.2514891334259914,
+          "northDeltaM": -7.0395593697490995,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 29065189,
+          "tokyoNames": []
+        },
+        {
+          "e27Node": "n:e075f8131444484fb8e33296d594c679",
+          "tokyoNode": 11115155,
+          "offsetM": 7.757808413263949,
+          "eastDeltaM": 2.613128542285544,
+          "northDeltaM": 7.304461006700052,
+          "e27Floor": "toei-nwd-0",
+          "tokyoFloor": "B1F",
+          "floorAgreement": "label-mismatch",
+          "tokyoGeometryId": 28994151,
+          "tokyoNames": []
+        }
+      ]
+    },
+    {
+      "e27Node": "n:e4cfe61e944e4f5e8ad8caeb6d521750",
+      "floor": "toei-nwd-0",
+      "kind": "exit",
+      "inOut": "outside",
+      "degree": 1,
+      "primaryExitOrBoundary": true,
+      "exitPois": [
+        "poi:exit:4"
+      ],
+      "within60mCount": 0,
+      "floorAgreementCounts": {},
+      "nearestAny": {
+        "e27Node": "n:e4cfe61e944e4f5e8ad8caeb6d521750",
+        "tokyoNode": 11114767,
+        "offsetM": 148.75464000569298,
+        "eastDeltaM": 93.51048067600104,
+        "northDeltaM": 115.68808463695191,
+        "e27Floor": "toei-nwd-0",
+        "tokyoFloor": "2F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 29007954,
+        "tokyoNames": []
+      },
+      "nearestCompatible": null,
+      "nearestFive": []
+    },
+    {
+      "e27Node": "n:e6feaa2cc7514b68be2758b956baeb28",
+      "floor": "toei-nwd-1",
+      "kind": "exit",
+      "inOut": "boundary",
+      "degree": 2,
+      "primaryExitOrBoundary": true,
+      "exitPois": [
+        "poi:exit:3"
+      ],
+      "within60mCount": 0,
+      "floorAgreementCounts": {},
+      "nearestAny": {
+        "e27Node": "n:e6feaa2cc7514b68be2758b956baeb28",
+        "tokyoNode": 11114767,
+        "offsetM": 142.51810275226296,
+        "eastDeltaM": 98.95048067600104,
+        "northDeltaM": 102.56808463695191,
+        "e27Floor": "toei-nwd-1",
+        "tokyoFloor": "2F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 29007954,
+        "tokyoNames": []
+      },
+      "nearestCompatible": null,
+      "nearestFive": []
+    },
+    {
+      "e27Node": "n:e835e35a340f4bcb87e11a8ba9bf3864",
+      "floor": "toei-nwd-0",
+      "kind": "exit",
+      "inOut": "outside",
+      "degree": 1,
+      "primaryExitOrBoundary": true,
+      "exitPois": [],
+      "within60mCount": 0,
+      "floorAgreementCounts": {},
+      "nearestAny": {
+        "e27Node": "n:e835e35a340f4bcb87e11a8ba9bf3864",
+        "tokyoNode": 11114767,
+        "offsetM": 147.33388587995674,
+        "eastDeltaM": 94.04048067600104,
+        "northDeltaM": 113.41808463695192,
+        "e27Floor": "toei-nwd-0",
+        "tokyoFloor": "2F",
+        "floorAgreement": "label-mismatch",
+        "tokyoGeometryId": 29007954,
+        "tokyoNames": []
+      },
+      "nearestCompatible": null,
+      "nearestFive": []
+    }
+  ],
+  "namedTokyoTargets": {
+    "28993983": {
+      "names": [
+        "京王新線　京王新線口"
+      ],
+      "nodeIds": [
+        11126872,
+        11126969
+      ],
+      "floor": "B1F"
+    },
+    "28993984": {
+      "names": [
+        "京王新線　京王新線口"
+      ],
+      "nodeIds": [
+        11126968
+      ],
+      "floor": "B1F"
+    },
+    "28993987": {
+      "names": [
+        "都営大江戸線 新都心口"
+      ],
+      "nodeIds": [
+        11126966
+      ],
+      "floor": "B1F"
+    },
+    "28993988": {
+      "names": [
+        "京王新線　新都心口"
+      ],
+      "nodeIds": [
+        11115160,
+        11126967
+      ],
+      "floor": "B1F"
+    },
+    "28993990": {
+      "names": [
+        "都営大江戸線 JR方面改札口"
+      ],
+      "nodeIds": [
+        11110335
+      ],
+      "floor": "B1F"
+    },
+    "28993975": {
+      "names": [
+        "JR西口"
+      ],
+      "nodeIds": [
+        11114545,
+        11116624,
+        11126964
+      ],
+      "floor": "B1F"
+    },
+    "28993451": {
+      "names": [
+        "丸の内線 西口改札口"
+      ],
+      "nodeIds": [
+        11126978
+      ],
+      "floor": "B2F"
+    },
+    "28993091": {
+      "names": [
+        "都営大江戸線 JR方面改札口"
+      ],
+      "nodeIds": [
+        11115542
+      ],
+      "floor": "B3F"
+    },
+    "28993261": {
+      "names": [
+        "サブナード防災センター"
+      ],
+      "nodeIds": [
+        11110006
+      ],
+      "floor": "B3F"
+    }
+  },
+  "rawAnalysisFiles": {
+    "allPairs": {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-join-2026-10-21/all-boundary-pairs-within-60m.json",
+      "sha256": "94adcad3f6379e12030835dd0173a0043832ce4f87aeb5d3df278f692f6e8970"
+    },
+    "transformedNodes": {
+      "path": "/Users/tachikoma/Developer/gteki-raw/shinjuku/w5-tokyo-join-2026-10-21/tokyo-transformed-nodes.json",
+      "sha256": "842180816b9acfc5d75f4c3d9a9dadc58db42a998a3950891067bad2bc796e1a"
+    }
+  },
+  "assertions": {
+    "zipCrcPassed": true,
+    "expectedCountsPassed": true,
+    "allTokyoLinkEndpointsExist": true,
+    "e27HorizontalReproductionBelow0_0072m": true
+  },
+  "recommendedSlice": {
+    "dmSum": 97.63512843224535,
+    "nodes": [
+      11110367,
+      11110369,
+      11110278,
+      11110375,
+      11110377,
+      11110380,
+      11110400,
+      11110398,
+      11110388,
+      11110386,
+      11110403,
+      11110413,
+      11110405,
+      11110415,
+      11110407,
+      11110409,
+      11110411,
+      11110419
+    ],
+    "edges": [
+      18763767,
+      18763768,
+      18763775,
+      18763778,
+      18763782,
+      18763812,
+      18763813,
+      18763811,
+      18763793,
+      18763816,
+      18763831,
+      18763832,
+      18763834,
+      18763835,
+      18763825,
+      18763828,
+      18763839
+    ],
+    "floor": "B1F",
+    "comparisonOrdinal": -1,
+    "hallwayGeometryId": 28993486,
+    "semanticFacility": "hallway",
+    "sourceDirectionsAllBidirectional": true,
+    "sumHorizontalEnuLengthM": 97.4092145397836,
+    "sampleCount": 220,
+    "samplesInsideHallway": 220,
+    "seam": {
+      "e27Node": "n:c01041e096fe4f6c8ed23520375ef2fd",
+      "tokyoNode": 11110367,
+      "offsetM": 0.9733185393519653,
+      "e27ApproachEdge": "e:ef8f83872c854175880bcd5df168109e",
+      "approachPaid": false,
+      "approachMode": "walk",
+      "headingDifferenceDegrees": 1.0250626894269403,
+      "samples": 21,
+      "samplesInsideTokyoHallway": 21,
+      "e27SpacesContainingAnchor": [
+        {
+          "FID": 102,
+          "id": "5487253f58914d5aba4ec85ee824f167",
+          "category": "B029",
+          "floor_id": "918d35f85b4c4cef84c6ba5225f954d2",
+          "name": " ",
+          "restricted": "2",
+          "suite": " ",
+          "nonpublic": "2",
+          "toll": "3",
+          "source": "2"
+        }
+      ],
+      "status": "historical geometric candidate; not a current or accepted connector",
+      "heightDifferenceM": null,
+      "hours": null
+    },
+    "candidateCombinedGraphCounts": {
+      "nodes": 251,
+      "edges": 281,
+      "floors": 9
+    },
+    "newHeightMeasurements": 0
+  },
+  "boundaryClassificationNote": "11 explicit exit/outside/boundary nodes plus all 20 degree-one nodes; union 24. Degree one is a possible clipped endpoint, not proof of public access.",
+  "contextPathsFromNorthAnchor": {
+    "28993983": {
+      "nodeCount": 7,
+      "edgeCount": 6,
+      "sourceDistanceM": 44.5114199273031,
+      "floors": [
+        "B1F"
+      ]
+    },
+    "28993984": {
+      "nodeCount": 9,
+      "edgeCount": 8,
+      "sourceDistanceM": 52.36734866562766,
+      "floors": [
+        "B1F"
+      ]
+    },
+    "28993987": {
+      "nodeCount": 38,
+      "edgeCount": 37,
+      "sourceDistanceM": 300.6473274288432,
+      "floors": [
+        "B1F"
+      ]
+    },
+    "28993988": {
+      "nodeCount": 34,
+      "edgeCount": 33,
+      "sourceDistanceM": 285.7024463786088,
+      "floors": [
+        "B1F"
+      ]
+    },
+    "28993990": {
+      "nodeCount": 13,
+      "edgeCount": 12,
+      "sourceDistanceM": 72.71826982191665,
+      "floors": [
+        "B1F"
+      ]
+    },
+    "28993975": {
+      "nodeCount": 49,
+      "edgeCount": 48,
+      "sourceDistanceM": 346.65604450224157,
+      "floors": [
+        "B1F"
+      ]
+    },
+    "28993451": {
+      "nodeCount": 59,
+      "edgeCount": 58,
+      "sourceDistanceM": 406.1534512833756,
+      "floors": [
+        "B1F",
+        "B2F"
+      ]
+    },
+    "28993091": {
+      "nodeCount": 78,
+      "edgeCount": 77,
+      "sourceDistanceM": 513.6606032084518,
+      "floors": [
+        "B1F",
+        "B2F",
+        "B3F",
+        "MB2F"
+      ]
+    },
+    "28993261": {
+      "nodeCount": 150,
+      "edgeCount": 149,
+      "sourceDistanceM": 1022.3146987484489,
+      "floors": [
+        "B1F",
+        "B2F",
+        "B3F"
+      ]
+    }
+  },
+  "E28": {
+    "nodes": 270,
+    "links": 307,
+    "crs": {
+      "type": "name",
+      "properties": {
+        "name": "EPSG:6668"
+      }
+    },
+    "bboxLonLat": [
+      139.69034432243257,
+      35.69007635963635,
+      139.69344039775626,
+      35.69078859211987
+    ],
+    "floorCounts": {
+      "-1": 41,
+      "-2": 63,
+      "-3": 77,
+      "-2.5": 12,
+      "-1.5": 22,
+      "0": 11,
+      "-0.5": 44
+    },
+    "maintenanceDateCounts": {
+      "2025-10-17": 307
+    },
+    "minimumAnyNodeDistanceToE27M": 485.54859653055354,
+    "nearestE27Node": "n:af29d46836994e219ce5dd4b8f704987",
+    "nearestE28NodeId": "44f175ab8bab4072ac62d12bfa1b8cec",
+    "connectionVerified": false
+  }
+}

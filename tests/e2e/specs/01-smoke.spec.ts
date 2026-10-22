@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { hooks, imageStats, textIf, toasts, labelUiOverlaps, openStation, save, shotPath, STATIONS, watch } from "../lib/gteki.ts";
 
+/** CI's e2e-smoke sets this (.github/workflows/e2e-smoke.yml): under SwiftShader the spec checks flow only and skips screenshots that time out (#76, #118). */
+const FLOW_ONLY = !!process.env.GTEKI_GUIDE_FLOW_ONLY;
+
 /** Opening each station from a plain browser URL: no install, real scene, honest banners, no errors. */
 for (const key of STATIONS) {
   test(`${key}: opens, renders its scene and states its limits @phone`, async ({ page }, testInfo) => {
@@ -24,8 +27,8 @@ for (const key of STATIONS) {
     expect.soft(options.join("|")).toMatch(/Shinjuku/);
 
     await page.waitForTimeout(1500);
-    const png = await page.screenshot({ path: shotPath(testInfo, `${key}-01-overview.png`) });
-    const stats = await imageStats(page, png);
+    const png = FLOW_ONLY ? null : await page.screenshot({ path: shotPath(testInfo, `${key}-01-overview.png`) });
+    const stats = png ? await imageStats(page, png) : null;
     const overlaps = await labelUiOverlaps(page);
 
     // Coverage dialog must list gaps and sources.
@@ -33,7 +36,7 @@ for (const key of STATIONS) {
     const dialog = page.locator("dialog.coverage");
     await expect(dialog).toBeVisible();
     const coverageText = (await dialog.textContent()) ?? "";
-    await page.screenshot({ path: shotPath(testInfo, `${key}-02-coverage.png`) });
+    if (!FLOW_ONLY) await page.screenshot({ path: shotPath(testInfo, `${key}-02-coverage.png`) });
     await dialog.locator("button.close").click();
 
     // The L0 fallback also has a bounding box and walkable ribbons; its toast is the reliable signal.
