@@ -37,7 +37,7 @@ Not re-run here (cited from the PRs that ran them): `pnpm check:godot` (re-run 2
 | 6 | Independent audit of every shipped asset against the manifest | GAP | Non-inlined files: PASS on desk evidence. Inlined JSON: GAP (#121). Lane F desk audit: [#12 comment](https://github.com/nurockplayer/gteki/issues/12#issuecomment-6324807437). `pnpm audit:assets` (#142, `pipeline/audit_assets.ts`) run today against the real `pnpm build` output with `--dist`: 10 files, all declared; both GLBs and both lightmaps are in `dist` byte-for-byte (`ikebukuro_b1.glb` `aef077a6...`, `ikebukuro_b1_lit.glb` `29b98e44...`); the two small `.meta.json` are inlined by Vite, as the audit expects. One WARN remains and is pinned on purpose: `ikebukuro_b1_lit.meta.json` records `source_glb_sha256 e0188c50...` while the shipped generic GLB is `aef077a6...` (a material-only rebuild, `lit_provenance.test.ts:64-76`, #139). Still open: the four inlined scene JSON files (`signage`, `crowd_lanes`, `walk_bridges`, `access_fences`) are not declared anywhere (#121). [inlined-data-declarations.md](inlined-data-declarations.md) (#150) proposes a `dataFiles` schema; it needs `packages/schema` and `apps/web/stations-plugin.ts`, so it is Lane C's. | Lane F (audit), Lane C (#121) |
 | 7 | Street-context rights (#39) | GAP | (#110 in flight) Owner chose option (b) on #39 (buildings, roads as geometry only, credit shown in-app). #110 at `d3e248a` carries the sources, the credits and the independent review. Nothing street-related is on main. | Ikebukuro |
 | 8 | Facts-only credit wording (#26 follow-up) | GAP | The app shows `[REFERENCE_ONLY, facts-only]`, not the agreed wording. Draft: `docs/gis/decisions/facts-only-credit-wording.md`; tracked as #122. | Lane C |
-| 9 | Field verification of access, gates and hours | HOLD | 21 checks (A1 to H4) plus section I (I1 to I7: FC-IK-01 to 03 and the #174 freshness checks) in [field-checklist.md](field-checklist.md); Exit 9 is B2. | Owner |
+| 9 | Field verification of access, gates and hours | HOLD | 21 checks (A1 to H4) plus section I (I1 to I13: FC-IK-01 to 03, the #174 freshness checks, I8 南通路西改札, FC-RT-01/02 from #197 as I9 and I10, and the step-free checks I11 to I13) in [field-checklist.md](field-checklist.md); Exit 9 is B2. | Owner |
 
 ## G1 Geometry
 
@@ -118,7 +118,7 @@ Desk-closable by Ikebukuro: none left. What remains needs a GPU or phone, anothe
 | Lane F verdict on current main; G1 row 8 camera recheck; Exit 18 full descent; stale flag on the route card | Lane F | GPU slot (see l2-evidence.md capture plan) |
 | Fresh independent side-by-side review (G3 7, 8) | Lane F | Read-only Claude subagent over fresh frames and the video |
 | Physical phone checks (G3 6) | Owner | A real iPhone and Android phone |
-| Field visit: 21 checks plus section I (FC-IK-01 to 03, I8 南通路西改札, CH-IK-04, 01, 02, 05/06); search-only POIs; hours; narration versus reality (G0 9, G2 6, 7, G3 8) | Owner | On-site |
+| Field visit: 21 checks plus section I (I1 to I13: FC-IK-01 to 03, I8 南通路西改札, CH-IK-04, 01, 02, 05/06, FC-RT-01/02, step-free I11 to I13); search-only POIs; hours; narration versus reality (G0 9, G2 6, 7, G3 8) | Owner | On-site |
 | Sound assessment (G3 5) | Owner, Lane F | Listening on a device |
 | Inlined scene JSON declared (G0 6) | Lane C | `packages/schema` and `apps/web` change (#121, proposal in #150) |
 | Facts-only credit wording (G0 8); persistent HUD credit (G0 4) | Lane C | #122, #137 |
