@@ -63,7 +63,7 @@ ESCALATOR_DRESSING = dict(
 STAIR_DRESSING = dict(
     step_count=18, riser_mm=160, tread_mm=300, width_mm=2400,
     parts=("nosing", "handrail", "skirt"), handrail_sides="both", skirt_sides="both",
-    rail_mount="post", post_spacing_mm=1800, skirt_mm=140, skirt_drop_mm=200,
+    rail_mount="post", post_spacing_mm=1800, rail_segments=10, skirt_mm=140, skirt_drop_mm=200,
 )
 STAIR_PARTS = ("nosing", "handrail", "skirt")
 SIDES = {"both": (-1, 1), "left": (-1,), "right": (1,), "none": ()}
@@ -195,6 +195,8 @@ def stair_dressing(asset_id, params, tex_res):
     for key in ("handrail_sides", "skirt_sides"):
         _choice(p, key, SIDES)
     _choice(p, "rail_mount", ("post", "wall"))
+    # tube cross-section sides (the mobile profile halves them, to at least 6)
+    _count(p, "rail_segments", 6, 16)
     n, riser, tread, w = p["step_count"], p["riser_mm"] / 1000, p["tread_mm"] / 1000, p["width_mm"] / 1000
     length, top = n * tread, n * riser
     a = _asset(asset_id, "stair_dressing", p, tex_res)
@@ -207,7 +209,8 @@ def stair_dressing(asset_id, params, tex_res):
         path = [(0.0, 0.0), (length, top)]
         noses = [(-tread, 0.0), (length - tread, top)]
         for side in SIDES[p["handrail_sides"]]:
-            _stair_rails(a, vp, path, noses, side * (w / 2 + 0.025), side, wall=p["rail_mount"] == "wall")
+            _stair_rails(a, vp, path, noses, side * (w / 2 + 0.025), side, wall=p["rail_mount"] == "wall",
+                         segments=p["rail_segments"], support_segments=min(8, p["rail_segments"]))
     if "skirt" in p["parts"]:
         for side in SIDES[p["skirt_sides"]]:
             _skirt(a, p, side)
