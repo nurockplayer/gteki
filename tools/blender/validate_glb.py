@@ -524,7 +524,7 @@ class Validator:
                 visit(child, world, collision)
 
         visit(root_index, IDENTITY)
-        # contract §9: gteki_role is on the root and every VIS_* node (mobile VIS_body included), one value
+        # contract §10: gteki_role is on the root and every VIS_* node (mobile VIS_body included), one value
         carried = {i: nodes[i]["extras"]["gteki_role"] for i in visited
                    if "gteki_role" in (nodes[i].get("extras") or {})}
         if carried:
@@ -642,7 +642,7 @@ def self_test():
         below["accessors"][0].update(min=[-1, -0.5, -1], max=[1, 0.5, 0])
         below["nodes"][0]["extras"]["gteki"].update(params=params, bounds_m=dict(min=[-1, -0.5, -1], max=[1, 0.5, 0]))
         assert Validator("tiny.glb", encode_glb(below, pit)).check()["status"] == status, params
-    # contract §9: gteki_role on the root and every VIS_* node, an allowed value, one value
+    # contract §10: gteki_role on the root and every VIS_* node, an allowed value, one value
     def roled(root_role="barriers", vis_role="barriers", extra=None):
         tagged = copy.deepcopy(doc)
         for index, role in ((0, root_role), (1, vis_role)):

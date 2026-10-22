@@ -111,7 +111,7 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
                 asset.dimension_basis = item["dimension_basis"]
             if item.get("notes"):
                 asset.notes = item["notes"]
-            if "gteki_role" in item:  # a station overrides the generator's default role; null drops it (contract §9)
+            if "gteki_role" in item:  # a station overrides the generator's default role; null drops it (contract §10)
                 asset.role = item["gteki_role"]
             asset.placement = item.get("placement") or PLACEMENT.get(item["generator"], "free")
             asset.build()

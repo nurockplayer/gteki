@@ -58,7 +58,7 @@ class Asset:
         self.license = contract.LICENSE
         self.license_spdx = contract.LICENSE_SPDX  # written only when contract.EMBED_SPDX
         self.placement = "free"
-        self.role = None  # station bake role (contract §9); dressing generators set it
+        self.role = None  # station bake role (contract §10); dressing generators set it
         self.materials = []
         self.parts = []  # (group, Part)
         self.collision = []  # (name, Part)

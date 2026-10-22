@@ -13,7 +13,7 @@ plan while the kit stays free of station measurements.
 
 The pieces are visual only (no colliders) and carry no structure of their own: no truss, slab,
 treads (unless asked), walls or floor. Each carries a station bake role, ``gteki_role`` in
-its root and ``VIS_*`` node extras (contract §9): ``transport`` for escalator parts,
+its root and ``VIS_*`` node extras (contract §10): ``transport`` for escalator parts,
 ``barriers`` for railings, ``stairs_ramps`` only for pieces that lie on a walkable surface
 (the nosing strips). A stair kit that mixes both has no single role and carries none.
 

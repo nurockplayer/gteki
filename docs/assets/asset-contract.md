@@ -127,7 +127,7 @@ python3 tools/blender/bundle_kit.py info --bundle kit.glb
 - Byte limits are per profile: `tools/blender/catalog/budget.json` for `full`, `budget_mobile.json` for `mobile`, each with `applies_to.profile`. The per-image rules, the texCoord check (core and extension slots, `KHR_texture_transform` overrides; `extras` are not texture slots) and the lightmap checks apply to every library; only `mobile` requires UV1.
 
 
-## 9. Dressing pieces: `gteki_role` and origins
+## 10. Dressing pieces: `gteki_role` and origins
 
 Dressing pieces (`family: "dressing"`, generators in `families/dressing.py`) go on geometry a station already has: an escalator slab or truss, a stair's treads, a floor plan. They are **visual only** (no `COL_*-colonly` nodes) and carry no structure of their own. Every size is a catalog param, in millimetres, so a station gets a piece that fits its geometry while the kit holds no station measurements.
 
