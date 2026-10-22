@@ -85,5 +85,56 @@ asserted for this fixture only, and symbolic-height routes skip that assertion.
 GLB compression extensions (including Draco, meshopt, and compressed texture
 extensions), complex materials, animation, and performance are untested.
 
+## Station scene snapshots (G-1 of #164)
+
+Walkable HQ client work starts by loading both stations in Godot without Godot owning any station truth.
+`packages/godot/src/export-scene.ts <stationId> <outDir>` runs the station's **real** `buildScene` under Node
+(the station's own `gteki/scene.ts`, `quality: "high"`, real `three`) and writes, to a gitignored directory:
+
+- `scene.glb`: the scene `root` as one binary glTF. Every mesh carries an explicit `extras.gteki_role`, taken from
+  the lists `buildScene` returns (`walkable` / `colliders` / `cameraBlockers`, the only collision truth the web walker
+  uses), else its own role, else `visual`. Listed meshes that are never drawn (Shinjuku's walk proxies, Ikebukuro's
+  raycast tiles) also carry `gteki_collision_only`. Drawn meshes whose source role says walkable/collider but that the
+  scene replaces with its own collision (Ikebukuro's GLB floor vs. its tiles) are exported as `visual`, original role in
+  `gteki_source_role`, so nothing collides twice. Material names, base colours and both UV sets (TEXCOORD_1) are kept.
+- `scene.json` (`gteki.godot-scene/0.1`): `stationId`, `sourceCommit` (+ `sourceDirty`), `walls` and `spawnPoints` in
+  ENU exactly as returned, `environment`, `counts` per role, a `reference` block (TypeScript-computed renderer-frame
+  values the Godot tests compare against; an oracle, not scene truth), and `warnings`.
+
+The browser-only parts are **shims, listed in `warnings`**: a no-op 2D canvas (blank textures; `measureText` is an
+em-width estimate, so sign sizes can differ), stubbed PMREM (no reflections), `loadTexture` returning blank textures
+(the Ikebukuro lightmap is not decoded), no audio. All material textures are omitted, so snapshots are **untextured
+and unlit**: this is geometry, roles and colours, not the #94 look (G-4 re-materials). `update()` runs once at `(0, 0)`;
+`InstancedMesh` (escalator steps, platform-door leaves) is baked into static merged meshes at that pose (Godot 4.7 cannot
+import `EXT_mesh_gpu_instancing`), and the Ikebukuro crowd (`ambient_crowd`) is dropped. The only added dependency is
+`three` (same version as the stations, so the station modules share the exporter's instance); no canvas library.
+
+```sh
+bash packages/godot/run-scenes.sh                 # export both stations, then the headless Godot snapshot tests
+bash packages/godot/run-scenes.sh shinjuku        # one station
+godot --path packages/godot res://hq/hq.tscn -- --station=ikebukuro   # HQ skeleton (windowed; Tab cycles stations)
+godot --headless --path packages/godot res://hq/hq.tscn -- --station=shinjuku --check
+```
+
+Godot side: `addons/gteki/gteki_scene.gd` loads a snapshot with `gteki_assets.gd` (so role normalisation is the same
+code), adds trimesh bodies for walkable meshes on `GROUND_LAYER` (value 4, backface collision on) next to the
+asset loader's collider bodies (layer 1) and camera blockers (layer 2, hidden), hides collision-only proxies, builds
+one thin box per wall segment between `zMin` and `zMax` (ENU `(x, y, z)` to Godot `(x, z, -y)`), and exposes spawn
+points and the environment. `hq/hq.gd` is a skeleton that picks a station and places a camera at its first spawn;
+there is no walking, HUD or HQ renderer yet (`project.godot` still uses `gl_compatibility`).
+
+`tests/run_scene_tests.gd` checks, for each station: role counts equal the sidecar's, at least one walkable mesh and one
+collider (mesh or wall), wall and spawn coordinates against TypeScript `enuToRenderer`, the world AABB of walkable and
+collider meshes against three.js, and, by physics raycast, walkable ground within 1 m below every spawn point.
+
+Known gaps and traps for later milestones:
+
+- Wall `zMin`/`zMax` are walker-feet bands (see `WALKER_BODY`): Shinjuku has 92 segments with `zMax < zMin` that still
+  block the web walker. They get **no** shape in Godot; the G-2 walk must apply the band rule to `sidecar.walls`.
+- Ikebukuro returns no `walls`; its collision is the 656 collider tiles (including ceilings, as on the web).
+- Shinjuku has no `collider`/`camera_blocker`/sign roles of its own (walls only); signs there are unlabelled `visual`.
+- Spawn `z` is the graph node's elevation; the tests confirm ground within 1 m, not that the point is legal to stand on.
+- Per-mesh geometry only: no textures, lightmap, lights, crowd, animation or audio (see the sidecar `warnings`).
+
 Runtime APIs: [GLTFDocument](https://docs.godotengine.org/en/latest/classes/class_gltfdocument.html)
 and [Godot glTF scene export](https://docs.godotengine.org/en/latest/tutorials/assets_pipeline/exporting_3d_scenes.html).
