@@ -9,6 +9,7 @@ import { buildFloorIndex, noseDistances, wallFloorAttribute } from "./geomattrs.
 import { buildSigns, type SignSpec } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { type KitManifest, loadKit } from "./kit.ts";
+import { type ColumnsFile, loadColumnKit } from "./kit_columns.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { createAmbience } from "./ambience.ts";
 import crowdLanes from "./crowd_lanes.json";
@@ -17,6 +18,7 @@ import signage from "./signage.json";
 import walkBridges from "./walk_bridges.json";
 import accessFences from "./access_fences.json";
 import kitManifest from "./kit/kit.json";
+import columnsFile from "./columns.json";
 import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
 
@@ -386,6 +388,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // Kit pieces (scene/kit/kit.json, tier by quality): visual-only instances on data the station already has.
   // They never enter `walkable` or `colliders`; a piece that fails to load leaves the procedural label board.
   const kit = await loadKit(THREE, ctx, kitManifest as KitManifest, (accessFences as AccessFences).marks, low);
+  const columnKit = await loadColumnKit(THREE, ctx, kitManifest as KitManifest, (columnsFile as unknown as ColumnsFile).columns, low);
   const fences = buildAccessFences(THREE, accessFences as AccessFences, toRenderer, kit.railed);
   const { walkable, colliders, extra, meshesByRole, bridges } = assembleCollision(THREE, gltf.scene, {
     materialFor: (role) => mats.byRole[role],
@@ -429,6 +432,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   }
 
   root.add(kit.build(THREE, env, toRenderer).group);
+  root.add(columnKit.build(THREE, env, toRenderer).group);
 
   // Low quality paints signs at ~160 px/m instead of 300: a quarter of the texture memory, still legible at phone size.
   const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy(), low ? 0.54 : 1, ctx.renderer.capabilities.maxTextureSize);
@@ -466,6 +470,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       mats.dispose();
       finishes.dispose();
       kit.dispose();
+      columnKit.dispose();
       signs.dispose();
       envTarget.dispose();
       lightmap?.dispose();

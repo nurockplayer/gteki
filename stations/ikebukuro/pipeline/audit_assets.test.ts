@@ -33,7 +33,7 @@ describe("audit_assets on the committed tree", () => {
   it("lists the contract files, the scene entry and exactly the declared assets, each with its real sha256 and size", () => {
     const files = result.files.map((f) => f.file).sort();
     expect(files).toEqual([...declared, "graph.json", "pois.json", "scene.ts", "station.json"].sort());
-    expect(declared.length).toBe(8); // the PLATEAU GLB + lit variant + sidecars + lightmaps (6) and the two kit rail copies
+    expect(declared.length).toBe(12); // the PLATEAU GLB + lit variant + sidecars + lightmaps (6) and the kit copies: rail and two columns, both tiers
     for (const f of result.files) {
       expect(f.sha256, f.file).toBe(sha(path.join(gteki, f.file)));
       expect(f.bytes, f.file).toBe(fs.statSync(path.join(gteki, f.file)).size);

@@ -8,6 +8,18 @@
       "use": "access_fence_rail",
       "pitch_m": 2.4,
       "note": "Origin on the floor, centred, +X along the run. Posts at the start of each module only, so modules chain."
+    },
+    "gteki_column_square_600": {
+      "use": "column_square",
+      "pitch_m": 0.61,
+      "height_m": 2.8,
+      "note": "Origin on the floor, centred; bounds +-0.305 m x 0..2.8 m. pitch_m is the plan footprint the sleeve is scaled from. Placed on scene/columns.json entries whose kit is this id."
+    },
+    "gteki_column_round_d600": {
+      "use": "column_round",
+      "pitch_m": 0.61,
+      "height_m": 2.8,
+      "note": "Origin on the floor, centred; bounds +-0.305 m x 0..2.8 m. pitch_m is the plan footprint the sleeve is scaled from. Placed on scene/columns.json entries whose kit is this id."
     }
   }
 }
