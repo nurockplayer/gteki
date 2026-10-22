@@ -808,7 +808,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   }
 
   // ---- wayfinding signs from the verified graph
-  const signs = buildSigns(bundle, layout, root, track);
+  const signs = buildSigns(bundle, layout, root, track, opts.quality);
   addWallBackFaces(root, mat.wall, track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
   // Batch names say what is inside. The steel batch is the stair handrails and brackets, escalator trusses and
@@ -1454,7 +1454,7 @@ function raySeg(o: XY, d: XY, a: XY, b: XY): number | null {
 }
 
 // ---------------------------------------------------------------- signs
-function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T): THREE.Object3D[] {
+function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T, quality: BuildOptions["quality"]): THREE.Object3D[] {
   const router = createRouter(bundle);
   const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
   const adj = new Map<string, string[]>();
@@ -1554,6 +1554,10 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
   const faceBuckets = new Map<string, THREE.BufferGeometry[]>();
   const cols = 3, cellW = 1040, margin = 8, pageCapacity = 30;
   const pageW = cols * cellW;
+  // Phones (quality "low") get atlas pixels halved on both axes: every shelf, cell and gutter coordinate is
+  // scaled by the same factor, and the UV rects are derived in full-resolution space, so the layout is
+  // identical and only the sampling is blurrier. High quality keeps the full 3120 px pages (#276).
+  const atlasScale = quality === "high" ? 1 : 0.5;
   const byLevel = new Map<string, FaceDraft[]>();
   byLevel.set("station", faceDrafts);
   for (const [floorId, faces] of byLevel) {
@@ -1567,9 +1571,11 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
       const rowStarts = rowHeights.map((_, row) => rowHeights.slice(0, row).reduce((sum, h) => sum + h, 0));
       const pageH = rowHeights.reduce((sum, h) => sum + h, 0);
       const canvas = document.createElement("canvas");
-      canvas.width = pageW;
-      canvas.height = pageH;
+      canvas.width = Math.round(pageW * atlasScale);
+      canvas.height = Math.round(pageH * atlasScale);
       const ctx = canvas.getContext("2d")!;
+      // Draw in full-resolution coordinates; the canvas and the rects stay proportional at either scale.
+      if (atlasScale !== 1) ctx.scale(atlasScale, atlasScale);
       const rects: { u0: number; v0: number; u1: number; v1: number }[] = [];
       const pageIndex = pages.length;
       for (const [slot, face] of pageFaces.entries()) {

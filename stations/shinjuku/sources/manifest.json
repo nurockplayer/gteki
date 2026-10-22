@@ -56,8 +56,10 @@
     {
       "path": "s10/other_stores_shinjuku.csv",
       "sha256": "e1d51a318bb1b3c096e5865bbe53d16c45e1dec6601970834e94420bac83d3a6",
-      "url": "ほこナビDP S10 store list",
-      "license": "unconfirmed; published under Owner override (#16); PDL 1.0 not treated as covering it (#39 Q11 = No); provider inquiry open",
+      "url": "https://www.opendata.metro.tokyo.lg.jp/kotsu/other/other_stores_shinjuku.csv",
+      "publisher": "東京都交通局 (Tokyo Metropolitan Government open data, 駅構内のお店); not ほこナビDP",
+      "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/legalcode.ja); dataset license_id CC-BY-4.0 covers this exact resource, GIS rights record docs/gis/rights/tokyo-s10-shinjuku-csv.json",
+      "attribution": "出典：東京都交通局「駅構内のお店」 (plus a change notice wherever the data is edited, selected or reformatted; Owner Q1, #39 comment 6324726321)",
       "use": "evaluated; no coordinates → not imported"
     },
     {
