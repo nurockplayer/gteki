@@ -1,25 +1,44 @@
-import type { Asset, Source } from "@gteki/schema";
+import type { Asset, Coverage, Edge, Node, Poi, Source } from "@gteki/schema";
 import { rightsLabel, sourceCredit, type SourceCredit } from "./credits.ts";
 
 /** The part of a station bundle the credit line reads. */
 export interface CreditBundle {
   sources: readonly Source[];
   assets?: readonly Asset[];
+  /** The graph the explorer also draws (route lines, nodes, coverage, POIs); omitted = nothing of it counts. */
+  nodes?: readonly Node[];
+  edges?: readonly Edge[];
+  pois?: readonly Poi[];
+  coverage?: Pick<Coverage, "areas">;
 }
 
 const norm = (text: string): string => text.replace(/\s+/g, " ").trim();
 
 /**
+ * Sources that back drawn graph geometry: node positions, edge polylines, coverage polygons and POI positions.
+ * Evidence that only backs a fact (an edge's access evidence, a POI without a position, an area without a polygon) is not drawn.
+ */
+function graphGeometrySourceIds(bundle: CreditBundle): Set<string> {
+  const ids = new Set<string>();
+  for (const n of bundle.nodes ?? []) for (const r of n.sourceRefs) ids.add(r.sourceId);
+  for (const e of bundle.edges ?? []) if (e.geometry?.length) for (const id of e.geometryEvidence.sourceIds) ids.add(id);
+  for (const p of bundle.pois ?? []) if (p.displayPosition) for (const id of p.evidence.sourceIds) ids.add(id);
+  for (const a of bundle.coverage?.areas ?? []) if (a.polygon?.length) for (const id of a.sourceIds) ids.add(id);
+  return ids;
+}
+
+/**
  * The sources whose data is drawn in the explorer, in bundle order.
  * - Facts-only sources are evidence for facts; nothing derived from them is drawn.
- * - A station with visual assets draws exactly the sources those assets cite (collision-only assets are invisible).
+ * - A station with visual assets draws the sources those assets cite (collision-only assets are invisible), plus the
+ *   sources behind the graph geometry the explorer draws over or beside the scene (see `graphGeometrySourceIds`).
  * - A station without visual assets (graph-only) is drawn from the graph, so every non-facts-only source counts.
  */
 export function drawnSources(bundle: CreditBundle): Source[] {
   const usable = bundle.sources.filter((s) => s.usage !== "facts-only");
   const visual = (bundle.assets ?? []).filter((a) => a.role === "visual" || a.role === "visual+collision");
   if (!visual.length) return usable;
-  const cited = new Set(visual.flatMap((a) => a.sourceIds));
+  const cited = new Set([...visual.flatMap((a) => a.sourceIds), ...graphGeometrySourceIds(bundle)]);
   return usable.filter((s) => cited.has(s.id));
 }
 

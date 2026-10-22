@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Asset, Source } from "@gteki/schema";
+import type { Asset, Coverage, Edge, Node, Poi, Source } from "@gteki/schema";
 import { composeCreditLine, creditEntries, creditLineFor, drawnSources, entryRightsLabels, groupByAttribution, groupLicenses } from "./creditLine.ts";
 import { strings } from "./i18n.ts";
 
@@ -25,6 +25,42 @@ describe("drawnSources", () => {
   it("falls back to every non-facts-only source for a graph-only station", () => {
     expect(drawnSources({ sources }).map((s) => s.id)).toEqual(["a", "b", "c"]);
     expect(drawnSources({ sources, assets: [asset("col", "collision", ["c"])] }).map((s) => s.id)).toEqual(["a", "b", "c"]);
+  });
+});
+
+describe("drawnSources with a drawn graph", () => {
+  const sources = [src("a", PLATEAU), src("g", "graph source"), src("e", "evidence only"), src("f", "facts", { usage: "facts-only" })];
+  const visual = [asset("v", "visual", ["a"])];
+  const node = (sourceId: string): Node => ({ id: "n", floorId: "f", position: { x: 0, y: 0, z: 0 }, kind: "junction", inOut: null, sourceRefs: [{ sourceId, featureId: "1" }] });
+  const edge = (geometry: boolean, ids: string[]): Edge => ({
+    id: "e", from: "n", to: "m", direction: "both", mode: "walk", lengthM: 1, ...(geometry ? { geometry: [{ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }] } : {}),
+    paid: null, crossesFareBoundary: null, wheelchair: null, steps: null, hours: null, closed: false, verification: "geometry_only",
+    geometryEvidence: { sourceIds: ids, method: "m", checkedDate: "2026-01-01" }, accessEvidence: null,
+  } as Edge);
+  const ids = (b: Parameters<typeof drawnSources>[0]) => drawnSources(b).map((s) => s.id);
+
+  it("credits both the asset's and the drawn graph's sources", () => {
+    expect(ids({ sources, assets: visual, nodes: [node("g")] })).toEqual(["a", "g"]);
+    expect(ids({ sources, assets: visual, edges: [edge(true, ["g"])] })).toEqual(["a", "g"]);
+    const area = { id: "c", floorId: null, status: "routable", label: [], polygon: [{ x: 0, y: 0 }], sourceIds: ["g"] } as Coverage["areas"][number];
+    expect(ids({ sources, assets: visual, coverage: { areas: [area] } })).toEqual(["a", "g"]);
+    const poi = { id: "p", displayPosition: { x: 0, y: 0, z: 0 }, evidence: { sourceIds: ["g"], method: "m", checkedDate: "2026-01-01" } } as Poi;
+    expect(ids({ sources, assets: visual, pois: [poi] })).toEqual(["a", "g"]);
+  });
+
+  it("does not count evidence-only references", () => {
+    const area = { id: "c", floorId: null, status: "routable", label: [], sourceIds: ["e"] } as Coverage["areas"][number];
+    const poi = { id: "p", displayPosition: null, evidence: { sourceIds: ["e"], method: "m", checkedDate: "2026-01-01" } } as Poi;
+    expect(ids({ sources, assets: visual, edges: [edge(false, ["e"])], coverage: { areas: [area] }, pois: [poi] })).toEqual(["a"]);
+  });
+
+  it("still excludes facts-only sources and keeps bundle order", () => {
+    expect(ids({ sources, assets: visual, nodes: [node("f"), node("g")] })).toEqual(["a", "g"]);
+    expect(ids({ sources: [sources[1]!, sources[0]!], assets: visual, nodes: [node("g")] })).toEqual(["g", "a"]);
+  });
+
+  it("leaves a graph-only station unchanged", () => {
+    expect(ids({ sources, nodes: [node("g")] })).toEqual(["a", "g", "e"]);
   });
 });
 
