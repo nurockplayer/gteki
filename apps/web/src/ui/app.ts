@@ -1,4 +1,4 @@
-import { createRouter, describeRoute, explainNoPathWith, floorDisplayName, instructionPoints, routeBetween, routePolyline } from "@gteki/navigation";
+import { createRouter, describeRoute, explainNoPathBetween, floorDisplayName, instructionPoints, routeBetween, routePolyline } from "@gteki/navigation";
 import type { Instruction, NoPathCause, PolylinePoint, RouteFailure, RouteProfile, RouteResult, Router } from "@gteki/navigation";
 import type { Poi, Source, StationBundle } from "@gteki/schema";
 import { createSearchIndex } from "@gteki/search";
@@ -454,7 +454,7 @@ export class App {
     const best: RouteResult | RouteFailure = routeBetween(router, origin, destination, profile);
     this.s.route = best;
     // Only after a no_path: re-ask with the user's own options relaxed to say which one refused.
-    if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathWith((p) => routeBetween(router, origin, destination, p), profile);
+    if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
     if (best.ok) {
       this.s.polyline = routePolyline(loaded.bundle, best);
       this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination);
