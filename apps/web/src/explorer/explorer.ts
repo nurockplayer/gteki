@@ -10,7 +10,7 @@ import type { Router, PolylinePoint } from "@gteki/navigation";
 import { nodeDisplayZ } from "@gteki/navigation";
 import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
-import { WALKER_BODY, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
+import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
@@ -46,8 +46,8 @@ export interface ExplorerEvents {
 
 const EYE = WALKER_BODY.eyeM;
 const RADIUS = WALKER_BODY.radiusM;
-const WALK = 1.45;
-const RUN = 3.4;
+const WALK = WALKER_SPEED.walkMps;
+const RUN = WALKER_SPEED.runMps;
 /** POI labels float this high above their entrance. */
 const LABEL_LIFT = 2.4;
 
