@@ -184,9 +184,12 @@ mesh and surface counts equal the applied ones, that each flagged surface keeps 
 that `lightMapIntensity / (scale × PI)` equals the scene's `LIGHTMAP_GAIN` (0.09), that 36 sampled texel channels
 decode within 1e-3 of `(byte/255)^2.2 × scale × gain`, that the shader declares `albedo_color : source_color` and its
 uniform equals the source material's own `albedo_color`, and that `--lightmap=off` applies nothing.
-`tests/run_walk_tests.gd` checks the light masks: the avatar meshes sit on `AVATAR_LAYER`, with the bake applied at
-least one light reaches that layer and no light's cull mask includes the station's layer, and with it off every light
-does.
+`tests/run_walk_tests.gd` checks the light masks on the helper: the avatar meshes sit on `AVATAR_LAYER`, with the bake
+applied at least one light reaches that layer and no light's cull mask includes the station's layer, and with it off
+every light does. The real wiring is asserted by the client itself: `run-scenes.sh` runs
+`hq.tscn --station=<id> --check` for each station, where `hq.gd` `check_lighting` compares every light's
+`light_cull_mask` with `gteki_hq_lights.cull_mask(lightmap_applied)`, requires every drawing station mesh to be on
+`WORLD_LAYER`, and requires a light on `AVATAR_LAYER` whenever a bake is applied. Layer 2 is reserved for the avatar.
 
 ## Third-person walk and follow camera (G-2 of #164)
 
