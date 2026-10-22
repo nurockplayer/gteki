@@ -186,6 +186,67 @@ export function bakeInstancedMeshes(root: THREE.Object3D): number {
   return instanced.length;
 }
 
+/** What the exporter records about a scene's baked lightmap, for the Godot side to re-apply it. */
+export interface LightmapInfo {
+  /** Station-relative URI the scene loaded the lightmap from (recorded by the export's `loadTexture` shim). */
+  uri: string;
+  /** three `lightMap.channel`: 1 is TEXCOORD_1, which glTF keeps and Godot imports as UV2. */
+  channel: number;
+  color_space: string;
+  flip_y: boolean;
+  /** three `lightMapIntensity`, exactly as the scene set it (Ikebukuro: scale × π × LIGHTMAP_GAIN). */
+  light_map_intensity: number;
+  /** Meshes with at least one lightmapped material slot, flagged `gteki_lightmap_surfaces`. */
+  meshes: number;
+  surfaces: number;
+}
+
+/**
+ * three keeps a baked lightmap on the material (`MeshStandardMaterial.lightMap`): glTF carries none of it, so the
+ * snapshot would silently lose the lighting. Record what `buildScene` actually did instead of inferring it from a
+ * role or a mesh name: every material slot with a `lightMap` gets its surface index in
+ * `userData.gteki_lightmap_surfaces` (exported as extras), and the texture is described once for the sidecar.
+ * Throws rather than guess when the slots disagree (two textures, two intensities) or the texture's origin is
+ * unknown, because a wrong lightmap is worse than a loud failure.
+ */
+export function tagLightmaps(root: THREE.Object3D): LightmapInfo | null {
+  const textures = new Set<THREE.Texture>();
+  const intensities = new Set<number>();
+  let meshes = 0;
+  let surfaces = 0;
+  root.traverse((object) => {
+    if (!isMesh(object)) return;
+    const materials = materialsOf(object);
+    const lit: number[] = [];
+    materials.forEach((material, index) => {
+      const map = (material as THREE.MeshStandardMaterial).lightMap ?? null;
+      if (map === null) return;
+      lit.push(index);
+      textures.add(map);
+      intensities.add(Number((material as THREE.MeshStandardMaterial).lightMapIntensity));
+    });
+    if (lit.length === 0) return;
+    object.userData.gteki_lightmap_surfaces = lit;
+    meshes += 1;
+    surfaces += lit.length;
+  });
+  if (meshes === 0) return null;
+  if (textures.size !== 1) throw new Error(`Scene carries ${textures.size} distinct lightmap textures; the snapshot supports exactly one (unrecorded, not guessed)`);
+  if (intensities.size !== 1) throw new Error(`Lightmapped materials disagree on lightMapIntensity (${[...intensities].join(", ")}); the snapshot records one value (not guessed)`);
+  const texture = [...textures][0]!;
+  const uri = texture.userData?.gteki_uri;
+  if (typeof uri !== "string" || uri.length === 0) throw new Error("Lightmap texture has no recorded source URI (ctx.loadTexture must record it)");
+  return {
+    uri,
+    channel: texture.channel,
+    color_space: texture.colorSpace,
+    flip_y: texture.flipY,
+    light_map_intensity: [...intensities][0]!,
+    meshes,
+    surfaces,
+  };
+}
+
 /** Detaches every texture from every material (their canvas/lightmap content is placeholder under Node). */
 export function stripTextures(root: THREE.Object3D): number {
   const seen = new Set<THREE.Material>();

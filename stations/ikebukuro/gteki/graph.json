@@ -496,6 +496,40 @@
    ]
   },
   {
+   "id": "e_hall_stair_top",
+   "floorId": "b1",
+   "position": {
+    "x": 115.0,
+    "y": 30.5,
+    "z": 27.79
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35"
+    }
+   ]
+  },
+  {
+   "id": "e_hall_stair_foot",
+   "floorId": "b1",
+   "position": {
+    "x": 117.5,
+    "y": 32.5,
+    "z": 26.88
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35"
+    }
+   ]
+  },
+  {
    "id": "se_1",
    "floorId": "b1",
    "position": {
@@ -686,8 +720,8 @@
    "id": "x35",
    "floorId": "street",
    "position": {
-    "x": 153.5,
-    "y": 18.0,
+    "x": 154.0,
+    "y": 18.5,
     "z": 31.268
    },
    "kind": "exit",
@@ -866,6 +900,40 @@
     {
      "sourceId": "plateau-ubld-13116",
      "featureId": "walkable-grid-cell"
+    }
+   ]
+  },
+  {
+   "id": "s41_stair_foot",
+   "floorId": "b1",
+   "position": {
+    "x": 73.0,
+    "y": -70.0,
+    "z": 25.86
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35"
+    }
+   ]
+  },
+  {
+   "id": "s41_stair_top",
+   "floorId": "b1",
+   "position": {
+    "x": 73.5,
+    "y": -67.5,
+    "z": 26.69
+   },
+   "kind": "junction",
+   "inOut": "inside",
+   "sourceRefs": [
+    {
+     "sourceId": "plateau-ubld-13116",
+     "featureId": "ubld_6115731d-c05d-42eb-89c2-4fcc1b7a332e_room1_IntInstallation_EF_35"
     }
    ]
   },
@@ -1077,8 +1145,8 @@
      "z": 27.91
     },
     {
-     "x": -42.5,
-     "y": 78.0,
+     "x": -43.5,
+     "y": 78.5,
      "z": 27.91
     },
     {
@@ -1317,7 +1385,7 @@
    "to": "c_e1",
    "direction": "both",
    "mode": "walk",
-   "lengthM": 33.1,
+   "lengthM": 33.2,
    "geometry": [
     {
      "x": 4.5,
@@ -1336,7 +1404,7 @@
     },
     {
      "x": 24.0,
-     "y": 50.0,
+     "y": 50.5,
      "z": 27.91
     },
     {
@@ -1558,7 +1626,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -1759,7 +1827,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -1783,12 +1851,12 @@
    "attributes": {}
   },
   {
-   "id": "e_hall__e_low",
+   "id": "e_hall__e_hall_stair_top",
    "from": "e_hall",
-   "to": "e_low",
+   "to": "e_hall_stair_top",
    "direction": "both",
-   "mode": "stairs",
-   "lengthM": 37.1,
+   "mode": "walk",
+   "lengthM": 23.3,
    "geometry": [
     {
      "x": 92.0,
@@ -1801,15 +1869,98 @@
      "z": 27.79
     },
     {
+     "x": 115.0,
+     "y": 30.5,
+     "z": 27.79
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-22"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU stair-top closures within 1-7 m",
+    "checkedDate": "2026-10-20",
+    "note": "Exits 27, 34, 35, 36, 37, 41, 42 and 43 connect the public B1 passages east of the JR concourse to street level."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "e_hall_stair_top__e_hall_stair_foot",
+   "from": "e_hall_stair_top",
+   "to": "e_hall_stair_foot",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 3.5,
+   "geometry": [
+    {
+     "x": 115.0,
+     "y": 30.5,
+     "z": 27.79
+    },
+    {
      "x": 115.5,
      "y": 31.0,
      "z": 27.79
     },
     {
      "x": 117.0,
-     "y": 32.0,
+     "y": 32.5,
      "z": 27.032
     },
+    {
+     "x": 117.5,
+     "y": 32.5,
+     "z": 26.88
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": false,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-22"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only) matched to PLATEAU stair-top closures within 1-7 m",
+    "checkedDate": "2026-10-20",
+    "note": "Exits 27, 34, 35, 36, 37, 41, 42 and 43 connect the public B1 passages east of the JR concourse to street level."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "e_hall_stair_foot__e_low",
+   "from": "e_hall_stair_foot",
+   "to": "e_low",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 10.6,
+   "geometry": [
     {
      "x": 117.5,
      "y": 32.5,
@@ -1824,7 +1975,7 @@
    "paid": false,
    "crossesFareBoundary": false,
    "wheelchair": null,
-   "steps": true,
+   "steps": false,
    "hours": null,
    "closed": false,
    "verification": "verified",
@@ -1832,7 +1983,7 @@
     "sourceIds": [
      "plateau-ubld-13116"
     ],
-    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
     "checkedDate": "2026-10-22"
    },
    "accessEvidence": {
@@ -1887,7 +2038,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -1916,7 +2067,7 @@
    "to": "x35",
    "direction": "both",
    "mode": "stairs",
-   "lengthM": 31.9,
+   "lengthM": 32.0,
    "geometry": [
     {
      "x": 128.0,
@@ -1939,14 +2090,14 @@
      "z": 27.049
     },
     {
-     "x": 153.5,
-     "y": 18.0,
+     "x": 154.0,
+     "y": 18.5,
      "z": 31.268
     }
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -2108,7 +2259,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -2162,7 +2313,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -2343,7 +2494,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -2441,7 +2592,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -2505,7 +2656,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -2529,18 +2680,57 @@
    "attributes": {}
   },
   {
-   "id": "s41_j__s41_f",
+   "id": "s41_j__s41_stair_foot",
    "from": "s41_j",
-   "to": "s41_f",
+   "to": "s41_stair_foot",
    "direction": "both",
-   "mode": "stairs",
-   "lengthM": 16.2,
+   "mode": "walk",
+   "lengthM": 1.0,
    "geometry": [
     {
      "x": 73.0,
      "y": -71.0,
      "z": 25.86
     },
+    {
+     "x": 73.0,
+     "y": -70.0,
+     "z": 25.86
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": null,
+   "steps": false,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
+    "checkedDate": "2026-10-22"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only): order of exit stairs along each passage matched one-to-one to PLATEAU stair-top closures (TP 32.2-32.8 m)",
+    "checkedDate": "2026-10-20",
+    "note": "Exit 38 (東口（南）/ East Exit South) rises from the South Passage east end beside Seibu; Exit 41 from a north branch of the south-east corridor; Exits 40 and 39 from that corridor, in that order, towards Meiji-dori."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "s41_stair_foot__s41_stair_top",
+   "from": "s41_stair_foot",
+   "to": "s41_stair_top",
+   "direction": "both",
+   "mode": "stairs",
+   "lengthM": 2.7,
+   "geometry": [
     {
      "x": 73.0,
      "y": -70.0,
@@ -2555,6 +2745,45 @@
      "x": 73.5,
      "y": -67.5,
      "z": 26.69
+    }
+   ],
+   "paid": false,
+   "crossesFareBoundary": false,
+   "wheelchair": false,
+   "steps": true,
+   "hours": null,
+   "closed": false,
+   "verification": "verified",
+   "geometryEvidence": {
+    "sourceIds": [
+     "plateau-ubld-13116"
+    ],
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "checkedDate": "2026-10-22"
+   },
+   "accessEvidence": {
+    "sourceIds": [
+     "toshima-underground-guide-2022",
+     "tokyometro-ikebukuro-yardmap-2026-03"
+    ],
+    "method": "official-map-reading (facts only): order of exit stairs along each passage matched one-to-one to PLATEAU stair-top closures (TP 32.2-32.8 m)",
+    "checkedDate": "2026-10-20",
+    "note": "Exit 38 (東口（南）/ East Exit South) rises from the South Passage east end beside Seibu; Exit 41 from a north branch of the south-east corridor; Exits 40 and 39 from that corridor, in that order, towards Meiji-dori."
+   },
+   "attributes": {}
+  },
+  {
+   "id": "s41_stair_top__s41_f",
+   "from": "s41_stair_top",
+   "to": "s41_f",
+   "direction": "both",
+   "mode": "walk",
+   "lengthM": 12.5,
+   "geometry": [
+    {
+     "x": 73.5,
+     "y": -67.5,
+     "z": 26.69
     },
     {
      "x": 73.5,
@@ -2565,7 +2794,7 @@
    "paid": false,
    "crossesFareBoundary": false,
    "wheelchair": null,
-   "steps": true,
+   "steps": false,
    "hours": null,
    "closed": false,
    "verification": "verified",
@@ -2573,7 +2802,7 @@
     "sourceIds": [
      "plateau-ubld-13116"
     ],
-    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.9m;no-wall-crossing",
+    "method": "sampled-on-plateau-surface:step=0.5m,tol=0.35m;no-wall-crossing",
     "checkedDate": "2026-10-22"
    },
    "accessEvidence": {
@@ -2618,7 +2847,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -2751,7 +2980,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -2916,7 +3145,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -3116,7 +3345,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -3145,7 +3374,7 @@
    "to": "ne_j",
    "direction": "both",
    "mode": "stairs",
-   "lengthM": 14.6,
+   "lengthM": 14.7,
    "geometry": [
     {
      "x": 97.0,
@@ -3158,9 +3387,9 @@
      "z": 28.45
     },
     {
-     "x": 103.5,
-     "y": 111.5,
-     "z": 27.443
+     "x": 104.5,
+     "y": 111.0,
+     "z": 26.94
     },
     {
      "x": 107.0,
@@ -3185,7 +3414,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -3243,7 +3472,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -3360,7 +3589,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -3482,7 +3711,7 @@
    "to": "x32",
    "direction": "both",
    "mode": "stairs",
-   "lengthM": 23.0,
+   "lengthM": 23.1,
    "geometry": [
     {
      "x": 156.5,
@@ -3516,8 +3745,8 @@
     },
     {
      "x": 157.5,
-     "y": 114.5,
-     "z": 31.858
+     "y": 115.0,
+     "z": 32.142
     },
     {
      "x": 157.0,
@@ -3527,7 +3756,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -3569,14 +3798,9 @@
      "z": 26.24
     },
     {
-     "x": 152.5,
+     "x": 152.0,
      "y": 83.5,
      "z": 26.24
-    },
-    {
-     "x": 152.5,
-     "y": 83.0,
-     "z": 26.416
     },
     {
      "x": 148.0,
@@ -3586,7 +3810,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -3688,7 +3912,7 @@
    "to": "w_n",
    "direction": "both",
    "mode": "walk",
-   "lengthM": 31.4,
+   "lengthM": 31.9,
    "geometry": [
     {
      "x": -107.0,
@@ -3696,13 +3920,18 @@
      "z": 27.91
     },
     {
-     "x": -112.5,
-     "y": 130.5,
+     "x": -111.5,
+     "y": 129.0,
      "z": 27.91
     },
     {
      "x": -113.0,
-     "y": 131.0,
+     "y": 130.5,
+     "z": 27.91
+    },
+    {
+     "x": -112.0,
+     "y": 142.5,
      "z": 27.91
     },
     {
@@ -4055,7 +4284,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -4114,7 +4343,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -4228,7 +4457,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -4284,7 +4513,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
@@ -4338,7 +4567,7 @@
    ],
    "paid": false,
    "crossesFareBoundary": false,
-   "wheelchair": null,
+   "wheelchair": false,
    "steps": true,
    "hours": null,
    "closed": false,
