@@ -16,7 +16,7 @@ import planJson from "../data/plan.json";
 import surfaceJson from "../data/surface.json";
 import { buildLayout, type Plan } from "../scene/layout.ts";
 import type { SurfaceData } from "../scene/surface-data.ts";
-import { CONTEXT_ASSET_ID, CONTEXT_ATTRIBUTION, CONTEXT_GLB, CONTEXT_OMIT, contextGlbFor, contextMeshes, prepareContext } from "../scene/context.ts";
+import { CONTEXT_ASSET_ID, CONTEXT_ATTRIBUTION, CONTEXT_GLB, CONTEXT_LOAD_TIMEOUT_MS, CONTEXT_OMIT, contextGlbFor, contextMeshes, disposeContextScene, loadContextScenes, prepareContext } from "../scene/context.ts";
 import { buildScene } from "../gteki/scene.ts";
 import { explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
 import { sourceCredit } from "../../../apps/web/src/credits.ts";
@@ -49,6 +49,14 @@ const withContext = (quality: "low" | "high", over: Record<string, unknown> = {}
 const surfaceOf = (scene: StationScene) => scene.root.getObjectByName("surface-render-only") as THREE.Group;
 const lod1Names = (scene: StationScene) => surfaceOf(scene).children.map((c) => c.name).filter((n) => /^surface-(facade-\d|roof)$/.test(n));
 
+/** One mesh with a geometry and a material, as a loaded GLB stand-in. */
+function scene1() {
+  const geometry = new THREE.BoxGeometry(), material = new THREE.MeshBasicMaterial();
+  const root = new THREE.Group();
+  root.add(new THREE.Mesh(geometry, material));
+  return { root, geometry, material };
+}
+
 describe("street context: station record and rights gate", () => {
   it("declares one visual asset: low file as uri, high file in files, floor toei-nwd-0, both PLATEAU bldg sources", () => {
     const assets = bundle.assets ?? [];
@@ -58,6 +66,26 @@ describe("street context: station record and rights gate", () => {
     expect(a.sourceIds).toEqual(["plateau-13104-bldg-53394525", "plateau-13104-bldg-53394526"]);
     expect(a.derivation).toMatch(/shinjuku-station-enu-v0/);
     expect(a.derivation).toMatch(/flattened to street z = 0/);
+  });
+
+  it("the derivation says that the two buildings on exits 2 and 3 are not drawn, and why", () => {
+    const d = bundle.assets![0]!.derivation!;
+    expect(d).toMatch(/Two of these buildings are NOT DRAWN/);
+    expect(d).toMatch(/poi:exit:2/);
+    expect(d).toMatch(/poi:exit:3/);
+    expect(d).toMatch(/no modelled opening/);
+    expect(d).toMatch(/context-omit\.json/);
+    expect(d).toMatch(/not a claim that those buildings are absent/);
+    // The sentence is about the same two buildings the omit list holds.
+    expect(CONTEXT_OMIT.omit.map((o) => o.where.slice(0, 12))).toEqual(["exit 2 (poi:", "exit 3 (poi:"]);
+  });
+
+  it("the Q10 credit has one source: plan.json lists it once, and every PLATEAU source cites the same string", () => {
+    const plan = planJson as unknown as { attribution: string[] };
+    expect(plan.attribution.filter((x) => x === CONTEXT_ATTRIBUTION)).toHaveLength(1);
+    expect(new Set(plan.attribution).size).toBe(plan.attribution.length);
+    expect(plan.attribution).toEqual([...new Set(bundle.sources.map((x) => x.attribution))]);
+    expect(bundle.sources.filter((x) => x.id.startsWith("plateau-")).every((x) => x.attribution === CONTEXT_ATTRIBUTION)).toBe(true);
   });
 
   it("carries the Owner's credit verbatim (Q10 Option A) and the PLATEAU Site Policy licence, never a CC BY label, on every source the asset cites", () => {
@@ -186,6 +214,90 @@ describe("street context: scene wiring", () => {
     for (const s of Object.values(built)) s?.dispose();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+  });
+
+  describe("release and failure of the context load", () => {
+    it("disposes every context geometry, material and texture when the scene is released", async () => {
+      const geometries: THREE.BufferGeometry[] = [], materials: THREE.Material[] = [], textures: THREE.Texture[] = [];
+      const spies = new Map<object, ReturnType<typeof vi.spyOn>>();
+      const watch = (x: { dispose(): void }) => spies.set(x, vi.spyOn(x, "dispose"));
+      const load = nodeLoadGlb();
+      const loadGlb = async (uri: string) => {
+        const gltf = await load(uri);
+        gltf.scene.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (!m.isMesh) return;
+          geometries.push(m.geometry);
+          watch(m.geometry);
+          for (const mat of [m.material].flat()) {
+            // The shipped GLBs carry no textures; give each material one so a texture leak is observable too.
+            const t = new THREE.Texture();
+            (mat as THREE.MeshStandardMaterial).map = t;
+            textures.push(t);
+            materials.push(mat);
+            watch(t);
+            watch(mat);
+          }
+        });
+        return gltf;
+      };
+      const scene = await buildScene(withContext("low", { loadGlb }));
+      const ctx = surfaceOf(scene).getObjectByName("street-context")!;
+      expect(ctx).toBeDefined();
+      const drawn = contextMeshes(ctx)!;
+      expect(drawn.length).toBe(geometries.length);
+      const shared = drawn[0]!.material as THREE.Material;
+      expect(shared.name).toBe("ctx_concrete");
+      watch(shared);
+      scene.dispose();
+      expect(spies.size).toBe(geometries.length + materials.length + textures.length + 1);
+      for (const spy of spies.values()) expect(spy).toHaveBeenCalled();
+    }, 120_000);
+
+    it("loadContextScenes: loads every file at once, and returns all or nothing", async () => {
+      const order: string[] = [];
+      const ok = await loadContextScenes(async (u) => { order.push(`start ${u}`); await new Promise((r) => setTimeout(r, 15)); order.push(`end ${u}`); return { scene: scene1().root }; }, ["a", "b"], 2000);
+      expect("scenes" in ok && ok.scenes.length).toBe(2);
+      expect(order.slice(0, 2)).toEqual(["start a", "start b"]); // parallel: both started before either ended
+      if ("scenes" in ok) ok.scenes.forEach(disposeContextScene);
+    });
+
+    it("loadContextScenes: when one file throws, the one already loaded is disposed and nothing is returned", async () => {
+      const loaded = scene1();
+      const spy = vi.spyOn(loaded.geometry, "dispose");
+      const matSpy = vi.spyOn(loaded.material, "dispose");
+      const r = await loadContextScenes(async (u) => { if (u === "bad") throw new Error("boom"); return { scene: loaded.root }; }, ["good", "bad"], 2000);
+      expect("error" in r && (r.error as Error).message).toBe("boom");
+      expect(spy).toHaveBeenCalled();
+      expect(matSpy).toHaveBeenCalled();
+    });
+
+    it("loadContextScenes: on timeout nothing is returned and a file that lands late is disposed", async () => {
+      const late = scene1();
+      const spy = vi.spyOn(late.geometry, "dispose");
+      const r = await loadContextScenes(() => new Promise((resolve) => setTimeout(() => resolve({ scene: late.root }), 80)), ["slow"], 20);
+      expect("error" in r && (r.error as Error).message).toMatch(/did not load within 20 ms/);
+      expect(spy).not.toHaveBeenCalled();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      expect(spy).toHaveBeenCalled();
+    });
+
+    it("a hanging context load times out and the station still builds, with the digest of fe8d3b6", async () => {
+      vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+      try {
+        const building = buildScene(withContext("low", { loadGlb: () => new Promise(() => undefined) }));
+        await vi.advanceTimersByTimeAsync(CONTEXT_LOAD_TIMEOUT_MS + 1);
+        const scene = await building;
+        vi.useRealTimers();
+        expect(scene.root.getObjectByName("street-context")).toBeUndefined();
+        expect(lod1Names(scene).length).toBe(6);
+        const d = physicalDigest(scene);
+        expect({ all: d.all, walls: d.walls, walkable: d.walkable.length, colliders: d.colliders.length, cameraBlockers: d.cameraBlockers.length }).toEqual(BASELINE_DIGEST);
+        scene.dispose();
+      } finally {
+        vi.useRealTimers();
+      }
+    }, 120_000);
   });
 
   describe("context off (no asset record, no bundled file, load failure, or a wrong credit)", () => {
@@ -411,5 +523,64 @@ describe("street context: clearance from our walkable street", () => {
     const mesh = { name: "m", positions, indices: new Uint32Array([0, 1, 2, 0, 2, 3]), extras: {} };
     const rows = contextIntrusions([mesh], [{ gmlId: "test", mesh: "m", triStart: 0, triCount: 2, groundOffsetM: 0, lod: "LOD1" }], zones, TOLERANCE_M2);
     expect(rows.find((r) => r.zone === "street")?.areaM2).toBeGreaterThan(1);
+  });
+});
+
+describe("street context: declared ranges are not stale against the committed GLBs", () => {
+  type Row = ReturnType<typeof featureRows>[number];
+  type Meshes = ReturnType<typeof parseGlb>["meshes"];
+  /** What is wrong when the per-building table is not an exact, gap-free tiling of the GLB's triangles, by mesh. */
+  const tilingProblems = (rows: Row[], meshes: Meshes): string[] => {
+    const problems: string[] = [];
+    for (const r of rows) if (!meshes.some((m) => m.name === r.mesh)) problems.push(`${r.gmlId}: no mesh ${r.mesh}`);
+    for (const m of meshes) {
+      let at = 0;
+      for (const r of rows.filter((x) => x.mesh === m.name).sort((a, b) => a.triStart - b.triStart)) {
+        if (r.triStart !== at) problems.push(`${m.name}: ${r.gmlId} starts at ${r.triStart}, expected ${at}`);
+        at = r.triStart + r.triCount;
+      }
+      if (at !== m.indices.length / 3) problems.push(`${m.name}: table ends at ${at}, mesh has ${m.indices.length / 3}`);
+    }
+    return problems;
+  };
+  const omitFile = JSON.parse(readFileSync(join(SOURCES_DIR, "context-omit.json"), "utf8")) as { glbSha256: Record<"low" | "high", string> };
+
+  for (const v of ["low", "high"] as const) {
+    it(`${v}: the table tiles the committed file, and every declared count, hash and omit range is measured from it`, () => {
+      const bytes = readGlbBytes(VARIANT[v].uri);
+      const meshes = parseGlb(bytes).meshes;
+      const rows = featureRows(v);
+      const sha = createHash("sha256").update(bytes).digest("hex");
+      const triangles = meshes.reduce((n, m) => n + m.indices.length / 3, 0);
+      expect(tilingProblems(rows, meshes)).toEqual([]);
+      expect(omitFile.glbSha256[v]).toBe(sha);
+      expect(CONTEXT_OMIT.glbTriangles[v]).toBe(triangles);
+      expect(manifest.assets[v]).toMatchObject({ outputSha256: sha, outputBytes: bytes.length, triangles, drawCalls: meshes.length, features: rows.length });
+      // Each omitted range is exactly one building's rows, in the mesh the list names.
+      for (const o of CONTEXT_OMIT.omit) {
+        const r = o.ranges[v];
+        const row = rows.filter((x) => x.gmlId === o.gmlId);
+        expect(row, `${v} ${o.gmlId}`).toHaveLength(1);
+        expect({ mesh: r.mesh, triStart: r.triStart, triCount: r.triCount }).toEqual({ mesh: row[0]!.mesh, triStart: row[0]!.triStart, triCount: row[0]!.triCount });
+        expect(r.triStart + r.triCount).toBeLessThanOrEqual(meshes.find((m) => m.name === r.mesh)!.indices.length / 3);
+      }
+    });
+  }
+
+  it("the station record names the files the manifest hashes, and nothing else", () => {
+    const a = bundle.assets![0]!;
+    expect([a.uri, ...(a.files ?? [])].sort()).toEqual([manifest.assets.low.uri, manifest.assets.high.uri].sort());
+    expect(Object.keys(manifest.assets).sort()).toEqual(["high", "low"]);
+  });
+
+  it("negative control: a shifted range, a missing or a duplicated building and a mesh the file lacks are each reported", () => {
+    const meshes = parseGlb(readGlbBytes(VARIANT.low.uri)).meshes;
+    const rows = featureRows("low");
+    expect(tilingProblems(rows, meshes)).toEqual([]);
+    expect(tilingProblems(rows.map((r, i) => (i === 3 ? { ...r, triStart: r.triStart + 1 } : r)), meshes)).not.toEqual([]);
+    expect(tilingProblems(rows.filter((_, i) => i !== 5), meshes)).not.toEqual([]);
+    expect(tilingProblems([...rows, rows[0]!], meshes)).not.toEqual([]);
+    expect(tilingProblems(rows.map((r) => ({ ...r, mesh: "elsewhere" })), meshes)).not.toEqual([]);
+    expect(tilingProblems(rows.slice(0, -1), meshes)).not.toEqual([]);
   });
 });
