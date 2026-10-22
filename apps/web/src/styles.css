@@ -24,7 +24,11 @@
 html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
 button, input, select { font: inherit; color: inherit; }
 
-.app { position: fixed; inset: 0; }
+/* --credit-extra: height of the persistent credit strip (excluding the safe-area inset); the sheet and HUD sit above it. */
+.app { position: fixed; inset: 0; --credit-extra: 0px; }
+.app.has-credit { --credit-extra: 30px; }
+/* Visually hidden, still read by assistive tech (the polite live region). Takes no layout space. */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
 /* Own stacking context: CSS2DRenderer gives each label a z-index, which must stay under the UI layers. */
 .viewport { position: absolute; inset: 0; z-index: 0; }
 .gteki-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
@@ -81,6 +85,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .result .dot { grid-row: span 2; align-self: center; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
 .result-meta { font-size: 11px; color: var(--muted); }
 .result.disabled .result-name { color: var(--muted); }
+.result[aria-selected="true"] { background: rgba(94, 240, 255, 0.16); outline: 2px solid var(--accent); outline-offset: -2px; }
 .result.empty { padding: 10px 12px; color: var(--muted); }
 .cat-exit .dot { background: var(--ok); } .cat-ticket_gate .dot { background: var(--gate); } .cat-platform .dot { background: #9b8cff; }
 .cat-toilet .dot, .cat-locker .dot { background: #ff9ad5; } .cat-elevator .dot { background: var(--accent); } .cat-transfer .dot { background: #ffa3a3; }
@@ -93,7 +98,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 
 /* ---- route sheet ---- */
 .sheet {
-  position: absolute; z-index: 3; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); width: min(400px, calc(100vw - 32px));
+  position: absolute; z-index: 3; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom) + var(--credit-extra)); width: min(400px, calc(100vw - 32px));
   max-height: calc(100vh - 340px); overflow: auto; display: none;
   border-radius: var(--radius); background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(16px); box-shadow: var(--shadow);
 }
@@ -135,10 +140,15 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .provenance a { color: #bfefff; }
 
 /* ---- HUD ---- */
-.hud { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom)); display: grid; justify-items: center; gap: 8px; pointer-events: none; }
+.hud { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom) + var(--credit-extra)); display: grid; justify-items: center; gap: 8px; pointer-events: none; }
 .hud > * { pointer-events: auto; }
 .hud-instruction { position: fixed; top: calc(64px + env(safe-area-inset-top)); left: 16px; right: 16px; width: fit-content; margin-inline: auto; padding: 10px 18px; border-radius: 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, 0.4); font-size: 18px; font-weight: 700; box-shadow: 0 0 30px rgba(94, 240, 255, 0.2); }
 .hud-row { display: flex; gap: 6px; padding: 6px; border-radius: 12px; background: var(--glass); backdrop-filter: blur(12px); }
+/* Guide playback controls: ‹ pause › speed end. Previous/next are compact icon buttons; the group never wraps. */
+.hud-guide { display: flex; flex-wrap: nowrap; gap: 6px; flex: none; }
+.hud-guide .guide-step { min-width: 36px; padding: 8px 0; font-size: 20px; line-height: 1; font-weight: 700; }
+.hud-guide .guide-step:disabled { opacity: 0.35; cursor: default; }
+.hud-guide .guide-step:disabled:active { transform: none; }
 .app[data-mode="walk"] .sheet, .app[data-mode="guide"] .sheet { opacity: 0.0; pointer-events: none; }
 .app[data-mode="walk"] .hud, .app[data-mode="guide"] .hud { left: auto; right: 16px; transform: none; justify-items: end; }
 /* Centred in the band between its left and right insets (fit-content + auto margins); on desktop the guide's band starts right of the From/To panel. */
@@ -150,6 +160,20 @@ button.on { border-color: var(--accent); color: var(--accent); }
 
 .hint { position: absolute; z-index: 2; right: 16px; top: calc(60px + env(safe-area-inset-top)); font-size: 11px; color: var(--muted); padding: 6px 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.35); display: none; }
 .app[data-mode="walk"] .hint { display: block; }
+
+/* ---- persistent credit line: bottom-left strip, in every mode; sheet and HUD are raised above it (--credit-extra) ---- */
+.credit-line {
+  position: absolute; z-index: 4; left: 0; bottom: 0; max-width: min(100%, 760px);
+  display: flex; align-items: center; gap: 6px;
+  height: calc(var(--credit-extra) + env(safe-area-inset-bottom)); padding: 0 8px env(safe-area-inset-bottom) 12px;
+  font-size: 11px; line-height: 1.3; color: #c3cedb;
+  background: rgba(11, 16, 24, 0.68); border-top-right-radius: 8px;
+  /* Touches on the text fall through to the canvas (the left-thumb joystick starts at the bottom); only the Credits button is live. */
+  pointer-events: none;
+}
+.credit-line[hidden] { display: none; }
+.credit-text { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.credit-btn { pointer-events: auto; flex: none; min-height: 24px; padding: 2px 8px; font-size: 11px; line-height: 1.2; border-radius: 7px; }
 
 /* ---- POI labels ---- */
 .poi-label {
@@ -188,6 +212,9 @@ button.on { border-color: var(--accent); color: var(--accent); }
 
 /* ---- phone ---- */
 @media (max-width: 720px) {
+  /* Credit strip: the text wraps to two lines (11px * 1.3 = ~29px + padding), so the sheet and HUD rise by 38px instead of 30px. */
+  .app.has-credit { --credit-extra: 38px; }
+  .credit-text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; overflow: hidden; }
   .tagline { display: none; }
   .topbar { gap: 8px; }
   .logo { font-size: 17px; }
@@ -203,9 +230,20 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .panel { left: 16px; right: 16px; width: auto; padding: 10px; }
   .field { grid-template-columns: 52px 1fr; }
   .results { left: 60px; }
-  .sheet { left: 0; right: 0; bottom: 0; width: auto; border-radius: var(--radius) var(--radius) 0 0; max-height: 38vh; padding-bottom: env(safe-area-inset-bottom); }
+  .sheet { left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom) + var(--credit-extra)); width: auto; border-radius: var(--radius) var(--radius) 0 0; max-height: 38vh; }
+  .app:not(.has-credit) .sheet { bottom: 0; padding-bottom: env(safe-area-inset-bottom); }
   .app[data-mode="walk"] .panel, .app[data-mode="guide"] .panel { display: none; }
   .app[data-mode="walk"] .hud, .app[data-mode="guide"] .hud { right: 16px; left: 16px; justify-items: stretch; }
   .hud-row { flex-wrap: wrap; justify-content: center; }
+  /* 375 px: the group gets the row's full width (343 - 12 padding) and its five buttons fit on one line; smaller screens squeeze the text buttons rather than wrap. */
+  .hud-guide { flex: 1 1 100%; min-width: 0; gap: 4px; justify-content: center; }
+  .hud-guide button { min-width: 0; padding: 8px 4px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* 44 x 44 hit area for previous/next (the text buttons stretch to the same height); the 24 px it adds comes out of the text buttons' padding and shrink. */
+  .hud-guide .guide-step { flex: 0 0 44px; min-width: 44px; min-height: 44px; padding: 0; font-size: 20px; }
   .hud-instruction { font-size: 16px; text-align: center; }
+}
+
+/* ---- reduced motion: UI transitions and animations off (guide playback in the 3D view is content, not decoration) ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.001ms !important; transition-delay: 0s !important; animation-duration: 0.001ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
 }

@@ -1,0 +1,244 @@
+{
+  "note": "Fixed QA vantage points for the E27 lane app. `node` + `heading` (rad, 0 = north, clockwise) uses the follow camera; `eye`/`look` (ENU metres, z up) is a free camera. `t` jumps station time (train cycle).",
+  "vantages": [
+    {
+      "id": "b1-gate-1",
+      "node": "n:fe13251e6885410b870179837c3832cf",
+      "heading": 3.1416
+    },
+    {
+      "id": "b1-gate-1-reverse",
+      "node": "n:fe13251e6885410b870179837c3832cf",
+      "heading": 0
+    },
+    {
+      "id": "b1-concourse",
+      "node": "n:27509b411f0d494dbb99dff291a1cc3f",
+      "heading": 1.57
+    },
+    {
+      "id": "exit-1-street",
+      "node": "n:a06f3d191885497bac197b666c4daef9",
+      "heading": 3.1416
+    },
+    {
+      "id": "exit-1-arrive",
+      "node": "n:a06f3d191885497bac197b666c4daef9",
+      "heading": 0
+    },
+    {
+      "id": "exit-2-street",
+      "node": "n:4423521d79e54865b7c41e4aec29826d",
+      "heading": 0
+    },
+    {
+      "id": "b2-stairs",
+      "node": "n:fa9cd0ba2685432cb446f2cf9c3edd86",
+      "heading": 0
+    },
+    {
+      "id": "b3-hall",
+      "node": "n:b159c0f74b1843c4bca94432e5fb5e86",
+      "heading": 0
+    },
+    {
+      "id": "b45-escalators",
+      "node": "n:d3780714b8fc4fa3ad1ef2d738af3181",
+      "heading": 0
+    },
+    {
+      "id": "b6-platform-train",
+      "node": "n:96df6458bbe9468488b6a052dcb134a4",
+      "heading": 0,
+      "t": 40
+    },
+    {
+      "id": "b6-platform-empty",
+      "node": "n:aa46c00fc8394714b53bbd7320a11697",
+      "heading": -1.98,
+      "t": 95
+    },
+    {
+      "id": "elevator-b1",
+      "node": "n:cbaeded02c114348a1bd8d0c0590584c",
+      "heading": 0
+    },
+    {
+      "id": "exit-1-canopy-back",
+      "eye": {
+        "x": -60.2,
+        "y": 213.025,
+        "z": 1.7
+      },
+      "look": {
+        "x": -59.915,
+        "y": 212.109,
+        "z": 2.45
+      }
+    },
+    {
+      "id": "exit-2-canopy-back",
+      "eye": {
+        "x": -61.5,
+        "y": 148.7,
+        "z": 1.7
+      },
+      "look": {
+        "x": -56.8,
+        "y": 146.4,
+        "z": 2.4
+      }
+    },
+    {
+      "id": "exit-3-canopy-back",
+      "eye": {
+        "x": -1.09,
+        "y": 6.5,
+        "z": 1.7
+      },
+      "look": {
+        "x": -2.59,
+        "y": 2.56,
+        "z": 2.6
+      }
+    },
+    {
+      "id": "exit-4-canopy-back",
+      "eye": {
+        "x": 5.8,
+        "y": -7.1,
+        "z": 1.7
+      },
+      "look": {
+        "x": -1.72,
+        "y": -12.31,
+        "z": 2.6
+      }
+    },
+    {
+      "id": "exit-street-oblique",
+      "eye": {
+        "x": -90,
+        "y": 180,
+        "z": 32
+      },
+      "look": {
+        "x": -53,
+        "y": 180,
+        "z": 0
+      }
+    },
+    {
+      "id": "exit-1-city",
+      "eye": {
+        "x": -59.8,
+        "y": 214.6,
+        "z": 1.7
+      },
+      "look": {
+        "x": -30,
+        "y": 198,
+        "z": 5
+      }
+    },
+    {
+      "id": "exit-4-city",
+      "eye": {
+        "x": 4,
+        "y": -8.5,
+        "z": 1.7
+      },
+      "look": {
+        "x": 60,
+        "y": -90,
+        "z": 4
+      }
+    },
+    {
+      "id": "characters-platform-setup",
+      "node": "n:96df6458bbe9468488b6a052dcb134a4",
+      "heading": 0,
+      "t": 40
+    },
+    {
+      "id": "characters-close-front",
+      "eye": {
+        "x": -39.9,
+        "y": 203.1,
+        "z": -41.52
+      },
+      "look": {
+        "x": -39.13,
+        "y": 200.04,
+        "z": -41.92
+      },
+      "t": 0
+    },
+    {
+      "id": "characters-close-back",
+      "eye": {
+        "x": -38.4,
+        "y": 197.2,
+        "z": -41.52
+      },
+      "look": {
+        "x": -39.13,
+        "y": 200.04,
+        "z": -41.92
+      },
+      "t": 0
+    },
+    {
+      "id": "w1-b1-b3-shaft-up",
+      "eye": {
+        "x": -65.7,
+        "y": 156.5,
+        "z": -22.05
+      },
+      "look": {
+        "x": -36.8,
+        "y": 168.1,
+        "z": -6.1
+      }
+    },
+    {
+      "id": "w1-b3-b6-shaft-up",
+      "eye": {
+        "x": -13.3,
+        "y": 94.17,
+        "z": -41.2
+      },
+      "look": {
+        "x": -23.63,
+        "y": 128.24,
+        "z": -22.05
+      }
+    },
+    {
+      "id": "w1-b2-stair-hall-across",
+      "eye": {
+        "x": -81.8,
+        "y": 173.7,
+        "z": -11.75
+      },
+      "look": {
+        "x": -85.8,
+        "y": 169.3,
+        "z": -14.2
+      }
+    },
+    {
+      "id": "w1-b45-landing-up",
+      "eye": {
+        "x": -47.0,
+        "y": 205.3,
+        "z": -28.4
+      },
+      "look": {
+        "x": -45.1,
+        "y": 192.8,
+        "z": -22.05
+      }
+    }
+  ]
+}

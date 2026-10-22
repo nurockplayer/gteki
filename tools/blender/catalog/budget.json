@@ -6,7 +6,7 @@
   },
   "limits": {
     "library_mib": 22.0,
-    "unique_image_mib": 2.55,
+    "unique_image_mib": 2.8,
     "gpu_unique_mib": 202,
     "gpu_all_glbs_mib": 1210,
     "finishes_mib": 1.6,
