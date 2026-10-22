@@ -1,0 +1,2427 @@
+{
+ "schema": "gteki.ikebukuro.kit-placements/0",
+ "catalog": {
+  "file": "kit_catalog.json",
+  "name": "gteki-ikebukuro",
+  "version": "0.1.0"
+ },
+ "source": {
+  "dressing_anchors_sha256": "ee8ef7c63da6c22e9ee2d1cf8041ff23b49acc20f1196608720114b095abae7e",
+  "gml": "53394576_ubld_6697_op.gml",
+  "gml_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
+  "wall_probe_glb_sha256": "aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8"
+ },
+ "frame": {
+  "axes": "ENU metres: x east, y north, z TP height (as dressing_anchors.json)",
+  "origin": "stair: floor under the first nosing line (centre of the line, nosing z less one riser); escalator: centre of the lower landing line, treated as the bottom comb line",
+  "dir": "horizontal unit vector (east, north) up the flight or escalator",
+  "yaw_deg": "counter-clockwise rotation about +Z taking the piece's local +Y (travel) to dir",
+  "mirror": "false everywhere: rails are on both sides, escalators are symmetric"
+ },
+ "summary": {
+  "unique_ids": 125,
+  "stair_nosing_ids": 60,
+  "stair_rails_ids": 60,
+  "escalator_ids": 5,
+  "stair_flights": {
+   "total": 72,
+   "covered": 69,
+   "skipped": 3
+  },
+  "escalator_lanes": {
+   "total": 5,
+   "covered": 5,
+   "skipped": 0
+  },
+  "rail_mount": {
+   "post": 9,
+   "wall": 60
+  },
+  "quantisation_max": {
+   "riser_mm": {
+    "mm": 2.417,
+    "anchor": "stair032"
+   },
+   "tread_mm": {
+    "mm": 2.0,
+    "anchor": "stair002"
+   },
+   "width_mm": {
+    "mm": 2.438,
+    "anchor": "stair071"
+   },
+   "top_height_mm": {
+    "mm": 40.0,
+    "anchor": "stair056"
+   },
+   "top_run_mm": {
+    "mm": 40.0,
+    "anchor": "stair044"
+   }
+  },
+  "escalator_incline_deg": {
+   "gteki_ik_escalator_w1010_rise2210_run5490": 25.23,
+   "gteki_ik_escalator_w1095_rise5840_run10795": 30.3,
+   "gteki_ik_escalator_w710_rise4390_run8060": 31.16,
+   "gteki_ik_escalator_w985_rise4390_run8060": 31.16,
+   "gteki_ik_escalator_w990_rise2210_run5490": 25.23
+  },
+  "skipped": [
+   {
+    "anchor": "stair040",
+    "kind": "stair",
+    "reason": "implausible riser 82 mm (19 steps, rise 1.483 m); outside 100-220 mm"
+   },
+   {
+    "anchor": "stair059",
+    "kind": "stair",
+    "reason": "1-step flight: no riser or tread to measure (generator needs step_count >= 2)"
+   },
+   {
+    "anchor": "stair069",
+    "kind": "stair",
+    "reason": "implausible tread 196 mm (run 0.196 m per step); under 200 mm"
+   }
+  ]
+ },
+ "placements": [
+  {
+   "anchor": "esc01_l1",
+   "kind": "escalator",
+   "scope": "building",
+   "bank": "esc01",
+   "ids": {
+    "dressing": "gteki_ik_escalator_w710_rise4390_run8060"
+   },
+   "origin": [
+    144.786,
+    21.966,
+    26.88
+   ],
+   "dir": [
+    0.7915,
+    -0.6112
+   ],
+   "yaw_deg": -127.675,
+   "mirror": false,
+   "incline_deg": 31.16,
+   "quantisation_mm": {
+    "rise_mm": 2.0,
+    "run_mm": 0.0,
+    "width_mm": 1.0
+   }
+  },
+  {
+   "anchor": "esc01_l2",
+   "kind": "escalator",
+   "scope": "building",
+   "bank": "esc01",
+   "ids": {
+    "dressing": "gteki_ik_escalator_w985_rise4390_run8060"
+   },
+   "origin": [
+    145.536,
+    22.938,
+    26.88
+   ],
+   "dir": [
+    0.7915,
+    -0.6112
+   ],
+   "yaw_deg": -127.675,
+   "mirror": false,
+   "incline_deg": 31.16,
+   "quantisation_mm": {
+    "rise_mm": 2.0,
+    "run_mm": 0.0,
+    "width_mm": 1.0
+   }
+  },
+  {
+   "anchor": "esc02_l1",
+   "kind": "escalator",
+   "scope": "building",
+   "bank": "esc02",
+   "ids": {
+    "dressing": "gteki_ik_escalator_w1095_rise5840_run10795"
+   },
+   "origin": [
+    153.273,
+    82.733,
+    26.24
+   ],
+   "dir": [
+    -0.3776,
+    -0.926
+   ],
+   "yaw_deg": 157.816,
+   "mirror": false,
+   "incline_deg": 30.3,
+   "quantisation_mm": {
+    "rise_mm": 2.0,
+    "run_mm": 1.0,
+    "width_mm": 2.0
+   }
+  },
+  {
+   "anchor": "esc03_l1",
+   "kind": "escalator",
+   "scope": "room1",
+   "bank": "esc03",
+   "ids": {
+    "dressing": "gteki_ik_escalator_w990_rise2210_run5490"
+   },
+   "origin": [
+    106.957,
+    108.404,
+    26.24
+   ],
+   "dir": [
+    -0.9259,
+    0.3777
+   ],
+   "yaw_deg": 67.808,
+   "mirror": false,
+   "incline_deg": 25.23,
+   "quantisation_mm": {
+    "rise_mm": 0.0,
+    "run_mm": 1.0,
+    "width_mm": 0.0
+   }
+  },
+  {
+   "anchor": "esc03_l2",
+   "kind": "escalator",
+   "scope": "room1",
+   "bank": "esc03",
+   "ids": {
+    "dressing": "gteki_ik_escalator_w1010_rise2210_run5490"
+   },
+   "origin": [
+    106.35,
+    106.917,
+    26.24
+   ],
+   "dir": [
+    -0.9259,
+    0.3777
+   ],
+   "yaw_deg": 67.808,
+   "mirror": false,
+   "incline_deg": 25.23,
+   "quantisation_mm": {
+    "rise_mm": 0.0,
+    "run_mm": 1.0,
+    "width_mm": 1.0
+   }
+  },
+  {
+   "anchor": "stair001",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n5_r165_t325_w2885_nosing",
+    "rails": "gteki_ik_stair_n5_r165_t325_w2885_rails_wall"
+   },
+   "origin": [
+    73.078,
+    -69.522,
+    25.861
+   ],
+   "dir": [
+    0.0819,
+    0.9966
+   ],
+   "yaw_deg": -4.698,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.0,
+    "tread_mm": 0.0,
+    "width_mm": 2.323,
+    "top_height_mm": 4.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair002",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n19_r170_t330_w4345_nosing",
+    "rails": "gteki_ik_stair_n19_r170_t330_w4345_rails_wall"
+   },
+   "origin": [
+    61.207,
+    -72.199,
+    25.858
+   ],
+   "dir": [
+    -0.9966,
+    0.0819
+   ],
+   "yaw_deg": 85.302,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.111,
+    "tread_mm": 2.0,
+    "width_mm": 1.603,
+    "top_height_mm": 38.0,
+    "top_run_mm": 36.0
+   }
+  },
+  {
+   "anchor": "stair003",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n8_r165_t335_w1910_nosing",
+    "rails": "gteki_ik_stair_n8_r165_t335_w1910_rails_wall"
+   },
+   "origin": [
+    174.44,
+    -170.225,
+    26.051
+   ],
+   "dir": [
+    -0.5875,
+    -0.8092
+   ],
+   "yaw_deg": 144.019,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.0,
+    "tread_mm": 2.0,
+    "width_mm": 1.632,
+    "top_height_mm": 7.0,
+    "top_run_mm": 14.0
+   }
+  },
+  {
+   "anchor": "stair004",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n12_r175_t265_w2740_nosing",
+    "rails": "gteki_ik_stair_n12_r175_t265_w2740_rails_wall"
+   },
+   "origin": [
+    134.346,
+    -130.328,
+    26.098
+   ],
+   "dir": [
+    0.5984,
+    0.8012
+   ],
+   "yaw_deg": -36.755,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.636,
+    "tread_mm": 1.0,
+    "width_mm": 1.993,
+    "top_height_mm": 18.0,
+    "top_run_mm": 11.0
+   }
+  },
+  {
+   "anchor": "stair005",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n3_r125_t315_w3065_nosing",
+    "rails": "gteki_ik_stair_n3_r125_t315_w3065_rails_wall"
+   },
+   "origin": [
+    159.396,
+    99.715,
+    26.24
+   ],
+   "dir": [
+    0.3778,
+    0.9259
+   ],
+   "yaw_deg": -22.197,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.5,
+    "tread_mm": 1.0,
+    "width_mm": 0.217,
+    "top_height_mm": 1.0,
+    "top_run_mm": 2.0
+   }
+  },
+  {
+   "anchor": "stair006",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n19_r170_t300_w3040_nosing",
+    "rails": "gteki_ik_stair_n19_r170_t300_w3040_rails_wall"
+   },
+   "origin": [
+    106.631,
+    102.014,
+    26.24
+   ],
+   "dir": [
+    -0.3776,
+    -0.926
+   ],
+   "yaw_deg": 157.816,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.111,
+    "tread_mm": 1.0,
+    "width_mm": 1.765,
+    "top_height_mm": 2.0,
+    "top_run_mm": 18.0
+   }
+  },
+  {
+   "anchor": "stair007",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n16_r175_t305_w2985_nosing",
+    "rails": "gteki_ik_stair_n16_r175_t305_w2985_rails_wall"
+   },
+   "origin": [
+    124.654,
+    94.715,
+    26.239
+   ],
+   "dir": [
+    -0.3774,
+    -0.9261
+   ],
+   "yaw_deg": 157.828,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.667,
+    "tread_mm": 2.0,
+    "width_mm": 0.993,
+    "top_height_mm": 10.0,
+    "top_run_mm": 30.0
+   }
+  },
+  {
+   "anchor": "stair008",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n16_r175_t305_w2985_nosing",
+    "rails": "gteki_ik_stair_n16_r175_t305_w2985_rails_wall"
+   },
+   "origin": [
+    134.702,
+    90.617,
+    26.239
+   ],
+   "dir": [
+    -0.3777,
+    -0.9259
+   ],
+   "yaw_deg": 157.808,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.667,
+    "tread_mm": 2.0,
+    "width_mm": 0.993,
+    "top_height_mm": 10.0,
+    "top_run_mm": 30.0
+   }
+  },
+  {
+   "anchor": "stair009",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n4_r175_t225_w2215_nosing",
+    "rails": "gteki_ik_stair_n4_r175_t225_w2215_rails_post"
+   },
+   "origin": [
+    105.574,
+    105.014,
+    26.24
+   ],
+   "dir": [
+    -0.926,
+    0.3775
+   ],
+   "yaw_deg": 67.821,
+   "mirror": false,
+   "rail_mount": "post",
+   "wall_share": {
+    "left": 1.0,
+    "right": 0.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.0,
+    "tread_mm": 1.0,
+    "width_mm": 0.488,
+    "top_height_mm": 0.0,
+    "top_run_mm": 3.0
+   }
+  },
+  {
+   "anchor": "stair010",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n4_r175_t225_w2205_nosing",
+    "rails": "gteki_ik_stair_n4_r175_t225_w2205_rails_post"
+   },
+   "origin": [
+    107.728,
+    110.293,
+    26.24
+   ],
+   "dir": [
+    -0.926,
+    0.3776
+   ],
+   "yaw_deg": 67.816,
+   "mirror": false,
+   "rail_mount": "post",
+   "wall_share": {
+    "left": 0.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.0,
+    "tread_mm": 1.0,
+    "width_mm": 0.832,
+    "top_height_mm": 0.0,
+    "top_run_mm": 3.0
+   }
+  },
+  {
+   "anchor": "stair011",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n17_r175_t300_w3055_nosing",
+    "rails": "gteki_ik_stair_n17_r175_t300_w3055_rails_wall"
+   },
+   "origin": [
+    110.082,
+    111.495,
+    26.241
+   ],
+   "dir": [
+    0.2309,
+    0.973
+   ],
+   "yaw_deg": -13.35,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.562,
+    "tread_mm": 1.0,
+    "width_mm": 1.499,
+    "top_height_mm": 9.0,
+    "top_run_mm": 16.0
+   }
+  },
+  {
+   "anchor": "stair012",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n17_r175_t300_w1515_nosing",
+    "rails": "gteki_ik_stair_n17_r175_t300_w1515_rails_post"
+   },
+   "origin": [
+    151.928,
+    83.281,
+    26.241
+   ],
+   "dir": [
+    -0.3775,
+    -0.926
+   ],
+   "yaw_deg": 157.821,
+   "mirror": false,
+   "rail_mount": "post",
+   "wall_share": {
+    "left": 0.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.562,
+    "tread_mm": 1.0,
+    "width_mm": 0.121,
+    "top_height_mm": 9.0,
+    "top_run_mm": 16.0
+   }
+  },
+  {
+   "anchor": "stair013",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n4_r145_t340_w3915_nosing",
+    "rails": "gteki_ik_stair_n4_r145_t340_w3915_rails_wall"
+   },
+   "origin": [
+    130.174,
+    41.17,
+    26.302
+   ],
+   "dir": [
+    0.2099,
+    -0.9777
+   ],
+   "yaw_deg": -167.883,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.667,
+    "tread_mm": 2.0,
+    "width_mm": 0.261,
+    "top_height_mm": 2.0,
+    "top_run_mm": 6.0
+   }
+  },
+  {
+   "anchor": "stair014",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n20_r140_t300_w3055_nosing",
+    "rails": "gteki_ik_stair_n20_r140_t300_w3055_rails_wall"
+   },
+   "origin": [
+    160.075,
+    102.507,
+    26.616
+   ],
+   "dir": [
+    -0.1479,
+    0.989
+   ],
+   "yaw_deg": 8.505,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.474,
+    "tread_mm": 1.0,
+    "width_mm": 0.447,
+    "top_height_mm": 28.0,
+    "top_run_mm": 19.0
+   }
+  },
+  {
+   "anchor": "stair015",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n12_r170_t335_w2940_nosing",
+    "rails": "gteki_ik_stair_n12_r170_t335_w2940_rails_wall"
+   },
+   "origin": [
+    78.003,
+    -49.027,
+    26.688
+   ],
+   "dir": [
+    0.5752,
+    0.818
+   ],
+   "yaw_deg": -35.114,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.364,
+    "tread_mm": 2.0,
+    "width_mm": 1.377,
+    "top_height_mm": 26.0,
+    "top_run_mm": 22.0
+   }
+  },
+  {
+   "anchor": "stair016",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n6_r150_t330_w2610_nosing",
+    "rails": "gteki_ik_stair_n6_r150_t330_w2610_rails_wall"
+   },
+   "origin": [
+    117.237,
+    31.937,
+    26.882
+   ],
+   "dir": [
+    -0.9763,
+    -0.2162
+   ],
+   "yaw_deg": 102.487,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.6,
+    "tread_mm": 2.0,
+    "width_mm": 0.542,
+    "top_height_mm": 8.0,
+    "top_run_mm": 10.0
+   }
+  },
+  {
+   "anchor": "stair017",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n13_r170_t330_w1845_nosing",
+    "rails": "gteki_ik_stair_n13_r170_t330_w1845_rails_post"
+   },
+   "origin": [
+    146.555,
+    24.259,
+    26.879
+   ],
+   "dir": [
+    0.7916,
+    -0.611
+   ],
+   "yaw_deg": -127.663,
+   "mirror": false,
+   "rail_mount": "post",
+   "wall_share": {
+    "left": 1.0,
+    "right": 0.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.583,
+    "tread_mm": 1.0,
+    "width_mm": 0.011,
+    "top_height_mm": 7.0,
+    "top_run_mm": 12.0
+   }
+  },
+  {
+   "anchor": "stair018",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n12_r170_t320_w2400_nosing",
+    "rails": "gteki_ik_stair_n12_r170_t320_w2400_rails_wall"
+   },
+   "origin": [
+    137.531,
+    42.987,
+    26.881
+   ],
+   "dir": [
+    0.0092,
+    1.0
+   ],
+   "yaw_deg": -0.527,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.091,
+    "tread_mm": 1.0,
+    "width_mm": 0.101,
+    "top_height_mm": 12.0,
+    "top_run_mm": 11.0
+   }
+  },
+  {
+   "anchor": "stair019",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n9_r170_t300_w2215_nosing",
+    "rails": "gteki_ik_stair_n9_r170_t300_w2215_rails_post"
+   },
+   "origin": [
+    102.147,
+    106.412,
+    26.938
+   ],
+   "dir": [
+    -0.9259,
+    0.3778
+   ],
+   "yaw_deg": 67.803,
+   "mirror": false,
+   "rail_mount": "post",
+   "wall_share": {
+    "left": 1.0,
+    "right": 0.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.25,
+    "tread_mm": 1.0,
+    "width_mm": 0.213,
+    "top_height_mm": 18.0,
+    "top_run_mm": 8.0
+   }
+  },
+  {
+   "anchor": "stair020",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n9_r170_t300_w2205_nosing",
+    "rails": "gteki_ik_stair_n9_r170_t300_w2205_rails_post"
+   },
+   "origin": [
+    104.299,
+    111.691,
+    26.938
+   ],
+   "dir": [
+    -0.926,
+    0.3776
+   ],
+   "yaw_deg": 67.816,
+   "mirror": false,
+   "rail_mount": "post",
+   "wall_share": {
+    "left": 0.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.25,
+    "tread_mm": 1.0,
+    "width_mm": 1.295,
+    "top_height_mm": 18.0,
+    "top_run_mm": 8.0
+   }
+  },
+  {
+   "anchor": "stair021",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n11_r170_t325_w2885_nosing",
+    "rails": "gteki_ik_stair_n11_r170_t325_w2885_rails_wall"
+   },
+   "origin": [
+    97.822,
+    -22.226,
+    27.08
+   ],
+   "dir": [
+    -0.6024,
+    -0.7982
+   ],
+   "yaw_deg": 142.958,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.3,
+    "tread_mm": 2.0,
+    "width_mm": 1.613,
+    "top_height_mm": 3.0,
+    "top_run_mm": 20.0
+   }
+  },
+  {
+   "anchor": "stair022",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n9_r175_t330_w2885_nosing",
+    "rails": "gteki_ik_stair_n9_r175_t330_w2885_rails_wall"
+   },
+   "origin": [
+    102.581,
+    -15.918,
+    27.078
+   ],
+   "dir": [
+    0.6024,
+    0.7982
+   ],
+   "yaw_deg": -37.042,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.375,
+    "tread_mm": 1.0,
+    "width_mm": 1.613,
+    "top_height_mm": 19.0,
+    "top_run_mm": 8.0
+   }
+  },
+  {
+   "anchor": "stair023",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n11_r165_t330_w1910_nosing",
+    "rails": "gteki_ik_stair_n11_r165_t330_w1910_rails_wall"
+   },
+   "origin": [
+    172.696,
+    -174.046,
+    27.379
+   ],
+   "dir": [
+    0.1606,
+    -0.987
+   ],
+   "yaw_deg": -170.758,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.6,
+    "tread_mm": 1.0,
+    "width_mm": 1.65,
+    "top_height_mm": 6.0,
+    "top_run_mm": 10.0
+   }
+  },
+  {
+   "anchor": "stair024",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n10_r145_t300_w10520_nosing",
+    "rails": "gteki_ik_stair_n10_r145_t300_w10520_rails_wall"
+   },
+   "origin": [
+    15.226,
+    -65.499,
+    27.582
+   ],
+   "dir": [
+    0.9966,
+    -0.0819
+   ],
+   "yaw_deg": -94.698,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.0,
+    "tread_mm": 2.0,
+    "width_mm": 2.367,
+    "top_height_mm": 18.0,
+    "top_run_mm": 18.0
+   }
+  },
+  {
+   "anchor": "stair025",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n6_r180_t325_w6660_nosing",
+    "rails": "gteki_ik_stair_n6_r180_t325_w6660_rails_post"
+   },
+   "origin": [
+    53.753,
+    129.17,
+    27.58
+   ],
+   "dir": [
+    0.9187,
+    -0.395
+   ],
+   "yaw_deg": -113.266,
+   "mirror": false,
+   "rail_mount": "post",
+   "wall_share": {
+    "left": 0.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.4,
+    "tread_mm": 2.0,
+    "width_mm": 1.578,
+    "top_height_mm": 2.0,
+    "top_run_mm": 10.0
+   }
+  },
+  {
+   "anchor": "stair026",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n9_r155_t315_w2955_nosing",
+    "rails": "gteki_ik_stair_n9_r155_t315_w2955_rails_wall"
+   },
+   "origin": [
+    -48.023,
+    181.538,
+    27.91
+   ],
+   "dir": [
+    0.5196,
+    0.8544
+   ],
+   "yaw_deg": -31.306,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.0,
+    "tread_mm": 1.0,
+    "width_mm": 0.884,
+    "top_height_mm": 0.0,
+    "top_run_mm": 8.0
+   }
+  },
+  {
+   "anchor": "stair027",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n16_r155_t330_w3870_nosing",
+    "rails": "gteki_ik_stair_n16_r155_t330_w3870_rails_wall"
+   },
+   "origin": [
+    -35.52,
+    174.336,
+    27.91
+   ],
+   "dir": [
+    0.5196,
+    0.8544
+   ],
+   "yaw_deg": -31.306,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.467,
+    "tread_mm": 1.0,
+    "width_mm": 1.78,
+    "top_height_mm": 7.0,
+    "top_run_mm": 15.0
+   }
+  },
+  {
+   "anchor": "stair028",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n13_r160_t300_w2310_nosing",
+    "rails": "gteki_ik_stair_n13_r160_t300_w2310_rails_wall"
+   },
+   "origin": [
+    -177.764,
+    124.516,
+    27.908
+   ],
+   "dir": [
+    -0.8531,
+    0.5218
+   ],
+   "yaw_deg": 58.548,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.0,
+    "tread_mm": 2.0,
+    "width_mm": 0.687,
+    "top_height_mm": 24.0,
+    "top_run_mm": 24.0
+   }
+  },
+  {
+   "anchor": "stair029",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n3_r160_t300_w3930_nosing",
+    "rails": "gteki_ik_stair_n3_r160_t300_w3930_rails_wall"
+   },
+   "origin": [
+    -165.704,
+    140.614,
+    27.909
+   ],
+   "dir": [
+    0.3757,
+    0.9267
+   ],
+   "yaw_deg": -22.068,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.5,
+    "tread_mm": 1.0,
+    "width_mm": 0.826,
+    "top_height_mm": 1.0,
+    "top_run_mm": 2.0
+   }
+  },
+  {
+   "anchor": "stair030",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n5_r160_t315_w2445_nosing",
+    "rails": "gteki_ik_stair_n5_r160_t315_w2445_rails_wall"
+   },
+   "origin": [
+    -52.65,
+    174.423,
+    27.91
+   ],
+   "dir": [
+    -0.5195,
+    -0.8545
+   ],
+   "yaw_deg": 148.702,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.5,
+    "tread_mm": 1.0,
+    "width_mm": 0.273,
+    "top_height_mm": 2.0,
+    "top_run_mm": 4.0
+   }
+  },
+  {
+   "anchor": "stair031",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n13_r160_t305_w3110_nosing",
+    "rails": "gteki_ik_stair_n13_r160_t305_w3110_rails_wall"
+   },
+   "origin": [
+    -166.279,
+    114.108,
+    27.912
+   ],
+   "dir": [
+    0.9267,
+    -0.3758
+   ],
+   "yaw_deg": -112.074,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.833,
+    "tread_mm": 1.0,
+    "width_mm": 1.364,
+    "top_height_mm": 22.0,
+    "top_run_mm": 12.0
+   }
+  },
+  {
+   "anchor": "stair032",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n13_r165_t300_w3010_nosing",
+    "rails": "gteki_ik_stair_n13_r165_t300_w3010_rails_wall"
+   },
+   "origin": [
+    -151.906,
+    162.551,
+    27.908
+   ],
+   "dir": [
+    -0.3759,
+    -0.9267
+   ],
+   "yaw_deg": 157.921,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.417,
+    "tread_mm": 0.0,
+    "width_mm": 1.704,
+    "top_height_mm": 29.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair033",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n13_r165_t300_w3010_nosing",
+    "rails": "gteki_ik_stair_n13_r165_t300_w3010_rails_wall"
+   },
+   "origin": [
+    -149.071,
+    169.542,
+    27.908
+   ],
+   "dir": [
+    0.3756,
+    0.9268
+   ],
+   "yaw_deg": -22.061,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.417,
+    "tread_mm": 0.0,
+    "width_mm": 1.704,
+    "top_height_mm": 29.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair034",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n14_r165_t300_w1805_nosing",
+    "rails": "gteki_ik_stair_n14_r165_t300_w1805_rails_wall"
+   },
+   "origin": [
+    -139.241,
+    129.769,
+    27.908
+   ],
+   "dir": [
+    0.3759,
+    0.9267
+   ],
+   "yaw_deg": -22.079,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.154,
+    "tread_mm": 0.0,
+    "width_mm": 1.465,
+    "top_height_mm": 28.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair035",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n13_r165_t300_w3010_nosing",
+    "rails": "gteki_ik_stair_n13_r165_t300_w3010_rails_wall"
+   },
+   "origin": [
+    -114.027,
+    146.837,
+    27.908
+   ],
+   "dir": [
+    -0.3759,
+    -0.9267
+   ],
+   "yaw_deg": 157.921,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.417,
+    "tread_mm": 0.0,
+    "width_mm": 1.704,
+    "top_height_mm": 29.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair036",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n13_r165_t300_w3010_nosing",
+    "rails": "gteki_ik_stair_n13_r165_t300_w3010_rails_wall"
+   },
+   "origin": [
+    -110.953,
+    154.382,
+    27.908
+   ],
+   "dir": [
+    0.376,
+    0.9266
+   ],
+   "yaw_deg": -22.087,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.417,
+    "tread_mm": 0.0,
+    "width_mm": 1.704,
+    "top_height_mm": 29.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair037",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n5_r175_t270_w2740_nosing",
+    "rails": "gteki_ik_stair_n5_r175_t270_w2740_rails_wall"
+   },
+   "origin": [
+    136.779,
+    -127.069,
+    28.179
+   ],
+   "dir": [
+    0.5982,
+    0.8013
+   ],
+   "yaw_deg": -36.743,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.0,
+    "tread_mm": 2.0,
+    "width_mm": 1.993,
+    "top_height_mm": 4.0,
+    "top_run_mm": 8.0
+   }
+  },
+  {
+   "anchor": "stair038",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n7_r145_t315_w2925_nosing",
+    "rails": "gteki_ik_stair_n7_r145_t315_w2925_rails_wall"
+   },
+   "origin": [
+    79.35,
+    37.791,
+    28.233
+   ],
+   "dir": [
+    0.3759,
+    0.9266
+   ],
+   "yaw_deg": -22.081,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.167,
+    "tread_mm": 1.0,
+    "width_mm": 1.563,
+    "top_height_mm": 1.0,
+    "top_run_mm": 6.0
+   }
+  },
+  {
+   "anchor": "stair039",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n11_r175_t270_w8180_nosing",
+    "rails": "gteki_ik_stair_n11_r175_t270_w8180_rails_wall"
+   },
+   "origin": [
+    31.336,
+    22.616,
+    28.3
+   ],
+   "dir": [
+    0.9186,
+    -0.3952
+   ],
+   "yaw_deg": -113.278,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.0,
+    "tread_mm": 0.0,
+    "width_mm": 2.238,
+    "top_height_mm": 20.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair041",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n9_r170_t310_w8615_nosing",
+    "rails": "gteki_ik_stair_n9_r170_t310_w8615_rails_wall"
+   },
+   "origin": [
+    74.117,
+    121.192,
+    28.448
+   ],
+   "dir": [
+    0.9187,
+    -0.395
+   ],
+   "yaw_deg": -113.266,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.5,
+    "tread_mm": 2.0,
+    "width_mm": 0.373,
+    "top_height_mm": 12.0,
+    "top_run_mm": 16.0
+   }
+  },
+  {
+   "anchor": "stair042",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n7_r170_t325_w4230_nosing",
+    "rails": "gteki_ik_stair_n7_r170_t325_w4230_rails_wall"
+   },
+   "origin": [
+    62.777,
+    25.226,
+    28.491
+   ],
+   "dir": [
+    -0.395,
+    -0.9187
+   ],
+   "yaw_deg": 156.734,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.167,
+    "tread_mm": 1.0,
+    "width_mm": 0.04,
+    "top_height_mm": 7.0,
+    "top_run_mm": 6.0
+   }
+  },
+  {
+   "anchor": "stair043",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n19_r165_t325_w1965_nosing",
+    "rails": "gteki_ik_stair_n19_r165_t325_w1965_rails_wall"
+   },
+   "origin": [
+    104.76,
+    -12.267,
+    28.635
+   ],
+   "dir": [
+    0.6021,
+    0.7984
+   ],
+   "yaw_deg": -37.021,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.789,
+    "right": 0.789
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.167,
+    "tread_mm": 2.0,
+    "width_mm": 1.407,
+    "top_height_mm": 21.0,
+    "top_run_mm": 36.0
+   }
+  },
+  {
+   "anchor": "stair044",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n21_r165_t330_w2940_nosing",
+    "rails": "gteki_ik_stair_n21_r165_t330_w2940_rails_wall"
+   },
+   "origin": [
+    80.775,
+    -45.082,
+    28.702
+   ],
+   "dir": [
+    0.5749,
+    0.8183
+   ],
+   "yaw_deg": -35.09,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.81,
+    "right": 0.81
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.7,
+    "tread_mm": 2.0,
+    "width_mm": 1.62,
+    "top_height_mm": 14.0,
+    "top_run_mm": 40.0
+   }
+  },
+  {
+   "anchor": "stair045",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n18_r165_t320_w2410_nosing",
+    "rails": "gteki_ik_stair_n18_r165_t320_w2410_rails_wall"
+   },
+   "origin": [
+    138.015,
+    48.007,
+    28.932
+   ],
+   "dir": [
+    0.3832,
+    0.9237
+   ],
+   "yaw_deg": -22.531,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.778,
+    "right": 0.778
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.647,
+    "tread_mm": 0.0,
+    "width_mm": 1.463,
+    "top_height_mm": 11.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair046",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n18_r170_t330_w1905_nosing",
+    "rails": "gteki_ik_stair_n18_r170_t330_w1905_rails_wall"
+   },
+   "origin": [
+    94.421,
+    -25.918,
+    28.945
+   ],
+   "dir": [
+    -0.6024,
+    -0.7982
+   ],
+   "yaw_deg": 142.958,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.778,
+    "right": 0.778
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.118,
+    "tread_mm": 2.0,
+    "width_mm": 0.792,
+    "top_height_mm": 36.0,
+    "top_run_mm": 34.0
+   }
+  },
+  {
+   "anchor": "stair047",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n19_r175_t305_w3000_nosing",
+    "rails": "gteki_ik_stair_n19_r175_t305_w3000_rails_wall"
+   },
+   "origin": [
+    126.006,
+    89.255,
+    29.03
+   ],
+   "dir": [
+    0.3775,
+    0.926
+   ],
+   "yaw_deg": -22.179,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.789,
+    "right": 0.789
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.833,
+    "tread_mm": 1.0,
+    "width_mm": 1.141,
+    "top_height_mm": 15.0,
+    "top_run_mm": 18.0
+   }
+  },
+  {
+   "anchor": "stair048",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n19_r175_t305_w3000_nosing",
+    "rails": "gteki_ik_stair_n19_r175_t305_w3000_rails_wall"
+   },
+   "origin": [
+    129.917,
+    87.66,
+    29.03
+   ],
+   "dir": [
+    0.3776,
+    0.926
+   ],
+   "yaw_deg": -22.184,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.789,
+    "right": 0.789
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.833,
+    "tread_mm": 1.0,
+    "width_mm": 0.764,
+    "top_height_mm": 15.0,
+    "top_run_mm": 18.0
+   }
+  },
+  {
+   "anchor": "stair049",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n10_r160_t300_w4815_nosing",
+    "rails": "gteki_ik_stair_n10_r160_t300_w4815_rails_wall"
+   },
+   "origin": [
+    52.037,
+    -60.1,
+    29.052
+   ],
+   "dir": [
+    0.0818,
+    0.9966
+   ],
+   "yaw_deg": -4.692,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.556,
+    "tread_mm": 2.0,
+    "width_mm": 2.222,
+    "top_height_mm": 14.0,
+    "top_run_mm": 18.0
+   }
+  },
+  {
+   "anchor": "stair050",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n3_r165_t200_w2435_nosing",
+    "rails": "gteki_ik_stair_n3_r165_t200_w2435_rails_wall"
+   },
+   "origin": [
+    134.613,
+    -124.323,
+    29.052
+   ],
+   "dir": [
+    -0.5984,
+    -0.8012
+   ],
+   "yaw_deg": 143.245,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.0,
+    "tread_mm": 2.0,
+    "width_mm": 1.405,
+    "top_height_mm": 4.0,
+    "top_run_mm": 4.0
+   }
+  },
+  {
+   "anchor": "stair051",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n13_r170_t330_w1845_nosing",
+    "rails": "gteki_ik_stair_n13_r170_t330_w1845_rails_post"
+   },
+   "origin": [
+    150.625,
+    21.117,
+    29.08
+   ],
+   "dir": [
+    0.7916,
+    -0.611
+   ],
+   "yaw_deg": -127.663,
+   "mirror": false,
+   "rail_mount": "post",
+   "wall_share": {
+    "left": 0.692,
+    "right": 0.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.833,
+    "tread_mm": 0.0,
+    "width_mm": 0.011,
+    "top_height_mm": 22.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair052",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n18_r170_t300_w3055_nosing",
+    "rails": "gteki_ik_stair_n18_r170_t300_w3055_rails_wall"
+   },
+   "origin": [
+    111.538,
+    117.633,
+    29.227
+   ],
+   "dir": [
+    0.2309,
+    0.973
+   ],
+   "yaw_deg": -13.35,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.778,
+    "right": 0.778
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.118,
+    "tread_mm": 0.0,
+    "width_mm": 1.499,
+    "top_height_mm": 36.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair053",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n16_r180_t300_w1515_nosing",
+    "rails": "gteki_ik_stair_n16_r180_t300_w1515_rails_post"
+   },
+   "origin": [
+    149.546,
+    77.44,
+    29.223
+   ],
+   "dir": [
+    -0.3775,
+    -0.926
+   ],
+   "yaw_deg": 157.821,
+   "mirror": false,
+   "rail_mount": "post",
+   "wall_share": {
+    "left": 0.0,
+    "right": 0.75
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.667,
+    "tread_mm": 1.0,
+    "width_mm": 0.426,
+    "top_height_mm": 25.0,
+    "top_run_mm": 15.0
+   }
+  },
+  {
+   "anchor": "stair054",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n19_r160_t330_w1970_nosing",
+    "rails": "gteki_ik_stair_n19_r160_t330_w1970_rails_wall"
+   },
+   "origin": [
+    81.197,
+    41.073,
+    29.246
+   ],
+   "dir": [
+    0.3759,
+    0.9266
+   ],
+   "yaw_deg": -22.081,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.789,
+    "right": 0.789
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.056,
+    "tread_mm": 2.0,
+    "width_mm": 1.606,
+    "top_height_mm": 19.0,
+    "top_run_mm": 36.0
+   }
+  },
+  {
+   "anchor": "stair055",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n3_r185_t260_w1515_nosing",
+    "rails": "gteki_ik_stair_n3_r185_t260_w1515_rails_wall"
+   },
+   "origin": [
+    173.65,
+    -180.724,
+    29.302
+   ],
+   "dir": [
+    -0.6061,
+    -0.7954
+   ],
+   "yaw_deg": 142.692,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.5,
+    "tread_mm": 1.0,
+    "width_mm": 1.244,
+    "top_height_mm": 3.0,
+    "top_run_mm": 2.0
+   }
+  },
+  {
+   "anchor": "stair056",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n21_r140_t300_w3055_nosing",
+    "rails": "gteki_ik_stair_n21_r140_t300_w3055_rails_wall"
+   },
+   "origin": [
+    159.12,
+    109.631,
+    29.446
+   ],
+   "dir": [
+    -0.148,
+    0.989
+   ],
+   "yaw_deg": 8.511,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.762,
+    "right": 0.762
+   },
+   "quantisation_mm": {
+    "riser_mm": 2.0,
+    "tread_mm": 0.0,
+    "width_mm": 0.373,
+    "top_height_mm": 40.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair057",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n16_r175_t300_w3040_nosing",
+    "rails": "gteki_ik_stair_n16_r175_t300_w3040_rails_wall"
+   },
+   "origin": [
+    104.038,
+    95.656,
+    29.47
+   ],
+   "dir": [
+    -0.3776,
+    -0.926
+   ],
+   "yaw_deg": 157.816,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.75,
+    "right": 0.75
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.6,
+    "tread_mm": 2.0,
+    "width_mm": 1.954,
+    "top_height_mm": 24.0,
+    "top_run_mm": 30.0
+   }
+  },
+  {
+   "anchor": "stair058",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n17_r175_t260_w2435_nosing",
+    "rails": "gteki_ik_stair_n17_r175_t260_w2435_rails_wall"
+   },
+   "origin": [
+    133.64,
+    -125.626,
+    29.55
+   ],
+   "dir": [
+    -0.5982,
+    -0.8014
+   ],
+   "yaw_deg": 143.261,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.765,
+    "right": 0.765
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.188,
+    "tread_mm": 0.0,
+    "width_mm": 1.405,
+    "top_height_mm": 19.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair060",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n15_r165_t310_w8375_nosing",
+    "rails": "gteki_ik_stair_n15_r165_t310_w8375_rails_wall"
+   },
+   "origin": [
+    77.536,
+    119.706,
+    29.965
+   ],
+   "dir": [
+    0.9187,
+    -0.3949
+   ],
+   "yaw_deg": -113.26,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.733,
+    "right": 0.733
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.286,
+    "tread_mm": 2.0,
+    "width_mm": 1.306,
+    "top_height_mm": 18.0,
+    "top_run_mm": 28.0
+   }
+  },
+  {
+   "anchor": "stair061",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n6_r175_t260_w1470_nosing",
+    "rails": "gteki_ik_stair_n6_r175_t260_w1470_rails_wall"
+   },
+   "origin": [
+    172.101,
+    -181.513,
+    30.012
+   ],
+   "dir": [
+    -0.7975,
+    0.6033
+   ],
+   "yaw_deg": 52.893,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.6,
+    "tread_mm": 0.0,
+    "width_mm": 1.215,
+    "top_height_mm": 8.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair062",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n19_r165_t300_w3010_nosing",
+    "rails": "gteki_ik_stair_n19_r165_t300_w3010_rails_wall"
+   },
+   "origin": [
+    -153.718,
+    158.084,
+    30.024
+   ],
+   "dir": [
+    -0.3759,
+    -0.9267
+   ],
+   "yaw_deg": 157.921,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.789,
+    "right": 0.789
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.722,
+    "tread_mm": 2.0,
+    "width_mm": 1.704,
+    "top_height_mm": 13.0,
+    "top_run_mm": 36.0
+   }
+  },
+  {
+   "anchor": "stair063",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n19_r165_t300_w3010_nosing",
+    "rails": "gteki_ik_stair_n19_r165_t300_w3010_rails_wall"
+   },
+   "origin": [
+    -147.26,
+    174.01,
+    30.024
+   ],
+   "dir": [
+    0.376,
+    0.9266
+   ],
+   "yaw_deg": -22.087,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.789,
+    "right": 0.789
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.722,
+    "tread_mm": 2.0,
+    "width_mm": 2.255,
+    "top_height_mm": 13.0,
+    "top_run_mm": 36.0
+   }
+  },
+  {
+   "anchor": "stair064",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n19_r165_t300_w3010_nosing",
+    "rails": "gteki_ik_stair_n19_r165_t300_w3010_rails_wall"
+   },
+   "origin": [
+    -115.839,
+    142.37,
+    30.024
+   ],
+   "dir": [
+    -0.3759,
+    -0.9267
+   ],
+   "yaw_deg": 157.921,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.789,
+    "right": 0.789
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.722,
+    "tread_mm": 2.0,
+    "width_mm": 1.704,
+    "top_height_mm": 13.0,
+    "top_run_mm": 36.0
+   }
+  },
+  {
+   "anchor": "stair065",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n19_r165_t300_w3010_nosing",
+    "rails": "gteki_ik_stair_n19_r165_t300_w3010_rails_wall"
+   },
+   "origin": [
+    -109.141,
+    158.849,
+    30.024
+   ],
+   "dir": [
+    0.376,
+    0.9266
+   ],
+   "yaw_deg": -22.087,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.789,
+    "right": 0.789
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.722,
+    "tread_mm": 2.0,
+    "width_mm": 1.704,
+    "top_height_mm": 13.0,
+    "top_run_mm": 36.0
+   }
+  },
+  {
+   "anchor": "stair066",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n13_r165_t300_w8325_nosing",
+    "rails": "gteki_ik_stair_n13_r165_t300_w8325_rails_wall"
+   },
+   "origin": [
+    34.866,
+    21.02,
+    30.205
+   ],
+   "dir": [
+    0.9186,
+    -0.3953
+   ],
+   "yaw_deg": -113.284,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.769,
+    "right": 0.769
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.417,
+    "tread_mm": 2.0,
+    "width_mm": 1.609,
+    "top_height_mm": 5.0,
+    "top_run_mm": 24.0
+   }
+  },
+  {
+   "anchor": "stair067",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n15_r160_t330_w3870_nosing",
+    "rails": "gteki_ik_stair_n15_r160_t330_w3870_rails_wall"
+   },
+   "origin": [
+    -32.01,
+    180.107,
+    30.397
+   ],
+   "dir": [
+    0.5196,
+    0.8544
+   ],
+   "yaw_deg": -31.306,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.733,
+    "right": 0.733
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.214,
+    "tread_mm": 1.0,
+    "width_mm": 1.78,
+    "top_height_mm": 3.0,
+    "top_run_mm": 14.0
+   }
+  },
+  {
+   "anchor": "stair068",
+   "kind": "stair",
+   "scope": "room1",
+   "ids": {
+    "nosing": "gteki_ik_stair_n12_r165_t300_w4815_nosing",
+    "rails": "gteki_ik_stair_n12_r165_t300_w4815_rails_wall"
+   },
+   "origin": [
+    52.38,
+    -55.916,
+    30.666
+   ],
+   "dir": [
+    0.082,
+    0.9966
+   ],
+   "yaw_deg": -4.704,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.667,
+    "right": 0.667
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.364,
+    "tread_mm": 1.0,
+    "width_mm": 2.222,
+    "top_height_mm": 4.0,
+    "top_run_mm": 11.0
+   }
+  },
+  {
+   "anchor": "stair070",
+   "kind": "stair",
+   "scope": "room3",
+   "ids": {
+    "nosing": "gteki_ik_stair_n7_r165_t300_w2555_nosing",
+    "rails": "gteki_ik_stair_n7_r165_t300_w2555_rails_wall"
+   },
+   "origin": [
+    -97.858,
+    154.702,
+    27.909
+   ],
+   "dir": [
+    0.3951,
+    0.9186
+   ],
+   "yaw_deg": -23.273,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.0,
+    "tread_mm": 0.0,
+    "width_mm": 1.219,
+    "top_height_mm": 6.0,
+    "top_run_mm": 0.0
+   }
+  },
+  {
+   "anchor": "stair071",
+   "kind": "stair",
+   "scope": "room3",
+   "ids": {
+    "nosing": "gteki_ik_stair_n9_r165_t290_w2700_nosing",
+    "rails": "gteki_ik_stair_n9_r165_t290_w2700_rails_wall"
+   },
+   "origin": [
+    -95.29,
+    157.188,
+    29.059
+   ],
+   "dir": [
+    0.9187,
+    -0.3949
+   ],
+   "yaw_deg": -113.26,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 1.0,
+    "right": 1.0
+   },
+   "quantisation_mm": {
+    "riser_mm": 0.125,
+    "tread_mm": 2.0,
+    "width_mm": 2.438,
+    "top_height_mm": 1.0,
+    "top_run_mm": 16.0
+   }
+  },
+  {
+   "anchor": "stair072",
+   "kind": "stair",
+   "scope": "room3",
+   "ids": {
+    "nosing": "gteki_ik_stair_n16_r165_t295_w2740_nosing",
+    "rails": "gteki_ik_stair_n16_r165_t295_w2740_rails_wall"
+   },
+   "origin": [
+    -94.569,
+    153.663,
+    30.544
+   ],
+   "dir": [
+    -0.9188,
+    0.3948
+   ],
+   "yaw_deg": 66.747,
+   "mirror": false,
+   "rail_mount": "wall",
+   "wall_share": {
+    "left": 0.75,
+    "right": 0.75
+   },
+   "quantisation_mm": {
+    "riser_mm": 1.067,
+    "tread_mm": 2.0,
+    "width_mm": 1.024,
+    "top_height_mm": 16.0,
+    "top_run_mm": 30.0
+   }
+  }
+ ]
+}

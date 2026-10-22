@@ -53,6 +53,7 @@ pnpm typecheck
 | `scene/access_fences.json` | Walker-blocking fences with a 「通行可否 未確認」/"Access unverified" marker where surveyed floor of unknown access would shortcut the routable areas | presentation |
 | `scene/finishes.json` | Finish-pack manifest for the Lane E kit: role → texture folder + repeat in metres. Empty today (see "Kit integration") | presentation |
 | `scene/dressing_anchors.json` | Stair nosing lines and escalator landings from the PLATEAU survey, where kit dressing is placed (see "Kit integration") | truth (survey positions) |
+| `scene/kit_catalog.json`, `scene/kit_placements.json` | Lane E catalog and per-anchor placements for stair and escalator dressing, generated from the anchors (see "Kit integration") | derived (survey dimensions) |
 | `pipeline/` | Reproducible data and asset build (stdlib Python + Blender; one Node walker check) | — |
 | `docs/` | G0 source audit, coverage gaps, evidence | — |
 
@@ -150,6 +151,19 @@ extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressi
 - `escalator_lanes[]`: the bank's sloped walking quad gives the landing lines (low edge = `lower`, high edge =
   `upper`); the thin truss plates inside pair into lanes. Each lane has `lower` and `upper` anchors
   (`position`, `dir` up the escalator, `width_m` clear between plates), plus `rise_m`, `run_m` and `slope_deg`.
+
+**Lane E catalog.** `python3 -I pipeline/build_kit_catalog.py` (`pnpm build:kit-catalog`) turns the anchors into
+`scene/kit_catalog.json`, a Lane E batch catalog (`CATALOG=stations/ikebukuro/scene/kit_catalog.json`), and
+`scene/kit_placements.json`, which gives each flight or lane its catalog ids and ENU transform (`origin`, `dir`,
+`yaw_deg` about +Z taking the piece's +Y to `dir`, `mirror` always false). Every entry is `station-verified` and cites
+the anchors and PLATEAU GML sha256 plus the flight or lane ids it serves. Each stair flight becomes two
+`stair_dressing` entries so every GLB has one bake role: `..._nosing` (`stairs_ramps`) and `..._rails_{post,wall}`
+(handrails, `barriers`). `step_count` is the surveyed nosing count, `riser_mm` = rise / (steps - 1), `tread_mm` the mean
+nosing run, and riser, tread and width are snapped to 5 mm so near-identical flights share one id and are instanced.
+`rail_mount` is `wall` when the base GLB's wall mesh lies within 0.3 m of both stair sides, else `post`. Flights with
+an implausible riser (outside 100-220 mm) or tread (under 200 mm) and single-step flights are skipped and listed with
+their reason. Escalators carry `rise_mm`, `run_mm` (between the flat sections), clear `width_mm` and the default 800 mm
+landing; direction is not surveyed, so `up` is a placeholder (it only flips indicators, which are off).
 
 **How the bake will take a kit GLB in** (not built yet; `blender_bake_lighting.py` is unchanged):
 
