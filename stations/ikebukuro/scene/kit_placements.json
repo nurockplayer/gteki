@@ -6,7 +6,7 @@
   "version": "0.1.0"
  },
  "source": {
-  "dressing_anchors_sha256": "d64a77e814fbc98da7cd8ea44fbe4963bd71dbcee007f8f90691f141568022cc",
+  "dressing_anchors_sha256": "231672e3245372f4e0ced679aa4c9b0ec6ac325b0f1afe7deaa9c75e05b8bf27",
   "gml": "53394576_ubld_6697_op.gml",
   "gml_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
   "wall_probe_glb_sha256": "aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8",
