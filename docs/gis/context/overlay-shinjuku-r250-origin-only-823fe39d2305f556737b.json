@@ -1,5 +1,5 @@
 {
-  "run_id": "overlay-shinjuku-r250-origin-only-d49cedd293559c82dd76",
+  "run_id": "overlay-shinjuku-r250-origin-only-823fe39d2305f556737b",
   "command": "context-overlay",
   "policy_version": "context-overlay-v1",
   "station_id": "shinjuku",
@@ -7,7 +7,15 @@
   "navigation_use": "NOT_FOR_ROUTING",
   "visual_only": true,
   "verification": "UNVERIFIED",
-  "note": "Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; no railway class or track level is shown (the source has no underground versus at-grade field).",
+  "note": "Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; no railway class or track level is shown (the source has no underground versus at-grade field). The geometry is clipped to a 700 m disc around the station frame origin and is not the full source line; feature_hash is the hash of the whole source feature.",
+  "clip": {
+    "kind": "origin_disc",
+    "radius_m": 700,
+    "center": "station frame origin",
+    "features_clipped": 2,
+    "vertices_before": 165,
+    "vertices_after": 134
+  },
   "frame": {
     "mode": "origin-only",
     "note": "horizontal ENU at the station.json origin (evaluated at height 0; no vertical anchor exists and none is asserted); same x/y as the station-enu frame would give to well under a millimetre",
@@ -23,7 +31,7 @@
     "node_rule": null,
     "graph_sha256": null,
     "pois_sha256": null,
-    "selection_rule": "A feature is selected when any segment of its projected polyline meets a closed disc of the window; selected features are kept whole (never cut at the window edge)."
+    "selection_rule": "A feature is selected when any segment of its projected polyline meets a closed disc of the window; selected features are then clipped to the clip disc (when one is configured), after projection; without a clip they are kept whole."
   },
   "z_basis": {
     "mode": "constant",
@@ -56,8 +64,12 @@
       "features_in_source": 21933,
       "outside_prefilter": 21914,
       "outside_window": 4,
+      "selected_before_clip": 15,
+      "dropped_by_clip": 0,
       "selected": 15,
-      "vertices": 149
+      "features_clipped": 2,
+      "vertices_before_clip": 149,
+      "vertices": 118
     },
     {
       "kind": "station",
@@ -69,7 +81,11 @@
       "features_in_source": 10234,
       "outside_prefilter": 10226,
       "outside_window": 3,
+      "selected_before_clip": 5,
+      "dropped_by_clip": 0,
       "selected": 5,
+      "features_clipped": 0,
+      "vertices_before_clip": 16,
       "vertices": 16
     }
   ],
@@ -77,8 +93,11 @@
     "features_in_source": 32167,
     "outside_prefilter": 32140,
     "outside_window": 7,
+    "selected_before_clip": 20,
+    "dropped_by_clip": 0,
     "selected": 20,
-    "vertices": 165
+    "vertices_before_clip": 165,
+    "vertices": 134
   },
   "feature_hashes_sha256": {
     "railway": "2665bda3d5d97d65f4861a7a84e30fade85e584f45662f70d3a045020300662d",
@@ -112,8 +131,8 @@
   },
   "bbox_local_ENU": {
     "min": [
-      -2345.666,
-      -1244.584,
+      -663.639,
+      -485.97,
       0
     ],
     "max": [
@@ -124,33 +143,33 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/overlay-shinjuku-r250-origin-only-d49cedd293559c82dd76.geojson",
-      "sha256": "b684728f7c6f9973193bed79467a29df83466b105b1121c067f29f030efe7034",
-      "bytes": 14703
+      "store_path": "out/overlay-shinjuku-r250-origin-only-823fe39d2305f556737b.geojson",
+      "sha256": "7e19c8e6f4a2e08bb98212a6fcda3258a3b42ea2fad47a0b937131d02a9a7ab1",
+      "bytes": 14366
     },
     "glb": {
-      "store_path": "out/overlay-shinjuku-r250-origin-only-d49cedd293559c82dd76.glb",
-      "sha256": "bd8afef8b478553f904391ed52df6a58144dc1ad31b58336bad3468620566cdc",
-      "bytes": 22932,
+      "store_path": "out/overlay-shinjuku-r250-origin-only-823fe39d2305f556737b.glb",
+      "sha256": "eb03739d7d01556db891955b9f571cedafe7998bda827ffd0ff6185f42924067",
+      "bytes": 19212,
       "nodes": [
         "ctx_rail_all",
         "ctx_station_all"
       ],
       "triangles": {
-        "ctx_rail_all": 268,
+        "ctx_rail_all": 206,
         "ctx_station_all": 22
       },
       "readback": {
         "status": "PASS",
         "node_count": 2,
-        "triangle_count": 290,
-        "expected_triangle_count": 290,
-        "bbox_max_error_m": 0.00004700058889284264,
+        "triangle_count": 228,
+        "expected_triangle_count": 228,
+        "bbox_max_error_m": 0.00000767647975408181,
         "tolerance_m": 0.001
       },
       "segments_skipped_zero_length": 0
     }
   },
-  "tool_input_sha256": "a9ea30889a56395f376f88bbdd85de607a80b1f5280b4e2fea65d961890285c6",
+  "tool_input_sha256": "550b68d38a3d34e71299f7a01b9e7dc6c20c7d11f8ac15c9284b76d1727e5306",
   "tool_version": "0.1.0"
 }

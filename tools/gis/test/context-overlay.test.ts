@@ -12,7 +12,7 @@ import { stationLocal, isStationEnuFrame, type StationEnuFrame } from '../src/st
 import { buildContextWindow } from '../src/context-window.js';
 import { loadContextConfig, explorerRoleFromName } from '../src/context.js';
 import {
-  assertNoSourceValues, assertOverlayConfig, axisOrderOfPosition, overlayBBox, overlayGeoJson, parseOverlayKinds, polylineMeetsAnyDisc, publicOverlayReceipt, selectLayer, writeOverlayGlb,
+  assertNoSourceValues, assertOverlayConfig, clipPolylineToDisc, axisOrderOfPosition, overlayBBox, overlayGeoJson, parseOverlayKinds, polylineMeetsAnyDisc, publicOverlayReceipt, selectLayer, writeOverlayGlb,
   OVERLAY_PROPERTY_KEYS, type LayerInput, type OverlayMeta, type OverlayProjection, type OverlayReceiptInput,
 } from '../src/context-overlay.js';
 
@@ -55,10 +55,10 @@ async function fixtureCollection(swap = false): Promise<Record<string, unknown>>
   };
 }
 const layer = { source_id: 'ksj-n02-2025', kind: 'railway' as const, member: 'synthetic.geojson', ribbon_width_m: 1.5 };
-async function select(collection: unknown, kind: 'railway' | 'station' = 'railway', z = 32.5) {
+async function select(collection: unknown, kind: 'railway' | 'station' = 'railway', z = 32.5, clip: number | null = null) {
   const window = await buildContextWindow({ r_origin_m: 250, r_exit_m: 0 }, { stationId: 'ikebukuro' });
   const input: LayerInput = { layer: { ...layer, kind }, sourceSha256: 'a'.repeat(64), memberSha256: 'b'.repeat(64), collection };
-  return { window, ...selectLayer(input, await projection(), window, z) };
+  return { window, ...selectLayer(input, await projection(), window, z, clip) };
 }
 const meta: OverlayMeta = { station_id: 'ikebukuro', frame_label: 'ikebukuro-station-enu-v0', credit: 'SYNTHETIC credit', source_id: 'ksj-n02-2025', source_sha256: 'a'.repeat(64), z_m: 32.5, z_basis: 'render z = street floor renderElevationM', window_label: 'r_origin 250 m' };
 
@@ -179,7 +179,7 @@ describe('context-overlay: determinism', () => {
     const one = overlayGeoJson((await select(await fixtureCollection())).features, meta);
     const two = overlayGeoJson((await select(await fixtureCollection())).features, meta);
     expect(one).toBe(two);
-    expect(sha(one)).toBe('d5ef8be38d873ae6d0aed9c7b5f03bb5564955fc8ab9d81c2de97d4543653e1a');
+    expect(sha(one)).toBe('e1389b8a0b53736041b9c6b266171b5e442f3916b6bdf288422ff61ed2072ae3');
   });
   it('writes a GLB whose readback matches, with role-safe node names and 2 triangles per segment', async () => {
     const { features } = await select(await fixtureCollection());
@@ -202,14 +202,14 @@ describe('context-overlay: public receipt', () => {
     return { values: sourceValues, input: {
       run_id: 'overlay-x', station_id: 'ikebukuro', frame: { mode: 'station-enu-frame' }, window: { r_origin_m: 250 }, z: { z_m: 32.5, basis: 'render z = street floor renderElevationM' }, credit: 'SYNTHETIC credit',
       source: { source_id: 'ksj-n02-2025', source_sha256: 'a'.repeat(64), bytes: 1, license_name: 'CC BY 4.0', license_url: null, publish_gate: 'CONDITIONAL' },
-      layers: [counts], feature_hashes: { railway: features.map((f) => f.feature_hash) }, bbox: overlayBBox(features), outputs: {}, tool_input_sha256: 'd'.repeat(64), policy_version: 'context-overlay-v1',
+      layers: [counts], feature_hashes: { railway: features.map((f) => f.feature_hash) }, bbox: overlayBBox(features), outputs: {}, tool_input_sha256: 'd'.repeat(64), policy_version: 'context-overlay-v1', clip: { kind: 'origin_disc', radius_m: 250 },
     } };
   }
   it('has the expected shape: tags, counts, sorted hashes and no source value', async () => {
     const { input: i, values } = await input();
     const r = publicOverlayReceipt(i, values) as Record<string, any>;
     expect(r).toMatchObject({ gteki_role: 'context', navigation_use: 'NOT_FOR_ROUTING', visual_only: true, command: 'context-overlay', totals: { selected: 3 } });
-    expect(Object.keys(r).sort()).toEqual(['bbox_local_ENU', 'command', 'credit', 'feature_hashes', 'feature_hashes_sha256', 'frame', 'gteki_role', 'layers', 'navigation_use', 'note', 'outputs', 'policy_version', 'run_id', 'source', 'station_id', 'tool_input_sha256', 'tool_version', 'totals', 'verification', 'visual_only', 'window', 'z_basis']);
+    expect(Object.keys(r).sort()).toEqual(['bbox_local_ENU', 'clip', 'command', 'credit', 'feature_hashes', 'feature_hashes_sha256', 'frame', 'gteki_role', 'layers', 'navigation_use', 'note', 'outputs', 'policy_version', 'run_id', 'source', 'station_id', 'tool_input_sha256', 'tool_version', 'totals', 'verification', 'visual_only', 'window', 'z_basis']);
     expect(r.feature_hashes.railway).toEqual([...r.feature_hashes.railway].sort());
     for (const needle of [NAME, OPERATOR, CODE, 'N02_']) expect(JSON.stringify(r)).not.toContain(needle);
   });
@@ -239,6 +239,112 @@ describe('context-overlay: CLI argument validation', () => {
     expect(await run('ikebukuro', '--exit-radius', 'x')).toContain('--exit-radius must be a non-negative number');
     expect(await run('ikebukuro', '--kinds', 'bldg')).toContain('Invalid --kinds');
     expect(await run('ikebukuro', '--merge', 'kind')).toContain('takes only');
+    expect(await run('ikebukuro', '--clip-radius=-3')).toContain('--clip-radius must be a non-negative');
+    expect(await run('ikebukuro', '--clip-radius', 'abc')).toContain('--clip-radius must be a non-negative');
     expect(await run('nowhere')).toContain('No context config for station nowhere');
+  }, 60_000);
+});
+
+describe('context-overlay: clip to the origin disc', () => {
+  const R = 250;
+  const norm = (p: readonly number[]): number => Math.hypot(p[0]!, p[1]!);
+  it('splits a line crossing the circle twice, with both intersections on the circle within 1e-6', () => {
+    const parts = clipPolylineToDisc([[-400, 200], [400, 200]], R);
+    expect(parts).toHaveLength(1);
+    expect(parts[0]).toHaveLength(2);
+    for (const p of parts[0]!) expect(Math.abs(norm(p) - R)).toBeLessThan(1e-6);
+    expect(parts[0]![0]![0]).toBeCloseTo(-Math.sqrt(R * R - 200 * 200), 6);
+    expect(parts[0]![1]![0]).toBeCloseTo(Math.sqrt(R * R - 200 * 200), 6);
+  });
+  it('keeps a line fully inside unchanged with clipped false, and cuts the edge-crossing one', async () => {
+    const { features, counts } = await select(await fixtureCollection(), 'railway', 32.5, R);
+    const byIndex = new Map(features.map((f) => [f.source_index, f]));
+    const inside = byIndex.get(0)!, whole = await select(await fixtureCollection());
+    expect(inside.clipped).toBe(false);
+    expect(inside.parts).toEqual(whole.features.find((f) => f.source_index === 0)!.parts);
+    expect(byIndex.get(3)!.clipped).toBe(false);
+    const cut = byIndex.get(1)!;
+    expect(cut.clipped).toBe(true);
+    expect(cut.vertices_before_clip).toBe(2);
+    for (const p of cut.parts[0]!) expect(Math.abs(norm(p) - R)).toBeLessThan(1e-3);
+    expect(counts).toMatchObject({ selected_before_clip: 3, selected: 3, features_clipped: 1, dropped_by_clip: 0, vertices_before_clip: 8, vertices: 8 });
+    // Feature hash stays the hash of the source feature, clipped or not.
+    expect(cut.feature_hash).toBe(whole.features.find((f) => f.source_index === 1)!.feature_hash);
+  });
+  it('turns a line that exits and re-enters into a MultiLineString', async () => {
+    const parts = clipPolylineToDisc([[0, 0], [150, 0], [150, 60], [50, 60]], 100);
+    expect(parts).toHaveLength(2);
+    expect(parts[0]).toEqual([[0, 0], [100, 0]]);
+    expect(parts[1]![0]![0]).toBeCloseTo(80, 9); expect(parts[1]![0]![1]).toBe(60);
+    expect(parts[1]![1]).toEqual([50, 60]);
+    const f = await frame();
+    const collection = { type: 'FeatureCollection', crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:EPSG::6668' } }, features: [{ type: 'Feature', properties: { N02_003: NAME }, geometry: { type: 'LineString', coordinates: await Promise.all([[0, 0], [150, 0], [150, 60], [50, 60]].map((p) => at(p[0]!, p[1]!))) } }] };
+    expect(f.origin.lat).toBeGreaterThan(0);
+    const { features } = await select(collection, 'railway', 32.5, 100);
+    expect(features).toHaveLength(1);
+    expect(features[0]!.parts).toHaveLength(2);
+    expect(JSON.parse(overlayGeoJson(features, meta)).features[0].geometry.type).toBe('MultiLineString');
+  });
+  it('drops tangent touches and slivers shorter than 0.01 m, and drops a feature with nothing left', async () => {
+    expect(clipPolylineToDisc([[-50, 100], [50, 100]], 100)).toEqual([]);
+    expect(clipPolylineToDisc([[0, 99.999], [0, 200]], 100)).toEqual([]);
+    expect(clipPolylineToDisc([[500, 500]], 100)).toEqual([]);
+    expect(clipPolylineToDisc([[5, 5]], 100)).toEqual([[[5, 5]]]);
+    // Lines meeting the 250 m selection window but with no part inside a 100 m clip disc are dropped, and counted.
+    const { features, counts } = await select(await fixtureCollection(), 'railway', 32.5, 100);
+    expect(features.map((f) => f.source_index)).toEqual([0]);
+    expect(counts).toMatchObject({ selected_before_clip: 3, dropped_by_clip: 2, selected: 1 });
+  });
+  it('clipping disabled (null) leaves every geometry whole with clipped false', async () => {
+    const { features, counts } = await select(await fixtureCollection(), 'railway', 32.5, null);
+    expect(features.every((f) => !f.clipped)).toBe(true);
+    expect(counts).toMatchObject({ features_clipped: 0, vertices: 8, vertices_before_clip: 8 });
+    expect(features.find((f) => f.source_index === 1)!.parts[0]!.map((p) => Math.round(p[0]!))).toEqual([-400, 400]);
+  });
+  it('reads the radius from config for both stations and validates it', async () => {
+    for (const station of ['ikebukuro', 'shinjuku']) {
+      const overlay = assertOverlayConfig(station, (await loadContextConfig(station) as { overlay?: unknown }).overlay);
+      expect(overlay.clip).toEqual({ kind: 'origin_disc', radius_m: 700 });
+    }
+    const good = { frame: { mode: 'origin-only', station_json: 'stations/x/gteki/station.json' }, z: { mode: 'constant', z_m: 0, basis: 'b', datum_asserted: false, check: { path: 'p', floor_ordinal: 0, field: 'renderElevationM' } }, layers: [{ source_id: 's', kind: 'station', member: 'm', ribbon_width_m: 2 }] };
+    expect(() => assertOverlayConfig('x', { ...good, clip: { kind: 'origin_disc', radius_m: 700 } })).not.toThrow();
+    expect(() => assertOverlayConfig('x', { ...good, clip: { kind: 'box', radius_m: 700 } })).toThrow(/overlay.clip/);
+    expect(() => assertOverlayConfig('x', { ...good, clip: { kind: 'origin_disc', radius_m: 0 } })).toThrow(/overlay.clip/);
+  });
+  it('is deterministic: pinned GeoJSON hash for the clipped synthetic fixture, bbox follows the clipped geometry', async () => {
+    const one = await select(await fixtureCollection(), 'railway', 32.5, R), two = await select(await fixtureCollection(), 'railway', 32.5, R);
+    const text = overlayGeoJson(one.features, { ...meta, clip: { kind: 'origin_disc', radius_m: R } });
+    expect(text).toBe(overlayGeoJson(two.features, { ...meta, clip: { kind: 'origin_disc', radius_m: R } }));
+    expect(sha(text)).toBe('71c86d6129375ef8686a36852ca1e443f6d027402f9ba8bd93a63f3c411739d1');
+    const box = overlayBBox(one.features)!;
+    expect(box.max[0]).toBeLessThanOrEqual(R + 1e-3);
+    expect(box.min[0]).toBeGreaterThanOrEqual(-R - 1e-3);
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-overlay-')); dirs.push(dir);
+    await writeOverlayGlb(join(dir, 'c.glb'), [{ kind: 'railway', width_m: 1.5, features: one.features }], { ...meta, feature_hashes_sha256: {} });
+    expect(sha((await readFile(join(dir, 'c.glb'))).toString('latin1'))).toBe('25b017fa766c1ddcd1c1b69016a91e1a1ddcea9bc2fb3ca54c6bb78cb4df1028');
+  });
+  it('the receipt carries the clip block, the note and the clipped geometry bbox', async () => {
+    const { features, counts, sourceValues } = await select(await fixtureCollection(), 'railway', 32.5, R);
+    const r = publicOverlayReceipt({
+      run_id: 'overlay-x', station_id: 'ikebukuro', frame: {}, window: {}, z: {}, credit: 'SYNTHETIC credit',
+      source: { source_id: 'ksj-n02-2025', source_sha256: 'a'.repeat(64), bytes: 1, license_name: 'CC BY 4.0', license_url: null, publish_gate: 'CONDITIONAL' },
+      layers: [counts], feature_hashes: { railway: features.map((f) => f.feature_hash) }, bbox: overlayBBox(features), outputs: {}, tool_input_sha256: 'd'.repeat(64), policy_version: 'context-overlay-v1', clip: { kind: 'origin_disc', radius_m: R },
+    }, sourceValues) as Record<string, any>;
+    expect(r.clip).toEqual({ kind: 'origin_disc', radius_m: R, center: 'station frame origin', features_clipped: 1, vertices_before: 8, vertices_after: 8 });
+    expect(r.note).toContain('clipped to a 250 m disc');
+    expect(r.note).toContain('not the full source line');
+    expect(r.bbox_local_ENU.max[0]).toBeLessThanOrEqual(R + 1e-3);
+    const off = publicOverlayReceipt({ run_id: 'x', station_id: 'ikebukuro', frame: {}, window: {}, z: {}, credit: 'c', source: r.source, layers: [(await select(await fixtureCollection())).counts], feature_hashes: {}, bbox: null, outputs: {}, tool_input_sha256: 'd'.repeat(64), policy_version: 'v', clip: { kind: 'none', radius_m: null } }, new Set()) as Record<string, any>;
+    expect(off.clip).toMatchObject({ kind: 'none', radius_m: null, features_clipped: 0 });
+    expect(off.note).toContain('not clipped');
+  });
+  it('--clip-radius 0 and none are accepted by the CLI parser path (config default is overridden)', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'gteki-overlay-cli-')); dirs.push(dir);
+    const run = async (...args: string[]): Promise<string> => {
+      try { await promisify(execFile)(join(pkg, 'node_modules', '.bin', 'tsx'), ['src/cli.ts', 'context-overlay', ...args], { cwd: pkg, env: { ...process.env, GTEKI_GIS_STORE: join(dir, 'store') } }); return 'ok'; }
+      catch (error) { return (error as { stderr?: string }).stderr ?? String(error); }
+    };
+    // Past argument validation the run reaches the (empty) store and fails there, not on --clip-radius.
+    for (const v of ['0', 'none', '500']) expect(await run('ikebukuro', '--clip-radius', v)).not.toContain('--clip-radius must be');
   }, 60_000);
 });

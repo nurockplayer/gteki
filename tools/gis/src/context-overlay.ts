@@ -22,7 +22,7 @@ export const OVERLAY_POLICY_VERSION = 'context-overlay-v1';
 export type OverlayKind = 'station' | 'railway';
 export const OVERLAY_KINDS: readonly OverlayKind[] = ['station', 'railway'];
 /** The only property keys any overlay feature may carry. */
-export const OVERLAY_PROPERTY_KEYS = ['credit', 'feature_hash', 'gteki_role', 'kind', 'navigation_use', 'source_id', 'source_sha256', 'visual_only'] as const;
+export const OVERLAY_PROPERTY_KEYS = ['clipped', 'credit', 'feature_hash', 'gteki_role', 'kind', 'navigation_use', 'source_id', 'source_sha256', 'visual_only'] as const;
 
 export function parseOverlayKinds(value: string | readonly string[]): OverlayKind[] {
   const items = typeof value === 'string' ? value.split(',').map((v) => v.trim()) : [...value];
@@ -37,7 +37,11 @@ export interface OverlayZConfig {
   check: { path: string; floor_ordinal: number; field: 'renderElevationM' };
 }
 export type OverlayFrameConfig = { mode: 'station-enu-frame'; frame_id: string } | { mode: 'origin-only'; station_json: string };
-export interface OverlayConfig { frame: OverlayFrameConfig; z: OverlayZConfig; layers: OverlayLayerConfig[]; notes?: string }
+/** Clip of the projected geometry to a disc around the station frame origin (x = y = 0). */
+export interface OverlayClipConfig { kind: 'origin_disc'; radius_m: number }
+export interface OverlayConfig { frame: OverlayFrameConfig; z: OverlayZConfig; layers: OverlayLayerConfig[]; clip?: OverlayClipConfig; notes?: string }
+/** Parts shorter than this (metres) are dropped after clipping. */
+export const CLIP_MIN_PART_M = 0.01;
 
 const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 const sha256 = (data: string | Buffer): string => createHash('sha256').update(data).digest('hex');
@@ -86,7 +90,7 @@ function readParts(geometry: unknown, order: { value: AxisOrder | null }): Sourc
 // ---------------------------------------------------------------------------------------------------------------------
 // Selection and projection
 
-export interface OverlayFeature { kind: OverlayKind; source_index: number; feature_hash: string; parts: Point3[][] }
+export interface OverlayFeature { kind: OverlayKind; source_index: number; feature_hash: string; parts: Point3[][]; clipped: boolean; vertices_before_clip: number }
 export interface OverlayProjection {
   origin: { lat: number; lon: number };
   /** Station-frame [x east, y north] metres of a (lat, lon) pair. */
@@ -106,10 +110,40 @@ export function polylineMeetsAnyDisc(line: ReadonlyArray<readonly [number, numbe
   return false;
 }
 
-export interface LayerCounts { kind: OverlayKind; source_id: string; member: string; member_sha256: string; axis_order: AxisOrder | null; crs: string; features_in_source: number; outside_prefilter: number; outside_window: number; selected: number; vertices: number }
+/**
+ * Clip a polyline (station XY metres) to the closed disc of `radius` around (0, 0). Exact segment and circle intersections; a line
+ * that leaves and re-enters yields several parts. Parts shorter than CLIP_MIN_PART_M (tangent touches, slivers) are dropped. A line
+ * with a single vertex is kept only when that vertex is inside.
+ */
+export function clipPolylineToDisc(line: ReadonlyArray<readonly [number, number]>, radius: number): Array<Array<[number, number]>> {
+  const r2 = radius * radius;
+  const parts: Array<Array<[number, number]>> = [];
+  if (line.length === 1) { const [x, y] = line[0]!; return x * x + y * y <= r2 ? [[[x, y]]] : []; }
+  let current: Array<[number, number]> | null = null;
+  for (let i = 0; i + 1 < line.length; i++) {
+    const [ax, ay] = line[i]!, [bx, by] = line[i + 1]!;
+    const dx = bx - ax, dy = by - ay;
+    const A = dx * dx + dy * dy, B = ax * dx + ay * dy, C = ax * ax + ay * ay - r2;
+    let t0 = 0, t1 = 1, hit = true;
+    if (A === 0) hit = C <= 0;
+    else {
+      const disc = B * B - A * C;
+      if (disc < 0) hit = false;
+      else { const sq = Math.sqrt(disc); t0 = Math.max(0, (-B - sq) / A); t1 = Math.min(1, (-B + sq) / A); hit = t0 <= t1; }
+    }
+    if (!hit) { current = null; continue; }
+    const entry: [number, number] = t0 <= 0 ? [ax, ay] : [ax + t0 * dx, ay + t0 * dy];
+    const exit: [number, number] = t1 >= 1 ? [bx, by] : [ax + t1 * dx, ay + t1 * dy];
+    if (current && t0 <= 0) current.push(exit); else { current = [entry, exit]; parts.push(current); }
+    if (t1 < 1) current = null;
+  }
+  return parts.filter((p) => { let len = 0; for (let i = 0; i + 1 < p.length; i++) len += Math.hypot(p[i + 1]![0] - p[i]![0], p[i + 1]![1] - p[i]![1]); return len >= CLIP_MIN_PART_M; });
+}
+
+export interface LayerCounts { kind: OverlayKind; source_id: string; member: string; member_sha256: string; axis_order: AxisOrder | null; crs: string; features_in_source: number; outside_prefilter: number; outside_window: number; selected_before_clip: number; dropped_by_clip: number; selected: number; features_clipped: number; vertices_before_clip: number; vertices: number }
 export interface LayerInput { layer: OverlayLayerConfig; sourceSha256: string; memberSha256: string; collection: unknown }
 
-export function selectLayer(input: LayerInput, projection: OverlayProjection, window: ContextWindow, z: number): { features: OverlayFeature[]; counts: LayerCounts; sourceValues: Set<string> } {
+export function selectLayer(input: LayerInput, projection: OverlayProjection, window: ContextWindow, z: number, clipRadiusM: number | null = null): { features: OverlayFeature[]; counts: LayerCounts; sourceValues: Set<string> } {
   const { layer, collection } = input;
   if (!isRecord(collection) || collection.type !== 'FeatureCollection' || !Array.isArray(collection.features)) throw new Error(`${layer.member}: not a GeoJSON FeatureCollection`);
   const crs = crsNameOf(collection);
@@ -119,7 +153,7 @@ export function selectLayer(input: LayerInput, projection: OverlayProjection, wi
   const order = { value: null as AxisOrder | null };
   const features: OverlayFeature[] = [];
   const sourceValues = new Set<string>();
-  let outsidePrefilter = 0, outsideWindow = 0, vertices = 0;
+  let outsidePrefilter = 0, outsideWindow = 0, vertices = 0, verticesBefore = 0, selectedBeforeClip = 0, droppedByClip = 0, featuresClipped = 0;
   (collection.features as unknown[]).forEach((raw, index) => {
     if (!isRecord(raw)) throw new Error(`${layer.member}: feature ${index} is not an object`);
     const parts = readParts(raw.geometry, order);
@@ -133,13 +167,26 @@ export function selectLayer(input: LayerInput, projection: OverlayProjection, wi
     if (!near) { outsidePrefilter++; return; }
     const local = parts.map((part) => part.lonLat.map(([lon, lat]) => projection.project(lat, lon)));
     if (!local.some((line) => polylineMeetsAnyDisc(line, window.discs))) { outsideWindow++; return; }
-    features.push({ kind: layer.kind, source_index: index, feature_hash: sha256(JSON.stringify(raw)), parts: local.map((line) => line.map(([x, y]) => [round3(x), round3(y), z] as Point3)) });
-    vertices += local.reduce((n, line) => n + line.length, 0);
+    selectedBeforeClip++;
+    const before = local.reduce((n, line) => n + line.length, 0);
+    verticesBefore += before;
+    // Clip after projection and selection: a line wholly inside the disc is untouched; the others are cut at the circle.
+    let outParts: Array<Array<[number, number]>> = local;
+    let clipped = false;
+    if (clipRadiusM !== null) {
+      const r2 = clipRadiusM * clipRadiusM;
+      outParts = local.flatMap((line) => (line.every(([x, y]) => x * x + y * y <= r2) ? [line] : (clipped = true, clipPolylineToDisc(line, clipRadiusM))));
+    }
+    if (!outParts.length) { droppedByClip++; featuresClipped++; return; }
+    const after = outParts.reduce((n, line) => n + line.length, 0);
+    if (clipped) featuresClipped++;
+    features.push({ kind: layer.kind, source_index: index, feature_hash: sha256(JSON.stringify(raw)), clipped, vertices_before_clip: before, parts: outParts.map((line) => line.map(([x, y]) => [round3(x), round3(y), z] as Point3)) });
+    vertices += after;
     // Source values of the selected features, kept only in memory for the leak guard.
     const props = isRecord(raw.properties) ? raw.properties : {};
     for (const [k, v] of Object.entries(props)) { sourceValues.add(`key:${k}`); if (typeof v === 'string' && v.length) sourceValues.add(v); else if (typeof v === 'number') sourceValues.add(String(v)); }
   });
-  return { features, sourceValues, counts: { kind: layer.kind, source_id: layer.source_id, member: layer.member, member_sha256: input.memberSha256, axis_order: order.value, crs, features_in_source: collection.features.length, outside_prefilter: outsidePrefilter, outside_window: outsideWindow, selected: features.length, vertices } };
+  return { features, sourceValues, counts: { kind: layer.kind, source_id: layer.source_id, member: layer.member, member_sha256: input.memberSha256, axis_order: order.value, crs, features_in_source: collection.features.length, outside_prefilter: outsidePrefilter, outside_window: outsideWindow, selected_before_clip: selectedBeforeClip, dropped_by_clip: droppedByClip, selected: features.length, features_clipped: featuresClipped, vertices_before_clip: verticesBefore, vertices } };
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -148,16 +195,17 @@ export function selectLayer(input: LayerInput, projection: OverlayProjection, wi
 export interface OverlayMeta {
   station_id: string; frame_label: string; credit: string; source_id: string; source_sha256: string;
   z_m: number; z_basis: string; window_label: string;
+  clip?: { kind: string; radius_m: number | null } | null;
 }
 const NOTE_CRS = 'station-enu frame: coordinates are [x east, y north, z up] metres, not lon/lat';
 
 export function overlayGeoJson(features: readonly OverlayFeature[], meta: OverlayMeta): string {
   return JSON.stringify({
     type: 'FeatureCollection', crs_note: NOTE_CRS, gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, station_id: meta.station_id, frame: meta.frame_label,
-    z_basis: meta.z_basis, z_m: meta.z_m, credit: meta.credit, policy_version: OVERLAY_POLICY_VERSION,
+    z_basis: meta.z_basis, z_m: meta.z_m, clip: meta.clip ?? null, credit: meta.credit, policy_version: OVERLAY_POLICY_VERSION,
     features: features.map((f) => ({
       type: 'Feature',
-      properties: { gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, kind: f.kind, source_id: meta.source_id, source_sha256: meta.source_sha256, feature_hash: f.feature_hash, credit: meta.credit },
+      properties: { gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, kind: f.kind, source_id: meta.source_id, source_sha256: meta.source_sha256, feature_hash: f.feature_hash, clipped: f.clipped, credit: meta.credit },
       geometry: f.parts.length === 1 ? { type: 'LineString', coordinates: f.parts[0] } : { type: 'MultiLineString', coordinates: f.parts },
     })),
   });
@@ -261,21 +309,25 @@ export interface OverlayReceiptInput {
   source: { source_id: string; source_sha256: string; bytes: number; license_name: string; license_url: string | null; publish_gate: string };
   layers: LayerCounts[]; feature_hashes: Record<string, string[]>; bbox: { min: Point3; max: Point3 } | null;
   outputs: Record<string, unknown>; tool_input_sha256: string; policy_version: string;
+  clip: { kind: string; radius_m: number | null };
 }
 /**
  * The committed receipt: allow-listed counts, hashes, schema-level facts and the credit. Built field by field (nothing is spread from
  * the source), then checked against the selected features' source values; any hit fails the run.
  */
 export function publicOverlayReceipt(input: OverlayReceiptInput, sourceValues: ReadonlySet<string>): Record<string, unknown> {
-  const totals = { features_in_source: 0, outside_prefilter: 0, outside_window: 0, selected: 0, vertices: 0 };
-  for (const l of input.layers) { totals.features_in_source += l.features_in_source; totals.outside_prefilter += l.outside_prefilter; totals.outside_window += l.outside_window; totals.selected += l.selected; totals.vertices += l.vertices; }
+  const totals = { features_in_source: 0, outside_prefilter: 0, outside_window: 0, selected_before_clip: 0, dropped_by_clip: 0, selected: 0, vertices_before_clip: 0, vertices: 0 };
+  for (const l of input.layers) { totals.features_in_source += l.features_in_source; totals.outside_prefilter += l.outside_prefilter; totals.outside_window += l.outside_window; totals.selected += l.selected; totals.vertices += l.vertices; totals.selected_before_clip += l.selected_before_clip; totals.dropped_by_clip += l.dropped_by_clip; totals.vertices_before_clip += l.vertices_before_clip; }
+  const clipActive = input.clip.radius_m !== null;
+  const clip = { kind: input.clip.kind, radius_m: input.clip.radius_m, center: 'station frame origin', features_clipped: input.layers.reduce((n, l) => n + l.features_clipped, 0), vertices_before: totals.vertices_before_clip, vertices_after: totals.vertices };
   const hashesByKind = Object.fromEntries(Object.entries(input.feature_hashes).sort(([a], [b]) => (a < b ? -1 : 1)).map(([k, v]) => [k, [...v].sort()]));
   const receipt = {
     run_id: input.run_id, command: 'context-overlay', policy_version: input.policy_version, station_id: input.station_id,
     gteki_role: CONTEXT_ROLE, navigation_use: 'NOT_FOR_ROUTING', visual_only: true, verification: 'UNVERIFIED',
-    note: 'Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; no railway class or track level is shown (the source has no underground versus at-grade field).',
+    note: 'Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; no railway class or track level is shown (the source has no underground versus at-grade field).' + (clipActive ? ` The geometry is clipped to a ${input.clip.radius_m} m disc around the station frame origin and is not the full source line; feature_hash is the hash of the whole source feature.` : ' The geometry is not clipped (clip disabled for this run); selected features are kept whole.'),
+    clip,
     frame: input.frame, window: input.window, z_basis: input.z, credit: input.credit, source: input.source,
-    layers: input.layers.map((l) => ({ kind: l.kind, source_id: l.source_id, member: l.member, member_sha256: l.member_sha256, axis_order: l.axis_order, crs: l.crs, features_in_source: l.features_in_source, outside_prefilter: l.outside_prefilter, outside_window: l.outside_window, selected: l.selected, vertices: l.vertices })),
+    layers: input.layers.map((l) => ({ kind: l.kind, source_id: l.source_id, member: l.member, member_sha256: l.member_sha256, axis_order: l.axis_order, crs: l.crs, features_in_source: l.features_in_source, outside_prefilter: l.outside_prefilter, outside_window: l.outside_window, selected_before_clip: l.selected_before_clip, dropped_by_clip: l.dropped_by_clip, selected: l.selected, features_clipped: l.features_clipped, vertices_before_clip: l.vertices_before_clip, vertices: l.vertices })),
     totals, feature_hashes_sha256: Object.fromEntries(Object.entries(hashesByKind).map(([k, v]) => [k, sha256(JSON.stringify(v))])), feature_hashes: hashesByKind,
     bbox_local_ENU: input.bbox, outputs: input.outputs, tool_input_sha256: input.tool_input_sha256, tool_version: TOOL_VERSION,
   };
@@ -286,7 +338,8 @@ export function publicOverlayReceipt(input: OverlayReceiptInput, sourceValues: R
 // ---------------------------------------------------------------------------------------------------------------------
 // Station wrapper (store)
 
-export interface OverlayRunOptions { radiusM?: number; exitRadiusM?: number; kinds?: string | readonly string[]; glb?: boolean; graphPath?: string; poisPath?: string; receiptDir?: string }
+/** clipRadiusM: undefined = use the config; 0 = disable clipping; > 0 = override the disc radius. */
+export interface OverlayRunOptions { clipRadiusM?: number; radiusM?: number; exitRadiusM?: number; kinds?: string | readonly string[]; glb?: boolean; graphPath?: string; poisPath?: string; receiptDir?: string }
 
 export function assertOverlayConfig(station: string, overlay: unknown): OverlayConfig {
   if (!isRecord(overlay)) throw new Error(`Context config for ${station} has no overlay section`);
@@ -297,6 +350,10 @@ export function assertOverlayConfig(station: string, overlay: unknown): OverlayC
   if (!z || z.mode !== 'constant' || !finite(z.z_m) || typeof z.basis !== 'string' || !z.basis || z.datum_asserted !== false || !isRecord(z.check) || typeof z.check.path !== 'string' || !finite(z.check.floor_ordinal) || z.check.field !== 'renderElevationM') throw new Error(`overlay.z for ${station} must be a constant with a basis, datum_asserted false and a station.json check`);
   if (!Array.isArray(o.layers) || !o.layers.length) throw new Error(`overlay.layers for ${station} is empty`);
   for (const l of o.layers) if (!l || !OVERLAY_KINDS.includes(l.kind) || typeof l.source_id !== 'string' || typeof l.member !== 'string' || !finite(l.ribbon_width_m) || l.ribbon_width_m <= 0 || l.ribbon_width_m > 20) throw new Error(`overlay.layers entry for ${station} is invalid`);
+  if (o.clip !== undefined) {
+    const c = o.clip as unknown as Record<string, unknown>;
+    if (!isRecord(c) || c.kind !== 'origin_disc' || !finite(c.radius_m) || c.radius_m <= 0) throw new Error(`overlay.clip for ${station} must be { kind: "origin_disc", radius_m: positive number }`);
+  }
   return o;
 }
 
@@ -340,6 +397,9 @@ export async function contextOverlay(station: string, options: OverlayRunOptions
   const floor = Array.isArray(floors) ? floors.filter((fl) => fl.ordinal === overlay.z.check.floor_ordinal) : [];
   if (floor.length !== 1 || floor[0]!.renderElevationM !== overlay.z.z_m) throw new Error(`${overlay.z.check.path}: the ordinal-${overlay.z.check.floor_ordinal} floor renderElevationM is not ${overlay.z.z_m}; the z basis no longer matches the station lead's value`);
   const z = overlay.z.z_m;
+  if (options.clipRadiusM !== undefined && (!Number.isFinite(options.clipRadiusM) || options.clipRadiusM < 0)) throw new Error('clip radius must be a non-negative number of metres (0 disables clipping)');
+  const clipRadius: number | null = options.clipRadiusM !== undefined ? (options.clipRadiusM === 0 ? null : options.clipRadiusM) : (overlay.clip?.radius_m ?? null);
+  const clipFacts = { kind: clipRadius === null ? 'none' : 'origin_disc', radius_m: clipRadius };
   const zFacts = { mode: 'constant', z_m: z, basis: overlay.z.basis, datum_asserted: false, drape: 'none', baked_offset_m: 0, evidence_path: overlay.z.check.path, evidence_sha256: sha256(zBytes), evidence_field: `floors[ordinal ${overlay.z.check.floor_ordinal}].${overlay.z.check.field}` };
 
   const window = await buildContextWindow(
@@ -356,16 +416,16 @@ export async function contextOverlay(station: string, options: OverlayRunOptions
     const matches = entries.filter((e) => e.name === layer.member);
     if (matches.length !== 1) throw new Error(`${layer.member} is not exactly one member of ${layer.source_id}`);
     const bytes = matches[0]!.data;
-    selected.push({ layer, ...selectLayer({ layer, sourceSha256: stored.record.sha256, memberSha256: sha256(bytes), collection: JSON.parse(bytes.toString('utf8')) }, projection, window, z) });
+    selected.push({ layer, ...selectLayer({ layer, sourceSha256: stored.record.sha256, memberSha256: sha256(bytes), collection: JSON.parse(bytes.toString('utf8')) }, projection, window, z, clipRadius) });
   }
   const features = selected.flatMap((s) => s.features);
   if (!features.length) throw new Error('No overlay feature meets the window; nothing written');
   const sourceValues = new Set<string>(selected.flatMap((s) => [...s.sourceValues]));
   const credit = stored.source.attribution_text;
-  const meta: OverlayMeta = { station_id: station, frame_label: frameLabel, credit, source_id: sourceIds[0]!, source_sha256: stored.record.sha256, z_m: z, z_basis: overlay.z.basis, window_label: `r_origin ${window.spec.r_origin_m} m, r_exit ${window.spec.r_exit_m} m, ${window.discs.length} discs` };
+  const meta: OverlayMeta = { station_id: station, frame_label: frameLabel, credit, source_id: sourceIds[0]!, source_sha256: stored.record.sha256, z_m: z, z_basis: overlay.z.basis, clip: clipFacts, window_label: `r_origin ${window.spec.r_origin_m} m, r_exit ${window.spec.r_exit_m} m, ${window.discs.length} discs` };
 
   const fingerprint = await toolFingerprint();
-  const digest = sha256(JSON.stringify({ policy: OVERLAY_POLICY_VERSION, frame: frameFacts, window: window.spec, discs: window.discs.map((d) => [d.id, d.x, d.y, d.r]), graph: window.graph?.graph_sha256 ?? null, pois: window.graph?.pois?.pois_sha256 ?? null, z: zFacts, layers: selected.map((s) => [s.layer.kind, s.layer.member, s.counts.member_sha256, s.layer.ribbon_width_m]), source: stored.record.sha256, glb: options.glb !== false, fingerprint })).slice(0, 20);
+  const digest = sha256(JSON.stringify({ policy: OVERLAY_POLICY_VERSION, frame: frameFacts, window: window.spec, discs: window.discs.map((d) => [d.id, d.x, d.y, d.r]), graph: window.graph?.graph_sha256 ?? null, pois: window.graph?.pois?.pois_sha256 ?? null, z: zFacts, layers: selected.map((s) => [s.layer.kind, s.layer.member, s.counts.member_sha256, s.layer.ribbon_width_m]), source: stored.record.sha256, glb: options.glb !== false, clip: clipFacts, fingerprint })).slice(0, 20);
   const exitPart = window.spec.r_exit_m > 0 ? `-x${window.spec.r_exit_m}` : '';
   const kindsPart = kinds.length === OVERLAY_KINDS.length ? '' : `-${kinds.join('-')}`;
   const runId = `overlay-${station}-r${window.spec.r_origin_m}${exitPart}-${frameLabel}${kindsPart}-${digest}`;
@@ -390,11 +450,11 @@ export async function contextOverlay(station: string, options: OverlayRunOptions
   }
   const counts = selected.map((s) => s.counts);
   const bbox = overlayBBox(features);
-  const windowFacts = { r_origin_m: window.spec.r_origin_m, r_exit_m: window.spec.r_exit_m, disc_count: window.discs.length, mesh_margin_m: window.spec.mesh_margin_m, node_rule: window.spec.node_rule, graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null, selection_rule: 'A feature is selected when any segment of its projected polyline meets a closed disc of the window; selected features are kept whole (never cut at the window edge).' };
+  const windowFacts = { r_origin_m: window.spec.r_origin_m, r_exit_m: window.spec.r_exit_m, disc_count: window.discs.length, mesh_margin_m: window.spec.mesh_margin_m, node_rule: window.spec.node_rule, graph_sha256: window.graph?.graph_sha256 ?? null, pois_sha256: window.graph?.pois?.pois_sha256 ?? null, selection_rule: 'A feature is selected when any segment of its projected polyline meets a closed disc of the window; selected features are then clipped to the clip disc (when one is configured), after projection; without a clip they are kept whole.' };
   const sourceFacts = { source_id: sourceIds[0]!, source_sha256: stored.record.sha256, bytes: stored.record.bytes, license_name: stored.source.license_name, license_url: stored.source.license_url, publish_gate: stored.source.publish_gate };
-  const receipt = publicOverlayReceipt({ run_id: runId, station_id: station, frame: frameFacts, window: windowFacts, z: zFacts, credit, source: sourceFacts, layers: counts, feature_hashes: featureHashes, bbox, outputs, tool_input_sha256: fingerprint, policy_version: OVERLAY_POLICY_VERSION }, sourceValues);
+  const receipt = publicOverlayReceipt({ run_id: runId, station_id: station, frame: frameFacts, window: windowFacts, z: zFacts, credit, source: sourceFacts, layers: counts, feature_hashes: featureHashes, bbox, outputs, tool_input_sha256: fingerprint, policy_version: OVERLAY_POLICY_VERSION, clip: clipFacts }, sourceValues);
   // Sidecar (private store): the receipt plus the per-feature table (source index, vertex count) and the stored-source records.
-  const table = { columns: ['kind', 'source_index', 'feature_hash', 'vertices'], rows: features.map((f) => [f.kind, f.source_index, f.feature_hash, f.parts.reduce((n, p) => n + p.length, 0)]) };
+  const table = { columns: ['kind', 'source_index', 'feature_hash', 'vertices', 'vertices_before_clip', 'clipped'], rows: features.map((f) => [f.kind, f.source_index, f.feature_hash, f.parts.reduce((n, p) => n + p.length, 0), f.vertices_before_clip, f.clipped]) };
   const sidecarRel = `out/${runId}.provenance.json`;
   await writeJson(join(getStoreRoot(), sidecarRel), { ...receipt, feature_table: table, source_record: stored.record, source_manifest: stored.source, elapsed_ms: Math.round(performance.now() - started), peak_rss_bytes: process.resourceUsage().maxRSS * 1024 });
   const receiptDir = options.receiptDir ?? join(docsRoot, 'gis', 'context');

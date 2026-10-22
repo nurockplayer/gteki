@@ -1,5 +1,5 @@
 {
-  "run_id": "overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-cb09c76bea97f2b6d347",
+  "run_id": "overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-22aecfc5cf5910e29b8d",
   "command": "context-overlay",
   "policy_version": "context-overlay-v1",
   "station_id": "ikebukuro",
@@ -7,7 +7,15 @@
   "navigation_use": "NOT_FOR_ROUTING",
   "visual_only": true,
   "verification": "UNVERIFIED",
-  "note": "Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; no railway class or track level is shown (the source has no underground versus at-grade field).",
+  "note": "Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; no railway class or track level is shown (the source has no underground versus at-grade field). The geometry is clipped to a 700 m disc around the station frame origin and is not the full source line; feature_hash is the hash of the whole source feature.",
+  "clip": {
+    "kind": "origin_disc",
+    "radius_m": 700,
+    "center": "station frame origin",
+    "features_clipped": 5,
+    "vertices_before": 122,
+    "vertices_after": 94
+  },
   "frame": {
     "mode": "station-enu-frame",
     "frame_id": "ikebukuro-station-enu-v0",
@@ -32,7 +40,7 @@
     },
     "graph_sha256": "8e8c34f30101921f754beaf505111c0794f60888cda263e936880352b35c59e0",
     "pois_sha256": "fad15a3cbf257ba14fc8373ffabd95680f7983f2bcbf66d885f0f33764d0b17a",
-    "selection_rule": "A feature is selected when any segment of its projected polyline meets a closed disc of the window; selected features are kept whole (never cut at the window edge)."
+    "selection_rule": "A feature is selected when any segment of its projected polyline meets a closed disc of the window; selected features are then clipped to the clip disc (when one is configured), after projection; without a clip they are kept whole."
   },
   "z_basis": {
     "mode": "constant",
@@ -65,8 +73,12 @@
       "features_in_source": 21933,
       "outside_prefilter": 21915,
       "outside_window": 2,
+      "selected_before_clip": 16,
+      "dropped_by_clip": 0,
       "selected": 16,
-      "vertices": 108
+      "features_clipped": 5,
+      "vertices_before_clip": 108,
+      "vertices": 80
     },
     {
       "kind": "station",
@@ -78,7 +90,11 @@
       "features_in_source": 10234,
       "outside_prefilter": 10227,
       "outside_window": 0,
+      "selected_before_clip": 7,
+      "dropped_by_clip": 0,
       "selected": 7,
+      "features_clipped": 0,
+      "vertices_before_clip": 14,
       "vertices": 14
     }
   ],
@@ -86,8 +102,11 @@
     "features_in_source": 32167,
     "outside_prefilter": 32142,
     "outside_window": 2,
+    "selected_before_clip": 23,
+    "dropped_by_clip": 0,
     "selected": 23,
-    "vertices": 122
+    "vertices_before_clip": 122,
+    "vertices": 94
   },
   "feature_hashes_sha256": {
     "railway": "92496aebed59acdc6fa57361fe86ac447e63444dfe2f1e2cf7b2c3017f1318fb",
@@ -125,44 +144,44 @@
   "bbox_local_ENU": {
     "min": [
       -570.85,
-      -922.019,
+      -448.528,
       32.5
     ],
     "max": [
-      1574.247,
-      1606.64,
+      690.97,
+      658.155,
       32.5
     ]
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-cb09c76bea97f2b6d347.geojson",
-      "sha256": "626cffac2c246bf0b363f105260596f0d078d0e69f4775af9ffdd38491931b8f",
-      "bytes": 15802
+      "store_path": "out/overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-22aecfc5cf5910e29b8d.geojson",
+      "sha256": "66ffe585d63ebbca499a47736f06210a355bbd6d138d4e2f2f771e312e47f18f",
+      "bytes": 15552
     },
     "glb": {
-      "store_path": "out/overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-cb09c76bea97f2b6d347.glb",
-      "sha256": "cd47c73bec423bd1bb782a8cd6cf239c3c0dec8b076bcb7fb342b9d62f0c5999",
-      "bytes": 17512,
+      "store_path": "out/overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-22aecfc5cf5910e29b8d.glb",
+      "sha256": "bf3338b68037f286c80641a08c9191fa4b68817af4f2caf8ea0f0c6ee90c6400",
+      "bytes": 14152,
       "nodes": [
         "ctx_rail_all",
         "ctx_station_all"
       ],
       "triangles": {
-        "ctx_rail_all": 184,
+        "ctx_rail_all": 128,
         "ctx_station_all": 14
       },
       "readback": {
         "status": "PASS",
         "node_count": 2,
-        "triangle_count": 198,
-        "expected_triangle_count": 198,
+        "triangle_count": 142,
+        "expected_triangle_count": 142,
         "bbox_max_error_m": 0.000013749393019679701,
         "tolerance_m": 0.001
       },
       "segments_skipped_zero_length": 0
     }
   },
-  "tool_input_sha256": "a9ea30889a56395f376f88bbdd85de607a80b1f5280b4e2fea65d961890285c6",
+  "tool_input_sha256": "550b68d38a3d34e71299f7a01b9e7dc6c20c7d11f8ac15c9284b76d1727e5306",
   "tool_version": "0.1.0"
 }
