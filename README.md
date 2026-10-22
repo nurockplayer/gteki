@@ -48,4 +48,15 @@ GPU/WebGL work stays on the host.
 
 The GitHub repository is public. Third-party maps, photos, logos, 3D models, POI datasets and derived downloadable assets need source-specific reuse and redistribution checks. A source being public or a map being viewable is not enough to distribute its content. Prototype-only inferred visuals must be explicitly labeled; unverified passages must not appear in production routing.
 
-No open-source license has yet been selected for this repository.
+## Licence
+
+Decided by the Owner in [Issue #123](https://github.com/nurockplayer/gteki/issues/123). Per-path licences are mapped in [`REUSE.toml`](REUSE.toml), licence texts are in [`LICENSES/`](LICENSES/), and credits are in [`NOTICE`](NOTICE).
+
+| Material | Licence |
+| --- | --- |
+| Code (repository default) | [Apache-2.0](LICENSE) |
+| Original project art: Lane E procedural assets (Blender-built GLBs, textures, contact sheets, renders) | CC BY 4.0, attribution "GTEki contributors" |
+| AI-generated 2D images (posters, light boxes, decals) | CC0 1.0. Each keeps its provenance sidecar, is labelled AI-generated, and shows no real brands, logos or trademarks. |
+| Third-party data and derived files (PLATEAU, GSI, E27, OSM and so on) | Unchanged: each keeps its own terms and is listed in [`NOTICE`](NOTICE) with the required credit. Facts-only and no-release sources are never relicensed. |
+
+Until the station rollout says otherwise, no station uses library assets. Third-party maps, photos, logos, 3D models and POI datasets still need the source-specific checks above.

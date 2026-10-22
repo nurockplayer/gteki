@@ -4,12 +4,14 @@
 import type * as THREE_NS from "three";
 import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { ENV_INTENSITY, createMaterials } from "./materials.ts";
+import { type FinishManifest, loadFinishPacks } from "./finishes.ts";
 import { buildFloorIndex, noseDistances, wallFloorAttribute } from "./geomattrs.ts";
 import { buildSigns, LOW_TEXEL_SCALE, type SignSpec } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { createAmbience } from "./ambience.ts";
 import crowdLanes from "./crowd_lanes.json";
+import finishManifest from "./finishes.json";
 import signage from "./signage.json";
 import walkBridges from "./walk_bridges.json";
 import accessFences from "./access_fences.json";
@@ -364,7 +366,9 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const THREE = ctx.THREE;
   const low = ctx.quality === "low";
   const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(...ctx.enuToRenderer({ x, y, z }));
-  const mats = createMaterials(THREE, low);
+  // Kit finish packs (scene/finishes.json, empty today): a role without one keeps its procedural texture.
+  const finishes = await loadFinishPacks(THREE, ctx, finishManifest as FinishManifest, low);
+  const mats = createMaterials(THREE, low, finishes.packs);
   const root = new THREE.Group();
   root.name = "ikebukuro";
 
@@ -453,6 +457,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       ambience?.dispose();
       crowd.dispose();
       mats.dispose();
+      finishes.dispose();
       signs.dispose();
       envTarget.dispose();
       lightmap?.dispose();

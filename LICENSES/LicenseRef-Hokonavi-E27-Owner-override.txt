@@ -1,0 +1,17 @@
+MARKER, NOT A LICENCE: Hokonavi E27 ships under an Owner override
+
+Resource licence unconfirmed; package PDL 1.0 not inherited; not relicensed.
+
+Pointers:
+- The Owner's merge comment on PR #16 (2026-10-21T10:31:49Z),
+  https://github.com/nurockplayer/gteki/pull/16 ("Merging by explicit Owner
+  decision ... overriding this PR's HOLD").
+- Owner answer Q11 = No (#39 comment 6324726321): the package's PDL 1.0 is not
+  taken to cover the two E27 resources. Owner option (a), #39 comment 6325100917.
+- PR #127 aligns the GIS docs.
+
+Files carrying this identifier are derived from Toei Oedo E27 data (package
+https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45;
+the package page says PDL 1.0 but the resource-level licences are null) and
+keep their own terms. This is an accepted risk, not a rights PASS, and not a
+grant. Publication period ends 2027-03-12; reuse after that date is unconfirmed.

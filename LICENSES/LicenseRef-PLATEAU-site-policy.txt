@@ -1,0 +1,18 @@
+Project PLATEAU site policy, section 3 (国土交通省 3D都市モデル)
+
+URL: https://www.mlit.go.jp/plateau/site-policy/
+Snapshot SHA-256: 3f565490f0910514ae9268f0024dff017f40ab5202ecf7052a373b3811c5125f
+  (docs/gis/acquisitions/plateau-related-provenance.json, id "plateau-policy")
+
+Stands for MLIT Project PLATEAU data and files derived from it (CityGML ubld,
+bldg and tran, GLBs, bakes, renders, inventories). The repository's records
+label the ubld/bldg/tran data CC BY 4.0 (tools/gis/sources/sources.yaml,
+stations/*/gteki/station.json); the PLATEAU data keeps those terms and is not
+relicensed under the repository's grants. Road (tran) geometry ships under an
+Owner risk acceptance, not a licence finding
+(docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md).
+Credits and modification notices: NOTICE.
+
+Pointer only: terms as published by the licensor. GTEki does not author or
+paraphrase the official wording. Source of the URL and hash: GIS (Lane D)
+inventory for Issue #123 and docs/gis/acquisitions/plateau-related-provenance.json.
