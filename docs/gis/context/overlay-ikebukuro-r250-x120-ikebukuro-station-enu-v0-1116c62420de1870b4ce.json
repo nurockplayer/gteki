@@ -1,5 +1,5 @@
 {
-  "run_id": "overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-22aecfc5cf5910e29b8d",
+  "run_id": "overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-1116c62420de1870b4ce",
   "command": "context-overlay",
   "policy_version": "context-overlay-v1",
   "station_id": "ikebukuro",
@@ -20,7 +20,7 @@
     "mode": "station-enu-frame",
     "frame_id": "ikebukuro-station-enu-v0",
     "station_json_path": "stations/ikebukuro/gteki/station.json",
-    "station_json_sha256": "5791be1694a291fe0a328e5e728e06c5f87c0269f01619a61bc888d257de07b7",
+    "station_json_sha256": "8d0f5012b0c9317e54a6a30cdf9d6b57689fb137e2c7ca62641b73f9681326ea",
     "origin_crs": "EPSG:6697"
   },
   "window": {
@@ -38,8 +38,8 @@
       ],
       "exit_poi_connectors": true
     },
-    "graph_sha256": "8e8c34f30101921f754beaf505111c0794f60888cda263e936880352b35c59e0",
-    "pois_sha256": "fad15a3cbf257ba14fc8373ffabd95680f7983f2bcbf66d885f0f33764d0b17a",
+    "graph_sha256": "f2d077c5acc082b20540cc6d699c460870f66e346e9198d49a9492950c3bc967",
+    "pois_sha256": "f42464fc006b6bc2ade640a633c8e5c02cd92a7be87be0fd65168d8bc1629f84",
     "selection_rule": "A feature is selected when any segment of its projected polyline meets a closed disc of the window; selected features are then clipped to the clip disc (when one is configured), after projection; without a clip they are kept whole."
   },
   "z_basis": {
@@ -50,7 +50,7 @@
     "drape": "none",
     "baked_offset_m": 0,
     "evidence_path": "stations/ikebukuro/gteki/station.json",
-    "evidence_sha256": "5791be1694a291fe0a328e5e728e06c5f87c0269f01619a61bc888d257de07b7",
+    "evidence_sha256": "8d0f5012b0c9317e54a6a30cdf9d6b57689fb137e2c7ca62641b73f9681326ea",
     "evidence_field": "floors[ordinal 0].renderElevationM"
   },
   "credit": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成",
@@ -155,12 +155,12 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-22aecfc5cf5910e29b8d.geojson",
+      "store_path": "out/overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-1116c62420de1870b4ce.geojson",
       "sha256": "66ffe585d63ebbca499a47736f06210a355bbd6d138d4e2f2f771e312e47f18f",
       "bytes": 15552
     },
     "glb": {
-      "store_path": "out/overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-22aecfc5cf5910e29b8d.glb",
+      "store_path": "out/overlay-ikebukuro-r250-x120-ikebukuro-station-enu-v0-1116c62420de1870b4ce.glb",
       "sha256": "bf3338b68037f286c80641a08c9191fa4b68817af4f2caf8ea0f0c6ee90c6400",
       "bytes": 14152,
       "nodes": [
@@ -182,6 +182,6 @@
       "segments_skipped_zero_length": 0
     }
   },
-  "tool_input_sha256": "550b68d38a3d34e71299f7a01b9e7dc6c20c7d11f8ac15c9284b76d1727e5306",
+  "tool_input_sha256": "05522f733a360b1eefacaaeb7ccc218d80e1802933d43174cc33708c48a1678f",
   "tool_version": "0.1.0"
 }
