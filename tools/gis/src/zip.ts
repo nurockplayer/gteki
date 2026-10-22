@@ -7,7 +7,7 @@ import { describeZipName, type ZipNameInfo } from './zip-names.js';
  * The identity fields are additive: raw name bytes in hex, the CP437 decoding and a labelled CP932 candidate.
  */
 export type ZipEntry = { name: string; data: Buffer } & ZipNameInfo;
-export type ZipReadOptions = { maxEntryBytes?: number; maxTotalBytes?: number; legacyFileNameEncoding?: 'shift_jis' };
+export type ZipReadOptions = { maxEntryBytes?: number; maxTotalBytes?: number; legacyFileNameEncoding?: 'shift_jis'; /** Only entries whose decoded name passes are read; every name is still validated and counted against the size limits. */ include?: (name: string) => boolean };
 const DEFAULT_ENTRY_LIMIT = 128 * 1024 * 1024;
 const DEFAULT_TOTAL_LIMIT = 512 * 1024 * 1024;
 
@@ -67,6 +67,7 @@ export async function readZip(path: string, options: ZipReadOptions = {}): Promi
       if (entry.uncompressedSize > maxEntryBytes) { fail(new Error(`ZIP entry exceeds size limit: ${entry.fileName}`)); return; }
       if (totalBytes + entry.uncompressedSize > maxTotalBytes) { fail(new Error(`ZIP archive exceeds total size limit at: ${entry.fileName}`)); return; }
       if (entry.fileName.endsWith('/')) { zip.readEntry(); return; }
+      if (options.include && !options.include(entry.fileName)) { zip.readEntry(); return; }
       zip.openReadStream(entry, (error, stream) => {
         if (error || !stream) { fail(error ?? new Error(`Unable to read ZIP entry: ${entry.fileName}`)); return; }
         const chunks: Buffer[] = [];

@@ -5339,5 +5339,50 @@
     "assets/ikebukuro_b1_lightmap_2k.webp"
    ]
   }
+ ],
+ "dataFiles": [
+  {
+   "id": "signage",
+   "path": "scene/signage.json",
+   "sourceIds": [
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-terminal-sign-guideline-draft-v1.3",
+    "toshima-underground-guide-2022"
+   ],
+   "modified": true,
+   "derivation": "pipeline/build_signage.py: sign positions, facing and arrows from verified edge geometry and routing (gteki/graph.json); placement against PLATEAU ceiling and wall surfaces (build/ubld_enu.json); exit and gate names/labels from gteki/pois.json (names only, no source sign layout reproduced). sourceIds = every verified edge's geometry/access evidence and its end nodes' sourceRefs, plus the evidence of each exit and gate a sign shows (a wide set)"
+  },
+  {
+   "id": "crowd-lanes",
+   "path": "scene/crowd_lanes.json",
+   "sourceIds": [
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-underground-guide-2022"
+   ],
+   "modified": true,
+   "derivation": "pipeline/build_station.py crowd_lanes(): per verified edge (gteki/graph.json geometry), the lateral width a pedestrian may stand off the polyline, sampled on the PLATEAU walkable grid (build/ubld_enu.json, >= 0.35 m from walls) inside the routable coverage areas (data/graph.src.json). sourceIds = PLATEAU, the routable areas' sources and every verified edge's geometry/access evidence and end nodes' sourceRefs (a wide set)"
+  },
+  {
+   "id": "walk-bridges",
+   "path": "scene/walk_bridges.json",
+   "sourceIds": [
+    "plateau-ubld-13116"
+   ],
+   "modified": true,
+   "derivation": "pipeline/build_walkfix.py: thin invisible quads bridging hairline cracks (< 0.30 m, same height within 0.06 m) between adjacent PLATEAU floor and stair-tread polygons (build/ubld_enu.json); they change neither the graph nor the rendered geometry"
+  },
+  {
+   "id": "access-fences",
+   "path": "scene/access_fences.json",
+   "sourceIds": [
+    "plateau-ubld-13116",
+    "tokyometro-ikebukuro-yardmap-2026-03",
+    "toshima-underground-guide-2022"
+   ],
+   "modified": true,
+   "derivation": "pipeline/build_access.py: fence pieces and 'access unverified' label stretches along the outline of the routable coverage areas (data/graph.src.json) where PLATEAU floor (build/ubld_enu.json) lies beside it; verified edge geometry (gteki/graph.json) is only checked for clearance and does not shape the output. sourceIds = PLATEAU and the routable areas' sources"
+  }
  ]
 }

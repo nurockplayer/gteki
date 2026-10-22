@@ -1,0 +1,124 @@
+{
+  "dataset": "3D都市モデル（Project PLATEAU）新宿区（2025年度）",
+  "datasetUrl": "https://www.geospatial.jp/ckan/dataset/plateau-13104-shinjuku-ku-2025",
+  "catalogApi": "https://api.plateauview.mlit.go.jp/datacatalog/citygml/13104?types=bldg",
+  "year": 2025,
+  "specification": "5.0",
+  "version": "13104_shinjuku-ku_pref_2025_citygml_1_op",
+  "license": "CC-BY-4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "licenseEvidence": {
+    "metadata": "metadata.zip!metadata/udx_13104_pref_2025_op.xml",
+    "quote": "Licensed under CC BY 4.0",
+    "catalogLicense": "PLATEAU Site Policy 「３．著作権について」に拠る",
+    "policy": "https://www.mlit.go.jp/plateau/site-policy/",
+    "note": "CKAN dataset and metadata read on acquisition. Dataset-specific CC BY 4.0; site policy allows CC BY 4.0. Raw textures/appearances are not used."
+  },
+  "crs": "EPSG:6697 (JGD2011 latitude, longitude, orthometric height; metres for height)",
+  "origin": {
+    "lat": 35.687,
+    "lon": 139.6994,
+    "h": 0
+  },
+  "note": "API fileSize estimates differ from acquired bytes; actual hashes and bytes below pin the input. Four 3rd-mesh tiles surround the exits, including adjacent context; only geometry within 300 m of a ground-level exit is retained. Render-only context, not routing.",
+  "files": [
+    {
+      "path": "53394525_bldg_6697_op.gml",
+      "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/bldg/53394525_bldg_6697_op.gml",
+      "bytes": 94275150,
+      "sha256": "6ee3ab2254dd634b437ebc2afbb5dbb430acb9cc5c2f7cfe687ca637f403d327",
+      "kind": "bldg",
+      "acquiredAt": "2026-10-20T16:18:25+00:00"
+    },
+    {
+      "path": "53394526_bldg_6697_op.gml",
+      "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/bldg/53394526_bldg_6697_op.gml",
+      "bytes": 62700939,
+      "sha256": "b6a84b0148dff5a33fbaf012549eb482979ffa75fd9f764f20fb9a7434fcda3c",
+      "kind": "bldg",
+      "acquiredAt": "2026-10-20T16:18:26+00:00"
+    },
+    {
+      "path": "53394535_bldg_6697_op.gml",
+      "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/bldg/53394535_bldg_6697_op.gml",
+      "bytes": 124173341,
+      "sha256": "f409d890918d4a980a508ca084393d403b6e2f437be94f599f5f4f2ac4fe1114",
+      "kind": "bldg",
+      "acquiredAt": "2026-10-20T16:18:28+00:00"
+    },
+    {
+      "path": "53394536_bldg_6697_op.gml",
+      "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/bldg/53394536_bldg_6697_op.gml",
+      "bytes": 138190372,
+      "sha256": "a5de4cd723119dd97b2c578db6247bba99a1ed2fb0f29824879d5ad5ab97009d",
+      "kind": "bldg",
+      "acquiredAt": "2026-10-20T16:18:28+00:00"
+    },
+    {
+      "path": "catalog.json",
+      "url": "https://api.plateauview.mlit.go.jp/datacatalog/citygml/13104?types=bldg",
+      "bytes": 9895,
+      "sha256": "7239448113f643b1bc1220e507359eba5608ef9d3cbf0c31d1ab68b63ba7bfee",
+      "kind": "provenance",
+      "acquiredAt": "2026-10-20T16:18:40+00:00"
+    },
+    {
+      "path": "ckan.json",
+      "url": "https://www.geospatial.jp/ckan/api/3/action/package_show?id=plateau-13104-shinjuku-ku-2025",
+      "bytes": 187935,
+      "sha256": "6eb9b9c4962cc45fa216d80d550c79214ac3cea14c44616a350de65a07170942",
+      "kind": "provenance",
+      "acquiredAt": "2026-10-20T16:18:40+00:00"
+    },
+    {
+      "path": "dataset.html",
+      "url": "https://www.geospatial.jp/ckan/dataset/plateau-13104-shinjuku-ku-2025",
+      "bytes": 201336,
+      "sha256": "9f8a9babd3ccc6cdbbffdbf88cfb27859244bd6b606fe7ea97a92930e47ce0e8",
+      "kind": "provenance",
+      "acquiredAt": "2026-10-20T16:18:41+00:00"
+    },
+    {
+      "path": "metadata.zip",
+      "url": "https://assets.cms.plateau.reearth.io/assets/e3/7cb09d-c77c-4a58-835a-5f65842426fb/13104_shinjuku-ku_pref_2025_citygml_1_op_metadata.zip",
+      "bytes": 26786,
+      "sha256": "ff758d4ca7ed806dce908138669d086624b590bb7095b712b7eb9d0eb06d77da",
+      "kind": "provenance",
+      "acquiredAt": "2026-10-20T16:18:39+00:00"
+    },
+    {
+      "path": "53394525_tran_6697_op.gml",
+      "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/tran/53394525_tran_6697_op.gml",
+      "bytes": 34370375,
+      "sha256": "5b6e432a857c3241766abcda3c3c596b5ff8f298e1ae95051619fbb191c4c195",
+      "kind": "tran",
+      "acquiredAt": "2026-10-20T16:41:06+00:00"
+    },
+    {
+      "path": "53394526_tran_6697_op.gml",
+      "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/tran/53394526_tran_6697_op.gml",
+      "bytes": 11415006,
+      "sha256": "2ff55bf2847f8f9ce30dff083a3fedf77599390d08644002b56c8cf50fe829d5",
+      "kind": "tran",
+      "acquiredAt": "2026-10-20T16:41:07+00:00"
+    },
+    {
+      "path": "53394535_tran_6697_op.gml",
+      "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/tran/53394535_tran_6697_op.gml",
+      "bytes": 31785752,
+      "sha256": "1141159b90ee2a901eae0b4afa76ebd11141296caa97fa5ac9cd87a5ee07db6c",
+      "kind": "tran",
+      "acquiredAt": "2026-10-20T16:41:07+00:00"
+    },
+    {
+      "path": "53394536_tran_6697_op.gml",
+      "url": "https://assets.cms.plateau.reearth.io/assets/84/48ebed-93d8-4196-bdda-e1db9590d3d1/13104_shinjuku-ku_pref_2025_citygml_1_op/udx/tran/53394536_tran_6697_op.gml",
+      "bytes": 25412513,
+      "sha256": "b6732ec989aebb843e71c9707efee32686980d0f51244e25cc691d0e4f84a019",
+      "kind": "tran",
+      "acquiredAt": "2026-10-20T16:41:08+00:00"
+    }
+  ],
+  "tranCatalogApi": "https://api.plateauview.mlit.go.jp/datacatalog/citygml/13104?types=tran",
+  "tranCoverageNote": "2025年度 新宿区 tran CityGML; four 3rd-mesh tiles matching the building context (53394525, 53394526, 53394535, 53394536), LOD1 road polygons only."
+}
