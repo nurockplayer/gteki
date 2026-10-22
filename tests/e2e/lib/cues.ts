@@ -15,7 +15,7 @@ import { routeWaypoints, stationData, type StationKey, type Vec3, type Waypoint 
  */
 
 export type CueType = "sign" | "junction" | "fence";
-export interface Cue { id: string; type: CueType; s: number; lateralM: number; /** sign only: dot of its facing with the walking direction; < 0 means its front faces the walker */ facingDot?: number; repeater?: boolean }
+export interface Cue { id: string; type: CueType; s: number; lateralM: number; /** sign only: dot of its facing with the walking direction; < 0 means its front faces the walker */ facingDot?: number; repeater?: boolean; /** #180 blue place boards (`sign-place-*`) */ place?: boolean }
 
 export interface RouteLine { wps: Waypoint[]; s: number[]; lengthM: number; nodeS: number[] }
 
@@ -99,7 +99,7 @@ export function cuesAlong(key: StationKey, line: RouteLine, nodeIds: string[], o
   for (const sg of loadSigns(key)) {
     const pr = project(line, sg.position);
     if (pr.lateralM > lateralMax || Math.abs(pr.dz) > dzMax) continue;
-    cues.push({ id: sg.id, type: "sign", s: pr.s, lateralM: pr.lateralM, facingDot: sg.facing.x * pr.dir.x + sg.facing.y * pr.dir.y, repeater: sg.id.startsWith("sign-rep-") });
+    cues.push({ id: sg.id, type: "sign", s: pr.s, lateralM: pr.lateralM, facingDot: sg.facing.x * pr.dir.x + sg.facing.y * pr.dir.y, repeater: sg.id.startsWith("sign-rep-"), place: sg.id.startsWith("sign-place-") });
   }
   loadFences(key).forEach((f, i) => {
     const mid = { x: (f.a[0] + f.b[0]) / 2, y: (f.a[1] + f.b[1]) / 2, z: (f.z0 + f.z1) / 2 };

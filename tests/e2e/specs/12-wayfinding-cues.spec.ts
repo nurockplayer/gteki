@@ -114,7 +114,7 @@ for (const w of walks) {
     save(testInfo, `ikebukuro-cues-${w.label}.json`, {
       project: testInfo.project.name, quality: await hooks.quality(page), guideTier, flowOnly: FLOW_ONLY, arrived,
       route: { lengthM: route.totalLengthM, horizontalLengthM: round(line.lengthM), nodeIds: route.nodeIds, instructions: await hooks.instructions(page) },
-      sources: { signage: "stations/ikebukuro/scene/signage.json", repeaterSigns: cues.filter((c) => c.repeater).length, signsOnRoute: cues.filter((c) => c.type === "sign").length, junctionsOnRoute: cues.filter((c) => c.type === "junction").length, fencesOnRoute: cues.filter((c) => c.type === "fence").length },
+      sources: { signage: "stations/ikebukuro/scene/signage.json", repeaterSigns: cues.filter((c) => c.repeater).length, placeBoards: cues.filter((c) => c.place).length, signsOnRoute: cues.filter((c) => c.type === "sign").length, junctionsOnRoute: cues.filter((c) => c.type === "junction").length, fencesOnRoute: cues.filter((c) => c.type === "fence").length },
       thresholds: { maxGapM: MAX_GAP_M, aheadM: AHEAD_M },
       gaps: { signsAndJunctions: g, withFences: { maxGapM: gWithFences.maxGapM, from: gWithFences.from, to: gWithFences.to }, frontFacingOnly: { maxGapM: gFront.maxGapM, from: gFront.from, to: gFront.to } },
       cues: cues.map((c) => ({ ...c, s: round(c.s), lateralM: round(c.lateralM), facingDot: c.facingDot === undefined ? undefined : round(c.facingDot, 2) })),
