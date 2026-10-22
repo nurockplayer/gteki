@@ -180,8 +180,8 @@
     }
   ],
   "invalidated": {
-    "at": "2026-10-22T06:55:25.634Z",
-    "by_command": "gis rights-report",
+    "at": "2026-10-22T06:59:40.942Z",
+    "by_command": "gis literals-report",
     "reason": "Report-writing command run outside real-run; rerun real-run before summarizing"
   }
 }

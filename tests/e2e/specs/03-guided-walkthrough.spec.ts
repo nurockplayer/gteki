@@ -17,20 +17,24 @@ const FLOW_ONLY = !!process.env.GTEKI_GUIDE_FLOW_ONLY;
  * HUD speed control), in real time. The video is the primary L2 evidence; frames are sampled
  * for review and for objective image statistics (exposure, blank frames, label clutter).
  */
-const walks: Record<StationKey, { from: [string, RegExp]; to: [string, RegExp]; label: string }[]> = {
+const walks: Record<StationKey, { from: [string, RegExp]; to: [string, RegExp]; label: string; gpuOnly?: string }[]> = {
   ikebukuro: [
     { from: ["中央2", /JR Central Gate 2/], to: ["35", /^Exit 35$/], label: "jrc2-exit35" },
     { from: ["West Exit", /^West Exit \(B1\)$/], to: ["West Exit (South)", /^Exit 4$/], label: "westb1-exit4" },
   ],
   shinjuku: [
     { from: ["north side", /street level, north side/], to: ["platform", /Oedo Line platform/], label: "exit1-platform" },
-    { from: ["platform", /Oedo Line platform/], to: ["northwest", /street level, northwest side/], label: "platform-exit2" },
+    // Its first instruction is the long escalator up from the platform: under SwiftShader the second one
+    // took 96–282 s and sometimes never came within the walk budget, pushing the smoke step to its 10 min
+    // cap (#76). exit1-platform already checks the same Shinjuku guide flow in CI.
+    { from: ["platform", /Oedo Line platform/], to: ["northwest", /street level, northwest side/], label: "platform-exit2", gpuOnly: "first instruction is a long escalator ride; too slow under SwiftShader (#76)" },
   ],
 };
 
 for (const key of STATIONS) {
   for (const w of walks[key]) {
     test(`${key}: guided walk ${w.label} (real UI, recorded) @phone`, async ({ page }, testInfo) => {
+      test.skip(FLOW_ONLY && !!w.gpuOnly, w.gpuOnly);
       test.setTimeout(420_000);
       await openStation(page, key);
       const isPhone = testInfo.project.name.startsWith("phone");
