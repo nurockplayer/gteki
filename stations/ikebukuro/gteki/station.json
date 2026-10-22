@@ -263,7 +263,7 @@
      "text": "street level"
     }
    ],
-   "_note": "No source names this level; it is the open ground where exit stairs end (PLATEAU closure surfaces at the stair tops)."
+   "_note": "Labelled 地上 from PLATEAU (plateau-ubld-13116, per sourceLabels): the open ground where the exit stairs end, at the PLATEAU closure surfaces on the stair tops."
   }
  ],
  "coverage": {
@@ -1032,7 +1032,7 @@
     "sourceDate": null
    }
   ],
-  "freshness": "2023"
+  "freshness": "2022-01"
  },
  "spawnNodeIds": [
   "c_mid",

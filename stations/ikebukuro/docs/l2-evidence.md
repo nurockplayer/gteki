@@ -50,7 +50,7 @@ Run by the lead on the host, one heavy job at a time, memory gate first. Candida
 | W3 JR Central Gate 1 to Exit 22 (187 m, Lane F I3) | `?station=ikebukuro&from=jr-central-gate-1&to=exit-22` | One more route with a different turn pattern | desktop only |
 | W4 JR South Gate to Exit 18 (288 m, Lane F I4) | `?station=ikebukuro&from=jr-south-gate&to=exit-18` | The three-flight U-stair; full descent from the top as well (Lane F's open item) | desktop only |
 
-Record on each: the `__gteki.sceneInfo()` camera blocker count, the `jrc2-exit35-07` frame (is the camera ever above the stair cover), and whether the route card shows the stale flag (the route is stale under core's 730-day default today, `routing.test.ts:241`).
+Record on each: the `__gteki.sceneInfo()` camera blocker count, the `jrc2-exit35-07` frame (is the camera ever above the stair cover), and whether the route card shows the stale flag (the route is stale under core's 730-day default today, `routing.test.ts:241`). Part of the reason is that the node sourceRefs cite PLATEAU 2023, whose datasetDate is itself past the 730-day default, so field capture alone cannot clear the flag; the PLATEAU data version has to be updated.
 
 ## 2. Independent side-by-side review, and the deliberate simplifications
 

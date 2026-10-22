@@ -31,9 +31,19 @@ def _cross(ax, ay, bx, by, cx, cy, dx, dy):
         (o(cx, cy, dx, dy, ax, ay) > 0) != (o(cx, cy, dx, dy, bx, by) > 0)
 
 
+def _seg_seg_dist(ax, ay, bx, by, cx, cy, dx, dy):
+    """Shortest 2D distance between segments a-b and c-d (0 when they cross)."""
+    if _cross(ax, ay, bx, by, cx, cy, dx, dy):
+        return 0.0
+    return min(_seg_dist(ax, ay, cx, cy, dx, dy), _seg_dist(bx, by, cx, cy, dx, dy),
+               _seg_dist(cx, cy, ax, ay, bx, by), _seg_dist(dx, dy, ax, ay, bx, by))
+
+
 class Grid:
-    def __init__(self, surf, segs, sgrid, bbox):
-        self.surf, self.segs, self.sgrid = surf, segs, sgrid
+    def __init__(self, surf, segs, sgrid, bbox, floor_edge=frozenset()):
+        # floor_edge: indices of wall pieces whose top is a walking surface's edge (build_station.floor_edges);
+        # they are left out of the body band everywhere the grid tests it
+        self.surf, self.segs, self.sgrid, self.floor_edge = surf, segs, sgrid, floor_edge
         x0, x1, y0, y1 = bbox
         self.x0, self.y0 = x0, y0
         self.cells = {}  # (i, j) -> [(z, kind)]
@@ -58,7 +68,7 @@ class Grid:
     def _clear(self, x, y, z):
         for k in self._near_segs(x, y):
             x1, y1, x2, y2, smin, smax = self.segs[k]
-            if smax < z + 0.4 or smin > z + 1.8:
+            if k in self.floor_edge or smax < z + 0.4 or smin > z + 1.8:
                 continue
             if _seg_dist(x, y, x1, y1, x2, y2) < CLEAR:
                 return False
@@ -103,12 +113,26 @@ class Grid:
                         continue
                     if self._blocked(x, y, nx, ny, min(z, nz)):
                         continue
+                    # both cells are CLEAR of every face, but a diagonal move can still cut past a corner
+                    if self.clearance(x, y, nx, ny, (z + nz) / 2) < CLEAR:
+                        continue
                     yield (i + di, j + dj, nlv), math.sqrt(h * h + (nz - z) ** 2), "riser" if step > lim else nkind
+
+    def clearance(self, x, y, nx, ny, z):
+        """Least plan distance from the short segment (x, y)-(nx, ny), feet at z, to any face in the body band
+        (0.4-1.8 m above z, the band the wall-crossing checks use), capped at 4 m (the index reach)."""
+        best = 4.0
+        for k in self._near_segs(x, y) | self._near_segs(nx, ny):
+            x1, y1, x2, y2, smin, smax = self.segs[k]
+            if k in self.floor_edge or smax < z + 0.4 or smin > z + 1.8:
+                continue
+            best = min(best, _seg_seg_dist(x, y, nx, ny, x1, y1, x2, y2))
+        return best
 
     def _blocked(self, x, y, nx, ny, z):
         for k in self._near_segs(x, y):
             x1, y1, x2, y2, smin, smax = self.segs[k]
-            if smax < z + 0.4 or smin > z + 1.8:
+            if k in self.floor_edge or smax < z + 0.4 or smin > z + 1.8:
                 continue
             if _cross(x, y, nx, ny, x1, y1, x2, y2):
                 return True
@@ -175,19 +199,22 @@ class Grid:
     def _line_ok(self, p, q, max_z_err):
         d = math.hypot(q[0] - p[0], q[1] - p[1])
         n = max(1, math.ceil(d / 0.25))  # spacing never exceeds 0.25 m
+        hz = []
         for s in range(n + 1):
             t = s / n
             x, y, z = p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t, p[2] + (q[2] - p[2]) * t
             hit = self.surf.height_near(x, y, z, 0.6)
             if hit is None or abs(hit[0] - z) > max(max_z_err, 0.5 if hit[1] == "stairs" else 0):
                 return False
-            if not self._clear(x, y, hit[0]):
-                return False
-        # Check walls at the walking height along the line, in short pieces.
+            hz.append(hit[0])
+        # Check walls at the walking height along the line, in short pieces: no crossing, and CLEAR over the
+        # whole piece (not only at its ends, which let a wall corner come to ~0.33 m between samples).
         for s in range(n):
             t0, t1 = s / n, (s + 1) / n
             ax, ay = p[0] + (q[0] - p[0]) * t0, p[1] + (q[1] - p[1]) * t0
             bx, by = p[0] + (q[0] - p[0]) * t1, p[1] + (q[1] - p[1]) * t1
             if self._blocked(ax, ay, bx, by, p[2] + (q[2] - p[2]) * t0):
+                return False
+            if self.clearance(ax, ay, bx, by, (hz[s] + hz[s + 1]) / 2) < CLEAR:
                 return False
         return True
