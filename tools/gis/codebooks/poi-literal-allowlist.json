@@ -1,0 +1,31 @@
+{
+  "purpose": "Generic vocabulary exempt from the POI leak scan (gis check-poi-literals). Each term is a common word or schema/file-name fragment that our own committed text, floor-label file names and non-POI sources use; none is a distinctive source value. Add a term only after confirming that, never to hide a leaked value.",
+  "terms": [
+    "MB2F",
+    "Stream",
+    "above",
+    "ange",
+    "below",
+    "building",
+    "door",
+    "elevator",
+    "entrance",
+    "escalator",
+    "gate",
+    "general",
+    "indoor",
+    "information",
+    "locker",
+    "ramp",
+    "section",
+    "stairs",
+    "step",
+    "true",
+    "unit",
+    "wall",
+    "エスカレーター",
+    "エレベーター",
+    "コインロッカー",
+    "スロープ"
+  ]
+}
