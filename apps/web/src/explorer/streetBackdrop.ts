@@ -69,46 +69,52 @@ export function roleOf(o: THREE.Object3D | null): string | null {
   return o?.name || null;
 }
 
-/** Name of the station group that carries its own surface context (roads, pavement): see docs/core/contract.md. */
-export const STREET_CONTEXT_NAME = "street-context";
+/**
+ * `userData` flag a station sets (on a group or mesh, or as a GLB extra) on the subtree that draws its own
+ * road / pavement surfaces at their real heights: see docs/core/contract.md. Deliberately not a gteki role:
+ * roles are inherited by descendant meshes, and a buildings-only context must not hide the pavement plane.
+ */
+export const STREET_SURFACE_FLAG = "gteki_street_surface";
 
-/** Visible in the render sense: the object and every ancestor have `visible` set. */
-function visibleInHierarchy(o: THREE.Object3D): boolean {
-  for (let x: THREE.Object3D | null = o; x; x = x.parent) if (!x.visible) return false;
-  return true;
+/** How often (s of backdrop time) the attached scene is re-scanned for street surfaces that arrived late. */
+export const STREET_RESCAN_S = 0.5;
+
+/** In the scene and drawn: the parent chain reaches `root`, and `root` and every node on it are visible. */
+function drawnUnder(o: THREE.Object3D, root: THREE.Object3D): boolean {
+  for (let x: THREE.Object3D | null = o; x; x = x.parent) {
+    if (!x.visible) return false;
+    if (x === root) return true;
+  }
+  return false; // detached from the scene
 }
 
 /**
- * Finds a station scene's own street context once, at attach: the `street-context` group, plus any mesh
- * tagged `gteki_role: "context"` that is not already inside one. Returns the objects to watch for visibility;
- * empty when the station draws no ground of its own.
+ * Finds the station scene's street-surface objects (`userData.gteki_street_surface === true`) under `root`.
+ * Empty when the station draws no ground of its own. A flagged object's own subtree is not searched further.
  */
-export function collectStreetContext(root: THREE.Object3D | null): THREE.Object3D[] {
+export function collectStreetSurfaces(root: THREE.Object3D | null): THREE.Object3D[] {
   const found: THREE.Object3D[] = [];
   if (!root) return found;
-  const named = new Set<THREE.Object3D>();
-  root.traverse((o) => {
-    if (o.name === STREET_CONTEXT_NAME) {
-      named.add(o);
+  const walk = (o: THREE.Object3D): void => {
+    if (o.userData[STREET_SURFACE_FLAG] === true) {
       found.push(o);
+      return;
     }
-  });
-  root.traverse((o) => {
-    if (!(o as THREE.Mesh).isMesh || o.userData.gteki_role !== "context") return;
-    for (let x: THREE.Object3D | null = o; x; x = x.parent) if (named.has(x)) return;
-    found.push(o);
-  });
+    for (const c of o.children) walk(c);
+  };
+  walk(root);
   return found;
 }
 
 /**
- * The core pavement plane yields wherever the station draws its own ground: true while any of the station's
- * street-context objects (see collectStreetContext) is visible. The plane sits just under the walker's feet
- * and, being transparent, would otherwise hide real road surfaces a few cm below it. Cheap enough per frame:
- * a handful of cached objects, each checked up its (shallow) parent chain; no scene traversal.
+ * The core pavement plane yields wherever the station draws its own ground: true while any known
+ * street-surface object (see collectStreetSurfaces) is attached under `root` and visible. The plane sits
+ * just under the walker's feet and, being transparent, would otherwise hide real road surfaces a few cm
+ * below it. Cheap enough per frame: a handful of cached objects, each checked up its (shallow) parent
+ * chain; no scene traversal. Removing or hiding an object is therefore seen the same frame.
  */
-export function stationDrawsGround(contexts: readonly THREE.Object3D[]): boolean {
-  return contexts.some(visibleInHierarchy);
+export function stationDrawsGround(surfaces: readonly THREE.Object3D[], root: THREE.Object3D | null): boolean {
+  return root !== null && surfaces.some((o) => drawnUnder(o, root));
 }
 
 const SKY_VERT = /* glsl */ `
@@ -172,7 +178,10 @@ export class StreetBackdrop {
   private saved: { fog: THREE.Scene["fog"] } | null = null;
   private blend = 0;
   private groundBlend = 0;
-  private contexts: THREE.Object3D[] = [];
+  private root: THREE.Object3D | null = null;
+  private surfaces: THREE.Object3D[] = [];
+  /** Backdrop time (s) since the attached scene was last scanned for street surfaces. */
+  private sinceScan = 0;
 
   constructor() {
     this.group.name = "street-backdrop";
@@ -206,11 +215,14 @@ export class StreetBackdrop {
   }
 
   /**
-   * Point the backdrop at the loaded station scene (or null on unload): the street context it draws is looked
-   * up once here, and its visibility alone decides whether the pavement plane shows (see stationDrawsGround).
+   * Point the backdrop at the loaded station scene (or null on unload) and scan it for street surfaces. A
+   * station may add its surfaces later (async GLB, toggled with camera height), so while outdoors on level
+   * ground the scene is re-scanned every STREET_RESCAN_S; the visibility of the known ones is re-read every frame.
    */
   attach(root: THREE.Object3D | null): void {
-    this.contexts = collectStreetContext(root);
+    this.root = root;
+    this.surfaces = collectStreetSurfaces(root);
+    this.sinceScan = 0;
   }
 
   get active(): boolean {
@@ -249,7 +261,12 @@ export class StreetBackdrop {
     // The plane follows the walker's feet and shows only on level ground: on a stair (or at the lip of a
     // stairwell) it would cut across the flight below, so there the stair geometry stays visible.
     // It also yields entirely wherever the station draws its own street (real road surfaces can sit below it).
-    const up = outdoors && level && !stationDrawsGround(this.contexts);
+    this.sinceScan += dt;
+    if (outdoors && level && (teleport || this.sinceScan >= STREET_RESCAN_S)) {
+      this.surfaces = collectStreetSurfaces(this.root);
+      this.sinceScan = 0;
+    }
+    const up = outdoors && level && !stationDrawsGround(this.surfaces, this.root);
     // Fades in on arrival; clears at once when footing stops being level, so it never covers a stair going down.
     this.groundBlend = up ? (teleport ? 1 : THREE.MathUtils.damp(this.groundBlend, 1, 8, dt)) : 0;
     this.ground.visible = this.groundBlend > 0.01;
