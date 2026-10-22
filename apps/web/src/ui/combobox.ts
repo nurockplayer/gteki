@@ -40,6 +40,24 @@ export function comboboxKeys(state: ComboState, key: string): ComboOutcome {
   }
 }
 
+/** Safari fires the Enter that confirms a conversion just after compositionend. */
+export const IME_ENTER_GRACE_MS = 50;
+
+export interface KeyLike {
+  key: string;
+  isComposing?: boolean;
+  keyCode?: number;
+}
+
+/**
+ * A keydown that belongs to an IME, not to the combobox: composing, the legacy keyCode 229 (Safari reports
+ * isComposing false for the confirming Enter), or an Enter within a few ms of compositionend.
+ */
+export function isImeKeydown(e: KeyLike, lastCompositionEndMs: number, nowMs: number): boolean {
+  if (e.isComposing || e.keyCode === 229) return true;
+  return e.key === "Enter" && nowMs - lastCompositionEndMs >= 0 && nowMs - lastCompositionEndMs < IME_ENTER_GRACE_MS;
+}
+
 export type AriaAttrs = Record<string, string | null>;
 
 /** Id of option `i` of the listbox `listId`. */

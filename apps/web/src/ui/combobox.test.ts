@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { COMBO_CLOSED, applyAria, comboboxKeys, inputAria, listboxRole, normalizeCombo, optionAria, optionId, type ComboState } from "./combobox.ts";
+import { COMBO_CLOSED, IME_ENTER_GRACE_MS, applyAria, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, optionId, type ComboState } from "./combobox.ts";
 
 const open = (count: number, active = -1): ComboState => ({ open: true, count, active });
 
@@ -94,5 +94,37 @@ describe("combobox ARIA attributes", () => {
     const el = { setAttribute: (k: string, v: string) => store.set(k, v), removeAttribute: (k: string) => store.delete(k) } as unknown as Element;
     applyAria(el, { role: "combobox", "aria-activedescendant": null });
     expect([...store]).toEqual([["role", "combobox"]]);
+  });
+});
+
+describe("isImeKeydown", () => {
+  const never = -Infinity;
+
+  it("treats a composing keydown as the IME's", () => {
+    expect(isImeKeydown({ key: "Enter", isComposing: true }, never, 1000)).toBe(true);
+    expect(isImeKeydown({ key: "ArrowDown", isComposing: true }, never, 1000)).toBe(true);
+  });
+
+  it("treats keyCode 229 as the IME's even when isComposing is false (Safari)", () => {
+    expect(isImeKeydown({ key: "Enter", isComposing: false, keyCode: 229 }, never, 1000)).toBe(true);
+  });
+
+  it("treats an Enter within the grace window after compositionend as the IME's", () => {
+    expect(isImeKeydown({ key: "Enter", isComposing: false, keyCode: 13 }, 1000, 1000)).toBe(true);
+    expect(isImeKeydown({ key: "Enter", isComposing: false, keyCode: 13 }, 1000, 1000 + IME_ENTER_GRACE_MS - 1)).toBe(true);
+  });
+
+  it("a later Enter, or another key just after compositionend, is the user's", () => {
+    expect(isImeKeydown({ key: "Enter", keyCode: 13 }, 1000, 1000 + IME_ENTER_GRACE_MS)).toBe(false);
+    expect(isImeKeydown({ key: "ArrowDown", keyCode: 40 }, 1000, 1010)).toBe(false);
+  });
+
+  it("a plain Enter with no composition at all is the user's", () => {
+    expect(isImeKeydown({ key: "Enter", isComposing: false, keyCode: 13 }, never, 5)).toBe(false);
+    expect(isImeKeydown({ key: "Enter" }, never, 5)).toBe(false);
+  });
+
+  it("a timestamp in the future (clock skew) never matches", () => {
+    expect(isImeKeydown({ key: "Enter", keyCode: 13 }, 2000, 1000)).toBe(false);
   });
 });

@@ -10,7 +10,7 @@ import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
 import { sourceCredit } from "../credits.ts";
-import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
+import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { LiveRegion, routeLiveMessage, searchLiveMessage } from "./live.ts";
 import { watchReducedMotion } from "./motion.ts";
 
@@ -183,8 +183,11 @@ export class App {
     applyAria(input, inputAria(COMBO_CLOSED, results.id));
     input.addEventListener("input", () => this.renderResults(which));
     input.addEventListener("focus", () => this.renderResults(which));
+    let compositionEndMs = -Infinity;
+    input.addEventListener("compositionend", () => { compositionEndMs = performance.now(); });
     input.addEventListener("keydown", (e) => {
-      if (e.isComposing) return;
+      // The Enter that confirms an IME conversion is not a pick (Safari reports it as not composing).
+      if (isImeKeydown(e, compositionEndMs, performance.now())) return;
       // Arrows reopen a closed list.
       if (!this.combo[which].open && (e.key === "ArrowDown" || e.key === "ArrowUp")) this.renderResults(which);
       const out = comboboxKeys(this.combo[which], e.key);
