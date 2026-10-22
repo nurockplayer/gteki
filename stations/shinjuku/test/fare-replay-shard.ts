@@ -32,9 +32,9 @@ export function replayShard(index: number, count: number) {
      (conflicts.get(b.fence?.restrictedSpaceId ?? "") ?? 0) - (conflicts.get(a.fence?.restrictedSpaceId ?? "") ?? 0) || b.p.z - a.p.z);
    const result = await replayMatrix(built, scene, plan, selected, index);
    // One summary line per shard, so runs without FARE_REPLAY_REPORT (e.g. test:heavy:box) still record totals.
-   const { jobs, finished, wallMs, integratedFrames, frames, failedPaths, fringeContacts, maxFringeM, leaks } = result;
-   console.log(`fare-replay shard ${index + 1}/${count} ${JSON.stringify({ jobs, finished, wallMs: Math.round(wallMs), integratedFrames, frames, failedPaths, fringeContacts, maxFringeM, leaks: leaks.length, paths: result.matrix.reduce((n, r) => n + r.paths, 0) })}`);
-   expect(result.finished).toBe(result.jobs); expect(result.leaks).toEqual([]); expect(result.matrix).toHaveLength(72);
+   const { jobs, shardJobs, prefix, finished, wallMs, integratedFrames, frames, failedPaths, fringeContacts, maxFringeM, leaks } = result;
+   console.log(`fare-replay shard ${index + 1}/${count} ${JSON.stringify({ jobs, shardJobs, prefix, finished, wallMs: Math.round(wallMs), integratedFrames, frames, failedPaths, fringeContacts, maxFringeM, leaks: leaks.length, paths: result.matrix.reduce((n, r) => n + r.paths, 0) })}`);
+   expect(result.finished).toBe(result.jobs); expect(result.leaks).toEqual([]); expect(result.matrix).toHaveLength(prefix && prefix < 2 ? 36 : 72); // one walker's 36 rows when FARE_REPLAY_PREFIX=1
    for (const row of result.matrix) { expect(row.paths).toBeGreaterThan(0); expect(row.passed).toBe(row.paths); }
   }, 7_200_000);
  });

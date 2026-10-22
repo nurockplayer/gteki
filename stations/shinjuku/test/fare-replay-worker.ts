@@ -49,13 +49,16 @@ function capture(built: BuiltStation, scene: StationScene, plan: Plan): Fixture 
 }
 
 export async function replayMatrix(built: BuiltStation, scene: StationScene, plan: Plan, ends: End[], shard?: number) {
-  const fixture = capture(built, scene, plan), jobs = ends.flatMap(end => (["lane", "explorer"] as const).map(walker => ({ end, walker }))).map((j, id) => ({ ...j, id }));
+  const fixture = capture(built, scene, plan), shardJobs = ends.flatMap(end => (["lane", "explorer"] as const).map(walker => ({ end, walker }))).map((j, id) => ({ ...j, id }));
+  // FARE_REPLAY_PREFIX=<n> runs only the first n jobs of this shard, in the caller's (conflict-first) order; default all.
+  const prefix = Number(process.env.FARE_REPLAY_PREFIX) > 0 ? Math.floor(Number(process.env.FARE_REPLAY_PREFIX)) : 0;
+  const jobs = prefix ? shardJobs.slice(0, prefix) : shardJobs;
   const matrix = new Map<string, MatrixRow>(), results: Result[] = [], workers: Worker[] = [];
   const groupsByKey = new Map<string, Job[]>();
   for (const job of jobs) { const p = job.end.p, key = `${job.walker}:${p.x},${p.y},${p.z}`, list = groupsByKey.get(key) ?? []; list.push(job); groupsByKey.set(key, list); }
   const groups = [...groupsByKey.values()], startedAt = Date.now(), start = performance.now();
   let next = 0, finished = 0;
-  const report = () => ({ jobs: jobs.length, finished, failFast: fixture.failFast, startedAt, finishedAt: Date.now(), wallMs: performance.now() - start, integratedFrames: results.reduce((n, r) => n + r.integratedFrames, 0), frames: results.reduce((n, r) => n + r.frames, 0),
+  const report = () => ({ jobs: jobs.length, shardJobs: shardJobs.length, prefix: prefix || null, finished, failFast: fixture.failFast, startedAt, finishedAt: Date.now(), wallMs: performance.now() - start, integratedFrames: results.reduce((n, r) => n + r.integratedFrames, 0), frames: results.reduce((n, r) => n + r.frames, 0),
     failedPaths: [...matrix.values()].reduce((n, r) => n + r.paths - r.passed, 0),
     fringeContacts: results.reduce((n, r) => n + r.fringeContacts, 0), maxFringeM: Math.max(0, ...results.map(r => r.maxFringeM)),
     matrix: [...matrix.values()], zeroSeedJobs: results.filter(r => !r.seeds).map(r => jobs[r.id]!.end.id), leaks: results.flatMap(r => r.leak ? [r.leak] : []) });

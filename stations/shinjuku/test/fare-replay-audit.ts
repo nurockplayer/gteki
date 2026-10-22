@@ -1,4 +1,7 @@
-/** Replay fixtures use the shipped scene, walker math and actual Three ray targets. */
+/** Replay fixtures use the shipped scene, walker math and actual Three ray targets.
+ * ExplorerReplay.step mirrors the shared explorer's free-walk step (explorer.ts stepWalk) including the body
+ * collision and wall slide of #81: resolveWalls, bodyBlock over the 0.3 m disc, slideAlong the blocking surface,
+ * resolveWalls and bodyBlock again, then ground. bodyBlock/slideAlong/hitNormal are the imported originals. */
 import * as THREE from "three";
 import { WALKER_BODY, type StationScene } from "@gteki/scene-api";
 import type { BuiltStation } from "../scene/build.ts";
@@ -6,7 +9,8 @@ import { pointInRings, railingWalls, WalkWorld, type XY, type XYZ, type Plan, ty
 import { gateMachines, containsPolygons, derivedRestrictedAccess, restrictionAt, type RestrictedRegion, type Fence } from "../scene/fare-fence.ts";
 import { laneBands, explorerBands, segmentDistance2, lanePatches, proxyPatches, gateCrossing, type WalkerAudit, type Patch } from "./fare-boundary-audit.ts";
 import { resolveWalls, acceptGround, wallToRenderer, DEFAULT_GROUND, type Segment2 } from "../../../apps/web/src/explorer/walker.ts";
-import { castAll, castTargets } from "../../../apps/web/src/explorer/raycast.ts";
+import { castAll, explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
+import { bodyBlock, hitNormal, slideAlong, type BodyBlock, type CastFn } from "../../../apps/web/src/explorer/bodyCollision.ts";
 import { accelerateRaycasts, nearbyTargets } from "./fare-replay-rays.ts";
 import { Player } from "../app/src/player.ts";
 
@@ -142,7 +146,6 @@ export class ExplorerReplay {
   private readonly ray = new THREE.Raycaster();
   private readonly from = new THREE.Vector3();
   private readonly to = new THREE.Vector3();
-  private readonly motion = new THREE.Vector3();
   private readonly origin = new THREE.Vector3();
   private readonly down = new THREE.Vector3(0, -1, 0);
   private readonly walls;
@@ -153,11 +156,22 @@ export class ExplorerReplay {
   private readonly cellActive = new Map<string, typeof this.walls>();
   private readonly grounds;
   private readonly colliders;
+  private readonly hasColliders: boolean;
+  /** explorer.ts blockedByColliders' cast: nearest collider hit with its ray-facing normal (the broad phase only drops meshes the ray cannot reach). */
+  private readonly cast: CastFn = (origin, dir, far) => {
+    this.ray.set(origin, dir);
+    this.ray.far = far;
+    const hit = castAll(this.ray, this.colliders(this.ray))[0];
+    return hit ? { distance: hit.distance, normal: hitNormal(hit, dir) } : null;
+  };
   constructor(readonly scene: StationScene) {
     this.walls = (scene.walls ?? []).map(wallToRenderer);
     this.bandKey = bandKeys(this.walls.flatMap(w => [w.yMin - WALKER_BODY.bodyTopM, w.yMax - WALKER_BODY.bodyBottomM]));
-    this.grounds = nearbyTargets(castTargets(scene.walkable, scene.colliders));
-    this.colliders = nearbyTargets(castTargets(scene.colliders ?? [], scene.walkable));
+    // The explorer's own target sets (explorerTargets), so camera blockers are filed exactly as it files them.
+    const targets = explorerTargets(scene.walkable, scene.colliders ?? [], scene.cameraBlockers ?? []);
+    this.grounds = nearbyTargets(targets.ground);
+    this.colliders = nearbyTargets(targets.collider);
+    this.hasColliders = (scene.colliders ?? []).length > 0;
     for (const w of this.walls)
       for (let x = Math.floor((Math.min(w.ax, w.bx) - .3) / 2); x <= Math.floor((Math.max(w.ax, w.bx) + .3) / 2); x++)
         for (let z = Math.floor((Math.min(w.az, w.bz) - .3) / 2); z <= Math.floor((Math.max(w.az, w.bz) + .3) / 2); z++) {
@@ -202,17 +216,23 @@ export class ExplorerReplay {
     const pushed = resolveWalls(p.x, -p.y, .3, p.z, WALKER_BODY.bodyTopM, !fast ? this.walls : overlap ? selected : []);
     return { x: pushed.x, y: -pushed.z, z: p.z };
   }
+  /** explorer.ts blockedByColliders: the collider surface that stops the body going from `from` to `to`, or null. */
+  private blockedByColliders(from: THREE.Vector3, to: THREE.Vector3): BodyBlock | null {
+    if (!this.hasColliders) return null;
+    return bodyBlock(from, to, this.cast, WALKER_BODY.radiusM);
+  }
+  /** explorer.ts stepWalk for one frame of input along `dir` (plan coordinates; three's z is -y). */
   step(pos: XYZ, dir: XY, speed: number, dt: number): XYZ {
-    const target = this.push({ x: pos.x + dir.x * speed * dt, y: pos.y + dir.y * speed * dt, z: pos.z });
+    let target = this.push({ x: pos.x + dir.x * speed * dt, y: pos.y + dir.y * speed * dt, z: pos.z });
     const from = this.from.set(pos.x, pos.z, -pos.y), to = this.to.set(target.x, pos.z, -target.y);
-    const vector = this.motion.subVectors(to, from), len = vector.length();
-    if (len >= 1e-6) {
-      vector.divideScalar(len);
-      for (const h of [.5, 1.2]) {
-        this.ray.set(this.origin.copy(from).setY(from.y + h), vector);
-        this.ray.far = len + .3;
-        if (castAll(this.ray, this.colliders(this.ray)).length) return pos;
-      }
+    const block = this.blockedByColliders(from, to);
+    if (block) {
+      // Slide along the surface that stopped the move rather than sticking to it.
+      const slid = slideAlong(from, to, block.normal);
+      if (!slid) return pos;
+      target = this.push({ x: slid.x, y: -slid.z, z: pos.z });
+      to.set(target.x, pos.z, -target.y);
+      if (this.blockedByColliders(from, to)) return pos;
     }
     const ground = this.ground(target);
     if (!acceptGround(pos.z, ground, DEFAULT_GROUND)) return pos;
@@ -363,6 +383,14 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
     return result;
   };
   const gateWorld = { propBands: laneBands(built.propWalls) } as WalkerAudit;
+  /** The replay's leak criterion for one frame: `supported` (the walker's feet on its accepted floor) is unmapped or
+   * restricted, or its fare label differs from the last labelled one without a verified gate crossing from `lastKnown`.
+   * Returns the leak kind, or null. Returned by replayEnvironment so other probes (fence-slide) apply exactly this rule. */
+  const judge = (last: string | null, lastKnown: XYZ, supported: XYZ, next = labels(supported)): string | null => {
+    if (!next.mapped) return "verified → unmapped/restricted";
+    if (next.fare && last && next.fare !== last && !gateCrossing(lastKnown, supported, built.layout, plan, gateWorld)) return `${last} → ${next.fare}`;
+    return null;
+  };
   const traceMemo = new Map<string, { leak: ReplayLeak | null; frames: number; position: XYZ; fringeContacts: number; maxFringeM: number }>();
   const memoCapacity = Math.max(1, options.memoCapacity ?? 50000);
   let eviction = traceMemo.keys();
@@ -428,9 +456,8 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
             throw new Error("A quantisation fringe admitted the body");
           fringeContacts++; traceMaxFringeM = Math.max(traceMaxFringeM, next.fringe.distanceM); maxFringeM = Math.max(maxFringeM, traceMaxFringeM);
         }
-        if (!next.mapped) return finish({ end: end.id, approach, walker, fps, run, from, to: pos, kind: "verified → unmapped/restricted" });
-        if (next.fare && last && next.fare !== last && !gateCrossing(lastKnown, supported, built.layout, plan, gateWorld))
-          return finish({ end: end.id, approach, walker, fps, run, from, to: pos, kind: `${last} → ${next.fare}` });
+        const kind = judge(last, lastKnown, supported, next);
+        if (kind) return finish({ end: end.id, approach, walker, fps, run, from, to: pos, kind });
         if (next.fare) { last = next.fare; lastKnown = supported; }
         // No near-equality stopping rule: tiny drift can cross a resolver branch.
         // Exact fixed points or cycles preserve the static-world transition. Keep
@@ -449,7 +476,7 @@ export function replayEnvironment(built: BuiltStation, scene: StationScene, plan
     }
     return finish(null);
   };
-  return { explorer, seeds, replay, labels, position: () => lastPosition, frames: () => frames, integratedFrames: () => integratedFrames,
+  return { explorer, seeds, replay, judge, labels, position: () => lastPosition, frames: () => frames, integratedFrames: () => integratedFrames,
     fringes: () => ({ contacts: fringeContacts, maxM: maxFringeM }) };
 }
 

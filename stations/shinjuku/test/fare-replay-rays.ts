@@ -1,10 +1,11 @@
 /** Test-only spatial broad phase over the hook's actual static meshes.
  * Native Three Ray.intersectTriangle is the same primitive used by Mesh.raycast.
- * Keep the consumed point/distance/material-side/near/far semantics; omit UV/normal work.
+ * Keep the consumed point/distance/material-side/near/far semantics; omit UV work. The hit carries three's
+ * face (indices and the local-space triangle normal), which bodyCollision's hitNormal reads for wall sliding.
  */
 import * as THREE from "three";
 interface Axis { x: number; z: number; min: number; max: number; radius: number }
-interface Face { axes: Axis[]; a: THREE.Vector3; b: THREE.Vector3; c: THREE.Vector3; minY: number; maxY: number; index: number; box: THREE.Box3 }
+interface Face { axes: Axis[]; a: THREE.Vector3; b: THREE.Vector3; c: THREE.Vector3; minY: number; maxY: number; index: number; box: THREE.Box3; ia: number; ib: number; ic: number; normal?: THREE.Vector3 }
 interface Node { box: THREE.Box3; faces?: Face[]; left?: Node; right?: Node }
 export function accelerateRaycasts(objects: readonly THREE.Object3D[]) {
   const restores: (() => void)[] = [];
@@ -17,15 +18,16 @@ export function accelerateRaycasts(objects: readonly THREE.Object3D[]) {
     const faces: Face[] = [];
     const cells = new Map<string, Face[]>(), cell = .5;
     for (let i = 0; i < count; i += 3) {
-      const a = new THREE.Vector3().fromBufferAttribute(position, index ? index.getX(i) : i);
-      const b = new THREE.Vector3().fromBufferAttribute(position, index ? index.getX(i + 1) : i + 1);
-      const c = new THREE.Vector3().fromBufferAttribute(position, index ? index.getX(i + 2) : i + 2);
+      const ia = index ? index.getX(i) : i, ib = index ? index.getX(i + 1) : i + 1, ic = index ? index.getX(i + 2) : i + 2;
+      const a = new THREE.Vector3().fromBufferAttribute(position, ia);
+      const b = new THREE.Vector3().fromBufferAttribute(position, ib);
+      const c = new THREE.Vector3().fromBufferAttribute(position, ic);
       const box = new THREE.Box3().setFromPoints([a, b, c]).expandByScalar(1e-8);
       const axes = [[-(b.z - a.z), b.x - a.x], [-(c.z - b.z), c.x - b.x], [-(a.z - c.z), a.x - c.x]].map(([x, z]) => {
         const values = [a, b, c].map(p => p.x * x! + p.z * z!);
         return { x: x!, z: z!, min: Math.min(...values) - 1e-8, max: Math.max(...values) + 1e-8, radius: cell / 2 * (Math.abs(x!) + Math.abs(z!)) };
       });
-      faces.push({ a, b, c, box, axes, index: i / 3, minY: box.min.y, maxY: box.max.y });
+      faces.push({ a, b, c, ia, ib, ic, box, axes, index: i / 3, minY: box.min.y, maxY: box.max.y });
     }
     const build = (fs: Face[]): Node => {
       const box = new THREE.Box3(); for (const f of fs) box.union(f.box);
@@ -58,7 +60,9 @@ export function accelerateRaycasts(objects: readonly THREE.Object3D[]) {
         worldPoint.copy(point).applyMatrix4(matrix);
         const distance = worldPoint.distanceTo(caster.ray.origin);
         if (distance < caster.near || distance > caster.far) return;
-        hits.push({ distance, point: worldPoint.clone(), object: mesh, faceIndex: f.index });
+        // Mesh.raycast's face: the triangle in the geometry's own space, normal from Triangle.getNormal on (a, b, c).
+        f.normal ??= THREE.Triangle.getNormal(f.a, f.b, f.c, new THREE.Vector3());
+        hits.push({ distance, point: worldPoint.clone(), object: mesh, faceIndex: f.index, face: { a: f.ia, b: f.ib, c: f.ic, normal: f.normal.clone(), materialIndex: 0 } });
       };
     mesh.raycast = (caster, hits) => {
       ray.copy(caster.ray).applyMatrix4(inverse);

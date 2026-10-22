@@ -4,6 +4,7 @@ import { accelerateRaycasts } from "./fare-replay-rays.ts";
 import { conservativeWalls, lazySurfaceGrid } from "./fare-replay-audit.ts";
 import { surfaceGrid, type Patch } from "./fare-boundary-audit.ts";
 import { resolveWalls, type Segment2 } from "../../../apps/web/src/explorer/walker.ts";
+import { hitNormal } from "../../../apps/web/src/explorer/bodyCollision.ts";
 
 describe("replay broad phases preserve the native operations", () => {
   it("enumerates the identical lattice heights without rasterising distant street cells", () => {
@@ -17,7 +18,7 @@ describe("replay broad phases preserve the native operations", () => {
       expect(lazy.get(key)).toEqual(eager.get(key) ?? []);
     }
   });
-  it("keeps Three hit points, clipping and material sides under static transforms", () => {
+  it("keeps Three hit points, clipping, material sides and wall-slide normals under static transforms", () => {
     for (const side of [THREE.FrontSide, THREE.BackSide, THREE.DoubleSide]) {
       const geometry = new THREE.BoxGeometry(2, 3, 4); geometry.clearGroups();
       const material = new THREE.MeshBasicMaterial({ side });
@@ -29,8 +30,10 @@ describe("replay broad phases preserve the native operations", () => {
         const target = i % 3 ? mesh.position : mesh.position.clone().add(new THREE.Vector3(4, -2, 1));
         return new THREE.Raycaster(origin, target.clone().sub(origin).normalize(), i % 5 * .4, i % 7 ? 20 : 2);
       });
-      const hits = (ray: THREE.Raycaster) => ray.intersectObject(mesh).map(h =>
-        [h.distance, h.point.x, h.point.y, h.point.z].map(v => Math.round(v * 1e9) / 1e9));
+      const hits = (ray: THREE.Raycaster) => ray.intersectObject(mesh).map(h => {
+        const n = hitNormal(h, ray.ray.direction); // what slideAlong consumes: must not fall back to -dir
+        return [h.distance, h.point.x, h.point.y, h.point.z, n.x, n.y, n.z].map(v => Math.round(v * 1e9) / 1e9);
+      });
       const expected = rays.map(hits), restore = accelerateRaycasts([mesh]);
       try { expect(rays.map(hits)).toEqual(expected); }
       finally { restore(); geometry.dispose(); material.dispose(); }
