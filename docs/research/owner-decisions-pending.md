@@ -25,6 +25,7 @@ Decided by the director (gteki-80) under the Owner's delegation of 2026-10-22: [
 | OD-15 | A. Keep roads risk acceptance (b) (the Owner accepted it knowingly); add the GSI Q1-24 note to `docs/gis/HANDOFF.md` (GIS lane). |
 | OD-16 | A. Keep Q8; add a `HANDOFF` note on the confirmed catalog-versus-CKAN divergence (GIS lane). |
 | OD-17 | R1 (Ikebukuro walk network) stays context-only. |
+| OD-18 | A, with conditions (decided later on 2026-10-22 by the director under the Owner's delegation; question raised in R8, [`gaps/DR-retry-unread-sources.md`](gaps/DR-retry-unread-sources.md) §8 item 2, #197). Station-access facts from the 東武百貨店, 東武ホープセンター and PARCO sites may be used under the #26 facts-only reference: only simple connection facts (for example "B1 直結", entrance names, floors); no copied text, drawings or layout; every fact carries its URL and retrieval date; a fact confirmed by a second public source is preferred, and one that is not is marked UNVERIFIED. Tobu gate names stay out (OD-01). |
 
 ## Questions as asked (pending until 2026-10-22)
 
