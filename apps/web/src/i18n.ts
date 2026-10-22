@@ -63,6 +63,9 @@ const STRINGS = {
     sources: "出典",
     /** Modification disclosure required by PDL / CC BY when a source was processed. */
     modified: "加工して作成",
+    /** #26 / #122: facts-only sources have no licence to show; the wording specified in #122. */
+    factsOnly: "ライセンスなし・事実のみ参照（複製なし）",
+    rightsDecision: "権利判断",
     assetDerivations: "3D素材の加工内容",
     symbolicHeight: "高さは表示用の推定です",
     coverage: "カバー範囲",
@@ -135,6 +138,9 @@ const STRINGS = {
     freshness: "Data as of",
     sources: "Sources",
     modified: "modified",
+    /** Proposed English equivalent of the #26 line; adds no claim beyond the Japanese. */
+    factsOnly: "No licence; cited for facts only (not reproduced)",
+    rightsDecision: "Rights decision",
     assetDerivations: "3D asset derivations",
     symbolicHeight: "Heights are display estimates",
     coverage: "Coverage",

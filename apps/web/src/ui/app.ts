@@ -9,7 +9,7 @@ import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGu
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
-import { sourceCredit } from "../credits.ts";
+import { safeHref, sourceCredit } from "../credits.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -689,6 +689,18 @@ export class App {
     li.append(link(c.title, c.href), el("span", "muted", ` — ${c.attribution}`));
     if (c.license) li.append(el("span", "muted", " ("), link(c.license.name, c.license.href), el("span", "muted", ")"));
     if (c.modified) li.append(el("span", "muted", ` · ${this.t.modified}`));
+    // Facts-only sources have no licence to show: say so (Coverage dialog and the route card's 出典 both use this).
+    if (s.usage === "facts-only") {
+      li.append(el("span", "muted", ` · ${this.t.factsOnly}`));
+      const href = safeHref(s.decision?.url);
+      if (s.decision && href) {
+        const a = el("a", undefined, `${this.t.rightsDecision} ${s.decision.date}`);
+        a.href = href;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        li.append(el("span", "muted", " ("), a, el("span", "muted", ")"));
+      }
+    }
     return li;
   }
 
