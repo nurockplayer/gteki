@@ -18,8 +18,10 @@ const GROUND_LAYER := 1 << 2
 const WALL_LAYER := 1 << 3
 ## Wall segments are zero-thickness in the web walker; the box only needs to be a solid for a trimesh-free test.
 const WALL_THICKNESS := 0.05
-## Extras flag set by the exporter on collision proxies the scene never draws.
+## Extras flags set by the exporter: collision proxies the scene never draws, and any source mesh that was not drawn
+## (a scene helper such as the access-fence collider, which the scene collides through tiles instead).
 const COLLISION_ONLY := "gteki_collision_only"
+const HIDDEN := "gteki_hidden"
 
 var issues: Array[String] = []
 var sidecar: Dictionary = {}
@@ -81,7 +83,7 @@ func load_snapshot(dir: String, parent: Node3D) -> bool:
 
 ## Walkable meshes get a ground body (assets only tags them), collision-only proxies stop being drawn.
 func _finish_meshes(node: Node) -> void:
-	counts = {"meshes": 0, "walkable": 0, "collider": 0, "camera_blocker": 0, "see_through": 0, "collision_only": 0}
+	counts = {"meshes": 0, "walkable": 0, "collider": 0, "camera_blocker": 0, "see_through": 0, "collision_only": 0, "hidden": 0}
 	_visit(node)
 
 
@@ -103,7 +105,10 @@ func _visit(node: Node) -> void:
 			counts.see_through += 1
 		if extras is Dictionary and extras.get(COLLISION_ONLY, false) == true:
 			counts.collision_only += 1
-			mesh.visible = false
+			_hide_mesh(mesh)
+		if extras is Dictionary and extras.get(HIDDEN, false) == true:
+			counts.hidden += 1
+			_hide_mesh(mesh)
 	for child in node.get_children():
 		_visit(child)
 
@@ -123,6 +128,15 @@ func _apply_collider_side(mesh: MeshInstance3D) -> void:
 			for shape_node in body.get_children():
 				if shape_node is CollisionShape3D and shape_node.shape is ConcavePolygonShape3D:
 					shape_node.shape.backface_collision = double_sided
+
+
+## Not drawn. A mesh with drawn children (they carry their own flags) leaves no render layer instead, so they stay.
+func _hide_mesh(mesh: MeshInstance3D) -> void:
+	for child in mesh.get_children():
+		if not child is CollisionObject3D:
+			mesh.layers = 0
+			return
+	mesh.visible = false
 
 
 func _add_ground(mesh: MeshInstance3D) -> void:

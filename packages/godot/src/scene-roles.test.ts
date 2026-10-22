@@ -64,6 +64,32 @@ describe("tagSceneRoles", () => {
     expect(summary).toMatchObject({ meshes: 4, walkable: 1, collider: 1, camera_blocker: 0, see_through: 1, collisionOnly: 2, replacedByCollision: 1 });
   });
 
+  it("flags every source mesh that is not drawn, listed or not (Codex P2 on #184)", () => {
+    const root = new THREE.Group();
+    const hiddenHelper = named("helper", "access_fences_collider"); // invisible original, collided through tiles elsewhere
+    hiddenHelper.visible = false;
+    const hiddenMaterial = named("m", "walk_bridges");
+    (hiddenMaterial.material as THREE.Material).visible = false;
+    const group = new THREE.Group();
+    group.visible = false;
+    const underHidden = named("child");
+    group.add(underHidden);
+    const drawn = named("drawn");
+    const tile = named("tile"); // the listed stand-in for the hidden helper
+    tile.visible = false;
+    root.add(hiddenHelper, hiddenMaterial, group, drawn);
+    const summary = tagSceneRoles({ root, walkable: [], colliders: [tile], dispose() {} } as unknown as StationScene);
+    expect(hiddenHelper.userData.gteki_hidden).toBe(true);
+    expect(hiddenMaterial.userData.gteki_hidden).toBe(true);
+    expect(underHidden.userData.gteki_hidden).toBe(true);
+    expect(tile.userData.gteki_hidden).toBe(true);
+    expect(drawn.userData.gteki_hidden).toBeUndefined();
+    expect(summary.hidden).toBe(4);
+    // Hidden originals keep their own roles and do not inflate the collision counts.
+    expect(hiddenHelper.userData.gteki_role).toBe("access_fences_collider");
+    expect(summary).toMatchObject({ collider: 1, walkable: 0, collisionOnly: 1 });
+  });
+
   it("keeps an own vocabulary role such as stairs_ramps", () => {
     const stairs = named("st", "stairs_ramps");
     const root = new THREE.Group();

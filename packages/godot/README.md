@@ -94,7 +94,11 @@ Walkable HQ client work starts by loading both stations in Godot without Godot o
 - `scene.glb`: the scene `root` as one binary glTF. Every mesh carries an explicit `extras.gteki_role`, taken from
   the lists `buildScene` returns (`walkable` / `colliders` / `cameraBlockers`, the only collision truth the web walker
   uses), else its own role, else `visual`. Listed meshes that are never drawn (Shinjuku's walk proxies, Ikebukuro's
-  raycast tiles) also carry `gteki_collision_only`. Drawn meshes whose source role says walkable/collider but that the
+  raycast tiles) also carry `gteki_collision_only`. Every mesh the source scene does not draw (invisible itself, under an invisible ancestor, or with only invisible
+  materials) is flagged `gteki_hidden`, listed or not, and the loader never draws it: Ikebukuro's access-fence collider,
+  solid door/window panels, portal "beyond" mesh and walk-bridge strips stay in the file as hidden originals while their
+  collision comes from the exported tiles (the walk bridges are walkable tiles with `gteki_source_role` `walk_bridges`).
+  Drawn meshes whose source role says walkable/collider but that the
   scene replaces with its own collision (Ikebukuro's GLB floor vs. its tiles) are exported as `visual`, original role in
   `gteki_source_role`, so nothing collides twice. Material names, base colours and both UV sets (TEXCOORD_1) are kept.
 - `scene.json` (`gteki.godot-scene/0.1`): `stationId`, `sourceCommit` (+ `sourceDirty`), `walls` and `spawnPoints` in
