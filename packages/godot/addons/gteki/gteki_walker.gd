@@ -368,6 +368,99 @@ func walk_from(position_godot: Vector3, heading_deg: float = 0.0) -> bool:
 	return true
 
 
+## Where a ride may put its feet down (#287): an opening in the floor is a hole by construction, so a shaft's exit
+## vertex often sits over the car's floor — on Shinjuku S4 it does. The landing is searched forward along the route's
+## own continuation only, ring by ring from the vertex, inside a cone of RIDE_LANDING_CONE degrees either side of the
+## direction to the route's next point, and no further than RIDE_LANDING_REACH: a ride may step out of the lift, never
+## across a wall, into another room or back the way it came. The ground must be on the exit's own level to within
+## RIDE_LANDING_LEVEL (the narrowest rendered floor band here is 1.6 m, so a stair or another floor is never mistaken
+## for it), the body must fit, and the line from the vertex at body height must be clear of colliders.
+const RIDE_LANDING_RINGS: Array[float] = [0.0, 0.25, 0.5, 0.75, 1.0]
+const RIDE_LANDING_CONE := 30.0
+const RIDE_LANDING_REACH := 1.0
+const RIDE_LANDING_LEVEL := 0.2
+## Spoke angles (degrees off the route's continuation), straight ahead first and then either side: a ride steps aside
+## only when the way ahead is blocked.
+const RIDE_LANDING_SPREADS: Array[float] = [0.0, 10.0, -10.0, 20.0, -20.0, 30.0, -30.0]
+
+
+## A lift ride's landing (#287): the feet go down only where `ride_landing` finds ground the walker's own rules accept.
+## `forward` is the route's continuation from the exit vertex (flattened, unit length or zero); the yaw is kept: a ride
+## does not change where the walker faces. False when nothing qualifies, so the caller reports it instead of dropping
+## the avatar into the shaft or through a wall.
+func ride_to(target: Vector3, forward: Vector3) -> bool:
+	var landing: Variant = ride_landing(target, forward)
+	if landing == null:
+		return false
+	global_position = landing
+	body_yaw = yaw
+	_sync_avatar()
+	return true
+
+
+## The first point, from `target` outward ring by ring and spoke by spoke, where the walker can actually stand: see the
+## rules above. Null when none does, so a caller can tell "the shaft's floor is 0.5 m forward" from "there is no floor
+## ahead at all". Pure in the scene under the walker.
+func ride_landing(target: Vector3, forward: Vector3) -> Variant:
+	var flat := Vector3(forward.x, 0.0, forward.z)
+	var heading := flat.normalized() if flat.length() > 1e-6 else Vector3.ZERO
+	for ring in RIDE_LANDING_RINGS:
+		if ring > RIDE_LANDING_REACH + 1e-6:
+			continue
+		if ring > 0.0 and heading == Vector3.ZERO:
+			continue
+		# The vertex itself is probed once; around a ring, each spoke once.
+		for k in (1 if ring <= 0.0 else RIDE_LANDING_SPREADS.size()):
+			var at := target
+			if ring > 0.0:
+				at = target + heading.rotated(Vector3.UP, deg_to_rad(RIDE_LANDING_SPREADS[k])) * ring
+			var ground: Variant = _ground_near(at, target.y)
+			if not accept_ground(target.y, ground) or absf(float(ground) - target.y) > RIDE_LANDING_LEVEL:
+				continue
+			if not _body_fits(at, target.y):
+				continue
+			if ring > 0.0 and not _line_clear(target, at):
+				continue
+			return Vector3(at.x, float(ground), at.z)
+	return null
+
+
+## True when a body-height line from `from` to `to` meets no collider: nothing stands between the shaft's mouth and
+## the ground the ride would put the walker on.
+func _line_clear(from: Vector3, to: Vector3) -> bool:
+	var flat := Vector3(to.x - from.x, 0.0, to.z - from.z)
+	var distance := flat.length()
+	if distance < 1e-6:
+		return true
+	var direction := flat / distance
+	for height in BODY_HEIGHTS:
+		if not cast(from + Vector3(0.0, height, 0.0), direction, distance, Scene.COLLIDER_LAYER).is_empty():
+			return false
+	return true
+
+
+func _ground_near(at: Vector3, feet_y: float) -> Variant:
+	return ground_at(at.x, feet_y + STEP_UP + 0.05, at.z, STEP_UP + STEP_DOWN + 0.1)
+
+
+## True when a body of the walker's own radius fits at `at`: every ground probe within RADIUS is acceptable at
+## `feet_y`, no sidecar wall pushes the circle out (`resolve_walls`), and no collider stands within RADIUS at either
+## body height. A landing with a wall in the body is not a landing.
+func _body_fits(at: Vector3, feet_y: float) -> bool:
+	var pushed := resolve_walls(at.x, at.z, feet_y)
+	if Vector2(pushed.x - at.x, pushed.y - at.z).length() > 1e-4:
+		return false
+	for k in 8:
+		var angle := TAU * float(k) / 8.0
+		var around := at + Vector3(cos(angle), 0.0, sin(angle)) * RADIUS
+		if not accept_ground(feet_y, _ground_near(around, feet_y)):
+			return false
+	for height in BODY_HEIGHTS:
+		if _touches(at.x, feet_y + height, at.z):
+			return false
+	return true
+
+
 func _sync_avatar() -> void:
 	avatar.rotation.y = body_yaw
 
