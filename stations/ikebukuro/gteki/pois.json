@@ -71,7 +71,8 @@
     "sourceIds": [
      "toshima-underground-guide-2022",
      "tokyometro-ikebukuro-yardmap-2026-03",
-     "plateau-ubld-13116"
+     "plateau-ubld-13116",
+     "toshima-terminal-sign-guideline-draft-v1.3"
     ],
     "method": "exit number from official maps; location = PLATEAU stair-top closure",
     "checkedDate": "2026-10-20"
@@ -554,7 +555,8 @@
     "sourceIds": [
      "toshima-underground-guide-2022",
      "tokyometro-ikebukuro-yardmap-2026-03",
-     "plateau-ubld-13116"
+     "plateau-ubld-13116",
+     "toshima-terminal-sign-guideline-draft-v1.3"
     ],
     "method": "exit number from official maps; location = PLATEAU stair-top closure",
     "checkedDate": "2026-10-20"
@@ -782,7 +784,8 @@
     "sourceIds": [
      "toshima-underground-guide-2022",
      "tokyometro-ikebukuro-yardmap-2026-03",
-     "plateau-ubld-13116"
+     "plateau-ubld-13116",
+     "toshima-terminal-sign-guideline-draft-v1.3"
     ],
     "method": "exit number from official maps; location = PLATEAU stair-top closure",
     "checkedDate": "2026-10-20"
@@ -957,7 +960,8 @@
     "sourceIds": [
      "toshima-underground-guide-2022",
      "tokyometro-ikebukuro-yardmap-2026-03",
-     "plateau-ubld-13116"
+     "plateau-ubld-13116",
+     "toshima-terminal-sign-guideline-draft-v1.3"
     ],
     "method": "exit number from official maps; not yet connected in GTEki graph",
     "checkedDate": "2026-10-20"
@@ -2594,7 +2598,8 @@
     "sourceIds": [
      "toshima-underground-guide-2022",
      "tokyometro-ikebukuro-yardmap-2026-03",
-     "plateau-ubld-13116"
+     "plateau-ubld-13116",
+     "toshima-terminal-sign-guideline-draft-v1.3"
     ],
     "method": "exit number from official maps; connector = B1 foot of the exit stairs (PLATEAU wall opening); the stairs are outside the survey",
     "checkedDate": "2026-10-21"

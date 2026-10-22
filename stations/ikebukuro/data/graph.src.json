@@ -164,6 +164,20 @@
    "usage": "facts-only"
   },
   {
+   "id": "toshima-terminal-sign-guideline-draft-v1.3",
+   "title": "池袋ターミナル案内サインガイドライン（案） Ver1.3 (資料3-3 p20 主要出入口)",
+   "publisher": "豊島区",
+   "url": "https://www.city.toshima.lg.jp/documents/56546/20260519131956.pdf",
+   "license": null,
+   "rights": "REFERENCE_ONLY",
+   "attribution": "豊島区「池袋ターミナル案内サインガイドライン（案）Ver1.3」(facts only; not reproduced)",
+   "modified": false,
+   "retrievedAt": "2026-10-22T00:00:00+09:00",
+   "datasetDate": "2026-03",
+   "notes": "Draft (案, 草案) Ver1.3, 第14回 委員会 (2026-03-25), 資料3-3 p20 text layer only (p21 figure not read); listed on https://www.city.toshima.lg.jp/405/kuse/shingi/kaigichiran/006335.html. Used only for the names-to-number mapping of main exits (東口(北)=22, 東口(中央)=37, 東口(南)=38, 西口(北)=20a, 西口(中央)=19, 西口(南)=4), never as route evidence (OD-22, PR #222). Freshness check: replace when the final guideline is published.",
+   "usage": "facts-only"
+  },
+  {
    "id": "tokyometro-ikebukuro-yardmap-2026-03",
    "title": "東京メトロ 池袋駅構内立体図 (2026.3現在)",
    "publisher": "東京地下鉄",
@@ -1434,7 +1448,8 @@
     "sourceIds": [
      "toshima-underground-guide-2022",
      "tokyometro-ikebukuro-yardmap-2026-03",
-     "plateau-ubld-13116"
+     "plateau-ubld-13116",
+     "toshima-terminal-sign-guideline-draft-v1.3"
     ],
     "method": "exit number from official maps; location = PLATEAU stair-top closure",
     "checkedDate": "2026-10-20"
@@ -1917,7 +1932,8 @@
     "sourceIds": [
      "toshima-underground-guide-2022",
      "tokyometro-ikebukuro-yardmap-2026-03",
-     "plateau-ubld-13116"
+     "plateau-ubld-13116",
+     "toshima-terminal-sign-guideline-draft-v1.3"
     ],
     "method": "exit number from official maps; location = PLATEAU stair-top closure",
     "checkedDate": "2026-10-20"
@@ -2145,7 +2161,8 @@
     "sourceIds": [
      "toshima-underground-guide-2022",
      "tokyometro-ikebukuro-yardmap-2026-03",
-     "plateau-ubld-13116"
+     "plateau-ubld-13116",
+     "toshima-terminal-sign-guideline-draft-v1.3"
     ],
     "method": "exit number from official maps; location = PLATEAU stair-top closure",
     "checkedDate": "2026-10-20"
@@ -2320,7 +2337,8 @@
     "sourceIds": [
      "toshima-underground-guide-2022",
      "tokyometro-ikebukuro-yardmap-2026-03",
-     "plateau-ubld-13116"
+     "plateau-ubld-13116",
+     "toshima-terminal-sign-guideline-draft-v1.3"
     ],
     "method": "exit number from official maps; not yet connected in GTEki graph",
     "checkedDate": "2026-10-20"
@@ -3957,7 +3975,8 @@
     "sourceIds": [
      "toshima-underground-guide-2022",
      "tokyometro-ikebukuro-yardmap-2026-03",
-     "plateau-ubld-13116"
+     "plateau-ubld-13116",
+     "toshima-terminal-sign-guideline-draft-v1.3"
     ],
     "method": "exit number from official maps; connector = B1 foot of the exit stairs (PLATEAU wall opening); the stairs are outside the survey",
     "checkedDate": "2026-10-21"
