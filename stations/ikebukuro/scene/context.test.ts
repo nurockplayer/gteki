@@ -277,14 +277,14 @@ describe("station.json: street-context asset, sources and attribution", () => {
   const SOURCE_IDS = ["plateau-13116-bldg-53394576", "plateau-13116-bldg-53394577", "plateau-13116-tran-53394576", "plateau-13116-tran-53394577"];
   const DECISION = "docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md";
 
-  it("lists the two bldg and two tran sources with the exact PLATEAU attribution, CC BY 4.0, modified: true", () => {
+  it("lists the two bldg and two tran sources with the exact PLATEAU attribution, PLATEAU site policy, modified: true", () => {
     expect(station.station.datasetVersion).toBe("ikebukuro-b1-slice5.5");
     const mine = station.sources.filter((s) => SOURCE_IDS.includes(s.id));
     expect(mine.map((s) => s.id).sort()).toEqual([...SOURCE_IDS].sort());
     for (const s of mine) {
       expect(s.attribution).toBe(ATTRIBUTION);
       expect(s.modified).toBe(true);
-      expect(s.license?.name).toBe("CC BY 4.0");
+      expect(s.license?.name).toBe("PLATEAU Site Policy 「３．著作権について」に拠る");
       expect(s.rights).toBe("REUSABLE_WITH_CONDITIONS");
       expect(s.notes).toContain("CONDITIONAL");
       expect(Object.keys(s.sha256 ?? {})).toHaveLength(1);
