@@ -49,36 +49,45 @@ export class PlaceholderLedger implements PlaceholderLedgerView {
   }
 
   hide(group: PlaceholderGroup, anchorKeys: ReadonlySet<string>): number {
+    const prepared = this.prepareHide(group, anchorKeys);
+    prepared.commit();
+    return prepared.removed;
+  }
+
+  /**
+   * Work out the new index buffers without touching any mesh. Only `commit()` mutates (plain assignments that
+   * cannot throw), so a caller that prepares every group first and commits afterwards can never leave a
+   * half-hidden scene behind a failure.
+   */
+  prepareHide(group: PlaceholderGroup, anchorKeys: ReadonlySet<string>): { removed: number; commit(): void } {
     let removed = 0;
+    const steps: (() => void)[] = [];
     for (const entry of this.bound) {
       if (entry.group !== group) continue;
-      const drop = entry.ranges.filter((r) => anchorKeys.has(r.key));
+      const drop = entry.ranges.filter((r) => anchorKeys.has(r.key)).sort((a, b) => a.start - b.start);
       if (!drop.length) continue;
       const geo = entry.mesh.geometry;
       const index = geo.index;
       if (!index) continue;
       const keep: number[] = [];
       let cursor = 0;
-      for (const r of drop.sort((a, b) => a.start - b.start)) {
+      for (const r of drop) {
         for (let i = cursor; i < r.start; i++) keep.push(index.getX(i));
         cursor = r.start + r.count;
         removed += r.count / 3;
       }
       for (let i = cursor; i < index.count; i++) keep.push(index.getX(i));
-      // Ranges after a hide would point at shifted indices: shrink them so a second hide stays correct.
-      let shift = 0;
+      // Ranges after a hide would point at shifted indices: move each survivor back by the dropped ranges before it.
       const dropped = new Set(drop);
-      entry.ranges = entry.ranges.filter((r) => !dropped.has(r)).map((r) => {
-        shift = drop.filter((d) => d.start < r.start).reduce((s, d) => s + d.count, 0);
-        return { ...r, start: r.start - shift };
+      const ranges = entry.ranges.filter((r) => !dropped.has(r)).map((r) => ({ ...r, start: r.start - drop.filter((d) => d.start < r.start).reduce((n, d) => n + d.count, 0) }));
+      const next = keep.length ? compact(geo, keep) : null;
+      steps.push(() => {
+        entry.ranges = ranges;
+        if (!next) entry.mesh.removeFromParent();
+        else entry.mesh.geometry = this.track(next);
       });
-      if (!keep.length) {
-        entry.mesh.removeFromParent();
-        continue;
-      }
-      entry.mesh.geometry = this.track(compact(geo, keep));
     }
-    return removed;
+    return { removed, commit: () => { for (const f of steps) f(); } };
   }
 }
 

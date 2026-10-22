@@ -75,7 +75,7 @@ export const ROLE_RANK: Record<KitRole, number> = {
 
 /**
  * Which placeholder group a role replaces, and whether build.ts records that group so its triangles can
- * be hidden. `undefined` means the role adds geometry that is not drawn today (toilets). A role whose
+ * be hidden. `group: null` means the role adds geometry that is not drawn today (escalator comb plates and newels). A role whose
  * placeholder is drawn but not recorded cannot be placed: the kit would double the geometry.
  */
 export const ROLE_REPLACES: Record<KitRole, { group: PlaceholderGroup | null; hooked: boolean }> = {
@@ -87,7 +87,7 @@ export const ROLE_REPLACES: Record<KitRole, { group: PlaceholderGroup | null; ho
   // lamps stay), so there is nothing to hide; the piece is additive and its parts must never include the balustrade.
   escalator: { group: null, hooked: true },
   exit: { group: null, hooked: false },
-  toilet: { group: null, hooked: true },
+  toilet: { group: null, hooked: false },
 };
 
 const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
@@ -104,7 +104,8 @@ const partsAre = (a: KitAsset, want: readonly string[]) => {
  * Selectors choose a manifest asset for a role from its family, tags and params, never from a hard-coded
  * id or path. A role with no matching asset is a gap for Lane E and its anchors keep their placeholders.
  */
-export const ROLE_SELECTORS: Record<KitRole, (a: KitAsset) => boolean> = {
+export type ActiveRole = Exclude<KitRole, "toilet">;
+export const ROLE_SELECTORS: Record<ActiveRole, (a: KitAsset) => boolean> = {
   // One verified gate row = one aisle flanked by two machines. A multi-aisle array would draw aisles the
   // dataset does not have, so only single-aisle arrays qualify (none in kit 0.1.0).
   gate: (a) => a.family === "gate" && num(a.params.aisles) === 1,
@@ -114,8 +115,16 @@ export const ROLE_SELECTORS: Record<KitRole, (a: KitAsset) => boolean> = {
   // balustrade, handrail or skirts would double geometry that stays, so it is never selected.
   stairs: (a) => a.family === "dressing" && a.tags.includes("stair") && partsAre(a, STAIR_PARTS) && num(a.params.step_count) !== null,
   escalator: (a) => a.family === "dressing" && a.tags.includes("escalator") && partsAre(a, ESCALATOR_PARTS) && num(a.params.rise_mm) !== null,
-  toilet: (a) => a.tags.some((t) => /(^|[:_ -])toilet$/.test(t)) || a.family === "toilet",
   exit: (a) => a.tags.some((t) => /(^|[:_ -])(canopy|exit)$/.test(t)) || a.family === "canopy",
+};
+
+/**
+ * Roles that are never placed, whatever the manifest offers. Toilets: the three GSI facility points (F001 to F003)
+ * are representative points of a room, not doors, and the dataset has no door source, so any entrance piece would
+ * be invented placement. They stay a reported gap until a door source exists.
+ */
+export const ROLE_DISABLED: Partial<Record<KitRole, string>> = {
+  toilet: "toilet facility points are room representatives, not doors; no placement until a door source exists",
 };
 
 /** Per-run fit tolerances for parametric stair and escalator pieces (the catalog quantises well inside these). */

@@ -7,11 +7,11 @@
  * stands on y = 0. Sockets are read from the manifest.
  */
 import {
-  ESCALATOR_FLAT_STEPS, ESCALATOR_STEP_DEPTH_M, ESCALATOR_STEP_INSET_M, ESCALATOR_TRANSITION_M, FLOOR_LIFT_M, GATE_CLEAR_RANGE_M, KIT_GEOMETRY_BYTES_PER_TRIANGLE, ROLE_RANK, ROLE_REPLACES, ROLE_SELECTORS, RUN_FIT, WALL_CLEARANCE_M, type TierCaps,
+  ESCALATOR_FLAT_STEPS, ESCALATOR_STEP_DEPTH_M, ESCALATOR_STEP_INSET_M, ESCALATOR_TRANSITION_M, FLOOR_LIFT_M, GATE_CLEAR_RANGE_M, KIT_GEOMETRY_BYTES_PER_TRIANGLE, ROLE_DISABLED, ROLE_RANK, ROLE_REPLACES, ROLE_SELECTORS, type ActiveRole, RUN_FIT, WALL_CLEARANCE_M, type TierCaps,
 } from "./config.ts";
 import { selectAssets, socketOf } from "./manifest.ts";
 import type {
-  ExitTopAnchor, GateRowAnchor, KitAnchors, KitAsset, KitBudget, KitDrop, KitGap, KitManifest, KitPlacement, KitRole, KitTotals, LiftAnchor, RunAnchor, ToiletAnchor,
+  ExitTopAnchor, GateRowAnchor, KitAnchors, KitAsset, KitBudget, KitDrop, KitGap, KitManifest, KitPlacement, KitRole, KitTotals, LiftAnchor, RunAnchor,
 } from "./types.ts";
 
 export interface PlaceInput {
@@ -124,18 +124,6 @@ export function escalatorPlacement(a: RunAnchor, asset: KitAsset): Fitted | null
   return fitted(runFrame(a), [[rise / 1000 - g.rise, RUN_FIT.riseM], [comb - g.length, RUN_FIT.lengthM], [width / 1000 + ESCALATOR_STEP_INSET_M - a.width, RUN_FIT.widthM]]);
 }
 
-export function toiletPlacement(a: ToiletAnchor, asset: KitAsset): Pick<KitPlacement, "position" | "yaw"> | null {
-  const w = a.wall;
-  if (!w) return null;
-  const width = Math.max(asset.boundsMax[0] - asset.boundsMin[0], 0);
-  if (width + 0.2 > w.length) return null;
-  const s = Math.max(width / 2 + 0.1, Math.min(w.length - width / 2 - 0.1, w.s));
-  const p = { x: w.point.x + w.u.x * (s - w.s), y: w.point.y + w.u.y * (s - w.s) };
-  const n = flow3(w.normal);
-  const recess = Math.max(0, -asset.boundsMin[2]);
-  return { position: [p.x + n.x * (recess + WALL_CLEARANCE_M), a.point.z + FLOOR_LIFT_M, -p.y + n.z * (recess + WALL_CLEARANCE_M)], yaw: yawFacing(n) };
-}
-
 export function exitPlacement(a: ExitTopAnchor, _asset: KitAsset): Pick<KitPlacement, "position" | "yaw"> {
   // A canopy is a `free` piece centred on its footprint; its long axis lies along the exit run (a.u).
   const n = flow3(a.u);
@@ -186,11 +174,16 @@ export function planKitPlacements(input: PlaceInput): PlaceResult {
 
   const consider = <A extends { key: string; floorId: string }>(role: KitRole, list: A[], place: (a: A, asset: KitAsset) => Fitted | null) => {
     if (!list.length) return;
+    const disabled = ROLE_DISABLED[role];
+    if (disabled) {
+      gaps.push({ role, anchors: list.length, reason: disabled });
+      return;
+    }
     if (!placeable.has(role)) {
       gaps.push({ role, anchors: list.length, reason: "the build does not record this role's placeholder geometry yet; placing a piece would double it" });
       return;
     }
-    const pool = selectAssets(manifest, ROLE_SELECTORS[role]);
+    const pool = selectAssets(manifest, ROLE_SELECTORS[role as ActiveRole]);
     if (!pool.length) {
       gaps.push({ role, anchors: list.length, reason: `no ${role} piece in the ${manifest.tier} manifest fits Shinjuku (a gap for Lane E)` });
       return;
@@ -216,8 +209,8 @@ export function planKitPlacements(input: PlaceInput): PlaceResult {
   consider("lift", anchors.lifts, liftPlacement);
   consider("stairs", anchors.runs.filter((r) => r.role === "stairs"), stairPlacement);
   consider("escalator", anchors.runs.filter((r) => r.role === "escalator"), escalatorPlacement);
-  consider("toilet", anchors.toilets, toiletPlacement);
   consider("exit", anchors.exits, exitPlacement);
+  consider("toilet", anchors.toilets, () => null); // disabled in config.ts: reported as a gap, never placed
 
   // Highest-ranked first; drop from the tail as soon as the budget is breached.
   candidates.sort((a, b) => a.rank - b.rank || a.anchorKey.localeCompare(b.anchorKey));

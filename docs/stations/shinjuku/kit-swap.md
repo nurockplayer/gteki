@@ -1,7 +1,10 @@
 # Shinjuku kit swap (Issue #94, Shinjuku half)
 
-Status: prepared, flag OFF. With the flag off the station is byte-identical to `fe8d3b6`
-(geometry digest `2b3a94ba...`, appearance digest `3b66b3e1...`, 136 meshes, 13,288,866 bytes).
+Status: prepared, flag OFF. With the flag off the built station equals `fe8d3b6` in every mesh byte (geometry digest
+`2b3a94ba...`, appearance digest `3b66b3e1...`, 136 meshes, 13,288,866 bytes), in all other scene nodes including lights and
+`userData` (nodes digest), in the texture parameters of every material (textures digest), and in the lists the explorer reads off the
+scene object: walls, walkable, colliders, cameraBlockers, spawn points and environment (lists digest). The test builds the scene through the
+shipping `buildScene` entry point. It does not cover GPU state or anything drawn after the explorer takes over.
 Nothing here claims a licence for the library: the manifest `license` string is carried through to
 `KitSwapReport.license` verbatim, for credit wiring.
 
@@ -39,8 +42,10 @@ Smallest hook, **no `apps/web` change needed for the mobile tier**:
 
 Only if the **full** tier or KTX2 textures ship: `apps/web/src/.../explorer.ts` `loadGlb` needs
 `loader.setKTX2Loader(...)` and the basis transcoder served as a static file. That is the only
-`apps/web` write-up (request for the apps/web lane). Not verified: the production-build behaviour of the
-dynamic manifest import (vite build was forbidden on this host).
+`apps/web` write-up (request for the apps/web lane). **To verify before release:** the dynamic import of
+`assets/library[/mobile]/manifest.json` has not been through a real Vite production build (builds were forbidden on this host), so
+check that it chunks as a separate lazy JSON file (not folded into the main chunk) and that the library path resolves in the built
+output. The coordinator will do this.
 
 ## 3. Budget (director ruling, per scene)
 
@@ -72,7 +77,7 @@ routes and on both step-free routes that exist).
 | 6 | Street exit canopies (`scene/surface.ts`, `surface-layout.ts`) | none | Gap: canopy piece (D4) plus a hook in `surface.ts`. 4 exit tops. |
 | 7 | Tactile ribbons (107 polylines) | none | Wait for F1 finish. |
 | 8 | Hanging signs: cases, rods, atlas `sign-faces:*` | not replaced | Stay: deliberate GTEki atlas. |
-| 9 | Toilets (3 points at B3: F001, F002, F003) | none (no toilet piece) | Additive only: selector is tag or family "toilet". Gap: P1 toilet-entrance piece; tag name to confirm with Lane E. |
+| 9 | Toilets (3 facility points at B3: F001, F002, F003) | none placed | **Gap, deliberately.** The GSI facility point is a representative point of the room, not a door, and the dataset has no door source, so an entrance piece would be invented placement. `ROLE_DISABLED.toilet` reports the 3 anchors as a gap whatever the manifest offers; there is no toilet selector or placement code. Revisit when a door source exists. |
 | 10 | Fare fences, platform-edge/PSD | none | Wait for D2 railing runs. |
 | 11 | Luminaires | none | Wait for D1. |
 | 12 | Train | out of scope | Stay. |
@@ -80,8 +85,10 @@ routes and on both step-free routes that exist).
 Not placed whatever the manifest offers: shops, kiosks, benches, vending (no source anchor in Shinjuku).
 Lifts get no status claims; gate flaps rest open with no stated gate count.
 
-The heaviest placeholder is the lift box (49,560 + 6,832 + 672 triangles, about 4.4 MB geometry), so item 5
-is also the largest triangle saving when the flag is on.
+Lift placeholders, measured on the real mobile lift run: hiding the 9 lift boxes removes 1,728 triangles (9 x 192) and the 9 mobile
+`gteki_lift_portal_w1000` portals add 9,810 (9 x 1,090), a net of +8,082 triangles. The 49,560 + 6,832 + 672 triangles (about 4.4 MB) seen
+in the baseline are the whole merged metal batch (`elevator-portal:finish` shares it with other finishes), not the lift boxes; the swap
+hides only the lift boxes' own triangles, so it is not a large saving. Item 5 is a visual replacement, not a budget win.
 
 ## 5. Station catalog (`stations/shinjuku/kit/catalog.json`)
 
@@ -133,15 +140,13 @@ the diff, not in code. If the stair stepping rule in `build.ts` changes, update 
 
 Budget with the stub estimates Lane E gave (escalator 1352 triangles per run, stair nosing 180, gate and lift stubs 1800 and 1090): 19 escalators +
 24 stairs + 4 gate rows = 37,208 triangles, which already uses most of the 3 MB geometry cap (70 B per merged triangle = 42,857
-triangles). Five of the nine lift portals fit; the other four and the three toilets are dropped, in rank order (escalator, stairs, gate,
-exit, lift, toilet). The real counts will change this; the rule does not. If the director prefers a different order or per-instance sharing
+triangles). Five of the nine lift portals fit; the other four are dropped, in rank order (escalator, stairs, gate, exit, lift). The real counts will change this; the rule does not. If the director prefers a different order or per-instance sharing
 (InstancedMesh costs draws instead of geometry), that is a one-line change in `config.ts`.
 
 ## 6. How the swap works
 
 1. `anchors.ts` derives anchors only from data the scene already uses: verified gate edges
-   (`protection.gates`), portals recorded by `buildElevatorPortals`, runs, plan facilities F001 to F003
-   (nearest toilet-room wall chained across jagged CAD segments, at most 12 degrees of bend), and the
+   (`protection.gates`), portals recorded by `buildElevatorPortals`, runs, the plan facility points F001 to F003 (counted and reported as a gap, never placed, see item 9), and the
    `surfaceEntrances`.
 2. `place.ts` converts an anchor into asset id + position + yaw using manifest sockets and
    placement classes (ENU to renderer: (x, y, z) to (x, z, -y)).
@@ -151,6 +156,13 @@ exit, lift, toilet). The real counts will change this; the rule does not. If the
    (`COL_`, `SOCKET_`, `LIGHTHINT_`, `-colonly` are never drawn; contract names come from
    `extras.gteki_name`), tints the `line_accent` slot to `OEDO_MAGENTA` (#b6007a) on a cloned material,
    hides exactly the replaced placeholder triangles, and adds a `kit-swap` group before the finish merges.
+   A placement hides its placeholder only if it put at least one triangle into a merged mesh (a piece with only collision, socket
+   or hint nodes, or a multi-material mesh without geometry groups, is reported as not drawn and its placeholder stays; a
+   multi-material mesh with groups is split per material). Every batched material is a clone owned by the station build
+   (textures included), so nothing from the loaded GLB is left undisposed.
+   `apply()` is all-or-nothing: it is wrapped in try/catch; every hide is first prepared without touching a mesh, and the
+   commits (plain assignments) run only after the kit meshes were built and added. On any error it logs
+   `kit swap off: <message>; placeholders stay`, returns no report and leaves the scene as flag-off (tested).
 5. Roles whose placeholder the build does not record (exits) are refused so that geometry is never
    doubled; they are reported as gaps. Escalator dressing is additive (no placeholder to hide).
 
@@ -162,7 +174,7 @@ nothing hard-coded blocks them.
 
 1. Build `stations/shinjuku/kit/catalog.json` (PR #143 generators) and confirm the `parts` value names and that the built
    manifest echoes the catalog params (and `comb_run_m` for escalators). The mobile triangle counts decide how many lift portals fit.
-2. Exit canopy (D4), toilet entrance (P1, tag `toilet`), railing runs (D2), luminaires (D1), finishes (F1).
+2. Exit canopy (D4), railing runs (D2), luminaires (D1), finishes (F1). No toilet piece is requested: there is no door source to place one on.
 4. `line_accent` as a slot in the main library (today only in the `claude/lane-e-batch1-finishes` branch as
    `gteki_finish_band_line_accent`).
 5. Bundle script output per tier with `userData.gteki_bundle` (or tell us the existing format).

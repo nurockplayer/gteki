@@ -816,7 +816,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   const signs = buildSigns(bundle, layout, root, track);
   // ---- optional Lane E kit swap (Issue #94): off unless a KitSwap was passed in
   const kitSwap = opts.kit && ledger
-    ? opts.kit.apply({ THREE, bundle, plan, layout, protection, liftAnchors, root, ledger, levelGroups, track })
+    ? opts.kit.apply({ THREE, bundle, plan, layout, protection, liftAnchors, root, ledger, levelGroups, track }) ?? undefined
     : undefined;
   addWallBackFaces(root, mat.wall, track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);

@@ -99,10 +99,11 @@ export interface ToiletAnchor {
   key: string;
   /** F001 male, F002 female, F003 unisex (GSI indoor spec, H30.3). */
   code: string;
-  /** The facility point: a representative point of the room, not an equipment position. */
+  /**
+   * The facility point: a representative point of the room, not a door or an equipment position. The dataset has
+   * no door source, so a toilet entrance piece has nowhere honest to go: toilets are a reported gap (config.ts).
+   */
   point: XYZ;
-  /** Nearest toilet-room wall on the walkable side, when one exists. */
-  wall: { point: XY; u: XY; normal: XY; length: number; /** distance of `point` from the wall's start */ s: number } | null;
   floorId: string;
 }
 
@@ -216,10 +217,13 @@ export interface KitApplyContext {
 export interface PlaceholderLedgerView {
   /** Hide (remove) every triangle recorded for these anchor keys of this group. Returns triangles removed. */
   hide(group: PlaceholderGroup, anchorKeys: ReadonlySet<string>): number;
+  /** Same, in two steps: nothing changes until `commit()`, so several groups can be prepared before any is hidden. */
+  prepareHide(group: PlaceholderGroup, anchorKeys: ReadonlySet<string>): { removed: number; commit(): void };
   /** Anchor keys that have recorded placeholder geometry in this group. */
   keys(group: PlaceholderGroup): string[];
 }
 
 export interface KitSwap {
-  apply(ctx: KitApplyContext): KitSwapReport;
+  /** Returns null when the swap failed: the error is logged, the placeholders are intact and nothing was added. */
+  apply(ctx: KitApplyContext): KitSwapReport | null;
 }

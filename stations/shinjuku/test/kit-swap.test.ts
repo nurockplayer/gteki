@@ -5,9 +5,9 @@ import * as THREE from "three";
 import type { StationScene } from "@gteki/scene-api";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { loadShinjukuBundle } from "../data/bundle.ts";
-import { assembleScene } from "../gteki/scene.ts";
+import { assembleScene, buildScene } from "../gteki/scene.ts";
 import { OEDO_MAGENTA } from "../scene/build.ts";
-import { KIT_BUDGET, kitSwapRequested, kitTierFor, ROLE_SELECTORS } from "../scene/kit/config.ts";
+import { KIT_BUDGET, kitSwapRequested, kitTierFor, ROLE_DISABLED, ROLE_SELECTORS } from "../scene/kit/config.ts";
 import { collectKitAnchors } from "../scene/kit/anchors.ts";
 import { batchKitPlacements } from "../scene/kit/batch.ts";
 import { PlaceholderLedger, compact } from "../scene/kit/ledger.ts";
@@ -20,8 +20,8 @@ import { buildLayout, type Plan } from "../scene/layout.ts";
 import planJson from "../data/plan.json" with { type: "json" };
 import { createKitSwap } from "../scene/kit/swap.ts";
 import { tintSlots } from "../scene/kit/config.ts";
-import type { KitAnchors, KitApplyContext, KitSwap, KitSwapReport } from "../scene/kit/types.ts";
-import { digestStation } from "./helpers/station-digest.ts";
+import type { KitAnchors, KitApplyContext, KitPlacement, KitSwap, KitSwapReport } from "../scene/kit/types.ts";
+import { digestSceneLists, digestStation } from "./helpers/station-digest.ts";
 import { shinjukuStubManifestJson, STUB_TRIANGLES, stubAsset, stubManifestJson, stubProvider } from "./helpers/kit-stub.ts";
 
 const { bundle } = loadShinjukuBundle();
@@ -30,10 +30,19 @@ const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../asse
 
 /** Digest of the flag-off station at fe8d3b6 (computed from that tree, and equal to geometry-lifetime.test.ts). */
 const FE8D3B6 = {
-  geometryDigest: "2b3a94baf32629b9d6371d6f365c808fd67efcb924a7ae00dc27daebdecb48b4",
-  appearanceDigest: "3b66b3e19fd747dc9308d1f7ddc2adc8c60b13a53d925dca92514143dd07cfaf",
-  meshes: 136,
-  bytes: 13_288_866,
+  station: {
+    geometryDigest: "2b3a94baf32629b9d6371d6f365c808fd67efcb924a7ae00dc27daebdecb48b4",
+    appearanceDigest: "3b66b3e19fd747dc9308d1f7ddc2adc8c60b13a53d925dca92514143dd07cfaf",
+    // Added with the widened digest; computed from the pristine fe8d3b6 tree with scene/digest code identical to this helper.
+    nodesDigest: "65b79536aaa611048f5c749fc7a28155e3f2edfcb06fea86313bdcf47e17c8ba",
+    texturesDigest: "b53f31c89f2650e9170c4c1773cea0e17f8299a97ec829f711f0fa2e901da8de",
+    meshes: 136,
+    bytes: 13_288_866,
+  },
+  lists: {
+    listsDigest: "00b3bf1efd3019cf7d68881896ff00d49bc57575e4fcb2077b6af49612c39895",
+    counts: { walkable: 433, colliders: 2, cameraBlockers: 3, walls: 14479 },
+  },
 };
 
 const sha = (parts: unknown[]) => createHash("sha256").update(JSON.stringify(parts)).digest("hex");
@@ -118,7 +127,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
     });
     it("kit 0.1.0 has a lift portal and none of the other Shinjuku pieces: those wait for Lane E PR #143 and later", () => {
       expect(selectAssets(mobile, ROLE_SELECTORS.lift).map((a) => a.id)).toEqual(["gteki_lift_portal_w1000"]);
-      for (const role of ["gate", "toilet", "exit", "stairs", "escalator"] as const) {
+      for (const role of ["gate", "exit", "stairs", "escalator"] as const) {
         expect([role, selectAssets(mobile, ROLE_SELECTORS[role]).length]).toEqual([role, 0]);
         expect([role, selectAssets(full, ROLE_SELECTORS[role]).length]).toEqual([role, 0]);
       }
@@ -146,7 +155,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       gates: Array.from({ length: gates }, (_, i) => ({ role: "gate" as const, key: `g${i}`, center: { x: i * 20, y: 0, z: -7.8 }, dir: { x: 1, y: 0 }, width: 1.8, floorId: "B1" })),
       lifts: Array.from({ length: lifts }, (_, i) => ({ role: "lift" as const, key: `l${i}`, nodeIds: [], wallPoint: { x: i * 10, y: 5 }, z: -7.8, u: { x: 1, y: 0 }, normal: { x: 0, y: -1 }, floorId: "B1" })),
       runs: [],
-      toilets: Array.from({ length: toilets }, (_, i) => ({ role: "toilet" as const, key: `t${i}`, code: "F001", point: { x: 0, y: 0, z: -23.7 }, wall: { point: { x: 0, y: 0 }, u: { x: 1, y: 0 }, normal: { x: 0, y: 1 }, length: 6, s: 3 }, floorId: "B3" })),
+      toilets: Array.from({ length: toilets }, (_, i) => ({ role: "toilet" as const, key: `t${i}`, code: "F001", point: { x: 0, y: 0, z: -23.7 }, floorId: "B3" })),
       exits: [],
     });
 
@@ -176,15 +185,15 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(p.position[1]).toBeGreaterThan(-7.8);
       expect(p.position[1]).toBeLessThan(-7.8 + 0.01);
     });
-    it("only adds toilets at toilet facility anchors, on a wall long enough for the piece", () => {
-      const r = planKitPlacements({ anchors: anchors(0, 0, 3), manifest, budget: KIT_BUDGET, caps: { ktx2: false } });
-      expect(r.placed.map((p) => [p.role, p.assetId])).toEqual([["toilet", "stub_toilet_entrance"], ["toilet", "stub_toilet_entrance"], ["toilet", "stub_toilet_entrance"]]);
-      const short = anchors(0, 0, 1);
-      short.toilets[0]!.wall!.length = 0.8;
-      expect(planKitPlacements({ anchors: short, manifest, budget: KIT_BUDGET, caps: { ktx2: false } }).placed).toEqual([]);
-      const noWall = anchors(0, 0, 1);
-      noWall.toilets[0]!.wall = null;
-      expect(planKitPlacements({ anchors: noWall, manifest, budget: KIT_BUDGET, caps: { ktx2: false } }).placed).toEqual([]);
+    it("never places a toilet piece: facility points are room representatives, not doors, so toilets are a reported gap", () => {
+      // The stub library offers a toilet-tagged piece, and the anchors are exactly the three facility points.
+      expect(manifest.byId.has("stub_toilet_entrance")).toBe(true);
+      const r = planKitPlacements({ anchors: anchors(0, 0, 3), manifest, budget: KIT_BUDGET, caps: { ktx2: false }, placeable: new Set(["toilet", "gate", "lift", "stairs", "escalator", "exit"]) });
+      expect(r.placed).toEqual([]);
+      expect(r.dropped).toEqual([]);
+      expect(r.gaps).toEqual([{ role: "toilet", anchors: 3, reason: ROLE_DISABLED.toilet }]);
+      expect(ROLE_DISABLED.toilet).toMatch(/not doors; no placement until a door source exists/);
+      expect(Object.keys(ROLE_SELECTORS)).not.toContain("toilet");
     });
     it("places no shop, kiosk, bench or vending piece, however many the manifest offers and whatever the anchors", () => {
       const onlyProps = parseKitManifest(stubManifestJson({ remove: ["stub_gate_1aisle", "stub_gate_4aisle", "stub_lift_portal", "stub_toilet_entrance"] }), "mobile");
@@ -265,19 +274,19 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
     it("enforces the budget at build time: the lowest-ranked placements are dropped first, and logged", () => {
       const heavy = parseKitManifest(stubManifestJson({ remove: ["stub_lift_portal"], extra: [{ id: "stub_lift_heavy", family: "vertical", file: "glb/h.glb", bytes: 1, triangles: 20_000, materials: ["stub_palette"], textures: { stub_palette: { res: 64, maps: ["albedo"] } }, bounds_m: { min: [-1, 0, -0.3], max: [1, 2.7, 0.9] }, placement: "wall", params: {}, sockets: [] }] }), "mobile");
       const logs: string[] = [];
-      const r = planKitPlacements({ anchors: anchors(2, 5, 1), manifest: heavy, budget: KIT_BUDGET, caps: { ktx2: false }, log: (m) => logs.push(m) });
-      // Gates (rank 3) come before lifts (5) and the toilet (6) and are cheap; a 20k-triangle lift is 20k of the 60k triangle cap, so two fit with the gates; the rest and the toilet go.
+      const r = planKitPlacements({ anchors: anchors(2, 5), manifest: heavy, budget: KIT_BUDGET, caps: { ktx2: false }, log: (m) => logs.push(m) });
+      // Gates (rank 3) come before lifts (5) and are cheap; a 20k-triangle lift is 20k of the 60k triangle cap, so two fit with the gates; the other three go.
       expect(r.placed.filter((p) => p.role === "gate").length).toBe(2);
       expect(r.placed.filter((p) => p.role === "lift").length).toBe(2);
       expect(r.totals.triangles).toBeLessThanOrEqual(KIT_BUDGET.maxTriangles);
-      expect(r.dropped.map((d) => d.role).sort()).toEqual(["lift", "lift", "lift", "toilet"]);
+      expect(r.dropped.map((d) => d.role).sort()).toEqual(["lift", "lift", "lift"]);
       expect(r.dropped.find((d) => d.role === "lift")!.reason).toMatch(/over budget \(triangles 60200 > 60000/);
       // With a roomier triangle cap the 3 MB geometry cap binds instead.
       const roomy = planKitPlacements({ anchors: anchors(0, 5), manifest: heavy, budget: { ...KIT_BUDGET, maxTriangles: 99e6 }, caps: { ktx2: false } });
       expect(roomy.placed.length).toBe(2);
       expect(roomy.dropped[0]!.reason).toMatch(/over budget \(geometry/);
-      expect(r.dropped.find((d) => d.role === "toilet")!.reason).toMatch(/ranked below/);
-      expect(logs.length).toBe(4);
+      expect(r.dropped.filter((d) => /ranked below a placement dropped for budget/.test(d.reason)).length).toBe(2);
+      expect(logs.length).toBe(3);
       expect(logs.every((l) => /^kit swap: dropped /.test(l))).toBe(true);
       // Every cap holds for what was kept.
       const t = totalsFor(r.placed, heavy, { ktx2: false });
@@ -319,6 +328,42 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(ledger.hide("lift-portals", new Set(["1"]))).toBe(0);
       expect(ledger.hide("lift-portals", new Set(["0"]))).toBe(12);
       expect(mesh.geometry.index!.count / 3).toBe(12);
+    });
+    it("keeps later ranges correct after an earlier anchor is hidden (range shift)", () => {
+      const ledger = new PlaceholderLedger((x) => x);
+      const box = (x: number) => new THREE.BoxGeometry().translate(x, 0, 0);
+      const a = ledger.tag("lift-portals", "A", box(0));
+      const b = ledger.tag("lift-portals", "B", box(5));
+      const c = ledger.tag("lift-portals", "C", box(10));
+      const other = box(20); // untagged, last in the mesh
+      const geos = [a, b, c, other];
+      const mesh = new THREE.Mesh(mergeGeometries(geos, false)!, new THREE.MeshBasicMaterial());
+      new THREE.Group().add(mesh);
+      ledger.bind("lift-portals", mesh, geos);
+      // A is dropped first and sits before B and C: their index ranges must shift by A's 36 indices.
+      expect(ledger.hide("lift-portals", new Set(["A"]))).toBe(12);
+      expect(ledger.hide("lift-portals", new Set(["B"]))).toBe(12);
+      const xs = Array.from({ length: mesh.geometry.attributes.position!.count }, (_, i) => mesh.geometry.attributes.position!.getX(i));
+      expect(Math.min(...xs)).toBeCloseTo(9.5);
+      expect(xs.some((x) => x > 4 && x < 6)).toBe(false); // B is gone, not A's neighbour or C
+      expect(mesh.geometry.index!.count / 3).toBe(24); // C and the untagged box survive
+      expect(ledger.hide("lift-portals", new Set(["C"]))).toBe(12);
+      expect(Math.min(...Array.from({ length: mesh.geometry.attributes.position!.count }, (_, i) => mesh.geometry.attributes.position!.getX(i)))).toBeCloseTo(19.5);
+    });
+    it("prepareHide changes nothing until commit", () => {
+      const ledger = new PlaceholderLedger((x) => x);
+      const g = ledger.tag("gate-machines", "e1", new THREE.BoxGeometry());
+      const mesh = new THREE.Mesh(mergeGeometries([g], false)!, new THREE.MeshBasicMaterial());
+      const parent = new THREE.Group();
+      parent.add(mesh);
+      ledger.bind("gate-machines", mesh, [g]);
+      const before = mesh.geometry;
+      const prepared = ledger.prepareHide("gate-machines", new Set(["e1"]));
+      expect(prepared.removed).toBe(12);
+      expect(mesh.parent).toBe(parent);
+      expect(mesh.geometry).toBe(before);
+      prepared.commit();
+      expect(mesh.parent).toBeNull();
     });
     it("removes a mesh that loses every triangle, and never touches another group", () => {
       const ledger = new PlaceholderLedger((x) => x);
@@ -386,6 +431,69 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         expect((out.meshes.find((m) => m.name === "kit:L:stub_palette")!.material as THREE.MeshStandardMaterial).aoMap).toBeNull();
       }
     });
+    it("splits a multi-material mesh by its geometry groups, and counts one without groups as not drawn", () => {
+      const manifest = parseKitManifest(stubManifestJson(), "mobile");
+      const provider = stubProvider();
+      const [m0, m1] = [provider.materials.get("stub_palette")!, provider.materials.get("gteki_line_accent")!];
+      let withGroups = true;
+      const base = provider.instantiate.bind(provider);
+      provider.instantiate = (a) => {
+        const root = new THREE.Group();
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), [m0, m1, m0, m1, m0, m1]);
+        mesh.name = "VIS_multi";
+        if (!withGroups) mesh.geometry.clearGroups();
+        root.add(mesh);
+        void base;
+        void a;
+        return root;
+      };
+      const place = (assetId: string): KitPlacement => ({ role: "lift", anchorKey: "1", assetId, rank: 5, floorId: "L", position: [0, 0, 0], yaw: 0, replaces: "lift-portals" });
+      const p1 = place("stub_lift_portal");
+      const out = batchKitPlacements({ placed: [p1], manifest, provider, tint: tintSlots(OEDO_MAGENTA), track: (x) => x });
+      expect(out.meshes.map((m) => m.name)).toEqual(["kit:L:gteki_line_accent", "kit:L:stub_palette"]);
+      expect(out.triangles).toBe(12); // 6 faces x 2 triangles, split 6 + 6 across the two materials
+      expect(out.meshes.map((m) => m.geometry.index!.count / 3)).toEqual([6, 6]);
+      expect(out.drawn.has(p1)).toBe(true);
+      withGroups = false;
+      const p2 = place("stub_lift_portal");
+      const none = batchKitPlacements({ placed: [p2], manifest, provider, tint: [], track: (x) => x });
+      expect(none.meshes).toEqual([]);
+      expect(none.drawn.has(p2)).toBe(false);
+    });
+    it("a placement whose asset has only collision, socket and hint nodes is not drawn", () => {
+      const manifest = parseKitManifest(stubManifestJson(), "mobile");
+      const provider = stubProvider();
+      provider.instantiate = () => {
+        const root = new THREE.Group();
+        const col = new THREE.Mesh(new THREE.BoxGeometry(), provider.materials.get("stub_palette")!);
+        col.name = "COL_body-colonly";
+        root.add(col);
+        return root;
+      };
+      const p: KitPlacement = { role: "lift", anchorKey: "1", assetId: "stub_lift_portal", rank: 5, floorId: "L", position: [0, 0, 0], yaw: 0, replaces: "lift-portals" };
+      const out = batchKitPlacements({ placed: [p], manifest, provider, tint: [], track: (x) => x });
+      expect(out.meshes).toEqual([]);
+      expect(out.drawn.has(p)).toBe(false);
+      expect(out.missing).toEqual([]);
+    });
+    it("owns every material it batches: shared GLB materials are cloned, tracked, and their textures released", () => {
+      const manifest = parseKitManifest(stubManifestJson(), "mobile");
+      const provider = stubProvider();
+      const map = new THREE.Texture();
+      provider.materials.get("stub_palette")!.map = map;
+      const tracked: { dispose(): void }[] = [];
+      const placed = planKitPlacements({ anchors: { gates: [], lifts: [1, 2].map((i) => ({ role: "lift" as const, key: String(i), nodeIds: [], wallPoint: { x: i * 3, y: 0 }, z: 0, u: { x: 1, y: 0 }, normal: { x: 0, y: 1 }, floorId: "L" })), runs: [], toilets: [], exits: [] }, manifest, budget: KIT_BUDGET, caps: { ktx2: false } }).placed;
+      const out = batchKitPlacements({ placed, manifest, provider, tint: tintSlots(OEDO_MAGENTA), track: (x) => (tracked.push(x), x) });
+      const source = new Set<THREE.Material>(provider.materials.values());
+      for (const m of out.meshes) {
+        expect(source.has(m.material as THREE.Material)).toBe(false);
+        expect(tracked).toContain(m.material);
+        expect(tracked).toContain(m.geometry);
+      }
+      expect(tracked).toContain(map);
+      // Disposing what was tracked leaves the untouched source material usable (its own dispose is not ours to call).
+      expect(source.size).toBe(2);
+    });
     it("reads asset roots from a kit bundle, using gteki_name for renamed nodes", () => {
       const holder = new THREE.Group();
       holder.userData.gteki_bundle = { contract: "gteki-kit-bundle/0.1" };
@@ -413,10 +521,11 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
     const logs: string[] = [];
     const ctx = { THREE, bundle, quality: "low" as const } as never;
 
-    beforeAll(() => {
+    beforeAll(async () => {
       const context = new Proxy({}, { get: (_t, key) => (key === "createLinearGradient" || key === "createRadialGradient") ? () => ({ addColorStop() {} }) : () => undefined });
       vi.stubGlobal("document", { createElement: () => ({ width: 1, height: 1, getContext: () => context }) });
-      off = assembleScene(ctx);
+      // The shipping entry point with the flag off (no `location` in node): the path every user gets today.
+      off = await buildScene(ctx);
       const inner = createKitSwap({
         manifest: parseKitManifest(shinjukuStubManifestJson(catalogJson), "mobile"),
         provider: stubProvider(),
@@ -424,7 +533,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         tint: tintSlots(OEDO_MAGENTA),
         log: (m) => logs.push(m),
       });
-      const spy: KitSwap = { apply: (c) => { captured = c; report = inner.apply(c); return report; } };
+      const spy: KitSwap = { apply: (c) => { captured = c; report = inner.apply(c)!; return report; } };
       on = assembleScene(ctx, spy);
       const layout = buildLayout(bundle, planJson as unknown as Plan);
       catalogResult = buildStationCatalog(layout, protectFareAndAccess(layout, planJson as unknown as Plan, bundle));
@@ -435,17 +544,18 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       vi.unstubAllGlobals();
     });
 
-    it("flag off: the scene is byte-identical to fe8d3b6", () => {
+    it("flag off: the scene equals fe8d3b6 in every mesh byte, node, light, userData, texture parameter and explorer list", () => {
       expect(off.root.userData.kitSwap).toBeUndefined();
-      const digest = digestStation(off.root, isStationProxy);
-      expect(digest).toEqual(FE8D3B6);
+      // Meshes (geometry + appearance), all other nodes incl. lights and userData, and texture params of every material.
+      expect(digestStation(off.root, isStationProxy)).toEqual(FE8D3B6.station);
+      // walls, walkable, colliders, cameraBlockers, spawn points and environment, as the explorer reads them.
+      expect(digestSceneLists(off)).toEqual(FE8D3B6.lists);
     });
 
     it("flag on: every placement lands on a real anchor, in the right role", () => {
       expect(report.placed.length).toBeGreaterThan(0);
       const gateEdges = new Set(bundle.edges.filter((e) => e.mode === "gate").map((e) => e.id));
       const anchors = collectKitAnchors({ layout: captured.layout, protection: captured.protection, plan: captured.plan, bundle, lifts: captured.liftAnchors });
-      const facility = new Set(captured.plan.levels.flatMap((l) => l.facilities.filter((f) => ["F001", "F002", "F003"].includes(f.category)).map((f) => f.id)));
       for (const p of report.placed) {
         if (p.role === "gate") {
           expect(gateEdges.has(p.anchorKey)).toBe(true);
@@ -462,8 +572,6 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
           });
           expect(wall).toBeDefined();
           expect(Math.hypot(p.position[0] - a.wallPoint.x, -p.position[2] - a.wallPoint.y)).toBeCloseTo(0.264, 3);
-        } else if (p.role === "toilet") {
-          expect(facility.has(p.anchorKey)).toBe(true);
         } else if (p.role === "stairs" || p.role === "escalator") {
           const a = anchors.runs.find((r) => r.key === p.anchorKey && r.role === p.role)!;
           expect(a).toBeDefined();
@@ -485,13 +593,14 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
     });
 
     it("flag on, stub library at the estimated triangle counts: the budget keeps the highest-ranked placements", () => {
-      // Stub counts (STUB_TRIANGLES): escalator 1352 (19 fitted runs), stairs 180 (24), gate 1800 (4 rows), lift 1090 (9 portals), toilet 100 (3).
+      // Stub counts (STUB_TRIANGLES): escalator 1352 (19 fitted runs), stairs 180 (24), gate 1800 (4 rows), lift 1090 (9 portals).
       // Geometry is 70 B per merged triangle, so the 3 MB cap allows 42,857 triangles:
-      //   19*1352 + 24*180 + 4*1800 = 37,208; five lifts add 5,450 = 42,658; a sixth (43,748) would breach, so the other 4 of the 9 portals and the 3 toilets go.
+      //   19*1352 + 24*180 + 4*1800 = 37,208; five lifts add 5,450 = 42,658; a sixth (43,748) would breach, so the other 4 of the 9 portals go. Toilets are never placed (a gap).
       const count = (role: string) => report.placed.filter((p) => p.role === role).length;
       expect([count("escalator"), count("stairs"), count("gate"), count("lift"), count("toilet")]).toEqual([19, 24, 4, 5, 0]);
       expect(report.dropped.filter((d) => d.role === "lift").length).toBe(4);
-      expect(report.dropped.filter((d) => d.role === "toilet").length).toBe(3);
+      expect(report.dropped.filter((d) => d.role === "toilet")).toEqual([]);
+      expect(report.gaps.filter((g) => g.role === "toilet")).toEqual([{ role: "toilet", anchors: 3, reason: ROLE_DISABLED.toilet }]);
       expect(report.dropped.filter((d) => d.role === "escalator").map((d) => d.anchorKey).sort()).toEqual(catalogResult.unfitted.map((u) => u.edgeId).sort());
       expect(report.dropped.find((d) => d.role === "lift")!.reason).toMatch(/over budget \(geometry/);
       expect(report.totals.triangles).toBe(19 * STUB_TRIANGLES.escalator + 24 * STUB_TRIANGLES.stairs + 4 * STUB_TRIANGLES.gate + 5 * STUB_TRIANGLES.lift);
@@ -517,6 +626,70 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(exits.gaps.find((g) => g.role === "exit")?.reason).toMatch(/no exit piece/);
     });
 
+    describe("failure and partial results", () => {
+      const manifest = () => parseKitManifest(shinjukuStubManifestJson(catalogJson), "mobile");
+      const run = (provider: ReturnType<typeof stubProvider> | { instantiate: ReturnType<typeof stubProvider>["instantiate"] }, wrap?: (c: KitApplyContext) => KitApplyContext) => {
+        const out: string[] = [];
+        let result: KitSwapReport | null | undefined;
+        let applyCtx: KitApplyContext | undefined;
+        const inner = createKitSwap({ manifest: manifest(), provider, caps: { ktx2: false }, tint: tintSlots(OEDO_MAGENTA), log: (m) => out.push(m) });
+        const scene = assembleScene(ctx, { apply: (c) => { applyCtx = c; result = inner.apply(wrap ? wrap(c) : c); return result; } });
+        return { scene, result, out, applyCtx: applyCtx! };
+      };
+      const unchanged = (scene: StationScene) => {
+        expect(scene.root.userData.kitSwap).toBeUndefined();
+        expect(scene.root.children.some((c) => c.name === "kit-swap")).toBe(false);
+        expect(digestStation(scene.root, isStationProxy)).toEqual(FE8D3B6.station);
+        expect(digestSceneLists(scene)).toEqual(FE8D3B6.lists);
+      };
+
+      it("an error while building the kit meshes logs 'kit swap off', returns no report and leaves the scene exactly as flag-off", () => {
+        const stub = stubProvider();
+        let n = 0;
+        const { scene, result, out } = run({ instantiate: (a) => { if (++n > 5) throw new Error("boom"); return stub.instantiate(a); } });
+        expect(result).toBeNull();
+        expect(out.some((l) => /^kit swap off: boom; placeholders stay/.test(l))).toBe(true);
+        unchanged(scene);
+        scene.dispose();
+      });
+
+      it("an error while hiding placeholders cannot leave a partial hide: the first group is prepared but never committed", () => {
+        const { scene, result, out } = run(stubProvider(), (c) => ({
+          ...c,
+          ledger: {
+            hide: (g, k) => c.ledger.hide(g, k),
+            keys: (g) => c.ledger.keys(g),
+            prepareHide: (g, k) => { if (g === "lift-portals") throw new Error("hide failed"); return c.ledger.prepareHide(g, k); },
+          },
+        }));
+        expect(result).toBeNull();
+        expect(out.some((l) => /^kit swap off: hide failed/.test(l))).toBe(true);
+        unchanged(scene);
+        scene.dispose();
+      });
+
+      it("a placement that draws nothing keeps its placeholder: no triangles are hidden for it, and it is reported", () => {
+        const stub = stubProvider();
+        const { scene, result } = run({
+          instantiate: (a) => {
+            if (!/lift/.test(a.id)) return stub.instantiate(a);
+            const root = new THREE.Group(); // collision node only
+            const col = new THREE.Mesh(new THREE.BoxGeometry(), stub.materials.get("stub_palette")!);
+            col.name = "COL_x-colonly";
+            root.add(col);
+            return root;
+          },
+        });
+        expect(result).not.toBeNull();
+        expect(result!.placed.some((p) => p.role === "lift")).toBe(false);
+        expect(result!.hidden["lift-portals"]).toBeUndefined();
+        expect(result!.dropped.filter((d) => /no drawable visual mesh/.test(d.reason)).length).toBe(5);
+        // Gates and stairs were still swapped.
+        expect(result!.hidden["gate-machines"]).toBe(96 * 4);
+        scene.dispose();
+      });
+    });
+
     it("flag on: no shop, kiosk, bench or vending piece is instantiated or drawn", () => {
       const ids = new Set(report.placed.map((p) => p.assetId));
       for (const id of ids) expect(id).not.toMatch(/bench|vending|kiosk|shop/);
@@ -539,19 +712,22 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(killed.length).toBe(1);
     });
 
-    it("flag on: apart from the kit, only the triangles of replaced placeholders are gone", () => {
+    it("flag on: the hidden placeholder triangles are exactly those of the anchors that got a drawn piece", () => {
       const skip = (o: THREE.Object3D) => isStationProxy(o);
       const offTri = triangles(off.root, skip);
       const onTri = triangles(on.root, (o) => skip(o) || o.name === "kit-swap");
-      const hidden = Object.values(report.hidden).reduce((s, n) => s + (n ?? 0), 0);
-      expect(hidden).toBeGreaterThan(0);
-      expect(offTri - onTri).toBe(hidden);
-      // Gate placeholders really were replaced: their machines are among the hidden triangles.
-      expect(report.hidden["gate-machines"]).toBeGreaterThan(0);
-      expect(report.hidden["lift-portals"]).toBeGreaterThan(0);
-      // Stair nosing: exactly one 12-triangle strip per step of every placed stair run is hidden, and no escalator geometry.
-      const steps = report.placed.filter((p) => p.role === "stairs").reduce((n, p) => n + (catalogJson.assets.find((e) => e.id === p.assetId)!.params.step_count as number), 0);
+      const placed = (role: string) => report.placed.filter((p) => p.role === role);
+      // Per-anchor placeholder sizes, counted from the boxes build.ts emits: a lift portal's boxes are 192 triangles
+      // in this dataset (9 portals = 1,728), a gate row's two machines are 96 (body 12 + top 12 + two IC pads 24, twice),
+      // and a stair's nosing is one 12-triangle strip per step. Only placed (drawn) anchors lose their placeholder.
+      expect(report.hidden["lift-portals"]).toBe(192 * placed("lift").length);
+      expect(report.hidden["gate-machines"]).toBe(96 * placed("gate").length);
+      const steps = placed("stairs").reduce((n, p) => n + (catalogJson.assets.find((e) => e.id === p.assetId)!.params.step_count as number), 0);
       expect(report.hidden["stair-nosing"]).toBe(12 * steps);
+      // Escalators are additive: no escalator triangle is hidden, and the scene lost nothing else.
+      expect(offTri - onTri).toBe(192 * placed("lift").length + 96 * placed("gate").length + 12 * steps);
+      // The 4 lifts and 2 escalators that were not placed keep every placeholder triangle.
+      expect(captured.liftAnchors.length - placed("lift").length).toBe(4);
     });
 
     it("flag on: the budget holds on what was actually built, and the report states it", () => {
