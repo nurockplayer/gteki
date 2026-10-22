@@ -70,7 +70,7 @@ const PERIOD_NOTE = `Publication period (公開提供期限): limited publicatio
 /** Honest licence value for the E27 resources: validate.ts requires a data source to name a licence with an http(s) link, so link the provider's dataset page. */
 const E27_LICENSE = { name: "Licence unconfirmed — published under the Owner's override (#16)", url: "https://ckan.hokonavi.go.jp/dataset/2d8ff84b-f110-41ad-b5e5-7b8ec9c6cb45" };
 // #130: the E27 resources ship under the Owner's recorded override (the #16 merge), not under a confirmed licence.
-const E27_OVERRIDE = { decision: "https://github.com/nurockplayer/gteki/pull/16", date: "2026-10-21" };
+const E27_OVERRIDE = { decision: "https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757", date: "2026-10-21" };
 const SRC_NWD = "mlit-hokonavi-e27-nwd";
 const SRC_MAP = "mlit-hokonavi-e27-stationmap";
 const OP = "toei";
