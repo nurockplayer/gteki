@@ -109,7 +109,9 @@ Walkable HQ client work starts by loading both stations in Godot without Godot o
   ENU exactly as returned, `environment`, `counts` per role, `lightmap` (only when the scene has a baked one: the URI
   it loaded, channel, colour space, `lightMapIntensity` and the flagged mesh/surface counts — see G-4a), a `reference`
   block (TypeScript-computed renderer-frame values the Godot tests compare against; an oracle, not scene truth), and
-  `warnings`.
+  `warnings`. The counts describe what the GLB can carry: a mesh with no drawable geometry (an empty `BufferGeometry`,
+  such as Shinjuku's viewer probe) is skipped by three's exporter, so it is left out of every count and named in a
+  warning instead of inflating the sidecar past the file.
 
 The browser-only parts are **shims, listed in `warnings`**: a no-op 2D canvas (blank textures; `measureText` is an
 em-width estimate, so sign sizes can differ), stubbed PMREM (no reflections), `loadTexture` returning blank textures
@@ -217,8 +219,12 @@ sidecar (`environment`), never from hard-coded values:
   pass, not for the headless gate.
 
 `looks/materials.json` maps snapshot material names to style-bible materials. Each mapping carries a `from` block with
-the snapshot evidence (colour, metal, roughness, surface count, roles) and a one-line `evidence` note, because the
-snapshot loses the scene's own material names (three's exporter names unnamed materials `material_<n>`). A station's
+the snapshot evidence (colour, metal, roughness, surface count, roles, optionally the sample mesh names) and a one-line
+`evidence` note, because the snapshot loses the scene's own material names (three's exporter names unnamed materials
+`material_<n>`). Those names are positional, so the loader re-checks every mapping before applying it: a mapping is
+applied only while its material still has the recorded sRGB albedo exactly, metal and roughness within 0.01, and every
+recorded sample mesh still carries it. A mapping that no longer matches is skipped with a warning instead of repainting
+whatever took the name (#254/#257), and `run_look_tests.gd` fails on it. A station's
 `unmapped` array lists every material the table leaves alone and why; anything ambiguous stays there rather than being
 guessed. Shinjuku has 13 mapped materials (floors, walls, ceiling, tactile paving, stair nosings, gate bodies/caps,
 steel plates, light housings, the Oedo accent band, handrails); Ikebukuro is listed as entirely unmapped because its lightmap
@@ -227,8 +233,8 @@ shader owns its surfaces and that decision belongs to the lead. The table sets o
 textures, and it only ever overrides surfaces whose material it names.
 
 Two mappings are **provisional, not E27 facts**: `material_2` (wall field → `steel_painted_light`, a grey painted steel
-per OD-30 via R10 #234) and `material_23` (stair nosings → `vertical_safety_yellow`, a representative style-bible finish;
-R10 found no source). `material_12` maps to `oedo_accent`, a style marked `local: true` with a `note`: GTEki's chosen
+per OD-30 via R10 #234) and `material_37` (stair nosings → `vertical_safety_yellow`, a representative style-bible finish;
+R10 found no source). `material_11` maps to `oedo_accent`, a style marked `local: true` with a `note`: GTEki's chosen
 Oedo magenta per OD-29 (#222), not the operator's official colour. The optional `local`, `note` and `provisional` fields
 are documentation; the loader ignores them, and the source's faint emission survives because the override duplicates the
 snapshot material.
