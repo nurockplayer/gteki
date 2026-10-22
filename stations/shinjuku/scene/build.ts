@@ -1091,6 +1091,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     surface: buildSurface(surfaceJson as SurfaceData, layout, { ...opts, bundle }),
     surfaceBarriers: surfaceWalls(layout, bundle, surfaceJson as SurfaceData),
   }), seed);
+  surface.root.userData.bakedSurface = seed !== null; // observable by tests: was the baked table used?
   root.add(surface.root);
   propWalls.push(...surfaceBarriers);
   world.addWalls(surfaceBarriers);

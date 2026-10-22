@@ -30,7 +30,9 @@ export interface PrepareOptions {
   verifyGeneratedInput?: boolean;
 }
 
-let entry: { key: string; snapshot: { layout: Layout; protection: FareProtection } } | null = null;
+/** `verified`: the snapshot's fences were confirmed against the generated table's input key. An unverified
+ * snapshot (built with verifyGeneratedInput:false) never serves a verified request. */
+let entry: { key: string; verified: boolean; snapshot: { layout: Layout; protection: FareProtection } } | null = null;
 
 export function clearLayoutCache() {
   entry = null;
@@ -38,13 +40,14 @@ export function clearLayoutCache() {
 
 export function prepareLayout(bundle: StationBundle, plan: Plan, options: PrepareOptions = {}): PreparedLayout {
   const key = options.reuse ? contentKey(bundle, plan) : "";
-  if (entry && options.reuse && entry.key === key) {
+  const verify = options.verifyGeneratedInput !== false;
+  if (entry && options.reuse && entry.key === key && (entry.verified || !verify)) {
     const copy = structuredClone(entry.snapshot);
     adoptRestrictedAccess(copy.layout, plan, bundle);
     return { ...copy, cached: true };
   }
   const layout = buildLayout(bundle, plan);
   const protection = protectFareAndAccess(layout, plan, bundle, { verifyGeneratedInput: options.verifyGeneratedInput });
-  if (options.reuse) entry = { key, snapshot: structuredClone({ layout, protection }) };
+  if (options.reuse) entry = { key, verified: verify, snapshot: structuredClone({ layout, protection }) };
   return { layout, protection, cached: false };
 }

@@ -31,6 +31,7 @@ export function expectIdentical(got: FullDigest) {
     expect(g.cameraBlockers, `${q} cameraBlockers`).toEqual(b.cameraBlockers);
     expect(g.cameraBlockerIsCollider, `${q} blocker identity`).toEqual(b.cameraBlockerIsCollider);
     expect(g.walls, `${q} walls`).toBe(b.walls);
+    expect(g.semantic, `${q} roles/portals/signage`).toEqual(b.semantic);
     expect(g.spawnPoints, `${q} spawn`).toBe(b.spawnPoints);
     // Visual meshes: identical triangle sets per material.
     expect(g.visual, `${q} visual`).toEqual(b.visual);
@@ -44,6 +45,8 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
   }, 120_000);
 
   it("a reopen (every layout from the cache) matches the fe8d3b6 digest", async () => {
+    clearLayoutCache();
+    expect(prepareLayout(bundle, plan, { reuse: true }).cached).toBe(false); // prime
     expect(prepareLayout(bundle, plan, { reuse: true }).cached).toBe(true);
     expectIdentical(await fullDigest(bundle, plan));
   }, 120_000);
@@ -64,6 +67,8 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
   it("derives the street layer itself when the baked table is not used, with the same result", () => {
     for (const useBakedSurface of [true, false]) {
       const built = withCanvasStub(() => buildStation(bundle, plan, { quality: "low", useBakedSurface }));
+      // The flag is set where the seed is chosen: the table was really used, or really not.
+      expect(built.root.getObjectByName("surface-render-only")!.userData.bakedSurface, `table used, useBakedSurface=${useBakedSurface}`).toBe(useBakedSurface);
       expect(stationDigest(built), `useBakedSurface=${useBakedSurface}`).toEqual(base.station);
       // The scene hook adds an empty viewer probe on top of the station root; compare drawn triangles only.
       const drawn = (v: FullDigest["scene"]["low"]["visual"]) => Object.fromEntries(Object.entries(v).filter(([, g]) => g.triangles > 0));
@@ -83,6 +88,13 @@ describe("#72 load-cost changes leave collision and fence geometry byte-identica
     const level = plan.levels[0]!;
     const replanned = { ...plan, levels: [{ ...level, renderElevationM: level.renderElevationM + 0.001 }, ...plan.levels.slice(1)] };
     expect(prepareLayout(bundle, replanned, { reuse: true }).cached).toBe(false);
+    // A snapshot built without the restricted-input check never serves a request that wants the check.
+    clearLayoutCache();
+    expect(prepareLayout(bundle, plan, { reuse: true, verifyGeneratedInput: false }).cached).toBe(false);
+    expect(prepareLayout(bundle, plan, { reuse: true, verifyGeneratedInput: false }).cached).toBe(true);
+    expect(prepareLayout(bundle, plan, { reuse: true }).cached).toBe(false); // verified request: rebuilt and verified
+    expect(prepareLayout(bundle, plan, { reuse: true }).cached).toBe(true);
+    expect(prepareLayout(bundle, plan, { reuse: true, verifyGeneratedInput: false }).cached).toBe(true); // verified serves unverified
     // Without reuse nothing is read or written.
     clearLayoutCache();
     expect(prepareLayout(bundle, plan).cached).toBe(false);

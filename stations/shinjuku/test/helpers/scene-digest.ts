@@ -53,6 +53,9 @@ type Digest = {
   walls: string;
   spawnPoints: string;
   visual: Record<string, { triangles: number; hash: string }>;
+  /** Meshes whose identity matters to other code: gteki_role holders, lift-portal carriers, and the names
+   * gteki/scene.ts and the explorer key on. Batch names are deliberately absent (they were renamed in #72). */
+  semantic: string[];
 };
 
 const materialSignature = (m: THREE.Material | THREE.Material[]): string => {
@@ -126,6 +129,21 @@ export function visualDigest(root: THREE.Object3D): Digest["visual"] {
   return out;
 }
 
+const SEMANTIC_NAME = /^(sign-faces:|sign-cases$|Restricted area$|No entry$|surface-ground$|surface-stone$)/;
+export function semanticDigest(root: THREE.Object3D): string[] {
+  const out: string[] = [];
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh) return;
+    const role = (m.userData?.gteki_role as string | undefined) ?? "", portals = m.userData?.portals;
+    const named = SEMANTIC_NAME.test(m.name);
+    if (!role && !portals && !named) return;
+    const g = m.geometry, tris = g.index ? g.index.count / 3 : (g.attributes.position?.count ?? 0) / 3;
+    out.push([role, named ? m.name : "", portals ? `portals:${exactHash(portals)}` : "", materialSignature(m.material), tris].join("|"));
+  });
+  return out.sort();
+}
+
 export function sceneDigest(scene: StationScene): Digest {
   const colliders = scene.colliders ?? [];
   return {
@@ -136,6 +154,7 @@ export function sceneDigest(scene: StationScene): Digest {
     walls: exactHash(scene.walls),
     spawnPoints: exactHash(scene.spawnPoints),
     visual: visualDigest(scene.root),
+    semantic: semanticDigest(scene.root),
   };
 }
 

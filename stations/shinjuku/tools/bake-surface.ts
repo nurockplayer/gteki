@@ -12,11 +12,22 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { loadShinjukuBundle } from "../data/bundle.ts";
 import { buildLayout, type Plan } from "../scene/layout.ts";
 import { protectFareAndAccess } from "../scene/fare-fence.ts";
+import { contentKey } from "../scene/content-key.ts";
 import { bakeSurface, bakedModuleSource } from "../scene/surface-bake.ts";
 import type { SurfaceData } from "../scene/surface-data.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const BAKED_PATH = join(here, "../data/surface-baked.ts");
+
+/** Hash of everything the baked values are computed by: the derivation sources (including the layout and the
+ * fare/access pad trim the layout passes through) and the polygon-clipping version. Not checkable at load, so
+ * the test and `--check` compare it with the one stored in the baked file. */
+export const DERIVATION_SOURCES = ["layout.ts", "fare-fence.ts", "surface-layout.ts", "surface-street.ts", "surface-bake.ts", "content-key.ts"];
+export function derivationSourceKey(): string {
+  const sources = DERIVATION_SOURCES.map((f) => [f, readFileSync(join(here, "../scene", f), "utf8")]);
+  const clipping = JSON.parse(readFileSync(join(here, "../node_modules/polygon-clipping/package.json"), "utf8")).version;
+  return contentKey("surface-sources", sources, clipping);
+}
 
 /** The exact text the file must contain. */
 export function bakedText(): string {
@@ -26,7 +37,7 @@ export function bakedText(): string {
   // buildStation derives the street layer from the layout after the fare/access trim of its pads.
   const layout = buildLayout(bundle, plan);
   protectFareAndAccess(layout, plan, bundle);
-  return bakedModuleSource(bakeSurface(surface, layout, bundle, plan));
+  return bakedModuleSource(bakeSurface(surface, layout, bundle, plan), derivationSourceKey());
 }
 
 export function bakeSurfaceFile(check = false) {

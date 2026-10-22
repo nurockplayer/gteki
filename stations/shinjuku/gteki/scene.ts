@@ -10,6 +10,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
 import { surfaceEntrances, surfaceRoofs, withSurfaceMemo } from "../scene/surface-layout.ts";
+import { clearLayoutCache } from "../scene/build-cache.ts";
 import plan from "../data/plan.json" with { type: "json" };
 
 /** Camera that renders the station, reported to the street layer (see the probe in buildScene). */
@@ -38,6 +39,16 @@ function sceneLifecycle(stepBuilt: (dt: number, t: number) => void, disposeBuilt
       envTarget?.dispose(); // render target owns the texture plus its framebuffer/depth
     },
   };
+}
+
+/**
+ * Drops what Shinjuku keeps between opens: the layout/fence snapshot that makes a reopen fast (~7.5 MB of JS
+ * heap). Call it when the explorer leaves Shinjuku for good (apps/web does not call it yet, so until it is
+ * wired the heap goal of #72 is not met). The next open then rebuilds the layout once. The baked street table
+ * (a 0.4 MB module-level string) cannot be released: it is a static ESM import.
+ */
+export function releaseShinjukuCaches() {
+  clearLayoutCache();
 }
 
 export const buildScene: BuildScene = (ctx) => {
