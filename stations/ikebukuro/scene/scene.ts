@@ -424,6 +424,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
         return;
       }
       loaded.scene.name = "street-context";
+      // This subtree draws Ikebukuro's own (PLATEAU) road surface, so the explorer's pavement plane yields (#181).
+      loaded.scene.userData.gteki_street_surface = true;
       loaded.scene.visible = false;
       contextBlockers.fill(loaded.scene);
       context = loaded.scene;
