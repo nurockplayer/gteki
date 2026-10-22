@@ -51,6 +51,19 @@ for (const w of walks) {
   test(`ikebukuro: wayfinding cues along ${w.label} (guided, sampled) @phone`, async ({ page }, testInfo) => {
     test.setTimeout(420_000);
     const key = "ikebukuro";
+    // Large canvas textures uploaded to WebGL (the sign atlas pages are canvases; GLB images are not), to see
+    // whether a tier's signs spill onto a second atlas page (#126/#180 low-tier atlas). Recorded only.
+    await page.addInitScript(() => {
+      const seen: { w: number; h: number }[] = ((window as any).__qaCanvasTextures = []);
+      for (const C of [WebGLRenderingContext, (window as any).WebGL2RenderingContext].filter(Boolean)) {
+        const orig = C.prototype.texImage2D;
+        C.prototype.texImage2D = function (this: unknown, ...a: unknown[]) {
+          const src = a.find((x) => x instanceof HTMLCanvasElement) as HTMLCanvasElement | undefined;
+          if (src && Math.max(src.width, src.height) >= 1024) seen.push({ w: src.width, h: src.height });
+          return orig.apply(this, a as never);
+        };
+      }
+    });
     await openStation(page, key);
     const isPhone = testInfo.project.name.startsWith("phone");
     await chooseBySearch(page, "from", w.from[0], w.from[1]);
@@ -113,6 +126,7 @@ for (const w of walks) {
 
     save(testInfo, `ikebukuro-cues-${w.label}.json`, {
       project: testInfo.project.name, quality: await hooks.quality(page), guideTier, flowOnly: FLOW_ONLY, arrived,
+      largeCanvasTextures: await page.evaluate(() => (window as any).__qaCanvasTextures ?? null),
       route: { lengthM: route.totalLengthM, horizontalLengthM: round(line.lengthM), nodeIds: route.nodeIds, instructions: await hooks.instructions(page) },
       sources: { signage: "stations/ikebukuro/scene/signage.json", repeaterSigns: cues.filter((c) => c.repeater).length, placeBoards: cues.filter((c) => c.place).length, signsOnRoute: cues.filter((c) => c.type === "sign").length, junctionsOnRoute: cues.filter((c) => c.type === "junction").length, fencesOnRoute: cues.filter((c) => c.type === "fence").length },
       thresholds: { maxGapM: MAX_GAP_M, aheadM: AHEAD_M },
