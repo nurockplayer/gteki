@@ -273,7 +273,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+      "uiCard": "No verified route to showNo verified route with \"Step-free\" on. The connection found uses stairs, escalators or passages not step-free.Turn off \"Step-free\""
     }
   },
   "SN1": {
@@ -288,7 +288,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+      "uiCard": "No verified route to showNo verified route with \"Outside gates only\" on.Turn off \"Outside gates only\""
     }
   },
   "SN2": {
@@ -303,7 +303,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+      "uiCard": "No verified route to showNo verified route with \"Outside gates only\" on.Turn off \"Outside gates only\""
     }
   },
   "SN3": {
@@ -318,7 +318,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+      "uiCard": "No verified route to showNo verified route with \"Verified hours only\" on. The connection found uses passages whose hours are not verified.Turn off \"Verified hours only\""
     }
   },
   "SN4": {
