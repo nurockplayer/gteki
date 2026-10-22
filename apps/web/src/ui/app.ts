@@ -15,7 +15,7 @@ import { factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
-import { LiveRegion, routeLiveMessage, searchLiveMessage } from "./live.ts";
+import { LiveRegion, freshnessReason, routeLiveMessage, searchLiveMessage, unknownLabel } from "./live.ts";
 import { watchReducedMotion } from "./motion.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
@@ -617,8 +617,7 @@ export class App {
     const badges = el("div", "badges");
     const badge = (text: string, cls: string, title?: string) => { const x = el("span", `badge ${cls}`, text); if (title) x.title = title; badges.append(x); };
     if (r.synthetic) badge(t.syntheticShort, "warn", t.synthetic);
-    const unknownText: Record<string, string> = { hours: t.unknownHours, wheelchair: t.unknownWheelchair, steps: t.unknownSteps, paid: t.unknownPaid, fare_boundary: t.unknownFare, access_evidence: t.unknownAccess };
-    for (const u of r.unknowns) badge(`${unknownText[u.kind] ?? u.kind} ×${u.edgeIds.length}`, "unknown");
+    for (const u of r.unknowns) badge(`${unknownLabel(t, u.kind)} ×${u.edgeIds.length}`, "unknown");
     // Waiting for an opening window is part of the time, and is said so.
     if (r.waitSeconds > 0) badge(t.waiting(Math.max(1, Math.round(r.waitSeconds / 60))), "info");
     if (r.timeRestricted.length) badge(`${t.timeWindow}: ${r.timeRestricted.map((w) => `${w.open}–${w.close}`).join(", ")}`, "unknown");
@@ -631,10 +630,8 @@ export class App {
     if (r.operatorIds.length > 1) badge(`${t.operators}: ${r.operatorIds.join(" → ")}`, "info");
     card.append(badges);
     // Why the freshness is stale or unknown, as text: a tooltip alone is invisible on touch (#203 B5).
-    let freshnessReason: string | null = null;
-    if (r.stale === true) freshnessReason = r.expiredSourceIds.length > 0 ? `${t.expired}: ${r.expiredSourceIds.join(", ")}` : `${t.oldestSource} ${r.oldestSourceDate ?? "?"}`;
-    else if (r.stale === null) freshnessReason = r.undatedSourceIds.length > 0 ? `${t.undatedSources}: ${r.undatedSourceIds.join(", ")}` : `${t.oldestSource} ${r.oldestSourceDate ?? "?"}`;
-    if (freshnessReason) card.append(el("p", `freshness-reason${r.stale === true ? " warn" : ""}`, freshnessReason));
+    const reason = freshnessReason(t, r);
+    if (reason) card.append(el("p", `freshness-reason${r.stale === true ? " warn" : ""}`, reason));
 
     const actions = el("div", "actions");
     const guide = el("button", "primary", t.guide);
