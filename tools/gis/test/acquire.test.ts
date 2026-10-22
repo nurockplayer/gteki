@@ -34,9 +34,9 @@ afterEach(async () => {
 });
 
 describe('source acquisition', () => {
-  it('loads exactly the bounded 57-source manifest with explicit unknown rights', () => {
+  it('loads exactly the bounded 58-source manifest with explicit unknown rights', () => {
     const sources = loadSources();
-    expect(sources).toHaveLength(57);
+    expect(sources).toHaveLength(58);
     for (const id of ['tokyo-s03-zip', 'tokyo-s03-spec', 'tokyo-s03-reference']) {
       const moved = sources.find(source => source.source_id === id)!;
       expect(moved.expected_url).toContain('/documents/d/toshiseibi/');

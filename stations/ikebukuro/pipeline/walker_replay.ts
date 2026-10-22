@@ -14,8 +14,8 @@
 //  - `blockedByColliders`    = Explorer.blockedByColliders, lines 564-576 (rays at 0.5 and 1.2 m, far = len + RADIUS)
 //  - `ReplayWalker.stepWalk` = Explorer.stepWalk,           lines 967-987 (forward move only: the camera-relative
 //    strafe term is a rotation of the heading, and headings are swept continuously here)
-//  - RADIUS = WALKER_BODY.radiusM (line 46); WALK / RUN (lines 47-48) are module-private, so they are read from
-//    the source text and the test fails if they can no longer be found.
+//  - RADIUS = WALKER_BODY.radiusM (line 46); WALK / RUN come from WALKER_SPEED in @gteki/scene-api (the same
+//    constant explorer.ts uses for its walk and run speeds), so there is no source-text parsing here.
 // Explorer.walkFrom (lines 538-547) is mirrored by `ReplayWalker.spawn`.
 //
 // Not replayed: the follow camera (it never moves the walker), per-frame dt jitter (a fixed step is used, with
@@ -25,7 +25,7 @@ import fs from "node:fs";
 import * as THREE from "three";
 import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
-import { WALKER_BODY, glbPrimitivePlugin } from "@gteki/scene-api";
+import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin } from "@gteki/scene-api";
 import { enuToRenderer } from "../../../packages/geo/src/index.ts";
 import { DEFAULT_GROUND, acceptGround, resolveWalls, type Segment2 } from "../../../apps/web/src/explorer/walker.ts";
 import { castAll, explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
@@ -36,19 +36,10 @@ import { assembleCollision, tileCollision } from "../scene/scene.ts";
 import { type Fence, committed, inPoly, routable } from "./access_seal.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
-const EXPLORER = new URL("../../../apps/web/src/explorer/explorer.ts", import.meta.url).pathname;
 
 export const RADIUS = WALKER_BODY.radiusM;
-/** WALK and RUN as declared in explorer.ts (not exported there). */
-export const SPEED = (() => {
-  const src = fs.readFileSync(EXPLORER, "utf8");
-  const num = (name: string) => {
-    const m = new RegExp(`^const ${name} = ([0-9.]+);`, "m").exec(src);
-    if (!m) throw new Error(`explorer.ts no longer declares "const ${name} = <number>;": update walker_replay.ts`);
-    return Number(m[1]);
-  };
-  return { walk: num("WALK"), run: num("RUN") };
-})();
+/** WALK and RUN in m/s: the walk and run speeds of the explorer, from WALKER_SPEED in @gteki/scene-api. */
+export const SPEED = { walk: WALKER_SPEED.walkMps, run: WALKER_SPEED.runMps };
 
 const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(...enuToRenderer({ x, y, z }));
 
