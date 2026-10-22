@@ -51,6 +51,8 @@ pnpm typecheck
 | `scene/signage.json`, `scene/crowd_lanes.json` | Derived from the verified graph and the PLATEAU walkable grid | presentation |
 | `scene/walk_bridges.json` | Invisible walking strips over hairline cracks between PLATEAU floor polygons | presentation |
 | `scene/access_fences.json` | Walker-blocking fences with a 「通行可否 未確認」/"Access unverified" marker where surveyed floor of unknown access would shortcut the routable areas | presentation |
+| `scene/finishes.json` | Finish-pack manifest for the Lane E kit: role → texture folder + repeat in metres. Empty today (see "Kit integration") | presentation |
+| `scene/dressing_anchors.json` | Stair nosing lines and escalator landings from the PLATEAU survey, where kit dressing is placed (see "Kit integration") | truth (survey positions) |
 | `pipeline/` | Reproducible data and asset build (stdlib Python + Blender; one Node walker check) | — |
 | `docs/` | G0 source audit, coverage gaps, evidence | — |
 
@@ -109,6 +111,68 @@ reproduces `w_n__x18` at ENU (-100.5, 152.5) blocked by `doors`), which shows th
   stay solid except near verified-edge segments), or the station ships pre-split solid door and `portal_beyond`
   meshes tagged `wall`. Recommendation: not now; keep role `visual` and use `pnpm check:godot` as the
   regression gate.
+
+## Kit integration (Lane E, issue #94)
+
+Swapping a kit piece in is a data change. Nothing below changes the lit GLB, the graph or the walker; with an
+empty `scene/finishes.json` the scene builds exactly the procedural materials.
+
+**Finish packs.** `scene/finishes.json` maps a role (`floor`, `ceiling`, `stairs_ramps`, `shopfront` for both
+`windows` and `doors`, plus `wall` and `barriers`) to a texture set. `scene/finishes.ts` loads it through
+`ctx.loadTexture` (albedo sRGB; normal and roughness linear; `flipY` as the canvas textures), sets the repeat from
+metres (UV0 is metric) and hands the textures to `createMaterials`. `patchLit`, the lightmap and the balance knee
+are untouched. Roles without an entry keep the procedural texture.
+
+```json
+{ "schema": "gteki.ikebukuro.finishes/0",
+  "packs": {
+    "floor": {
+      "source": "assets/library/<pack folder>",
+      "dir": "assets/finishes/floor",
+      "repeat_m": 1.2,
+      "maps": { "albedo": "albedo.webp", "normal": "normal.webp", "roughness": "roughness.webp" },
+      "low": { "albedo": "albedo_512.webp" },
+      "color": "#ffffff" } } }
+```
+
+- `repeat_m` is a number or `[u, v]`. `orm` may replace `roughness` (three reads its G channel). `color` tints a
+  textured pack; for `wall` and `barriers` a pack with only a `color` is a recolour.
+- Low tier (style.md §8): `low` names smaller variants, the normal map is not fetched (shader relief is a no-op
+  there), and any loaded image over 1024 px drops the pack. A pack that cannot load (file not in the station
+  folder, bad entry) warns and falls back to the procedural texture; it never fails the scene.
+- **Serving.** The explorer bundles only files under `gteki/` and follows symlinks only inside the station's own
+  folder, so a link into `assets/library/` is refused. Copy instead: `python3 -I pipeline/sync_finish_packs.py`
+  copies each pack's `source` files to `gteki/<dir>/` (`--check` for CI) and prints the paths to add as
+  `assets[].files` of the kit asset in `data/graph.src.json`; a production build refuses undeclared asset files.
+  The kit source (CC BY 4.0, "GTEki contributors") is declared there too, once the licence PR (#131) lands.
+
+**Dressing anchors.** `python3 -I pipeline/build_dressing_anchors.py` (from `build/ubld_enu.json`; it refuses an
+extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressing_anchors.json`, ENU metres to
+1 mm, deterministic. Facts only, derived from the surveyed EF_35 and EF_80 triangles:
+
+- `stair_flights[]`: a riser's top edge is the nosing line of the tread above; nosings one rise and one tread apart
+  chain into a flight. Each has `bottom` and `top` (`position`, `dir` = horizontal up-stair unit vector, `width_m`,
+  end points `a` left and `b` right facing up), `steps`, `rise_m`, `run_m`, and every `nosings` row `[ax, ay, bx, by, z]`.
+- `escalator_lanes[]`: the bank's sloped walking quad gives the landing lines (low edge = `lower`, high edge =
+  `upper`); the thin truss plates inside pair into lanes. Each lane has `lower` and `upper` anchors
+  (`position`, `dir` up the escalator, `width_m` clear between plates), plus `rise_m`, `run_m` and `slope_deg`.
+
+**How the bake will take a kit GLB in** (not built yet; `blender_bake_lighting.py` is unchanged):
+
+1. A Lane E generator places pieces on the anchors: origin at the nosing midpoint or landing point, rotated about
+   +Z by `atan2(dir.y, dir.x)`, width / rise / run passed as catalog params (the kit stays generic; station
+   measurements live only in the anchors). Output is a separate `ikebukuro_kit.glb` in ENU, not merged into the
+   PLATEAU base, so it stays separately attributable.
+2. The bake imports the base GLB and the kit GLB, selects meshes by `gteki_role` extras (`barriers` for railings,
+   `transport` for escalator parts, `stairs_ramps` only on walkable overlays, `light_fixtures` for luminaires),
+   and packs both into one atlas. Kit meshes arrive with their own UV2 (lightmap UVs); `pack()` today expects a
+   single UV layer and unwraps, so it needs a branch that keeps a kit mesh's UV2 islands and scales them into
+   the atlas. UV0 stays the material UV.
+3. It exports two lit GLBs sharing the one lightmap WebP: `ikebukuro_b1_lit.glb` as today and
+   `ikebukuro_kit_lit.glb`, each with TEXCOORD_1.
+4. `scene.ts` loads the kit GLB with `ctx.loadGlb`, applies the same lightmap (`channel = 1`) and adds it to
+   `root` **without** `assembleCollision`: kit pieces carry no colliders, so `walkable` and `colliders` stay the
+   PLATEAU sets. Kit luminaires would replace the generated ceiling fixtures (`fixtures()`), a separate change.
 
 ## Sources and rights
 
