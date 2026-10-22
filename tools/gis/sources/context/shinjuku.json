@@ -10,5 +10,41 @@
     "plateau-13104-tran-53394526"
   ],
   "blocked_reason": "stations/shinjuku/gteki/station.json has origin.hM null, origin.crs EPSG:6668 and symbolic floors (street = 0, elevationSource symbolic). PLATEAU heights are real TP (street is roughly 32 m), so the vertical anchor and reference origin are a station-lead decision. No station-enu frame is created and nothing is converted until that decision is recorded.",
-  "notes": "Sources are acquired (hash-recorded) and the config shape is final; only the anchor decision is missing."
+  "notes": "Sources are acquired (hash-recorded) and the config shape is final; only the anchor decision is missing.",
+  "overlay": {
+    "frame": {
+      "mode": "origin-only",
+      "station_json": "stations/shinjuku/gteki/station.json"
+    },
+    "z": {
+      "mode": "constant",
+      "z_m": 0,
+      "basis": "symbolic street z = 0 (no datum asserted)",
+      "datum_asserted": false,
+      "check": {
+        "path": "stations/shinjuku/gteki/station.json",
+        "floor_ordinal": 0,
+        "field": "renderElevationM"
+      }
+    },
+    "layers": [
+      {
+        "source_id": "ksj-n02-2025",
+        "kind": "railway",
+        "member": "N02-25_GML/UTF-8/N02-25_RailroadSection.geojson",
+        "ribbon_width_m": 1.5
+      },
+      {
+        "source_id": "ksj-n02-2025",
+        "kind": "station",
+        "member": "N02-25_GML/UTF-8/N02-25_Station.geojson",
+        "ribbon_width_m": 3
+      }
+    ],
+    "clip": {
+      "kind": "origin_disc",
+      "radius_m": 700
+    },
+    "notes": "station.json has origin.hM null (the vertical anchor is undecided, which is why the PLATEAU building context stays BLOCKED), so no station-enu frame exists; the overlay uses the horizontal origin only and a symbolic street z = 0. Window = origin disc of radius_m (no graph node rule is configured)."
+  }
 }

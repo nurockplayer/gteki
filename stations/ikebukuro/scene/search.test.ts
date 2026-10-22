@@ -82,7 +82,8 @@ const GOLDEN: Record<string, Row[]> = {
     { q: "まるのうち", top: METRO },
     { q: "Marunouchi", top: METRO },
     { q: "丸之內線", top: METRO },
-    { q: "西改札", top1: "metro-m-central-west-gate" },
+    { q: "西改札", top: ["metro-m-central-west-gate", "metro-y-south-west-gate"] },
+    { q: "南通路西改札", top1: "metro-y-south-west-gate" },
     { q: "marunouchi-sen chuo-tsuro higashi kaisatsu", top1: "metro-m-central-east-gate" },
   ],
   "Tobu Tojo gates": [
