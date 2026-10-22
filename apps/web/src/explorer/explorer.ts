@@ -382,21 +382,26 @@ export class Explorer {
   /**
    * Per frame: keep the sun's shadow frustum on the walker (or the pinned focus), texel-snapped and allocation-free.
    * Overview renders no sun shadows: a 300 m half-extent at 2048 px is ~29 cm texels, and the cutaway removes
-   * geometry only from the colour pass, so cut geometry would still cast into the slice. The follow fit and its
-   * state are left as they were; leaving overview turns the sun's casting back on and the next frame refits.
+   * geometry only from the colour pass, so cut geometry would still cast into the slice. It clears the caster mask
+   * rather than the sun's castShadow, which is in three's lights hash and would recompile every material on each
+   * switch (mesh castShadow is not); leaving overview recomputes the mask and the next frame refits.
    */
   private updateShadows(): void {
     if (!this.sun) return;
-    const cast = this.quality === "high" && this.mode !== "overview";
-    if (this.sun.castShadow !== cast) this.sun.castShadow = cast;
     const f = this.shadowFit;
     if (!f) return;
-    if (this.mode === "overview") { f.fitted = "off"; return; }
+    if (this.mode === "overview") {
+      if (f.fitted !== "off") { f.casters = setCasters(f.candidates, -Infinity); f.castFloorY = NaN; f.fitted = "off"; }
+      return;
+    }
     // Only geometry starting below the walker's head casts (shadows.ts). Recomputed on a floor change, not per frame.
     const floorY = f.floorY ?? this.pos.y; // pos is the feet
     if (!(Math.abs(floorY - f.castFloorY) <= CAST_RETUNE_M)) { f.castFloorY = floorY; f.casters = setCasters(f.candidates, floorY); }
     f.fitted = "follow";
-    followShadow(this.sun, f.focus ?? this.pos, f.walkHalf, SHADOW_MAP_SIZE, f.yRange, this.shadowOut);
+    const at = f.focus ?? this.pos;
+    // followShadow throws on a non-finite target; skip the frame rather than throw every frame.
+    if (!Number.isFinite(at.x) || !Number.isFinite(at.y) || !Number.isFinite(at.z)) return;
+    followShadow(this.sun, at, f.walkHalf, SHADOW_MAP_SIZE, f.yRange, this.shadowOut);
   }
 
   /**

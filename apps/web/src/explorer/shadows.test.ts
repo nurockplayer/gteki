@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { CAST_HEADROOM_M, SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, SHADOW_Y_PAD_M, TALL_CANDIDATE_SPAN_M, applyStationShadows, meshShadowFlags, setCasters, shadowYRange, shadowsActive } from "./shadows.ts";
 
 const box = (mat: THREE.Material | THREE.Material[] = new THREE.MeshStandardMaterial(), at: [number, number, number] = [0, 0, 0]) => {
@@ -164,10 +164,14 @@ describe("gteki_shadow opt-out", () => {
     expect(r).toMatchObject({ casters: 0, receivers: 1 });
   });
 
-  it("ignores other values", () => {
+  it("ignores other values, warning once per node", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const m = box();
-    m.userData.gteki_shadow = "cast";
+    m.userData.gteki_shadow = "off";
     expect(apply(rootOf(m)).casters).toBe(1);
+    apply(rootOf(m));
+    expect(warn).toHaveBeenCalledOnce();
+    warn.mockRestore();
   });
 });
 

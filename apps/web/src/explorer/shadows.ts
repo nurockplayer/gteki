@@ -86,7 +86,12 @@ export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high
   const box = new THREE.Box3();
   const visit = (o: THREE.Object3D, optOut: boolean): void => {
     if (!o.visible) return;
-    const optedOut = optOut || o.userData?.gteki_shadow === "none";
+    const flag = o.userData?.gteki_shadow;
+    if (flag !== undefined && flag !== "none" && !warnedShadowFlag.has(o)) {
+      warnedShadowFlag.add(o);
+      console.warn(`[gteki] ${o.name || o.type}: unknown gteki_shadow ${JSON.stringify(flag)} ignored (only "none" opts out)`);
+    }
+    const optedOut = optOut || flag === "none";
     const m = o as THREE.Mesh;
     if (m.isMesh) {
       const f = meshShadowFlags(m);
@@ -112,6 +117,9 @@ export function applyStationShadows(root: THREE.Object3D, quality: "low" | "high
  * castShadow; returns how many cast. Allocation-free. A candidate on a level above the walker does not cast; one on a
  * level below does (its ceiling is under the walker's feet, so it only shades the level out of view).
  */
+/** Nodes already warned about an unknown `gteki_shadow` value. */
+const warnedShadowFlag = new WeakSet<THREE.Object3D>();
+
 export function setCasters(candidates: readonly ShadowCandidate[], floorY: number, headroom = CAST_HEADROOM_M): number {
   const limit = floorY + headroom;
   let n = 0;
