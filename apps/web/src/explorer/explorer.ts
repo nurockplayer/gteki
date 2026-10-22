@@ -34,6 +34,7 @@ import { OcclusionSweep, labelState, onFocusFloor, type LabelState } from "./lab
 import { TriangleBvh, segmentHitsBox, type Cull } from "./triangleBvh.ts";
 import { cacheBvh, currentBvh, prepareRayTrees } from "./meshBvh.ts";
 import { occludedLineStyle, type OccludedLineStyle } from "./occludedLine.ts";
+import { OVERLAY_INPUT_MIN, compensate, linearToSrgb, type Vec3 } from "./toneComp.ts";
 
 export type ExplorerMode = "overview" | "walk" | "guide";
 
@@ -80,6 +81,12 @@ interface Occluder {
 }
 
 /** A drawn part of a mesh: its material and the index (or vertex) range it draws. */
+/** The chevron texture's dominant texel colour, linear (geometry.ts chevronTexture default). */
+const CHEVRON = new THREE.Color(0x5ef0ff);
+
+/** A `toneMapped: false` overlay: authored (uncompensated) colour, its map's texel colour, and the display sRGB it should show. */
+interface OverlayTint { mat: THREE.MeshBasicMaterial | THREE.LineBasicMaterial; authored: THREE.Color; texel: THREE.Color; target: Vec3 }
+
 interface MeshPart { material: THREE.Material; start: number; count: number }
 
 /**
@@ -170,6 +177,10 @@ export class Explorer {
   private readonly cameraCut = new CameraCut();
   private routeTexture: THREE.CanvasTexture | null = null;
   private routeLines: OccludedLineStyle | null = null;
+  /** `toneMapped: false` overlays whose colour is pre-compensated for the high tier's OutputPass (see applyOverlayTone). */
+  private overlayTints: OverlayTint[] = [];
+  /** Max modelled display error (0..255) over the compensated overlays; null on the low tier or with no overlays. */
+  private overlayResidual: number | null = null;
 
   private readonly avatar = new THREE.Group();
   private avatarRig: AvatarRig | null = null;
@@ -256,7 +267,7 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environmentIntensity: number | null; exposure: number; street: { active: boolean; opacity: number } } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; street: { active: boolean; opacity: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
@@ -264,7 +275,7 @@ export class Explorer {
       rayTrees: { ...this.rayTrees, buildMs: Math.round(this.rayTrees.buildMs * 10) / 10 },
       camera: this.camera.position.toArray().map((v) => Math.round(v * 10) / 10), mode: this.mode,
       lighting: this.lighting, coreLightsOn: this.coreLights.filter((l) => l.visible).length,
-      environmentIntensity: this.scene.environment ? this.scene.environmentIntensity : null, exposure: this.renderer.toneMappingExposure,
+      environmentIntensity: this.scene.environment ? this.scene.environmentIntensity : null, exposure: this.renderer.toneMappingExposure, overlayToneResidual: this.overlayResidual === null ? null : Math.round(this.overlayResidual * 100) / 100,
       street: { active: this.street.active, opacity: Math.round(this.street.opacity * 1000) / 1000 },
     };
   }
@@ -309,6 +320,7 @@ export class Explorer {
     this.renderer.toneMappingExposure = plan.toneMappingExposure;
     this.bloomThreshold = plan.bloomThreshold;
     this.composer?.setBloomThreshold(plan.bloomThreshold);
+    this.applyOverlayTone();
     if (!this.coreEnvMap) {
       const pmrem = new THREE.PMREMGenerator(this.renderer);
       this.coreEnvMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -326,6 +338,38 @@ export class Explorer {
   private disposeComposer(): void {
     this.composer?.dispose();
     this.composer = null;
+    this.applyOverlayTone();
+  }
+
+  /** Tracks `mat` (a `toneMapped: false` overlay) so the high tier can pre-compensate its colour; `texel` is the map's dominant colour. */
+  private trackOverlay<M extends THREE.MeshBasicMaterial | THREE.LineBasicMaterial>(mat: M, texel?: THREE.Color): M {
+    const authored = mat.color.clone();
+    const tex = texel ?? new THREE.Color(1, 1, 1);
+    // What the overlay should read as on screen: authored colour x map texel, in display sRGB.
+    const target = [authored.r * tex.r, authored.g * tex.g, authored.b * tex.b].map(linearToSrgb) as Vec3;
+    this.overlayTints.push({ mat, authored, texel: tex, target });
+    this.applyOverlayTone();
+    return mat;
+  }
+
+  /**
+   * High tier only: OutputPass AgX-tone-maps and grades the whole frame, `toneMapped: false` or not, which
+   * desaturates the overlays. Writes into each material the linear colour whose pipeline output is its authored
+   * display colour (toneComp.ts). Always derived from the stored authored colour, never from the current one, so
+   * repeated calls do not compound; the low tier honours `toneMapped: false`, so there it restores the authored colours.
+   * A mapped overlay (the route ribbon) gets compensated / texel per channel: exact for the texel colour only.
+   * Runs on exposure/composer changes and route creation, never per frame.
+   */
+  private applyOverlayTone(): void {
+    const comp = this.composer;
+    let worst = 0;
+    for (const t of this.overlayTints) {
+      if (!comp) { t.mat.color.copy(t.authored); continue; }
+      const c = compensate(t.target, this.renderer.toneMappingExposure, { grade: comp.settings.grade, min: OVERLAY_INPUT_MIN });
+      t.mat.color.setRGB(c.linear[0] / Math.max(t.texel.r, 1e-3), c.linear[1] / Math.max(t.texel.g, 1e-3), c.linear[2] / Math.max(t.texel.b, 1e-3));
+      worst = Math.max(worst, c.residual);
+    }
+    this.overlayResidual = comp && this.overlayTints.length > 0 ? worst : null;
   }
 
   /** Built once: the composer only references this explorer's scene and camera, so stations reuse it. */
@@ -333,6 +377,7 @@ export class Explorer {
     if (this.composer || this.quality !== "high") return;
     this.composer = new PostFx(this.renderer, this.scene, this.camera);
     this.composer.setBloomThreshold(this.bloomThreshold);
+    this.applyOverlayTone();
   }
 
   private buildAvatar(): void {
@@ -611,17 +656,19 @@ export class Explorer {
     if (pts.length < 2) return;
     this.routeTexture = chevronTexture();
     this.routeTexture.repeat.set(1 / 1.8, 1);
-    const mat = new THREE.MeshBasicMaterial({ map: this.routeTexture, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
+    const mat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, transparent: true, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
     const ribbon = new THREE.Mesh(ribbonGeometry(pts, 1.1, 0.07), mat);
     ribbon.renderOrder = 5;
     // Depth-tested glow plus a faint dashed pass where a wall hides it; overview keeps the always-on-top look.
     this.routeLines = occludedLineStyle(0x5ef0ff, 0.9);
+    this.trackOverlay(this.routeLines.visible);
+    this.trackOverlay(this.routeLines.occluded);
     this.routeLines.setXray(this.mode === "overview");
     const glow = this.routeLines.lines(new THREE.BufferGeometry().setFromPoints(pts.map((p) => p.clone().add(new THREE.Vector3(0, 0.12, 0)))), 6);
     // Symbolic (unknown) heights are drawn dashed above the ribbon so they read as approximate.
     const symbolic = polyline.some((p) => !p.zKnown);
     // X-ray copy so the route stays readable through ceilings/slabs in overview.
-    const xrayMat = new THREE.MeshBasicMaterial({ map: this.routeTexture, color: 0xb8f8ff, transparent: true, opacity: 0.6, depthTest: false, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
+    const xrayMat = this.trackOverlay(new THREE.MeshBasicMaterial({ map: this.routeTexture, color: 0xb8f8ff, transparent: true, opacity: 0.6, depthTest: false, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }), CHEVRON);
     const xray = new THREE.Mesh(ribbon.geometry, xrayMat);
     xray.renderOrder = 20;
     xray.name = "route-xray";
@@ -633,9 +680,9 @@ export class Explorer {
 
   private beacon(at: THREE.Vector3, color: number, height: number): THREE.Group {
     const g = new THREE.Group();
-    const col = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, height, 20, 1, true), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.28, depthWrite: false, side: THREE.FrontSide, toneMapped: false }));
+    const col = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, height, 20, 1, true), this.trackOverlay(new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.28, depthWrite: false, side: THREE.FrontSide, toneMapped: false })));
     col.position.y = height / 2;
-    const ring = new THREE.Mesh(new THREE.RingGeometry(0.6, 0.8, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, toneMapped: false }));
+    const ring = new THREE.Mesh(new THREE.RingGeometry(0.6, 0.8, 40).rotateX(-Math.PI / 2), this.trackOverlay(new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, toneMapped: false })));
     ring.position.y = 0.08;
     g.add(col, ring);
     g.position.copy(at);
@@ -653,6 +700,8 @@ export class Explorer {
     this.routeTexture?.dispose();
     this.routeTexture = null;
     this.routeLines = null;
+    this.overlayTints = [];
+    this.overlayResidual = null;
   }
 
   /** Floating labels at each POI's verified entrance (or display position when search-only). */
