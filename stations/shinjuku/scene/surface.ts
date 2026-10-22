@@ -4,14 +4,14 @@
  * the exported obstacle segments, which the integration hook adds to WalkWorld.
  */
 import * as THREE from "three";
-import polygonClipping from "polygon-clipping";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import type { Layout, XY, XYZ } from "./layout.ts";
 import type { SurfaceData } from "./surface-data.ts";
-import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfaceGround, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceVisibleAt } from "./surface-layout.ts";
+import { surfaceBuildingFootprints, surfaceColumns, surfaceEntrances, surfacePadWalls, surfaceCanopyWalls, surfaceRoofs, surfaceVisibleIn } from "./surface-layout.ts";
 import { daylight, facadeTexture, hash, pavingTexture, skyMaterial } from "./surface-materials.ts";
-import { inside, strip, surfaceStreets } from "./surface-street.ts";
+import { inside, strip, surfaceKerbs, surfaceLampRails, surfacePaving, surfaceStreets } from "./surface-street.ts";
+import { OEDO_MAGENTA } from "./palette.ts";
 export { surfaceWalls } from "./surface-layout.ts";
 export type { SurfaceData } from "./surface-data.ts";
 
@@ -51,13 +51,36 @@ function quad(a: XY, b: XY, bottom: number, top: number, inset = 0) {
   g.setIndex([0, 1, 2, 0, 2, 3]); g.computeVertexNormals();
   return g;
 }
+/**
+ * One horizontal glazing sheet (a single polygon, not a thin box): the glass material is translucent, double
+ * sided and non-depth-writing, so a 28 mm box showed its top and bottom faces stacked, a ghosted double
+ * exposure from the follow camera below. A lone double-sided sheet composites exactly once from either side.
+ */
+function glazingSheet(center: XY, u: XY, halfWidth: number, halfLength: number, z: number) {
+  const g = new THREE.PlaneGeometry(halfWidth * 2, halfLength * 2);
+  g.rotateX(-Math.PI / 2); g.rotateY(Math.atan2(u.x, -u.y)); g.translate(center.x, z, -center.y);
+  return g;
+}
 function beam(a: THREE.Vector3, b: THREE.Vector3, width: number, depth: number) {
   const d = b.clone().sub(a), g = new THREE.BoxGeometry(width, d.length(), depth);
   g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()));
   g.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
   return g;
 }
+/** Builds the street layer and returns only what the live scene keeps. The construction lives in its own
+ * function on purpose: any closure that survives (visibility update, setViewer, dispose, the sky hook)
+ * keeps the whole scope it was defined in reachable, and this scope holds the street polygons, building
+ * footprints and every source geometry (#72). The survivors are created in buildSurface, whose scope
+ * holds nothing else. */
 export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high" }) {
+  const { root, resources, visibility } = assembleSurface(surface, layout, opts);
+  const dome = root.getObjectByName("surface-sky")!;
+  dome.onBeforeRender = (_renderer, _scene, camera) => { dome.position.copy(camera.position); dome.updateMatrixWorld(); };
+  let disposed = false, viewer: XYZ | null = null;
+  const update = (_dt: number, _t: number) => { root.visible = viewer !== null && surfaceVisibleIn(visibility, viewer); };
+  return { root, update, setViewer(p: XYZ) { viewer = { ...p }; update(0, 0); }, dispose() { if (disposed) return; disposed = true; for (const r of resources) r.dispose(); resources.clear(); root.clear(); } };
+}
+function assembleSurface(surface: SurfaceData, layout: Layout, opts: { bundle: StationBundle; quality: "low" | "high" }) {
   const root = new THREE.Group(); root.name = "surface-render-only"; root.visible = false;
   root.userData.attribution = surface.attribution;
   const resources = new Set<{ dispose(): void }>();
@@ -79,17 +102,13 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   const streets=surfaceStreets(surface,layout,opts.bundle);
   // Adjacent road/paving polygons, not nearly coplanar overlays: avoids distant
   // depth fighting and gives the asphalt a small, deliberate kerb depression.
-  const paving=polygonClipping.difference(surfaceGround(layout,opts.bundle),streets.asphalt);
+  const paving=surfacePaving(surface,layout,opts.bundle);
   for(const poly of paving)add("ground",texturedFlat(poly,-.012,3.2),mats.ground);
   for(const poly of streets.asphalt)add("asphalt",texturedFlat(poly,-.06,5),mats.asphalt);
   mats.paint.polygonOffset=true;mats.paint.polygonOffsetFactor=-1;mats.paint.polygonOffsetUnits=-1;
   for(const poly of streets.markings)add("paint",flat(poly,-.055),mats.paint);
   // Kerbs are context outside the evidence-limited pads, with breaks at openings.
-  for(const poly of streets.asphalt)for(const ring of poly)for(let i=1;i<ring.length;i++){
-    const a={x:ring[i-1]![0],y:ring[i-1]![1]},b={x:ring[i]![0],y:ring[i]![1]};
-    if(Math.hypot(b.x-a.x,b.y-a.y)<.5)continue;
-    const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
-    if(inside(mid,streets.pads)||inside(mid,streets.holes))continue;
+  for(const {a,b} of surfaceKerbs(surface,layout,opts.bundle)){
     add("stone",quad(a,b,-.06,.11),mats.stone);
     add("stone",flat(strip(a,b,.13),.11),mats.stone);
   }
@@ -119,16 +138,15 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   entrances.forEach((e,index)=>{
     const y=index*384;
     ctx.fillStyle="#edf0ee";ctx.fillRect(0,y,2048,384);
-    ctx.fillStyle="#b6007a";ctx.fillRect(0,y+356,2048,28);
+    ctx.fillStyle=OEDO_MAGENTA;ctx.fillRect(0,y+356,2048,28);
     ctx.fillStyle="#2b3439";ctx.font='600 105px sans-serif';ctx.fillText("大江戸線 新宿駅",280,y+122);
     ctx.font='60px sans-serif';ctx.fillText("Oedo Line Shinjuku",280,y+204);
     ctx.font='48px sans-serif';ctx.fillText(e.labelJa,280,y+280);
     ctx.font='32px sans-serif';ctx.fillText(e.labelEn,280,y+330);
-    ctx.fillStyle="#b6007a";ctx.fillRect(38,y+74,184,184);
+    ctx.fillStyle=OEDO_MAGENTA;ctx.fillRect(38,y+74,184,184);
     ctx.fillStyle="#ffffff";ctx.font='600 80px sans-serif';ctx.fillText("E27",53,y+193);
     const at=(along:number,across:number,z:number)=>new THREE.Vector3(e.center.x+e.u.x*along-e.u.y*across,z,-(e.center.y+e.u.y*along+e.u.x*across));
-    const glassRoof=new THREE.BoxGeometry(e.halfWidth*2,.028,e.halfLength*2);
-    glassRoof.rotateY(Math.atan2(e.u.x,-e.u.y));glassRoof.translate(e.center.x,3.08,-e.center.y);add("glass",glassRoof,mats.glass);
+    add("glass",glazingSheet(e.center,e.u,e.halfWidth,e.halfLength,3.08),mats.glass);
     for(const side of [-1,1]){
       add("steel",beam(at(-e.halfLength,side*e.halfWidth,2.99),at(e.halfLength,side*e.halfWidth,2.99),.075,.09),mats.steel);
       add("steel",beam(at(side*e.halfLength,-e.halfWidth,2.99),at(side*e.halfLength,e.halfWidth,2.99),.075,.09),mats.steel);
@@ -153,8 +171,7 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   // Roofed (E27 roof = 2) runs open to the street beyond the canopies: plain glazing just under canopy height.
   for(const r of surfaceRoofs(layout,opts.bundle,entrances)){
     const at=(along:number,across:number,z:number)=>new THREE.Vector3(r.center.x+r.u.x*along-r.u.y*across,z,-(r.center.y+r.u.y*along+r.u.x*across));
-    const roof=new THREE.BoxGeometry(r.halfWidth*2,.028,r.halfLength*2);
-    roof.rotateY(Math.atan2(r.u.x,-r.u.y));roof.translate(r.center.x,3.05,-r.center.y);add("glass",roof,mats.glass);
+    add("glass",glazingSheet(r.center,r.u,r.halfWidth,r.halfLength,3.05),mats.glass);
     for(const side of [-1,1]){
       add("steel",beam(at(-r.halfLength,side*r.halfWidth,2.97),at(r.halfLength,side*r.halfWidth,2.97),.075,.09),mats.steel);
       add("steel",beam(at(side*r.halfLength,-r.halfWidth,2.97),at(side*r.halfLength,r.halfWidth,2.97),.075,.09),mats.steel);
@@ -202,11 +219,7 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
   instance("surface-tree-trunks",new THREE.CylinderGeometry(.12,.17,3,6),mats.stone,trees.map(({p})=>matrix(p,1.6)),trees.map(()=>new THREE.Color("#75685b")));
   const lampParts=[new THREE.CylinderGeometry(.055,.095,6,8),new THREE.BoxGeometry(.85,.12,.28)];lampParts[0]!.translate(0,3,0);lampParts[1]!.translate(.32,6,0);
   const lamp=mergeGeometries(lampParts,false)!;lampParts.forEach(g=>g.dispose());instance("surface-streetlights",lamp,mats.steel,lights.map(({p})=>matrix(p,0)));
-  for(const {p,u} of lights){
-    const safe=(q:XY)=>!inside(q,streets.pads)&&!inside(q,streets.holes)&&!inside(q,streets.asphalt)&&!inside(q,surface.buildings.map(b=>b.rings));
-    const a={x:p.x+u.x*2,y:p.y+u.y*2},b={x:p.x+u.x*5,y:p.y+u.y*5};
-    const samples=Array.from({length:31},(_,i)=>({x:a.x+(b.x-a.x)*i/30,y:a.y+(b.y-a.y)*i/30}));
-    if(!samples.every(q=>[-.15,0,.15].every(dx=>[-.15,0,.15].every(dy=>safe({x:q.x+dx,y:q.y+dy})))))continue;
+  for(const {a,b} of surfaceLampRails(surface,layout,opts.bundle)){
     add("steel",beam(pos(a,.85),pos(b,.85),.04,.04),mats.steel);
     for(const q of [a,b]){
       const bollard=new THREE.CylinderGeometry(.065,.065,.9,8);bollard.translate(q.x,.45,-q.y);add("steel",bollard,mats.steel);
@@ -225,15 +238,8 @@ export function buildSurface(surface: SurfaceData, layout: Layout, opts: { bundl
     const merged=mergeGeometries(gs,false)!;gs.forEach(g=>g.dispose());
     const mesh=new THREE.Mesh(track(merged),batch.material);mesh.name=`surface-${name}`;root.add(mesh);
   }
-  const dome=new THREE.Mesh(track(new THREE.SphereGeometry(300,24,12)),track(skyMaterial()));dome.name="surface-sky";dome.frustumCulled=false;dome.renderOrder=-1000;
-  dome.onBeforeRender=(_renderer,_scene,camera)=>{dome.position.copy(camera.position);dome.updateMatrixWorld();};root.add(dome);
+  const dome=new THREE.Mesh(track(new THREE.SphereGeometry(300,24,12)),track(skyMaterial()));dome.name="surface-sky";dome.frustumCulled=false;dome.renderOrder=-1000;root.add(dome);
   root.userData.drawCallBudget=batches.size+4;root.userData.buildingParts=buildings.length;
-  // The live update/dispose closures share this scope with add(). Disposing a
-  // source geometry does not release its arrays; drop the batch references once
-  // merging is complete, keeping only the final meshes for rendering/restoration.
   batches.clear();
-  let disposed=false,viewer:XYZ|null=null;
-  const visibility={entrances,openings:streets.holes};
-  const update=(_dt:number,_t:number)=>{root.visible=viewer!==null&&surfaceVisibleAt(layout,opts.bundle,viewer,visibility);};
-  return {root,update,setViewer(p:XYZ){viewer={...p};update(0,0);},dispose(){if(disposed)return;disposed=true;for(const r of resources)r.dispose();resources.clear();root.clear();}};
+  return {root,resources,visibility:{entrances,openings:streets.holes}};
 }

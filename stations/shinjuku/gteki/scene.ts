@@ -10,8 +10,47 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { OEDO_MAGENTA, buildStation, slabGeometry, soffitGeometry } from "../scene/build.ts";
 import { kitSwapRequested, prepareKitSwap, type KitSwap } from "../scene/kit/index.ts";
 import { railingWalls, type Plan } from "../scene/layout.ts";
-import { surfaceEntrances, surfaceRoofs } from "../scene/surface-layout.ts";
+import { surfaceEntrances, surfaceRoofs, withSurfaceMemo } from "../scene/surface-layout.ts";
+import { clearLayoutCache } from "../scene/build-cache.ts";
 import plan from "../data/plan.json" with { type: "json" };
+
+/** Camera that renders the station, reported to the street layer (see the probe in buildScene). */
+function viewerTracker(setViewer: ((pos: { x: number; y: number; z: number }) => void) | undefined) {
+  let camera: THREE.Camera | null = null;
+  const report = (cam: THREE.Camera) => setViewer?.({ x: cam.position.x, y: -cam.position.z, z: cam.position.y });
+  return {
+    onBeforeRender: (_r: unknown, _s: unknown, cam: THREE.Camera) => { camera = cam; report(cam); },
+    refresh: () => { if (camera) report(camera); },
+  };
+}
+
+/** update/dispose of the returned scene. They live out here, not inside buildScene, on purpose: a closure
+ * keeps its entire defining scope alive, and buildScene's scope holds the layout, the built station and
+ * every intermediate array (#72: ~9 MB retained for the life of the scene). Pass only what they use. */
+function sceneLifecycle(stepBuilt: (dt: number, t: number) => void, disposeBuilt: () => void, refreshViewer: () => void, meshes: THREE.Object3D[], owned: { dispose(): void }[], envTarget: THREE.WebGLRenderTarget | null) {
+  return {
+    update: (dt: number, t: number) => {
+      refreshViewer();
+      stepBuilt(dt, t);
+    },
+    dispose() {
+      disposeBuilt();
+      for (const m of meshes) (m as THREE.Mesh).geometry.dispose();
+      for (const o of owned) o.dispose();
+      envTarget?.dispose(); // render target owns the texture plus its framebuffer/depth
+    },
+  };
+}
+
+/**
+ * Drops what Shinjuku keeps between opens: the layout/fence snapshot that makes a reopen fast (~7.5 MB of JS
+ * heap). Call it when the explorer leaves Shinjuku for good (apps/web does not call it yet, so until it is
+ * wired the heap goal of #72 is not met). The next open then rebuilds the layout once. The baked street table
+ * (a 0.4 MB module-level string) cannot be released: it is a static ESM import.
+ */
+export function releaseShinjukuCaches() {
+  clearLayoutCache();
+}
 
 /**
  * The explorer hook. The Lane E kit swap (Issue #94) is OFF by default: with no opt-in this is the same
@@ -27,7 +66,7 @@ export const buildScene: BuildScene = (ctx) => {
 /** The scene build itself, with an optional, already prepared kit swap. Exported for tests. */
 export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap): StationScene => {
   const T = ctx.THREE;
-  const built = buildStation(ctx.bundle, plan as unknown as Plan, { quality: ctx.quality, ...(kit ? { kit } : {}) });
+  const built = buildStation(ctx.bundle, plan as unknown as Plan, { quality: ctx.quality, reuseLayout: true, verifyRestrictedInput: true, ...(kit ? { kit } : {}) });
   const { layout } = built;
 
   // Invisible walk proxies: the explorer raycasts these from above (non-recursive), so each is a Mesh.
@@ -77,12 +116,8 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap): St
   probe.frustumCulled = false;
   // update() runs before each render, so it re-reports the last seen camera's *current* position; the
   // probe alone would lag a frame (the render list is already built when onBeforeRender fires).
-  let viewCamera: THREE.Camera | null = null;
-  const reportViewer = (cam: THREE.Camera) => built.setViewer?.({ x: cam.position.x, y: -cam.position.z, z: cam.position.y });
-  probe.onBeforeRender = (_r, _s, cam) => {
-    viewCamera = cam;
-    reportViewer(cam);
-  };
+  const viewer = viewerTracker(built.setViewer);
+  probe.onBeforeRender = viewer.onBeforeRender;
   built.root.add(probe);
 
   // Level walls only block bodies near their own level (bodyMax); approximate that for the
@@ -128,6 +163,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap): St
   // explorer's street probe tests only walls and floors for open sky, and a roof must count there too.
   const cameraBlockers: THREE.Mesh[] = [];
   const underground = new Set(layout.levels.filter((lv) => lv.z < -0.5).map((lv) => lv.floorId));
+  const street = withSurfaceMemo(() => ({ entrances: surfaceEntrances(layout, ctx.bundle), roofs: surfaceRoofs(layout, ctx.bundle) }));
   const caps = [
     ...layout.levels.filter((lv) => underground.has(lv.floorId)).flatMap((lv) => lv.ceilings.map((s) => slabGeometry(s.rings, s.z, 1, true))),
     // Above-ground source spaces are drawn with ceilings too: the 1F entrance structures over exit stairs
@@ -137,7 +173,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap): St
     ...layout.soffits.filter((s) => underground.has(s.floorId)).map(soffitGeometry),
     // Street entrance canopies: the glass roof sits at 3.08 m; cap just below it so the follow camera
     // stays under the canopy instead of looking down onto the bright glazing.
-    ...surfaceEntrances(layout, ctx.bundle).map((e) => {
+    ...street.entrances.map((e) => {
       const n = { x: -e.u.y, y: e.u.x };
       const corner = (sl: number, sw: number) => [e.center.x + e.u.x * e.halfLength * sl + n.x * e.halfWidth * sw, 3.0, -(e.center.y + e.u.y * e.halfLength * sl + n.y * e.halfWidth * sw)];
       const g = new T.BufferGeometry();
@@ -146,7 +182,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap): St
       return g;
     }),
     // Glazing over roofed (E27 roof = 2) runs open beyond the canopies, at 3.05 m: cap just below it.
-    ...surfaceRoofs(layout, ctx.bundle).map((r) => {
+    ...street.roofs.map((r) => {
       const n = { x: -r.u.y, y: r.u.x };
       const corner = (sl: number, sw: number) => [r.center.x + r.u.x * r.halfLength * sl + n.x * r.halfWidth * sw, 2.95, -(r.center.y + r.u.y * r.halfLength * sl + n.y * r.halfWidth * sw)];
       const g = new T.BufferGeometry();
@@ -226,17 +262,7 @@ export const assembleScene = (ctx: Parameters<BuildScene>[0], kit?: KitSwap): St
     walls,
     spawnPoints,
     environment: { background: 0x0d0e10, exposure: 0.92, lighting: "scene" },
-    update: (dt, t) => {
-      if (viewCamera) reportViewer(viewCamera);
-      built.update(dt, t);
-    },
-    dispose() {
-      built.dispose();
-      for (const m of [...walkable, ...colliders, probe]) m.geometry.dispose();
-      proxyMat.dispose();
-      probeMat.dispose();
-      envTarget?.dispose(); // render target owns the texture plus its framebuffer/depth
-    },
+    ...sceneLifecycle(built.update, built.dispose, viewer.refresh, [...walkable, ...colliders, probe], [proxyMat, probeMat], envTarget),
   };
   return scene;
 };
