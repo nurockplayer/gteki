@@ -476,6 +476,47 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(out.drawn.has(p)).toBe(false);
       expect(out.missing).toEqual([]);
     });
+    it("drops COL_* and SOCKET_/LIGHTHINT_ nodes from a kit stub even when the source did not strip them (collision: false guard)", () => {
+      const manifest = parseKitManifest(stubManifestJson(), "mobile");
+      const provider = stubProvider();
+      const stub = provider.materials.get("stub_palette")!;
+      provider.instantiate = () => {
+        const root = new THREE.Group();
+        for (const name of ["COL_body", "COL_wall-colonly", "SOCKET_end", "LIGHTHINT_a"]) {
+          const m = new THREE.Mesh(new THREE.BoxGeometry(), stub);
+          m.name = name;
+          root.add(m);
+        }
+        return root;
+      };
+      const p: KitPlacement = { role: "lift", anchorKey: "1", assetId: "stub_lift_portal", rank: 5, floorId: "L", position: [0, 0, 0], yaw: 0, replaces: "lift-portals" };
+      const out = batchKitPlacements({ placed: [p], manifest, provider, tint: [], track: (x) => x });
+      expect(out.meshes).toEqual([]);
+      expect(out.triangles).toBe(0);
+      expect(out.drawn.has(p)).toBe(false);
+    });
+    it("does not carry a GLB gteki_role (mesh or material) into the merged kit meshes: visual-only pieces", () => {
+      const manifest = parseKitManifest(stubManifestJson(), "mobile");
+      const provider = stubProvider();
+      const base = provider.instantiate.bind(provider);
+      provider.instantiate = (a) => {
+        const root = base(a)!;
+        // The GLB marks its nodes and materials with the roles the station's own geometry uses.
+        root.traverse((o) => { if (o.name.startsWith("VIS_")) o.userData.gteki_role = o.name === "VIS_stripe" ? "transport" : "stairs_ramps"; });
+        provider.materials.get("stub_palette")!.userData.gteki_role = "stairs_ramps";
+        return root;
+      };
+      const p: KitPlacement = { role: "lift", anchorKey: "1", assetId: "stub_lift_portal", rank: 5, floorId: "L", position: [0, 0, 0], yaw: 0, replaces: "lift-portals" };
+      const out = batchKitPlacements({ placed: [p], manifest, provider, tint: tintSlots(OEDO_MAGENTA), track: (x) => x });
+      expect(out.meshes.length).toBeGreaterThan(0);
+      const roles: unknown[] = [];
+      out.group.traverse((o) => {
+        if (o.userData.gteki_role !== undefined) roles.push(o.userData.gteki_role);
+        const mat = (o as THREE.Mesh).material as THREE.Material | THREE.Material[] | undefined;
+        for (const m of Array.isArray(mat) ? mat : mat ? [mat] : []) if (m.userData.gteki_role !== undefined) roles.push(m.userData.gteki_role);
+      });
+      expect(roles).toEqual([]);
+    });
     it("owns every material it batches: shared GLB materials are cloned, tracked, and their textures released", () => {
       const manifest = parseKitManifest(stubManifestJson(), "mobile");
       const provider = stubProvider();

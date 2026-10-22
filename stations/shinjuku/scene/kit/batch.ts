@@ -73,6 +73,8 @@ export function batchKitPlacements(args: {
       const slot = tint.find((t) => t.match.test(key));
       out = m.clone();
       out.name = key;
+      // Clone copies userData: a GLB role must never reach the station's merged materials (kit pieces are visual-only).
+      delete out.userData.gteki_role;
       const s = out as THREE.MeshStandardMaterial;
       if (s.aoMap) { s.aoMap = null; s.aoMapIntensity = 1; }
       if (slot && s.color) {

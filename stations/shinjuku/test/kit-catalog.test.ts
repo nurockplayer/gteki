@@ -30,8 +30,8 @@ describe("Shinjuku station catalog for the Lane E kit (Issue #94)", () => {
     const kit = JSON.parse(readFileSync(new URL("../../../tools/blender/catalog/kit_v0_1.json", import.meta.url), "utf8"));
     expect(Object.keys(kit)).toEqual(expect.arrayContaining(["catalog", "version", "notes", "assets"]));
     for (const k of ["catalog", "version", "notes", "assets"]) expect(committed).toHaveProperty(k);
-    // ao_res is the optional build.py key; only stair and escalator dressings carry it.
-    for (const e of committed.assets) expect(Object.keys(e).filter((k) => k !== "ao_res").sort()).toEqual(["dimension_basis", "generator", "id", "notes", "params", "tags"]);
+    // ao_res and gteki_role are optional keys: dressings carry both, the gate carries collision false only.
+    for (const e of committed.assets) expect(Object.keys(e).filter((k) => !["ao_res", "gteki_role", "collision"].includes(k)).sort()).toEqual(["dimension_basis", "generator", "id", "notes", "params", "tags"]);
   });
 
   it("dressings carry ao_res 128 at entry level (stairs and escalators); the gate array carries none", () => {
@@ -41,8 +41,16 @@ describe("Shinjuku station catalog for the Lane E kit (Issue #94)", () => {
     for (const e of dressings) {
       expect(e.ao_res).toBe(128);
       expect(e.params).not.toHaveProperty("ao_res");
+      // Visual-only: an explicit null role, so Lane E's builder does not tag them stairs_ramps or transport.
+      expect(e).toHaveProperty("gteki_role", null);
+      expect(e).not.toHaveProperty("collision");
     }
-    for (const e of committed.assets.filter((x) => x.generator === "gate_array")) expect(e).not.toHaveProperty("ao_res");
+    for (const e of committed.assets.filter((x) => x.generator === "gate_array")) {
+      expect(e).not.toHaveProperty("ao_res");
+      expect(e).not.toHaveProperty("gteki_role");
+      // Lane E strips the gate's COL_* nodes, so Godot builds no StaticBody for it.
+      expect(e).toHaveProperty("collision", false);
+    }
   });
 
   it("is exactly what the generator derives from the current data (regenerate with pnpm kit:catalog)", () => {
@@ -129,6 +137,13 @@ describe("Shinjuku station catalog for the Lane E kit (Issue #94)", () => {
     expect(validateStationCatalog(mutate(stair, { params: { ...stair.params, step_count: 90 } })).join()).toMatch(/step_count/);
     expect(validateStationCatalog(mutate(gate, { params: { ...gate.params, wide_w: 1.2 } })).join()).toMatch(/wide_w/);
     expect(validateStationCatalog(mutate(gate, { dimension_basis: "station-verified" as never })).join()).toMatch(/station-verified/);
+    expect(validateStationCatalog(mutate(base, { gteki_role: "transport" as never })).join()).toMatch(/gteki_role must be null/);
+    expect(validateStationCatalog(mutate(stair, { gteki_role: "stairs_ramps" as never })).join()).toMatch(/gteki_role must be null/);
+    expect(validateStationCatalog(mutate(base, { gteki_role: undefined })).join()).toMatch(/gteki_role must be null/);
+    expect(validateStationCatalog(mutate(gate, { gteki_role: null })).join()).toMatch(/gteki_role is set on stair and escalator/);
+    expect(validateStationCatalog(mutate(gate, { collision: true as never })).join()).toMatch(/collision must be false/);
+    expect(validateStationCatalog(mutate(gate, { collision: undefined })).join()).toMatch(/collision must be false/);
+    expect(validateStationCatalog(mutate(base, { collision: false as never })).join()).toMatch(/collision is set on the gate array only/);
     expect(validateStationCatalog(mutate(base, { ao_res: 64 as never })).join()).toMatch(/ao_res must be one of/);
     expect(validateStationCatalog(mutate(base, { ao_res: 256 })).join()).toMatch(/ao_res must be 128/);
     expect(validateStationCatalog(mutate(stair, { ao_res: undefined })).join()).toMatch(/ao_res must be 128/);
