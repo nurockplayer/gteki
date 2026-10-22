@@ -10,7 +10,8 @@ import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGu
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
-import { factsOnlyCredit, sourceCredit } from "../credits.ts";
+import { factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
+import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { LiveRegion, routeLiveMessage, searchLiveMessage } from "./live.ts";
 import { watchReducedMotion } from "./motion.ts";
@@ -85,6 +86,7 @@ export class App {
     coverageBtn: el("button", "ghost"),
     railBtn: el("button", "ghost rail-launch"),
     hint: el("div", "hint"),
+    credit: el("footer", "credit-line"),
     panel: el("section", "panel"),
     more: el("button", "ghost more", "⋯"),
     live: new LiveRegion(() => this.t),
@@ -161,7 +163,7 @@ export class App {
     panel.append(this.ui.banner, fields, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
-    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.ui.live.el, this.ui.coverage, this.ui.hint);
+    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
     this.layoutText();
   }
 
@@ -246,6 +248,7 @@ export class App {
     this.s.route = null;
     this.s.polyline = [];
     this.s.instructions = [];
+    this.renderCredit();
     this.ui.fromInput.value = "";
     this.ui.toInput.value = "";
     this.closeResults("from");
@@ -331,6 +334,7 @@ export class App {
 
   private refreshAll(): void {
     this.updatePanelCollapse();
+    this.renderCredit();
     const b = this.s.loaded?.bundle;
     this.renderBanner(b);
     this.renderSpawnChips(b);
@@ -921,9 +925,12 @@ export class App {
     }
   }
 
-  /** A source's credit line: title (linked), attribution, licence (linked) and the modification notice. */
-  private creditItem(s: Source): HTMLLIElement {
-    const c = sourceCredit(s);
+  /**
+   * A credit line for one source, or for several sources sharing an attribution: titles (linked), the attribution once,
+   * the distinct licences (linked) and the modification notice; a facts-only source adds the #26 wording and decision link
+   * (Coverage dialog and the route card's 出典 both use this).
+   */
+  private creditItem(...sources: Source[]): HTMLLIElement {
     const link = (text: string, href: string | null): HTMLElement => {
       if (!href) return el("span", undefined, text);
       const a = el("a", undefined, text);
@@ -933,16 +940,47 @@ export class App {
       return a;
     };
     const li = el("li");
-    li.append(link(c.title, c.href), el("span", "muted", ` — ${c.attribution}`));
-    if (c.license) li.append(el("span", "muted", " ("), link(c.license.name, c.license.href), el("span", "muted", ")"));
-    if (c.modified) li.append(el("span", "muted", ` · ${this.t.modified}`));
-    // Facts-only sources have no licence to show: say so (Coverage dialog and the route card's 出典 both use this).
-    const facts = factsOnlyCredit(s, this.t);
-    if (facts) {
+    sources.forEach((s, i) => {
+      const c = sourceCredit(s);
+      if (i) li.append(el("span", "muted", "、"));
+      li.append(link(c.title, c.href));
+    });
+    const attribution = sources[0]?.attribution.replace(/\s+/g, " ").trim() ?? "";
+    if (attribution) li.append(el("span", "muted", ` — ${attribution}`));
+    const licenses = groupLicenses(sources);
+    if (licenses.length) {
+      li.append(el("span", "muted", " ("));
+      licenses.forEach((l, i) => { if (i) li.append(el("span", "muted", ", ")); li.append(link(l.name, l.href)); });
+      li.append(el("span", "muted", ")"));
+    }
+    if (sources.some((s) => s.modified)) li.append(el("span", "muted", ` · ${this.t.modified}`));
+    for (const s of sources) {
+      const facts = factsOnlyCredit(s, this.t);
+      if (!facts) continue;
       li.append(el("span", "muted", ` · ${facts.text}`));
       if (facts.decision) li.append(el("span", "muted", " ("), link(facts.decision.label, facts.decision.href), el("span", "muted", ")"));
     }
     return li;
+  }
+
+  /** The persistent credit line (bottom strip, above the safe-area inset): drawn sources' attributions, each once; "Credits" opens the full list. */
+  private renderCredit(): void {
+    const b = this.s.loaded?.bundle;
+    const text = b ? creditLineFor(b) : "";
+    const box = this.ui.credit;
+    box.innerHTML = "";
+    box.hidden = !text;
+    this.root.classList.toggle("has-credit", Boolean(text));
+    if (!text) return;
+    box.setAttribute("aria-label", this.t.creditsLabel);
+    const line = el("span", "credit-text", text);
+    line.title = text;
+    const btn = el("button", "ghost credit-btn", this.t.credits);
+    // The text does not take pointer events (joystick area), so the button carries the full text as its tooltip too.
+    btn.title = text;
+    btn.setAttribute("aria-haspopup", "dialog");
+    btn.addEventListener("click", () => this.openCoverage());
+    box.append(line, btn);
   }
 
   // ---- Coverage --------------------------------------------------------------------
@@ -968,10 +1006,12 @@ export class App {
       if (!b.coverage.gaps.length) gaps.append(el("li", "muted", "—"));
       d.append(gaps, el("h3", undefined, this.t.sources));
       const src = el("ul");
-      // Every source, including those cited only by assets or coverage: link, licence and modification notice.
-      for (const s of b.sources) {
-        const li = this.creditItem(s);
-        li.append(el("span", "muted", ` [${s.rights}${s.usage === "facts-only" ? `, ${this.t.factsOnlyTag}` : ""}]`));
+      // Every source exactly once, including those cited only by assets or coverage. Sources sharing an attribution form one item;
+      // facts-only and blank-attribution sources stay single. Rights are plain language (#130), never the internal enum.
+      for (const g of creditEntries(b.sources)) {
+        const li = this.creditItem(...g.sources);
+        const rights = entryRightsLabels(g.sources, this.t);
+        if (rights.length) li.append(el("span", "muted", ` · ${rights.join(" / ")}`));
         src.append(li);
       }
       d.append(src);
