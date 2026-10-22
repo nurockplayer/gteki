@@ -21,8 +21,8 @@ import type { SceneContext, SpawnPoint, StationScene } from "@gteki/scene-api";
 type ThreeNS = typeof THREE_NS;
 
 /**
- * The overhead wayfinding signs are GTEki's own, generated from the verified graph (scene/signage.json), not
- * placed at surveyed sign positions. The web app shows a hint when a scene declares this (#203 B14).
+ * The overhead wayfinding signs are GTEki's own, generated from the route graph (desk-checked, not surveyed;
+ * scene/signage.json), not placed at surveyed sign positions. The web app shows a hint when a scene declares this (#203 B14).
  */
 export const generatedSignageFromGraph = true;
 
