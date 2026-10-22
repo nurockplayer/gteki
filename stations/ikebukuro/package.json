@@ -7,6 +7,7 @@
     "build:data": "python3 -I pipeline/extract_plateau_ubld.py ../../data-cache/ikebukuro/53394576_ubld_6697_op.gml build/ubld_enu.json && blender -b --factory-startup --python pipeline/blender_build_glb.py -- build/ubld_enu.json gteki/assets/ikebukuro_b1.glb && python3 -I pipeline/build_station.py && python3 -I pipeline/build_signage.py && python3 -I pipeline/build_walkfix.py && python3 -I pipeline/build_access.py",
     "typecheck": "tsc -p .",
     "check:access": "node pipeline/check_access.ts",
+    "audit:assets": "node pipeline/audit_assets.ts",
     "check:godot": "bash pipeline/godot_colliders.sh",
     "bake:lighting": "sh pipeline/bake_lighting.sh"
   },

@@ -1,0 +1,68 @@
+# CodeRabbit review settings for GTEki.
+# CodeRabbit is a second review bot next to the Codex review bot (see Issue #6).
+# Schema: https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+  path_filters:
+    # Binary or generated artefacts: their receipts and generators are reviewed instead.
+    - "!**/*.glb"
+    - "!**/*.bin"
+    - "!**/*.ktx2"
+    - "!**/*.jpg"
+    - "!**/*.png"
+    - "!pnpm-lock.yaml"
+    - "!docs/gis/history/**"
+    - "!docs/gis/acquisitions/**"
+    - "!**/evidence/**"
+    - "!tests/e2e/specs/__goldens__/**"
+  path_instructions:
+    - path: "**/*"
+      instructions: |
+        GTEki is a public repo of real Japanese stations. Truth comes before polish:
+        flag any route, connection, floor height, opening or accessibility claim that
+        is not backed by a recorded source, and anything UNKNOWN rendered as verified
+        or routable. Flag third-party maps, photos, logos, operator artwork or assets
+        added without a rights record. Installs must use pnpm, never npm/npx/yarn.
+        Mark findings as P0/P1 (blocking) or P2 (follow-up).
+    - path: "packages/**"
+      instructions: |
+        Shared core: keep it renderer-neutral and station-agnostic. Check that the
+        router and search keep UNKNOWN distinct from no_path, and that contract or
+        schema changes are reflected in both stations and in packages/godot.
+    - path: "stations/**"
+      instructions: |
+        Station code must stay inside its own station directory and use the shared
+        core through its contracts. Check coordinate frames (ENU, render axes) and
+        that collision, camera and walker changes cannot let the avatar leave
+        verified walkable space.
+    - path: "apps/web/**"
+      instructions: |
+        Browser explorer: watch frame-time and memory cost on the phone tier
+        (quality=low), draw calls, disposal of GPU resources, and accessibility of
+        the HUD (labels, keyboard, reduced motion).
+    - path: "tools/gis/**"
+      instructions: |
+        GIS pipeline: outputs must be reproducible from receipts (sha256, sourceIds,
+        attribution). Check that licence and attribution data travel with each
+        derived asset, and that attribute-free outputs really drop attributes.
+    - path: "tools/blender/**"
+      instructions: |
+        Asset factory: every piece is procedural generator code. Flag imported
+        external models or textures without provenance.
+    - path: "**/*.test.ts"
+      instructions: |
+        Tests must be deterministic: no wall-clock assertions. Long replay, matrix
+        or brute-force suites belong in *.heavy.test.ts (host memory is 16 GB).
+chat:
+  auto_reply: true
