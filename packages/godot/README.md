@@ -310,7 +310,10 @@ godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- 
 Per pose it places the walker, settles the follow camera for 45 physics frames, waits 3 rendered frames, saves a 1600x900
 PNG and writes its camera transform, FOV and `RenderingServer` counts into `<outDir>/report.json` (`gteki.capture/0.1`),
 together with the run's station, look, GI, renderer, driver, adapter, window size, machine, and any pose it could not
-take (`pose_problems`). Default poses: each spawn point x 4 yaws; Ikebukuro adds the `g_jr_c2` -> `x35` route every 15 m
+take (`pose_problems`). `renderer` is the method the run actually rendered with
+(`RenderingServer.get_current_rendering_method()`), because `project.godot` says `gl_compatibility` while the runbook
+asks for Forward+ on the command line; the project setting is recorded apart as `project_renderer` and never labelled
+as the measured renderer. Default poses: each spawn point x 4 yaws; Ikebukuro adds the `g_jr_c2` -> `x35` route every 15 m
 (needs `.cache/routes/ikebukuro.route.json`, written by `run-walk.sh` or by the router command in the runbook below; a
 missing route file is recorded in `pose_problems` and makes the run exit non-zero, with the other poses still captured,
 rather than quietly shortening the list) and the #227 stall area; Shinjuku adds 3 poses at inverted-band walls. Then the **G-5 evidence poses**: for every route the

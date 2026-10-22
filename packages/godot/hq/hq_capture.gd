@@ -12,7 +12,8 @@ extends RefCounted
 ## quietly shorter pose list), Shinjuku its inverted-band walls; then the G-5 evidence poses — the start, the mid-stair
 ## point and the goal of every route the evidence walk covers, plus each lift's landing (the one shaft in the goldens is
 ## Shinjuku S4's) — asked from the router through gteki_bridge.gd, the same call the evidence walk makes.
-## Writes <outDir>/report.json (`gteki.capture/0.1`): station, look, GI, renderer, driver, GPU, window, machine and, per
+## Writes <outDir>/report.json (`gteki.capture/0.1`): station, look, GI, the renderer the run actually used, the project
+## renderer setting, driver, GPU, window, machine and, per
 ## pose, the PNG, the camera, RenderingServer stats and (with --perf) the frame-interval and renderer-setup percentiles.
 
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
@@ -86,8 +87,11 @@ func run(hq: Node3D, out_dir: String, poses_file: String, look: String, gi: Stri
 		"gi": gi,
 		"perf_seconds": perf_seconds,
 		"machine": machine(),
-		"renderer": str(ProjectSettings.get_setting("rendering/renderer/rendering_method")),
-		"rendering_method_runtime": RenderingServer.get_current_rendering_method(),
+		# What this run rendered with. The project setting is `gl_compatibility` and the runbook asks for Forward+ on the
+		# command line, so the figures must be labelled with the runtime method; the project default is kept apart, as
+		# `project_renderer`, and is never what a performance table calls the renderer.
+		"renderer": RenderingServer.get_current_rendering_method(),
+		"project_renderer": str(ProjectSettings.get_setting("rendering/renderer/rendering_method")),
 		"driver": RenderingServer.get_current_rendering_driver_name(),
 		"adapter": RenderingServer.get_video_adapter_name(),
 		"window": [window.size.x, window.size.y],

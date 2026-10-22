@@ -264,6 +264,8 @@ func check_report_generator() -> void:
 	check(Report.main([out, fixture]) == 0, "self: the generator writes a table from a fixture report")
 	var text := FileAccess.get_file_as_string(out)
 	check(text.contains("Measured on Fixture GPU (forward_plus via metal, FixtureOS 1.0, Fixture CPU) in the lead's GPU slot."), "self: the table names the machine and the GPU slot it was measured in")
+	check(text.contains("renderer `forward_plus`, driver `metal`"), "self: the table names the renderer the run actually used, not the project setting")
+	check(not text.contains("gl_compatibility"), "self: a project renderer of gl_compatibility is never printed as the measured renderer")
 	check(text.contains("## shinjuku — look hq, GI sdfgi"), "self: the run names its station, look and GI")
 	check(text.contains("| Frame interval ms p50 | p95 | max | Renderer setup ms p50 | p95 | max |"), "self: each column names the series it prints")
 	check(text.contains("| g5_S4_start | 300 | 16.70 | 18.20 | 40.50 | 4.20 | 5.10 | 9.90 | 412 | 120401 | 512.0 |"), "self: a pose's percentiles, draw calls, primitives and video memory are printed as measured")
@@ -318,7 +320,7 @@ static func sample_report(with_perf := true) -> Dictionary:
 		"contract": "gteki.capture/0.1",
 		"station": "shinjuku", "look": "hq", "gi": "sdfgi", "perf_seconds": 5.0,
 		"machine": {"os": "FixtureOS", "os_version": "1.0", "processor": "Fixture CPU", "gpu": "Fixture GPU", "gpu_vendor": "Fixture"},
-		"renderer": "forward_plus", "rendering_method_runtime": "forward_plus", "driver": "metal", "adapter": "Fixture GPU",
+		"renderer": "forward_plus", "project_renderer": "gl_compatibility", "driver": "metal", "adapter": "Fixture GPU",
 		"window": [1600, 900], "resolution": [1600, 900],
 		"settle_physics_frames": 45, "perf_warmup_frames": 60,
 		"pose_problems": ["W2: no stairs step, so no mid-stair pose"],

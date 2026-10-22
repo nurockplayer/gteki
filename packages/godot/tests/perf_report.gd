@@ -121,10 +121,11 @@ static func run_lines(report: Dictionary) -> Array[String]:
 	var lines: Array[String] = []
 	lines.append("## %s — look %s, GI %s" % [str(report.get("station", "UNKNOWN")), str(report.get("look", "UNKNOWN")), str(report.get("gi", "off"))])
 	lines.append("")
-	lines.append("- Window %s at capture resolution %s; renderer `%s` (runtime `%s`), driver `%s`, GPU `%s`" % [
+	# `renderer` is the method the run actually rendered with (`RenderingServer.get_current_rendering_method()`); the
+	# project setting (`project_renderer`) is not what was measured, so it never appears as the renderer here.
+	lines.append("- Window %s at capture resolution %s; renderer `%s`, driver `%s`, GPU `%s`" % [
 		_size(report.get("window")), _size(report.get("resolution")),
-		str(report.get("renderer", "")), str(report.get("rendering_method_runtime", "")),
-		str(report.get("driver", "")), str(report.get("adapter", ""))])
+		str(report.get("renderer", "")), str(report.get("driver", "")), str(report.get("adapter", ""))])
 	var perf_seconds := float(report.get("perf_seconds", 0.0))
 	var warmup := int(report.get("perf_warmup_frames", 0))
 	if perf_seconds > 0.0:
