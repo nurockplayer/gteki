@@ -37,9 +37,16 @@ export const FONT = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",
 const PX_PER_M = 300;
 const H = 0.42;
 const ATLAS_W = 4096; // atlas page side (px), lowered to the GPU's MAX_TEXTURE_SIZE where that is smaller
-/** Phone tier ("low") paints faces at this fraction of full size (150 px/m). It was 0.54 until #108's place boards
- *  used the last spare rows of the one 4096 x 2048 page; 0.5 leaves several rows spare (scene/signage.test.ts pins it). */
-export const LOW_TEXEL_SCALE = 0.5;
+/** Phone tier ("low") paints faces at this fraction of full size (PX_PER_M x this, px/m). At 0.5 the English
+ *  line and the "~N m" distance stopped reading at mid range, so it is back above 0.54; the faces then spill past
+ *  one 4096 x 2048 page into a small overflow page (LOW_PAGE_HEIGHTS; scene/signage.test.ts pins both). */
+export const LOW_TEXEL_SCALE = 0.6;
+/** Phone tier page heights (px, pages 4096 wide): the first page, then an overflow page made only when the faces
+ *  do not fit the first, as short as the rest allows. The phone tier never gets a 4096 x 4096 page. */
+const LOW_PAGE_HEIGHTS = [2048, 1024];
+/** Em (fraction of the face height) of the small lines: an exit's distance, a gate's or hall's English name and
+ *  its distance. The Japanese name stays larger (gates 0.24, halls 0.3). */
+export const SMALL_EM = 0.21;
 const GUTTER = 8; // px between faces; the gutter is panel colour so mip filtering never bleeds a foreign colour
 /** Operator chips before gate names, keyed by POI id prefix: plain lettering on a line-colour square
  *  (GTEki style, no operator logo). Only operators with routable gates need an entry. */
@@ -154,7 +161,7 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
       const dText = e.distanceM != null ? distLabel(e.distanceM) : null;
       let pw = bw;
       if (dText) {
-        measure.font = `600 ${Math.round(h * 0.16)}px ${FONT}`;
+        measure.font = `600 ${Math.round(h * SMALL_EM)}px ${FONT}`;
         pw = Math.max(bw, measure.measureText(dText).width + 8);
       }
       parts.push({
@@ -171,7 +178,7 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
           g.fillText(e.label, bx + bw / 2, h / 2 + 3);
           if (dText) {
             g.fillStyle = "#d6dde6";
-            g.font = `600 ${Math.round(h * 0.16)}px ${FONT}`;
+            g.font = `600 ${Math.round(h * SMALL_EM)}px ${FONT}`;
             g.fillText(dText, x + pw / 2, h - 18);
           }
           g.textAlign = "left";
@@ -185,7 +192,7 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
     const dText = place.distanceM != null ? distLabel(place.distanceM) : null;
     measure.font = `700 ${Math.round(h * 0.3)}px ${FONT}`;
     const jaW = measure.measureText(ja).width;
-    measure.font = `500 ${Math.round(h * 0.16)}px ${FONT}`;
+    measure.font = `500 ${Math.round(h * SMALL_EM)}px ${FONT}`;
     const enW = measure.measureText(en).width;
     const dW = dText ? measure.measureText(dText).width : 0;
     const tw = Math.max(jaW, enW + (dText ? 16 + dW : 0)) + 36;
@@ -198,11 +205,11 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
         g.font = `700 ${Math.round(h * 0.3)}px ${FONT}`;
         g.fillText(ja, x + 14, h * 0.36);
         g.fillStyle = "#d6e8f2";
-        g.font = `500 ${Math.round(h * 0.16)}px ${FONT}`;
+        g.font = `500 ${Math.round(h * SMALL_EM)}px ${FONT}`;
         g.fillText(en, x + 16, h * 0.73);
         if (dText) {
           g.fillStyle = "#ffd200";
-          g.font = `600 ${Math.round(h * 0.16)}px ${FONT}`;
+          g.font = `600 ${Math.round(h * SMALL_EM)}px ${FONT}`;
           g.fillText(dText, x + 16 + enW + 16, h * 0.73);
         }
       },
@@ -218,8 +225,8 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
     const cw = chip ? badge * 1.15 : 0;
     const off = chip ? cw + 12 : 0;
     const dText = gate.distanceM != null ? distLabel(gate.distanceM) : null;
-    const enW = (measure.measureText(en).width * 0.15) / 0.24;
-    const dW = dText ? (measure.measureText(dText).width * 0.15) / 0.24 : 0;
+    const enW = (measure.measureText(en).width * SMALL_EM) / 0.24;
+    const dW = dText ? (measure.measureText(dText).width * SMALL_EM) / 0.24 : 0;
     const tw = Math.max(measure.measureText(ja).width, enW + (dText ? 14 + dW : 0)) + 30 + off;
     parts.push({
       w: tw,
@@ -239,12 +246,12 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
         g.textBaseline = "middle";
         g.font = `600 ${Math.round(h * 0.24)}px ${FONT}`;
         g.fillText(ja, x + 14 + off, h * 0.38);
-        g.font = `500 ${Math.round(h * 0.15)}px ${FONT}`;
+        g.font = `500 ${Math.round(h * SMALL_EM)}px ${FONT}`;
         g.fillStyle = "#d6dde6";
         g.fillText(en, x + 16 + off, h * 0.72);
         if (dText) {
           g.fillStyle = "#ffd200";
-          g.font = `600 ${Math.round(h * 0.15)}px ${FONT}`;
+          g.font = `600 ${Math.round(h * SMALL_EM)}px ${FONT}`;
           g.fillText(dText, x + 16 + off + enW + 14, h * 0.72);
         }
       },
@@ -255,11 +262,14 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
 
 /** Shelf-pack face canvases (all the same height) into as few atlas pages of side `side` px as fit, drawn
  *  at `scale` (< 1 on low quality: same layout, fewer texels). A face wider than a page is drawn narrower
- *  (fewer texels across, same size in the scene). Slots carry the drawn size for the UVs. */
-function packAtlas(faces: HTMLCanvasElement[], backgrounds: string[], scale: number, side: number) {
+ *  (fewer texels across, same size in the scene). Slots carry the drawn size for the UVs. `heights` caps each
+ *  page's height in turn (the last cap repeats); without it every page may be `side` tall. */
+function packAtlas(faces: HTMLCanvasElement[], backgrounds: string[], scale: number, side: number, heights?: number[]) {
   const dims = faces.map((c) => ({ w: Math.min(side - 2 * GUTTER, Math.ceil(c.width * scale)), h: Math.round(c.height * scale) }));
   const rowH = dims[0] ? dims[0].h + GUTTER : 0;
-  const rowsPerPage = Math.max(1, Math.floor(side / Math.max(1, rowH)));
+  const cap = (pi: number) => (heights ? Math.min(side, heights[Math.min(pi, heights.length - 1)]!) : side);
+  // Rows a page holds; a capped page keeps its last row's bottom gutter inside the page.
+  const rowsOn = (pi: number) => Math.max(1, Math.floor((heights ? cap(pi) - GUTTER : side) / Math.max(1, rowH)));
   const slots: { page: number; x: number; y: number; w: number; h: number }[] = new Array(dims.length);
   let page = 0, row = 0, x = GUTTER;
   const pageRows: number[] = [0];
@@ -270,7 +280,7 @@ function packAtlas(faces: HTMLCanvasElement[], backgrounds: string[], scale: num
     if (x + d.w + GUTTER > side) {
       row++;
       x = GUTTER;
-      if (row >= rowsPerPage) {
+      if (row >= rowsOn(page)) {
         page++;
         row = 0;
         pageRows.push(0);
@@ -283,7 +293,7 @@ function packAtlas(faces: HTMLCanvasElement[], backgrounds: string[], scale: num
   const pages = pageRows.map((rows, pi) => {
     const c = document.createElement("canvas");
     // Power-of-two sides keep mipmapping cheap on every GPU; a short last page also narrows.
-    c.height = Math.min(side, 2 ** Math.ceil(Math.log2(GUTTER + rows * rowH)));
+    c.height = Math.min(cap(pi), 2 ** Math.ceil(Math.log2(GUTTER + rows * rowH)));
     c.width = rows > 1 ? side : 2 ** Math.ceil(Math.log2(Math.max(64, ...slots.filter((s) => s.page === pi).map((s) => s.x + s.w + GUTTER))));
     const g = c.getContext("2d")!;
     g.fillStyle = "#1c222b";
@@ -299,7 +309,7 @@ function packAtlas(faces: HTMLCanvasElement[], backgrounds: string[], scale: num
     g.fillRect(s.x - GUTTER / 2, s.y - GUTTER / 2, s.w + GUTTER, s.h + GUTTER);
     g.drawImage(c, s.x, s.y, s.w, s.h);
   });
-  return { pages, slots, rowsPerPage, rowsUsed: pageRows, rowH };
+  return { pages, slots, rowsPerPage: pageRows.map((_, pi) => rowsOn(pi)), rowsUsed: pageRows, rowH };
 }
 
 /** Concatenate indexed geometries (position, normal, optional uv) into one, after each one's matrix.
@@ -371,7 +381,9 @@ export function buildSigns(
   const housing = new THREE.MeshBasicMaterial({ color: 0x4f565f });
   group.add(new THREE.Mesh(merge(THREE, boxes, false), housing));
 
-  const { pages, slots, rowsPerPage, rowsUsed, rowH } = packAtlas(faces.map((x) => x.canvas), faces.map((x) => x.bg), texelScale, Math.min(ATLAS_W, maxTextureSize));
+  // Below full resolution (the phone tier) pages are capped at LOW_PAGE_HEIGHTS; full resolution is unchanged.
+  const { pages, slots, rowsPerPage, rowsUsed, rowH } = packAtlas(faces.map((x) => x.canvas), faces.map((x) => x.bg), texelScale,
+    Math.min(ATLAS_W, maxTextureSize), texelScale < 1 ? LOW_PAGE_HEIGHTS : undefined);
   const textures: THREE_NS.Texture[] = [];
   pages.forEach((page, pi) => {
     const tex = new THREE.CanvasTexture(page);
@@ -398,9 +410,10 @@ export function buildSigns(
 
   return {
     group,
-    /** Atlas page sizes (px), for tests and the harness: the low tier should stay one 4096 x 2048 page. */
+    /** Atlas page sizes (px), for tests and the harness: on the low tier one 4096 x 2048 page, plus a 4096 x <= 1024
+     *  overflow page only when the faces need it. */
     pages: pages.map((p) => ({ w: p.width, h: p.height })),
-    /** Shelf rows used per page, rows a full page holds, and the row pitch / gutter (px): how much budget is left. */
+    /** Shelf rows used per page, rows each page holds at its cap, and the row pitch / gutter (px): how much budget is left. */
     rows: { used: rowsUsed, perPage: rowsPerPage, rowH, gutter: GUTTER },
     dispose() {
       textures.forEach((t) => t.dispose());

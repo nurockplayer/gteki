@@ -3,7 +3,7 @@
 import { readFileSync } from "node:fs";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { buildSigns, LOW_TEXEL_SCALE, type SignSpec } from "./signs.ts";
+import { buildSigns, LOW_TEXEL_SCALE, SMALL_EM, type SignSpec } from "./signs.ts";
 import { parseStationFiles } from "@gteki/schema";
 import { createRouter, routeBetween } from "../../../packages/navigation/src/index.ts";
 
@@ -417,10 +417,12 @@ describe("ikebukuro sign provenance (#108)", () => {
   });
 });
 
-// The sign atlas on the phone tier ("low": texel scale LOW_TEXEL_SCALE = 0.5, 4096 px pages) must stay ONE 4096 x 2048 page.
+// The sign atlas on the phone tier ("low": texel scale LOW_TEXEL_SCALE, pages 4096 wide) is one 4096 x 2048 page plus,
+// only when the faces do not fit it, one overflow page 4096 x (power of two <= 1024); never a 4096 x 4096 page.
 // buildSigns runs for real on a stub canvas whose text measure is a flat estimate (CJK 1 em, Latin ~0.56 em),
 // so face widths, trimming and shelf packing are the production code's; only glyph widths are approximate.
-// Before #108 the low atlas used about 22 of its 26 rows (rowH ~78 px => 2048 / 78). The repeaters add 2 faces each.
+// At 0.5 the English line and the "~N m" distance did not read at mid range (Lane F), so the scale is 0.6 and the
+// small lines are SMALL_EM of the face height (they were 0.15-0.16).
 describe("ikebukuro sign atlas budget on the low tier", () => {
   function stubDocument() {
     const em = (font: string) => Number(/(\d+(?:\.\d+)?)px/.exec(font)?.[1] ?? 16);
@@ -436,6 +438,7 @@ describe("ikebukuro sign atlas budget on the low tier", () => {
           return k in t ? t[k] : () => undefined;
         },
         set(t, k: string, v) {
+          if (k === "font") fonts.push(String(v));
           t[k] = v;
           return true;
         },
@@ -449,8 +452,12 @@ describe("ikebukuro sign atlas budget on the low tier", () => {
     };
   }
 
+  /** Font strings the faces were painted with (every assignment to a 2D context's font). */
+  let fonts: string[] = [];
+
   function atlas(set: Sign[], texel = LOW_TEXEL_SCALE) {
     (globalThis as { document?: unknown }).document = stubDocument();
+    fonts = [];
     try {
       const built = buildSigns(THREE, set, (x, y, z) => new THREE.Vector3(x, z, -y), 1, texel, 4096);
       const out = { pages: built.pages, rows: built.rows };
@@ -461,27 +468,60 @@ describe("ikebukuro sign atlas budget on the low tier", () => {
     }
   }
 
-  it("with the repeaters and place boards the low atlas is still a single 4096 x 2048 page", () => {
-    expect(atlas(signs).pages).toEqual([{ w: 4096, h: 2048 }]);
+  /** Low-tier page limit: page 1 at most 4096 x 2048, an overflow page at most 4096 x 1024, nothing more. */
+  function withinLimit(pages: { w: number; h: number }[]) {
+    expect(pages.length).toBeLessThanOrEqual(2);
+    expect(pages[0]!.w).toBeLessThanOrEqual(4096);
+    expect(pages[0]!.h).toBeLessThanOrEqual(2048);
+    if (pages[1]) {
+      expect(pages[1].w).toBeLessThanOrEqual(4096);
+      expect(pages[1].h).toBeLessThanOrEqual(1024);
+      expect(Math.log2(pages[1].h) % 1).toBe(0);
+    }
+  }
+
+  it("pins the phone scale and the small-line em", () => {
+    expect(LOW_TEXEL_SCALE).toBe(0.6);
+    expect(SMALL_EM).toBe(0.21);
   });
 
-  it("uses at least three rows fewer than a 2048 px page holds, as slack for glyph-width error", () => {
+  it("with the repeaters and place boards the low atlas is one 4096 x 2048 page and a 4096 x 1024 overflow page", () => {
+    const { pages } = atlas(signs);
+    withinLimit(pages);
+    expect(pages).toEqual([{ w: 4096, h: 2048 }, { w: 4096, h: 1024 }]);
+  });
+
+  it("negative control: at this scale the faces do not fit one 2048 px page (why the overflow page exists)", () => {
     const { rows } = atlas(signs);
-    expect(rows.used).toHaveLength(1);
     const fits = Math.floor((2048 - rows.gutter) / rows.rowH);
-    expect(rows.used[0]!).toBeLessThanOrEqual(fits - 3);
+    expect(rows.used.reduce((a, b) => a + b, 0)).toBeGreaterThan(fits);
   });
 
-  it("negative control: at the old 0.54 scale the last spare rows were gone (why the scale is 0.5 now)", () => {
-    const old = atlas(signs, 0.54);
-    const fits = Math.floor((2048 - old.rows.gutter) / old.rows.rowH);
-    expect(fits - old.rows.used[0]!).toBeLessThan(3);
-    expect(LOW_TEXEL_SCALE).toBe(0.5);
+  it("the overflow page is made on demand: faces that fit page 1 give exactly one page", () => {
+    const few = signs.slice(0, 20);
+    const { pages, rows } = atlas(few);
+    expect(pages).toHaveLength(1);
+    expect(rows.used).toHaveLength(1);
+    withinLimit(pages);
   });
 
-  it("keeps slack for glyph-width error: three more repeaters (six faces) still fit the 2048 px page", () => {
+  it("keeps slack for glyph-width error: three more repeaters (six faces) still fit the two low-tier pages", () => {
     const rep = signs.filter((s) => s.kind === "repeat");
     const extra = rep.slice(0, 3).map((s, i) => ({ ...s, id: `slack-${i}` }));
-    expect(atlas([...signs, ...extra]).pages).toEqual([{ w: 4096, h: 2048 }]);
+    withinLimit(atlas([...signs, ...extra]).pages);
+  });
+
+  it("paints the English line and the distance at SMALL_EM of the face height on boards and repeaters", () => {
+    const h = Math.round(0.42 * 300);
+    const small = `${Math.round(h * SMALL_EM)}px`;
+    atlas(signs.filter((s) => s.kind === "place"));
+    expect(fonts.filter((f) => f.startsWith("500 ") && f.includes(small)).length).toBeGreaterThan(0); // hall English
+    expect(fonts.filter((f) => f.startsWith("600 ") && f.includes(small)).length).toBeGreaterThan(0); // hall distance
+    atlas(signs.filter((s) => s.kind === "repeat"));
+    expect(fonts.filter((f) => f.includes(small)).length).toBeGreaterThan(0); // exit distance, gate English and distance
+    // The Japanese names stay larger: gates 0.24, halls 0.3 of the face height.
+    expect(SMALL_EM).toBeLessThan(0.24);
+    expect(SMALL_EM).toBeGreaterThanOrEqual(0.2);
+    expect(SMALL_EM).toBeLessThanOrEqual(0.22);
   });
 });
