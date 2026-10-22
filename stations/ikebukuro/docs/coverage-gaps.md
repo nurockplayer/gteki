@@ -83,7 +83,8 @@ names both ends, but Metro's exit list puts the ground lift on exit 35 rather th
 [field-checklist.md](field-checklist.md) section I. Metro facts are `FACTS_ONLY_REFERENCE` (#26). Using JR East facts
 (JR's terms bar all use) and the Tobu terms (article 8) are Owner decisions; neither was used here. **No node, edge,
 accessFact, POI or coverage text changed.** Not one of the 20: the Yurakucho 南通路西改札 to Exit 4 pair is stated with
-both endpoints, but the west gate has no POI (`gap-south-west`); adding it is a candidate POI pending the Owner's OK.
+both endpoints, but the west gate had no POI when #177 was written (`gap-south-west`). PR #185 adds it as a 21st
+search-only POI (`metro-y-south-west-gate`, no node, no edge); the on-site check is field-checklist I8.
 
 Cheapest unlocks, in order: checklist B2 (Exit 9, one stair, geometry already passes), A1 to A3
 (the five gates, one visit), D1 and G1.

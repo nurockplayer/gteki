@@ -101,7 +101,7 @@ What the review must **not** count as a reference-grounded feature: sign positio
 - **An exit node is the top of its surveyed stairs**, under the stairwell's street-level closure.
 - **Exits whose stairs are outside the survey** (Exit 4; Exits 13 and 36 only the lower flight) are routed to the stair foot; the climb is not modelled or claimed.
 - **Free walking stays on verified floor**: surveyed floor outside the routable areas is visible but cannot be entered, with an "Access unverified" panel.
-- **Scene coverage**: five B1 slices, not the whole station; 20 exits and gates are search-only (see [coverage-gaps.md](coverage-gaps.md)).
+- **Scene coverage**: five B1 slices, not the whole station; 20 exits and gates are search-only (21 once #185 merges; see [coverage-gaps.md](coverage-gaps.md)).
 - **Godot** is not access-fenced and has different door semantics from the web.
 
 ## 3. Desktop and phone interaction and visual checks
