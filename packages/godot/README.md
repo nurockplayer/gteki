@@ -210,10 +210,17 @@ the snapshot evidence (colour, metal, roughness, surface count, roles) and a one
 snapshot loses the scene's own material names (three's exporter names unnamed materials `material_<n>`). A station's
 `unmapped` array lists every material the table leaves alone and why; anything ambiguous stays there rather than being
 guessed. Shinjuku has 13 mapped materials (floors, walls, ceiling, tactile paving, stair nosings, gate bodies/caps,
-steel plates, light housings, the accent band, handrails); Ikebukuro is listed as entirely unmapped because its lightmap
+steel plates, light housings, the Oedo accent band, handrails); Ikebukuro is listed as entirely unmapped because its lightmap
 shader owns its surfaces and that decision belongs to the lead. The table sets only albedo (sRGB, written to
 `albedo_color` exactly as the glTF importer writes it), roughness and metal; it never touches emission, transparency or
 textures, and it only ever overrides surfaces whose material it names.
+
+Two mappings are **provisional, not E27 facts**: `material_2` (wall field → `steel_painted_light`, a grey painted steel
+per OD-30 via R10 #234) and `material_23` (stair nosings → `vertical_safety_yellow`, a representative style-bible finish;
+R10 found no source). `material_12` maps to `oedo_accent`, a style marked `local: true` with a `note`: GTEki's chosen
+Oedo magenta per OD-29 (#222), not the operator's official colour. The optional `local`, `note` and `provisional` fields
+are documentation; the loader ignores them, and the source's faint emission survives because the override duplicates the
+snapshot material.
 
 `tests/run_look_tests.gd` (run by `run-scenes.sh`) checks the profile selection and its errors, the Environment against
 each station's sidecar (AgX, exposure, SSAO, glow off, SDFGI on/off, depth fog near/far/curve/colour, the ambient rule),

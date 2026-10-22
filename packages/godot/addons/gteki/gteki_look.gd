@@ -147,6 +147,8 @@ static func apply_materials(root: Node3D, table: Dictionary, station_id: String)
 					unknown_style.append(style_name)
 				continue
 			if not cache.has(name):
+				# The override is a duplicate, so everything the table does not set (emission, transparency, textures)
+				# stays the snapshot's: the Oedo accent band keeps its faint emission this way.
 				var copy: StandardMaterial3D = (material as BaseMaterial3D).duplicate()
 				copy.albedo_color = Color.html(str(style.get("albedo", "#ffffff")))
 				copy.roughness = float(style.get("roughness", 0.5))

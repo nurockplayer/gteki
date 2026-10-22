@@ -59,6 +59,13 @@ func check_table(table: Dictionary) -> void:
 		check(albedo.length() == 7 and albedo.begins_with("#"), "%s: albedo is a 6-digit sRGB hex (%s)" % [name, albedo])
 		check(float(style.get("roughness", -1.0)) >= 0.0 and float(style.get("roughness", 2.0)) <= 1.0, "%s: roughness in 0..1" % name)
 		check(float(style.get("metal", -1.0)) >= 0.0 and float(style.get("metal", 2.0)) <= 1.0, "%s: metal in 0..1" % name)
+		# Optional fields: a Godot-local style says so and explains itself; nothing here is a style-bible entry.
+		if style.has("local"):
+			check(style.local is bool, "%s: local is a bool" % name)
+		if style.has("note"):
+			check(style.note is String and not str(style.note).is_empty(), "%s: note is a non-empty string" % name)
+		if style.get("local", false) == true:
+			check(style.has("note"), "%s: a local style carries a note" % name)
 	var stations: Dictionary = table.get("stations", {})
 	check(stations.has("shinjuku") and stations.has("ikebukuro"), "materials.json covers both stations")
 	for id in stations.keys():
@@ -69,6 +76,9 @@ func check_table(table: Dictionary) -> void:
 			var from: Dictionary = mapping.get("from", {})
 			for key in ["color", "metal", "roughness", "surfaces", "evidence"]:
 				check(from.has(key), "%s/%s: `from` carries %s evidence" % [id, name, key])
+			# Optional: a mapping that is not E27 fact says so in its own field.
+			if mapping.has("provisional"):
+				check(mapping.provisional is String and not str(mapping.provisional).is_empty(), "%s/%s: provisional is a non-empty string" % [id, name])
 	check((stations.shinjuku.get("materials", {}) as Dictionary).size() > 0, "Shinjuku has mapped materials")
 
 
@@ -151,6 +161,11 @@ func check_materials(holder: Node3D, table: Dictionary, id: String) -> void:
 				var style: Dictionary = styles[str(mappings[name].style)]
 				check(override.albedo_color.to_html(false).to_upper() == str(style.albedo).trim_prefix("#").to_upper(), "%s/%s: albedo is the palette hex %s" % [id, name, style.albedo])
 				check(is_equal_approx(override.roughness, float(style.roughness)) and is_equal_approx(override.metallic, float(style.metal)), "%s/%s: roughness/metal are the palette values" % [id, name])
+				# The table sets albedo/roughness/metal only; the duplicate keeps the source's emission (the Oedo
+				# band's faint emission), transparency and texture.
+				var source := was.material as BaseMaterial3D
+				check(override.emission_enabled == source.emission_enabled and override.emission.is_equal_approx(source.emission) and is_equal_approx(override.emission_energy_multiplier, source.emission_energy_multiplier), "%s/%s: the override keeps the source emission" % [id, name])
+				check(override.transparency == source.transparency and override.albedo_texture == source.albedo_texture, "%s/%s: the override keeps transparency and texture" % [id, name])
 			checked[name] = true
 		else:
 			# No mapping: the surface keeps the snapshot material and no override of ours.

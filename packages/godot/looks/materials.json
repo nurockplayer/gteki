@@ -14,6 +14,12 @@
       "metal": 0.0,
       "role": "field: upper wall panels, column cladding"
     },
+    "steel_painted_light": {
+      "albedo": "#CCCCC7",
+      "roughness": 0.34,
+      "metal": 0.0,
+      "role": "field: painted steel panels, wall field"
+    },
     "wall_tile_white": {
       "albedo": "#DEDED6",
       "roughness": 0.22,
@@ -25,6 +31,14 @@
       "roughness": 0.3,
       "metal": 0.0,
       "role": "accent: wainscot"
+    },
+    "oedo_accent": {
+      "albedo": "#B0186F",
+      "roughness": 0.4,
+      "metal": 0.0,
+      "role": "accent: Oedo line identity bands",
+      "local": true,
+      "note": "GTEki-chosen Oedo magenta per OD-29 (#222); not the operator's official colour; replaces #b6007a"
     },
     "ceiling_spandrel": {
       "albedo": "#DBDBD9",
@@ -111,7 +125,7 @@
           }
         },
         "material_12": {
-          "style": "wall_panel_accent",
+          "style": "oedo_accent",
           "from": {
             "color": "#b6007a",
             "metal": 0.0,
@@ -120,7 +134,7 @@
             "roles": {
               "visual": 18
             },
-            "evidence": "source mat.accent (OEDO_MAGENTA #b6007a, roughness 0.4, faint emission): long 40 mm bands along the walls, i.e. the accent band role"
+            "evidence": "source mat.accent (OEDO_MAGENTA #b6007a, roughness 0.4, faint emission): long 40 mm bands along the walls, i.e. the accent band role. Kept as the station-identity cue; the override is a duplicate, so the source's emission survives"
           }
         },
         "material_18": {
@@ -150,7 +164,7 @@
           }
         },
         "material_2": {
-          "style": "wall_panel_enamel",
+          "style": "steel_painted_light",
           "from": {
             "color": "#ffffff",
             "metal": 0.05,
@@ -159,8 +173,9 @@
             "roles": {
               "visual": 7
             },
-            "evidence": "source mat.wall, roughness 0.42 and metal 0.05; seven merged wall meshes. The wall texture is the Oedo-magenta pattern, which this table drops for the style bible field finish"
-          }
+            "evidence": "source mat.wall, roughness 0.42 and metal 0.05; seven merged wall meshes. The wall texture is the Oedo-magenta pattern; this table replaces it with a grey painted field (provisional, see below)"
+          },
+          "provisional": "OD-30 via R10 (#234): second-hand description of grey panels; not E27 fact"
         },
         "material_23": {
           "style": "vertical_safety_yellow",
@@ -173,7 +188,8 @@
               "visual": 1
             },
             "evidence": "source mat.nosing (#3a3a3a, roughness 0.7): stair nosings. The source is dark grey; the style bible gives stair nosings its safety-yellow signal"
-          }
+          },
+          "provisional": "representative finish from the style bible; not verified for E27 (R10 found no source)"
         },
         "material_24": {
           "style": "rubber_black",
