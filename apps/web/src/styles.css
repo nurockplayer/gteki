@@ -140,19 +140,43 @@ button.on { border-color: var(--accent); color: var(--accent); }
 /* ---- HUD ---- */
 .hud { position: absolute; z-index: 4; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom)); display: grid; justify-items: center; gap: 8px; pointer-events: none; }
 .hud > * { pointer-events: auto; }
-.hud-instruction { position: fixed; top: calc(64px + env(safe-area-inset-top)); left: 16px; right: 16px; width: fit-content; margin-inline: auto; padding: 10px 18px; border-radius: 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, 0.4); font-size: 18px; font-weight: 700; box-shadow: 0 0 30px rgba(94, 240, 255, 0.2); }
+/* The guide box holds the mascot beside the instruction (never on top of it); the instruction keeps priority and the mascot figure shrinks first. */
+.hud-guide { position: fixed; top: calc(64px + env(safe-area-inset-top)); left: 16px; right: 16px; width: fit-content; margin-inline: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.hud-instruction { flex: 1 1 auto; min-width: 0; padding: 10px 18px; border-radius: 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, 0.4); font-size: 18px; font-weight: 700; box-shadow: 0 0 30px rgba(94, 240, 255, 0.2); }
 .hud-row { display: flex; gap: 6px; padding: 6px; border-radius: 12px; background: var(--glass); backdrop-filter: blur(12px); }
 .app[data-mode="walk"] .sheet, .app[data-mode="guide"] .sheet { opacity: 0.0; pointer-events: none; }
 .app[data-mode="walk"] .hud, .app[data-mode="guide"] .hud { left: auto; right: 16px; transform: none; justify-items: end; }
 /* Centred in the band between its left and right insets (fit-content + auto margins); on desktop the guide's band starts right of the From/To panel. */
 @media (min-width: 721px) {
-  .app[data-mode="guide"] .hud-instruction { left: calc(16px + min(400px, 100vw - 32px) + 16px); }
+  .app[data-mode="guide"] .hud-guide { left: calc(16px + min(400px, 100vw - 32px) + 16px); }
   /* The toast below it shares that band's centre. */
   .app[data-mode="guide"] .toast { left: calc(50% + (16px + min(400px, 100vw - 32px)) / 2); }
 }
 
 .hint { position: absolute; z-index: 2; right: 16px; top: calc(60px + env(safe-area-inset-top)); font-size: 11px; color: var(--muted); padding: 6px 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.35); display: none; }
 .app[data-mode="walk"] .hint { display: block; }
+
+/* ---- guide mascots (#132): placeholder art; transform/opacity animation only, off for reduced motion and the phone tier ---- */
+.mascot { display: flex; align-items: center; gap: 8px; pointer-events: none; }
+.mascot[hidden], .mascot-bubble[hidden] { display: none; }
+.mascot-figure { flex: 0 0 auto; width: 48px; height: 48px; transform-origin: 50% 100%; }
+.mascot-figure svg { display: block; width: 100%; height: 100%; }
+.mascot-bubble { max-width: 20em; padding: 6px 12px; border-radius: 12px; background: var(--glass-strong); border: 1px solid rgba(94, 240, 255, 0.4); font-size: 13px; line-height: 1.45; }
+.mascot[data-character="cat"] .mascot-bubble { border-color: rgba(255, 200, 87, 0.45); }
+.mascot[data-motion="on"] .mascot-bubble { animation: mascot-pop 0.18s ease-out; }
+.mascot[data-motion="on"][data-speaking="true"] .mascot-figure { animation: mascot-bob 1.2s ease-in-out 3; }
+@keyframes mascot-pop { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes mascot-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.mascot[data-motion="off"], .mascot[data-motion="off"] * { animation: none !important; transition: none !important; }
+/* In the guide box the mascot's parts join its flex row: figure | instruction, with the bubble wrapping below. */
+.hud-guide .mascot { display: contents; }
+.hud-guide .mascot[hidden] { display: none; }
+.hud-guide .mascot-figure { order: 0; }
+.hud-guide .hud-instruction { order: 1; }
+.hud-guide .mascot-bubble { order: 2; flex: 1 0 100%; }
+.sheet > .mascot { padding: 0 14px 14px; }
+.card .mascot { margin: 4px 0 8px; }
+.results .mascot { padding: 8px 12px; }
 
 /* ---- POI labels ---- */
 .poi-label {
@@ -212,8 +236,12 @@ button.on { border-color: var(--accent); color: var(--accent); }
   .hud-row { flex-wrap: wrap; justify-content: center; }
   .hud-instruction { font-size: 16px; text-align: center; }
 }
+@media (max-width: 480px) {
+  .mascot-figure { width: 32px; height: 32px; }
+}
 
 /* ---- reduced motion: UI transitions and animations off (guide playback in the 3D view is content, not decoration) ---- */
 @media (prefers-reduced-motion: reduce) {
+  .mascot, .mascot * { animation: none !important; }
   *, *::before, *::after { transition-duration: 0.001ms !important; transition-delay: 0s !important; animation-duration: 0.001ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
 }

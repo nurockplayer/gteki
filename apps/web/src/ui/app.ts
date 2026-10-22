@@ -12,6 +12,7 @@ import { stationClock } from "../stationClock.ts";
 import { sourceCredit } from "../credits.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { LiveRegion, routeLiveMessage, searchLiveMessage } from "./live.ts";
+import { MascotSlot, type MascotEvent } from "./mascot.ts";
 import { watchReducedMotion } from "./motion.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
@@ -83,6 +84,7 @@ export class App {
     panel: el("section", "panel"),
     more: el("button", "ghost more", "⋯"),
     live: new LiveRegion(() => this.t),
+    mascot: new MascotSlot(() => this.t, (text) => this.ui.live.announce(text)),
   };
   /** Listbox state of the two search comboboxes. */
   private readonly combo: Record<"from" | "to", ComboState> = { from: COMBO_CLOSED, to: COMBO_CLOSED };
@@ -106,7 +108,10 @@ export class App {
       },
     });
     this.explorer.setGuideTier(readGuideTier());
-    watchReducedMotion((reduce) => this.explorer.setReducedMotion(reduce));
+    watchReducedMotion((reduce) => {
+      this.explorer.setReducedMotion(reduce);
+      this.ui.mascot.setMotion(reduce, this.explorer.qualityLevel === "low");
+    });
     this.exposeTestHooks();
     this.s.entries = await listStations();
     this.renderStationSelect();
@@ -238,6 +243,7 @@ export class App {
     this.ui.toInput.value = "";
     this.closeResults("from");
     this.closeResults("to");
+    this.ui.mascot.clear();
     this.ui.sheet.innerHTML = "";
     this.renderSpawnChips(undefined);
     this.toast(this.t.loading);
@@ -376,6 +382,7 @@ export class App {
       none.setAttribute("role", "option");
       none.setAttribute("aria-disabled", "true");
       box.append(none);
+      this.mascotSay({ kind: "search_empty" }, box);
       this.setCombo(which, { open: true, count: 0, active: -1 });
       return;
     }
@@ -406,6 +413,7 @@ export class App {
 
   /** Close one results list (focus is left alone). */
   private closeResults(which: "from" | "to"): void {
+    this.releaseMascot(which === "from" ? this.ui.fromResults : this.ui.toResults);
     this.setCombo(which, COMBO_CLOSED);
   }
 
@@ -520,6 +528,7 @@ export class App {
 
   private renderSheet(): void {
     const sheet = this.ui.sheet;
+    this.releaseMascot(sheet);
     sheet.innerHTML = "";
     const r = this.s.route;
     const b = this.s.loaded?.bundle;
@@ -530,6 +539,8 @@ export class App {
       const card = el("div", "card no-route");
       card.append(el("h2", undefined, t.noRoute), el("p", undefined, t.noRouteWhy[r.reason] ?? r.message));
       sheet.append(card);
+      // A sibling of the frozen card, so the card's own text and structure stay untouched.
+      this.mascotSay({ kind: "no_path", reason: r.reason }, sheet);
       return;
     }
     const card = el("div", "card route");
@@ -556,6 +567,7 @@ export class App {
     if (this.s.polyline.some((p) => !p.zKnown)) badge(t.symbolicHeight, "muted");
     if (r.operatorIds.length > 1) badge(`${t.operators}: ${r.operatorIds.join(" → ")}`, "info");
     card.append(badges);
+    if (r.unknowns.length > 0) this.mascotSay({ kind: "route_unknowns" }, card);
 
     const actions = el("div", "actions");
     const guide = el("button", "primary", t.guide);
@@ -608,13 +620,17 @@ export class App {
 
   private renderHud(): void {
     const hud = this.ui.hud;
+    this.releaseMascot(hud);
     hud.innerHTML = "";
     const mode = this.explorer.currentMode;
     this.announceInstruction();
     if (mode === "overview") { this.trackInstruction(); return; }
     const t = this.t;
     const ins = this.s.instructions[this.s.activeInstruction];
-    if (mode === "guide" && ins) hud.append(el("div", "hud-instruction", ins.text));
+    if (mode === "guide" && ins) {
+      this.ui.mascot.clear();
+      hud.append(this.guideBox(ins.text));
+    }
     const row = el("div", "hud-row");
     if (mode === "guide") {
       // Built from the explorer's state; instruction changes then go through updateGuideHud, so the controls stay put under the pointer.
@@ -670,7 +686,7 @@ export class App {
 
   /** Keep `--hud-clear` (the guide instruction's bottom edge + 8 px) current for the toast, which sits below the instruction while one shows; unset otherwise. */
   private trackInstruction(): void {
-    const cur = this.ui.hud.querySelector(".hud-instruction");
+    const cur = this.ui.hud.querySelector(".hud-guide");
     if (cur !== this.instructionEl) {
       this.instructionSize?.disconnect();
       this.instructionEl = cur;
@@ -688,9 +704,9 @@ export class App {
     if (this.explorer.currentMode !== "guide" || !pause) { this.renderHud(); return; }
     const ins = this.s.instructions[this.s.activeInstruction];
     const cur = hud.querySelector(".hud-instruction");
-    if (!ins) cur?.remove();
+    if (!ins) hud.querySelector(".hud-guide")?.remove();
     else if (cur) cur.textContent = ins.text;
-    else hud.prepend(el("div", "hud-instruction", ins.text));
+    else hud.prepend(this.guideBox(ins.text));
     pause.textContent = this.explorer.guidePaused ? this.t.resume : this.t.pause;
     this.announceInstruction();
     this.trackInstruction();
@@ -702,8 +718,34 @@ export class App {
   private announceInstruction(): void {
     const ins = this.explorer.currentMode === "guide" ? this.s.instructions[this.s.activeInstruction] ?? null : null;
     if (ins === this.spokenInstruction) return;
+    const changed = ins !== null && this.spokenInstruction !== null;
     this.spokenInstruction = ins;
-    if (ins) this.ui.live.announce(ins.text);
+    if (!ins) return;
+    this.ui.live.announce(ins.text);
+    // A nudge only: the instruction text itself is the router's job (and was just announced).
+    if (changed && this.ui.hud.contains(this.ui.mascot.root)) this.ui.mascot.say({ kind: "turn" });
+  }
+
+  /** The guide box: the mascot beside the instruction text, never over it. */
+  private guideBox(text: string): HTMLElement {
+    const box = el("div", "hud-guide");
+    this.ui.mascot.setResident(true);
+    box.append(this.ui.mascot.root, el("div", "hud-instruction", text));
+    return box;
+  }
+
+  /** Move the one mascot into `host` and let it speak (it is shared; the last place to ask wins). */
+  private mascotSay(ev: MascotEvent, host: Element): void {
+    this.ui.mascot.setResident(false);
+    host.append(this.ui.mascot.root);
+    this.ui.mascot.say(ev);
+  }
+
+  /** Hide the mascot if it currently lives in `host` (which is about to be emptied or closed). */
+  private releaseMascot(host: Element): void {
+    if (!host.contains(this.ui.mascot.root)) return;
+    this.ui.mascot.clear();
+    this.ui.mascot.setResident(false);
   }
 
   /** Guide along the route, stopping where each wait for an opening happens. */
@@ -742,6 +784,7 @@ export class App {
         // A route ending on a stair/escalator/ramp connector has not reached the destination: say so.
         const last = this.s.instructions[this.s.instructions.length - 1];
         this.toast(last?.connector ? last.text : this.t.arrived, 2500);
+        this.ui.mascot.say({ kind: last?.connector ? "arrival_connector" : "arrival" });
       }
     }
   }
@@ -834,6 +877,7 @@ export class App {
       hud: () => [...this.ui.hud.querySelectorAll("button")].map((b) => b.textContent),
       labels: () => this.explorer.labelInfo(),
       quality: () => this.explorer.qualityLevel,
+      mascot: () => this.ui.mascot.info(),
       avatar: () => this.explorer.avatarEnu,
       sceneInfo: () => this.explorer.sceneInfo(),
       phase: () => this.explorer.phase,
