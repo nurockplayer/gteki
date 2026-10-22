@@ -113,7 +113,8 @@ Open rights questions from Issues #39 and #26 and the committed rights records. 
 - **Question:** Do we treat the CKAN package's PDL 1.0 as covering both E27 resources, although each resource-level licence is `null`?
 - **Yes:** E27-derived candidate graphs have a licence basis, still needing attribution and a processing notice. They also stay `UNVERIFIED`.
 - **No:** E27 data stays internal. Nothing ships either way today.
-- **Evidence:** HANDOFF "Open question (rights, Hokonavi E27 scope)". The package snapshot is not acquired on this base; the cited SHA-256 comes from a reference run. No rights record exists. Source: HANDOFF; not raised in #39 or #26.
+- **Conflict, resolved by the Owner (recorded 2026-10-22 JST).** The Owner answered Q11 **No** (#39 comment 6324726321, 2026-10-21T19:31:08Z) against the option text above. Earlier, the Owner had already merged PR #16 (Owner comment 2026-10-21T10:31:49Z), overriding its HOLD and accepting publication of the Shinjuku slice, which includes E27-derived data. A literal reading of "No" conflicts with E27 already shipping. **Reading put to the Owner as option (a):** the #16 override stands as the shipping basis, and "No" means only that the package PDL 1.0 is not taken as a licence basis for the two resources. Not a rights PASS. **Owner confirmed (a) on 2026-10-22 JST** (https://github.com/nurockplayer/gteki/issues/39#issuecomment-6325100917, 2026-10-21T19:50:48Z): E27 keeps shipping under the #16 override, and Q11 "No" means only that PDL 1.0 is not treated as covering the two resources. Open: `gap:reuse-after-publication` (ほこナビDP inquiry about reuse after 2027-03-12).
+- **Evidence:** HANDOFF "Open question (rights, Hokonavi E27 scope)". Answered in #39 comment 6324726321 (see the conflict note above).
 - **Default:** No.
 
 ### 12. Roads (b) and Shinjuku
