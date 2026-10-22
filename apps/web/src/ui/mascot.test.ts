@@ -72,6 +72,20 @@ describe("mascotLine: event -> line", () => {
       expect(mascotLine(t, { kind: "turn" })).toMatchObject({ character: "dog", expression: "encourage", lineKey: "turn", announce: false, transient: true });
     });
 
+    it(`load_error: cat, sorry, announced because the error card says nothing (${lang})`, () => {
+      expect(mascotLine(t, { kind: "load_error" })).toMatchObject({ character: "cat", expression: "sorry", lineKey: "load_error", line: t.mascot.loadError, announce: true, transient: false });
+    });
+
+    it(`scene_fallback: cat, sorry, not announced (the toast is), stays (${lang})`, () => {
+      expect(mascotLine(t, { kind: "scene_fallback" })).toMatchObject({ character: "cat", expression: "sorry", lineKey: "scene_fallback", line: t.mascot.sceneFallback, announce: false, transient: false });
+    });
+
+    it(`start_hint: dog, encourage, not announced, stays, and names the actual "to" field label (${lang})`, () => {
+      const m = mascotLine(t, { kind: "start_hint" })!;
+      expect(m).toMatchObject({ character: "dog", expression: "encourage", lineKey: "start_hint", line: t.mascot.startHint, announce: false, transient: false });
+      expect(m.line).toContain(t.to);
+    });
+
     it(`idle hides the bubble (${lang})`, () => {
       expect(mascotLine(t, { kind: "idle" })).toBeNull();
     });
@@ -83,10 +97,11 @@ describe("mascotLine: event -> line", () => {
     expect(mascotLine(t, { kind: "no_path", reason: "start_equals_goal" })!.expression).toBe("neutral");
   });
 
-  it("announce is true for arrival_connector and every state event, false for turn and arrival (the toast announces arrival)", () => {
+  it("announce is true for arrival_connector and the error/empty states; false for turn, arrival, scene_fallback and start_hint (said elsewhere or only a hint)", () => {
     const t = strings("en");
-    const events: MascotEvent[] = [{ kind: "arrival_connector" }, { kind: "no_path", reason: "no_path" }, { kind: "route_unknowns" }, { kind: "search_empty" }];
+    const events: MascotEvent[] = [{ kind: "arrival_connector" }, { kind: "no_path", reason: "no_path" }, { kind: "route_unknowns" }, { kind: "search_empty" }, { kind: "load_error" }];
     for (const ev of events) expect(mascotLine(t, ev)!.announce).toBe(true);
+    for (const kind of ["scene_fallback", "start_hint"] as const) expect(mascotLine(t, { kind })!.announce).toBe(false);
     expect(mascotLine(t, { kind: "turn" })!.announce).toBe(false);
     expect(mascotLine(t, { kind: "arrival" })!.announce).toBe(false);
   });
@@ -111,14 +126,15 @@ describe("truthfulness: lines are fixed strings that cannot carry route facts", 
 
     it(`the line table is only strings, no functions to interpolate with (${lang})`, () => {
       const all = leaves(t.mascot, "mascot");
-      expect(all.length).toBeGreaterThanOrEqual(11);
+      expect(all.length).toBeGreaterThanOrEqual(14);
       for (const [path, v] of all) expect(typeof v, path).toBe("string");
     });
 
     it(`no digits, units, directions or floors in any line (${lang})`, () => {
       for (const [path, v] of leaves(t.mascot, "mascot")) {
         const line = v as string;
-        expect(line, path).not.toMatch(/[0-9０-９]/);
+        // "3D" is the one UI term allowed to carry a digit (the scene_fallback line); it is no route fact.
+        expect(line.replaceAll("3D", ""), path).not.toMatch(/[0-9０-９]/);
         expect(line, path).not.toMatch(/\{|\}|\$|%s/);
         if (lang === "ja") expect(line, path).not.toMatch(/[左右北南東西階分秒]|メートル|まっすぐ|エスカレーター|エレベーター|階段/);
         else expect(line, path).not.toMatch(/\b(left|right|straight|north|south|east|west|floors?|levels?|minutes?|seconds?|metres?|meters?|stairs?|escalators?|elevators?|lifts?)\b/i);
@@ -127,7 +143,7 @@ describe("truthfulness: lines are fixed strings that cannot carry route facts", 
 
     it(`mascotLine returns the table's own text for every event, nothing built at runtime (${lang})`, () => {
       const table = new Set(leaves(t.mascot, "mascot").map(([, v]) => v));
-      const events: MascotEvent[] = [{ kind: "arrival" }, { kind: "arrival_connector" }, { kind: "route_unknowns" }, { kind: "search_empty" }, { kind: "turn" }, ...REASONS.map((reason) => ({ kind: "no_path", reason }) as MascotEvent)];
+      const events: MascotEvent[] = [{ kind: "arrival" }, { kind: "arrival_connector" }, { kind: "route_unknowns" }, { kind: "search_empty" }, { kind: "turn" }, { kind: "load_error" }, { kind: "scene_fallback" }, { kind: "start_hint" }, ...REASONS.map((reason) => ({ kind: "no_path", reason }) as MascotEvent)];
       for (const ev of events) expect(table.has(mascotLine(t, ev)!.line), JSON.stringify(ev)).toBe(true);
     });
 

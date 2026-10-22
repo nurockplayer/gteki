@@ -177,6 +177,7 @@ button.on { border-color: var(--accent); color: var(--accent); }
 .sheet > .mascot { padding: 0 14px 14px; }
 .card .mascot { margin: 4px 0 8px; }
 .results .mascot { padding: 8px 12px; }
+.panel > .mascot { margin-top: 10px; }
 
 /* ---- POI labels ---- */
 .poi-label {

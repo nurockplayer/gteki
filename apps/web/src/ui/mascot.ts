@@ -12,6 +12,9 @@ export type MascotEvent =
   | { kind: "route_unknowns" }
   | { kind: "search_empty" }
   | { kind: "turn" }
+  | { kind: "load_error" }
+  | { kind: "scene_fallback" }
+  | { kind: "start_hint" }
   | { kind: "idle" };
 
 export interface MascotLine {
@@ -54,6 +57,14 @@ export function mascotLine(t: Strings, ev: MascotEvent): MascotLine | null {
       return { character: "dog", expression: "encourage", lineKey: "search_empty", line: m.searchEmpty, announce: true, transient: false };
     case "turn":
       return { character: "dog", expression: "encourage", lineKey: "turn", line: m.turn, announce: false, transient: true };
+    case "load_error":
+      // The error card announces nothing itself, so this line is the announcement.
+      return { character: "cat", expression: "sorry", lineKey: "load_error", line: m.loadError, announce: true, transient: false };
+    case "scene_fallback":
+      // The sceneFallback toast already announces the fallback.
+      return { character: "cat", expression: "sorry", lineKey: "scene_fallback", line: m.sceneFallback, announce: false, transient: false };
+    case "start_hint":
+      return { character: "dog", expression: "encourage", lineKey: "start_hint", line: m.startHint, announce: false, transient: false };
     case "idle":
       return null;
   }

@@ -96,6 +96,10 @@ const STRINGS = {
       routeUnknowns: "まだ確認できていないところがあるの。そこは、わたしにはわからないよ。バッジを見てね。",
       searchEmpty: "ほかのことばで探してみよう！",
       turn: "つぎの案内は、となりに出ているよ！",
+      loadError: "駅のデータを読み込めなかったの。ほかの駅を選んでみてね。",
+      sceneFallback: "3Dが表示できなかったから、線の図で見てね。",
+      /** Names the actual `to` field label. */
+      startHint: "行きたい場所を『目的地』で探してね。",
     },
     language: "English",
   },
@@ -191,6 +195,10 @@ const STRINGS = {
       routeUnknowns: "Some parts aren't confirmed yet, and I don't know them. Check the badges.",
       searchEmpty: "Let's try other words!",
       turn: "Your next step is shown next to me!",
+      loadError: "I couldn't load this station's data. Please try another station.",
+      sceneFallback: "The 3D view didn't load, so here's the line map.",
+      /** Names the actual `to` field label. */
+      startHint: "Search for where you want to go under \"To\".",
     },
     language: "日本語",
   },

@@ -255,6 +255,8 @@ export class App {
       this.s.search = createSearchIndex(loaded.bundle);
       if (!(await this.explorer.loadStation(loaded, this.s.router)) || !current()) return;
       this.toast(this.explorer.sceneError ? `${this.t.sceneFallback}: ${this.explorer.sceneError}` : "", this.explorer.sceneError ? 6000 : 0);
+      // Beneath the search fields (the toast fades): the 3D scene failed and the line map is shown instead.
+      if (this.explorer.sceneError) this.mascotSay({ kind: "scene_fallback" }, this.ui.panel);
     } catch (err) {
       if (!current()) return;
       this.s.loaded = null;
@@ -285,6 +287,8 @@ export class App {
     this.ui.sheet.append(box);
     this.ui.sheet.classList.add("open");
     this.toast("");
+    // A sibling of the error card; the card announces nothing, so the mascot line is the announcement.
+    this.mascotSay({ kind: "load_error" }, this.ui.sheet);
   }
 
   /** Once both ends are chosen, fold options away (phone layout uses this to free the 3D view). */
@@ -309,6 +313,7 @@ export class App {
     this.ui.toInput.value = this.s.destination ? this.poiName(this.s.destination) : "";
     if (b) this.explorer.showPois(b, (p) => this.poiName(p), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
     this.computeRoute();
+    this.syncPanelMascot();
   }
 
   private renderBanner(b: StationBundle | undefined): void {
@@ -433,6 +438,25 @@ export class App {
     else box.removeAttribute("role");
     applyAria(input, inputAria(state, box.id));
     box.querySelectorAll('[role="option"]').forEach((o, i) => o.setAttribute("aria-selected", String(i === state.active)));
+    this.syncPanelMascot();
+  }
+
+  /**
+   * The mascot's two panel states. start_hint (dog, under the fields) shows while the station is ready with no
+   * destination, no route and no results list open; it never displaces another line. scene_fallback is only
+   * re-said here so it follows the language.
+   */
+  private syncPanelMascot(): void {
+    const m = this.ui.mascot;
+    const key = m.info().lineKey;
+    if (key === "scene_fallback") { this.mascotSay({ kind: "scene_fallback" }, this.ui.panel); return; }
+    const want = this.stationReady && !this.s.destination && !this.s.route && !this.combo.from.open && !this.combo.to.open;
+    if (want && (key === null || key === "start_hint")) {
+      this.mascotSay({ kind: "start_hint" }, this.ui.panel, this.ui.spawnChips);
+    } else if (!want && key === "start_hint") {
+      m.clear();
+      m.setResident(false);
+    }
   }
 
   /** Endpoints must come from the station that is loaded now (a stale result list may still be clickable). */
@@ -735,9 +759,9 @@ export class App {
   }
 
   /** Move the one mascot into `host` and let it speak (it is shared; the last place to ask wins). */
-  private mascotSay(ev: MascotEvent, host: Element): void {
+  private mascotSay(ev: MascotEvent, host: Element, before: Node | null = null): void {
     this.ui.mascot.setResident(false);
-    host.append(this.ui.mascot.root);
+    host.insertBefore(this.ui.mascot.root, before);
     this.ui.mascot.say(ev);
   }
 
