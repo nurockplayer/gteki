@@ -71,6 +71,7 @@ for (const key of STATIONS) {
       const budgetMs = Math.max(90_000, route.totalLengthM * 1000 + 30_000);
       let i = 0;
       let still = 0;
+      let stillSince = Date.now();
       let last = "";
       const perf = await perfWindow(page, 2);
       while (Date.now() - t0 < budgetMs) {
@@ -84,11 +85,16 @@ for (const key of STATIONS) {
         frames.push({ t: Date.now() - t0, instruction, avatar, stats: png ? await imageStats(page, png) : null, overlaps: png ? await labelUiOverlaps(page) : null });
         // The arrival toast lasts 2.5 s; the probe's observer records it even between samples.
         if ((await toasts(page)).some(isArrival)) arrived = true;
-        const pos = JSON.stringify(avatar, (_k, v) => (typeof v === "number" ? Math.round(v * 10) / 10 : v));
-        still = pos === last ? still + 1 : 0;
+        // Flow-only (CI, SwiftShader) runs the Shinjuku scene at 2–3 fps, so the avatar can move under 0.1 m between
+        // samples: compare at 1 cm there, and call it parked only after 20 s without movement (#261). GPU runs keep 0.1 m / 2 samples.
+        const q = FLOW_ONLY ? 100 : 10;
+        const pos = JSON.stringify(avatar, (_k, v) => (typeof v === "number" ? Math.round(v * q) / q : v));
+        if (pos === last) still++;
+        else { still = 0; stillSince = Date.now(); }
         last = pos;
+        const parked = still >= 2 && (!FLOW_ONLY || Date.now() - stillSince >= 20_000);
         // Playback ended (avatar parked at the end) or the user-visible mode changed.
-        if (arrived || still >= 2 || (await hooks.mode(page)) !== "guide") break;
+        if (arrived || parked || (await hooks.mode(page)) !== "guide") break;
         if (FLOW_ONLY && seen.size >= 2) break;
       }
       const end = await hooks.avatar(page);

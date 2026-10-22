@@ -9,6 +9,7 @@ const Scene = preload("res://addons/gteki/gteki_scene.gd")
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
 const FollowCamera = preload("res://addons/gteki/gteki_follow_camera.gd")
 const Station = preload("res://addons/gteki/gteki_station.gd")
+const HqLights = preload("res://addons/gteki/gteki_hq_lights.gd")
 
 const DT := 1.0 / 60.0
 const EPSILON := 0.001
@@ -78,6 +79,52 @@ func test_rules() -> void:
 	var slid: Variant = Walker.slide_along(Vector3.ZERO, Vector3(1, 0, 1), Vector3(0, 0, -1))
 	check(slid != null and slid.distance_to(Vector3(1, 0, 0)) < EPSILON, "slide_along keeps the component along the surface")
 	check(Walker.slide_along(Vector3.ZERO, Vector3(0, 0, 1), Vector3(0, 0, -1)) == null, "a head-on move slides nowhere")
+	check_avatar_lighting()
+
+
+## #251 review: with a station bake applied the added lights must reach the avatar and no station mesh; the unlit
+## snapshot keeps them on every layer.
+func check_avatar_lighting() -> void:
+	var host := Node3D.new()
+	root.add_child(host)
+	var lights := HqLights.build(host)
+	var walker := Walker.new()
+	host.add_child(walker)
+	var meshes: Array[MeshInstance3D] = []
+	var stack: Array[Node] = [walker.avatar]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		stack.append_array(node.get_children())
+		if node is MeshInstance3D:
+			var mesh: MeshInstance3D = node
+			meshes.append(mesh)
+	check(meshes.size() >= 2, "avatar: body and nose meshes exist")
+	var off_layer := 0
+	for mesh in meshes:
+		if mesh.layers != Walker.AVATAR_LAYER:
+			off_layer += 1
+	check(off_layer == 0, "avatar: every mesh draws on AVATAR_LAYER")
+	check((Walker.AVATAR_LAYER & HqLights.WORLD_LAYER) == 0, "avatar: AVATAR_LAYER is not a station layer")
+	var camera := FollowCamera.new()
+	check((camera.cull_mask & Walker.AVATAR_LAYER) != 0, "avatar: the camera renders the avatar layer")
+	camera.free()
+	HqLights.apply(lights, true)
+	var on_avatar := 0
+	var on_station := 0
+	for light in lights:
+		if (light.light_cull_mask & Walker.AVATAR_LAYER) != 0:
+			on_avatar += 1
+		if (light.light_cull_mask & HqLights.WORLD_LAYER) != 0:
+			on_station += 1
+	check(on_avatar >= 1, "lightmap on: a light affects the avatar layer")
+	check(on_station == 0, "lightmap on: no light's cull mask includes a station mesh layer")
+	HqLights.apply(lights, false)
+	var lit_world := 0
+	for light in lights:
+		if (light.light_cull_mask & HqLights.WORLD_LAYER) != 0:
+			lit_world += 1
+	check(lit_world == lights.size(), "lightmap off: the unlit snapshot is lit")
+	host.queue_free()
 
 
 # ---- synthetic world: ground rules and the wall band rule on known geometry ------------------------------------

@@ -8,22 +8,83 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import type { Floor, Poi, StationBundle } from "@gteki/schema";
 import { createRouter, routeBetween, type RouteEndpoint, type RouteProfile, type RouteResult } from "@gteki/navigation";
 import { createSearchIndex } from "@gteki/search";
-import { loadShinjukuBundle } from "../../data/bundle.ts";
-import planJson from "../../data/plan.json";
 import { buildStation } from "../../scene/build.ts";
-import { pointInRings, type Plan } from "../../scene/layout.ts";
-import { Player, PLAYER_RADIUS, type GuidePoint, type MoveInput } from "./player.ts";
-import { floorLabel, narrate, UNKNOWN_LABELS, type Maneuver } from "./narrate.ts";
+import { pointInRings, WalkWorld, type Plan } from "../../scene/layout.ts";
+import { Player, PLAYER_RADIUS, sweepCamera, chooseFollowCamera, type GuidePoint, type MoveInput } from "./player.ts";
+import { floorLabel, narrate, summarizeRoute, routeMapFrame, nearbyExits, explainStepFreeFailure, UNKNOWN_LABELS, type Maneuver } from "./narrate.ts";
 import { createAvatar } from "./avatar.ts";
 import { createStationAudio } from "./audio.ts";
 import { CROWD_LIMIT, createCrowd } from "./crowd.ts";
 
-const { bundle } = loadShinjukuBundle();
-const plan = planJson as unknown as Plan;
+import { placeProjectedLabel, type HudRect } from "./hud-layout.ts";
+import { createStartupTimings, paintStartupFrame } from "./hud-startup.ts";
+
+const startup = createStartupTimings();
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const params = new URLSearchParams(location.search);
 const isTouch = matchMedia("(pointer: coarse)").matches;
 const quality: "low" | "high" = (params.get("q") as "low" | "high") ?? (isTouch ? "low" : "high");
+const motionPreference = matchMedia("(prefers-reduced-motion: reduce)");
+let reducedMotion = motionPreference.matches;
+let bobEnabled = !reducedMotion;
+let journey: "idle" | "preview" | "walking" | "guiding" | "arrived" = "idle";
+function setJourney(value: typeof journey) {
+  journey = value;
+  document.body.dataset.journey = value;
+  document.body.classList.toggle("has-route", value !== "idle");
+}
+function setPanel(expanded: boolean, focus = false) {
+  $("panel").classList.toggle("collapsed", !expanded);
+  $("panel-content").hidden = !expanded;
+  $("search-pill").setAttribute("aria-expanded", String(expanded));
+  $("sheet-handle").setAttribute("aria-expanded", String(expanded));
+  $("search-chevron").textContent = expanded ? "⌃" : "⌄";
+  document.body.classList.toggle("sheet-open", expanded);
+  if (!expanded && $("panel-content").contains(document.activeElement)) $("search-pill").focus();
+  if (focus) { document.body.classList.add("editing-route"); $("to").focus(); }
+}
+$("search-pill").onclick = () => setPanel(!!$("panel-content").hidden);
+$("sheet-handle").onclick = () => setPanel(!!$("panel-content").hidden);
+let sheetStartY = 0;
+$("sheet-handle").addEventListener("pointerdown", (e) => { sheetStartY = e.clientY; $("sheet-handle").setPointerCapture(e.pointerId); });
+$("sheet-handle").addEventListener("pointerup", (e) => {
+  if (Math.abs(e.clientY - sheetStartY) > 24) {
+    setPanel(e.clientY < sheetStartY);
+    // Suppress the click following a completed drag.
+    $("sheet-handle").onclick = null;
+    setTimeout(() => { $("sheet-handle").onclick = () => setPanel(!!$("panel-content").hidden); }, 0);
+  }
+});
+$("btn-bob").setAttribute("aria-pressed", String(bobEnabled));
+$("btn-bob").onclick = () => {
+  bobEnabled = !bobEnabled && !reducedMotion;
+  $("btn-bob").setAttribute("aria-pressed", String(bobEnabled));
+};
+motionPreference.addEventListener("change", (e) => {
+  reducedMotion = e.matches;
+  if (reducedMotion) bobEnabled = false;
+  $("btn-bob").setAttribute("aria-pressed", String(bobEnabled));
+});
+
+/** Completed phases, rather than an invented download percentage. */
+function loadingStep(completed: number, ja: string, en: string) {
+  $("loading-step").textContent = `${ja} · ${en}`;
+  $("loading-count").textContent = `${completed} / 4`;
+  $("loading-progress").setAttribute("aria-valuenow", String(completed));
+  $("loading-progress").setAttribute("aria-valuetext", `${completed} / 4 · ${ja} · ${en}`);
+  $("loading-fill").style.transform = `scaleX(${completed / 4})`;
+}
+loadingStep(0, "駅のデータを読み込み中", "Reading station data");
+await paintStartupFrame();
+startup.milestone("loading-paint");
+startup.begin("bundle");
+// Defer the JSON modules until the loading veil has had a chance to paint.
+const [bundleModule, planModule] = await Promise.all([import("../../data/bundle.ts"), import("../../data/plan.json")]);
+const { bundle } = bundleModule.loadShinjukuBundle();
+const plan = planModule.default as unknown as Plan;
+startup.complete("bundle");
+loadingStep(1, "駅の空間を構築中", "Building station spaces");
+await paintStartupFrame();
 
 // ------------------------------------------------------------ renderer
 const canvas = $<HTMLCanvasElement>("view");
@@ -33,6 +94,8 @@ renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 0.92;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+// Post passes render too; reset stats once per frame so QA reads whole-frame calls/triangles.
+renderer.info.autoReset = false;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#0c0d10");
@@ -46,7 +109,7 @@ scene.add(fill);
 
 const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.05, 400);
 
-const station = buildStation(bundle, plan, { quality });
+const station = startup.phase("station", () => buildStation(bundle, plan, { quality }));
 scene.add(station.root);
 const world = station.world;
 const layout = station.layout;
@@ -78,8 +141,13 @@ const nodeFare = new Map(bundle.nodes.map((n) => {
 const levelFloors = bundle.floors.filter((f) => !f.intermediate).sort((a, b) => b.renderElevationM - a.renderElevationM);
 function floorAtZ(z: number): Floor {
   let best = levelFloors[0]!;
-  for (const f of levelFloors) if (Math.abs(f.renderElevationM - z) < Math.abs(best.renderElevationM - z)) best = f;
-  // between levels on stairs: report the nearer
+  // Between levels on stairs: report the nearer. Symbolic heights pin 1F and street level both at 0 m;
+  // on a tie prefer the floor nearest street level, so the street exits do not read "1F".
+  const better = (f: Floor) => {
+    const d = Math.abs(f.renderElevationM - z) - Math.abs(best.renderElevationM - z);
+    return d < -1e-6 || (Math.abs(d) <= 1e-6 && Math.abs(f.ordinal ?? 0) < Math.abs(best.ordinal ?? 0));
+  };
+  for (const f of levelFloors) if (better(f)) best = f;
   return best;
 }
 /**
@@ -139,66 +207,111 @@ if (gatePoi?.displayPosition) {
 const player = new Player(world, spawnPos);
 if (gatePoi?.displayPosition) player.heading = Math.atan2(gatePoi.displayPosition.x - spawnPos.x, gatePoi.displayPosition.y - spawnPos.y);
 
+// The camera clears human-height props. Walker collision remains the complete world.
+// Full-height architecture and floor/ceiling slabs still constrain every camera candidate.
+const cameraWorld = new WalkWorld({ ...layout, runWalls: [], levels: layout.levels.map((level) => ({
+  ...level, railings: [], walls: level.walls.filter((wall) => wall.zMax - wall.zMin > 1.9),
+})) });
+cameraWorld.addWalls(station.propWalls.filter((wall) => wall.zMax - wall.zMin > 1.9));
+// Soffits (landing/shaft roofs, run undersides) too: without them the boom rose through a landing roof
+// and looked down on the station from above it.
+const cameraSurfaces = [...layout.levels.flatMap((l) => [...l.slabs, ...l.ceilings]), ...layout.pads, ...layout.streetPads, ...layout.soffits];
+// Submit core geometry from the same safe spawn view and composer used in play.
+// This avoids compiling extra materials for a separate preview camera or pipeline.
+const previewHead = { x: player.x, y: player.y, z: player.z + 1.1 };
+const previewEye = chooseFollowCamera(previewHead, player.heading, -0.28, 3.6, cameraWorld, cameraSurfaces);
+camera.position.set(previewEye.x, previewEye.z, -previewEye.y);
+camera.lookAt(player.x + Math.sin(player.heading) * 1.15, previewHead.z + 0.15, -(player.y + Math.cos(player.heading) * 1.15));
+fill.position.set(player.x, player.z + 2.4, -player.y);
+station.setViewer?.({ x: camera.position.x, y: -camera.position.z, z: camera.position.y });
+renderer.info.reset();
+composer.render(0);
+startup.milestone("first-frame");
+$("loading").classList.add("has-frame");
+loadingStep(2, "通行人を準備中", "Preparing ambient commuters");
+await paintStartupFrame();
+
 const avatar = createAvatar(THREE, 0);
 // Decorative ambient commuters (invented, not crowd data). ?crowd=0 disables.
 const crowdDefault = quality === "high" ? 36 : 16;
 const crowdParam = Number(params.get("crowd") ?? crowdDefault);
 const crowdMax = Number.isNaN(crowdParam) ? crowdDefault : Math.max(0, Math.min(CROWD_LIMIT, Math.floor(crowdParam)));
-const crowd = createCrowd(THREE, bundle, router, nodeZ, { max: crowdMax, seed: 27 });
+const crowd = startup.phase("crowd", () => createCrowd(THREE, bundle, router, nodeZ, { max: crowdMax, seed: 27, playerAvatar: avatar }));
 scene.add(crowd.group);
 scene.add(avatar.object);
 avatar.object.traverse((o) => ((o as THREE.Mesh).castShadow = false));
+loadingStep(3, "操作と表示を準備中", "Preparing controls and views");
+await paintStartupFrame();
+startup.begin("surface-hooks");
 
 // ------------------------------------------------------------ camera rig
 const cam = { yaw: player.heading, pitch: -0.18, dist: 3.6, firstPerson: false, userTurnedAt: -10 };
 const camPos = new THREE.Vector3();
 const camTarget = new THREE.Vector3();
+let cameraDistance = cam.dist;
+let stairPitch = 0;
+let transitionFocus = 0;
 let camInit = false;
+/** QA: fixed free camera in ENU metres (eye → look), used by the screenshot/recording harness. */
+let viewOverride: { eye: { x: number; y: number; z: number }; look: { x: number; y: number; z: number } } | null = null;
 function updateCamera(dt: number, t: number) {
-  // gentle auto-follow behind the character while moving and the user is not steering the camera
-  if (t - cam.userTurnedAt > 1.4 && player.speed > 0.4) {
-    let d = player.heading - cam.yaw;
-    d = Math.atan2(Math.sin(d), Math.cos(d));
-    cam.yaw += d * (1 - Math.exp(-1.6 * dt));
+  if (viewOverride) {
+    const { eye, look } = viewOverride;
+    camera.position.set(eye.x, eye.z, -eye.y);
+    camera.lookAt(look.x, look.z, -look.y);
+    avatar.object.visible = true;
+    return;
   }
-  const head = { x: player.x, y: player.y, z: player.z + (cam.firstPerson ? 1.62 : 1.45) };
-  const lv = floorAtZ(player.z);
-  const level = layout.levels.find((l) => l.floorId === lv.id);
-  const ceiling = level && Math.abs(player.z - level.z) < 0.4 ? level.ceilingZ - 0.25 : player.z + 2.5;
-  const fwd = { x: Math.sin(cam.yaw) * Math.cos(cam.pitch), y: Math.cos(cam.yaw) * Math.cos(cam.pitch), z: Math.sin(cam.pitch) };
-  let dist = cam.firstPerson ? 0 : cam.dist;
-  if (dist > 0) {
-    const back = { x: head.x - fwd.x * dist, y: head.y - fwd.y * dist };
-    const hit = world.firstWallHit(head, back, head.z - 0.2);
-    dist = Math.max(0.35, dist * hit - 0.25);
+  const onRun = Math.abs(player.climbing) > 0.15;
+  const target = player.guide?.[player.guideIndex];
+  const pathHeading = target && onRun ? Math.atan2(target.x - player.x, target.y - player.y) : player.heading;
+  // Stair framing follows the actual run even at the first captured guide frame.
+  if (t - cam.userTurnedAt > 1.4 && (player.speed > 0.05 || player.carriedByEscalator)) {
+    const d = Math.atan2(Math.sin(pathHeading - cam.yaw), Math.cos(pathHeading - cam.yaw));
+    cam.yaw += d * (camInit ? 1 - Math.exp(-(onRun ? 7 : 3) * dt) : 1);
   }
-  const want = new THREE.Vector3(head.x - fwd.x * dist, Math.min(head.z - fwd.z * dist, ceiling), -(head.y - fwd.y * dist));
-  const look = new THREE.Vector3(head.x + fwd.x * 4, head.z + fwd.z * 4, -(head.y + fwd.y * 4));
-  if (!camInit) {
+  const targetPitch = onRun ? -0.22 - Math.max(0, -player.climbing) * 0.06 : 0;
+  stairPitch += (targetPitch - stairPitch) * (camInit ? 1 - Math.exp(-5 * dt) : 1);
+  const bob = bobEnabled && !reducedMotion && !player.carriedByEscalator ? -Math.cos(player.stridePhase * 2) * 0.012 * Math.min(1, player.speed / 1.45) : 0;
+  const head = { x: player.x, y: player.y, z: player.z + (cam.firstPerson ? 1.62 : 1.1) + bob };
+  transitionFocus *= Math.exp(-3 * dt);
+  const pitch = cam.pitch - 0.1 + stairPitch - (reducedMotion ? 0 : transitionFocus * 0.04);
+  const safe = cam.firstPerson ? head : chooseFollowCamera(head, cam.yaw, pitch, cam.dist, cameraWorld, cameraSurfaces);
+  const want = new THREE.Vector3(safe.x, safe.z, -safe.y);
+  const lookAhead = cam.firstPerson ? 4 : 1.15;
+  const look = new THREE.Vector3(head.x + Math.sin(cam.yaw) * lookAhead, head.z + (cam.firstPerson ? Math.sin(cam.pitch) * 4 : 0.15), -(head.y + Math.cos(cam.yaw) * lookAhead));
+  if (!camInit || reducedMotion || cam.firstPerson) {
     camPos.copy(want);
     camTarget.copy(look);
     camInit = true;
   }
-  const k = 1 - Math.exp(-14 * dt);
-  camPos.lerp(want, k);
-  camTarget.lerp(look, 1 - Math.exp(-20 * dt));
+  camPos.lerp(want, 1 - Math.exp(-8 * dt));
+  camTarget.lerp(look, 1 - Math.exp(-12 * dt));
+  const final = sweepCamera(head, { x: camPos.x, y: -camPos.z, z: camPos.y }, cameraWorld, cameraSurfaces);
+  // Smoothing across two safe candidates can cross a corner. Use the safe candidate
+  // immediately in that case, then recover smoothly once the corridor opens.
+  const smoothedClearance = Math.hypot(final.x - head.x, final.y - head.y, final.z - head.z);
+  const candidateClearance = Math.hypot(safe.x - head.x, safe.y - head.y, safe.z - head.z);
+  if (smoothedClearance < Math.min(1.6, candidateClearance * 0.8)) camPos.copy(want);
+  else camPos.set(final.x, final.z, -final.y);
+  cameraDistance = Math.hypot(camPos.x - head.x, -camPos.z - head.y, camPos.y - head.z);
   camera.position.copy(camPos);
   camera.lookAt(camTarget);
-  avatar.object.visible = !cam.firstPerson && camPos.distanceTo(new THREE.Vector3(player.x, player.z + 1.2, -player.y)) > 0.9;
+  avatar.object.visible = !cam.firstPerson && cameraDistance >= 0.9;
 }
 
 // ------------------------------------------------------------ input
 const keys = new Set<string>();
 addEventListener("keydown", (e) => {
-  if ((e.target as HTMLElement).tagName === "INPUT") {
-    if (e.key === "Escape") (e.target as HTMLInputElement).blur();
+  if (e.key === "Escape") { setPanel(false); canvas.focus(); }
+  if ((e.target as HTMLElement).matches("input, button, summary, [contenteditable=true]") || document.querySelector("dialog[open]")) {
     return;
   }
   keys.add(e.code);
-  if (e.code === "Slash") (e.preventDefault(), $("to").focus());
+  if (e.code === "Slash") (e.preventDefault(), setPanel(true, true));
   if (e.code === "KeyV") cam.firstPerson = !cam.firstPerson;
   if (e.code === "KeyG") toggleGuide();
-  if (e.code === "KeyM") $("minimap").classList.toggle("big");
+  if (e.code === "KeyM") toggleMap();
   if (e.code === "KeyE") interact();
 });
 addEventListener("keyup", (e) => keys.delete(e.code));
@@ -208,6 +321,8 @@ let dragging: { id: number; x: number; y: number } | null = null;
 canvas.addEventListener("pointerdown", (e) => {
   if (e.pointerType === "touch" && e.clientX < innerWidth * 0.45) return;
   dragging = { id: e.pointerId, x: e.clientX, y: e.clientY };
+  canvas.focus();
+  if (journey !== "preview" && journey !== "arrived") setPanel(false);
   canvas.setPointerCapture(e.pointerId);
   audio.start().catch(() => {});
 });
@@ -262,11 +377,13 @@ const stick = { x: 0, y: 0, id: -1 as number, run: false };
   $("btn-run").addEventListener("click", () => {
     stick.run = !stick.run;
     $("btn-run").classList.toggle("on", stick.run);
+    $("btn-run").setAttribute("aria-pressed", String(stick.run));
   });
   $("btn-act").addEventListener("click", () => interact());
 }
 
 function readInput(): MoveInput {
+  if (document.querySelector("dialog[open]") || (document.activeElement as HTMLElement)?.matches("input, [contenteditable=true]")) return { forward: 0, strafe: 0, run: false };
   const f = (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0) + stick.y;
   const s = (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0) + stick.x;
   return { forward: Math.max(-1, Math.min(1, f)), strafe: Math.max(-1, Math.min(1, s)), run: keys.has("ShiftLeft") || keys.has("ShiftRight") || stick.run || Math.hypot(stick.x, stick.y) > 0.95 };
@@ -278,14 +395,16 @@ for (const e of station.escalators) audio.addEscalator(e.run.edgeId, e.run.a, e.
 $("btn-sound").addEventListener("click", async () => {
   await audio.start();
   audio.setMuted(!audio.muted);
-  $("btn-sound").textContent = audio.muted ? "🔇 音" : "🔊 音";
+  player.stridePhase = 0;
+  $("btn-sound").textContent = audio.muted ? "消音 Muted" : "音 Sound on";
 });
 canvas.addEventListener("pointerdown", async () => {
   if (audioPrimed) return;
   audioPrimed = true;
   await audio.start();
   audio.setMuted(false);
-  $("btn-sound").textContent = "🔊 音";
+  player.stridePhase = 0;
+  $("btn-sound").textContent = "音 Sound on";
 }, { once: false });
 let audioPrimed = false;
 
@@ -295,6 +414,7 @@ let fromPick: Pick = { kind: "here" };
 let toPick: Pick | null = null;
 let activeField: "from" | "to" = "to";
 const ICON: Record<string, [string, string]> = { exit: ["出", "exit"], ticket_gate: ["改", ""], platform: ["E", "platform"], elevator: ["EV", ""], toilet: ["WC", ""], escalator: ["⇅", ""], stairs: ["⇵", ""] };
+const CATEGORY: Record<string, string> = { exit: "出口 · Exit", ticket_gate: "改札 · Ticket gates", platform: "ホーム · Platform", elevator: "エレベーター · Elevator", toilet: "トイレ · Toilet", escalator: "エスカレーター · Escalator", stairs: "階段 · Stairs" };
 function poiName(p: Poi) {
   return { ja: p.names.find((n) => n.lang === "ja")?.text ?? p.names[0]!.text, en: p.names.find((n) => n.lang === "en")?.text ?? "" };
 }
@@ -306,6 +426,9 @@ function renderResults(q: string) {
     const li = document.createElement("li");
     li.innerHTML = `<span class="ico">◎</span><span class="meta"><b>現在地</b><small>Current location</small></span>`;
     li.onclick = () => choose({ kind: "here" });
+    li.tabIndex = 0;
+    li.setAttribute("role", "button");
+    li.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); li.click(); } };
     ul.appendChild(li);
   }
   for (const h of hits) {
@@ -317,6 +440,9 @@ function renderResults(q: string) {
     li.querySelector("b")!.textContent = nm.ja;
     li.querySelector("small")!.textContent = `${nm.en}${fl ? " · " + fl : ""}`;
     li.onclick = () => choose({ kind: "poi", poi: h.poi });
+    li.tabIndex = 0;
+    li.setAttribute("role", "button");
+    li.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); li.click(); } };
     ul.appendChild(li);
   }
 }
@@ -336,23 +462,45 @@ for (const id of ["from", "to"] as const) {
   const el = $<HTMLInputElement>(id);
   el.addEventListener("focus", () => {
     activeField = id;
+    document.body.classList.add("editing-route");
     renderResults(el.value);
-    $("panel").classList.remove("collapsed");
+    setPanel(true);
   });
   el.addEventListener("input", () => renderResults(el.value));
   el.addEventListener("keydown", (e) => {
     if (e.key === "Enter") ($("results").querySelector("li") as HTMLElement | null)?.click();
+    if (e.key === "ArrowDown") { e.preventDefault(); ($("results").querySelector("li") as HTMLElement | null)?.focus(); }
   });
 }
+$("results").addEventListener("keydown", (e) => {
+  if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+  e.preventDefault();
+  const choices = [...$("results").querySelectorAll<HTMLElement>("li")];
+  const i = choices.indexOf(document.activeElement as HTMLElement);
+  choices[(i + (e.key === "ArrowDown" ? 1 : -1) + choices.length) % choices.length]?.focus();
+});
 $("ticketed").addEventListener("change", () => computeRoute());
 $("stepfree").addEventListener("change", () => computeRoute());
 $("clear").addEventListener("click", () => clearRoute());
 $("guide").addEventListener("click", () => toggleGuide());
+$("guide-pause").addEventListener("click", () => toggleGuide());
+$("edit-route").onclick = () => {
+  if (player.guide) { resumeIndex = player.guideIndex; player.stopGuide(); setJourney("walking"); }
+  setPanel(true, true);
+};
+$("prompt").onclick = interact;
+$("new-destination").onclick = () => { clearRoute(); toPick = null; $<HTMLInputElement>("to").value = ""; fromPick = { kind: "here" }; $<HTMLInputElement>("from").value = ""; setPanel(true, true); };
+$("route-again").onclick = () => { clearRoute(); fromPick = { kind: "here" }; $<HTMLInputElement>("from").value = ""; setPanel(true, true); };
 
 // ------------------------------------------------------------ route
 let route: RouteResult | null = null;
 let maneuvers: Maneuver[] = [];
 let routePts: GuidePoint[] = [];
+let resumeIndex = 1;
+let lastVertical = -1;
+let toastUntil = 0;
+let cuePoint: GuidePoint | null = null;
+const ribbonPlayer = { value: new THREE.Vector3() };
 const ribbon = new THREE.Group();
 scene.add(ribbon);
 const chevronTex = (() => {
@@ -378,6 +526,9 @@ const chevronTex = (() => {
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
 })();
+addEventListener("pagehide", (e) => {
+  if (!e.persisted) { disposeRibbon(); chevronTex.dispose(); }
+});
 /** Today's calendar day at the station (Asia/Tokyo), "YYYY-MM-DD", for source staleness/expiry. */
 function stationToday(): string {
   const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date());
@@ -407,24 +558,50 @@ function computeRoute() {
         ? "改札内（または改札内外が未確認）の施設のため、「きっぷ・IC あり」なしでは案内できません。This place is inside, or not known to be outside, the paid area."
         : "条件を満たす検証済み経路がありません（例: 段差なし・改札外のみ）。No verified route satisfies the profile.",
       start_equals_goal: "すでに目的地にいます。You are already there.",
-      unknown_start: "出発地が不明です。",
-      unknown_goal: "目的地が不明です。",
+      unknown_start: "出発地が不明です。Unknown origin.",
+      unknown_goal: "目的地が不明です。Unknown destination.",
     };
+    if (profile().stepFree && r.reason === "no_path" && !/paid area/.test(r.message)) {
+      const refusal = explainStepFreeFailure(bundle, router, origin, goal, profile());
+      showRouteError(`${refusal.reason.ja} ${refusal.reason.en}`);
+      if (refusal.alternative) {
+        const alternative = refusal.alternative;
+        const button = document.createElement("button");
+        button.className = "ghost alternative";
+        const name = poiName(alternative.poi);
+        button.textContent = `段差なし: ${name.ja} · Step-free: ${name.en} · ${alternative.distanceM} m`;
+        button.onclick = () => {
+          toPick = { kind: "poi", poi: alternative.poi };
+          $<HTMLInputElement>("to").value = name.ja;
+          computeRoute();
+        };
+        $("route-error").appendChild(button);
+      }
+      return;
+    }
     return showRouteError(why[r.reason] ?? r.message);
   }
   clearRoute();
   route = r;
   maneuvers = narrate(bundle, r);
-  routePts = r.nodeIds.map((id, i) => ({ ...nodeById.get(id)!.position, z: nodeZ(id), nodeId: id, elevator: i > 0 && r.steps[i - 1]!.mode === "elevator" }));
+  routePts = r.nodeIds.map((id, i) => ({ ...nodeById.get(id)!.position, z: nodeZ(id), nodeId: id, elevator: i > 0 && r.steps[i - 1]!.mode === "elevator", escalator: i > 0 && r.steps[i - 1]!.mode === "escalator" }));
   // start the guide from the player's current position when starting "here"
   if (fromPick.kind === "here") routePts.unshift({ x: player.x, y: player.y, z: player.z, nodeId: "here" });
   drawRibbon();
   renderRoutePanel();
+  document.body.classList.remove("editing-route");
+  setJourney("preview");
+  setPanel(true);
+  $("search-label").textContent = `${poiName(goal).ja} · ${poiName(goal).en}`;
+  $("guide").focus();
 }
 function showRouteError(msg: string) {
   clearRoute();
+  $("results").replaceChildren();
   $("route-error").textContent = msg;
   $("route-error").classList.remove("hidden");
+  setPanel(true);
+  requestAnimationFrame(() => $("route-error").scrollIntoView({ block: "nearest" }));
 }
 function clearRoute() {
   route = null;
@@ -432,10 +609,16 @@ function clearRoute() {
   routePts = [];
   player.stopGuide();
   routeOffSince = -1;
+  resumeIndex = 1;
+  lastVertical = -1;
+  cuePoint = null;
+  setJourney("idle");
   disposeRibbon();
   $("route").classList.add("hidden");
   $("next").classList.add("hidden");
-  $("guide").textContent = "▶ 案内歩行 Guide";
+  for (const id of ["arrival", "journey-evidence", "maneuver-anchor", "destination-label", "floor-toast"]) $(id).classList.add("hidden");
+  $("guide").textContent = "▶ 出発 Start";
+  $("search-label").innerHTML = "どこへ行きますか？ <small>Find a destination</small>";
 }
 function disposeRibbon() {
   const materials = new Set<THREE.Material>();
@@ -449,8 +632,14 @@ function disposeRibbon() {
 }
 function drawRibbon() {
   disposeRibbon();
-  const ribbonMat = new THREE.MeshBasicMaterial({ map: chevronTex, transparent: true, depthWrite: false, color: "#ff5cc0", polygonOffset: true, polygonOffsetFactor: -4 });
-  const beaconMat = new THREE.MeshBasicMaterial({ color: "#ff3fae", transparent: true, opacity: 0.35, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+  const ribbonMat = new THREE.MeshBasicMaterial({ map: chevronTex, transparent: true, depthWrite: false, color: "#f0d8b2", side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -4 });
+  ribbonMat.onBeforeCompile = (shader) => {
+    shader.uniforms.guidancePlayer = ribbonPlayer;
+    shader.vertexShader = "varying vec3 guidancePosition;\n" + shader.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\nguidancePosition = (modelMatrix * vec4(position, 1.0)).xyz;");
+    shader.fragmentShader = "varying vec3 guidancePosition;\nuniform vec3 guidancePlayer;\n" + shader.fragmentShader.replace("#include <color_fragment>", "#include <color_fragment>\ndiffuseColor.a *= smoothstep(0.65, 2.2, distance(guidancePosition, guidancePlayer)) * (1.0 - smoothstep(5.0, 10.0, abs(guidancePosition.y - guidancePlayer.y))); ");
+  };
+  // Original navigation marker, not station equipment. Visible through floors.
+  const beaconMat = new THREE.MeshBasicMaterial({ color: "#e8d7b2", transparent: true, opacity: 0.3, depthTest: false, depthWrite: false, side: THREE.DoubleSide });
   const pos: number[] = [];
   const uv: number[] = [];
   const idx: number[] = [];
@@ -465,11 +654,13 @@ function drawRibbon() {
     const nx = (-(b.y - a.y) / L) * W;
     const ny = ((b.x - a.x) / L) * W;
     const base = pos.length / 3;
-    const za = a.z + 0.05;
-    const zb = b.z + 0.05;
+    // Above the symbolic stair treads / moving escalator steps, without changing ground.
+    const lift = Math.abs(b.z - a.z) > 0.05 ? 0.22 : 0.055;
+    const za = a.z + lift;
+    const zb = b.z + lift;
     pos.push(a.x + nx, za, -(a.y + ny), a.x - nx, za, -(a.y - ny), b.x + nx, zb, -(b.y + ny), b.x - nx, zb, -(b.y - ny));
     const L3 = Math.hypot(L, b.z - a.z);
-    uv.push(0, -acc / 0.8, 1, -acc / 0.8, 0, -(acc + L3) / 0.8, 1, -(acc + L3) / 0.8);
+    uv.push(0, acc / 0.8, 1, acc / 0.8, 0, (acc + L3) / 0.8, 1, (acc + L3) / 0.8);
     acc += L3;
     idx.push(base, base + 2, base + 1, base + 1, base + 2, base + 3);
   }
@@ -481,20 +672,22 @@ function drawRibbon() {
   m.renderOrder = 5;
   ribbon.add(m);
   const end = routePts[routePts.length - 1]!;
-  const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 3.2, 32, 1, true), beaconMat);
-  beacon.position.set(end.x, end.z + 1.6, -end.y);
-  ribbon.add(beacon);
-  const ring = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.75, 40), beaconMat);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.62, 32), beaconMat);
   ring.rotation.x = -Math.PI / 2;
   ring.position.set(end.x, end.z + 0.06, -end.y);
+  ring.renderOrder = 6;
   ribbon.add(ring);
 }
-const MI: Record<string, string> = { walk: "↑", turn: "↱", stairs: "⇵", escalator: "⇅", elevator: "⇕", gate: "⛩", ramp: "◢", arrive: "◎" };
+const MI: Record<string, string> = { walk: "↑", turn: "↱", stairs: "⇵", escalator: "⇅", elevator: "⇕", gate: "▥", ramp: "◢", arrive: "◎" };
 function renderRoutePanel() {
   if (!route) return;
   $("route").classList.remove("hidden");
-  $("route-dist").textContent = `${Math.round(route.totalLengthM)} m`;
-  $("route-eta").textContent = `約 ${Math.max(1, Math.round(route.estimatedSeconds / 60))} 分 · ${route.floorChanges} 回の階移動${route.crossesFareBoundary === true ? " · 改札通過" : route.crossesFareBoundary === null ? " · 改札通過 不明" : ""}`;
+  const summary = summarizeRoute(bundle, route);
+  $("route-origin").textContent = fromPick.kind === "poi" ? `出発 From: ${poiName(fromPick.poi).ja} / ${poiName(fromPick.poi).en} · 選択した位置から開始 / Start places you at this origin` : "現在のアバター位置から開始 · Start from the avatar’s current location";
+  $("route-dist").textContent = `${summary.distanceM} m`;
+  $("route-eta").textContent = `約 ${summary.minutes} 分 · ~${summary.minutes} min`;
+  $("route-floors").textContent = `${summary.floorLabels.join(" → ")} · ${summary.floorChanges} 回の階移動 / floor changes${profile().stepFree ? " · 段差なし Step-free" : ""}`;
+  $("route-fare").textContent = `${summary.fare.ja} · ${summary.fare.en}`;
   const ol = $("steps");
   ol.innerHTML = "";
   maneuvers.forEach((m, i) => {
@@ -521,70 +714,187 @@ function renderRoutePanel() {
     un.appendChild(s);
   }
   const src = bundle.sources.filter((s) => route!.sourceIds.includes(s.id));
-  $("prov").textContent = `根拠 Evidence: ${src.map((s) => s.publisher).filter((v, i, a) => a.indexOf(v) === i).join(", ")} · データ ${bundle.coverage.freshness} · 確認 ${route.evidenceCheckedDate} · 高さは推定 heights estimated · 実際の通行可否は現地表示に従ってください`;
+  $("prov").textContent = `根拠 Evidence: ${src.map((s) => s.publisher).filter((v, i, a) => a.indexOf(v) === i).join(", ")} · データ Data ${route.oldestSourceDate ?? "未確認 / unverified"} · 確認 Checked ${route.evidenceCheckedDate ?? "未確認 / unverified"} · 高さは推定 Heights estimated · 現地表示を確認 Check local signs`;
+  const trust = route.synthetic ? "仮想データ Synthetic" : "公開データ由来 · Public-data route";
+  const freshness = route.stale === true ? "古い可能性 · May be outdated" : route.stale === null ? "時効未確認 · Freshness unverified" : "";
+  $("evidence-detail").textContent = `${trust} · ${route.oldestSourceDate ?? "date unknown"}${freshness ? " · " + freshness : ""} · ${summary.fare.ja} / ${summary.fare.en} · ${$("unknowns").textContent} · 高さは推定 Heights estimated`;
+  const unverified = route.unknowns.length;
+  $("evidence-toggle").textContent = `ⓘ 未確認 ${unverified} · Unverified ${unverified}`;
+  $("hours-chip").classList.toggle("hidden", !route.unknowns.some((u) => u.kind === "hours"));
+  $<HTMLDetailsElement>("evidence-disclosure").open = false;
+  $("journey-evidence").classList.remove("hidden");
 }
+$("guide-speed").onclick = () => {
+  const speed = player.guideSpeedMultiplier === 1 ? 2 : player.guideSpeedMultiplier === 2 ? 4 : 1;
+  player.setGuideSpeed(speed);
+  $("guide-speed").textContent = `×${speed}`;
+  $("guide-speed").setAttribute("aria-label", `案内速度 ${speed} 倍 · Guide speed ${speed} times. Click to change`);
+};
 function toggleGuide() {
   if (!route) return;
+  if (journey === "arrived") { setPanel(true, true); return; }
   if (player.guide) {
+    resumeIndex = player.guideIndex;
     player.stopGuide();
-    $("guide").textContent = "▶ 案内歩行 Guide";
+    setJourney("walking");
+    $("guide").textContent = "▶ 再開 Resume";
+    $("guide-pause").textContent = "▶";
     return;
   }
-  // restart from current location on resume
-  if (fromPick.kind === "here") computeRoute();
+  // Resume from the actual body-swept attachment. A manual detour must never
+  // create a straight shortcut back to an old route node through a wall.
+  if (journey !== "preview") {
+    fromPick = { kind: "here" };
+    $<HTMLInputElement>("from").value = "";
+    computeRoute();
+  }
   if (!route) return;
+  if (fromPick.kind === "poi" && journey === "preview") { player.teleport(routePts[0]!); camInit = false; }
   player.startGuide(routePts);
+  player.guideIndex = resumeIndex;
+  setJourney("guiding");
+  setPanel(false);
+  canvas.focus();
   $("guide").textContent = "⏸ 停止 Pause";
+  $("guide-pause").textContent = "Ⅱ";
   audio.uiClick();
 }
 player.onGuideEvent = (e) => {
   if (e.type === "elevator") {
     fadeFlash();
+    camInit = false;
+    const index = routePts.findIndex((p) => p.nodeId === e.point.nodeId) - 1 - (routePts[0]?.nodeId === "here" ? 1 : 0);
+    const m = [...maneuvers].reverse().find((m) => m.kind === "elevator" && m.startIndex <= index);
+    if (m) showFloorToast(m);
   } else if (e.type === "arrived") {
-    $("guide").textContent = "▶ 案内歩行 Guide";
-    audio.arrivalChime();
+    showArrival();
   }
 };
 function fadeFlash() {
+  if (reducedMotion) { camInit = false; return; }
   $("fade").classList.add("on");
   setTimeout(() => $("fade").classList.remove("on"), 380);
 }
 
+function showArrival() {
+  if (journey === "arrived" || !toPick || toPick.kind !== "poi") return;
+  player.stopGuide();
+  setJourney("arrived");
+  setPanel(false);
+  $("next").classList.add("hidden");
+  $("maneuver-anchor").classList.add("hidden");
+  $("destination-label").classList.add("hidden");
+  $("floor-toast").classList.add("hidden");
+  const p = toPick.poi, name = poiName(p);
+  const end = routePts[routePts.length - 1]!;
+  const floorId = nodeById.get(end.nodeId)?.floorId ?? p.floorId;
+  $("arrival-name").textContent = `${name.ja} · ${name.en}`;
+  const floor = floorById.get(floorId ?? "");
+  $("arrival-eyebrow").textContent = p.category === "exit" && floor?.ordinal === 0
+    ? "地上に出ました · You are at street level" : "◎ 到着しました · You have arrived";
+  $("arrival-place").textContent = `${floorLabel(floor).short} · ${CATEGORY[p.category] ?? "施設 · Facility"}`;
+  // Graph-routed distances on the destination floor; no invented exit numbers or compass directions.
+  const exits = p.category === "exit" ? [] : nearbyExits(bundle, router, end.nodeId, profile());
+  $("arrival-exits").textContent = exits.length ? `近くの出口 Nearby exits: ${exits.map((x) => `${poiName(x.poi).ja} / ${poiName(x.poi).en} · ${x.distanceM} m`).join(" · ")}` : "";
+  $("arrival-exits").hidden = exits.length === 0;
+  $("arrival").classList.remove("hidden");
+  $("guide").textContent = "▶ 出発 Start";
+  audio.arrivalChime();
+  $("new-destination").focus({ preventScroll: true });
+}
+
+function showFloorToast(m: Maneuver) {
+  if (!m.fromFloorLabel || !m.toFloorLabel || m.fromFloorLabel === m.toFloorLabel || m.startIndex === lastVertical) return;
+  lastVertical = m.startIndex;
+  const mode = { stairs: "階段 · Stairs", escalator: "エスカレーター · Escalator", elevator: "エレベーター · Elevator", ramp: "スロープ · Ramp" }[m.kind as "stairs" | "escalator" | "elevator" | "ramp"] ?? "";
+  $("floor-toast").textContent = `${m.fromFloorLabel} → ${m.toFloorLabel} · ${mode}`;
+  $("floor-toast").classList.remove("hidden");
+  toastUntil = performance.now() + 3800;
+  transitionFocus = reducedMotion ? 0 : 1;
+}
+
 // progress along route → next maneuver
 function updateNext() {
-  if (!route || !routePts.length) return;
-  // nearest route point index ahead of player
-  let bestI = 0;
-  let bestD = Infinity;
-  for (let i = 0; i < routePts.length; i++) {
-    const p = routePts[i]!;
-    const d = Math.hypot(p.x - player.x, p.y - player.y) + Math.abs(p.z - player.z) * 4;
-    if (d < bestD) (bestD = d), (bestI = i);
+  if (!route || !routePts.length || journey === "arrived" || journey === "preview") return;
+  let bestI = 0, bestD = Infinity, along = 0;
+  // Project onto segments, rather than nearest nodes (long corridors have few nodes).
+  for (let i = 0; i < routePts.length - 1; i++) {
+    const a = routePts[i]!, b = routePts[i + 1]!;
+    const dx = b.x - a.x, dy = b.y - a.y, dz = (b.z - a.z) * 3;
+    const t = Math.max(0, Math.min(1, ((player.x - a.x) * dx + (player.y - a.y) * dy + (player.z - a.z) * 3 * dz) / (dx * dx + dy * dy + dz * dz || 1)));
+    const d = Math.hypot(player.x - a.x - dx * t, player.y - a.y - dy * t, (player.z - a.z) * 3 - dz * t);
+    if (d < bestD) { bestD = d; bestI = i; along = t; }
   }
-  const offset = fromPick.kind === "here" ? 1 : 0;
+  if (player.guide) { bestI = Math.max(0, player.guideIndex - 1); resumeIndex = player.guideIndex; }
+  const end = routePts[routePts.length - 1]!;
+  if (!player.guide && Math.hypot(player.x - end.x, player.y - end.y) < 0.8 && Math.abs(player.z - end.z) < 0.35) { showArrival(); return; }
+  const offset = routePts[0]?.nodeId === "here" ? 1 : 0;
   const nodeIndex = Math.max(0, bestI - offset);
-  let cur = maneuvers.findIndex((m, i) => m.startIndex > nodeIndex && i > 0) - 1;
-  if (cur < 0) cur = maneuvers.length - 1;
-  const nextM = maneuvers[Math.min(maneuvers.length - 1, cur + 1)] ?? maneuvers[cur]!;
-  const show = bestD < 12 ? nextM : maneuvers[cur]!;
+  let cur = 0;
+  for (let i = 0; i < maneuvers.length; i++) if (maneuvers[i]!.startIndex <= nodeIndex) cur = i;
+  const current = maneuvers[cur]!;
+  const upcoming = maneuvers.slice(cur + 1).find((m) => m.kind !== "walk") ?? current;
+  let rem = 0;
+  for (let i = bestI; i < Math.min(routePts.length - 1, upcoming.startIndex + offset); i++) {
+    const a = routePts[i]!, b = routePts[i + 1]!;
+    rem += Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) * (i === bestI ? 1 - along : 1);
+  }
+  const show = current.kind === "walk" && rem < 14 ? upcoming : current;
   $("next").classList.remove("hidden");
   $("next-icon").textContent = show.kind === "turn" ? (show.en.includes("left") ? "↰" : "↱") : MI[show.kind]!;
-  // remaining distance to that maneuver
-  let rem = 0;
-  for (let i = bestI; i < Math.min(routePts.length - 1, show.startIndex + offset); i++) rem += Math.hypot(routePts[i + 1]!.x - routePts[i]!.x, routePts[i + 1]!.y - routePts[i]!.y);
-  $("next-ja").textContent = `${show.ja}${rem > 3 && show.kind !== "walk" ? `（あと ${Math.round(rem)} m）` : ""}`;
-  $("next-en").textContent = `${show.en}${rem > 3 && show.kind !== "walk" ? ` · in ${Math.round(rem)} m` : ""}`;
+  $("next-ja").textContent = `${show.ja}${show === upcoming && rem > 3 ? ` · あと ${Math.round(rem)} m` : ""}`;
+  $("next-en").textContent = `${show.en}${show === upcoming && rem > 3 ? ` · in ${Math.round(rem)} m` : ""}`;
+  cuePoint = routePts[Math.min(routePts.length - 1, show.startIndex + offset)]!;
+  $("maneuver-anchor").textContent = `${$("next-icon").textContent} ${show.kind === "turn" ? (show.en.includes("left") ? "左 Left" : "右 Right") : show.toFloorLabel ?? `${Math.round(rem)} m`}`;
   document.querySelectorAll("#steps li").forEach((li) => li.classList.toggle("cur", Number((li as HTMLElement).dataset.i) === maneuvers.indexOf(show)));
+  showFloorToast(current);
   if (bestD > 9 && !player.guide && routeOffSince < 0) routeOffSince = performance.now();
   if (bestD <= 9) routeOffSince = -1;
   if (routeOffSince > 0 && performance.now() - routeOffSince > 2500 && fromPick.kind === "here") {
-    routeOffSince = -1;
-    const guiding = !!player.guide;
-    computeRoute(); // re-route from current position
-    if (guiding && route) {
-      player.startGuide(routePts);
-      $("guide").textContent = "⏸ 停止 Pause";
-    }
+    computeRoute(); // Uses the same body-swept current-location attachment as initial routing.
+  }
+}
+const labelHud = [...document.querySelectorAll<HTMLElement>("#hud-top .brand, #hud-top .floor, #next, #journey-evidence, #evidence-detail, #floor-toast, #minimap, #panel, #foot, #stick, #btn-run, #btn-act, #prompt, #arrival")];
+function visibleHudRect(el: HTMLElement): HudRect | null {
+  const rect = el.getBoundingClientRect();
+  const style = getComputedStyle(el);
+  return !rect.width || !rect.height || style.display === "none" || style.visibility === "hidden" ? null : rect;
+}
+function projectLabel(id: string, point: GuidePoint, height: number, clamp: boolean) {
+  const el = $(id);
+  const p = new THREE.Vector3(point.x, point.z + height, -point.y).project(camera);
+  const inFront = p.z > -1 && p.z < 1;
+  const visible = inFront && (clamp || (Math.abs(p.x) < 0.85 && Math.abs(p.y) < 0.7 && Math.abs(point.z - player.z) < 4));
+  el.classList.toggle("hidden", !visible);
+  if (!visible) return;
+  const obstacles = labelHud.flatMap((element) => { const rect = visibleHudRect(element); return rect ? [rect] : []; });
+  // Reserve the entire band occupied by guidance and its evidence chips.
+  const guidanceBottom = ["next", "journey-evidence"].reduce((bottom, name) => {
+    const rect = visibleHudRect($(name));
+    return rect ? Math.max(bottom, rect.y + rect.height + 8) : bottom;
+  }, 90);
+  if (id === "destination-label") {
+    const cue = visibleHudRect($("maneuver-anchor"));
+    if (cue) obstacles.push(cue);
+  }
+  const bottom = innerWidth <= 600 ? innerHeight - 324 : innerHeight - 110;
+  const placed = placeProjectedLabel(
+    { x: (p.x + 1) * innerWidth / 2, y: (1 - p.y) * innerHeight / 2 },
+    { width: el.offsetWidth, height: el.offsetHeight },
+    { x: 12, y: guidanceBottom, width: innerWidth - 24, height: bottom - guidanceBottom }, obstacles,
+  );
+  el.classList.toggle("hidden", !placed);
+  if (placed) el.style.transform = `translate(${placed.x}px, ${placed.y}px)`;
+}
+function updateWorldLabels() {
+  if (!route || journey === "arrived") return;
+  if (cuePoint && journey !== "preview") projectLabel("maneuver-anchor", cuePoint, 0.9, false);
+  else $("maneuver-anchor").classList.add("hidden");
+  const end = routePts[routePts.length - 1]!;
+  if (toPick?.kind === "poi") {
+    const f = nodeById.get(end.nodeId)?.floorId ?? toPick.poi.floorId;
+    $("destination-label").textContent = `◎ ${poiName(toPick.poi).ja} / ${poiName(toPick.poi).en} · ${floorLabel(floorById.get(f ?? "")).short}`;
+    projectLabel("destination-label", end, 1.4, true);
   }
 }
 let routeOffSince = -1;
@@ -639,24 +949,29 @@ function interact() {
 // ------------------------------------------------------------ minimap
 const mm = $<HTMLCanvasElement>("minimap");
 const mmc = mm.getContext("2d")!;
+function toggleMap() { mm.classList.toggle("big"); mm.setAttribute("aria-pressed", String(mm.classList.contains("big"))); }
+mm.onclick = toggleMap;
+mm.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleMap(); } };
 function drawMinimap() {
   const W = mm.width;
   const big = mm.classList.contains("big");
-  const scale = big ? 2.2 : 3.2; // px per metre
+  const overview = journey === "preview" ? routeMapFrame(routePts, W) : null;
+  const scale = overview?.scale ?? (big ? 2.2 : 3.2);
+  const center = overview ?? player;
   mmc.setTransform(1, 0, 0, 1, 0, 0);
   mmc.clearRect(0, 0, W, W);
   mmc.fillStyle = "rgba(14,16,20,0.92)";
   mmc.fillRect(0, 0, W, W);
   mmc.save();
   mmc.translate(W / 2, W / 2);
-  if (!big) mmc.rotate(-cam.yaw);
+  if (!big && !overview) mmc.rotate(-cam.yaw);
   mmc.scale(scale, -scale);
-  mmc.translate(-player.x, -player.y);
+  mmc.translate(-center.x, -center.y);
   const lvFloor = floorAtZ(player.z);
   for (const lv of layout.levels) {
     const isCur = lv.floorId === lvFloor.id;
-    if (!isCur && Math.abs(lv.z - player.z) > 9) continue;
-    mmc.globalAlpha = isCur ? 1 : 0.18;
+    if (!overview && !isCur && Math.abs(lv.z - player.z) > 9) continue;
+    mmc.globalAlpha = isCur ? 1 : overview ? 0.28 : 0.18;
     for (const s of lv.slabs) {
       mmc.beginPath();
       for (const ring of s.rings) {
@@ -670,7 +985,7 @@ function drawMinimap() {
   mmc.globalAlpha = 1;
   // route
   if (routePts.length > 1) {
-    mmc.lineWidth = 1.4;
+    mmc.lineWidth = overview ? 3 / scale : 1.4;
     mmc.lineCap = "round";
     mmc.lineJoin = "round";
     for (let i = 1; i < routePts.length; i++) {
@@ -678,7 +993,7 @@ function drawMinimap() {
       const b = routePts[i]!;
       if (b.elevator) continue;
       const near = Math.abs((a.z + b.z) / 2 - player.z) < 2.5;
-      mmc.strokeStyle = near ? "#ff3fae" : "rgba(255,63,174,0.3)";
+      mmc.strokeStyle = overview ? "#eedcb8" : near ? "#eedcb8" : "rgba(238,220,184,0.3)";
       mmc.beginPath();
       mmc.moveTo(a.x, a.y);
       mmc.lineTo(b.x, b.y);
@@ -687,7 +1002,7 @@ function drawMinimap() {
     const e = routePts[routePts.length - 1]!;
     mmc.fillStyle = "#ffd84a";
     mmc.beginPath();
-    mmc.arc(e.x, e.y, 2.2, 0, Math.PI * 2);
+    mmc.arc(e.x, e.y, overview ? 6 / scale : 2.2, 0, Math.PI * 2);
     mmc.fill();
   }
   // POIs on this level
@@ -699,8 +1014,8 @@ function drawMinimap() {
   mmc.restore();
   // player arrow
   mmc.save();
-  mmc.translate(W / 2, W / 2);
-  mmc.rotate(big ? player.heading : player.heading - cam.yaw);
+  mmc.translate(W / 2 + (player.x - center.x) * scale, W / 2 - (player.y - center.y) * scale);
+  mmc.rotate(big || overview ? player.heading : player.heading - cam.yaw);
   mmc.fillStyle = "#ffffff";
   mmc.beginPath();
   mmc.moveTo(0, -14);
@@ -712,7 +1027,7 @@ function drawMinimap() {
   mmc.restore();
   mmc.fillStyle = "rgba(255,255,255,0.75)";
   mmc.font = "700 22px sans-serif";
-  mmc.fillText(floorLabel(lvFloor).short, 16, 34);
+  mmc.fillText(overview ? "経路全体 · Route overview" : floorLabel(lvFloor).short, 16, 34);
 }
 
 // ------------------------------------------------------------ coverage / help dialogs
@@ -721,7 +1036,7 @@ $("btn-cov").addEventListener("click", () => {
   const c = bundle.coverage;
   const rows = c.gaps.map((g) => `<tr><td>${esc(g.zone)}</td><td>${esc(g.missingFact)}</td><td>${esc(g.fieldWorkNeeded)}</td></tr>`).join("");
   const srcs = bundle.sources.map((s) => `<li>${esc(s.title)} — ${esc(s.publisher)} · ${esc(s.license?.name ?? "")} · dataset ${esc(s.datasetDate ?? "?")} ${s.validUntil ? `· 有効期限 ${esc(s.validUntil)}` : ""}${s.notes ? `<br><small>${esc(s.notes)}</small>` : ""}</li>`).join("");
-  $("cov-body").innerHTML = `<h3>データ範囲と未確認事項 Coverage &amp; gaps</h3><p>${esc(c.summary[0]!.text)}<br><small>${esc(c.summary[1]?.text ?? "")}</small></p><table><tr><th>範囲 Zone</th><th>欠落 Missing</th><th>必要な調査 Needed</th></tr>${rows}</table><h4>出典 Sources</h4><ul>${srcs}</ul><p><small>表示用の階高さ・改札機の台数・ホーム柵・案内サインの意匠は GTEki による簡略表現で、実物の再現ではありません。Visual details (heights, gate machine count, platform doors, sign design) are GTEki simplifications, not reproductions.</small></p><p>通勤客の動き・列車の発着とドアの開閉は演出であり、実際の混雑や時刻表ではありません。<br><small>Commuters, train arrivals and door cycles are simulated ambience — not real crowd data or timetables.</small></p>`;
+  $("cov-body").innerHTML = `<h3>データ範囲と未確認事項 Coverage &amp; gaps</h3><p>${esc(c.summary[0]!.text)}<br><small>${esc(c.summary[1]?.text ?? "")}</small></p><table><tr><th>範囲 Zone</th><th>欠落 Missing</th><th>必要な調査 Needed</th></tr>${rows}</table><h4>出典 Sources</h4><ul>${srcs}</ul><p><small>表示用の階高さ・改札機の台数・ホーム柵・案内サインの意匠は GTEki による簡略表現で、実物の再現ではありません。Visual details (heights, gate machine count, platform doors, sign design) are GTEki simplifications, not reproductions.<br>地上の建物・道路は PLATEAU の外形と高さを簡略化したもので、外観・出入口上屋・街路設備は GTEki の表現です。Street buildings and roads are simplified PLATEAU outlines and heights; facades, entrance canopies and street furniture are GTEki's own rendering.</small></p><p>通勤客の動き・列車の発着とドアの開閉は演出であり、実際の混雑や時刻表ではありません。<br><small>Commuters, train arrivals and door cycles are simulated ambience — not real crowd data or timetables.</small></p>`;
   $<HTMLDialogElement>("dlg-cov").showModal();
 });
 function esc(s: string) {
@@ -739,26 +1054,47 @@ function frame() {
   step(Math.min(clock.getDelta(), 0.05));
   requestAnimationFrame(frame);
 }
-function step(dt: number) {
+function step(dt: number, render = true) {
   const t = clock.elapsedTime + simOffset;
-  player.update(dt, readInput(), cam.yaw);
+  const input = readInput();
+  const manual = Math.abs(input.forward) > 0.05 || Math.abs(input.strafe) > 0.05;
+  if (manual) {
+    if (journey === "guiding") resumeIndex = player.guideIndex;
+    if (route && journey !== "arrived") setJourney("walking");
+    if (!$("panel-content").hidden) setPanel(false);
+    $("guide-pause").textContent = "▶";
+    $("guide").textContent = "▶ 案内歩行 Guide";
+  }
+  if (!document.querySelector("dialog[open]")) player.update(dt, input, cam.yaw);
+  else { player.speed = player.vx = player.vy = player.stridePhase = 0; }
+  if (!render) {
+    // Fast-forward uses the same camera integration as normal play, without GPU work.
+    updateCamera(dt, performance.now() / 1000);
+    return;
+  }
   station.update(dt, t);
   crowd.update(dt, { x: player.x, y: player.y, z: player.z });
   updateCamera(dt, performance.now() / 1000);
+  station.setViewer?.({ x: camera.position.x, y: -camera.position.z, z: camera.position.y }); // W2: cull street from underground passes.
   avatar.object.position.set(player.x, player.z, -player.y);
   avatar.object.rotation.y = -player.heading + Math.PI; // avatar faces -Z (north) at rotation 0... heading 0 = north
   avatar.object.rotation.y = -player.heading;
-  avatar.update(dt, player.speed, { onStairs: Math.abs(player.climbing) > 0.2, climbing: player.climbing });
+  avatar.update(dt, player.carriedByEscalator ? 0 : player.speed, { onStairs: !player.carriedByEscalator && Math.abs(player.climbing) > 0.2, climbing: player.carriedByEscalator ? 0 : player.climbing });
   fill.position.set(player.x, player.z + 2.4, -player.y);
-  chevronTex.offset.y = (chevronTex.offset.y - dt * 1.1) % 1;
+  if (!reducedMotion) chevronTex.offset.y = (chevronTex.offset.y - dt * 0.65) % 1;
+  ribbonPlayer.value.set(player.x, player.z, -player.y);
   const lv = floorAtZ(player.z);
   const fl = floorLabel(lv);
   $("floor-label").textContent = fl.short;
   $("floor-sub").textContent = `推定 ${lv.renderElevationM.toFixed(0)} m · est.`;
-  audio.update(dt, { x: player.x, y: player.y, z: player.z, heading: cam.yaw }, { speed: player.speed, onStairs: Math.abs(player.climbing) > 0.2, onEscalator: false, levelLabel: fl.short, ceilingHeight: 3.2 });
+  audio.update(dt, { x: player.x, y: player.y, z: player.z, heading: cam.yaw }, { speed: player.carriedByEscalator ? 0 : player.speed, onStairs: Math.abs(player.climbing) > 0.2, onEscalator: player.carriedByEscalator, levelLabel: fl.short, ceilingHeight: 3.2 });
   if (route) updateNext();
+  updateWorldLabels();
+  if (performance.now() > toastUntil) $("floor-toast").classList.add("hidden");
   updatePrompt();
   drawMinimap();
+  renderer.info.reset();
+  crowd.prepareRender(camera);
   composer.render(dt);
   fpsAcc += dt;
   fpsN++;
@@ -772,30 +1108,47 @@ addEventListener("resize", () => {
   composer.setSize(innerWidth, innerHeight);
 });
 
-requestAnimationFrame(() => {
-  $("loading").classList.add("done");
-  frame();
-});
-
 // ------------------------------------------------------------ automation / QA hooks
 declare global {
   interface Window {
     __gteki: unknown;
   }
 }
-window.__gteki = {
+const qaHooks = {
+  timings: startup.snapshot,
   player,
   cam,
   bundle,
   routeTo(poiId: string, fromPoiId?: string) {
     const p = bundle.pois.find((x) => x.id === poiId);
     if (!p) return "no poi";
-    fromPick = fromPoiId ? { kind: "poi", poi: bundle.pois.find((x) => x.id === fromPoiId)! } : { kind: "here" };
+    const fromPoi = fromPoiId ? bundle.pois.find((x) => x.id === fromPoiId) : null;
+    if (fromPoiId && !fromPoi) return "no origin poi";
+    fromPick = fromPoi ? { kind: "poi", poi: fromPoi } : { kind: "here" };
+    $<HTMLInputElement>("from").value = fromPoi ? poiName(fromPoi).ja : "";
+    $<HTMLInputElement>("to").value = poiName(p).ja;
     toPick = { kind: "poi", poi: p };
     computeRoute();
     return route ? { m: Math.round(route.totalLengthM), steps: maneuvers.map((m) => m.ja) } : $("route-error").textContent;
   },
   guide: toggleGuide,
+  /** Capture real guide progress, never manufacture an arrival event. */
+  walkUntil(stage: "stairs" | "arrival", maxSeconds = 600, minRunDistance = 0) {
+    if (!route) return { ok: false, reason: "no route" };
+    let elapsed = 0;
+    for (; elapsed < maxSeconds; elapsed += 1 / 30) {
+      step(1 / 30, false);
+      const stepIndex = Math.max(0, player.guideIndex - 1 - (routePts[0]?.nodeId === "here" ? 1 : 0));
+      const mode = route.steps[stepIndex]?.mode;
+      const runStart = routePts[Math.max(0, player.guideIndex - 1)]!;
+      const alongRun = Math.hypot(player.x - runStart.x, player.y - runStart.y, player.z - runStart.z);
+      if (stage === "stairs" && player.guide && (mode === "stairs" || mode === "escalator") && Math.abs(player.climbing) > 0.2 && alongRun >= minRunDistance) { camInit = false; step(0); return { ok: true, elapsed, mode }; }
+      if (stage === "arrival" && journey === "arrived") { camInit = false; step(0); return { ok: true, elapsed }; }
+      if (!player.guide) return { ok: false, reason: "guide stopped", elapsed };
+    }
+    return { ok: false, reason: "timeout", elapsed };
+  },
+  panel: setPanel,
   teleportNode(id: string, heading?: number) {
     const n = nodeById.get(id);
     if (!n) return false;
@@ -810,7 +1163,39 @@ window.__gteki = {
     for (let i = 0; i < frames; i++) step(1 / 30);
     return true;
   },
+  /** QA: fixed free camera (ENU metres); `null` returns to the follow camera. */
+  view(v: typeof viewOverride) {
+    viewOverride = v;
+    camInit = false;
+    return true;
+  },
+  /** QA: renders one frame and returns the share of near-black pixels (open void / unlit background). */
+  voidFraction() {
+    step(1 / 30);
+    const gl = renderer.getContext();
+    const w = gl.drawingBufferWidth, h = gl.drawingBufferHeight;
+    const px = new Uint8Array(w * h * 4);
+    gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px);
+    let dark = 0, n = 0;
+    for (let i = 0; i < px.length; i += 4 * 7) {
+      n++;
+      if (px[i]! < 24 && px[i + 1]! < 24 && px[i + 2]! < 28) dark++;
+    }
+    return Math.round((dark / n) * 1000) / 1000;
+  },
   crowd,
   station,
-  state: () => ({ crowd: crowd.count, x: player.x, y: player.y, z: player.z, heading: player.heading, floor: floorLabel(floorAtZ(player.z)).short, fps: Math.round(fps), guiding: !!player.guide, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
+  state: () => ({ crowd: crowd.count, x: player.x, y: player.y, z: player.z, heading: player.heading, floor: floorLabel(floorAtZ(player.z)).short, fps: Math.round(fps), guiding: !!player.guide, journey, stepFree: profile().stepFree, destination: toPick?.kind === "poi" ? toPick.poi.id : null, cameraDistance: +cameraDistance.toFixed(2), avatarVisible: avatar.object.visible, carried: player.carriedByEscalator, guideSpeed: player.guideSpeedMultiplier, reducedMotion, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
 };
+
+startup.complete("surface-hooks");
+loadingStep(4, "準備できました", "Ready to explore");
+await paintStartupFrame();
+clock.start();
+frame();
+startup.milestone("interactive");
+$("loading").classList.add("done");
+$("loading").setAttribute("aria-busy", "false");
+$("loading").setAttribute("aria-hidden", "true");
+// Publish the established hooks together only after the normal scene is rendered.
+window.__gteki = qaHooks;

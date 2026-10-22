@@ -1,6 +1,7 @@
 /**
  * Loader for the raw MLIT ほこナビDP dataset
- * 「歩行空間ネットワークデータ／構内地図データ（都営地下鉄大江戸線 新宿駅）」 (PDL 1.0).
+ * 「歩行空間ネットワークデータ／構内地図データ（都営地下鉄大江戸線 新宿駅）」 (licence basis unconfirmed;
+ * shipped under the Owner's override at #16, and PDL 1.0 is not treated as covering it, #39 Q11 = No).
  *
  * Raw files are NOT committed (see stations/shinjuku/sources/manifest.json for URLs + sha256).
  * Set GTEKI_RAW_SHINJUKU to the directory produced by `tools/fetch-sources.sh`.

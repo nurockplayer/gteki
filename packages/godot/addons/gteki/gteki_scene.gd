@@ -7,6 +7,7 @@ extends RefCounted
 
 const Assets = preload("res://addons/gteki/gteki_assets.gd")
 const Station = preload("res://addons/gteki/gteki_station.gd")
+const Lightmap = preload("res://addons/gteki/gteki_lightmap.gd")
 
 const SCHEMA := "gteki.godot-scene/0.1"
 ## Physics layers. Walking bodies should use mask COLLIDER_LAYER | GROUND_LAYER; a camera arm uses Assets.CAMERA_LAYER.
@@ -44,6 +45,13 @@ var wall_owner_by_index: Dictionary = {}
 ## [{position: Vector3 (Godot frame), heading_deg, node_id, label}]
 var spawn_points: Array[Dictionary] = []
 var environment: Dictionary = {}
+## The sidecar's `lightmap` block ({} when the scene has no baked lightmap), and what G-4a applied of it.
+var lightmap: Dictionary = {}
+var lightmap_applied := false
+var lightmap_meshes := 0
+var lightmap_surfaces := 0
+var lightmap_texture_size := Vector2i.ZERO
+var lightmap_texture_path := ""
 
 
 ## ENU (x east, y north, z up) to Godot (x, z, -y), the same mapping as @gteki/geo enuToRenderer.
@@ -51,8 +59,17 @@ static func enu_to_godot(x: float, y: float, z: float) -> Vector3:
 	return Vector3(x, z, -y)
 
 
-func load_snapshot(dir: String, parent: Node3D) -> bool:
+## `options.lightmap` (default true): apply the sidecar's baked lightmap when it has one. Shinjuku has none, so the
+## option changes nothing there. A lightmap that fails to apply is an issue (the load fails) rather than a silent
+## downgrade: a snapshot with the wrong lighting is worse than a loud error.
+func load_snapshot(dir: String, parent: Node3D, options: Dictionary = {}) -> bool:
 	issues.clear()
+	lightmap = {}
+	lightmap_applied = false
+	lightmap_meshes = 0
+	lightmap_surfaces = 0
+	lightmap_texture_size = Vector2i.ZERO
+	lightmap_texture_path = ""
 	var errors: Array[String] = []
 	sidecar = Station.read_json(dir.path_join("scene.json"), errors)
 	issues.append_array(errors)
@@ -75,10 +92,32 @@ func load_snapshot(dir: String, parent: Node3D) -> bool:
 	if loaded == null:
 		return false
 	_finish_meshes(loaded)
+	_apply_lightmap(options.get("lightmap", true))
 	_build_walls()
 	_read_spawn_points()
 	environment = sidecar.get("environment", {})
 	return issues.is_empty()
+
+
+## G-4a: the exporter records the material state (which surfaces carry three's lightMap) and the intensity; the
+## texture itself is loaded from the station's own assets, because the snapshot carries no textures.
+func _apply_lightmap(enabled: bool) -> void:
+	var block: Variant = sidecar.get("lightmap", {})
+	if not block is Dictionary or block.is_empty():
+		return
+	lightmap = block
+	if not enabled:
+		return
+	var applier := Lightmap.new()
+	var applied := applier.apply(root, block, str(sidecar.get("stationId", "")))
+	issues.append_array(applier.issues)
+	if not applied:
+		return
+	lightmap_applied = true
+	lightmap_meshes = applier.meshes
+	lightmap_surfaces = applier.surfaces
+	lightmap_texture_size = applier.texture_size
+	lightmap_texture_path = applier.texture_path
 
 
 ## Walkable meshes get a ground body (assets only tags them), collision-only proxies stop being drawn.
@@ -130,13 +169,52 @@ func _apply_collider_side(mesh: MeshInstance3D) -> void:
 					shape_node.shape.backface_collision = double_sided
 
 
-## Not drawn. A mesh with drawn children (they carry their own flags) leaves no render layer instead, so they stay.
+## Not drawn. `visible = false` would hide the whole subtree, and a hidden mesh can carry drawn children (they carry
+## their own flags): those stay, and this mesh's own surfaces get a fully transparent override material instead
+## (#232). Drawing nothing is stronger than `layers = 0`, which only keeps the node out of every camera.
 func _hide_mesh(mesh: MeshInstance3D) -> void:
 	for child in mesh.get_children():
 		if not child is CollisionObject3D:
-			mesh.layers = 0
+			_hide_own_surfaces(mesh)
 			return
 	mesh.visible = false
+
+
+## A MeshInstance3D has no per-surface visibility flag, so each surface gets an unshaded fully transparent
+## material; the node itself (and its children) keeps rendering.
+func _hide_own_surfaces(mesh: MeshInstance3D) -> void:
+	if mesh.mesh == null:
+		mesh.visible = false
+		return
+	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var invisible := StandardMaterial3D.new()
+	invisible.albedo_color = Color(0.0, 0.0, 0.0, 0.0)
+	invisible.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	invisible.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	invisible.cull_mode = BaseMaterial3D.CULL_DISABLED
+	for surface in range(mesh.mesh.get_surface_count()):
+		mesh.set_surface_override_material(surface, invisible)
+
+
+## True when this mesh still paints: visible, on a render layer, and at least one surface that is not the
+## transparent override `_hide_own_surfaces` installs. The headless tests use it to assert that no flagged mesh draws.
+static func is_drawn(mesh: MeshInstance3D) -> bool:
+	if not mesh.visible or mesh.layers == 0 or mesh.mesh == null:
+		return false
+	for surface in range(mesh.mesh.get_surface_count()):
+		var material: Material = mesh.get_surface_override_material(surface)
+		if material == null:
+			material = mesh.get_active_material(surface)
+		if material == null or not _is_transparent(material):
+			return true
+	return false
+
+
+static func _is_transparent(material: Material) -> bool:
+	if material is BaseMaterial3D:
+		var base: BaseMaterial3D = material
+		return base.transparency != BaseMaterial3D.TRANSPARENCY_DISABLED and base.albedo_color.a <= 0.0
+	return false
 
 
 func _add_ground(mesh: MeshInstance3D) -> void:
