@@ -28,7 +28,7 @@ Method: WebSearch + WebFetch only. PAGE_READ = fetched via WebFetch (a small mod
 - GAP: no official number found from PlayCanvas, Babylon.js, three.js, Google web.dev/Chrome, Unity or Apple WWDC.
 - Unity 6 WebGL memory manual (built 2026-10-22): gives no mobile budget or iOS Safari figure; says asset data is held uncompressed and memory varies by device/browser. [DR-MW-16, PAGE_READ]
 - PlayCanvas forum (staff-type reply "Max", 2016-12-13): mobile VRAM is shared with RAM and not large; uncompressed 4096x4096 with mipmaps about 90 MB; compression saves at least 6x. [DR-MW-17, PAGE_READ] PlayCanvas forum (Leonidas, 2021-11-23): 1 GB of resources is "a lot" for mobile; iOS limits can be quite low; no number. [DR-MW-18, PAGE_READ]
-- SECONDARY / UNVERIFIED: abratabia.com (June 2026): design to 150 MB total with 70-80 MB for GPU textures; formulas RGBA8 = w*h*4 (x1.33 mips), ASTC 4x4 = 1 byte/px, ASTC 8x8 = 0.5 byte/px. [DR-MW-06]
+- SECONDARY / UNVERIFIED: abratabia.com (June 2026): design to 150 MB total with 70-80 MB for GPU textures; formulas RGBA8 = w*h*4 (x1.33 mips), ASTC 4x4 = 1 byte/px, ASTC 8x8 = 0.5 byte/px. [DR-MW-06] **Correction:** the blog's ASTC 8x8 figure is wrong by a factor of 2. Every ASTC block is 128 bits; the Khronos ASTC extension spec (Table C.2.2) gives 8.00 bits per texel for 4x4 (= 1 byte/px, matches the blog) and 2.00 bits per texel for 8x8 (= 0.25 byte/px, not 0.5). Use the spec values for budgeting. [DR-MW-21, PAGE_READ, primary]
 - Babylon forum user guess of ~1 GB common VRAM limit (SUMMARY_ONLY, undated) and Unity forum user 400 MiB mobile target (SUMMARY_ONLY, undated): not authoritative; URLs in DR-MW-19/20.
 
 ## Sources
@@ -55,6 +55,7 @@ Method: WebSearch + WebFetch only. PAGE_READ = fetched via WebFetch (a small mod
 | DR-MW-18 | WebGL limitations | PlayCanvas forum | https://forum.playcanvas.com/t/webgl-limitations/22994 | 2021-11-23 | PAGE_READ | facts only |
 | DR-MW-19 | Reducing memory consumption in BabylonJS apps | Babylon.js forum | https://forum.babylonjs.com/t/reducing-memory-consumption-in-babylonjs-apps/53242 | undated | SUMMARY_ONLY | facts only |
 | DR-MW-20 | WebGL memory increment issue and crash on iOS | Unity discussions | https://discussions.unity.com/t/webgl-memory-increment-issue-and-crash-on-ios/894771 | undated | SUMMARY_ONLY | facts only |
+| DR-MW-21 | KHR_texture_compression_astc_hdr (ASTC extension spec), section C.2.8, Table C.2.2 Footprint and Bit Rates | Khronos Group | https://registry.khronos.org/OpenGL/extensions/KHR/KHR_texture_compression_astc_hdr.txt | file last modified 2026-08-03 (registry) | PAGE_READ | facts only (bit rates), nothing copied beyond two values |
 
 ## What this cannot tell you
 
