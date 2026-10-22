@@ -6,6 +6,7 @@
 import * as THREE from "three";
 import type { RailDemoLink } from "./railTravel.ts";
 import { railStationName } from "./railTravel.ts";
+import { swallowBackgroundWalkKey } from "./railKeyGuard.ts";
 
 type Stage = "boarding" | "moving" | "loading" | "arrived" | "error";
 
@@ -175,7 +176,7 @@ export class RailRideDemo {
     const copy: Record<Stage, [string, string, string]> = {
       boarding: ja
         ? ["まもなく発車します", this.link.platformJa + "｜乗車して出発", "乗車する"]
-        : ["Ready to board", "Demo boarding point · JR Saikyo Line", "Board train"],
+        : ["Ready to board", this.link.platformEn + " · JR Saikyo Line", "Board train"],
       moving: ja
         ? ["次は " + to, "走行中 · 窓の外をご覧ください", "走行中…"]
         : ["Next stop: " + to, "Train in motion · Enjoy the journey", "Traveling…"],
@@ -255,6 +256,8 @@ export class RailRideDemo {
   };
 
   private readonly onKeyDown = (e: KeyboardEvent): void => {
+    // `inert` does not stop the explorer's window-level walk listener; swallow walk keys here (capture).
+    swallowBackgroundWalkKey(e);
     if (e.key === "Tab") {
       // Contain focus within the two controls, including during disabled-button loading.
       const targets = [this.action, this.cancelButton].filter((button) => !button.disabled);
