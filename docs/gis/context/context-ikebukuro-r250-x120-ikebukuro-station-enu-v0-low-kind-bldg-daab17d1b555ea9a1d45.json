@@ -1,5 +1,5 @@
 {
-  "run_id": "context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-kind-bldg-b0f04191c8274060780e",
+  "run_id": "context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-kind-bldg-daab17d1b555ea9a1d45",
   "verification": "UNVERIFIED",
   "navigation_use": "NOT_FOR_ROUTING",
   "visual_only": true,
@@ -4453,13 +4453,13 @@
   "feature_table_sha256": "2c050e8ef54da4a3b6a61160febf187199cb83d7ea3aaf7feafe50cf45897d89",
   "per_feature_count": 474,
   "tool_version": "0.1.0",
-  "tool_input_sha256": "0ca1af67b253f067d9245668707af3e7b181436850e03f49e9ab10d7069d50fa",
+  "tool_input_sha256": "14f378699be60b6f04b8900d4dd0c633028ce77c72aa57d0a43efa2ffcd179a2",
   "station_json_sha256_now": "3bbcdf9b0eaa284320858bff2183819e30fd311792841ebbdf01153bb4f6e99b",
   "station_json_changed_since_frame": true,
-  "store_path": "out/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-kind-bldg-b0f04191c8274060780e.glb",
-  "sidecar_path": "out/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-kind-bldg-b0f04191c8274060780e.provenance.json",
+  "store_path": "out/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-kind-bldg-daab17d1b555ea9a1d45.glb",
+  "sidecar_path": "out/context-ikebukuro-r250-x120-ikebukuro-station-enu-v0-low-kind-bldg-daab17d1b555ea9a1d45.provenance.json",
   "output_sha256": "293003f9eb1c681267fb4876271566673de02c7f50441e498419f42f35af86cc",
   "output_bytes": 593688,
-  "elapsed_ms": 7962,
-  "peak_rss_bytes": 194932736
+  "elapsed_ms": 22187,
+  "peak_rss_bytes": 200040448
 }

@@ -24,6 +24,18 @@ export function decodeText(buffer: Buffer): { text: string; encoding: 'UTF-8' | 
 }
 const blank = (value: unknown): boolean => value === undefined || value === null || typeof value === 'string' && value.trim() === '';
 const type = (value: unknown): string => value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value;
+/**
+ * SHA-256 of one source value, hex. A string is hashed as its UTF-8 bytes; any other JSON value
+ * (number, boolean, array, object) is hashed as the UTF-8 bytes of its JSON text.
+ */
+export function valueSha256(value: unknown): string {
+  return createHash('sha256').update(typeof value === 'string' ? value : JSON.stringify(value), 'utf8').digest('hex');
+}
+/**
+ * Committed-report form of a field. Literal source values never enter it (docs/gis is public and some sources carry no
+ * release permission): each distinct value is reduced to its SHA-256 and a count. The literals stay only in the
+ * git-ignored external detail report.
+ */
 export function fieldStatistics(rows: Row[], headers?: string[]) {
   const keys = headers ?? [...new Set(rows.flatMap(row => Object.keys(row)))].sort();
   return Object.fromEntries(keys.map(key => {
@@ -32,11 +44,12 @@ export function fieldStatistics(rows: Row[], headers?: string[]) {
       const encoded = JSON.stringify(value);
       const entry = counts.get(encoded) ?? { value, count: 0 }; entry.count++; counts.set(encoded, entry);
     }
-    const distribution = [...counts.values()].sort((a, b) => b.count - a.count || JSON.stringify(a.value).localeCompare(JSON.stringify(b.value)));
-    // Complete literals stay in the hashed external detail; Git gets at most five short values per field.
-    const sample = /description/iu.test(key) ? [] : distribution.filter(item => JSON.stringify(item.value).length <= 40).slice(0, 5);
+    // Deterministic order independent of the literals: count descending, then hash. At most five entries per field.
+    const distribution = [...counts.values()].map(item => ({ value_sha256: valueSha256(item.value), value_type: type(item.value), count: item.count }))
+      .sort((a, b) => b.count - a.count || (a.value_sha256 < b.value_sha256 ? -1 : a.value_sha256 > b.value_sha256 ? 1 : a.value_type.localeCompare(b.value_type)));
+    const sample = distribution.slice(0, 5);
     return [key, { blank_count: values.filter(blank).length, missing_count: values.filter(value => value === undefined).length,
-      types: [...new Set(values.map(type))].sort(), distinct_count: counts.size, literal_distribution: sample, omitted_distinct: counts.size - sample.length }];
+      types: [...new Set(values.map(type))].sort(), distinct_count: counts.size, value_hash_distribution: sample, omitted_distinct: counts.size - sample.length }];
   }));
 }
 export function inventoryCsv(bytes: Buffer) {
@@ -48,7 +61,7 @@ export function inventoryCsv(bytes: Buffer) {
   const coordinateFields = headers.filter(key => /^(?:lat|lon|lng|latitude|longitude|緯度|経度|座標)$/iu.test(key));
   return { summary: { file: 'resource.csv', format: 'CSV', encoding: decoded.encoding, headers, row_count: all.length, populated_row_count: rows.length,
     blank_row_count: all.length - rows.length, fields: fieldStatistics(all, headers), coordinates: 'UNKNOWN', coordinate_fields: coordinateFields,
-    crs: 'UNKNOWN', bbox: null, geometry_types: {}, literal_location_time_fields: Object.fromEntries(headers.filter(key => OPENING_TIME_FIELD.test(key) || /場所|階|位置|location|floor|時間/iu.test(key)).map(key => [key, fieldStatistics(all, headers)[key]])), routable: false }, detail: all };
+    crs: 'UNKNOWN', bbox: null, geometry_types: {}, location_time_fields: Object.fromEntries(headers.filter(key => OPENING_TIME_FIELD.test(key) || /場所|階|位置|location|floor|時間/iu.test(key)).map(key => [key, fieldStatistics(all, headers)[key]])), routable: false }, detail: all };
 }
 export function geometryInventory(geometries: unknown[], options: { overridingCrs?: boolean } = {}) {
   const types = new Map<string, number>();
@@ -80,12 +93,12 @@ export function inventoryJson(value: unknown, file: string) {
   const literalKeys = Object.keys(fields).filter(key => OPENING_TIME_FIELD.test(key) || /floor|level|場所|階|location|時間|int_address|^(?:to|from)$/iu.test(key));
   return { file, format: features ? 'FeatureCollection' : navLinks.length ? 'HERE_NAVIGATION_JSON' : Array.isArray(root.entities) ? 'HERE_ENTITIES' : 'HERE_COMMUNITY',
     root_keys: Object.keys(root).sort(), feature_count: features?.length ?? null, entity_count: Array.isArray(root.entities) ? root.entities.length : null,
-    fields, root_properties: rootProperties, crs: ownValue(root, 'crs') ?? 'UNKNOWN', crs_declared: Object.hasOwn(root, 'crs'),
+    fields, root_properties: Object.fromEntries(Object.entries(rootProperties).map(([key, value]) => [key, { value_sha256: valueSha256(value), value_type: type(value) }])), crs: ownValue(root, 'crs') ?? 'UNKNOWN', crs_declared: Object.hasOwn(root, 'crs'),
     crs_note: Object.hasOwn(root, 'crs') && root.crs === null ? 'Explicit null; coordinates cannot be inferred (S03 specification p8).' : 'No datum inferred from coordinates or file name.',
     ...geometryInventory(features?.map(feature => ownValue(object(feature), 'geometry')) ?? [], { overridingCrs: features ? hasOverridingCrs(features) : false }),
     origin_attribution_fields: Object.fromEntries(originKeys.map(key => [key, fields[key]])),
     origin_dataset: 'UNKNOWN', origin_note: 'Property names and generic CityGML metadata do not identify the exact origin/vintage/licence of this related layer.',
-    literal_location_time_fields: Object.fromEntries(literalKeys.map(key => [key, fields[key]])),
+    location_time_fields: Object.fromEntries(literalKeys.map(key => [key, fields[key]])),
     route_structure: { exported_edges: 0, source_link_count: navLinks.length, source_node_count: navNodes.length,
       link_fields: fieldStatistics(navLinks), node_fields: fieldStatistics(navNodes), start_end_fields: Object.keys(fieldStatistics(navLinks)).filter(key => /^(?:n1|n2|start|end|from|to)$/iu.test(key)),
       interpretation: 'n1/n2 are literal source references. Path geometry files describe drawing shapes, not route edges. No route is validated or exported.' }, routable: false };
@@ -138,7 +151,7 @@ export async function inspectPoi(sourceId: string) {
       relation: bboxRelation(member.bbox, reference.bbox), status: 'CONDITIONAL_NUMERIC_BBOX_ONLY', reference_crs_status: reference.crs_status,
       condition: 'Native XY must be longitude/latitude degrees in a compatible datum. CRS UNKNOWN is not resolved by range plausibility. No floor, point or route correspondence.' }))),
     coordinates: csv ? 'UNKNOWN' : 'SEE_MEMBERS', routable: false, verification: 'UNVERIFIED', publish_gate: 'HOLD',
-    limitations: ['No POI becomes a node, edge, door or floor.', 'Literal location, opening-hour and level fields remain verbatim in the hashed detail.', 'No source currency, operator permission, complete coverage or navigability established.'] };
+    limitations: ['No POI becomes a node, edge, door or floor.', 'Location, opening-hour, level and every other source field value appear in this committed report only as SHA-256 + count (no release permission for some sources); the verbatim values stay in the git-ignored external detail.', 'No source currency, operator permission, complete coverage or navigability established.'] };
   await writeJson(join(docsRoot, 'gis', 'poi', `${sourceId}.json`), report);
   return report;
 }
