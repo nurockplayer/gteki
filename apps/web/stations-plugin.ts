@@ -28,7 +28,7 @@ const ASSET_EXT = /\.(glb|gltf|bin|png|jpe?g|webp|ktx2|hdr|ogg|mp3|m4a|json)$/i;
 const PUBLICATION_RULES = new Set([
   "node.source.rights", "edge.geometry.rights", "floor.elevation.rights", "poi.position.rights",
   "coverage.polygon.rights", "asset.rights", "asset.source", "data.rights", "data.source", "data.path", "data.dup", "data.derivation",
-  "source.attribution", "source.license", "source.url", "source.override",
+  "source.attribution", "source.license", "source.url", "source.override", "source.decision",
 ]);
 /** The contract files are loaded as data, not served as assets. */
 const CONTRACT_FILES = new Set(["station.json", "graph.json", "pois.json"]);
