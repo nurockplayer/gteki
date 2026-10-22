@@ -9,7 +9,7 @@ import { buildSigns, type SignSpec } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { createAmbience } from "./ambience.ts";
-import { CONTEXT_GLB, contextVisibleAt, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
+import { CONTEXT_GLB, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
 import crowdLanes from "./crowd_lanes.json";
 import signage from "./signage.json";
 import walkBridges from "./walk_bridges.json";
@@ -393,13 +393,20 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // concourse) has no verified access: it stays visible, but their outline is fenced and labelled.
   root.add(fences.visual, fences.collider);
 
-  // Street-level context buildings (#39): visual only, so they never join walkable, colliders or cameraBlockers
-  // (and assembleCollision never sees them). The explorer has no context slot, so the gate is station-side: the
+  // Street-level context buildings (#39): visual only, so they never join walkable or colliders (and
+  // assembleCollision never sees them). They do stop the follow camera, through separate low-poly blockers
+  // (context.ts) that the explorer reads once at resolve, so they exist now and fill when the context arrives.
+  // The explorer has no context slot, so the gate is station-side: the
   // group is in the scene only while the camera is at street height and the scene is fogged (see context.ts),
   // which keeps underground draws exactly as before and keeps it out of the overview's framing box. It loads in the
   // background (it is only ever seen at street level, so the station is walkable before it arrives) and fails soft:
   // no file, no layer.
   const streetY = streetRenderY(ctx.bundle.floors);
+  const streetFloors = new Set(ctx.bundle.floors.filter((f) => f.ordinal === 0 && !f.intermediate).map((f) => f.id));
+  const contextBlockers = createContextBlockers(
+    THREE,
+    ctx.bundle.nodes.filter((n) => streetFloors.has(n.floorId)).map((n) => toRenderer(n.position.x, n.position.y, n.position.z ?? 0)),
+  );
   let context: THREE_NS.Object3D | null = null;
   let contextMaterial: THREE_NS.Material | null = null;
   let disposed = false;
@@ -414,6 +421,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       }
       loaded.scene.name = "street-context";
       loaded.scene.visible = false;
+      contextBlockers.fill(loaded.scene);
       context = loaded.scene;
       contextMaterial = material;
     },
@@ -427,6 +435,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     if (show && context.parent !== root) root.add(context);
     else if (!show && context.parent === root) root.remove(context);
     context.visible = show;
+    contextBlockers.setActive(show);
   };
 
   // Lightmap (baked by pipeline/blender_bake_lighting.py, TEXCOORD_1). Falls back to a hemisphere rig.
@@ -480,6 +489,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     root,
     walkable: walkTiles,
     colliders: colliderTiles,
+    cameraBlockers: contextBlockers.meshes,
     spawnPoints,
     environment: { lighting: lightmap ? "scene" : "default", background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
     update: (dt, elapsed) => {
@@ -494,6 +504,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       ambience?.dispose();
       cameraTrack?.dispose();
       disposed = true;
+      contextBlockers.dispose();
       if (context) {
         setContext(false);
         context.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());

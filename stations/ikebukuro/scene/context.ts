@@ -108,3 +108,121 @@ export function trackCamera(probe: THREE_NS.Object3D): { read(): { y: number; fo
     },
   };
 }
+
+/**
+ * How far from a street node (m, horizontal) a building triangle can still matter to the follow camera: the
+ * longest boom (9 m over the head, ~9.3 m with the clearance) plus the few metres a walker can stray from the
+ * node on the exit's top landing. Buildings further out cannot be between the walker and the camera.
+ */
+export const BLOCKER_REACH_M = 20;
+
+/** Where `mesh.layers` puts a blocker that is switched off: no ray the explorer casts (layer 0) tests it. */
+const OFF_LAYER = 1;
+
+export interface ContextBlockers {
+  /**
+   * The StationScene.cameraBlockers entries: one mesh per street node, never in the scene graph, empty until
+   * `fill`. The explorer reads cameraBlockers once when buildScene resolves, then builds its camera targets and
+   * ray trees from that list, so the meshes must exist then and are filled in place later.
+   */
+  meshes: THREE_NS.Mesh[];
+  /** Fill from the loaded context: the `ctx_bldg_*` triangles within reach of each node. Roads are never used. Returns the triangle count. */
+  fill(contextScene: THREE_NS.Object3D): number;
+  /** Switch the blockers on (street level) or off (underground, overview): off, no camera ray tests them at all. */
+  setActive(on: boolean): void;
+  /** Triangles the blockers currently hold. */
+  triangles(): number;
+  /** Free the geometry and empty the blockers; `fill` does nothing afterwards. */
+  dispose(): void;
+}
+
+/**
+ * Camera-only blockers for the street context's buildings (the follow camera must not end up inside one; the
+ * context material is double-sided). Not walkable, not colliders: only meant for `StationScene.cameraBlockers`.
+ *
+ * The geometry is a spatial subset of the building triangles, one small mesh per street node (`centers`, renderer
+ * space), because the explorer ray-tests a mesh against its bounding sphere and box first and builds its triangle
+ * tree only at load: a mesh filled later is scanned triangle by triangle, so many small tight meshes keep a ray
+ * from scanning the whole district (the high variant has ~120k building triangles; each node's share is a few
+ * hundred). The meshes hold world-space positions and stay outside the scene graph, so the overview framing, the
+ * label occluders and the sign cut never see them.
+ */
+export function createContextBlockers(THREE: ThreeNS, centers: readonly THREE_NS.Vector3[], reach: number = BLOCKER_REACH_M): ContextBlockers {
+  // One degenerate triangle far below the world: ray-testable (a mesh without positions is not), never hit,
+  // rejected by the bounding box on the first test.
+  const empty = new THREE.BufferGeometry();
+  empty.setAttribute("position", new THREE.BufferAttribute(new Float32Array(9).fill(-1e6), 3));
+  const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+  material.name = "ctx_blocker";
+  const meshes = centers.map((_, i) => {
+    const m = new THREE.Mesh(empty, material);
+    m.name = `ctx_blocker_${i}`;
+    m.visible = false;
+    m.frustumCulled = false;
+    m.layers.set(OFF_LAYER);
+    return m;
+  });
+  let disposed = false;
+  let held = 0;
+  const own = new Set<THREE_NS.BufferGeometry>();
+
+  const release = () => {
+    for (const g of own) g.dispose();
+    own.clear();
+    for (const m of meshes) m.geometry = empty;
+    held = 0;
+  };
+
+  return {
+    meshes,
+    fill(contextScene) {
+      if (disposed) return 0;
+      release();
+      contextScene.updateMatrixWorld(true);
+      const buckets: number[][] = centers.map(() => []);
+      const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+      const r2 = reach * reach;
+      contextScene.traverse((o) => {
+        const mesh = o as THREE_NS.Mesh;
+        if (!mesh.isMesh || !/^ctx_bldg_/.test(mesh.name)) return;
+        const pos = mesh.geometry.getAttribute("position");
+        const index = mesh.geometry.getIndex();
+        const count = Math.floor((index ? index.count : pos.count) / 3);
+        const vertex = (t: number, k: number, out: THREE_NS.Vector3) => out.fromBufferAttribute(pos, index ? index.getX(t * 3 + k) : t * 3 + k).applyMatrix4(mesh.matrixWorld);
+        for (let t = 0; t < count; t++) {
+          vertex(t, 0, a); vertex(t, 1, b); vertex(t, 2, c);
+          const x0 = Math.min(a.x, b.x, c.x), x1 = Math.max(a.x, b.x, c.x);
+          const z0 = Math.min(a.z, b.z, c.z), z1 = Math.max(a.z, b.z, c.z);
+          for (let i = 0; i < centers.length; i++) {
+            const { x, z } = centers[i]!;
+            // Distance from the node to the triangle's horizontal bounding box.
+            const dx = Math.max(x0 - x, 0, x - x1), dz = Math.max(z0 - z, 0, z - z1);
+            if (dx * dx + dz * dz <= r2) buckets[i]!.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+          }
+        }
+      });
+      buckets.forEach((verts, i) => {
+        if (verts.length === 0) return;
+        const g = new THREE.BufferGeometry();
+        g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(verts), 3));
+        g.computeBoundingSphere();
+        g.computeBoundingBox();
+        own.add(g);
+        meshes[i]!.geometry = g;
+        held += verts.length / 9;
+      });
+      return held;
+    },
+    setActive(on) {
+      for (const m of meshes) m.layers.set(on && !disposed ? 0 : OFF_LAYER);
+    },
+    triangles: () => held,
+    dispose() {
+      disposed = true;
+      release();
+      for (const m of meshes) m.layers.set(OFF_LAYER);
+      empty.dispose();
+      material.dispose();
+    },
+  };
+}

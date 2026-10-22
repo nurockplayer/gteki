@@ -241,7 +241,7 @@ Evidence stills:
 triangles, 9.5 MB) are visual-only PLATEAU surface **buildings and roads** around the exits, built by `tools/gis`
 (`gis context-glb ikebukuro --variant low|high --merge tiles:380`; commands, receipts in `docs/gis/context/` and
 sha256s are on the `street-context` asset in `station.json`). Every node is `gteki_role=context`, `ctx_bldg_*` or
-`ctx_road_*`, `NOT_FOR_ROUTING`: never walkable, never a collider, never a camera blocker, and `assembleCollision`
+`ctx_road_*`, `NOT_FOR_ROUTING`: never walkable, never a collider, and `assembleCollision`
 never sees them. `scene/scene.ts` loads the file for `ctx.quality` (fails soft) with a cheap daylight material that
 takes the explorer's street fog, and keeps the group **out of the scene** unless the camera is at street height:
 renderer y within [street - 1 m, street + 25 m] (street = 32.5 m) and the scene is fogged (`scene/context.ts`, read
@@ -251,7 +251,12 @@ low adds at most 8 draws and 30.4k triangles. The credit 出典：国土交通�
 is each context source's `attribution`, which the app's coverage dialog lists. **Roads ship as geometry only** (no
 `tran` attribute) under the Owner's risk acceptance that the GSI approval (令7関公第296号) covers attributes only:
 `docs/gis/decisions/2026-10-22-plateau-tran-geometry-risk-acceptance.md`. If that scope turns up and does not fit, the
-`--kinds bldg` build is the buildings-only fallback.
+`--kinds bldg` build is the buildings-only fallback. The **buildings** (not the roads) also stop the follow camera, so it
+cannot end up inside one near the exits: the explorer reads `cameraBlockers` once when `buildScene` resolves, so
+`scene/scene.ts` returns one empty camera-only mesh per street node and `createContextBlockers` fills them from the
+`ctx_bldg_*` triangles within 20 m of the node when the context arrives (about 1.4k triangles low, 11k high, in
+world space and outside the scene graph); they are switched on only with the context, so underground and overview
+rays never test them, and walking is unchanged.
 
 ## Next
 

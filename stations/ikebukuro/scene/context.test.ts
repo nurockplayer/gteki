@@ -7,10 +7,11 @@ import * as THREE from "three";
 import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { glbPrimitivePlugin, roleOf, sceneFromGlbRoles } from "@gteki/scene-api";
 import { enuToRenderer } from "../../../packages/geo/src/index.ts";
-import { explorerTargets } from "../../../apps/web/src/explorer/raycast.ts";
+import { castCamera, explorerTargets, keepBelowBlockers } from "../../../apps/web/src/explorer/raycast.ts";
+import { prepareRayTrees } from "../../../apps/web/src/explorer/meshBvh.ts";
 import { buildFenceCollider } from "./fences.ts";
 import accessFences from "./access_fences.json";
-import { CONTEXT_GATE, CONTEXT_GLB, contextVisibleAt, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
+import { BLOCKER_REACH_M, CONTEXT_GATE, CONTEXT_GLB, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
 import { assembleCollision } from "./scene.ts";
 
 const GTEKI = new URL("../gteki/", import.meta.url).pathname;
@@ -146,11 +147,13 @@ describe("the context is not part of the collision world", () => {
     });
   }
 
-  it("scene.ts returns no cameraBlockers and builds walkable and colliders from assembleCollision alone", () => {
+  it("scene.ts builds walkable and colliders from assembleCollision alone; its only cameraBlockers are the context blockers", () => {
     const src = fs.readFileSync(new URL("./scene.ts", import.meta.url), "utf8").replace(/\/\/[^\n]*/g, "");
-    expect(src).not.toContain("cameraBlockers");
+    expect(src.match(/cameraBlockers/g)).toEqual(["cameraBlockers"]);
+    expect(src).toContain("cameraBlockers: contextBlockers.meshes");
     expect(src).toMatch(/tileCollision\(THREE, \{ walkable, colliders \}\)/);
     expect(src).toMatch(/root\.add\(context\)/);
+    expect(src).not.toMatch(/root\.add\([^)]*contextBlockers/);
   });
 });
 
@@ -333,4 +336,220 @@ describe("station.json: street-context asset, sources and attribution", () => {
       expect(seen, quality).toEqual(want);
     }
   });
+});
+
+/** Triangle budgets for the camera blockers (measured; the ray scans a mesh triangle by triangle, see createContextBlockers). */
+const BUDGET_BLOCKERS = {
+  low: { total: 2_000, perMesh: 200, scanned: 1_500 },
+  high: { total: 16_000, perMesh: 3_000, scanned: 10_000 },
+} as const;
+
+describe("context camera blockers (buildings only, camera only)", () => {
+  const station = JSON.parse(fs.readFileSync(GTEKI + "station.json", "utf8")) as { floors: { id: string; ordinal: number; intermediate: boolean; renderElevationM: number }[] };
+  const graph = JSON.parse(fs.readFileSync(GTEKI + "graph.json", "utf8")) as { nodes: { id: string; floorId: string; kind: string; position: { x: number; y: number; z: number } }[] };
+  const streetY = streetRenderY(station.floors)!;
+  const streetNodes = graph.nodes.filter((n) => n.floorId === "street");
+  const rendererOf = (p: { x: number; y: number; z: number }) => new THREE.Vector3(...enuToRenderer(p));
+  const centers = streetNodes.map((n) => rendererOf(n.position));
+
+  const load = async (uri: string): Promise<GLTF> => {
+    const buf = fs.readFileSync(GTEKI + uri);
+    const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+    const gltf = await new Promise<GLTF>((res, rej) => new GLTFLoader().register(glbPrimitivePlugin).parse(ab, "", res, rej));
+    gltf.scene.updateMatrixWorld(true);
+    return gltf;
+  };
+  const meshesOf = (scene: THREE.Object3D, prefix: string) => {
+    const out: THREE.Mesh[] = [];
+    scene.traverse((o) => { if ((o as THREE.Mesh).isMesh && o.name.startsWith(prefix)) out.push(o as THREE.Mesh); });
+    return out;
+  };
+  const triCount = (m: THREE.Mesh) => (m.geometry.index ? m.geometry.index.count : m.geometry.getAttribute("position").count) / 3;
+  const rayAt = (origin: THREE.Vector3, dir: THREE.Vector3, far: number) => new THREE.Raycaster(origin.clone(), dir.clone().normalize(), 0, far);
+  const compass = (deg: number, y = 0) => new THREE.Vector3(Math.cos((deg * Math.PI) / 180), y, Math.sin((deg * Math.PI) / 180));
+
+  it("one placeholder per street node exists at resolve: the explorer reads cameraBlockers once, then builds its targets and ray trees from it", () => {
+    expect(streetNodes.length).toBe(20);
+    expect(streetY).toBe(32.5);
+    const blockers = createContextBlockers(THREE, centers);
+    expect(blockers.meshes).toHaveLength(20);
+    expect(blockers.triangles()).toBe(0);
+    const targets = explorerTargets([], [], blockers.meshes);
+    expect(targets.camera).toEqual(blockers.meshes);
+    expect(targets.blockers.size).toBe(20);
+    // What the explorer does at resolve must not choke on the empty placeholders, and a ray finds nothing in them.
+    expect(() => prepareRayTrees(targets.camera)).not.toThrow();
+    blockers.setActive(true);
+    const hits = castCamera(rayAt(centers[0]!, new THREE.Vector3(0, -1, 0), 1e4), targets.camera, targets.blockers);
+    expect(hits).toEqual([]);
+    blockers.dispose();
+  });
+
+  it("a tree built at resolve on the empty placeholder does not hide the geometry filled in later", () => {
+    const blockers = createContextBlockers(THREE, [new THREE.Vector3(0, 0, 0)], 20);
+    const targets = explorerTargets([], [], blockers.meshes);
+    prepareRayTrees(targets.camera);
+    const scene = new THREE.Group();
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array([-5, 0, 3, 5, 0, 3, 0, 9, 3]), 3));
+    const wall = new THREE.Mesh(g);
+    wall.name = "ctx_bldg_t00_00";
+    scene.add(wall);
+    expect(blockers.fill(scene)).toBe(1);
+    blockers.setActive(true);
+    const hit = castCamera(rayAt(new THREE.Vector3(0, 2, 0), new THREE.Vector3(0, 0, 1), 9), targets.camera, targets.blockers)[0];
+    expect(hit?.distance).toBeCloseTo(3, 5);
+    blockers.dispose();
+  });
+
+  it("fills from the building meshes only: a road mesh adds nothing", () => {
+    const scene = new THREE.Group();
+    const tri = (name: string, z: number) => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.BufferAttribute(new Float32Array([0, 0, z, 1, 0, z, 0, 1, z, 0, 0, z + 1, 1, 0, z + 1, 0, 1, z + 1]), 3));
+      const m = new THREE.Mesh(g);
+      m.name = name;
+      return m;
+    };
+    scene.add(tri("ctx_bldg_t00_00", 0), tri("ctx_road_t00_00", 5));
+    const blockers = createContextBlockers(THREE, [new THREE.Vector3(0, 0, 0)], 20);
+    expect(blockers.fill(scene)).toBe(2);
+    const pos = blockers.meshes[0]!.geometry.getAttribute("position");
+    const zs = new Set(Array.from({ length: pos.count }, (_, i) => pos.getZ(i)));
+    expect([...zs].sort()).toEqual([0, 1]);
+    blockers.dispose();
+  });
+
+  for (const quality of ["low", "high"] as const) {
+    describe(quality, () => {
+      let gltf: GLTF;
+      let blockers: ReturnType<typeof createContextBlockers>;
+      let bldgTris = 0;
+      const setup = async () => {
+        gltf = await load(CONTEXT_GLB[quality]);
+        blockers = createContextBlockers(THREE, centers);
+        bldgTris = meshesOf(gltf.scene, "ctx_bldg_").reduce((n, m) => n + triCount(m), 0);
+      };
+
+      it("holds building triangles near the street nodes, a bounded few, and none from roads", async () => {
+        await setup();
+        const filled = blockers.fill(gltf.scene);
+        const perMesh = blockers.meshes.map(triCount);
+        const max = Math.max(...perMesh);
+        console.info(`${quality}: building tris ${bldgTris}, blocker tris ${filled} (${((filled / bldgTris) * 100).toFixed(1)}%), meshes ${perMesh.filter((n) => n > 1).length}/20, per mesh max ${max} mean ${(filled / 20).toFixed(0)}`);
+        expect(filled).toBeGreaterThan(0);
+        expect(blockers.triangles()).toBe(filled);
+        expect(max).toBeLessThanOrEqual(BUDGET_BLOCKERS[quality].perMesh);
+        expect(filled).toBeLessThanOrEqual(BUDGET_BLOCKERS[quality].total);
+        // Every blocker vertex is a building-mesh vertex (roads are never sampled).
+        const key = (x: number, y: number, z: number) => `${x.toFixed(2)},${y.toFixed(2)},${z.toFixed(2)}`;
+        const bldgVerts = new Set<string>();
+        for (const m of meshesOf(gltf.scene, "ctx_bldg_")) {
+          const p = m.geometry.getAttribute("position");
+          for (let i = 0; i < p.count; i++) bldgVerts.add(key(p.getX(i), p.getY(i), p.getZ(i)));
+        }
+        for (const m of blockers.meshes) {
+          const p = m.geometry.getAttribute("position");
+          for (let i = 0; i < p.count; i += Math.max(1, Math.floor(p.count / 200))) {
+            if (p.getY(i) < -1e5) continue;
+            expect(bldgVerts.has(key(p.getX(i), p.getY(i), p.getZ(i)))).toBe(true);
+          }
+        }
+        // World-space meshes outside the scene graph (inside it they would widen the overview framing box).
+        for (const m of blockers.meshes) expect(m.parent).toBeNull();
+        blockers.dispose();
+      });
+
+      it("is not walkable or a collider: assembleCollision and the explorer's ground, collider and sky targets see none of it; the camera set does", async () => {
+        await setup();
+        blockers.fill(gltf.scene);
+        blockers.setActive(true);
+        const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(...enuToRenderer({ x, y, z }));
+        const fenceCollider = buildFenceCollider(THREE, (accessFences as unknown as { fences: never }).fences, toRenderer);
+        const parts = assembleCollision(THREE, gltf.scene, { materialFor: () => undefined, toRenderer, enuToRenderer, fenceCollider });
+        const targets = explorerTargets(parts.walkable, parts.colliders, blockers.meshes);
+        const blockerSet = new Set<THREE.Object3D>(blockers.meshes);
+        for (const list of [parts.walkable, parts.colliders, parts.extra, targets.ground, targets.collider, targets.sky]) expect((list as THREE.Object3D[]).filter((o) => blockerSet.has(o) || /^ctx_/.test(o.name))).toEqual([]);
+        expect(blockers.meshes.every((m) => targets.camera.includes(m) && targets.blockers.has(m))).toBe(true);
+        // The context meshes themselves (buildings and roads) are no camera target: only the proxies are.
+        expect(targets.camera.filter((o) => /^ctx_bldg_|^ctx_road_/.test(o.name))).toEqual([]);
+        blockers.dispose();
+      });
+
+      it("stops a camera boom at the building near Exit 39, from the street spot at head height, and only while switched on", async () => {
+        await setup();
+        blockers.fill(gltf.scene);
+        blockers.setActive(true);
+        const spot = rendererOf(streetNodes.find((n) => n.id === "x39")!.position);
+        const head = new THREE.Vector3(spot.x, spot.y + 1.62, spot.z);
+        const targets = explorerTargets([], [], blockers.meshes);
+        let best = Infinity, bestDeg = 0;
+        for (let deg = 0; deg < 360; deg += 1) {
+          const hit = castCamera(rayAt(head, compass(deg), 9.3), targets.camera, targets.blockers)[0];
+          if (hit && hit.distance < best) { best = hit.distance; bestDeg = deg; }
+        }
+        console.info(`${quality}: nearest building from x39 at head height ${best.toFixed(2)} m at ${bestDeg} deg (reach ${BLOCKER_REACH_M})`);
+        expect(best).toBeLessThanOrEqual(8);
+        // The smoothed camera is pulled in front of that building, never left behind it.
+        const dir = compass(bestDeg);
+        const camera = head.clone().addScaledVector(dir, 9);
+        keepBelowBlockers(head, camera, [...targets.blockers], 0.3);
+        expect(head.distanceTo(camera)).toBeCloseTo(Math.max(0, best - 0.3), 1);
+        // Switched off (underground, overview): the same rays hit nothing and the camera is left alone.
+        blockers.setActive(false);
+        expect(castCamera(rayAt(head, dir, 9.3), targets.camera, targets.blockers)).toEqual([]);
+        const free = head.clone().addScaledVector(dir, 9);
+        keepBelowBlockers(head, free, [...targets.blockers], 0.3);
+        expect(free.distanceTo(head.clone().addScaledVector(dir, 9))).toBe(0);
+        blockers.dispose();
+      });
+
+      it("dispose removes everything: no triangles, no hits, nothing left to fill", async () => {
+        await setup();
+        blockers.fill(gltf.scene);
+        blockers.setActive(true);
+        const targets = explorerTargets([], [], blockers.meshes);
+        const spot = rendererOf(streetNodes.find((n) => n.id === "x39")!.position);
+        const head = new THREE.Vector3(spot.x, spot.y + 1.62, spot.z);
+        const sweep = () => {
+          let n = 0;
+          for (let deg = 0; deg < 360; deg += 10) n += castCamera(rayAt(head, compass(deg), 9.3), targets.camera, targets.blockers).length;
+          return n;
+        };
+        expect(sweep()).toBeGreaterThan(0);
+        blockers.dispose();
+        expect(blockers.triangles()).toBe(0);
+        expect(blockers.meshes.every((m) => triCount(m) === 1 && m.geometry.getAttribute("position").getY(0) < -1e5)).toBe(true);
+        expect(sweep()).toBe(0);
+        expect(blockers.fill(gltf.scene)).toBe(0);
+        blockers.setActive(true);
+        expect(sweep()).toBe(0);
+      });
+
+      it("raycast cost: the triangles a boom-length ray can scan, and the time per ray", async () => {
+        await setup();
+        blockers.fill(gltf.scene);
+        blockers.setActive(true);
+        const targets = explorerTargets([], [], blockers.meshes);
+        // Worst case: every blocker mesh whose bounding box the ray enters is scanned triangle by triangle.
+        let worst = 0, rays = 0;
+        const t0 = performance.now();
+        for (const c of centers) {
+          for (let deg = 0; deg < 360; deg += 15) {
+            const origin = new THREE.Vector3(c.x, c.y + 1.62, c.z);
+            const ray = rayAt(origin, compass(deg, 0.1), 9.3);
+            let scanned = 0;
+            for (const m of blockers.meshes) if (ray.ray.intersectsBox(m.geometry.boundingBox!)) scanned += triCount(m);
+            worst = Math.max(worst, scanned);
+            castCamera(ray, targets.camera, targets.blockers);
+            rays++;
+          }
+        }
+        const ms = (performance.now() - t0) / rays;
+        console.info(`${quality}: worst triangles scanned per ray ${worst}, mean ${ms.toFixed(3)} ms/ray over ${rays} rays`);
+        expect(worst).toBeLessThanOrEqual(BUDGET_BLOCKERS[quality].scanned);
+        blockers.dispose();
+      });
+    });
+  }
 });
