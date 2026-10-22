@@ -49,8 +49,9 @@ describe("PLATEAU street-surface credit (#161)", () => {
     const { html, plateau } = inApp();
     expect(surfaceJson.attribution.startsWith(OPTION_A)).toBe(true);
     expect(html).toContain(OPTION_A);
-    expect(plateau).toHaveLength(1);
-    expect(plateau[0]!.attribution).toBe(OPTION_A);
+    // The surface source, plus the two street-context building sources (#39): all carry the one Q10 string.
+    expect(plateau.map((p) => p.id)).toEqual(["plateau-13104-shinjuku-ku-2025", "plateau-13104-bldg-53394525", "plateau-13104-bldg-53394526"]);
+    for (const p of plateau) expect(p.attribution).toBe(OPTION_A);
   });
 
   it("shows no CC BY label and no 東京都 prefix in any in-app PLATEAU credit", () => {
