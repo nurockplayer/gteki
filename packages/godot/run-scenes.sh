@@ -23,3 +23,7 @@ for station in "${stations[@]}"; do
 done
 # One headless Godot process at a time; the snapshots are loaded and freed one station after the other.
 "$godot_bin" --headless --path packages/godot --script res://tests/run_scene_tests.gd -- "$scenes_dir" "${stations[@]}"
+# The real client's --check also asserts the avatar lighting wiring (light cull masks vs. the station's layers).
+for station in "${stations[@]}"; do
+  "$godot_bin" --headless --path packages/godot res://hq/hq.tscn -- --scenes="$scenes_dir" --station="$station" --check
+done
