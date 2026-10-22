@@ -16,7 +16,7 @@ for facts only and never published).
 | `gap-tobu-jr-link` | passage along the west side of the JR block, South Passage ↔ Central Passage (west) | whether it is public or a JR–Tobu transfer concourse (gate machines along its JR side; Tobu Central Gate 1 at its north end) | on-site check of both ends for gate lines and signage | a second west–east link |
 | `gap-ne-north` | North-east, north of the shopping-park passage | which stair is Exit 24 and which is 25 (the official map shows two; PLATEAU has one stair top); Exits 23, 29, 30, 31 lie outside the surveyed geometry | on-site check of the 24/25 stairs; a survey source for the passage further north | routing to those exits |
 | `gap-west-stairs` | West Exit area | PLATEAU models only the lower flights of Exit 9 and of two stairwells near (-181, 126) and (-165, 113) (to TP ~30 m; street ~33 m). Exit 9's flight is ~9 m from its map position; the (-181, 126) flight sits beside the wide stair to the Fukutoshin Line West Passage, and the (-165, 113) flight runs into the Hope Center block towards Exit 7's map position, so neither is matched. Exit 8's stairs are ~12 m beyond the surveyed floor at the passage's west end. Exits 14, 16 and 19 (西口（中央）) have no stair in the survey. (Exit 13's lower flight matches its map position within ~3 m and is routed to its foot.) | a survey source for the upper flights and the passage west to Exit 8 (or a later PLATEAU release); on-site check of which stairwell is which exit | routing to Exits 7, 8, 9 and the upper flight of 13 |
-| `gap-freshness` | whole slice | geometry is a 2023 survey; later construction unknown | dated walk-through comparing columns, exits and openings with the GLB | lifts the stale flag for slice 1 |
+| `gap-freshness` | whole slice | geometry is a 2023 survey; later construction unknown | dated walk-through comparing columns, exits and openings with the GLB | does not by itself lift the route's stale flag: `stale` comes from source dates (PLATEAU 2023 and the 2022 Toshima guide are both past the 730-day default), so it clears only when a newer dated source replaces them and the node and edge sourceRefs are updated |
 
 ## Per-POI evidence: the 20 search-only POIs (audit 2026-10-22)
 
@@ -36,8 +36,12 @@ Method and limits of this audit:
 - Result: **all 20 stay search-only. No node, edge, accessFact or coverage text changed.** For every
   one the missing piece is the identification (which opening or stair is which gate or exit), which
   no document in the repo supplies. Geometry alone cannot supply it, and inventing it is not allowed.
-- The two Yurakucho South Passage gates (`gap-south-west`) have no POI today, so they are not among
-  the 20; they stay a gap for the same reason (the map's gate machines sit inside surveyed floor with
+- The two Yurakucho South Passage gates (`gap-south-west`) had no POI at the time of this audit, so
+  they are not among the 20. 南通路西改札 has since been added as a 21st search-only POI
+  (`metro-y-south-west-gate`, 2026-10-22): Tokyo Metro's accessibility page (facts only) states a
+  lift and escalator connection 南通路西改札～４番出入口（エソラ） outside the fare gates, but the gate
+  cannot be placed and the passage to Exit 4 is not modelled, so there is no node and no edge. The
+  gates stay a gap for the same reason (the map's gate machines sit inside surveyed floor with
   no gate-line opening). `gap-tobu-jr-link` is a passage, not a POI; it touches only Tobu Central Gate 1.
 
 PLATEAU stair flights that no exit claims (West Exit area; all three end at a vertical closure about
