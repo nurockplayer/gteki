@@ -78,10 +78,11 @@ Order follows the list's Suggested visit plan; nothing reordered. Stop 11 is "as
 - Unlocks: `exit-9`, `gap-west-stairs`; `exit-14`, `exit-16`, `exit-19`, `exit-8`.
 - Items: B2, B3, B4, B5, B6, C1 (add-on `[CH-04]`, alias FC-CH-04)
 
-### 4. Same hall, one exit stair  ★ (250)
-- Where: West exit hall (any free B1 hall) and one exit stair.
+### 4. West hall, one exit stair; east hall at stop 7  ★ (250)
+- Where: two halls. Here: the West exit hall (any free B1 hall) and one exit stair. Later, at stop 7: any free B1 hall on the east side (the list requires both the east and the west hall).
 - Check: floor, ceiling, handrail, stair nosing.
-- Photos: FC-IMG-04 **[ships]**, close-ups only. The list says this also fills the missing "east/west underground plaza" photo gap.
+- Photos: FC-IMG-04 **[ships]**, close-ups only, in both halls (west here, east at stop 7). The list says this also fills the missing "east/west underground plaza" photo gap.
+- Minutes are for both halls together.
 - Minutes: 20
 - Unlocks: rank 4 (IK-12), imagery.
 - Items: FC-IMG-04
@@ -105,7 +106,7 @@ Order follows the list's Suggested visit plan; nothing reordered. Stop 11 is "as
 ### 7. Central Passage east; East B1 hall toward exit 35  ★★★ (60) / ★★ (90)
 - Where: east of the Marunouchi east gate (中央通路東改札), exits 34 and 35 stair heads; then the East B1 hall toward exit 35 (`e_hall` to `e_low`).
 - Check: which exit number the lift surfaces at and which the escalator (the Metro pages disagree: 34 or 35); wording at both stair heads. At the hall: ramp, slope, lift or only steps; step count; sign wording. Do not pick 34 or 35 in data until done.
-- Photos: both stair-head signs **[private]**.
+- Photos: both stair-head signs **[private]**. Also the east half of FC-IMG-04 **[ships]**: floor, ceiling, handrail close-ups in this free B1 hall (minutes counted at stop 4).
 - Minutes: 10 (FC-IK-02, includes FC-SH-03) + 5 est. (FC-SH-01) = 15
 - Unlocks: `gap-step-free` (east); #203 A1(a), I12.
 - Items: FC-IK-02, FC-SH-01
@@ -152,7 +153,7 @@ Order follows the list's Suggested visit plan; nothing reordered. Stop 11 is "as
 - ☐ A1, A2, A3 — Central Passage gates
 - ☐ FC-IK-01 — west-side lift
 - ☐ B2, B3, B4, B5, B6, C1 (+ `[CH-04]`) — West Exit hall
-- ☐ FC-IMG-04 — hall and one exit stair
+- ☐ FC-IMG-04 — west hall and one exit stair (stop 4) + east B1 hall (stop 7)
 - ☐ D1 — passage north of West Exit (South)
 - ☐ FC-RT-03 — stairs signed 4 and 5
 - ☐ F2, F3 — South Passage and JR link
