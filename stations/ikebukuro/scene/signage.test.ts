@@ -3,7 +3,7 @@
 import { readFileSync } from "node:fs";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { buildSigns, type SignSpec } from "./signs.ts";
+import { buildSigns, LOW_TEXEL_SCALE, type SignSpec } from "./signs.ts";
 
 const here = (p: string) => new URL(p, import.meta.url);
 const json = (p: string) => JSON.parse(readFileSync(here(p), "utf8"));
@@ -18,7 +18,7 @@ type Edge = {
   geometry: { x: number; y: number; z: number }[];
 };
 type Poi = { id: string; category: string; connectorNodeIds: string[] };
-type Sign = SignSpec & { kind?: "repeat"; basis?: string[]; atNode: string };
+type Sign = SignSpec & { basis?: string[]; atNode: string };
 
 const graph = json("../gteki/graph.json") as { nodes: { id: string; kind: string }[]; edges: Edge[] };
 const pois = json("../gteki/pois.json").pois as Poi[];
@@ -144,7 +144,7 @@ describe("ikebukuro wayfinding cues along the guided legs (#108)", () => {
   });
 
   it("negative control: without the repeaters the West leg has empty windows and a long gap (the JR leg is unaffected)", () => {
-    const base = signs.filter((s) => s.kind !== "repeat");
+    const base = signs.filter((s) => s.kind !== "repeat" && s.kind !== "place");
     const west = legs["westb1-exit4"]!;
     expect(emptyWindows(west, base).length).toBeGreaterThan(0);
     const [lo, hi] = west.edgeSpan[REPEAT_EDGE]!;
@@ -152,7 +152,7 @@ describe("ikebukuro wayfinding cues along the guided legs (#108)", () => {
     expect(emptyWindows(legs["jrc2-exit35"]!, base)).toEqual([]);
   });
 
-  it("repeaters are the only additions: double-sided, capped, and sit on a verified edge between its end signs", () => {
+  it("repeaters: double-sided, capped, and sit on a verified edge between its end signs", () => {
     const rep = signs.filter((s) => s.kind === "repeat");
     expect(rep.length).toBeGreaterThan(0);
     for (const s of rep) {
@@ -258,7 +258,154 @@ describe("ikebukuro repeater content comes from the verified graph (#108)", () =
   });
 });
 
-// The sign atlas on the phone tier ("low": texel scale 0.54, 4096 px pages) must stay ONE 4096 x 2048 page.
+describe("ikebukuro place boards between the repeaters (#108)", () => {
+  const poiById = new Map(pois.map((p) => [p.id, p]));
+  const boards = signs.filter((s) => s.kind === "place");
+  const west = leg(LEGS["westb1-exit4"].result.steps);
+  const [lo, hi] = west.edgeSpan[REPEAT_EDGE]!;
+  const edge = edges.get(REPEAT_EDGE)!;
+  /** Positions along the leg of the readable signs of one kind inside the long passage. */
+  const inPassage = (kind: "repeat" | "place" | "end") =>
+    signAnchors(west, signs.filter((s) => (kind === "end" ? !s.kind : s.kind === kind)))
+      .filter((a) => a.c >= lo - 0.01 && a.c <= hi + 0.01)
+      .map((a) => a.c);
+
+  it("every board names a B1 hall that is a POI with a connector node, on both faces, with a source", () => {
+    expect(boards.length).toBeGreaterThanOrEqual(4);
+    for (const b of boards) {
+      expect(b.exits).toEqual([]);
+      expect(b.gates).toEqual([]);
+      expect(b.back).toHaveLength(1);
+      for (const face of [b.places!, b.back![0]!.places!]) {
+        expect(face.length, b.id).toBeGreaterThan(0);
+        expect(face.length, b.id).toBeLessThanOrEqual(2);
+        for (const it of face) {
+          const p = poiById.get(it.id)!;
+          expect(p, `${b.id}: ${it.id}`).toBeDefined();
+          expect(p.category).toBe("other");
+          expect(p.connectorNodeIds.length).toBeGreaterThan(0);
+          expect(it.ja, it.id).toBeTruthy();
+          expect(it.en, it.id).toBeTruthy();
+          expect(b.basis).toContain(`poi:${it.id}`);
+        }
+      }
+      expect(b.basis).toContain(`graph:${REPEAT_EDGE}`);
+      expect(b.basis!.some((x) => x.startsWith("fact:"))).toBe(true);
+    }
+  });
+
+  it("names only halls, not passages (a passage's connector is an arbitrary junction inside it)", () => {
+    const named = new Set(boards.flatMap((b) => [...b.places!, ...b.back![0]!.places!].map((x) => x.id)));
+    expect([...named].sort()).toEqual(["west-exit-b1", "west-exit-south-b1"]);
+  });
+
+  it("each distance is the graph walk to the hall's connector less the sign's position, within 5 m", () => {
+    // Verified edges except the passage itself (a hall is reached from its end nodes, not through the signed edge).
+    const adj = new Map<string, { to: string; len: number }[]>();
+    const link = (a: string, b: string, len: number) => adj.set(a, [...(adj.get(a) ?? []), { to: b, len }]);
+    for (const e of graph.edges) {
+      if (e.verification !== "verified" || e.id === edge.id) continue;
+      link(e.from, e.to, e.lengthM);
+      if (e.direction === "both") link(e.to, e.from, e.lengthM);
+    }
+    const dijkstra = (src: string) => {
+      const dist = new Map([[src, 0]]);
+      const todo = new Set([src]);
+      while (todo.size) {
+        const u = [...todo].reduce((a, b) => (dist.get(a)! <= dist.get(b)! ? a : b));
+        todo.delete(u);
+        for (const { to, len } of adj.get(u) ?? []) {
+          if (dist.get(u)! + len < (dist.get(to) ?? Infinity)) {
+            dist.set(to, dist.get(u)! + len);
+            todo.add(to);
+          }
+        }
+      }
+      return dist;
+    };
+    const fromEnd = dijkstra(edge.from), toEnd = dijkstra(edge.to);
+    let acc = 0;
+    const poly: Pt[] = edge.geometry.map((p, i) => {
+      if (i) acc += Math.hypot(p.x - edge.geometry[i - 1]!.x, p.y - edge.geometry[i - 1]!.y);
+      return { x: p.x, y: p.y, cum: acc };
+    });
+    const hall = (id: string, d: Map<string, number>) => Math.min(...poiById.get(id)!.connectorNodeIds.map((c) => d.get(c) ?? Infinity));
+    for (const b of boards) {
+      const along = (project(poly, b.position.x, b.position.y).c / acc) * edge.lengthM;
+      for (const it of b.places!) {
+        expect(Math.abs(it.distanceM! - (hall(it.id, toEnd) + edge.lengthM - along)), `${b.id}: ${it.id}`).toBeLessThanOrEqual(5);
+        expect(it.distanceM! % 5).toBe(0);
+      }
+      for (const it of b.back![0]!.places!) {
+        expect(Math.abs(it.distanceM! - (hall(it.id, fromEnd) + along)), `${b.id}: ${it.id}`).toBeLessThanOrEqual(5);
+        expect(it.distanceM! % 5).toBe(0);
+      }
+    }
+  });
+
+  it("the long passage alternates direction signs and place boards: neither kind twice in a row", () => {
+    const rep = inPassage("repeat");
+    const place = inPassage("place");
+    expect(place.length).toBe(boards.length);
+    const all = [...rep.map((c) => ({ c, k: "direction" })), ...place.map((c) => ({ c, k: "place" }))].sort((a, b) => a.c - b.c);
+    // from the first repeater to the last board; the end signs sit in the junction zones
+    for (let i = 1; i < all.length; i++) expect(all[i]!.k, `at ${all[i]!.c.toFixed(1)} m`).not.toBe(all[i - 1]!.k);
+  });
+
+  it("a readable sign every 14 m or less along the long passage, and every 30 m window holds both kinds", () => {
+    const anchors = signAnchors(west, signs).map((a) => a.c);
+    expect(maxGap(anchors, lo, hi)).toBeLessThanOrEqual(14);
+    const rep = inPassage("repeat"), place = inPassage("place");
+    for (let w = lo; w + WINDOW_M <= hi; w += 10) {
+      expect(rep.some((c) => c >= w && c <= w + WINDOW_M), `direction sign in ${w.toFixed(0)}-${(w + WINDOW_M).toFixed(0)} m`).toBe(true);
+      expect(place.some((c) => c >= w && c <= w + WINDOW_M), `place board in ${w.toFixed(0)}-${(w + WINDOW_M).toFixed(0)} m`).toBe(true);
+    }
+  });
+
+  it("boards keep clear of the repeaters (at least 5.5 m along the passage)", () => {
+    const rep = inPassage("repeat");
+    for (const c of inPassage("place")) for (const r of rep) expect(Math.abs(c - r)).toBeGreaterThanOrEqual(5.5);
+  });
+
+  it("negative control: without the boards the passage has no second kind of sign", () => {
+    expect(new Set(boards.map((b) => b.kind))).toEqual(new Set(["place"]));
+    const without = signs.filter((s) => s.kind !== "place");
+    expect(without.some((s) => (s.places ?? []).length > 0)).toBe(false);
+    expect(maxGap(signAnchors(west, without).map((a) => a.c), lo, hi)).toBeGreaterThan(14);
+  });
+});
+
+// Every added sign cites a source id: the graph edge, the POIs it names and a documented access fact.
+describe("ikebukuro sign provenance (#108)", () => {
+  const edgeIds = new Set(graph.edges.map((e) => `graph:${e.id}`));
+  const poiIds = new Set(pois.map((p) => p.id));
+  const src = json("../data/graph.src.json") as { accessFacts: { id: string }[] };
+  const facts = new Set(src.accessFacts.map((f) => f.id));
+
+  it("every repeater and place board cites a verified graph edge, the POIs it names and an access fact", () => {
+    const added = signs.filter((s) => s.kind);
+    expect(added.length).toBeGreaterThanOrEqual(10);
+    for (const s of added) {
+      expect(s.basis, s.id).toBeDefined();
+      for (const b of s.basis!) {
+        const kind = b.slice(0, b.indexOf(":"));
+        const id = b.slice(b.indexOf(":") + 1);
+        if (kind === "graph") expect(edgeIds.has(b), `${s.id}: ${b}`).toBe(true);
+        else if (kind === "poi") expect(poiIds.has(id), `${s.id}: ${b}`).toBe(true);
+        else if (kind === "fact") expect(facts.has(id), `${s.id}: ${b}`).toBe(true);
+        else throw new Error(`${s.id}: unknown basis ${b}`);
+      }
+      const shown = [
+        ...s.exits, ...s.gates, ...(s.places ?? []),
+        ...(s.back ?? []).flatMap((x) => [...x.exits, ...x.gates, ...(x.places ?? [])]),
+      ].map((i) => `poi:${i.id}`);
+      for (const b of shown) expect(s.basis, s.id).toContain(b);
+      expect(s.basis!.some((b) => b.startsWith("fact:")), s.id).toBe(true);
+    }
+  });
+});
+
+// The sign atlas on the phone tier ("low": texel scale LOW_TEXEL_SCALE = 0.5, 4096 px pages) must stay ONE 4096 x 2048 page.
 // buildSigns runs for real on a stub canvas whose text measure is a flat estimate (CJK 1 em, Latin ~0.56 em),
 // so face widths, trimming and shelf packing are the production code's; only glyph widths are approximate.
 // Before #108 the low atlas used about 22 of its 26 rows (rowH ~78 px => 2048 / 78). The repeaters add 2 faces each.
@@ -290,25 +437,39 @@ describe("ikebukuro sign atlas budget on the low tier", () => {
     };
   }
 
-  function atlas(set: Sign[]) {
+  function atlas(set: Sign[], texel = LOW_TEXEL_SCALE) {
     (globalThis as { document?: unknown }).document = stubDocument();
     try {
-      const built = buildSigns(THREE, set, (x, y, z) => new THREE.Vector3(x, z, -y), 1, 0.54, 4096);
-      const pages = built.pages;
+      const built = buildSigns(THREE, set, (x, y, z) => new THREE.Vector3(x, z, -y), 1, texel, 4096);
+      const out = { pages: built.pages, rows: built.rows };
       built.dispose();
-      return pages;
+      return out;
     } finally {
       delete (globalThis as { document?: unknown }).document;
     }
   }
 
-  it("with the repeaters the low atlas is still a single 4096 x 2048 page", () => {
-    expect(atlas(signs)).toEqual([{ w: 4096, h: 2048 }]);
+  it("with the repeaters and place boards the low atlas is still a single 4096 x 2048 page", () => {
+    expect(atlas(signs).pages).toEqual([{ w: 4096, h: 2048 }]);
+  });
+
+  it("uses at least three rows fewer than a 2048 px page holds, as slack for glyph-width error", () => {
+    const { rows } = atlas(signs);
+    expect(rows.used).toHaveLength(1);
+    const fits = Math.floor((2048 - rows.gutter) / rows.rowH);
+    expect(rows.used[0]!).toBeLessThanOrEqual(fits - 3);
+  });
+
+  it("negative control: at the old 0.54 scale the last spare rows were gone (why the scale is 0.5 now)", () => {
+    const old = atlas(signs, 0.54);
+    const fits = Math.floor((2048 - old.rows.gutter) / old.rows.rowH);
+    expect(fits - old.rows.used[0]!).toBeLessThan(3);
+    expect(LOW_TEXEL_SCALE).toBe(0.5);
   });
 
   it("keeps slack for glyph-width error: three more repeaters (six faces) still fit the 2048 px page", () => {
     const rep = signs.filter((s) => s.kind === "repeat");
     const extra = rep.slice(0, 3).map((s, i) => ({ ...s, id: `slack-${i}` }));
-    expect(atlas([...signs, ...extra])).toEqual([{ w: 4096, h: 2048 }]);
+    expect(atlas([...signs, ...extra]).pages).toEqual([{ w: 4096, h: 2048 }]);
   });
 });
