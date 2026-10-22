@@ -9,7 +9,7 @@ import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGu
 import { initialLang, pick, strings, type Lang } from "../i18n.ts";
 import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
 import { stationClock } from "../stationClock.ts";
-import { safeHref, sourceCredit } from "../credits.ts";
+import { factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -675,17 +675,6 @@ export class App {
   }
 
   /** A source's credit line: title (linked), attribution, licence (linked) and the modification notice. */
-  /** Human wording for a source's rights status (#130); unknown values read as unverified rather than leaking the enum. */
-  private rightsLabel(rights: Source["rights"]): string {
-    switch (rights) {
-      case "REUSABLE_WITH_CONDITIONS": return this.t.rightsReusable;
-      case "PUBLISHED_UNDER_OWNER_OVERRIDE": return this.t.rightsOwnerOverride;
-      case "REFERENCE_ONLY": return this.t.rightsReference;
-      case "RESTRICTED": return this.t.rightsRestricted;
-      default: return this.t.rightsUnverified;
-    }
-  }
-
   private creditItem(s: Source): HTMLLIElement {
     const c = sourceCredit(s);
     const link = (text: string, href: string | null): HTMLElement => {
@@ -701,16 +690,10 @@ export class App {
     if (c.license) li.append(el("span", "muted", " ("), link(c.license.name, c.license.href), el("span", "muted", ")"));
     if (c.modified) li.append(el("span", "muted", ` · ${this.t.modified}`));
     // Facts-only sources have no licence to show: say so (Coverage dialog and the route card's 出典 both use this).
-    if (s.usage === "facts-only") {
-      li.append(el("span", "muted", ` · ${this.t.factsOnly}`));
-      const href = safeHref(s.decision?.url);
-      if (s.decision && href) {
-        const a = el("a", undefined, `${this.t.rightsDecision} ${s.decision.date}`);
-        a.href = href;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        li.append(el("span", "muted", " ("), a, el("span", "muted", ")"));
-      }
+    const facts = factsOnlyCredit(s, this.t);
+    if (facts) {
+      li.append(el("span", "muted", ` · ${facts.text}`));
+      if (facts.decision) li.append(el("span", "muted", " ("), link(facts.decision.label, facts.decision.href), el("span", "muted", ")"));
     }
     return li;
   }
@@ -741,7 +724,7 @@ export class App {
       for (const s of b.sources) {
         const li = this.creditItem(s);
         // #130: plain-language rights, never the internal enum. A facts-only source is already described by creditItem (#122 wording).
-        if (s.usage !== "facts-only") li.append(el("span", "muted", ` · ${this.rightsLabel(s.rights)}`));
+        if (s.usage !== "facts-only") li.append(el("span", "muted", ` · ${rightsLabel(s.rights, this.t)}`));
         src.append(li);
       }
       d.append(src);

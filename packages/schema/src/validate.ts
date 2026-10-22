@@ -136,7 +136,10 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
       if (!ovOk) err("source.override", "PUBLISHED_UNDER_OWNER_OVERRIDE needs override {decision: issue/comment URL or #ref, date: YYYY-MM-DD}", s.id);
       if (!(s.license && typeof s.license.name === "string" && s.license.name.trim()))
         err("source.override", "PUBLISHED_UNDER_OWNER_OVERRIDE needs license.name text stating the licence status (e.g. unconfirmed)", s.id);
-    } else if (ov !== undefined && !ovOk) err("source.override", "override needs a decision reference and a YYYY-MM-DD date", s.id);
+    } else if (ov !== undefined) {
+      if (!ovOk) err("source.override", "override needs a decision reference and a YYYY-MM-DD date", s.id);
+      else warn("source.override", `override recorded but rights is ${s.rights}, not PUBLISHED_UNDER_OWNER_OVERRIDE; it has no effect`, s.id);
+    }
     if (!b.station.synthetic && !isShippableRights(s.rights) && s.usage !== "facts-only")
       warn("source.rights", `source rights ${s.rights}; must not feed published geometry/data (mark usage:"facts-only" if only cited as evidence)`, s.id);
   }

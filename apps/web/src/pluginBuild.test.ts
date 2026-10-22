@@ -221,4 +221,20 @@ describe("production build publication allowlist", () => {
       expect(l.lines.warn.join("\n")).toContain("alpha: scene/linked.json (symlink resolving outside the station folder)");
     }, 30_000);
   });
+
+  it("publishes a source under the Owner override only with its recorded decision (#130)", async () => {
+    const p = project(`export const buildScene = () => null;`);
+    const manifest = path.join(p.station, "gteki", "station.json");
+    const m = JSON.parse(fs.readFileSync(manifest, "utf8"));
+    m.sources[0].rights = "PUBLISHED_UNDER_OWNER_OVERRIDE";
+    m.sources[0].license = { name: "Licence unconfirmed", url: "https://example.org/terms" };
+    fs.writeFileSync(manifest, JSON.stringify(m));
+    await expect(run(p)).rejects.toThrow(/source\.override \(demo-synthetic\)/);
+    m.sources[0].override = { decision: "see chat", date: "2026-10-22" };
+    fs.writeFileSync(manifest, JSON.stringify(m));
+    await expect(run(p)).rejects.toThrow(/source\.override \(demo-synthetic\)/);
+    m.sources[0].override = { decision: "https://github.com/nurockplayer/gteki/issues/130", date: "2026-10-22" };
+    fs.writeFileSync(manifest, JSON.stringify(m));
+    await expect(run(p)).resolves.toBeDefined();
+  }, 30_000);
 });
