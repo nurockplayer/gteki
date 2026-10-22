@@ -266,7 +266,7 @@ Generated directly from the three current [network JSON reports](../networks/) f
 | R1 GeoJSON | vtcl_slope | `[]` | `[]` | 0 / 0 | 0 / 0 |
 | R1 GeoJSON | lev_diff | `[]` | `[]` | 0 / 0 | 0 / 0 |
 | E27 network | width | `[]` | `[]` | 0 / 0 | 0 / 0 |
-| E27 network | vtcl_slope | `["b80b3f4aef474ac2aa25c6680b26177a"]` | `[]` | 0 / 0 | 0 / 0 |
+| E27 network | vtcl_slope | `["value_sha256:a9b08f56f1dd49af2654254d40f9a2a3f24392feee109025bcb3796744810e74"]` | `[]` | 0 / 0 | 0 / 0 |
 | E27 network | lev_diff | `[]` | `[]` | 0 / 0 | 0 / 0 |
 
 R1 results retain method uncertainty; they do not assert survey/trace provenance. The E27 slope mismatch remains an observation and is not corrected. Applicable specification versions remain UNKNOWN and every candidate remains UNVERIFIED and not routable.
@@ -405,7 +405,7 @@ Generated directly from the three current [network JSON reports](../networks/) f
 | R1 GeoJSON | vtcl_slope | `[]` | `[]` | 0 / 0 | 0 / 0 |
 | R1 GeoJSON | lev_diff | `[]` | `[]` | 0 / 0 | 0 / 0 |
 | E27 network | width | `[]` | `[]` | 0 / 0 | 0 / 0 |
-| E27 network | vtcl_slope | `["b80b3f4aef474ac2aa25c6680b26177a"]` | `[]` | 0 / 0 | 0 / 0 |
+| E27 network | vtcl_slope | `["value_sha256:a9b08f56f1dd49af2654254d40f9a2a3f24392feee109025bcb3796744810e74"]` | `[]` | 0 / 0 | 0 / 0 |
 | E27 network | lev_diff | `[]` | `[]` | 0 / 0 | 0 / 0 |
 
 R1 results retain method uncertainty; they do not assert survey/trace provenance. The E27 slope mismatch remains an observation and is not corrected. Applicable specification versions remain UNKNOWN and every candidate remains UNVERIFIED and not routable.
@@ -548,7 +548,7 @@ Generated directly from the three current [network JSON reports](../networks/) f
 | R1 GeoJSON | vtcl_slope | `[]` | `[]` | 0 / 0 | 0 / 0 |
 | R1 GeoJSON | lev_diff | `[]` | `[]` | 0 / 0 | 0 / 0 |
 | E27 network | width | `[]` | `[]` | 0 / 0 | 0 / 0 |
-| E27 network | vtcl_slope | `["b80b3f4aef474ac2aa25c6680b26177a"]` | `[]` | 0 / 0 | 0 / 0 |
+| E27 network | vtcl_slope | `["value_sha256:a9b08f56f1dd49af2654254d40f9a2a3f24392feee109025bcb3796744810e74"]` | `[]` | 0 / 0 | 0 / 0 |
 | E27 network | lev_diff | `[]` | `[]` | 0 / 0 | 0 / 0 |
 
 R1 results retain method uncertainty; they do not assert survey/trace provenance. The E27 slope mismatch remains an observation and is not corrected. Applicable specification versions remain UNKNOWN and every candidate remains UNVERIFIED and not routable.

@@ -160,6 +160,19 @@ describe('check-poi-literals completeness', () => {
       expect(result.scanned_literals).toBe(POI_SOURCES.length + 1);
     } finally { await rm(root, { recursive: true, force: true }); }
   });
+  it('exempts an allowlisted term only inside prose: a whole JSON value or key equal to it still leaks (#147 Codex P2)', async () => {
+    const { root, docs, store } = await setup();
+    const term = `SYNTH-VALUE-${POI_SOURCES[0]}`, allowlist = new Set([term]);
+    try {
+      await writeFile(join(docs, 'note.md'), `our prose names ${term} as a publisher`);
+      await writeFile(join(docs, 'prose.json'), JSON.stringify({ note: `published by ${term}` }));
+      expect(await checkPoiLiterals(docs, store, allowlist)).toMatchObject({ status: 'PASS', leaking_files: [] });
+      await writeFile(join(docs, 'value.json'), JSON.stringify({ operator: term }));
+      await writeFile(join(docs, 'key.json'), JSON.stringify({ [term]: 1 }));
+      expect(await checkPoiLiterals(docs, store, allowlist)).toMatchObject({ status: 'FAIL', leaking_files: [{ file: 'key.json', count: 1 }, { file: 'value.json', count: 1 }] });
+      expect(await checkPoiLiterals(docs, store, allowlist, new Set([term]))).toMatchObject({ status: 'PASS', leaking_files: [] });
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
   it('rejects a detail.store_path that escapes the store', async () => {
     const { root, docs, store } = await setup();
     try {

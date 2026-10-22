@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { overlapHolds } from '../src/gaps.js';
+import { overlapHolds, sourceFileLines } from '../src/gaps.js';
 import { buildOverlapReport, type BboxLayerInput } from '../src/overlap.js';
 
 // SYNTHETIC bboxes written by hand; no station geometry or source coordinates.
@@ -18,4 +18,16 @@ it('B keeps incomplete bbox evidence UNKNOWN and never turns an intersection int
   const overlapping=buildOverlapReport('shinjuku',[plateau,{...network,source_crs_bbox:[139.7,35.7,139.71,35.71]}]);
   expect(overlapping.pairs[0].bbox_relation).toBe('INTERSECTS');
   expect(overlapHolds(overlapping)[0]).toContain('envelope overlap only');
+});
+
+it('keeps the network credit line in the Markdown packet when the CityGML inventory is missing', () => {
+  const credit = { attribution_text: 'SYNTH-CREDIT', classification: 'docs/gis/rights/non-poi-literals.md' };
+  const without = sourceFileLines('synthetic-gml', null, credit, ['- fact']);
+  expect(without).toContain('- Credit: SYNTH-CREDIT (see docs/gis/rights/non-poi-literals.md).');
+  expect(without).toContain('- CityGML inventory: unavailable; contents UNKNOWN.');
+  expect(without.join('\n')).not.toContain('CityGML source');
+  expect(without.join('\n')).not.toContain('- fact');
+  const withInventory = sourceFileLines('synthetic-gml', {}, credit, ['- fact']);
+  expect(withInventory).toEqual(['- CityGML source: synthetic-gml.', '- Credit: SYNTH-CREDIT (see docs/gis/rights/non-poi-literals.md).', '- fact']);
+  expect(sourceFileLines('synthetic-gml', null, null, [])).toEqual(['- CityGML inventory: unavailable; contents UNKNOWN.']);
 });
