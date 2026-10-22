@@ -84,7 +84,7 @@ def scan_glb(path):
         images.append(dict(index=index, sha=hashlib.sha256(raw).hexdigest(), bytes=len(raw),
                            w=w, h=h, kind=kind, gpu=gpu_bytes(w, h, kind)))
     # which materials sample each image (for the texture-plan check)
-    users, sampled = {}, {}
+    users, sampled, occluding = {}, {}, {}
     textures = doc.get("textures", [])
     for material in doc.get("materials", []):
         refs = [material.get("pbrMetallicRoughness", {}).get(k) for k in ("baseColorTexture", "metallicRoughnessTexture")]
@@ -97,8 +97,12 @@ def scan_glb(path):
                     source = ext.get("source", source)
                 users.setdefault(source, set()).add(material.get("name"))
                 sampled.setdefault(material.get("name"), set()).add(source)
+        if material.get("occlusionTexture"):  # the per-asset baked map has its own size in the plan
+            tex = textures[material["occlusionTexture"]["index"]]
+            occluding.setdefault(tex.get("source"), set()).add(material.get("name"))
     for image in images:
         image["materials"] = sorted(users.get(image["index"], ()))
+        image["occlusion_of"] = sorted(occluding.get(image["index"], ()))
     return dict(file=path.name, bytes=len(data), sha256=hashlib.sha256(data).hexdigest(), images=images,
                 material_images={k: len(v) for k, v in sampled.items()})
 
@@ -191,8 +195,10 @@ def check(glbs, manifest, budget, manifest_meta=None):
                 problems.append(f"{aid}: image {im['index']} duplicates image {seen[im['sha']]} (same bytes)")
             seen[im["sha"]] = im["index"]
             for name in im["materials"]:
-                if name in plan and max(im["w"], im["h"]) > plan[name]["res"]:
-                    problems.append(f"{aid}: {name} image {im['w']}x{im['h']} exceeds plan {plan[name]['res']}")
+                # the occlusion map is sized per asset, not per material (`occlusion_res`)
+                limit = plan[name].get("occlusion_res", plan[name]["res"]) if name in plan and name in im["occlusion_of"] else None
+                if name in plan and max(im["w"], im["h"]) > (plan[name]["res"] if limit is None else limit):
+                    problems.append(f"{aid}: {name} image {im['w']}x{im['h']} exceeds plan {plan[name]['res'] if limit is None else limit}")
     if manifest_meta is not None and not budget_applies(budget, manifest_meta):
         return problems
     limits = budget.get("limits", {})
@@ -214,8 +220,9 @@ def _png_header(w, h, salt=b""):
     return b"\x89PNG\r\n\x1a\n" + struct.pack(">I4sII", 13, b"IHDR", w, h) + b"\x08\x02\x00\x00\x00" + salt
 
 
-def _fake_glb(images, material_refs):
-    """GLB with `images` (bytes) and one material sampling `material_refs` image indices."""
+def _fake_glb(images, material_refs, occlusion=None):
+    """GLB with `images` (bytes) and one material sampling `material_refs` image indices
+    (and image `occlusion` as its occlusionTexture)."""
     binary, views = b"", []
     for raw in images:
         views.append({"buffer": 0, "byteOffset": len(binary), "byteLength": len(raw)})
@@ -225,6 +232,8 @@ def _fake_glb(images, material_refs):
     material = {"name": "gteki_test", "pbrMetallicRoughness": pbr}
     if len(material_refs) > 2:
         material["normalTexture"] = {"index": material_refs[2]}
+    if occlusion is not None:
+        material["occlusionTexture"] = {"index": occlusion, "texCoord": 1}
     doc = {"asset": {"version": "2.0"}, "buffers": [{"byteLength": len(binary)}], "bufferViews": views,
            "images": [{"bufferView": i, "mimeType": "image/png"} for i in range(len(images))],
            "textures": [{"source": i} for i in range(len(images))], "materials": [material]}
@@ -287,6 +296,12 @@ def self_test():
         assert [p.split(":")[1].split()[1] for p in stale if p not in unplanned] == ["sha256", "bytes"], stale
         both = {**rec(path, plan), "gteki_gone": {"textures": plan}}
         assert [p for p in check(glbs, both, budget, meta) if "gteki_gone" in p] == ["gteki_gone: in manifest.json but its GLB is missing"]
+        # the baked occlusion map is sized per asset: it checks against occlusion_res, not the material's res
+        path.write_bytes(_fake_glb([_png_header(128, 128, b"a"), _png_header(512, 512, b"o")], [0], occlusion=1))
+        glbs = {path.stem: scan_glb(path)}
+        for occlusion_res, want in ((512, []), (256, [f"{path.stem}: gteki_test image 512x512 exceeds plan 256"])):
+            ao = {"gteki_test": {"res": 128, "maps": ["albedo", "occlusion"], "occlusion_res": occlusion_res}}
+            assert check(glbs, rec(path, ao), budget, meta) == want, (occlusion_res, check(glbs, rec(path, ao), budget, meta))
     for w, h in ((512, 256), (1024, 1024)):
         assert image_size(_png_header(w, h)) == (w, h, "png")
     print("texture_budget self-test: PASS")

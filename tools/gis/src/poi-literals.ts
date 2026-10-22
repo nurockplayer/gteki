@@ -49,12 +49,30 @@ export async function storeDetailLiterals(storeRoot: string = getStoreRoot(), mi
   return literals;
 }
 
-/** Generic vocabulary that coincides with our own text (see codebooks/poi-literal-allowlist.json); it is not a source value. */
-export async function loadLiteralAllowlist(): Promise<Set<string>> {
-  const parsed = JSON.parse(await readFile(join(packageRoot, 'codebooks', 'poi-literal-allowlist.json'), 'utf8')) as { terms?: unknown };
-  if (!Array.isArray(parsed.terms) || parsed.terms.some(term => typeof term !== 'string')) throw new Error('poi-literal-allowlist.json needs a string array `terms`');
-  return new Set(parsed.terms as string[]);
+export type LiteralAllowlist = { terms: Set<string>; structural: Set<string> };
+
+/**
+ * Generic vocabulary that coincides with our own text (see codebooks/poi-literal-allowlist.json); it is not a source value.
+ * Every term needs a written reason; `structural_values` (whole JSON values exempt for class (b), #129) need one too.
+ */
+export async function loadLiteralAllowlistFile(): Promise<LiteralAllowlist> {
+  const parsed = JSON.parse(await readFile(join(packageRoot, 'codebooks', 'poi-literal-allowlist.json'), 'utf8')) as { terms?: unknown; justifications?: unknown; structural_values?: unknown; structural_justifications?: unknown };
+  const strings = (value: unknown, name: string): string[] => { if (!Array.isArray(value) || value.some(entry => typeof entry !== 'string')) throw new Error(`poi-literal-allowlist.json needs a string array \`${name}\``); return value as string[]; };
+  const terms = new Set(strings(parsed.terms, 'terms')), structural = new Set(strings(parsed.structural_values ?? [], 'structural_values'));
+  const reasons = (value: unknown, name: string, required: ReadonlySet<string>): void => {
+    const entries = value !== null && typeof value === 'object' && !Array.isArray(value) ? Object.entries(value as Record<string, unknown>) : null;
+    if (!entries) throw new Error(`poi-literal-allowlist.json needs an object \`${name}\``);
+    const given = new Map(entries);
+    for (const term of required) { const reason = given.get(term); if (typeof reason !== 'string' || reason.trim().length < 20) throw new Error(`poi-literal-allowlist.json \`${name}\` needs a reason of at least 20 characters for "${term}"`); }
+    for (const term of given.keys()) if (!required.has(term)) throw new Error(`poi-literal-allowlist.json \`${name}\` explains "${term}", which is not listed`);
+  };
+  reasons(parsed.justifications, 'justifications', terms);
+  reasons(parsed.structural_justifications ?? {}, 'structural_justifications', structural);
+  for (const term of structural) if (!terms.has(term)) throw new Error(`poi-literal-allowlist.json structural value "${term}" must also be a listed term`);
+  return { terms, structural };
 }
+
+export async function loadLiteralAllowlist(): Promise<Set<string>> { return (await loadLiteralAllowlistFile()).terms; }
 
 /** Literals present in `text`, verbatim or as the JSON-escaped form a report writer would emit. */
 export function literalsInText(text: string, literals: Iterable<string>): string[] {
@@ -80,7 +98,36 @@ export async function scanTreeForLiterals(root: string, literals: Iterable<strin
   return leaks.sort((a, b) => a.file.localeCompare(b.file));
 }
 
-export type DetailProblem = { source_id: string; reason: 'missing' | 'hash_mismatch'; detail: string };
+/** Every string key and string value of a parsed JSON document. */
+function jsonStrings(value: unknown, into: string[]): string[] {
+  if (typeof value === 'string') into.push(value);
+  else if (Array.isArray(value)) for (const item of value) jsonStrings(item, into);
+  else if (value !== null && typeof value === 'object') for (const [key, item] of Object.entries(value)) { into.push(key); jsonStrings(item, into); }
+  return into;
+}
+
+/** JSON files under `root` with a whole string value or key equal (NFKC, trimmed) to one of `terms`. */
+export async function scanTreeForWholeValues(root: string, terms: ReadonlySet<string>): Promise<Array<{ file: string; count: number }>> {
+  const leaks: Array<{ file: string; count: number }> = [];
+  if (terms.size === 0) return leaks;
+  const wanted = new Map([...terms].map(term => [term.normalize('NFKC').trim(), term]));
+  for await (const path of textFiles(root)) {
+    if (!/\.(?:json|geojson)$/iu.test(path)) continue;
+    let parsed: unknown;
+    try { parsed = JSON.parse(await readFile(path, 'utf8')); } catch { continue; }
+    const hits = new Set(jsonStrings(parsed, []).map(value => wanted.get(value.normalize('NFKC').trim())).filter((term): term is string => term !== undefined));
+    if (hits.size) leaks.push({ file: path.slice(root.length + 1), count: hits.size });
+  }
+  return leaks;
+}
+
+function mergeLeaks(...lists: Array<Array<{ file: string; count: number }>>): Array<{ file: string; count: number }> {
+  const byFile = new Map<string, number>();
+  for (const list of lists) for (const { file, count } of list) byFile.set(file, (byFile.get(file) ?? 0) + count);
+  return [...byFile].map(([file, count]) => ({ file, count })).sort((a, b) => a.file.localeCompare(b.file));
+}
+
+export type DetailProblem = { source_id: string; reason: 'missing' | 'hash_mismatch' | 'unregistered' | 'overlap'; detail: string };
 
 /**
  * Every committed POI report names its store detail (`detail.store_path`, `sha256`, `bytes`). A PASS is only meaningful when
@@ -109,11 +156,13 @@ export async function verifyPoiDetails(poiDocsDir: string, storeRoot: string = g
  * The full guard: verifies every referenced detail, then scans `docsGisDir` against every detail present in the store
  * (stale or unreferenced details are extra inputs). FAIL on any leak, any missing or mismatched detail, or zero literals.
  */
-export async function checkPoiLiterals(docsGisDir: string, storeRoot: string = getStoreRoot(), allowlist: ReadonlySet<string> = new Set()) {
+export async function checkPoiLiterals(docsGisDir: string, storeRoot: string = getStoreRoot(), allowlist: ReadonlySet<string> = new Set(), wholeValueExempt: ReadonlySet<string> = new Set()) {
   const detailProblems = await verifyPoiDetails(join(docsGisDir, 'poi'), storeRoot);
   const literals = await storeDetailLiterals(storeRoot);
-  for (const term of allowlist) literals.delete(term);
-  const leaks = await scanTreeForLiterals(docsGisDir, literals.keys());
+  // An allowlisted term is exempt only inside prose: as a whole JSON value or key it is still a leak, unless `wholeValueExempt` lists it.
+  const wholeOnly = new Set<string>();
+  for (const term of allowlist) if (literals.delete(term) && !wholeValueExempt.has(term)) wholeOnly.add(term);
+  const leaks = mergeLeaks(await scanTreeForLiterals(docsGisDir, literals.keys()), await scanTreeForWholeValues(docsGisDir, wholeOnly));
   const status = leaks.length || detailProblems.length || literals.size === 0 ? 'FAIL' as const : 'PASS' as const;
   return { status, scanned_literals: literals.size, allowlisted_generic_terms: allowlist.size, detail_problems: detailProblems,
     ...(literals.size === 0 ? { error: 'no literals scanned (store out/poi empty or without free-text values)' } : {}), leaking_files: leaks };
