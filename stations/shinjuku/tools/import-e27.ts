@@ -30,6 +30,7 @@ import {
   validateBundle,
   type CoverageArea,
   type CoverageGap,
+  type DataFile,
   type Edge,
   type EdgeMode,
   type EvidenceRef,
@@ -42,6 +43,7 @@ import {
 } from "@gteki/schema";
 import { runWidth } from "../scene/layout.ts";
 import { floorLabel } from "../app/src/narrate.ts";
+import { SURFACE_CREDIT } from "./import-surface.ts";
 import { loadRawE27, normId, pointInPolygon, RAW_DIR, type GeoFeature, type PolyG, type RawSpaceP } from "./e27-raw.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -1057,20 +1059,21 @@ const sources: Source[] = [
 // app ships stays in the station record (it adds no nodes, edges, POIs or coverage).
 {
   const m = JSON.parse(readFileSync(join(HERE, "../sources/surface-manifest.json"), "utf8")) as {
-    dataset: string; datasetUrl: string; licenseUrl: string; year: number;
+    dataset: string; datasetUrl: string; license: string; licenseUrl: string; year: number;
     files: { path: string; url: string; sha256: string; kind: string; acquiredAt: string }[];
   };
   const data = m.files.filter((f) => f.kind === "bldg" || f.kind === "tran");
   sources.push({
     id: "plateau-13104-shinjuku-ku-2025",
     title: `${m.dataset} — bldg / tran CityGML（E27 出口周辺 4 メッシュ）`,
-    publisher: "国土交通省 Project PLATEAU（東京都 新宿区 3D都市モデル）",
+    publisher: "国土交通省 Project PLATEAU",
     url: m.datasetUrl,
     downloadUrls: data.map((f) => f.url),
-    license: { name: "CC BY 4.0", url: m.licenseUrl },
+    // Catalogue licence (PLATEAU Site Policy §3). The CC BY 4.0 clause inside the data metadata is unconfirmed evidence, not shown (#161).
+    license: { name: m.license, url: m.licenseUrl },
     rights: "REUSABLE_WITH_CONDITIONS",
     usage: "data",
-    attribution: `「${m.dataset}」（国土交通省 Project PLATEAU）を加工して作成`,
+    attribution: SURFACE_CREDIT,
     modified: true,
     retrievedAt: data.map((f) => f.acquiredAt).sort().at(-1)!,
     sha256: Object.fromEntries(data.map((f) => [f.path, f.sha256])),
@@ -1123,6 +1126,32 @@ const spawnNodeIds = (["ticket_gate", "platform", "exit"] as const).flatMap((cat
   return poi?.connectorNodeIds[0] ? [poi.connectorNodeIds[0]] : [];
 });
 
+// Non-code data the web bundle inlines (#186). Declared here so station.json carries the same
+// source and rights gate as assets; each derivation names the script that writes the file.
+const dataFiles: DataFile[] = [
+  {
+    id: "plan",
+    path: "data/plan.json",
+    sourceIds: [SRC_NWD, SRC_MAP].sort(),
+    modified: true,
+    derivation: "tools/import-e27.ts: render-only plan from the 構内地図 polygons (level outlines, spaces and their restricted/toll flags, facilities) and the NWD node positions behind nodeRenderZ; heights are symbolic estimates from stair/escalator run lengths, not measurements. It is not routing truth.",
+  },
+  {
+    id: "surface",
+    path: "data/surface.json",
+    sourceIds: [SRC_NWD, "plateau-13104-shinjuku-ku-2025"].sort(),
+    modified: true,
+    derivation: "tools/import-surface.ts: LOD1 building footprints/heights and road polygons from the PLATEAU bldg/tran CityGML around the E27 exits, simplified and flattened to the symbolic street level; gteki/graph.json only supplies the street-level exit node positions that bound the selection radius. Render-only context, not routing.",
+  },
+  {
+    id: "fare-restricted",
+    path: "scene/fare-restricted.generated.json",
+    sourceIds: [SRC_NWD, SRC_MAP].sort(),
+    modified: true,
+    derivation: "test/helpers/generate-restricted-fences.ts: fare/access containment geometry recomputed from the bundle's verified edges (gteki/graph.json) and the restricted spaces/ 構内地図 polygons in data/plan.json; it never supplies or alters routing edges.",
+  },
+];
+
 const bundle: StationBundle = {
   schema: SCHEMA_VERSION,
   station: {
@@ -1147,6 +1176,7 @@ const bundle: StationBundle = {
   pois,
   coverage,
   spawnNodeIds,
+  dataFiles,
 };
 
 // ---------------------------------------------------------------- plan (render geometry)

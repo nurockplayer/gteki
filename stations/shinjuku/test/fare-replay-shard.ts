@@ -36,6 +36,8 @@ export function replayShard(index: number, count: number) {
    console.log(`fare-replay shard ${index + 1}/${count} ${JSON.stringify({ jobs, shardJobs, prefix, finished, wallMs: Math.round(wallMs), integratedFrames, frames, failedPaths, fringeContacts, maxFringeM, leaks: leaks.length, paths: result.matrix.reduce((n, r) => n + r.paths, 0) })}`);
    expect(result.finished).toBe(result.jobs); expect(result.leaks).toEqual([]); expect(result.matrix).toHaveLength(prefix && prefix < 2 ? 36 : 72); // one walker's 36 rows when FARE_REPLAY_PREFIX=1
    for (const row of result.matrix) { expect(row.paths).toBeGreaterThan(0); expect(row.passed).toBe(row.paths); }
-  }, 7_200_000);
+   // 6 h: a full shard (~390 jobs) on the #81 walk step (body collision + slide, ~25 % more per frame than the old
+   // 2-ray step) with two boxes sharing the host runs ~1.7-2.3 h, past the old 2 h limit (#156).
+  }, 21_600_000);
  });
 }

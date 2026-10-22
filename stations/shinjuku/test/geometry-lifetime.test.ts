@@ -45,9 +45,13 @@ describe("station geometry lifetime", () => {
     expect(result.retired).toBeGreaterThan(30_000); // exercise the real PLATEAU and station merges
     expect(result.retained).toBe(0);
     expect(result.live).toBe(136);
-    expect(result.bytes).toBe(13_288_866);
+    expect(result.bytes).toBe(13_284_666);
+    // #72 renamed the merged finish batches (names are in this hash); bytes, vertex data and the per-material
+    // triangle sets are unchanged (test/scene-digest.test.ts), previously 2b3a94baf326….
+    // #70 merged the six roof glazing boxes (4 entrance canopies + 2 roofed runs) into single sheets, so only the
+    // surface-glass mesh changed: -4,200 B = 6 x (840 - 140).
     // Glazing over roofed (E27 roof = 2) exit runs open beyond the canopies; regenerated with
     // test/helpers/retained-geometry.ts. Retired arrays must still be collectible.
-    expect(result.geometryHash).toBe("2b3a94baf32629b9d6371d6f365c808fd67efcb924a7ae00dc27daebdecb48b4");
+    expect(result.geometryHash).toBe("f713e7215da792b850e481561fa12f87510276792878a8c15f5cd490c5b48071");
   }, 60_000);
 });
