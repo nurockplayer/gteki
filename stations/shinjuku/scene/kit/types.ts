@@ -144,7 +144,7 @@ export interface KitPlacement {
   replaces: PlaceholderGroup | null;
 }
 
-export type PlaceholderGroup = "gate-machines" | "lift-portals";
+export type PlaceholderGroup = "gate-machines" | "lift-portals" | "stair-nosing";
 
 /** Budget caps for one scene (director ruling, Issue #94). */
 export interface KitBudget {

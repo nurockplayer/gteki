@@ -7,7 +7,7 @@
  * stands on y = 0. Sockets are read from the manifest.
  */
 import {
-  FLOOR_LIFT_M, KIT_GEOMETRY_BYTES_PER_TRIANGLE, ROLE_RANK, ROLE_REPLACES, ROLE_SELECTORS, RUN_FIT, WALL_CLEARANCE_M, type TierCaps,
+  ESCALATOR_FLAT_STEPS, ESCALATOR_STEP_DEPTH_M, ESCALATOR_STEP_INSET_M, ESCALATOR_TRANSITION_M, FLOOR_LIFT_M, GATE_CLEAR_RANGE_M, KIT_GEOMETRY_BYTES_PER_TRIANGLE, ROLE_RANK, ROLE_REPLACES, ROLE_SELECTORS, RUN_FIT, WALL_CLEARANCE_M, type TierCaps,
 } from "./config.ts";
 import { selectAssets, socketOf } from "./manifest.ts";
 import type {
@@ -46,6 +46,8 @@ export function gatePlacement(a: GateRowAnchor, asset: KitAsset): Pick<KitPlacem
   const span = Array.isArray(asset.params.cabinet_span_z_m) ? asset.params.cabinet_span_z_m.filter((v): v is number => typeof v === "number") : [];
   const centres = Array.isArray(asset.params.aisle_centers_x_m) ? asset.params.aisle_centers_x_m.filter((v): v is number => typeof v === "number") : [];
   if (span.length !== 2 || centres.length !== 1) return null;
+  const clear = Array.isArray(asset.params.aisle_widths_m) ? num(asset.params.aisle_widths_m[0]) : num(asset.params.wide_w);
+  if (clear !== null && (clear < GATE_CLEAR_RANGE_M[0] - 1e-6 || clear > GATE_CLEAR_RANGE_M[1] + 1e-6)) return null;
   const f = flow3(a.dir);
   // Local -Z is the travel axis, so +Z faces against the passenger flow.
   const yaw = yawFacing({ x: -f.x, z: -f.z });
@@ -68,16 +70,58 @@ export function liftPlacement(a: LiftAnchor, asset: KitAsset): Pick<KitPlacement
   return { position: [a.wallPoint.x + n.x * offset, a.z + FLOOR_LIFT_M, -a.wallPoint.y + n.z * offset], yaw: yawFacing(n) };
 }
 
-export function runPlacement(a: RunAnchor, asset: KitAsset): Pick<KitPlacement, "position" | "yaw"> | null {
-  const rise = num(asset.params.rise);
-  const width = num(asset.params.width) ?? (num(asset.params.step_width) !== null ? num(asset.params.step_width)! : null);
-  const length = num(asset.params.length);
-  if (rise === null || width === null || length === null) return null;
-  const dz = a.hi.z - a.lo.z;
-  const L = Math.hypot(a.hi.x - a.lo.x, a.hi.y - a.lo.y);
-  if (Math.abs(rise - dz) > RUN_FIT.riseM || Math.abs(width - a.width) > RUN_FIT.widthM || Math.abs(length - L) > RUN_FIT.lengthM) return null;
+/** A transform, plus how far the piece is from the drawn anchor (sum of errors in units of their tolerance; 0 = exact). */
+export type Fitted = Pick<KitPlacement, "position" | "yaw"> & { misfit?: number };
+
+/** `null` when any error is beyond its tolerance, so a piece that does not fit is never placed. */
+function fitted(t: Pick<KitPlacement, "position" | "yaw">, errors: [error: number, tolerance: number][]): Fitted | null {
+  if (errors.some(([e, tol]) => Math.abs(e) > tol)) return null;
+  return { ...t, misfit: errors.reduce((s, [e, tol]) => s + Math.abs(e) / tol, 0) };
+}
+
+/** Where the run goes: origin on the lower end, local -Z climbing toward the upper end. Shared by both dressing pieces. */
+function runFrame(a: RunAnchor): Pick<KitPlacement, "position" | "yaw"> {
   const f = flow3(a.dir);
   return { position: [a.lo.x, a.lo.z + FLOOR_LIFT_M, -a.lo.y], yaw: yawFacing({ x: -f.x, z: -f.z }) };
+}
+
+const runGeometry = (a: RunAnchor) => ({
+  rise: a.hi.z - a.lo.z,
+  length: Math.hypot(a.hi.x - a.lo.x, a.hi.y - a.lo.y),
+});
+
+/**
+ * `stair_dressing` with parts [nosing]: origin on the floor under the first nosing, risers climbing toward -Z.
+ * Fits when step_count * riser, step_count * tread and width_mm match the drawn run.
+ */
+export function stairPlacement(a: RunAnchor, asset: KitAsset): Fitted | null {
+  const n = num(asset.params.step_count), riser = num(asset.params.riser_mm), tread = num(asset.params.tread_mm), width = num(asset.params.width_mm);
+  if (n === null || riser === null || tread === null || width === null) return null;
+  const g = runGeometry(a);
+  return fitted(runFrame(a), [[(n * riser) / 1000 - g.rise, RUN_FIT.riseM], [(n * tread) / 1000 - g.length, RUN_FIT.lengthM], [width / 1000 - a.width, RUN_FIT.widthM]]);
+}
+
+/** Comb-to-comb horizontal run of an escalator_dressing piece, from the manifest (comb_run_m) or its params. */
+export function combRunM(params: Record<string, unknown>): number | null {
+  const stated = num(params.comb_run_m);
+  if (stated !== null) return stated;
+  const rise = num(params.rise_mm);
+  if (rise === null) return null;
+  const run = num(params.run_mm) ?? (num(params.angle_deg) !== null ? (rise / Math.tan((num(params.angle_deg)! * Math.PI) / 180)) : null);
+  if (run === null) return null;
+  const flat = num(params.flat_steps) ?? ESCALATOR_FLAT_STEPS;
+  return run / 1000 + 2 * flat * ESCALATOR_STEP_DEPTH_M + ESCALATOR_TRANSITION_M;
+}
+
+/**
+ * `escalator_dressing` with parts [comb, newel]: origin on the bottom comb plate line, rising toward -Z. Fits when
+ * rise_mm, the step width and the comb-to-comb run match the drawn run.
+ */
+export function escalatorPlacement(a: RunAnchor, asset: KitAsset): Fitted | null {
+  const rise = num(asset.params.rise_mm), width = num(asset.params.width_mm), comb = combRunM(asset.params);
+  if (rise === null || width === null || comb === null) return null;
+  const g = runGeometry(a);
+  return fitted(runFrame(a), [[rise / 1000 - g.rise, RUN_FIT.riseM], [comb - g.length, RUN_FIT.lengthM], [width / 1000 + ESCALATOR_STEP_INSET_M - a.width, RUN_FIT.widthM]]);
 }
 
 export function toiletPlacement(a: ToiletAnchor, asset: KitAsset): Pick<KitPlacement, "position" | "yaw"> | null {
@@ -140,7 +184,7 @@ export function planKitPlacements(input: PlaceInput): PlaceResult {
   const candidates: KitPlacement[] = [];
   const dropped: KitDrop[] = [];
 
-  const consider = <A extends { key: string; floorId: string }>(role: KitRole, list: A[], place: (a: A, asset: KitAsset) => Pick<KitPlacement, "position" | "yaw"> | null) => {
+  const consider = <A extends { key: string; floorId: string }>(role: KitRole, list: A[], place: (a: A, asset: KitAsset) => Fitted | null) => {
     if (!list.length) return;
     if (!placeable.has(role)) {
       gaps.push({ role, anchors: list.length, reason: "the build does not record this role's placeholder geometry yet; placing a piece would double it" });
@@ -153,10 +197,11 @@ export function planKitPlacements(input: PlaceInput): PlaceResult {
     }
     let unfit = 0;
     for (const a of list) {
-      let chosen: { asset: KitAsset; t: Pick<KitPlacement, "position" | "yaw"> } | null = null;
+      // The closest fit wins; among equals the cheaper piece (pool order) does.
+      let chosen: { asset: KitAsset; t: Fitted } | null = null;
       for (const asset of pool) {
         const t = place(a, asset);
-        if (t) { chosen = { asset, t }; break; }
+        if (t && (!chosen || (t.misfit ?? 0) < (chosen.t.misfit ?? 0) - 1e-9)) chosen = { asset, t };
       }
       if (!chosen) { unfit++; dropped.push({ role, anchorKey: a.key, assetId: pool[0]!.id, reason: "no piece fits this anchor" }); continue; }
       candidates.push({
@@ -169,8 +214,8 @@ export function planKitPlacements(input: PlaceInput): PlaceResult {
 
   consider("gate", anchors.gates, gatePlacement);
   consider("lift", anchors.lifts, liftPlacement);
-  consider("stairs", anchors.runs.filter((r) => r.role === "stairs"), runPlacement);
-  consider("escalator", anchors.runs.filter((r) => r.role === "escalator"), runPlacement);
+  consider("stairs", anchors.runs.filter((r) => r.role === "stairs"), stairPlacement);
+  consider("escalator", anchors.runs.filter((r) => r.role === "escalator"), escalatorPlacement);
   consider("toilet", anchors.toilets, toiletPlacement);
   consider("exit", anchors.exits, exitPlacement);
 

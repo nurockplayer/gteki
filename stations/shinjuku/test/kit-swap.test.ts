@@ -13,14 +13,19 @@ import { batchKitPlacements } from "../scene/kit/batch.ts";
 import { PlaceholderLedger, compact } from "../scene/kit/ledger.ts";
 import { bundleProvider } from "../scene/kit/load.ts";
 import { KitManifestError, parseKitManifest, selectAssets } from "../scene/kit/manifest.ts";
-import { planKitPlacements, totalsFor } from "../scene/kit/place.ts";
+import { buildStationCatalog } from "../scene/kit/catalog.ts";
+import { combRunM, planKitPlacements, totalsFor } from "../scene/kit/place.ts";
+import { protectFareAndAccess } from "../scene/fare-fence.ts";
+import { buildLayout, type Plan } from "../scene/layout.ts";
+import planJson from "../data/plan.json" with { type: "json" };
 import { createKitSwap } from "../scene/kit/swap.ts";
 import { tintSlots } from "../scene/kit/config.ts";
 import type { KitAnchors, KitApplyContext, KitSwap, KitSwapReport } from "../scene/kit/types.ts";
 import { digestStation } from "./helpers/station-digest.ts";
-import { stubManifestJson, stubProvider } from "./helpers/kit-stub.ts";
+import { shinjukuStubManifestJson, STUB_TRIANGLES, stubAsset, stubManifestJson, stubProvider } from "./helpers/kit-stub.ts";
 
 const { bundle } = loadShinjukuBundle();
+const catalogJson = JSON.parse(readFileSync(new URL("../kit/catalog.json", import.meta.url), "utf8")) as Parameters<typeof shinjukuStubManifestJson>[0];
 const library = (file: string) => JSON.parse(readFileSync(new URL(`../../../assets/library/${file}`, import.meta.url), "utf8"));
 
 /** Digest of the flag-off station at fe8d3b6 (computed from that tree, and equal to geometry-lifetime.test.ts). */
@@ -111,11 +116,12 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         expect([role, selectAssets(mobile, selector).map((a) => a.id)]).toEqual([role, selectAssets(full, selector).map((a) => a.id)]);
       }
     });
-    it("kit 0.1.0 has a lift portal and no single-aisle gate, toilet or exit piece: those are Lane E gaps", () => {
+    it("kit 0.1.0 has a lift portal and none of the other Shinjuku pieces: those wait for Lane E PR #143 and later", () => {
       expect(selectAssets(mobile, ROLE_SELECTORS.lift).map((a) => a.id)).toEqual(["gteki_lift_portal_w1000"]);
-      for (const role of ["gate", "toilet", "exit"] as const) expect([role, selectAssets(mobile, ROLE_SELECTORS[role]).length]).toEqual([role, 0]);
-      // Fixed-size stairs and escalators are selectable, but per-run fitting (in the scene test below) rejects them all.
-      expect(selectAssets(mobile, ROLE_SELECTORS.stairs).map((a) => a.id).sort()).toEqual(["gteki_stairs_landing_w2400_r4000", "gteki_stairs_straight_w2400_r3000"]);
+      for (const role of ["gate", "toilet", "exit", "stairs", "escalator"] as const) {
+        expect([role, selectAssets(mobile, ROLE_SELECTORS[role]).length]).toEqual([role, 0]);
+        expect([role, selectAssets(full, ROLE_SELECTORS[role]).length]).toEqual([role, 0]);
+      }
     });
     it("the real lift portal fits the budget on the mobile tier, but not on the full tier even with KTX2", () => {
       const lift = (m: typeof mobile) => {
@@ -189,16 +195,72 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(all.placed.every((p) => p.role === "lift")).toBe(true);
       expect(all.placed.map((p) => p.assetId).join()).not.toMatch(/bench|vending|kiosk|shop|bin_|poster|column/);
     });
-    it("refuses roles whose placeholder the build does not record, so geometry is never doubled", () => {
-      const withRuns = anchors(0, 0);
-      withRuns.runs = [{ role: "stairs", key: "r1", lo: { x: 0, y: 0, z: -7.8 }, hi: { x: 5, y: 0, z: -4.6 }, width: 2.4, dir: { x: 1, y: 0 }, floorId: "B1" }];
-      const m = parseKitManifest(stubManifestJson({ extra: [{ id: "stub_stairs_fit", family: "vertical", file: "glb/s.glb", bytes: 1, triangles: 10, materials: ["stub_palette"], textures: {}, bounds_m: { min: [-1, 0, -5], max: [1, 3, 0] }, placement: "linear", params: { rise: 3.2, width: 2.4, length: 5 }, sockets: [] }] }), "mobile");
-      const refused = planKitPlacements({ anchors: withRuns, manifest: m, budget: KIT_BUDGET, caps: { ktx2: false } });
+    it("refuses roles whose placeholder the build does not record (exits), so geometry is never doubled", () => {
+      const withExit = anchors(0, 0);
+      withExit.exits = [{ role: "exit", key: "x1", top: { x: 0, y: 0 }, center: { x: 0, y: 0 }, u: { x: 1, y: 0 }, halfWidth: 2, halfLength: 3, z: 0, floorId: "G" }];
+      const m = parseKitManifest(stubManifestJson({ extra: [stubAsset("stub_canopy", "canopy", "free")] }), "mobile");
+      const refused = planKitPlacements({ anchors: withExit, manifest: m, budget: KIT_BUDGET, caps: { ktx2: false } });
       expect(refused.placed).toEqual([]);
       expect(refused.gaps[0]?.reason).toMatch(/does not record/);
-      // The fit logic itself works once the build records stairs: a parametric piece that matches is chosen.
-      const widened = planKitPlacements({ anchors: withRuns, manifest: m, budget: KIT_BUDGET, caps: { ktx2: false }, placeable: new Set(["stairs"]) });
-      expect(widened.placed.map((p) => p.assetId)).toEqual(["stub_stairs_fit"]);
+      const widened = planKitPlacements({ anchors: withExit, manifest: m, budget: KIT_BUDGET, caps: { ktx2: false }, placeable: new Set(["exit"]) });
+      expect(widened.placed.map((p) => p.assetId)).toEqual(["stub_canopy"]);
+    });
+    describe("stair and escalator dressing (Lane E PR #143)", () => {
+      const run = (role: "stairs" | "escalator", width: number, rise = 3.2, length = 4.8) => ({
+        role, key: "r1", lo: { x: 0, y: 0, z: -7.8 }, hi: { x: length, y: 0, z: -7.8 + rise }, width, dir: { x: 1, y: 0 }, floorId: "B1",
+      });
+      const stair = (extra: Record<string, unknown> = {}) => stubAsset("stub_stair_nosing", "dressing", "linear", { tags: ["dressing", "stair"], materials: ["stub_yellow"], textures: {}, params: { step_count: 16, riser_mm: 200, tread_mm: 300, width_mm: 2400, parts: ["nosing"], ...extra } });
+      const esc = (extra: Record<string, unknown> = {}) => stubAsset("stub_esc_comb_newel", "dressing", "linear", { tags: ["dressing", "escalator"], materials: ["stub_steel"], textures: {}, params: { rise_mm: 3200, width_mm: 1150, run_mm: 6000, parts: ["comb", "newel"], ...extra } });
+      const plan = (assets: unknown[], runs: ReturnType<typeof run>[]) => {
+        const a = anchors(0, 0);
+        a.runs = runs;
+        return planKitPlacements({ anchors: a, manifest: parseKitManifest(stubManifestJson({ extra: assets }), "mobile"), budget: KIT_BUDGET, caps: { ktx2: false } });
+      };
+      it("puts the nosing origin under the first nosing, climbing along the run", () => {
+        const r = plan([stair()], [run("stairs", 2.4)]);
+        expect(r.placed.map((p) => [p.role, p.assetId, p.replaces])).toEqual([["stairs", "stub_stair_nosing", "stair-nosing"]]);
+        const p = r.placed[0]!;
+        expect(p.position[0]).toBeCloseTo(0, 6);
+        expect(p.position[2]).toBeCloseTo(0, 6);
+        expect(p.position[1]).toBeCloseTo(-7.8 + 0.003, 6);
+        // Local -Z (the climb) must point along +x (the run direction).
+        const climb = new THREE.Vector3(0, 0, -1).applyEuler(new THREE.Euler(0, p.yaw, 0));
+        expect(climb.x).toBeCloseTo(1, 6);
+        expect(climb.z).toBeCloseTo(0, 6);
+      });
+      it("puts the escalator comb line on the lower end node and adds (never replaces) placeholder geometry", () => {
+        const r = plan([esc()], [run("escalator", 1.25, 3.2, 8.4)]);
+        const p = r.placed[0]!;
+        expect([p.assetId, p.replaces]).toEqual(["stub_esc_comb_newel", null]);
+        expect(p.position[0]).toBeCloseTo(0, 6);
+        expect(p.position[1]).toBeCloseTo(-7.797, 6);
+        expect(p.position[2]).toBeCloseTo(0, 6);
+      });
+      it("never selects a piece that also carries parts the scene already draws, or one with no stated parts", () => {
+        for (const parts of [["balustrade", "comb", "newel"], ["comb"], ["comb", "newel", "handrail"], undefined]) {
+          const e = esc(parts ? { parts } : { parts: undefined });
+          const r = plan([e], [run("escalator", 1.25, 3.2, 8.4)]);
+          expect(r.placed).toEqual([]);
+        }
+        for (const parts of [["nosing", "skirt"], ["handrail"], ["nosing", "handrail", "skirt"]]) expect(plan([stair({ parts })], [run("stairs", 2.4)]).placed).toEqual([]);
+        expect(plan([esc({ parts: ["newel", "comb"] })], [run("escalator", 1.25, 3.2, 8.4)]).placed.length).toBe(1);
+      });
+      it("fits on rise, length and width, and reports an unfit run as dropped", () => {
+        expect(plan([stair()], [run("stairs", 2.4, 3.6)]).placed).toEqual([]); // rise 3.6 vs 16 x 200 mm
+        expect(plan([stair()], [run("stairs", 1.8)]).placed).toEqual([]); // width 1.8 vs 2.4
+        expect(plan([stair()], [run("stairs", 2.4, 3.2, 5.4)]).placed).toEqual([]); // length 5.4 vs 4.8
+        const r = plan([esc()], [run("escalator", 1.25, 3.5, 8.4)]);
+        expect(r.placed).toEqual([]);
+        expect(r.dropped.map((d) => d.reason)).toEqual(["no piece fits this anchor"]);
+        expect(plan([esc({ run_mm: 3000 })], [run("escalator", 1.25, 3.2, 8.4)]).placed).toEqual([]); // comb run 5.4 vs 8.4
+      });
+      it("derives the comb-to-comb run from the manifest, or from run_mm / angle_deg with the kit's flat steps", () => {
+        expect(combRunM({ comb_run_m: 7.5, rise_mm: 1 })).toBe(7.5);
+        expect(combRunM({ rise_mm: 4000, run_mm: 5000 })).toBeCloseTo(7.4, 9);
+        expect(combRunM({ rise_mm: 4000, run_mm: 5000, flat_steps: 3 })).toBeCloseTo(5 + 2 * 3 * 0.4 + 0.8, 9);
+        expect(combRunM({ rise_mm: 4000, angle_deg: 30 })).toBeCloseTo(4 / Math.tan(Math.PI / 6) + 2.4, 9);
+        expect(combRunM({ rise_mm: 4000 })).toBeNull();
+      });
     });
     it("enforces the budget at build time: the lowest-ranked placements are dropped first, and logged", () => {
       const heavy = parseKitManifest(stubManifestJson({ remove: ["stub_lift_portal"], extra: [{ id: "stub_lift_heavy", family: "vertical", file: "glb/h.glb", bytes: 1, triangles: 20_000, materials: ["stub_palette"], textures: { stub_palette: { res: 64, maps: ["albedo"] } }, bounds_m: { min: [-1, 0, -0.3], max: [1, 2.7, 0.9] }, placement: "wall", params: {}, sockets: [] }] }), "mobile");
@@ -347,6 +409,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
     let on: StationScene;
     let report: KitSwapReport;
     let captured: KitApplyContext;
+    let catalogResult: ReturnType<typeof buildStationCatalog>;
     const logs: string[] = [];
     const ctx = { THREE, bundle, quality: "low" as const } as never;
 
@@ -355,16 +418,16 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       vi.stubGlobal("document", { createElement: () => ({ width: 1, height: 1, getContext: () => context }) });
       off = assembleScene(ctx);
       const inner = createKitSwap({
-        manifest: parseKitManifest(stubManifestJson(), "mobile"),
+        manifest: parseKitManifest(shinjukuStubManifestJson(catalogJson), "mobile"),
         provider: stubProvider(),
         caps: { ktx2: false },
         tint: tintSlots(OEDO_MAGENTA),
         log: (m) => logs.push(m),
-        // The stub library has a gate pair, a lift portal and a toilet piece; place all three roles the build supports.
-        placeable: new Set(["gate", "lift", "toilet"]),
       });
       const spy: KitSwap = { apply: (c) => { captured = c; report = inner.apply(c); return report; } };
       on = assembleScene(ctx, spy);
+      const layout = buildLayout(bundle, planJson as unknown as Plan);
+      catalogResult = buildStationCatalog(layout, protectFareAndAccess(layout, planJson as unknown as Plan, bundle));
     }, 120_000);
     afterAll(() => {
       off?.dispose();
@@ -401,29 +464,55 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
           expect(Math.hypot(p.position[0] - a.wallPoint.x, -p.position[2] - a.wallPoint.y)).toBeCloseTo(0.264, 3);
         } else if (p.role === "toilet") {
           expect(facility.has(p.anchorKey)).toBe(true);
+        } else if (p.role === "stairs" || p.role === "escalator") {
+          const a = anchors.runs.find((r) => r.key === p.anchorKey && r.role === p.role)!;
+          expect(a).toBeDefined();
+          // Origin on the lower end node, and the catalog says which piece fits this run.
+          expect(p.position[0]).toBeCloseTo(a.lo.x, 6);
+          expect(-p.position[2]).toBeCloseTo(a.lo.y, 6);
+          expect(p.assetId).toBe(catalogResult.byAnchor.get(p.anchorKey));
         } else {
           throw new Error(`unexpected role ${p.role}`);
         }
       }
-      // All lifts placed, one per mounted portal: no portal is skipped or doubled.
-      expect(report.placed.filter((p) => p.role === "lift").length).toBe(captured.liftAnchors.length);
+      // Every mounted portal is either placed once or dropped for budget (see the budget test): none is skipped or doubled.
+      const lifts = report.placed.filter((p) => p.role === "lift").map((p) => p.anchorKey);
+      expect(new Set(lifts).size).toBe(lifts.length);
+      expect(lifts.length + report.dropped.filter((d) => d.role === "lift").length).toBe(captured.liftAnchors.length);
       expect(captured.liftAnchors.length).toBeGreaterThan(5);
       // Gate rows are the verified ones only: 4 rows from 5 gate edges.
       expect(report.placed.filter((p) => p.role === "gate").length).toBe(anchors.gates.length);
-      // Toilets only at F001..F003.
-      expect(report.placed.filter((p) => p.role === "toilet").length).toBe(3);
     });
 
-    it("no kit 0.1.0 stair or escalator fits any of Shinjuku's runs, so they stay placeholders", () => {
+    it("flag on, stub library at the estimated triangle counts: the budget keeps the highest-ranked placements", () => {
+      // Stub counts (STUB_TRIANGLES): escalator 1352 (19 fitted runs), stairs 180 (24), gate 1800 (4 rows), lift 1090 (9 portals), toilet 100 (3).
+      // Geometry is 70 B per merged triangle, so the 3 MB cap allows 42,857 triangles:
+      //   19*1352 + 24*180 + 4*1800 = 37,208; five lifts add 5,450 = 42,658; a sixth (43,748) would breach, so the other 4 of the 9 portals and the 3 toilets go.
+      const count = (role: string) => report.placed.filter((p) => p.role === role).length;
+      expect([count("escalator"), count("stairs"), count("gate"), count("lift"), count("toilet")]).toEqual([19, 24, 4, 5, 0]);
+      expect(report.dropped.filter((d) => d.role === "lift").length).toBe(4);
+      expect(report.dropped.filter((d) => d.role === "toilet").length).toBe(3);
+      expect(report.dropped.filter((d) => d.role === "escalator").map((d) => d.anchorKey).sort()).toEqual(catalogResult.unfitted.map((u) => u.edgeId).sort());
+      expect(report.dropped.find((d) => d.role === "lift")!.reason).toMatch(/over budget \(geometry/);
+      expect(report.totals.triangles).toBe(19 * STUB_TRIANGLES.escalator + 24 * STUB_TRIANGLES.stairs + 4 * STUB_TRIANGLES.gate + 5 * STUB_TRIANGLES.lift);
+      expect(report.totals.triangles).toBeLessThanOrEqual(KIT_BUDGET.maxTriangles);
+      expect(report.totals.geometryBytes).toBeLessThanOrEqual(KIT_BUDGET.maxGeometryBytes);
+      expect(report.totals.draws).toBeLessThanOrEqual(KIT_BUDGET.maxDraws);
+      // Lifts are dropped from the tail of the anchor order, never an escalator or stair for a lift.
+      expect(report.placed.filter((p) => p.role === "lift").map((p) => p.anchorKey)).toEqual(["0", "1", "2", "3", "4"]);
+    });
+
+    it("the real kit 0.1.0 has no dressing piece, so with the real manifest stairs and escalators stay placeholders", () => {
       const mobile = parseKitManifest(library("mobile/manifest.json"), "mobile");
       const anchors = collectKitAnchors({ layout: captured.layout, protection: captured.protection, plan: captured.plan, bundle, lifts: captured.liftAnchors });
-      expect(anchors.runs.filter((r) => r.role === "stairs").length).toBeGreaterThan(10);
-      expect(anchors.runs.filter((r) => r.role === "escalator").length).toBeGreaterThan(10);
-      const r = planKitPlacements({ anchors, manifest: mobile, budget: KIT_BUDGET, caps: { ktx2: false }, placeable: new Set(["stairs", "escalator"]) });
-      expect(r.placed).toEqual([]);
-      expect(r.gaps.filter((g) => /none fits/.test(g.reason)).map((g) => g.role).sort()).toEqual(["escalator", "stairs"]);
-      // Exit tops: anchors exist for each street exit, and no canopy piece exists to put on them.
+      expect(anchors.runs.filter((r) => r.role === "stairs").length).toBe(24);
+      expect(anchors.runs.filter((r) => r.role === "escalator").length).toBe(21);
+      const r = planKitPlacements({ anchors, manifest: mobile, budget: KIT_BUDGET, caps: { ktx2: false } });
+      expect(r.placed.every((p) => p.role === "lift")).toBe(true);
+      expect(r.gaps.filter((g) => /no (stairs|escalator|gate) piece/.test(g.reason)).map((g) => g.role).sort()).toEqual(["escalator", "gate", "stairs"]);
+      // Exit tops: anchors exist for each street exit, the build records no placeholder for them, and no canopy exists.
       expect(anchors.exits.length).toBe(4);
+      expect(r.gaps.find((g) => g.role === "exit")?.reason).toMatch(/does not record/);
       const exits = planKitPlacements({ anchors, manifest: mobile, budget: KIT_BUDGET, caps: { ktx2: false }, placeable: new Set(["exit"]) });
       expect(exits.gaps.find((g) => g.role === "exit")?.reason).toMatch(/no exit piece/);
     });
@@ -460,6 +549,9 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       // Gate placeholders really were replaced: their machines are among the hidden triangles.
       expect(report.hidden["gate-machines"]).toBeGreaterThan(0);
       expect(report.hidden["lift-portals"]).toBeGreaterThan(0);
+      // Stair nosing: exactly one 12-triangle strip per step of every placed stair run is hidden, and no escalator geometry.
+      const steps = report.placed.filter((p) => p.role === "stairs").reduce((n, p) => n + (catalogJson.assets.find((e) => e.id === p.assetId)!.params.step_count as number), 0);
+      expect(report.hidden["stair-nosing"]).toBe(12 * steps);
     });
 
     it("flag on: the budget holds on what was actually built, and the report states it", () => {

@@ -573,7 +573,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
             const nose = new THREE.BoxGeometry(0.075, 0.014, r.width - 0.06);
             nose.rotateY(yaw);
             nose.translate(ex + u.x * 0.03, top + 0.006, -(ey + u.y * 0.03));
-            nosingGeos.push(nose);
+            nosingGeos.push(ledger ? ledger.tag("stair-nosing", r.edgeId, nose) : nose);
           }
         }
       } else {
@@ -635,13 +635,15 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
     const add = (geos: THREE.BufferGeometry[], m: THREE.Material, name?: string) => {
       const geo = merged(geos);
-      if (!geo) return;
+      if (!geo) return undefined;
       const mesh = new THREE.Mesh(track(geo), m);
       if (name) mesh.name = name;
       root.add(mesh);
+      return mesh;
     };
     add(stairGeos, mat.stair, "walkable");
-    add(nosingGeos, mat.nosing);
+    const nosingMesh = add(nosingGeos, mat.nosing);
+    if (nosingMesh) ledger?.bind("stair-nosing", nosingMesh, nosingGeos);
     add(sideGeos, mat.wall);
     add(balustradeGeos, mat.glass);
     add(handGeos, mat.steel);

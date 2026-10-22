@@ -6,7 +6,7 @@
 import * as THREE from "three";
 import type { KitAssetProvider } from "../../scene/kit/types.ts";
 
-const asset = (id: string, family: string, placement: string, extra: Record<string, unknown> = {}) => ({
+export const stubAsset = (id: string, family: string, placement: string, extra: Record<string, unknown> = {}) => ({
   id,
   family,
   file: `glb/${id}.glb`,
@@ -21,31 +21,82 @@ const asset = (id: string, family: string, placement: string, extra: Record<stri
   ...extra,
 });
 
+/** Triangle counts Lane E gave as estimates for the PR #143 pieces (comb+newel escalator, nosing-only stair); the gate and lift are stubs. */
+export const STUB_TRIANGLES = { escalator: 1352, stairs: 180, gate: 1800, lift: 1090, toilet: 100 } as const;
+
+interface CatalogLike {
+  assets: { id: string; generator: string; params: Record<string, unknown>; tags: string[] }[];
+}
+
+/**
+ * Manifest entries a Lane E build of Shinjuku's station catalog would produce, with stub triangle counts. Params are
+ * the catalog params plus the derived values the generators add (comb_run_m, aisle centres and widths, cabinet span).
+ */
+export function catalogStubAssets(catalog: CatalogLike) {
+  return catalog.assets.map((e) => {
+    const p = e.params;
+    if (e.generator === "gate_array") {
+      return stubAsset(e.id, "gate", "linear", {
+        triangles: STUB_TRIANGLES.gate,
+        tags: e.tags,
+        params: { ...p, aisle_centers_x_m: [0], aisle_widths_m: [p.wide_w], cabinet_span_z_m: [-0.3, -1.6] },
+        bounds_m: { min: [-0.7, 0, -1.9], max: [0.7, 1, 0] },
+        sockets: [{ name: "start", position_gltf: [0, 0, 0], yaw_deg: 180 }, { name: "end", position_gltf: [0, 0, -1.9], yaw_deg: 0 }],
+      });
+    }
+    const escalator = e.generator === "escalator_dressing";
+    return stubAsset(e.id, "dressing", "linear", {
+      triangles: escalator ? STUB_TRIANGLES.escalator : STUB_TRIANGLES.stairs,
+      tags: e.tags,
+      materials: escalator ? ["stub_steel", "stub_yellow"] : ["stub_yellow"],
+      textures: {},
+      params: escalator ? { ...p, comb_run_m: (p.run_mm as number) / 1000 + 2.4 } : p,
+    });
+  });
+}
+
+/** The Shinjuku stub library: station-catalog pieces, a lift portal with the real mobile triangle count, and a toilet piece. */
+export function shinjukuStubManifestJson(catalog: CatalogLike) {
+  return stubManifestJson({
+    remove: ["stub_gate_1aisle", "stub_lift_portal"],
+    extra: [
+      ...catalogStubAssets(catalog),
+      stubAsset("stub_lift_portal_mobile", "vertical", "wall", {
+        triangles: STUB_TRIANGLES.lift,
+        materials: ["stub_palette", "gteki_line_accent"],
+        textures: { stub_palette: { res: 64, maps: ["albedo"] } },
+        sockets: [{ name: "start", position_gltf: [0, 0, 0], yaw_deg: 180 }, { name: "end", position_gltf: [0, 0, -0.26], yaw_deg: 0 }],
+        bounds_m: { min: [-0.92, -0.16, -0.26], max: [0.92, 2.7, 0.9] },
+      }),
+    ],
+  });
+}
+
 export function stubManifestJson(overrides: { extra?: unknown[]; remove?: string[] } = {}) {
   const assets = [
     // A single-aisle gate pair, the piece Shinjuku's one-aisle gate rows need.
-    asset("stub_gate_1aisle", "gate", "linear", {
+    stubAsset("stub_gate_1aisle", "gate", "linear", {
       params: { aisles: 1, aisle_centers_x_m: [0], aisle_widths_m: [1.02], cabinet_span_z_m: [-1.6, -0.3] },
       bounds_m: { min: [-0.7, 0, -1.9], max: [0.7, 1, 0] },
       sockets: [{ name: "start", position_gltf: [0, 0, 0], yaw_deg: 180 }, { name: "end", position_gltf: [0, 0, -1.9], yaw_deg: 0 }],
     }),
     // A multi-aisle array: must never be chosen for a one-aisle gate row.
-    asset("stub_gate_4aisle", "gate", "linear", {
+    stubAsset("stub_gate_4aisle", "gate", "linear", {
       params: { aisles: 4, aisle_centers_x_m: [-1.38, -0.56, 0.26, 1.23], cabinet_span_z_m: [-1.6, -0.3] },
       bounds_m: { min: [-1.95, 0, -1.9], max: [1.95, 1, 0] },
     }),
-    asset("stub_lift_portal", "vertical", "wall", {
+    stubAsset("stub_lift_portal", "vertical", "wall", {
       materials: ["stub_palette", "gteki_line_accent"],
       textures: { stub_palette: { res: 64, maps: ["albedo"] } },
       sockets: [{ name: "start", position_gltf: [0, 0, 0], yaw_deg: 180 }, { name: "end", position_gltf: [0, 0, -0.26], yaw_deg: 0 }],
       bounds_m: { min: [-0.92, -0.16, -0.26], max: [0.92, 2.7, 0.9] },
     }),
-    asset("stub_toilet_entrance", "props", "wall", { tags: ["toilet"], bounds_m: { min: [-0.35, 0, -0.1], max: [0.35, 2.4, 0.3] } }),
+    stubAsset("stub_toilet_entrance", "props", "wall", { tags: ["toilet"], bounds_m: { min: [-0.35, 0, -0.1], max: [0.35, 2.4, 0.3] } }),
     // Pieces Shinjuku has no source anchor for. They must stay unplaced whatever the manifest offers.
-    asset("stub_bench_4seat", "props", "free"),
-    asset("stub_vending_machine", "props", "wall"),
-    asset("stub_ticket_kiosk", "props", "wall"),
-    asset("stub_shop_front", "props", "wall", { tags: ["shop"] }),
+    stubAsset("stub_bench_4seat", "props", "free"),
+    stubAsset("stub_vending_machine", "props", "wall"),
+    stubAsset("stub_ticket_kiosk", "props", "wall"),
+    stubAsset("stub_shop_front", "props", "wall", { tags: ["shop"] }),
     ...(overrides.extra ?? []),
   ].filter((a) => !(overrides.remove ?? []).includes((a as { id: string }).id));
   return { contract: "gteki-asset/0.1", kit_version: "0.0.0-stub", profile: "mobile", license: "STUB LICENCE STRING", assets };

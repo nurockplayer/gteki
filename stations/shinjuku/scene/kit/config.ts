@@ -81,13 +81,24 @@ export const ROLE_RANK: Record<KitRole, number> = {
 export const ROLE_REPLACES: Record<KitRole, { group: PlaceholderGroup | null; hooked: boolean }> = {
   gate: { group: "gate-machines", hooked: true },
   lift: { group: "lift-portals", hooked: true },
-  stairs: { group: null, hooked: false },
-  escalator: { group: null, hooked: false },
+  // Stairs: the kit piece is nosing strips only, which replace the per-step nosing boxes (tagged per run in build.ts).
+  stairs: { group: "stair-nosing", hooked: true },
+  // Escalators: comb plates and newels only. The placeholder draws neither (truss, steps, balustrade panels and
+  // lamps stay), so there is nothing to hide; the piece is additive and its parts must never include the balustrade.
+  escalator: { group: null, hooked: true },
   exit: { group: null, hooked: false },
   toilet: { group: null, hooked: true },
 };
 
 const num = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
+
+/** `parts` values this adapter accepts per dressing generator (PR #143: escalator balustrade|handrail|newel|comb, stair nosing|handrail|skirt). */
+export const STAIR_PARTS = ["nosing"] as const;
+export const ESCALATOR_PARTS = ["comb", "newel"] as const;
+const partsAre = (a: KitAsset, want: readonly string[]) => {
+  const p = a.params.parts;
+  return Array.isArray(p) && p.length === want.length && want.every((w) => p.includes(w));
+};
 
 /**
  * Selectors choose a manifest asset for a role from its family, tags and params, never from a hard-coded
@@ -98,16 +109,30 @@ export const ROLE_SELECTORS: Record<KitRole, (a: KitAsset) => boolean> = {
   // dataset does not have, so only single-aisle arrays qualify (none in kit 0.1.0).
   gate: (a) => a.family === "gate" && num(a.params.aisles) === 1,
   lift: (a) => a.family === "vertical" && a.placement === "wall" && /lift/.test(a.id),
-  // Fixed-geometry stairs and escalators do not fit Shinjuku's runs; only a parametric piece that states
-  // the rise, width and length it was built for can (matched per run in place.ts).
-  stairs: (a) => a.family === "vertical" && /stairs/.test(a.id) && num(a.params.rise) !== null,
-  escalator: (a) => a.family === "vertical" && /escalator/.test(a.id) && num(a.params.rise) !== null,
+  // Dressing pieces (Lane E D2, PR #143) fitted to a run through params. Only the parts Shinjuku has no placeholder
+  // for are accepted: nosing for stairs; comb plates and newels for escalators. A piece that also carries the
+  // balustrade, handrail or skirts would double geometry that stays, so it is never selected.
+  stairs: (a) => a.family === "dressing" && a.tags.includes("stair") && partsAre(a, STAIR_PARTS) && num(a.params.step_count) !== null,
+  escalator: (a) => a.family === "dressing" && a.tags.includes("escalator") && partsAre(a, ESCALATOR_PARTS) && num(a.params.rise_mm) !== null,
   toilet: (a) => a.tags.some((t) => /(^|[:_ -])toilet$/.test(t)) || a.family === "toilet",
   exit: (a) => a.tags.some((t) => /(^|[:_ -])(canopy|exit)$/.test(t)) || a.family === "canopy",
 };
 
-/** Per-run fit tolerances for parametric stair and escalator pieces. */
+/** Per-run fit tolerances for parametric stair and escalator pieces (the catalog quantises well inside these). */
 export const RUN_FIT = { riseM: 0.1, widthM: 0.15, lengthM: 0.25 } as const;
+
+/** build.ts draws the escalator steps `run.width - 0.1` wide; the dressing's `width_mm` is the step width. */
+export const ESCALATOR_STEP_INSET_M = 0.1;
+/**
+ * Comb-to-comb horizontal run of an `escalator_dressing` piece = `run_mm` + 2 * flat_steps * 0.4 m + 0.8 m
+ * (two flat step sections and one transition, from `vertical._escalator_path` in PR #143 at flat_steps 2).
+ */
+export const ESCALATOR_STEP_DEPTH_M = 0.4;
+export const ESCALATOR_TRANSITION_M = 0.8;
+export const ESCALATOR_FLAT_STEPS = 2;
+
+/** Clear width of a single-aisle gate array the kit may build (Lane E: wide_w settable 1.00 to 1.04 m). */
+export const GATE_CLEAR_RANGE_M = [1.0, 1.04] as const;
 
 /** Lift portal: the door plane (`SOCKET_end`) is put on the existing wall plane, plus this lift against z-fighting. */
 export const WALL_CLEARANCE_M = 0.004;
