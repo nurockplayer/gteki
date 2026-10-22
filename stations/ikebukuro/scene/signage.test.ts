@@ -3,7 +3,7 @@
 import { readFileSync } from "node:fs";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { buildSigns, LOW_TEXEL_SCALE, SMALL_EM, type SignSpec } from "./signs.ts";
+import { buildSigns, EXIT_EN_EM, EXIT_JA_EM, FONT, LOW_TEXEL_SCALE, SMALL_EM, type SignSpec } from "./signs.ts";
 import { parseStationFiles } from "@gteki/schema";
 import { createRouter, routeBetween } from "../../../packages/navigation/src/index.ts";
 
@@ -523,5 +523,19 @@ describe("ikebukuro sign atlas budget on the low tier", () => {
     expect(SMALL_EM).toBeLessThan(0.24);
     expect(SMALL_EM).toBeGreaterThanOrEqual(0.2);
     expect(SMALL_EM).toBeLessThanOrEqual(0.22);
+  });
+
+  it("the 出口 / Exit caption is 0.26 / 0.2 of the face height, 出口 larger, and the two lines do not overlap", () => {
+    expect(EXIT_JA_EM).toBe(0.26);
+    expect(EXIT_EN_EM).toBe(0.2);
+    expect(EXIT_JA_EM).toBeGreaterThan(EXIT_EN_EM);
+    const h = Math.round(0.42 * 300);
+    // Centres as painted (0.36 h and 0.68 h, middle baseline): 出口's bottom stays above Exit's top, both on the face.
+    expect(0.36 * h + (EXIT_JA_EM * h) / 2).toBeLessThan(0.68 * h - (EXIT_EN_EM * h) / 2);
+    expect(0.36 * h - (EXIT_JA_EM * h) / 2).toBeGreaterThan(6); // below the top rule
+    expect(0.68 * h + (EXIT_EN_EM * h) / 2).toBeLessThan(h);
+    atlas(signs.filter((s) => s.kind === "repeat"));
+    expect(fonts).toContain(`600 ${Math.round(h * EXIT_JA_EM)}px ${FONT}`);
+    expect(fonts).toContain(`500 ${Math.round(h * EXIT_EN_EM)}px ${FONT}`);
   });
 });

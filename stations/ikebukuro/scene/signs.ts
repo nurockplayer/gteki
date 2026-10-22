@@ -47,6 +47,10 @@ const LOW_PAGE_HEIGHTS = [2048, 1024];
 /** Em (fraction of the face height) of the small lines: an exit's distance, a gate's or hall's English name and
  *  its distance. The Japanese name stays larger (gates 0.24, halls 0.3). */
 export const SMALL_EM = 0.21;
+/** Em of the 出口 / Exit caption before an exit's badges (were 0.2 / 0.15): 出口 stays larger than Exit. Centred at
+ *  0.36 and 0.68 of the face height, 出口 spans about 0.23-0.49 and Exit 0.58-0.78, so they never touch. */
+export const EXIT_JA_EM = 0.26;
+export const EXIT_EN_EM = 0.2;
 const GUTTER = 8; // px between faces; the gutter is panel colour so mip filtering never bleeds a foreign colour
 /** Operator chips before gate names, keyed by POI id prefix: plain lettering on a line-colour square
  *  (GTEki style, no operator logo). Only operators with routable gates need an entry. */
@@ -143,16 +147,18 @@ function blockParts(spec: SignContent, h: number, pad: number): Part[] {
   const arrow = spec.arrow ?? "up";
   parts.push({ w: h * 0.62, draw: (g, x) => drawArrow(g, x + h * 0.31, h / 2, h * 0.58, arrow) });
   if (spec.exits.length) {
-    measure.font = `600 ${Math.round(h * 0.2)}px ${FONT}`;
-    const lw = Math.max(measure.measureText("出口").width, measure.measureText("Exit").width) + 18;
+    measure.font = `600 ${Math.round(h * EXIT_JA_EM)}px ${FONT}`;
+    const jaW = measure.measureText("出口").width;
+    measure.font = `500 ${Math.round(h * EXIT_EN_EM)}px ${FONT}`;
+    const lw = Math.max(jaW, measure.measureText("Exit").width + 4) + 18;
     parts.push({
       w: lw,
       draw: (g, x) => {
         g.fillStyle = "#ffffff";
-        g.font = `600 ${Math.round(h * 0.2)}px ${FONT}`;
+        g.font = `600 ${Math.round(h * EXIT_JA_EM)}px ${FONT}`;
         g.textBaseline = "middle";
         g.fillText("出口", x, h * 0.36);
-        g.font = `500 ${Math.round(h * 0.15)}px ${FONT}`;
+        g.font = `500 ${Math.round(h * EXIT_EN_EM)}px ${FONT}`;
         g.fillText("Exit", x + 4, h * 0.68);
       },
     });
