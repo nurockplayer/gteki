@@ -691,12 +691,15 @@ const vEv = (method: string, note?: string) => ev([SRC_NWD, SRC_MAP], method, no
 //    from coordinates; the ENU origin is itself at the south end of the network, so it would give
 //    meaningless bearings for the three exits within 12 m of it);
 //  - roof: E27 link attribute 屋根の有無 (1 = なし, 2 = あり, 99 = 不明), street-level exits only
-//    (a roof says nothing about a B1 exit), and only when every link at the exit node agrees and
-//    the code is not 99; mixed or unknown stays unsaid;
+//    (a roof says nothing about a B1 exit). The codes of ALL links within ROOF_RADIUS_M of the F108
+//    point (any floor: the plan view is what a person standing there sees) are collected, plus every
+//    link inside the stairs / elevator / escalator space the name cites. A roof word is said only
+//    when all of them agree and none is 99; otherwise the roof word is omitted;
 //  - adjacent GSI space category: the stairs / elevator / escalator / walkway space (GSI indoor spec
 //    2019: B021 / B022 / B023 / B029) that contains the F108 point or touches it within 0.5 m. "Other
 //    room" (B019) and other categories are not informative enough to name.
 const ADJACENT_RADIUS_M = 0.5;
+const ROOF_RADIUS_M = 1.5;
 const SPACE_WORDS: Record<string, { ja: string; en: string; zh: string; kana: string; romaji: string }> = {
   B021: { ja: "階段", en: "stairs", zh: "樓梯", kana: "かいだん", romaji: "kaidan" },
   B022: { ja: "エレベーター", en: "elevator", zh: "電梯", kana: "えれべーたー", romaji: "erebeta" },
@@ -723,34 +726,48 @@ function distToRing(p: { x: number; y: number }, ring: { x: number; y: number }[
   }
   return m;
 }
-/** GSI space categories (informative ones only) that contain or touch an exit's F108 point. */
-function adjacentSpaces(x: ExitInfo): string[] {
+/** GSI spaces (informative categories only) that contain or touch an exit's F108 point, in SPACE_WORDS order. */
+function adjacentSpaces(x: ExitInfo) {
   const level = mapLevels.find((m) => m.label === x.level)!;
-  const cats = new Set<string>();
-  for (const sp of level.spaces) {
-    const cat = sp.properties.category;
-    if (!(cat in SPACE_WORDS)) continue;
-    if (pointInPolygon(x.lonlat[0], x.lonlat[1], sp.geometry.coordinates) || sp.enu.some((ring) => distToRing(x.p, ring) <= ADJACENT_RADIUS_M)) cats.add(cat);
-  }
-  return Object.keys(SPACE_WORDS).filter((c) => cats.has(c));
+  const found = level.spaces.filter((sp) => sp.properties.category in SPACE_WORDS && (pointInPolygon(x.lonlat[0], x.lonlat[1], sp.geometry.coordinates) || sp.enu.some((ring) => distToRing(x.p, ring) <= ADJACENT_RADIUS_M)));
+  const order = Object.keys(SPACE_WORDS);
+  return found.sort((a, b) => order.indexOf(a.properties.category) - order.indexOf(b.properties.category));
 }
-/** "roofed" / "open" when every link at the exit node carries the same known E27 roof code; otherwise null. */
-function exitRoof(nodeId: string): "roofed" | "open" | null {
-  const codes = new Set((incident.get(nodeId) ?? []).map((l) => l.properties.roof));
-  if (codes.size !== 1) return null;
-  const code = [...codes][0]!;
-  return code === 2 ? "roofed" : code === 1 ? "open" : null;
+const CONVEYANCE_SPACES = new Set(["B021", "B022", "B023"]);
+/**
+ * E27 roof codes around an exit: every link within ROOF_RADIUS_M of the F108 point, plus every link
+ * (on a floor equivalent to the exit's map level) whose midpoint lies in a cited stairs / elevator /
+ * escalator space. "roofed" / "open" only when all agree and none is 99 (不明); otherwise null.
+ */
+function exitRoof(x: ExitInfo, spaces: ReturnType<typeof adjacentSpaces>): { roof: "roofed" | "open" | null; codes: number[] } {
+  const floorsHere = exitFloors(mapLevels.find((m) => m.label === x.level)!.ordinal);
+  const codes = new Set<number>();
+  for (const l of links) {
+    const pts = l.geometry.coordinates.map(([lo, la]) => enu(lo, la));
+    let near = false;
+    for (let i = 0; i + 1 < pts.length && !near; i++) near = distToRing(x.p, [pts[i]!, pts[i + 1]!]) <= ROOF_RADIUS_M;
+    if (!near) {
+      const onFloor = [l.properties.start_id, l.properties.end_id].some((id) => floorsHere.includes(rawNodes.get(id)!.properties.floor));
+      const [mx, my] = sampleAlong(l.geometry.coordinates, 0.5);
+      near = onFloor && spaces.some((sp) => CONVEYANCE_SPACES.has(sp.properties.category) && pointInPolygon(mx, my, sp.geometry.coordinates));
+    }
+    if (near) codes.add(l.properties.roof);
+  }
+  const list = [...codes].sort((a, b) => a - b);
+  const roof = list.length === 1 ? (list[0] === 2 ? "roofed" : list[0] === 1 ? "open" : null) : null;
+  return { roof, codes: list };
 }
 const exitDescriptors = exits.map((x) => {
   if (x.level !== "1" && x.level !== "B1") throw new Error(`exit on map level ${x.level}: no level wording defined`);
   const street = x.level === "1";
   const [cja, cen] = compass(x.p);
-  const spaces = adjacentSpaces(x);
-  const roof = street ? exitRoof(x.nodeId) : null;
+  const adjacent = adjacentSpaces(x);
+  const spaces = adjacent.map((sp) => sp.properties.category);
+  const { roof, codes: roofCodes } = street ? exitRoof(x, adjacent) : { roof: null, codes: [] as number[] };
   const cw = COMPASS_WORDS[cja]!;
   const sw = spaces.map((c) => SPACE_WORDS[c]!);
   const parts = {
-    ja: [street ? "地上" : "地下1階", `${cja}側`, ...(sw.length ? [`${sw.map((w) => w.ja).join("・")}に隣接`] : []), ...(roof ? [roof === "roofed" ? "屋根あり" : "屋根なし"] : [])],
+    ja: [street ? "地上" : "地下1階", `${cja}側`, ...(sw.length ? [`${sw.map((w) => w.ja).join("と")}に隣接`] : []), ...(roof ? [roof === "roofed" ? "屋根あり" : "屋根なし"] : [])],
     en: [street ? "street level" : "underground level B1", `${cen} side`, ...(sw.length ? [`next to ${sw.map((w) => w.en).join(" and ")}`] : []), ...(roof ? [roof === "roofed" ? "roofed" : "no roof"] : [])],
   };
   // Readings of the same descriptors. The romaji level word goes last: "chijo" has a "j", and any
@@ -759,7 +776,7 @@ const exitDescriptors = exits.map((x) => {
   const romaji = ["deguchi", `${cw.romaji}-gawa`, ...sw.map((w) => w.romaji), ...(roof ? [roof === "roofed" ? "yane ari" : "yane nashi"] : []), street ? "chijo" : "chika ikkai"].join(" ");
   const en = ["exit", street ? "street level" : "underground level B1", cen, ...sw.map((w) => w.en), ...(roof ? [roof === "roofed" ? "roofed" : "no roof"] : [])].join(" ");
   const zh = ["出口", street ? "地面" : "地下1樓", `${cw.zh}側`, ...sw.map((w) => w.zh), ...(roof ? [roof === "roofed" ? "有屋頂" : "無屋頂"] : [])].join(" ");
-  return { parts, kana, romaji, en, zh, roof, spaces };
+  return { parts, kana, romaji, en, zh, roof, roofCodes, spaces };
 });
 for (const lang of ["ja", "en"] as const) {
   const names = exitDescriptors.map((d) => d.parts[lang].join("・"));
@@ -792,7 +809,7 @@ exits.forEach((x, i) => {
     evidence: vEv(
       `GSI facility F108 on map level ${x.level} → nearest NWD node on an equivalent floor (${x.d.toFixed(1)} m); name words: level of the F108 map level, compass side from the F108 point vs the node centroid, ` +
         `adjacent GSI space ${d.spaces.length ? d.spaces.join("+") : "none"} (contains or touches the F108 point within ${ADJACENT_RADIUS_M} m), ` +
-        `E27 屋根の有無 roof: ${x.level === "1" ? (d.roof ?? "not stated (link codes mixed or unknown)") : "not stated (below street level)"}`,
+        `E27 屋根の有無 roof: ${x.level === "1" ? (d.roof ?? `not stated (codes ${d.roofCodes.join("/")} within ${ROOF_RADIUS_M} m and in the cited stairs/lift/escalator space are mixed or unknown)`) : "not stated (below street level)"} (all links within ${ROOF_RADIUS_M} m of the F108 point, plus links in the cited stairs/lift/escalator space)`,
       "Exit number/name not in source (coverage gap); the words in the name are descriptors, not official exit numbers",
     ),
   });
@@ -809,7 +826,12 @@ for (const id of gateLinks) {
 }
 gateClusters.forEach((g, i) => {
   const [ja, en] = compass(g.p);
-  const f106Near = allFacilities.filter((f) => f.f.properties.category === "F106" && f.level.label === g.level && Math.hypot(f.p.x - g.p.x, f.p.y - g.p.y) <= 30).length;
+  // Each F106 point on this level is counted once, for the nearest gate cluster on the same level.
+  const f106Near = allFacilities.filter((f) => {
+    if (f.f.properties.category !== "F106" || f.level.label !== g.level) return false;
+    const nearest = gateClusters.filter((c) => c.level === g.level).reduce((best, c) => (Math.hypot(f.p.x - c.p.x, f.p.y - c.p.y) < Math.hypot(f.p.x - best.p.x, f.p.y - best.p.y) ? c : best));
+    return nearest === g;
+  }).length;
   const nodeIds = [...new Set(g.links.flatMap((id) => { const l = links.find((x) => x.properties.link_id === id)!; return [l.properties.start_id, l.properties.end_id]; }))];
   const freeSide = nodeIds.filter((id) => nodeToll.get(id) === "free").map((id) => `n:${id}`);
   pois.push({
@@ -830,8 +852,8 @@ gateClusters.forEach((g, i) => {
     connectorNodeIds: freeSide,
     paid: false,
     notes: [
-      { lang: "ja", text: `位置はE27の改札リンク${g.links.length}本のまとまりの位置です。この階でGSI構内地図の改札口代表点（F106）が30 m以内に${f106Near}件あります。` },
-      { lang: "en", text: `Position comes from ${g.links.length} E27 gate link${g.links.length === 1 ? "" : "s"} grouped together. The GSI station map has ${f106Near} ticket-gate representative point${f106Near === 1 ? "" : "s"} (F106) on this level within 30 m.` },
+      { lang: "ja", text: `位置はE27の改札リンク${g.links.length}本のまとまりの位置です。この階のGSI構内地図の改札口代表点（F106）のうち、この改札群が最寄りのものは${f106Near}件です（各点は最寄りの1群だけに数えます）。` },
+      { lang: "en", text: `Position comes from ${g.links.length} E27 gate link${g.links.length === 1 ? "" : "s"} grouped together. Of the GSI station map's ticket-gate representative points (F106) on this level, ${f106Near} ${f106Near === 1 ? "has" : "have"} this cluster as the nearest (each point is counted for one cluster only).` },
     ],
     evidence: vEv("toll transition links clustered (≤30 m) + GSI F106 ≤8 m"),
   });
@@ -1167,6 +1189,7 @@ const report = {
   gates: gateLinks.size,
   gateClusters: gateClusters.length,
   exits: exits.length,
+  exitNameBasis: { compass: "bearing of the F108 point from the centroid of the mapped NWD nodes (not the ENU origin)", compassCentroidEnu: { x: round(centroid.x, 2), y: round(centroid.y, 2) }, adjacentSpaceRadiusM: ADJACENT_RADIUS_M, roofRadiusM: ROOF_RADIUS_M },
   liftCrossCheck,
   anomalies,
   validation: { errors: errors.length, warnings: issues.length - errors.length, sample: issues.slice(0, 5) },

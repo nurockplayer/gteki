@@ -18,7 +18,7 @@ const byCategory = (c: string) => pois.filter((p) => p.category === c);
 const exits = byCategory("exit");
 
 interface PlanFacility { id: string; category: string; x: number; y: number }
-const plan = planJson as unknown as { levels: { label: string; ordinal: number; floorId: string; facilities: PlanFacility[] }[] };
+const plan = planJson as unknown as { levels: { label: string; ordinal: number; floorId: string; facilities: PlanFacility[]; spaces: { category: string; rings: Pt[][] }[] }[] };
 const facilities = plan.levels.flatMap((lv) => lv.facilities.map((f) => ({ ...f, level: lv.label, ordinal: lv.ordinal })));
 const near = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
 
@@ -69,35 +69,93 @@ describe("POI names", () => {
     }
   });
 
-  it("tells every exit apart by source-backed descriptors only", () => {
-    const parse = (p: Poi) => {
-      const ja = text(p, "ja")!;
-      return {
-        level: /地上/.test(ja) ? "street" : "B1",
-        compass: /(北東|北西|南東|南西|北|東|南|西)側/.exec(ja)![1]!,
-        spaces: ["階段", "エレベーター", "エスカレーター", "通路/コンコース"].filter((w) => ja.includes(w)),
-        roof: /屋根あり/.test(ja) ? "roofed" : /屋根なし/.test(ja) ? "open" : null,
-      };
-    };
-    const keys = exits.map((p) => JSON.stringify(parse(p)));
-    expect(new Set(keys).size).toBe(exits.length);
-
-    // Roof words only where E27 屋根の有無 gives one known code across the exit's links, and never below street.
-    const links = bundle.edges;
-    const rawRoof = (p: Poi) => new Set(links.filter((e) => p.connectorNodeIds.includes(e.from) || p.connectorNodeIds.includes(e.to)).map((e) => e.attributes?.roof));
+  it("builds every exit name from descriptors recomputed here from coordinates, plan.json and the graph", () => {
+    // Nothing is read back out of the names: level, compass, adjacent space and roof come from the
+    // POI position, the node centroid, plan.json spaces and the E27 link roof attribute.
     for (const p of exits) {
-      const d = parse(p);
-      if (d.level === "B1") expect(d.roof, p.id).toBeNull();
+      const d = describeExit(p);
+      const wordsJa = d.spaces.map((c) => SPACE_BY_CATEGORY[c]!.ja).join("と");
+      const wordsEn = d.spaces.map((c) => SPACE_BY_CATEGORY[c]!.en).join(" and ");
+      const ja = [d.street ? "地上" : "地下1階", `${COMPASS_BY_EN[d.compass]!.ja}側`, ...(wordsJa ? [`${wordsJa}に隣接`] : []), ...(d.roof ? [d.roof === "roofed" ? "屋根あり" : "屋根なし"] : [])].join("・");
+      const en = [d.street ? "street level" : "underground level B1", `${d.compass} side`, ...(wordsEn ? [`next to ${wordsEn}`] : []), ...(d.roof ? [d.roof === "roofed" ? "roofed" : "no roof"] : [])].join(", ");
+      expect(text(p, "ja"), p.id).toBe(`出口（${ja}）`);
+      expect(text(p, "en"), p.id).toBe(`Exit (${en})`);
+      if (!d.street) expect(d.roof, p.id).toBeNull();
       expect(p.evidence.method, p.id).toContain("E27 屋根の有無");
-      const codes = rawRoof(p);
-      expect(codes.has(99), p.id).toBe(false); // 99 = 不明: never claimed
-      // 1 = なし (open), 2 = あり (roofed): said only when every link at the exit agrees
-      if (d.roof === "roofed") expect([...codes], p.id).toEqual([2]);
-      else if (d.roof === "open") expect([...codes], p.id).toEqual([1]);
-      else if (d.level === "street") expect(codes.size, p.id).toBeGreaterThan(1);
     }
+    // The descriptors tell all six exits apart.
+    expect(new Set(exits.map((p) => JSON.stringify(describeExit(p)))).size).toBe(exits.length);
+  });
+
+  it("says roofed / no roof only when every nearby E27 link agrees and none is 不明 (99)", () => {
+    const byId = Object.fromEntries(exits.map((p) => [p.id, describeExit(p)]));
+    // exit 4: its 3 m approach link is roof=1 (なし) but the stair link 0.8 m away and the escalator link 1.1 m away are roof=2 (あり)
+    expect(byId["poi:exit:4"]!.roofCodes).toEqual([1, 2]);
+    expect(byId["poi:exit:4"]!.roof).toBeNull();
+    expect(text(exits.find((p) => p.id === "poi:exit:4")!, "ja")).not.toMatch(/屋根/);
+    expect(byId["poi:exit:2"]!.roof).toBeNull(); // open approach link at 1.4 m, roofed links at 1.0 m and 1.3 m
+    expect(byId["poi:exit:1"]!.roof).toBe("roofed");
+    for (const d of Object.values(byId)) if (d.street && d.roof) expect(d.roofCodes).toHaveLength(1);
+    for (const d of Object.values(byId)) if (d.roofCodes.includes(99)) expect(d.roof).toBeNull();
   });
 });
+
+const ROOF_RADIUS_M = 1.5, ADJACENT_RADIUS_M = 0.5;
+const SPACE_BY_CATEGORY: Record<string, { ja: string; en: string }> = {
+  B021: { ja: "階段", en: "stairs" }, B022: { ja: "エレベーター", en: "elevator" }, B023: { ja: "エスカレーター", en: "escalator" }, B029: { ja: "通路/コンコース", en: "walkway/concourse" },
+};
+const SECTORS = [["north", "北"], ["northeast", "北東"], ["east", "東"], ["southeast", "南東"], ["south", "南"], ["southwest", "南西"], ["west", "西"], ["northwest", "北西"]] as const;
+const COMPASS_BY_EN = Object.fromEntries(SECTORS.map(([en, ja]) => [en, { ja }])) as Record<string, { ja: string }>;
+type Pt = { x: number; y: number };
+const segDist = (p: Pt, a: Pt, b: Pt) => {
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1)));
+  return Math.hypot(a.x + t * dx - p.x, a.y + t * dy - p.y);
+};
+const ringDist = (p: Pt, ring: Pt[]) => Math.min(...ring.slice(0, -1).map((a, i) => segDist(p, a, ring[i + 1]!)));
+const inRing = (p: Pt, ring: Pt[]) => {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const a = ring[i]!, b = ring[j]!;
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
+  }
+  return inside;
+};
+const centroid = {
+  x: bundle.nodes.reduce((s, n) => s + n.position.x, 0) / bundle.nodes.length,
+  y: bundle.nodes.reduce((s, n) => s + n.position.y, 0) / bundle.nodes.length,
+};
+/** Everything an exit name may say, recomputed independently of the importer. */
+function describeExit(p: Poi) {
+  const pos = p.displayPosition!;
+  const ordinal = floors.get(p.floorId!)!.ordinal!;
+  const street = ordinal >= 0;
+  // compass: bearing of the POI from the node centroid, 8 sectors clockwise from north
+  const bearing = (Math.atan2(pos.x - centroid.x, pos.y - centroid.y) * 180) / Math.PI;
+  const compass = SECTORS[Math.round(((bearing + 360) % 360) / 45) % 8]![0];
+  // adjacent space: plan.json spaces of the exit's map level that contain or touch the point
+  const level = plan.levels.find((l) => l.label === (street ? "1" : "B1"))!;
+  const adj = level.spaces.filter((sp) => sp.category in SPACE_BY_CATEGORY && (inRing(pos, sp.rings[0]!) || sp.rings.some((r) => ringDist(pos, r) <= ADJACENT_RADIUS_M)));
+  const spaces = Object.keys(SPACE_BY_CATEGORY).filter((c) => adj.some((sp) => sp.category === c));
+  // roof: every graph link within ROOF_RADIUS_M of the point, plus links inside a cited stairs / lift / escalator space
+  const equivalent = street ? [1, 0] : [ordinal];
+  const codes = new Set<number>();
+  for (const e of bundle.edges) {
+    const from = nodes.get(e.from)!, to = nodes.get(e.to)!;
+    const line: Pt[] = (e.geometry ?? [from.position, to.position]).map((g) => ({ x: g.x, y: g.y }));
+    let hit = line.slice(0, -1).some((a, i) => segDist(pos, a, line[i + 1]!) <= ROOF_RADIUS_M);
+    if (!hit && [from, to].some((n) => equivalent.includes(floors.get(n.floorId)!.ordinal!))) {
+      const f = (line.length - 1) * 0.5;
+      const a = line[Math.floor(f)]!, b = line[Math.ceil(f)]!;
+      const mid = { x: a.x + (b.x - a.x) * (f - Math.floor(f)), y: a.y + (b.y - a.y) * (f - Math.floor(f)) };
+      hit = adj.some((sp) => ["B021", "B022", "B023"].includes(sp.category) && inRing(mid, sp.rings[0]!));
+    }
+    if (hit) codes.add(e.attributes!.roof as number);
+  }
+  const roofCodes = street ? [...codes].sort((a, b) => a - b) : [];
+  const roof = roofCodes.length === 1 && roofCodes[0] === 2 ? "roofed" : roofCodes.length === 1 && roofCodes[0] === 1 ? "open" : null;
+  return { street, compass, spaces, roofCodes, roof };
+}
 
 /** Source behind a hand-written alias; the allow-list is deliberately small and cited. */
 const STATION_RECORD = "station.json: station.names (新宿駅（都営大江戸線） / Shinjuku Station (Toei Oedo Line) / 新宿站（都營大江戶線）) and codes E27";
@@ -170,18 +228,15 @@ describe("POI aliases", () => {
       if (p.category === "platform") for (const [k, why] of Object.entries(PLATFORM_ALIASES)) add(k, why);
       for (const [k, why] of Object.entries(GENERIC_ALIASES[p.category] ?? {})) add(k, why);
       if (p.category === "exit") {
-        // Distinguishing aliases are rebuilt from the descriptor words found in the ja name.
-        const ja = text(p, "ja")!;
-        const compass = /(北東|北西|南東|南西|北|東|南|西)側/.exec(ja)![1]!;
-        const found = Object.keys(WORDS).filter((w) => ja.includes(w));
-        const level: string[] = found.filter((w) => w === "地上" || w === "地下1階");
-        const rest = found.filter((w) => !level.includes(w));
-        expect(level.length, p.id).toBe(1);
-        const c = COMPASS[compass]!;
-        add("ja-Hrkt:" + tokens(["でぐち", WORDS[level[0]!]!.kana, `${c.kana}がわ`, ...rest.map((w) => WORDS[w]!.kana)].join(" ")), "readings of the name's descriptors");
-        add("ja-Latn:" + tokens(["deguchi", `${c.romaji}-gawa`, ...rest.map((w) => WORDS[w]!.romaji), WORDS[level[0]!]!.romaji].join(" ")), "romaji of the name's descriptors");
-        add("en:" + tokens(["exit", WORDS[level[0]!]!.en, c.en, ...rest.map((w) => WORDS[w]!.en)].join(" ")), "English of the name's descriptors");
-        add("zh-Hant:" + tokens(["出口", WORDS[level[0]!]!.zh, `${c.zh}側`, ...rest.map((w) => WORDS[w]!.zh)].join(" ")), "zh-Hant of the name's descriptors");
+        // Distinguishing aliases are rebuilt from the independently recomputed descriptors (not from the name).
+        const d = describeExit(p);
+        const lw = WORDS[d.street ? "地上" : "地下1階"]!;
+        const rest = [...d.spaces.map((c) => WORDS[SPACE_BY_CATEGORY[c]!.ja]!), ...(d.roof ? [WORDS[d.roof === "roofed" ? "屋根あり" : "屋根なし"]!] : [])];
+        const c = COMPASS[SECTORS.find(([en]) => en === d.compass)![1]]!;
+        add("ja-Hrkt:" + tokens(["でぐち", lw.kana, `${c.kana}がわ`, ...rest.map((w) => w.kana)].join(" ")), "readings of the recomputed descriptors");
+        add("ja-Latn:" + tokens(["deguchi", `${c.romaji}-gawa`, ...rest.map((w) => w.romaji), lw.romaji].join(" ")), "romaji of the recomputed descriptors");
+        add("en:" + tokens(["exit", lw.en, c.en, ...rest.map((w) => w.en)].join(" ")), "English of the recomputed descriptors");
+        add("zh-Hant:" + tokens(["出口", lw.zh, `${c.zh}側`, ...rest.map((w) => w.zh)].join(" ")), "zh-Hant of the recomputed descriptors");
       }
       const norm = (k: string) => {
         const i = k.indexOf(":");
@@ -262,17 +317,21 @@ describe("facility POIs trace to the GSI facility points", () => {
     expect(mismatched).toEqual(["poi:elevator:2"]);
   });
 
-  it("names ticket gates per E27 gate cluster, with their F106 points counted in the note", () => {
+  it("names ticket gates per E27 gate cluster and counts every F106 point once, for its nearest cluster", () => {
     const pts = facilities.filter((f) => f.category === "F106");
     const gates = byCategory("ticket_gate");
     expect(gates.length).toBeGreaterThan(0);
     expect(gates.length).toBeLessThanOrEqual(pts.length);
-    for (const g of gates) {
+    const counts = gates.map((g) => {
       const level = floors.get(g.floorId!)!.ordinal!;
-      const onLevel = pts.filter((f) => f.ordinal === level && near(f, g.displayPosition!) <= 30);
-      expect(onLevel.length, g.id).toBeGreaterThan(0);
-      expect(g.notes!.map((n) => n.text).join(" "), g.id).toContain(`${onLevel.length}`);
-    }
+      const sameLevel = gates.filter((o) => floors.get(o.floorId!)!.ordinal === level);
+      const n = pts.filter((f) => f.ordinal === level && sameLevel.reduce((best, o) => (near(f, o.displayPosition!) < near(f, best.displayPosition!) ? o : best)) === g).length;
+      const ja = g.notes!.find((x) => x.lang === "ja")!.text, en = g.notes!.find((x) => x.lang === "en")!.text;
+      expect(ja, g.id).toContain(`が最寄りのものは${n}件です（各点は最寄りの1群だけに数えます）`);
+      expect(en, g.id).toContain(`, ${n} ${n === 1 ? "has" : "have"} this cluster as the nearest (each point is counted for one cluster only)`);
+      return n;
+    });
+    expect(counts.reduce((a, b) => a + b, 0)).toBe(pts.length); // no overlap, none lost
   });
 
   it("matches the old POI count plus only source-backed additions", () => {
@@ -303,7 +362,7 @@ describe("expected search results (docs/stations/shinjuku/search-expected.md)", 
     ["新宿駅", [P]], ["E27", [P]], ["e27", [P]], ["大江戸線", [P]], ["都営大江戸線", [P]], ["Oedo", [P]], ["oedo line", [P]], ["Toei Oedo Line", [P]],
     ["新宿站", [P]], ["大江戶線", [P]], ["都營大江戶線", [P]],
     // exits told apart by descriptor
-    ["屋根あり", ["poi:exit:1"]], ["roofed", ["poi:exit:1"]], ["屋根なし", ["poi:exit:2", "poi:exit:4"]], ["no roof", ["poi:exit:2", "poi:exit:4"]],
+    ["屋根あり", ["poi:exit:1"]], ["roofed", ["poi:exit:1"]], 
     ["escalator", ["poi:exit:4"]], ["エスカレーター", ["poi:exit:4"]], ["手扶梯", ["poi:exit:4"]],
     ["stairs", ["poi:exit:5"]], ["階段", ["poi:exit:1", "poi:exit:4", "poi:exit:5"]],
     ["street level", ["poi:exit:1", "poi:exit:2", "poi:exit:3", "poi:exit:4"]],
@@ -331,7 +390,7 @@ describe("expected search results (docs/stations/shinjuku/search-expected.md)", 
     expect(strong(query).map((h) => h.poi.id)).toContain(id);
   });
 
-  it.each(["JR", "JR新宿", "山手線", "Yamanote", "中央線", "京王", "京王線", "小田急", "小田急線", "丸ノ内線", "東京メトロ", "Tokyo Metro", "都営新宿線", "西口", "南口", "東口", "新宿西口", "E01", "3番出口", "Exit 3", "A1出口"])(
+  it.each(["JR", "JR新宿", "山手線", "Yamanote", "中央線", "京王", "京王線", "小田急", "小田急線", "丸ノ内線", "東京メトロ", "Tokyo Metro", "都営新宿線", "西口", "南口", "東口", "新宿西口", "E01", "3番出口", "Exit 3", "A1出口", "屋根なし"])(
     "%s returns no Shinjuku POI claim",
     (query) => {
       expect(strong(query)).toEqual([]);
