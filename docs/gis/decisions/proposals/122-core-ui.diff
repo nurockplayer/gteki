@@ -1,0 +1,201 @@
+diff --git a/apps/web/src/i18n.ts b/apps/web/src/i18n.ts
+index 6b29b2d..f18cf5e 100644
+--- a/apps/web/src/i18n.ts
++++ b/apps/web/src/i18n.ts
+@@ -63,6 +63,9 @@ const STRINGS = {
+     sources: "出典",
+     /** Modification disclosure required by PDL / CC BY when a source was processed. */
+     modified: "加工して作成",
++    /** #26 / #122: facts-only sources have no licence to show; the wording specified in #122. */
++    factsOnly: "ライセンスなし・事実のみ参照（複製なし）",
++    rightsDecision: "権利判断",
+     assetDerivations: "3D素材の加工内容",
+     symbolicHeight: "高さは表示用の推定です",
+     coverage: "カバー範囲",
+@@ -135,6 +138,9 @@ const STRINGS = {
+     freshness: "Data as of",
+     sources: "Sources",
+     modified: "modified",
++    /** Proposed English equivalent of the #26 line; adds no claim beyond the Japanese. */
++    factsOnly: "No licence; cited for facts only (not reproduced)",
++    rightsDecision: "Rights decision",
+     assetDerivations: "3D asset derivations",
+     symbolicHeight: "Heights are display estimates",
+     coverage: "Coverage",
+diff --git a/apps/web/src/ui/app.ts b/apps/web/src/ui/app.ts
+index 84661a0..b44b8fd 100644
+--- a/apps/web/src/ui/app.ts
++++ b/apps/web/src/ui/app.ts
+@@ -9,7 +9,7 @@ import { DEFAULT_GUIDE_TIER, guidePaceSpans, guideTierSpeed, isGuideTier, nextGu
+ import { initialLang, pick, strings, type Lang } from "../i18n.ts";
+ import { listStations, StationLoadError, type LoadedStation, type StationEntry } from "../registry.ts";
+ import { stationClock } from "../stationClock.ts";
+-import { sourceCredit } from "../credits.ts";
++import { safeHref, sourceCredit } from "../credits.ts";
+ 
+ /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
+ const STATION_TIME_ZONE = "Asia/Tokyo";
+@@ -689,6 +689,18 @@ export class App {
+     li.append(link(c.title, c.href), el("span", "muted", ` — ${c.attribution}`));
+     if (c.license) li.append(el("span", "muted", " ("), link(c.license.name, c.license.href), el("span", "muted", ")"));
+     if (c.modified) li.append(el("span", "muted", ` · ${this.t.modified}`));
++    // Facts-only sources have no licence to show: say so (Coverage dialog and the route card's 出典 both use this).
++    if (s.usage === "facts-only") {
++      li.append(el("span", "muted", ` · ${this.t.factsOnly}`));
++      const href = safeHref(s.decision?.url);
++      if (s.decision && href) {
++        const a = el("a", undefined, `${this.t.rightsDecision} ${s.decision.date}`);
++        a.href = href;
++        a.target = "_blank";
++        a.rel = "noopener noreferrer";
++        li.append(el("span", "muted", " ("), a, el("span", "muted", ")"));
++      }
++    }
+     return li;
+   }
+ 
+diff --git a/packages/schema/src/contract.test.ts b/packages/schema/src/contract.test.ts
+index e99cb5e..c1410fc 100644
+--- a/packages/schema/src/contract.test.ts
++++ b/packages/schema/src/contract.test.ts
+@@ -4,6 +4,7 @@ import { isOpenAt, parseHm, parseStationFiles, validateBundle } from "./index.ts
+ import type { GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
+ 
+ const ev = { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" };
++const DECISION = { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" };
+ const errors = (b: StationBundle) => validateBundle(b).filter((i) => i.level === "error").map((i) => i.code);
+ const warnings = (b: StationBundle) => validateBundle(b).filter((i) => i.level === "warning").map((i) => i.code);
+ 
+@@ -111,6 +112,7 @@ describe("validator truth rules added in v0.1 core", () => {
+     ref.rights = "REFERENCE_ONLY";
+     expect(warnings(b)).toContain("source.rights");
+     ref.usage = "facts-only";
++    ref.decision = DECISION;
+     expect(warnings(b)).not.toContain("source.rights");
+     expect(errors(b)).toEqual([]);
+     b.edges[0]!.geometryEvidence = { ...b.edges[0]!.geometryEvidence, sourceIds: ["fixture-access"] };
+@@ -293,6 +295,7 @@ describe("review regressions: nested fail-closed shape and rights", () => {
+       b.edges = [];
+       for (const n of b.nodes) n.sourceRefs = [{ sourceId: "fixture-geometry", featureId: n.id }];
+       b.sources.find((s) => s.id === "fixture-access")!.usage = "facts-only";
++      b.sources.find((s) => s.id === "fixture-access")!.decision = DECISION;
+       b.sources.find((s) => s.id === "fixture-access")!.rights = "REFERENCE_ONLY";
+       b.coverage.areas = [{ id: "area", floorId: "concourse", status: "routable", label: [], polygon: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }], sourceIds: ["fixture-geometry", "fixture-access"] }];
+       return b;
+@@ -383,6 +386,55 @@ describe("review regressions: nested fail-closed shape and rights", () => {
+     expect(errors(b)).toContain("source.url");
+   });
+ 
++  it("requires the #26 decision reference on a real facts-only source", () => {
++    const b = asRealStation(createSyntheticBundle());
++    b.edges = [];
++    const src = b.sources.find((s) => s.id === "fixture-access")!;
++    src.rights = "REFERENCE_ONLY";
++    src.license = null;
++    src.usage = "facts-only";
++    expect(errors(b)).toContain("source.decision");
++    src.decision = DECISION;
++    expect(errors(b)).not.toContain("source.decision");
++    // A malformed decision is an error and no longer satisfies the rule.
++    for (const bad of [{ url: "javascript:alert(1)", date: "2026-10-21" }, { url: DECISION.url, date: "2026-10" }, { url: DECISION.url, date: "2026-02-30" }]) {
++      src.decision = bad;
++      expect(errors(b)).toContain("source.decision");
++    }
++    // Synthetic stations and licensed data sources are not asked for it.
++    src.decision = undefined;
++    b.station.synthetic = true;
++    expect(errors(b)).not.toContain("source.decision");
++    const data = asRealStation(createSyntheticBundle());
++    data.edges = [];
++    expect(errors(data)).not.toContain("source.decision");
++    // A decision on a non-facts-only source is still shape-checked.
++    data.sources[0]!.decision = { url: "ftp://example.org/x", date: "2026-10-21" };
++    expect(errors(data)).toContain("source.decision");
++  });
++
++  it("fails closed on a malformed source decision instead of throwing", () => {
++    const parse = (decision: unknown) => {
++      const [m, g, p] = split(createSyntheticBundle());
++      (m.sources[0] as { decision?: unknown }).decision = decision;
++      return parseStationFiles(m, g, p);
++    };
++    expect(parse(DECISION).ok).toBe(true);
++    for (const bad of [null, "x", [], {}, { url: DECISION.url }, { url: 1, date: "2026-10-21" }, { url: DECISION.url, date: null }]) {
++      const parsed = parse(bad);
++      expect(parsed.ok).toBe(false);
++      expect(parsed.issues.map((i) => i.code)).toEqual(expect.arrayContaining([expect.stringMatching(/^shape\./)]));
++    }
++    // validateBundle itself must not throw on a hand-built bundle with a wrong-typed decision.
++    const b = asRealStation(createSyntheticBundle());
++    b.edges = [];
++    for (const bad of [null, "x", 5]) {
++      (b.sources[0] as { decision?: unknown }).decision = bad;
++      expect(() => validateBundle(b)).not.toThrow();
++      expect(errors(b)).toContain("source.decision");
++    }
++  });
++
+   it("rejects origin coordinates outside the geodetic range", () => {
+     const b = createSyntheticBundle();
+     expect(errors(b)).not.toContain("station.origin.range");
+diff --git a/packages/schema/src/index.ts b/packages/schema/src/index.ts
+index 0788f0b..8bc98b6 100644
+--- a/packages/schema/src/index.ts
++++ b/packages/schema/src/index.ts
+@@ -46,6 +46,11 @@ export interface Source {
+    * Omitted = "data" (contents or derivatives may ship).
+    */
+   usage?: "data" | "facts-only";
++  /**
++   * The Owner decision that permits using this source (#26 per-source clearance record). A real
++   * facts-only source must carry one; the web UI shows the #26 credit line for every facts-only source.
++   */
++  decision?: { url: string; date: string };
+   /** Credit line to display wherever derived data is shown. */
+   attribution: string;
+   /** True when GTEki modified/derived the data (must be disclosed for PDL/CC BY). */
+diff --git a/packages/schema/src/parse.ts b/packages/schema/src/parse.ts
+index f268afd..14f1e35 100644
+--- a/packages/schema/src/parse.ts
++++ b/packages/schema/src/parse.ts
+@@ -16,7 +16,7 @@ type Spec = Record<string, Kind | `${Kind}?`>;
+ const SPECS = {
+   station: { id: "string", names: "array", codes: "array?", operators: "array", origin: "object", frame: "string", datasetVersion: "string", generatedAt: "string", synthetic: "boolean" },
+   origin: { lat: "number", lon: "number", hM: "number|null", datum: "string", crs: "string" },
+-  source: { id: "string", title: "string", publisher: "string", url: "string", license: "object|null", rights: "string", attribution: "string", modified: "boolean", retrievedAt: "string|null", datasetDate: "string|null", downloadUrls: "array?", usage: "string?", sha256: "object?", validUntil: "string|null?", notes: "string?" },
++  source: { id: "string", title: "string", publisher: "string", url: "string", license: "object|null", rights: "string", attribution: "string", modified: "boolean", retrievedAt: "string|null", datasetDate: "string|null", downloadUrls: "array?", usage: "string?", decision: "object?", sha256: "object?", validUntil: "string|null?", notes: "string?" },
+   floor: { id: "string", operatorId: "string", sourceLabels: "array", ordinal: "number|null", intermediate: "boolean", elevationM: "number|null", elevationSource: "string", renderElevationM: "number", displayNames: "array?" },
+   node: { id: "string", floorId: "string", position: "object", kind: "string", inOut: "string|null", sourceRefs: "array", renderZ: "number?" },
+   position: { x: "number", y: "number", z: "number|null" },
+@@ -27,6 +27,7 @@ const SPECS = {
+   operator: { id: "string", names: "array" },
+   code: { operatorId: "string", code: "string" },
+   license: { name: "string", url: "string" },
++  decision: { url: "string", date: "string" },
+   sourceLabel: { operatorId: "string", label: "string", sourceId: "string" },
+   featureRef: { sourceId: "string", featureId: "string" },
+   hoursAlways: { kind: "string", evidence: "object" },
+@@ -144,6 +145,7 @@ export function checkShape(manifest: unknown, graph: unknown, pois: unknown): Va
+     }
+     c.each(m.sources, SPECS.source, "sources", (src, where) => {
+       if (src.license !== null) c.check(src.license, SPECS.license, `${where}.license`);
++      if (src.decision !== undefined) c.check(src.decision, SPECS.decision, `${where}.decision`);
+       c.strings(src.downloadUrls, `${where}.downloadUrls`);
+       if (kindOf(src.sha256) === "object") c.strings(Object.values(src.sha256 as object), `${where}.sha256`);
+     });
+diff --git a/packages/schema/src/validate.ts b/packages/schema/src/validate.ts
+index a0a8b30..35c581a 100644
+--- a/packages/schema/src/validate.ts
++++ b/packages/schema/src/validate.ts
+@@ -108,6 +108,11 @@ export function validateBundle(b: StationBundle): ValidationIssue[] {
+     if (!b.station.synthetic && !isHttpUrl(s.url)) err("source.url", "source without an http(s) landing URL", s.id);
+     if (!b.station.synthetic && s.usage !== "facts-only" && !(s.license && s.license.name.trim() && isHttpUrl(s.license.url)))
+       err("source.license", "data source without a licence name and http(s) licence link", s.id);
++    // #26/#122: a facts-only source has no licence to show; the UI says so, and the source records the Owner decision that allows it.
++    const decisionOk = typeof s.decision === "object" && s.decision !== null && isHttpUrl(s.decision.url) && typeof s.decision.date === "string" && isIsoDate(s.decision.date);
++    if (s.decision !== undefined && !decisionOk) err("source.decision", "decision needs an http(s) url and a YYYY-MM-DD date", s.id);
++    if (!b.station.synthetic && s.usage === "facts-only" && s.decision === undefined)
++      err("source.decision", "facts-only source without a decision {url, date} (the #26 Owner decision)", s.id);
+     if (!b.station.synthetic && s.rights !== "REUSABLE_WITH_CONDITIONS" && s.usage !== "facts-only")
+       warn("source.rights", `source rights ${s.rights}; must not feed published geometry/data (mark usage:"facts-only" if only cited as evidence)`, s.id);
+   }
