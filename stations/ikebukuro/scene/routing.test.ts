@@ -295,3 +295,17 @@ describe("matrix rows that do not apply to Ikebukuro (premise asserted, no routi
     expect(r.operatorIds).toEqual(["public"]);
   });
 });
+
+// #161: the in-app PLATEAU credit is the Owner's Q10 Option A string (Ikebukuro keeps real TP heights, so no
+// base-adjustment parenthetical), and the unverified "CC BY 4.0" label is never shown.
+describe("PLATEAU source credit (#161)", () => {
+  const source = load().sources.find((s) => s.id === "plateau-ubld-13116")!;
+
+  it("uses the Option A string, with no CC BY label and no Shinjuku base-adjustment parenthetical", () => {
+    expect(source.attribution).toBe("出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成");
+    expect(source.attribution).not.toMatch(/CC[ -]?BY/i);
+    expect(source.attribution).not.toContain("建物の基部");
+    expect(source.license?.name ?? "").not.toMatch(/CC[ -]?BY/i);
+    expect(source.license?.url).toBe("https://www.mlit.go.jp/plateau/site-policy/");
+  });
+});
