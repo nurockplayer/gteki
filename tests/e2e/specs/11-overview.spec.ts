@@ -21,13 +21,13 @@ test.use({ trace: "off" });
  * Recorded only: the full label list with rects, faded-label overlaps, label counts per category,
  * `__gteki.labels()`, camera position, the screenshot's stats, and (when the app offers them) a direct
  * measure of the routable slice's projected extent.
- *   - Framing proxy: no page hook exposes the camera, the routable bounds or the projected slice (#114 adds
- *     `overviewFraming.ts` but no hook), so framing is measured from label anchors: `labelSpread` from
- *     `labelUiOverlaps` (all visible labels) and the spread of the *routable* labels (those not marked
- *     `search-only`, i.e. anchored on a graph node). Anchors lie inside the slice, so the spread is a lower
- *     bound of its extent: > 80 % is a clear miss, < 50 % may be a miss or labels hidden at the edge.
- *     `framingDirect` stays null until a hook exists; the spec feature-detects `__gteki.overviewFrame()`
- *     and, failing that, `sceneInfo().overview`, and records whatever they return without asserting it.
+ *   - Framing: #114 (fc4e5c6) adds `__gteki.overviewFrame()` → `{ extentShare, fitShare, bbox }` (null outside
+ *     overview): `extentShare` is the routable network's projected extent over the shorter viewport side,
+ *     measured on its actual edge points, and is asserted in the band when the hook exists. Without it (main
+ *     before #114) framing falls back to a proxy from label anchors: `labelSpread` from `labelUiOverlaps`
+ *     (all visible labels) and the spread of the *routable* labels (those not marked `search-only`, i.e.
+ *     anchored on a graph node). Anchors lie inside the slice, so the spread is a lower bound of its extent:
+ *     > 80 % is a clear miss, < 50 % may be a miss or labels hidden at the edge. Both are always recorded.
  *   - "Reachable": #114 hides the lower-priority label of two colliding labels (display: none) until the user
  *     zooms in, but keeps start/destination always and exits ahead of everything but those. So reachable
  *     means (a) at least one exit label is on screen, and (b) an exit whose label is hidden can still be
@@ -66,7 +66,7 @@ for (const key of STATIONS) {
     const routable = visible.filter((b) => !b.searchOnly);
     const spreadRoutable = anchorSpread(routable, view);
 
-    // A direct measure, only if the app ever exposes one. Nothing in main or #114 does, so null today.
+    // The direct measure (#114's overviewFrame), or null on builds without it.
     const framingDirect = await page.evaluate(() => {
       const g = (window as any).__gteki;
       try {
@@ -132,8 +132,12 @@ for (const key of STATIONS) {
     expect.soft(overlapsReadable, "visible, non-faded POI labels overlapping each other").toEqual([]);
     // 4. C1: labels never above the UI.
     expect.soft(smoke.uiOverlaps.filter((o) => o.labelOnTop), "POI labels painted over UI controls").toEqual([]);
-    // 1. Framing, through the label-anchor proxy.
-    if (spreadRoutable.spread !== null) {
+    // 1. Framing: the direct measure when the app has it, else the label-anchor proxy.
+    const extentShare = framingDirect?.source === "overviewFrame" ? framingDirect.value?.extentShare : undefined;
+    if (typeof extentShare === "number") {
+      expect.soft(extentShare, "routable network extent / shorter viewport side (overviewFrame)").toBeGreaterThanOrEqual(FRAMING.min);
+      expect.soft(extentShare, "routable network extent / shorter viewport side (overviewFrame)").toBeLessThanOrEqual(FRAMING.max);
+    } else if (spreadRoutable.spread !== null) {
       expect.soft(spreadRoutable.spread, "spread of routable label anchors / shorter viewport side (proxy for the slice)").toBeGreaterThanOrEqual(FRAMING.min);
       expect.soft(spreadRoutable.spread, "spread of routable label anchors / shorter viewport side (proxy for the slice)").toBeLessThanOrEqual(FRAMING.max);
     } else {

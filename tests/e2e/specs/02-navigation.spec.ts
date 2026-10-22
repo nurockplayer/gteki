@@ -53,7 +53,9 @@ for (const key of STATIONS) {
         }
       }
       save(testInfo, `${key}-navigation.json`, summaries);
-      expect(JSON.stringify(summaries, null, 2)).toMatchSnapshot(`${key}-routes.json`);
+      // `stale` is a calendar verdict, so it stays in the evidence but not in the golden: a source ageing past
+      // staleAfterDays must not read as a routing change. The search-UI test checks the card says so instead.
+      expect(JSON.stringify(summaries, (k, v) => (k === "stale" ? undefined : v), 2)).toMatchSnapshot(`${key}-routes.json`);
     });
 
     test(`${key}: deep link restores the same route after reload`, async ({ page }) => {
@@ -91,6 +93,10 @@ for (const key of STATIONS) {
     await expect(card).toBeVisible();
     await expect(card.locator(".route-head")).toContainText(/min/);
     await expect(card.locator(".instructions li").first()).toBeVisible();
+    // Freshness is a calendar verdict (sources older than the core's staleAfterDays, 730 by default), so a
+    // stale route must say so on the card; Ikebukuro's 2022 guide is past it.
+    const stale = (await hooks.route(page))?.stale;
+    if (stale === true) await expect.soft(card.locator(".badge.warn", { hasText: /Possibly outdated|情報が古い可能性/ }), "stale route says so on the card").toBeVisible();
     await page.waitForTimeout(1200);
     await page.screenshot({ path: shotPath(testInfo, `${key}-03-route-card.png`) });
     // Clicking an instruction frames that segment in the overview.
