@@ -132,6 +132,22 @@ export const LITERAL_CLASSES: LiteralClassEntry[] = [
   unquotedUnknown('plateau-catalog-bldg-tran-13116-13104', 'catalog API snapshot'),
   unquotedUnknown('hokonavi-oedo-shinjuku-package', 'CKAN package metadata and terms pages'),
   unquotedUnknown('mlit-indoor-shinjuku-r2-package', 'CKAN package metadata and dataset page'),
+  unquotedUnknown('tokyo-muni-shinjuku-public-facilities-csv', 'municipal open-data CSV or ZIP with CKAN package_show and terms snapshots'),
+  unquotedUnknown('tokyo-muni-shinjuku-tourism-csv', 'municipal open-data CSV or ZIP with CKAN package_show and terms snapshots'),
+  unquotedUnknown('tokyo-muni-shinjuku-cultural-properties-csv', 'municipal open-data CSV or ZIP with CKAN package_show and terms snapshots'),
+  unquotedUnknown('tokyo-muni-toshima-tourism-csv', 'municipal open-data CSV or ZIP with CKAN package_show and terms snapshots'),
+  unquotedUnknown('tokyo-muni-toshima-cultural-properties-csv', 'municipal open-data CSV or ZIP with CKAN package_show and terms snapshots'),
+  unquotedUnknown('tokyo-muni-toshima-public-facilities-csv', 'municipal open-data CSV or ZIP with CKAN package_show and terms snapshots'),
+  unquotedUnknown('tokyo-muni-shinjuku-shelter-csv', 'municipal open-data CSV or ZIP with CKAN package_show and terms snapshots'),
+  unquotedUnknown('tokyo-muni-toshima-shelter-csv', 'municipal open-data CSV or ZIP with CKAN package_show and terms snapshots'),
+  unquotedUnknown('tokyo-muni-shinjuku-park-csv', 'municipal open-data CSV or ZIP with CKAN package_show and terms snapshots'),
+  unquotedUnknown('tokyo-emergency-route-zip', 'municipal open-data CSV or ZIP with CKAN package_show and terms snapshots'),
+  unquotedUnknown('tokyo-nishi-shinjuku-walk-zip', 'municipal open-data CSV or ZIP with CKAN package_show and terms snapshots'),
+  unquotedUnknown('tokyo-toei-station-info-csv', 'municipal open-data CSV or ZIP with CKAN package_show and terms snapshots'),
+  unquotedUnknown('hokonavi-oedo-shinjuku-nishiguchi-package', 'CKAN package metadata and terms snapshots'),
+  unquotedUnknown('hokonavi-oedo-tochomae-package', 'CKAN package metadata and terms snapshots'),
+  unquotedUnknown('hokonavi-shibuya-sendagaya-shinjuku-package', 'CKAN package metadata and terms snapshots'),
+  unquotedUnknown('geospatial-0401-package', 'CKAN package metadata and terms snapshots'),
 ];
 
 /**
