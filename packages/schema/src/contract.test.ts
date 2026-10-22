@@ -622,3 +622,43 @@ describe("late-opening windows (PR #15 Codex review 6)", () => {
     expect(errors(b)).toContain("edge.hours");
   });
 });
+
+describe("PUBLISHED_UNDER_OWNER_OVERRIDE rights (#130)", () => {
+  const OVERRIDE = { decision: "https://github.com/nurockplayer/gteki/issues/130", date: "2026-10-22" };
+  const overridden = (override?: unknown, license: { name: string; url: string } | null = { name: "Licence unconfirmed", url: "https://example.org/terms" }) => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    const src = b.sources.find((s) => s.id === "fixture-access")!;
+    src.rights = "PUBLISHED_UNDER_OWNER_OVERRIDE";
+    src.license = license;
+    (src as { override?: unknown }).override = override;
+    return b;
+  };
+
+  it("ships like REUSABLE_WITH_CONDITIONS when the override is recorded", () => {
+    const b = overridden(OVERRIDE);
+    expect(errors(b)).not.toContain("source.override");
+    expect(errors(b)).not.toContain("source.rights.value");
+    expect(warnings(b)).not.toContain("source.rights");
+    // An issue reference is accepted as well as a URL.
+    for (const decision of ["#130", "nurockplayer/gteki#130"]) expect(errors(overridden({ ...OVERRIDE, decision }))).not.toContain("source.override");
+  });
+
+  it("is an error without an override reference or with a malformed one", () => {
+    expect(errors(overridden(undefined))).toContain("source.override");
+    for (const bad of [null, "x", {}, { decision: "see chat", date: "2026-10-22" }, { decision: OVERRIDE.decision }, { decision: OVERRIDE.decision, date: "2026-10" }, { decision: OVERRIDE.decision, date: "2026-02-30" }])
+      expect(errors(overridden(bad))).toContain("source.override");
+  });
+
+  it("needs licence text", () => {
+    expect(errors(overridden(OVERRIDE, null))).toContain("source.override");
+    expect(errors(overridden(OVERRIDE, { name: " ", url: "https://example.org/terms" }))).toContain("source.override");
+  });
+
+  it("fails closed on a wrong-shaped override at parse time", () => {
+    const [m, g, p] = split(overridden(OVERRIDE));
+    expect(parseStationFiles(m, g, p).ok).toBe(true);
+    (m.sources.find((s) => s.id === "fixture-access") as { override?: unknown }).override = "x";
+    expect(parseStationFiles(m, g, p).ok).toBe(false);
+  });
+});

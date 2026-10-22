@@ -675,6 +675,17 @@ export class App {
   }
 
   /** A source's credit line: title (linked), attribution, licence (linked) and the modification notice. */
+  /** Human wording for a source's rights status (#130); unknown values read as unverified rather than leaking the enum. */
+  private rightsLabel(rights: Source["rights"]): string {
+    switch (rights) {
+      case "REUSABLE_WITH_CONDITIONS": return this.t.rightsReusable;
+      case "PUBLISHED_UNDER_OWNER_OVERRIDE": return this.t.rightsOwnerOverride;
+      case "REFERENCE_ONLY": return this.t.rightsReference;
+      case "RESTRICTED": return this.t.rightsRestricted;
+      default: return this.t.rightsUnverified;
+    }
+  }
+
   private creditItem(s: Source): HTMLLIElement {
     const c = sourceCredit(s);
     const link = (text: string, href: string | null): HTMLElement => {
@@ -729,7 +740,8 @@ export class App {
       // Every source, including those cited only by assets or coverage: link, licence and modification notice.
       for (const s of b.sources) {
         const li = this.creditItem(s);
-        li.append(el("span", "muted", ` [${s.rights}${s.usage === "facts-only" ? ", facts-only" : ""}]`));
+        // #130: plain-language rights, never the internal enum. A facts-only source is already described by creditItem (#122 wording).
+        if (s.usage !== "facts-only") li.append(el("span", "muted", ` · ${this.rightsLabel(s.rights)}`));
         src.append(li);
       }
       d.append(src);

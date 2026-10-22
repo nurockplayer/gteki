@@ -46,6 +46,7 @@ stations/<id>/gteki/
 | Operator floors are never equated by label (`B1` ≠ `B1`); optional `Floor.displayNames` (ja/en, station-authored) are display-only and `sourceLabels` stay exact | schema, tests |
 | `Source.usage: "facts-only"`: may evidence facts; may not feed edge geometry, node positions or assets | validate |
 | Assets, edge geometry and node positions (`sourceRefs`) derived from non-`REUSABLE_WITH_CONDITIONS` or `facts-only` sources are rejected for public bundles | validate |
+| `rights: "PUBLISHED_UNDER_OWNER_OVERRIDE"` ships like `REUSABLE_WITH_CONDITIONS` but needs `override: {decision: issue/comment URL or #ref, date: YYYY-MM-DD}` and `license.name` text, else `source.override` (a publication rule: the build refuses it). The Coverage dialog shows plain-language rights labels (i18n), never the enum (#130) | validate + web build + i18n |
 | Every evidence record (edge geometry/access/hours, POI) names at least one source | validate |
 | Station origin datum is `JGD2011` | validate |
 | Real-station floors cite at least one source label; routes count the traversed floors' sources in provenance and freshness | validate + router |
