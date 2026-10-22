@@ -481,8 +481,8 @@
      "hash": "78fdc0a7cad1b77e94bdce5ca7caad26afbe860ced3c8069d89a79e0c775c714"
     },
     "[\"MeshBasicMaterial\",\"\",\"8aafb9\",null,null,0.38,true,2,true,null,null,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 90,
-     "hash": "6e1df4a61a9ea30dd9118b3a2658a223cd06b160959b364fbbf4f31334fe4d30"
+     "triangles": 30,
+     "hash": "569a63936f75be923696382b54e91617a5c07d5dab2b5995d42fca5dcaf54f75"
     },
     "[\"MeshBasicMaterial\",\"\",\"aebcc2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 6496,
@@ -1624,8 +1624,8 @@
      "hash": "78fdc0a7cad1b77e94bdce5ca7caad26afbe860ced3c8069d89a79e0c775c714"
     },
     "[\"MeshBasicMaterial\",\"\",\"8aafb9\",null,null,0.38,true,2,true,null,null,false,true,true,false,false,false]#visible=true#order=0#instanced=false": {
-     "triangles": 90,
-     "hash": "6e1df4a61a9ea30dd9118b3a2658a223cd06b160959b364fbbf4f31334fe4d30"
+     "triangles": 30,
+     "hash": "569a63936f75be923696382b54e91617a5c07d5dab2b5995d42fca5dcaf54f75"
     },
     "[\"MeshBasicMaterial\",\"\",\"aebcc2\",null,null,1,false,2,true,null,null,true,true,true,false,false,false]#visible=true#order=0#instanced=false": {
      "triangles": 6496,
