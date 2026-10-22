@@ -4,16 +4,45 @@ import type { SearchHit, SearchIndex } from "./index.ts";
 /** Fold scripts and formatting only; readings and translations come from aliases. */
 export function normalizeJa(s: string): string {
   return s.normalize("NFKC").toLowerCase()
-    .replace(/[\u30a1-\u30f6]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0x60))
-    .replace(/[\s\p{P}\u2212\u301c\uff5e~ー<>]/gu, "");
+    .replace(/[ァ-ヶ]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0x60))
+    .replace(/[\s\p{P}−〜～~ー<>]/gu, "");
+}
+
+/**
+ * Matching key: normalizeJa plus exit-number folding, so 22号出口 / 22號出口 / 22番出口 are one text.
+ * 号 / 號 fold only before 出口 or at the end (not 1号線 "line 1" or 3号車 "car 3"). normalizeJa itself is
+ * unchanged because the Godot port mirrors its goldens.
+ */
+export function searchKey(s: string): string {
+  return normalizeJa(s).replace(/(\d)[号號](?=出|口|でぐち|$)/g, "$1番");
 }
 
 interface IndexedPoi {
   poi: Poi;
-  name: string;
   routable: boolean;
   texts: { original: string; normalized: string }[];
 }
+
+/** One query form to score: the typed query, or what is left after dropping the station's own name. */
+interface QueryForm {
+  normalized: string;
+  chars: string[];
+  tokens: string[];
+  runs: string[];
+  /** Taken off the score: a literal match beats a stripped one. */
+  penalty: number;
+  /** Subsequence fuzz is noise on short queries (東口 -> ...東剪票口, JR -> Tobu Tojo Line Central Gate). */
+  fuzzy: boolean;
+  /** Contains "<digits>番": a precise exit reference, so the digits must match as a whole number. */
+  numbered: boolean;
+}
+
+/** Subsequence fuzz only for queries of at least this many normalised characters. */
+const MIN_FUZZY_CHARS = 4;
+/** Station-name stripping needs at least this many characters left to search. */
+const MIN_REMAINDER_CHARS = 2;
+const STRIPPED_PENALTY = 2;
+const STATION_WORD = /^(?:駅|站|えき|station|eki)/;
 
 /**
  * Split a normalised query where the script changes (digits / latin / kana / kanji), so word
@@ -32,6 +61,52 @@ export function scriptRuns(normalized: string): string[] {
   }
   if (current) runs.push(current);
   return runs;
+}
+
+function makeForm(normalized: string, tokens: string[], penalty: number): QueryForm {
+  const chars = [...normalized];
+  return {
+    normalized, chars, tokens, runs: scriptRuns(normalized), penalty,
+    fuzzy: chars.length >= MIN_FUZZY_CHARS,
+    numbered: /\d番/.test(normalized),
+  };
+}
+
+const compareText = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+
+/** The station's own name as people prefix it to a query (池袋東口, "ikebukuro east exit"), longest first. */
+function stationPrefixes(names: readonly string[]): string[] {
+  const out = new Set<string>();
+  for (const name of names) {
+    const base = searchKey(name.split(/[（(]/)[0] ?? "");
+    for (const form of [base, base.replace(/(?:駅|站|えき|station|eki)$/, "")]) {
+      if (form.length >= 2) out.add(form);
+    }
+  }
+  return [...out].sort((a, b) => b.length - a.length || compareText(a, b));
+}
+
+/** Drop a leading station name from the query; null when it is not there or nothing else is left. */
+function stripStation(prefixes: readonly string[], normalized: string, latinTokens: string[]): QueryForm | null {
+  for (const prefix of prefixes) {
+    if (!normalized.startsWith(prefix)) continue;
+    const rest = normalized.slice(prefix.length).replace(STATION_WORD, "");
+    if ([...rest].length < MIN_REMAINDER_CHARS) return null;
+    // Latin tokens: drop the words that spell the station name (and a following "station" / "eki").
+    let tokens: string[] = [];
+    if (latinTokens.length > 1) {
+      let used = "";
+      let i = 0;
+      while (i < latinTokens.length && used.length < prefix.length) used += latinTokens[i++];
+      if (used === prefix) {
+        tokens = latinTokens.slice(i);
+        if (tokens[0] !== undefined && STATION_WORD.exec(tokens[0])?.[0] === tokens[0]) tokens = tokens.slice(1);
+        if (tokens.length < 2) tokens = [];
+      }
+    }
+    return makeForm(rest, tokens, STRIPPED_PENALTY);
+  }
+  return null;
 }
 
 /** Ordered subsequence matching, penalising skipped characters within the match. */
@@ -61,57 +136,81 @@ function fuzzyScore(query: string[], candidate: string[]): number {
   return best;
 }
 
-function scoreText(query: string, queryChars: string[], tokens: string[], candidate: string): number {
+/** First occurrence of `query` in `candidate` that does not continue a longer number ("2番" in "22番"). */
+function wholeNumberAt(candidate: string, query: string): number {
+  for (let i = candidate.indexOf(query); i >= 0; i = candidate.indexOf(query, i + 1)) {
+    if (i === 0 || !/\p{Nd}/u.test(candidate[i - 1]!)) return i;
+  }
+  return -1;
+}
+
+function scoreText(q: QueryForm, candidate: string): number {
+  const query = q.normalized;
   if (candidate === query) return 100;
+  if (q.numbered) {
+    // "2番出口" is that exit only: no token / fuzzy matching, and not inside "22番出口".
+    const at = /^\p{Nd}/u.test(query) ? wholeNumberAt(candidate, query) : candidate.indexOf(query);
+    if (at < 0) return 0;
+    return at === 0 ? 80 : at + query.length === candidate.length ? 70 : 60;
+  }
   if (candidate.startsWith(query)) return 80;
   // Japanese compounds are head-final (中央改札, 35番出口): a suffix match names the thing itself.
   if (candidate.endsWith(query)) return 70;
   if (candidate.includes(query)) return 60;
-  const runs = scriptRuns(query);
-  const tokenScore = (tokens.length > 1 && tokens.every((token) => candidate.includes(token))) ||
-    (runs.length > 1 && runs.every((run) => candidate.includes(run))) ? 40 : 0;
-  return Math.max(tokenScore, fuzzyScore(queryChars, [...candidate]));
+  const tokenScore = (q.tokens.length > 1 && q.tokens.every((token) => candidate.includes(token))) ||
+    (q.runs.length > 1 && q.runs.every((run) => candidate.includes(run))) ? 40 : 0;
+  return Math.max(tokenScore, q.fuzzy ? fuzzyScore(q.chars, [...candidate]) : 0);
 }
-
-const compareText = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 export function createSearchIndex(bundle: StationBundle): SearchIndex {
   const entries: IndexedPoi[] = bundle.pois.map((poi) => ({
     poi,
-    name: poi.names[0]?.text ?? "",
     routable: poi.connectorNodeIds.length > 0,
-    texts: [...poi.names, ...poi.aliases].map(({ text }) => ({ original: text, normalized: normalizeJa(text) })),
+    texts: [...poi.names, ...poi.aliases].map(({ text }) => ({ original: text, normalized: searchKey(text) })),
   }));
+  const prefixes = stationPrefixes(bundle.station.names.map(({ text }) => text));
 
   return {
     search(query, opts = {}) {
-      const normalized = normalizeJa(query);
+      const normalized = searchKey(query);
       if (!normalized) return [];
-      const queryChars = [...normalized];
       const latinQuery = query.normalize("NFKC").toLowerCase().trim();
       const tokens = /^[a-z0-9]+(?:\s+[a-z0-9]+)+$/.test(latinQuery)
         ? latinQuery.split(/\s+/).map(normalizeJa) : [];
+      const forms = [makeForm(normalized, tokens, 0)];
+      // A query that is only the station name stays as typed; "池袋東口" also searches "東口".
+      const stripped = prefixes.length ? stripStation(prefixes, normalized, tokens) : null;
+      if (stripped) forms.push(stripped);
       const categories = opts.categories === undefined ? null : new Set(opts.categories);
       const floors = opts.floorIds === undefined ? null : new Set(opts.floorIds);
-      const hits: { hit: SearchHit; name: string }[] = [];
+      const hits: { hit: SearchHit; rank: number; length: number }[] = [];
       for (const entry of entries) {
         if (categories && !categories.has(entry.poi.category)) continue;
         if (floors && (entry.poi.floorId === null || !floors.has(entry.poi.floorId))) continue;
         let score = 0;
         let matched = "";
+        let rank = 0;
+        let length = 0;
         for (const text of entry.texts) {
-          const candidateScore = scoreText(normalized, queryChars, tokens, text.normalized);
-          if (candidateScore > score) {
-            score = candidateScore;
-            matched = text.original;
+          for (const form of forms) {
+            const raw = scoreText(form, text.normalized);
+            const candidateScore = raw > 0 ? raw - form.penalty : 0;
+            if (candidateScore > score) {
+              score = candidateScore;
+              matched = text.original;
+              // Match quality for ties: exact name > name starts with the query > anything else.
+              rank = text.normalized === form.normalized ? 2 : text.normalized.startsWith(form.normalized) ? 1 : 0;
+              length = text.normalized.length;
+            }
           }
         }
         if (score > 0) hits.push({
           hit: { poi: entry.poi, score: score + (entry.routable ? 5 : 0), matched, routable: entry.routable },
-          name: entry.name,
+          rank, length,
         });
       }
-      hits.sort((a, b) => b.hit.score - a.hit.score || compareText(a.name, b.name) || compareText(a.hit.poi.id, b.hit.poi.id));
+      // Ties: better match quality, then the shorter matched name, then id (stable regardless of bundle order).
+      hits.sort((a, b) => b.hit.score - a.hit.score || b.rank - a.rank || a.length - b.length || compareText(a.hit.poi.id, b.hit.poi.id));
       return hits.slice(0, Math.max(0, opts.limit ?? 10)).map(({ hit }) => hit);
     },
   };
