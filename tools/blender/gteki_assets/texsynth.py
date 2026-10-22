@@ -123,26 +123,42 @@ def quantize8(img):
     return np.clip(np.asarray(img) * 255.0 + 0.5, 0, 255).astype(np.uint8)
 
 
-def write_png(path, img):
-    """Minimal deterministic 8-bit RGB/RGBA PNG writer (stdlib only)."""
+def png_bytes(img, gray=False):
+    """Deterministic 8-bit PNG of a [0,1] float image: RGB/RGBA, or with `gray` an HxW greyscale (colour type 0)."""
     import struct
     import zlib
 
     a = quantize8(img)
-    if a.ndim == 2:
+    if gray:
+        a = a[..., None]
+    elif a.ndim == 2:
         a = a[..., None].repeat(3, axis=2)
     h, w, c = a.shape
-    color_type = {3: 2, 4: 6}[c]
-    raw = b"".join(b"\x00" + a[y].tobytes() for y in range(h))
+    color_type = {1: 0, 3: 2, 4: 6}[c]
+    if gray:  # smooth maps: per row, the cheapest of the None / Sub / Up filters (sum of |residual|)
+        rows = []
+        for y in range(h):
+            row = a[y]
+            sub = row.copy()
+            sub[1:] -= row[:-1]
+            options = [(0, row), (1, sub)] + ([(2, row - a[y - 1])] if y else [])
+            kind, best = min(options, key=lambda o: (np.abs(o[1].astype(np.int8).astype(np.int32)).sum(), o[0]))
+            rows.append(bytes([kind]) + best.tobytes())
+        raw = b"".join(rows)
+    else:
+        raw = b"".join(b"\x00" + a[y].tobytes() for y in range(h))
 
     def chunk(tag, data):
         return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
 
+    return (b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, color_type, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(raw, 9)) + chunk(b"IEND", b""))
+
+
+def write_png(path, img):
+    """Minimal deterministic 8-bit RGB/RGBA PNG writer (stdlib only)."""
     with open(path, "wb") as f:
-        f.write(b"\x89PNG\r\n\x1a\n")
-        f.write(chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, color_type, 0, 0, 0)))
-        f.write(chunk(b"IDAT", zlib.compress(raw, 9)))
-        f.write(chunk(b"IEND", b""))
+        f.write(png_bytes(img))
 
 
 def read_png(path):

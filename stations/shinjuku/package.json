@@ -26,10 +26,18 @@
     "preview": "vite preview --host",
     "typecheck": "tsc -p tsconfig.json",
     "import:e27": "tsx tools/import-e27.ts",
-    "check": "pnpm typecheck && vitest run --root ../.. stations/shinjuku"
+    "import:surface": "tsx tools/import-surface.ts",
+    "check": "pnpm typecheck && vitest run --root ../.. stations/shinjuku",
+    "shoot": "tsx tools/shoot.ts",
+    "record": "tsx tools/record.ts",
+    "explorer-walk": "tsx tools/explorer-walk.ts",
+    "perf": "tsx tools/perf.ts",
+    "heap": "tsx tools/heap.ts",
+    "bake:surface": "tsx tools/bake-surface.ts"
   },
   "devDependencies": {
     "@types/three": "^0.186.0",
+    "playwright-core": "^1.64.1",
     "vite": "^8.3.4"
   }
 }

@@ -44,6 +44,15 @@ Measured in your own scenes, on scratch copies of the station branches with prob
 
 Which gates, how many aisles, and where they stand is the station lead's decision.
 
+**Station manifests: `uri` and `uriMobile`** (Explorer contract, lands with #134). A station manifest asset can set an optional `uriMobile` next to `uri`. It follows the same canonical-path and `.glb` rules. On the low tier (phones) the explorer loads `uriMobile` when it is set, and `uri` otherwise. For kit placements, ship two bundles made from the same id list or layout:
+
+```sh
+python3 tools/blender/bundle_kit.py bundle --library assets/library        --ids <ids> --out stations/<id>/gteki/assets/kit/full.glb    # -> uri
+python3 tools/blender/bundle_kit.py bundle --library assets/library/mobile --ids <ids> --out stations/<id>/gteki/assets/kit/mobile.glb  # -> uriMobile
+```
+
+`--library` is the directory that holds `manifest.json`, not its `glb/` subdirectory. The two bundles carry the same asset ids, sockets and node names (the `extras.gteki_name` values included), so station code treats them the same way. Each one carries the per-asset AO material clones (`<material>~<asset id>`). Rebuild both from the same library commit, because a mobile palette change (a new colour-only material) moves the swatch UVs in every mobile GLB.
+
 ## Placing pieces
 
 Units are metres, glTF +Y is up, and the root carries `extras.gteki` (contract, params, `placement`, bounds, licence). The **placement class** tells you where the origin sits:
@@ -62,6 +71,8 @@ T_B = T_A · S_A_end · RotY(180°) · inverse(S_B_start)
 `S_x` is the socket's local transform inside its own GLB. Every linear module's `start` socket sits at the origin with yaw 180°, so for linear pieces this simplifies to `T_B = T_A · S_A_end`.
 
 **Collision.** `COL_*-colonly` nodes become `StaticBody3D` in Godot automatically. In three.js, hide them, or feed them to your physics engine. Stairs and escalators collide as smooth ramps. Gate flaps and hanging signs have no collision. Kit collision is only for character movement; **it is not navigation truth** (`extras.gteki.navigation`). Routes must come from your verified station graph (G2).
+
+A station whose walkable floors and colliders come from its own layout can build a visual-only copy: `"collision": false` in its catalog entry drops every `COL_*-colonly` node on both tiers (`false` or absent; any other value fails the build). `"gteki_role": null` drops a dressing piece's role (contract §9). Together they keep kit geometry from becoming walkable or a collider in any loader.
 
 **Lights.** `LIGHTHINT_*` empties mark where fixtures are. Their extras give `kind` (`linear_led`, `panel`, `step_light`, `indicator`), `length_m` or `size_m`, `watts` and `colour_temp_k`. The kit exports no lights; spawn whatever your renderer can afford. `tools/blender/render_preview.py` shows one way to map them to area lights.
 

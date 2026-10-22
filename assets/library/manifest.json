@@ -1683,8 +1683,8 @@
       "family": "gate",
       "variant": "array_2",
       "file": "glb/gteki_gate_array_2.glb",
-      "sha256": "f65539453b69724cc9761dd99293705f5813a58b96029ddce0600fb9e5ae42e3",
-      "bytes": 331668,
+      "sha256": "dcde3c90db16d7db016f27eaf06f3f9efc8efeac85c5669df068608e0e3a0c38",
+      "bytes": 439616,
       "triangles": 3802,
       "materials": [
         "gteki_steel_painted_dark",
@@ -1703,22 +1703,84 @@
         "gteki_steel_painted_dark": {
           "res": 512,
           "maps": [
-            "normal"
-          ]
+            "normal",
+            "occlusion"
+          ],
+          "occlusion_res": 512
         },
         "gteki_gate_body": {
           "res": 512,
           "maps": [
-            "albedo"
-          ]
+            "albedo",
+            "occlusion"
+          ],
+          "occlusion_res": 512
+        },
+        "gteki_gate_accent": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 512
+        },
+        "gteki_gate_top": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 512
+        },
+        "gteki_plastic_dark": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 512
+        },
+        "gteki_emissive_ic_blue": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 512
+        },
+        "gteki_reveal_dark": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 512
+        },
+        "gteki_screen_lcd": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 512
+        },
+        "gteki_emissive_green": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 512
+        },
+        "gteki_rubber_black": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 512
         },
         "gteki_floor_granite_dark": {
           "res": 1024,
           "maps": [
             "albedo",
             "normal",
+            "occlusion",
             "orm"
-          ]
+          ],
+          "occlusion_res": 512
         }
       },
       "bounds_m": {
@@ -2254,8 +2316,8 @@
       "family": "vertical",
       "variant": "escalator",
       "file": "glb/gteki_escalator_s1000_r5000_up.glb",
-      "sha256": "264d4f9301f42e573cc24be6ad6d8c5a4d1fa82dd450030360b99b6f8453247a",
-      "bytes": 1150580,
+      "sha256": "212b983df3124f709a39226c7bac39c0fdc837ba138b89f986a9d40c8c9b5eb3",
+      "bytes": 1975248,
       "triangles": 29030,
       "materials": [
         "gteki_escalator_tread",
@@ -2275,23 +2337,78 @@
           "maps": [
             "albedo",
             "normal",
+            "occlusion",
             "orm"
-          ]
+          ],
+          "occlusion_res": 1024
+        },
+        "gteki_vertical_safety_yellow": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 1024
         },
         "gteki_steel_painted_light": {
           "res": 512,
           "maps": [
             "albedo",
-            "normal"
-          ]
+            "normal",
+            "occlusion"
+          ],
+          "occlusion_res": 1024
         },
         "gteki_steel_brushed": {
           "res": 512,
           "maps": [
             "albedo",
             "normal",
+            "occlusion",
             "orm"
-          ]
+          ],
+          "occlusion_res": 1024
+        },
+        "gteki_reveal_dark": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 1024
+        },
+        "gteki_rubber_black": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 1024
+        },
+        "gteki_glass_clear": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 1024
+        },
+        "gteki_emissive_green": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 1024
+        },
+        "gteki_emissive_red": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 1024
+        },
+        "gteki_vertical_nosing_light": {
+          "res": 0,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 1024
         }
       },
       "bounds_m": {

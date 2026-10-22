@@ -26,7 +26,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
-from gteki_assets import contract  # noqa: E402
+from gteki_assets import ao, contract  # noqa: E402
 from gteki_assets.asset import Asset  # noqa: E402
 from gteki_assets.families import PLACEMENT, REGISTRY  # noqa: E402
 
@@ -111,6 +111,14 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
                 asset.dimension_basis = item["dimension_basis"]
             if item.get("notes"):
                 asset.notes = item["notes"]
+            if "ao_res" in item:
+                if item["ao_res"] not in ao.SIZES:
+                    raise ValueError(f"ao_res must be one of {ao.SIZES}, got {item['ao_res']!r}")
+                asset.ao_res_override = item["ao_res"]
+            if "collision" in item:  # a station that takes its colliders from its own layout
+                if item["collision"] is not False:
+                    raise ValueError(f"collision must be false or absent, got {item['collision']!r}")
+                asset.drop_collision()
             asset.placement = item.get("placement") or PLACEMENT.get(item["generator"], "free")
             asset.build()
             entry = asset.export(staging, save_blend_dir=args.save_blend or None)

@@ -19,6 +19,7 @@ tools/blender/build.sh selftest   # validator, texture budget and bundle tool se
 ONLY=gteki_gate_array_4w1 tools/blender/build.sh build   # rebuild a subset
 TEX_RES=2048 OUT=/tmp/kit_hq tools/blender/build.sh build # high-res textures (Godot HQ)
 PROFILE=mobile tools/blender/build.sh all                 # mobile tier into assets/library/mobile (palette, merged VIS_body, UV1)
+python3 tools/blender/validate_glb.py --require-occlusion assets/library/glb/*.glb   # FAIL assets without the baked AO map (default: allowed during rollout)
 ```
 
 Viewer: `pnpm --dir tools/blender/web_preview install && pnpm --dir tools/blender/web_preview dev`, then open `/?asset=<id>` or `/?mode=gallery`.
@@ -49,6 +50,7 @@ Editable sources: add `--save-blend <dir>` to `build.py` to save a `.blend` per 
 | `gteki_assets/asset.py` | Asset assembly: parts → bevel + weighted normals → joined `VIS_*`, `*-colonly` collision, sockets, light hints, extras, GLB export |
 | `gteki_assets/texsynth.py` | Seeded **tileable** numpy textures (terrazzo, tiles, metals, tactile blocks, treads, …) |
 | `gteki_assets/materials.py` | Stable `gteki_*` PBR material library |
+| `gteki_assets/ao.py` | Baked ambient occlusion: one Cycles-CPU map per asset (joint `UVLightmap` atlas), deterministic blur/dilate, PNG attached as `occlusionTexture` on `texCoord` 1 |
 | `gteki_assets/families/*.py` | Generators by family |
 | `render_preview.py` | GLB round-trip renders |
 | `validate_glb.py` | Stdlib contract validator (`--self-test` included) |
@@ -68,5 +70,7 @@ A generator is `fn(asset_id, params, tex_res) -> Asset` registered in its module
 - `a.light_hint(name, loc, kind=…, …)` where a fixture emits light.
 - Materials by stable name; add new ones with `materials.register()`. Keep everything original: no brand marks, no copied pictograms, no text in textures.
 - Set `repeat_m` to the material's real repeat. Texture size follows from it (`materials.texture_res`), and maps that come out flat are exported as factors (`materials.texture_plan`), so do not pad a generator with invisible noise to "fill" a map. A face with a single 0–1 UV island that is not square (signs) should draw at its physical aspect (see `signage._face_shape`).
+
+Every asset gets one baked AO map in both tiers (`gteki_assets/ao.py`, contract §4); generators need nothing for it. The bake uses Cycles on the CPU (about 30–60 s per asset), so full-library builds and `repro` take correspondingly longer.
 
 Determinism: all randomness is seeded, textures are cached by content hash, UVs are quantized after modifiers; `build.sh repro` guards it.
