@@ -226,11 +226,13 @@ Done so far:
   ([video](docs/evidence/walk-west-exit-to-exit4.mp4)).
 - An independent Astra High critique, addressed in `ca399cb`.
 
-Remaining before claiming L2:
+Remaining before claiming L2: see [docs/g0-g4-status.md](docs/g0-g4-status.md) (gate-by-gate status, dated, with the
+main SHA) and [docs/l2-evidence.md](docs/l2-evidence.md) (the four required L2 evidence items, what is missing and the
+capture plan). In short:
 
 - A real phone test (only emulated so far).
-- A side-by-side reference review on site.
-- An avatar pass in the explorer (core lane).
+- A fresh independent side-by-side review, and the on-site reference comparison.
+- Recordings and measurements on current main, desktop and phone (Lane F).
 
 Evidence stills:
 
