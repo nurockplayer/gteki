@@ -151,7 +151,8 @@ func _check_ikebukuro_helpers(scene: Scene) -> void:
 	check(bridge_tiles >= 1, "ikebukuro: walk bridges are walkable tiles (role walkable, source walk_bridges): %d" % bridge_tiles)
 	for role in ["walk_bridges", "access_fences_collider", "doors_solid", "windows_solid", "portal_beyond"]:
 		check(originals.has(role), "ikebukuro: hidden helper %s is in the snapshot" % role)
-		if originals.has(role):
+		# portal_beyond is drawn on the web too (an opaque "beyond" surface); only the others are invisible helpers.
+		if originals.has(role) and role != "portal_beyond":
 			var helper: MeshInstance3D = originals[role]
 			check(not helper.visible or helper.layers == 0, "ikebukuro: helper %s is not drawn" % role)
 	if fence_original == null or fence_original.mesh == null:
@@ -169,11 +170,15 @@ func _check_ikebukuro_helpers(scene: Scene) -> void:
 		var c: Vector3 = fence_original.global_transform * faces[k * 6 + 2]
 		var centre := (a + b + c) / 3.0
 		var normal := (b - a).cross(c - a).normalized()
-		var query := PhysicsRayQueryParameters3D.create(centre + normal * 0.4, centre - normal * 0.4, Scene.COLLIDER_LAYER)
-		query.hit_back_faces = true
-		var hit := space.intersect_ray(query)
-		if not hit.is_empty() and abs(hit.position.distance_to(centre + normal * 0.4) - 0.4) < 0.02:
-			hit_panels += 1
+		# Tiles are single-sided unless their material is double-sided: try from both sides of the panel.
+		for side in [1.0, -1.0]:
+			var start: Vector3 = centre + normal * 0.4 * side
+			var query := PhysicsRayQueryParameters3D.create(start, centre - normal * 0.4 * side, Scene.COLLIDER_LAYER)
+			query.hit_back_faces = true
+			var hit := space.intersect_ray(query)
+			if not hit.is_empty() and abs(hit.position.distance_to(start) - 0.4) < 0.02:
+				hit_panels += 1
+				break
 	check(hit_panels == panels, "ikebukuro: fence collider panels exist as collider tiles (%d of %d)" % [hit_panels, panels])
 
 
