@@ -2,7 +2,7 @@ import type { Strings } from "../i18n.ts";
 
 /** The two original, fictional guide mascots (#132): a proud, calm cat and an eager dog. */
 export type MascotId = "cat" | "dog";
-export type MascotExpression = "neutral" | "happy" | "encourage" | "sorry";
+export type MascotExpression = "neutral" | "happy" | "encourage" | "sorry" | "unsure";
 
 /** A UI event the mascot may react to. `no_path` carries the router's RouteFailure.reason. */
 export type MascotEvent =
@@ -34,9 +34,19 @@ export interface MascotLine {
 export const TRANSIENT_MS = 4500;
 
 /**
+ * Face for a no_path reason: a proven dead end is `sorry`; the search running out, an unknown endpoint or an
+ * unrecognised reason is `unsure` (the router does not know either); start == goal is `neutral`.
+ */
+function noPathExpression(reason: string): MascotExpression {
+  if (reason === "start_equals_goal") return "neutral";
+  return reason === "no_path" ? "sorry" : "unsure";
+}
+
+/**
  * UI event -> mascot line, or null (hide). The mascot only reacts to the kind of event: every line is a fixed
  * string, so it can never state a direction, distance, floor or name; the router's own text does that.
- * UNKNOWN stays UNKNOWN: search_limit, unknown_* and unrecognised reasons say plainly "I don't know".
+ * UNKNOWN stays UNKNOWN: search_limit, unknown_* and unrecognised reasons say plainly "I don't know", with the
+ * `unsure` face; `sorry` is kept for a proven dead end and for failures.
  */
 export function mascotLine(t: Strings, ev: MascotEvent): MascotLine | null {
   const m = t.mascot;
@@ -45,14 +55,15 @@ export function mascotLine(t: Strings, ev: MascotEvent): MascotLine | null {
       return { character: "dog", expression: "happy", lineKey: "arrival", line: m.arrival, announce: false, transient: true };
     case "arrival_connector":
       // The guide ran out on a stair/escalator/ramp, not at the destination: never "arrived".
-      return { character: "cat", expression: "sorry", lineKey: "arrival_connector", line: m.arrivalConnector, announce: true, transient: true };
+      // Where it leaves you next is unknown, so the face is unsure rather than sorry.
+      return { character: "cat", expression: "unsure", lineKey: "arrival_connector", line: m.arrivalConnector, announce: true, transient: true };
     case "no_path": {
       const known = Object.hasOwn(m.noPath, ev.reason) && ev.reason !== "other";
       const key = known ? ev.reason : "other";
-      return { character: "cat", expression: ev.reason === "start_equals_goal" ? "neutral" : "sorry", lineKey: `no_path.${key}`, line: m.noPath[key]!, announce: true, transient: false };
+      return { character: "cat", expression: noPathExpression(ev.reason), lineKey: `no_path.${key}`, line: m.noPath[key]!, announce: true, transient: false };
     }
     case "route_unknowns":
-      return { character: "cat", expression: "sorry", lineKey: "route_unknowns", line: m.routeUnknowns, announce: true, transient: false };
+      return { character: "cat", expression: "unsure", lineKey: "route_unknowns", line: m.routeUnknowns, announce: true, transient: false };
     case "search_empty":
       return { character: "dog", expression: "encourage", lineKey: "search_empty", line: m.searchEmpty, announce: true, transient: false };
     case "turn":
@@ -72,8 +83,9 @@ export function mascotLine(t: Strings, ev: MascotEvent): MascotLine | null {
 
 // ---- Placeholder art ------------------------------------------------------------------
 // PLACEHOLDER ONLY (#132): tiny geometric faces authored for this repo, no external files or third-party art.
-// Final art comes from Lane E's model sheet (4 expressions per character) after Owner approval; it drops in by
-// replacing MASCOT_ART, a plain (character, expression) -> svg string lookup. Faces look right, toward the text.
+// Final art comes from Lane E's model sheet after Owner approval; `unsure` is our own fifth face, pending a model
+// sheet drawing. It drops in by replacing MASCOT_ART, a plain (character, expression) -> svg string lookup.
+// Faces look right, toward the text.
 
 const INK = "#2b2118";
 const STROKE = `fill="none" stroke="${INK}" stroke-width="1.8" stroke-linecap="round"`;
@@ -86,13 +98,14 @@ function eyes(e: MascotExpression, x1: number, x2: number, y: number): string {
     case "happy": return `<path ${STROKE} d="M${x1 - 2.5} ${y + 1}q2.5-4 5 0M${x2 - 2.5} ${y + 1}q2.5-4 5 0"/>`;
     case "encourage": return dot(x1, y, 2.7) + dot(x2, y, 2.7);
     case "sorry": return dot(x1, y, 2) + dot(x2, y, 2) + `<path ${STROKE} d="M${x1 - 3} ${y - 5}l6 2M${x2 + 3} ${y - 5}l-6 2"/>`;
+    case "unsure": return dot(x1, y, 2) + dot(x2, y, 2) + `<path ${STROKE} d="M${x1 - 3} ${y - 5}h6M${x2 - 3} ${y - 5}h6"/>`;
     case "neutral": return dot(x1, y, 2) + dot(x2, y, 2);
   }
 }
 
 /** A small mouth at (x, y). */
 function mouth(e: MascotExpression, x: number, y: number): string {
-  const d = { neutral: `M${x} ${y}h6`, happy: `M${x - 0.5} ${y - 1}q3.5 5 7 0`, encourage: `M${x} ${y - 1}q3 3.5 6 0`, sorry: `M${x} ${y + 1}q3-3 6 0` }[e];
+  const d = { neutral: `M${x} ${y}h6`, happy: `M${x - 0.5} ${y - 1}q3.5 5 7 0`, encourage: `M${x} ${y - 1}q3 3.5 6 0`, sorry: `M${x} ${y + 1}q3-3 6 0`, unsure: `M${x - 0.5} ${y + 2}l6-2` }[e];
   return `<path ${STROKE} d="${d}"/>`;
 }
 
@@ -102,7 +115,7 @@ const cat = (e: MascotExpression): string =>
 const dog = (e: MascotExpression): string =>
   svg(`<ellipse cx="11.5" cy="27" rx="5" ry="10" fill="#a8742f" transform="rotate(8 11.5 27)"/><ellipse cx="38.5" cy="27" rx="5" ry="10" fill="#a8742f" transform="rotate(-8 38.5 27)"/><circle cx="25" cy="27" r="14" fill="#d8a96b"/><ellipse cx="30" cy="33" rx="7" ry="5" fill="#f1dcb8"/>${eyes(e, 22, 32, 24)}<ellipse cx="32" cy="30.5" rx="2.4" ry="1.7" fill="${INK}"/>${mouth(e, 28, 36.5)}`);
 
-const EXPRESSIONS: readonly MascotExpression[] = ["neutral", "happy", "encourage", "sorry"];
+const EXPRESSIONS: readonly MascotExpression[] = ["neutral", "happy", "encourage", "sorry", "unsure"];
 const table = (make: (e: MascotExpression) => string): Record<MascotExpression, string> =>
   Object.fromEntries(EXPRESSIONS.map((e) => [e, make(e)])) as Record<MascotExpression, string>;
 

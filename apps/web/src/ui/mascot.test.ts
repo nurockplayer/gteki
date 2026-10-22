@@ -4,7 +4,7 @@ import { MASCOT_ART, MascotSlot, TRANSIENT_MS, mascotLine, type MascotEvent, typ
 
 const LANGS: Lang[] = ["ja", "en"];
 const REASONS = ["no_path", "unknown_start", "unknown_goal", "start_equals_goal", "search_limit"];
-const EXPRESSIONS: MascotExpression[] = ["neutral", "happy", "encourage", "sorry"];
+const EXPRESSIONS: MascotExpression[] = ["neutral", "happy", "encourage", "sorry", "unsure"];
 
 /** The few DOM members MascotSlot touches (the repo's unit tests run in plain node, without a DOM). */
 class FakeEl {
@@ -36,9 +36,9 @@ describe("mascotLine: event -> line", () => {
       expect(mascotLine(t, { kind: "arrival" })).toMatchObject({ character: "dog", expression: "happy", lineKey: "arrival", line: t.mascot.arrival, announce: false });
     });
 
-    it(`arrival_connector is the cat, sorry, and never says arrived (${lang})`, () => {
+    it(`arrival_connector is the cat, unsure, and never says arrived (${lang})`, () => {
       const m = mascotLine(t, { kind: "arrival_connector" })!;
-      expect(m).toMatchObject({ character: "cat", expression: "sorry", lineKey: "arrival_connector", announce: true });
+      expect(m).toMatchObject({ character: "cat", expression: "unsure", lineKey: "arrival_connector", announce: true });
       expect(m.line).not.toBe(t.mascot.arrival);
       expect(m.line).not.toBe(t.arrived);
       expect(m.line).not.toMatch(/arriv|着いた|到着|We're here/i);
@@ -59,8 +59,8 @@ describe("mascotLine: event -> line", () => {
       }
     });
 
-    it(`route_unknowns: cat, sorry, state line pointing at the badges (${lang})`, () => {
-      expect(mascotLine(t, { kind: "route_unknowns" })).toMatchObject({ character: "cat", expression: "sorry", lineKey: "route_unknowns", announce: true, transient: false });
+    it(`route_unknowns: cat, unsure, state line pointing at the badges (${lang})`, () => {
+      expect(mascotLine(t, { kind: "route_unknowns" })).toMatchObject({ character: "cat", expression: "unsure", lineKey: "route_unknowns", announce: true, transient: false });
       expect(t.mascot.routeUnknowns).toMatch(lang === "ja" ? /バッジ/ : /badges/);
     });
 
@@ -91,10 +91,14 @@ describe("mascotLine: event -> line", () => {
     });
   }
 
-  it("expressions: honest 'I don't know' is sorry; start_equals_goal is just neutral", () => {
+  it("expressions: 'I don't know' is unsure, a proven dead end and failures are sorry, start_equals_goal is neutral", () => {
     const t = strings("en");
-    for (const reason of ["no_path", "unknown_start", "unknown_goal", "search_limit", "weird"]) expect(mascotLine(t, { kind: "no_path", reason })!.expression).toBe("sorry");
-    expect(mascotLine(t, { kind: "no_path", reason: "start_equals_goal" })!.expression).toBe("neutral");
+    const expression = (ev: MascotEvent) => mascotLine(t, ev)!.expression;
+    for (const reason of ["search_limit", "unknown_start", "unknown_goal", "weird", "", "other"]) expect(expression({ kind: "no_path", reason }), reason).toBe("unsure");
+    expect(expression({ kind: "no_path", reason: "no_path" })).toBe("sorry");
+    expect(expression({ kind: "no_path", reason: "start_equals_goal" })).toBe("neutral");
+    for (const kind of ["route_unknowns", "arrival_connector"] as const) expect(expression({ kind }), kind).toBe("unsure");
+    for (const kind of ["load_error", "scene_fallback"] as const) expect(expression({ kind }), kind).toBe("sorry");
   });
 
   it("announce is true for arrival_connector and the error/empty states; false for turn, arrival, scene_fallback and start_hint (said elsewhere or only a hint)", () => {
@@ -154,7 +158,7 @@ describe("truthfulness: lines are fixed strings that cannot carry route facts", 
         const m = mascotLine(t, { kind: "no_path", reason })!;
         expect(m.line, reason).toMatch(dontKnow);
         expect(m.line, reason).not.toMatch(claimsNone);
-        expect(m.expression).toBe("sorry");
+        expect(m.expression).toBe("unsure");
       }
       expect(t.mascot.routeUnknowns).toMatch(dontKnow);
       expect(t.mascot.arrivalConnector).toMatch(lang === "ja" ? /わからない/ : /can't tell/);
@@ -186,9 +190,9 @@ describe("MascotSlot", () => {
     expect(root.hidden).toBe(false);
     expect(bubble.hidden).toBe(false);
     expect(bubble.textContent).toBe(strings("en").mascot.noPath.search_limit);
-    expect(root.dataset).toMatchObject({ character: "cat", expression: "sorry" });
-    expect(figure.innerHTML).toBe(MASCOT_ART.cat.sorry);
-    expect(s.info()).toMatchObject({ visible: true, character: "cat", expression: "sorry", lineKey: "no_path.search_limit", placeholder: true });
+    expect(root.dataset).toMatchObject({ character: "cat", expression: "unsure" });
+    expect(figure.innerHTML).toBe(MASCOT_ART.cat.unsure);
+    expect(s.info()).toMatchObject({ visible: true, character: "cat", expression: "unsure", lineKey: "no_path.search_limit", placeholder: true });
   });
 
   it("speaks in the current language", () => {
@@ -274,8 +278,9 @@ describe("MascotSlot", () => {
 describe("placeholder art cost guard", () => {
   const all = (["cat", "dog"] as MascotId[]).flatMap((c) => EXPRESSIONS.map((e) => [c, e, MASCOT_ART[c][e]] as const));
 
-  it("has an svg for every (character, expression)", () => {
-    expect(all).toHaveLength(8);
+  it("has an svg for every (character, expression): 2 characters x 5 expressions", () => {
+    expect(all).toHaveLength(10);
+    for (const c of ["cat", "dog"] as MascotId[]) expect(Object.keys(MASCOT_ART[c]).sort()).toEqual([...EXPRESSIONS].sort());
     for (const [c, e, art] of all) expect(art, `${c}/${e}`).toMatch(/^<svg [^>]*viewBox="0 0 48 48"/);
   });
 
@@ -291,6 +296,17 @@ describe("placeholder art cost guard", () => {
   });
 
   it("expressions and characters are visibly distinct", () => {
-    expect(new Set(all.map(([, , art]) => art)).size).toBe(8);
+    expect(new Set(all.map(([, , art]) => art)).size).toBe(10);
+  });
+
+  it("unsure is a face, not a question mark: flat brows, a slanted mouth, no glyphs or text", () => {
+    for (const c of ["cat", "dog"] as MascotId[]) {
+      const art = MASCOT_ART[c].unsure;
+      expect(art, c).not.toMatch(/<text|\?|？/);
+      // A straight horizontal brow on each side (the sorry face's brows slope; this one does not).
+      expect(art, c).toMatch(/d="M[\d. ]+h6M[\d. ]+h6"/);
+      expect(art, c).not.toBe(MASCOT_ART[c].neutral);
+      expect(art, c).not.toBe(MASCOT_ART[c].sorry);
+    }
   });
 });
