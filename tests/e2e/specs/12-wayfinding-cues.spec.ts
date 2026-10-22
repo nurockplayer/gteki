@@ -62,6 +62,13 @@ for (const w of walks) {
           if (src && Math.max(src.width, src.height) >= 1024) seen.push({ w: src.width, h: src.height });
           return orig.apply(this, a as never);
         };
+        // WebGL2 three.js allocates with texStorage2D and uploads with texSubImage2D.
+        const sub = C.prototype.texSubImage2D;
+        C.prototype.texSubImage2D = function (this: unknown, ...a: unknown[]) {
+          const src = a.find((x) => x instanceof HTMLCanvasElement) as HTMLCanvasElement | undefined;
+          if (src && Math.max(src.width, src.height) >= 1024) seen.push({ w: src.width, h: src.height });
+          return sub.apply(this, a as never);
+        };
       }
     });
     await openStation(page, key);
@@ -78,7 +85,8 @@ for (const w of walks) {
     const primary = cues.filter((c) => c.type !== "fence");
     const g = gaps(primary, line.lengthM);
     const gWithFences = gaps(cues, line.lengthM);
-    const gFront = gaps(primary.filter((c) => c.type === "junction" || (c.facingDot ?? 0) < 0), line.lengthM);
+    // A double-sided board (`back` faces) reads from both directions, so it counts as facing the walker either way.
+    const gFront = gaps(primary.filter((c) => c.type === "junction" || c.twoSided || (c.facingDot ?? 0) < 0), line.lengthM);
 
     await page.locator(".sheet .card.route button.primary").click();
     await expect.poll(() => hooks.mode(page)).toBe("guide");
