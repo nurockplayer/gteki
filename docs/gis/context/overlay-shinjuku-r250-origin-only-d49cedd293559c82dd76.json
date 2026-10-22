@@ -1,5 +1,5 @@
 {
-  "run_id": "overlay-shinjuku-r250-origin-only-bf43122852dedb917b70",
+  "run_id": "overlay-shinjuku-r250-origin-only-d49cedd293559c82dd76",
   "command": "context-overlay",
   "policy_version": "context-overlay-v1",
   "station_id": "shinjuku",
@@ -124,12 +124,12 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/overlay-shinjuku-r250-origin-only-bf43122852dedb917b70.geojson",
+      "store_path": "out/overlay-shinjuku-r250-origin-only-d49cedd293559c82dd76.geojson",
       "sha256": "b684728f7c6f9973193bed79467a29df83466b105b1121c067f29f030efe7034",
       "bytes": 14703
     },
     "glb": {
-      "store_path": "out/overlay-shinjuku-r250-origin-only-bf43122852dedb917b70.glb",
+      "store_path": "out/overlay-shinjuku-r250-origin-only-d49cedd293559c82dd76.glb",
       "sha256": "bd8afef8b478553f904391ed52df6a58144dc1ad31b58336bad3468620566cdc",
       "bytes": 22932,
       "nodes": [
@@ -151,6 +151,6 @@
       "segments_skipped_zero_length": 0
     }
   },
-  "tool_input_sha256": "25a02af568193220c138f9727135fb598ac9b1367a2a94fb69ed1c22f74871d5",
+  "tool_input_sha256": "a9ea30889a56395f376f88bbdd85de607a80b1f5280b4e2fea65d961890285c6",
   "tool_version": "0.1.0"
 }
