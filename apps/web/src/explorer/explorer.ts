@@ -22,7 +22,7 @@ import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { FOLLOW, followBoom, followDistance, followPose } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
-import { OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
+import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
 import { createAvatar, type AvatarRig } from "./avatar.ts";
@@ -134,7 +134,7 @@ interface PoiLabel {
 export class Explorer {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
-  readonly camera = new THREE.PerspectiveCamera(60, 1, 0.05, 2000);
+  readonly camera = new THREE.PerspectiveCamera(60, 1, 0.05, CAMERA_FAR_M);
   private readonly labels = new CSS2DRenderer();
   private readonly orbit: OrbitControls;
   private composer: PostFx | null = null;
@@ -238,6 +238,11 @@ export class Explorer {
   private routablePts: THREE.Vector3[] = [];
   /** What the overview is framed on, so a resize can refit; cleared by the user's own orbit/zoom/pan. */
   private framed: THREE.Box3 | null = null;
+  /**
+   * The points the fit sizes itself on: the routable network (the set `overviewFrame().bbox` measures), so
+   * the reported extent is what the fit targeted. Null when an explicit box is framed (its 8 corners).
+   */
+  private framedPts: readonly THREE.Vector3[] | null = null;
   /** The HUD/search panel the overview must not frame under; its rect is read, never drawn. */
   private panelEl: HTMLElement | null = null;
   /** The persistent credit line along the canvas bottom; the overview keeps clear of it too. */
@@ -268,7 +273,7 @@ export class Explorer {
     this.orbit.maxPolarAngle = Math.PI * 0.49;
     this.orbit.screenSpacePanning = false;
     // Any user orbit, pan or zoom ends automatic refitting on resize.
-    this.orbit.addEventListener("start", () => { this.framed = null; });
+    this.orbit.addEventListener("start", () => { this.framed = null; this.framedPts = null; });
 
     this.input = new Input(this.renderer.domElement, host);
     this.scene.add(this.world, this.overlays, this.avatar, this.street.group);
@@ -314,11 +319,11 @@ export class Explorer {
    * Where the routable network sits on screen now (CSS px, page coordinates like label rects) and how
    * big it is, measured against the FREE area — the part of the canvas neither the search panel nor the
    * credit line covers: `extentShare` = larger bbox side / the free area's shorter side (about 0.65 right
-   * after the fit; the bbox of the network's own points, so a little below the fit target, which is
-   * measured on the slice box). `fitShare` is that box's share against the same free area (the fit target,
-   * about 0.65). `visibleRect` is that free area itself (page CSS px, so it excludes the panel and the
-   * credit strip), so a spec can check `bbox` lies outside both. Null outside overview or without a
-   * routable network.
+   * after the fit: the fit sizes the same network points). `fitShare` is the share of the AABB of those
+   * points, which is what the fit is fed; its 8 corners project outside a diagonal point band, so it can
+   * read larger than `extentShare`. `visibleRect` is that free area itself (page CSS px, so it excludes
+   * the panel and the credit strip), so a spec can check `bbox` lies outside both. Null outside overview
+   * or without a routable network.
    */
   overviewFrame(): { extentShare: number; fitShare: number | null; bbox: { x0: number; y0: number; x1: number; y1: number }; visibleRect: { x: number; y: number; w: number; h: number } } | null {
     if (this.mode !== "overview" || this.routablePts.length === 0) return null;
@@ -551,6 +556,7 @@ export class Explorer {
     this.routableBox = null;
     this.routablePts = [];
     this.framed = null;
+    this.framedPts = null;
     this.walkable = [];
     this.colliders = [];
     this.cameraBlockers = [];
@@ -589,6 +595,7 @@ export class Explorer {
     if (b.isEmpty()) b.set(new THREE.Vector3(-50, -10, -50), new THREE.Vector3(50, 10, 50));
     this.setMode("overview");
     this.framed = b;
+    this.framedPts = box ? null : this.routablePts;
     this.camera.near = 0.1;
     this.fitOverview();
   }
@@ -659,12 +666,15 @@ export class Explorer {
     const { w, h } = this.viewSize;
     const pose = frameBounds(
       this.framed,
-      { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near, viewport: { w, h }, free: this.freeRect() },
+      { fovDeg: this.camera.fov, aspect: this.camera.aspect, near: this.camera.near, viewport: { w, h }, free: this.freeRect(), points: this.framedPts ?? undefined },
       undefined,
       OVERVIEW_OFFSET,
     );
     this.orbit.target.copy(pose.target);
     this.camera.position.copy(pose.position);
+    // A short free area (a phone below its sheet and credit line) puts the pose kilometres out: deepen the
+    // far plane so the slice is not culled, or the overview would show nothing.
+    this.camera.far = overviewFar(pose.distance, this.framed.getSize(new THREE.Vector3()).length() / 2);
     this.camera.updateProjectionMatrix();
     this.orbit.update();
   }
@@ -672,6 +682,8 @@ export class Explorer {
   setMode(mode: ExplorerMode): void {
     if (this.mode === mode) return;
     this.mode = mode;
+    // The overview may have deepened the far plane for its pose; the walking camera keeps its own.
+    if (mode !== "overview" && this.camera.far !== CAMERA_FAR_M) { this.camera.far = CAMERA_FAR_M; this.camera.updateProjectionMatrix(); }
     this.orbit.enabled = mode === "overview";
     this.avatar.visible = mode !== "overview" && !this.firstPerson;
     this.input.enabled = mode !== "overview";

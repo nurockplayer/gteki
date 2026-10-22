@@ -21,6 +21,18 @@ export const OVERVIEW_FILL = 0.65;
 /** A slice smaller than this (m, per ground axis) is framed as if it were this big, so a point never zooms to the floor. */
 export const MIN_SLICE_M = 24;
 
+/** The walking camera's far plane (m). The overview may need a deeper one: it sits as far as its free area makes it. */
+export const CAMERA_FAR_M = 2000;
+
+/**
+ * The far plane the overview camera needs for a pose at `distance` framing a slice of `radius` (m): the base
+ * plane, or far enough to hold the whole slice beyond the camera. A phone's free strip is short, which pushes
+ * the frame kilometres out; past the far plane every corner is culled and the overview shows nothing.
+ */
+export function overviewFar(distance: number, radius: number, base = CAMERA_FAR_M): number {
+  return Math.max(base, distance + 2 * radius);
+}
+
 /** Labels float this far above their entrance, so the slice reaches that high. */
 const LABEL_LIFT_M = 2.4;
 
@@ -144,13 +156,20 @@ export interface FrameView {
    * sits under the search panel or the credit line. Default: the whole viewport.
    */
   free?: ViewRect;
+  /**
+   * The points to size and centre on, when the box is only their AABB. The overview passes the routable
+   * network's own points — the same set `overviewFrame().bbox` measures — so the fit and the reported
+   * extent agree: an AABB's 8 corners can project well outside a diagonal point band and inflate the fit.
+   * Default: the box's 8 corners.
+   */
+  points?: readonly THREE.Vector3[];
 }
 
 export interface FramePose { target: THREE.Vector3; position: THREE.Vector3; distance: number }
 
 interface Extent { cx: number; cy: number; ndcW: number; ndcH: number; widthPx: number; heightPx: number }
 
-/** Screen extent (viewport height = 1 unit) of the box corners seen from `eye` along `forward`. */
+/** Screen extent (viewport height = 1 unit) of `corners` (any sample points) seen from `eye` along `forward`. */
 function projectCorners(corners: readonly THREE.Vector3[], eye: THREE.Vector3, forward: THREE.Vector3, right: THREE.Vector3, up: THREE.Vector3, tanV: number, aspect: number, near: number): Extent | null {
   const d = new THREE.Vector3();
   let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
@@ -166,13 +185,14 @@ function projectCorners(corners: readonly THREE.Vector3[], eye: THREE.Vector3, f
 }
 
 /**
- * Fit the camera to `box` along `offsetDir` (target to camera). The fit is per axis: the box's projected
- * width may reach `fill` of the free area's width and its projected height `fill` of its height, and the
- * axis that hits its limit first sets the distance — so a wide free area (a desktop's left column) is not
- * wasted on a wide slice. The box is centred in that area, so with `fill` at most 0.8 nothing is clipped
- * (nor hidden under a UI panel) at any aspect. Uses the real perspective projection of the 8 corners (not a
- * bounding sphere), so a flat, long slice is framed tightly. Only the target and the distance change; the
- * viewing direction never does.
+ * Fit the camera to `box` along `offsetDir` (target to camera). The fit is per axis: the framed points'
+ * projected width may reach `fill` of the free area's width and their projected height `fill` of its
+ * height, and the axis that hits its limit first sets the distance — so a wide free area (a desktop's left
+ * column) is not wasted on a wide slice. The outline is centred in that area, so with `fill` at most 0.8
+ * nothing is clipped (nor hidden under a UI panel) at any aspect. Uses the real perspective projection of
+ * `view.points` when given, else the box's 8 corners (not a bounding sphere), so a flat, long slice is
+ * framed tightly — and the outline measured is the one a caller projecting the same points sees. Only the
+ * target and the distance change; the viewing direction never does.
  *
  * Pure: no camera is touched. The caller puts `position` and `target` on the camera and orbit controls.
  */
@@ -203,26 +223,30 @@ export function frameBounds(box: Aabb, view: FrameView, fill = OVERVIEW_FILL, of
   const goalW = Math.max(1e-6, fill * (free.w / vw) * view.aspect);
   const goalH = Math.max(1e-6, fill * (free.h / vh));
   const target = centre.clone();
-  const world = corners.map((c) => c.clone().add(centre));
+  // The outline the fit sizes and centres: the caller's points (the routable network) when given, else the
+  // grown box's corners.
+  const world = view.points && view.points.length > 0 ? view.points : corners.map((c) => c.clone().add(centre));
+  const radius = half.length();
   const eyeAt = (dist: number): THREE.Vector3 => target.clone().addScaledVector(dir, dist);
   const outline = (dist: number): Extent | null => {
     return projectCorners(world, eyeAt(dist), forward, right, up, tanV, view.aspect, near);
   };
-  /** How far past its per-axis goal the box is: 1 exactly at the fit, and it falls monotonically as the camera backs away. */
+  /** How far past its per-axis goal the outline is: 1 exactly at the fit, and it falls monotonically as the camera backs away. */
   const excess = (dist: number): number => {
     const e = outline(dist);
     return e ? Math.max(e.widthPx / goalW, e.heightPx / goalH) : Infinity;
   };
   const solve = (): number => {
+    // Bracket the answer: `lo` is too close (Infinity counts as too close), `hi` is at or past the fit.
     let lo = near * 2;
-    while (excess(lo) === Infinity && lo < 1e7) lo *= 2;
     let hi = Math.max(lo * 2, 1);
-    while (excess(hi) > 1 && hi < 1e7) hi *= 2;
+    while ((excess(hi) === Infinity || excess(hi) > 1) && hi < 1e7) { lo = hi; hi *= 2; }
     for (let i = 0; i < 48; i++) {
       const mid = (lo + hi) / 2;
       if (excess(mid) > 1) lo = mid; else hi = mid;
     }
-    return hi;
+    // A degenerate point set would otherwise zoom the camera into the box: never closer than its radius.
+    return Math.max(hi, radius + near);
   };
   // The perspective outline's centre differs from the 3D centre; pan the target sideways until the outline
   // sits where the free area wants it (the camera keeps its direction, so this is a pure pan), re-solving

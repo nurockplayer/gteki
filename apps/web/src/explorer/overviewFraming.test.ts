@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import type { Edge, StationBundle } from "@gteki/schema";
-import { MIN_SLICE_M, OVERVIEW_FILL, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, pointsBounds, routableBounds, routablePoints, screenBox, type Aabb } from "./overviewFraming.ts";
+import { parseStationFiles, type Edge, type StationBundle } from "@gteki/schema";
+import { DEFAULT_PROFILE, createRouter } from "@gteki/navigation";
+import { CAMERA_FAR_M, MIN_SLICE_M, OVERVIEW_FILL, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routableBounds, routablePoints, screenBox, type Aabb } from "./overviewFraming.ts";
 
 const VIEWPORTS = [
   { name: "desktop 1440x900", w: 1440, h: 900 },
@@ -18,9 +21,9 @@ const BOXES: Record<string, Aabb> = {
   "one point": { min: new THREE.Vector3(7, 2, 9), max: new THREE.Vector3(7, 2, 9) },
 };
 
-/** The camera as the explorer sets it up (fov 60, near 0.1, far 2000, looking at the orbit target). */
-function camera(w: number, h: number, pose: { target: THREE.Vector3; position: THREE.Vector3 }): THREE.PerspectiveCamera {
-  const cam = new THREE.PerspectiveCamera(60, w / h, 0.1, 2000);
+/** The camera as the explorer sets it up (fov 60, near 0.05, the walking far plane unless a deeper one is given). */
+function camera(w: number, h: number, pose: { target: THREE.Vector3; position: THREE.Vector3 }, far = CAMERA_FAR_M): THREE.PerspectiveCamera {
+  const cam = new THREE.PerspectiveCamera(60, w / h, 0.05, far);
   cam.position.copy(pose.position);
   cam.lookAt(pose.target);
   cam.updateMatrixWorld(true);
@@ -191,6 +194,114 @@ describe("frameBounds inside the free area", () => {
     const free = freeArea({ w: 393, h: 852 }, PHONE_PANEL, 38);
     const pose = frameBounds(BOXES["Ikebukuro, compact"]!, { fovDeg: 60, aspect: 393 / 852, viewport: { w: 393, h: 852 }, free });
     expect(pose.position.clone().sub(pose.target).normalize().distanceTo(OVERVIEW_OFFSET)).toBeLessThan(1e-9);
+  });
+});
+
+describe("frameBounds on the points the hook measures", () => {
+  /**
+   * Ikebukuro's real routable network: the points `Explorer` frames and `overviewFrame().bbox` measures.
+   * Its AABB's 8 corners project well outside the network (a diagonal band), so sizing on the corners (the
+   * old behaviour) left the measured network at ~0.70 of the fit target: 0.46 instead of 0.65 on desktop.
+   */
+  function ikebukuroNetwork(): { box: Aabb; points: THREE.Vector3[] } {
+    const dir = fileURLToPath(new URL("../../../../stations/ikebukuro/gteki/", import.meta.url));
+    const read = (f: string): unknown => JSON.parse(readFileSync(dir + f, "utf8")) as unknown;
+    const parsed = parseStationFiles(read("station.json"), read("graph.json"), read("pois.json"));
+    if (!parsed.ok) throw new Error(JSON.stringify(parsed.issues));
+    const router = createRouter(parsed.bundle);
+    const points = routablePoints(parsed.bundle, (e) => router.isTraversable(e, DEFAULT_PROFILE));
+    return { box: pointsBounds(points)!, points };
+  }
+  const net = ikebukuroNetwork();
+
+  const cases = [
+    // The free rects Lane F measured in the browser (page CSS px; y only shifts the centre).
+    { name: "desktop 1024x900", w: 1440, h: 900, free: { x: 416, y: 0, w: 1024, h: 900 } },
+    { name: "phone 393x236", w: 393, h: 852, free: { x: 0, y: 423, w: 393, h: 236 } },
+  ];
+
+  /** The far plane the explorer sets for this pose (it deepens it when the fit sits past the walking plane). */
+  const farFor = (pose: { distance: number }): number => overviewFar(pose.distance, net.box.min.distanceTo(net.box.max) / 2);
+
+  for (const c of cases) {
+    it(`${c.name}: the measured outline hits fill on one axis and is centred within 2 px`, () => {
+      const pose = frameBounds(net.box, { fovDeg: 60, aspect: c.w / c.h, near: 0.05, viewport: { w: c.w, h: c.h }, free: c.free, points: net.points });
+      const e = screenBox(net.points, camera(c.w, c.h, pose, farFor(pose)), c.w, c.h)!;
+      // Every point is inside the explorer's far plane: none is culled, so the outline is the whole network.
+      expect(e).not.toBeNull();
+      expect(farFor(pose)).toBeGreaterThanOrEqual(pose.distance);
+      const wShare = (e.x1 - e.x0) / c.free.w, hShare = (e.y1 - e.y0) / c.free.h;
+      // What the hook's bbox reports: the limiting axis reaches the fit target, the other stays under it.
+      expect(Math.max(wShare, hShare)).toBeCloseTo(OVERVIEW_FILL, 2);
+      expect(Math.min(wShare, hShare)).toBeLessThanOrEqual(OVERVIEW_FILL + 1e-3);
+      // Centred in the free rect (its own outline, not the box's corners), within 2 px.
+      expect(Math.abs((e.x0 + e.x1) / 2 - (c.free.x + c.free.w / 2))).toBeLessThanOrEqual(2);
+      expect(Math.abs((e.y0 + e.y1) / 2 - (c.free.y + c.free.h / 2))).toBeLessThanOrEqual(2);
+      // ... and inside it, so nothing of the network is under the panel or the credit strip.
+      expect(e.x0).toBeGreaterThanOrEqual(c.free.x - 2);
+      expect(e.x1).toBeLessThanOrEqual(c.free.x + c.free.w + 2);
+      expect(e.y0).toBeGreaterThanOrEqual(c.free.y - 2);
+      expect(e.y1).toBeLessThanOrEqual(c.free.y + c.free.h + 2);
+    });
+  }
+
+  it("the phone pose needs the deeper far plane: at the walking plane the network's far edge is culled", () => {
+    // Real data, real phone free rect: the fit sits past 2000 m, so the walking camera would drop the far half
+    // of the slice (screenBox ignores points past the far plane) and the overview would show a cut-off network.
+    const c = cases[1]!;
+    const pose = frameBounds(net.box, { fovDeg: 60, aspect: c.w / c.h, near: 0.05, viewport: { w: c.w, h: c.h }, free: c.free, points: net.points });
+    const radius = net.box.min.distanceTo(net.box.max) / 2;
+    // The pose itself is inside the walking plane; the slice reaching `2 * radius` past it is not.
+    expect(pose.distance).toBeLessThan(CAMERA_FAR_M);
+    expect(pose.distance + radius).toBeGreaterThan(CAMERA_FAR_M);
+    expect(farFor(pose)).toBeGreaterThan(CAMERA_FAR_M);
+    const deep = screenBox(net.points, camera(c.w, c.h, pose, farFor(pose)), c.w, c.h)!;
+    const base = screenBox(net.points, camera(c.w, c.h, pose), c.w, c.h)!;
+    expect(deep.y1 - deep.y0).toBeGreaterThan(OVERVIEW_FILL * c.free.h - 2);
+    expect(base.y1 - base.y0).toBeLessThan(deep.y1 - deep.y0 - 1);
+  });
+
+  it("sizing on the AABB corners instead would read well above the fit (the old desktop 0.46)", () => {
+    const free = { x: 416, y: 0, w: 1024, h: 900 };
+    const cam = camera(1440, 900, frameBounds(net.box, { fovDeg: 60, aspect: 1440 / 900, viewport: { w: 1440, h: 900 }, free, points: net.points }));
+    const axisShare = (b: { x0: number; x1: number; y0: number; y1: number }) => Math.max((b.x1 - b.x0) / free.w, (b.y1 - b.y0) / free.h);
+    const fitted = axisShare(screenBox(net.points, cam, 1440, 900)!);
+    const corners = axisShare(screenBox(boxCorners(net.box), cam, 1440, 900)!);
+    expect(fitted).toBeCloseTo(OVERVIEW_FILL, 2);
+    expect(corners).toBeGreaterThan(fitted + 0.1);
+  });
+
+  it("still never zooms a degenerate point into the box", () => {
+    const box: Aabb = { min: new THREE.Vector3(7, 2, 9), max: new THREE.Vector3(7, 2, 9) };
+    const pose = frameBounds(box, { fovDeg: 60, aspect: 1, points: [new THREE.Vector3(7, 2, 9)] });
+    expect(pose.distance).toBeGreaterThanOrEqual(MIN_SLICE_M / 2);
+  });
+});
+
+describe("overviewFar", () => {
+  it("keeps the walking far plane unless the pose needs more", () => {
+    expect(overviewFar(400, 200)).toBe(CAMERA_FAR_M);
+    expect(overviewFar(2200, 245)).toBe(2690);
+    expect(overviewFar(2200, 245, 1000)).toBe(2690);
+  });
+
+  it("covers the short-free-area phone pose, whose slice the base far plane would cull", () => {
+    const box = BOXES["Ikebukuro, compact"]!;
+    const free = { x: 0, y: 616, w: 393, h: 236 };
+    const pose = frameBounds(box, { fovDeg: 60, aspect: 393 / 852, near: 0.05, viewport: { w: 393, h: 852 }, free });
+    expect(pose.distance).toBeGreaterThan(CAMERA_FAR_M);
+    const radius = box.min.clone().sub(box.max).length() / 2;
+    const deep = new THREE.PerspectiveCamera(60, 393 / 852, 0.05, overviewFar(pose.distance, radius));
+    deep.position.copy(pose.position);
+    deep.lookAt(pose.target);
+    deep.updateMatrixWorld(true);
+    expect(screenBox(boxCorners(box), deep, 393, 852)).not.toBeNull();
+    // The base plane alone drops every corner: that is what the deeper far plane avoids.
+    const base = new THREE.PerspectiveCamera(60, 393 / 852, 0.05, CAMERA_FAR_M);
+    base.position.copy(pose.position);
+    base.lookAt(pose.target);
+    base.updateMatrixWorld(true);
+    expect(screenBox(boxCorners(box), base, 393, 852)).toBeNull();
   });
 });
 
