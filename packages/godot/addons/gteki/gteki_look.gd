@@ -177,12 +177,18 @@ static func apply_materials(root: Node3D, table: Dictionary, station_id: String)
 				cache[name] = style_material(material, styles[str(mappings[name].style)])
 			mesh.set_surface_override_material(surface, cache[name])
 			applied += 1
-	return {"applied": applied, "surfaces": surfaces, "missing": missing, "mismatched": mismatched, "unknown_style": unknown_style}
+	return {
+		"applied": applied,
+		"surfaces": surfaces,
+		"missing": missing,
+		"mismatched": mismatched,
+		"unknown_style": unknown_style,
+	}
 
 
-## The evidence each snaphot material actually carries, keyed by name: {name: {material, color, metal, roughness,
-## meshes}} where `meshes` is the set of mesh node names that use it. First instance per name wins (glTF import shares
-## one material resource per glTF material).
+## The evidence each snapshot material actually carries, keyed by name: {name: {color, metal, roughness, meshes}},
+## where `meshes` is the set of mesh node names that use it. First instance per name wins (glTF import shares one
+## material resource per glTF material).
 static func fingerprint_materials(root: Node3D) -> Dictionary:
 	var found := {}
 	var stack: Array[Node] = [root]
@@ -200,7 +206,6 @@ static func fingerprint_materials(root: Node3D) -> Dictionary:
 			var name := str(base.resource_name)
 			if not found.has(name):
 				found[name] = {
-					"material": base,
 					"color": base.albedo_color.to_html(false),
 					"metal": base.metallic,
 					"roughness": base.roughness,
