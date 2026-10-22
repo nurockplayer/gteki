@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { Node, StationBundle, Vec3N } from "@gteki/schema";
 import { parseStationFiles } from "@gteki/schema";
-import { createRouter, describeRoute, routePolyline, type RouteProfile, type RouteResult } from "@gteki/navigation";
+import { createRouter, describeRoute, routeBetween, routePolyline, type RouteEndpoint, type RouteFailure, type RouteProfile, type RouteResult, type Router } from "@gteki/navigation";
 import { enuToRenderer } from "@gteki/geo";
 
 interface CliOptions {
@@ -11,10 +11,14 @@ interface CliOptions {
   from: string;
   goals: string[];
   profile: RouteProfile;
+  /** `from` is a POI id (routed via its connector nodes) instead of a node id. */
+  fromPoi: boolean;
+  /** The single goal is a POI id (routed via its connector nodes) instead of node ids. */
+  goalPoi: boolean;
 }
 
 function usage(): string {
-  return "Usage: route.ts <stationDir> <from> <comma-separated goals> [--step-free] [--unpaid-only] [--strict-hours] [--today YYYY-MM-DD]";
+  return "Usage: route.ts <stationDir> <from> <comma-separated goals> [--step-free] [--unpaid-only] [--strict-hours] [--today YYYY-MM-DD] [--from-poi] [--goal-poi]";
 }
 
 function validDate(value: string): boolean {
@@ -28,11 +32,15 @@ export function parseArgs(args: string[]): CliOptions | string {
   const [stationDir, from, rawGoals] = args;
   if (!stationDir || !from || !rawGoals) return usage();
   const profile: RouteProfile = { fare: "ticketed", stepFree: false };
+  let fromPoi = false;
+  let goalPoi = false;
   for (let i = 3; i < args.length; i++) {
     switch (args[i]) {
       case "--step-free": profile.stepFree = true; break;
       case "--unpaid-only": profile.fare = "unpaid_only"; break;
       case "--strict-hours": profile.hours = "require_known"; break;
+      case "--from-poi": fromPoi = true; break;
+      case "--goal-poi": goalPoi = true; break;
       case "--today": {
         const value = args[++i];
         if (!value || !validDate(value)) return "--today requires a valid YYYY-MM-DD date";
@@ -44,7 +52,8 @@ export function parseArgs(args: string[]): CliOptions | string {
   }
   const goals = rawGoals.split(",").map((goal) => goal.trim()).filter(Boolean);
   if (goals.length === 0) return "At least one goal node is required";
-  return { stationDir, from, goals, profile };
+  if (goalPoi && goals.length !== 1) return "--goal-poi takes exactly one POI id";
+  return { stationDir, from, goals, profile, fromPoi, goalPoi };
 }
 
 async function loadStation(stationDir: string): Promise<StationBundle | null> {
@@ -96,6 +105,25 @@ export function renderPath(bundle: StationBundle, route: RouteResult): PathNode[
   });
 }
 
+/** POI endpoints resolve to connector nodes through the shared `routeBetween` (the rule the web explorer uses). */
+function routeByPoi(bundle: StationBundle, router: Router, options: CliOptions): RouteResult | RouteFailure {
+  const pois = new Map(bundle.pois.map((poi) => [poi.id, poi]));
+  let from: RouteEndpoint = { kind: "node", nodeId: options.from };
+  if (options.fromPoi) {
+    const poi = pois.get(options.from);
+    if (!poi) return { ok: false, reason: "unknown_start", message: `unknown origin POI ${options.from}` };
+    from = { kind: "poi", poi };
+  }
+  if (options.goalPoi) {
+    const goal = pois.get(options.goals[0]!);
+    if (!goal) return { ok: false, reason: "unknown_goal", message: `unknown destination POI ${options.goals[0]}` };
+    return routeBetween(router, from, goal, options.profile);
+  }
+  // POI origin, node goals: resolve the origin's connectors only (a POI never routes from a bare display position).
+  if (from.kind !== "poi" || from.poi.connectorNodeIds.length === 0) return { ok: false, reason: "unknown_start", message: "origin has no verified entrance" };
+  return router.route(from.poi.connectorNodeIds, options.goals, options.profile, [from.poi.evidence]);
+}
+
 export async function runRoute(args: string[]): Promise<number> {
   const options = parseArgs(args);
   if (typeof options === "string") {
@@ -105,7 +133,8 @@ export async function runRoute(args: string[]): Promise<number> {
   const bundle = await loadStation(options.stationDir);
   if (!bundle) return 2;
 
-  const result = createRouter(bundle).route(options.from, options.goals, options.profile);
+  const router = createRouter(bundle);
+  const result = options.fromPoi || options.goalPoi ? routeByPoi(bundle, router, options) : router.route(options.from, options.goals, options.profile);
   const path = result.ok ? renderPath(bundle, result) : [];
   // Same renderer-neutral presentation the web explorer uses: edge-geometry polyline and ja/en instructions.
   const polyline = result.ok

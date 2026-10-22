@@ -1,0 +1,80 @@
+// route.ts on the committed Ikebukuro and Shinjuku bundles (what the Godot client shells out to / reads).
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
+
+const routeScript = fileURLToPath(new URL("./route.ts", import.meta.url));
+const stationDir = (id: string) => fileURLToPath(new URL(`../../../stations/${id}`, import.meta.url));
+
+interface RouteOutput {
+  contract: string;
+  stationId: string;
+  result: { ok: boolean; nodeIds?: string[]; reason?: string };
+  path: { nodeId: string; renderer: number[]; heightSymbolic: boolean }[];
+  polyline: { renderer: number[]; zKnown: boolean; stepIndex: number }[];
+  instructions: { ja: { kind: string; text: string }[]; en: { kind: string; text: string }[] };
+}
+
+function route(id: string, args: string[]) {
+  const run = spawnSync(process.execPath, ["--import", "tsx", routeScript, stationDir(id), ...args], { encoding: "utf8" });
+  return { status: run.status, stderr: run.stderr, out: JSON.parse(run.stdout) as RouteOutput };
+}
+
+describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
+  it("Ikebukuro: JR Central Gate 2 -> Exit 35 by node ids (the stations/ikebukuro routing golden)", () => {
+    const { status, stderr, out } = route("ikebukuro", ["g_jr_c2", "x35"]);
+    expect(status, stderr).toBe(0);
+    expect(out.stationId).toBe("ikebukuro");
+    expect(out.result.nodeIds).toEqual(["g_jr_c2", "c_g2", "c_c", "c_e1", "c_n", "c_e2", "e_27j", "e_hall", "e_low", "x35"]);
+    expect(out.path).toHaveLength(10);
+    expect(out.polyline.length).toBeGreaterThan(out.path.length);
+    expect(out.polyline.every((p) => p.renderer.length === 3 && typeof p.zKnown === "boolean")).toBe(true);
+    expect(out.polyline[0]!.stepIndex).toBe(-1);
+    expect(out.instructions.en[0]!.kind).toBe("start");
+    expect(out.instructions.en.at(-1)!.kind).toBe("arrive");
+    expect(out.instructions.ja).toHaveLength(out.instructions.en.length);
+    expect(out.instructions.en.some((i) => /stairs/i.test(i.text))).toBe(true);
+  });
+
+  it("Ikebukuro: the same route by POI ids resolves connectors like the web explorer", () => {
+    const byPoi = route("ikebukuro", ["jr-central-gate-2", "exit-35", "--from-poi", "--goal-poi"]);
+    expect(byPoi.status, byPoi.stderr).toBe(0);
+    expect(byPoi.out.result.nodeIds![0]).toBe("g_jr_c2");
+    expect(byPoi.out.result.nodeIds!.at(-1)).toBe("x35");
+    expect(byPoi.out.instructions.ja.length).toBeGreaterThan(2);
+  });
+
+  it("Shinjuku: Oedo platform -> street exit by POI ids; heights stay symbolic (zKnown false)", () => {
+    const { status, stderr, out } = route("shinjuku", ["poi:platform:oedo", "poi:exit:1", "--from-poi", "--goal-poi"]);
+    expect(status, stderr).toBe(0);
+    expect(out.stationId).toBe("shinjuku");
+    expect(out.path.length).toBeGreaterThan(2);
+    expect(out.path.every((p) => p.heightSymbolic)).toBe(true);
+    expect(out.polyline.length).toBeGreaterThan(0);
+    expect(out.polyline.every((p) => !p.zKnown)).toBe(true);
+    expect(out.instructions.en[0]!.kind).toBe("start");
+    expect(out.instructions.en.at(-1)!.kind).toBe("arrive");
+    expect(out.instructions.ja).toHaveLength(out.instructions.en.length);
+  });
+
+  it("Shinjuku: node-id goals still work (backwards compatible)", () => {
+    const { status, out } = route("shinjuku", ["n:d9cd1bb0f76a440d83010e5b9f63ad65", "n:a06f3d191885497bac197b666c4daef9"]);
+    expect(status).toBe(0);
+    expect(out.result.ok).toBe(true);
+    expect(out.path.length).toBeGreaterThan(1);
+  });
+
+  it.each([
+    ["ikebukuro", ["jr-central-gate-2", "tobu-central-gate-2", "--from-poi", "--goal-poi"], "unknown_goal"], // search-only POI: no verified entrance
+    ["ikebukuro", ["g_jr_c2", "no-such-node"], "unknown_goal"],
+    ["shinjuku", ["poi:platform:oedo", "poi:nope", "--from-poi", "--goal-poi"], "unknown_goal"],
+    ["shinjuku", ["poi:nope", "poi:exit:1", "--from-poi", "--goal-poi"], "unknown_start"],
+  ] as const)("%s %j fails safely: exit 1, empty path and polyline, no instructions", (id, args, reason) => {
+    const { status, out } = route(id, [...args]);
+    expect(status).toBe(1);
+    expect(out.result).toMatchObject({ ok: false, reason });
+    expect(out.path).toEqual([]);
+    expect(out.polyline).toEqual([]);
+    expect(out.instructions).toEqual({ ja: [], en: [] });
+  });
+});
