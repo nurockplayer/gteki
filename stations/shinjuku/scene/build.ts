@@ -17,7 +17,8 @@ import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceDat
 import { withSurfaceMemo } from "./surface-layout.ts";
 import { surfaceSeed } from "./surface-bake.ts";
 
-export const OEDO_MAGENTA = "#b6007a"; // public line colour of the Oedo Line
+import { OEDO_MAGENTA } from "./palette.ts";
+export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
 
