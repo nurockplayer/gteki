@@ -3,6 +3,9 @@ extends Node3D
 ## No search/route (G-3) yet. The HQ look (G-4b) is opt-in: `--look=hq` builds the sidecar-driven Environment and
 ## applies the station's material table (gteki_look.gd); the default `baseline` is today's look.
 ## Run:  godot --path packages/godot res://hq/hq.tscn -- [--station=<id>] [--scenes=<dir>] [--lightmap=on|off] [--look=baseline|hq] [--gi=off|sdfgi] [--check]
+## Capture (windowed; see hq_capture.gd): --capture=<dir> [--poses=<file>] [--perf=<seconds>]. On a headless display
+## `--capture` says so and exits 0 after loading the station; `--perf` says "perf needs a display" and exits 0 before
+## loading anything, because a frame time nobody rendered is no measurement.
 ## <dir> holds <stationId>/{scene.glb,scene.json} from packages/godot/src/export-scene.ts (default: .cache/scenes).
 ## Keys: WASD/arrows move, Shift runs, drag (left or right mouse) or right stick orbits, wheel zooms,
 ##       Tab switches station, N cycles the station's spawn points. --check loads every station (or the one named by
@@ -48,8 +51,6 @@ var _placing := false
 func _ready() -> void:
 	var wanted := ""
 	var check_only := false
-	var capture_dir := ""
-	var poses_file := ""
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--station="):
 			wanted = arg.trim_prefix("--station=")
@@ -57,10 +58,6 @@ func _ready() -> void:
 			scenes_dir = arg.trim_prefix("--scenes=")
 		elif arg == "--check":
 			check_only = true
-		elif arg.begins_with("--capture="):
-			capture_dir = arg.trim_prefix("--capture=")
-		elif arg.begins_with("--poses="):
-			poses_file = arg.trim_prefix("--poses=")
 		elif arg.begins_with("--lightmap="):
 			var value := arg.trim_prefix("--lightmap=")
 			if value != "on" and value != "off":
@@ -68,6 +65,20 @@ func _ready() -> void:
 				get_tree().quit(2)
 				return
 			lightmap = value == "on"
+	var capture_args := Capture.parse_args(OS.get_cmdline_user_args())
+	if not (capture_args.error as String).is_empty():
+		printerr(capture_args.error)
+		get_tree().quit(2)
+		return
+	var capture_dir := str(capture_args.capture)
+	var poses_file := str(capture_args.poses)
+	var perf_seconds := float(capture_args.perf_s)
+	# No display, no frame time: a headless "measurement" would be a number nobody rendered, so it is refused before a
+	# station is even loaded and nothing is written.
+	if perf_seconds > 0.0 and DisplayServer.get_name() == "headless":
+		print("perf needs a display (run windowed, not --headless)")
+		get_tree().quit(0)
+		return
 	var look_args := Look.parse_args(OS.get_cmdline_user_args())
 	if not (look_args.errors as Array).is_empty():
 		for message in look_args.errors:
@@ -127,7 +138,7 @@ func _ready() -> void:
 			get_tree().quit(0)
 			return
 		var capture := Capture.new()
-		var code := await capture.run(self, capture_dir, poses_file, look_profile if gi == "off" else "%s+%s" % [look_profile, gi])
+		var code := await capture.run(self, capture_dir, poses_file, look_profile, gi, perf_seconds)
 		get_tree().quit(code)
 		return
 

@@ -1,27 +1,49 @@
 extends RefCounted
-## G-4 capture mode: place the walker on a list of poses, let the follow camera settle, save the viewport as a PNG and
-## record RenderingServer stats. Windowed only (a headless display has nothing to render).
+## G-4/G-5b capture mode: place the walker on a list of poses, let the follow camera settle, save the viewport as a PNG
+## and record RenderingServer stats; with `--perf=<seconds>` it also samples frame time per pose.
+## Windowed only: a headless display has nothing to render, so it has no picture and no frame time that would mean
+## anything (the client refuses `--perf` on a headless display instead of making a number up).
 ## Run:  godot --path packages/godot --rendering-method forward_plus res://hq/hq.tscn -- --station=<id> --capture=<outDir>
-##         [--poses=<file>] [--look=baseline|hq]
+##         [--poses=<file>] [--look=baseline|hq] [--gi=off|sdfgi] [--perf=<seconds>]
 ## Poses file: JSON array of {name, position:[x,y,z] (Godot frame, near the ground), yaw_deg (walker yaw, 0 faces -Z,
-## positive turns left), pitch?, distance?}. Default poses are built from the station's spawn points, plus the
-## g_jr_c2 -> x35 route for Ikebukuro (.cache/routes/ikebukuro.route.json) and inverted-band walls for Shinjuku.
+## positive turns left), pitch?, distance?}. Default poses: each spawn point x 4 yaws; Ikebukuro adds the
+## g_jr_c2 -> x35 route every 15 m and the #227 stall area (.cache/routes/ikebukuro.route.json, written by run-walk.sh),
+## Shinjuku its inverted-band walls; then the G-5 evidence poses — the start, the mid-stair point and the goal of every
+## route the evidence walk covers, plus each lift's landing (the one shaft in the goldens is Shinjuku S4's) — asked from
+## the router through gteki_bridge.gd, the same call the evidence walk makes.
+## Writes <outDir>/report.json (`gteki.capture/0.1`): station, look, GI, renderer, driver, GPU, window, machine and, per
+## pose, the PNG, the camera, RenderingServer stats and (with --perf) the frame-time percentiles.
 
 const Walker = preload("res://addons/gteki/gteki_walker.gd")
+const Guide = preload("res://addons/gteki/gteki_guide.gd")
+const Bridge = preload("res://addons/gteki/gteki_bridge.gd")
+const Evidence = preload("res://addons/gteki/gteki_evidence.gd")
 
 const WIDTH := 1600
 const HEIGHT := 900
 const SETTLE_PHYSICS_FRAMES := 45
 const SETTLE_RENDER_FRAMES := 3
 const TIMING_FRAMES := 30
+## Frames rendered before the perf window: shader compilation and first-use uploads land there, not in the measurement.
+const PERF_WARMUP_FRAMES := 60
 const TIMEOUT_MS := 10 * 60 * 1000
+## What one pose costs besides its perf window — the settle, the 60 warm-up frames and the PNG — allowed for at a slow
+## 30 rendered frames a second when the timeout decides whether a pose still fits.
+const POSE_OVERHEAD_MS := 5000
 const ROUTE_STEP := 15.0
 const DT := 1.0 / 60.0
 ## Index of the #227 stall in the deduped Ikebukuro polyline.
 const STALL_POINT := 8
+## Where a mid-stair pose is looked for, in order, as a fraction of the stair span: the middle first, then either side of
+## it, all inside the stair the route states.
+const MID_STAIR_FRACTIONS: Array[float] = [0.5, 0.4, 0.6, 0.3, 0.7]
+
+## Why the default pose list is shorter than the evidence routes call for (a route the router refuses, a stair span with
+## no walkable mid point, a missing route file). Reported in report.json: a pose is missing loudly, never silently.
+var pose_problems: Array[String] = []
 
 
-func run(hq: Node3D, out_dir: String, poses_file: String, look: String) -> int:
+func run(hq: Node3D, out_dir: String, poses_file: String, look: String, gi: String, perf_seconds: float) -> int:
 	var started := Time.get_ticks_msec()
 	var dir := out_dir if out_dir.is_absolute_path() else ProjectSettings.globalize_path("res://").path_join(out_dir)
 	if DirAccess.make_dir_recursive_absolute(dir) != OK:
@@ -41,11 +63,13 @@ func run(hq: Node3D, out_dir: String, poses_file: String, look: String) -> int:
 	var timed_out := false
 	var failures := 0
 	for i in poses.size():
-		if Time.get_ticks_msec() - started > TIMEOUT_MS:
+		# Never start a pose the 10-minute bound cannot hold: the settle, the warm-up and the perf window all count.
+		var pose_budget_ms := int(perf_seconds * 1000.0) + POSE_OVERHEAD_MS
+		if Time.get_ticks_msec() - started + pose_budget_ms > TIMEOUT_MS:
 			timed_out = true
 			printerr("Capture timeout after %d of %d poses" % [i, poses.size()])
 			break
-		var result := await capture_pose(hq, poses[i], i, dir, station)
+		var result := await capture_pose(hq, poses[i], i, dir, station, perf_seconds)
 		if result.has("error"):
 			failures += 1
 		results.append(result)
@@ -54,20 +78,27 @@ func run(hq: Node3D, out_dir: String, poses_file: String, look: String) -> int:
 		"contract": "gteki.capture/0.1",
 		"station": station,
 		"look": look,
+		"gi": gi,
+		"perf_seconds": perf_seconds,
+		"machine": machine(),
 		"renderer": str(ProjectSettings.get_setting("rendering/renderer/rendering_method")),
 		"rendering_method_runtime": RenderingServer.get_current_rendering_method(),
 		"driver": RenderingServer.get_current_rendering_driver_name(),
 		"adapter": RenderingServer.get_video_adapter_name(),
+		"window": [window.size.x, window.size.y],
 		"resolution": [WIDTH, HEIGHT],
 		"settle_physics_frames": SETTLE_PHYSICS_FRAMES,
+		"perf_warmup_frames": PERF_WARMUP_FRAMES,
 		"timing_frames": TIMING_FRAMES,
+		"poses_file": poses_file,
+		"pose_problems": pose_problems,
 		"timed_out": timed_out,
 		"elapsed_s": (Time.get_ticks_msec() - started) / 1000.0,
 		"poses": results,
 	}
-	var file := FileAccess.open(dir.path_join("captures.json"), FileAccess.WRITE)
+	var file := FileAccess.open(dir.path_join("report.json"), FileAccess.WRITE)
 	if file == null:
-		printerr("Cannot write captures.json in %s" % dir)
+		printerr("Cannot write report.json in %s" % dir)
 		return 1
 	file.store_string(JSON.stringify(report, "\t"))
 	file.close()
@@ -75,7 +106,7 @@ func run(hq: Node3D, out_dir: String, poses_file: String, look: String) -> int:
 	return 1 if (failures > 0 or timed_out) else 0
 
 
-func capture_pose(hq: Node3D, pose: Dictionary, index: int, dir: String, station: String) -> Dictionary:
+func capture_pose(hq: Node3D, pose: Dictionary, index: int, dir: String, station: String, perf_seconds := 0.0) -> Dictionary:
 	var walker: Walker = hq.walker
 	var camera: Camera3D = hq.camera
 	var position := Vector3(pose.position[0], pose.position[1], pose.position[2])
@@ -92,41 +123,138 @@ func capture_pose(hq: Node3D, pose: Dictionary, index: int, dir: String, station
 		camera.follow(walker, DT)
 	for i in SETTLE_RENDER_FRAMES:
 		await RenderingServer.frame_post_draw
-	var started := Time.get_ticks_usec()
-	for i in TIMING_FRAMES:
-		await RenderingServer.frame_post_draw
-	var frame_ms := (Time.get_ticks_usec() - started) / 1000.0 / TIMING_FRAMES
+	var result := {
+		"name": pose.name,
+		"pose": pose,
+		"feet": _vec(walker.global_position),
+	}
+	var frame_ms_avg := 0.0
+	if perf_seconds > 0.0:
+		result["perf"] = await sample_perf(perf_seconds)
+	else:
+		var started := Time.get_ticks_usec()
+		for i in TIMING_FRAMES:
+			await RenderingServer.frame_post_draw
+		frame_ms_avg = (Time.get_ticks_usec() - started) / 1000.0 / TIMING_FRAMES
 	var image := hq.get_viewport().get_texture().get_image()
 	if image == null:
-		return {"name": pose.name, "error": "no viewport image", "pose": pose}
+		result["error"] = "no viewport image"
+		return result
 	if image.get_width() != WIDTH or image.get_height() != HEIGHT:
 		image.resize(WIDTH, HEIGHT, Image.INTERPOLATE_LANCZOS)
 	var file_name := "%02d_%s.png" % [index, String(pose.name).validate_filename()]
 	var err := image.save_png(dir.path_join(file_name))
 	if err != OK:
-		return {"name": pose.name, "error": "save_png failed (%d)" % err, "pose": pose}
+		result["error"] = "save_png failed (%d)" % err
+		return result
+	result["file"] = file_name
 	var xf := camera.global_transform
-	return {
-		"name": pose.name,
-		"file": file_name,
-		"pose": pose,
-		"feet": _vec(walker.global_position),
-		"camera": {
-			"origin": _vec(xf.origin),
-			"basis_x": _vec(xf.basis.x), "basis_y": _vec(xf.basis.y), "basis_z": _vec(xf.basis.z),
-			"fov": camera.fov,
-			"distance": camera.last_distance,
-		},
-		"stats": {
-			"draw_calls": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
-			"primitives": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME),
-			"objects": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME),
-			"video_mem_bytes": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_VIDEO_MEM_USED),
-			"texture_mem_bytes": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TEXTURE_MEM_USED),
-			"buffer_mem_bytes": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_BUFFER_MEM_USED),
-			"frame_ms_avg_30": frame_ms,
-		},
+	result["camera"] = {
+		"origin": _vec(xf.origin),
+		"basis_x": _vec(xf.basis.x), "basis_y": _vec(xf.basis.y), "basis_z": _vec(xf.basis.z),
+		"fov": camera.fov,
+		"distance": camera.last_distance,
 	}
+	var stats := {
+		"draw_calls": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
+		"primitives": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME),
+		"objects": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME),
+		"video_mem_bytes": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_VIDEO_MEM_USED),
+		"texture_mem_bytes": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TEXTURE_MEM_USED),
+		"buffer_mem_bytes": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_BUFFER_MEM_USED),
+	}
+	# The short capture-only timing; a perf run measured the same frames properly and reports it under `perf`.
+	if perf_seconds <= 0.0:
+		stats["frame_ms_avg_%d" % TIMING_FRAMES] = frame_ms_avg
+	result["stats"] = stats
+	return result
+
+
+## Measure one settled pose: PERF_WARMUP_FRAMES rendered frames first, then rendered frames until `seconds` of wall
+## clock have passed. Frame time is recorded two ways — `Performance.TIME_PROCESS`, the engine's own figure for the
+## frame's process step, and the real interval between rendered frames, which also carries vsync, the presenter and the
+## compositor — and the RenderingServer counters are read at the end of the same window.
+func sample_perf(seconds: float) -> Dictionary:
+	for i in PERF_WARMUP_FRAMES:
+		await RenderingServer.frame_post_draw
+	var process_ms: Array[float] = []
+	var frame_ms: Array[float] = []
+	var start := Time.get_ticks_usec()
+	var last := start
+	while true:
+		await RenderingServer.frame_post_draw
+		var now := Time.get_ticks_usec()
+		frame_ms.append((now - last) / 1000.0)
+		last = now
+		process_ms.append(Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0)
+		if now - start >= int(seconds * 1000000.0):
+			break
+	return {
+		"warmup_frames": PERF_WARMUP_FRAMES,
+		"seconds": seconds,
+		"frames": frame_ms.size(),
+		"frame_ms": percentiles(frame_ms),
+		"process_ms": percentiles(process_ms),
+		"draw_calls": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME),
+		"primitives": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME),
+		"objects": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME),
+		"video_mem_bytes": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_VIDEO_MEM_USED),
+		"texture_mem_bytes": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TEXTURE_MEM_USED),
+		"buffer_mem_bytes": RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_BUFFER_MEM_USED),
+	}
+
+
+## p50/p95/max of a measured series, nearest-rank (the smallest value with at least that share of the samples at or
+## below it); {} for no samples, so nothing is reported as a 0 ms frame.
+static func percentiles(values: Array[float]) -> Dictionary:
+	if values.is_empty():
+		return {}
+	var sorted := values.duplicate()
+	sorted.sort()
+	return {
+		"p50": snappedf(sorted[nearest_rank(0.5, sorted.size())], 0.001),
+		"p95": snappedf(sorted[nearest_rank(0.95, sorted.size())], 0.001),
+		"max": snappedf(sorted[sorted.size() - 1], 0.001),
+	}
+
+
+static func nearest_rank(q: float, count: int) -> int:
+	return clampi(int(ceil(q * count)) - 1, 0, count - 1)
+
+
+## What the run was measured on: the machine and its adapter, recorded from the runtime rather than typed in.
+static func machine() -> Dictionary:
+	return {
+		"os": OS.get_name(),
+		"os_version": OS.get_version(),
+		"processor": OS.get_processor_name(),
+		"gpu": RenderingServer.get_video_adapter_name(),
+		"gpu_vendor": RenderingServer.get_video_adapter_vendor(),
+	}
+
+
+## The capture/perf arguments, parsed in one place so the client only routes them and the tests state the rules.
+## {"capture": dir, "poses": file, "perf_s": float, "error": ""}; a non-empty error is an argument error (exit 2).
+static func parse_args(args: PackedStringArray) -> Dictionary:
+	var out := {"capture": "", "poses": "", "perf_s": 0.0, "error": ""}
+	for arg in args:
+		if arg.begins_with("--capture="):
+			out.capture = arg.trim_prefix("--capture=")
+			if String(out.capture).is_empty():
+				out.error = "--capture needs a directory"
+		elif arg.begins_with("--poses="):
+			out.poses = arg.trim_prefix("--poses=")
+			if String(out.poses).is_empty():
+				out.error = "--poses needs a file"
+		elif arg.begins_with("--perf="):
+			var value := arg.trim_prefix("--perf=")
+			if not value.is_valid_float() or float(value) <= 0.0:
+				out.error = "--perf must be a positive number of seconds, not %s" % value
+			else:
+				out.perf_s = float(value)
+	if String(out.error).is_empty() and float(out.perf_s) > 0.0 and String(out.capture).is_empty():
+		out.error = "--perf needs --capture=<dir>: the numbers are written into its report.json"
+	return out
 
 
 static func _vec(v: Vector3) -> Array:
@@ -156,7 +284,7 @@ static func yaw_deg_toward(dx: float, dz: float) -> float:
 	return rad_to_deg(atan2(-dx, -dz))
 
 
-static func build_poses(hq: Node3D, station: String) -> Array:
+func build_poses(hq: Node3D, station: String) -> Array:
 	var poses: Array = []
 	var spawns: Array = hq.current.spawn_points
 	for s in spawns.size():
@@ -172,15 +300,16 @@ static func build_poses(hq: Node3D, station: String) -> Array:
 		poses.append_array(route_poses(hq))
 	elif station == "shinjuku":
 		poses.append_array(inverted_wall_poses(hq))
+	poses.append_array(evidence_poses(hq.walker, station))
 	return poses
 
 
 ## Follow-camera poses every ROUTE_STEP metres along the g_jr_c2 -> x35 polyline, plus the #227 stall area.
-static func route_poses(hq: Node3D) -> Array:
+func route_poses(hq: Node3D) -> Array:
 	var path := ProjectSettings.globalize_path("res://.cache/routes/ikebukuro.route.json")
 	var route: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 	if not (route is Dictionary) or not route.has("polyline"):
-		printerr("No route file at %s, skipping the route poses (see README, G-4)" % path)
+		pose_problems.append("No route file at %s, skipping the route poses (see README, G-4)" % path)
 		return []
 	var points: Array[Vector3] = []
 	for p in route.polyline:
@@ -248,3 +377,140 @@ static func inverted_wall_poses(hq: Node3D) -> Array:
 						})
 						found = true
 	return poses
+
+
+# ---- G-5 evidence poses --------------------------------------------------------------------------------------------
+
+## The G-5 evidence poses: for every route the evidence walk covers (`gteki_evidence.gd`), its start, its mid-stair
+## point and its goal, plus the landing of every lift the route states (Shinjuku S4's shaft is the one in the goldens).
+## The routes come from the real router through the bridge, so a pose cannot describe a route the walk does not check;
+## a route it refuses, or a route with no walkable stair middle, is stated in `pose_problems` instead of being guessed.
+func evidence_poses(walker: Walker, station: String) -> Array:
+	if Evidence.routes(station).is_empty():
+		pose_problems.append("%s has no G-5 evidence routes" % station)
+		return []
+	var bridge := Bridge.new()
+	if bridge.repo_root.is_empty():
+		pose_problems.append("Cannot find the repository root; no evidence poses")
+		return []
+	var golden := Evidence.load_golden(bridge.repo_root, station)
+	if golden.is_empty():
+		pose_problems.append("No golden for %s; no evidence poses" % station)
+		return []
+	var poses: Array = []
+	for spec in Evidence.routes(station):
+		var label := str(spec.label)
+		var scenario: Variant = golden.get(str(spec.golden))
+		if not scenario is Dictionary:
+			pose_problems.append("%s: golden scenario %s is missing" % [label, str(spec.golden)])
+			continue
+		var routed := Evidence.route_for(bridge, station, scenario)
+		if not routed.ok:
+			pose_problems.append("%s: the router gives no route (%s)" % [label, str(routed.get("error", ""))])
+			continue
+		poses.append_array(route_evidence_poses(label, routed.doc, walker))
+	return poses
+
+
+## One route's own poses: start, mid-stair (when the route has a `stairs` step) and goal, then each lift's landing.
+func route_evidence_poses(label: String, doc: Dictionary, walker: Walker) -> Array:
+	var guide := Guide.new()
+	if not guide.load_doc(doc) or guide.points.size() < 2:
+		pose_problems.append("%s: the route does not load in the guide (%s)" % [label, str(guide.issues)])
+		return []
+	var poses: Array = []
+	var points := guide.points
+	poses.append(_pose("g5_%s_start" % label, "start", label, points[0],
+		yaw_deg_toward(points[1].x - points[0].x, points[1].z - points[0].z)))
+	var last := points.size() - 1
+	poses.append(_pose("g5_%s_goal" % label, "goal", label, points[last],
+		yaw_deg_toward(points[last].x - points[last - 1].x, points[last].z - points[last - 1].z)))
+	var stairs: Array = (doc.result as Dictionary).get("steps", [])
+	var stair := stair_span(guide, stairs)
+	if stair.is_empty():
+		pose_problems.append("%s: no stairs step, so no mid-stair pose" % label)
+	else:
+		var mid := stair_mid_pose(guide, walker, float(stair.from_s), float(stair.to_s))
+		if mid.is_empty():
+			pose_problems.append("%s: the stair span has no walkable mid point" % label)
+		else:
+			var pose := _pose("g5_%s_mid_stair" % label, "mid_stair", label, mid.position, mid.yaw_deg)
+			pose["step"] = int(stair.step)
+			pose["s"] = mid.s
+			poses.append(pose)
+	var rides: Array = guide.rides
+	for r in rides.size():
+		var ride: Dictionary = rides[r]
+		var landing := ride_landing_pose(guide, walker, ride)
+		if landing.is_empty():
+			pose_problems.append("%s: the lift exit has no landing the walker accepts" % label)
+			continue
+		var name := "g5_%s_lift_landing" % label if rides.size() == 1 else "g5_%s_lift%d_landing" % [label, r + 1]
+		var pose := _pose(name, "lift_landing", label, landing.position, landing.yaw_deg)
+		pose["step"] = int(ride.step)
+		poses.append(pose)
+	return poses
+
+
+static func _pose(name: String, kind: String, route: String, at: Vector3, yaw: float) -> Dictionary:
+	return {
+		"name": name,
+		"kind": kind,
+		"route": route,
+		"position": [snappedf(at.x, 0.0001), snappedf(at.y, 0.0001), snappedf(at.z, 0.0001)],
+		"yaw_deg": snappedf(yaw, 0.01),
+	}
+
+
+## The first `stairs` step's span on the route's own polyline: from the point before its first point to its last point
+## (a point's stepIndex names the step that ends there), with the path distance at both ends. {} when the route has no
+## stairs step, so no mid-stair point exists to capture.
+static func stair_span(guide: Guide, steps: Array) -> Dictionary:
+	for step_id in range(steps.size()):
+		var record: Variant = steps[step_id]
+		if not record is Dictionary or str(record.get("mode", "")) != "stairs":
+			continue
+		var first := -1
+		var last := -1
+		for k in guide.step_index.size():
+			if guide.step_index[k] == step_id:
+				if first < 0:
+					first = k
+				last = k
+		if first < 0:
+			continue
+		var from_point := maxi(0, first - 1)
+		return {"step": step_id, "from_point": from_point, "to_point": last,
+			"from_s": guide.cumulative[from_point], "to_s": guide.cumulative[last]}
+	return {}
+
+
+## A point inside the stair span, on ground the walker can stand on: the span's middle first, then either side of it.
+## `walker` may be null, and then the sampled middle is taken without the ground test (only the windowed client can
+## ray-test the station). {} when no fraction has ground, so the caller reports a missing pose.
+static func stair_mid_pose(guide: Guide, walker: Walker, from_s: float, to_s: float) -> Dictionary:
+	for fraction in MID_STAIR_FRACTIONS:
+		var at := lerpf(from_s, to_s, fraction)
+		var sample := guide.sample(at)
+		var position: Vector3 = sample.position
+		if walker != null and walker.ground_at(position.x, position.y + 1.5, position.z, 4.0) == null:
+			continue
+		return {"position": position, "yaw_deg": yaw_deg_toward(float(sample.tx), float(sample.tz)), "s": snappedf(at, 0.001)}
+	return {}
+
+
+## Where a ride's own rules put the feet down from the shaft's exit (`walker.ride_landing`, pure: it asks the station,
+## it does not move the walker), facing along the route's continuation so the picture shows where the lift lets out.
+static func ride_landing_pose(guide: Guide, walker: Walker, ride: Dictionary) -> Dictionary:
+	if walker == null:
+		return {}
+	var to_point := int(ride.to_point)
+	var forward := Vector3.ZERO
+	if to_point + 1 < guide.points.size():
+		forward = guide.points[to_point + 1] - guide.points[to_point]
+	elif to_point > 0:
+		forward = guide.points[to_point] - guide.points[to_point - 1]
+	var landing: Variant = walker.ride_landing(ride.to, forward)
+	if landing == null:
+		return {}
+	return {"position": landing, "yaw_deg": yaw_deg_toward(forward.x, forward.z)}
