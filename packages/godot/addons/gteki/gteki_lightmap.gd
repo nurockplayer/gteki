@@ -29,7 +29,10 @@ const DECODE_GAMMA := 2.2
 const SHADER_TEMPLATE := """shader_type spatial;
 render_mode %s, diffuse_burley, specular_schlick_ggx;
 
-uniform vec4 albedo_color = vec4(1.0);
+// source_color: the importer stores StandardMaterial3D.albedo_color in sRGB (glTF baseColorFactor is linear;
+// Godot encodes it), and the hint converts it back to linear when the parameter is set. Without it every
+// lightmapped surface and the EMISSION term it scales would be too bright.
+uniform vec4 albedo_color : source_color = vec4(1.0);
 uniform float roughness_value : hint_range(0.0, 1.0) = 0.5;
 uniform float metallic_value : hint_range(0.0, 1.0) = 0.0;
 // Raw texels (no source_color hint): the fragment decodes them with the bake's 2.2 gamma.
@@ -147,6 +150,8 @@ func _material_for(source: Material, texture: Texture2D, factor: float) -> Shade
 	else:
 		issues.append("Lightmapped surface material %s is not a BaseMaterial3D; using defaults" % str(source))
 	material.shader = _shader(cull, blended)
+	# Kept for the headless check that the shader uniform really receives the source material's own value.
+	material.set_meta("gteki_source_material", source)
 	material.set_shader_parameter("albedo_color", albedo)
 	material.set_shader_parameter("roughness_value", roughness)
 	material.set_shader_parameter("metallic_value", metallic)

@@ -145,6 +145,14 @@ func _check_lightmap(scene: Scene, id: String) -> void:
 			check(material is ShaderMaterial, "%s: lightmapped surface %s/%d has the lightmap shader" % [id, mesh.name, index])
 			if material is ShaderMaterial:
 				check(material.get_shader_parameter("light_map") is Texture2D, "%s: lightmapped surface %s/%d carries the texture" % [id, mesh.name, index])
+				# The importer stores albedo_color in sRGB; the uniform must be declared source_color (sRGB -> linear)
+				# or the albedo and the EMISSION it scales would be too bright.
+				check(str(material.shader.code).contains("albedo_color : source_color"), "%s: lightmapped surface %s/%d declares albedo_color as source_color" % [id, mesh.name, index])
+				var source: Variant = material.get_meta("gteki_source_material", null)
+				check(source is BaseMaterial3D, "%s: lightmapped surface %s/%d keeps its source material" % [id, mesh.name, index])
+				if source is BaseMaterial3D:
+					var uniform: Variant = material.get_shader_parameter("albedo_color")
+					check(uniform is Color and uniform == source.albedo_color, "%s: lightmapped surface %s/%d albedo uniform == source albedo_color" % [id, mesh.name, index])
 			check((mesh.mesh.surface_get_format(index) & Mesh.ARRAY_FORMAT_TEX_UV2) != 0, "%s: lightmapped surface %s/%d keeps UV2" % [id, mesh.name, index])
 	check(flagged == scene.lightmap_meshes, "%s: lightmap flags found by traversal %d == applied %d" % [id, flagged, scene.lightmap_meshes])
 	if id != "ikebukuro":
