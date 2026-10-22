@@ -510,6 +510,7 @@ def main():
         "coverage": src["coverage"],
         "spawnNodeIds": src.get("spawnNodeIds", []),
         "assets": src.get("assets", []),
+        "dataFiles": src.get("dataFiles", []),
     }
     graph = {
         "schema": "gteki.station/0.1",
