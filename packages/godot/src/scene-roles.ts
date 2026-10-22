@@ -86,6 +86,13 @@ function meshesUnder(roots: readonly THREE.Object3D[]): THREE.Mesh[] {
 /** One `geometry.groups` entry (three's `GeometryGroup`; `materialIndex` is optional there). */
 type GeometryRange = { start: number; count: number; materialIndex?: number };
 
+/** The stored (encoded) value of a component, without `getComponent`'s normalized-integer decoding. */
+function encodedComponent(attribute: THREE.BufferAttribute | THREE.InterleavedBufferAttribute, vertex: number, component: number): number {
+  const interleaved = attribute as THREE.InterleavedBufferAttribute;
+  if (interleaved.isInterleavedBufferAttribute) return interleaved.data.array[vertex * interleaved.data.stride + interleaved.offset + component]!;
+  return (attribute as THREE.BufferAttribute).array[vertex * attribute.itemSize + component]!;
+}
+
 /**
  * Copies the index ranges of `ranges` into a new geometry, renumbering vertices and remapping each range's
  * materialIndex through `materialIndex`. The source geometry is left untouched. Morph targets are not carried
@@ -110,17 +117,19 @@ function extractGroups(
       if (mapped === undefined) {
         mapped = remap.size;
         remap.set(vertex, mapped);
-        for (const entry of data) for (let c = 0; c < entry.attribute.itemSize; c++) entry.values.push(entry.attribute.getComponent(vertex, c));
+        for (const entry of data) for (let c = 0; c < entry.attribute.itemSize; c++) entry.values.push(encodedComponent(entry.attribute, vertex, c));
       }
       indices.push(mapped);
     }
     groups.push({ start, count: indices.length - start, materialIndex: materialIndex(range.materialIndex ?? 0) });
   }
   for (const { name, attribute, values } of data) {
-    // Keep the source's component type (Uint8 colours, Uint16 joints); interleaved buffers have no flat array, so
-    // they fall back to Float32, which glTF export accepts for every attribute the static snapshot carries.
-    const flat = (attribute as THREE.BufferAttribute).array as ArrayLike<number> | undefined;
-    const ArrayType = (flat?.constructor ?? Float32Array) as new (n: number | ArrayLike<number>) => THREE.TypedArray;
+    // Keep the source's component type (Uint8 colours, Int16 UVs), item size and normalized flag, and copy the raw
+    // encoded values. `getComponent` decodes normalized integers to floats; writing those into the same array type
+    // truncates (128 → 0.502 → 0, i.e. black) and even a decode/encode round trip maps Int16 -32768 to -32767.
+    // Interleaved buffers expose their backing array, so they are de-interleaved into the same type.
+    const flat = attribute.array as ArrayLike<number>;
+    const ArrayType = (flat.constructor ?? Float32Array) as new (n: number | ArrayLike<number>) => THREE.TypedArray;
     out.setAttribute(name, new THREE.BufferAttribute(new ArrayType(values), attribute.itemSize, attribute.normalized));
   }
   out.setIndex(indices);
