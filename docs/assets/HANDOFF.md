@@ -72,6 +72,8 @@ T_B = T_A · S_A_end · RotY(180°) · inverse(S_B_start)
 
 **Collision.** `COL_*-colonly` nodes become `StaticBody3D` in Godot automatically. In three.js, hide them, or feed them to your physics engine. Stairs and escalators collide as smooth ramps. Gate flaps and hanging signs have no collision. Kit collision is only for character movement; **it is not navigation truth** (`extras.gteki.navigation`). Routes must come from your verified station graph (G2).
 
+A station whose walkable floors and colliders come from its own layout can build a visual-only copy: `"collision": false` in its catalog entry drops every `COL_*-colonly` node on both tiers (`false` or absent; any other value fails the build). `"gteki_role": null` drops a dressing piece's role (contract §9). Together they keep kit geometry from becoming walkable or a collider in any loader.
+
 **Lights.** `LIGHTHINT_*` empties mark where fixtures are. Their extras give `kind` (`linear_led`, `panel`, `step_light`, `indicator`), `length_m` or `size_m`, `watts` and `colour_temp_k`. The kit exports no lights; spawn whatever your renderer can afford. `tools/blender/render_preview.py` shows one way to map them to area lights.
 
 ## Making it look like *your* station

@@ -67,6 +67,12 @@ class Asset:
         self.shift = Vector((0.0, 0.0, 0.0))  # applied to everything at build time
         self.pivots = {}  # VIS group -> node origin (for runtime-animated parts)
 
+    def drop_collision(self):
+        """Catalog `"collision": false`: a visual-only GLB, with no COL_* nodes on either tier."""
+        for _, part in self.collision:
+            part.bm.free()
+        self.collision = []
+
     def use_full_twin(self, twin):
         """Mobile: take collision from the same asset generated at full detail, so colliders are
         identical in both profiles. `twin` must come from the same generator and params; only its

@@ -26,7 +26,7 @@ Every GLB has exactly one root node named after the asset id, e.g. `gteki_gate_a
 | Prefix / suffix | Role | Web | Godot |
 | --- | --- | --- | --- |
 | `VIS_*` | Render mesh | render | `MeshInstance3D` |
-| `*-colonly` (e.g. `COL_floor-colonly`) | Collision only (boxes / ramps / simple hulls) | hide; feed to physics | auto `StaticBody3D` + shape (import hint) |
+| `*-colonly` (e.g. `COL_floor-colonly`) | Collision only (boxes / ramps / simple hulls) | hide; feed to physics | auto `StaticBody3D` + shape (import hint). A station catalog entry with `"collision": false` builds the asset without them |
 | `SOCKET_*` | Empty: snap point for modular joining | read transform + extras | `Node3D` marker |
 | `LIGHTHINT_*` | Empty: suggested light placement (emissive fixtures) | optional | optional |
 
