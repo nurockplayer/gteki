@@ -18,8 +18,9 @@ const PROFILES := ["baseline", "hq"]
 const GI_MODES := ["off", "sdfgi"]
 const TABLE_PATH := "res://looks/materials.json"
 ## docs/assets/style.md §7: the interior references use a near-black world, so a station with its bake applied gets no
-## ambient at all (the bake is its light). An unbaked station gets the studio world's light grey as a low ambient fill;
-## it is a colour, so it is used as the linear value §7 states, at a fill level that leaves the key lights dominant.
+## ambient at all (the bake is its light). An unbaked station gets the studio world's light grey as a low ambient fill,
+## at a fill level that leaves the key lights dominant. §7 states it as a linear value; Environment colour properties
+## take sRGB, so it is converted once with `linear_to_srgb()` before assignment.
 const AMBIENT_COLOR := Color(0.55, 0.58, 0.62)
 const AMBIENT_ENERGY := 0.25
 
@@ -75,7 +76,8 @@ static func environment_for(settings: Dictionary, baked: bool, gi: String = "off
 	# The style references have no bloom (style.md §7): highlights come from AgX and the bevels, not from glow.
 	environment.glow_enabled = false
 	# three's fog is linear in distance; Godot's depth fog is linear too when its curve is 1.0, so near/far carry over
-	# unchanged and the colour is three's sRGB hex converted to the linear value Godot expects.
+	# unchanged. Environment colours take sRGB, so the sidecar's sRGB hex goes in as is: Godot linearises it in the
+	# renderer, and decoding it here as well would apply the transform twice (fog almost black).
 	var fog: Variant = settings.get("fog", null)
 	if fog is Dictionary:
 		environment.fog_enabled = true
@@ -84,22 +86,23 @@ static func environment_for(settings: Dictionary, baked: bool, gi: String = "off
 		environment.fog_depth_end = float(fog.get("far", 1.0))
 		environment.fog_depth_curve = 1.0
 		environment.fog_density = 1.0
-		environment.fog_light_color = linear_color(int(fog.get("color", 0)))
+		environment.fog_light_color = srgb_color(int(fog.get("color", 0)))
 	if baked:
 		environment.ambient_light_source = Environment.AMBIENT_SOURCE_DISABLED
 		environment.ambient_light_energy = 0.0
 	else:
 		environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-		environment.ambient_light_color = AMBIENT_COLOR
+		environment.ambient_light_color = AMBIENT_COLOR.linear_to_srgb()
 		environment.ambient_light_energy = AMBIENT_ENERGY
 		environment.ambient_light_sky_contribution = 0.0
 	environment.sdfgi_enabled = gi == "sdfgi"
 	return environment
 
 
-## An sRGB hex colour (as three stores `fog.color`) as the linear value Godot's rendering expects.
-static func linear_color(rgb: int) -> Color:
-	return Color.html("#%06x" % (rgb & 0xffffff)).srgb_to_linear()
+## A sidecar colour (three's sRGB hex) as the sRGB `Color` an Environment property takes. Godot linearises those
+## properties itself, so this must not decode; material albedo is written as sRGB for the same reason (#251).
+static func srgb_color(rgb: int) -> Color:
+	return Color.html("#%06x" % (rgb & 0xffffff))
 
 
 static func load_table(path: String = TABLE_PATH) -> Dictionary:

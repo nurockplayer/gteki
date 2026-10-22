@@ -196,10 +196,12 @@ sidecar (`environment`), never from hard-coded values:
 - SSAO on, glow off (§7's contact AO is what makes the equipment read; the references have no bloom).
 - Fog: three's `fog { color, near, far }` is linear in distance, so it maps to Godot depth fog with
   `fog_mode = FOG_MODE_DEPTH`, `fog_depth_begin = near`, `fog_depth_end = far`, `fog_depth_curve = 1.0`, and the
-  sidecar's sRGB colour converted to linear (`fog_light_color`). Ikebukuro has fog (25..180 m), Shinjuku does not.
+  sidecar's sRGB colour as is (`fog_light_color` takes sRGB and Godot linearises it — converting here as well would
+  apply the transform twice, leaving the fog almost black). Ikebukuro has fog (25..180 m), Shinjuku does not.
 - Ambient: a station whose bake is applied gets **no ambient** (`AMBIENT_SOURCE_DISABLED`), because the bake is its
   light. An unbaked station (Shinjuku) gets `AMBIENT_SOURCE_COLOR` at §7's studio world grey
-  `(0.55, 0.58, 0.62)` linear, scaled to a 0.25 fill so the client's key + fill stay dominant. The web's Shinjuku rule
+  `(0.55, 0.58, 0.62)` linear, encoded once to sRGB (`linear_to_srgb()`, because Environment colours are sRGB), and
+  scaled to a 0.25 fill so the client's key + fill stay dominant. The web's Shinjuku rule
   (hemisphere + RoomEnvironment 0.55, §8) is a scene light; Godot gets this ambient plus the same key + fill lights.
 - SDFGI is off; `--gi=sdfgi` turns it on for the GPU review slot. SSAO and SDFGI only render on Forward+/Mobile this
   project runs `gl_compatibility`, where Godot ignores both (it prints a warning for SDFGI); they are set for the visual

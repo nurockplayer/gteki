@@ -49,6 +49,14 @@ func check_args() -> void:
 	check((bad.errors as Array).size() == 2 and bad.profile == "baseline", "unknown --look / --gi values are errors and never a silent fallback")
 
 
+## The IEC 61966-2-1 sRGB transfer function (linear → sRGB), written out here so the expectations do not come from
+## the same `Color.linear_to_srgb` the engine uses.
+static func encode_srgb(linear: float) -> float:
+	if linear <= 0.0031308:
+		return linear * 12.92
+	return 1.055 * pow(linear, 1.0 / 2.4) - 0.055
+
+
 func check_table(table: Dictionary) -> void:
 	var styles: Dictionary = table.get("styles", {})
 	check(not styles.is_empty(), "materials.json declares style materials")
@@ -111,14 +119,22 @@ func check_station(dir: String, id: String, table: Dictionary) -> void:
 		check(environment.fog_enabled, "%s: sidecar fog is applied" % id)
 		check(is_equal_approx(environment.fog_depth_begin, float(fog.near)) and is_equal_approx(environment.fog_depth_end, float(fog.far)), "%s: fog near/far map to depth begin/end (%s..%s)" % [id, str(fog.near), str(fog.far)])
 		check(environment.fog_mode == Environment.FOG_MODE_DEPTH and is_equal_approx(environment.fog_depth_curve, 1.0), "%s: fog is linear depth fog" % id)
-		check(environment.fog_light_color.is_equal_approx(Look.linear_color(int(fog.color))), "%s: fog colour is the sidecar colour, sRGB→linear" % id)
+		# Environment colours take sRGB: the fog is the sidecar hex with no conversion. Built from bytes here, not with
+		# Look.srgb_color, so the test does not check the code with a copy of the code.
+		var rgb := int(fog.color)
+		var expected_fog := Color(((rgb >> 16) & 0xff) / 255.0, ((rgb >> 8) & 0xff) / 255.0, (rgb & 0xff) / 255.0)
+		check(environment.fog_light_color.is_equal_approx(expected_fog), "%s: fog colour is the sidecar sRGB hex %s, unconverted" % [id, expected_fog.to_html(false)])
 	else:
 		check(not environment.fog_enabled, "%s: no sidecar fog, no fog" % id)
 	if scene.lightmap_applied:
 		check(environment.ambient_light_source == Environment.AMBIENT_SOURCE_DISABLED, "%s: a baked station gets no ambient" % id)
 	else:
 		check(environment.ambient_light_source == Environment.AMBIENT_SOURCE_COLOR, "%s: an unbaked station gets an ambient colour" % id)
-		check(environment.ambient_light_color.is_equal_approx(Look.AMBIENT_COLOR) and is_equal_approx(environment.ambient_light_energy, Look.AMBIENT_ENERGY), "%s: ambient is the §7 world grey at fill level" % id)
+		# §7 states the world grey as linear; Environment takes sRGB, so the expected value is that tuple encoded
+		# independently of `Color.linear_to_srgb`.
+		var world := Color(0.55, 0.58, 0.62)
+		var expected_ambient := Color(encode_srgb(world.r), encode_srgb(world.g), encode_srgb(world.b))
+		check(environment.ambient_light_color.is_equal_approx(expected_ambient) and is_equal_approx(environment.ambient_light_energy, Look.AMBIENT_ENERGY), "%s: ambient is the §7 world grey at fill level, encoded once to sRGB (%s)" % [id, expected_ambient.to_html(false)])
 	check_materials(holder, table, id)
 
 
