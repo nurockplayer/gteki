@@ -30,6 +30,7 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 from floorquery import CELL, Surfaces, _inside  # noqa: E402
 from build_station import wall_segments, write_json  # noqa: E402
+from sign_sightlines import Sightlines, placement_sign  # noqa: E402
 
 CLEAR_BELOW_SIGN = 2.25  # m above walking surface
 MIN_CLEAR = 2.0          # never lower than this; a low ceiling shrinks the panel instead
@@ -232,7 +233,7 @@ def place(geom, ceil, segs, sgrid, target_d):
     return px, py, bottom, dirx, diry, ceiling_z, max_w, round(sign_h / SIGN_H, 3)
 
 
-def choose_place(geom, ceil, segs, sgrid, cands):
+def choose_place(geom, ceil, segs, sgrid, cands, sight=None, sides=("front", "back")):
     """First acceptable of the candidate offsets along geom, preferring full-size, wide panels.
     Returns (placement, offset) or (None, None)."""
     best, best_d = None, None
@@ -244,6 +245,14 @@ def choose_place(geom, ceil, segs, sgrid, cands):
             best, best_d = r, d
         if best[6] >= 4.2 and best[7] == 1:
             break
+    if best is not None and sight is not None:
+        # Preserve the old preferred placement when clear; otherwise take the
+        # nearest clear existing candidate. If all are blocked, retain it: the
+        # final audit reports the sign and each obstructed painted face.
+        for d in sorted(cands, key=lambda d: abs(d - best_d)):
+            r = best if d == best_d else place(geom, ceil, segs, sgrid, d)
+            if r is not None and not sight.blocked(geom, placement_sign(r), sides):
+                return r, d
     return best, best_d
 
 
@@ -288,7 +297,7 @@ def place_item(p, d):
     return {"id": p["id"], "ja": name(p, "ja"), "en": name(p, "en"), "distanceM": step_dist(d)}
 
 
-def repeaters(graph, edges, ahead, offset, ceil, segs, sgrid, adj, dest):
+def repeaters(graph, edges, ahead, offset, ceil, segs, sgrid, adj, dest, sight):
     """Repeater signs along long verified edges (see the module docstring), in edge-id order."""
     src = json.load(open(os.path.join(ROOT, "data", "graph.src.json")))
     fact_of = {(e["from"], e["to"]): e.get("access") for e in src["edges"]}
@@ -318,15 +327,17 @@ def repeaters(graph, edges, ahead, offset, ceil, segs, sgrid, adj, dest):
             return ([{**exit_item(p), "distanceM": step_dist(dmap[p["id"]] - at)} for p in exits],
                     [{**gate_item(p), "distanceM": step_dist(dmap[p["id"]] - at)} for p in gates])
 
+        rep_pos = [a_end] + [a_end + gap * k / (n + 1) for k in range(1, n + 1)] + [b_end]
         for k in range(1, n + 1):
             want = a_end + gap * k / (n + 1)
             cands = [want] + [want + s * j for j in (1, 2, 3) for s in (1, -1)]
             cands = [c for c in cands if a_end + 2.0 <= c <= b_end - 2.0]
-            best, pos = choose_place(geom, ceil, segs, sgrid, cands)
+            best, pos = choose_place(geom, ceil, segs, sgrid, cands, sight)
             if best is None:
                 print(f"warning: no repeater {eid} #{k}", file=sys.stderr)
                 continue
             px, py, bottom, dirx, diry, ceiling_z, max_w, scale = best
+            rep_pos[k] = pos
             fe, fg = counted(f_exits, f_gates, f_dist, pos * k_len)
             be, bg = counted(b_exits, b_gates, b_dist, (total - pos) * k_len)
             fact = fact_of.get((e["from"], e["to"]))
@@ -350,7 +361,6 @@ def repeaters(graph, edges, ahead, offset, ceil, segs, sgrid, adj, dest):
                 "basis": basis,
             })
         # Place boards in the middle of each stretch between neighbouring signs (end sign, repeaters, end sign).
-        rep_pos = [a_end] + [a_end + gap * k / (n + 1) for k in range(1, n + 1)] + [b_end]
         ahead_places = place_dists(adj, dest, e["to"], eid)
         behind_places = place_dists(adj, dest, e["from"], eid)
 
@@ -360,10 +370,12 @@ def repeaters(graph, edges, ahead, offset, ceil, segs, sgrid, adj, dest):
 
         for j in range(n + 1):
             lo, hi = rep_pos[j], rep_pos[j + 1]
-            want = (lo + hi) / 2
+            # Keep the original target; use the actual repeaters for the same
+            # minimum spacing constraint after a repeater has moved.
+            want = a_end + gap * (j + 0.5) / (n + 1)
             cands = [want] + [want + sg * q for q in (1, 2, 3) for sg in (1, -1)]
             cands = [c for c in cands if lo + PLACE_MIN_GAP_M <= c <= hi - PLACE_MIN_GAP_M]
-            best, pos = choose_place(geom, ceil, segs, sgrid, cands)
+            best, pos = choose_place(geom, ceil, segs, sgrid, cands, sight)
             if best is None:
                 print(f"warning: no place board {eid} #{j + 1}", file=sys.stderr)
                 continue
@@ -428,6 +440,7 @@ def main():
 
     edges = {e["id"]: e for e in graph["edges"]}
     segs, sgrid = wall_segments(os.path.join(ROOT, "build", "ubld_enu.json"))
+    sight = Sightlines()
 
     def out_dir(nid, key):
         e = edges[key[0]]
@@ -491,7 +504,8 @@ def main():
             # column or a narrowing leaves too little room there, preferring positions close to 4 m.
             base = min(4.0, total * 0.45)
             cands = [base] + [base + k for k in (1, -1, 2, -1.5, 3, 4, 5) if 1.5 <= base + k <= total * 0.6]
-            best, best_d = choose_place(geom, ceil, segs, sgrid, cands)
+            sides = ("front", "back") if blocks else ("front",)
+            best, best_d = choose_place(geom, ceil, segs, sgrid, cands, sight, sides)
             dist_map = {}
             for dd, p in items:
                 dist_map[p["id"]] = min(dd, dist_map.get(p["id"], 1e18))
@@ -514,7 +528,18 @@ def main():
                 "arrow": "up",
                 "back": sorted(blocks.values(), key=lambda b: ARROW_ORDER[b["arrow"]]),
             })
-    signs += repeaters(graph, edges, ahead, offset, ceil, segs, sgrid, adj, dest)
+    signs += repeaters(graph, edges, ahead, offset, ceil, segs, sgrid, adj, dest, sight)
+    for sign in signs:
+        # End signs carry no basis; their id still records their verified edge.
+        eid = next((b[6:] for b in sign.get("basis", []) if b.startswith("graph:")), None)
+        if eid is None:
+            eid = next(eid for eid in edges if sign["id"].endswith(eid) or sign["id"].endswith(eid + "-r"))
+        sides = ("front", "back") if sign["back"] else ("front",)
+        hits = sight.blocked(edges[eid]["geometry"], sign, sides)
+        for face in sides:
+            blocked = [h for h in hits if h["face"] == face]
+            if blocked:
+                print(f"blocked: {sign['id']} {face}: {json.dumps(blocked[:3])}")
     out = os.path.join(ROOT, "scene", "signage.json")
     write_json(out, {"generatedFrom": "gteki/graph.json + gteki/pois.json (verified edges only)", "signs": signs}, indent=1)
     print(f"{len(signs)} signs -> {out}")

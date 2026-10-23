@@ -5493,7 +5493,7 @@
     "toshima-underground-guide-2022"
    ],
    "modified": true,
-   "derivation": "pipeline/build_signage.py: sign positions, facing and arrows from verified edge geometry and routing (gteki/graph.json); placement against PLATEAU ceiling and wall surfaces (build/ubld_enu.json); exit and gate names/labels from gteki/pois.json (names only, no source sign layout reproduced). sourceIds = every verified edge's geometry/access evidence and its end nodes' sourceRefs, plus the evidence of each exit and gate a sign shows (a wide set)"
+   "derivation": "pipeline/build_signage.py: sign positions, facing and arrows from verified edge geometry and routing (gteki/graph.json); placement against PLATEAU ceiling and wall surfaces (build/ubld_enu.json), with continuous 6-10 m full-face sight-line envelopes from the 1.62 m walker eye and default follow camera against the shipped lit GLB walls/ceiling/barriers/light_fixtures and scene/columns.json kit sleeves (nearest clear candidate, otherwise retained and reported blocked); exit and gate names/labels from gteki/pois.json (names only, no source sign layout reproduced). sourceIds = every verified edge's geometry/access evidence and its end nodes' sourceRefs, plus the evidence of each exit and gate a sign shows (a wide set)"
   },
   {
    "id": "crowd-lanes",
