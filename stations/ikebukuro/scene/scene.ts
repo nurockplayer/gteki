@@ -402,7 +402,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const kit = await loadKit(THREE, ctx, kitManifest as KitManifest, (accessFences as AccessFences).marks, low, graph as unknown as KitGraph);
   const columnKit = await loadColumnKit(THREE, ctx, kitManifest as KitManifest, (columnsFile as unknown as ColumnsFile).columns, low);
   // Lane E station catalog (scene/kit_placements.json, tier by quality): surveyed stair and escalator dressing,
-  // visual only like the other kits. Batch A ships the 5 escalators on the desktop tier (see kit_catalog_loader.ts).
+  // visual only like the other kits. Batches A (5 escalators) and B (21 handrails) are desktop tier (kit_catalog_loader.ts).
   const catalogKit = await loadKitCatalog(THREE, ctx, (kitPlacements as unknown as { placements: CatalogPlacement[] }).placements, low);
   // Phones keep the sign frames but not their rods: with rods all 119 frames are ~40k triangles, without ~19k.
   const signKit = await loadSignKit(THREE, ctx, kitManifest as KitManifest, low, { omitPhoneRods: true });

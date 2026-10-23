@@ -1098,7 +1098,7 @@
   },
   {
    "id": "gteki-ikb-catalog-0-1-0",
-   "title": "GTEki Ikebukuro station catalog 0.1.0 (Lane E): stair and escalator dressing, batch A (the 5 escalators)",
+   "title": "GTEki Ikebukuro station catalog 0.1.0 (Lane E): stair and escalator dressing, batch A (the 5 escalators) and batch B (the 21 stair handrails)",
    "publisher": "GTEki contributors",
    "url": "https://github.com/nurockplayer/gteki/tree/main/stations/ikebukuro/scene",
    "license": {
@@ -1115,9 +1115,30 @@
     "kit/catalog/high/gteki_ik_escalator_w1093_rise5838_a2840.glb": "a22b8d3f4c88d9b23e3e992124c14249019dccf3dbec5ce6088fdbfced6b95fc",
     "kit/catalog/high/gteki_ik_escalator_w709_rise4388_a2856.glb": "2d947196d23397a759ac84c181db327bf1918723639194350615ce5e74fa2115",
     "kit/catalog/high/gteki_ik_escalator_w986_rise4388_a2856.glb": "c4c54ccd2c65e322d69bd84cec991014ddca9cb0f7d8588fb76436b10c973452",
-    "kit/catalog/high/gteki_ik_escalator_w990_rise2210_a2193.glb": "f3dbcb2ae186ac62f16cbe380fbe1693858b5e455e676df20e5943496c689864"
+    "kit/catalog/high/gteki_ik_escalator_w990_rise2210_a2193.glb": "f3dbcb2ae186ac62f16cbe380fbe1693858b5e455e676df20e5943496c689864",
+    "kit/catalog/high/gteki_ik_stair_n12_r173_t264_w2738_rails_wall.glb": "8529a9c4012970064eb1b5197918b03ab0fb012fa56647c4989a092eedaaf6f5",
+    "kit/catalog/high/gteki_ik_stair_n13_r163_t300_w3008_rails_wall.glb": "e7794d82d7951d28597cde7d4d6bd49a7636abc18f17ef9ede4ac5cb0edd55ce",
+    "kit/catalog/high/gteki_ik_stair_n13_r168_t330_w1845_rails_post.glb": "0cd5008720c3ccb1f399e45570e5a22e05b8a8105d236b73daf70c658f8d1508",
+    "kit/catalog/high/gteki_ik_stair_n13_r169_t329_w1845_rails_post.glb": "1afc3b821f85e8f257cb2a6a624a3b34e021ce77ccdd782519f6465c9ff2f856",
+    "kit/catalog/high/gteki_ik_stair_n15_r164_t308_w8376_rails_wall.glb": "7d8b0cf83dd2abf446a3df206e9be3bba03fceae6878cde0a7a91b6f7cb1968a",
+    "kit/catalog/high/gteki_ik_stair_n16_r164_t297_w2741_rails_wall.glb": "47a35f8986ec215f5072a21088027d7f3205b56c2c6e2a68e37c0b520201ead2",
+    "kit/catalog/high/gteki_ik_stair_n16_r173_t302_w3038_rails_wall.glb": "8220ece52536dd80e391baac78d23b08557dc0100f719c34e417cda065f1fb95",
+    "kit/catalog/high/gteki_ik_stair_n17_r174_t260_w2436_rails_wall.glb": "ccde368d71d950672c5a9918a33e217c3198dea9c9d9dd3a690653415c842edf",
+    "kit/catalog/high/gteki_ik_stair_n19_r164_t298_w3008_rails_wall.glb": "a1807894d43eca23fe204e2a184e8f1754974b679c9680844bcb1c39055accde",
+    "kit/catalog/high/gteki_ik_stair_n19_r166_t323_w1966_rails_wall.glb": "df29b7823d33a8e3b0c6de3bf91440b2d25afe9acedd5fe2ea33efc06e80aa45",
+    "kit/catalog/high/gteki_ik_stair_n19_r168_t328_w4347_rails_wall.glb": "048e37d135691dd73fb9564e8a3efdecba8a26a5722ab5aedc0e4578c835d11c",
+    "kit/catalog/high/gteki_ik_stair_n19_r170_t299_w3038_rails_wall.glb": "3cc0b5b8d85d272ca8a1187f09bf8792627407e4b719d9e86f21ed84940538f7",
+    "kit/catalog/high/gteki_ik_stair_n3_r167_t202_w2436_rails_wall.glb": "d2cfb5dfea018a5d0663aff9dcd91dad14f57003d962e9ad0effb58187c4ede0",
+    "kit/catalog/high/gteki_ik_stair_n4_r175_t226_w2206_rails_post.glb": "0f0c153d56c2779e133d61670536ca5733616d5284e7de215fbf14e7eb0b6ca5",
+    "kit/catalog/high/gteki_ik_stair_n5_r174_t272_w2738_rails_wall.glb": "85d674f4e7b320c0d4f236e44e2ec460c1d122dc77951c81637f808375661c54",
+    "kit/catalog/high/gteki_ik_stair_n6_r152_t332_w2609_rails_wall.glb": "eb3becd7cfb8d5d739eda9564cab5f514acc15c9140c403215f77e9aa9f812fc",
+    "kit/catalog/high/gteki_ik_stair_n7_r164_t300_w2554_rails_wall.glb": "4f52716594dbc3e7720c076b5ac61a1b14d858ae843f33430c701e344d4a25c2",
+    "kit/catalog/high/gteki_ik_stair_n9_r165_t292_w2698_rails_wall.glb": "c1d2c27ccd77b595748f6891617a1920c1c8f02abea717e27ce62f21c439ae5d",
+    "kit/catalog/high/gteki_ik_stair_n9_r168_t299_w2206_rails_post.glb": "359aaa14995fa2e65ebfae3cecd6cdc53f9d7dd946b934bc9ee2027311f92751",
+    "kit/catalog/high/gteki_ik_stair_n9_r169_t308_w8615_rails_wall.glb": "f38e58da314744145ab29f8837452cefec7d034cd823fcedfad1ebe8d00d2626",
+    "kit/catalog/high/gteki_ik_stair_n9_r173_t329_w2887_rails_wall.glb": "60c21161c9869fa15c88b1cc892458c825db3ba5d94b104c6ad9462fee2b5b09"
    },
-   "notes": "Visual only: never walkable, never a collider, never walk-graph or route evidence. The pieces are GTEki's own art; the catalogue entries that sized them are station-verified from the PLATEAU survey (scene/dressing_anchors.json). Provenance: kit main 7258e6b; catalog main 7258e6b stations/ikebukuro/scene/kit_catalog.json. Both tiers were built 119/119 (build, validate --require-occlusion 0 FAIL, Godot 119/119); full manifest sha256 ae50ce902c505c1b..., mobile 51b5b54b4160ca62.... Batch A copies only the 5 escalator ids, desktop tier: every escalator placement lists `high` alone (low waits for a phone measurement), so there is no phone copy yet. pipeline/sync_kit_catalog.py copies each file byte for byte after checking it against its tier's manifest (sha256 and bytes)."
+   "notes": "Visual only: never walkable, never a collider, never walk-graph or route evidence. The pieces are GTEki's own art; the catalogue entries that sized them are station-verified from the PLATEAU survey (scene/dressing_anchors.json). Provenance: kit main 7258e6b; catalog main 7258e6b stations/ikebukuro/scene/kit_catalog.json. Both tiers were built 119/119 (build, validate --require-occlusion 0 FAIL, Godot 119/119); full manifest sha256 ae50ce902c505c1b..., mobile 51b5b54b4160ca62.... Batch A copies the 5 escalator ids, batch B the 21 stair handrail ids, all desktop tier: every escalator placement lists `high` alone (low waits for a phone measurement) and rails are drawn only on `main_route` flights and on `high`, so there is no phone copy yet. pipeline/sync_kit_catalog.py copies each file byte for byte after checking it against its tier's manifest (sha256 and bytes)."
   }
  ],
  "floors": [
@@ -2268,7 +2289,7 @@
     "gteki-ikb-catalog-0-1-0"
    ],
    "role": "visual",
-   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform; collision comes from per-mesh gteki_role tags (floor/stairs_ramps walkable; wall/barriers/transport collide), not from the asset role, because verified exit routes pass through door and portal panels; runtime variant assets/ikebukuro_b1_lit.glb (listed in files, not a second asset, so loaders that load every asset never stack both): the same geometry + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap (assets/ikebukuro_b1_lightmap.webp / _2k.webp, gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json). scene/scene.ts loads the lit variant and falls back to this GLB; kit/{high,low}/*.glb: Lane E kit pieces (see source gteki-kit-0-1-0) copied unmodified by pipeline/sync_kit.py and instanced by scene/kit.ts on the access-fence label stretches and, for the two column pieces, by scene/kit_columns.ts as sleeves on the PLATEAU column footprints in scene/columns.json (finish generic, not surveyed), visual only, no colliders; gteki_gate_array_2 (kit/{high,low}/): ONE generic array per node at g_jr_c1, g_jr_c2 and g_jr_s, anchored on the node with its aisles along the verified edge's arriving direction, visual only, no colliders, not in the walk graph. 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\": the aisle count, direction and side are guesses, not a surveyed layout; scene/kit_signs.ts stretches the generic sign frame around the existing sign faces; presentation only, never walkable or colliders; kit/catalog/{high,low}/<id>.glb: Lane E station-catalog GLBs (see source gteki-ikb-catalog-0-1-0) copied by pipeline/sync_kit_catalog.py and instanced by scene/kit_catalog_loader.ts on the surveyed stair and escalator anchors of scene/kit_placements.json (batch A: the 5 escalators, desktop tier), visual only, no colliders, not in the walk graph",
+   "derivation": "PLATEAU CityGML LOD4.1 -> pipeline/extract_plateau_ubld.py (ENU) -> pipeline/blender_build_glb.py (triangulated, metric UV0); renderer frame (x, z, -y), identity transform; collision comes from per-mesh gteki_role tags (floor/stairs_ramps walkable; wall/barriers/transport collide), not from the asset role, because verified exit routes pass through door and portal panels; runtime variant assets/ikebukuro_b1_lit.glb (listed in files, not a second asset, so loaders that load every asset never stack both): the same geometry + generated ceiling LED fixtures (GTEki art direction, not surveyed) -> pipeline/blender_bake_lighting.py: second UV set (TEXCOORD_1) and a Cycles diffuse lightmap (assets/ikebukuro_b1_lightmap.webp / _2k.webp, gamma-2.2 encoded, scale in ikebukuro_b1_lit.meta.json). scene/scene.ts loads the lit variant and falls back to this GLB; kit/{high,low}/*.glb: Lane E kit pieces (see source gteki-kit-0-1-0) copied unmodified by pipeline/sync_kit.py and instanced by scene/kit.ts on the access-fence label stretches and, for the two column pieces, by scene/kit_columns.ts as sleeves on the PLATEAU column footprints in scene/columns.json (finish generic, not surveyed), visual only, no colliders; gteki_gate_array_2 (kit/{high,low}/): ONE generic array per node at g_jr_c1, g_jr_c2 and g_jr_s, anchored on the node with its aisles along the verified edge's arriving direction, visual only, no colliders, not in the walk graph. 「代表性擺設，通道數與方向未驗證」 / \"representative placement; aisle count and orientation unverified\": the aisle count, direction and side are guesses, not a surveyed layout; scene/kit_signs.ts stretches the generic sign frame around the existing sign faces; presentation only, never walkable or colliders; kit/catalog/{high,low}/<id>.glb: Lane E station-catalog GLBs (see source gteki-ikb-catalog-0-1-0) copied by pipeline/sync_kit_catalog.py and instanced by scene/kit_catalog_loader.ts on the surveyed stair and escalator anchors of scene/kit_placements.json (batch A: the 5 escalators; batch B: the 21 stair handrails of the main_route flights; desktop tier), visual only, no colliders, not in the walk graph",
    "derivationSummary": [
     {
      "lang": "ja",
@@ -2299,7 +2320,28 @@
     "kit/catalog/high/gteki_ik_escalator_w1093_rise5838_a2840.glb",
     "kit/catalog/high/gteki_ik_escalator_w709_rise4388_a2856.glb",
     "kit/catalog/high/gteki_ik_escalator_w986_rise4388_a2856.glb",
-    "kit/catalog/high/gteki_ik_escalator_w990_rise2210_a2193.glb"
+    "kit/catalog/high/gteki_ik_escalator_w990_rise2210_a2193.glb",
+    "kit/catalog/high/gteki_ik_stair_n12_r173_t264_w2738_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n13_r163_t300_w3008_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n13_r168_t330_w1845_rails_post.glb",
+    "kit/catalog/high/gteki_ik_stair_n13_r169_t329_w1845_rails_post.glb",
+    "kit/catalog/high/gteki_ik_stair_n15_r164_t308_w8376_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n16_r164_t297_w2741_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n16_r173_t302_w3038_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n17_r174_t260_w2436_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n19_r164_t298_w3008_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n19_r166_t323_w1966_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n19_r168_t328_w4347_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n19_r170_t299_w3038_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n3_r167_t202_w2436_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n4_r175_t226_w2206_rails_post.glb",
+    "kit/catalog/high/gteki_ik_stair_n5_r174_t272_w2738_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n6_r152_t332_w2609_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n7_r164_t300_w2554_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n9_r165_t292_w2698_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n9_r168_t299_w2206_rails_post.glb",
+    "kit/catalog/high/gteki_ik_stair_n9_r169_t308_w8615_rails_wall.glb",
+    "kit/catalog/high/gteki_ik_stair_n9_r173_t329_w2887_rails_wall.glb"
    ]
   },
   {

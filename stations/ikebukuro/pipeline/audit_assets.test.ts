@@ -33,7 +33,7 @@ describe("audit_assets on the committed tree", () => {
   it("lists the contract files, the scene entry and exactly the declared assets, each with its real sha256 and size", () => {
     const files = result.files.map((f) => f.file).sort();
     expect(files).toEqual([...declared, "graph.json", "pois.json", "scene.ts", "station.json"].sort());
-    expect(declared.length).toBe(24); // PLATEAU GLB + lit variant + sidecars + lightmaps (6), street-context GLBs (2, #110), the kit copies, both tiers: rail, gate array, two columns and a sign frame (10), the station catalog's 5 escalators, desktop tier only, N02 context (1)
+    expect(declared.length).toBe(45); // PLATEAU GLB + lit variant + sidecars + lightmaps (6), street-context GLBs (2, #110), the kit copies, both tiers: rail, gate array, two columns and a sign frame (10), the station catalog's 26 copies, desktop tier only: 5 escalators and 21 handrails, N02 context (1)
     for (const f of result.files) {
       expect(f.sha256, f.file).toBe(sha(path.join(gteki, f.file)));
       expect(f.bytes, f.file).toBe(fs.statSync(path.join(gteki, f.file)).size);
@@ -108,7 +108,7 @@ describe("audit_assets negative controls (temporary copy of gteki/)", () => {
     scratch.push(dist);
     fs.mkdirSync(path.join(dist, "assets"));
     const big = declared.filter((f) => fs.statSync(path.join(gteki, f)).size >= INLINE_LIMIT_BYTES);
-    expect(big.length).toBe(23); // 7 PLATEAU/context files + 10 kit GLBs (rail, gate array, two columns, sign frame; both tiers) + the 5 catalog escalators + N02 context; the 1.5 KB lit sidecar is inlined by Vite
+    expect(big.length).toBe(44); // 7 PLATEAU/context files + 10 kit GLBs (rail, gate array, two columns, sign frame; both tiers) + the 26 catalog copies (5 escalators, 21 handrails) + N02 context; the 1.5 KB lit sidecar is inlined by Vite
     big.forEach((f, i) => fs.copyFileSync(path.join(gteki, f), path.join(dist, "assets", `${path.basename(f, path.extname(f))}-hash${i}${path.extname(f)}`)));
     expect(audit({ dist }).problems).toEqual([]);
 

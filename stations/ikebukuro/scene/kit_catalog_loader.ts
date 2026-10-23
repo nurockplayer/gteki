@@ -3,10 +3,10 @@
 // never enters `walkable`, `colliders` or the walk graph, and the pieces are not a survey layout.
 //
 // Files: scene/kit_catalog.json names the pieces; scene/kit_placements.json gives each surveyed anchor the catalog id
-// of each part, its ENU origin and travel direction, and the quality tiers that draw that part (`tiers`). Batch A
-// ships only the 5 escalator ids (desktop tier; every escalator placement lists `high` alone). An id whose GLB the
-// station does not ship is treated as "not in this batch" and skipped silently (one summary line); a GLB that is
-// declared but fails to load warns and drops its own placements only.
+// of each part, its ENU origin and travel direction, and the quality tiers that draw that part (`tiers`). The station
+// ships batch A (the 5 escalator ids) and batch B (the 21 `main_route` stair handrails), desktop tier only. An id
+// whose GLB the station does not ship is treated as "not in this batch" and skipped silently (one summary line); a
+// GLB that is declared but fails to load warns and drops its own placements only.
 //
 // Frame: the Lane E pieces put the start socket at the origin with travel along local -Z (the end socket is at
 // -Z), width along local X and up along +Y. The catalog's `yaw_deg` is a counter-clockwise turn about ENU +Z taking
