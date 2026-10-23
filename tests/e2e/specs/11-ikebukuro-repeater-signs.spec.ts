@@ -42,7 +42,7 @@ import { hooks, openStation, stationData, type Vec3 } from "../lib/gteki.ts";
  * re-shot clipped to that box plus a margin, at the screenshot's native device pixels (`<name>.crop.png`). Per
  * face the report gives the on-screen face height in CSS px, device px and canvas render px, and the smallest
  * type as em / cap height derived from the layout in scene/signs.ts (the face canvas is 126 px high; the smallest
- * type is 0.15 of it on repeaters ("Exit", gate English) and 0.16 on place boards (English name, distance); cap
+ * type is 0.2 of it on repeaters (the "Exit" caption) and 0.21 on place boards (English name, distance); cap
  * height is taken as 0.72 em, an approximation). It ends with a readability checklist, one line per face with
  * its crop, for the reviewer to mark.
  *
@@ -73,7 +73,8 @@ const WANT_REPEATERS = process.env.GTEKI_REPEATERS_SIGNS?.split(",").map((s) => 
 const LEGACY_NAMES = new Set(["desktop-chromium", "phone-chromium"]);
 /** Layout facts from scene/signs.ts: face canvas height (H 0.42 m x 300 px/m), smallest type as a fraction of it, cap height per em. */
 const CANVAS_H_PX = 126;
-const MIN_EM_FRAC = { repeat: 0.15, place: 0.16 } as const;
+/** Repeaters: the "Exit" caption, EXIT_EN_EM; place boards: English name and distance, SMALL_EM (scene/signage.test.ts pins both). */
+const MIN_EM_FRAC = { repeat: 0.2, place: 0.21 } as const;
 const CAP_PER_EM = 0.72;
 const LOOK_RAD_PER_PX = 0.0042;
 const WALK_MPS = 1.45;
@@ -492,7 +493,7 @@ test("ikebukuro signs: screenshots, crops and atlas-size probe @phone", async ({
     "",
     "Open each crop at 100%: it is the page at native device pixels, so what you see is what the screen shows. " +
       "Mark one box per face. Face height = on-screen height of the whole sign face; min cap = approximate cap height of its smallest type " +
-      "(0.15 of face height on repeaters, 0.16 on place boards, times 0.72). Heights are device px unless stated; `render` is the canvas backing resolution (the low tier renders at <= 1.5x and the screenshot upsamples it).",
+      "(0.2 of face height on repeaters, 0.21 on place boards, times 0.72). Heights are device px unless stated; `render` is the canvas backing resolution (the low tier renders at <= 1.5x and the screenshot upsamples it).",
     "",
     ...(["place", "repeat"] as const).flatMap((kind) => {
       const rows = shots.filter((s) => s.kind === kind);

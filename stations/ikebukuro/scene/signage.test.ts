@@ -483,6 +483,9 @@ describe("ikebukuro sign atlas budget on the low tier", () => {
   it("pins the phone scale and the small-line em", () => {
     expect(LOW_TEXEL_SCALE).toBe(0.56);
     expect(SMALL_EM).toBe(0.21);
+    // The readability probe (e2e spec 11) reports the smallest type from these: keep it in step with the layout.
+    const probe = readFileSync(here("../../../tests/e2e/specs/11-ikebukuro-repeater-signs.spec.ts"), "utf8");
+    expect(probe).toContain(`const MIN_EM_FRAC = { repeat: ${Math.min(SMALL_EM, EXIT_EN_EM)}, place: ${SMALL_EM} } as const;`);
   });
 
   it("with the repeaters and place boards the low atlas is one 4096 x 2048 page and a 4096 x 512 overflow page", () => {
