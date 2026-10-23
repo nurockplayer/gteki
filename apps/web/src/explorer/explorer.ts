@@ -29,6 +29,8 @@ import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf }
 import { createAvatar, type AvatarRig } from "./avatar.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
+import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
+import { CAST_RETUNE_M, SHADOW_HALF_EXTENT_M, SHADOW_MAP_SIZE, SHADOW_NORMAL_BIAS, SHADOW_RADIUS, applyStationShadows, setCasters, shadowYRange, type ShadowCandidate } from "./shadows.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
 import { Input } from "./input.ts";
 import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer, type Segment2 } from "./walker.ts";
@@ -39,6 +41,26 @@ import { occludedLineStyle, type OccludedLineStyle } from "./occludedLine.ts";
 import { BLOOM_HEADROOM, OVERLAY_INPUT_MIN, compensate, linearToSrgb, type Vec3 } from "./toneComp.ts";
 
 export type ExplorerMode = "overview" | "walk" | "guide";
+
+/** The walker-following sun shadow's fixed inputs (set at attach) and what it currently holds. */
+interface ShadowFit {
+  /** World Y span of the station's drawn meshes, padded. */
+  yRange: [number, number];
+  /** Walking half-extent of the frustum. */
+  walkHalf: number;
+  /** Casting candidates (fixed at attach), how many cast now, and the floor Y that mask was computed at (NaN: never). */
+  candidates: ShadowCandidate[];
+  /** Candidates taller than TALL_CANDIDATE_SPAN_M (merged meshes spanning several levels); a diagnostic. */
+  tallCandidates: number;
+  casters: number;
+  castFloorY: number;
+  receivers: number;
+  /** "follow": the frustum tracks the walker; "off": overview, sun not casting (fit untouched); null: not fitted yet. */
+  fitted: "follow" | "off" | null;
+  /** Pinned focus and floor Y (QA harness) instead of the walker's position and feet. */
+  focus: THREE.Vector3 | null;
+  floorY: number | null;
+}
 
 export interface ExplorerEvents {
   onMode?(mode: ExplorerMode): void;
@@ -202,6 +224,13 @@ export class Explorer {
   /** What the latest lighting plan wants, read when the async bake resolves so a station switch in between wins. */
   private probeWanted = false;
   private lighting: "default" | "scene" = "default";
+  private sun: THREE.DirectionalLight | null = null;
+  /**
+   * The walker-following sun shadow (high tier, default lighting, a station attached); null leaves the sun's
+   * default ±150 m frustum. `fitted` is what the frustum currently holds, so overview can switch it off without losing the follow fit.
+   */
+  private shadowFit: ShadowFit | null = null;
+  private readonly shadowOut: FollowShadowInfo = { texelM: 0, near: 0, far: 0, centre: new THREE.Vector3() };
   private bloomThreshold = resolveLighting().bloomThreshold;
   /** Host-owned WebAudio for station scenes; created lazily, resumed on the first user gesture. */
   private audio: { context: AudioContext; master: GainNode } | null = null;
@@ -283,7 +312,7 @@ export class Explorer {
   }
 
   /** Bounding boxes (renderer frame) for automated visual sanity checks. */
-  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; street: { active: boolean; opacity: number } } {
+  sceneInfo(): { world: number[]; route: number[]; routeChildren: number; walkable: number; colliders: number; cameraBlockers: number; seeThrough: number; rayTrees: { trees: number; triangles: number; bytes: number; buildMs: number }; camera: number[]; mode: ExplorerMode; lighting: "default" | "scene"; coreLightsOn: number; environment: "envMap" | "probe" | null; environmentIntensity: number | null; exposure: number; overlayToneResidual: number | null; street: { active: boolean; opacity: number }; shadows: { following: boolean; fit: "follow" | "off" | null; texelM: number; halfExtent: number; casters: number; candidates: number; tallCandidates: number; receivers: number } } {
     const box = (o: THREE.Object3D) => { const b = new THREE.Box3().setFromObject(o); return b.isEmpty() ? [] : [...b.min.toArray(), ...b.max.toArray()].map((v) => Math.round(v * 10) / 10); };
     return {
       world: box(this.world), route: box(this.routeGroup), routeChildren: this.routeGroup.children.length,
@@ -294,6 +323,7 @@ export class Explorer {
       environment: this.envProbe.visible ? "probe" : this.scene.environment ? "envMap" : null,
       environmentIntensity: this.envProbe.visible || this.scene.environment ? this.scene.environmentIntensity : null, exposure: this.renderer.toneMappingExposure, overlayToneResidual: this.overlayResidual === null ? null : Math.round(this.overlayResidual * 100) / 100,
       street: { active: this.street.active, opacity: Math.round(this.street.opacity * 1000) / 1000 },
+      shadows: { following: this.shadowFit !== null, fit: this.shadowFit?.fitted ?? null, texelM: this.shadowFit?.fitted === "follow" ? this.shadowOut.texelM : 0, halfExtent: this.shadowFit?.walkHalf ?? 0, casters: this.shadowFit?.casters ?? 0, candidates: this.shadowFit?.candidates.length ?? 0, tallCandidates: this.shadowFit?.tallCandidates ?? 0, receivers: this.shadowFit?.receivers ?? 0 },
     };
   }
 
@@ -315,12 +345,72 @@ export class Explorer {
     const hemi = new THREE.HemisphereLight(0xcfe3ff, 0x1a1e26, resolveLighting().hemiIntensity);
     this.hemi = hemi;
     const sun = new THREE.DirectionalLight(0xffffff, 1.4);
-    sun.position.set(40, 120, 60);
     sun.castShadow = this.quality === "high";
-    sun.shadow.mapSize.set(2048, 2048);
-    Object.assign(sun.shadow.camera, { left: -150, right: 150, top: 150, bottom: -150, far: 400 });
+    sun.shadow.mapSize.set(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+    sun.shadow.radius = SHADOW_RADIUS;
+    sun.shadow.normalBias = SHADOW_NORMAL_BIAS;
+    this.sun = sun;
+    this.resetSun();
     this.scene.add(hemi, sun);
     this.coreLights.push(hemi, sun);
+  }
+
+  /** The sun as the L0 graph view (and any scene-lit or low-tier station) has it: one fixed ±150 m shadow frustum. */
+  private resetSun(): void {
+    const sun = this.sun;
+    if (!sun) return;
+    sun.position.set(40, 120, 60);
+    sun.target.position.set(0, 0, 0);
+    Object.assign(sun.shadow.camera, { left: -150, right: 150, top: 150, bottom: -150, near: 0.5, far: 400 });
+    sun.shadow.camera.updateProjectionMatrix();
+    sun.target.updateMatrixWorld();
+    sun.updateMatrixWorld();
+  }
+
+  /**
+   * Sets cast/receive on the station's drawn meshes (shadows.ts) and, if any take part, starts the sun's shadow
+   * following the walker over the station's floor-to-roof height. Once per attach; `updateShadows` does the per-frame fit.
+   * `focus` and `floorY` pin the frustum and the caster floor to a point instead of the walker (the QA harness has none).
+   */
+  private attachShadows(root: THREE.Object3D, focus: THREE.Vector3 | null = null, halfExtentM = SHADOW_HALF_EXTENT_M, floorY: number | null = focus ? focus.y : null): { casters: number; receivers: number } {
+    this.shadowFit = null;
+    const r = applyStationShadows(root, this.quality, this.lighting);
+    if (r.bounds.isEmpty()) return r;
+    this.shadowFit = { yRange: shadowYRange(r.bounds), candidates: r.candidates, tallCandidates: r.tallCandidates, casters: 0, castFloorY: NaN, receivers: r.receivers, fitted: null, walkHalf: halfExtentM, focus, floorY };
+    return r;
+  }
+
+  /**
+   * QA harness only (apps/web/qa/look.ts): shadows for `root` outside any loaded station, framed on `focus`
+   * in place of the walker. Same policy and frustum as a station; returns the cast/receive counts.
+   */
+  devShadows(root: THREE.Object3D, focus: THREE.Vector3, halfExtentM = SHADOW_HALF_EXTENT_M, floorY = focus.y): { casters: number; receivers: number } {
+    return this.attachShadows(root, focus.clone(), halfExtentM, floorY);
+  }
+
+  /**
+   * Per frame: keep the sun's shadow frustum on the walker (or the pinned focus), texel-snapped and allocation-free.
+   * Overview renders no sun shadows: a 300 m half-extent at 2048 px is ~29 cm texels, and the cutaway removes
+   * geometry only from the colour pass, so cut geometry would still cast into the slice. It clears the caster mask
+   * rather than the sun's castShadow, which is in three's lights hash and would recompile every material on each
+   * switch (mesh castShadow is not); leaving overview recomputes the mask and the next frame refits.
+   */
+  private updateShadows(): void {
+    if (!this.sun) return;
+    const f = this.shadowFit;
+    if (!f) return;
+    if (this.mode === "overview") {
+      if (f.fitted !== "off") { f.casters = setCasters(f.candidates, -Infinity); f.castFloorY = NaN; f.fitted = "off"; }
+      return;
+    }
+    // Only geometry starting below the walker's head casts (shadows.ts). Recomputed on a floor change, not per frame.
+    const floorY = f.floorY ?? this.pos.y; // pos is the feet
+    if (!(Math.abs(floorY - f.castFloorY) <= CAST_RETUNE_M)) { f.castFloorY = floorY; f.casters = setCasters(f.candidates, floorY); }
+    f.fitted = "follow";
+    const at = f.focus ?? this.pos;
+    // followShadow throws on a non-finite target; skip the frame rather than throw every frame.
+    if (!Number.isFinite(at.x) || !Number.isFinite(at.y) || !Number.isFinite(at.z)) return;
+    followShadow(this.sun, at, f.walkHalf, SHADOW_MAP_SIZE, f.yRange, this.shadowOut);
   }
 
   /**
@@ -578,6 +668,8 @@ export class Explorer {
       // a mesh that is both a sign and a camera blocker stops the camera and stays solid.
       const signs = cuttableSigns(seeThroughMeshes(this.stationScene.root), [this.walkable, this.colliders, this.cameraBlockers, this.cameraTargets]);
       this.seeThrough = this.cameraCut.apply(this.stationScene.root, signs);
+      // After the cut: shadows read the materials as they will be drawn. Frustum fit runs in the next step().
+      this.attachShadows(this.stationScene.root);
     }
     this.buildOccluders(this.stationScene?.root ?? this.graph.root);
     this.phase = "composer";
@@ -624,6 +716,8 @@ export class Explorer {
     this.cameraCut.clear();
     this.occluders = [];
     this.proxies.clear();
+    this.shadowFit = null;
+    this.resetSun();
     this.scene.background = new THREE.Color(0x0b1018);
     this.scene.fog = new THREE.Fog(0x0b1018, 60, 420);
     this.applyLighting();
@@ -1148,6 +1242,7 @@ export class Explorer {
     this.avatarRig?.update(dt, this.mode === "overview" ? 0 : motion.speed);
     this.avatar.position.copy(this.pos);
     this.avatar.rotation.y = this.bodyYaw;
+    this.updateShadows();
   }
 
   private stepWalk(dt: number): void {
