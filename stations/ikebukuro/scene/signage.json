@@ -511,11 +511,11 @@
    "id": "sign-w_n-w_c__w_n-r",
    "atNode": "w_n",
    "position": {
-    "x": -109.703,
-    "y": 147.381,
+    "x": -109.198,
+    "y": 144.932,
     "z": 30.15
    },
-   "maxWidthM": 6.0,
+   "maxWidthM": 4.99,
    "scale": 1.0,
    "facing": {
     "x": 0.4258,

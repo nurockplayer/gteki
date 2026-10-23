@@ -1,8 +1,9 @@
 """CPU-only visibility against the geometry rendered by scene/scene.ts.
 
-Use the shipped lit GLB, including its baked light_fixtures, rather than a second
-copy of blender_bake_lighting.py's fixture-generation algorithm. The strips in
-scene.ts makeEnvironment are reflection sources in a separate scene, not blockers.
+Use the shipped lit GLB. Generated light_fixtures and kit sleeves can be excluded
+independently for the rebake/PLATEAU audit. The strips in scene.ts makeEnvironment
+are reflection sources in a separate scene, not blockers. Viewing volumes are
+also reused by the Blender fitting exclusion; this module requires only stdlib.
 """
 import itertools
 import json
@@ -32,7 +33,7 @@ def cross(a, b):
     return (a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0])
 
 
-def scene_polygons():
+def scene_polygons(include_fittings=True, include_sleeves=True):
     """Read uncompressed glTF triangles, in ENU, without Blender or a renderer."""
     with (ROOT / 'gteki/assets/ikebukuro_b1_lit.glb').open('rb') as f:
         magic, version, _ = struct.unpack('<III', f.read(12))
@@ -62,6 +63,8 @@ def scene_polygons():
         role = node.get('extras', {}).get('gteki_role', mesh.get('extras', {}).get('gteki_role', node.get('name')))
         if role not in {'wall', 'ceiling', 'barriers', 'light_fixtures'}:
             continue
+        if role == 'light_fixtures' and not include_fittings:
+            continue
         # The station bake exports world-space geometry. Fail rather than silently
         # checking a different position if its transform contract ever changes.
         assert not any(k in node for k in ('matrix', 'translation', 'rotation', 'scale')), node
@@ -73,6 +76,8 @@ def scene_polygons():
             for i in range(0, len(idx), 3):
                 yield role, f'{node.get("name", role)}:{i // 3}', [pos[idx[i+j]] for j in range(3)]
 
+    if not include_sleeves:
+        return  # The actual bare PLATEAU columns remain in the barriers mesh.
     # scene/kit_columns.ts columnPlacements: conservative sleeve bounds include
     # the trim footprint as well as the 0.02 m stand-off and rounded corners.
     pieces = json.loads((ROOT / 'scene/kit/kit.json').read_text())['pieces']
@@ -156,9 +161,13 @@ def clipped(poly, planes):
 
 
 class Sightlines:
-    def __init__(self, polygons=None):
+    def __init__(self, polygons=None, *, include_fittings=True, include_sleeves=True):
         self.polys, self.grid = [], {}
-        for role, name, poly in scene_polygons() if polygons is None else polygons:
+        source = scene_polygons(include_fittings, include_sleeves) if polygons is None else polygons
+        for role, name, poly in source:
+            if (role == 'light_fixtures' and not include_fittings or
+                    role == 'column_sleeve' and not include_sleeves):
+                continue
             lo = tuple(min(p[k] for p in poly) for k in range(3))
             hi = tuple(max(p[k] for p in poly) for k in range(3))
             i = len(self.polys)
@@ -171,61 +180,65 @@ class Sightlines:
         return [hit for viewer in viewers for hit in self._blocked(geom, sign, sides, distances, viewer)]
 
     def _blocked(self, geom, sign, sides, distances, viewer):
-        """Full painted-face envelope from every eye position at 6-10 polyline m.
-
-        Each straight piece of the eye path and the full face form a convex hull.
-        Their union covers continuous stand-offs, including bends, with no ray
-        sampling gaps. maxWidthM is a conservative bound on the painted width.
-        """
-        p = sign['position']
-        center = tuple(p[k] for k in ('x', 'y', 'z'))
-        facing = (sign['facing']['x'], sign['facing']['y'], 0)
-        norm = math.hypot(*facing[:2])
-        facing = tuple(v / norm for v in facing)
-        right = (-facing[1], facing[0], 0)
-        scale = sign.get('scale', 1)
-        width, height = sign['maxWidthM'], FACE_H * scale
-        at = project(geom, center)
-        breaks, acc = [0.0], 0.0
-        for a, b in zip(geom, geom[1:]):
-            acc += math.hypot(b['x']-a['x'], b['y']-a['y'])
-            breaks.append(acc)
         hits = []
-        for side in sides:
-            direction = 1 if side == 'front' else -1
-            # Determine the face's side on this geom (end signs may use reversed geometry).
-            before, after = point_at(geom, at-0.01), point_at(geom, at+0.01)
-            toward = -1 if dot(sub(after, before), facing) < 0 else 1
-            lo, hi = sorted(max(0, min(acc, at + toward*direction*d)) for d in distances)
-            stops = [lo] + [d for d in breaks if lo < d < hi] + [hi]
-            face = [tuple(center[k] + direction*FACE_OFFSET*scale*facing[k] +
-                          x*width/2*right[k] + (z*height/2 if k == 2 else 0)
-                          for k in range(3)) for x, z in ((-1,-1),(1,-1),(1,1),(-1,1))]
-            for start, end in zip(stops, stops[1:]):
-                eyes = [tuple(v + (EYE_M if k == 2 else 0) for k, v in enumerate(point_at(geom, d))) for d in (start, end)]
-                if viewer == 'follow':
-                    eyes = follow_envelope(eyes, center)
-                vertices = face + eyes
-                planes = hull_planes(vertices)
-                low = tuple(min(v[k] for v in vertices) for k in range(3))
-                high = tuple(max(v[k] for v in vertices) for k in range(3))
-                indices = set()
-                for x in range(math.floor(low[0]/CELL), math.floor(high[0]/CELL)+1):
-                    for y in range(math.floor(low[1]/CELL), math.floor(high[1]/CELL)+1):
-                        indices.update(self.grid.get((x, y), []))
-                for i in sorted(indices):
-                    role, name, poly, pmin, pmax = self.polys[i]
-                    if any(pmax[k] < low[k]-EPS or pmin[k] > high[k]+EPS for k in range(3)):
-                        continue
-                    cut = clipped(poly, planes)
-                    if len(cut) < 3:
-                        continue
-                    area = sum(math.sqrt(dot(n, n)) for n in
-                               (cross(sub(cut[j], cut[0]), sub(cut[j+1], cut[0])) for j in range(1, len(cut)-1)))
-                    if area > EPS:
-                        hits.append({'face': side, 'viewer': viewer, 'role': role, 'id': name,
-                                     'enu': tuple(round(sum(v[k] for v in cut)/len(cut), 3) for k in range(3))})
+        for side, vertices, planes in sightline_volumes(geom, sign, sides, distances, viewer):
+            low = tuple(min(v[k] for v in vertices) for k in range(3))
+            high = tuple(max(v[k] for v in vertices) for k in range(3))
+            indices = set()
+            for x in range(math.floor(low[0]/CELL), math.floor(high[0]/CELL)+1):
+                for y in range(math.floor(low[1]/CELL), math.floor(high[1]/CELL)+1):
+                    indices.update(self.grid.get((x, y), []))
+            for i in sorted(indices):
+                role, name, poly, pmin, pmax = self.polys[i]
+                if any(pmax[k] < low[k]-EPS or pmin[k] > high[k]+EPS for k in range(3)):
+                    continue
+                cut = clipped(poly, planes)
+                if len(cut) < 3:
+                    continue
+                area = sum(math.sqrt(dot(n, n)) for n in
+                           (cross(sub(cut[j], cut[0]), sub(cut[j+1], cut[0])) for j in range(1, len(cut)-1)))
+                if area > EPS:
+                    hits.append({'face': side, 'viewer': viewer, 'role': role, 'id': name,
+                                 'enu': tuple(round(sum(v[k] for v in cut)/len(cut), 3) for k in range(3))})
         return hits
+
+
+def sightline_volumes(geom, sign, sides=('front', 'back'), distances=(6.0, 10.0), viewer='eye'):
+    """Full painted-face envelope from every eye position at 6-10 polyline m.
+
+    Each straight piece of the eye path and the full face form a convex hull.
+    Their union covers continuous stand-offs, including bends, with no ray
+    sampling gaps. maxWidthM is a conservative bound on the painted width.
+    """
+    p = sign['position']
+    center = tuple(p[k] for k in ('x', 'y', 'z'))
+    facing = (sign['facing']['x'], sign['facing']['y'], 0)
+    norm = math.hypot(*facing[:2])
+    facing = tuple(v / norm for v in facing)
+    right = (-facing[1], facing[0], 0)
+    scale = sign.get('scale', 1)
+    width, height = sign['maxWidthM'], FACE_H * scale
+    at = project(geom, center)
+    breaks, acc = [0.0], 0.0
+    for a, b in zip(geom, geom[1:]):
+        acc += math.hypot(b['x']-a['x'], b['y']-a['y'])
+        breaks.append(acc)
+    for side in sides:
+        direction = 1 if side == 'front' else -1
+        # Determine the face's side on this geom (end signs may use reversed geometry).
+        before, after = point_at(geom, at-0.01), point_at(geom, at+0.01)
+        toward = -1 if dot(sub(after, before), facing) < 0 else 1
+        lo, hi = sorted(max(0, min(acc, at + toward*direction*d)) for d in distances)
+        stops = [lo] + [d for d in breaks if lo < d < hi] + [hi]
+        face = [tuple(center[k] + direction*FACE_OFFSET*scale*facing[k] +
+                      x*width/2*right[k] + (z*height/2 if k == 2 else 0)
+                      for k in range(3)) for x, z in ((-1,-1),(1,-1),(1,1),(-1,1))]
+        for start, end in zip(stops, stops[1:]):
+            eyes = [tuple(v + (EYE_M if k == 2 else 0) for k, v in enumerate(point_at(geom, d))) for d in (start, end)]
+            if viewer == 'follow':
+                eyes = follow_envelope(eyes, center)
+            vertices = face + eyes
+            yield side, vertices, hull_planes(vertices)
 
 
 def follow_envelope(eyes, target):
@@ -261,3 +274,14 @@ def placement_sign(r):
     # Check the rounded coordinates actually written to signage.json.
     return {'position': {'x': round(x, 3), 'y': round(y, 3), 'z': round(bottom + 0.48*scale/2, 3)},
             'facing': {'x': round(-dx, 4), 'y': round(-dy, 4)}, 'maxWidthM': width, 'scale': scale}
+
+
+def sign_edge(sign, edges):
+    """Resolve both end-sign ids and repeater/place-board graph provenance."""
+    eid = next((b[6:] for b in sign.get('basis', []) if b.startswith('graph:')), None)
+    if eid is None:
+        eid = next(eid for eid in edges if sign['id'].endswith(eid) or sign['id'].endswith(eid + '-r'))
+    edge = edges[eid]
+    if edge['verification'] != 'verified':
+        raise ValueError(f"{sign['id']}: unverified edge {eid}")
+    return edge

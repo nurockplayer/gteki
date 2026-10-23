@@ -246,6 +246,12 @@ def choose_place(geom, ceil, segs, sgrid, cands, sight=None, sides=("front", "ba
         if best[6] >= 4.2 and best[7] == 1:
             break
     if best is not None and sight is not None:
+        # Generated geometry may never initiate relocation. The rendered sleeve
+        # bounds still constrain candidates when real PLATEAU structure blocks
+        # the preferred position; sleeve-only conflicts require a margin ruling.
+        hits = sight.blocked(geom, placement_sign(best), sides)
+        if not any(h['role'] in {'wall', 'ceiling', 'barriers'} for h in hits):
+            return best, best_d
         # Preserve the old preferred placement when clear; otherwise take the
         # nearest clear existing candidate. If all are blocked, retain it: the
         # final audit reports the sign and each obstructed painted face.
@@ -440,7 +446,10 @@ def main():
 
     edges = {e["id"]: e for e in graph["edges"]}
     segs, sgrid = wall_segments(os.path.join(ROOT, "build", "ubld_enu.json"))
-    sight = Sightlines()
+    # Generated LED housings yield to signs in blender_bake_lighting.py. Keep
+    # the rendered column bounds for candidate clearance; audit bare PLATEAU
+    # columns separately without changing the sleeve margin or sign positions.
+    sight = Sightlines(include_fittings=False)
 
     def out_dir(nid, key):
         e = edges[key[0]]
