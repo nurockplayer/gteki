@@ -245,6 +245,7 @@ for (const key of STATIONS) {
       await act();
       const until = Date.now() + settleMs;
       while (Date.now() < until) { await page.waitForTimeout(Math.min(VZ_SAMPLE_MS, Math.max(0, until - Date.now()))); await sampleZ(); }
+      const windowEnd = Date.now();
       const rec = await stopFovRecorder(page);
       // End-of-window state: the app's own FOV/far (newer builds) and the canvas aspect, to tell a missing render from a stale aspect.
       const end = await page.evaluate(() => {
@@ -270,9 +271,10 @@ for (const key of STATIONS) {
       const jumpM = k.lensSlope.jump ?? 0.5;
       const speeds = zs.slice(1).map((b, i) => ({ t: b.t, dz: Math.abs(b.z - zs[i]!.z), dt: Math.max(0.05, (b.t - zs[i]!.t) / 1000) }))
         .filter((x) => x.dz <= jumpM).map((x) => ({ t: x.t, v: x.dz / x.dt }));
+      // Speed over the last sample interval (about 100 ms); before #322 it was the mean over the last 300 ms.
       const vzMps = speeds.length ? Math.round(speeds.at(-1)!.v * 100) / 100 : null;
       const lastMoving = speeds.filter((x) => x.v >= VZ_MOVING_MPS).at(-1)?.t ?? null;
-      const sinceMotionMs = lastMoving !== null ? Date.now() - lastMoving : null;
+      const sinceMotionMs = lastMoving !== null ? windowEnd - lastMoving : null;
       const sl = k.lensSlope;
       const recentMs = sl.hold !== null && sl.smooth !== null ? Math.round((sl.hold + 3 * sl.smooth) * 1000) : VZ_RECENT_FALLBACK_MS;
       const onSlope = (cs?.stepMode === "stairs" || cs?.stepMode === "escalator") && sinceMotionMs !== null && sinceMotionMs <= recentMs;
