@@ -76,6 +76,8 @@ A station whose walkable floors and colliders come from its own layout can build
 
 **Lights.** `LIGHTHINT_*` empties mark where fixtures are. Their extras give `kind` (`linear_led`, `panel`, `step_light`, `indicator`), `length_m` or `size_m`, `watts` and `colour_temp_k`. The kit exports no lights; spawn whatever your renderer can afford. `tools/blender/render_preview.py` shows one way to map them to area lights.
 
+**Showcase layouts as GLB.** `tools/blender/showcase_export.py` exports a layout from `tools/blender/showcase/` as one GLB with its reference cameras (they import as `Camera3D`, named by layout key; `TEXCOORD_1` imports as UV2 for `LightmapGI`), so you can render the same views.
+
 ## Making it look like *your* station
 
 1. **Sign wording.** Each readable face is one quad with a full 0–1 UV and a `gteki_sign_face_*` material. The kit art is only colour fields and arrows. Swap the material, or its texture, by name at runtime for real text and pictograms. Wording, pictograms and typefaces must come from sources your lane has cleared (G0); the kit deliberately contains none.

@@ -1,0 +1,19 @@
+{
+  "started_at": "2026-10-23T01:29:27.142Z",
+  "completed_at": "2026-10-23T01:29:31.755Z",
+  "tool_input_sha256": "d355cfb305eea2cf5ad0ae6f07c1b2990de94d8b22c036573f1ed2f61ca7ea19",
+  "commands": [
+    {
+      "command": "pnpm --dir tools/gis gis acquire --all --offline",
+      "exit_code": 1,
+      "elapsed_ms": 4579,
+      "log_store_path": "out/run-logs/2026-10-23T01-29-27-142Z/01-acquire---all.log",
+      "tool_input_sha256": "d355cfb305eea2cf5ad0ae6f07c1b2990de94d8b22c036573f1ed2f61ca7ea19"
+    }
+  ],
+  "invalidated": {
+    "at": "2026-10-23T01:30:20.173Z",
+    "by_command": "gis acquire plateau-13104-tran-53394535 plateau-13104-tran-53394536",
+    "reason": "Report-writing command run outside real-run; rerun real-run before summarizing"
+  }
+}
