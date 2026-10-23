@@ -4,7 +4,7 @@ This is a round-trip check (what a consumer sees), not a render of the
 authoring scene. Interior lighting is placed from the GLB's LIGHTHINT_* empties.
 
   blender -b --factory-startup -P tools/blender/render_preview.py -- \
-      --layout layout.json --out shot.png [--res 1600x900] [--samples 64]
+      --layout layout.json --out shot.png [--res 1600x900] [--samples 64] [--show-ao]
 
 layout.json:
   {"items": [{"glb": "assets/library/glb/x.glb", "pos": [x, y, z], "yaw": 0,
@@ -112,6 +112,30 @@ def import_items(layout):
     return hints
 
 
+def show_ao():
+    """Blender ignores glTF occlusion, so multiply each material's baked occlusion map (the image
+    named *_ao, read on its own UV layer) into its base colour. Engines apply it to ambient light
+    only, so this exaggerates the effect; it is for checking the bake."""
+    for mat in bpy.data.materials:
+        if not mat.use_nodes:
+            continue
+        nt = mat.node_tree
+        tex = next((n for n in nt.nodes if n.type == "TEX_IMAGE" and n.image and n.image.name.endswith("_ao")), None)
+        bsdf = next((n for n in nt.nodes if n.type == "BSDF_PRINCIPLED"), None)
+        if tex is None or bsdf is None:
+            continue
+        base = bsdf.inputs["Base Color"]
+        mix = nt.nodes.new("ShaderNodeMix")
+        mix.data_type, mix.blend_type = "RGBA", "MULTIPLY"
+        mix.inputs[0].default_value = 1.0
+        if base.is_linked:
+            nt.links.new(base.links[0].from_socket, mix.inputs[6])
+        else:
+            mix.inputs[6].default_value = base.default_value
+        nt.links.new(tex.outputs["Color"], mix.inputs[7])
+        nt.links.new(mix.outputs[2], base)
+
+
 def _close_flaps(roots, objs):
     """Pose gate flaps closed using the asset's own params (contract: yaw about the hinge)."""
     params = {}
@@ -199,6 +223,7 @@ def main(argv):
     ap.add_argument("--samples", type=int, default=64)
     ap.add_argument("--engine", default="eevee", choices=["eevee", "cycles"])
     ap.add_argument("--camera", default="", help="key into layout['cameras']")
+    ap.add_argument("--show-ao", action="store_true", help="multiply baked occlusion maps into base colour")
     args = ap.parse_args(argv)
     with open(args.layout) as f:
         layout = json.load(f)
@@ -208,6 +233,8 @@ def main(argv):
         layout["camera"] = next(iter(layout["cameras"].values()))
     setup_scene(args, layout)
     hints = import_items(layout)
+    if args.show_ao:
+        show_ao()
     if layout.get("mode") == "studio":
         add_studio_lights(layout)
     if layout.get("hint_lights", layout.get("mode") != "studio"):
