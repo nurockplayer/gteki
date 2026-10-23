@@ -37,6 +37,20 @@ export const FOLLOW = {
   boomKeep: 0.85,
   /** Otherwise the best lowered boom must beat the unlowered distance by this much (m), or the boom stays put. */
   boomGain: 0.25,
+  /** A boom shorter than this (m) first tries a raised view over the shoulder before it is shortened. */
+  comfortDistance: 1.6,
+  /** Most the boom's elevation is raised above its nominal angle (radians, 50 degrees). */
+  maxRaise: (50 * Math.PI) / 180,
+  /** Raised booms tried, in equal steps up to `maxRaise` (10 degrees apart): the most extra casts per squeezed frame. */
+  raiseSteps: 5,
+  /** When no raised boom is comfortable, the longest one is still taken if it beats the unraised boom by this much (m). */
+  raiseGain: 0.1,
+  /** The avatar starts to fade when the camera is closer than this to the pivot (m)... */
+  fadeStart: 1.0,
+  /** Lowest avatar opacity (fraction of the screen-door dither kept), reached at `minDistance`, the closest the camera gets. */
+  fadeMin: 0.25,
+  /** Rate (1/s) at which the raise eases toward its wanted value (same damping as the camera position). */
+  raiseDamping: 10,
 } as const;
 
 /** Vertical field of view (degrees) per camera mode. */
@@ -175,4 +189,64 @@ export function followBoom(
     if (!best || distance > best.distance) best = { back: candidate, distance };
   }
   return best && best.distance >= d0 + FOLLOW.boomGain ? best : unchanged;
+}
+
+/**
+ * `back` rotated up by `raise` radians in its own vertical plane (yaw kept), written to `out` and returned.
+ * The elevation never passes 85 degrees. `out` may be `back` itself.
+ */
+export function raisedBack(back: THREE.Vector3, raise: number, out: THREE.Vector3): THREE.Vector3 {
+  const flat = Math.hypot(back.x, back.z);
+  if (flat < 1e-6) return out.copy(back);
+  const elevation = Math.min(Math.asin(Math.max(-1, Math.min(1, back.y))) + raise, (85 * Math.PI) / 180);
+  const cos = Math.cos(elevation);
+  return out.set((back.x / flat) * cos, Math.sin(elevation), (back.z / flat) * cos);
+}
+
+/**
+ * How far to raise the boom (radians above nominal, 0 = leave it) when it would be shortened below
+ * `FOLLOW.comfortDistance`. `current` is the distance the unraised `back` already gets. Raised booms are tried
+ * in equal steps up to `FOLLOW.maxRaise`, lowest first, and the first whose clear distance reaches the
+ * comfortable one wins, so the camera looks over the shoulder from the least extra height. The clear distance
+ * is not monotonic in the raise (a slab or a stair lip can block a middling angle yet clear a steeper one), so
+ * every step is tried. If none is comfortable the longest raised boom is taken when it beats `current` by
+ * `FOLLOW.raiseGain`, else 0 and the boom is shortened as before. Costs nothing when `current` is already
+ * comfortable, else at most `FOLLOW.raiseSteps` casts. `scratch` receives the candidate direction (no allocation here).
+ */
+export function constrainedPitch(
+  wanted: number,
+  back: THREE.Vector3,
+  current: number,
+  cast: (back: THREE.Vector3) => readonly { distance: number; cameraOnly: boolean }[],
+  scratch: THREE.Vector3,
+): number {
+  const comfort = Math.min(FOLLOW.comfortDistance, wanted);
+  if (current >= comfort) return 0;
+  let best = 0;
+  let bestDistance = current + FOLLOW.raiseGain;
+  for (let i = 1; i <= FOLLOW.raiseSteps; i++) {
+    const raise = (FOLLOW.maxRaise * i) / FOLLOW.raiseSteps;
+    const distance = followDistance(wanted, cast(raisedBack(back, raise, scratch)));
+    if (distance >= comfort) return raise;
+    if (distance > bestDistance) { best = raise; bestDistance = distance; }
+  }
+  return best;
+}
+
+/** Eases `current` toward `target` with the camera's damping; `snap` jumps. Pure and allocation-free. */
+export function easeRaise(current: number, target: number, dt: number, snap = false): number {
+  if (snap) return target;
+  const next = current + (target - current) * (1 - Math.exp(-Math.max(0, dt) * FOLLOW.raiseDamping));
+  return Math.abs(next - target) < 1e-3 ? target : next;
+}
+
+/**
+ * Avatar opacity for a camera `distanceM` from the pivot: 1 at `fadeStart` or farther, `fadeMin` at
+ * `minDistance` (the closest the camera gets) or closer, smooth and monotonic between. A pure function of distance; the avatar renders it as
+ * a screen-door dither, so there is no transparency and no sort.
+ */
+export function avatarFade(distanceM: number): number {
+  if (!(distanceM < FOLLOW.fadeStart)) return 1;
+  const t = Math.min(1, Math.max(0, (FOLLOW.fadeStart - distanceM) / (FOLLOW.fadeStart - FOLLOW.minDistance)));
+  return 1 - (1 - FOLLOW.fadeMin) * t * t * (3 - 2 * t);
 }

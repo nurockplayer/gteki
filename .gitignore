@@ -7,6 +7,7 @@ dist/
 coverage/
 .claude/
 .serena/
+/.qa/
 data-cache/
 stations/*/build/
 __pycache__/
