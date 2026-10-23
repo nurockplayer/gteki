@@ -78,7 +78,7 @@ export function fsUrl(realPath: string): string {
 
 /**
  * What a production build may publish for each station: the manifest's declared asset files
- * (`assets[].uri` and `assets[].files`), keyed by station folder. Throws, refusing the build, when a
+ * (`assets[].uri`, `assets[].uriMobile` and `assets[].files`), keyed by station folder. Throws, refusing the build, when a
  * station fails `parseStationFiles`, declares a file that isn't there, or holds an asset file it
  * doesn't declare (rights are only checked for declared assets).
  */
@@ -99,7 +99,7 @@ export function publishableAssets(stations: DiscoveredStation[]): Map<string, Se
     const asPublished = { ...parsed.bundle, station: { ...parsed.bundle.station, synthetic: false } };
     for (const i of validateBundle(asPublished))
       if (i.level === "error" && PUBLICATION_RULES.has(i.code)) failures.push(`${s.dir}: ${i.code}${i.ref ? ` (${i.ref})` : ""}: ${i.message}`);
-    const declared = new Set((parsed.bundle.assets ?? []).flatMap((a) => [a.uri, ...(a.files ?? [])]));
+    const declared = new Set((parsed.bundle.assets ?? []).flatMap((a) => [a.uri, ...(a.uriMobile ? [a.uriMobile] : []), ...(a.files ?? [])]));
     const found = new Set(s.assets);
     const missing = [...declared].filter((f) => !found.has(f));
     // A canonical name may still link to a target whose real path Vite would read as a query or fragment.
@@ -127,7 +127,7 @@ export interface DeclaredStationFiles {
   dir: string;
   /** Real path of stations/<dir>/. */
   folder: string;
-  /** Real paths: assets[].uri, assets[].files (relative to gteki/) and dataFiles[].path (relative to the folder). */
+  /** Real paths: assets[].uri, assets[].uriMobile, assets[].files (relative to gteki/) and dataFiles[].path (relative to the folder). */
   declared: ReadonlySet<string>;
   /**
    * Symlinks inside the station folder that resolve outside it: real target (file or directory) -> the link's
@@ -157,13 +157,13 @@ function symlinkEscapes(dir: string, fence: string, depth = 0, out = new Map<str
 export function declaredStationFiles(stations: DiscoveredStation[]): DeclaredStationFiles[] {
   return stations.map((s) => {
     const folder = path.dirname(s.gtekiDir);
-    let manifest: { assets?: { uri?: unknown; files?: unknown }[]; dataFiles?: { path?: unknown }[] } = {};
+    let manifest: { assets?: { uri?: unknown; uriMobile?: unknown; files?: unknown }[]; dataFiles?: { path?: unknown }[] } = {};
     try { manifest = JSON.parse(fs.readFileSync(path.join(s.gtekiDir, "station.json"), "utf8")); } catch { /* invalid: publishableAssets refuses it */ }
     const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
     const real = (p: string) => { try { return fs.realpathSync(p); } catch { return null; } };
     const declared = new Set<string>();
     for (const a of Array.isArray(manifest.assets) ? manifest.assets : [])
-      for (const f of [...strings([a?.uri]), ...strings(a?.files)]) { const r = real(path.join(s.gtekiDir, f)); if (r) declared.add(r); }
+      for (const f of [...strings([a?.uri]), ...strings([a?.uriMobile]), ...strings(a?.files)]) { const r = real(path.join(s.gtekiDir, f)); if (r) declared.add(r); }
     for (const d of Array.isArray(manifest.dataFiles) ? manifest.dataFiles : [])
       for (const f of strings([d?.path])) { const r = real(path.join(folder, f)); if (r) declared.add(r); }
     const fence = real(folder) ?? folder;
@@ -179,7 +179,7 @@ const VITE_QUERY = /\?[\w-]+(?:=[^&#?]*)?(?:&[\w-]+(?:=[^&#?]*)?)*$/;
 
 /**
  * Module ids of a production build that inline a non-code data file from a station folder without the
- * station's manifest declaring it (`assets[].uri`/`files` or `dataFiles[]`, each with a source id that
+ * station's manifest declaring it (`assets[].uri`/`uriMobile`/`files` or `dataFiles[]`, each with a source id that
  * `PUBLICATION_RULES` checks), or that reach one through a symlink resolving outside the station folder
  * (refused even when declared, as `walk()` refuses such assets). Pure: ids are real file paths as Vite
  * reports them (only a trailing Vite `?query` is ignored; virtual `\0` ids and anything outside every station
@@ -219,9 +219,12 @@ export function factsOnlyDataLines(stations: DiscoveredStation[]): string[] {
   });
 }
 
-/** `GTEKI_INLINE_DATA_GATE=error` fails the build on undeclared inlined data; anything else only warns (the default). */
+/**
+ * Undeclared inlined data fails the build by default. Only an explicit `GTEKI_INLINE_DATA_GATE=warn` logs it
+ * and still builds (a local debugging aid); any other value — including a typo — fails.
+ */
 export function inlineDataGateMode(env: Record<string, string | undefined> = process.env): "warn" | "error" {
-  return env.GTEKI_INLINE_DATA_GATE === "error" ? "error" : "warn";
+  return env.GTEKI_INLINE_DATA_GATE === "warn" ? "warn" : "error";
 }
 
 const VIRTUAL = "virtual:gteki-stations";
@@ -287,7 +290,7 @@ export function gtekiStations(roots: string[]): Plugin {
      * Bytes a scene module inlines into code (a JSON import, `?raw`) are never emitted as files, so
      * `generateBundle` can't see them: check every module id of the build instead. Data under a station
      * folder must be declared in its manifest with sources (see `undeclaredInlinedData`). Mode is
-     * `GTEKI_INLINE_DATA_GATE`: `warn` (default) logs the list, `error` fails the build.
+     * `GTEKI_INLINE_DATA_GATE`: undeclared data fails the build unless the mode is explicitly `warn`.
      */
     buildEnd(error) {
       if (serve || error) return;

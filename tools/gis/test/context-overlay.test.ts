@@ -8,7 +8,7 @@ import { promisify } from 'node:util';
 import { afterEach, describe, expect, it } from 'vitest';
 import { NodeIO } from '@gltf-transform/core';
 import { loadFrame } from '../src/crs.js';
-import { stationLocal, isStationEnuFrame, type StationEnuFrame } from '../src/station-enu.js';
+import { stationHorizontal, stationLocal, isStationEnuFrame, type StationEnuFrame } from '../src/station-enu.js';
 import { buildContextWindow } from '../src/context-window.js';
 import { loadContextConfig, explorerRoleFromName } from '../src/context.js';
 import {
@@ -30,7 +30,7 @@ async function frame(): Promise<StationEnuFrame> {
 }
 async function projection(): Promise<OverlayProjection> {
   const f = await frame();
-  return { origin: { lat: f.origin.lat, lon: f.origin.lon }, project: (lat, lon) => { const p = stationLocal([lat, lon, f.origin.hM], f); return [p[0], p[1]]; } };
+  return { origin: { lat: f.origin.lat, lon: f.origin.lon }, project: (lat, lon) => stationHorizontal([lat, lon], f) };
 }
 /** lon/lat of a point `east`/`north` metres from the origin (small offsets; 1e-6 deg is far below the test tolerances). */
 async function at(east: number, north: number): Promise<[number, number]> {
