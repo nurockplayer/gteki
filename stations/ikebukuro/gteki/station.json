@@ -80,9 +80,9 @@
       ],
       "method": "public-page-facts-only",
       "checkedDate": "2026-10-24",
-      "note": "Department-store orientation only; no gate names or route connections. Second source: 豊島区「池袋ターミナル案内サインガイドライン（案（草案）Ver1.3）」資料3-3 p20, https://www.city.toshima.lg.jp/documents/56546/20260519131956.pdf, retrieved 2026-10-22: 東口（中央）37「西武東口」, 東口（南）38「西武口」 (OD-22: exit-name source, never route evidence). See docs/research/gaps/DR-IK-identity-sides.md."
+      "note": "Department-store orientation only; no gate names or route connections. Supporting only (does not name the store): 豊島区「池袋ターミナル案内サインガイドライン（案（草案）Ver1.3）」資料3-3 p20, https://www.city.toshima.lg.jp/documents/56546/20260519131956.pdf, retrieved 2026-10-22, gives Seibu-named East Exit entrances 東口（中央）37「西武東口」, 東口（南）38「西武口」 (OD-22: exit-name source, never route evidence). The store location rests on the booklet alone, so the side stays unverified. See docs/research/gaps/DR-IK-identity-sides.md."
      },
-     "verification": "confirmed"
+     "verification": "unverified"
     }
    ]
   },
@@ -234,7 +234,7 @@
    "modified": false,
    "retrievedAt": "2026-10-24T00:00:00+09:00",
    "datasetDate": "2025-03",
-   "notes": "PDF page 2 prose locates Seibu Ikebukuro on the east and Tobu department store on the west. Facts-only orientation under #342; not geometry or route evidence. East is confirmed together with the ward draft sign guideline (OD-22); west together with the Tobu department store page. All artwork, prose and layout remain reference-only."
+   "notes": "PDF page 2 prose locates Seibu Ikebukuro on the east and Tobu department store on the west. Facts-only orientation under #342; not geometry or route evidence. East has only this explicit store source and is UNVERIFIED (the ward draft sign guideline gives Seibu-named East Exit entrances but not the store); west is confirmed together with the Tobu department store page. All artwork, prose and layout remain reference-only."
   },
   {
    "id": "ksj-n02-2025",
@@ -312,7 +312,7 @@
    "modified": false,
    "retrievedAt": "2026-10-22T00:00:00+09:00",
    "datasetDate": "2026-03",
-   "notes": "Draft (案, 草案) Ver1.3, 第14回 委員会 (2026-03-25), 資料3-3 p20 text layer only (p21 figure not read); listed on https://www.city.toshima.lg.jp/405/kuse/shingi/kaigichiran/006335.html. Used only for the names-to-number mapping of main exits (東口(北)=22, 東口(中央)=37, 東口(南)=38, 西口(北)=20a, 西口(中央)=19, 西口(南)=4), never as route evidence (OD-22, PR #222); also the second east-side source for the station identity label (#342 Q4), which is not route evidence. Freshness check: replace when the final guideline is published.",
+   "notes": "Draft (案, 草案) Ver1.3, 第14回 委員会 (2026-03-25), 資料3-3 p20 text layer only (p21 figure not read); listed on https://www.city.toshima.lg.jp/405/kuse/shingi/kaigichiran/006335.html. Used only for the names-to-number mapping of main exits (東口(北)=22, 東口(中央)=37, 東口(南)=38, 西口(北)=20a, 西口(中央)=19, 西口(南)=4), never as route evidence (OD-22, PR #222); also cited as supporting (not confirming) evidence for the east-side station identity label (#342 Q4), which is not route evidence. Freshness check: replace when the final guideline is published.",
    "usage": "facts-only",
    "decision": { "url": "https://github.com/nurockplayer/gteki/issues/165#issuecomment-6340635823", "date": "2026-10-22" }
   },
