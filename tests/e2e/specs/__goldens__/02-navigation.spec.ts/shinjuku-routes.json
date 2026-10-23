@@ -273,7 +273,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+      "uiCard": "No route confirmed in the surveyed dataNo route confirmed in the surveyed data with \"Step-free\" on. The connection found uses stairs, escalators or passages not step-free.Turn off \"Step-free\""
     }
   },
   "SN1": {
@@ -288,7 +288,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+      "uiCard": "No route confirmed in the surveyed dataThe destination is inside the ticket gates. \"Outside gates only\" only routes between points known to be outside the gates.Turn off \"Outside gates only\""
     }
   },
   "SN2": {
@@ -303,7 +303,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+      "uiCard": "No route confirmed in the surveyed dataThe destination is inside the ticket gates. \"Outside gates only\" only routes between points known to be outside the gates.Turn off \"Outside gates only\""
     }
   },
   "SN3": {
@@ -318,7 +318,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showVerified passages alone don't connect these points. Relax step-free / outside-gates / hours, or the link may not be surveyed yet."
+      "uiCard": "No route confirmed in the surveyed dataNo route confirmed in the surveyed data with \"Only places with listed hours\" on. This station has no opening-hours data.Turn off \"Only places with listed hours\""
     }
   },
   "SN4": {
@@ -330,7 +330,7 @@
     "result": {
       "ok": false,
       "reason": "start_equals_goal",
-      "uiCard": "No verified route to showStart and destination are the same."
+      "uiCard": "No route confirmed in the surveyed dataStart and destination are the same."
     }
   }
 }
