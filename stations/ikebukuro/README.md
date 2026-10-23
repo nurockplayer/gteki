@@ -40,6 +40,7 @@ pnpm typecheck
 - **Street-context budget probe** (draws/tris underground vs street, one run per tier; real GPU, not in CI): after `pnpm build`, in `tests/e2e` run `GTEKI_BUDGET=1 GTEKI_ROOT=<repo> pnpm exec playwright test specs/10-ikebukuro-context-budget.spec.ts --project=phone-chromium` (low) or `--project=desktop-chromium` (high); results land in `<repo>/.qa/ikebukuro-context-budget/`. It counts every pass at the WebGL boundary, so its numbers are not comparable with the scene-pass budget below; to check a change, run it once on the base branch and pass that run's `.json` as `GTEKI_BUDGET_BASELINE` (underground views must match, street views may add at most the context's own 8 meshes). Measured 2026-10-22, low tier, all passes: underground p50 44–53 draws / 132–136k triangles on both main and #110; street views +5–9 draws and +20–30k triangles with the context.
 - **Capture tooling** (dev only): `gt.capture(name)` and `gt.walkCapture(...)` write frames to
   `build/captures/`.
+- **Repeater-sign screenshots and atlas-size probe** (opt-in, needs a real GPU and a built `apps/web`; run from `tests/e2e`): `GTEKI_REPEATERS=1 GTEKI_ROOT=<checkout> pnpm exec playwright test specs/11-ikebukuro-repeater-signs.spec.ts --project=desktop-chromium` (or `--project=phone-chromium` for the low tier); writes `.qa/ikebukuro-repeaters/`.
 
 ## Layout
 
@@ -313,6 +314,21 @@ Evidence stills:
 - quality "low": at most 28 draw calls and 129k triangles per frame (56 crowd agents, 100 signs; four spots × four headings in the Central, West, South-West and North areas). Signs share atlas textures and merged geometry (three draw calls for all of them; one mesh per sign had pushed this to 252). On "low" the sign atlas is one 4096 × 2048 page painted at ~160 px/m (about 45 MB of GPU texture with mipmaps, down from 134 MB at full resolution);
 - shipped assets: 9.5 MB at "high", with lightmap WebP 1.1 MB (4k) or 0.5 MB (2k).
 
+### Cue source (#108 acceptance 4)
+
+The cues along the two guided legs, and where each comes from. Nothing here is invented: signs list
+only POIs the verified graph routes to, and the junctions are graph nodes.
+
+| Cue | Where | Source |
+| --- | --- | --- |
+| End signs at junctions | ~4 m along each verified edge from a junction | `graph:<edge>` + `poi:<exit or gate>`, derived by `pipeline/build_signage.py` |
+| Repeater 1 to 5 (`sign-rep-sw_h__w_cj-1…5`) | on `sw_h__w_cj` (152 m), 24 m apart between its two end signs | `basis`: `graph:sw_h__w_cj`, `fact:af-west-corridor`, and the `poi:` ids shown: `exit-4`, `exit-13`, `exit-15`, `exit-17`, `exit-38`, `exit-41`, `jr-central-gate-1`, `jr-south-gate` |
+| Junction nodes | `w_cj`, `sw_h` and the other graph junctions on the legs | `data/graph.src.json` nodes snapped to the PLATEAU walkable grid |
+
+The `basis` field of every repeater in `scene/signage.json` is the authoritative list. The
+`westb1-exit4` leg ran 143 m between two signs before this; it now has a readable sign every 24 m at
+most (`scene/signage.test.ts`). `jrc2-exit35` already met the 30 m rule.
+
 ## Deliberate simplifications
 
 - **Light fixtures** are generated on a regular 2.4 × 3.0 m grid under surveyed ceilings. They are
@@ -324,6 +340,14 @@ Evidence stills:
 - **Signs** use GTEki's design, placed about 4 m along each verified edge from junctions. Their
   content is computed from the verified graph. Positions are not real sign locations. Gate names
   carry a plain line-colour chip ("JR" on green), not an operator logo.
+  **Repeater signs** (`kind: "repeat"`, #108) fill verified edges of 100 m or more, spaced at most
+  24 m apart between the two end signs. Each is double-sided: the front faces walkers leaving the
+  edge's `from` node and the back faces the other way, with at most 3 exits and 1 gate and a
+  small "~140 m" countdown per item. The countdown is the graph's own walking distance
+  (`lengthM`, Dijkstra) to the POI's connector node less the sign's position, rounded to 5 m.
+  Exit 4 counts down to its stair foot, where the route ends. Content is a fact (verified edge,
+  routable POI); the positions and the spacing are design, not the real signs' locations. They
+  add two faces each to the sign atlas (see the budget test in `scene/signage.test.ts`).
 - **Crowd** is ambient decoration on verified edges, clamped to surveyed walkable lanes. It is
   not a pedestrian-flow model.
 - **Openings into unmodelled space** (fare areas, shops) block movement and render as a fogged
