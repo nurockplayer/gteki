@@ -183,6 +183,7 @@ export async function loadColumnKit(THREE: ThreeNS, host: Host, kit: KitManifest
           if (!mine.length) continue;
           for (const part of assets.get(id)!.parts) {
             const im = new THREE.InstancedMesh(part.geometry, litOf(part.material), mine.length);
+            owned.push(im); // its instance-matrix buffer is freed only by its own dispose()
             im.name = `kit_column:${id}:${key}`;
             im.userData = { gteki_role: "kit_column" };
             mine.forEach((wi, i) => {

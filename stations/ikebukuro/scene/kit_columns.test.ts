@@ -171,6 +171,16 @@ describe("loadColumnKit", () => {
     }
   });
 
+  it("dispose() frees every InstancedMesh it built", async () => {
+    const loaded = await loadColumnKit(THREE, host(all("high")), kit, file.columns, false);
+    const instanced: THREE.InstancedMesh[] = [];
+    loaded.build(THREE, env, toRenderer).group.traverse((o) => { if ((o as THREE.InstancedMesh).isInstancedMesh) instanced.push(o as THREE.InstancedMesh); });
+    expect(instanced.length).toBeGreaterThan(0);
+    const spies = instanced.map((im) => vi.spyOn(im, "dispose"));
+    loaded.dispose();
+    for (const s of spies) expect(s).toHaveBeenCalledTimes(1);
+  });
+
   it("drops only the columns of a piece that cannot be loaded, and warns", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const onlySquare = await loadColumnKit(THREE, host([`kit/high/${SQUARE}.glb`]), kit, file.columns, false);
