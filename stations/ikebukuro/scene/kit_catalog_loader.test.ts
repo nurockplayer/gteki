@@ -1,6 +1,6 @@
-// Lane E station catalog, batch A (#94): the 5 escalator pieces placed on the surveyed anchors of
-// scene/kit_placements.json. Pins the batch (desktop tier only), the placement maths, the tier and batch filters,
-// disposal, and that the copies, declarations and credits agree with each other and with Lane E's manifest.
+// Lane E station catalog (#94): batch A (the 5 escalators) and batch B (the 21 stair handrails) placed on the surveyed
+// anchors of scene/kit_placements.json. Pins the batches (desktop tier only), the placement maths, the tier and batch
+// filters, disposal, and that the copies, declarations and credits agree with each other and with Lane E's manifest.
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -18,14 +18,27 @@ const GTEKI = path.join(STATION, "gteki");
 const placements = (kitPlacements as unknown as { placements: CatalogPlacement[] }).placements;
 /** What the loader sees on the desktop tier: the escalator anchors (the batch is filtered by which GLBs are served). */
 const escalators = placements.filter((p) => p.kind === "escalator");
+const stairs = placements.filter((p) => p.kind === "stair");
 const catalog = kitCatalog as { assets: { id: string; generator: string }[] };
 const ESCALATOR_IDS = catalog.assets.filter((a) => a.generator === "escalator_dressing").map((a) => a.id).sort();
+/** The 21 rail ids a `main_route` flight actually draws (the catalog has 57; the rest have empty tiers). */
+const RAILS_IDS = [...new Set(tierParts(stairs, false).map((w) => w.id).filter((id) => id.includes("_rails_")))].sort();
+/** Ids the station ships (batch A + B); every other catalog id is "not in this batch". */
+const SHIPPED = new Set([...ESCALATOR_IDS, ...RAILS_IDS]);
+/** The catalog copies the placements need, per tier: the batch plan sync_kit_catalog.py copies. */
+function plannedUris(low: boolean): string[] {
+  const tier = tierName(low);
+  const out = new Set<string>();
+  for (const p of placements)
+    for (const [part, id] of Object.entries(p.ids)) if (SHIPPED.has(id) && (p.tiers[part] ?? []).includes(tier)) out.add(catalogUri(id, low));
+  return [...out].sort();
+}
 const SOURCE_ID = "gteki-ikb-catalog-0-1-0";
 const sha = (p: string) => crypto.createHash("sha256").update(fs.readFileSync(p)).digest("hex");
 const toRenderer = (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y); // the shared ENU -> renderer frame
 const readManifest = (name: string) => JSON.parse(fs.readFileSync(path.join(GTEKI, name), "utf8"));
 
-describe("batch A: the 5 escalators on the surveyed anchors", () => {
+describe("the shipped batches on the surveyed anchors", () => {
   it("draws every escalator part on the desktop tier and none on phones", () => {
     const high = tierParts(escalators, false);
     const low = tierParts(escalators, true);
@@ -39,9 +52,17 @@ describe("batch A: the 5 escalators on the surveyed anchors", () => {
     expect(catalogUri(ESCALATOR_IDS[0]!, false)).toBe(`kit/catalog/high/${ESCALATOR_IDS[0]}.glb`);
   });
 
-  it("ships each catalog escalator id on disk, and no phone copy", () => {
-    for (const id of ESCALATOR_IDS) expect(fs.existsSync(path.join(GTEKI, catalogUri(id, false))), id).toBe(true);
-    expect(fs.existsSync(path.join(GTEKI, "kit/catalog/low"))).toBe(false); // batch A draws nothing on phones
+  it("draws the handrails on the desktop tier only, one part per main_route flight", () => {
+    const high = tierParts(stairs, false).filter((w) => SHIPPED.has(w.id) && w.id.includes("_rails_"));
+    expect(RAILS_IDS.length).toBe(21);
+    expect(high.length).toBe(21); // 21 main_route flights, one rail part each
+    expect(new Set(high.map((w) => w.id))).toEqual(new Set(RAILS_IDS));
+    expect(tierParts(stairs, true).filter((w) => w.id.includes("_rails_"))).toEqual([]); // rails are high only
+  });
+
+  it("ships each shipped id on disk, and no phone copy", () => {
+    for (const id of SHIPPED) expect(fs.existsSync(path.join(GTEKI, catalogUri(id, false))), id).toBe(true);
+    expect(fs.existsSync(path.join(GTEKI, "kit/catalog/low"))).toBe(false); // both batches draw nothing on phones
   });
 
   it("copies each id byte for byte, pinned by the source record in both manifests", () => {
@@ -55,28 +76,30 @@ describe("batch A: the 5 escalators on the surveyed anchors", () => {
     expect(a.attribution).toContain("GTEki contributors");
     expect(a.attribution).toContain("PLATEAU");
     expect(a.url).toMatch(/^https?:\/\//);
-    expect(Object.keys(a.sha256).sort()).toEqual(ESCALATOR_IDS.map((id) => `kit/catalog/high/${id}.glb`));
-    for (const id of ESCALATOR_IDS) {
-      const rel = `kit/catalog/high/${id}.glb`;
-      expect(a.sha256[rel], rel).toBe(sha(path.join(GTEKI, rel)));
-    }
+    expect(Object.keys(a.sha256).sort()).toEqual([...SHIPPED].map((id) => `kit/catalog/high/${id}.glb`).sort());
+    for (const rel of Object.keys(a.sha256) as string[]) expect(a.sha256[rel], rel).toBe(sha(path.join(GTEKI, rel)));
   });
 
   it("declares the copies on the b1 asset in both manifests, with the catalog as a source", () => {
     for (const doc of [readManifest("station.json"), JSON.parse(fs.readFileSync(path.join(STATION, "data/graph.src.json"), "utf8"))]) {
       const b1 = doc.assets.find((x: { id: string }) => x.id === "b1");
       expect(b1.sourceIds).toContain(SOURCE_ID);
-      expect(b1.files).toEqual(expect.arrayContaining(ESCALATOR_IDS.map((id) => `kit/catalog/high/${id}.glb`)));
+      expect(b1.files).toEqual(expect.arrayContaining([...SHIPPED].map((id) => `kit/catalog/high/${id}.glb`)));
     }
   });
 
-  it("declares nothing the catalog plan does not load, and lists no stray copy", () => {
-    const planned = new Set(tierParts(escalators, false).map((w) => catalogUri(w.id, false)));
-    const copies = fs
-      .readdirSync(path.join(GTEKI, "kit/catalog/high"))
-      .filter((n) => n.endsWith(".glb"))
-      .map((n) => `kit/catalog/high/${n}`);
-    expect(copies.sort()).toEqual([...planned].sort());
+  it("copies exactly the plan, and the record pins exactly those copies", () => {
+    const copies = (...tiers: string[]) =>
+      tiers
+        .flatMap((t) => {
+          const dir = path.join(GTEKI, "kit/catalog", t);
+          return fs.existsSync(dir) ? fs.readdirSync(dir).filter((n) => n.endsWith(".glb")).map((n) => `kit/catalog/${t}/${n}`) : [];
+        })
+        .sort();
+    expect(copies("high", "low")).toEqual([...plannedUris(false), ...plannedUris(true)].sort());
+    const station = readManifest("station.json");
+    const a = station.sources.find((s: { id: string }) => s.id === SOURCE_ID);
+    expect(Object.keys(a.sha256).sort()).toEqual(copies("high", "low"));
   });
 });
 

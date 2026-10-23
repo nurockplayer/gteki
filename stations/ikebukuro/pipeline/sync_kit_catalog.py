@@ -10,9 +10,11 @@ the repo. Only the (id, tier) pairs some placement actually loads are copied:
     <src-full>/glb/<id>.glb     -> gteki/kit/catalog/high/<id>.glb   (desktop, "high" tier)
     <src-mobile>/glb/<id>.glb   -> gteki/kit/catalog/low/<id>.glb    (phone, "low" tier)
 
-Batch A is `--kinds escalator` (the default): the 5 escalator ids, high tier only, because every escalator placement
-lists `high` alone. Later batches add `rails` and `nosing` by extending BATCH_KINDS. A kind is read from the catalog
-entry's generator (`escalator_dressing`) or the id's maker suffix (`_nosing`, `_rails_...`).
+Batch A is `--kinds escalator`: the 5 escalator ids, high tier only, because every escalator placement lists `high`
+alone. Batch B adds `rails` (the 21 stair handrails, also high only: rails are drawn on `main_route` flights only and
+that tier filter keeps them off phones); BATCH_KINDS is the union the station ships, so plain `--check` covers both.
+Later batches add `nosing` by extending BATCH_KINDS. A kind is read from the catalog entry's generator
+(`escalator_dressing`) or the id's maker suffix (`_nosing`, `_rails_...`).
 
 Each source must match the sha256 and size its tier's manifest.json records. --check changes nothing and exits
 non-zero when a copy is missing or stale (byte-compared with the source manifest when the Lane E tree is present,
@@ -45,7 +47,7 @@ TIERS = {
     "high": (os.path.join(LANE_E, "ike_full"), "manifest.json", "high"),
     "low": (os.path.join(LANE_E, "ike_mobile"), "manifest.json", "low"),
 }
-BATCH_KINDS = ("escalator",)  # batch A; later batches add "rails", "nosing"
+BATCH_KINDS = ("escalator", "rails")  # batch A + B; "nosing" joins with a later batch
 KINDS = ("escalator", "rails", "nosing")
 
 

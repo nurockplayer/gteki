@@ -1,6 +1,7 @@
-// pipeline/sync_kit_catalog.py: batch A copies exactly the escalator GLBs some placement loads, on the tiers it
-// loads them, and --check proves the committed copies still match the source record's pins. The negative controls run
-// on a temporary copy of the catalog folder (and a temporary station.json), so the committed tree is never touched.
+// pipeline/sync_kit_catalog.py: the shipped batches (A: 5 escalators, B: 21 handrails) copy exactly the catalog GLBs
+// some placement loads, on the tiers it loads them, and --check proves the committed copies still match the source
+// record's pins. The negative controls run on a temporary copy of the catalog folder (and a temporary station.json),
+// so the committed tree is never touched.
 import crypto from "node:crypto";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -22,7 +23,13 @@ const plan = JSON.parse(fs.readFileSync(path.join(STATION, "scene/kit_placements
 const catalog = JSON.parse(fs.readFileSync(path.join(STATION, "scene/kit_catalog.json"), "utf8")) as {
   assets: { id: string; generator: string }[];
 };
-const ids = catalog.assets.filter((a) => a.generator === "escalator_dressing").map((a) => a.id).sort();
+const escalatorIds = catalog.assets.filter((a) => a.generator === "escalator_dressing").map((a) => a.id).sort();
+/** The rail ids some placement draws (the catalog has 57; only the 21 `main_route` flights list a tier). */
+const railIds = [
+  ...new Set(plan.placements.flatMap((p) => (p.tiers.rails ?? []).map(() => p.ids.rails!))),
+].sort();
+/** Every id the station ships today (batch A + B), all of them on the desktop tier only. */
+const ids = [...escalatorIds, ...railIds].sort();
 const stationJson = JSON.parse(fs.readFileSync(path.join(GTEKI, "station.json"), "utf8")) as {
   sources: { id: string; sha256?: Record<string, string> }[];
 };
@@ -48,15 +55,20 @@ const run = (...args: string[]) => spawnSync("python3", ["-I", SCRIPT, ...args],
 const glb = (dest: string, id: string) => path.join(dest, "high", `${id}.glb`);
 const sha = (p: string) => crypto.createHash("sha256").update(fs.readFileSync(p)).digest("hex");
 
-describe("batch A copies", () => {
-  it("plans exactly the 5 escalator ids, all on the desktop tier", () => {
-    expect(ids.length).toBe(5);
+describe("the shipped batches", () => {
+  it("plans the 5 escalators and the 21 handrails, all on the desktop tier", () => {
+    expect(escalatorIds.length).toBe(5);
+    expect(railIds.length).toBe(21);
     expect(record.sha256).toBeDefined();
     expect(Object.keys(record.sha256!).sort()).toEqual(ids.map((id) => `${CATALOG_REL}/high/${id}.glb`));
-    // Every escalator placement loads `high` alone, so batch A has no phone copy.
+    // Every escalator placement loads `high` alone and every rail part is `high` only, so there is no phone copy.
     const escalators = plan.placements.filter((p) => p.kind === "escalator");
     expect(escalators.length).toBe(5);
     for (const p of escalators) expect(p.tiers.dressing).toEqual(["high"]);
+    const rails = plan.placements.filter((p) => "rails" in p.ids);
+    expect(rails.length).toBe(65); // every stair flight has a rail id ...
+    expect(rails.filter((p) => (p.tiers.rails ?? []).includes("high")).length).toBe(21); // ... 21 draw it (main_route)
+    for (const p of rails) expect(p.tiers.rails ?? []).not.toContain("low");
   });
 
   it.skipIf(!python)("--check passes on the committed tree", () => {
