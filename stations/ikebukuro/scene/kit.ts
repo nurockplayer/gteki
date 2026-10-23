@@ -393,6 +393,7 @@ export async function loadKit(
           let tileTris = 0;
           for (const part of parts) {
             const im = new THREE.InstancedMesh(part.geometry, litOf(part.material), idx.length);
+            owned.push(im); // its instance-matrix buffer is freed only by its own dispose()
             im.name = `kit_fence_rail:${key}`;
             im.userData = { gteki_role: "kit_fence_rail" };
             idx.forEach((wi, i) => {
@@ -435,6 +436,7 @@ export async function loadKit(
         for (const [key, idx] of sets) {
           for (const part of gateMerged) {
             const im = new THREE.InstancedMesh(part.geometry, litOf(part.material), idx.length);
+            owned.push(im); // its instance-matrix buffer is freed only by its own dispose()
             im.name = `kit_gate_array:${key}`;
             im.userData = { gteki_role: "kit_gate_array", gteki_note: note, gteki_label: { ...GATE_ARRAY_LABEL }, gteki_nodes: idx.map((i) => gates[i]!.node) };
             idx.forEach((wi, i) => {

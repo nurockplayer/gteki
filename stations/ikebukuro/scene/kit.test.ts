@@ -492,6 +492,17 @@ describe("representative gate arrays: what loadKit builds", () => {
   const gateGroup = (g: THREE.Group) => g.children.find((c) => c.name === "ikebukuro_kit_gate_arrays") as THREE.Group | undefined;
   const meshesOf = (g: THREE.Group) => gateGroup(g)!.children as THREE.InstancedMesh[];
 
+  it("dispose() frees every InstancedMesh it built (rail tiles and gate arrays), not only geometries and materials", async () => {
+    const loaded = await loadKit(THREE, host(), kit, fences.marks, false, graph);
+    const { group } = loaded.build(THREE, env, toRenderer);
+    const instanced: THREE.InstancedMesh[] = [];
+    group.traverse((o) => { if ((o as THREE.InstancedMesh).isInstancedMesh) instanced.push(o as THREE.InstancedMesh); });
+    expect(instanced.length).toBeGreaterThan(GATE_NODES.length); // rails and gates both present
+    const spies = instanced.map((im) => vi.spyOn(im, "dispose"));
+    loaded.dispose();
+    for (const s of spies) expect(s).toHaveBeenCalledTimes(1);
+  });
+
   it("loads the gate GLB of the right tier once, and only when a graph is given", async () => {
     for (const low of [false, true]) {
       const h = host();
