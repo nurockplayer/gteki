@@ -13,6 +13,7 @@ import type { Poi, StationBundle } from "@gteki/schema";
 import type { SceneContext, StationScene } from "@gteki/scene-api";
 import { WALKER_BODY, WALKER_SPEED, glbPrimitivePlugin, seeThroughMeshes } from "@gteki/scene-api";
 import type { LoadedStation } from "../registry.ts";
+import { loadSignFont } from "../signFont.ts";
 import { R, chevronTexture, ribbonGeometry } from "./geometry.ts";
 import { bodyBlock, hitNormal, slideAlong, type BodyBlock } from "./bodyCollision.ts";
 import { CameraCut } from "./cameraCut.ts";
@@ -795,6 +796,7 @@ export class Explorer {
 
   private async buildStationScene(station: LoadedStation, ctx: SceneContext): Promise<StationScene | null> {
     if (station.sceneImportError) throw new Error(`scene module failed to load: ${station.sceneImportError}`);
+    await loadSignFont();
     if (station.scene) return await station.scene.buildScene(ctx);
     const assets = station.bundle.assets ?? [];
     if (assets.length === 0) return null;
