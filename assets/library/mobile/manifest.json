@@ -5409,6 +5409,607 @@
       ]
     },
     {
+      "id": "gteki_luminaire_linear_1200",
+      "family": "luminaire",
+      "variant": "linear_1200",
+      "file": "glb/gteki_luminaire_linear_1200.glb",
+      "sha256": "741c8a9f29c1f47989c839bca4f521cfdb158f279a2a6739356da1695dc8eb0d",
+      "bytes": 10760,
+      "triangles": 50,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 128
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.065,
+          2.76,
+          -0.6
+        ],
+        "max": [
+          0.065,
+          2.8,
+          0.6
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "ceiling",
+      "params": {
+        "length_mm": 1200,
+        "width_mm": 130,
+        "depth_mm": 40,
+        "cap_mm": 20,
+        "rail_mm": 16,
+        "recess_mm": 4,
+        "ceiling_height_mm": 2800
+      },
+      "sockets": [
+        {
+          "name": "ceiling",
+          "position_gltf": [
+            0.0,
+            2.8,
+            -0.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.13,
+          "height": 0.04,
+          "mount": "ceiling"
+        },
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            2.8,
+            0.6
+          ],
+          "yaw_deg": 180.0,
+          "width": 0.13,
+          "height": 0.04
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            2.8,
+            -0.6
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.13,
+          "height": 0.04
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "luminaire",
+        "ceiling"
+      ]
+    },
+    {
+      "id": "gteki_luminaire_panel_600",
+      "family": "luminaire",
+      "variant": "panel_600",
+      "file": "glb/gteki_luminaire_panel_600.glb",
+      "sha256": "92edef0e584a48a2910d4db6cf3fd783c9f03ba13b4b6b9464c6c41447a6b972",
+      "bytes": 8248,
+      "triangles": 42,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 128
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.3,
+          2.788,
+          -0.3
+        ],
+        "max": [
+          0.3,
+          2.8,
+          0.3
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "ceiling",
+      "params": {
+        "width_mm": 600,
+        "length_mm": 600,
+        "frame_mm": 22,
+        "lip_mm": 12,
+        "gasket_mm": 6,
+        "recess_mm": 3,
+        "ceiling_height_mm": 2800
+      },
+      "sockets": [
+        {
+          "name": "ceiling",
+          "position_gltf": [
+            0.0,
+            2.8,
+            -0.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.6,
+          "height": 0.012,
+          "mount": "ceiling"
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "luminaire",
+        "ceiling"
+      ]
+    },
+    {
+      "id": "gteki_luminaire_downlight_d150",
+      "family": "luminaire",
+      "variant": "downlight_d150",
+      "file": "glb/gteki_luminaire_downlight_d150.glb",
+      "sha256": "6b67d8bb1820489105faf82a32867c95df5a7ae60ffa4ecff18a4b349ccfdde6",
+      "bytes": 13468,
+      "triangles": 130,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 128
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.075,
+          2.788,
+          -0.075
+        ],
+        "max": [
+          0.075,
+          2.8,
+          0.075
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "ceiling",
+      "params": {
+        "diameter_mm": 150,
+        "aperture_mm": 100,
+        "lip_mm": 12,
+        "gasket_mm": 6,
+        "recess_mm": 4,
+        "segments": 24,
+        "ceiling_height_mm": 2800
+      },
+      "sockets": [
+        {
+          "name": "ceiling",
+          "position_gltf": [
+            0.0,
+            2.8,
+            -0.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.15,
+          "height": 0.012,
+          "mount": "ceiling"
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "luminaire",
+        "ceiling"
+      ]
+    },
+    {
+      "id": "gteki_trim_chair_rail_3000_steel",
+      "family": "trim",
+      "variant": "chair_rail_3000_steel",
+      "file": "glb/gteki_trim_chair_rail_3000_steel.glb",
+      "sha256": "9f231bea1fe1086d1445bad6b8e8c8284a6624f3734d4d7458bd59f140cb33b9",
+      "bytes": 6824,
+      "triangles": 20,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.5,
+          1.1,
+          -0.0
+        ],
+        "max": [
+          1.5,
+          1.14,
+          0.02
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "length_mm": 3000,
+        "height_mm": 40,
+        "depth_mm": 20,
+        "bottom_mm": 1100,
+        "profile": "bullnose",
+        "material": "steel_brushed",
+        "miter_start": "none",
+        "miter_end": "none"
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            -1.5,
+            1.12,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.02,
+          "height": 0.04
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            1.5,
+            1.12,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.02,
+          "height": 0.04
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "trim",
+        "wall"
+      ]
+    },
+    {
+      "id": "gteki_trim_skirting_3000_steel",
+      "family": "trim",
+      "variant": "skirting_3000_steel",
+      "file": "glb/gteki_trim_skirting_3000_steel.glb",
+      "sha256": "533ef136bdb1ffa4b67c263d3156f81736093d17c66ee08bd8f9fdeba4e10cc9",
+      "bytes": 8204,
+      "triangles": 12,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.5,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.5,
+          0.12,
+          0.012
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "length_mm": 3000,
+        "height_mm": 120,
+        "depth_mm": 12,
+        "bottom_mm": 0,
+        "profile": "flat",
+        "material": "steel_brushed",
+        "miter_start": "none",
+        "miter_end": "none"
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            -1.5,
+            0.06,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.012,
+          "height": 0.12
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            1.5,
+            0.06,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.012,
+          "height": 0.12
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "trim",
+        "wall"
+      ]
+    },
+    {
+      "id": "gteki_trim_skirting_3000_granite",
+      "family": "trim",
+      "variant": "skirting_3000_granite",
+      "file": "glb/gteki_trim_skirting_3000_granite.glb",
+      "sha256": "e1c561a996e6be7e581c2d7327c4ae1c3e5ab921d79b826fa7a0a69b135934fb",
+      "bytes": 8976,
+      "triangles": 20,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.5,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.5,
+          0.12,
+          0.016
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "length_mm": 3000,
+        "height_mm": 120,
+        "depth_mm": 16,
+        "bottom_mm": 0,
+        "profile": "stepped",
+        "material": "floor_granite_dark",
+        "miter_start": "none",
+        "miter_end": "none"
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            -1.5,
+            0.06,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.016,
+          "height": 0.12
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            1.5,
+            0.06,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.016,
+          "height": 0.12
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "trim",
+        "wall"
+      ]
+    },
+    {
+      "id": "gteki_column_sleeve_600x600_h2800",
+      "family": "cladding",
+      "variant": "600x600_h2800",
+      "file": "glb/gteki_column_sleeve_600x600_h2800.glb",
+      "sha256": "cf9d745bab0b32a913d28bc62538e3840047b81c311a4f8b602fc934630d88c1",
+      "bytes": 26816,
+      "triangles": 200,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.303,
+          0.0,
+          -0.303
+        ],
+        "max": [
+          0.303,
+          2.8,
+          0.303
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "width_mm": 600,
+        "depth_mm": 600,
+        "height_mm": 2800,
+        "plinth_mm": 120,
+        "ceiling_gap_mm": 30,
+        "panel": "enamel",
+        "corner_guard": true,
+        "guard_height_mm": 1500,
+        "module_mm": 1200
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "cladding",
+        "column"
+      ]
+    },
+    {
+      "id": "gteki_column_sleeve_900x600_h3200_accent",
+      "family": "cladding",
+      "variant": "900x600_h3200_accent",
+      "file": "glb/gteki_column_sleeve_900x600_h3200_accent.glb",
+      "sha256": "b08f686b89df04bb913401afe733410562137aff13a795426772a35295745544",
+      "bytes": 25940,
+      "triangles": 168,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.45,
+          0.0,
+          -0.3
+        ],
+        "max": [
+          0.45,
+          3.2,
+          0.3
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "width_mm": 900,
+        "depth_mm": 600,
+        "height_mm": 3200,
+        "plinth_mm": 150,
+        "ceiling_gap_mm": 30,
+        "panel": "accent",
+        "corner_guard": false,
+        "guard_height_mm": 1500,
+        "module_mm": 1200
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/fixtures.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "cladding",
+        "column"
+      ]
+    },
+    {
       "id": "gteki_toilet_entrance_male",
       "family": "facilities",
       "variant": "toilet_entrance_male",
@@ -6045,6 +6646,981 @@
         "toilet",
         "entrance",
         "male"
+      ]
+    },
+    {
+      "id": "gteki_platform_edge_l6000_dots",
+      "family": "platform",
+      "variant": "edge_l6000_dots",
+      "file": "glb/gteki_platform_edge_l6000_dots.glb",
+      "sha256": "976185cdc0014264845bdaeb7bedc0630bc3dc6764b48ce58c1dd9e7fcd99ead",
+      "bytes": 8620,
+      "triangles": 34,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          0.0,
+          0.0,
+          -6.0
+        ],
+        "max": [
+          0.6,
+          0.01,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "length_mm": 6000,
+        "coping_depth_mm": 600,
+        "coping_h_mm": 10,
+        "coping": "granite",
+        "line_offset_mm": 40,
+        "line_w_mm": 100,
+        "tactile": "dots",
+        "tactile_setback_mm": 200,
+        "gap_strip_w_mm": 50,
+        "parts": [
+          "coping",
+          "line",
+          "tactile"
+        ],
+        "strips_mm": [
+          [
+            "coping",
+            0,
+            40
+          ],
+          [
+            "line",
+            40,
+            140
+          ],
+          [
+            "coping",
+            140,
+            200
+          ],
+          [
+            "tactile",
+            200,
+            500
+          ],
+          [
+            "coping",
+            500,
+            600
+          ]
+        ]
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 0.6,
+          "height": 0.01
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -6.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.6,
+          "height": 0.01
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/platform.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "platform",
+        "floor"
+      ]
+    },
+    {
+      "id": "gteki_platform_edge_l3000_innerline",
+      "family": "platform",
+      "variant": "edge_l3000_innerline",
+      "file": "glb/gteki_platform_edge_l3000_innerline.glb",
+      "sha256": "09fd6a9ffe23d8348c99654f77dfcaacbbe3b0c57c3a29b93c9706cf28693557",
+      "bytes": 9816,
+      "triangles": 46,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          0.0,
+          0.0,
+          -3.0
+        ],
+        "max": [
+          0.6,
+          0.01,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "length_mm": 3000,
+        "coping_depth_mm": 600,
+        "coping_h_mm": 10,
+        "coping": "concrete",
+        "line_offset_mm": 40,
+        "line_w_mm": 100,
+        "tactile": "inner_line",
+        "tactile_setback_mm": 200,
+        "gap_strip_w_mm": 50,
+        "parts": [
+          "coping",
+          "line",
+          "tactile"
+        ],
+        "strips_mm": [
+          [
+            "coping",
+            0,
+            40
+          ],
+          [
+            "line",
+            40,
+            140
+          ],
+          [
+            "coping",
+            140,
+            200
+          ],
+          [
+            "tactile",
+            200,
+            500
+          ],
+          [
+            "coping",
+            500,
+            530
+          ],
+          [
+            "inner_line",
+            530,
+            570
+          ],
+          [
+            "coping",
+            570,
+            600
+          ]
+        ]
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 0.6,
+          "height": 0.01
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -3.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.6,
+          "height": 0.01
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/platform.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "platform",
+        "floor"
+      ]
+    },
+    {
+      "id": "gteki_platform_edge_l6000_gap",
+      "family": "platform",
+      "variant": "edge_l6000_gap",
+      "file": "glb/gteki_platform_edge_l6000_gap.glb",
+      "sha256": "1ca5e76aaf2b4a7a37b398cf699d1f4acd2a9bd2d631450276ee99882aa7e839",
+      "bytes": 13140,
+      "triangles": 74,
+      "materials": [
+        "gteki_palette"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.05,
+          0.0,
+          -6.0
+        ],
+        "max": [
+          0.6,
+          0.01,
+          -0.0
+        ]
+      },
+      "dimension_basis": "generic-typical",
+      "placement": "linear",
+      "params": {
+        "length_mm": 6000,
+        "coping_depth_mm": 600,
+        "coping_h_mm": 10,
+        "coping": "granite",
+        "line_offset_mm": 40,
+        "line_w_mm": 100,
+        "tactile": "inner_line",
+        "tactile_setback_mm": 200,
+        "gap_strip_w_mm": 50,
+        "parts": [
+          "coping",
+          "line",
+          "tactile",
+          "gap_strip"
+        ],
+        "strips_mm": [
+          [
+            "coping",
+            0,
+            40
+          ],
+          [
+            "line",
+            40,
+            140
+          ],
+          [
+            "coping",
+            140,
+            200
+          ],
+          [
+            "tactile",
+            200,
+            500
+          ],
+          [
+            "coping",
+            500,
+            530
+          ],
+          [
+            "inner_line",
+            530,
+            570
+          ],
+          [
+            "coping",
+            570,
+            600
+          ]
+        ]
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 0.65,
+          "height": 0.01
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -6.0
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.65,
+          "height": 0.01
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/platform.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "platform",
+        "floor"
+      ]
+    },
+    {
+      "id": "gteki_platform_screen_door_l5600",
+      "family": "platform",
+      "variant": "screen_door_l5600",
+      "file": "glb/gteki_platform_screen_door_l5600.glb",
+      "sha256": "3e0a960ff7754c2866fef3faeaedd71f6ca36fc71d6e8c3d170e325ab4073a79",
+      "bytes": 50808,
+      "triangles": 492,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          0.052,
+          0.0,
+          -5.6
+        ],
+        "max": [
+          0.248,
+          2.4,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "linear",
+      "params": {
+        "length_mm": 5600,
+        "height_mm": 2000,
+        "header_h_mm": 400,
+        "inset_mm": 60,
+        "depth_mm": 180,
+        "opening_mm": 2000,
+        "fixed_panels_per_side": 2,
+        "open_mm": 0
+      },
+      "sockets": [
+        {
+          "name": "start",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 180.0,
+          "width": 0.24,
+          "height": 2.4
+        },
+        {
+          "name": "end",
+          "position_gltf": [
+            0.0,
+            0.0,
+            -5.6
+          ],
+          "yaw_deg": 0.0,
+          "width": 0.24,
+          "height": 2.4
+        }
+      ],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/platform.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "platform"
+      ]
+    },
+    {
+      "id": "gteki_shopfront_glazing_w2400",
+      "family": "shopfront",
+      "variant": "glazing_w2400",
+      "file": "glb/gteki_shopfront_glazing_w2400.glb",
+      "sha256": "0bfee1ab284c5059d9bb8f789830d12f569c846b9ce407bdc329b6dd35def26f",
+      "bytes": 25904,
+      "triangles": 114,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend",
+        "gteki_fascia_art"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_fascia_art": {
+          "res": 512,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.2,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.2,
+          2.8,
+          0.14
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "kind": "glazing",
+        "bay_w_mm": 2400,
+        "height_mm": 2800,
+        "fascia_h_mm": 600,
+        "mullion_mm": 60,
+        "frame_depth_mm": 90,
+        "sill_mm": 300,
+        "panes": 0,
+        "door_h_mm": 2100,
+        "shutter_open": 0.0,
+        "housing_h_mm": 250,
+        "fascia": true,
+        "backing": true,
+        "fascia_u": [
+          0.0,
+          1.0
+        ],
+        "fascia_aspect": 4.273
+      },
+      "sockets": [
+        {
+          "name": "left",
+          "position_gltf": [
+            -1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.1,
+          "height": 2.8
+        },
+        {
+          "name": "right",
+          "position_gltf": [
+            1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.1,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/shopfront.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "shopfront"
+      ]
+    },
+    {
+      "id": "gteki_shopfront_door_w2000",
+      "family": "shopfront",
+      "variant": "door_w2000",
+      "file": "glb/gteki_shopfront_door_w2000.glb",
+      "sha256": "2fa7da96e1a96f9f59d5363b3cc1ff1ac1c23f8e554ac6240679a12c635607c9",
+      "bytes": 32524,
+      "triangles": 226,
+      "materials": [
+        "gteki_palette",
+        "gteki_palette_blend",
+        "gteki_fascia_art"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_palette_blend": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_fascia_art": {
+          "res": 512,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.0,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.0,
+          2.8,
+          0.14
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "kind": "door",
+        "bay_w_mm": 2000,
+        "height_mm": 2800,
+        "fascia_h_mm": 600,
+        "mullion_mm": 60,
+        "frame_depth_mm": 90,
+        "sill_mm": 300,
+        "panes": 0,
+        "door_h_mm": 2100,
+        "shutter_open": 0.0,
+        "housing_h_mm": 250,
+        "fascia": true,
+        "backing": true,
+        "fascia_u": [
+          0.0,
+          1.0
+        ],
+        "fascia_aspect": 3.545
+      },
+      "sockets": [
+        {
+          "name": "left",
+          "position_gltf": [
+            -1.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.1,
+          "height": 2.8
+        },
+        {
+          "name": "right",
+          "position_gltf": [
+            1.0,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.1,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/shopfront.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "shopfront"
+      ]
+    },
+    {
+      "id": "gteki_shopfront_shutter_w2400_closed",
+      "family": "shopfront",
+      "variant": "shutter_w2400_closed",
+      "file": "glb/gteki_shopfront_shutter_w2400_closed.glb",
+      "sha256": "c5b58f115ab1cee706d583181821e9bc54e7b29e499b1337992b68cc1d8bbb7c",
+      "bytes": 26472,
+      "triangles": 190,
+      "materials": [
+        "gteki_palette",
+        "gteki_fascia_art"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_fascia_art": {
+          "res": 512,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.2,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.2,
+          2.8,
+          0.14
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "kind": "shutter",
+        "bay_w_mm": 2400,
+        "height_mm": 2800,
+        "fascia_h_mm": 600,
+        "mullion_mm": 60,
+        "frame_depth_mm": 90,
+        "sill_mm": 300,
+        "panes": 0,
+        "door_h_mm": 2100,
+        "shutter_open": 0.0,
+        "housing_h_mm": 250,
+        "fascia": true,
+        "backing": true,
+        "fascia_u": [
+          0.0,
+          1.0
+        ],
+        "fascia_aspect": 4.273
+      },
+      "sockets": [
+        {
+          "name": "left",
+          "position_gltf": [
+            -1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.1,
+          "height": 2.8
+        },
+        {
+          "name": "right",
+          "position_gltf": [
+            1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.1,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/shopfront.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "shopfront"
+      ]
+    },
+    {
+      "id": "gteki_shopfront_shutter_w2400_half",
+      "family": "shopfront",
+      "variant": "shutter_w2400_half",
+      "file": "glb/gteki_shopfront_shutter_w2400_half.glb",
+      "sha256": "dec0b4d3f9e6db01d5c5f5220c80fc61d3e2eefe54dd690ec698cc93a13285ce",
+      "bytes": 22988,
+      "triangles": 136,
+      "materials": [
+        "gteki_palette",
+        "gteki_fascia_art"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_fascia_art": {
+          "res": 512,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.2,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.2,
+          2.8,
+          0.14
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "kind": "shutter",
+        "bay_w_mm": 2400,
+        "height_mm": 2800,
+        "fascia_h_mm": 600,
+        "mullion_mm": 60,
+        "frame_depth_mm": 90,
+        "sill_mm": 300,
+        "panes": 0,
+        "door_h_mm": 2100,
+        "shutter_open": 0.5,
+        "housing_h_mm": 250,
+        "fascia": true,
+        "backing": true,
+        "fascia_u": [
+          0.0,
+          1.0
+        ],
+        "fascia_aspect": 4.273
+      },
+      "sockets": [
+        {
+          "name": "left",
+          "position_gltf": [
+            -1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.1,
+          "height": 2.8
+        },
+        {
+          "name": "right",
+          "position_gltf": [
+            1.2,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.1,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/shopfront.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "shopfront"
+      ]
+    },
+    {
+      "id": "gteki_shopfront_fascia_w4800",
+      "family": "shopfront",
+      "variant": "fascia_w4800",
+      "file": "glb/gteki_shopfront_fascia_w4800.glb",
+      "sha256": "16e9ea14d117a45bf9295a17c8adc396052fb90a2a40730ba80bd17207efaa9f",
+      "bytes": 12752,
+      "triangles": 26,
+      "materials": [
+        "gteki_palette",
+        "gteki_fascia_art"
+      ],
+      "textures": {
+        "gteki_palette": {
+          "res": 64,
+          "maps": [
+            "albedo",
+            "emissive",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        },
+        "gteki_fascia_art": {
+          "res": 512,
+          "maps": [
+            "occlusion"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -2.4,
+          2.2,
+          -0.0
+        ],
+        "max": [
+          2.4,
+          2.8,
+          0.14
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "kind": "fascia",
+        "bay_w_mm": 4800,
+        "height_mm": 2800,
+        "fascia_h_mm": 600,
+        "mullion_mm": 60,
+        "frame_depth_mm": 90,
+        "sill_mm": 300,
+        "panes": 0,
+        "door_h_mm": 2100,
+        "shutter_open": 0.0,
+        "housing_h_mm": 250,
+        "fascia": true,
+        "backing": true,
+        "fascia_u": [
+          0.0,
+          1.0
+        ],
+        "fascia_aspect": 8.636
+      },
+      "sockets": [
+        {
+          "name": "left",
+          "position_gltf": [
+            -2.4,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": 90.0,
+          "width": 0.1,
+          "height": 2.8
+        },
+        {
+          "name": "right",
+          "position_gltf": [
+            2.4,
+            0.0,
+            -0.0
+          ],
+          "yaw_deg": -90.0,
+          "width": 0.1,
+          "height": 2.8
+        }
+      ],
+      "light_hints": 1,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/shopfront.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "shopfront"
       ]
     },
     {
