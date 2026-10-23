@@ -1,0 +1,22 @@
+{
+  "title": "SYNTHETIC KIT DEMO — platform edge set and shopfront bays, not a station layout",
+  "mode": "studio",
+  "exposure": -0.2,
+  "hint_lights": false,
+  "items": [
+    {"glb": "assets/library/glb/gteki_platform_edge_l6000_gap.glb", "pos": [0, 0, 0]},
+    {"glb": "assets/library/glb/gteki_platform_edge_l6000_gap.glb", "pos": [0, 6, 0]},
+    {"glb": "assets/library/glb/gteki_platform_edge_l3000_innerline.glb", "pos": [4, 0, 0]},
+    {"glb": "assets/library/glb/gteki_platform_edge_l6000_dots.glb", "pos": [4, 3, 0]},
+    {"glb": "assets/library/glb/gteki_platform_screen_door_l5600.glb", "pos": [9, 0.2, 0]},
+    {"glb": "assets/library/glb/gteki_shopfront_glazing_w2400.glb", "pos": [-3.0, 20, 0]},
+    {"glb": "assets/library/glb/gteki_shopfront_door_w2000.glb", "pos": [-0.8, 20, 0]},
+    {"glb": "assets/library/glb/gteki_shopfront_shutter_w2400_closed.glb", "pos": [1.4, 20, 0]},
+    {"glb": "assets/library/glb/gteki_shopfront_shutter_w2400_half.glb", "pos": [3.8, 20, 0]},
+    {"glb": "assets/library/glb/gteki_shopfront_fascia_w4800.glb", "pos": [7.4, 20, 0]}
+  ],
+  "cameras": {
+    "platform": {"pos": [-3.6, -3.4, 1.7], "look_at": [4.5, 5.0, 0.9], "lens": 24},
+    "shops": {"pos": [0.5, 11.5, 1.7], "look_at": [1.6, 20.0, 1.5], "lens": 22}
+  }
+}
