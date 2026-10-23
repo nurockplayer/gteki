@@ -381,8 +381,9 @@ describe("representative gate arrays: the piece, the sites and the label", () =>
         bounds_m: { min: number[]; max: number[] };
       }[];
       const arrays = assets.filter((a) => a.family === "gate" && a.id.startsWith("gteki_gate_array_"));
-      expect(arrays.length).toBe(4);
-      const neutral = arrays.filter((a) => a.params.bidirectional);
+      expect(arrays.length).toBeGreaterThanOrEqual(4);
+      // An array has two or more aisles: the single wide-aisle piece (gteki_gate_array_1w) is not a stand-in for a gate line.
+      const neutral = arrays.filter((a) => a.params.bidirectional && a.params.aisles >= 2);
       expect([...neutral].sort((a, b) => a.triangles - b.triangles)[0]!.id, m).toBe(GATE);
       expect(arrays.find((a) => a.id.includes("oneway"))!.params.bidirectional).toBe(false);
       // The anchor numbers in kit.json are the piece's own: its first aisle's centre and its depth.
