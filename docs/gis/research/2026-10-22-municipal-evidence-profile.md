@@ -496,8 +496,8 @@ A CSV row is in the window when its point lies inside any disc; a vector feature
 | tokyo-muni-shinjuku-shelter-csv | NOT_CLEAN | lat/lon columns present but no valid coordinate rows |
 | tokyo-muni-toshima-shelter-csv | NOT_CLEAN | lat/lon columns present but no valid coordinate rows |
 | tokyo-muni-shinjuku-park-csv | NOT_CLEAN | no row inside any station window |
-| tokyo-emergency-route-zip | CLEAN_CANDIDATE | dataset-level CC BY 4.0 in the snapshot and terms; vector members present; CRS declared by a member; 23 feature(s)/row(s) touch a window |
-| tokyo-nishi-shinjuku-walk-zip | NOT_CLEAN | ZIP holds no vector files (coordinate tables only) |
+| tokyo-emergency-route-zip | CLEAN_CANDIDATE | dataset-level CC BY 4.0 in the snapshot and terms; vector members present; CRS declared by a member; 23 vector feature(s) touch a window; 0 coordinate-table row(s) in window |
+| tokyo-nishi-shinjuku-walk-zip | NOT_CLEAN | ZIP holds no vector files (coordinate tables only); no vector member was evaluated for station windows; 0 vector feature(s) touch a window; 923 coordinate-table row(s) in window |
 | tokyo-toei-station-info-csv | NOT_CLEAN | no lat/lon columns |
 | hokonavi-oedo-shinjuku-nishiguchi-package:res-network-csv-zip | UNKNOWN | dataset licence label is pdl-jp-1.0, outside the CC BY 4.0 rule; the resource licence field is null; not assessed by this rule |
 | hokonavi-oedo-shinjuku-nishiguchi-package:res-network-geojson-zip | UNKNOWN | dataset licence label is pdl-jp-1.0, outside the CC BY 4.0 rule; the resource licence field is null; not assessed by this rule |

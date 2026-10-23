@@ -180,7 +180,7 @@
     }
   ],
   "invalidated": {
-    "at": "2026-10-23T01:53:29.479Z",
+    "at": "2026-10-23T02:48:46.963Z",
     "by_command": "gis literals-report",
     "reason": "Report-writing command run outside real-run; rerun real-run before summarizing"
   }

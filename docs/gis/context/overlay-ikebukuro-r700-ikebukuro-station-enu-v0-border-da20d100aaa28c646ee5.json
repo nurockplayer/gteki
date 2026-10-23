@@ -1,5 +1,5 @@
 {
-  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-border-b5b092a058eaad42523a",
+  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-border-da20d100aaa28c646ee5",
   "command": "context-overlay",
   "policy_version": "context-overlay-v1",
   "station_id": "ikebukuro",
@@ -89,6 +89,6 @@
   },
   "bbox_local_ENU": null,
   "outputs": {},
-  "tool_input_sha256": "e183256195d0745cb3642e117a5a3527b7e8b50c13ca9d4af458ad73828a01c2",
+  "tool_input_sha256": "ee61e32afeec0242774859d2bee05870f9f13ce704b5e13a6615596ef9b30347",
   "tool_version": "0.1.0"
 }
