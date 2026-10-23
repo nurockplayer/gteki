@@ -414,7 +414,7 @@
     ],
     "note": "Conditional on R1 inferred EPSG:6668. Node containment and supplied polyline intersection with the PLATEAU geometry bbox only. No feature correspondence, floor match or route is established."
   },
-  "tool_input_sha256": "ca9ef46e121b7da44432c6b39e75b87bfc5be56e7e661fdd04e6bfbaefcbf403",
+  "tool_input_sha256": "d355cfb305eea2cf5ad0ae6f07c1b2990de94d8b22c036573f1ed2f61ca7ea19",
   "input_sources": [
     {
       "source_id": "plateau-13116-ubld-53394576",

@@ -53,9 +53,9 @@ for (const key of STATIONS) {
         }
       }
       save(testInfo, `${key}-navigation.json`, summaries);
-      // `stale` is a calendar verdict, so it stays in the evidence but not in the golden: a source ageing past
-      // staleAfterDays must not read as a routing change. The search-UI test checks the card says so instead.
-      expect(JSON.stringify(summaries, (k, v) => (k === "stale" ? undefined : v), 2)).toMatchSnapshot(`${key}-routes.json`);
+      // The golden is byte-for-byte an input of stations/ikebukuro/pipeline/build_kit_catalog.py (its sha256 is in
+      // kit_catalog.json), so it keeps the same shape as main, `stale` included.
+      expect(JSON.stringify(summaries, null, 2)).toMatchSnapshot(`${key}-routes.json`);
     });
 
     test(`${key}: deep link restores the same route after reload`, async ({ page }) => {
@@ -98,6 +98,7 @@ for (const key of STATIONS) {
     const stale = (await hooks.route(page))?.stale;
     const staleBadge = await card.locator(".badge.warn", { hasText: /Possibly outdated|情報が古い可能性/ }).isVisible();
     save(testInfo, `${key}-route-card.json`, { stale: stale ?? null, staleBadge });
+    expect.soft(typeof stale, "route() reports a freshness verdict").toBe("boolean");
     if (stale === true) expect.soft(staleBadge, "stale route says so on the card").toBe(true);
     await page.waitForTimeout(1200);
     await page.screenshot({ path: shotPath(testInfo, `${key}-03-route-card.png`) });

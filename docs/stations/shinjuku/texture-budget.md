@@ -55,6 +55,14 @@ Reasoning:
 | kit (#94, mobile tier with AO) | 12 | 0 | — |
 | **total** | **112** | **189.5** | **yes** |
 
+For #94, the regenerated catalog's mobile kit texture estimate is about 3.1 MB + 2.5 MiB for the ten escalator dressings at `ao_res: 256`, or approximately 5.6 MiB. This is an estimate from the Lane E AO figures, not a device measurement; the `Today` value above remains the measured flag-off baseline.
+
+Mobile additions and offsets (rule in docs/assets/texture-budget.md: until the mobile tier is back under its cap, each PR that adds mobile texture or geometry lists its saving here or says "no offset"):
+
+| PR | Adds (mobile) | Offset |
+|---|---|---|
+| #94 kit catalog: 10 escalator dressings `ao_res` 128 → 256 | about +2.5 MiB GPU per tier (estimate, Lane E figures) | **No offset.** Reason: the escalator AO charts cannot fit at 128 px (Lane E slot 3 build of catalog 3f33f35: LightmapOverflow on all 10, both tiers), so 128 is not buildable. Stairs stay at 128. |
+
 How to check it: run `texture-memory.test.ts`, or the same helper on another station's scene, and compare the low-tier rows with this table.
 
 Ikebukuro #180's sign atlas, 53–64 MiB on the phone, is above the 40 MiB signage line. Per the director it is **not blocked** by this line; the Friday real-phone shots decide it.

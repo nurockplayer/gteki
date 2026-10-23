@@ -1,0 +1,83 @@
+{
+  "format": "gteki-finish/0.1",
+  "id": "gteki_finish_wall_enamel_panel",
+  "kit_version": "0.1.0",
+  "tier": "mobile",
+  "role": "wall",
+  "gteki_role": "wall",
+  "facility": [
+    "passage",
+    "concourse"
+  ],
+  "use": "upper wall above the wainscot, column cladding",
+  "pattern": "warm white enamel; vertical 8 mm joints every 1.2 m (u = k x 1.2 m), no horizontal joint",
+  "source_material": "gteki_wall_panel_enamel",
+  "repeat_m": [
+    1.2,
+    1.2
+  ],
+  "uv": {
+    "u": "along the wall",
+    "v": "up",
+    "surface": "wall face",
+    "origin": "a repeat starts at u = k x repeat_m along the wall and at v = 0 on the floor"
+  },
+  "maps": {
+    "albedo": {
+      "file": "albedo.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 9746,
+      "sha256": "1d1bf9788239f95c88830cc031a80625240564eb153a7673fa4c4c5c1460ed44"
+    },
+    "orm": {
+      "file": "orm.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 10188,
+      "sha256": "1845fc97ddccbfb520791a1cf51f9f943cecb04c8553a0409e31babfa5add8b2"
+    },
+    "normal": {
+      "file": "normal.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 21211,
+      "sha256": "fb599b3fa80be49c79190b4692fe0a20f7bf445fccc4f9e4efcdc85a465a35ff"
+    }
+  },
+  "factors": {
+    "baseColorFactor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "roughnessFactor": 1.0,
+    "metallicFactor": 1.0
+  },
+  "omitted_maps": [],
+  "texel_density_px_per_m": [
+    426.7,
+    426.7
+  ],
+  "tint": false,
+  "sample_glb": "../glb/gteki_finish_wall_enamel_panel.glb",
+  "sample": {
+    "plane": "wall",
+    "repeats": 2,
+    "size_m": [
+      2.4,
+      2.4
+    ]
+  },
+  "dimension_basis": "synthetic",
+  "generator": "tools/blender/gteki_assets/finishes.py",
+  "license": "CC-BY-4.0 — original GTEki work; attribution: GTEki contributors",
+  "provenance": "original procedural geometry and textures; see assets/library/PROVENANCE.md"
+}

@@ -15,6 +15,9 @@ import { exactHash, fullDigest, protectOnly, stationDigest, visualDigest, withCa
  * candidate head). Colliders, walls, floors, fences, camera blockers, restricted-area output and the
  * post-build layout are compared byte for byte; visual meshes are compared as per-material triangle sets,
  * so re-batching is allowed but a changed, dropped or added triangle is not.
+ * #49 intentionally adds the visual escalator shell to the wall/ceiling entries only; all
+ * physical fields retain their original values. Removing those two batches reproduced
+ * the previous visual digest before updating the fixture.
  */
 const { bundle } = loadShinjukuBundle();
 const plan = planJson as unknown as Plan;
