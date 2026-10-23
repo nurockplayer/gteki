@@ -3,7 +3,7 @@
 // in tools/blender (PR #143; Blender is not needed here), the placements against the anchors, and determinism.
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,6 +18,7 @@ type V3 = [number, number, number];
 interface Entry {
   id: string;
   generator: string;
+  ao_res: number;
   anchor: string;
   params: Record<string, unknown>;
   dimension_basis: string;
@@ -60,8 +61,21 @@ const placed = JSON.parse(read("kit_placements.json")) as {
 const station = JSON.parse(readFileSync(join(STATION, "gteki", "station.json"), "utf8")) as { sources: { id: string; sha256?: Record<string, string> }[] };
 const gmlSha = station.sources.find((s) => s.id === "plateau-ubld-13116")!.sha256![anchors.source.gml]!;
 const byId = new Map(catalog.assets.map((a) => [a.id, a]));
+const WIDE_NOSINGS = [
+  "gteki_ik_stair_n21_r142_t300_w3055_nosing",
+  "gteki_ik_stair_n15_r164_t308_w8376_nosing",
+  "gteki_ik_stair_n19_r168_t328_w4347_nosing",
+  "gteki_ik_stair_n13_r165_t302_w8323_nosing",
+  "gteki_ik_stair_n10_r147_t302_w10522_nosing",
+];
 
 describe("kit_catalog.json", () => {
+  it("pins exactly the five wide nosings to 256 px AO and all other nosings to 128 px", () => {
+    const nosings = catalog.assets.filter((a) => a.id.endsWith("_nosing"));
+    expect(nosings.filter((a) => a.ao_res === 256).map((a) => a.id).sort()).toEqual([...WIDE_NOSINGS].sort());
+    for (const a of nosings) expect(a.ao_res, a.id).toBe(WIDE_NOSINGS.includes(a.id) ? 256 : 128);
+  });
+
   it("has the Lane E catalog shape, with valid unique ids", () => {
     expect(catalog.catalog).toBe("gteki-ikebukuro");
     expect(catalog.version).toBe("0.1.0");
@@ -254,6 +268,23 @@ describe("per-tier dressing subsets", () => {
 });
 
 describe("build_kit_catalog.py", () => {
+  it("fails before writing output if a survey no longer produces an AO override id", () => {
+    const dir = mkdtempSync(join(tmpdir(), "kit-missing-ao-"));
+    try {
+      const missingId = WIDE_NOSINGS[0]!;
+      const flights = new Set(placed.placements.filter((p) => p.ids.nosing === missingId).map((p) => p.anchor));
+      const path = join(dir, "anchors.json");
+      const outDir = join(dir, "out");
+      writeFileSync(path, JSON.stringify({ ...anchors, stair_flights: anchors.stair_flights.filter((f) => !flights.has(f.id)) }));
+      const r = spawnSync("python3", ["-I", SCRIPT, "--anchors", path, "--out-dir", outDir], { encoding: "utf8" });
+      expect(r.status, r.stderr).toBe(1);
+      expect(r.stderr).toContain(`AO override ids not produced: ${missingId}`);
+      expect(existsSync(outDir)).toBe(false);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it("is deterministic and reproduces the committed files", () => {
     const dirs = [mkdtempSync(join(tmpdir(), "kit-a-")), mkdtempSync(join(tmpdir(), "kit-b-"))];
     try {
