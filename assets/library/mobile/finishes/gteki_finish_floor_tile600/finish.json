@@ -1,0 +1,84 @@
+{
+  "format": "gteki-finish/0.1",
+  "id": "gteki_finish_floor_tile600",
+  "kit_version": "0.1.0",
+  "tier": "mobile",
+  "role": "floor",
+  "gteki_role": "floor",
+  "facility": [
+    "platform",
+    "back_of_house"
+  ],
+  "use": "platform and back-of-house floor",
+  "pattern": "light ceramic tile 600 x 600 mm, 5 mm grout",
+  "source_material": "gteki_floor_tile600",
+  "repeat_m": [
+    1.2,
+    1.2
+  ],
+  "uv": {
+    "u": "east",
+    "v": "north",
+    "surface": "floor, in the surface plane",
+    "origin": "a repeat starts where u and v are whole multiples of repeat_m from the surface origin"
+  },
+  "maps": {
+    "albedo": {
+      "file": "albedo.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 26139,
+      "sha256": "44afff520602304ff74e15b1c75e9cf3b38a011829a6e9f8b8ad272ad94b2ed2"
+    },
+    "orm": {
+      "file": "orm.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 21977,
+      "sha256": "520e62b0526dfe2beb52c1944a2d9d0a076c830ac19cc98572fa41d4fdef8547"
+    },
+    "normal": {
+      "file": "normal.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 89261,
+      "sha256": "c131c21cbb0c1060b194ea736aad1580edb20d6c56be1117296a68e548120d66"
+    }
+  },
+  "factors": {
+    "baseColorFactor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "roughnessFactor": 1.0,
+    "metallicFactor": 1.0
+  },
+  "omitted_maps": [],
+  "texel_density_px_per_m": [
+    426.7,
+    426.7
+  ],
+  "tint": false,
+  "sample_glb": "../glb/gteki_finish_floor_tile600.glb",
+  "sample": {
+    "plane": "floor",
+    "repeats": 2,
+    "size_m": [
+      2.4,
+      2.4
+    ]
+  },
+  "dimension_basis": "synthetic",
+  "generator": "tools/blender/gteki_assets/finishes.py",
+  "license": "CC-BY-4.0 — original GTEki work; attribution: GTEki contributors",
+  "provenance": "original procedural geometry and textures; see assets/library/PROVENANCE.md",
+  "mobile_normal_format": "png"
+}
