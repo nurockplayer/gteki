@@ -1,0 +1,84 @@
+{
+  "format": "gteki-finish/0.1",
+  "id": "gteki_finish_floor_granite_tile",
+  "kit_version": "0.1.0",
+  "tier": "mobile",
+  "role": "floor",
+  "gteki_role": "floor",
+  "facility": [
+    "paid_area",
+    "gate_surround"
+  ],
+  "use": "paid-side floor, gate surrounds and the 0.30 m border band",
+  "pattern": "dark granite tile 600 x 300 mm (u x v), 3 mm grout",
+  "source_material": "gteki_floor_granite_dark",
+  "repeat_m": [
+    1.2,
+    1.2
+  ],
+  "uv": {
+    "u": "east",
+    "v": "north",
+    "surface": "floor, in the surface plane",
+    "origin": "a repeat starts where u and v are whole multiples of repeat_m from the surface origin"
+  },
+  "maps": {
+    "albedo": {
+      "file": "albedo.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 39836,
+      "sha256": "f3c319c615fa6e5050c532ed257960712a2b69fb30465c01130d2fc3757d965f"
+    },
+    "orm": {
+      "file": "orm.jpg",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 27630,
+      "sha256": "1c53c663a1979679364d4b008a0d8a53902d5b96f5c710081cbe59a07d0b1fbd"
+    },
+    "normal": {
+      "file": "normal.png",
+      "size": [
+        512,
+        512
+      ],
+      "bytes": 89815,
+      "sha256": "7748b107e5d19f31a5340e1da27a88c705b4a339cf389ddc57d5620c1788a422"
+    }
+  },
+  "factors": {
+    "baseColorFactor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "roughnessFactor": 1.0,
+    "metallicFactor": 1.0
+  },
+  "omitted_maps": [],
+  "texel_density_px_per_m": [
+    426.7,
+    426.7
+  ],
+  "tint": false,
+  "sample_glb": "../glb/gteki_finish_floor_granite_tile.glb",
+  "sample": {
+    "plane": "floor",
+    "repeats": 2,
+    "size_m": [
+      2.4,
+      2.4
+    ]
+  },
+  "dimension_basis": "synthetic",
+  "generator": "tools/blender/gteki_assets/finishes.py",
+  "license": "CC-BY-4.0 — original GTEki work; attribution: GTEki contributors",
+  "provenance": "original procedural geometry and textures; see assets/library/PROVENANCE.md",
+  "mobile_normal_format": "png"
+}

@@ -1,0 +1,84 @@
+{
+  "format": "gteki-finish/0.1",
+  "id": "gteki_finish_wall_kick_plate",
+  "kit_version": "0.1.0",
+  "tier": "mobile",
+  "role": "trim",
+  "gteki_role": "wall",
+  "facility": [
+    "passage",
+    "concourse",
+    "paid_area"
+  ],
+  "use": "skirting and kick zone along the wall foot",
+  "pattern": "brushed steel, streaks along u",
+  "source_material": "gteki_steel_brushed",
+  "repeat_m": [
+    0.5,
+    0.5
+  ],
+  "uv": {
+    "u": "along the wall",
+    "v": "up",
+    "surface": "wall face",
+    "origin": "a repeat starts at u = k x repeat_m along the wall and at v = 0 on the floor"
+  },
+  "maps": {
+    "albedo": {
+      "file": "albedo.jpg",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 6368,
+      "sha256": "29ea0bb2f6e6cffcb2c5668444e50b88b48cb4e3817b7c74be3f3460af2024b6"
+    },
+    "orm": {
+      "file": "orm.jpg",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 6194,
+      "sha256": "f3f9b22d09a581e0eac78e7dedb445717ef492bcdb8202ecff531b5db6566224"
+    },
+    "normal": {
+      "file": "normal.jpg",
+      "size": [
+        256,
+        256
+      ],
+      "bytes": 4100,
+      "sha256": "79ce1bf4dafeaeab6490e2a91d220ddcc5b06afb516eeb6467a9951399f94960"
+    }
+  },
+  "factors": {
+    "baseColorFactor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "roughnessFactor": 1.0,
+    "metallicFactor": 1.0
+  },
+  "omitted_maps": [],
+  "texel_density_px_per_m": [
+    512.0,
+    512.0
+  ],
+  "tint": false,
+  "sample_glb": "../glb/gteki_finish_wall_kick_plate.glb",
+  "sample": {
+    "plane": "wall",
+    "repeats": 2,
+    "size_m": [
+      1.0,
+      1.0
+    ]
+  },
+  "dimension_basis": "synthetic",
+  "generator": "tools/blender/gteki_assets/finishes.py",
+  "license": "CC-BY-4.0 — original GTEki work; attribution: GTEki contributors",
+  "provenance": "original procedural geometry and textures; see assets/library/PROVENANCE.md"
+}
