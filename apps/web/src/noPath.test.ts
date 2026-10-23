@@ -9,16 +9,16 @@ const one = (evidence: "unknown" | "known" | "mixed" | null, complete = true, op
 describe("no_path failure card text", () => {
   it("names the one option, in the toggle's own label, and says unsurveyed only for UNKNOWN facts", () => {
     expect(noPathView(strings("en"), one("unknown"))).toEqual({
-      text: 'No verified route with "Step-free" on. The connection found uses passages whose step-free access is not surveyed.',
+      text: 'No route confirmed in the surveyed data with "Step-free" on. The connection found uses passages whose step-free access is not surveyed.',
       relax: ["stepFree"], all: false,
     });
-    expect(noPathView(strings("ja"), one("unknown"))?.text).toBe("「段差なし」をオンにしたままでは、確認済みのルートがありません。 見つかった経路は、段差の有無が未調査の通路を通ります。");
+    expect(noPathView(strings("ja"), one("unknown"))?.text).toBe("「段差なし」をオンにしたままでは、データ上で確認できたルートがありません。 見つかった経路は、段差の有無が未調査の通路を通ります。");
     const known = noPathView(strings("en"), one("known"));
     expect(known?.text).toContain("stairs, escalators");
     expect(known?.text).not.toContain("not surveyed");
     // Mixed or unattributable evidence claims neither.
-    expect(noPathView(strings("en"), one("mixed"))?.text).toBe('No verified route with "Step-free" on.');
-    expect(noPathView(strings("en"), one(null, false))?.text).toBe('No verified route with "Step-free" on.');
+    expect(noPathView(strings("en"), one("mixed"))?.text).toBe('No route confirmed in the surveyed data with "Step-free" on.');
+    expect(noPathView(strings("en"), one(null, false))?.text).toBe('No route confirmed in the surveyed data with "Step-free" on.');
   });
 
   it("softens 'uses' to 'includes' when the refusal could not be fully attributed", () => {
@@ -29,13 +29,13 @@ describe("no_path failure card text", () => {
 
   it("lists several sufficient options and offers one button per option", () => {
     const v = noPathView(strings("en"), { kind: "option", options: [{ option: "stepFree", evidence: "known", complete: true }, { option: "strictHours", evidence: "unknown", complete: true }] });
-    expect(v).toEqual({ text: "Turning off any one of these finds a route: Step-free / Verified hours only", relax: ["stepFree", "strictHours"], all: false });
+    expect(v).toEqual({ text: "Turning off any one of these finds a route: Step-free / Only places with listed hours", relax: ["stepFree", "strictHours"], all: false });
   });
 
   it("a combination lists all and offers a single turn-all-off button", () => {
     const v = noPathView(strings("en"), { kind: "combination", options: ["stepFree", "unpaidOnly", "strictHours"] });
-    expect(v).toEqual({ text: "Turning off all of Step-free / Outside gates only / Verified hours only finds a route.", relax: ["stepFree", "unpaidOnly", "strictHours"], all: true });
-    expect(noPathView(strings("ja"), { kind: "combination", options: ["stepFree", "strictHours"] })?.text).toBe("段差なし・営業時間確認済みのみをすべてオフにすると経路が見つかります。");
+    expect(v).toEqual({ text: "Turning off all of Step-free / Outside gates only / Only places with listed hours finds a route.", relax: ["stepFree", "unpaidOnly", "strictHours"], all: true });
+    expect(noPathView(strings("ja"), { kind: "combination", options: ["stepFree", "strictHours"] })?.text).toBe("段差なし・営業時間が記載されたもののみをすべてオフにすると経路が見つかります。");
   });
 
   it("an endpoint refusal says which end, inside versus not known outside, with no passage evidence", () => {
@@ -51,7 +51,7 @@ describe("no_path failure card text", () => {
   });
 
   it("none says even with every option off when an option was on; with none on it keeps the generic text", () => {
-    expect(noPathView(strings("en"), { kind: "none", relaxed: ["stepFree"] })?.text).toBe("Even with every option off, verified passages don't connect these points; the link may not be surveyed yet.");
+    expect(noPathView(strings("en"), { kind: "none", relaxed: ["stepFree"] })?.text).toBe("Even with every option off, passages confirmed in the surveyed data don't connect these points; the link may not be surveyed yet.");
     expect(noPathView(strings("ja"), { kind: "none", relaxed: ["stepFree"] })?.text).toContain("すべての条件をオフにしても");
     expect(noPathView(strings("en"), { kind: "none", relaxed: [] })).toBeNull();
   });
