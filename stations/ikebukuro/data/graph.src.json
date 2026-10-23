@@ -128,6 +128,34 @@
  },
  "sources": [
   {
+   "id": "ksj-n02-2025",
+   "title": "KSJ N02-2025 railway data (stations and railway sections)",
+   "publisher": "MLIT National Land Information (KSJ)",
+   "url": "https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html",
+   "downloadUrls": [
+    "https://nlftp.mlit.go.jp/ksj/gml/data/N02/N02-25/N02-25_GML.zip"
+   ],
+   "license": {
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+   },
+   "rights": "REUSABLE_WITH_CONDITIONS",
+   "attribution": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成",
+   "modified": true,
+   "retrievedAt": "2026-10-22T12:04:24.314Z",
+   "datasetDate": "2025",
+   "sha256": {
+    "N02-25_GML.zip": "aaf76af133b2e771e538fabc4646d2e443dc1d5a67b221382a28d744e706cc9f",
+    "context/ksj_n02_2025_r700.glb": "28ae48bc9ea9798587d57a9a6649b3ea0a23119ae1705db7530cd4c0b1bf94ec"
+   },
+   "derivation": "tools/gis context-overlay run overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3 (receipt docs/gis/context/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3.json): station and railway geometry, coarse kind and feature hash only, clipped to a 700 m origin disc; no name, code or attribute; rendered 0.02 m above its z basis as a scene-side render offset, not data z",
+   "gteki_role": "context",
+   "navigation_use": "NOT_FOR_ROUTING",
+   "visual_only": true,
+   "verification": "UNVERIFIED",
+   "notes": "Visual-only UNVERIFIED context; NOT_FOR_ROUTING. N02 has no underground versus at-grade field; no track level is asserted. Constant z basis 32.5 m (street floor renderElevationM), no datum assertion or drape. Upstream ZIP: 14,903,774 bytes; derived GLB: 16,728 bytes. CC BY 4.0, credit and change notice required."
+  },
+  {
    "id": "plateau-ubld-13116",
    "title": "PLATEAU 豊島区 2025 地下街モデル (ubld) 53394576 — 池袋駅_B1地下通路",
    "publisher": "国土交通省 Project PLATEAU (source survey: 東京都 2023 LidarSLAM)",
@@ -5707,6 +5735,19 @@
   "sw_h"
  ],
  "assets": [
+  {
+   "id": "ksj-n02-context",
+   "uri": "context/ksj_n02_2025_r700.glb",
+   "format": "glb",
+   "floorIds": [
+    "street"
+   ],
+   "sourceIds": [
+    "ksj-n02-2025"
+   ],
+   "role": "visual",
+   "derivation": "tools/gis context-overlay run overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3 (receipt docs/gis/context/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3.json): station and railway geometry, coarse kind and feature hash only, clipped to a 700 m origin disc; no name, code or attribute; rendered 0.02 m above its z basis as a scene-side render offset, not data z"
+  },
   {
    "id": "b1",
    "uri": "assets/ikebukuro_b1.glb",

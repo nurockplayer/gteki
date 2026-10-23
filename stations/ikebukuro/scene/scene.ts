@@ -14,6 +14,7 @@ import { loadSignKit } from "./kit_signs.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { createAmbience } from "./ambience.ts";
 import { CONTEXT_GLB, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
+import { loadN02Overlay } from "./n02_overlay.ts";
 import crowdLanes from "./crowd_lanes.json";
 import finishManifest from "./finishes.json";
 import signage from "./signage.json";
@@ -432,6 +433,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   let context: THREE_NS.Object3D | null = null;
   let contextMaterial: THREE_NS.Material | null = null;
   let disposed = false;
+  const n02Overlay = loadN02Overlay(THREE, ctx, root);
   ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
     (loaded) => {
       const material = createContextMaterial(THREE);
@@ -455,6 +457,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   const probe = meshesByRole.get("floor")?.[0] ?? [...meshesByRole.values()].flat()[0] ?? null;
   const cameraTrack = probe ? trackCamera(probe) : null;
   const setContext = (show: boolean) => {
+    n02Overlay.setVisible(show && context !== null);
     if (!context) return;
     if (show && context.parent !== root) root.add(context);
     else if (!show && context.parent === root) root.remove(context);
@@ -533,6 +536,7 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
       ambience?.dispose();
       cameraTrack?.dispose();
       disposed = true;
+      n02Overlay.dispose();
       contextBlockers.dispose();
       if (context) {
         setContext(false);
