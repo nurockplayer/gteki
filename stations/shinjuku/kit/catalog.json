@@ -493,7 +493,7 @@
       "params": {
         "rise_mm": 19100,
         "width_mm": 1150,
-        "run_mm": 33250,
+        "run_mm": 34000,
         "landing_mm": 800,
         "flat_steps": 2,
         "parts": [
@@ -509,82 +509,10 @@
         "escalator"
       ],
       "dimension_basis": "synthetic",
-      "notes": "Comb plates and newels for 5 drawn escalator run(s), graph edges: e:06a78a8f616c4a75a7b4eece6a295c4c, e:2768d162a2d648cf9df2fc76ca89257f, e:4fc06b0d45184e66aaa3bb1ea9ddcd62, e:ac906cd95e89401b9b11858e02f20895, e:d1463e426fa54a42876cc397b8a1d71d. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 19.13 m). run_mm = plan length of the edge (35.60 m for the first run) minus 2.4 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m + 0.8 m transition) lands the two comb lines on the two end nodes; the implied incline is 29.9 degrees. Rounding moves the top comb by at most 3.0 cm in height and 12.2 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
+      "notes": "Comb plates and newels for 6 drawn escalator run(s), graph edges: e:06a78a8f616c4a75a7b4eece6a295c4c, e:2768d162a2d648cf9df2fc76ca89257f, e:4fc06b0d45184e66aaa3bb1ea9ddcd62, e:ac906cd95e89401b9b11858e02f20895, e:d1463e426fa54a42876cc397b8a1d71d, e:fc787100b15241da8b07d38622acbfd7. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 19.13 m). run_mm = plan length of the edge (35.60 m for the first run) minus 1.6 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m; run_mm already holds the eased transitions) lands the two comb lines on the two end nodes; the implied incline is 29.9 degrees (the generator's straight incline is run_mm minus one 0.8 m transition run). Rounding moves the top comb by at most 3.0 cm in height and 11.3 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
     },
     {
       "id": "gteki_sj_escalator_2692fe08",
-      "generator": "escalator_dressing",
-      "params": {
-        "rise_mm": 15900,
-        "width_mm": 1150,
-        "run_mm": 27750,
-        "landing_mm": 800,
-        "flat_steps": 2,
-        "parts": [
-          "comb",
-          "newel"
-        ]
-      },
-      "ao_res": 256,
-      "anchor": "linear_run",
-      "gteki_role": null,
-      "tags": [
-        "dressing",
-        "escalator"
-      ],
-      "dimension_basis": "synthetic",
-      "notes": "Comb plates and newels for 3 drawn escalator run(s), graph edges: e:2692fe08625f4a3f92d69a1380a58ccd, e:e1fa653048b94a5695777d1063b34417, e:fd3365c80feb4bcab0437f74db5ad68d. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 15.94 m). run_mm = plan length of the edge (30.14 m for the first run) minus 2.4 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m + 0.8 m transition) lands the two comb lines on the two end nodes; the implied incline is 29.8 degrees. Rounding moves the top comb by at most 4.0 cm in height and 8.5 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
-    },
-    {
-      "id": "gteki_sj_escalator_296f6709",
-      "generator": "escalator_dressing",
-      "params": {
-        "rise_mm": 7300,
-        "width_mm": 1150,
-        "run_mm": 13750,
-        "landing_mm": 800,
-        "flat_steps": 2,
-        "parts": [
-          "comb",
-          "newel"
-        ]
-      },
-      "ao_res": 256,
-      "anchor": "linear_run",
-      "gteki_role": null,
-      "tags": [
-        "dressing",
-        "escalator"
-      ],
-      "dimension_basis": "synthetic",
-      "notes": "Comb plates and newels for 2 drawn escalator run(s), graph edges: e:296f6709397b47faa8cbf2c36135a619, e:42a9f8829d984243af47ff8328e698f6. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 7.26 m). run_mm = plan length of the edge (16.14 m for the first run) minus 2.4 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m + 0.8 m transition) lands the two comb lines on the two end nodes; the implied incline is 28.0 degrees. Rounding moves the top comb by at most 4.0 cm in height and 0.8 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
-    },
-    {
-      "id": "gteki_sj_escalator_4b7d9463",
-      "generator": "escalator_dressing",
-      "params": {
-        "rise_mm": 11900,
-        "width_mm": 1150,
-        "run_mm": 23000,
-        "landing_mm": 800,
-        "flat_steps": 2,
-        "parts": [
-          "comb",
-          "newel"
-        ]
-      },
-      "ao_res": 256,
-      "anchor": "linear_run",
-      "gteki_role": null,
-      "tags": [
-        "dressing",
-        "escalator"
-      ],
-      "dimension_basis": "synthetic",
-      "notes": "Comb plates and newels for 2 drawn escalator run(s), graph edges: e:4b7d94635d1b429da986ac22f37cf89d, e:fe73ae6ffa784eb294383dacb8a2a38d. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 11.87 m). run_mm = plan length of the edge (25.48 m for the first run) minus 2.4 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m + 0.8 m transition) lands the two comb lines on the two end nodes; the implied incline is 27.4 degrees. Rounding moves the top comb by at most 3.0 cm in height and 8.3 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
-    },
-    {
-      "id": "gteki_sj_escalator_6113a228",
       "generator": "escalator_dressing",
       "params": {
         "rise_mm": 15900,
@@ -605,7 +533,79 @@
         "escalator"
       ],
       "dimension_basis": "synthetic",
-      "notes": "Comb plates and newels for 1 drawn escalator run(s), graph edges: e:6113a2285c9143b9854ec8473455c64c. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 15.94 m). run_mm = plan length of the edge (30.90 m for the first run) minus 2.4 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m + 0.8 m transition) lands the two comb lines on the two end nodes; the implied incline is 29.2 degrees. Rounding moves the top comb by at most 4.0 cm in height and 0.4 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
+      "notes": "Comb plates and newels for 3 drawn escalator run(s), graph edges: e:2692fe08625f4a3f92d69a1380a58ccd, e:e1fa653048b94a5695777d1063b34417, e:fd3365c80feb4bcab0437f74db5ad68d. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 15.94 m). run_mm = plan length of the edge (30.14 m for the first run) minus 1.6 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m; run_mm already holds the eased transitions) lands the two comb lines on the two end nodes; the implied incline is 29.9 degrees (the generator's straight incline is run_mm minus one 0.8 m transition run). Rounding moves the top comb by at most 4.0 cm in height and 9.0 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
+    },
+    {
+      "id": "gteki_sj_escalator_296f6709",
+      "generator": "escalator_dressing",
+      "params": {
+        "rise_mm": 7300,
+        "width_mm": 1150,
+        "run_mm": 14500,
+        "landing_mm": 800,
+        "flat_steps": 2,
+        "parts": [
+          "comb",
+          "newel"
+        ]
+      },
+      "ao_res": 256,
+      "anchor": "linear_run",
+      "gteki_role": null,
+      "tags": [
+        "dressing",
+        "escalator"
+      ],
+      "dimension_basis": "synthetic",
+      "notes": "Comb plates and newels for 2 drawn escalator run(s), graph edges: e:296f6709397b47faa8cbf2c36135a619, e:42a9f8829d984243af47ff8328e698f6. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 7.26 m). run_mm = plan length of the edge (16.14 m for the first run) minus 1.6 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m; run_mm already holds the eased transitions) lands the two comb lines on the two end nodes; the implied incline is 28.1 degrees (the generator's straight incline is run_mm minus one 0.8 m transition run). Rounding moves the top comb by at most 4.0 cm in height and 5.4 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
+    },
+    {
+      "id": "gteki_sj_escalator_4b7d9463",
+      "generator": "escalator_dressing",
+      "params": {
+        "rise_mm": 11900,
+        "width_mm": 1150,
+        "run_mm": 24000,
+        "landing_mm": 800,
+        "flat_steps": 2,
+        "parts": [
+          "comb",
+          "newel"
+        ]
+      },
+      "ao_res": 256,
+      "anchor": "linear_run",
+      "gteki_role": null,
+      "tags": [
+        "dressing",
+        "escalator"
+      ],
+      "dimension_basis": "synthetic",
+      "notes": "Comb plates and newels for 1 drawn escalator run(s), graph edges: e:4b7d94635d1b429da986ac22f37cf89d. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 11.87 m). run_mm = plan length of the edge (25.48 m for the first run) minus 1.6 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m; run_mm already holds the eased transitions) lands the two comb lines on the two end nodes; the implied incline is 27.2 degrees (the generator's straight incline is run_mm minus one 0.8 m transition run). Rounding moves the top comb by at most 3.0 cm in height and 11.7 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
+    },
+    {
+      "id": "gteki_sj_escalator_6113a228",
+      "generator": "escalator_dressing",
+      "params": {
+        "rise_mm": 15900,
+        "width_mm": 1150,
+        "run_mm": 29250,
+        "landing_mm": 800,
+        "flat_steps": 2,
+        "parts": [
+          "comb",
+          "newel"
+        ]
+      },
+      "ao_res": 256,
+      "anchor": "linear_run",
+      "gteki_role": null,
+      "tags": [
+        "dressing",
+        "escalator"
+      ],
+      "dimension_basis": "synthetic",
+      "notes": "Comb plates and newels for 1 drawn escalator run(s), graph edges: e:6113a2285c9143b9854ec8473455c64c. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 15.94 m). run_mm = plan length of the edge (30.90 m for the first run) minus 1.6 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m; run_mm already holds the eased transitions) lands the two comb lines on the two end nodes; the implied incline is 29.2 degrees (the generator's straight incline is run_mm minus one 0.8 m transition run). Rounding moves the top comb by at most 4.0 cm in height and 5.4 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
     },
     {
       "id": "gteki_sj_escalator_7628a98a",
@@ -613,7 +613,7 @@
       "params": {
         "rise_mm": 15900,
         "width_mm": 1150,
-        "run_mm": 28750,
+        "run_mm": 29500,
         "landing_mm": 800,
         "flat_steps": 2,
         "parts": [
@@ -629,7 +629,7 @@
         "escalator"
       ],
       "dimension_basis": "synthetic",
-      "notes": "Comb plates and newels for 2 drawn escalator run(s), graph edges: e:7628a98a51a543b0a6a2a1bc8f5328e0, e:abdb4369e9ba4070b7a2693b71bdaae9. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 15.94 m). run_mm = plan length of the edge (31.12 m for the first run) minus 2.4 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m + 0.8 m transition) lands the two comb lines on the two end nodes; the implied incline is 28.9 degrees. Rounding moves the top comb by at most 4.0 cm in height and 5.4 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
+      "notes": "Comb plates and newels for 2 drawn escalator run(s), graph edges: e:7628a98a51a543b0a6a2a1bc8f5328e0, e:abdb4369e9ba4070b7a2693b71bdaae9. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 15.94 m). run_mm = plan length of the edge (31.12 m for the first run) minus 1.6 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m; run_mm already holds the eased transitions) lands the two comb lines on the two end nodes; the implied incline is 29.0 degrees (the generator's straight incline is run_mm minus one 0.8 m transition run). Rounding moves the top comb by at most 4.0 cm in height and 10.4 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
     },
     {
       "id": "gteki_sj_escalator_88ef3d09",
@@ -637,7 +637,7 @@
       "params": {
         "rise_mm": 8400,
         "width_mm": 1150,
-        "run_mm": 16750,
+        "run_mm": 17500,
         "landing_mm": 800,
         "flat_steps": 2,
         "parts": [
@@ -653,7 +653,7 @@
         "escalator"
       ],
       "dimension_basis": "synthetic",
-      "notes": "Comb plates and newels for 1 drawn escalator run(s), graph edges: e:88ef3d09d7b240b18754ee19bbeae3e1. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 8.40 m). run_mm = plan length of the edge (19.03 m for the first run) minus 2.4 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m + 0.8 m transition) lands the two comb lines on the two end nodes; the implied incline is 26.6 degrees. Rounding moves the top comb by at most 0.0 cm in height and 11.7 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
+      "notes": "Comb plates and newels for 1 drawn escalator run(s), graph edges: e:88ef3d09d7b240b18754ee19bbeae3e1. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 8.40 m). run_mm = plan length of the edge (19.03 m for the first run) minus 1.6 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m; run_mm already holds the eased transitions) lands the two comb lines on the two end nodes; the implied incline is 26.7 degrees (the generator's straight incline is run_mm minus one 0.8 m transition run). Rounding moves the top comb by at most 0.0 cm in height and 6.7 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
     },
     {
       "id": "gteki_sj_escalator_904c66c3",
@@ -661,7 +661,7 @@
       "params": {
         "rise_mm": 8400,
         "width_mm": 1150,
-        "run_mm": 17000,
+        "run_mm": 18000,
         "landing_mm": 800,
         "flat_steps": 2,
         "parts": [
@@ -677,7 +677,7 @@
         "escalator"
       ],
       "dimension_basis": "synthetic",
-      "notes": "Comb plates and newels for 1 drawn escalator run(s), graph edges: e:904c66c36c1440ea8c6261ec2356bf72. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 8.40 m). run_mm = plan length of the edge (19.48 m for the first run) minus 2.4 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m + 0.8 m transition) lands the two comb lines on the two end nodes; the implied incline is 26.3 degrees. Rounding moves the top comb by at most 0.0 cm in height and 8.4 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
+      "notes": "Comb plates and newels for 1 drawn escalator run(s), graph edges: e:904c66c36c1440ea8c6261ec2356bf72. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 8.40 m). run_mm = plan length of the edge (19.48 m for the first run) minus 1.6 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m; run_mm already holds the eased transitions) lands the two comb lines on the two end nodes; the implied incline is 26.0 degrees (the generator's straight incline is run_mm minus one 0.8 m transition run). Rounding moves the top comb by at most 0.0 cm in height and 11.6 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
     },
     {
       "id": "gteki_sj_escalator_d573063b",
@@ -685,7 +685,7 @@
       "params": {
         "rise_mm": 8400,
         "width_mm": 1150,
-        "run_mm": 13000,
+        "run_mm": 13750,
         "landing_mm": 800,
         "flat_steps": 2,
         "parts": [
@@ -701,15 +701,15 @@
         "escalator"
       ],
       "dimension_basis": "synthetic",
-      "notes": "Comb plates and newels for 1 drawn escalator run(s), graph edges: e:d573063b997e42f3b146ffeec98aed38. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 8.40 m). run_mm = plan length of the edge (15.40 m for the first run) minus 2.4 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m + 0.8 m transition) lands the two comb lines on the two end nodes; the implied incline is 32.9 degrees. Rounding moves the top comb by at most 0.0 cm in height and 0.3 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
+      "notes": "Comb plates and newels for 1 drawn escalator run(s), graph edges: e:d573063b997e42f3b146ffeec98aed38. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 8.40 m). run_mm = plan length of the edge (15.40 m for the first run) minus 1.6 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m; run_mm already holds the eased transitions) lands the two comb lines on the two end nodes; the implied incline is 33.0 degrees (the generator's straight incline is run_mm minus one 0.8 m transition run). Rounding moves the top comb by at most 0.0 cm in height and 4.7 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
     },
     {
-      "id": "gteki_sj_escalator_fc787100",
+      "id": "gteki_sj_escalator_fe73ae6f",
       "generator": "escalator_dressing",
       "params": {
-        "rise_mm": 19100,
+        "rise_mm": 11900,
         "width_mm": 1150,
-        "run_mm": 33000,
+        "run_mm": 23750,
         "landing_mm": 800,
         "flat_steps": 2,
         "parts": [
@@ -725,7 +725,7 @@
         "escalator"
       ],
       "dimension_basis": "synthetic",
-      "notes": "Comb plates and newels for 1 drawn escalator run(s), graph edges: e:fc787100b15241da8b07d38622acbfd7. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 19.13 m). run_mm = plan length of the edge (35.49 m for the first run) minus 2.4 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m + 0.8 m transition) lands the two comb lines on the two end nodes; the implied incline is 30.1 degrees. Rounding moves the top comb by at most 3.0 cm in height and 8.7 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
+      "notes": "Comb plates and newels for 1 drawn escalator run(s), graph edges: e:fe73ae6ffa784eb294383dacb8a2a38d. Shinjuku heights are symbolic (station.json hM is null), so every dimension below is the rise, length and width the scene draws between the two end nodes of the graph edge, not a survey. rise_mm = drawn rise rounded to 100 mm (first run: 11.87 m). run_mm = plan length of the edge (25.47 m for the first run) minus 1.6 m, rounded to 250 mm, so that the comb-to-comb run of the piece (run_mm + 2 x 2 flat steps x 0.4 m; run_mm already holds the eased transitions) lands the two comb lines on the two end nodes; the implied incline is 27.4 degrees (the generator's straight incline is run_mm minus one 0.8 m transition run). Rounding moves the top comb by at most 3.0 cm in height and 12.5 cm along the run for the grouped runs. width_mm = scene escalator width estimate (1.25 m for every escalator, a visual constant) minus the 0.1 m the scene takes off for the steps. landing_mm and flat_steps are the kit defaults, written out so the build is reproducible; they are not Shinjuku facts. parts: comb and newel only; truss, steps, balustrade panels and handrails stay as drawn by the scene. Origin: bottom comb line = the lower end node of the edge."
     },
     {
       "id": "gteki_sj_gate_1w_w1020",

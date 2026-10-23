@@ -107,10 +107,12 @@ export function combRunM(params: Record<string, unknown>): number | null {
   if (stated !== null) return stated;
   const rise = num(params.rise_mm);
   if (rise === null) return null;
-  const run = num(params.run_mm) ?? (num(params.angle_deg) !== null ? (rise / Math.tan((num(params.angle_deg)! * Math.PI) / 180)) : null);
+  // run_mm already holds the eased transitions; from angle_deg the run is rise / tan(angle) plus one transition run.
+  const angle = num(params.angle_deg);
+  const run = num(params.run_mm) ?? (angle !== null ? rise / Math.tan((angle * Math.PI) / 180) + ESCALATOR_TRANSITION_M * 1000 : null);
   if (run === null) return null;
   const flat = num(params.flat_steps) ?? ESCALATOR_FLAT_STEPS;
-  return run / 1000 + 2 * flat * ESCALATOR_STEP_DEPTH_M + ESCALATOR_TRANSITION_M;
+  return run / 1000 + 2 * flat * ESCALATOR_STEP_DEPTH_M;
 }
 
 /**
