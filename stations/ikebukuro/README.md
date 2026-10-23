@@ -191,6 +191,17 @@ library's `_h3200` variant is round only and no kit-matched round column is tall
 sleeve (42 square, 103 round), 136 are listed with a reason and keep the flat column. The PLATEAU column stays in `barriers` and stays the collider; the sleeve is visual only. The finish is the
 kit's generic tile or enamel, not a survey of the real columns.
 
+**Kit sign frames (batch 3).** `scene/kit_signs.ts` stretches `gteki_sign_frame_9slice_h480_d80` around each
+sign using the fitted face dimensions from `buildSigns`, centred and facing with the existing sign. The outer width
+includes the two 3 cm side bars so the opening contains both faces, clamped to 0.5–6.1 m with a warning outside that
+range. Low-ceiling frames match the existing panel height; flush signs have no rods. Other rods and their ceiling
+canopies meet `ceilingZ`. Faces sit 1 mm inside the kit's recessed face plane; a failed kit keeps the original sign
+box and faces. Each part is one instance batch for the whole station, not per kit tile (fewer draws: about +40 draws p50 on desktop instead of +213 with 16 m tiles, spec 13 on 2026-10-23), and visual only. These are generic Lane E presentation
+(CC BY 4.0, GTEki contributors), not a survey of the real Ikebukuro housings. `loadSignKit` offers
+`omitPhoneRods`, which `scene.ts` turns on: phones keep the frames but not the rods, collars and canopies (all 119
+frames: ~123k triangles on desktop, ~40k on phones with rods, ~19k without). The real-GLB triangle report is printed
+by `scene/kit_signs.test.ts`.
+
 **Dressing anchors.** `python3 -I pipeline/build_dressing_anchors.py` (from `build/ubld_enu.json`; it refuses an
 extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressing_anchors.json`, ENU metres to
 1 mm, deterministic. Facts only, derived from the surveyed EF_35 and EF_80 triangles:
