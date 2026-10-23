@@ -37,7 +37,11 @@ export function identityTexture(quality: "low" | "high") {
   g.fillStyle = "#555961";
   g.fillRect(72, 440, 880, 2);
   g.font = `600 48px ${IDENTITY_FONT_STACK}`;
-  g.fillText("E27  都営大江戸線", 72, 493);
+  // Line colour sits beside the line name it stands for (#342 ruling 3).
+  g.fillStyle = OEDO_MAGENTA;
+  g.fillRect(72, 457, 36, 36);
+  g.fillStyle = "#555961";
+  g.fillText("E27  都営大江戸線", 124, 493);
   const texture = new THREE.CanvasTexture(c);
   texture.name = "GTEki Shinjuku identity (original design)";
   texture.colorSpace = THREE.SRGBColorSpace;
