@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
 import { FadeAwareGTAOPass } from "./postfx.ts";
 import { AVATAR_DITHER_DISCARD } from "./avatarDither.ts";
+import { createAvatarRig } from "./avatarSelection.ts";
+import { fadeUniform, skinnedAvatarFixture } from "./avatarGlb.fixture.ts";
 
 describe("FadeAwareGTAOPass", () => {
   afterEach(() => vi.restoreAllMocks());
@@ -131,5 +133,28 @@ describe("FadeAwareGTAOPass", () => {
     const dispose = vi.spyOn(draws[0]![0]!, "dispose");
     pass.dispose();
     expect(dispose).toHaveBeenCalled();
+  });
+
+  it("follows the current rig root after an async skinned avatar swap", async () => {
+    const asset = skinnedAvatarFixture();
+    // The existing GTAO path supports single-material meshes; array-material coverage remains a visual gate.
+    const mesh: THREE.SkinnedMesh = asset.mesh;
+    mesh.material = asset.materials[0]!;
+    const rig = createAvatarRig({ quality: "low", glbUrl: "/avatar.glb", loader: { loadAsync: async () => asset } });
+    const previousRoot = rig.root;
+    const pass = makePass();
+    pass.setFade(previousRoot, 0.4);
+    await rig.loadGlb();
+    const original = mesh.material;
+    let drawn: THREE.Material | undefined;
+    vi.spyOn(GTAOPass.prototype, "render").mockImplementation(() => { drawn = mesh.material as THREE.Material; });
+    pass.setFade(rig.root, 0.4); // same per-frame root lookup as Explorer
+    pass.render(...args);
+    expect(rig.root).not.toBe(previousRoot);
+    expect(drawn).toBeInstanceOf(THREE.MeshNormalMaterial);
+    expect(fadeUniform(drawn!).value).toBe(0.4);
+    expect(mesh.material).toBe(original);
+    rig.dispose();
+    pass.dispose();
   });
 });

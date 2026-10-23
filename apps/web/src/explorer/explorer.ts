@@ -29,7 +29,7 @@ import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, fr
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
 import { StationCaches } from "./stationCaches.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
-import { createAvatar, type AvatarRig } from "./avatar.ts";
+import { createAvatarRig, type AvatarSelection } from "./avatarSelection.ts";
 import { avatarMotion } from "./avatarMotion.ts";
 import { contactShadow } from "./contactShadow.ts";
 import { followShadow, type FollowShadowInfo } from "./followShadow.ts";
@@ -44,6 +44,8 @@ import { occludedLineStyle, type OccludedLineStyle } from "./occludedLine.ts";
 import { BLOOM_HEADROOM, OVERLAY_INPUT_MIN, compensate, linearToSrgb, type Vec3 } from "./toneComp.ts";
 
 export type ExplorerMode = "overview" | "walk" | "guide";
+
+export interface ExplorerOptions { avatarGlbUrl?: string }
 
 /** The walker-following sun shadow's fixed inputs (set at attach) and what it currently holds. */
 interface ShadowFit {
@@ -233,7 +235,7 @@ export class Explorer {
   private overlayResidual: number | null = null;
 
   private readonly avatar = new THREE.Group();
-  private avatarRig: AvatarRig | null = null;
+  private avatarRig: AvatarSelection | null = null;
   /** Where the body faces (it turns toward travel; the camera keeps `yaw`). */
   private bodyYaw = 0;
   private readonly lastAvatarPos = new THREE.Vector3();
@@ -321,7 +323,7 @@ export class Explorer {
   sceneError: string | null = null;
   private disposed = false;
 
-  constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}) {
+  constructor(private readonly host: HTMLElement, private readonly events: ExplorerEvents = {}, options: ExplorerOptions = {}) {
     this.quality = matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 700 ? "low" : "high";
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, this.quality === "high" ? 2 : 1.5));
@@ -347,7 +349,7 @@ export class Explorer {
     this.envProbe.visible = false;
     this.scene.add(this.world, this.overlays, this.avatar, this.street.group, this.envProbe);
     this.overlays.add(this.routeGroup, this.poiGroup);
-    this.buildAvatar();
+    this.buildAvatar(options.avatarGlbUrl);
     this.defaultEnvironment();
     this.applyLighting();
 
@@ -542,11 +544,7 @@ export class Explorer {
     this.envProbe.intensity = plan.environmentIntensity;
     this.envProbe.visible = this.probeWanted && this.probeBake === "ready";
     if (this.probeWanted && this.probeBake === "idle") this.bakeEnvProbe();
-    this.avatar.traverse((o) => {
-      const m = (o as THREE.Mesh).material;
-      const next = plan.avatarEnvMap ? envMap : null;
-      if (m instanceof THREE.MeshStandardMaterial && m.envMap !== next) { m.envMap = next; m.needsUpdate = true; }
-    });
+    this.avatarRig?.setEnvMap(plan.avatarEnvMap ? envMap : null);
   }
 
   private coreEnv(): THREE.Texture {
@@ -636,8 +634,8 @@ export class Explorer {
     this.applyOverlayTone();
   }
 
-  private buildAvatar(): void {
-    this.avatarRig = createAvatar({ quality: this.quality });
+  private buildAvatar(glbUrl?: string): void {
+    this.avatarRig = createAvatarRig({ quality: this.quality, glbUrl });
     // A slim marker ring keeps "this is you" readable without outshining the character.
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.46, 0.5, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x5ef0ff, transparent: true, opacity: 0.38, depthWrite: false }));
     ring.position.y = 0.02;
@@ -676,6 +674,7 @@ export class Explorer {
     // Leaving another station drops its retained caches first; the same station reopening keeps them.
     this.releaseStationCaches(station.key);
     this.clearStation();
+    void this.avatarRig?.loadGlb();
     this.station = station;
     this.stationCaches.remember(station.key, station.scene);
     const bundle = station.bundle;
@@ -803,6 +802,7 @@ export class Explorer {
   }
 
   private clearStation(): void {
+    this.avatarRig?.cancelPendingLoad();
     this.street.restore(this.scene);
     this.street.attach(null);
     this.streetY = null;
