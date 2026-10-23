@@ -1,0 +1,19 @@
+{
+  "title": "SYNTHETIC KIT DEMO — toilet entrances, no wall or room drawn, not a station layout",
+  "mode": "studio",
+  "exposure": -0.2,
+  "hint_lights": false,
+  "items": [
+    {"glb": "assets/library/glb/gteki_toilet_entrance_male.glb", "pos": [-7.0, 0, 0]},
+    {"glb": "assets/library/glb/gteki_toilet_entrance_female.glb", "pos": [-4.2, 0, 0]},
+    {"glb": "assets/library/glb/gteki_toilet_entrance_unisex.glb", "pos": [-1.4, 0, 0]},
+    {"glb": "assets/library/glb/gteki_toilet_entrance_accessible.glb", "pos": [1.4, 0, 0]},
+    {"glb": "assets/library/glb/gteki_toilet_entrance_pair.glb", "pos": [4.2, 0, 0]},
+    {"glb": "assets/library/glb/gteki_toilet_entrance_male_maze.glb", "pos": [7.0, 0, 0]}
+  ],
+  "cameras": {
+    "sheet": {"pos": [0.0, -11.0, 1.5], "look_at": [0.0, 0, 1.25], "lens": 35},
+    "signs": {"pos": [-2.8, -4.0, 2.2], "look_at": [-2.8, 0, 2.2], "lens": 30},
+    "oblique": {"pos": [3.4, -3.0, 1.7], "look_at": [7.0, 0.6, 1.1], "lens": 26}
+  }
+}

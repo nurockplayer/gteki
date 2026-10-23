@@ -19,12 +19,25 @@ describe("Shinjuku gteki/ contract files", () => {
     }
   });
 
-  it("cites the render-only PLATEAU street context as a reusable CC BY 4.0 source", () => {
+  it("cites the render-only PLATEAU street context under the catalogue licence with the Owner's Option A credit (#161)", () => {
     const p = bundle.sources.find((s) => s.id === "plateau-13104-shinjuku-ku-2025");
     expect(p?.rights).toBe("REUSABLE_WITH_CONDITIONS");
-    expect(p?.license?.name).toBe("CC BY 4.0");
+    expect(p?.license?.name).toBe("PLATEAU Site Policy 「３．著作権について」に拠る");
+    expect(p?.license?.url).toBe("https://www.mlit.go.jp/plateau/site-policy/");
+    expect(p?.attribution).toBe("出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成（建物の基部を地表面の高さにそろえて表示）");
     expect(p?.modified).toBe(true);
     expect(Object.keys(p?.sha256 ?? {}).length).toBe(8);
+  });
+
+  it("ships both E27 resources under the Owner's recorded #16 override, never as a confirmed licence (#130, #39 Q11)", () => {
+    const e27 = bundle.sources.filter((s) => s.id.startsWith("mlit-hokonavi-e27-"));
+    expect(e27.map((s) => s.id).sort()).toEqual(["mlit-hokonavi-e27-nwd", "mlit-hokonavi-e27-stationmap"]);
+    for (const s of e27) {
+      expect(s.rights, s.id).toBe("PUBLISHED_UNDER_OWNER_OVERRIDE");
+      expect(s.override, s.id).toEqual({ decision: "https://github.com/nurockplayer/gteki/pull/16#issuecomment-6313815757", date: "2026-10-21" });
+      expect(s.license?.name, s.id).toMatch(/unconfirmed/i);
+      expect(s.license?.name, s.id).not.toMatch(/PDL|CC[ -]?BY/i);
+    }
   });
 
   it("never claims measured heights", () => {
