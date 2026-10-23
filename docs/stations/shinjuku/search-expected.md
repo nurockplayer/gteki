@@ -60,9 +60,9 @@ Only `poi:exit:1` states a roof (all nearby links are roof = 2). `poi:exit:2`, `
 
 | Query | Expected top POI(s) | Why |
 | --- | --- | --- |
-| トイレ / 廁所 / toilet | `poi:toilet:1` women, `poi:toilet:2` unisex, `poi:toilet:3` men (all B3) | GSI F002 / F003 / F001. Their note says the position is the space's representative point, not a door |
-| 電梯 / elevator / エレベーター | `poi:elevator:1`, `:2`, `:3` (and `poi:exit:3` below them: its name says elevator) | E27 lift connectors cross-checked against F012. Lift 2 (B1 and B3) has no F012 point on B3, which its note reports as a mismatch |
-| 改札 / 剪票口 / gate | `poi:gate:1`, `:2`, `:3` | E27 gate clusters. Each note counts the GSI F106 points whose nearest cluster (same level) it is: 1, 4 and 1, so all 6 points are counted once |
+| トイレ / 廁所 / toilet | `poi:toilet:1` women, `poi:toilet:2` unisex, `poi:toilet:3` men (all B3) | The notes are traveller text describing each toilet-space representative point; facility codes and the source cross-check live in `evidence.method` |
+| 電梯 / elevator / エレベーター | `poi:elevator:1`, `:2`, `:3` (and `poi:exit:3` below them: its name says elevator) | The notes describe stops and any station-map confirmation gap for travellers; F012 levels and cross-check results live in `evidence.method` |
+| 改札 / 剪票口 / gate | `poi:gate:1`, `:2`, `:3` | The notes give travellers an approximate position; gate-link counts and F106 cluster counts live in `evidence.method` (1, 4 and 1; all 6 points are counted once) |
 
 ## Negative cases (must return no Shinjuku POI claim)
 

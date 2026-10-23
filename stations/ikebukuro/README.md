@@ -40,6 +40,7 @@ pnpm typecheck
 - **Street-context budget probe** (draws/tris underground vs street, one run per tier; real GPU, not in CI): after `pnpm build`, in `tests/e2e` run `GTEKI_BUDGET=1 GTEKI_ROOT=<repo> pnpm exec playwright test specs/10-ikebukuro-context-budget.spec.ts --project=phone-chromium` (low) or `--project=desktop-chromium` (high); results land in `<repo>/.qa/ikebukuro-context-budget/`. It counts every pass at the WebGL boundary, so its numbers are not comparable with the scene-pass budget below; to check a change, run it once on the base branch and pass that run's `.json` as `GTEKI_BUDGET_BASELINE` (underground views must match, street views may add at most the context's own 8 meshes). Measured 2026-10-22, low tier, all passes: underground p50 44–53 draws / 132–136k triangles on both main and #110; street views +5–9 draws and +20–30k triangles with the context.
 - **Capture tooling** (dev only): `gt.capture(name)` and `gt.walkCapture(...)` write frames to
   `build/captures/`.
+- **Repeater-sign screenshots and atlas-size probe** (opt-in, needs a real GPU and a built `apps/web`; run from `tests/e2e`): `GTEKI_REPEATERS=1 GTEKI_ROOT=<checkout> pnpm exec playwright test specs/11-ikebukuro-repeater-signs.spec.ts --project=desktop-chromium` (or `--project=phone-chromium` for the low tier); writes `.qa/ikebukuro-repeaters/`.
 
 ## Layout
 
@@ -53,6 +54,7 @@ pnpm typecheck
 | `scene/walk_bridges.json` | Invisible walking strips over hairline cracks between PLATEAU floor polygons | presentation |
 | `scene/access_fences.json` | Walker-blocking fences with a 「通行可否 未確認」/"Access unverified" marker where surveyed floor of unknown access would shortcut the routable areas | presentation |
 | `scene/finishes.json` | Finish-pack manifest for the Lane E kit: role → texture folder + repeat in metres. Empty today (see "Kit integration") | presentation |
+| `scene/kit/kit.json`, `scene/kit.ts` | Kit GLBs placed as instances on existing data (batch 1: barrier rails on the access-fence stretches; plus one labelled representative gate array per JR gate node); copies in `gteki/kit/` | presentation |
 | `scene/dressing_anchors.json` | Stair nosing lines and escalator landings from the PLATEAU survey, where kit dressing is placed (see "Kit integration") | truth (survey positions) |
 | `scene/kit_catalog.json`, `scene/kit_placements.json` | Lane E catalog and per-anchor placements for stair and escalator dressing, generated from the anchors (see "Kit integration") | derived (survey dimensions) |
 | `pipeline/` | Reproducible data and asset build (stdlib Python + Blender; one Node walker check) | — |
@@ -150,6 +152,32 @@ are untouched. Roles without an entry keep the procedural texture.
   `assets[].files` of the kit asset in `data/graph.src.json`; a production build refuses undeclared asset files.
   The kit source (CC BY 4.0, "GTEki contributors") is declared there too, once the licence PR (#131) lands.
 
+**Kit instances (batch 1).** `scene/kit/kit.json` lists the kit GLBs the scene places; `scene/kit.ts` places them on
+data the station already has and nothing else, except the labelled gate arrays below. Batch 1: `gteki_barrier_rail_2400_solid` along the access-fence label
+stretches (`scene/access_fences.json` `marks`; the 62 of 80 that are at least 1.8 m long, 259 modules, stretched at most
+12 % along the run; the label boards move onto the rail faces and the collision panels are unchanged). The
+desktop tier loads `gteki/kit/high/` (the full library GLB), `quality: "low"` loads `gteki/kit/low/` (the mobile library
+GLB) for the gate arrays only: phones keep the procedural boards instead of rails, which cost up to ~95k triangles a frame
+near the JR gates on the low tier (spec 13 against main, 2026-10-23). The low rail copy stays declared for a cheaper rail later. Instances are grouped into 16 m (desktop) or 32 m (phone) tiles so three.js culls them per tile. Kit meshes are
+visual only: they never enter `walkable` or `colliders`, and a GLB that cannot load leaves the procedural board.
+`python3 -I pipeline/sync_kit.py [--check]` (`pnpm sync:kit`) copies the GLBs byte for byte from `assets/library/` and
+checks them against the kit manifests' sha256; both copies are declared in `assets[id=b1].files`. Credit:
+"GTEki contributors, CC BY 4.0" (source `gteki-kit-0-1-0` in `station.json`; `REUSE.toml` section 2 covers
+`stations/*/gteki/kit/**`; the GLBs' embedded licence strings read UNDECIDED until Lane E's EMBED_SPDX rebuild). Kit
+meshes have no lightmap in this atlas, so they are lit by the scene's PMREM environment only. What else still renders
+procedurally, and what each needs: [docs/kit-gap-list.md](docs/kit-gap-list.md).
+
+**Representative gate arrays (the one exception).** By director decision (issue #3, 2026-10-22) the three JR gate nodes
+(`g_jr_c1`, `g_jr_c2`, `g_jr_s`) each get one `gteki_gate_array_2` (the smallest neutral, bidirectional array), and every
+one is labelled 「代表性擺設，通道數與方向未驗證」 / "representative placement; aisle count and orientation unverified"
+(`GATE_ARRAY_LABEL` in `scene/kit.ts`, copied into `kit.json`, each placement, each mesh's `userData`, the kit source
+credit in `station.json` and the asset derivation; a manifest entry without that exact label is not placed). The data
+fixes only the node and its verified edge. Placement rule, a guess: the piece's aisles run along the edge's last segment as
+it arrives, the first aisle's centre stands on the node at mid-depth (the edge runs down an aisle and crosses no cabinet),
+lifted 1 cm against z-fighting with the piece's floor plate. Like the rails the arrays are visual only (no collider, not in
+`walkable` or the walk graph). The three arrays are merged per material and instanced: one draw on the phone tier (one
+palette material, always drawn) and one draw per material per 16 m tile on desktop.
+
 **Dressing anchors.** `python3 -I pipeline/build_dressing_anchors.py` (from `build/ubld_enu.json`; it refuses an
 extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressing_anchors.json`, ENU metres to
 1 mm, deterministic. Facts only, derived from the surveyed EF_35 and EF_80 triangles:
@@ -205,7 +233,7 @@ landing. The placement origin is the bottom comb, 1.2 m before the quad's lower 
 
 - No operator maps, logos, photos or typefaces are in the repo.
 - Signs use GTEki's own style: charcoal panels and yellow exit badges.
-- Every texture is procedural, generated at runtime.
+- Every texture is procedural, generated at runtime, except the Lane E kit GLBs (CC BY 4.0, "GTEki contributors") in `gteki/kit/`.
 - Light fixtures, crowd and haze are GTEki art direction, declared in each asset's `derivation`.
 
 ## Acceptance record (quality contract G0–G4)
@@ -286,6 +314,21 @@ Evidence stills:
 - quality "low": at most 28 draw calls and 129k triangles per frame (56 crowd agents, 100 signs; four spots × four headings in the Central, West, South-West and North areas). Signs share atlas textures and merged geometry (three draw calls for all of them; one mesh per sign had pushed this to 252). On "low" the sign atlas is one 4096 × 2048 page painted at ~160 px/m (about 45 MB of GPU texture with mipmaps, down from 134 MB at full resolution);
 - shipped assets: 9.5 MB at "high", with lightmap WebP 1.1 MB (4k) or 0.5 MB (2k).
 
+### Cue source (#108 acceptance 4)
+
+The cues along the two guided legs, and where each comes from. Nothing here is invented: signs list
+only POIs the verified graph routes to, and the junctions are graph nodes.
+
+| Cue | Where | Source |
+| --- | --- | --- |
+| End signs at junctions | ~4 m along each verified edge from a junction | `graph:<edge>` + `poi:<exit or gate>`, derived by `pipeline/build_signage.py` |
+| Repeater 1 to 5 (`sign-rep-sw_h__w_cj-1…5`) | on `sw_h__w_cj` (152 m), 24 m apart between its two end signs | `basis`: `graph:sw_h__w_cj`, `fact:af-west-corridor`, and the `poi:` ids shown: `exit-4`, `exit-13`, `exit-15`, `exit-17`, `exit-38`, `exit-41`, `jr-central-gate-1`, `jr-south-gate` |
+| Junction nodes | `w_cj`, `sw_h` and the other graph junctions on the legs | `data/graph.src.json` nodes snapped to the PLATEAU walkable grid |
+
+The `basis` field of every repeater in `scene/signage.json` is the authoritative list. The
+`westb1-exit4` leg ran 143 m between two signs before this; it now has a readable sign every 24 m at
+most (`scene/signage.test.ts`). `jrc2-exit35` already met the 30 m rule.
+
 ## Deliberate simplifications
 
 - **Light fixtures** are generated on a regular 2.4 × 3.0 m grid under surveyed ceilings. They are
@@ -297,6 +340,14 @@ Evidence stills:
 - **Signs** use GTEki's design, placed about 4 m along each verified edge from junctions. Their
   content is computed from the verified graph. Positions are not real sign locations. Gate names
   carry a plain line-colour chip ("JR" on green), not an operator logo.
+  **Repeater signs** (`kind: "repeat"`, #108) fill verified edges of 100 m or more, spaced at most
+  24 m apart between the two end signs. Each is double-sided: the front faces walkers leaving the
+  edge's `from` node and the back faces the other way, with at most 3 exits and 1 gate and a
+  small "~140 m" countdown per item. The countdown is the graph's own walking distance
+  (`lengthM`, Dijkstra) to the POI's connector node less the sign's position, rounded to 5 m.
+  Exit 4 counts down to its stair foot, where the route ends. Content is a fact (verified edge,
+  routable POI); the positions and the spacing are design, not the real signs' locations. They
+  add two faces each to the sign atlas (see the budget test in `scene/signage.test.ts`).
 - **Crowd** is ambient decoration on verified edges, clamped to surveyed walkable lanes. It is
   not a pedestrian-flow model.
 - **Openings into unmodelled space** (fare areas, shops) block movement and render as a fogged

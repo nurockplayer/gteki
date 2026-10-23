@@ -79,5 +79,8 @@
       "radius_m": 700
     },
     "notes": "z is the station lead's render anchor (the ordinal-0 street floor renderElevationM in station.json), not a surveyed or TP ground height: that floor has elevationM null and elevationSource unknown. No DEM draping and no baked offset; the scene owns depth offset and draw order."
+  },
+  "profile": {
+    "window": { "kind": "origin_disc", "radius_m": 700 }
   }
 }
