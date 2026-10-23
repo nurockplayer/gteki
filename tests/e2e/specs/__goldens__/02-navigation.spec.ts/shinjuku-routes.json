@@ -42,7 +42,7 @@
         "Turn left, then left again, ~21 m. After ~17 m, continue straight through the junction.",
         "Turn right, ~6 m",
         "Take the escalator down to B6",
-        "Data for the Toei Oedo Line station (E27) only. Facilities of JR, Keio, Odakyu, Tokyo Metro, the Toei Shinjuku Line and other operators or lines are not modelled."
+        "Arrive at destination. Data for the Toei Oedo Line station (E27) only. Facilities of JR, Keio, Odakyu, Tokyo Metro, the Toei Shinjuku Line and other operators or lines are not modelled."
       ],
       "steps": [
         "<e:b503c7d9461a4f239a60bbd4011022e9",
@@ -194,7 +194,7 @@
         "Turn left, then left again, ~17 m",
         "Turn right, ~45 m. After ~24 m, continue straight through the junction.",
         "Turn left, then right, ~5 m, then turn left",
-        "Position is the GSI station-map representative point of the toilet space (F003), not a door position."
+        "Arrive at destination. Position is a representative point of the toilet space, not the door."
       ],
       "steps": [
         "<e:45ebdab487134925b3b47cd29bffb99c",
