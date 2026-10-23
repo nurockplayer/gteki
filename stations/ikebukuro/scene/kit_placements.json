@@ -10,8 +10,8 @@
   "gml": "53394576_ubld_6697_op.gml",
   "gml_sha256": "38f17964f0f6e2a41534aad8f6f5c83a3b083bc1d035946442fb52b1c901ac09",
   "wall_probe_glb_sha256": "aef077a6928855a98c4ae2e26be2856f79716e1e016503fe3413b14331cdfba8",
-  "golden_routes_sha256": "8dae98c5d4d724c2d180c6f521f89518befb7bf9ab83eeeffb27c16e6ce476a1",
-  "graph_sha256": "8e8c34f30101921f754beaf505111c0794f60888cda263e936880352b35c59e0"
+  "golden_routes_sha256": "c0a6ea8a532d4307e98eacb05d2bfcbda3835204b85285ad6f92eb0db7733791",
+  "graph_sha256": "61fbaab99ffa320550b509dcc39d245913c469b1c293ccf61b97be253ad7801d"
  },
  "frame": {
   "axes": "ENU metres: x east, y north, z TP height (as dressing_anchors.json)",

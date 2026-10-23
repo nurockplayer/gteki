@@ -25,8 +25,8 @@ describe("@gteki/cli route on the real stations", { timeout: 30_000 }, () => {
     const { status, stderr, out } = route("ikebukuro", ["g_jr_c2", "x35"]);
     expect(status, stderr).toBe(0);
     expect(out.stationId).toBe("ikebukuro");
-    expect(out.result.nodeIds).toEqual(["g_jr_c2", "c_g2", "c_c", "c_e1", "c_n", "c_e2", "e_27j", "e_hall", "e_low", "x35"]);
-    expect(out.path).toHaveLength(10);
+    expect(out.result.nodeIds).toEqual(["g_jr_c2", "c_g2", "c_c", "c_e1", "c_n", "c_e2", "e_27j", "e_hall", "e_hall_stair_top", "e_hall_stair_foot", "e_low", "x35"]);
+    expect(out.path).toHaveLength(12);
     expect(out.polyline.length).toBeGreaterThan(out.path.length);
     expect(out.polyline.every((p) => p.renderer.length === 3 && typeof p.zKnown === "boolean")).toBe(true);
     expect(out.polyline[0]!.stepIndex).toBe(-1);
