@@ -5,7 +5,7 @@ import { loadShinjukuBundle } from "../data/bundle.ts";
 import { buildScene } from "../gteki/scene.ts";
 import { buildLayout, type Plan } from "../scene/layout.ts";
 import planJson from "../data/plan.json";
-import { FOLLOW, followBoom, followDistance, followPose } from "../../../apps/web/src/explorer/followCamera.ts";
+import { FOLLOW, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack } from "../../../apps/web/src/explorer/followCamera.ts";
 import { bodyBlock, hitNormal } from "../../../apps/web/src/explorer/bodyCollision.ts";
 import { DEFAULT_GROUND, resolveWalls, wallToRenderer } from "../../../apps/web/src/explorer/walker.ts";
 import { castAll, castCamera, explorerTargets, keepBelowBlockers } from "../../../apps/web/src/explorer/raycast.ts";
@@ -14,7 +14,7 @@ import { castAll, castCamera, explorerTargets, keepBelowBlockers } from "../../.
  * #70: follow camera and roof on the street-level flights of every roofed (E27 屋根の有無 = 2) sloped run.
  *
  * It replays the explorer's follow rig at steady state (the same followPose / castCamera / followBoom /
- * keepBelowBlockers sequence as Explorer.placeCamera, imported read-only from apps/web) against the real Shinjuku
+ * raised boom / keepBelowBlockers sequence as Explorer.placeCamera, imported read-only from apps/web) against the real Shinjuku
  * scene, with the walker standing on the drawn treads facing uphill and downhill, and measures:
  *  - the clearance between each tread and the roof cap straight above it;
  *  - the number of glazing faces a vertical ray crosses above each tread (the "double exposure");
@@ -83,7 +83,11 @@ describe("roofed sloped street stairs: roof caps, glazing and the follow camera 
       ray.set(pose.pivot, b); ray.far = FOLLOW.defaultDistance + FOLLOW.clearance;
       return castCamera(ray, t.camera, t.blockers).map((h) => ({ distance: h.distance, cameraOnly: t.blockers.has(h.object) }));
     };
-    const { back, distance } = t.blockers.size ? followBoom(FOLLOW.defaultDistance, pose.back, cast) : { back: pose.back, distance: followDistance(FOLLOW.defaultDistance, cast(pose.back)) };
+    let { back, distance } = t.blockers.size ? followBoom(FOLLOW.defaultDistance, pose.back, cast) : { back: pose.back, distance: followDistance(FOLLOW.defaultDistance, cast(pose.back)) };
+    if (t.camera.length) {
+      const raise = easeRaise(0, constrainedPitch(FOLLOW.defaultDistance, back, distance, cast, new THREE.Vector3()), 0, true);
+      if (raise > 0) { back = raisedBack(back, raise, new THREE.Vector3()); distance = followDistance(FOLLOW.defaultDistance, cast(back)); }
+    }
     const position = pose.pivot.clone().addScaledVector(back, distance);
     if (t.blockers.size) keepBelowBlockers(pose.pivot, position, [...t.blockers], FOLLOW.clearance, ray);
     return { pose, position, back, distance, hit: cast(back)[0] };
@@ -209,6 +213,10 @@ describe("roofed sloped street stairs: roof caps, glazing and the follow camera 
       if (pitch !== DEFAULT_PITCH) continue;
       if (report) for (const r of rows) console.log(`ROW ${r.edge} ${r.dir.padEnd(4)} z${r.z.toFixed(2).padStart(6)} clear${r.clearance.toFixed(2)} faces${r.glassFaces} dist${r.dist.toFixed(2)} share${r.share.toFixed(3)} head${r.headShare.toFixed(3)} ${r.limiter}`);
       expect(rows.filter((r) => r.capLimits).map((r) => `${r.edge} ${r.dir} ${r.z.toFixed(2)}`)).toEqual([]);
+      const tooClose = rows.filter((r) => r.dist < FOLLOW.comfortDistance);
+      expect(tooClose.map((r) => `${r.edge} ${r.dir} z${r.z.toFixed(2)} dist${r.dist.toFixed(2)}`), "camera distances below comfortDistance").toEqual([]);
+      const oversizedHead = rows.filter((r) => r.headShare >= 0.3);
+      expect(oversizedHead.map((r) => `${r.edge} ${r.dir} z${r.z.toFixed(2)} head${r.headShare.toFixed(3)}`), "head-and-shoulders frame shares at or above 0.3").toEqual([]);
     }
   }, 240_000);
 });

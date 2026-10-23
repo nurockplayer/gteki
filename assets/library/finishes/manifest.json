@@ -1,0 +1,804 @@
+{
+  "contract": "gteki-asset/0.1",
+  "kit_version": "0.1.0",
+  "catalog": "../../../tools/blender/catalog/finishes_v0_1.json",
+  "texture_resolution": 1024,
+  "license": "CC-BY-4.0 — original GTEki work; attribution: GTEki contributors",
+  "license_spdx": "CC-BY-4.0",
+  "rights_class": "original",
+  "attribution": "GTEki contributors",
+  "finish_pack": "gteki-finish/0.1",
+  "assets": [
+    {
+      "id": "gteki_finish_floor_terrazzo",
+      "family": "finish",
+      "variant": "floor_terrazzo",
+      "file": "glb/gteki_finish_floor_terrazzo.glb",
+      "sha256": "0113a3ae79021a13e559cec222148c2a683dcd1127f4d1cbdca2edc142837703",
+      "bytes": 568572,
+      "triangles": 2,
+      "materials": [
+        "gteki_finish_floor_terrazzo"
+      ],
+      "textures": {
+        "gteki_finish_floor_terrazzo": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 512
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.0,
+          0.0,
+          -1.0
+        ],
+        "max": [
+          1.0,
+          0.0,
+          1.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "role": "floor",
+        "gteki_role": "floor",
+        "facility": [
+          "concourse",
+          "passage"
+        ],
+        "use": "public (free-side) concourse and passage floor",
+        "pattern": "polished terrazzo, 16,000 chips per m2; no joints",
+        "repeat_m": [
+          1.0,
+          1.0
+        ],
+        "repeats": 2
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/finish_sample.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "finish",
+        "floor"
+      ]
+    },
+    {
+      "id": "gteki_finish_floor_granite_tile",
+      "family": "finish",
+      "variant": "floor_granite_tile",
+      "file": "glb/gteki_finish_floor_granite_tile.glb",
+      "sha256": "03e9fb7fb27ac8e8bd9c13c02acfcc2bc6796542412c9066eead01022c832969",
+      "bytes": 257004,
+      "triangles": 2,
+      "materials": [
+        "gteki_finish_floor_granite_tile"
+      ],
+      "textures": {
+        "gteki_finish_floor_granite_tile": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 512
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.2,
+          0.0,
+          -1.2
+        ],
+        "max": [
+          1.2,
+          0.0,
+          1.2
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "role": "floor",
+        "gteki_role": "floor",
+        "facility": [
+          "paid_area",
+          "gate_surround"
+        ],
+        "use": "paid-side floor, gate surrounds and the 0.30 m border band",
+        "pattern": "dark granite tile 600 x 300 mm (u x v), 3 mm grout",
+        "repeat_m": [
+          1.2,
+          1.2
+        ],
+        "repeats": 2
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/finish_sample.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "finish",
+        "floor"
+      ]
+    },
+    {
+      "id": "gteki_finish_floor_tile600",
+      "family": "finish",
+      "variant": "floor_tile600",
+      "file": "glb/gteki_finish_floor_tile600.glb",
+      "sha256": "7d60b20b51d5f71be278856833e5bb0b1d84f7afce93a549b67fd987d96f1282",
+      "bytes": 177696,
+      "triangles": 2,
+      "materials": [
+        "gteki_finish_floor_tile600"
+      ],
+      "textures": {
+        "gteki_finish_floor_tile600": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 512
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.2,
+          0.0,
+          -1.2
+        ],
+        "max": [
+          1.2,
+          0.0,
+          1.2
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "free",
+      "params": {
+        "role": "floor",
+        "gteki_role": "floor",
+        "facility": [
+          "platform",
+          "back_of_house"
+        ],
+        "use": "platform and back-of-house floor",
+        "pattern": "light ceramic tile 600 x 600 mm, 5 mm grout",
+        "repeat_m": [
+          1.2,
+          1.2
+        ],
+        "repeats": 2
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/finish_sample.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "tags": [
+        "finish",
+        "floor"
+      ]
+    },
+    {
+      "id": "gteki_finish_wall_enamel_panel",
+      "family": "finish",
+      "variant": "wall_enamel_panel",
+      "file": "glb/gteki_finish_wall_enamel_panel.glb",
+      "sha256": "ebdc17ff3ad663714f682f5d5fc10321de703c7b3b71d722f217d89da2e16ab6",
+      "bytes": 174476,
+      "triangles": 2,
+      "materials": [
+        "gteki_finish_wall_enamel_panel"
+      ],
+      "textures": {
+        "gteki_finish_wall_enamel_panel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 512
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.2,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.2,
+          2.4,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "role": "wall",
+        "gteki_role": "wall",
+        "facility": [
+          "passage",
+          "concourse"
+        ],
+        "use": "upper wall above the wainscot, column cladding",
+        "pattern": "warm white enamel; vertical 8 mm joints every 1.2 m (u = k x 1.2 m), no horizontal joint",
+        "repeat_m": [
+          1.2,
+          1.2
+        ],
+        "repeats": 2
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/finish_sample.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "surface",
+      "tags": [
+        "finish",
+        "wall"
+      ]
+    },
+    {
+      "id": "gteki_finish_wall_wainscot_blue",
+      "family": "finish",
+      "variant": "wall_wainscot_blue",
+      "file": "glb/gteki_finish_wall_wainscot_blue.glb",
+      "sha256": "66def8aa80ae1f8daf9d3ae360c7fe71a76bb8dde30308425601b0df663bde95",
+      "bytes": 167648,
+      "triangles": 2,
+      "materials": [
+        "gteki_finish_wall_wainscot_blue"
+      ],
+      "textures": {
+        "gteki_finish_wall_wainscot_blue": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 512
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.2,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.2,
+          2.4,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "role": "wall",
+        "gteki_role": "wall",
+        "facility": [
+          "passage",
+          "concourse"
+        ],
+        "use": "lower wall band up to 1.1 m",
+        "pattern": "deep blue enamel #334F66; vertical 8 mm joints every 1.2 m (u = k x 1.2 m), no horizontal joint",
+        "repeat_m": [
+          1.2,
+          1.2
+        ],
+        "repeats": 2
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/finish_sample.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "surface",
+      "tags": [
+        "finish",
+        "wall"
+      ]
+    },
+    {
+      "id": "gteki_finish_wall_kick_plate",
+      "family": "finish",
+      "variant": "wall_kick_plate",
+      "file": "glb/gteki_finish_wall_kick_plate.glb",
+      "sha256": "d0c3cd72c1a65a20560b5d72aa3298a3e65a217ac330501da3f52f75c94a8680",
+      "bytes": 69776,
+      "triangles": 2,
+      "materials": [
+        "gteki_finish_wall_kick_plate"
+      ],
+      "textures": {
+        "gteki_finish_wall_kick_plate": {
+          "res": 512,
+          "maps": [
+            "albedo",
+            "normal",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.5,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          0.5,
+          1.0,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "role": "trim",
+        "gteki_role": "wall",
+        "facility": [
+          "passage",
+          "concourse",
+          "paid_area"
+        ],
+        "use": "skirting and kick zone along the wall foot",
+        "pattern": "brushed steel, streaks along u",
+        "repeat_m": [
+          0.5,
+          0.5
+        ],
+        "repeats": 2
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/finish_sample.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "surface",
+      "tags": [
+        "finish",
+        "trim"
+      ]
+    },
+    {
+      "id": "gteki_finish_ceiling_spandrel",
+      "family": "finish",
+      "variant": "ceiling_spandrel",
+      "file": "glb/gteki_finish_ceiling_spandrel.glb",
+      "sha256": "c27b4d2eb8dcd69d27761aee1484362c8205ebb8424e3bf192b400d9067e0bae",
+      "bytes": 208008,
+      "triangles": 2,
+      "materials": [
+        "gteki_finish_ceiling_spandrel"
+      ],
+      "textures": {
+        "gteki_finish_ceiling_spandrel": {
+          "res": 1024,
+          "maps": [
+            "albedo",
+            "normal",
+            "occlusion",
+            "orm"
+          ],
+          "occlusion_res": 512
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -1.0,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.0,
+          2.0,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "role": "ceiling",
+        "gteki_role": "ceiling",
+        "facility": [
+          "concourse",
+          "passage"
+        ],
+        "use": "linear metal ceiling",
+        "pattern": "100 mm strips along u, 8 mm dark groove between strips",
+        "repeat_m": [
+          1.0,
+          1.0
+        ],
+        "repeats": 2
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/finish_sample.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "surface",
+      "tags": [
+        "finish",
+        "ceiling"
+      ]
+    },
+    {
+      "id": "gteki_finish_band_line_accent",
+      "family": "finish",
+      "variant": "band_line_accent",
+      "file": "glb/gteki_finish_band_line_accent.glb",
+      "sha256": "66bb56f2f6c73be950deed630735143396dae37cec23eac16fc0655da2c4b91b",
+      "bytes": 17536,
+      "triangles": 2,
+      "materials": [
+        "gteki_finish_band_line_accent"
+      ],
+      "textures": {
+        "gteki_finish_band_line_accent": {
+          "res": 256,
+          "maps": [
+            "albedo",
+            "normal",
+            "occlusion"
+          ],
+          "occlusion_res": 256
+        }
+      },
+      "bounds_m": {
+        "min": [
+          -0.5,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          0.5,
+          1.0,
+          -0.0
+        ]
+      },
+      "dimension_basis": "synthetic",
+      "placement": "wall",
+      "params": {
+        "role": "band",
+        "gteki_role": "wall",
+        "facility": [
+          "passage",
+          "concourse",
+          "platform"
+        ],
+        "use": "line-colour stripe on the wall; the station multiplies the base by its line colour at runtime",
+        "tint": true,
+        "pattern": "neutral near-white painted metal #F2F2F0 with faint orange peel; the base carries no colour",
+        "repeat_m": [
+          0.25,
+          0.25
+        ],
+        "repeats": 4
+      },
+      "sockets": [],
+      "light_hints": 0,
+      "collision_nodes": [],
+      "generator": "tools/blender/gteki_assets/families/finish_sample.py",
+      "license_spdx": "CC-BY-4.0",
+      "rights_class": "original",
+      "attribution": "GTEki contributors",
+      "anchor": "surface",
+      "tags": [
+        "finish",
+        "band",
+        "tint"
+      ]
+    }
+  ],
+  "finishes": [
+    {
+      "id": "gteki_finish_floor_terrazzo",
+      "role": "floor",
+      "gteki_role": "floor",
+      "tint": false,
+      "repeat_m": [
+        1.0,
+        1.0
+      ],
+      "dir": "gteki_finish_floor_terrazzo",
+      "finish_json": {
+        "file": "gteki_finish_floor_terrazzo/finish.json",
+        "bytes": 1739,
+        "sha256": "31de06b84f08951b01fb8ae6c96dbc71f92cafd7627db861da6bffb0f2c8a6da"
+      },
+      "files": {
+        "albedo": {
+          "file": "gteki_finish_floor_terrazzo/albedo.jpg",
+          "bytes": 420867,
+          "sha256": "8d04f23d515ac39171db9014c252f49b01953f2a16a3bc640b6c0702a2282048"
+        },
+        "orm": {
+          "file": "gteki_finish_floor_terrazzo/orm.jpg",
+          "bytes": 143439,
+          "sha256": "cb2bc29e67c5ac7da6aa23718359b5c476a942451aee13f71eeeff885a50cbd0"
+        }
+      },
+      "sample_glb": "glb/gteki_finish_floor_terrazzo.glb",
+      "texture_bytes": 564306
+    },
+    {
+      "id": "gteki_finish_floor_granite_tile",
+      "role": "floor",
+      "gteki_role": "floor",
+      "tint": false,
+      "repeat_m": [
+        1.2,
+        1.2
+      ],
+      "dir": "gteki_finish_floor_granite_tile",
+      "finish_json": {
+        "file": "gteki_finish_floor_granite_tile/finish.json",
+        "bytes": 1959,
+        "sha256": "a5f0b2eaa02df5806f4de358ba397095c81ebfb585312ec3010cab1cd9d37ac8"
+      },
+      "files": {
+        "albedo": {
+          "file": "gteki_finish_floor_granite_tile/albedo.jpg",
+          "bytes": 143801,
+          "sha256": "9d74e86c67a05839e91f27b850e3992869bf00bfa90265a02a7030b1ec41daa2"
+        },
+        "orm": {
+          "file": "gteki_finish_floor_granite_tile/orm.jpg",
+          "bytes": 70030,
+          "sha256": "aa0982fd670978fe55fa271dae5f488e6ca5990ddf09b25b5f0ddcb3b22fb107"
+        },
+        "normal": {
+          "file": "gteki_finish_floor_granite_tile/normal.jpg",
+          "bytes": 38567,
+          "sha256": "cc926e0f29c58f7049e7fedf0b1b43e2104307deaacb839214b257b4f4a3212b"
+        }
+      },
+      "sample_glb": "glb/gteki_finish_floor_granite_tile.glb",
+      "texture_bytes": 252398
+    },
+    {
+      "id": "gteki_finish_floor_tile600",
+      "role": "floor",
+      "gteki_role": "floor",
+      "tint": false,
+      "repeat_m": [
+        1.2,
+        1.2
+      ],
+      "dir": "gteki_finish_floor_tile600",
+      "finish_json": {
+        "file": "gteki_finish_floor_tile600/finish.json",
+        "bytes": 1909,
+        "sha256": "dc2e4d004c7147a9cbf9f34b53559e16b883de7e321943809941c33b63e06c35"
+      },
+      "files": {
+        "albedo": {
+          "file": "gteki_finish_floor_tile600/albedo.jpg",
+          "bytes": 83423,
+          "sha256": "ea85ae9dfc46acefcce38d66f3ea6fa63789e38b636cd45895a27900c4def073"
+        },
+        "orm": {
+          "file": "gteki_finish_floor_tile600/orm.jpg",
+          "bytes": 57694,
+          "sha256": "c670a7fe01656f6c08428b8006879b8f168e716e1ef79459b0e9f48899dd78dd"
+        },
+        "normal": {
+          "file": "gteki_finish_floor_tile600/normal.jpg",
+          "bytes": 32054,
+          "sha256": "aa99cb3279a3231abc1970b5f3c92b7386986947a6d52bcdd3418cd6970e3913"
+        }
+      },
+      "sample_glb": "glb/gteki_finish_floor_tile600.glb",
+      "texture_bytes": 173171
+    },
+    {
+      "id": "gteki_finish_wall_enamel_panel",
+      "role": "wall",
+      "gteki_role": "wall",
+      "tint": false,
+      "repeat_m": [
+        1.2,
+        1.2
+      ],
+      "dir": "gteki_finish_wall_enamel_panel",
+      "finish_json": {
+        "file": "gteki_finish_wall_enamel_panel/finish.json",
+        "bytes": 1952,
+        "sha256": "da0b93c777c5c9586900a3aa1b0a3c4679427af1baec969816e8abedc4702bfc"
+      },
+      "files": {
+        "albedo": {
+          "file": "gteki_finish_wall_enamel_panel/albedo.jpg",
+          "bytes": 29751,
+          "sha256": "75bc217e36c4280b141041451b6680a069585e59be51cb01a4fc7e915ae74def"
+        },
+        "orm": {
+          "file": "gteki_finish_wall_enamel_panel/orm.jpg",
+          "bytes": 30784,
+          "sha256": "0be9b53804364b80a2b45a2ee29b2198fb7fd2f460f4f85842444cade663607c"
+        },
+        "normal": {
+          "file": "gteki_finish_wall_enamel_panel/normal.jpg",
+          "bytes": 98673,
+          "sha256": "74a4aa024117d221936a687d9e49ad73890a907d7e008a06e763e6837bcf8fbd"
+        }
+      },
+      "sample_glb": "glb/gteki_finish_wall_enamel_panel.glb",
+      "texture_bytes": 159208
+    },
+    {
+      "id": "gteki_finish_wall_wainscot_blue",
+      "role": "wall",
+      "gteki_role": "wall",
+      "tint": false,
+      "repeat_m": [
+        1.2,
+        1.2
+      ],
+      "dir": "gteki_finish_wall_wainscot_blue",
+      "finish_json": {
+        "file": "gteki_finish_wall_wainscot_blue/finish.json",
+        "bytes": 1942,
+        "sha256": "209d7cc2e8f35f6df180a57ad7d926b770f04f7bef9a55598dabe7046ef125f8"
+      },
+      "files": {
+        "albedo": {
+          "file": "gteki_finish_wall_wainscot_blue/albedo.jpg",
+          "bytes": 23922,
+          "sha256": "ed8d5ebff42d4c3fa27cd2066d3c266cfaf26f9d9782c9b7c3ce133220413f9a"
+        },
+        "orm": {
+          "file": "gteki_finish_wall_wainscot_blue/orm.jpg",
+          "bytes": 31430,
+          "sha256": "0b91f675d5a5a52a2da5094a3d5b0d2a9574eeccc22314b4478c300eb640099a"
+        },
+        "normal": {
+          "file": "gteki_finish_wall_wainscot_blue/normal.jpg",
+          "bytes": 97032,
+          "sha256": "55e99e9df944d7a25318f423a13271b866bddb386117aeef3e9888f28f184672"
+        }
+      },
+      "sample_glb": "glb/gteki_finish_wall_wainscot_blue.glb",
+      "texture_bytes": 152384
+    },
+    {
+      "id": "gteki_finish_wall_kick_plate",
+      "role": "trim",
+      "gteki_role": "wall",
+      "tint": false,
+      "repeat_m": [
+        0.5,
+        0.5
+      ],
+      "dir": "gteki_finish_wall_kick_plate",
+      "finish_json": {
+        "file": "gteki_finish_wall_kick_plate/finish.json",
+        "bytes": 1895,
+        "sha256": "5ed4ae0976b92e812a09465b0aada09f4407f076b3a7a43dff83dfc047bb4200"
+      },
+      "files": {
+        "albedo": {
+          "file": "gteki_finish_wall_kick_plate/albedo.jpg",
+          "bytes": 21947,
+          "sha256": "a6e93d7b674cd3e04cd174dd9b91dddd0e349e2e63574ae1faffb92a819f5af4"
+        },
+        "orm": {
+          "file": "gteki_finish_wall_kick_plate/orm.jpg",
+          "bytes": 20929,
+          "sha256": "4e31682fa30c069204b4fcf770be08fb72a6e9d96762426f29c869c9a38e0da4"
+        },
+        "normal": {
+          "file": "gteki_finish_wall_kick_plate/normal.jpg",
+          "bytes": 17428,
+          "sha256": "279caa3393cfd3608551a23a7b4ea2359cb16ee1a27002c07b51d51705b05209"
+        }
+      },
+      "sample_glb": "glb/gteki_finish_wall_kick_plate.glb",
+      "texture_bytes": 60304
+    },
+    {
+      "id": "gteki_finish_ceiling_spandrel",
+      "role": "ceiling",
+      "gteki_role": "ceiling",
+      "tint": false,
+      "repeat_m": [
+        1.0,
+        1.0
+      ],
+      "dir": "gteki_finish_ceiling_spandrel",
+      "finish_json": {
+        "file": "gteki_finish_ceiling_spandrel/finish.json",
+        "bytes": 1933,
+        "sha256": "286b80967ad87142083bef48ba95ffbf93f5128acb47b08c0d178a2471361460"
+      },
+      "files": {
+        "albedo": {
+          "file": "gteki_finish_ceiling_spandrel/albedo.jpg",
+          "bytes": 75020,
+          "sha256": "e365fba58ff6d39bb1014c286a57341c3ad2a8e3938558d9f6093d18737b10b1"
+        },
+        "orm": {
+          "file": "gteki_finish_ceiling_spandrel/orm.jpg",
+          "bytes": 50558,
+          "sha256": "920147d0513f1292bbb6cba658e66536b7ccb3b70f61316b6865c79a9c952dd7"
+        },
+        "normal": {
+          "file": "gteki_finish_ceiling_spandrel/normal.jpg",
+          "bytes": 65651,
+          "sha256": "bfe4ac96c376a41a62a69c3cb8c520b42e010378b1504c716b5fea69a8d5f517"
+        }
+      },
+      "sample_glb": "glb/gteki_finish_ceiling_spandrel.glb",
+      "texture_bytes": 191229
+    },
+    {
+      "id": "gteki_finish_band_line_accent",
+      "role": "band",
+      "gteki_role": "wall",
+      "tint": true,
+      "repeat_m": [
+        0.25,
+        0.25
+      ],
+      "dir": "gteki_finish_band_line_accent",
+      "finish_json": {
+        "file": "gteki_finish_band_line_accent/finish.json",
+        "bytes": 2441,
+        "sha256": "fc024cefa159c0bd78392d644df173164bfc5f361a5911d8d3f43eed541d3766"
+      },
+      "files": {
+        "albedo": {
+          "file": "gteki_finish_band_line_accent/albedo.jpg",
+          "bytes": 3065,
+          "sha256": "81b9e1c42517eba71c5345493301b09881ecc354bedd21167c4799ff9ec2b6b3"
+        },
+        "normal": {
+          "file": "gteki_finish_band_line_accent/normal.jpg",
+          "bytes": 5035,
+          "sha256": "573b254c8392fd8c172aefe7f2e609b8e10293cc5124bde9f697119afa50e22c"
+        }
+      },
+      "sample_glb": "glb/gteki_finish_band_line_accent.glb",
+      "texture_bytes": 8100
+    }
+  ]
+}

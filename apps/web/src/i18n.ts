@@ -146,6 +146,26 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `ルートが見つかりました：${m}m、約${min}分`,
     liveSeparator: "。",
     coverageStatus: { routable: "経路あり", visual_only: "表示のみ", unverified: "未確認", excluded: "対象外" } as Record<string, string>,
+    /** Guide mascot lines (#132): fixed text per event kind, never interpolated with route facts. */
+    mascot: {
+      arrival: "着いたよ！おつかれさま！",
+      arrivalConnector: "ガイドはここまでだよ。このあとのことは、わたしにはわからないの。",
+      noPath: {
+        no_path: "確認できた道だけでは、つながらなかったの。",
+        unknown_start: "その出発地は、わたしにはわからないの。別の場所を選んでね。",
+        unknown_goal: "その目的地への入口は、わたしにはわからないの。",
+        start_equals_goal: "出発地と目的地が同じだよ。",
+        search_limit: "調べきれなかったの。道があるかどうか、わたしにはわからないよ。",
+        other: "うまく案内できなかったの。くわしいことは、わたしにはわからないよ。",
+      } as Record<string, string>,
+      routeUnknowns: "まだ確認できていないところがあるの。そこは、わたしにはわからないよ。バッジを見てね。",
+      searchEmpty: "ほかのことばで探してみよう！",
+      turn: "つぎの案内は、となりに出ているよ！",
+      loadError: "駅のデータを読み込めなかったの。ほかの駅を選んでみてね。",
+      sceneFallback: "3Dが表示できなかったから、線の図で見てね。",
+      /** Names the actual `to` field label. */
+      startHint: "行きたい場所を『目的地』で探してね。",
+    },
     language: "English",
   },
   en: {
@@ -280,6 +300,26 @@ const STRINGS = {
     routeFound: (m: number, min: number) => `Route found: ${m} m, about ${min} minute${min === 1 ? "" : "s"}`,
     liveSeparator: ". ",
     coverageStatus: { routable: "routable", visual_only: "visual only", unverified: "unverified", excluded: "excluded" } as Record<string, string>,
+    /** Guide mascot lines (#132): fixed text per event kind, never interpolated with route facts. */
+    mascot: {
+      arrival: "We're here! Nice work!",
+      arrivalConnector: "The guide ends here. I can't tell you what comes after.",
+      noPath: {
+        no_path: "The paths I've verified don't connect these two places.",
+        unknown_start: "I don't know that start. Please pick another place.",
+        unknown_goal: "I don't know an entrance for that destination.",
+        start_equals_goal: "Start and destination are the same place.",
+        search_limit: "I couldn't finish searching, so I don't know if there's a way.",
+        other: "I couldn't guide this one, and I don't know the details.",
+      } as Record<string, string>,
+      routeUnknowns: "Some parts aren't confirmed yet, and I don't know them. Check the badges.",
+      searchEmpty: "Let's try other words!",
+      turn: "Your next step is shown next to me!",
+      loadError: "I couldn't load this station's data. Please try another station.",
+      sceneFallback: "The 3D view didn't load, so here's the line map.",
+      /** Names the actual `to` field label. */
+      startHint: "Search for where you want to go under \"To\".",
+    },
     language: "日本語",
   },
 };

@@ -16,7 +16,10 @@ import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { nodeLabel, poiLabel } from "./labels.ts";
 import { LiveRegion, freshnessReason, routeLiveMessage, searchLiveMessage, unknownLabel } from "./live.ts";
+import { MascotSlot, type MascotEvent } from "./mascot.ts";
 import { watchReducedMotion } from "./motion.ts";
+import { railDemoLink } from "./railTravel.ts";
+import { RailRideDemo } from "./railRideDemo.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
 const STATION_TIME_ZONE = "Asia/Tokyo";
@@ -70,6 +73,7 @@ export class App {
     route: null, noPath: null, polyline: [], instructions: [], activeInstruction: 0,
   };
   private explorer!: Explorer;
+  private railRide: RailRideDemo | null = null;
   private readonly ui = {
     stationSelect: el("select", "station-select"),
     banner: el("div", "banner"),
@@ -85,11 +89,13 @@ export class App {
     toast: el("div", "toast"),
     langBtn: el("button", "ghost lang"),
     coverageBtn: el("button", "ghost"),
+    railBtn: el("button", "ghost rail-launch"),
     hint: el("div", "hint"),
     credit: el("footer", "credit-line"),
     panel: el("section", "panel"),
     more: el("button", "ghost more", "⋯"),
     live: new LiveRegion(() => this.t),
+    mascot: new MascotSlot(() => this.t, (text) => this.ui.live.announce(text)),
   };
   /** Listbox state of the two search comboboxes. */
   private readonly combo: Record<"from" | "to", ComboState> = { from: COMBO_CLOSED, to: COMBO_CLOSED };
@@ -112,9 +118,15 @@ export class App {
         if (poi) this.setDestination(poi);
       },
     });
+    // The overview is framed into the part of the view the search panel leaves free (below it on a phone,
+    // to its right on a desktop); the panel's own size changes refit it (see Explorer.setPanel).
+    this.explorer.setPanel(this.ui.panel);
     this.explorer.setGuideTier(readGuideTier());
     this.bindGuideKeys();
-    watchReducedMotion((reduce) => this.explorer.setReducedMotion(reduce));
+    watchReducedMotion((reduce) => {
+      this.explorer.setReducedMotion(reduce);
+      this.ui.mascot.setMotion(reduce, this.explorer.qualityLevel === "low");
+    });
     this.exposeTestHooks();
     this.s.entries = await listStations();
     this.renderStationSelect();
@@ -144,8 +156,10 @@ export class App {
       this.refreshAll();
     });
     this.ui.coverageBtn.addEventListener("click", () => this.openCoverage());
+    this.ui.railBtn.hidden = true;
+    this.ui.railBtn.addEventListener("click", () => this.startRailRide());
     const actions = el("div", "top-actions");
-    actions.append(this.ui.coverageBtn, this.ui.langBtn);
+    actions.append(this.ui.railBtn, this.ui.coverageBtn, this.ui.langBtn);
     top.append(brand, this.ui.stationSelect, actions);
 
     const panel = this.ui.panel;
@@ -171,6 +185,8 @@ export class App {
     this.ui.langBtn.textContent = t.language;
     this.ui.langBtn.dataset.short = this.s.lang === "ja" ? "EN" : "日本語";
     this.ui.coverageBtn.textContent = t.coverage;
+    this.ui.railBtn.textContent = this.s.lang === "ja" ? "電車に乗る（デモ・未調査）" : "Ride train (demo, not surveyed)";
+    this.ui.railBtn.title = this.s.lang === "ja" ? "埼京線 乗車デモ（仮設ホーム）" : "JR Saikyo ride demo (temporary platform)";
     this.ui.more.setAttribute("aria-label", t.options);
     this.ui.fromInput.placeholder = t.fromPlaceholder;
     this.ui.toInput.placeholder = t.toPlaceholder;
@@ -224,7 +240,9 @@ export class App {
   /** True only once the selected station's data and scene are both current; endpoint controls wait for it. */
   private stationReady = false;
 
-  private async openStation(entry: StationEntry, fromId?: string | null, toId?: string | null): Promise<void> {
+  private async openStation(entry: StationEntry, fromId?: string | null, toId?: string | null, fromRide = false): Promise<void> {
+    if (!fromRide) { this.railRide?.dispose(); this.railRide = null; }
+    this.ui.railBtn.hidden = true;
     // A later selection supersedes this one: never let a slow station overwrite the one now selected.
     const generation = ++this.openGeneration;
     const current = () => generation === this.openGeneration;
@@ -247,6 +265,7 @@ export class App {
     this.ui.toInput.value = "";
     this.closeResults("from");
     this.closeResults("to");
+    this.ui.mascot.clear();
     this.ui.sheet.innerHTML = "";
     this.renderSpawnChips(undefined);
     this.toast(this.t.loading);
@@ -258,6 +277,8 @@ export class App {
       this.s.search = createSearchIndex(loaded.bundle);
       if (!(await this.explorer.loadStation(loaded, this.s.router)) || !current()) return;
       this.toast(this.explorer.sceneError ? `${this.t.sceneFallback}: ${this.explorer.sceneError}` : "", this.explorer.sceneError ? 6000 : 0);
+      // Beneath the search fields (the toast fades): the 3D scene failed and the line map is shown instead.
+      if (this.explorer.sceneError) this.mascotSay({ kind: "scene_fallback" }, this.ui.panel);
     } catch (err) {
       if (!current()) return;
       this.s.loaded = null;
@@ -267,6 +288,7 @@ export class App {
       return;
     }
     this.stationReady = true;
+    this.ui.railBtn.hidden = railDemoLink(entry.key) === null;
     const pois = this.s.loaded.bundle.pois;
     const from = pois.find((p) => p.id === fromId);
     const to = pois.find((p) => p.id === toId);
@@ -274,6 +296,32 @@ export class App {
     if (to) this.s.destination = to;
     this.refreshAll();
     this.updateUrl();
+  }
+
+  /** Short playable JR Saikyo demo: a ride scene, not a surveyed station-to-platform path. */
+  private startRailRide(): void {
+    if (!this.stationReady || this.railRide) return;
+    const link = railDemoLink(this.s.entry?.key ?? "");
+    const destination = this.s.entries.find((e) => e.key === link?.to);
+    if (!link || !destination) return;
+    try {
+      this.railRide = new RailRideDemo(
+        this.root, link, this.s.lang,
+        async () => {
+          await this.openStation(destination, undefined, undefined, true);
+          if (!this.stationReady || this.s.entry?.key !== destination.key || !this.s.loaded) return false;
+          // Arrive at a known playable station spawn, NOT at an invented JR platform coordinate.
+          const node = this.s.loaded.bundle.spawnNodeIds?.[0];
+          if (node) this.explorer.walkFromNode(this.s.loaded.bundle, node);
+          return true;
+        },
+        () => { this.railRide = null; },
+      );
+    } catch (error) {
+      this.railRide?.dispose();
+      this.railRide = null;
+      this.toast(String(error), 5000);
+    }
   }
 
   private showLoadError(err: unknown): void {
@@ -288,6 +336,8 @@ export class App {
     this.ui.sheet.append(box);
     this.ui.sheet.classList.add("open");
     this.toast("");
+    // A sibling of the error card; the card announces nothing, so the mascot line is the announcement.
+    this.mascotSay({ kind: "load_error" }, this.ui.sheet);
   }
 
   /** Once both ends are chosen, fold options away (phone layout uses this to free the 3D view). */
@@ -313,6 +363,7 @@ export class App {
     this.ui.toInput.value = this.s.destination ? this.poiName(this.s.destination) : "";
     if (b) this.explorer.showPois(b, (p) => poiLabel(b, p, this.s.lang, this.t), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
     this.computeRoute();
+    this.syncPanelMascot();
   }
 
   private renderBanner(b: StationBundle | undefined): void {
@@ -393,6 +444,7 @@ export class App {
       none.setAttribute("role", "option");
       none.setAttribute("aria-disabled", "true");
       box.append(none);
+      this.mascotSay({ kind: "search_empty" }, box);
       this.setCombo(which, { open: true, count: 0, active: -1 });
       return;
     }
@@ -436,12 +488,35 @@ export class App {
     this.combo[which] = state;
     const input = which === "from" ? this.ui.fromInput : this.ui.toInput;
     const box = which === "from" ? this.ui.fromResults : this.ui.toResults;
-    if (!state.open) box.replaceChildren();
+    if (!state.open) {
+      // Every close (Escape included) frees the mascot first, so a search_empty line never outlives its list.
+      this.releaseMascot(box);
+      box.replaceChildren();
+    }
     const role = listboxRole(state);
     if (role) box.setAttribute("role", role);
     else box.removeAttribute("role");
     applyAria(input, inputAria(state, box.id));
     box.querySelectorAll('[role="option"]').forEach((o, i) => o.setAttribute("aria-selected", String(i === state.active)));
+    this.syncPanelMascot();
+  }
+
+  /**
+   * The mascot's two panel states. start_hint (dog, under the fields) shows while the station is ready with no
+   * destination, no route and no results list open; it never displaces another line. scene_fallback is only
+   * re-said here so it follows the language.
+   */
+  private syncPanelMascot(): void {
+    const m = this.ui.mascot;
+    const key = m.info().lineKey;
+    if (key === "scene_fallback") { this.mascotSay({ kind: "scene_fallback" }, this.ui.panel); return; }
+    const want = this.stationReady && !this.s.destination && !this.s.route && !this.combo.from.open && !this.combo.to.open;
+    if (want && (key === null || key === "start_hint")) {
+      this.mascotSay({ kind: "start_hint" }, this.ui.panel, this.ui.spawnChips);
+    } else if (!want && key === "start_hint") {
+      m.clear();
+      m.setResident(false);
+    }
   }
 
   /** Endpoints must come from the station that is loaded now (a stale result list may still be clickable). */
@@ -572,6 +647,7 @@ export class App {
 
   private renderSheet(): void {
     const sheet = this.ui.sheet;
+    this.releaseMascot(sheet);
     sheet.innerHTML = "";
     const r = this.s.route;
     const b = this.s.loaded?.bundle;
@@ -599,6 +675,8 @@ export class App {
         card.append(relax);
       }
       sheet.append(card);
+      // A sibling of the frozen card, so the card's own text and structure stay untouched.
+      this.mascotSay({ kind: "no_path", reason: r.reason }, sheet);
       return;
     }
     const card = el("div", "card route");
@@ -632,6 +710,7 @@ export class App {
     // Why the freshness is stale or unknown, as text: a tooltip alone is invisible on touch (#203 B5).
     const reason = freshnessReason(t, r);
     if (reason) card.append(el("p", `freshness-reason${r.stale === true ? " warn" : ""}`, reason));
+    if (r.unknowns.length > 0) this.mascotSay({ kind: "route_unknowns" }, card);
 
     const actions = el("div", "actions");
     const guide = el("button", "primary", t.guide);
@@ -684,13 +763,17 @@ export class App {
 
   private renderHud(): void {
     const hud = this.ui.hud;
+    this.releaseMascot(hud);
     hud.innerHTML = "";
     const mode = this.explorer.currentMode;
     this.announceInstruction();
     if (mode === "overview") { this.trackInstruction(); return; }
     const t = this.t;
     const ins = this.s.instructions[this.s.activeInstruction];
-    if (mode === "guide" && ins) hud.append(el("div", "hud-instruction", ins.text));
+    if (mode === "guide" && ins) {
+      this.ui.mascot.clear();
+      hud.append(this.guideBox(ins.text));
+    }
     const row = el("div", "hud-row");
     if (mode === "guide") {
       // Built from the explorer's state; instruction changes then go through updateGuideHud, so the controls stay put under the pointer.
@@ -783,7 +866,7 @@ export class App {
 
   /** Keep `--hud-clear` (the guide instruction's bottom edge + 8 px) current for the toast, which sits below the instruction while one shows; unset otherwise. */
   private trackInstruction(): void {
-    const cur = this.ui.hud.querySelector(".hud-instruction");
+    const cur = this.ui.hud.querySelector(".hud-line");
     if (cur !== this.instructionEl) {
       this.instructionSize?.disconnect();
       this.instructionEl = cur;
@@ -801,9 +884,9 @@ export class App {
     if (this.explorer.currentMode !== "guide" || !pause) { this.renderHud(); return; }
     const ins = this.s.instructions[this.s.activeInstruction];
     const cur = hud.querySelector(".hud-instruction");
-    if (!ins) cur?.remove();
+    if (!ins) hud.querySelector(".hud-line")?.remove();
     else if (cur) cur.textContent = ins.text;
-    else hud.prepend(el("div", "hud-instruction", ins.text));
+    else hud.prepend(this.guideBox(ins.text));
     pause.textContent = this.explorer.guidePaused ? this.t.resume : this.t.pause;
     this.syncGuideStep();
     this.announceInstruction();
@@ -816,8 +899,34 @@ export class App {
   private announceInstruction(): void {
     const ins = this.explorer.currentMode === "guide" ? this.s.instructions[this.s.activeInstruction] ?? null : null;
     if (ins === this.spokenInstruction) return;
+    const changed = ins !== null && this.spokenInstruction !== null;
     this.spokenInstruction = ins;
-    if (ins) this.ui.live.announce(ins.text);
+    if (!ins) return;
+    this.ui.live.announce(ins.text);
+    // A nudge only: the instruction text itself is the router's job (and was just announced).
+    if (changed && this.ui.hud.contains(this.ui.mascot.root)) this.ui.mascot.say({ kind: "turn" });
+  }
+
+  /** The guide box: the mascot beside the instruction text, never over it. */
+  private guideBox(text: string): HTMLElement {
+    const box = el("div", "hud-line");
+    this.ui.mascot.setResident(true);
+    box.append(this.ui.mascot.root, el("div", "hud-instruction", text));
+    return box;
+  }
+
+  /** Move the one mascot into `host` and let it speak (it is shared; the last place to ask wins). */
+  private mascotSay(ev: MascotEvent, host: Element, before: Node | null = null): void {
+    this.ui.mascot.setResident(false);
+    host.insertBefore(this.ui.mascot.root, before);
+    this.ui.mascot.say(ev);
+  }
+
+  /** Hide the mascot if it currently lives in `host` (which is about to be emptied or closed). */
+  private releaseMascot(host: Element): void {
+    if (!host.contains(this.ui.mascot.root)) return;
+    this.ui.mascot.clear();
+    this.ui.mascot.setResident(false);
   }
 
   /** The running guide's length and pace spans: the speed button's effective pace is read from them on each tier change, not per frame. */
@@ -870,7 +979,10 @@ export class App {
     this.arrived = j.index === last && this.s.instructions[last]?.kind === "arrive";
     this.updateGuideHud();
     this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === j.index));
-    if (this.arrived) this.toast(this.arrivalText(), 2500);
+    if (this.arrived) {
+      this.toast(this.arrivalText(), 2500);
+      this.ui.mascot.say({ kind: this.endsOnConnector() ? "arrival_connector" : "arrival" });
+    }
   }
 
   /** A route ending on a stair/escalator/ramp connector has not reached the destination: the last instruction says so. */
@@ -923,7 +1035,10 @@ export class App {
       this.arrived = p.done;
       this.updateGuideHud();
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === next));
-      if (p.done) this.toast(this.arrivalText(), 2500);
+      if (p.done) {
+        this.toast(this.arrivalText(), 2500);
+        this.ui.mascot.say({ kind: this.endsOnConnector() ? "arrival_connector" : "arrival" });
+      }
     }
   }
 
@@ -973,6 +1088,8 @@ export class App {
     box.innerHTML = "";
     box.hidden = !text;
     this.root.classList.toggle("has-credit", Boolean(text));
+    // The strip is a second occluder for the overview's free area: keep the slice above it (#114).
+    this.explorer.setCreditLine(text ? box : null);
     if (!text) return;
     box.setAttribute("aria-label", this.t.creditsLabel);
     const line = el("span", "credit-text", text);
@@ -1056,7 +1173,9 @@ export class App {
       guideControls: () => ({ paused: this.explorer.guidePaused, tier: this.explorer.guideTier, speed: guideTierSpeed(this.explorer.guideTier), instruction: this.s.activeInstruction, distanceM: this.guideS, arrived: this.arrived }),
       hud: () => [...this.ui.hud.querySelectorAll("button")].map((b) => b.textContent),
       labels: () => this.explorer.labelInfo(),
+      overviewFrame: () => this.explorer.overviewFrame(),
       quality: () => this.explorer.qualityLevel,
+      mascot: () => this.ui.mascot.info(),
       avatar: () => this.explorer.avatarEnu,
       sceneInfo: () => this.explorer.sceneInfo(),
       phase: () => this.explorer.phase,
