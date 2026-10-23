@@ -1,6 +1,6 @@
 # GTEki Blender asset factory (Lane E)
 
-Reproducible, parametric generators for a **generic, reusable station kit** (passages, junctions, fare-gate arrays, stairs, escalators, lift portals, wayfinding signs, props, and dressing fitted to a station's own stairs, escalators and floor plan). Output is contract GLB (`docs/assets/asset-contract.md`) for the Three.js Web client and Godot 4. The kit carries no navigation truth and does not replicate any operator's equipment or any specific Ikebukuro/Shinjuku location; station leads decide placement and art direction.
+Reproducible, parametric generators for a **generic, reusable station kit** (passages, junctions, fare-gate arrays, stairs, escalators, lift portals, wayfinding signs, props, toilet entrances, and dressing fitted to a station's own stairs, escalators and floor plan). Output is contract GLB (`docs/assets/asset-contract.md`) for the Three.js Web client and Godot 4. The kit carries no navigation truth and does not replicate any operator's equipment or any specific Ikebukuro/Shinjuku location; station leads decide placement and art direction.
 
 ## Requirements
 
@@ -63,11 +63,22 @@ Editable sources: add `--save-blend <dir>` to `build.py` to save a `.blend` per 
 | `godot_import/` | Godot 4 project: headless import report + screenshot mode |
 | `web_preview/` | Three.js viewer, load-strategy bench (`bench.html`), Node GLTFLoader load test |
 
+## Facility anchors (`families/facilities.py`)
+
+`toilet_entrance` is a wall-mounted portal surround and sign for a room a station knows only as a point (Shinjuku GSI F001 / F002 / F003, [gap-list](../../docs/assets/gap-list.md) finding 5). It draws no room: no fixtures, door leaf, floor or ceiling.
+
+- **Placement `wall`:** origin on the floor at the wall plane, centred on the opening; the room is toward `-Y` (glTF `+Z`) and the wall thickness recesses toward `+Y`. `SOCKET_wall` is the opening, `SOCKET_sign` the sign face.
+- **Params:** `kind` (`male` | `female` | `unisex` | `accessible` | `pair`, mirroring F001 / F002 / F003; `pair` is a combined male | female plate), `opening_w_mm`, `opening_h_mm`, `wall_depth_mm` (reveal lining, 0 = none), `trim` (`aluminium` | `brushed` | `dark` | `accent` | `enamel`), `trim_w_mm`, `trim_proud_mm`, `sign_pos` (`above` | `left` | `right` | `none`), `sign_mm`, `screen` (`none` | `maze`, an optional privacy screen stub behind the wall) and its `screen_*_mm` sizes. Catalog tags: `toilet`, `entrance` and the kind.
+- **Pictograms:** the sign face `gteki_sign_face_toilet_<kind>` is one emissive quad drawn from the kit's own circles, capsules, rounded rectangles and polygons (`toilet_pictogram` in `texsynth.GENERATORS`). The shapes follow the general idea of public-information symbols and copy no artwork. No text; swap the material by name for wording.
+- **Collision:** the opening is never blocked. Colliders are a thin box per jamb trim (the skin proud of the wall; the station's wall collider owns the wall) and, with `screen: maze`, the screen stub.
+- Contact sheet layout: `showcase/facilities_demo.json`.
+
 ## Writing a generator
 
 A generator is `fn(asset_id, params, tex_res) -> Asset` registered in its module's `GENERATORS`. Author in Blender Z-up with the entry edge at `y = 0`, travel/rise toward `+Y`, walking surface at `z = 0` (exported as glTF +Y up, entry at z=0 extending to −Z, front +Z). Use:
 
 - `a.part(group, bevel=…)` for visuals; parts in a group are joined into one `VIS_<group>` mesh (fewer draw calls). Small chamfers (2–6 mm) plus weighted normals are what make hard-surface pieces read as finished rather than blockout.
+- `a.pivot(group, loc)` to give `VIS_<group>` its own node origin at `loc`. Pivoted groups stay separate nodes in the mobile profile (gate flaps, and the pieces of `sign_frame_9slice` that a station scales or instances on its own); every other group merges into `VIS_body` there.
 - `a.col_box` / `a.col_ramp` for simple collision (`COL_*-colonly`); stairs/escalators collide as ramps.
 - `a.socket(name, loc, yaw, width=…, height=…)` for snap points (local +Y Blender = outward).
 - `a.light_hint(name, loc, kind=…, …)` where a fixture emits light.
@@ -91,3 +102,23 @@ Determinism: all randomness is seeded, textures are cached by content hash, UVs 
 A catalog entry may set `"gteki_role"` to override a generator's default role: `null` drops it, or another of `barriers`, `transport`, `stairs_ramps` (contract §10).
 
 Variants are the `gteki_escalator_dress_*`, `gteki_stair_*`, `gteki_railing_run_*` and `gteki_fare_fence_*` ids in the catalog. Build them with `ONLY=<ids> tools/blender/build.sh build`.
+
+## Street family (batch D4)
+
+`families/street.py` holds the street-exit canopy and street furniture, all with `*_mm` catalog params and `dimension_basis` `synthetic`:
+
+| Generator | Pieces | Placement | Collision |
+| --- | --- | --- | --- |
+| `street_canopy` | glazed roof on a steel frame, blank sign fascia (`SOCKET_fascia`, `SOCKET_opening`), posts or cantilever, optional glass side screens, flat, pitched or curved roof | `linear` (origin at the centre of the opening edge, roof toward +Y) | one box per post and per screen; none for the roof |
+| `street_bollard` | fixed, or removable with an aluminium collar | `free` | 12-sided cylinder |
+| `street_guard_rail` | posts and two rails along a `points_mm` polyline, `SOCKET_start` / `SOCKET_end` | `linear` | one thin full-height box per segment |
+| `street_lamp` | pole, gooseneck arm, luminaire head, `LIGHTHINT_head` | `free` | 12-sided cylinder on the pole |
+| `street_planter` | box or round concrete planter with an optional shrub | `free` | box or 12-sided cylinder |
+
+The fascia is a blank `gteki_sign_face_*` quad with a 0..1 UV island for the station's own signage. It carries no wording. Four flat materials (`gteki_street_steel`, `_concrete`, `_soil`, `_foliage`) are new; they add no texture. Status and rationale are in `docs/assets/gap-list.md` (D4 status).
+
+```bash
+ONLY=$(python3 -c "import json;print(','.join(a['id'] for a in json.load(open('tools/blender/catalog/kit_v0_1.json'))['assets'] if a['id'].startswith('gteki_street_')))") tools/blender/build.sh build
+PROFILE=mobile ONLY=<same ids> tools/blender/build.sh build
+blender -b --factory-startup -P tools/blender/render_preview.py -- --layout tools/blender/showcase/street_demo.json --camera hero --out street_hero.png   # also: canopy, furniture
+```

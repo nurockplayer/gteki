@@ -121,3 +121,57 @@ Each batch is one PR with 5–10 pieces, a contact sheet and both tiers passing 
 - Kit pieces are visual-only.
 - The line band is a runtime-tinted `line_accent` slot.
 - The station sends placement mapping after #61 and #72, once it has the piece list with dimensions.
+
+## P1 status
+
+**Built (generator code, batch `claude/lane-e-p1-toilet-anchor`):** `toilet_entrance` in `tools/blender/gteki_assets/families/facilities.py`, six catalog variants (`gteki_toilet_entrance_` + `male`, `female`, `unisex`, `accessible`, `pair`, `male_maze`) and `tools/blender/showcase/facilities_demo.json`.
+- **What it is:** jamb and lintel trim around an opening the station already has, a reveal lining, a pictogram sign above or beside the opening, and an optional privacy screen stub behind the wall. Placement `wall`; sockets `SOCKET_wall` and `SOCKET_sign`; tags `toilet`, `entrance` and the kind.
+- **Facility kind:** `params.kind` mirrors the GSI codes (F001 `male`, F002 `female`, F003 `unisex`). `accessible` and `pair` are extra kinds: a multi-purpose room at F003 can use `unisex` or `accessible` (the station lead chooses), and `pair` is for a shared entrance to a male and a female room.
+- **Anchors:** place the piece only where the source gives the entrance or door position. A GSI point is a representative point of a space and gives no door, so it is not enough on its own: the piece would imply a door the source does not give. **Shinjuku decision (B lead, 2026-10-22):** Shinjuku does not place it, because its F001–F003 data has no door location, and toilets stay a gap there. Ikebukuro is to be asked. The kit holds no station measurement; opening sizes are generic-typical (1.0 and 1.2 m wide, 2.1 m high) and are parameters.
+- **Not modelled:** toilets, sinks, door leaves, floors and ceilings. The kit does not invent the room.
+- **Collision:** jamb trims and, for `screen: maze`, the screen; the opening is clear. A kit piece for Shinjuku is visual-only in practice, so those colliders can be dropped there.
+- **Style exception:** [style.md](style.md) §6 says signs carry no pictograms. These sign faces are the one exception, as requested for P1: own geometric figures in the spirit of ISO 7001 / JIS Z8210 symbols, no traced artwork, no text, no operator marks. §6 now records this narrow exception; the Owner can still revert it.
+- **Still open in P1:** bench, bin, vending and locker stay with the existing props; no new piece is added without station geometry that backs it.
+- **Checks to run with Blender (not run yet):** `build.sh` for both tiers, `repro`, `godot`, `web`, and the contact sheet.
+
+## D4 status: street exit and street furniture
+
+**Status:** generator code, catalog entries and a contact-sheet layout are in; nothing is built or rendered yet. Code is `tools/blender/gteki_assets/families/street.py`, the layout `tools/blender/showcase/street_demo.json`.
+
+Covers Shinjuku inventory items 15–18 and Ikebukuro item 11 (exit portals), as generic pieces: no real-world specifics, no station names, no operator graphics. Every piece is tagged `street`, plus `exit` (F108) for the canopies or `furniture`.
+
+| Piece | Catalog ids | Params (mm) |
+| --- | --- | --- |
+| Street-exit canopy (`street_canopy`) | `gteki_street_canopy_w3000_d3000_posts`, `gteki_street_canopy_w4500_d3000_cantilever_curved` | `width_mm`, `depth_mm`, `height_mm` (clear height under the fascia), `roof` (`flat`, `pitched`, `curved`), `pitch_deg`, `rise_mm`, `support` (`posts`, `cantilever`), `fascia_mm`, `fascia_theme`, `screens` (`none`, `left`, `right`, `both`) |
+| Bollard (`street_bollard`) | `gteki_street_bollard_fixed_d114_h900`, `gteki_street_bollard_removable_d114_h900` | `diameter_mm`, `height_mm`, `kind` (`fixed`, `removable` with an aluminium collar and lock plate), `band_mm` |
+| Guard rail (`street_guard_rail`) | `gteki_street_guard_rail_3000`, `gteki_street_guard_rail_l_3000x2000_stainless` | `points_mm` (plan polyline from the first point), `height_mm`, `post_spacing_mm`, `coating` (`painted`, `stainless`) |
+| Street lamp (`street_lamp`) | `gteki_street_lamp_h5000_arm900` | `height_mm` (diffuser underside), `arm_mm` |
+| Planter (`street_planter`) | `gteki_street_planter_box_1200x600_h600`, `gteki_street_planter_round_d800_h500` | `shape` (`box`, `round`), `width_mm`, `depth_mm`, `diameter_mm`, `height_mm`, `planting` (`shrub`, `none`) |
+
+**How the pieces fit:**
+- **Canopy frame.** The origin is on the ground at the centre of the opening edge. The roof runs toward +Y (glTF −Z) for `depth_mm`. Placement is `linear`.
+- **Canopy sockets.** `SOCKET_opening` sits at the origin and faces back toward the stair or escalator; its width is the clear gap between the posts. `SOCKET_fascia` sits on the sign face at the far edge and faces +Y.
+- **Fascia.** It is a blank sign panel: an aluminium frame around a `gteki_sign_face_*` quad with a 0..1 UV island, and no wording. The station swaps the material or puts a canvas on it. It carries a `LIGHTHINT_fascia`, because the face is a backlit light box.
+- **Roof.** The frame sits just under the fascia top at the far edge. A pitched roof rises toward the opening edge, and a curved roof arches between the two edges. Glass cells sit in aluminium ribs.
+- **Posts.** `posts` puts square posts at all four corners; `cantilever` keeps only the rear pair, with knee gussets. Posts stand beside the opening, so `width_mm` minus two post widths (100 mm, 140 mm for a cantilever) is the clear opening.
+- **Guard rail.** `points_mm` are offsets from the first point, which is the origin, with mitred corners. `SOCKET_start` and `SOCKET_end` chain runs. Posts sit at every vertex and at most `post_spacing_mm` apart.
+- **Lamp.** The arm and head reach toward −Y (glTF +Z). `LIGHTHINT_head` sits on the diffuser (`kind` `street_lamp`, 60 W, 4000 K).
+
+**Collision** (contract §2). All of it is street level, outside any station interior's walker footprint, and the colliders block a walker:
+- bollard, lamp pole, planter: one box or 12-sided cylinder over the visual footprint (planter shrubs do not collide)
+- canopy: one box per post and one thin box per glass screen. The roof, frame and fascia have none, because they are overhead
+- guard rail: one full-height thin box per segment, so a walker cannot slip between the rails
+
+This follows the Ikebukuro rule (a solid prop needs a walker collider). Shinjuku keeps kit pieces visual-only and ignores the `COL_*` nodes.
+
+**Materials.** All come from style.md §2 except four new flat factor colours, with no texture and so no download or GPU cost:
+- `gteki_street_steel`: painted graphite steel
+- `gteki_street_concrete`: precast planter body
+- `gteki_street_soil`
+- `gteki_street_foliage`: one flat green for the generic shrub
+
+The fascia face uses `gteki_sign_face_white_none_a<aspect×100>` through `signage.face_material`, with the aspect rounded to 0.5. Adding four materials moves the sorted mobile palette, so all mobile GLBs are rebuilt.
+
+**Dimensions.** `dimension_basis` is `synthetic` for every piece: look-dev proportions in a typical street range, with no published source claimed. The catalog stays generic, and a station passes its own `*_mm` values.
+
+**Not done here:** a Blender build, the Godot and web import tests, `repro`, the contact sheet, and budget numbers for the new GLBs. Triangle counts so far come from a pure-Python stub (mobile exact; full is an estimate of the bevel growth), and the GPU and byte budgets (`budget.json`, `budget_mobile.json`) have headroom to confirm after the first build.
