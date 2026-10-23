@@ -23,7 +23,7 @@ import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { FOLLOW, FOV, NO_SLOPE, approachFov, avatarFade, boomSqueezed, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, stepSlope, targetFov, type SlopeState } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachFov, avatarFade, boomSqueezed, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, stepSlope, targetFov, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { StationCaches } from "./stationCaches.ts";
 import { STREET, StreetBackdrop, atStreetTop, footingLevel, isOutdoors, roleOf } from "./streetBackdrop.ts";
@@ -1355,15 +1355,17 @@ export class Explorer {
 
   /** Move the lens toward `target`; the projection is rebuilt only while the FOV actually changes. */
   private setFov(target: number, snap: boolean, dt = 0): void {
-    const next = snap ? target : approachFov(this.camera.fov, target, dt);
+    const next = snap || this.reducedMotion ? target : approachFov(this.camera.fov, target, dt);
     if (next === this.camera.fov) return;
     this.camera.fov = next;
     this.camera.updateProjectionMatrix();
   }
 
   private placeCamera(dt: number, snap = false): void {
-    // The slope state follows the walker's height; a teleport or snap restarts it so a jump is not read as a climb.
-    this.slope = snap || dt <= 0 ? NO_SLOPE : stepSlope(this.slope, this.pos.y - this.slopeY, dt);
+    // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
+    this.slope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump
+      ? NO_SLOPE
+      : stepSlope(this.slope, this.pos.y - this.slopeY, dt);
     this.slopeY = this.pos.y;
     const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));

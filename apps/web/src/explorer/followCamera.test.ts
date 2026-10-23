@@ -222,6 +222,12 @@ describe("slope lens", () => {
     expect(stepSlope(run(NO_SLOPE, 0, 1), 0.02, 1 / 60).on).toBe(false);
   });
 
+  it("keeps the teleport threshold above a frame of climbing", () => {
+    expect(SLOPE.jump).toBeGreaterThanOrEqual(0.3);
+    expect(stepSlope(NO_SLOPE, 0.05, 0.1).on).toBe(false);
+    expect(run(NO_SLOPE, 0.5, 0.3).on).toBe(true);
+  });
+
   it("does not flutter when a landing dips just under the exit speed briefly", () => {
     let s = run(NO_SLOPE, 0.8, 0.5);
     s = run(s, 0, 0.3);

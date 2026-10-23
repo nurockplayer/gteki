@@ -85,6 +85,8 @@ export function boomSqueezed(wasSqueezed: boolean, distance: number): boolean {
 
 /** Slope detection from the walker's smoothed vertical speed, with hysteresis and a hold so landings do not flutter the lens. */
 export const SLOPE = {
+  /** A height change above this (m) within one frame is a teleport, not a climb (stairs and escalators move centimetres per frame). */
+  jump: 0.5,
   /** Smoothed |vertical speed| (m/s) above which the walker counts as on a slope. */
   enter: 0.25,
   /** ... and below which (for `hold` seconds) it counts as level again. */
