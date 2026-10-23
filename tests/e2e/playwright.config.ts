@@ -65,7 +65,13 @@ export default defineConfig({
     {
       name: "phone-webkit",
       grep: /@phone/,
-      use: { ...devices["iPhone 15"], video: { mode: "on", size: { width: 393, height: 852 } } },
+      // No video: Playwright WebKit's screencast grows the GPU process ~45 MB/s for as long as a page renders
+      // (#40; 12 GB froze the host on 2026-10-23). retain-on-failure records the whole run too, so it leaks the
+      // same way. GTEKI_WEBKIT_VIDEO=1 records it for one short, targeted spec.
+      use: {
+        ...devices["iPhone 15"],
+        video: process.env.GTEKI_WEBKIT_VIDEO === "1" ? { mode: "on", size: { width: 393, height: 852 } } : "off",
+      },
     },
     {
       name: "phone-chromium",

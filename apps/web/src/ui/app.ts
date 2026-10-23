@@ -15,6 +15,7 @@ import { factsOnlyCredit, rightsLabel, sourceCredit } from "../credits.ts";
 import { creditEntries, creditLineFor, entryRightsLabels, groupLicenses } from "../creditLine.ts";
 import { applyAria, COMBO_CLOSED, comboboxKeys, inputAria, isImeKeydown, listboxRole, normalizeCombo, optionAria, type ComboState } from "./combobox.ts";
 import { LiveRegion, routeLiveMessage, searchLiveMessage } from "./live.ts";
+import { MascotSlot, type MascotEvent } from "./mascot.ts";
 import { watchReducedMotion } from "./motion.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
@@ -89,6 +90,7 @@ export class App {
     panel: el("section", "panel"),
     more: el("button", "ghost more", "⋯"),
     live: new LiveRegion(() => this.t),
+    mascot: new MascotSlot(() => this.t, (text) => this.ui.live.announce(text)),
   };
   /** Listbox state of the two search comboboxes. */
   private readonly combo: Record<"from" | "to", ComboState> = { from: COMBO_CLOSED, to: COMBO_CLOSED };
@@ -113,7 +115,10 @@ export class App {
     });
     this.explorer.setGuideTier(readGuideTier());
     this.bindGuideKeys();
-    watchReducedMotion((reduce) => this.explorer.setReducedMotion(reduce));
+    watchReducedMotion((reduce) => {
+      this.explorer.setReducedMotion(reduce);
+      this.ui.mascot.setMotion(reduce, this.explorer.qualityLevel === "low");
+    });
     this.exposeTestHooks();
     this.s.entries = await listStations();
     this.renderStationSelect();
@@ -246,6 +251,7 @@ export class App {
     this.ui.toInput.value = "";
     this.closeResults("from");
     this.closeResults("to");
+    this.ui.mascot.clear();
     this.ui.sheet.innerHTML = "";
     this.renderSpawnChips(undefined);
     this.toast(this.t.loading);
@@ -257,6 +263,8 @@ export class App {
       this.s.search = createSearchIndex(loaded.bundle);
       if (!(await this.explorer.loadStation(loaded, this.s.router)) || !current()) return;
       this.toast(this.explorer.sceneError ? `${this.t.sceneFallback}: ${this.explorer.sceneError}` : "", this.explorer.sceneError ? 6000 : 0);
+      // Beneath the search fields (the toast fades): the 3D scene failed and the line map is shown instead.
+      if (this.explorer.sceneError) this.mascotSay({ kind: "scene_fallback" }, this.ui.panel);
     } catch (err) {
       if (!current()) return;
       this.s.loaded = null;
@@ -287,6 +295,8 @@ export class App {
     this.ui.sheet.append(box);
     this.ui.sheet.classList.add("open");
     this.toast("");
+    // A sibling of the error card; the card announces nothing, so the mascot line is the announcement.
+    this.mascotSay({ kind: "load_error" }, this.ui.sheet);
   }
 
   /** Once both ends are chosen, fold options away (phone layout uses this to free the 3D view). */
@@ -312,6 +322,7 @@ export class App {
     this.ui.toInput.value = this.s.destination ? this.poiName(this.s.destination) : "";
     if (b) this.explorer.showPois(b, (p) => this.poiName(p), [this.s.destination?.id, this.s.origin?.kind === "poi" ? this.s.origin.poi.id : undefined].filter(Boolean) as string[]);
     this.computeRoute();
+    this.syncPanelMascot();
   }
 
   private renderBanner(b: StationBundle | undefined): void {
@@ -385,6 +396,7 @@ export class App {
       none.setAttribute("role", "option");
       none.setAttribute("aria-disabled", "true");
       box.append(none);
+      this.mascotSay({ kind: "search_empty" }, box);
       this.setCombo(which, { open: true, count: 0, active: -1 });
       return;
     }
@@ -428,12 +440,35 @@ export class App {
     this.combo[which] = state;
     const input = which === "from" ? this.ui.fromInput : this.ui.toInput;
     const box = which === "from" ? this.ui.fromResults : this.ui.toResults;
-    if (!state.open) box.replaceChildren();
+    if (!state.open) {
+      // Every close (Escape included) frees the mascot first, so a search_empty line never outlives its list.
+      this.releaseMascot(box);
+      box.replaceChildren();
+    }
     const role = listboxRole(state);
     if (role) box.setAttribute("role", role);
     else box.removeAttribute("role");
     applyAria(input, inputAria(state, box.id));
     box.querySelectorAll('[role="option"]').forEach((o, i) => o.setAttribute("aria-selected", String(i === state.active)));
+    this.syncPanelMascot();
+  }
+
+  /**
+   * The mascot's two panel states. start_hint (dog, under the fields) shows while the station is ready with no
+   * destination, no route and no results list open; it never displaces another line. scene_fallback is only
+   * re-said here so it follows the language.
+   */
+  private syncPanelMascot(): void {
+    const m = this.ui.mascot;
+    const key = m.info().lineKey;
+    if (key === "scene_fallback") { this.mascotSay({ kind: "scene_fallback" }, this.ui.panel); return; }
+    const want = this.stationReady && !this.s.destination && !this.s.route && !this.combo.from.open && !this.combo.to.open;
+    if (want && (key === null || key === "start_hint")) {
+      this.mascotSay({ kind: "start_hint" }, this.ui.panel, this.ui.spawnChips);
+    } else if (!want && key === "start_hint") {
+      m.clear();
+      m.setResident(false);
+    }
   }
 
   /** Endpoints must come from the station that is loaded now (a stale result list may still be clickable). */
@@ -554,7 +589,7 @@ export class App {
     if (!best.ok && best.reason === "no_path") this.s.noPath = explainNoPathBetween(router, loaded.bundle, origin, destination, profile);
     if (best.ok) {
       this.s.polyline = routePolyline(loaded.bundle, best);
-      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination);
+      this.s.instructions = describeRoute(loaded.bundle, best, this.s.lang, destination, origin.kind === "poi" ? origin.poi : undefined);
       this.s.activeInstruction = 0;
       this.explorer.showRoute(this.s.polyline);
       if (this.explorer.currentMode === "overview") this.explorer.focusPoints(this.s.polyline);
@@ -564,6 +599,7 @@ export class App {
 
   private renderSheet(): void {
     const sheet = this.ui.sheet;
+    this.releaseMascot(sheet);
     sheet.innerHTML = "";
     const r = this.s.route;
     const b = this.s.loaded?.bundle;
@@ -591,6 +627,8 @@ export class App {
         card.append(relax);
       }
       sheet.append(card);
+      // A sibling of the frozen card, so the card's own text and structure stay untouched.
+      this.mascotSay({ kind: "no_path", reason: r.reason }, sheet);
       return;
     }
     const card = el("div", "card route");
@@ -601,6 +639,8 @@ export class App {
       el("span", undefined, t.floors(r.floorChanges)),
     );
     card.append(head);
+    // No station records an on-site check, so a real station's route is always said to be desk-checked only (synthetic data says so itself).
+    if (!r.synthetic) card.append(el("p", "desk-check", t.deskChecked));
 
     const badges = el("div", "badges");
     const badge = (text: string, cls: string, title?: string) => { const x = el("span", `badge ${cls}`, text); if (title) x.title = title; badges.append(x); };
@@ -617,6 +657,7 @@ export class App {
     if (this.s.polyline.some((p) => !p.zKnown)) badge(t.symbolicHeight, "muted");
     if (r.operatorIds.length > 1) badge(`${t.operators}: ${r.operatorIds.join(" → ")}`, "info");
     card.append(badges);
+    if (r.unknowns.length > 0) this.mascotSay({ kind: "route_unknowns" }, card);
 
     const actions = el("div", "actions");
     const guide = el("button", "primary", t.guide);
@@ -669,13 +710,17 @@ export class App {
 
   private renderHud(): void {
     const hud = this.ui.hud;
+    this.releaseMascot(hud);
     hud.innerHTML = "";
     const mode = this.explorer.currentMode;
     this.announceInstruction();
     if (mode === "overview") { this.trackInstruction(); return; }
     const t = this.t;
     const ins = this.s.instructions[this.s.activeInstruction];
-    if (mode === "guide" && ins) hud.append(el("div", "hud-instruction", ins.text));
+    if (mode === "guide" && ins) {
+      this.ui.mascot.clear();
+      hud.append(this.guideBox(ins.text));
+    }
     const row = el("div", "hud-row");
     if (mode === "guide") {
       // Built from the explorer's state; instruction changes then go through updateGuideHud, so the controls stay put under the pointer.
@@ -768,7 +813,7 @@ export class App {
 
   /** Keep `--hud-clear` (the guide instruction's bottom edge + 8 px) current for the toast, which sits below the instruction while one shows; unset otherwise. */
   private trackInstruction(): void {
-    const cur = this.ui.hud.querySelector(".hud-instruction");
+    const cur = this.ui.hud.querySelector(".hud-line");
     if (cur !== this.instructionEl) {
       this.instructionSize?.disconnect();
       this.instructionEl = cur;
@@ -786,9 +831,9 @@ export class App {
     if (this.explorer.currentMode !== "guide" || !pause) { this.renderHud(); return; }
     const ins = this.s.instructions[this.s.activeInstruction];
     const cur = hud.querySelector(".hud-instruction");
-    if (!ins) cur?.remove();
+    if (!ins) hud.querySelector(".hud-line")?.remove();
     else if (cur) cur.textContent = ins.text;
-    else hud.prepend(el("div", "hud-instruction", ins.text));
+    else hud.prepend(this.guideBox(ins.text));
     pause.textContent = this.explorer.guidePaused ? this.t.resume : this.t.pause;
     this.syncGuideStep();
     this.announceInstruction();
@@ -801,8 +846,34 @@ export class App {
   private announceInstruction(): void {
     const ins = this.explorer.currentMode === "guide" ? this.s.instructions[this.s.activeInstruction] ?? null : null;
     if (ins === this.spokenInstruction) return;
+    const changed = ins !== null && this.spokenInstruction !== null;
     this.spokenInstruction = ins;
-    if (ins) this.ui.live.announce(ins.text);
+    if (!ins) return;
+    this.ui.live.announce(ins.text);
+    // A nudge only: the instruction text itself is the router's job (and was just announced).
+    if (changed && this.ui.hud.contains(this.ui.mascot.root)) this.ui.mascot.say({ kind: "turn" });
+  }
+
+  /** The guide box: the mascot beside the instruction text, never over it. */
+  private guideBox(text: string): HTMLElement {
+    const box = el("div", "hud-line");
+    this.ui.mascot.setResident(true);
+    box.append(this.ui.mascot.root, el("div", "hud-instruction", text));
+    return box;
+  }
+
+  /** Move the one mascot into `host` and let it speak (it is shared; the last place to ask wins). */
+  private mascotSay(ev: MascotEvent, host: Element, before: Node | null = null): void {
+    this.ui.mascot.setResident(false);
+    host.insertBefore(this.ui.mascot.root, before);
+    this.ui.mascot.say(ev);
+  }
+
+  /** Hide the mascot if it currently lives in `host` (which is about to be emptied or closed). */
+  private releaseMascot(host: Element): void {
+    if (!host.contains(this.ui.mascot.root)) return;
+    this.ui.mascot.clear();
+    this.ui.mascot.setResident(false);
   }
 
   /** The running guide's length and pace spans: the speed button's effective pace is read from them on each tier change, not per frame. */
@@ -855,7 +926,10 @@ export class App {
     this.arrived = j.index === last && this.s.instructions[last]?.kind === "arrive";
     this.updateGuideHud();
     this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === j.index));
-    if (this.arrived) this.toast(this.arrivalText(), 2500);
+    if (this.arrived) {
+      this.toast(this.arrivalText(), 2500);
+      this.ui.mascot.say({ kind: this.endsOnConnector() ? "arrival_connector" : "arrival" });
+    }
   }
 
   /** A route ending on a stair/escalator/ramp connector has not reached the destination: the last instruction says so. */
@@ -908,7 +982,10 @@ export class App {
       this.arrived = p.done;
       this.updateGuideHud();
       this.ui.sheet.querySelectorAll(".ins").forEach((n, i) => n.classList.toggle("active", i === next));
-      if (p.done) this.toast(this.arrivalText(), 2500);
+      if (p.done) {
+        this.toast(this.arrivalText(), 2500);
+        this.ui.mascot.say({ kind: this.endsOnConnector() ? "arrival_connector" : "arrival" });
+      }
     }
   }
 
@@ -1042,6 +1119,7 @@ export class App {
       hud: () => [...this.ui.hud.querySelectorAll("button")].map((b) => b.textContent),
       labels: () => this.explorer.labelInfo(),
       quality: () => this.explorer.qualityLevel,
+      mascot: () => this.ui.mascot.info(),
       avatar: () => this.explorer.avatarEnu,
       sceneInfo: () => this.explorer.sceneInfo(),
       phase: () => this.explorer.phase,

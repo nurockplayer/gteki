@@ -1,0 +1,20 @@
+{
+  "title": "SYNTHETIC KIT DEMO — D1 fixtures (luminaires, trim, column sleeves), not a station layout",
+  "mode": "studio",
+  "exposure": -0.2,
+  "hint_lights": false,
+  "items": [
+    {"glb": "assets/library/glb/gteki_column_sleeve_600x600_h2800.glb", "pos": [-3.2, 0, 0]},
+    {"glb": "assets/library/glb/gteki_column_sleeve_900x600_h3200_accent.glb", "pos": [-1.8, 0, 0]},
+    {"glb": "assets/library/glb/gteki_trim_chair_rail_3000_steel.glb", "pos": [1.0, 0, 0]},
+    {"glb": "assets/library/glb/gteki_trim_skirting_3000_steel.glb", "pos": [1.0, 0, 0]},
+    {"glb": "assets/library/glb/gteki_trim_skirting_3000_granite.glb", "pos": [4.2, 0, 0]},
+    {"glb": "assets/library/glb/gteki_luminaire_linear_1200.glb", "pos": [8.0, 0, 0]},
+    {"glb": "assets/library/glb/gteki_luminaire_panel_600.glb", "pos": [9.0, 0, 0]},
+    {"glb": "assets/library/glb/gteki_luminaire_downlight_d150.glb", "pos": [9.8, 0, 0]}
+  ],
+  "cameras": {
+    "walls": {"pos": [1.2, -7.0, 1.7], "look_at": [1.2, 0.0, 1.4], "lens": 24},
+    "ceiling": {"pos": [9.0, -2.5, 1.4], "look_at": [9.0, 0.0, 2.7], "lens": 24}
+  }
+}

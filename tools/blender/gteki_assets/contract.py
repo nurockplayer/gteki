@@ -13,11 +13,9 @@ AI_IMAGE_SPDX = "CC0-1.0"  # AI-generated 2D images (assets/library/source/poste
 
 # EMBED_SPDX is the single switch for writing license_spdx / rights_class / attribution into the
 # manifest and every GLB's extras.gteki, and for replacing the "UNDECIDED" strings below
-# (LICENSE, the GLB copyright). It stays False now because those strings are embedded in all
-# committed GLBs and `build.sh repro` compares rebuilds byte-for-byte with the committed library.
-# The next full library rebuild (the AO rollout) turns it on and commits the new GLBs, both
-# manifests and the new hashes together. See docs/assets/asset-contract.md.
-EMBED_SPDX = False
+# (LICENSE, the GLB copyright). The AO rollout rebuild turned it on and committed the new GLBs,
+# both manifests and the new hashes together. See docs/assets/asset-contract.md.
+EMBED_SPDX = True  # on since the AO rollout rebuild (#160)
 
 LICENSE_UNDECIDED = "UNDECIDED — original GTEki work; repository licence pending Owner decision"
 LICENSE_DECIDED = f"{LICENSE_SPDX} — original GTEki work; attribution: {ATTRIBUTION}"
@@ -38,6 +36,12 @@ def rights_fields(license_spdx=None):
 PROVENANCE = "original procedural geometry and textures; see assets/library/PROVENANCE.md"
 FIDELITY = "generic kit; not a replica of any operator equipment or station"
 NAVIGATION = "none — visual/physical only; routing truth lives in the station graph"
+
+# Station bake roles (contract §10): optional `gteki_role` on the root and VIS_* nodes of dressing pieces.
+ROLES = ("barriers", "transport", "stairs_ramps")
+# Anchor classes (contract §10): optional `anchor` in a catalog entry, for pieces whose origin is
+# not the plain `placement` one; the Godot import test checks the origin by it when present.
+ANCHORS = ("linear_run", "edge_anchored", "surface")
 
 # dimension_basis values (contract §3). The kit never claims "station-verified".
 GENERIC_TYPICAL = "generic-typical"
