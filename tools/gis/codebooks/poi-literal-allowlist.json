@@ -99,6 +99,7 @@
     "road",
     "section",
     "stairs",
+    "unit",
     "unknown"
   ],
   "structural_justifications": {
@@ -110,6 +111,7 @@
     "gate": "Our own enum value: the feature kind / facility-presence key that GTEki's network, gap, context and summary reports emit (and counts keyed by it). That is GTEki schema vocabulary, not a copied POI label; a POI value equal to this English word carries no wording value.",
     "ramp": "Our own enum value: the feature kind / facility-presence key that GTEki's network, gap, context and summary reports emit (and counts keyed by it). That is GTEki schema vocabulary, not a copied POI label; a POI value equal to this English word carries no wording value.",
     "stairs": "Our own enum value: the feature kind / facility-presence key that GTEki's network, gap, context and summary reports emit (and counts keyed by it). That is GTEki schema vocabulary, not a copied POI label; a POI value equal to this English word carries no wording value.",
-    "section": "Our own report key (`section`, the network/POI report section a count belongs to); GTEki schema vocabulary, not a copied POI label. A POI value equal to this English word carries no wording value."
+    "section": "Our own report key (`section`, the network/POI report section a count belongs to); GTEki schema vocabulary, not a copied POI label. A POI value equal to this English word carries no wording value.",
+    "unit": "Our own report key (`unit`, the measurement unit of a figure; value `m`): the Shinjuku context receipts emit `ground_offsets.unit` and `exit_neighbours.unit`. GTEki schema vocabulary, not a copied POI label. A POI value equal to this English word carries no wording value."
   }
 }
