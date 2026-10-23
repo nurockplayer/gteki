@@ -57,7 +57,8 @@ async function creditsList(page: Page) {
   // Rights wording checks (#187 / #161): the list text and its links, for reading, plus raw enum values leaking to the UI.
   const text = (await dlg.textContent()) ?? "";
   const links = await dlg.locator("a").evaluateAll((as) => as.map((a) => ({ text: a.textContent?.trim() ?? "", href: (a as HTMLAnchorElement).href })));
-  const rawEnums = [...new Set(text.match(/\b[A-Z]{3,}(?:_[A-Z0-9]+){1,}\b/g) ?? [])];
+  // glTF attribute names (TEXCOORD_1 etc.) appear in asset-derivation notes and are not rights enums.
+  const rawEnums = [...new Set(text.match(/\b[A-Z]{3,}(?:_[A-Z0-9]+){1,}\b/g) ?? [])].filter((s) => !/^(TEXCOORD|COLOR|JOINTS|WEIGHTS)_\d+$/.test(s));
   return { dlg, count: items.length, duplicates: [...new Set(dup)], items, links, rawEnums };
 }
 
