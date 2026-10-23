@@ -12,6 +12,10 @@ Options:
   --save-blend DIR   also save an editable .blend per asset (keep outside Git)
   --manifest PATH    manifest path (default <out>/manifest.json)
   --profile NAME     full (default, canonical library) or mobile (contract §8)
+
+A catalog with "kind": "finish-pack" builds the finish pack (contract §9): the sample GLBs go to
+<out>/glb as usual, and each finish also gets <out>/<id>/ (maps + finish.json) and an entry in the
+manifest's "finishes" section. It is always built whole (no --only).
 """
 
 import argparse
@@ -26,7 +30,7 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
-from gteki_assets import contract  # noqa: E402
+from gteki_assets import ao, contract, finishes  # noqa: E402
 from gteki_assets.asset import Asset  # noqa: E402
 from gteki_assets.families import PLACEMENT, REGISTRY  # noqa: E402
 
@@ -57,6 +61,8 @@ def main(argv):
     repeated = sorted({i for i in ids if ids.count(i) > 1})
     if repeated:
         sys.exit(f"[gteki] {args.catalog} lists these ids more than once: {', '.join(repeated)}")
+    if only and catalog.get("kind") == "finish-pack":
+        sys.exit(f"[gteki] {args.catalog} is a finish pack: it is always built whole (no --only)")
     unknown = sorted(only - set(ids))
     if unknown:
         sys.exit(f"[gteki] --only names ids not in {args.catalog}: {', '.join(unknown)}")
@@ -111,6 +117,14 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
                 asset.dimension_basis = item["dimension_basis"]
             if item.get("notes"):
                 asset.notes = item["notes"]
+            if "ao_res" in item:
+                if item["ao_res"] not in ao.SIZES:
+                    raise ValueError(f"ao_res must be one of {ao.SIZES}, got {item['ao_res']!r}")
+                asset.ao_res_override = item["ao_res"]
+            if "collision" in item:  # a station that takes its colliders from its own layout
+                if item["collision"] is not False:
+                    raise ValueError(f"collision must be false or absent, got {item['collision']!r}")
+                asset.drop_collision()
             asset.placement = item.get("placement") or PLACEMENT.get(item["generator"], "free")
             asset.build()
             entry = asset.export(staging, save_blend_dir=args.save_blend or None)
@@ -134,6 +148,8 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
         print(f"[gteki] nothing published; {glb_dir} and {manifest_path} are unchanged", file=sys.stderr)
         sys.exit(1)
 
+    pack = catalog.get("kind") == "finish-pack"
+    section = finishes.stage_pack(catalog, entries, args.tex_res, args.profile, staging) if pack else None
     order = {a["id"]: i for i, a in enumerate(catalog["assets"])}
     entries.sort(key=lambda e: order.get(e["id"], 1e9))
     for e in entries:
@@ -149,6 +165,9 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
     }
     if args.profile != "full":  # the canonical manifest keeps its exact bytes
         manifest = {**{k: v for k, v in manifest.items() if k != "assets"}, "profile": args.profile, "assets": entries}
+    if pack:
+        manifest = {**{k: v for k, v in manifest.items() if k != "assets"}, "finish_pack": finishes.FORMAT,
+                    "assets": entries, "finishes": section}
     # Write the manifest next to its destination before touching glb/, so an
     # unwritable --manifest fails while the live library is still unchanged.
     manifest_dir = os.path.dirname(os.path.abspath(manifest_path))
@@ -163,6 +182,8 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
             json.dump(manifest, f, indent=2, ensure_ascii=False)
             f.write("\n")
         os.chmod(manifest_tmp, 0o644)
+        if pack:
+            _publish_finishes(args.out, staging, [e["id"] for e in section])
         for path in glob.glob(os.path.join(staging, "*.glb")):
             os.replace(path, os.path.join(glb_dir, os.path.basename(path)))
         if not only:
@@ -184,6 +205,19 @@ def _build(args, catalog, only, previous, glb_dir, staging, manifest_path):
     finally:
         if os.path.exists(manifest_tmp):
             os.remove(manifest_tmp)
+
+
+def _publish_finishes(out, staging, ids):
+    """Replace <out>/<id>/ for every finish and drop finish directories no longer in the catalog."""
+    for fid in ids:
+        dest = os.path.join(out, fid)
+        shutil.rmtree(dest, ignore_errors=True)
+        os.replace(os.path.join(staging, fid), dest)
+    for path in glob.glob(os.path.join(out, "gteki_finish_*", "finish.json")):
+        d = os.path.dirname(path)
+        if os.path.basename(d) not in ids:
+            shutil.rmtree(d)
+            print(f"[gteki] removed stale finish {os.path.basename(d)}", flush=True)
 
 
 if __name__ == "__main__":

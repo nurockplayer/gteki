@@ -15,10 +15,12 @@ Reproducible, parametric generators for a **generic, reusable station kit** (pas
 tools/blender/build.sh            # generate assets/library from the catalog + validate
 tools/blender/build.sh all        # + Godot headless import + Three.js load test
 tools/blender/build.sh repro      # two clean builds must be byte-identical to each other and to assets/library
-tools/blender/build.sh selftest   # validator, texture budget and bundle tool self-tests (stdlib only)
+tools/blender/build.sh selftest   # validator, finish validator, texture budget and bundle tool self-tests (stdlib only)
+tools/blender/build.sh finishes   # finish pack only: build assets/library/finishes + validate (also build-finishes, validate-finishes, repro-finishes)
 ONLY=gteki_gate_array_4w1 tools/blender/build.sh build   # rebuild a subset
 TEX_RES=2048 OUT=/tmp/kit_hq tools/blender/build.sh build # high-res textures (Godot HQ)
-PROFILE=mobile tools/blender/build.sh all                 # mobile tier into assets/library/mobile (palette, merged VIS_body, UV1)
+PROFILE=mobile tools/blender/build.sh all                 # mobile tier into assets/library/mobile (palette, merged VIS_body, UV1); its finishes use half-size textures
+python3 tools/blender/validate_glb.py --require-occlusion assets/library/glb/*.glb   # FAIL assets without the baked AO map (default: allowed during rollout)
 ```
 
 Viewer: `pnpm --dir tools/blender/web_preview install && pnpm --dir tools/blender/web_preview dev`, then open `/?asset=<id>` or `/?mode=gallery`.
@@ -44,14 +46,18 @@ Editable sources: add `--save-blend <dir>` to `build.py` to save a `.blend` per 
 | --- | --- |
 | `build.py`, `build.sh` | Catalog → GLB batch build, manifest, validation, import tests |
 | `catalog/kit_v0_1.json` | Shared kit variants (ids, generator, params) |
+| `catalog/finishes_v0_1.json` | Finish pack (`kind: "finish-pack"`): 8 tileable surface materials, built into `<out>/finishes` ([contract §9](../../docs/assets/asset-contract.md#9-finish-packs--gteki-finish01)) |
 | `gteki_assets/contract.py` | Contract constants (`gteki-asset/0.1`) |
 | `gteki_assets/mesh.py` | bmesh builders (box, prism, extrusions, cylinder, tube sweeps), metric box UVs |
 | `gteki_assets/asset.py` | Asset assembly: parts → bevel + weighted normals → joined `VIS_*`, `*-colonly` collision, sockets, light hints, extras, GLB export |
 | `gteki_assets/texsynth.py` | Seeded **tileable** numpy textures (terrazzo, tiles, metals, tactile blocks, treads, …) |
 | `gteki_assets/materials.py` | Stable `gteki_*` PBR material library |
+| `gteki_assets/finishes.py` | Finish materials (`gteki_finish_*`) and the pack writer (maps, `finish.json`) |
+| `gteki_assets/ao.py` | Baked ambient occlusion: one Cycles-CPU map per asset (joint `UVLightmap` atlas), deterministic blur/dilate, PNG attached as `occlusionTexture` on `texCoord` 1 |
 | `gteki_assets/families/*.py` | Generators by family |
 | `render_preview.py` | GLB round-trip renders |
 | `validate_glb.py` | Stdlib contract validator (`--self-test` included) |
+| `validate_finish.py` | Stdlib finish-pack validator (schema, sha256, sizes, tiling, tint base; includes a baseline JPEG decoder; `--self-test`) |
 | `texture_budget.py` | Download / GPU texture report, before-after compare, layout costing, budget check (`catalog/budget.json`) |
 | `bundle_kit.py` | `gteki-kit-bundle/0.1`: pack assets into one GLB with shared images/materials; extract; info |
 | `godot_import/` | Godot 4 project: headless import report + screenshot mode |
@@ -67,5 +73,7 @@ A generator is `fn(asset_id, params, tex_res) -> Asset` registered in its module
 - `a.light_hint(name, loc, kind=…, …)` where a fixture emits light.
 - Materials by stable name; add new ones with `materials.register()`. Keep everything original: no brand marks, no copied pictograms, no text in textures.
 - Set `repeat_m` to the material's real repeat. Texture size follows from it (`materials.texture_res`), and maps that come out flat are exported as factors (`materials.texture_plan`), so do not pad a generator with invisible noise to "fill" a map. A face with a single 0–1 UV island that is not square (signs) should draw at its physical aspect (see `signage._face_shape`).
+
+Every asset gets one baked AO map in both tiers (`gteki_assets/ao.py`, contract §4); generators need nothing for it. The bake uses Cycles on the CPU (about 30–60 s per asset), so full-library builds and `repro` take correspondingly longer.
 
 Determinism: all randomness is seeded, textures are cached by content hash, UVs are quantized after modifiers; `build.sh repro` guards it.

@@ -71,6 +71,8 @@ for (const key of STATIONS) {
       const budgetMs = Math.max(90_000, route.totalLengthM * 1000 + 30_000);
       let i = 0;
       let still = 0;
+      let stillSince = Date.now();
+      let steppedOn = false;
       let last = "";
       const perf = await perfWindow(page, 2);
       while (Date.now() - t0 < budgetMs) {
@@ -84,12 +86,24 @@ for (const key of STATIONS) {
         frames.push({ t: Date.now() - t0, instruction, avatar, stats: png ? await imageStats(page, png) : null, overlaps: png ? await labelUiOverlaps(page) : null });
         // The arrival toast lasts 2.5 s; the probe's observer records it even between samples.
         if ((await toasts(page)).some(isArrival)) arrived = true;
-        const pos = JSON.stringify(avatar, (_k, v) => (typeof v === "number" ? Math.round(v * 10) / 10 : v));
-        still = pos === last ? still + 1 : 0;
+        // Flow-only (CI, SwiftShader) runs the Shinjuku scene at 2–3 fps, so the avatar can move under 0.1 m between
+        // samples: compare at 1 cm there, and call it parked only after 20 s without movement (#261). GPU runs keep 0.1 m / 2 samples.
+        const q = FLOW_ONLY ? 100 : 10;
+        const pos = JSON.stringify(avatar, (_k, v) => (typeof v === "number" ? Math.round(v * q) / q : v));
+        if (pos === last) still++;
+        else { still = 0; stillSince = Date.now(); }
         last = pos;
+        const parked = still >= 2 && (!FLOW_ONLY || Date.now() - stillSince >= 20_000);
         // Playback ended (avatar parked at the end) or the user-visible mode changed.
-        if (arrived || still >= 2 || (await hooks.mode(page)) !== "guide") break;
+        if (arrived || parked || (await hooks.mode(page)) !== "guide") break;
         if (FLOW_ONLY && seen.size >= 2) break;
+        // Flow-only: the explorer clamps each frame to 50 ms of sim time, so at SwiftShader's 2–3 fps playback runs at
+        // ~0.13× and a long first leg (Shinjuku's GL–B1 stair) can outlast the budget on one instruction (#261). After
+        // 15 s on the same line, step on with the HUD's own "Next instruction" button, as a user would.
+        if (FLOW_ONLY && Date.now() - t0 >= 15_000 && !steppedOn) {
+          await page.locator(".guide-next").click();
+          steppedOn = true;
+        }
       }
       const end = await hooks.avatar(page);
       await page.waitForTimeout(1000);
@@ -97,7 +111,7 @@ for (const key of STATIONS) {
       const nodes = new Map(stationData(key).graph.nodes.map((n) => [n.id, n]));
       const goal = nodes.get(route.nodeIds.at(-1))!.position;
       const distToGoal = Math.hypot(end.x - goal.x, end.y - goal.y);
-      save(testInfo, `${key}-walk-${w.label}.json`, { route: { lengthM: route.totalLengthM, floorChanges: route.floorChanges, instructions: await hooks.instructions(page) }, instructionsSeenInHud: [...seen], toasts: await toasts(page), arrived, guideTier, distToGoal, elapsedMs: Date.now() - t0, end, perf, frames });
+      save(testInfo, `${key}-walk-${w.label}.json`, { route: { lengthM: route.totalLengthM, floorChanges: route.floorChanges, instructions: await hooks.instructions(page) }, instructionsSeenInHud: [...seen], steppedOn, toasts: await toasts(page), arrived, guideTier, distToGoal, elapsedMs: Date.now() - t0, end, perf, frames });
       expect.soft(seen.size, "HUD showed several instructions").toBeGreaterThan(1);
       if (FLOW_ONLY) return;
       expect.soft(distToGoal, "guide ended at the destination").toBeLessThan(2);
