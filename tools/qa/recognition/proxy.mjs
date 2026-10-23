@@ -42,12 +42,17 @@ for (const dir of dirs) {
       const per = fr.map((f) => {
         const page = ocr[run.frames.indexOf(f)];
         const chips = (f.chips ?? []).filter((c) => !(c.opacity < 0.3));
-        const lines = (page?.lines ?? []).map((l) => ({ ...l, x: l.x / dpr, y: l.y / dpr, w: l.w / dpr, h: l.h / dpr }))
-          .filter((l) => { const cx = l.x + l.w / 2, cy = l.y + l.h / 2; return !f.ui.some((r) => inside(r, cx, cy)) && !chips.some((r) => inside(r, cx, cy)); });
+        const centre = (l) => [l.x + l.w / 2, l.y + l.h / 2];
+        const notUi = (page?.lines ?? []).map((l) => ({ ...l, x: l.x / dpr, y: l.y / dpr, w: l.w / dpr, h: l.h / dpr }))
+          .filter((l) => !f.ui.some((r) => inside(r, ...centre(l))));
+        // A chip's own text (DOM) that happens to contain the name is overlay text, not the in-world name.
+        const chipText = (l) => chips.some((c) => inside(c, ...centre(l)) && names.ja.test(c.text ?? "") === names.ja.test(l.text) && (c.text ?? "").includes(l.text.slice(0, 2)));
+        const lines = notUi.filter((l) => !chips.some((c) => inside(c, ...centre(l))));
         const ja = lines.filter((l) => names.ja.test(l.text));
         const en = lines.filter((l) => names.en.test(l.text));
         const kanaName = lines.filter((l) => names.kana.test(l.text));
-        const covered = ja.some((l) => chips.some((c) => overlaps(l, c)));
+        // Covered: an in-world JA name line that a visible chip overlaps, or one read through a (translucent) chip.
+        const covered = ja.some((l) => chips.some((c) => overlaps(l, c))) || notUi.some((l) => names.ja.test(l.text) && chips.some((c) => inside(c, ...centre(l))) && !chipText(l));
         const id = f.identity && !f.identity.error ? f.identity : null;
         return {
           t: f.t, second: Math.floor(f.t + 1e-6),
@@ -61,7 +66,7 @@ for (const dir of dirs) {
       const hookFrames = per.filter((p) => p.hook);
       const row = {
         station: run.station, project: run.project, tier: run.tier, sha: run.sha, view, hasIdentityHook: run.hasIdentityHook,
-        fontsReady: run.fonts?.status, notoJp: run.fonts?.notoJp,
+        fontsReady: run.fonts?.status, notoJp: run.fonts?.notoJp, stationIdentityAtReady: run.stationIdentityAtReady ?? null,
         readableS: seconds((p) => p.readable), jaMaxPx: r1(maxOf("jaPx")), enMaxPx: r1(maxOf("enPx")),
         kanaName: per.some((p) => p.kanaName), kanaAny: per.some((p) => p.kanaAny), chipOverNameFrames: per.filter((p) => p.covered).length,
         hookReadableS: hookFrames.length ? seconds((p) => p.hook?.ok) : null,
@@ -85,6 +90,11 @@ for (const st of [...new Set(rows.map((r) => r.station))]) {
   md.push(`### ${st}: recognition proxy (${rs[0].sha?.slice(0, 8) ?? "unknown SHA"})`, "",
     "| view | project | tier | readable s (OCR) | readable s (hook) | JA px | EN px | kana name | kana any | chip over name | fonts | equipment cues ≥2 | automated |",
     "|---|---|---|---|---|---|---|---|---|---|---|---|---|");
+  for (const p of [...new Set(rs.map((r) => r.project))]) {
+    // Q4's loading card / overview name: product orientation, judged apart from the scene (not part of "automated").
+    const si = rs.find((r) => r.project === p)?.stationIdentityAtReady;
+    md.splice(md.length - 2, 0, `Q4 station identity at ready (${p}): ${si ? JSON.stringify(si) : "no hook"}`, "");
+  }
   for (const r of rs) md.push(`| ${r.view} | ${r.project} | ${r.tier} | ${r.readableS}/5 | ${r.hookReadableS == null ? "no hook" : `${r.hookReadableS}/5`} | ${b(r.hookMaxPx ?? r.jaMaxPx)} | ${b(r.enMaxPx)} | ${b(r.kanaName)} | ${b(r.kanaAny)} | ${r.chipOverNameFrames + (r.hookCoveredFrames ?? 0)} | ${b(r.fontsReady)}${r.notoJp ? ", Noto JP" : ""} | review | ${r.auto} |`);
   md.push("");
 }
