@@ -1,0 +1,83 @@
+{
+  "format": "gteki-finish/0.1",
+  "id": "gteki_finish_wall_enamel_panel",
+  "kit_version": "0.1.0",
+  "tier": "full",
+  "role": "wall",
+  "gteki_role": "wall",
+  "facility": [
+    "passage",
+    "concourse"
+  ],
+  "use": "upper wall above the wainscot, column cladding",
+  "pattern": "warm white enamel; vertical 8 mm joints every 1.2 m (u = k x 1.2 m), no horizontal joint",
+  "source_material": "gteki_wall_panel_enamel",
+  "repeat_m": [
+    1.2,
+    1.2
+  ],
+  "uv": {
+    "u": "along the wall",
+    "v": "up",
+    "surface": "wall face",
+    "origin": "a repeat starts at u = k x repeat_m along the wall and at v = 0 on the floor"
+  },
+  "maps": {
+    "albedo": {
+      "file": "albedo.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 29751,
+      "sha256": "75bc217e36c4280b141041451b6680a069585e59be51cb01a4fc7e915ae74def"
+    },
+    "orm": {
+      "file": "orm.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 30784,
+      "sha256": "0be9b53804364b80a2b45a2ee29b2198fb7fd2f460f4f85842444cade663607c"
+    },
+    "normal": {
+      "file": "normal.jpg",
+      "size": [
+        1024,
+        1024
+      ],
+      "bytes": 98673,
+      "sha256": "74a4aa024117d221936a687d9e49ad73890a907d7e008a06e763e6837bcf8fbd"
+    }
+  },
+  "factors": {
+    "baseColorFactor": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "roughnessFactor": 1.0,
+    "metallicFactor": 1.0
+  },
+  "omitted_maps": [],
+  "texel_density_px_per_m": [
+    853.3,
+    853.3
+  ],
+  "tint": false,
+  "sample_glb": "../glb/gteki_finish_wall_enamel_panel.glb",
+  "sample": {
+    "plane": "wall",
+    "repeats": 2,
+    "size_m": [
+      2.4,
+      2.4
+    ]
+  },
+  "dimension_basis": "synthetic",
+  "generator": "tools/blender/gteki_assets/finishes.py",
+  "license": "CC-BY-4.0 — original GTEki work; attribution: GTEki contributors",
+  "provenance": "original procedural geometry and textures; see assets/library/PROVENANCE.md"
+}
