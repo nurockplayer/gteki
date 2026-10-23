@@ -44,6 +44,15 @@ proxy**, not a five-second human recognition or rendered frame acceptance claim.
 The [local CPU receipt](docs/identity-342.md) lists all boards, spawn text sizes,
 equipment visibility, atlas deltas and before/after route gaps. Its current
 atlas figures supersede the historical rendering measurements below.
+Round 3 gives all ten boards one separate shared texture: **968×345 low,
+1.699 MiB GPU including mipmaps** (desktop 1920×658, 6.426 MiB). Shared sign
+pages return to 4096×2048 + 4096×512 low (53.33 MiB), with high unchanged at
+two 4096×4096 pages (170.67 MiB). Artwork fits each panel uniformly, with solid
+margins and no glyph stretch. Phone recognition-proxy names measure 21.0–42.9 px
+Japanese / 15.0–30.5 px English; Japanese source texels per CSS px are ≥1.05.
+The exact JR / Metro transfer rows remain secondary: cap height is 0.87–4.91 cm,
+limited by panel width, with no distance-readability claim. One additional face
+batch draws all identity panels; its texture/material are disposed with the signs.
 
 ## Run it
 

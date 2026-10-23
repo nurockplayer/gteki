@@ -90,11 +90,12 @@ it("provides a tight name region on metadata-only objects with zero draw calls a
     expect(r.max[1]-r.min[1]).toBeLessThan(b.heightM*0.8);
     expect(r.min[2]).toBeGreaterThan(0);
     // The name box ends above the first transfer row's conservative em box.
-    if (b.kind === "station-name") expect(r.min[1]).toBeGreaterThan((0.5-0.77+0.075/2)*b.heightM);
+    if (b.kind === "station-name") expect(r.min[1]).toBeGreaterThan((0.5-0.78+0.13/2)*0.54*identityTypography(b).artScale);
   }
   const meshes: THREE.Object3D[] = [];
   built.group.traverse((o) => { if ((o as THREE.Mesh).isMesh) meshes.push(o); });
-  expect(meshes.length).toBe(built.pages.length+1);
+  expect(meshes.length).toBe(built.pages.length+2);
+  expect(built.group.getObjectByName("identity-faces")).toBeInstanceOf(THREE.Mesh);
   // Collision is assembled exclusively from GLB meshes + fences/bridges before signs are added.
   expect(sceneSource.indexOf("assembleCollision(THREE, gltf.scene")).toBeLessThan(sceneSource.indexOf("root.add(signs.group)"));
   expect(sceneSource).toContain("(identity as { boards: IdentityBoard[] }).boards");
@@ -135,15 +136,23 @@ it("recognition proxy: name visible and JP >=18 / EN >=12 CSS px at every spawn 
         expect.soft(Math.abs(p.y), `${nid} ${label} name vertical`).toBeLessThanOrEqual(1);
         expect(p.z, `${nid} ${label} name in front`).toBeLessThan(1);
       }
-      const projected = (px: number, centerY: number, x: number) => {
-        const cap = px/type.h*b.heightM*IDENTITY_TYPE.cap;
-        const points = [-1, 1].map((side) => new THREE.Vector3((x-0.5)*b.widthM, (0.5-centerY)*b.heightM+side*cap/2, 0.041)
+      const projected = (emM: number, centerY: number, x: number) => {
+        const cap = emM*IDENTITY_TYPE.cap;
+        const points = [-1, 1].map((side) => new THREE.Vector3((x-0.5)*b.widthM, (0.5-centerY)*b.heightM+side*cap/2, 0.042)
           .applyMatrix4(proxy.matrixWorld).project(camera));
         return Math.abs(points[0]!.y-points[1]!.y)*h/2;
       };
-      const jp = projected(type.jaPx, type.jaY, type.jaX), en = projected(type.enPx, type.enY, type.enX);
+      const jp = projected(type.jaM, type.jaY, type.jaX), en = projected(type.enM, type.enY, type.enX);
       row[label] = `${jp.toFixed(1)} / ${en.toFixed(1)}`;
-      if (label === "phone") { expect.soft(jp, nid).toBeGreaterThanOrEqual(18); expect.soft(en, nid).toBeGreaterThanOrEqual(12); }
+      if (label === "phone") {
+        expect.soft(jp, nid).toBeGreaterThanOrEqual(18); expect.soft(en, nid).toBeGreaterThanOrEqual(12);
+        const face = built.group.userData.faces.find((f: { id: string }) => f.id === b.id)!;
+        const art = built.identityArt.find((a) => a.canvasPx.w === face.canvasPx.w)!;
+        const texelCap = type.jaM/type.artScale/art.heightM*art.canvasPx.h*IDENTITY_TYPE.cap;
+        row.jpTexelsPerCssPx = Number((texelCap/jp).toFixed(2));
+        expect.soft(texelCap/jp, `${nid}: JP texels / CSS px`).toBeGreaterThanOrEqual(1);
+        row.transferCapCm = art.transferCapM.map((m) => Number((m*type.artScale*100).toFixed(2)));
+      }
     }
     rows.push(row);
   }
@@ -152,22 +161,60 @@ it("recognition proxy: name visible and JP >=18 / EN >=12 CSS px at every spawn 
   built.dispose();
 });
 
-it("reports before/after atlas sizes on both tiers and retains the current phone cap", () => {
+it("isolates identity within 2 MiB low including mipmaps and preserves round-0 shared atlas sizes", () => {
   const rows = [];
   for (const [tier, scale] of [["low", LOW_TEXEL_SCALE], ["high", 1]] as const) {
     const before = build([], scale), after = build(boards, scale);
     const mib = (pages: { w: number; h: number }[]) => pages.reduce((sum, p) => sum+p.w*p.h*4*4/3/1024**2, 0);
-    rows.push({ tier, before: before.pages, after: after.pages, beforeMiB: mib(before.pages), afterMiB: mib(after.pages) });
+    expect(after.pages).toEqual(before.pages);
+    expect(after.pages).toEqual(tier === "low" ? [{ w: 4096, h: 2048 }, { w: 4096, h: 512 }] : [{ w: 4096, h: 4096 }, { w: 4096, h: 4096 }]);
+    expect(before.identityPages).toEqual([]);
+    expect(after.identityPages).toHaveLength(1);
+    expect(after.identityArt).toHaveLength(3);
+    rows.push({ tier, before: before.pages, after: after.pages, identity: after.identityPages,
+      beforeMiB: mib(before.pages), sharedMiB: mib(after.pages), identityMiB: mib(after.identityPages),
+      afterMiB: mib(after.pages)+mib(after.identityPages) });
     if (tier === "low") {
-      expect(after.pages.length).toBeLessThanOrEqual(2);
-      expect(after.pages[0]!.h).toBeLessThanOrEqual(2048);
-      if (after.pages[1]) expect(after.pages[1].h).toBeLessThanOrEqual(1024);
-      expect(after.pages.every((p) => p.w <= 4096)).toBe(true);
+      expect(mib(after.identityPages)).toBeLessThanOrEqual(2);
     }
     before.dispose(); after.dispose();
   }
   console.log("Atlas delta (CPU estimated glyph widths; RGBA8 + mipmaps MiB)", JSON.stringify(rows));
   evidence.atlas = rows;
+});
+
+it("keeps art aspect, painted name bounds and metadata aligned at both tiers, and disposes texture/material", () => {
+  const regions = [];
+  for (const scale of [LOW_TEXEL_SCALE, 1]) {
+    const built = build(boards, scale);
+    const artFaces = built.group.userData.faces.filter((f: { id: string }) => boards.some((b) => b.id === f.id));
+    expect(artFaces).toHaveLength(10);
+    for (const b of boards) {
+      const face = artFaces.find((f: { id: string }) => f.id === b.id)!;
+      // Artwork is uniformly scaled, with solid margins on taller panels in the same merged batch.
+      expect(face.widthM/face.heightM).toBeCloseTo(face.canvasPx.w/face.canvasPx.h, 1);
+      expect(face.heightM).toBeLessThanOrEqual(b.heightM);
+      const proxy = built.group.getObjectByName(b.id)!;
+      const box = proxy.userData.gteki_identity.regions[0];
+      if (b.kind === "station-name") {
+        const t = identityTypography(b);
+        expect(box.min[0]).toBeCloseTo((t.jaX-0.5)*b.widthM, 8);
+        expect(box.max[0]).toBeCloseTo((t.enX-0.5)*b.widthM+9*0.56*t.enM, 8);
+        expect(box.min[1]).toBeCloseTo(Math.min((0.5-t.jaY)*b.heightM-t.jaM/2, (0.5-t.enY)*b.heightM-t.enM/2), 8);
+        expect(box.max[1]).toBeCloseTo(Math.max((0.5-t.jaY)*b.heightM+t.jaM/2, (0.5-t.kanaY)*b.heightM+t.kanaM/2), 8);
+      }
+      if (scale === LOW_TEXEL_SCALE) regions.push({ board: b.id, min: box.min, max: box.max });
+    }
+    const mesh = built.group.getObjectByName("identity-faces") as THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>;
+    const textureDispose = vi.spyOn(mesh.material.map!, "dispose");
+    const materialDispose = vi.spyOn(mesh.material, "dispose");
+    const geometryDispose = vi.spyOn(mesh.geometry, "dispose");
+    built.dispose();
+    expect(textureDispose).toHaveBeenCalledOnce();
+    expect(materialDispose).toHaveBeenCalledOnce();
+    expect(geometryDispose).toHaveBeenCalledOnce();
+  }
+  evidence.nameRegions = regions;
 });
 
 for (const script of ["build_identity.py", "check_identity_rhythm.py", "check_identity_equipment.py"]) it(`checks ${script}`, () => {

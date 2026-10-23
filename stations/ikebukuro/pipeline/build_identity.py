@@ -140,16 +140,19 @@ def in_phone_view(board, node, heading):
     Actual glyph widths remain a renderer acceptance item; the test uses the
     existing atlas CJK/Latin width estimator and checks the projected ink box.
     """
-    w, h = board['widthM'], board['heightM']
-    fit = min(1, w/2.2)
-    jp, en, kana = round(126*0.56*fit), round(126*0.40*fit), round(126*0.15*fit)
-    # Canvas text widths expressed as local world units; text height uses physical face height.
-    lo = -(2*jp/300+9*0.56*en/300+0.08*fit)/2
-    en_x = lo+2*jp/300+0.08*fit
-    hi = max(en_x+9*0.56*en/300, en_x+5*kana/300)
-    jy, ey, ky = (0.30, 0.36, 0.10) if w < 1.5 else (0.43, 0.50, 0.18)
-    ylo = min((0.5-jy)*h-jp/126*h/2, (0.5-ey)*h-en/126*h/2)
-    yhi = max((0.5-jy)*h+jp/126*h/2, (0.5-ky)*h+kana/126*h/2)
+    # One 3.4 x 0.54 m artwork, uniformly fitted inside each board (same as signs.ts).
+    # The extra panel height is a solid margin, never a vertical glyph stretch.
+    scale = min(board['widthM']/3.4, board['heightM']/0.54)
+    h = 0.54*scale
+    name_scale = 0.8 if board['widthM'] > 2 else 1.12
+    shift = 0.03*h if name_scale > 1 else 0
+    jp, en, kana = h*0.56*name_scale, h*0.40*name_scale, h*0.15*name_scale
+    lo = -(2*jp+9*0.56*en+0.08*scale*name_scale)/2
+    en_x = lo+2*jp+0.08*scale*name_scale
+    hi = max(en_x+9*0.56*en, en_x+5*kana)
+    jy, ey, ky = 0.43, 0.50, 0.18
+    ylo = min((0.5-jy)*h*name_scale-jp/2, (0.5-ey)*h*name_scale-en/2)+shift
+    yhi = max((0.5-jy)*h*name_scale+jp/2, (0.5-ky)*h*name_scale+kana/2)+shift
     angle, pitch = math.radians(heading), -0.12
     dx, dy = math.sin(angle), math.cos(angle)
     normal = board['facing']
@@ -157,20 +160,20 @@ def in_phone_view(board, node, heading):
     origin = node['position']
     for x in (lo, hi):
         for y in (ylo, yhi):
-            v = (board['position']['x']+x*right[0]+0.041*normal['x']-origin['x'],
-                 board['position']['y']+x*right[1]+0.041*normal['y']-origin['y'],
+            v = (board['position']['x']+x*right[0]+0.042*normal['x']-origin['x'],
+                 board['position']['y']+x*right[1]+0.042*normal['y']-origin['y'],
                  board['position']['z']+y-origin['z']-1.62)
             depth = (v[0]*dx+v[1]*dy)*math.cos(pitch)+v[2]*math.sin(pitch)
             across = v[0]*dy-v[1]*dx
             up = -(v[0]*dx+v[1]*dy)*math.sin(pitch)+v[2]*math.cos(pitch)
             if depth <= 0 or abs(across/depth/math.tan(math.pi/6)/(390/844)) > 0.98 or abs(up/depth/math.tan(math.pi/6)) > 0.98:
                 return False
-    for px, cy, cx, minimum in [(jp, jy, lo, 18), (en, ey, en_x, 12)]:
+    for em_m, cy, cx, minimum in [(jp, jy, lo, 18), (en, ey, en_x, 12)]:
         projected = []
         for side in (-1, 1):
-            z = board['position']['z']+(0.5-cy)*h+side*px/126*h*0.7/2-origin['z']-1.62
-            vx = board['position']['x']+cx*right[0]+0.041*normal['x']-origin['x']
-            vy = board['position']['y']+cx*right[1]+0.041*normal['y']-origin['y']
+            z = board['position']['z']+(0.5-cy)*h*name_scale+shift+side*em_m*0.7/2-origin['z']-1.62
+            vx = board['position']['x']+cx*right[0]+0.042*normal['x']-origin['x']
+            vy = board['position']['y']+cx*right[1]+0.042*normal['y']-origin['y']
             depth = (vx*dx+vy*dy)*math.cos(pitch)+z*math.sin(pitch)
             up = -(vx*dx+vy*dy)*math.sin(pitch)+z*math.cos(pitch)
             projected.append(up/depth/math.tan(math.pi/6)*844/2)

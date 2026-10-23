@@ -6,14 +6,14 @@ Local implementation receipt, 2026-10-24. No commit or push. No web, browser, GP
 
 The requested CPU proxy uses the spawn eye at 1.62 m, the actual scene spawn headings, the Explorer first-person 60° vertical lens, default pitch -0.12, phone 390×844 and desktop 1280×720 CSS px. Cap height is conservatively estimated at 0.7 em, not measured glyph ink. Phone name bounds are inside the frustum; full panel sightlines include structural geometry, column sleeves and existing sign panels, with light fittings excluded as requested. Default third-person uses a 50° lens and collision-adjusted 3.45 m boom; that camera and perceived readability require rendered acceptance.
 
-| Spawn | Phone JP / EN px | Desktop JP / EN px | Other equipment centres visible | Equipment result |
-| --- | ---: | ---: | ---: | --- |
-| c_mid | 36.9 / 26.1 | 31.5 / 22.3 | 10 | proxy met (equipment) |
-| c_e2 | 28.8 / 20.4 | 24.5 / 17.4 | 1 | proxy not met (equipment) |
-| n_h | 28.8 / 22.6 | 24.6 / 19.3 | 0 | proxy not met (equipment) |
-| sp_e | 28.8 / 20.6 | 24.6 / 17.6 | 2 | proxy met (equipment) |
-| w_c | 53.9 / 37.9 | 46.0 / 32.3 | 6 | proxy met (equipment) |
-| sw_h | 47.3 / 33.3 | 40.3 / 28.4 | 7 | proxy met (equipment) |
+| Spawn | Phone JP / EN px | Desktop JP / EN px | Phone JP texels / CSS px | Other equipment centres visible | Equipment result |
+| --- | ---: | ---: | ---: | ---: | --- |
+| c_mid | 28.3 / 20.2 | 24.1 / 17.2 | 1.34 | 10 | proxy met (equipment) |
+| c_e2 | 21.0 / 15.0 | 17.9 / 12.8 | 1.80 | 1 | proxy not met (equipment) |
+| n_h | 30.0 / 22.7 | 25.6 / 19.4 | 1.26 | 0 | proxy not met (equipment) |
+| sp_e | 21.0 / 15.1 | 17.9 / 12.9 | 1.80 | 2 | proxy met (equipment) |
+| w_c | 42.9 / 30.5 | 36.6 / 26.0 | 1.11 | 6 | proxy met (equipment) |
+| sw_h | 35.9 / 25.6 | 30.6 / 21.8 | 1.05 | 7 | proxy met (equipment) |
 
 Equipment counts exclude the identity boards themselves. This conservative report counts only existing scene LED housings and wayfinding panels using frustum and structural/panel ray occlusion; it does not enumerate every gate, stair mouth, kit piece or column. Round 2 removes all three authored utility fittings and their atlas swatch (42 fewer triangles, unchanged batches). No props are added to meet the equipment proxy. Counts below two are explicitly proxy not met (equipment); only c_mid, w_c and sw_h retain a >=2 regression assertion. Centre visibility remains a CPU proxy, not a perceived-size or lighting judgment.
 
@@ -47,14 +47,49 @@ Six station-name boards cover all spawn nodes. Additional main-passage junctions
 
 CPU canvas width estimates use the existing CJK/Latin estimator. Memory is RGBA8 plus a full mip chain (4/3), in MiB; browser glyph widths may differ.
 
-| Tier | Before pages | After pages | Before MiB | After MiB | Delta MiB |
-| --- | --- | --- | ---: | ---: | ---: |
-| low | 4096×2048 + 4096×512 | 4096×2048 + 4096×1024 | 53.33 | 64.00 | 10.67 |
-| high | 4096×4096 + 4096×4096 | 4096×4096 + 4096×4096 | 170.67 | 170.67 | 0.00 |
+| Tier | Round-0 shared pages = final shared pages | Separate identity texture | Round-0 MiB | Final shared MiB | Identity MiB | Final total MiB | Delta MiB |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
+| low | 4096×2048 + 4096×512 | 968×345 | 53.33 | 53.33 | 1.699 | 55.032 | 1.699 |
+| high | 4096×4096 + 4096×4096 | 1920×658 | 170.67 | 170.67 | 6.426 | 177.092 | 6.426 |
 
-Round 1 low-tier baseline was 53.33 → 64.00 MiB (+10.67 MiB). The Round 2 figures above include removal of the utility-light swatch and the expanded, two-line transfer text.
+Round 3 replaces the Round 2 low-tier 53.33 → 64.00 MiB (+10.67 MiB) allocation. Direction/place faces return to exactly the round-0 page sizes. All ten identity boards share one tightly cropped, non-power-of-two canvas with mipmaps (WebGL2), one material and one merged face batch. The canvas contains three shelf-packed artworks: compact station name at 160 px/m low, wide station name at 280 px/m low, and meeting point at 140 px/m low; desktop doubles each density. Identical content reuses the same UV rectangle. The nearby wide panel uses a 0.8 name scale to retain phone frustum clearance.
 
-Panels: 119 existing → 129 total. Identity proxies: 10, with no mesh, draw call, walkable or collider. Atlas rendering remains one housing batch and one face batch per page. The phone cap is unchanged: 4096×2048 plus at most 4096×1024. Shipped asset count remains 19; declared scene data files increase 7 → 8.
+Each artwork is painted in physical coordinates at its own 3.4×0.54 aspect, then uniformly fitted inside each board width and height; solid margins fill the remaining panel area with quads in the same batch. There is no 0.42 m shelf-height stretch or horizontal fillText compression. Compact main names use a 1.12 scale and a small upward shift, preserving junction recognition and the transfer-row clearance; wide main names use 0.8. This reuse avoids allocating ten nearly identical canvases. Main-name cap height remains geometric; the texel ratios above use the actual tier canvas height and the correct artwork for each spawn.
+
+Panels: 119 existing → 129 total. Identity proxies: 10, with no mesh, draw call, walkable or collider. Rendering now has one housing batch, one face batch per shared page, and one identity face batch: four draw calls on either tier, one more than round 0 / Round 2. Solid margins add 20 triangles versus Round 2. The new texture, material and geometry are disposed with the rest of the signs; regression tests observe disposal. The shared phone pages are exactly 4096×2048 + 4096×512. Shipped asset count remains 19; declared scene data files remain 8.
+
+## Transfer-row cap height
+
+Both exact transfer strings are unchanged, split into JR / Metro rows. The rows use 0.13 em of artwork height, the available vertical band below the name with interline and edge clearance, and shrink uniformly only if measured width requires it. Values below are conservative 0.7 em cap estimates, not measured ink. Two complete rows impose a width limit: the narrow panels cannot provide 3 cm transfer caps. These rows are secondary transfer information; no distance-readability claim is made.
+
+| Board | JR cap cm | Metro cap cm |
+| --- | ---: | ---: |
+| identity-c_mid | 1.73 | 1.73 |
+| identity-c_e2 | 1.73 | 1.73 |
+| identity-n_h | 0.87 | 0.87 |
+| identity-sp_e | 1.73 | 1.73 |
+| identity-w_c | 4.91 | 4.91 |
+| identity-sw_h | 2.60 | 2.60 |
+| identity-c_e1 | 1.46 | 1.46 |
+| identity-c_n | 1.73 | 1.73 |
+| identity-sp_m | 4.67 | 4.67 |
+
+## Name-region boxes
+
+Local metres, front normal +Z; z bounds are 0.039–0.043 m around the face at 0.042 m. Runtime boxes come from actual canvas text ink metrics (em-box fallback on the CPU stub), transformed by exactly the same uniform scale as the artwork. The union encloses Japanese, kana and English and excludes transfer rows. Tests compare geometry aspect and painted bounds at both tiers. The following CPU boxes use the deterministic CJK/Latin estimator; browser font ink may differ.
+
+| Board | Min [x,y,z] | Max [x,y,z] |
+| --- | --- | --- |
+| identity-c_mid | [-0.3505, -0.0391, 0.0390] | [0.3505, 0.0900, 0.0430] |
+| identity-c_e2 | [-0.3505, -0.0391, 0.0390] | [0.3505, 0.0900, 0.0430] |
+| identity-n_h | [-0.1753, -0.0196, 0.0390] | [0.1753, 0.0450, 0.0430] |
+| identity-sp_e | [-0.3505, -0.0391, 0.0390] | [0.3505, 0.0900, 0.0430] |
+| identity-w_c | [-0.7094, -0.0907, 0.0390] | [0.7094, 0.1706, 0.0430] |
+| identity-sw_h | [-0.5258, -0.0587, 0.0390] | [0.5258, 0.1351, 0.0430] |
+| identity-c_e1 | [-0.2950, -0.0329, 0.0390] | [0.2950, 0.0758, 0.0430] |
+| identity-c_n | [-0.3505, -0.0391, 0.0390] | [0.3505, 0.0900, 0.0430] |
+| identity-sp_m | [-0.6739, -0.0862, 0.0390] | [0.6739, 0.1621, 0.0430] |
+| meeting-ikefukuro | [-1.5640, 0.0837, 0.0390] | [0.7048, 0.2187, 0.0430] |
 
 ## Guided-route rhythm proxy
 
