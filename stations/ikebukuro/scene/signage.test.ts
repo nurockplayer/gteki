@@ -3,7 +3,7 @@
 import { readFileSync } from "node:fs";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { buildSigns, type SignSpec } from "./signs.ts";
+import { buildSigns, EXIT_EN_EM, EXIT_JA_EM, FONT, LOW_TEXEL_SCALE, SMALL_EM, type SignSpec } from "./signs.ts";
 import { parseStationFiles } from "@gteki/schema";
 import { createRouter, routeBetween } from "../../../packages/navigation/src/index.ts";
 
@@ -20,7 +20,7 @@ type Edge = {
   geometry: { x: number; y: number; z: number }[];
 };
 type Poi = { id: string; category: string; connectorNodeIds: string[] };
-type Sign = SignSpec & { kind?: "repeat"; basis?: string[]; atNode: string };
+type Sign = SignSpec & { basis?: string[]; atNode: string };
 
 const graph = json("../gteki/graph.json") as { nodes: { id: string; kind: string }[]; edges: Edge[] };
 const pois = json("../gteki/pois.json").pois as Poi[];
@@ -156,7 +156,7 @@ describe("ikebukuro wayfinding cues along the guided legs (#108)", () => {
   });
 
   it("negative control: without the repeaters the West leg has empty windows and a long gap (the JR leg is unaffected)", () => {
-    const base = signs.filter((s) => s.kind !== "repeat");
+    const base = signs.filter((s) => s.kind !== "repeat" && s.kind !== "place");
     const west = legs["westb1-exit4"]!;
     expect(emptyWindows(west, base).length).toBeGreaterThan(0);
     const [lo, hi] = west.edgeSpan[REPEAT_EDGE]!;
@@ -164,7 +164,7 @@ describe("ikebukuro wayfinding cues along the guided legs (#108)", () => {
     expect(emptyWindows(legs["jrc2-exit35"]!, base)).toEqual([]);
   });
 
-  it("repeaters are the only additions: double-sided, capped, and sit on a verified edge between its end signs", () => {
+  it("repeaters: double-sided, capped, and sit on a verified edge between its end signs", () => {
     const rep = signs.filter((s) => s.kind === "repeat");
     expect(rep.length).toBeGreaterThan(0);
     for (const s of rep) {
@@ -270,10 +270,159 @@ describe("ikebukuro repeater content comes from the verified graph (#108)", () =
   });
 });
 
-// The sign atlas on the phone tier ("low": texel scale 0.54, 4096 px pages) must stay ONE 4096 x 2048 page.
+describe("ikebukuro place boards between the repeaters (#108)", () => {
+  const poiById = new Map(pois.map((p) => [p.id, p]));
+  const boards = signs.filter((s) => s.kind === "place");
+  const west = leg(LEGS["westb1-exit4"].result.steps);
+  const [lo, hi] = west.edgeSpan[REPEAT_EDGE]!;
+  const edge = edges.get(REPEAT_EDGE)!;
+  /** Positions along the leg of the readable signs of one kind inside the long passage. */
+  const inPassage = (kind: "repeat" | "place" | "end") =>
+    signAnchors(west, signs.filter((s) => (kind === "end" ? !s.kind : s.kind === kind)))
+      .filter((a) => a.c >= lo - 0.01 && a.c <= hi + 0.01)
+      .map((a) => a.c);
+
+  it("every board names a B1 hall that is a POI with a connector node, on both faces, with a source", () => {
+    expect(boards.length).toBeGreaterThanOrEqual(4);
+    for (const b of boards) {
+      expect(b.exits).toEqual([]);
+      expect(b.gates).toEqual([]);
+      expect(b.back).toHaveLength(1);
+      for (const face of [b.places!, b.back![0]!.places!]) {
+        expect(face.length, b.id).toBeGreaterThan(0);
+        expect(face.length, b.id).toBeLessThanOrEqual(2);
+        for (const it of face) {
+          const p = poiById.get(it.id)!;
+          expect(p, `${b.id}: ${it.id}`).toBeDefined();
+          expect(p.category).toBe("other");
+          expect(p.connectorNodeIds.length).toBeGreaterThan(0);
+          expect(it.ja, it.id).toBeTruthy();
+          expect(it.en, it.id).toBeTruthy();
+          expect(b.basis).toContain(`poi:${it.id}`);
+        }
+      }
+      expect(b.basis).toContain(`graph:${REPEAT_EDGE}`);
+      expect(b.basis!.some((x) => x.startsWith("fact:"))).toBe(true);
+    }
+  });
+
+  it("names only halls, not passages (a passage's connector is an arbitrary junction inside it)", () => {
+    const named = new Set(boards.flatMap((b) => [...b.places!, ...b.back![0]!.places!].map((x) => x.id)));
+    expect([...named].sort()).toEqual(["west-exit-b1", "west-exit-south-b1"]);
+  });
+
+  it("each distance is the graph walk to the hall's connector less the sign's position, within 5 m", () => {
+    // Verified edges except the passage itself (a hall is reached from its end nodes, not through the signed edge).
+    const adj = new Map<string, { to: string; len: number }[]>();
+    const link = (a: string, b: string, len: number) => adj.set(a, [...(adj.get(a) ?? []), { to: b, len }]);
+    for (const e of graph.edges) {
+      if (e.verification !== "verified" || e.id === edge.id) continue;
+      link(e.from, e.to, e.lengthM);
+      if (e.direction === "both") link(e.to, e.from, e.lengthM);
+    }
+    const dijkstra = (src: string) => {
+      const dist = new Map([[src, 0]]);
+      const todo = new Set([src]);
+      while (todo.size) {
+        const u = [...todo].reduce((a, b) => (dist.get(a)! <= dist.get(b)! ? a : b));
+        todo.delete(u);
+        for (const { to, len } of adj.get(u) ?? []) {
+          if (dist.get(u)! + len < (dist.get(to) ?? Infinity)) {
+            dist.set(to, dist.get(u)! + len);
+            todo.add(to);
+          }
+        }
+      }
+      return dist;
+    };
+    const fromEnd = dijkstra(edge.from), toEnd = dijkstra(edge.to);
+    let acc = 0;
+    const poly: Pt[] = edge.geometry.map((p, i) => {
+      if (i) acc += Math.hypot(p.x - edge.geometry[i - 1]!.x, p.y - edge.geometry[i - 1]!.y);
+      return { x: p.x, y: p.y, cum: acc };
+    });
+    const hall = (id: string, d: Map<string, number>) => Math.min(...poiById.get(id)!.connectorNodeIds.map((c) => d.get(c) ?? Infinity));
+    for (const b of boards) {
+      const along = (project(poly, b.position.x, b.position.y).c / acc) * edge.lengthM;
+      for (const it of b.places!) {
+        expect(Math.abs(it.distanceM! - (hall(it.id, toEnd) + edge.lengthM - along)), `${b.id}: ${it.id}`).toBeLessThanOrEqual(5);
+        expect(it.distanceM! % 5).toBe(0);
+      }
+      for (const it of b.back![0]!.places!) {
+        expect(Math.abs(it.distanceM! - (hall(it.id, fromEnd) + along)), `${b.id}: ${it.id}`).toBeLessThanOrEqual(5);
+        expect(it.distanceM! % 5).toBe(0);
+      }
+    }
+  });
+
+  it("the long passage alternates direction signs and place boards: neither kind twice in a row", () => {
+    const rep = inPassage("repeat");
+    const place = inPassage("place");
+    expect(place.length).toBe(boards.length);
+    const all = [...rep.map((c) => ({ c, k: "direction" })), ...place.map((c) => ({ c, k: "place" }))].sort((a, b) => a.c - b.c);
+    // from the first repeater to the last board; the end signs sit in the junction zones
+    for (let i = 1; i < all.length; i++) expect(all[i]!.k, `at ${all[i]!.c.toFixed(1)} m`).not.toBe(all[i - 1]!.k);
+  });
+
+  it("a readable sign every 14 m or less along the long passage, and every 30 m window holds both kinds", () => {
+    const anchors = signAnchors(west, signs).map((a) => a.c);
+    expect(maxGap(anchors, lo, hi)).toBeLessThanOrEqual(14);
+    const rep = inPassage("repeat"), place = inPassage("place");
+    for (let w = lo; w + WINDOW_M <= hi; w += 10) {
+      expect(rep.some((c) => c >= w && c <= w + WINDOW_M), `direction sign in ${w.toFixed(0)}-${(w + WINDOW_M).toFixed(0)} m`).toBe(true);
+      expect(place.some((c) => c >= w && c <= w + WINDOW_M), `place board in ${w.toFixed(0)}-${(w + WINDOW_M).toFixed(0)} m`).toBe(true);
+    }
+  });
+
+  it("boards keep clear of the repeaters (at least 5.5 m along the passage)", () => {
+    const rep = inPassage("repeat");
+    for (const c of inPassage("place")) for (const r of rep) expect(Math.abs(c - r)).toBeGreaterThanOrEqual(5.5);
+  });
+
+  it("negative control: without the boards the passage has no second kind of sign", () => {
+    expect(new Set(boards.map((b) => b.kind))).toEqual(new Set(["place"]));
+    const without = signs.filter((s) => s.kind !== "place");
+    expect(without.some((s) => (s.places ?? []).length > 0)).toBe(false);
+    expect(maxGap(signAnchors(west, without).map((a) => a.c), lo, hi)).toBeGreaterThan(14);
+  });
+});
+
+// Every added sign cites a source id: the graph edge, the POIs it names and a documented access fact.
+describe("ikebukuro sign provenance (#108)", () => {
+  const edgeIds = new Set(graph.edges.map((e) => `graph:${e.id}`));
+  const poiIds = new Set(pois.map((p) => p.id));
+  const src = json("../data/graph.src.json") as { accessFacts: { id: string }[] };
+  const facts = new Set(src.accessFacts.map((f) => f.id));
+
+  it("every repeater and place board cites a verified graph edge, the POIs it names and an access fact", () => {
+    const added = signs.filter((s) => s.kind);
+    expect(added.length).toBeGreaterThanOrEqual(10);
+    for (const s of added) {
+      expect(s.basis, s.id).toBeDefined();
+      for (const b of s.basis!) {
+        const kind = b.slice(0, b.indexOf(":"));
+        const id = b.slice(b.indexOf(":") + 1);
+        if (kind === "graph") expect(edgeIds.has(b), `${s.id}: ${b}`).toBe(true);
+        else if (kind === "poi") expect(poiIds.has(id), `${s.id}: ${b}`).toBe(true);
+        else if (kind === "fact") expect(facts.has(id), `${s.id}: ${b}`).toBe(true);
+        else throw new Error(`${s.id}: unknown basis ${b}`);
+      }
+      const shown = [
+        ...s.exits, ...s.gates, ...(s.places ?? []),
+        ...(s.back ?? []).flatMap((x) => [...x.exits, ...x.gates, ...(x.places ?? [])]),
+      ].map((i) => `poi:${i.id}`);
+      for (const b of shown) expect(s.basis, s.id).toContain(b);
+      expect(s.basis!.some((b) => b.startsWith("fact:")), s.id).toBe(true);
+    }
+  });
+});
+
+// The sign atlas on the phone tier ("low": texel scale LOW_TEXEL_SCALE, pages 4096 wide) is one 4096 x 2048 page plus,
+// only when the faces do not fit it, one overflow page 4096 x (power of two <= 1024); never a 4096 x 4096 page.
 // buildSigns runs for real on a stub canvas whose text measure is a flat estimate (CJK 1 em, Latin ~0.56 em),
 // so face widths, trimming and shelf packing are the production code's; only glyph widths are approximate.
-// Before #108 the low atlas used about 22 of its 26 rows (rowH ~78 px => 2048 / 78). The repeaters add 2 faces each.
+// At 0.5 the English line and the "~N m" distance did not read at mid range (Lane F), so the scale is 0.56 (read as well as 0.6 on the 2026-10-23 phone shoot) and the
+// small lines are SMALL_EM of the face height (they were 0.15-0.16).
 describe("ikebukuro sign atlas budget on the low tier", () => {
   function stubDocument() {
     const em = (font: string) => Number(/(\d+(?:\.\d+)?)px/.exec(font)?.[1] ?? 16);
@@ -289,6 +438,7 @@ describe("ikebukuro sign atlas budget on the low tier", () => {
           return k in t ? t[k] : () => undefined;
         },
         set(t, k: string, v) {
+          if (k === "font") fonts.push(String(v));
           t[k] = v;
           return true;
         },
@@ -302,27 +452,93 @@ describe("ikebukuro sign atlas budget on the low tier", () => {
     };
   }
 
-  function atlas(set: Sign[]) {
+  /** Font strings the faces were painted with (every assignment to a 2D context's font). */
+  let fonts: string[] = [];
+
+  function atlas(set: Sign[], texel = LOW_TEXEL_SCALE) {
     (globalThis as { document?: unknown }).document = stubDocument();
+    fonts = [];
     try {
-      const built = buildSigns(THREE, set, (x, y, z) => new THREE.Vector3(x, z, -y), 1, 0.54, 4096);
-      const pages = built.pages;
+      const built = buildSigns(THREE, set, (x, y, z) => new THREE.Vector3(x, z, -y), 1, texel, 4096);
+      const out = { pages: built.pages, rows: built.rows };
       built.dispose();
-      return pages;
+      return out;
     } finally {
       delete (globalThis as { document?: unknown }).document;
     }
   }
 
-  it("with the repeaters the low atlas is still a single 4096 x 2048 page", () => {
-    expect(atlas(signs)).toEqual([{ w: 4096, h: 2048 }]);
+  /** Low-tier page limit: page 1 at most 4096 x 2048, an overflow page at most 4096 x 1024, nothing more. */
+  function withinLimit(pages: { w: number; h: number }[]) {
+    expect(pages.length).toBeLessThanOrEqual(2);
+    expect(pages[0]!.w).toBeLessThanOrEqual(4096);
+    expect(pages[0]!.h).toBeLessThanOrEqual(2048);
+    if (pages[1]) {
+      expect(pages[1].w).toBeLessThanOrEqual(4096);
+      expect(pages[1].h).toBeLessThanOrEqual(1024);
+      expect(Math.log2(pages[1].h) % 1).toBe(0);
+    }
+  }
+
+  it("pins the phone scale and the small-line em", () => {
+    expect(LOW_TEXEL_SCALE).toBe(0.56);
+    expect(SMALL_EM).toBe(0.21);
+    // The readability probe (e2e spec 11) reports the smallest type from these: keep it in step with the layout.
+    const probe = readFileSync(here("../../../tests/e2e/specs/11-ikebukuro-repeater-signs.spec.ts"), "utf8");
+    expect(probe).toContain(`const MIN_EM_FRAC = { repeat: ${Math.min(SMALL_EM, EXIT_EN_EM)}, place: ${SMALL_EM} } as const;`);
   });
 
-  // After #245 regenerated the signs (arrow contents changed) the 0.54 scale leaves no spare row; #180 restores the slack
-  // (0.5 texel scale, widest-first packing) and re-enables this check, so #126 ships to main only together with #180.
-  it.skip("keeps slack for glyph-width error: three more repeaters (six faces) still fit the 2048 px page", () => {
+  it("with the repeaters and place boards the low atlas is one 4096 x 2048 page and a 4096 x 512 overflow page", () => {
+    const { pages } = atlas(signs);
+    withinLimit(pages);
+    expect(pages).toEqual([{ w: 4096, h: 2048 }, { w: 4096, h: 512 }]);
+  });
+
+  it("negative control: at this scale the faces do not fit one 2048 px page (why the overflow page exists)", () => {
+    const { rows } = atlas(signs);
+    const fits = Math.floor((2048 - rows.gutter) / rows.rowH);
+    expect(rows.used.reduce((a, b) => a + b, 0)).toBeGreaterThan(fits);
+  });
+
+  it("the overflow page is made on demand: faces that fit page 1 give exactly one page", () => {
+    const few = signs.slice(0, 20);
+    const { pages, rows } = atlas(few);
+    expect(pages).toHaveLength(1);
+    expect(rows.used).toHaveLength(1);
+    withinLimit(pages);
+  });
+
+  it("keeps slack for glyph-width error: three more repeaters (six faces) still fit the two low-tier pages", () => {
     const rep = signs.filter((s) => s.kind === "repeat");
     const extra = rep.slice(0, 3).map((s, i) => ({ ...s, id: `slack-${i}` }));
-    expect(atlas([...signs, ...extra])).toEqual([{ w: 4096, h: 2048 }]);
+    withinLimit(atlas([...signs, ...extra]).pages);
+  });
+
+  it("paints the English line and the distance at SMALL_EM of the face height on boards and repeaters", () => {
+    const h = Math.round(0.42 * 300);
+    const small = `${Math.round(h * SMALL_EM)}px`;
+    atlas(signs.filter((s) => s.kind === "place"));
+    expect(fonts.filter((f) => f.startsWith("500 ") && f.includes(small)).length).toBeGreaterThan(0); // hall English
+    expect(fonts.filter((f) => f.startsWith("600 ") && f.includes(small)).length).toBeGreaterThan(0); // hall distance
+    atlas(signs.filter((s) => s.kind === "repeat"));
+    expect(fonts.filter((f) => f.includes(small)).length).toBeGreaterThan(0); // exit distance, gate English and distance
+    // The Japanese names stay larger: gates 0.24, halls 0.3 of the face height.
+    expect(SMALL_EM).toBeLessThan(0.24);
+    expect(SMALL_EM).toBeGreaterThanOrEqual(0.2);
+    expect(SMALL_EM).toBeLessThanOrEqual(0.22);
+  });
+
+  it("the 出口 / Exit caption is 0.26 / 0.2 of the face height, 出口 larger, and the two lines do not overlap", () => {
+    expect(EXIT_JA_EM).toBe(0.26);
+    expect(EXIT_EN_EM).toBe(0.2);
+    expect(EXIT_JA_EM).toBeGreaterThan(EXIT_EN_EM);
+    const h = Math.round(0.42 * 300);
+    // Centres as painted (0.36 h and 0.68 h, middle baseline): 出口's bottom stays above Exit's top, both on the face.
+    expect(0.36 * h + (EXIT_JA_EM * h) / 2).toBeLessThan(0.68 * h - (EXIT_EN_EM * h) / 2);
+    expect(0.36 * h - (EXIT_JA_EM * h) / 2).toBeGreaterThan(6); // below the top rule
+    expect(0.68 * h + (EXIT_EN_EM * h) / 2).toBeLessThan(h);
+    atlas(signs.filter((s) => s.kind === "repeat"));
+    expect(fonts).toContain(`600 ${Math.round(h * EXIT_JA_EM)}px ${FONT}`);
+    expect(fonts).toContain(`500 ${Math.round(h * EXIT_EN_EM)}px ${FONT}`);
   });
 });

@@ -6,7 +6,7 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { ENV_INTENSITY, createMaterials } from "./materials.ts";
 import { type FinishManifest, loadFinishPacks } from "./finishes.ts";
 import { buildFloorIndex, noseDistances, wallFloorAttribute } from "./geomattrs.ts";
-import { buildSigns, type SignSpec } from "./signs.ts";
+import { buildSigns, LOW_TEXEL_SCALE, type SignSpec } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
 import { type KitGraph, type KitManifest, loadKit } from "./kit.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
@@ -479,8 +479,8 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
 
   root.add(kit.build(THREE, env, toRenderer).group);
 
-  // Low quality paints signs at ~160 px/m instead of 300: a quarter of the texture memory, still legible at phone size.
-  const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy(), low ? 0.54 : 1, ctx.renderer.capabilities.maxTextureSize);
+  // Low quality paints signs at LOW_TEXEL_SCALE (~168 px/m) instead of 300: under a third of the texture memory, still legible at phone size.
+  const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy(), low ? LOW_TEXEL_SCALE : 1, ctx.renderer.capabilities.maxTextureSize);
   root.add(signs.group);
 
   const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes);
