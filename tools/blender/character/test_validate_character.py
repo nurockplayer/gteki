@@ -443,6 +443,17 @@ class FailingChecks(unittest.TestCase):
         doc, binary = character(tier="mobile", image=(512, 512))
         self.assertFailsCheck(validate(doc, binary, tier="mobile"), 6, "VIS_head base-colour image")
 
+    def test_6_high_head_base_colour_texture_size(self):
+        doc, binary = character(image=(1024, 1024))
+        self.assertFailsCheck(validate(doc, binary), 6, "VIS_head base-colour image")
+
+    def test_6_high_head_orm_texture_size(self):
+        doc, binary = character(image=(1024, 1024))
+        material = doc["materials"][0]
+        material["pbrMetallicRoughness"].pop("baseColorTexture")
+        material["pbrMetallicRoughness"]["metallicRoughnessTexture"] = {"index": 0}
+        self.assertFailsCheck(validate(doc, binary), 6, "VIS_head metallic-roughness image")
+
     def test_6_mobile_triangles(self):
         doc, binary = character(tier="mobile", triangles=5001)
         self.assertFailsCheck(validate(doc, binary, tier="mobile"), 6, "5002 triangles")

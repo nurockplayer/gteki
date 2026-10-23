@@ -55,8 +55,10 @@ FORBIDDEN_MATERIAL_EXTENSIONS = {"KHR_materials_transmission", "KHR_materials_vo
 # §4 budgets. The high tier's GPU cap is the §4 texture set itself: base colour + ORM at 1024² (body) and 512² (head).
 TIERS = {
     "high": dict(triangles=12000, primitives=3, max_texture=1024,
+                 mesh_texture={"VIS_body": 1024, "VIS_head": 512},
                  texture_gpu_bytes=int(2 * (1024 * 1024 + 512 * 512) * 4 * 4 / 3), file_fail=None, file_warn=None),
     "mobile": dict(triangles=5000, primitives=3, max_texture=512,
+                   mesh_texture={"VIS_body": 512, "VIS_head": 256},
                    texture_gpu_bytes=2 * MIB, file_fail=2 * MIB, file_warn=int(1.5 * MIB)),
 }
 
@@ -199,6 +201,22 @@ def item(items, index):
     if not isinstance(index, int) or isinstance(index, bool) or index < 0 or index >= len(items):
         raise ValueError(f"invalid array index {index!r}")
     return items[index]
+
+
+def material_texture_images(material, textures):
+    """Yield (material slot, image index) pairs for textures referenced by a material."""
+    pbr = material.get("pbrMetallicRoughness", {})
+    for slot, texture in (
+        ("base-colour", pbr.get("baseColorTexture")),
+        ("metallic-roughness", pbr.get("metallicRoughnessTexture")),
+        ("occlusion", material.get("occlusionTexture")),
+        ("normal", material.get("normalTexture")),
+        ("emissive", material.get("emissiveTexture")),
+    ):
+        if texture is not None:
+            image = item(textures, texture["index"]).get("source")
+            if image is not None:
+                yield slot, image
 
 
 class Store:
@@ -556,24 +574,22 @@ class Validator:
             self.result["texture_gpu_bytes"] += gpu
             if max(width, height) > limits["max_texture"]:
                 self.fail(6, f"image {i} is {width}x{height}, over the {self.tier} size of {limits['max_texture']}²")
-        if self.tier == "mobile":
-            for name, index in vis.items():
-                max_size = 512 if name == "VIS_body" else 256
-                mesh = item(self.doc.get("meshes", []), self.nodes[index]["mesh"])
-                for primitive in mesh.get("primitives", []):
-                    material_index = primitive.get("material")
-                    if material_index is None:
-                        continue
-                    material = item(self.doc.get("materials", []), material_index)
-                    texture = material.get("pbrMetallicRoughness", {}).get("baseColorTexture")
-                    if texture is None:
-                        continue
-                    source = item(self.doc.get("textures", []), texture["index"]).get("source")
-                    if source is None:
+        for name, index in vis.items():
+            max_size = limits["mesh_texture"].get(name)
+            if max_size is None:
+                continue
+            mesh = item(self.doc.get("meshes", []), self.nodes[index]["mesh"])
+            for primitive in mesh.get("primitives", []):
+                material_index = primitive.get("material")
+                if material_index is None:
+                    continue
+                material = item(self.doc.get("materials", []), material_index)
+                for slot, source in material_texture_images(material, self.doc.get("textures", [])):
+                    if self.tier == "mobile" and slot != "base-colour":
                         continue
                     width, height = item(image_sizes, source)
                     if max(width, height) > max_size:
-                        self.fail(6, f"{name} base-colour image is {width}x{height}, over the mobile size of {max_size}²")
+                        self.fail(6, f"{name} {slot} image is {width}x{height}, over the {self.tier} size of {max_size}²")
         if self.result["texture_gpu_bytes"] > limits["texture_gpu_bytes"]:
             self.fail(6, f"texture GPU bytes {self.result['texture_gpu_bytes']} are over the {self.tier} limit of "
                          f"{limits['texture_gpu_bytes']}")
