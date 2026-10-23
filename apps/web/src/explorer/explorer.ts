@@ -23,7 +23,7 @@ import { advanceGuide, seekGuideState } from "./guideStops.ts";
 import { PostFx } from "./postfx.ts";
 import { applyBakedAo, type BakedAoCounts } from "./bakedAo.ts";
 import { resolveLighting, type LightingEnv } from "./lighting.ts";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, followDistance, followPose, solveRaisedBoom, stepSlope, targetFov, type SlopeState } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, fadeHold, followDistance, followPose, patchCameraHold, solveRaisedBoom, stepSlope, targetFov, type CameraHold, type SlopeState } from "./followCamera.ts";
 import { OverviewLook } from "./overviewLook.ts";
 import { CAMERA_FAR_M, OVERVIEW_OFFSET, boxCorners, extentShare, frameBounds, freeArea, overviewFar, pointsBounds, routablePoints, screenBox, type ViewRect } from "./overviewFraming.ts";
 import { declutter, estimateLabelBox, labelClass, revealedUnmeasured, type DeclutterItem, type LabelClass } from "./labelDeclutter.ts";
@@ -269,6 +269,12 @@ export class Explorer {
   private camDistance: number = FOLLOW.defaultDistance;
   /** Smoothed extra boom elevation (radians) raised over a wall/slab squeeze; see constrainedPitch. */
   private boomRaise = 0;
+  private boomActual = 0;
+  private cameraFade = 1;
+  /** Empty/null until the QA hooks are explicitly called. */
+  private qaCamera: CameraHold = {};
+  private qaCameraSnap = false;
+  private qaAvatarFade: number | null = null;
   private firstPerson = false;
   private mode: ExplorerMode = "overview";
   private guide: { pts: THREE.Vector3[]; cum: number[]; steps: number[]; s: number; paused: boolean; stops: { s: number; index: number }[]; holding: boolean; spans: readonly PaceSpan[] } | null = null;
@@ -354,6 +360,33 @@ export class Explorer {
 
   get currentMode(): ExplorerMode {
     return this.mode;
+  }
+
+  /** Follow-camera diagnostics for the QA hook. Angles are radians, distances metres. */
+  cameraInfo(): { fov: number; far: number; slopeOn: boolean; boomWanted: number; boomActual: number; raise: number; pitch: number; yaw: number; avatarFade: number; mode: ExplorerMode } {
+    return {
+      fov: this.camera.fov, far: this.camera.far, slopeOn: this.slope.on,
+      boomWanted: this.camDistance, boomActual: this.boomActual, raise: this.boomRaise,
+      pitch: this.pitch, yaw: this.yaw, avatarFade: this.cameraFade, mode: this.mode,
+    };
+  }
+
+  /** QA-only: hold supplied controls across guide steering/input; null releases all held controls. */
+  setCamera(patch: CameraHold | null): void {
+    this.qaCamera = patchCameraHold(this.qaCamera, patch);
+    this.qaCameraSnap = patch !== null;
+  }
+
+  /** QA-only: hold the shared body/postprocessing fade; null restores the automatic value. */
+  holdAvatarFade(value: number | null): void {
+    this.qaAvatarFade = fadeHold(value);
+    this.applyAvatarFade();
+  }
+
+  private applyAvatarFade(): void {
+    this.cameraFade = this.qaAvatarFade ?? avatarFade(this.boomActual);
+    this.avatarRig?.setFade(this.cameraFade);
+    this.composer?.setAvatarFade(this.avatarRig?.root ?? null, this.cameraFade);
   }
 
   get qualityLevel(): "low" | "high" {
@@ -1616,6 +1649,11 @@ export class Explorer {
   }
 
   private placeCamera(dt: number, snap = false): void {
+    if (this.qaCamera.yaw !== undefined) this.yaw = this.qaCamera.yaw;
+    if (this.qaCamera.pitch !== undefined) this.pitch = this.qaCamera.pitch;
+    if (this.qaCamera.distance !== undefined) this.camDistance = this.qaCamera.distance;
+    snap ||= this.qaCameraSnap;
+    this.qaCameraSnap = false;
     // The slope state follows the walker's height; a large one-frame jump, snap, or stopped clock restarts it instead of reading a teleport as a climb.
     this.slope = snap || dt <= 0 || Math.abs(this.pos.y - this.slopeY) > SLOPE.jump
       ? NO_SLOPE
@@ -1624,6 +1662,9 @@ export class Explorer {
     const head = this.pos.clone().add(new THREE.Vector3(0, EYE, 0));
     const dir = new THREE.Vector3(-Math.sin(this.yaw) * Math.cos(this.pitch), Math.sin(this.pitch), -Math.cos(this.yaw) * Math.cos(this.pitch));
     if (this.firstPerson) {
+      this.boomActual = 0;
+      this.boomRaise = 0;
+      this.applyAvatarFade();
       this.camera.position.copy(head);
       this.camera.lookAt(head.clone().add(dir));
       this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
@@ -1631,24 +1672,29 @@ export class Explorer {
     }
     // Over-the-shoulder framing; the pivot itself is pulled in if a wall is closer than the shoulder offset.
     // Signs (visual-only) are never camera targets and never pull the camera in; cameraCut sees through them instead.
+    const cameraSides = new Set(this.cameraTargets);
     let shoulder: number = FOLLOW.shoulder;
     if (this.cameraTargets.length) {
       this.ray.set(head, new THREE.Vector3(Math.cos(this.yaw), 0, -Math.sin(this.yaw)));
       this.ray.far = FOLLOW.shoulder + 0.25;
-      const side = castCamera(this.ray, this.cameraTargets, this.blockerTargets)[0];
+      const side = castCamera(this.ray, this.cameraTargets, cameraSides)[0];
       if (side) shoulder = Math.max(0, side.distance - 0.25);
     }
     const pose = followPose(head, this.yaw, this.pitch, shoulder);
     let back = pose.back;
     let dist = this.camDistance;
+    let raisedClear = false;
     if (!this.cameraTargets.length) this.boomRaise = 0;
     const cast = (b: THREE.Vector3, length = this.camDistance) => {
       this.ray.set(pose.pivot, b);
       this.ray.far = length + FOLLOW.clearance;
-      return castCamera(this.ray, this.cameraTargets, this.blockerTargets).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
+      return castCamera(this.ray, this.cameraTargets, cameraSides).map((h) => ({ distance: h.distance, cameraOnly: this.blockerTargets.has(h.object) }));
     };
     if (this.cameraTargets.length) {
       const solved = solveRaisedBoom(this.camDistance, pose.back, cast, this.boomRaise, dt, snap || this.reducedMotion);
+      // A lip-clearing raise also needs to move the camera now; interpolating from below the slab
+      // would recreate the same obstruction even though the target boom has already cleared it.
+      raisedClear = solved.raise > this.boomRaise && solved.distance >= Math.min(FOLLOW.comfortDistance, this.camDistance);
       back = solved.back;
       dist = solved.distance;
       this.boomRaise = solved.raise;
@@ -1659,7 +1705,7 @@ export class Explorer {
     this.setFov(targetFov(this.mode, this.firstPerson, this.slope.on || this.squeezed), snap, dt);
     const previousDistance = this.camera.position.distanceTo(pose.pivot);
     const desired = pose.pivot.clone().addScaledVector(back, dist);
-    this.camera.position.lerp(desired, snap || this.reducedMotion ? 1 : 1 - Math.exp(-dt * 10));
+    this.camera.position.lerp(desired, snap || this.reducedMotion || raisedClear ? 1 : 1 - Math.exp(-dt * 10));
     // Preserve angular/extension damping, but control contraction separately. Cast the actual interpolated
     // direction as well: a yaw change can sweep a different wall from the solved boom's ray.
     const offset = this.camera.position.clone().sub(pose.pivot);
@@ -1673,9 +1719,8 @@ export class Explorer {
     }
     this.camera.lookAt(pose.target);
     // A camera crowding the walker dithers the body out (uniform only); the contact shadow and shadow pass are untouched.
-    const fade = avatarFade(this.camera.position.distanceTo(pose.pivot));
-    this.avatarRig?.setFade(fade);
-    this.composer?.setAvatarFade(this.avatarRig?.root ?? null, fade);
+    this.boomActual = this.camera.position.distanceTo(pose.pivot);
+    this.applyAvatarFade();
   }
 
   private ensureAudio(): boolean {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import * as THREE from "three";
-import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, clampDistance, constrainedPitch, easeRaise, followBoom, followDistance, followPose, raisedBack, solveRaisedBoom, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
+import { FOLLOW, FOV, NO_SLOPE, SLOPE, approachBoom, approachFov, avatarFade, boomSqueezed, clampDistance, fadeHold, constrainedPitch, easeRaise, followBoom, followDistance, followPose, patchCameraHold, raisedBack, solveRaisedBoom, stepSlope, targetFov, viewDirection } from "./followCamera.ts";
 
 describe("follow camera", () => {
   it("stays under a 2.6 m ceiling at the default pitch and distance", () => {
@@ -22,10 +22,11 @@ describe("follow camera", () => {
     }
   });
 
-  it("keeps clearance before an obstruction but never collapses below the minimum", () => {
+  it("keeps clearance before an obstruction even when the preferred minimum is blocked", () => {
     expect(clampDistance(3, null)).toBe(3);
     expect(clampDistance(3, 2)).toBeCloseTo(2 - FOLLOW.clearance);
-    expect(clampDistance(3, 0.1)).toBe(FOLLOW.minDistance);
+    expect(clampDistance(3, 0.1)).toBe(0);
+    expect(clampDistance(3, 0.7)).toBeCloseTo(0.4);
   });
 });
 
@@ -141,7 +142,7 @@ describe("followBoom", () => {
     expect(out.distance).toBeGreaterThanOrEqual(d0 + FOLLOW.boomGain);
     expect(out.distance).toBe(followDistance(wanted, cast(out.back)));
     // Never reports a distance past what is clear along the chosen boom.
-    for (const h of cast(out.back)) expect(out.distance).toBeLessThanOrEqual(Math.max(FOLLOW.minDistance, h.distance - FOLLOW.clearance) + 1e-9);
+    for (const h of cast(out.back)) expect(out.distance).toBeLessThanOrEqual(Math.max(0, h.distance - FOLLOW.clearance) + 1e-9);
   });
 });
 
@@ -298,12 +299,16 @@ describe("constrainedPitch", () => {
     expect(n).toBe(0);
   });
 
-  it("falls back to the shortened boom when no raise reaches the comfortable distance", () => {
+  it("takes the best shortened raised boom when a tall wall prevents comfortable distance", () => {
     const { cast, calls } = scene(0.5, 5, 5); // a tall wall: no pitch gets over it
     const current = followDistance(wanted, cast(back0));
     calls.n = 0;
-    expect(constrainedPitch(wanted, back0, current, cast, new THREE.Vector3())).toBe(0);
+    const raise = constrainedPitch(wanted, back0, current, cast, new THREE.Vector3());
+    expect(raise).toBeCloseTo(FOLLOW.maxRaise, 12);
     expect(calls.n).toBe(FOLLOW.raiseSteps);
+    const distance = followDistance(wanted, cast(raisedBack(back0, raise, new THREE.Vector3())));
+    expect(distance).toBeGreaterThan(current + FOLLOW.raiseGain);
+    expect(distance).toBeLessThan(FOLLOW.comfortDistance);
   });
 
   /** Elevation raise (radians) of a candidate boom over `back0`. */
@@ -367,7 +372,6 @@ describe("avatarFade", () => {
   });
 });
 
-
 describe("solved raise after a slab squeeze", () => {
   const back = new THREE.Vector3(0, 0.14, 1).normalize();
   // A slab lip behind the walker: the shallow boom hits its edge, the steeper boom clears it.
@@ -396,7 +400,6 @@ describe("solved raise after a slab squeeze", () => {
     expect(walking.raise).toBeLessThan(0.5);
   });
 });
-
 
 describe("boom contraction", () => {
   it("ramps distance and fade monotonically over multiple 60 Hz frames after a sudden occluder", () => {
@@ -441,5 +444,44 @@ describe("boom contraction", () => {
     };
     expect(run(30)).toBeCloseTo(run(60), 9);
     expect(run(60)).toBeCloseTo(run(120), 9);
+  });
+});
+
+describe("close wall fallback", () => {
+  it("permits a closer shoulder pose with near-plane clearance when the minimum is blocked", () => {
+    for (const hit of [0.1, 0.4, 0.7]) {
+      const target = followDistance(3, [{ distance: hit, cameraOnly: false }]);
+      const actual = approachBoom(3, target, hit, 0.05, 1 / 60, true);
+      expect(actual).toBeLessThan(FOLLOW.minDistance);
+      expect(actual).toBeGreaterThanOrEqual(0);
+      expect(hit - actual).toBeGreaterThanOrEqual(0.05 + FOLLOW.nearEpsilon);
+    }
+  });
+
+  it("bounds the boom by a larger near plane as well as the preferred clearance", () => {
+    expect(approachBoom(3, 0.5, 0.8, 0.4, 1 / 60, true)).toBeCloseTo(0.38);
+    expect(approachBoom(3, 0, 0.01, 0.05, 1 / 60, true)).toBe(0);
+  });
+});
+
+describe("QA camera holds", () => {
+  it("merges only supplied finite controls, clamps them, and releases with null", () => {
+    const initial = { yaw: 1, pitch: -0.2, distance: 2 };
+    expect(patchCameraHold(initial, { pitch: -0.5 })).toEqual({ ...initial, pitch: -0.5 });
+    expect(initial.pitch).toBe(-0.2);
+    expect(patchCameraHold(initial, { yaw: NaN, pitch: Infinity, distance: -Infinity })).toEqual(initial);
+    expect(patchCameraHold({}, { yaw: 10, pitch: 9, distance: -1 })).toEqual({ yaw: 10, pitch: 0.5, distance: 0 });
+    expect(patchCameraHold({}, { pitch: -9, distance: 20 })).toEqual({ pitch: -1.1, distance: 9 });
+    expect(patchCameraHold(initial, null)).toEqual({});
+  });
+
+  it("allows a reproducible mid fade and releases or sanitizes invalid overrides", () => {
+    expect(fadeHold(0.5)).toBe(0.5);
+    expect(fadeHold(0)).toBe(0);
+    expect(fadeHold(-1)).toBe(0);
+    expect(fadeHold(2)).toBe(1);
+    expect(fadeHold(null)).toBeNull();
+    expect(fadeHold(NaN)).toBeNull();
+    expect(fadeHold(Infinity)).toBeNull();
   });
 });
