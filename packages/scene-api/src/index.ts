@@ -23,6 +23,13 @@ export const SCENE_API_VERSION = "gteki.scene/0.1" as const;
  */
 export const WALKER_BODY = { radiusM: 0.3, bodyBottomM: 0.2, bodyTopM: 1.7, eyeM: 1.62, stepUpM: 0.45, stepDownM: 0.9 } as const;
 
+/**
+ * Walker ground speeds in m/s (walking and running), as the explorer moves the avatar. Tools that replay or
+ * time a walk (e.g. a station's pipeline) import these instead of copying the numbers. Changing them is a
+ * contract change.
+ */
+export const WALKER_SPEED = { walkMps: 1.45, runMps: 3.4 } as const;
+
 /** Vertical wall in station ENU metres; blocks the walker between zMin and zMax (see WALKER_BODY). */
 export interface WallSegment {
   a: { x: number; y: number };
@@ -64,9 +71,15 @@ export interface StationScene {
     /**
      * "default" (or omitted): the explorer adds its hemisphere + sun. "scene": the explorer adds no scene
      * lights (use for baked lightmaps / underground stations); the scene owns lighting and the explorer
-     * lights only its own avatar with a per-material environment map.
+     * lights only its own avatar with a per-material environment map (unless `envIntensity` is set).
      */
     lighting?: "default" | "scene";
+    /**
+     * Strength of the explorer's environment light (`scene.environment`, a neutral studio map). In "default"
+     * lighting it applies whether or not it is set (the explorer's default when omitted). In "scene" lighting
+     * there is no environment light unless this is set above 0, so baked lightmaps are not double-lit.
+     */
+    envIntensity?: number;
   };
   /** Per-frame hook (animated signage, ambient props). */
   update?(dtSeconds: number, elapsedSeconds: number): void;
@@ -104,6 +117,12 @@ export type BuildScene = (ctx: SceneContext) => StationScene | Promise<StationSc
 
 export interface StationSceneModule {
   buildScene: BuildScene;
+  /**
+   * Called once when the explorer leaves this station for a different one (or the explorer is disposed);
+   * never between reopens of the same station. Drop caches kept across opens (parsed geometry, baked
+   * textures, merged buffers) here so a big station does not hold memory while another one is shown.
+   */
+  releaseCaches?: () => void;
 }
 
 const WALKABLE_ROLES = new Set(["floor", "stairs_ramps", "walkable", "ramp", "stairs"]);

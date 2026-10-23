@@ -83,12 +83,12 @@ App 起點：North Passage，往 26／28番出口方向。
 
 ## I — 公開資料研究帶出的追加確認（2026-10-22）
 
-來源：data-research PR #177（`docs/research/gaps/DR-IK-station-facts.md`，FC-IK-01 至 03；I8 的 POI 於 PR #185 新增為 search-only）與 PR #174（`docs/research/gaps/DR-changes-since-2023.md`，CH-IK-01、02、04、05/06）。這些是「去看一眼」的項目，不是結論：公開資料沒有一項能確定開口或樓梯是哪個出口，也沒有改動任何路網、POI 或通行資料。全部在改札外（I8 的改札線只需站在改札外觀察，不必進站）；照片規則同上。順路時一併記錄即可，各項已對應到上面既有的 A–H 項目。I9、I10 來自 PR #197（`docs/research/gaps/DR-retry-unread-sources.md`，FC-RT-01、02）；I11–I13 來自 [step-free-coverage.md](step-free-coverage.md)（無障礙路線覆蓋報告：目前 63 條邊的已驗證無障礙為 0 條），只補上 H2、I2、I4、I5、I8 沒有涵蓋的「某一段通道有沒有臺階或坡道」與「短樓梯旁有沒有替代設施」。
+來源：data-research PR #177（`docs/research/gaps/DR-IK-station-facts.md`，FC-IK-01 至 03；I8 的 POI 於 PR #185 新增為 search-only）與 PR #174（`docs/research/gaps/DR-changes-since-2023.md`，CH-IK-01、02、04、05/06）。這些是「去看一眼」的項目，不是結論：公開資料沒有一項能確定開口或樓梯是哪個出口，也沒有改動任何路網、POI 或通行資料。全部在改札外（I8 的改札線只需站在改札外觀察，不必進站）；照片規則同上。順路時一併記錄即可，各項已對應到上面既有的 A–H 項目。I9、I10 來自 PR #197（`docs/research/gaps/DR-retry-unread-sources.md`，FC-RT-01、02）；I11–I13 來自 [step-free-coverage.md](step-free-coverage.md)（無障礙路線覆蓋報告：目前 67 條邊的已驗證無障礙為 0 條），只補上 H2、I2、I4、I5、I8 沒有涵蓋的「某一段通道有沒有臺階或坡道」與「短樓梯旁有沒有替代設施」。
 
 | # | Check | Closes / 對應 | Source |
 |---|---|---|---|
 | I1 (FC-IK-01) | 東武中央1改札以西的通道、往西口樓梯與 19番出口方向：有沒有電梯？服務哪些樓層？有沒有貼營業時間？標示寫幾號出口？ | gap-step-free、`exit-19`；與 B4、H1、H2 一起看 | 現場確認。沿用 #177 的項目編號 FC-IK-01，但不引用任何 JR 東日本資料（OD-02：[#165 留言](https://github.com/nurockplayer/gteki/issues/165#issuecomment-6335071234)） |
-| I2 (FC-IK-02) | 中央通路東改札之外，往 34番、35番：電梯與手扶梯各通到幾號出口？（東京 Metro 兩個頁面的說法不一致：無障礙頁寫電梯到 34、出口表把地上電梯標在 35） | gap-step-free（東側）、`metro-m-central-east-gate`；與 A1、H2 一起看 | #177 FC-IK-02 |
+| I2 (FC-IK-02) | 中央通路東改札之外，往 34番、35番：電梯與手扶梯各通到幾號出口？（東京 Metro 兩個頁面的說法不一致：無障礙頁寫電梯到 34、出口表把地上電梯標在 35）另外 Sunshine City 網站寫 35番有電梯通到地面（OD-24：facts-only、UNVERIFIED），和 Metro 的說法也不一致，一併確認。 | gap-step-free（東側）、`metro-m-central-east-gate`；與 A1、H2 一起看 | #177 FC-IK-02 |
 | I3 (FC-IK-03) | 購物街區東側的 30番與 31番：是同一座樓梯兩個號碼，還是兩座樓梯？ | `exit-30`、`exit-31`；與 G2 一起看 | #177 FC-IK-03 |
 | I4 (CH-IK-04) | 36番、37番出口的樓梯：現在有沒有加裝手扶梯或電梯？樓梯或通道的形狀與 App 畫面有沒有不同？（豊島區協議會 2024-11-05 有「考慮 4 座手扶梯與電梯」的發言；結果未知） | gap-freshness、gap-step-free；與 H2、H3 一起看 | #174 CH-IK-04 |
 | I5 (CH-IK-01) | 副都心線 C1b 出口：有沒有這個出口？與 C1（現稱 C1a）怎麼分？有電梯嗎？（Metro 稱新設，開通日未確認） | gap-freshness、gap-step-free；與 H2、H3 一起看 | #174 CH-IK-01 |
@@ -100,6 +100,9 @@ App 起點：North Passage，往 26／28番出口方向。
 | I11 | 看起來平的通道：有沒有一階以上的臺階、門檻、坡道或明顯的斜面？記在哪一段（對照柱子或店面）。資料只有 0.07–0.56 m 的高低差，其中多數小於測量取樣誤差（0.35 m），不能當成有沒有坡道的證據。重點段落：中央通路東段（`c_c`→`c_e1`→`c_n`，以及 `c_e1`→`c_s`）、東口大廳往 27番方向（`c_e2`→`e_27j`→`e_hall`）、南通路與通往東南通道的段（`c_s`→`sp_j`、`e_hall`→`se_1`→`se_j`）、西口（南）往北的長通道（`sw_h`→`w_cj`，152 m）。順便記每個閘門開口與通道最窄處，輪椅看起來過不過得去（目測，不必量）。看起來平不等於無障礙，只記看到的 | `gap-step-free`；與 H2、H3 一起看，不取代 H2 | 本檔案旁的 [step-free-coverage.md](step-free-coverage.md) 第 2 節（PLATEAU 的 z 值，12 條 slope 邊；資料為「僅形狀」，未驗證） |
 | I12 | 短樓梯段旁邊有沒有坡道、電梯或手扶梯可以繞過？(a) 東口大廳往 34／35番低層通道的那段樓梯（`e_hall`→`e_low`，下 0.91 m）；(b) 南通路東端「上一小段、下一小段」的樓梯（`sp_e`→`s38_w`，1.47 m；`s41_j`→`s41_f`，0.83 m）；(c) 北通路往購物街通道的短樓梯（`n_e`→`ne_j`，2.21 m）。有的話記：位置、通到哪一層、在改札外還是改札內、有沒有貼時間 | `gap-step-free`；與 H2 一起看；(a) 與 I2 同一區 | step-free-coverage.md 第 2、5 節（資料把這些邊記為樓梯，附近沒有任何公開資料提到替代設施） |
 | I13 | PLATEAU 測量裡有 3 座手扶梯，目前沒有任何邊使用：(1) 35番出口樓梯旁（併入 I2 一起看）；(2) 33番出口樓梯旁；(3) 北通路往購物街通道的短樓梯旁（與 I12 (c) 同一處）。每座：真的是手扶梯嗎？往哪個方向？有在運轉嗎？旁邊有沒有電梯？ | `gap-step-free`；(1) 併入 I2、H2 | `scene/dressing_anchors.json`（esc01 至 esc03，PLATEAU 測量；種類、方向、運轉時間沒有任何來源）、step-free-coverage.md 第 4 節 |
+| I14 (OD-22) | 西口（北）／20a番出口：現場有沒有 20a 這個出口？在哪裡（離西口地下廣場或哪條通路最近）？標示牌寫什麼？（豊島区サインガイドライン（案）Ver1.3 p20 把西口（北）對應到 20a；那是草案，只能當名稱來源，資料裡沒有這個 POI） | 新 POI 候選（目前沒有）；與 B 區一起看 | 豊島区 Ver1.3（案）p20（OD-22，#165 comment 6340635823） |
+| I15 (FC-RT-03) | 4番和5番出口的標示牌：還有沒有「(新)」或「(旧4)」這類註記？拍下牌面文字。 | `exit-4`、`exit-5`；與 I14、B 區一起看 | #233（R8b，豊島区 資料3 標示變更表） |
+| I16 | 26番出口樓梯頂端：量階梯最上面一階的淨寬，以及兩側側牆比最上面一階高多少（捲尺即可）；側牆在街面那一端是否與地面齊平。App 的路線在這裡離側牆約 0.33 m，是離牆 0.35 m 規則唯一的例外（`CLEARANCE_EXCEPTIONS`；依 PLATEAU 測量，最窄處的側牆頂比那裡的踏面高約 0.44 m）；實測可用來確認或移除這個例外 | `ne_j__x26`；與 G 區一起看 | `pipeline/build_station.py` `CLEARANCE_EXCEPTIONS`（Refs [#227](https://github.com/nurockplayer/gteki/issues/227)） |
 
 另外兩項補充，併入既有項目：
 

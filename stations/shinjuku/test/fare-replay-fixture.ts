@@ -1,0 +1,69 @@
+/** Deliberately synthetic regression fixture, never used by station rendering or routing. */
+import * as THREE from "three";
+import type { StationScene } from "@gteki/scene-api";
+import { slabGeometry, type BuiltStation } from "../scene/build.ts";
+import { WalkWorld, type Layout, type Plan, type XY } from "../scene/layout.ts";
+import { loadShinjukuBundle } from "../data/bundle.ts";
+import { deriveRestrictedAccess, deriveRestrictedFences } from "../scene/fare-fence.ts";
+import type { Fence } from "../scene/fare-fence.ts";
+export function accessFixture(width: number, publicBeyond: boolean, restricted = false) {
+  const rect = (x0: number, x1: number): XY[][] => [[{ x: x0, y: -3 }, { x: x1, y: -3 }, { x: x1, y: 3 }, { x: x0, y: 3 }]];
+  const corners = rect(-3, 3)[0]!;
+  const perimeter = corners.map((a, i) => ({ a, b: corners[(i + 1) % 4]!, zMin: -.05, zMax: 2.8, kind: "wall" as const, side: 1 as const }));
+  const fence: Fence = { id: "synthetic-access", reason: "access", level: "fixture", a: { x: 0, y: -3 }, b: { x: 0, y: 3 }, zMin: -.05, zMax: 1.15, kind: "wall", side: 1 };
+  const layout = { levels: [{ label: "fixture", floorId: "fixture", z: 0, slabs: [{ rings: rect(-3, 3), z: 0 }], walls: perimeter, railings: [] }],
+    pads: [], linkStrips: [], streetPads: [], runs: [], runWalls: [], gates: [], nodeZ: new Map() } as unknown as Layout;
+  const space = (id: string, x0: number, x1: number, limited = false) => ({ id, category: "synthetic", restricted: limited, toll: "free" as const, rings: rect(x0, x1) });
+  const plan = { levels: [{ label: "fixture", floorId: "fixture", ordinal: 0, renderElevationM: 0, outline: [], facilities: [],
+    spaces: [space("verified-left", -3, 0), ...(publicBeyond ? [space("verified-right", width, 3)] : []), ...(restricted ? [space("restricted-pocket", 0, width, true)] : [])] }], nodeRenderZ: {}, attribution: [] } as Plan;
+  const world = new WalkWorld(layout); world.addWalls([fence]);
+  const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, visible: false });
+  // An intentional bad backing floor lets the negative control admit unknown positions.
+  // The shipped station instead clips this floor out; this fixture tests the rejection logic.
+  const floor = new THREE.Mesh(slabGeometry(rect(-3, 3), 0, 1), material);
+  const walls = [...perimeter, fence], vertices: number[] = [], indices: number[] = [];
+  for (const w of walls) {
+    const i = vertices.length / 3;
+    vertices.push(w.a.x, w.zMin, -w.a.y, w.b.x, w.zMin, -w.b.y, w.b.x, w.zMax, -w.b.y, w.a.x, w.zMax, -w.a.y);
+    indices.push(i, i + 1, i + 2, i, i + 2, i + 3);
+  }
+  const geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3)); geometry.setIndex(indices);
+  const wall = new THREE.Mesh(geometry, material); wall.name = "wall collider (invisible)";
+  const root = new THREE.Group(); root.add(floor, wall); root.updateMatrixWorld(true);
+  const scene = { root, walkable: [floor], colliders: [wall], walls, dispose() {} } as StationScene;
+  const built: BuiltStation = { root, world, layout, propWalls: [fence], escalators: [], signs: [], levelGroups: new Map(), update() {}, dispose() {}, trainStatus: () => [] };
+  return { scene, built, plan, fence, dispose() { floor.geometry.dispose(); geometry.dispose(); material.dispose(); } };
+}
+
+/** Same actual walkers/meshes; only the generic derivation's corridor radius is mutated. */
+export function restrictedCorridorFixture(radius: number, floorRight = 3, options: { oblique?: boolean; returns?: boolean } = {}) {
+  const base = accessFixture(3, false, true), { built, scene, plan } = base;
+  if (options.oblique) {
+    const level = plan.levels[0]!;
+    level.spaces[0]!.rings = built.layout.levels[0]!.slabs[0]!.rings;
+    level.spaces[1]!.rings = [[{ x: -3, y: 3 }, { x: -2.8, y: 3 }, { x: 3, y: -2.8 }, { x: 3, y: -3 }]];
+  }
+  if (floorRight !== 3) {
+    const rs = [[{ x: -3, y: -3 }, { x: floorRight, y: -3 }, { x: floorRight, y: 3 }, { x: -3, y: 3 }]];
+    built.layout.levels[0]!.slabs[0]!.rings = rs;
+    const floor = scene.walkable[0] as THREE.Mesh;
+    floor.geometry.dispose(); floor.geometry = slabGeometry(rs, 0, 1);
+  }
+  const template = loadShinjukuBundle().bundle, a = "fixture:verified-a", b = "fixture:verified-b";
+  const nodes = [a, b].map((id, i) => ({ ...template.nodes[0]!, id, floorId: "fixture", position: options.oblique
+    ? { x: i ? 3 : -3, y: 0, z: 0 } : { x: -.1, y: i ? 3 : -3, z: 0 } }));
+  const bundle = { ...template, nodes, pois: [], edges: [{ ...template.edges[0]!, id: "fixture:verified-edge", from: a, to: b,
+    verification: "verified" as const, mode: "walk" as const, geometry: nodes.map(n => n.position) }] };
+  built.layout.nodeZ.set(a, 0); built.layout.nodeZ.set(b, 0);
+  const canonical = deriveRestrictedAccess(built.layout, plan, bundle).regions;
+  const derived = deriveRestrictedAccess(built.layout, plan, bundle, radius);
+  const props = deriveRestrictedFences(built.layout, derived, []).filter(f => options.returns !== false || !f.id.startsWith("return:"));
+  const walls = [...built.layout.levels.flatMap(l => l.walls), ...props], positions: number[] = [], indices: number[] = [];
+  for (const w of walls) { const i = positions.length / 3; positions.push(w.a.x, w.zMin, -w.a.y, w.b.x, w.zMin, -w.b.y, w.b.x, w.zMax, -w.b.y, w.a.x, w.zMax, -w.a.y); indices.push(i, i + 1, i + 2, i, i + 2, i + 3); }
+  const geometry = new THREE.BufferGeometry(); geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3)); geometry.setIndex(indices);
+  const material = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }), mesh = new THREE.Mesh(geometry, material);
+  mesh.name = "wall collider (invisible)"; mesh.updateMatrixWorld(true);
+  const world = new WalkWorld(built.layout); world.addWalls(props);
+  return { built: { ...built, world, propWalls: props }, scene: { ...scene, walls, colliders: [mesh] }, plan, canonical,
+    dispose() { geometry.dispose(); material.dispose(); base.dispose(); } };
+}

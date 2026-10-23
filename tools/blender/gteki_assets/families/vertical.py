@@ -196,8 +196,11 @@ def _flight(a, p, y0, z0, n, riser, index):
     return end, top
 
 
-def _stair_rails(a, p, path, noses, x, side, wall=False, center=False):
-    """Two continuous tiers; horizontal ends fold back toward their supports."""
+def _stair_rails(a, p, path, noses, x, side, wall=False, center=False, segments=10, support_segments=8):
+    """Two continuous tiers; horizontal ends fold back toward their supports.
+
+    ``segments`` / ``support_segments`` set the tube cross-sections only (dressing.py lowers them).
+    """
     ext, ret = p["rail_extension"], p["rail_return"]
     rails = a.part("handrails")
     support = a.part("rail_supports", bevel=0.002, bevel_segments=1)
@@ -210,7 +213,8 @@ def _stair_rails(a, p, path, noses, x, side, wall=False, center=False):
         points += [(x, rail_path[-1][0], rail_path[-1][1] + h),
                    (x, rail_path[-1][0], rail_path[-1][1] + h - ret),
                    (x + side * 0.065, rail_path[-1][0], rail_path[-1][1] + h - ret)]
-        rails.tube(points, p["rail_radius"], STEEL, segments=10, corner_radius=0.085, corner_steps=5)
+        rails.tube(points, p["rail_radius"], STEEL, segments=segments, corner_radius=0.085,
+                   corner_steps=max(2, round(5 * segments / 10)))
     support_y0 = max(path[0][0], rail_path[0][0] + 0.12)
     support_y1 = min(path[-1][0], rail_path[-1][0] - 0.12)
     length = support_y1 - support_y0
@@ -223,7 +227,7 @@ def _stair_rails(a, p, path, noses, x, side, wall=False, center=False):
             for h in (p["rail_upper"], p["rail_lower"]):
                 support.tube([(x + side * 0.085, y, rail_z + h - 0.075),
                               (x, y, rail_z + h - 0.075), (x, y, rail_z + h)],
-                             0.010, STEEL, segments=8, corner_radius=0.025)
+                             0.010, STEEL, segments=support_segments, corner_radius=0.025)
         else:
             px = x if center else x + side * 0.065
             support.cylinder((px, y, z + 0.03), 0.021, rail_z - z + p["rail_upper"] - 0.03, STEEL, segments=10)
@@ -231,7 +235,7 @@ def _stair_rails(a, p, path, noses, x, side, wall=False, center=False):
             if not center:
                 for h in (p["rail_upper"], p["rail_lower"]):
                     support.tube([(px, y, rail_z + h - 0.05), (x, y, rail_z + h - 0.05), (x, y, rail_z + h)],
-                                 0.010, STEEL, segments=8, corner_radius=0.02)
+                                 0.010, STEEL, segments=support_segments, corner_radius=0.02)
     if center:
         blocker_path = _slice(rail_path, max(0, rail_path[0][0]), min(path[-1][0], rail_path[-1][0]))
         _block_path(a, "center_rail", -0.04, 0.04, blocker_path, p["rail_upper"])
@@ -389,7 +393,8 @@ def _escalator_path(p):
     return [(0.0, 0.0)] + path + [(length, rise)]
 
 
-def escalator(asset_id, params, tex_res):
+def escalator(asset_id, params, tex_res, handrail_segments=10, handrail_corner=0.035):
+    """``handrail_*`` shape the moving handrail's sweep only (not params); dressing.py thins it."""
     p = _params(ESCALATOR_DEFAULTS, params)
     _positive(p, "rise", "step_width", "incline", "step_depth", "transition_run", "landing",
               "handrail_height", "handrail_radius", "newel_radius", "deck_width", "skirt_height",
@@ -511,8 +516,8 @@ def escalator(asset_id, params, tex_res):
             points.append((gx, rail_y0 + r * math.cos(ang), h - r + r * math.sin(ang)))
         points.append(points[0])
         handrail = a.part("moving_handrails")
-        handrail.tube(points, p["handrail_radius"], "gteki_rubber_black", segments=10,
-                      caps=False, corner_radius=0.035, corner_steps=3)
+        handrail.tube(points, p["handrail_radius"], "gteki_rubber_black", segments=handrail_segments,
+                      caps=False, corner_radius=handrail_corner, corner_steps=3)
         bases = a.part("newel_bases", bevel=0.004, bevel_segments=2)
         for top in (False, True):
             cy, z = (rail_y1, p["rise"]) if top else (rail_y0, 0)
