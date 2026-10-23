@@ -95,8 +95,10 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       const mobile = parseKitManifest(library("mobile/manifest.json"), "mobile");
       expect(library("manifest.json").kit_version).toBe("0.1.0");
       expect(library("mobile/manifest.json").kit_version).toBe("0.1.0");
-      expect(full.assets.length).toBe(74);
-      expect(mobile.assets.length).toBe(74);
+      // Independent of library size (#326 grew it 74 -> 91): both tiers carry the same ids, and at least the
+      // 0.1.0 kit pieces this station's swap and tests rely on.
+      expect(mobile.assets.map((a) => a.id).sort()).toEqual(full.assets.map((a) => a.id).sort());
+      expect(full.assets.length).toBeGreaterThanOrEqual(74);
       expect(() => parseKitManifest(library("mobile/manifest.json"), "full")).toThrow(KitManifestError);
       expect(() => parseKitManifest(library("manifest.json"), "mobile")).toThrow(KitManifestError);
     });
@@ -129,7 +131,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
         expect([role, selectAssets(mobile, selector).map((a) => a.id)]).toEqual([role, selectAssets(full, selector).map((a) => a.id)]);
       }
     });
-    it("the 74-asset kit 0.1.0 offers a lift portal, one-aisle gate, safe dressing parts and exit canopies", () => {
+    it("kit 0.1.0 offers a lift portal, one-aisle gate, safe dressing parts and exit canopies", () => {
       const ids = {
         lift: ["gteki_lift_portal_w1000"],
         gate: ["gteki_gate_array_1w"],
@@ -215,7 +217,8 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(all.placed.filter((p) => p.role === "gate")).toHaveLength(4);
       expect(all.placed.filter((p) => p.role === "lift")).toHaveLength(15);
       const propIds = real.assets.filter((a) => /bench|vending|kiosk|shop/.test(a.id) || a.tags.includes("shop")).map((a) => a.id);
-      expect(propIds.sort()).toEqual(["gteki_bench_3seat_slat", "gteki_bench_4seat", "gteki_ticket_kiosk", "gteki_vending_machine", "gteki_vending_machine_sand"]);
+      // The library may keep adding props; the test only needs some on offer, so the refusal is not vacuous.
+      expect(propIds).toEqual(expect.arrayContaining(["gteki_bench_3seat_slat", "gteki_bench_4seat", "gteki_ticket_kiosk", "gteki_vending_machine", "gteki_vending_machine_sand"]));
       expect(all.placed.every((p) => p.role === "gate" || p.role === "lift")).toBe(true);
       expect(all.placed.map((p) => p.assetId).filter((id) => propIds.includes(id))).toEqual([]);
       expect(all.placed.map((p) => p.assetId).join()).not.toMatch(/bench|vending|kiosk|shop|bin_|poster|column/);
@@ -733,7 +736,7 @@ describe("kit swap: Issue #94, Shinjuku half", () => {
       expect(report.placed.filter((p) => p.role === "lift").map((p) => p.anchorKey)).toEqual(["0", "1", "2", "3", "4"]);
     });
 
-    it("the 74-asset real kit places mobile gates and lifts; available dressing pieces fit no Shinjuku run", () => {
+    it("the real kit 0.1.0 places mobile gates and lifts; available dressing pieces fit no Shinjuku run", () => {
       const mobile = parseKitManifest(library("mobile/manifest.json"), "mobile");
       const anchors = collectKitAnchors({ layout: captured.layout, protection: captured.protection, plan: captured.plan, bundle, lifts: captured.liftAnchors });
       expect(anchors.runs.filter((r) => r.role === "stairs").length).toBe(24);
