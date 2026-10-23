@@ -73,6 +73,7 @@ TURN_YAW = {"turn90_l": 90.0, "turn90_r": -90.0, "turn180_l": 180.0, "turn180_r"
 STAIRS = dict(riser_m=0.16, tread_m=0.30, steps_per_cycle=2)
 PELVIS_DRIFT_M = 0.01
 LOOP_POP_DEG = 0.5
+LOOP_POP_TRANSLATION_M = 0.001
 DRIFT_LIMITS_M = {
     "walk": 0.02, "jog": 0.02, "run": 0.02,
     "stairs_up": 0.03, "stairs_down": 0.03, "turn90_l": 0.03, "turn90_r": 0.03, "turn180_l": 0.03, "turn180_r": 0.03,
@@ -423,19 +424,34 @@ class Validator:
                                and key not in ("JOINTS_0", "WEIGHTS_0"))
                 if extra:
                     self.fail(3, f"{name} primitive {p} has {', '.join(extra)} (only JOINTS_0 and WEIGHTS_0)")
+                self.read_finite(attributes.get("POSITION"), f"{name} primitive {p} POSITION")
                 if "JOINTS_0" not in attributes or "WEIGHTS_0" not in attributes:
                     self.fail(3, f"{name} primitive {p} lacks JOINTS_0/WEIGHTS_0")
                     continue
-                self.check_weights(f"{name} primitive {p}", self.store.read(attributes["JOINTS_0"]),
-                                   self.store.read(attributes["WEIGHTS_0"]), joint_count)
+                joint_rows = self.store.read(attributes["JOINTS_0"])
+                weight_rows = self.store.read(attributes["WEIGHTS_0"])
+                self.check_weights(f"{name} primitive {p}", joint_rows, weight_rows, joint_count)
+
+    def read_finite(self, accessor, label):
+        """Read numeric accessor data and explicitly reject NaN/inf before metrics consume it."""
+        if accessor is None:
+            return None
+        values = self.store.read(accessor)
+        if any(not math.isfinite(component) for row in values for component in row):
+            self.fail(3, f"{label} contains a non-finite value")
+            return None
+        return values
 
     def check_weights(self, label, joint_rows, weight_rows, joint_count):
         if len(joint_rows) != len(weight_rows):
             self.fail(3, f"{label}: JOINTS_0 and WEIGHTS_0 have different counts")
             return
-        bad_sum = negative = outside = 0
+        bad_sum = negative = outside = non_finite = 0
         worst = 0.0
         for joints_, weights in zip(joint_rows, weight_rows):
+            if any(not math.isfinite(w) for w in weights):
+                non_finite += 1
+                continue
             total = sum(weights)
             worst = max(worst, abs(total - 1))
             bad_sum += abs(total - 1) > 1e-3
@@ -447,6 +463,8 @@ class Validator:
             self.fail(3, f"{label}: {negative} vertices have a negative weight")
         if outside:
             self.fail(3, f"{label}: {outside} vertices are weighted to a joint not in the skin")
+        if non_finite:
+            self.fail(3, f"{label}: {non_finite} vertices have non-finite WEIGHTS_0 values")
 
     # -- 4. morphs --
 
@@ -491,6 +509,10 @@ class Validator:
                     self.fail(5, f"mobile material {name!r} carries a metallicRoughnessTexture (base colour only)")
                 if material.get("occlusionTexture") is not None:
                     self.fail(5, f"mobile material {name!r} carries an occlusionTexture (base colour only)")
+                if material.get("normalTexture") is not None:
+                    self.fail(5, f"mobile material {name!r} carries a normalTexture (base colour only)")
+                if material.get("emissiveTexture") is not None:
+                    self.fail(5, f"mobile material {name!r} carries an emissiveTexture (base colour only)")
             for extension in material.get("extensions", {}):
                 if extension in FORBIDDEN_MATERIAL_EXTENSIONS:
                     self.fail(5, f"material {name!r} uses {extension}")
@@ -607,8 +629,12 @@ class Validator:
             interpolation = sampler.get("interpolation", "LINEAR")
             if interpolation != "LINEAR":
                 problems.add(f"{interpolation} interpolation")
-            times = [t for (t,) in self.store.read(sampler["input"])]
-            values = self.store.read(sampler["output"])
+            input_values = self.read_finite(sampler["input"], f"clip {name!r} sampler input")
+            output_values = self.read_finite(sampler["output"], f"clip {name!r} sampler output")
+            if input_values is None or output_values is None:
+                continue
+            times = [t for (t,) in input_values]
+            values = output_values
             if interpolation == "CUBICSPLINE":
                 values = values[1::3]
             if len(times) < 2 or len(values) != len(times):
@@ -656,7 +682,15 @@ class Validator:
                     worst, joint = angle, joint_nodes.get(node, item(self.nodes, node).get("name"))
         if worst > LOOP_POP_DEG:
             self.fail(7, f"cycle {name!r} pops {worst:.3f}° at the loop on {joint} (limit {LOOP_POP_DEG}°)")
-        return dict(loop_pop_deg=round(worst, 4), loop_pop_joint=joint)
+        pelvis_node = next((node for node, joint_name in joint_nodes.items() if joint_name == "pelvis"), None)
+        pelvis_translation = tracks.get(pelvis_node, {}).get("translation")
+        translation_pop = (max(abs(a - b) for a, b in zip(pelvis_translation[1][0], pelvis_translation[1][-1]))
+                           if pelvis_translation else 0.0)
+        if translation_pop > LOOP_POP_TRANSLATION_M:
+            self.fail(7, f"cycle {name!r} pelvis translation pops {translation_pop * 1000:.3f} mm at the loop "
+                         f"(limit {LOOP_POP_TRANSLATION_M * 1000:.0f} mm per axis)")
+        return dict(loop_pop_deg=round(worst, 4), loop_pop_joint=joint,
+                    loop_pop_translation_m=round(translation_pop, 6))
 
     # -- 8. metadata --
 
@@ -886,15 +920,27 @@ class Validator:
                 glide_positions = [self.profile_distance(profile, f / frames, clip["duration"])
                                    for f in range(frames + 1)]
             drift = {}
+            contact_results = {}
             for side in ("l", "r"):
                 worst = 0.0
+                side_results = []
                 for window in entry["contacts"].get(side) or []:
-                    worst = max(worst, self.window_drift(positions, side, window, frames, cycle, velocity,
-                                                         glide_positions))
+                    window_drift, usable = self.window_drift(positions, side, window, frames, cycle, velocity,
+                                                             glide_positions)
+                    if usable < 2:
+                        level(9, f"clip {name!r} {side} contact window {window!r} unmeasured: "
+                              f"only {usable} usable stance sample(s)")
+                        side_results.append(dict(window=window, usable_samples=usable, drift_m="unmeasured"))
+                    else:
+                        worst = max(worst, window_drift)
+                        side_results.append(dict(window=window, usable_samples=usable,
+                                                 drift_m=round(window_drift, 5)))
                 drift[side] = round(worst, 5)
+                contact_results[side] = side_results
             limit = DRIFT_LIMITS_M[name]
             self.result["clips"].setdefault(name, {}).update(foot_drift_m=drift, drift_limit_m=limit,
-                                                             glide_mps=[round(v, 5) for v in velocity])
+                                                             glide_mps=[round(v, 5) for v in velocity],
+                                                             contact_windows=contact_results)
             for side, value in drift.items():
                 if value > limit:
                     level(9, f"clip {name!r} {side} foot drifts {value * 100:.2f} cm in stance (limit {limit * 100:.0f} cm)")
@@ -911,14 +957,14 @@ class Validator:
     def window_drift(positions, side, window, frames, cycle, velocity, glide_positions=None):
         """Largest horizontal travel of a planted heel or ball inside one stance window, the ideal glide removed."""
         if not isinstance(window, list) or len(window) != 2 or not all(number(x) for x in window) or not frames:
-            return 0.0
+            return 0.0, 0
         first, last = math.ceil(window[0] * frames - 1e-6), math.floor(window[1] * frames + 1e-6)
         if not cycle:
             last = min(last, frames)
         steps = list(range(first, last + 1))
         if not steps:
-            return 0.0
-        worst = 0.0
+            return 0.0, 0
+        planted_by_ref = []
         for ref in (0, 1):
             corrected = []
             for f in steps:
@@ -935,11 +981,16 @@ class Validator:
                 neighbour = corrected[k + 1] if k + 1 < len(corrected) else corrected[k - 1] if k else p
                 speed = abs(neighbour[1] - p[1]) * FPS
                 if p[1] <= floor + STANCE_HEIGHT_M and speed < STANCE_SPEED_MPS:
-                    planted.append(p)
-            if planted:
-                anchor = planted[0]
-                worst = max(worst, max(math.hypot(p[0] - anchor[0], p[2] - anchor[2]) for p in planted))
-        return worst
+                    planted.append((k, p))
+            planted_by_ref.append(planted)
+        usable = len({index for planted in planted_by_ref for index, _ in planted})
+        worst = 0.0
+        if usable >= 2:
+            for planted in planted_by_ref:
+                if len(planted) >= 2:
+                    anchor = planted[0][1]
+                    worst = max(worst, max(math.hypot(p[0] - anchor[0], p[2] - anchor[2]) for _, p in planted))
+        return worst, usable
 
 
 def main():

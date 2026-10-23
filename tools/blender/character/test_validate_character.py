@@ -358,6 +358,32 @@ class FailingChecks(unittest.TestCase):
         attributes["JOINTS_1"], attributes["WEIGHTS_1"] = attributes["JOINTS_0"], attributes["WEIGHTS_0"]
         self.assertFailsCheck(validate(doc, binary), 3, "JOINTS_1")
 
+    def test_3_non_finite_skin_values_fail(self):
+        doc, binary = character()
+        b = Builder()
+        b.binary, b.views, b.accessors = binary, doc["bufferViews"], doc["accessors"]
+        weights = b.accessor([[float("nan"), 0.0, 0.0, 0.0]] * 4, "VEC4")
+        doc["meshes"][0]["primitives"][0]["attributes"]["WEIGHTS_0"] = weights
+        self.assertFailsCheck(validate(doc, b.binary), 3, "non-finite WEIGHTS_0")
+
+        doc, binary = character()
+        b = Builder()
+        b.binary, b.views, b.accessors = binary, doc["bufferViews"], doc["accessors"]
+        positions = b.accessor([[float("inf"), 0.8, 0.0]] * 4, "VEC3")
+        doc["meshes"][0]["primitives"][0]["attributes"]["POSITION"] = positions
+        self.assertFailsCheck(validate(doc, b.binary), 3, "POSITION contains a non-finite")
+
+        doc, binary = character()
+        b = Builder()
+        b.binary, b.views, b.accessors = binary, doc["bufferViews"], doc["accessors"]
+        bad = b.accessor([[0.0, float("-inf"), 0.0, 1.0]] * (FRAMES["idle"] + 1), "VEC4")
+        idle = next(a for a in doc["animations"] if a["name"] == "idle")
+        rotation = next(c for c in idle["channels"]
+                        if c["target"]["path"] == "rotation" and
+                        doc["nodes"][c["target"]["node"]].get("name") == "spine_01")
+        idle["samplers"][rotation["sampler"]]["output"] = bad
+        self.assertFailsCheck(validate(doc, b.binary), 3, "sampler output contains a non-finite")
+
     # 4. morphs
     def test_4_blink_order(self):
         doc, binary = character()
@@ -398,6 +424,13 @@ class FailingChecks(unittest.TestCase):
         doc, binary = character(tier="mobile")
         doc["materials"][0]["occlusionTexture"] = {"index": 0}
         self.assertFailsCheck(validate(doc, binary, tier="mobile"), 5, "occlusionTexture")
+
+    def test_5_mobile_normal_and_emissive_textures_fail(self):
+        for slot in ("normalTexture", "emissiveTexture"):
+            with self.subTest(slot=slot):
+                doc, binary = character(tier="mobile")
+                doc["materials"][0][slot] = {"index": 0}
+                self.assertFailsCheck(validate(doc, binary, tier="mobile"), 5, slot)
 
     # 6. budgets
     def test_6_mobile_texture_gpu_bytes(self):
@@ -504,6 +537,21 @@ class FailingChecks(unittest.TestCase):
         idle["samplers"][channel["sampler"]]["output"] = popping
         self.assertFailsCheck(validate(doc, b.binary), 7, "pops")
 
+    def test_7_cycle_pelvis_translation_loop_pop(self):
+        doc, binary = character()
+        b = Builder()
+        b.binary, b.views, b.accessors = binary, doc["bufferViews"], doc["accessors"]
+        frames = FRAMES["idle"]
+        popping = b.accessor([[0.0, 0.95, 0.0]] * frames + [[0.0, 0.952, 0.0]], "VEC3")
+        idle = next(a for a in doc["animations"] if a["name"] == "idle")
+        pelvis = next(i for i, n in enumerate(doc["nodes"]) if n.get("name") == "pelvis")
+        channel = next(c for c in idle["channels"]
+                       if c["target"]["node"] == pelvis and c["target"]["path"] == "translation")
+        idle["samplers"][channel["sampler"]]["output"] = popping
+        result = validate(doc, b.binary)
+        self.assertFailsCheck(result, 7, "pelvis translation pops")
+        self.assertEqual(result["clips"]["idle"]["loop_pop_translation_m"], 0.002)
+
     # 8. metadata
     def meta(self, doc):
         return doc["nodes"][0]["extras"]["gteki_character"]
@@ -583,6 +631,31 @@ class FootDrift(unittest.TestCase):
         result = validate(*character(slide=0.05), drift_gate=False)
         self.assertEqual(failures(result), [])
         self.assertEqual(result["status"], "WARN")
+
+    def test_9_contact_window_without_two_stance_samples_fails_or_warns(self):
+        doc, binary = character()
+        b = Builder()
+        b.binary, b.views, b.accessors = binary, doc["bufferViews"], doc["accessors"]
+        frames = FRAMES["idle"]
+        alternating = [[0.1 if f % 2 else -0.1, 0.95 if f % 2 == 0 else 1.0, 0.0]
+                        for f in range(frames + 1)]
+        values = b.accessor(alternating, "VEC3")
+        idle = next(a for a in doc["animations"] if a["name"] == "idle")
+        pelvis = next(i for i, n in enumerate(doc["nodes"]) if n.get("name") == "pelvis")
+        channel = next(c for c in idle["channels"]
+                       if c["target"]["node"] == pelvis and c["target"]["path"] == "translation")
+        idle["samplers"][channel["sampler"]]["output"] = values
+
+        result = validate(doc, b.binary)
+        self.assertTrue(any(m["level"] == "FAIL" and m["check"] == 9 and "unmeasured: only" in m["message"]
+                            for m in result["messages"]), result["messages"])
+        self.assertTrue(any(window["drift_m"] == "unmeasured"
+                            for side in result["clips"]["idle"]["contact_windows"].values()
+                            for window in side))
+        advisory = validate(doc, b.binary, drift_gate=False)
+        self.assertEqual(failures(advisory), [])
+        self.assertTrue(any(m["check"] == 9 and m["level"] == "WARN" and "unmeasured" in m["message"]
+                            for m in advisory["messages"]))
 
     def test_9_start_stop_profile_integrates_piecewise_linear_speed(self):
         self.assertAlmostEqual(vc.Validator.profile_distance([[0, 0], [1, 1.45]], 1, 2), 1.45)
