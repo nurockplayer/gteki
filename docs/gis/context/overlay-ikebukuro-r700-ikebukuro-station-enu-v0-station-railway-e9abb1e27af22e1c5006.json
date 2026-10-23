@@ -1,7 +1,7 @@
 {
-  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3",
+  "run_id": "overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-e9abb1e27af22e1c5006",
   "command": "context-overlay",
-  "policy_version": "context-overlay-v1",
+  "policy_version": "context-overlay-v2",
   "station_id": "ikebukuro",
   "gteki_role": "context",
   "navigation_use": "NOT_FOR_ROUTING",
@@ -20,7 +20,7 @@
     "mode": "station-enu-frame",
     "frame_id": "ikebukuro-station-enu-v0",
     "station_json_path": "stations/ikebukuro/gteki/station.json",
-    "station_json_sha256": "78a46e2e15f45b7aaf0b8d9b402a04d08d8eb024737948755ead8df9be29e43d",
+    "station_origin_sha256": "c387e18e5d90af281a8ec55e479d23fe52bcb394fccaa99b1a237d13ffeea36a",
     "origin_crs": "EPSG:6697"
   },
   "window": {
@@ -38,7 +38,7 @@
     "drape": "none",
     "baked_offset_m": 0,
     "evidence_path": "stations/ikebukuro/gteki/station.json",
-    "evidence_sha256": "78a46e2e15f45b7aaf0b8d9b402a04d08d8eb024737948755ead8df9be29e43d",
+    "evidence_value_sha256": "94c5e6319a416f70ac5b5734482f03f7536b3252d6aa2ed165dbc61d220f53ce",
     "evidence_field": "floors[ordinal 0].renderElevationM"
   },
   "credit": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成",
@@ -153,13 +153,13 @@
   },
   "outputs": {
     "geojson": {
-      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3.geojson",
-      "sha256": "e97700e6b487bef3de66b090249b83694246578f97f81d7f5e075996a5a60fd4",
+      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-e9abb1e27af22e1c5006.geojson",
+      "sha256": "801bed712abbc7641600b9106c046bda8e2b5907fbdccc6167ad5d32d4d09f6e",
       "bytes": 20145
     },
     "glb": {
-      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-70f286365793c8e9acf3.glb",
-      "sha256": "28ae48bc9ea9798587d57a9a6649b3ea0a23119ae1705db7530cd4c0b1bf94ec",
+      "store_path": "out/overlay-ikebukuro-r700-ikebukuro-station-enu-v0-station-railway-e9abb1e27af22e1c5006.glb",
+      "sha256": "584828971ac14f5158f40c0206b46a3f9bc7fc6da0a18d8cc833d14f9f287b0d",
       "bytes": 16728,
       "nodes": [
         "ctx_rail_all",
@@ -180,6 +180,6 @@
       "segments_skipped_zero_length": 0
     }
   },
-  "tool_input_sha256": "d9d46fffddd346e6b13fe668a0bffe706b2002980064dbccc6e28c3b5916bce6",
+  "tool_input_sha256": "bf2953766fccaf620496594f5b3b3870c481796c853392121da64869dcf30aa9",
   "tool_version": "0.1.0"
 }
