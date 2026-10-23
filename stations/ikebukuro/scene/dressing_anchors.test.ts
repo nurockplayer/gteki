@@ -16,7 +16,7 @@ const COMMITTED = join(HERE, "dressing_anchors.json");
 
 type V3 = [number, number, number];
 interface Nosing { position: V3; dir: [number, number]; width_m: number; a: V3; b: V3 }
-interface Flight { id: string; steps: number; rise_m: number; bottom: Nosing; top: Nosing; nosings: number[][] }
+interface Flight { id: string; steps: number; rise_m: number; run_m: number | null; bottom: Nosing; top: Nosing; nosings: number[][] }
 interface Lane { id: string; width_m: number; lower: { position: V3; dir: [number, number]; width_m: number }; upper: { position: V3; dir: [number, number]; width_m: number } }
 interface Anchors {
   schema: string;
@@ -124,6 +124,52 @@ describe("committed dressing_anchors.json", () => {
     }
   });
 
+  it("chains every flight one-to-one: nosings climb strictly, each step links to the next, and no step is modelled twice", () => {
+    const mid = (n: number[]): [number, number] => [(n[0]! + n[2]!) / 2, (n[1]! + n[3]!) / 2];
+    const dup: string[] = [];
+    for (const f of anchors.stair_flights) {
+      const [dx, dy] = f.bottom.dir;
+      // the catalog's acceptance: mean riser 100-220 mm and a tread of at least 200 mm
+      const accepted = f.steps > 1 && f.rise_m * 1000 / (f.steps - 1) >= 100 && f.rise_m * 1000 / (f.steps - 1) <= 220 && f.run_m! >= 0.2;
+      for (let k = 1; k < f.nosings.length; k++) {
+        const [p, q] = [f.nosings[k - 1]!, f.nosings[k]!];
+        expect(q[4], `${f.id} step ${k} climbs`).toBeGreaterThan(p[4]!);
+        const [mp, mq] = [mid(p), mid(q)];
+        const along = (mq[0] - mp[0]) * dx + (mq[1] - mp[1]) * dy;
+        const lateral = Math.abs(-(mq[0] - mp[0]) * dy + (mq[1] - mp[1]) * dx);
+        // the generator's own link limits, for every flight; the plausible band for flights the catalog accepts
+        expect(q[4]! - p[4]!, `${f.id} step ${k} rise`).toBeGreaterThanOrEqual(0.08);
+        expect(q[4]! - p[4]!).toBeLessThanOrEqual(0.3);
+        expect(along, `${f.id} step ${k} run`).toBeGreaterThanOrEqual(0.12);
+        expect(along).toBeLessThanOrEqual(0.6);
+        expect(lateral).toBeLessThanOrEqual(0.2);
+        if (accepted) {
+          expect(q[4]! - p[4]!, `${f.id} step ${k} rise`).toBeGreaterThanOrEqual(0.1);
+          expect(q[4]! - p[4]!).toBeLessThanOrEqual(0.22);
+          expect(along, `${f.id} step ${k} run`).toBeGreaterThanOrEqual(0.2);
+          expect(along).toBeLessThanOrEqual(0.45);
+          expect(lateral).toBeLessThanOrEqual(0.1);
+        }
+      }
+      if (accepted) expect(f.run_m!, `${f.id} mean run`).toBeLessThanOrEqual(0.45);
+    }
+    // no branch: a nosing has exactly one possible successor inside its flight, and the flights share no step
+    const all = anchors.stair_flights.flatMap((f) => f.nosings.map((n) => ({ id: f.id, n })));
+    for (let i = 0; i < all.length; i++) {
+      for (let j = i + 1; j < all.length; j++) {
+        const [a, b] = [all[i]!, all[j]!];
+        const [ma, mb] = [mid(a.n), mid(b.n)];
+        if (Math.abs(a.n[4]! - b.n[4]!) < 0.08 && Math.hypot(ma[0] - mb[0], ma[1] - mb[1]) < 0.06) dup.push(`${a.id}/${b.id}`);
+      }
+    }
+    expect(dup).toEqual([]);
+    // stair040 was two overlapping survey solids (10 + 10 nosings 1-35 mm apart) read as one 19-step flight with a 0.151 m run
+    const s40 = anchors.stair_flights.find((f) => f.id === "stair040")!;
+    expect(s40.steps).toBe(10);
+    expect(s40.run_m!).toBeGreaterThan(0.29);
+    expect(anchors.counts.duplicate_nosings_dropped).toBe(10);
+  });
+
   it("puts every stair nosing line on stairs_ramps geometry and every landing on transport geometry", () => {
     const tris = glbTriangles(join(STATION, "gteki", "assets", "ikebukuro_b1.glb"), ["stairs_ramps", "transport"]);
     const stairPoints: V3[] = anchors.stair_flights.flatMap((f) => [
@@ -187,6 +233,33 @@ describe.skipIf(!python)("build_dressing_anchors.py", () => {
       expect(l.upper.position).toEqual([8, 0.6, 4]);
       expect(l.width_m).toBeCloseTo(1, 3);
       expect(l.lower.dir).toEqual([1, 0]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("chains a stair modelled twice (two overlapping solids, different pitch) into one one-to-one flight", () => {
+    const dir = mkdtempSync(join(tmpdir(), "gt-anchors-"));
+    try {
+      fixture(dir);
+      const extract = JSON.parse(readFileSync(join(dir, "extract.json"), "utf8"));
+      const quad = (a: V3, b: V3, c: V3, d: V3) => [{ outer: [a, b, c] }, { outer: [a, c, d] }];
+      // a second body of the same stair, 20 mm to the side and 6-18 mm higher (risers 0.156 m): the same three steps
+      const zs = [0.156, 0.312, 0.468];
+      const polys = zs.flatMap((z, k) => [
+        ...quad([k * 0.3, 0.02, z - 0.156], [k * 0.3, 2.02, z - 0.156], [k * 0.3, 2.02, z], [k * 0.3, 0.02, z]),
+        ...quad([k * 0.3, 0.02, z], [k * 0.3 + 0.3, 0.02, z], [k * 0.3 + 0.3, 2.02, z], [k * 0.3, 2.02, z]),
+      ]);
+      extract.installations[0].polygons.push(...polys);
+      writeFileSync(join(dir, "extract.json"), JSON.stringify(extract));
+      const r = run(dir, join(dir, "extract.json"), join(dir, "station.json"), join(dir, "a.json"));
+      expect(r.status, r.stderr).toBe(0);
+      const out = JSON.parse(readFileSync(join(dir, "a.json"), "utf8")) as Anchors;
+      expect(out.counts).toMatchObject({ stair_flights: 1, stair_nosings: 3, duplicate_nosings_dropped: 3 });
+      const f = out.stair_flights[0]!;
+      expect(f.steps).toBe(3);
+      expect(f.nosings.map((n) => n[4])).toEqual([0.15, 0.3, 0.45]); // one surveyed representation, nothing averaged
+      expect(f.nosings.map((n) => n[1])).toEqual([2, 2, 2]); // the original body's nosings (y 0 to 2), not the shifted twin's
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
