@@ -22,6 +22,8 @@ The hashed `portal-terms` snapshot (東京都オープンデータ利用規約, 
 
 The CC BY 4.0 deed snapshot (`cc-by-4-deed-ja`, SHA-256 `cf5b3d5b…`) supplies the attribution, licence-link and change-indication conditions.
 
+Verdicts below are under the dataset-level grant. The portal terms exclude content with its own individual rules (「個別に適用されるコンテンツを除き」); none is recorded for this dataset or resource.
+
 | Item | Verdict | Evidence |
 | --- | --- | --- |
 | Commercial use | YES | portal-terms: 「商用利用も可能です」; CC BY 4.0 |
