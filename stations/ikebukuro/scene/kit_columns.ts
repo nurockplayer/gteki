@@ -66,10 +66,18 @@ export interface ColumnPlacement {
 }
 
 export interface ColumnPieceSpec {
-  /** Plan footprint of the piece (m): `pitch_m` in kit.json. */
+  /** Plan footprint of the piece (m): `pitch_m` in kit.json (includes the corner guards / trim). */
   footprint_m: number;
+  /** Width of the visible body above the trim (m): `body_m` in kit.json; the sleeve is scaled from this. */
+  body_m: number;
+  /** Corner radius of a square body (m): `corner_radius_m` in kit.json; 0 for a round piece. */
+  corner_radius_m: number;
   height_m: number;
 }
+
+/** How far a rounded corner of radius r pulls the body's corner in along each axis (m), in the piece's own frame: a
+ *  point (a, a) is inside the rounded square of half-width h only while a <= h - r(1 - 1/sqrt 2). */
+export const cornerInset = (spec: Pick<ColumnPieceSpec, "corner_radius_m">) => spec.corner_radius_m * (1 - Math.SQRT1_2);
 
 /** Pure: the sleeve per kit-matched column, in file order. A column whose piece is not in `pieces` is left out. */
 export function columnPlacements(columns: readonly Column[], pieces: Readonly<Record<string, ColumnPieceSpec>>): ColumnPlacement[] {
@@ -87,9 +95,11 @@ export function columnPlacements(columns: readonly Column[], pieces: Readonly<Re
       y: c.centre[1],
       z: c.base_z,
       yawDeg: c.rotation_deg,
-      sx: (w + 2 * SLEEVE_MARGIN_M) / spec.footprint_m,
+      // The piece's half-width minus the corner inset maps onto the column's half-width plus the margin, so the corner
+      // (the farthest point of a square or rect column) lands inside the rounded body even when sx and sz differ.
+      sx: (w / 2 + SLEEVE_MARGIN_M) / (spec.body_m / 2 - cornerInset(spec)),
       sy: Math.min(1, (c.height - SLEEVE_TOP_GAP_M) / spec.height_m),
-      sz: (d + 2 * SLEEVE_MARGIN_M) / spec.footprint_m,
+      sz: (d / 2 + SLEEVE_MARGIN_M) / (spec.body_m / 2 - cornerInset(spec)),
     });
   }
   return out;
@@ -100,7 +110,9 @@ export function columnPieces(kit: Pick<KitManifest, "pieces">): Record<string, C
   const out: Record<string, ColumnPieceSpec> = {};
   for (const [id, p] of Object.entries(kit.pieces)) {
     const h = (p as { height_m?: number }).height_m;
-    if ((COLUMN_USES as readonly string[]).includes(p.use) && typeof h === "number") out[id] = { footprint_m: p.pitch_m ?? 0, height_m: h };
+    const q = p as { body_m?: number; corner_radius_m?: number };
+    if ((COLUMN_USES as readonly string[]).includes(p.use) && typeof h === "number")
+      out[id] = { footprint_m: p.pitch_m ?? 0, body_m: q.body_m ?? p.pitch_m ?? 0, corner_radius_m: q.corner_radius_m ?? 0, height_m: h };
   }
   return out;
 }

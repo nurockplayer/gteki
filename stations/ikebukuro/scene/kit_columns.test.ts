@@ -12,7 +12,7 @@ import columnsJson from "./columns.json";
 import kitManifest from "./kit/kit.json";
 import { type KitManifest, KIT_TILE_M, pieceUri } from "./kit.ts";
 import {
-  type Column, type ColumnsFile, SLEEVE_MARGIN_M, SLEEVE_TOP_GAP_M, columnPieces, columnPlacements, loadColumnKit,
+  type Column, type ColumnsFile, SLEEVE_MARGIN_M, SLEEVE_TOP_GAP_M, cornerInset, columnPieces, columnPlacements, loadColumnKit,
 } from "./kit_columns.ts";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -30,8 +30,9 @@ const pieces = columnPieces(kit);
 describe("manifest entries and the copied files", () => {
   it("names both column pieces with the plan footprint and height their sleeves scale from (library bounds +-0.305 x 2.8 m)", () => {
     expect(Object.keys(pieces).sort()).toEqual([ROUND, SQUARE]);
-    expect(pieces[SQUARE]).toEqual({ footprint_m: 0.61, height_m: 2.8 });
-    expect(pieces[ROUND]).toEqual({ footprint_m: 0.61, height_m: 2.8 });
+    // footprint includes the trim; the sleeve scales from the visible 0.60 m body (rounded 3 cm corners on the square one)
+    expect(pieces[SQUARE]).toEqual({ footprint_m: 0.61, body_m: 0.6, corner_radius_m: 0.03, height_m: 2.8 });
+    expect(pieces[ROUND]).toEqual({ footprint_m: 0.61, body_m: 0.6, corner_radius_m: 0, height_m: 2.8 });
     for (const tier of ["assets/library/manifest.json", "assets/library/mobile/manifest.json"]) {
       const lib = JSON.parse(fs.readFileSync(path.join(REPO, tier), "utf8")).assets as { id: string; bounds_m: { min: number[]; max: number[] } }[];
       for (const id of [SQUARE, ROUND]) {
@@ -102,13 +103,27 @@ describe("placements follow the extracted footprints", () => {
       const p = placed[i]!;
       const w = c.shape === "round" ? c.diameter! : c.width;
       const d = c.shape === "round" ? c.diameter! : c.depth;
-      expect(p.sx * 0.61, c.id).toBeCloseTo(w + 2 * SLEEVE_MARGIN_M, 9);
-      expect(p.sz * 0.61, c.id).toBeCloseTo(d + 2 * SLEEVE_MARGIN_M, 9);
+      const reach = 0.3 - cornerInset(pieces[c.kit!]!); // the body's usable half-width
+      expect(p.sx * reach, c.id).toBeCloseTo(w / 2 + SLEEVE_MARGIN_M, 9);
+      expect(p.sz * reach, c.id).toBeCloseTo(d / 2 + SLEEVE_MARGIN_M, 9);
       expect(p.sy, c.id).toBeLessThanOrEqual(1);
       expect(p.sy * 2.8, c.id).toBeLessThanOrEqual(c.height - SLEEVE_TOP_GAP_M + 1e-9);
       expect(p.sy, c.id).toBeGreaterThan(0.69); // the 1.96 m minimum height: no squashed trims
       expect(p.sx, c.id).toBeGreaterThan(0.6);
       expect(p.sx, c.id).toBeLessThan(1.8);
+    }
+  });
+
+  it("every square or rect PLATEAU corner, plus the 2 cm margin, sits inside the sleeve's rounded body (not just its bounds)", () => {
+    for (const [i, c] of matched.entries()) {
+      if (c.shape === "round") continue;
+      const p = placed[i]!, spec = pieces[c.kit!]!, h = spec.body_m / 2, r = spec.corner_radius_m;
+      // the column's corner plus margin, back in the piece's unscaled frame
+      const x = (c.width / 2 + SLEEVE_MARGIN_M) / p.sx, z = (c.depth / 2 + SLEEVE_MARGIN_M) / p.sz;
+      expect(x, c.id).toBeLessThanOrEqual(h + 1e-9);
+      expect(z, c.id).toBeLessThanOrEqual(h + 1e-9);
+      const ox = Math.max(0, x - (h - r)), oz = Math.max(0, z - (h - r));
+      expect(Math.hypot(ox, oz), c.id).toBeLessThanOrEqual(r + 1e-9);
     }
   });
 
@@ -124,10 +139,11 @@ describe("placements follow the extracted footprints", () => {
     const out = columnPlacements(cols, pieces);
     expect(out.map((p) => p.column)).toEqual(["a", "b", "c"]);
     expect(out[0]).toMatchObject({ x: 10, y: 20, z: -4.5, yawDeg: 100, piece: SQUARE });
-    expect(out[0]!.sx).toBeCloseTo(0.74 / 0.61, 12);
-    expect(out[0]!.sz).toBeCloseTo(0.54 / 0.61, 12);
+    const reach = 0.3 - 0.03 * (1 - Math.SQRT1_2); // the square piece's half-width, less its rounded corner
+    expect(out[0]!.sx).toBeCloseTo(0.37 / reach, 12);
+    expect(out[0]!.sz).toBeCloseTo(0.27 / reach, 12);
     expect(out[0]!.sy).toBe(1); // 3 m column, 2.8 m piece: not stretched
-    expect(out[1]!.sx).toBeCloseTo(0.74 / 0.61, 12);
+    expect(out[1]!.sx).toBeCloseTo(0.74 / 0.6, 12);
     expect(out[1]!.sz).toBe(out[1]!.sx);
     expect(out[1]!.sy).toBeCloseTo(2.79 / 2.8, 12); // a 2.8 m column: 1 cm short of the cap
     expect(out[2]!.sy).toBeCloseTo(2.09 / 2.8, 12); // a 2.1 m column: squashed to fit

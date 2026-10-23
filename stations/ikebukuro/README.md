@@ -182,7 +182,7 @@ soup. `python3 -I pipeline/extract_columns.py` (from `build/ubld_enu.json`; same
 by shape (welded components that are vertical prisms, 1.5 m or taller, up to 3 m across) and writes `scene/columns.json`
 with centre, footprint (square, rect, round or polygon), rotation, base and top height, level band and the source
 installation and polygon ids, plus a `kit` piece id or `null` with a reason. `scene/kit_columns.ts` scales
-`gteki_column_square_600` / `gteki_column_round_d600` onto the measured footprint plus 2 cm on every side (so it stands
+`gteki_column_square_600` / `gteki_column_round_d600` onto the measured footprint plus 2 cm on every side (scaled from the piece's visible 0.60 m body, allowing for the square piece's rounded corners so a column corner never pokes through) (so it stands
 clear of the PLATEAU faces and does not z-fight), never stretches it taller than the 2.8 m piece and stops 1 cm under the
 column top (so on the 2 square columns over 3.05 m and 24 between 2.8 and 3.05 m the PLATEAU column shows above the sleeve; the
 library's `_h3200` variant is round only and no kit-matched round column is taller than 2.9 m). 281 columns are found; 145 get a
