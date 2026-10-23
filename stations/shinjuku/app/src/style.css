@@ -5,7 +5,7 @@
   --line: rgba(220, 235, 233, 0.17);
   --text: #f5f3eb;
   --muted: #bac7c6;
-  --accent: #b6007a;
+  --accent: #b0186f; /* GTEki-chosen Oedo magenta, not official; keep in sync with OEDO_MAGENTA in scene/palette.ts (OD-29) */
   --accent-2: #f0d8b2;
   --warn: #f1c477;
   --safe-b: env(safe-area-inset-bottom, 0px);

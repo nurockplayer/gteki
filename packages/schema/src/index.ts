@@ -296,6 +296,12 @@ export interface Asset {
   id: string;
   /** Path relative to stations/<id>/gteki/ (no "..", no scheme). */
   uri: string;
+  /**
+   * Optional lighter-weight variant of `uri` (same scene, smaller textures; e.g. a `PROFILE=mobile` kit
+   * bundle). The explorer loads it instead of `uri` on the low quality tier. Same rules as `uri`; it
+   * shares the asset's `sourceIds` and rights, and a production build publishes it as a declared file.
+   */
+  uriMobile?: string;
   format: "glb";
   floorIds: string[];
   /** Column-major 4x4 from asset space to the renderer frame; omitted = identity (authored in renderer frame). */
@@ -326,8 +332,14 @@ export interface DataFile {
   /** True when GTEki generated or modified the data. */
   modified: boolean;
   /**
-   * How it was made, naming the generating script. Required and non-empty when `modified` is true or when
-   * any cited source is facts-only (the data then states facts without reproducing the source; #186/#26).
+   * True when GTEki wrote the file itself (config, not derived from any source). Then sourceIds must be empty
+   * and derivation must say so; it is never credited.
+   */
+  authored?: boolean;
+  /**
+   * How it was made, naming the generating script. Required and non-empty when `modified` is true, when any
+   * cited source is facts-only (the data then states facts without reproducing the source; #186/#26), or when
+   * the file is `authored`.
    */
   derivation?: string;
 }

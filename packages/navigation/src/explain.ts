@@ -28,6 +28,12 @@ export interface NoPathOptionCause {
   evidence: NoPathEvidence | null;
   /** False when some edge of the route could not be checked (not in the edge list), so the refusal can't be fully attributed. */
   complete: boolean;
+  /**
+   * Present (true) only when the station has no data for this option at all: no edge in the bundle records the
+   * fact the option needs (step-free: a known `wheelchair`; strict hours: any `hours`). Then no route can pass
+   * with the option on, whatever the edges: that is missing data, not a known barrier. Absent otherwise.
+   */
+  noData?: true;
 }
 
 export interface NoPathEndpoint {
@@ -39,8 +45,8 @@ export interface NoPathEndpoint {
 export type NoPathCause =
   /** Relaxing each listed option alone finds a route (every one is sufficient on its own). */
   | { kind: "option"; options: NoPathOptionCause[] }
-  /** No single option is enough, but relaxing all of `options` together finds a route. */
-  | { kind: "combination"; options: NoPathOption[] }
+  /** No single option is enough, but relaxing all of `options` together finds a route. `noData`: those of them the station has no data for at all (absent when none). */
+  | { kind: "combination"; options: NoPathOption[]; noData?: NoPathOption[] }
   /** `unpaid_only` refuses the origin and/or destination POI itself (not known to be outside the paid area), whatever the passages are. */
   | { kind: "endpoint"; ends: NoPathEndpoint[] }
   /** Even with every option in `relaxed` off (none when no option was on) there is no route: the verified graph does not connect the points. */
@@ -56,6 +62,22 @@ function enabledOptions(profile: RouteProfile): NoPathOption[] {
   if (profile.hours === "require_known") options.push("strictHours");
   if (profile.avoidModes && profile.avoidModes.length > 0) options.push("avoidModes");
   return options;
+}
+
+/**
+ * Whether the whole station lacks the data `option` filters on, so it can never accept an edge (mirrors the
+ * router's rules). Only step-free and strict hours are judged. An edge without `accessEvidence` has every access
+ * flag UNKNOWN, so it contributes no `wheelchair` fact.
+ */
+function stationHasNoData(option: NoPathOption, edges: Iterable<Edge>): boolean {
+  if (option !== "stepFree" && option !== "strictHours") return false;
+  let any = false;
+  for (const e of edges) {
+    if (option === "stepFree" ? e.accessEvidence !== null && e.wheelchair !== null : e.hours !== null) return false;
+    any = true;
+  }
+  // An edge list that could not be read says nothing about the station.
+  return any;
 }
 
 /** The profile with these options relaxed (everything else, including `at`, `today` and closures, kept). */
@@ -100,7 +122,7 @@ function causeOf(option: NoPathOption, route: RouteResult, profile: RouteProfile
     if (!router.isTraversable(edge, relaxed)) { complete = false; continue; } // refusal not down to this option
     if (refusesOnKnownFact(option, edge)) known = true; else unknown = true;
   }
-  return { option, evidence: known && unknown ? "mixed" : known ? "known" : unknown ? "unknown" : null, complete };
+  return { option, evidence: known && unknown ? "mixed" : known ? "known" : unknown ? "unknown" : null, complete, ...(stationHasNoData(option, edges.values()) ? { noData: true as const } : {}) };
 }
 
 export interface NoPathContext {
@@ -133,7 +155,10 @@ export function explainNoPathWith(attempt: (profile: RouteProfile) => RouteResul
   if (limited) return { kind: "unknown" };
   if (enabled.length === 1) return { kind: "none", relaxed: enabled };
   const all = attempt(relax(profile, enabled));
-  if (all.ok) return { kind: "combination", options: enabled };
+  if (all.ok) {
+    const noData = enabled.filter((o) => stationHasNoData(o, edges.values()));
+    return { kind: "combination", options: enabled, ...(noData.length > 0 ? { noData } : {}) };
+  }
   return all.reason === "search_limit" ? { kind: "unknown" } : { kind: "none", relaxed: enabled };
 }
 

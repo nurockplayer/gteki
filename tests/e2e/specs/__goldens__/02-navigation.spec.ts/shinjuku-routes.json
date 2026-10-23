@@ -42,7 +42,7 @@
         "Turn left, then left again, ~21 m. After ~17 m, continue straight through the junction.",
         "Turn right, ~6 m",
         "Take the escalator down to B6",
-        "Arrive at destination"
+        "Arrive at destination. Data for the Toei Oedo Line station (E27) only. Facilities of JR, Keio, Odakyu, Tokyo Metro, the Toei Shinjuku Line and other operators or lines are not modelled."
       ],
       "steps": [
         "<e:b503c7d9461a4f239a60bbd4011022e9",
@@ -194,7 +194,7 @@
         "Turn left, then left again, ~17 m",
         "Turn right, ~45 m. After ~24 m, continue straight through the junction.",
         "Turn left, then right, ~5 m, then turn left",
-        "Arrive at destination"
+        "Arrive at destination. Position is a representative point of the toilet space, not the door."
       ],
       "steps": [
         "<e:45ebdab487134925b3b47cd29bffb99c",
@@ -273,7 +273,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showNo verified route with \"Step-free\" on. The connection found uses stairs, escalators or passages not step-free.Turn off \"Step-free\""
+      "uiCard": "No route confirmed in the surveyed dataNo route confirmed in the surveyed data with \"Step-free\" on. The connection found uses stairs, escalators or passages not step-free.Turn off \"Step-free\""
     }
   },
   "SN1": {
@@ -288,7 +288,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showThe destination is inside the ticket gates. \"Outside gates only\" only routes between points known to be outside the gates.Turn off \"Outside gates only\""
+      "uiCard": "No route confirmed in the surveyed dataThe destination is inside the ticket gates. \"Outside gates only\" only routes between points known to be outside the gates.Turn off \"Outside gates only\""
     }
   },
   "SN2": {
@@ -303,7 +303,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showThe destination is inside the ticket gates. \"Outside gates only\" only routes between points known to be outside the gates.Turn off \"Outside gates only\""
+      "uiCard": "No route confirmed in the surveyed dataThe destination is inside the ticket gates. \"Outside gates only\" only routes between points known to be outside the gates.Turn off \"Outside gates only\""
     }
   },
   "SN3": {
@@ -318,7 +318,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showNo verified route with \"Verified hours only\" on. The connection found uses passages whose hours are not verified.Turn off \"Verified hours only\""
+      "uiCard": "No route confirmed in the surveyed dataNo route confirmed in the surveyed data with \"Only places with listed hours\" on. This station has no opening-hours data.Turn off \"Only places with listed hours\""
     }
   },
   "SN4": {
@@ -330,7 +330,7 @@
     "result": {
       "ok": false,
       "reason": "start_equals_goal",
-      "uiCard": "No verified route to showStart and destination are the same."
+      "uiCard": "No route confirmed in the surveyed dataStart and destination are the same."
     }
   }
 }

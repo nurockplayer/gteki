@@ -7,13 +7,18 @@ import polygonClipping from "polygon-clipping";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import type { StationBundle } from "@gteki/schema";
 import { createRouter } from "@gteki/navigation";
-import { buildLayout, centroid, pointInRings, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
+import { centroid, cutWallsByVoids, pointInRings, soffitHeight, STREET_PAD, WalkWorld, type Layout, type Plan, type Run, type Soffit, type WallSeg, type XY, type XYZ } from "./layout.ts";
 import { ceilingTexture, signTexture, tactileTexture, tileTextures, wallTexture, SIGN_ROW_HEIGHT, type SignIcon } from "./textures.ts";
-import { protectFareAndAccess, gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
+import { prepareLayout } from "./build-cache.ts";
+import { gateMachines, accessSigns, ACCESS_WORDING } from "./fare-fence.ts";
 import surfaceJson from "../data/surface.json";
+import bakedSurface from "../data/surface-baked.ts";
 import { buildSurface, surfaceWalls, trimSurfaceCeilingFixtures, type SurfaceData } from "./surface.ts";
+import { withSurfaceMemo } from "./surface-layout.ts";
+import { surfaceSeed } from "./surface-bake.ts";
 
-export const OEDO_MAGENTA = "#b6007a"; // public line colour of the Oedo Line
+import { OEDO_MAGENTA } from "./palette.ts";
+export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
 
@@ -36,6 +41,16 @@ export interface BuiltStation {
 
 export interface BuildOptions {
   quality: "low" | "high";
+  /** Reuse the built layout and fences across builds of equal bundle and plan (the shared explorer's
+   * reopen). Output is byte-identical; see build-cache.ts. */
+  reuseLayout?: boolean;
+  /** Default true, and buildScene keeps it true: the restricted-area input fingerprint (~90 ms cold) is the only
+   * load-time guard against a stale generated fence table; root CI (`root-test`, #148) also fails on one.
+   * false is for tests that exercise the unchecked path. */
+  verifyRestrictedInput?: boolean;
+  /** false derives the street layer's polygons instead of reading data/surface-baked.ts. Default true; the
+   * baked table is used only if it was made from exactly this surface, bundle and plan (surface-bake.ts). */
+  useBakedSurface?: boolean;
 }
 
 // ---------------------------------------------------------------- helpers
@@ -111,6 +126,142 @@ function runPanel(w: WallSeg, r: Run): WallSeg {
   const zAt = (p: XY) => r.a.z + (r.b.z - r.a.z) * ((p.x - r.a.x) * dx + (p.y - r.a.y) * dy) / l2;
   const a = zAt(w.a), b = zAt(w.b);
   return { ...w, surfaceBase: { a, b }, profile: { bottomA: a - 0.12, bottomB: b - 0.12, topA: a + 0.9, topB: b + 0.9 } };
+}
+
+/** #49: generic finish for an unmodelled void, not a surveyed station reproduction.
+ * These panels belong only to the visible root; never append them to the layout/wall lists.
+ */
+export function escalatorShellGeometry(layout: Layout, bundle: StationBundle): { sides: THREE.BufferGeometry | null; soffits: THREE.BufferGeometry | null } {
+  const polygon = (rings: XY[][]): polygonClipping.Polygon => rings.map((ring) => ring.map((p) => [p.x, p.y]));
+  const ringsOf = (poly: polygonClipping.Polygon): XY[][] => poly.map((ring) => ring.map(([x, y]) => ({ x: x!, y: y! })));
+  const strip = (r: Run, margin: number, extend: number): XY[][] => {
+    const length = Math.hypot(r.b.x - r.a.x, r.b.y - r.a.y);
+    const u = { x: (r.b.x - r.a.x) / length, y: (r.b.y - r.a.y) / length };
+    const at = (p: XY, along: number, side: number) => ({ x: p.x + u.x * along - u.y * side, y: p.y + u.y * along + u.x * side });
+    const half = r.width / 2 + margin;
+    return [[at(r.a, -extend, -half), at(r.b, extend, -half), at(r.b, extend, half), at(r.a, -extend, half)]];
+  };
+  const pitched = (r: Run, margin: number, extend: number): Soffit => {
+    const dx = r.b.x - r.a.x, dy = r.b.y - r.a.y, l2 = dx * dx + dy * dy;
+    return { spaceId: `visual-escalator-shell:${r.edgeId}`, floorId: "", kind: "shaft", fare: null, category: "ceiling",
+      rings: strip(r, margin, extend), z: r.a.z, origin: r.a,
+      slope: { x: dx * (r.b.z - r.a.z) / l2, y: dy * (r.b.z - r.a.z) / l2 } };
+  };
+  // Reserve the complete existing walking footprints, including holes and sloping runs.
+  // 2.4 m leaves headroom for people and fixtures; the sides also clear the floor thickness.
+  const surfaces = [...layout.levels.flatMap((lv) => lv.slabs), ...layout.pads, ...layout.linkStrips, ...layout.streetPads,
+    ...layout.runs.map((r) => pitched(r, 0.04, 0.08))];
+  const voids = surfaces.map((s) => {
+    const points = s.rings.flat();
+    return { rings: s.rings, bottom: (p: XY) => soffitHeight(s, p) - 0.2, top: (p: XY) => soffitHeight(s, p) + 2.4,
+      minX: Math.min(...points.map((p) => p.x)), maxX: Math.max(...points.map((p) => p.x)),
+      minY: Math.min(...points.map((p) => p.y)), maxY: Math.max(...points.map((p) => p.y)) };
+  });
+  // Lift shafts have no walking slab across the opening. Preserve their vertical passages too.
+  const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
+  for (const e of bundle.edges.filter((e) => e.mode === "elevator")) {
+    const a = nodes.get(e.from)!.position, b = nodes.get(e.to)!.position;
+    const minX = Math.min(a.x, b.x) - 0.9, maxX = Math.max(a.x, b.x) + 0.9;
+    const minY = Math.min(a.y, b.y) - 0.9, maxY = Math.max(a.y, b.y) + 0.9;
+    const za = layout.nodeZ.get(e.from)!, zb = layout.nodeZ.get(e.to)!;
+    voids.push({ rings: [[{ x: minX, y: minY }, { x: maxX, y: minY }, { x: maxX, y: maxY }, { x: minX, y: maxY }]],
+      bottom: () => Math.min(za, zb) - 0.2, top: () => Math.max(za, zb) + 2.4, minX, maxX, minY, maxY });
+  }
+  // Clip arbitrary (possibly holed) roof polygons to an affine height half-plane.
+  const heightMask = (polys: polygonClipping.MultiPolygon, value: (p: XY) => number): polygonClipping.MultiPolygon => {
+    if (!polys.length) return [];
+    const points = polys.flat(2);
+    const xs = points.map((p) => p[0]), ys = points.map((p) => p[1]);
+    const x0 = Math.min(...xs) - 1, x1 = Math.max(...xs) + 1, y0 = Math.min(...ys) - 1, y1 = Math.max(...ys) + 1;
+    const rect = [{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }];
+    const mask: XY[] = [];
+    for (let i = 0; i < rect.length; i++) {
+      const a = rect[i]!, b = rect[(i + 1) % rect.length]!, va = value(a), vb = value(b);
+      if (va >= 0) mask.push(a);
+      if (va < 0 && vb > 0 || va > 0 && vb < 0) {
+        const t = va / (va - vb);
+        mask.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+      }
+    }
+    return mask.length < 3 ? [] : polygonClipping.intersection(polys, polygon([mask]));
+  };
+  // Mirror finishUnderground's streetUnderside without changing its bake fingerprint.
+  // Leave 1 mm below it so Float32 vertices remain strictly underground.
+  const streetLimit = -0.18 - 0.001;
+  const existingRoofs = [...layout.levels.flatMap((lv) => lv.ceilings), ...layout.soffits];
+  const walls: { wall: WallSeg; covered: XY[][][] }[] = [], roofs: THREE.BufferGeometry[] = [];
+  for (const r of layout.runs.filter((r) => r.mode === "escalator")) {
+    // Outside the truss (+0.15 m) and balustrade (+0.08 m). The 0.6 m end overlap
+    // joins the inclined finish to landing ceilings without closing either run mouth.
+    const roof = pitched(r, 0.45, 0.6);
+    roof.z += 3.4;
+    // Existing finish wins wherever its footprint covers the shell and its
+    // affine underside is at or below the shell top. Remove the side there too:
+    // otherwise its upper strip can become the first drawn roof seen by the camera.
+    let panels: polygonClipping.MultiPolygon = [polygon(roof.rings)];
+    const covered: XY[][][] = [];
+    for (const existing of existingRoofs) {
+      let cut = polygonClipping.intersection([polygon(roof.rings)], polygon(existing.rings));
+      cut = heightMask(cut, (p) => soffitHeight(roof, p) - soffitHeight(existing, p));
+      if (!cut.length) continue;
+      // Keep the existing footprint for side cutting: intersecting it with the
+      // shell strip would put both side walls exactly on the cutter boundary.
+      covered.push(...heightMask([polygon(existing.rings)], (p) => soffitHeight(roof, p) - soffitHeight(existing, p)).map(ringsOf));
+      panels = polygonClipping.difference(panels, cut);
+    }
+    panels = heightMask(panels, (p) => streetLimit - soffitHeight(roof, p));
+    const ring = roof.rings[0]!;
+    for (const [a, b] of [[ring[0]!, ring[1]!], [ring[3]!, ring[2]!]]) {
+      const topA = soffitHeight(roof, a!), topB = soffitHeight(roof, b!);
+      walls.push({ wall: { a: a!, b: b!, side: 1, kind: "wall", zMin: Math.min(topA, topB) - 4.5, zMax: Math.max(topA, topB),
+        profile: { bottomA: topA - 4.5, bottomB: topB - 4.5, topA, topB } }, covered });
+    }
+    const points = roof.rings.flat();
+    const minX = Math.min(...points.map((p) => p.x)), maxX = Math.max(...points.map((p) => p.x));
+    const minY = Math.min(...points.map((p) => p.y)), maxY = Math.max(...points.map((p) => p.y));
+    for (const v of voids) {
+      if (v.maxX < minX || v.minX > maxX || v.maxY < minY || v.minY > maxY) continue;
+      let cut = polygonClipping.intersection(panels, polygon(v.rings));
+      cut = heightMask(cut, (p) => soffitHeight(roof, p) - v.bottom(p));
+      cut = heightMask(cut, (p) => v.top(p) - soffitHeight(roof, p));
+      if (cut.length) panels = polygonClipping.difference(panels, cut);
+    }
+    for (const panel of panels) roofs.push(soffitGeometry({ ...roof, rings: ringsOf(panel) }));
+  }
+  const sides: THREE.BufferGeometry[] = [];
+  for (const { wall, covered } of walls) {
+    const dx = wall.b.x - wall.a.x, dy = wall.b.y - wall.a.y, length = Math.hypot(dx, dy);
+    const u = { x: dx / length, y: dy / length };
+    const along = (p: XY) => (p.x - wall.a.x) * u.x + (p.y - wall.a.y) * u.y;
+    const roofVoids = covered.map((rings) => ({ rings, bottom: () => wall.zMin - 1, top: () => wall.zMax + 1 }));
+    const pieces = cutWallsByVoids([wall], [...voids, ...roofVoids]).map((w): polygonClipping.Polygon => {
+      const p = w.profile!;
+      return [[[along(w.a), p.bottomA], [along(w.b), p.bottomB], [along(w.b), p.topB], [along(w.a), p.topA]]];
+    });
+    if (!pieces.length) continue;
+    // The physical wall cutter splits into conservative height bands. Union those coplanar
+    // pieces for rendering, removing subdivision vertices rather than retaining thousands of quads.
+    const panels = heightMask(polygonClipping.union(pieces[0]!, ...pieces.slice(1)), (p) => streetLimit - p.y);
+    for (const poly of panels) {
+      const rings = ringsOf(poly).map((closed) => {
+        const ring = closed.slice(0, -1); // polygon-clipping repeats the first vertex
+        return ring.filter((p, i) => {
+          const a = ring[(i + ring.length - 1) % ring.length]!, b = ring[(i + 1) % ring.length]!;
+          return Math.abs((p.x - a.x) * (b.y - p.y) - (p.y - a.y) * (b.x - p.x)) > 1e-7;
+        });
+      });
+      const geo = new THREE.ShapeGeometry(shapeFromRings(rings));
+      const pos = geo.attributes.position!, uv = geo.attributes.uv!;
+      for (let i = 0; i < pos.count; i++) {
+        const s = pos.getX(i), z = pos.getY(i);
+        pos.setXYZ(i, wall.a.x + u.x * s, z, -(wall.a.y + u.y * s));
+        uv.setXY(i, s / 2.4, z / 3.2);
+      }
+      geo.computeVertexNormals();
+      sides.push(geo);
+    }
+  }
+  return { sides: merged(sides), soffits: merged(roofs) };
 }
 
 /** Collision keeps short conservative height bands; rendering can join collinear panels. */
@@ -303,8 +454,8 @@ function cylAlong(a: THREE.Vector3, b: THREE.Vector3, r: number, seg = 8): THREE
 
 // ---------------------------------------------------------------- main
 export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptions): BuiltStation {
-  const layout = buildLayout(bundle, plan);
-  const protection = protectFareAndAccess(layout, plan, bundle);
+  // `let`, not `const`: both are cleared before returning (see the end of this function).
+  let { layout, protection } = prepareLayout(bundle, plan, { reuse: opts.reuseLayout, verifyGeneratedInput: opts.verifyRestrictedInput });
   const root = new THREE.Group();
   root.name = "shinjuku-e27";
   const disposables: { dispose(): void }[] = [];
@@ -515,6 +666,14 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   }
 
   // ---- stairs & escalators
+  const shell = escalatorShellGeometry(layout, bundle);
+  for (const [geo, material, name] of [[shell.sides, mat.wall, "escalator-shell-sides"], [shell.soffits, mat.ceiling, "escalator-shell-soffits"]] as const) {
+    if (!geo) continue;
+    const mesh = new THREE.Mesh(track(geo), material);
+    mesh.name = name;
+    mesh.receiveShadow = true;
+    root.add(mesh);
+  }
   const escalators: BuiltStation["escalators"] = [];
   {
     const stairGeos: THREE.BufferGeometry[] = [...fasciaGeos];
@@ -793,11 +952,14 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   }
 
   // ---- wayfinding signs from the verified graph
-  const signs = buildSigns(bundle, layout, root, track);
+  const signs = buildSigns(bundle, layout, root, track, opts.quality);
   addWallBackFaces(root, mat.wall, track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
-  mergeRootFinishes(root, [mat.steel, mat.glass], track, true);
-  mergeRootFinishes(root, [mat.darkSteel, mat.gateOk, mat.accent], track);
+  // Batch names say what is inside. The steel batch is the stair handrails and brackets, escalator trusses and
+  // skirts, fare/access fence rails and posts, lift-portal door finishes and level trim: ~50k triangles in all,
+  // of which the portals are only ~650 (#72). The batch used to inherit the name "elevator-portal:finish".
+  mergeRootFinishes(root, [[mat.steel, "static-steel-finishes"], [mat.glass, "static-glass-finishes"]], track, true);
+  mergeRootFinishes(root, [[mat.darkSteel, "static-dark-steel-finishes"], [mat.gateOk, "static-gate-ok-finishes"], [mat.accent, "static-accent-finishes"]], track);
   installTightCulling(root);
 
   // ---- collision world
@@ -1068,9 +1230,14 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   update(0, 0);
 
   // W2 surface hook: context adds obstacles only; existing pads remain the walk limit.
-  const surface = buildSurface(surfaceJson as SurfaceData, layout, { ...opts, bundle });
+  // The street layer and its walls ask for the same polygon derivations; compute each once (see surface-layout.ts).
+  const seed = opts.useBakedSurface === false ? null : surfaceSeed(bakedSurface, surfaceJson as SurfaceData, layout, bundle, plan);
+  const { surface, surfaceBarriers } = withSurfaceMemo(() => ({
+    surface: buildSurface(surfaceJson as SurfaceData, layout, { ...opts, bundle }),
+    surfaceBarriers: surfaceWalls(layout, bundle, surfaceJson as SurfaceData),
+  }), seed);
+  surface.root.userData.bakedSurface = seed !== null; // observable by tests: was the baked table used?
   root.add(surface.root);
-  const surfaceBarriers = surfaceWalls(layout, bundle, surfaceJson as SurfaceData);
   propWalls.push(...surfaceBarriers);
   world.addWalls(surfaceBarriers);
   trimSurfaceCeilingFixtures(root, [mat.light, mat.lightHousing]); // remove only floating street ceiling strips
@@ -1079,7 +1246,7 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   track(surface);
   disposeRetiredGeometries(root, disposables);
 
-  return {
+  const built: BuiltStation = {
     root,
     layout,
     world,
@@ -1098,12 +1265,19 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
       });
     },
   };
+  // The closures above (update, dispose, onBeforeRender hooks) share this function's scope for as long as
+  // the scene lives, and they never read the layout or the fare protection again. Without this, a running
+  // scene kept ~9 MB of build-time polygons reachable through them (#72). `built.layout` still holds it
+  // for callers that want it (the lane app, tests); the shared explorer's scene drops `built`.
+  layout = undefined as never;
+  protection = undefined as never;
+  return built;
 }
 
 /** Merge static trim; instanced train finishes, gate leaves and fixtures stay independent. */
-function mergeRootFinishes(root: THREE.Group, materials: THREE.Material[], track: <T extends { dispose(): void }>(x: T) => T, includeLevelTrim = false) {
+function mergeRootFinishes(root: THREE.Group, materials: [THREE.Material, string][], track: <T extends { dispose(): void }>(x: T) => T, includeLevelTrim = false) {
   root.updateMatrixWorld(true);
-  for (const material of materials) {
+  for (const [material, name] of materials) {
     const meshes: THREE.Mesh[] = [];
     root.traverse((o) => {
       if (o instanceof THREE.Mesh && !(o instanceof THREE.InstancedMesh) && o.material === material &&
@@ -1113,8 +1287,8 @@ function mergeRootFinishes(root: THREE.Group, materials: THREE.Material[], track
     const geos = meshes.map((m) => m.geometry.clone().applyMatrix4(m.matrixWorld));
     const mesh = new THREE.Mesh(track(merged(geos)!), material);
     const portal = meshes.find((m) => m.name === "elevator-portal:finish");
-    mesh.name = portal ? portal.name : "static-metal-finishes";
-    if (portal) mesh.userData = portal.userData;
+    mesh.name = name;
+    if (portal) mesh.userData = portal.userData; // the lift portals' metadata rides on the batch that holds them
     for (const m of meshes) m.removeFromParent();
     root.add(mesh);
   }
@@ -1424,7 +1598,7 @@ function raySeg(o: XY, d: XY, a: XY, b: XY): number | null {
 }
 
 // ---------------------------------------------------------------- signs
-function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T): THREE.Object3D[] {
+function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T, quality: BuildOptions["quality"]): THREE.Object3D[] {
   const router = createRouter(bundle);
   const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
   const adj = new Map<string, string[]>();
@@ -1524,6 +1698,10 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
   const faceBuckets = new Map<string, THREE.BufferGeometry[]>();
   const cols = 3, cellW = 1040, margin = 8, pageCapacity = 30;
   const pageW = cols * cellW;
+  // Phones (quality "low") get atlas pixels halved on both axes: every shelf, cell and gutter coordinate is
+  // scaled by the same factor, and the UV rects are derived in full-resolution space, so the layout is
+  // identical and only the sampling is blurrier. High quality keeps the full 3120 px pages (#276).
+  const atlasScale = quality === "high" ? 1 : 0.5;
   const byLevel = new Map<string, FaceDraft[]>();
   byLevel.set("station", faceDrafts);
   for (const [floorId, faces] of byLevel) {
@@ -1537,9 +1715,11 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
       const rowStarts = rowHeights.map((_, row) => rowHeights.slice(0, row).reduce((sum, h) => sum + h, 0));
       const pageH = rowHeights.reduce((sum, h) => sum + h, 0);
       const canvas = document.createElement("canvas");
-      canvas.width = pageW;
-      canvas.height = pageH;
+      canvas.width = Math.round(pageW * atlasScale);
+      canvas.height = Math.round(pageH * atlasScale);
       const ctx = canvas.getContext("2d")!;
+      // Draw in full-resolution coordinates; the canvas and the rects stay proportional at either scale.
+      if (atlasScale !== 1) ctx.scale(atlasScale, atlasScale);
       const rects: { u0: number; v0: number; u1: number; v1: number }[] = [];
       const pageIndex = pages.length;
       for (const [slot, face] of pageFaces.entries()) {

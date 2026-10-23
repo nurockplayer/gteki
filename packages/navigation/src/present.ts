@@ -108,8 +108,9 @@ export interface Instruction {
   /** Same, for short legs folded into the end of the last instruction before arrival. Absent when none. */
   trailTurns?: Turn[];
   /**
-   * Arrive only: the route ends at the destination's stair/escalator/ramp connector, not at the
-   * destination itself (e.g. the survey stops at the foot of an exit's stairs). Absent otherwise.
+   * Start or arrive only: the route starts at (or ends at) the origin's (destination's) stair/escalator/ramp
+   * connector, not at the POI itself (e.g. the survey stops at the foot of an exit's stairs); for a start, that
+   * flight is not part of the route. Absent otherwise.
    */
   connector?: ConnectorEndKind;
   /** Plain text in the requested language. */
@@ -177,7 +178,17 @@ const lowerFirst = (text: string) => `${text.charAt(0).toLowerCase()}${text.slic
 const TEXT = {
   ja: {
     start: () => "出発",
+    /**
+     * The route starts on the origin's own stair/escalator/ramp connector and does not use that flight. A stair end
+     * is the foot of the stairs (the survey of such an exit stops at the bottom); an escalator or ramp end is only "the end".
+     */
+    startAtConnector: (kind: ConnectorEndKind, name: string | null) => {
+      const via = { stair_end: "階段", escalator_end: "エスカレーター", ramp_end: "スロープ" }[kind];
+      return `${name === null ? "" : `${name}の`}${via}の${kind === "stair_end" ? "下" : "端"}から出発（${via}は経路に含まれません）`;
+    },
     walk: (m: number) => `約${m}m 直進`,
+    /** The opening leg: no heading comes before it, so it only says how far. */
+    go: (m: number) => `約${m}m 進む`,
     /** A walk whose own path bends: no "straight" claim (turns inside one edge aren't named). */
     continue: (m: number) => `約${m}m 進む`,
     turns: (turns: readonly Turn[]) => turnRun(turns,
@@ -213,6 +224,8 @@ const TEXT = {
       return hints.length === 0 ? `${text}、${turns}` : [text, ...hints, turns].join("。");
     },
     arrive: () => "目的地に到着",
+    /** A ticket gate is reached from the public side: the paid concourse behind it is not modelled (#203 B7). */
+    gateArrive: () => "改札外側に到着（改札内は未モデル化）",
     /** `name` null = the destination has no display name: say "目的地". `ridden` = the route ended by using this connector. */
     connectorArrive: (kind: ConnectorEndKind, name: string | null, ridden: boolean) => {
       const via = { stair_end: "階段", escalator_end: "エスカレーター", ramp_end: "スロープ" }[kind];
@@ -223,7 +236,13 @@ const TEXT = {
   },
   en: {
     start: () => "Start",
+    startAtConnector: (kind: ConnectorEndKind, name: string | null) => {
+      const via = { stair_end: "stairs", escalator_end: "escalator", ramp_end: "ramp" }[kind];
+      const of = name === null ? `the ${via}` : `the ${name} ${via}`;
+      return `Start at the ${kind === "stair_end" ? "foot" : "end"} of ${of} (${kind === "stair_end" ? "the stairs are" : `the ${via} is`} not part of this route)`;
+    },
     walk: (m: number) => `Go straight ~${m} m`,
+    go: (m: number) => `Go ~${m} m`,
     continue: (m: number) => `Continue ~${m} m`,
     turns: (turns: readonly Turn[]) => turnRun(turns,
       { left: "Turn left", right: "Turn right", back: "Turn back" },
@@ -245,6 +264,7 @@ const TEXT = {
       return `${[text, ...hints, ...(trail.length === 0 ? [] : [`After ~${m} m, ${lowerFirst(TEXT.en.turns(trail))}`])].join(". ")}.`;
     },
     arrive: () => "Arrive at destination",
+    gateArrive: () => "Arrived at the public side of the gate (inside the gate is not modelled)",
     connectorArrive: (kind: ConnectorEndKind, name: string | null, ridden: boolean) => {
       const via = { stair_end: "stairs", escalator_end: "escalator", ramp_end: "ramp" }[kind];
       const to = name ?? "your destination";
@@ -463,10 +483,18 @@ function departuresByNode(bundle: StationBundle, route: RouteResult): Map<string
   return out;
 }
 
-/** Display name of the first POI (bundle order) reached from each node: requested language, then ja, then any. */
+/**
+ * Display names for junction hints: only exits and ticket gates name a junction. Naming it after a hall or
+ * service POI reads backwards when the route itself goes into that area ("continue straight past West Exit"
+ * for a route heading into it), so any other category stays "the junction" (#203 B9).
+ */
+const NAMES_JUNCTIONS: ReadonlySet<Poi["category"]> = new Set(["exit", "ticket_gate"]);
+
+/** Display name of the first exit or ticket-gate POI (bundle order) reached from each node: requested language, then ja, then any. */
 function junctionNames(bundle: StationBundle, lang: "ja" | "en"): Map<string, string> {
   const out = new Map<string, string>();
   for (const poi of bundle.pois) {
+    if (!NAMES_JUNCTIONS.has(poi.category)) continue;
     const named = poi.names.find((t) => t.lang === lang) ?? poi.names.find((t) => t.lang === "ja") ?? poi.names[0];
     if (!named || named.text.trim() === "") continue;
     for (const nodeId of poi.connectorNodeIds) if (!out.has(nodeId)) out.set(nodeId, named.text);
@@ -563,6 +591,15 @@ function poiDisplayName(poi: Poi, lang: "ja" | "en"): string | null {
 }
 
 /**
+ * The POI's own note in the requested language only (null when it has none): a note is a statement by the
+ * station data, and one written in another language is not shown as if it were the requested one.
+ */
+function poiNote(poi: Poi, lang: "ja" | "en"): string | null {
+  const note = poi.notes?.find((n) => n.lang === lang);
+  return note && note.text.trim() !== "" ? note.text.trim() : null;
+}
+
+/**
  * True when every heading along the walk over these steps lies within one TURN_DEG-wide range (so neither
  * one turn nor a zig-zag, e.g. +30° then −30°, exceeds TURN_DEG). Every segment of at
  * least MIN_HEADING_STEP_M in plan has a heading of its own; only consecutive shorter ones are joined into
@@ -632,8 +669,9 @@ function straightInPlan(points: PolylinePoint[], stepIndexes: number[]): boolean
  * itself — the last instruction says the connector starts there instead of claiming arrival. It names
  * only the node kind and the POI: never a direction or floor, which the graph does not evidence there.
  */
-export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja", destination?: Poi): Instruction[] {
+export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "ja" | "en" = "ja", destination?: Poi, origin?: Poi): Instruction[] {
   const t = TEXT[lang];
+  const paidModelled = bundle.edges.some((e) => e.paid === true || e.crossesFareBoundary === true);
   const floors = new Map(bundle.floors.map((f) => [f.id, f]));
   const nodes = new Map(bundle.nodes.map((n) => [n.id, n]));
   const points = routePolyline(bundle, route);
@@ -647,8 +685,16 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     return !shut.get(e);
   };
   const names = junctionNames(bundle, lang);
-  const firstFloor = nodes.get(route.nodeIds[0]!)!.floorId;
-  const out: Draft[] = [{ kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, text: t.start(), label: null }];
+  const startNode = nodes.get(route.nodeIds[0]!)!;
+  const firstFloor = startNode.floorId;
+  // Mirror of the arrival side: the route starts on one of the origin's stair/escalator/ramp connectors (and the
+  // origin is not that flight itself), and its first step is not that flight, so the flight is not part of it.
+  const startEnd = Object.hasOwn(CONNECTOR_END, startNode.kind) ? CONNECTOR_END[startNode.kind as ConnectorEndKind] : null;
+  const startConnector = origin && startEnd && origin.category !== startEnd.self && origin.connectorNodeIds.includes(startNode.id) && route.steps[0]?.mode !== startEnd.mode
+    ? startNode.kind as ConnectorEndKind : null;
+  const out: Draft[] = [startConnector
+    ? { kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, connector: startConnector, text: t.startAtConnector(startConnector, poiDisplayName(origin!, lang)), label: null }
+    : { kind: "start", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: firstFloor, text: t.start(), label: null }];
   let current: Draft | null = null;
   /** Evidenced sense of the last vertical instruction, including "level". */
   let lastSense: "up" | "down" | "level" | null = null;
@@ -762,7 +808,16 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     const ridden = route.steps[route.steps.length - 1]?.mode === end.mode;
     out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, connector: kind, text: t.connectorArrive(kind, poiDisplayName(destination, lang), ridden), label: null });
   } else {
-    out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, text: t.arrive(), label: null });
+    // The public-side/inside-not-modelled gate claim applies only where the data has no paid side (#203 B7).
+    // Any non-exit destination keeps its own note in this language when it has one; another language's note
+    // is never shown as if it were this one.
+    const note = destination && destination.category !== "exit" ? poiNote(destination, lang) : null;
+    const base = destination?.category === "ticket_gate" && !paidModelled ? t.gateArrive() : t.arrive();
+    const separator = lang === "ja"
+      ? (base.endsWith("。") ? "" : "。")
+      : (base.endsWith(".") ? " " : ". ");
+    const text = note ? `${base}${separator}${note}` : base;
+    out.push({ kind: "arrive", stepIndexes: [], distanceM: 0, vertical: null, toFloorId: goal.floorId, text, label: null });
   }
 
   return foldShortLegs(out).map(({ label, ownM, ownSteps, ...ins }, k, all) => {
@@ -770,7 +825,8 @@ export function describeRoute(bundle: StationBundle, route: RouteResult, lang: "
     const m = Math.max(1, Math.round(ownM ?? ins.distanceM));
     const turns = [...(ins.leadTurns ?? []), ...(WALK_TURN[ins.kind] ? [WALK_TURN[ins.kind]!] : []), ...(ins.turn ? [ins.turn] : [])];
     let main: string;
-    if (WALK_KINDS.has(ins.kind)) main = turns.length > 0 ? t.turnWalk(turns, m) : straightInPlan(points, ownSteps ?? ins.stepIndexes) ? t.walk(m) : t.continue(m);
+    // The opening leg has no heading before it, so it never claims "straight": it only says how far.
+    if (WALK_KINDS.has(ins.kind)) main = turns.length > 0 ? t.turnWalk(turns, m) : ins.stepIndexes.includes(0) ? t.go(m) : straightInPlan(points, ownSteps ?? ins.stepIndexes) ? t.walk(m) : t.continue(m);
     else {
       // A flight right after another of the same kind (only short legs between) continues it, unless it
       // is known to reverse it (down, then up).

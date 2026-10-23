@@ -26,7 +26,7 @@
       ],
       "instructions": [
         "Start",
-        "Go straight ~7 m",
+        "Go ~7 m",
         "Turn left, ~72 m. After ~55 m, continue straight through the junction.",
         "Turn right, ~16 m",
         "Turn left, ~57 m. After ~20 m, continue straight through the junction. After ~34 m, continue straight through the junction.",
@@ -76,7 +76,7 @@
       ],
       "instructions": [
         "Start",
-        "Go straight ~20 m",
+        "Go ~20 m",
         "Turn left, ~152 m",
         "Turn right, ~14 m",
         "Stairs to Exit 4 start here"
@@ -115,7 +115,7 @@
       ],
       "instructions": [
         "Start",
-        "Go straight ~11 m",
+        "Go ~11 m",
         "Turn right, ~11 m",
         "Turn right, ~72 m. After ~55 m, continue straight through the junction.",
         "Turn left, ~82 m",
@@ -161,7 +161,7 @@
       ],
       "instructions": [
         "Start",
-        "Go straight ~10 m",
+        "Go ~10 m",
         "Turn right, ~49 m",
         "Turn right, ~152 m",
         "Turn right, ~20 m",
@@ -206,7 +206,7 @@
       ],
       "instructions": [
         "Start",
-        "Continue ~11 m",
+        "Go ~11 m",
         "Turn right, ~55 m",
         "Turn right, ~125 m. After ~13 m, continue straight through the junction. After ~98 m, keep left at the junction.",
         "Take the stairs up",
@@ -257,10 +257,10 @@
         "stairs"
       ],
       "instructions": [
-        "Start",
-        "Go straight ~7 m",
+        "Start at the foot of the Exit 13 stairs (the stairs are not part of this route)",
+        "Go ~7 m",
         "Turn left, ~33 m. After ~13 m, continue straight through the junction.",
-        "Turn right, ~112 m. After ~100 m, keep left at Central Passage.",
+        "Turn right, ~112 m. After ~100 m, keep left at the junction.",
         "Turn right, ~72 m. After ~55 m, continue straight through the junction.",
         "Turn right, ~16 m",
         "Turn left, ~34 m. After ~20 m, continue straight through the junction.",
@@ -319,7 +319,7 @@
         "Continue ~28 m",
         "Turn left, ~82 m",
         "Turn right, ~72 m. After ~18 m, continue straight through the junction.",
-        "Turn left, ~144 m. After ~11 m, continue straight past Central Passage. After ~112 m, continue straight past West Exit (B1).",
+        "Turn left, ~144 m. After ~11 m, continue straight through the junction. After ~112 m, continue straight through the junction.",
         "Turn left, ~46 m",
         "Turn left, then take the stairs up to street level",
         "Arrive at destination"
@@ -351,7 +351,7 @@
     "result": {
       "ok": false,
       "reason": "unknown_goal",
-      "uiCard": "No verified route to showThe destination has no verified entrance."
+      "uiCard": "No route confirmed in the surveyed dataThe destination has no entrance confirmed in the surveyed data."
     }
   },
   "IN2": {
@@ -366,7 +366,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showNo verified route with \"Verified hours only\" on. The connection found uses passages whose hours are not verified.Turn off \"Verified hours only\""
+      "uiCard": "No route confirmed in the surveyed dataNo route confirmed in the surveyed data with \"Only places with listed hours\" on. This station has no opening-hours data.Turn off \"Only places with listed hours\""
     }
   },
   "IN3": {
@@ -381,7 +381,7 @@
     "result": {
       "ok": false,
       "reason": "no_path",
-      "uiCard": "No verified route to showNo verified route with \"Step-free\" on.Turn off \"Step-free\""
+      "uiCard": "No route confirmed in the surveyed dataNo route confirmed in the surveyed data with \"Step-free\" on.Turn off \"Step-free\""
     }
   },
   "IN4": {
@@ -393,7 +393,7 @@
     "result": {
       "ok": false,
       "reason": "start_equals_goal",
-      "uiCard": "No verified route to showStart and destination are the same."
+      "uiCard": "No route confirmed in the surveyed dataStart and destination are the same."
     }
   },
   "IN5": {
@@ -405,7 +405,7 @@
     "result": {
       "ok": false,
       "reason": "unknown_start",
-      "uiCard": "No verified route to showThe start is not on the network."
+      "uiCard": "No route confirmed in the surveyed dataThe start is not on the network."
     }
   }
 }

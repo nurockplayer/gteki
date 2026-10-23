@@ -11,6 +11,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { EnuFrame } from "@gteki/geo";
 import type { SurfaceBuilding, SurfaceData, SurfaceRoad } from "../scene/surface-data.ts";
 
+/** The Owner's Q10 Option A credit (#39), shown as-is wherever the flattened PLATEAU street surface renders (#161). */
+export const SURFACE_CREDIT = "出典：国土交通省 Project PLATEAU（3D都市モデル）を加工して作成（建物の基部を地表面の高さにそろえて表示）";
 export const ORIGIN = { lat: 35.687, lon: 139.6994, h: 0 };
 const frame = new EnuFrame(ORIGIN);
 /** EPSG:6697 axis order is latitude, longitude, height. Orthometric height is kept
@@ -131,7 +133,7 @@ export function importSurface(check = false) {
   if (!buildings.length || new Set(buildings.map((b) => b.id)).size !== buildings.length) throw new Error("Empty or duplicate context");
   if (!roads.length || new Set(roads.map((r) => r.id)).size !== roads.length) throw new Error("Empty or duplicate road context");
   const surface: SurfaceData = {
-    version: 1, origin: ORIGIN, attribution: "東京都 3D都市モデル（Project PLATEAU）新宿区（2025年度） / CC BY 4.0. Modified by GTEki: LOD1 building footprints and road polygons simplified; buildings extruded; procedural facades, sidewalks and markings; terrain flattened. Not an official model.",
+    version: 1, origin: ORIGIN, attribution: `${SURFACE_CREDIT} / Dataset: 3D都市モデル（Project PLATEAU）新宿区（2025年度）. Modified by GTEki: LOD1 building footprints and road polygons simplified; buildings extruded; procedural facades, sidewalks and markings; building bases and roads flattened to street level. Not an official model.`,
     license: manifest.license, source: manifest.datasetUrl, note: "render-only context, not routing",
     heightNote: "Source EPSG:6697 orthometric groundHeight is retained for provenance. Render bases are flattened to symbolic station street z=0; source measuredHeight (or LOD1 height) is preserved. No datum registration to underground symbolic floors is asserted.",
     buildings, roads,

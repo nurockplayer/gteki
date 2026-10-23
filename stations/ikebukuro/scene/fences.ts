@@ -3,6 +3,7 @@
 // collision all round, plus a labelled panel where floor carries on outside. No route data.
 import type * as THREE_NS from "three";
 import { FONT } from "./signs.ts";
+import { RAIL_FACE_OFFSET, RAIL_LABEL_H } from "./kit.ts";
 
 export interface AccessFences {
   label: { ja: string; en: string };
@@ -51,8 +52,18 @@ function paintLabel(label: { ja: string; en: string }): HTMLCanvasElement {
 
 type ToRenderer = (x: number, y: number, z: number) => THREE_NS.Vector3;
 
-function pushQuad(out: number[], toRenderer: ToRenderer, a: number[], b: number[], z0: number, z1: number) {
+/** A quad over the ends a to b, from height z0 to z1. `off` (m) pushes it along its front-face normal, so a label
+ * can sit just off the face of a kit rail. The front side is the one the triangles (0 1 2) wind towards. */
+function pushQuad(out: number[], toRenderer: ToRenderer, a: number[], b: number[], z0: number, z1: number, off = 0) {
   const v = [toRenderer(a[0]!, a[1]!, z0), toRenderer(b[0]!, b[1]!, z0), toRenderer(b[0]!, b[1]!, z1), toRenderer(a[0]!, a[1]!, z1)];
+  if (off) {
+    const dx = v[1]!.x - v[0]!.x, dz = v[1]!.z - v[0]!.z;
+    const len = Math.hypot(dx, dz) || 1;
+    for (const p of v) {
+      p.x += (-dz / len) * off;
+      p.z += (dx / len) * off;
+    }
+  }
   for (const k of [0, 1, 2, 0, 2, 3]) out.push(v[k]!.x, v[k]!.y, v[k]!.z);
 }
 
@@ -71,21 +82,27 @@ export function buildFenceCollider(THREE: typeof THREE_NS, fences: AccessFences[
   return collider;
 }
 
+/**
+ * `railed`: indices of `data.marks` that a kit rail (scene/kit.ts) now stands on. Their label faces sit just off the
+ * rail's two faces and stop at its cap; every other stretch keeps the free-standing board. The collider is unchanged.
+ */
 export function buildAccessFences(
   THREE: typeof THREE_NS,
   data: AccessFences,
   toRenderer: ToRenderer,
+  railed: ReadonlySet<number> = new Set(),
 ) {
   const vis: number[] = [], uv: number[] = [];
-  const quad = (out: number[], a: number[], b: number[], z0: number, z1: number) => pushQuad(out, toRenderer, a, b, z0, z1);
-  for (const m of data.marks) {
+  const quad = (out: number[], a: number[], b: number[], z0: number, z1: number, off = 0) => pushQuad(out, toRenderer, a, b, z0, z1, off);
+  data.marks.forEach((m, i) => {
     const u = Math.hypot(m.b[0]! - m.a[0]!, m.b[1]! - m.a[1]!) / TILE_W;
+    const onRail = railed.has(i);
     // One single-sided face per side, each with its own UVs, so the label never reads mirrored.
     for (const [a, b] of [[m.a, m.b], [m.b, m.a]] as const) {
-      quad(vis, a, b, m.z + 0.05, m.z + 0.05 + PANEL_H);
+      quad(vis, a, b, m.z + 0.05, m.z + 0.05 + (onRail ? RAIL_LABEL_H : PANEL_H), onRail ? RAIL_FACE_OFFSET : 0);
       uv.push(0, 0, u, 0, u, 1, 0, 0, u, 1, 0, 1);
     }
-  }
+  });
   const tex = new THREE.CanvasTexture(paintLabel(data.label));
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.wrapS = THREE.RepeatWrapping;

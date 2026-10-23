@@ -28,8 +28,12 @@ SPDX-License-Identifier = "Apache-2.0"
 # assets/library/** includes the provenance sidecar and manifests; the AI posters are carved
 # out in section 3 below.
 
+# Byte-for-byte copies of kit GLBs that a station bundles (the explorer refuses symlinks into assets/library):
+# stations/ikebukuro/gteki/kit/{high,low}/ (pipeline/sync_kit.py). They live beside, not under,
+# stations/ikebukuro/gteki/assets/, so the PLATEAU annotation in section 4a (which globs that folder) does not
+# touch them. The GLBs' embedded licence strings read UNDECIDED until the kit's EMBED_SPDX rebuild; this is the record.
 [[annotations]]
-path = ["assets/library/**", "docs/assets/img/**"]
+path = ["assets/library/**", "docs/assets/img/**", "stations/*/gteki/kit/**"]
 precedence = "override"
 SPDX-FileCopyrightText = "GTEki contributors"
 SPDX-License-Identifier = "CC-BY-4.0"
