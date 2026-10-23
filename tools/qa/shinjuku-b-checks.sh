@@ -35,14 +35,20 @@ probes="shinjuku:poi:exit:1>poi:platform:oedo,shinjuku:poi:platform:oedo>poi:exi
 grep_re='shinjuku: (opens|scenario goldens|guided walk|walls stop|load, overview)|step probe'
 
 status=0
+# Evidence must come from this run: run-candidate.sh resets the artifacts only once it reaches the tests, so a
+# run that stops earlier (merge, build, server) would otherwise summarize the previous run's files (#318).
+stamp=$(mktemp "${TMPDIR:-/tmp}/b-checks-stamp.XXXXXX")
+trap 'rm -f "$stamp"' EXIT
 # shellcheck disable=SC2086
 GTEKI_PROBE="$probes" "$here/tools/qa/run-candidate.sh" "$work" "$base" $refs -- --grep "$grep_re" --trace off "$@" || status=$?
 
 art="$here/tests/e2e/artifacts"
-if [ -d "$art/evidence" ]; then
+fresh=$(find "$art/evidence" -type f -newer "$stamp" 2>/dev/null | head -n 1)
+rm -f "$stamp"
+if [ -n "$fresh" ]; then
   node "$here/tools/qa/summarize-b-checks.mjs" "$art/evidence" --candidate "$work/candidate" | tee "$art/b-checks.md"
 else
-  echo "no evidence under $art/evidence: the run stopped before the tests (see $work/logs)" >&2
+  echo "no evidence from this run under $art/evidence: it stopped before the tests (see $work/logs)" >&2
   [ "$status" -ne 0 ] || status=1
 fi
 exit "$status"
