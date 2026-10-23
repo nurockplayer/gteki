@@ -54,7 +54,9 @@ pnpm typecheck
 | `scene/walk_bridges.json` | Invisible walking strips over hairline cracks between PLATEAU floor polygons | presentation |
 | `scene/access_fences.json` | Walker-blocking fences with a 「通行可否 未確認」/"Access unverified" marker where surveyed floor of unknown access would shortcut the routable areas | presentation |
 | `scene/finishes.json` | Finish-pack manifest for the Lane E kit: role → texture folder + repeat in metres. Empty today (see "Kit integration") | presentation |
+| `scene/kit/kit.json`, `scene/kit.ts` | Kit GLBs placed as instances on existing data (batch 1: barrier rails on the access-fence stretches; plus one labelled representative gate array per JR gate node); copies in `gteki/kit/` | presentation |
 | `scene/dressing_anchors.json` | Stair nosing lines and escalator landings from the PLATEAU survey, where kit dressing is placed (see "Kit integration") | truth (survey positions) |
+| `scene/kit_catalog.json`, `scene/kit_placements.json` | Lane E catalog and per-anchor placements for stair and escalator dressing, generated from the anchors (see "Kit integration") | derived (survey dimensions) |
 | `pipeline/` | Reproducible data and asset build (stdlib Python + Blender; one Node walker check) | — |
 | `docs/` | G0 source audit, coverage gaps, evidence | — |
 
@@ -150,16 +152,59 @@ are untouched. Roles without an entry keep the procedural texture.
   `assets[].files` of the kit asset in `data/graph.src.json`; a production build refuses undeclared asset files.
   The kit source (CC BY 4.0, "GTEki contributors") is declared there too, once the licence PR (#131) lands.
 
+**Kit instances (batch 1).** `scene/kit/kit.json` lists the kit GLBs the scene places; `scene/kit.ts` places them on
+data the station already has and nothing else, except the labelled gate arrays below. Batch 1: `gteki_barrier_rail_2400_solid` along the access-fence label
+stretches (`scene/access_fences.json` `marks`; the 62 of 80 that are at least 1.8 m long, 259 modules, stretched at most
+12 % along the run; the label boards move onto the rail faces and the collision panels are unchanged). The
+desktop tier loads `gteki/kit/high/` (the full library GLB), `quality: "low"` loads `gteki/kit/low/` (the mobile library
+GLB) for the gate arrays only: phones keep the procedural boards instead of rails, which cost up to ~95k triangles a frame
+near the JR gates on the low tier (spec 13 against main, 2026-10-23). The low rail copy stays declared for a cheaper rail later. Instances are grouped into 16 m (desktop) or 32 m (phone) tiles so three.js culls them per tile. Kit meshes are
+visual only: they never enter `walkable` or `colliders`, and a GLB that cannot load leaves the procedural board.
+`python3 -I pipeline/sync_kit.py [--check]` (`pnpm sync:kit`) copies the GLBs byte for byte from `assets/library/` and
+checks them against the kit manifests' sha256; both copies are declared in `assets[id=b1].files`. Credit:
+"GTEki contributors, CC BY 4.0" (source `gteki-kit-0-1-0` in `station.json`; `REUSE.toml` section 2 covers
+`stations/*/gteki/kit/**`; the GLBs' embedded licence strings read UNDECIDED until Lane E's EMBED_SPDX rebuild). Kit
+meshes have no lightmap in this atlas, so they are lit by the scene's PMREM environment only. What else still renders
+procedurally, and what each needs: [docs/kit-gap-list.md](docs/kit-gap-list.md).
+
+**Representative gate arrays (the one exception).** By director decision (issue #3, 2026-10-22) the three JR gate nodes
+(`g_jr_c1`, `g_jr_c2`, `g_jr_s`) each get one `gteki_gate_array_2` (the smallest neutral, bidirectional array), and every
+one is labelled 「代表性擺設，通道數與方向未驗證」 / "representative placement; aisle count and orientation unverified"
+(`GATE_ARRAY_LABEL` in `scene/kit.ts`, copied into `kit.json`, each placement, each mesh's `userData`, the kit source
+credit in `station.json` and the asset derivation; a manifest entry without that exact label is not placed). The data
+fixes only the node and its verified edge. Placement rule, a guess: the piece's aisles run along the edge's last segment as
+it arrives, the first aisle's centre stands on the node at mid-depth (the edge runs down an aisle and crosses no cabinet),
+lifted 1 cm against z-fighting with the piece's floor plate. Like the rails the arrays are visual only (no collider, not in
+`walkable` or the walk graph). The three arrays are merged per material and instanced: one draw on the phone tier (one
+palette material, always drawn) and one draw per material per 16 m tile on desktop.
+
 **Dressing anchors.** `python3 -I pipeline/build_dressing_anchors.py` (from `build/ubld_enu.json`; it refuses an
 extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressing_anchors.json`, ENU metres to
 1 mm, deterministic. Facts only, derived from the surveyed EF_35 and EF_80 triangles:
 
 - `stair_flights[]`: a riser's top edge is the nosing line of the tread above; nosings one rise and one tread apart
-  chain into a flight. Each has `bottom` and `top` (`position`, `dir` = horizontal up-stair unit vector, `width_m`,
+  chain into a flight, one-to-one (each nosing has at most one successor and one predecessor; a stair the survey models
+  twice as two overlapping solids is kept as one of them, and `counts.duplicate_nosings_dropped` says how many nosings
+  that dropped). Each has `bottom` and `top` (`position`, `dir` = horizontal up-stair unit vector, `width_m`,
   end points `a` left and `b` right facing up), `steps`, `rise_m`, `run_m`, and every `nosings` row `[ax, ay, bx, by, z]`.
 - `escalator_lanes[]`: the bank's sloped walking quad gives the landing lines (low edge = `lower`, high edge =
   `upper`); the thin truss plates inside pair into lanes. Each lane has `lower` and `upper` anchors
   (`position`, `dir` up the escalator, `width_m` clear between plates), plus `rise_m`, `run_m` and `slope_deg`.
+
+**Lane E catalog.** `python3 -I pipeline/build_kit_catalog.py` (`pnpm build:kit-catalog`) turns the anchors into
+`scene/kit_catalog.json`, a Lane E batch catalog (`CATALOG=stations/ikebukuro/scene/kit_catalog.json`), and
+`scene/kit_placements.json`, which gives each flight or lane its catalog ids and ENU transform (`origin`, `dir`,
+`yaw_deg` about +Z taking the piece's +Y to `dir`, `mirror` always false). Every entry is `station-verified` and cites
+the anchors and PLATEAU GML sha256 plus the flight or lane ids it serves. Each stair flight becomes two
+`stair_dressing` entries so every GLB has one bake role: `..._nosing` (`stairs_ramps`) and `..._rails_{post,wall}`
+(handrails, `barriers`). `step_count` is the surveyed nosing count, `riser_mm` = rise / (steps - 1), `tread_mm` the mean
+nosing run, and riser, tread and width are rounded to whole mm (coarser snapping accumulated up to 40 mm by the top of a long flight); identical flights share one id and are instanced.
+`rail_mount` is `wall` when the base GLB's wall mesh lies within 0.3 m of both stair sides, else `post`. Flights with
+an implausible riser (outside 100-220 mm) or tread (under 200 mm), surveyed nosings more than 6 mm (the strip height) off the strips the generator builds with the whole-millimetre riser, and single-step flights are skipped and listed with
+their reason. Escalators carry `rise_mm`, `angle_deg` = atan2(rise, quad run) (the surveyed quad is the straight incline between the
+floors, so no `run_mm`), `width_mm` (tread width, read as the clear gap between the truss plates) and the default 800 mm
+landing. The placement origin is the bottom comb, 1.2 m before the quad's lower line along `dir` at the lower floor height
+(the top comb is 1.2 m past the upper line). Direction is not surveyed and is left out of the params. Placements carry `tiers`: nosings draw on `low` and `high`, escalators on `high` only (low waits for a phone measurement), and rails (6 segments) on `high` only and only for `main_route` flights, those a Lane F golden guided route walks (a polyline within 1 m of the flight's centre line at a matching height).
 
 **How the bake will take a kit GLB in** (not built yet; `blender_bake_lighting.py` is unchanged):
 
@@ -188,7 +233,7 @@ extract whose GML sha256 differs from `gteki/station.json`) writes `scene/dressi
 
 - No operator maps, logos, photos or typefaces are in the repo.
 - Signs use GTEki's own style: charcoal panels and yellow exit badges.
-- Every texture is procedural, generated at runtime.
+- Every texture is procedural, generated at runtime, except the Lane E kit GLBs (CC BY 4.0, "GTEki contributors") in `gteki/kit/`.
 - Light fixtures, crowd and haze are GTEki art direction, declared in each asset's `derivation`.
 
 ## Acceptance record (quality contract G0–G4)

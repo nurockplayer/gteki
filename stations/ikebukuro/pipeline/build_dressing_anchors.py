@@ -10,8 +10,9 @@ EF_80 (transport) triangles; nothing is invented, and nothing here changes the G
 Stairs. The survey models each step as a riser (2 vertical triangles) and a tread (horizontal triangles).
 The top edge of a riser is the nosing line of the tread above it. The up-stair direction is the side of
 that edge on which a tread at the same height lies. Nosings of consecutive steps (one rise up, one tread
-deep along the direction) are chained into flights; a flight's `bottom` and `top` are its first and last
-nosing lines.
+deep along the direction) are chained into flights, one-to-one (see chain_flights); a flight's `bottom` and
+`top` are its first and last nosing lines. Where the survey models one stair twice (overlapping solids), one
+representation is kept and `counts.duplicate_nosings_dropped` counts the rest.
 
 Escalators. Each bank is modelled as one sloped quad (the walking envelope) plus thin vertical truss
 side plates. The quad's low edge is the lower landing line and its high edge the upper landing line.
@@ -46,6 +47,8 @@ STEP_WIDTH = 0.30         # allowed width change between consecutive nosings
 PLATE_THIN = 0.5          # side plates are thinner than this across the bank
 LANE_GAP = (0.7, 1.8)     # clear distance between the two plates of one lane
 MIN_EDGE = 0.05           # shorter horizontal edges are slivers
+TWIN_XY = 0.06            # nosings this close horizontally and within TWIN_Z in height are one step modelled twice
+TWIN_Z = 0.08
 
 
 def r3(v):
@@ -184,18 +187,30 @@ def stair_nosings(tris):
 
 
 def chain_flights(nosings):
-    """Link each nosing to the next one up (best candidate = least run), then group the links."""
+    """Group nosings into flights: one-to-one predecessor/successor chains. Returns (flights, duplicates dropped).
+
+    Every nosing pair one rise up and one tread along the direction (STEP_*) is a candidate link. Links are
+    accepted best first, each nosing taking at most one successor and at most one predecessor, so a flight is a
+    path, never a branched component. Best = least sideways drift (a flight runs straight), then least run,
+    then lowest successor; the nosing order breaks the last ties, so the result is deterministic. A nosing that
+    loses its claim starts or ends its own chain.
+
+    The survey sometimes models one stair twice, as two overlapping solids a centimetre or so apart with a
+    slightly different pitch (stair040). Their nosings are twins (same direction, within TWIN_XY horizontally and
+    TWIN_Z in height: no two distinct steps are that close). After chaining, a chain whose every nosing has a
+    twin in one other chain is that chain's duplicate representation and is dropped, keeping the chain with more
+    steps, then the lower and more western/southern first nosing. Nothing is averaged or moved: the kept chain
+    is one surveyed representation as it stands.
+    """
     n = len(nosings)
     order = sorted(range(n), key=lambda i: (round(nosings[i]["z"], 3), round(nosings[i]["mid"][0], 3), round(nosings[i]["mid"][1], 3)))
     by_z = sorted(order, key=lambda i: nosings[i]["z"])
-    dsu = DSU(n)
-    nxt = {}
     zs = [nosings[i]["z"] for i in by_z]
+    edges = []
     for i in order:
         a = nosings[i]
         lo = bisect.bisect_left(zs, a["z"] + STEP_RISE[0])
         hi = bisect.bisect_right(zs, a["z"] + STEP_RISE[1])
-        best = None
         for k in range(lo, hi):
             j = by_z[k]
             b = nosings[j]
@@ -206,18 +221,37 @@ def chain_flights(nosings):
             lateral = abs(-dx * a["dir"][1] + dy * a["dir"][0])
             if not STEP_RUN[0] <= along <= STEP_RUN[1] or lateral > STEP_LATERAL or abs(a["width"] - b["width"]) > STEP_WIDTH:
                 continue
-            key = (round(along, 3), round(b["z"], 3), j)
-            if best is None or key < best[0]:
-                best = (key, j)
-        if best:
-            nxt[i] = best[1]
-            dsu.union(i, best[1])
-    groups = defaultdict(list)
-    for i in range(n):
-        groups[dsu.find(i)].append(i)
-    flights = [sorted(g, key=lambda i: (nosings[i]["z"], nosings[i]["mid"][0], nosings[i]["mid"][1])) for g in groups.values()]
-    flights.sort(key=lambda g: (round(nosings[g[0]]["z"], 3), round(nosings[g[0]]["mid"][0], 3), round(nosings[g[0]]["mid"][1], 3)))
-    return flights
+            edges.append((round(lateral, 3), round(along, 3), round(b["z"], 3), i, j))
+    edges.sort()
+    nxt, prv = {}, {}
+    for _, _, _, i, j in edges:
+        if i not in nxt and j not in prv:
+            nxt[i], prv[j] = j, i
+    chains = []
+    for i in order:
+        if i in prv:
+            continue
+        chain = [i]
+        while chain[-1] in nxt:
+            chain.append(nxt[chain[-1]])
+        chains.append(chain)
+
+    def key(i):
+        return (round(nosings[i]["z"], 3), round(nosings[i]["mid"][0], 3), round(nosings[i]["mid"][1], 3))
+
+    def twin(i, j):
+        a, b = nosings[i], nosings[j]
+        return (a["dir"][0] * b["dir"][0] + a["dir"][1] * b["dir"][1] >= 0.99 and abs(a["z"] - b["z"]) < TWIN_Z
+                and math.hypot(a["mid"][0] - b["mid"][0], a["mid"][1] - b["mid"][1]) < TWIN_XY)
+
+    kept, dropped = [], 0
+    for chain in sorted(chains, key=lambda c: (-len(c), key(c[0]))):
+        if any(all(any(twin(i, j) for j in other) for i in chain) for other in kept):
+            dropped += len(chain)
+        else:
+            kept.append(chain)
+    kept.sort(key=lambda c: key(c[0]))
+    return kept, dropped
 
 
 def nosing_anchor(n):
@@ -232,15 +266,17 @@ def nosing_anchor(n):
 
 
 def build_stairs(installations):
-    flights_out, unresolved, step_count = [], 0, 0
+    flights_out, unresolved, step_count, dup_count = [], 0, 0, 0
     serial = 0
     for inst in installations:
         if inst["function"] != "EF_35":
             continue
         nosings, bad = stair_nosings([p["outer"] for p in inst["polygons"]])
         unresolved += bad
-        step_count += len(nosings)
-        for g in chain_flights(nosings):
+        grouped, dup = chain_flights(nosings)
+        step_count += len(nosings) - dup
+        dup_count += dup
+        for g in grouped:
             first, last = nosings[g[0]], nosings[g[-1]]
             runs = [
                 (nosings[g[k + 1]]["mid"][0] - nosings[g[k]]["mid"][0]) * nosings[g[k]]["dir"][0]
@@ -258,7 +294,7 @@ def build_stairs(installations):
                 "top": nosing_anchor(last),
                 "nosings": [[r3(nosings[i]["a"][0]), r3(nosings[i]["a"][1]), r3(nosings[i]["b"][0]), r3(nosings[i]["b"][1]), r3(nosings[i]["z"])] for i in g],
             })
-    return flights_out, {"steps": step_count, "unresolved_steps": unresolved}
+    return flights_out, {"steps": step_count, "unresolved_steps": unresolved, "duplicates": dup_count}
 
 
 # ---- escalators -----------------------------------------------------------------------------------------
@@ -385,7 +421,7 @@ def build(data, input_sha256):
         },
         "frame": {"axes": "ENU metres: x east, y north, z TP height", "origin": data["frame"]["origin"], "rounding_m": 0.001,
                   "dir": "horizontal unit vector (east, north) of travel up the stair or escalator"},
-        "counts": {"stair_flights": len(flights), "stair_nosings": stair_stats["steps"], "unresolved_nosings": stair_stats["unresolved_steps"],
+        "counts": {"stair_flights": len(flights), "stair_nosings": stair_stats["steps"], "duplicate_nosings_dropped": stair_stats["duplicates"], "unresolved_nosings": stair_stats["unresolved_steps"],
                    "escalator_banks": esc_stats["banks"], "escalator_lanes": esc_stats["lanes"], "escalator_landings": esc_stats["lanes"] * 2,
                    "skipped_escalator_banks": esc_stats["skipped_banks"]},
         "stair_flights": flights,
