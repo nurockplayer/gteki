@@ -1,6 +1,7 @@
 import type { Instruction, PolylinePoint } from "@gteki/navigation";
 import { instructionPoints } from "@gteki/navigation";
 import { cumulativeLengths } from "./walker.ts";
+import { isImeKeydown, type KeyLike } from "../ui/combobox.ts";
 
 /** Previous restarts the current instruction when the guide is further into it than this (seconds of guide time) ... */
 export const RESTART_AFTER_S = 2;
@@ -130,4 +131,13 @@ export function guideKeyAction(e: GuideKeyEvent): GuideKeyAction | null {
   if (e.key === "[" || e.key === "PageUp") return "prev";
   if (e.key === "]" || e.key === "PageDown") return "next";
   return null;
+}
+
+/**
+ * `guideKeyAction` behind the app's IME guard (`isImeKeydown`): a composing keydown, the legacy keyCode 229,
+ * or any key in the few ms after compositionend (Safari dispatches one for the character that confirmed the
+ * conversion) never moves the guide. `lastCompositionEndMs` is -Infinity when none was seen.
+ */
+export function guideKeyActionGuarded(e: GuideKeyEvent & KeyLike, lastCompositionEndMs: number, nowMs: number): GuideKeyAction | null {
+  return isImeKeydown(e, lastCompositionEndMs, nowMs, true) ? null : guideKeyAction(e);
 }
