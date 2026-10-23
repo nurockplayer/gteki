@@ -19,6 +19,7 @@ import { LiveRegion, freshnessReason, routeLiveMessage, searchLiveMessage, unkno
 import { MascotSlot, type MascotEvent } from "./mascot.ts";
 import { watchReducedMotion } from "./motion.ts";
 import { railDemoLink } from "./railTravel.ts";
+import { StationIdentityView } from "./identityCard.ts";
 import { RailRideDemo } from "./railRideDemo.ts";
 
 /** IANA time zone of the supported stations; routes are timed in it and waits name it. */
@@ -73,6 +74,7 @@ export class App {
     route: null, noPath: null, polyline: [], instructions: [], activeInstruction: 0,
   };
   private explorer!: Explorer;
+  private readonly identityView = new StationIdentityView();
   private railRide: RailRideDemo | null = null;
   private readonly ui = {
     stationSelect: el("select", "station-select"),
@@ -174,10 +176,10 @@ export class App {
     swap.addEventListener("click", () => this.swap());
     const fields = el("div", "fields");
     fields.append(fromRow, toRow, swap);
-    panel.append(this.ui.banner, fields, this.ui.spawnChips, this.ui.profile, this.ui.more);
+    panel.append(this.identityView.overview, this.ui.banner, fields, this.ui.spawnChips, this.ui.profile, this.ui.more);
 
     this.ui.hint.setAttribute("role", "note");
-    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
+    this.root.append(viewport, top, panel, this.ui.sheet, this.ui.hud, this.ui.toast, this.identityView.card, this.ui.live.el, this.ui.coverage, this.ui.hint, this.ui.credit);
     this.layoutText();
   }
 
@@ -270,14 +272,20 @@ export class App {
     this.ui.mascot.clear();
     this.ui.sheet.innerHTML = "";
     this.renderSpawnChips(undefined);
-    this.toast(this.t.loading);
+    this.toast("");
+    const names = this.identityView.showCard(entry.identity, entry.label, this.s.lang);
+    this.ui.live.announce(`${names.ja} ${names.kana} ${names.en} · ${this.t.loading}`);
     try {
       const loaded = await entry.load();
       if (!current()) return;
+      this.identityView.showCard(loaded.bundle.station.identity, entry.label, this.s.lang);
       this.s.loaded = loaded;
       this.s.router = createRouter(loaded.bundle);
       this.s.search = createSearchIndex(loaded.bundle);
-      if (!(await this.explorer.loadStation(loaded, this.s.router)) || !current()) return;
+      const ready = await this.explorer.loadStation(loaded, this.s.router);
+      if (!current()) return;
+      this.identityView.hideCard();
+      if (!ready) return;
       this.toast(this.explorer.sceneError ? `${this.t.sceneFallback}: ${this.explorer.sceneError}` : "", this.explorer.sceneError ? 6000 : 0);
       // Beneath the search fields (the toast fades): the 3D scene failed and the line map is shown instead.
       if (this.explorer.sceneError) this.mascotSay({ kind: "scene_fallback" }, this.ui.panel);
@@ -286,6 +294,7 @@ export class App {
       this.s.loaded = null;
       this.s.router = null;
       this.s.search = null;
+      this.identityView.hideCard();
       this.showLoadError(err);
       return;
     }
@@ -353,6 +362,7 @@ export class App {
 
   private refreshAll(): void {
     this.updatePanelCollapse();
+    this.renderIdentity();
     this.renderCredit();
     const b = this.s.loaded?.bundle;
     this.renderBanner(b);
@@ -759,8 +769,17 @@ export class App {
 
   private onMode(mode: "overview" | "walk" | "guide"): void {
     this.root.dataset.mode = mode;
+    this.renderIdentity(mode);
     this.renderSpawnChips(this.s.loaded?.bundle);
     this.renderHud();
+  }
+
+  /** Inside the panel observed by setPanel: its ResizeObserver already accounts for this header (#114). */
+  private renderIdentity(mode = this.explorer.currentMode): void {
+    this.identityView.renderOverview(this.stationReady ? this.s.loaded?.bundle : undefined, this.s.entry?.label ?? "", this.s.lang, mode);
+    if (!this.identityView.card.hidden && this.s.entry) {
+      this.identityView.showCard(this.s.loaded?.bundle.station.identity ?? this.s.entry.identity, this.s.entry.label, this.s.lang);
+    }
   }
 
   private renderHud(): void {
@@ -1186,6 +1205,7 @@ export class App {
       hud: () => [...this.ui.hud.querySelectorAll("button")].map((b) => b.textContent),
       labels: () => this.explorer.labelInfo(),
       overviewFrame: () => this.explorer.overviewFrame(),
+      stationIdentity: () => this.identityView.info(),
       quality: () => this.explorer.qualityLevel,
       mascot: () => this.ui.mascot.info(),
       avatar: () => this.explorer.avatarEnu,
