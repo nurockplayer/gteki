@@ -27,6 +27,7 @@
     {"id": "gteki_sign_hanging_exit_yellow_up", "generator": "sign_hanging", "params": {"theme": "exit_yellow", "arrow": "up", "drop": 0.45}, "tags": ["signage"]},
     {"id": "gteki_sign_hanging_black_right", "generator": "sign_hanging", "params": {"theme": "black", "arrow": "right", "drop": 0.45}, "tags": ["signage"]},
     {"id": "gteki_sign_hanging_white_none", "generator": "sign_hanging", "params": {"theme": "white", "arrow": "none", "drop": 0.45}, "tags": ["signage"]},
+    {"id": "gteki_sign_frame_9slice_h480_d80", "generator": "sign_frame_9slice", "params": {"height": 0.48, "depth": 0.08, "bar": 0.03, "recess": 0.012, "end_m": 0.05}, "tags": ["signage", "frame", "nine_slice"], "notes": "Faceless frame for runtime stretching (0.5-6.1 m): VIS_end_L/R caps, VIS_span 1 m in X, VIS_rod 1 m in Z; recipe in params.nine_slice. Defaults match Ikebukuro's sign housings; station-verified values live in the station's catalog."},
     {"id": "gteki_sign_wall_black", "generator": "sign_wall", "params": {"theme": "black", "arrow": "right"}, "tags": ["signage"]},
     {"id": "gteki_sign_wall_navy_long", "generator": "sign_wall", "params": {"theme": "navy", "arrow": "left", "width": 2.4, "height": 0.5}, "tags": ["signage"]},
     {"id": "gteki_sign_totem", "generator": "sign_totem", "params": {}, "tags": ["signage"]},

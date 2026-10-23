@@ -78,6 +78,7 @@ Editable sources: add `--save-blend <dir>` to `build.py` to save a `.blend` per 
 A generator is `fn(asset_id, params, tex_res) -> Asset` registered in its module's `GENERATORS`. Author in Blender Z-up with the entry edge at `y = 0`, travel/rise toward `+Y`, walking surface at `z = 0` (exported as glTF +Y up, entry at z=0 extending to −Z, front +Z). Use:
 
 - `a.part(group, bevel=…)` for visuals; parts in a group are joined into one `VIS_<group>` mesh (fewer draw calls). Small chamfers (2–6 mm) plus weighted normals are what make hard-surface pieces read as finished rather than blockout.
+- `a.pivot(group, loc)` to give `VIS_<group>` its own node origin at `loc`. Pivoted groups stay separate nodes in the mobile profile (gate flaps, and the pieces of `sign_frame_9slice` that a station scales or instances on its own); every other group merges into `VIS_body` there.
 - `a.col_box` / `a.col_ramp` for simple collision (`COL_*-colonly`); stairs/escalators collide as ramps.
 - `a.socket(name, loc, yaw, width=…, height=…)` for snap points (local +Y Blender = outward).
 - `a.light_hint(name, loc, kind=…, …)` where a fixture emits light.
