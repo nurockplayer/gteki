@@ -233,6 +233,23 @@ floors, so no `run_mm`), `width_mm` (tread width, read as the clear gap between 
 landing. The placement origin is the bottom comb, 1.2 m before the quad's lower line along `dir` at the lower floor height
 (the top comb is 1.2 m past the upper line). Direction is not surveyed and is left out of the params. Placements carry `tiers`: nosings draw on `low` and `high`, escalators on `high` only (low waits for a phone measurement), and rails (6 segments) on `high` only and only for `main_route` flights, those a Lane F golden guided route walks (a polyline within 1 m of the flight's centre line at a matching height).
 
+**Kit catalog (station-specific dressing), batch A.** `scene/kit_catalog_loader.ts` reads
+`scene/kit_placements.json` and instances the Lane E catalog GLBs on the surveyed anchors: batch A is the 5
+escalators (`gteki_ik_escalator_*`), one per surveyed lane landing, desktop tier only because every escalator
+placement lists `high` alone (the phone tier copies wait for a phone measurement). The catalog GLBs are Lane E's
+built output for the catalog's params (kit main `7258e6b`); `python3 -I pipeline/sync_kit_catalog.py [--check]`
+copies just the ids some placement loads, byte for byte, and checks each against the tier manifest's sha256 and the
+sha256 the source record pins. `--check` also fails on a stray catalog copy and on a pin no placement backs.
+Provenance: "GTEki contributors, CC BY 4.0" (source `gteki-ikb-catalog-0-1-0`), on top of the anchors' PLATEAU
+credit. Frame: the piece's origin is the bottom comb, travel along local -Z, width along local X, up along +Y, turned
+about +Y by the placement's `yaw_deg` in the renderer frame (ENU +Z is renderer +Y, so the catalog's angle about ENU
++Z is the same number). `scope` is PLATEAU's container (building or a room suffix), not a playability marker, and
+every placement lies in the playable multi-level slice, so nothing is skipped by it. An id the station does not ship
+is skipped silently (one summary line); a GLB that fails to load warns and drops only its own anchors, never the
+scene. The pieces are visual only: no colliders, not in `walkable` or the walk graph. Cost on the desktop tier: 5
+part instances of 5 GLBs, 35 draws, 66 480 triangles; the phone tier draws none. `scene/kit_catalog_loader.test.ts`
+pins the batch, the placement maths and the credit, and `pipeline/sync_kit_catalog.test.ts` the copies.
+
 **How the bake will take a kit GLB in** (not built yet; `blender_bake_lighting.py` is unchanged):
 
 1. A Lane E generator places pieces on the anchors: origin at the nosing midpoint or landing point, rotated about
