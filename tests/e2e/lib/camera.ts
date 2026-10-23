@@ -28,6 +28,8 @@ export interface FollowConstants {
   bodyTopM: number;
   /** Declared vertical FOVs (degrees) from the source, for comparison with the measured one. null: not declared. */
   declaredFov: { follow: number | null; firstPerson: number | null; overview: number | null; settleS: number | null; source: string };
+  /** #136's reasons to widen the follow lens: boom squeezed below comfortDistance (released above comfortDistance + release). null: not in the source. */
+  lensSqueeze: { comfortDistance: number | null; release: number | null };
 }
 
 // origin/main values when this was written (apps/web/src/explorer/followCamera.ts, packages/scene-api).
@@ -35,6 +37,7 @@ const FALLBACK: FollowConstants = {
   source: "fallback (origin/main constants; GTEKI_ROOT source not readable)",
   minDistance: 0.55, defaultDistance: 3.4, shoulder: 0.42, clearance: 0.3, lowestBoom: -0.1, eyeM: 1.62, bodyTopM: 1.7,
   declaredFov: { follow: null, firstPerson: null, overview: null, settleS: null, source: "none" },
+  lensSqueeze: { comfortDistance: null, release: null },
 };
 
 export function followConstants(): FollowConstants {
@@ -63,7 +66,9 @@ export function followConstants(): FollowConstants {
       clearance: num(block, "clearance"), lowestBoom: num(block, "lowestBoom"), eyeM: num(body, "eyeM"), bodyTopM: num(body, "bodyTopM"),
     };
     if (Object.values(c).some((v) => v === null)) return { ...FALLBACK, source: "fallback (a constant was not found in the GTEKI_ROOT source)" };
-    return { source: "GTEKI_ROOT apps/web/src/explorer/followCamera.ts FOLLOW + packages/scene-api WALKER_BODY", ...(c as Omit<FollowConstants, "source" | "declaredFov">), declaredFov };
+    const squeeze = /export const SQUEEZE = \{([^}]*)\}/.exec(follow)?.[1] ?? "";
+    const lensSqueeze = { comfortDistance: num(block, "comfortDistance"), release: num(squeeze, "release") };
+    return { source: "GTEKI_ROOT apps/web/src/explorer/followCamera.ts FOLLOW + packages/scene-api WALKER_BODY", ...(c as Omit<FollowConstants, "source" | "declaredFov" | "lensSqueeze">), declaredFov, lensSqueeze };
   } catch {
     return FALLBACK;
   }

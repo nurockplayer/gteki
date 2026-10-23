@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
-import { chooseBySearch, hooks, imageStats, openStation, routeWaypoints, save, shotPath, stationData, textIf, toasts, STATIONS, type StationKey } from "../lib/gteki.ts";
+import { chooseBySearch, hooks, imageStats, openStation, routeWaypoints, save, shotPath, stationData, textIf, toasts, STATIONS, type StationKey, type Vec3 } from "../lib/gteki.ts";
 import {
   analyseFovEase, candidateIdentity, drainCameraSamples, followConstants, LENS_PROBE, longestRunMs, startCameraSampler, startFovRecorder, stopCameraSampler, stopFovRecorder,
   summarise, toSample, CROWDED_M, type CameraSample, type FovEase,
@@ -222,10 +222,11 @@ for (const key of STATIONS) {
     await page.addInitScript(LENS_PROBE);
     await openStation(page, key);
     const w = walks[key][0]!;
-    await startWalkUi(page, key, w);
+    const route = await startWalkUi(page, key, w);
+    const wps = routeWaypoints(key, route.steps);
     const hud = (name: RegExp) => page.locator(".hud button").filter({ hasText: name }).first();
 
-    const events: (FovEase & { expectedFov: number | null; kind: "ease" | "snap-by-design"; end: Record<string, unknown>; windowMs: number; designSettleMs: number | null })[] = [];
+    const events: (FovEase & { expectedFov: number | null; kind: "ease" | "snap-by-design"; end: Record<string, unknown>; windowMs: number; designSettleMs: number | null; wideCause: string | null; wideByDesign: boolean })[] = [];
     const declared = k.declaredFov;
     const run = async (event: string, act: () => Promise<void>, expectedFov: number | null, kind: "ease" | "snap-by-design" = "ease", settleMs = 900) => {
       await startFovRecorder(page);
@@ -236,14 +237,21 @@ for (const key of STATIONS) {
       // End-of-window state: the app's own FOV/far (newer builds) and the canvas aspect, to tell a missing render from a stale aspect.
       const end = await page.evaluate(() => {
         const w = window as any, c = document.querySelector("canvas.gteki-canvas") as HTMLCanvasElement | null, info = w.__gteki?.sceneInfo?.() ?? {};
-        return { mode: w.__gteki?.mode?.() ?? null, sceneFov: info.fov ?? null, sceneFar: info.far ?? null, cameraAspect: info.aspect ?? null, canvasAspect: c && c.clientHeight ? c.clientWidth / c.clientHeight : null };
+        return { mode: w.__gteki?.mode?.() ?? null, camera: info.camera ?? null, avatar: w.__gteki?.avatar?.() ?? null, sceneFov: info.fov ?? null, sceneFar: info.far ?? null, cameraAspect: info.aspect ?? null, canvasAspect: c && c.clientHeight ? c.clientWidth / c.clientHeight : null };
       });
       const a = analyseFovEase(event, rec);
       // Report only: the time the declared exponential ease (settle s) needs to come within FOV_TOL_DEG of a change
       // this size, next to the measured settle time, so a slow or unfinished ease is visible as a number.
       const delta = a.startFov !== null && a.endFov !== null ? Math.abs(a.endFov - a.startFov) : 0;
       const designSettleMs = declared.settleS && delta > FOV_TOL_DEG ? Math.round(declared.settleS * 1000 * Math.log(delta / FOV_TOL_DEG)) : null;
-      events.push({ ...a, expectedFov, kind, end, windowMs: settleMs, designSettleMs });
+      // Why #136 may legitimately hold the wide follow lens at the end of the window: the avatar is on a stair or
+      // escalator step of the route, or the boom is squeezed (pivot within comfortDistance + release, the app's own
+      // hysteresis). Without one of these a wide follow lens is not excused.
+      const cs = toSample({ t: 0, camera: end.camera as number[] | null, avatar: end.avatar as Vec3 | null, mode: end.mode as string | null, lens: null }, 0, k, wps);
+      const sq = k.lensSqueeze;
+      const wideCause = cs?.stepMode === "stairs" || cs?.stepMode === "escalator" ? cs.stepMode
+        : cs && sq.comfortDistance !== null && cs.pivotDistanceEst <= sq.comfortDistance + (sq.release ?? 0) ? `squeezed (pivot ${cs.pivotDistanceEst} m)` : null;
+      events.push({ ...a, expectedFov, kind, end, windowMs: settleMs, designSettleMs, wideCause, wideByDesign: false });
     };
 
     // Start guide: overview 60 -> follow.
@@ -281,10 +289,12 @@ for (const key of STATIONS) {
       if (e.expectedFov === null) continue;
       // #136 widens the follow lens to the wide lens (declared.firstPerson, 60) on stairs/escalators and while walls
       // or ceilings squeeze the boom. A follow-mode end at exactly that wide lens passes only when the app's own
-      // sceneInfo().fov reports the same lens; any other end value (including a mid-ease one) still fails.
+      // sceneInfo().fov reports the same lens AND the avatar is on a stair/escalator or the boom is squeezed (wideCause);
+      // any other end value (including a mid-ease one) still fails.
       const sceneFov = typeof e.end.sceneFov === "number" ? e.end.sceneFov : null;
-      const wideByDesign = e.expectedFov === declared.follow && declared.firstPerson !== null && sceneFov !== null
+      const wideByDesign = e.expectedFov === declared.follow && declared.firstPerson !== null && sceneFov !== null && e.wideCause !== null
         && Math.abs(e.endFov - declared.firstPerson) <= FOV_TOL_DEG && Math.abs(sceneFov - e.endFov) <= FOV_TOL_DEG;
+      e.wideByDesign = wideByDesign;
       if (!wideByDesign) expect.soft(Math.abs(e.endFov - e.expectedFov), `${e.event}: final FOV ${e.endFov} vs declared ${e.expectedFov}`).toBeLessThanOrEqual(FOV_TOL_DEG);
     }
   });
