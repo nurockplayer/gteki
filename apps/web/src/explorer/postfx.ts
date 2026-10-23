@@ -1,9 +1,10 @@
 // High-quality post-processing chain for the explorer (presentation only).
 //
-// HDR scene (half float, MSAA) → GTAO → bloom on true highlights only → tone map + sRGB → grade.
-// Bloom keys on linear values above 1: lit surfaces stay crisp, and only emitters (fixtures, signs,
-// daylight) get a halo. The grade adds gentle contrast, a vignette and dither so dark ceilings and fog
-// never band. Everything here is renderer-neutral styling; it never changes what the scene shows.
+// HDR scene (half float, MSAA) → GTAO → bloom on true highlights only → tone map (AgX) + sRGB → grade.
+// Bloom keys on linear luma above the lighting plan's threshold (2.5 under the environment light, where lit
+// white surfaces pass 1; 1.0 for scene-lit stations): lit surfaces stay crisp, and only emitters (fixtures,
+// bright signs, daylight) get a halo. The grade adds gentle
+// contrast, a vignette and dither so dark ceilings and fog never band. Everything here is renderer-neutral styling; it never changes what the scene shows.
 import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
@@ -24,9 +25,9 @@ export interface PostFxSettings {
 }
 
 export const POSTFX_HIGH: PostFxSettings = {
-  bloom: { strength: 0.32, radius: 0.32, threshold: 1.0 },
+  bloom: { strength: 0.3, radius: 0.32, threshold: 2.5 },
   ao: { blend: 0.85, radius: 0.5, distanceFallOff: 1.0, thickness: 1.0 },
-  grade: { contrast: 1.08, saturation: 1.06, vignette: 0.32, lift: 0.004 },
+  grade: { contrast: 1.12, saturation: 1.2, vignette: 0.18, lift: 0.004 },
   msaa: 4,
   reflections: true,
 };
@@ -186,6 +187,11 @@ export class PostFx {
   setSize(w: number, h: number): void {
     this.composer.setSize(w, h);
     this.grade.uniforms.uAspect!.value = w / Math.max(1, h);
+  }
+
+  /** Per-station bloom threshold (see lighting.ts BLOOM_THRESHOLD). */
+  setBloomThreshold(threshold: number): void {
+    this.bloom.threshold = threshold;
   }
 
   /** Mirrors a dithered `avatar` into GTAO and so the floor reflection (both read GTAO's depth/normals); null clears it. */

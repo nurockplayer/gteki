@@ -20,6 +20,8 @@ export interface NoPathView {
 export function noPathView(t: Strings, cause: NoPathCause): NoPathView | null {
   const label = (o: NoPathOption): string => (o === "avoidModes" ? t.noPath.avoidModes : t[o]);
   const relaxable = (os: readonly NoPathOption[]): RelaxableOption[] => os.filter((o): o is RelaxableOption => o !== "avoidModes");
+  /** "The station has no data for this option": missing data, said apart from any known barrier. */
+  const noData = (os: readonly NoPathOption[]): string[] => os.flatMap((o) => t.noPath.noData[o] ?? []);
   switch (cause.kind) {
     case "none": return cause.relaxed.length > 0 ? { text: t.noPath.none, relax: [], all: false } : null;
     case "unknown": return { text: t.noPath.unknown, relax: [], all: false };
@@ -30,13 +32,17 @@ export function noPathView(t: Strings, cause: NoPathCause): NoPathView | null {
     case "combination": {
       const relax = relaxable(cause.options);
       // Without a chip for every option there is no one-tap fix; the text still says what to turn off.
-      return { text: t.noPath.all(cause.options.map(label).join(t.noPath.joiner)), relax: relax.length === cause.options.length ? relax : [], all: true };
+      return { text: [t.noPath.all(cause.options.map(label).join(t.noPath.joiner)), ...noData(cause.noData ?? [])].join(" "), relax: relax.length === cause.options.length ? relax : [], all: true };
     }
     case "option": {
       const relax = relaxable(cause.options.map((c) => c.option));
-      if (cause.options.length > 1) return { text: t.noPath.any(cause.options.map((c) => label(c.option)).join(t.noPath.joiner)), relax, all: false };
+      if (cause.options.length > 1) {
+        const missing = noData(cause.options.filter((c) => c.noData).map((c) => c.option));
+        return { text: [t.noPath.any(cause.options.map((c) => label(c.option)).join(t.noPath.joiner)), ...missing].join(" "), relax, all: false };
+      }
       const one = cause.options[0]!;
-      const detail = one.evidence === "unknown" ? t.noPath.unsurveyed[one.option]?.(one.complete)
+      // No station data at all outranks the route's own evidence: the option could not pass anywhere here.
+      const detail = one.noData ? t.noPath.noData[one.option] : one.evidence === "unknown" ? t.noPath.unsurveyed[one.option]?.(one.complete)
         : one.evidence === "known" && one.option === "stepFree" ? t.noPath.knownStepFree(one.complete) : undefined;
       return { text: [t.noPath.one(label(one.option)), detail].filter(Boolean).join(" "), relax, all: false };
     }
