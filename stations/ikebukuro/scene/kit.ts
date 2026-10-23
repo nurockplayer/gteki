@@ -324,7 +324,9 @@ export async function loadKit(
   let parts: Part[] = [];
   let placements: Placement[] = [];
   const rail = Object.entries(kit.pieces).find(([, p]) => p.use === FENCE_RAIL_USE && typeof p.pitch_m === "number");
-  if (rail) {
+  // Rails are desktop only: on the phone tier the 259 modules added up to ~95k triangles a frame near the JR gates
+  // (GPU slot 2026-10-23, spec 13 against main), so phones keep the procedural label boards.
+  if (rail && !low) {
     parts = await fetchParts(rail[0]);
     if (parts.length) placements = railPlacements(marks, rail[1].pitch_m!);
   }

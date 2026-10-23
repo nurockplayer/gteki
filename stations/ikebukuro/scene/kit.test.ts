@@ -199,13 +199,13 @@ describe("loadKit", () => {
   });
   const env = new THREE.Texture();
 
-  it("loads the high-tier file on desktop and the low-tier file on phones, once", async () => {
+  it("loads the rail once on desktop and not at all on phones, which keep every procedural board", async () => {
     for (const low of [false, true]) {
       const h = host([`kit/high/${RAIL}.glb`, `kit/low/${RAIL}.glb`]);
       const loaded = await loadKit(THREE, h, kit, fences.marks, low);
-      expect(h.loadGlb.mock.calls.map((c) => c[0])).toEqual([`kit/${low ? "low" : "high"}/${RAIL}.glb`]);
-      expect(loaded.placements.length).toBe(259);
-      expect(loaded.railed.size).toBe(62);
+      expect(h.loadGlb.mock.calls.map((c) => c[0])).toEqual(low ? [] : [`kit/high/${RAIL}.glb`]);
+      expect(loaded.placements.length).toBe(low ? 0 : 259);
+      expect(loaded.railed.size).toBe(low ? 0 : 62);
     }
   });
 
@@ -495,9 +495,10 @@ describe("representative gate arrays: what loadKit builds", () => {
     for (const low of [false, true]) {
       const h = host();
       const loaded = await loadKit(THREE, h, kit, fences.marks, low, graph);
-      expect(h.loadGlb.mock.calls.map((c) => c[0]).sort()).toEqual([`kit/${low ? "low" : "high"}/${GATE}.glb`, `kit/${low ? "low" : "high"}/${RAIL}.glb`].sort());
+      // phones load the gate array only (rails are desktop only)
+      expect(h.loadGlb.mock.calls.map((c) => c[0]).sort()).toEqual(low ? [`kit/low/${GATE}.glb`] : [`kit/high/${GATE}.glb`, `kit/high/${RAIL}.glb`].sort());
       expect(loaded.gates.map((g) => g.node)).toEqual(GATE_NODES);
-      expect(loaded.placements.length).toBe(259); // the rails are unchanged
+      expect(loaded.placements.length).toBe(low ? 0 : 259); // the rails are unchanged on desktop
     }
     const h = host();
     const noGraph = await loadKit(THREE, h, kit, fences.marks, false);

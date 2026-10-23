@@ -154,7 +154,8 @@ data the station already has and nothing else, except the labelled gate arrays b
 stretches (`scene/access_fences.json` `marks`; the 62 of 80 that are at least 1.8 m long, 259 modules, stretched at most
 12 % along the run; the label boards move onto the rail faces and the collision panels are unchanged). The
 desktop tier loads `gteki/kit/high/` (the full library GLB), `quality: "low"` loads `gteki/kit/low/` (the mobile library
-GLB). Instances are grouped into 16 m (desktop) or 32 m (phone) tiles so three.js culls them per tile. Kit meshes are
+GLB) for the gate arrays only: phones keep the procedural boards instead of rails, which cost up to ~95k triangles a frame
+near the JR gates on the low tier (spec 13 against main, 2026-10-23). The low rail copy stays declared for a cheaper rail later. Instances are grouped into 16 m (desktop) or 32 m (phone) tiles so three.js culls them per tile. Kit meshes are
 visual only: they never enter `walkable` or `colliders`, and a GLB that cannot load leaves the procedural board.
 `python3 -I pipeline/sync_kit.py [--check]` (`pnpm sync:kit`) copies the GLBs byte for byte from `assets/library/` and
 checks them against the kit manifests' sha256; both copies are declared in `assets[id=b1].files`. Credit:
