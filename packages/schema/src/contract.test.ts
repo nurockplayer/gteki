@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { asRealStation, createSyntheticBundle, syntheticEdge as edge } from "../../navigation/src/fixtures.ts";
-import { isOpenAt, parseHm, parseStationFiles, validateBundle } from "./index.ts";
-import type { GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
+import { dataFileFactsOnlySources, isOpenAt, parseHm, parseStationFiles, validateBundle } from "./index.ts";
+import type { DataFile, GraphFile, HoursSpec, PoiFile, StationBundle, StationManifestFile, Weekday } from "./index.ts";
 
 const ev = { sourceIds: ["fixture-access"], method: "synthetic-fixture", checkedDate: "2026-10-20" };
 const DECISION = { url: "https://github.com/nurockplayer/gteki/issues/26#issuecomment-6302797404", date: "2026-10-21" };
@@ -326,6 +326,137 @@ describe("review regressions: nested fail-closed shape and rights", () => {
     expect(errors(bad)).toContain("floor.elevation");
   });
 
+  it("gives declared data files the asset source and rights gate, and refuses bad paths", () => {
+    const withData = (dataFiles: DataFile[], real = false) => {
+      const b = createSyntheticBundle();
+      b.dataFiles = dataFiles;
+      return errors(real ? asRealStation(b) : b);
+    };
+    const ok: DataFile = { id: "plan", path: "data/plan.json", sourceIds: ["fixture-geometry"], modified: false };
+    expect(withData([ok])).toEqual([]);
+    // dataFiles live outside gteki/ (any case: macOS is case-insensitive): contract files and anything else under it are refused (assets[] covers that folder).
+    for (const bad of ["../x.json", "data//x.json", "data/x#1.json", "/abs.json", "data/x.ts", "gteki/station.json", "gteki/graph.json", "gteki/assets/b1.meta.json", "GTEKI/station.json", "Gteki/graph.json"])
+      expect(withData([{ ...ok, path: bad }]), bad).toContain("data.path");
+    // ?raw imports of svg/shader text can be declared.
+    for (const good of ["scene/sign.svg", "scene/fog.glsl", "scene/a.vert", "scene/a.frag", "scene/a.wgsl"])
+      expect(withData([{ ...ok, path: good }]), good).toEqual([]);
+    expect(withData([ok, { ...ok, path: "data/other.json" }])).toContain("data.dup");
+    expect(withData([ok, { ...ok, id: "plan2" }])).toContain("data.dup");
+    expect(withData([{ ...ok, sourceIds: ["nope"] }])).toContain("data.source");
+    // A real station's data needs a source, and public data cannot derive from a reference-only one.
+    expect(withData([{ ...ok, sourceIds: [] }], true)).toContain("data.source");
+    const traced = createSyntheticBundle();
+    traced.station.synthetic = false;
+    traced.edges = [];
+    traced.sources[0]!.rights = "REFERENCE_ONLY";
+    traced.dataFiles = [ok];
+    expect(errors(traced)).toContain("data.rights");
+  });
+
+  it("accepts a source under the Owner override for data files, like isShippableRights elsewhere", () => {
+    const b = createSyntheticBundle();
+    b.station.synthetic = false;
+    b.edges = [];
+    const src = b.sources[0]!;
+    src.rights = "PUBLISHED_UNDER_OWNER_OVERRIDE";
+    src.override = { decision: "#130", date: "2026-10-22" };
+    src.license = { name: "unconfirmed", url: "https://example.org/terms" };
+    b.dataFiles = [{ id: "plan", path: "data/plan.json", sourceIds: [src.id], modified: false }];
+    expect(errors(b)).not.toContain("data.rights");
+  });
+
+  it("lets data files cite facts-only sources, but only with a derivation (#186/#26)", () => {
+    const real = () => {
+      const b = createSyntheticBundle();
+      b.station.synthetic = false;
+      b.edges = [];
+      b.sources.push({ ...b.sources[0]!, id: "facts", usage: "facts-only", rights: "REFERENCE_ONLY", decision: DECISION });
+      b.sources.push({ ...b.sources[0]!, id: "ref", rights: "REFERENCE_ONLY" });
+      return b;
+    };
+    const file: DataFile = { id: "signage", path: "scene/signage.json", sourceIds: ["fixture-geometry", "facts"], modified: true, derivation: "pipeline/build_signage.py: measured positions; labels are facts from the guide." };
+    const b = real();
+    b.dataFiles = [file];
+    expect(errors(b)).not.toContain("data.rights");
+    expect(errors(b)).not.toContain("data.derivation");
+    // Derivation is required and non-empty when modified or when a facts-only source is cited.
+    for (const derivation of [undefined, "", "  "]) {
+      for (const modified of [true, false]) {
+        b.dataFiles = [{ ...file, modified, derivation }];
+        expect(errors(b), `${modified} ${JSON.stringify(derivation)}`).toContain("data.derivation");
+      }
+    }
+    b.dataFiles = [{ id: "d", path: "scene/d.json", sourceIds: ["fixture-geometry"], modified: true }];
+    expect(errors(b)).toContain("data.derivation");
+    b.dataFiles = [{ id: "d", path: "scene/d.json", sourceIds: ["fixture-geometry"], modified: false }];
+    expect(errors(b)).not.toContain("data.derivation");
+    // Any other non-shippable source is still refused, alongside a facts-only one.
+    b.dataFiles = [{ ...file, sourceIds: ["facts", "ref"] }];
+    expect(errors(b).filter((c) => c === "data.rights")).toHaveLength(1);
+  });
+
+  it("lets an authored data file declare no source, but only with a derivation saying so (#252)", () => {
+    const real = () => {
+      const b = createSyntheticBundle();
+      b.station.synthetic = false;
+      b.edges = [];
+      return b;
+    };
+    const authored: DataFile = { id: "finishes", path: "scene/finishes.json", sourceIds: [], modified: false, authored: true, derivation: "GTEki-authored scene config: not derived from any source." };
+    const b = real();
+    b.dataFiles = [authored];
+    expect(errors(b)).not.toContain("data.source");
+    expect(errors(b)).not.toContain("data.derivation");
+    // Nothing to credit: it cites no source, so it cannot show up as citing a facts-only one.
+    expect(dataFileFactsOnlySources(b)).toEqual([]);
+    // Authored still means no sources at all.
+    const cites = real();
+    cites.dataFiles = [{ ...authored, sourceIds: ["fixture-geometry"] }];
+    expect(errors(cites)).toContain("data.source");
+    // The derivation is required and non-empty for an authored file, whatever `modified` says.
+    for (const derivation of [undefined, "", "  "]) {
+      for (const modified of [false, true]) {
+        const missing = real();
+        missing.dataFiles = [{ ...authored, modified, derivation }];
+        expect(errors(missing), `${modified} ${JSON.stringify(derivation)}`).toContain("data.derivation");
+      }
+    }
+    // A declared file that is not authored still needs provenance on a real station.
+    const plain = real();
+    plain.dataFiles = [{ id: "x", path: "scene/x.json", sourceIds: [], modified: false, derivation: "d" }];
+    expect(errors(plain)).toContain("data.source");
+    // And the field round-trips through parseStationFiles.
+    const [manifest, graph, pois] = split(createSyntheticBundle());
+    const roundTrip = parseStationFiles({ ...manifest, dataFiles: [authored] }, graph, pois);
+    expect(roundTrip.ok && roundTrip.bundle.dataFiles).toEqual([authored]);
+  });
+
+  it("lists data files that cite facts-only sources for the build log", () => {
+    const b = createSyntheticBundle();
+    b.sources.push({ ...b.sources[0]!, id: "facts-a", usage: "facts-only" }, { ...b.sources[0]!, id: "facts-b", usage: "facts-only" });
+    expect(dataFileFactsOnlySources(b)).toEqual([]);
+    b.dataFiles = [
+      { id: "plain", path: "scene/plain.json", sourceIds: ["fixture-geometry"], modified: false },
+      { id: "signage", path: "scene/signage.json", sourceIds: ["fixture-geometry", "facts-a", "facts-b", "facts-a"], modified: true, derivation: "d" },
+      { id: "lanes", path: "scene/lanes.json", sourceIds: ["facts-b"], modified: false, derivation: "d" },
+    ];
+    expect(dataFileFactsOnlySources(b)).toEqual([
+      { dataFileId: "signage", path: "scene/signage.json", factsOnlySourceIds: ["facts-a", "facts-b"] },
+      { dataFileId: "lanes", path: "scene/lanes.json", factsOnlySourceIds: ["facts-b"] },
+    ]);
+  });
+
+  it("round-trips dataFiles through parseStationFiles and rejects malformed entries", () => {
+    const b = createSyntheticBundle();
+    const [manifest, graph, pois] = split(b);
+    const withData = { ...manifest, dataFiles: [{ id: "plan", path: "data/plan.json", sourceIds: ["fixture-geometry"], modified: false }] };
+    const ok = parseStationFiles(withData, graph, pois);
+    expect(ok.ok && ok.bundle.dataFiles).toEqual(withData.dataFiles);
+    expect(parseStationFiles({ ...manifest, dataFiles: [{ id: "plan", path: 3, sourceIds: [], modified: false }] }, graph, pois).ok).toBe(false);
+    expect(parseStationFiles({ ...manifest, dataFiles: [{ id: "plan", path: "data/plan.json", sourceIds: [] }] }, graph, pois).ok).toBe(false);
+    expect(parseStationFiles({ ...manifest, dataFiles: "plan.json" }, graph, pois).ok).toBe(false);
+  });
+
   it("checks declared asset files like the asset uri, and refuses ? and # in either", () => {
     const withFiles = (uri: string, files: string[]) => {
       const b = createSyntheticBundle();
@@ -620,5 +751,74 @@ describe("late-opening windows (PR #15 Codex review 6)", () => {
     expect(isOpenAt(w("24:00", "00:00"), { weekday: "mon", minutes: 60 })).toBeNull();
     const b = createSyntheticBundle([edge("h", "start", "goal", { hours: w("24:00", "00:00") })]);
     expect(errors(b)).toContain("edge.hours");
+  });
+});
+
+describe("PUBLISHED_UNDER_OWNER_OVERRIDE rights (#130)", () => {
+  const OVERRIDE = { decision: "https://github.com/nurockplayer/gteki/issues/130", date: "2026-10-22" };
+  const overridden = (override?: unknown, license: { name: string; url: string } | null = { name: "Licence unconfirmed", url: "https://example.org/terms" }) => {
+    const b = asRealStation(createSyntheticBundle());
+    b.edges = [];
+    const src = b.sources.find((s) => s.id === "fixture-access")!;
+    src.rights = "PUBLISHED_UNDER_OWNER_OVERRIDE";
+    src.license = license;
+    (src as { override?: unknown }).override = override;
+    return b;
+  };
+
+  it("ships like REUSABLE_WITH_CONDITIONS when the override is recorded", () => {
+    const b = overridden(OVERRIDE);
+    expect(errors(b)).not.toContain("source.override");
+    expect(errors(b)).not.toContain("source.rights.value");
+    expect(warnings(b)).not.toContain("source.rights");
+    // An issue reference is accepted as well as a URL.
+    for (const decision of ["#130", "nurockplayer/gteki#130"]) expect(errors(overridden({ ...OVERRIDE, decision }))).not.toContain("source.override");
+  });
+
+  it("is an error without an override reference or with a malformed one", () => {
+    expect(errors(overridden(undefined))).toContain("source.override");
+    for (const bad of [null, "x", {}, { decision: "see chat", date: "2026-10-22" }, { decision: OVERRIDE.decision }, { decision: OVERRIDE.decision, date: "2026-10" }, { decision: OVERRIDE.decision, date: "2026-02-30" }])
+      expect(errors(overridden(bad))).toContain("source.override");
+  });
+
+  it("needs licence text", () => {
+    expect(errors(overridden(OVERRIDE, null))).toContain("source.override");
+    expect(errors(overridden(OVERRIDE, { name: " ", url: "https://example.org/terms" }))).toContain("source.override");
+  });
+
+  it("lets geometry ship: nodes, edges, assets, POIs and coverage polygons derived from an override source validate clean", () => {
+    const geometry = (rights: "PUBLISHED_UNDER_OWNER_OVERRIDE" | "UNVERIFIED") => {
+      const b = asRealStation(createSyntheticBundle([edge("v", "start", "goal", { verification: "verified" })]));
+      const src = b.sources.find((s) => s.id === "fixture-geometry")!;
+      src.rights = rights;
+      if (rights === "PUBLISHED_UNDER_OWNER_OVERRIDE") (src as { override?: unknown }).override = OVERRIDE;
+      b.assets = [{ id: "x", uri: "assets/x.glb", format: "glb", floorIds: [], role: "visual", sourceIds: ["fixture-geometry"] }];
+      b.coverage.areas = [{ id: "area", floorId: "concourse", status: "routable", label: [], polygon: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }], sourceIds: ["fixture-geometry"] }];
+      return b;
+    };
+    expect(errors(geometry("PUBLISHED_UNDER_OWNER_OVERRIDE"))).toEqual([]);
+    // The same bundle with an unverified source is refused at every geometry gate.
+    expect(errors(geometry("UNVERIFIED"))).toEqual(expect.arrayContaining([
+      "node.source.rights", "edge.geometry.rights", "asset.rights", "poi.position.rights", "coverage.polygon.rights",
+    ]));
+  });
+
+  it("warns, without erroring, when an override is recorded on a source whose rights is not the override value", () => {
+    const b = overridden(OVERRIDE);
+    b.sources.find((s) => s.id === "fixture-access")!.rights = "REUSABLE_WITH_CONDITIONS";
+    expect(errors(b)).toEqual([]);
+    expect(warnings(b)).toContain("source.override");
+    expect(warnings(overridden(OVERRIDE))).not.toContain("source.override");
+    // A malformed record on a non-override source is still an error.
+    const bad = overridden({ decision: "see chat", date: "2026-10-22" });
+    bad.sources.find((s) => s.id === "fixture-access")!.rights = "REUSABLE_WITH_CONDITIONS";
+    expect(errors(bad)).toContain("source.override");
+  });
+
+  it("fails closed on a wrong-shaped override at parse time", () => {
+    const [m, g, p] = split(overridden(OVERRIDE));
+    expect(parseStationFiles(m, g, p).ok).toBe(true);
+    (m.sources.find((s) => s.id === "fixture-access") as { override?: unknown }).override = "x";
+    expect(parseStationFiles(m, g, p).ok).toBe(false);
   });
 });

@@ -10,7 +10,7 @@
 // treats the real graph under a changed fact; they are not claims about the real station.
 //
 // Not applicable to Ikebukuro, so no case here (premise asserted in "matrix rows that do not apply"):
-//  - fare-paid boundary: all 63 edges are paid=false / crossesFareBoundary=false (fare-paid concourses are not modelled);
+//  - fare-paid boundary: all 67 edges are paid=false / crossesFareBoundary=false (fare-paid concourses are not modelled);
 //  - cross-operator: every floor belongs to the single operator "public".
 import fs from "node:fs";
 import { describe, expect, it } from "vitest";
@@ -30,19 +30,19 @@ const edgeOf = (b: StationBundle, id: string): Edge => b.edges.find((e) => e.id 
 // I1 in Lane F's goldens: JR Central Gate 2 -> Exit 35.
 const FROM = "g_jr_c2";
 const TO = "x35";
-const I1_NODES = ["g_jr_c2", "c_g2", "c_c", "c_e1", "c_n", "c_e2", "e_27j", "e_hall", "e_low", "x35"];
+const I1_NODES = ["g_jr_c2", "c_g2", "c_c", "c_e1", "c_n", "c_e2", "e_27j", "e_hall", "e_hall_stair_top", "e_hall_stair_foot", "e_low", "x35"];
 
 describe("shortest path", () => {
   const bundle = load();
   const router = createRouter(bundle);
 
-  it("JR Central Gate 2 -> Exit 35 is the golden route: 9 edges, 198.6 m, one floor change, two stair edges", () => {
+  it("JR Central Gate 2 -> Exit 35 is the golden route: 11 edges, 199.1 m, one floor change, two stair edges", () => {
     const r = router.route(FROM, TO, TICKETED);
     if (!r.ok) throw new Error(r.message);
     expect(r.nodeIds).toEqual(I1_NODES);
-    expect(r.totalLengthM).toBeCloseTo(198.6, 6);
+    expect(r.totalLengthM).toBeCloseTo(199.1, 6);
     expect(r.floorChanges).toBe(1);
-    expect(r.steps.map((s) => s.mode)).toEqual(["walk", "walk", "walk", "walk", "walk", "walk", "walk", "stairs", "stairs"]);
+    expect(r.steps.map((s) => s.mode)).toEqual(["walk", "walk", "walk", "walk", "walk", "walk", "walk", "walk", "stairs", "walk", "stairs"]);
     expect(r.synthetic).toBe(false);
   });
 
@@ -112,13 +112,22 @@ describe("no path / refusals", () => {
 
   it("a search-only POI (no verified connector) refuses to route rather than guessing an entrance", () => {
     const searchOnly = bundle.pois.filter((p) => p.connectorNodeIds.length === 0);
-    expect(searchOnly.length).toBe(20); // 5 gates and 15 exit numbers, per the gap list
+    expect(searchOnly.length).toBe(21); // 6 gates (incl. Yurakucho South Passage West Gate) and 15 exit numbers, per the gap list
     const exit35 = bundle.pois.find((p) => p.id === "exit-35")!;
     const gate = bundle.pois.find((p) => p.id === "jr-central-gate-2")!;
     const tobu = bundle.pois.find((p) => p.id === "tobu-central-gate-2")!;
     expect(routeBetween(router, { kind: "poi", poi: gate }, tobu, TICKETED)).toMatchObject({ ok: false, reason: "unknown_goal" });
     expect(routeBetween(router, { kind: "poi", poi: tobu }, exit35, TICKETED)).toMatchObject({ ok: false, reason: "unknown_start" });
     expect(routeBetween(router, { kind: "poi", poi: gate }, exit35, TICKETED)).toMatchObject({ ok: true });
+  });
+
+  it("Yurakucho South Passage West Gate is searchable but has no edge, so it refuses to route to Exit 4", () => {
+    const gate = bundle.pois.find((p) => p.id === "metro-y-south-west-gate")!;
+    const exit4 = bundle.pois.find((p) => p.id === "exit-4")!;
+    expect(gate.names.some((n) => n.text === "有楽町線 南通路西改札")).toBe(true);
+    expect(gate.connectorNodeIds).toEqual([]);
+    expect(routeBetween(router, { kind: "poi", poi: gate }, exit4, TICKETED)).toMatchObject({ ok: false, reason: "unknown_start" });
+    expect(routeBetween(router, { kind: "poi", poi: exit4 }, gate, TICKETED)).toMatchObject({ ok: false, reason: "unknown_goal" });
   });
 
   it("an unreachable goal is no_path, not search_limit (the only way to Exit 35's stair foot is cut)", () => {
@@ -194,7 +203,7 @@ describe("level transition", () => {
 
   it("the route climbs by stairs from B1 to street level: step floors change on the last edge, floorChanges counts it", () => {
     const stairs = route.steps.filter((s) => s.mode === "stairs");
-    expect(stairs.map((s) => s.edgeId)).toEqual(["e_hall__e_low", "e_low__x35"]);
+    expect(stairs.map((s) => s.edgeId)).toEqual(["e_hall_stair_top__e_hall_stair_foot", "e_low__x35"]);
     const last = route.steps.at(-1)!;
     expect([last.fromFloorId, last.toFloorId]).toEqual(["b1", "street"]);
     expect(route.floorChanges).toBe(1);
@@ -230,10 +239,10 @@ describe("freshness (stale data)", () => {
     return r;
   };
 
-  it("reports its evidence dates: oldest source 2022-01 (Toshima guide), checked 2026-10-21, no undated or expired source", () => {
+  it("reports its evidence dates: oldest source 2022-01 (Toshima guide), checked 2026-10-22, no undated or expired source", () => {
     const r = at("2026-10-22");
     expect(r.oldestSourceDate).toBe("2022-01");
-    expect(r.evidenceCheckedDate).toBe("2026-10-21");
+    expect(r.evidenceCheckedDate).toBe("2026-10-22");
     expect(r.undatedSourceIds).toEqual([]);
     expect(r.expiredSourceIds).toEqual([]);
   });
@@ -266,8 +275,9 @@ describe("strict hours and step-free", () => {
     expect(r.waitSeconds).toBe(0);
   });
 
-  it("step-free fails closed: wheelchair access is unknown (null) on every edge, so even the flat walk to the gate stair foot has none", () => {
-    expect(bundle.edges.every((e) => e.wheelchair === null)).toBe(true);
+  it("step-free fails closed: wheelchair access is false on stairs and unknown (null) on every other edge, so even the flat walk to the gate stair foot has none", () => {
+    expect(bundle.edges.filter((e) => e.wheelchair !== (e.mode === "stairs" ? false : null)).map((e) => e.id)).toEqual([]);
+    expect(bundle.edges.some((e) => e.wheelchair === false)).toBe(true);
     expect(router.route(FROM, TO, { ...TICKETED, stepFree: true })).toMatchObject({ ok: false, reason: "no_path" });
     expect(router.route(FROM, "c_e2", { ...TICKETED, stepFree: true })).toMatchObject({ ok: false, reason: "no_path" });
   });

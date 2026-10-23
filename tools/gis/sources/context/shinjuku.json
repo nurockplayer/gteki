@@ -13,5 +13,57 @@
   "notes": "Sources are acquired (hash-recorded) and the config shape is final; only the anchor decision is missing.",
   "profile": {
     "window": { "kind": "origin_disc", "radius_m": 700 }
+  },
+  "overlay": {
+    "frame": {
+      "mode": "origin-only",
+      "station_json": "stations/shinjuku/gteki/station.json"
+    },
+    "z": {
+      "mode": "constant",
+      "z_m": 0,
+      "basis": "symbolic street z = 0 (no datum asserted)",
+      "datum_asserted": false,
+      "check": {
+        "path": "stations/shinjuku/gteki/station.json",
+        "floor_ordinal": 0,
+        "field": "renderElevationM"
+      }
+    },
+    "layers": [
+      {
+        "source_id": "ksj-n02-2025",
+        "kind": "railway",
+        "member": "N02-25_GML/UTF-8/N02-25_RailroadSection.geojson",
+        "ribbon_width_m": 1.5
+      },
+      {
+        "source_id": "ksj-n02-2025",
+        "kind": "station",
+        "member": "N02-25_GML/UTF-8/N02-25_Station.geojson",
+        "ribbon_width_m": 3
+      },
+      {
+        "source_id": "ksj-n03-2026",
+        "kind": "border",
+        "member": "N03-20260101_13.geojson",
+        "ribbon_width_m": 2,
+        "geometry": "polygon_rings",
+        "select": {
+          "kind": "municipality_code",
+          "property": "N03_007",
+          "code": "13104"
+        }
+      }
+    ],
+    "window": {
+      "kind": "origin_disc",
+      "radius_m": 700
+    },
+    "clip": {
+      "kind": "origin_disc",
+      "radius_m": 700
+    },
+    "notes": "station.json has origin.hM null (the vertical anchor is undecided, which is why the PLATEAU building context stays BLOCKED), so no station-enu frame exists; the overlay uses the horizontal origin only and a symbolic street z = 0. Window = origin disc of radius_m (no graph node rule is configured)."
   }
 }
