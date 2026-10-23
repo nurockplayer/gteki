@@ -20,6 +20,8 @@ export interface SignSpec extends SignContent {
   id: string;
   position: { x: number; y: number; z: number };
   facing: { x: number; y: number };
+  /** Surveyed ceiling above the sign (ENU m), for presentation-only suspension. */
+  ceilingZ?: number;
   /** Read when walking toward the junction: one block per turn taken there (left, straight on, right). */
   back?: SignContent[];
   /** Clear passage width at the sign (m); content is trimmed to fit. */
@@ -31,6 +33,17 @@ export interface SignSpec extends SignContent {
   kind?: "repeat" | "place";
   /** Where the content comes from (graph edge, POIs, access fact); data only. */
   basis?: string[];
+}
+
+/** Fitted face dimensions in world metres, shared with the kit without measuring text again. */
+export interface SignLayout {
+  id: string;
+  position: SignSpec["position"];
+  facing: SignSpec["facing"];
+  ceilingZ?: number;
+  scale: number;
+  widthM: number;
+  heightM: number;
 }
 
 export const FONT = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans CJK JP","Yu Gothic",system-ui,sans-serif';
@@ -353,11 +366,13 @@ export function buildSigns(
   anisotropy: number,
   texelScale = 1,
   maxTextureSize = ATLAS_W,
+  frame?: { facePlaneM: number },
 ) {
   const group = new THREE.Group();
   group.name = "ikebukuro_signs";
   type Face = { id: string; side: "front" | "back"; scale: number; canvas: HTMLCanvasElement; widthM: number; h: number; bg: string; local: THREE_NS.Matrix4; sign: THREE_NS.Matrix4 };
   const faces: Face[] = [];
+  const layouts: SignLayout[] = [];
   const boxes: { geo: THREE_NS.BufferGeometry; matrix: THREE_NS.Matrix4 }[] = [];
   const face = (content: SignContent[], maxW: number, theme: Theme) => {
     const fit = paintFitted(content, maxW, theme);
@@ -372,6 +387,8 @@ export function buildSigns(
     const backBlocks = (s.back ?? []).filter((b) => b.exits.length > 0 || b.gates.length > 0 || (b.places?.length ?? 0) > 0);
     const back = backBlocks.length ? face(backBlocks, maxW, theme) : null;
     const width = Math.max(front.widthM, back?.widthM ?? 0);
+    layouts.push({ id: s.id, position: s.position, facing: s.facing, ceilingZ: s.ceilingZ, scale,
+      widthM: width * scale, heightM: Math.max(front.h, back?.h ?? 0) * scale });
     // Plane faces +Z in local space; rotate so it faces the ENU 'facing' vector.
     const f = toRenderer(s.facing.x, s.facing.y, 0).sub(toRenderer(0, 0, 0));
     const signM = new THREE.Matrix4().compose(
@@ -379,9 +396,14 @@ export function buildSigns(
       new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(f.x, f.z)),
       new THREE.Vector3(scale, scale, scale),
     );
-    boxes.push({ geo: new THREE.BoxGeometry(width + 0.06, H + 0.06, 0.08), matrix: signM });
-    faces.push({ ...front, id: s.id, side: "front", scale, local: new THREE.Matrix4().makeTranslation(0, 0, 0.041), sign: signM });
-    if (back) faces.push({ ...back, id: s.id, side: "back", scale, local: new THREE.Matrix4().makeRotationY(Math.PI).setPosition(0, 0, -0.041), sign: signM });
+    // A loaded kit supplies the trim. Its face plane is recessed at +-0.028 m (outer depth 0.08 m):
+    // move faces 1 mm inside it and the backing another 1 mm behind, rather than covering the rim at +-0.041.
+    // Offsets are world metres even for a scaled low-ceiling sign. Without a kit, keep the original box and face offsets.
+    const faceZ = frame ? (frame.facePlaneM - 0.001) / scale : 0.041;
+    boxes.push({ geo: new THREE.BoxGeometry(frame ? width : width + 0.06, frame ? H : H + 0.06,
+      frame ? 2 * (faceZ - 0.001 / scale) : 0.08), matrix: signM });
+    faces.push({ ...front, id: s.id, side: "front", scale, local: new THREE.Matrix4().makeTranslation(0, 0, faceZ), sign: signM });
+    if (back) faces.push({ ...back, id: s.id, side: "back", scale, local: new THREE.Matrix4().makeRotationY(Math.PI).setPosition(0, 0, -faceZ), sign: signM });
   }
 
   // Unlit: the station has no dynamic lights (baked lighting only).
@@ -417,6 +439,7 @@ export function buildSigns(
 
   return {
     group,
+    layouts,
     /** Atlas page sizes (px), for tests and the harness: on the low tier one 4096 x 2048 page, plus a 4096 x <= 1024
      *  overflow page only when the faces need it. */
     pages: pages.map((p) => ({ w: p.width, h: p.height })),
