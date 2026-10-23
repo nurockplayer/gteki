@@ -424,7 +424,6 @@ export class App {
 
   /** Close one results list (focus is left alone). */
   private closeResults(which: "from" | "to"): void {
-    this.releaseMascot(which === "from" ? this.ui.fromResults : this.ui.toResults);
     this.setCombo(which, COMBO_CLOSED);
   }
 
@@ -438,7 +437,11 @@ export class App {
     this.combo[which] = state;
     const input = which === "from" ? this.ui.fromInput : this.ui.toInput;
     const box = which === "from" ? this.ui.fromResults : this.ui.toResults;
-    if (!state.open) box.replaceChildren();
+    if (!state.open) {
+      // Every close (Escape included) frees the mascot first, so a search_empty line never outlives its list.
+      this.releaseMascot(box);
+      box.replaceChildren();
+    }
     const role = listboxRole(state);
     if (role) box.setAttribute("role", role);
     else box.removeAttribute("role");
