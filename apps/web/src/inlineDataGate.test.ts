@@ -70,10 +70,13 @@ describe("undeclaredInlinedData", () => {
 });
 
 describe("inlineDataGateMode", () => {
-  it("warns by default and fails only when set to error", () => {
-    expect(inlineDataGateMode({})).toBe("warn");
+  it("fails by default: both stations have declared their files, so undeclared data is a real error", () => {
+    expect(inlineDataGateMode({})).toBe("error");
+    expect(inlineDataGateMode({ GTEKI_INLINE_DATA_GATE: "" })).toBe("error");
+    // Only an explicit warn downgrades it, for local debugging; a typo must not silently pass a build.
     expect(inlineDataGateMode({ GTEKI_INLINE_DATA_GATE: "warn" })).toBe("warn");
-    expect(inlineDataGateMode({ GTEKI_INLINE_DATA_GATE: "error" })).toBe("error");
+    expect(inlineDataGateMode({ GTEKI_INLINE_DATA_GATE: "ERROR" })).toBe("error");
+    expect(inlineDataGateMode({ GTEKI_INLINE_DATA_GATE: "off" })).toBe("error");
   });
 });
 
@@ -84,17 +87,25 @@ describe("declaredStationFiles", () => {
     fs.mkdirSync(path.join(st, "gteki", "assets"), { recursive: true });
     fs.mkdirSync(path.join(st, "scene"), { recursive: true });
     fs.writeFileSync(path.join(st, "gteki", "assets", "b1.glb"), "x");
+    fs.writeFileSync(path.join(st, "gteki", "assets", "b1.mobile.glb"), "x");
+    fs.writeFileSync(path.join(st, "gteki", "assets", "b.mobile.glb"), "x");
     fs.writeFileSync(path.join(st, "gteki", "assets", "b1.meta.json"), "{}");
     fs.writeFileSync(path.join(st, "scene", "signage.json"), "{}");
     fs.writeFileSync(path.join(st, "scene", "undeclared.json"), "{}");
     fs.writeFileSync(path.join(st, "gteki", "station.json"), JSON.stringify({
-      assets: [{ uri: "assets/b1.glb", files: ["assets/b1.meta.json"] }],
+      assets: [{ uri: "assets/b1.glb", uriMobile: "assets/b1.mobile.glb", files: ["assets/b1.meta.json"] }],
       dataFiles: [{ id: "signage", path: "scene/signage.json", sourceIds: ["s"], modified: false }, { id: "gone", path: "scene/missing.json", sourceIds: ["s"], modified: false }],
     }));
     const [declared] = declaredStationFiles(discoverStations([root]));
     expect(declared!.folder).toBe(st);
     expect([...declared!.declared].sort()).toEqual([
-      path.join(st, "gteki/assets/b1.glb"), path.join(st, "gteki/assets/b1.meta.json"), path.join(st, "scene/signage.json"),
+      path.join(st, "gteki/assets/b1.glb"), path.join(st, "gteki/assets/b1.meta.json"), path.join(st, "gteki/assets/b1.mobile.glb"), path.join(st, "scene/signage.json"),
+    ]);
+    const mobilePath = path.join(st, "gteki/assets/b1.mobile.glb");
+    expect(declared!.declared.has(fs.realpathSync(mobilePath))).toBe(true);
+    expect(undeclaredInlinedData([mobilePath + "?url"], [declared!])).toEqual([]);
+    expect(undeclaredInlinedData([path.join(st, "gteki/assets/b.mobile.glb") + "?url"], [declared!])).toEqual([
+      "alpha: gteki/assets/b.mobile.glb",
     ]);
     const ids = [path.join(st, "scene/signage.json"), path.join(st, "scene/undeclared.json"), path.join(st, "gteki/assets/b1.meta.json")];
     expect(undeclaredInlinedData(ids, [declared!])).toEqual(["alpha: scene/undeclared.json"]);

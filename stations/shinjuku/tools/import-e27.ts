@@ -856,10 +856,10 @@ gateClusters.forEach((g, i) => {
     connectorNodeIds: freeSide,
     paid: false,
     notes: [
-      { lang: "ja", text: `位置はE27の改札リンク${g.links.length}本のまとまりの位置です。この階のGSI構内地図の改札口代表点（F106）のうち、この改札群が最寄りのものは${f106Near}件です（各点は最寄りの1群だけに数えます）。` },
-      { lang: "en", text: `Position comes from ${g.links.length} E27 gate link${g.links.length === 1 ? "" : "s"} grouped together. Of the GSI station map's ticket-gate representative points (F106) on this level, ${f106Near} ${f106Near === 1 ? "has" : "have"} this cluster as the nearest (each point is counted for one cluster only).` },
+      { lang: "ja", text: "位置は地図上の改札の位置から求めた目安です。" },
+      { lang: "en", text: "Position is approximate, taken from the mapped ticket gates." },
     ],
-    evidence: vEv("toll transition links clustered (≤30 m) + GSI F106 ≤8 m"),
+    evidence: vEv(`toll transition links clustered (≤30 m) + GSI F106 ≤8 m; ${g.links.length} gate link(s); F106 points nearest this cluster on this level: ${f106Near}`),
   });
 });
 // Platform
@@ -943,8 +943,16 @@ shafts.forEach((s, i) => {
   const missingInGsi = e27Floors.filter((o) => !gsiLevels.includes(o));
   const missingInE27 = gsiLevels.filter((o) => !e27Floors.includes(o));
   const lvl = (o: number) => (o > 0 ? "1F" : `B${Math.abs(o)}`);
-  liftCrossCheck.push({ poi: `poi:elevator:${i + 1}`, e27Floors, gsiLevels, missingInGsi, missingInE27 });
   const agree = missingInGsi.length === 0 && missingInE27.length === 0 && near.length > 0;
+  const jaCheck = agree
+    ? `GSI構内地図のエレベーター代表点（F012）と照合済み：E27の停止階（${e27Floors.map(lvl).join("・")}）と一致します。`
+    : `GSI構内地図のエレベーター代表点（F012）と照合：E27の停止階（${e27Floors.map(lvl).join("・")}）に対し、F012は${gsiLevels.length ? gsiLevels.map(lvl).join("・") : "なし"}。${missingInGsi.length ? `${missingInGsi.map(lvl).join("・")}にはF012がありません（不一致）。` : ""}${missingInE27.length ? `${missingInE27.map(lvl).join("・")}のF012にE27の停止がありません（不一致）。` : ""}`;
+  const enCheck = agree
+    ? `Cross-checked against the GSI station-map lift points (F012): they agree with the E27 stops (${e27Floors.map(lvl).join(", ")}).`
+    : `Cross-check against the GSI station-map lift points (F012): E27 stops at ${e27Floors.map(lvl).join(", ")}; F012 points on ${gsiLevels.length ? gsiLevels.map(lvl).join(", ") : "no level"}. ${missingInGsi.length ? `No F012 point on ${missingInGsi.map(lvl).join(", ")} (mismatch). ` : ""}${missingInE27.length ? `F012 on ${missingInE27.map(lvl).join(", ")} has no E27 stop (mismatch).` : ""}`.trim();
+  const jaNote = `停止階：${e27Floors.map(lvl).join("・")}${missingInGsi.length ? `（${missingInGsi.map(lvl).join("・")}の停止は構内地図で確認できません）` : ""}${missingInE27.length ? `（${missingInE27.map(lvl).join("・")}は構内地図にありますが、歩行ネットワークに停止がありません）` : ""}。`;
+  const enNote = `Stops: ${e27Floors.map(lvl).join(", ")}${missingInGsi.length ? ` (the ${missingInGsi.map(lvl).join(", ")} stop is not confirmed by the station map)` : ""}${missingInE27.length ? ` (the station map shows the lift on ${missingInE27.map(lvl).join(", ")}, but the walking network has no stop there)` : ""}.`;
+  liftCrossCheck.push({ poi: `poi:elevator:${i + 1}`, e27Floors, gsiLevels, missingInGsi, missingInE27 });
   pois.push({
     id: `poi:elevator:${i + 1}`,
     category: "elevator",
@@ -965,18 +973,14 @@ shafts.forEach((s, i) => {
     notes: [
       {
         lang: "ja",
-        text: agree
-          ? `GSI構内地図のエレベーター代表点（F012）と照合済み：E27の停止階（${e27Floors.map(lvl).join("・")}）と一致します。`
-          : `GSI構内地図のエレベーター代表点（F012）と照合：E27の停止階（${e27Floors.map(lvl).join("・")}）に対し、F012は${gsiLevels.length ? gsiLevels.map(lvl).join("・") : "なし"}。${missingInGsi.length ? `${missingInGsi.map(lvl).join("・")}にはF012がありません（不一致）。` : ""}${missingInE27.length ? `${missingInE27.map(lvl).join("・")}のF012にE27の停止がありません（不一致）。` : ""}`,
+        text: jaNote,
       },
       {
         lang: "en",
-        text: agree
-          ? `Cross-checked against the GSI station-map lift points (F012): they agree with the E27 stops (${e27Floors.map(lvl).join(", ")}).`
-          : `Cross-check against the GSI station-map lift points (F012): E27 stops at ${e27Floors.map(lvl).join(", ")}; F012 points on ${gsiLevels.length ? gsiLevels.map(lvl).join(", ") : "no level"}. ${missingInGsi.length ? `No F012 point on ${missingInGsi.map(lvl).join(", ")} (mismatch). ` : ""}${missingInE27.length ? `F012 on ${missingInE27.map(lvl).join(", ")} has no E27 stop (mismatch).` : ""}`.trim(),
+        text: enNote,
       },
     ],
-    evidence: vEv("NWD route_type=4 links (elevator code 5: wheelchair + visually-impaired accessible) grouped ≤4 m; cross-checked against GSI F012 within 4 m"),
+    evidence: vEv(`NWD route_type=4 links (elevator code 5: wheelchair + visually-impaired accessible) grouped ≤4 m; cross-checked against GSI F012 within 4 m; ${jaCheck} ${enCheck}`),
   });
 });
 const unmatchedLifts = liftPoints.filter((f) => !claimedLifts.has(f)).map((f) => `${f.level.label} ${f.p.x},${f.p.y}`);
@@ -1012,10 +1016,10 @@ for (const { level, f, p } of allFacilities) {
     connectorNodeIds: [`n:${best.id}`],
     paid: nodeToll.get(best.id) === "paid" ? true : nodeToll.get(best.id) === "free" ? false : null,
     notes: [
-      { lang: "ja", text: `位置はGSI構内地図のトイレ空間の代表点（${f.properties.category}）であり、出入口の位置ではありません。` },
-      { lang: "en", text: `Position is the GSI station-map representative point of the toilet space (${f.properties.category}), not a door position.` },
+      { lang: "ja", text: "位置はトイレ空間の代表点で、出入口の位置ではありません。" },
+      { lang: "en", text: "Position is a representative point of the toilet space, not the door." },
     ],
-    evidence: vEv(`GSI facility ${f.properties.category} → nearest same-floor NWD node (${best.d.toFixed(1)} m)`, "Connector is the nearest walkway node, not a surveyed doorway"),
+    evidence: vEv(`GSI facility ${f.properties.category} → nearest same-floor NWD node (${best.d.toFixed(1)} m); GSI ${f.properties.category} space representative point`, "Connector is the nearest walkway node, not a surveyed doorway"),
   });
 }
 

@@ -6,15 +6,20 @@ import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { ENV_INTENSITY, createMaterials } from "./materials.ts";
 import { type FinishManifest, loadFinishPacks } from "./finishes.ts";
 import { buildFloorIndex, noseDistances, wallFloorAttribute } from "./geomattrs.ts";
-import { buildSigns, type SignSpec } from "./signs.ts";
+import { buildSigns, LOW_TEXEL_SCALE, type SignSpec } from "./signs.ts";
 import { type AccessFences, buildAccessFences } from "./fences.ts";
+import { type KitGraph, type KitManifest, loadKit } from "./kit.ts";
+import { type ColumnsFile, loadColumnKit } from "./kit_columns.ts";
 import { buildCrowd, type Lane } from "./crowd.ts";
 import { createAmbience } from "./ambience.ts";
+import { CONTEXT_GLB, contextVisibleAt, createContextBlockers, createContextMaterial, dressContext, streetRenderY, trackCamera } from "./context.ts";
 import crowdLanes from "./crowd_lanes.json";
 import finishManifest from "./finishes.json";
 import signage from "./signage.json";
 import walkBridges from "./walk_bridges.json";
 import accessFences from "./access_fences.json";
+import kitManifest from "./kit/kit.json";
+import columnsFile from "./columns.json";
 import graph from "../gteki/graph.json";
 import litMeta from "../gteki/assets/ikebukuro_b1_lit.meta.json";
 
@@ -381,7 +386,12 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     baked = false;
   }
   gltf.scene.updateMatrixWorld(true);
-  const fences = buildAccessFences(THREE, accessFences as AccessFences, toRenderer);
+  // Kit pieces (scene/kit/kit.json, tier by quality): visual-only instances on data the station already has.
+  // They never enter `walkable` or `colliders`; a piece that fails to load leaves the procedural label board.
+  // The three JR gate nodes get one REPRESENTATIVE array each (aisle count and orientation unverified; see kit.ts).
+  const kit = await loadKit(THREE, ctx, kitManifest as KitManifest, (accessFences as AccessFences).marks, low, graph as unknown as KitGraph);
+  const columnKit = await loadColumnKit(THREE, ctx, kitManifest as KitManifest, (columnsFile as unknown as ColumnsFile).columns, low);
+  const fences = buildAccessFences(THREE, accessFences as AccessFences, toRenderer, kit.railed);
   const { walkable, colliders, extra, meshesByRole, bridges } = assembleCollision(THREE, gltf.scene, {
     materialFor: (role) => mats.byRole[role],
     toRenderer,
@@ -395,6 +405,53 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
   // Surveyed floor outside the routable areas (e.g. the JR-Tobu passage, possibly a fare-paid transfer
   // concourse) has no verified access: it stays visible, but their outline is fenced and labelled.
   root.add(fences.visual, fences.collider);
+
+  // Street-level context buildings (#39): visual only, so they never join walkable or colliders (and
+  // assembleCollision never sees them). They do stop the follow camera, through separate low-poly blockers
+  // (context.ts) that the explorer reads once at resolve, so they exist now and fill when the context arrives.
+  // The explorer has no context slot, so the gate is station-side: the
+  // group is in the scene only while the camera is at street height and the scene is fogged (see context.ts),
+  // which keeps underground draws exactly as before and keeps it out of the overview's framing box. It loads in the
+  // background (it is only ever seen at street level, so the station is walkable before it arrives) and fails soft:
+  // no file, no layer.
+  const streetY = streetRenderY(ctx.bundle.floors);
+  const streetFloors = new Set(ctx.bundle.floors.filter((f) => f.ordinal === 0 && !f.intermediate).map((f) => f.id));
+  const contextBlockers = createContextBlockers(
+    THREE,
+    ctx.bundle.nodes.filter((n) => streetFloors.has(n.floorId)).map((n) => toRenderer(n.position.x, n.position.y, n.position.z ?? 0)),
+  );
+  let context: THREE_NS.Object3D | null = null;
+  let contextMaterial: THREE_NS.Material | null = null;
+  let disposed = false;
+  ctx.loadGlb(CONTEXT_GLB[ctx.quality]).then(
+    (loaded) => {
+      const material = createContextMaterial(THREE);
+      dressContext(loaded.scene, material);
+      if (disposed) {
+        loaded.scene.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
+        material.dispose();
+        return;
+      }
+      loaded.scene.name = "street-context";
+      // This subtree draws Ikebukuro's own (PLATEAU) road surface, so the explorer's pavement plane yields (#181).
+      loaded.scene.userData.gteki_street_surface = true;
+      loaded.scene.visible = false;
+      contextBlockers.fill(loaded.scene);
+      context = loaded.scene;
+      contextMaterial = material;
+    },
+    () => undefined,
+  );
+  // The camera is read from a mesh drawn every frame anyway (the floor), so the gate costs no draw call.
+  const probe = meshesByRole.get("floor")?.[0] ?? [...meshesByRole.values()].flat()[0] ?? null;
+  const cameraTrack = probe ? trackCamera(probe) : null;
+  const setContext = (show: boolean) => {
+    if (!context) return;
+    if (show && context.parent !== root) root.add(context);
+    else if (!show && context.parent === root) root.remove(context);
+    context.visible = show;
+    contextBlockers.setActive(show);
+  };
 
   // Lightmap (baked by pipeline/blender_bake_lighting.py, TEXCOORD_1). Falls back to a hemisphere rig.
   let lightmap: THREE_NS.Texture | null = null;
@@ -423,8 +480,11 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     m.envMapIntensity = ENV_INTENSITY[role] ?? 0.2;
   }
 
-  // Low quality paints signs at ~160 px/m instead of 300: a quarter of the texture memory, still legible at phone size.
-  const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy(), low ? 0.54 : 1, ctx.renderer.capabilities.maxTextureSize);
+  root.add(kit.build(THREE, env, toRenderer).group);
+  root.add(columnKit.build(THREE, env, toRenderer).group);
+
+  // Low quality paints signs at LOW_TEXEL_SCALE (~168 px/m) instead of 300: under a third of the texture memory, still legible at phone size.
+  const signs = buildSigns(THREE, (signage as { signs: SignSpec[] }).signs, toRenderer, ctx.renderer.capabilities.getMaxAnisotropy(), low ? LOW_TEXEL_SCALE : 1, ctx.renderer.capabilities.maxTextureSize);
   root.add(signs.group);
 
   const crowd = buildCrowd(THREE, (graph as { edges: Parameters<typeof buildCrowd>[1] }).edges, toRenderer, low ? 56 : 150, env, (crowdLanes as { lanes: Record<string, Lane> }).lanes);
@@ -447,17 +507,32 @@ export async function buildScene(ctx: SceneContext): Promise<StationScene> {
     root,
     walkable: walkTiles,
     colliders: colliderTiles,
+    cameraBlockers: contextBlockers.meshes,
     spawnPoints,
     environment: { lighting: lightmap ? "scene" : "default", background: 0x0e0d0b, fog: { color: 0x1b1915, near: 25, far: low ? 120 : 180 }, exposure: 1.0 },
     update: (dt, elapsed) => {
       crowd.update(dt, elapsed);
       ambience?.update({ nearby: crowd.nearby(), openness: 0.8 });
+      if (context && cameraTrack) {
+        const seen = cameraTrack.read();
+        setContext(seen !== null && contextVisibleAt(seen.y, streetY, seen.fogged));
+      }
     },
     dispose() {
       ambience?.dispose();
+      cameraTrack?.dispose();
+      disposed = true;
+      contextBlockers.dispose();
+      if (context) {
+        setContext(false);
+        context.traverse((o) => (o as THREE_NS.Mesh).geometry?.dispose());
+        contextMaterial?.dispose();
+      }
       crowd.dispose();
       mats.dispose();
       finishes.dispose();
+      kit.dispose();
+      columnKit.dispose();
       signs.dispose();
       envTarget.dispose();
       lightmap?.dispose();

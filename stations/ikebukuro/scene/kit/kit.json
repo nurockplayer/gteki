@@ -1,0 +1,37 @@
+{
+  "schema": "gteki.ikebukuro.kit/0",
+  "kit_version": "0.1.0",
+  "credit": "GTEki contributors, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+  "dirs": { "high": "kit/high", "low": "kit/low" },
+  "pieces": {
+    "gteki_barrier_rail_2400_solid": {
+      "use": "access_fence_rail",
+      "pitch_m": 2.4,
+      "note": "Origin on the floor, centred, +X along the run. Posts at the start of each module only, so modules chain."
+    },
+    "gteki_column_square_600": {
+      "use": "column_square",
+      "pitch_m": 0.61, "body_m": 0.6, "corner_radius_m": 0.03,
+      "height_m": 2.8,
+      "note": "Origin on the floor, centred; bounds +-0.305 m x 0..2.8 m. pitch_m is the plan footprint the sleeve is scaled from. Placed on scene/columns.json entries whose kit is this id."
+    },
+    "gteki_column_round_d600": {
+      "use": "column_round",
+      "pitch_m": 0.61, "body_m": 0.6, "corner_radius_m": 0,
+      "height_m": 2.8,
+      "note": "Origin on the floor, centred; bounds +-0.305 m x 0..2.8 m. pitch_m is the plan footprint the sleeve is scaled from. Placed on scene/columns.json entries whose kit is this id."
+    },
+    "gteki_gate_array_2": {
+      "use": "gate_array_representative",
+      "nodes": ["g_jr_c1", "g_jr_c2", "g_jr_s"],
+      "aisle_centre_x_m": -0.41,
+      "depth_m": 1.9,
+      "lift_m": 0.01,
+      "representative": {
+        "ja": "代表性擺設，通道數與方向未驗證",
+        "en": "representative placement; aisle count and orientation unverified"
+      },
+      "note": "REPRESENTATIVE, NOT A SURVEY. The data fixes only each gate node and its verified edge. The smallest neutral array (2 aisles, 1.86 m x 1.9 m, bidirectional, not the one-way piece) is placed once per node: local -Z (the aisles) along the verified edge's last segment as it arrives, the first aisle's centre (local x = -0.41) at mid-depth (0.95 m) on the node, so the edge runs down an aisle and does not cross a cabinet. Aisle count, direction, width and side are guesses. Visual only: no collider, not in walkable, not in the walk graph."
+    }
+  }
+}

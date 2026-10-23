@@ -71,9 +71,15 @@ export interface StationScene {
     /**
      * "default" (or omitted): the explorer adds its hemisphere + sun. "scene": the explorer adds no scene
      * lights (use for baked lightmaps / underground stations); the scene owns lighting and the explorer
-     * lights only its own avatar with a per-material environment map.
+     * lights only its own avatar with a per-material environment map (unless `envIntensity` is set).
      */
     lighting?: "default" | "scene";
+    /**
+     * Strength of the explorer's environment light (`scene.environment`, a neutral studio map). In "default"
+     * lighting it applies whether or not it is set (the explorer's default when omitted). In "scene" lighting
+     * there is no environment light unless this is set above 0, so baked lightmaps are not double-lit.
+     */
+    envIntensity?: number;
   };
   /** Per-frame hook (animated signage, ambient props). */
   update?(dtSeconds: number, elapsedSeconds: number): void;
@@ -88,7 +94,9 @@ export interface SceneContext {
   assetUrl(uri: string): string | null;
   /**
    * Load a GLB from the station folder via the explorer's GLTFLoader (Meshopt supported; Draco/KTX2
-   * not configured yet). External buffers/images must resolve inside the station folder.
+   * not configured yet). External buffers/images must resolve inside the station folder. A scene module that
+   * loads its own GLBs should pick the tier by `ctx.quality` (e.g. the manifest's `uriMobile` on "low"), as
+   * the explorer does for manifest assets.
    */
   loadGlb(uri: string): Promise<GLTF>;
   /**

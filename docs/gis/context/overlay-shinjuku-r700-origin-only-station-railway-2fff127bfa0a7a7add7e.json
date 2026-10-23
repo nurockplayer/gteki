@@ -1,0 +1,220 @@
+{
+  "run_id": "overlay-shinjuku-r700-origin-only-station-railway-2fff127bfa0a7a7add7e",
+  "command": "context-overlay",
+  "policy_version": "context-overlay-v1",
+  "station_id": "shinjuku",
+  "gteki_role": "context",
+  "navigation_use": "NOT_FOR_ROUTING",
+  "visual_only": true,
+  "verification": "UNVERIFIED",
+  "note": "Geometry, kind and a per-feature source hash only. No source name, code or attribute is copied; no railway class or track level is shown (the source has no underground versus at-grade field); the geometry is clipped to a 700 m disc around the station frame origin and is not the full source line; feature_hash is the hash of the whole source feature.",
+  "clip": {
+    "kind": "origin_disc",
+    "radius_m": 700,
+    "center": "station frame origin",
+    "features_clipped": 20,
+    "vertices_before": 377,
+    "vertices_after": 277
+  },
+  "frame": {
+    "mode": "origin-only",
+    "note": "horizontal ENU at the station.json origin (evaluated at height 0; no vertical anchor exists and none is asserted); same x/y as the station-enu frame would give to well under a millimetre",
+    "station_json_path": "stations/shinjuku/gteki/station.json",
+    "station_json_sha256": "8fdef8f8798d099b7195308318042494a041413247ec31bc26502e7a249fcb64",
+    "origin_crs": "EPSG:6668"
+  },
+  "window": {
+    "kind": "origin_disc",
+    "radius_m": 700,
+    "center": "station frame origin",
+    "disc_count": 1,
+    "selection_rule": "A feature is selected when any segment of its projected polyline meets a closed disc of the window; selected features are then clipped to the clip disc (when one is configured), after projection; without a clip they are kept whole."
+  },
+  "z_basis": {
+    "mode": "constant",
+    "z_m": 0,
+    "basis": "symbolic street z = 0 (no datum asserted)",
+    "datum_asserted": false,
+    "drape": "none",
+    "baked_offset_m": 0,
+    "evidence_path": "stations/shinjuku/gteki/station.json",
+    "evidence_sha256": "8fdef8f8798d099b7195308318042494a041413247ec31bc26502e7a249fcb64",
+    "evidence_field": "floors[ordinal 0].renderElevationM"
+  },
+  "credit": "出典：国土交通省国土数値情報ダウンロードサイト（https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N02-2025.html）を加工して作成",
+  "source": {
+    "source_id": "ksj-n02-2025",
+    "source_sha256": "aaf76af133b2e771e538fabc4646d2e443dc1d5a67b221382a28d744e706cc9f",
+    "bytes": 14903774,
+    "license_name": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "publish_gate": "CONDITIONAL"
+  },
+  "layers": [
+    {
+      "kind": "railway",
+      "source_id": "ksj-n02-2025",
+      "member": "N02-25_GML/UTF-8/N02-25_RailroadSection.geojson",
+      "member_sha256": "4269b076c0689db13cadf0d07801418b7215b2160ebf1278c508031cd08c4da2",
+      "axis_order": "lon,lat",
+      "crs": "urn:ogc:def:crs:EPSG::6668",
+      "features_in_source": 21933,
+      "outside_selection": 0,
+      "outside_prefilter": 21886,
+      "outside_window": 2,
+      "selected_before_clip": 45,
+      "dropped_by_clip": 0,
+      "selected": 45,
+      "features_clipped": 16,
+      "vertices_before_clip": 324,
+      "vertices": 225
+    },
+    {
+      "kind": "station",
+      "source_id": "ksj-n02-2025",
+      "member": "N02-25_GML/UTF-8/N02-25_Station.geojson",
+      "member_sha256": "908e2c3036e9c80760ae3514be3682c77f81f0bd60ab5fb1b3da1aa9352bbd94",
+      "axis_order": "lon,lat",
+      "crs": "urn:ogc:def:crs:EPSG::6668",
+      "features_in_source": 10234,
+      "outside_selection": 0,
+      "outside_prefilter": 10214,
+      "outside_window": 0,
+      "selected_before_clip": 20,
+      "dropped_by_clip": 0,
+      "selected": 20,
+      "features_clipped": 4,
+      "vertices_before_clip": 53,
+      "vertices": 52
+    }
+  ],
+  "totals": {
+    "features_in_source": 32167,
+    "outside_selection": 0,
+    "outside_prefilter": 32100,
+    "outside_window": 2,
+    "selected_before_clip": 65,
+    "dropped_by_clip": 0,
+    "selected": 65,
+    "vertices_before_clip": 377,
+    "vertices": 277
+  },
+  "feature_hashes_sha256": {
+    "railway": "4bc67e8eb4525934b307dc806245caddbb690d02a8f21d4f00e8da76a074e46f",
+    "station": "c3f71e33dd1145f8e6fd412bc656ba4c5ed20a93e99abbf2578eb20bdfd28417"
+  },
+  "feature_hashes": {
+    "railway": [
+      "041960d4c77aab3cbaaa40e215417793cfa6336f93f5fba9b026e41a37b07355",
+      "0f6d5f01de94723de9d3e5d227b4887b4c728b1543e77fc19828306f1bfa264d",
+      "121ec9ef6fd5abc48fcb5ad2fa112eb0e3d135403d87f7f56f4d8c9cf0afc934",
+      "1d3000f941ff7fcd149e16cd80a75ea91fc0601cfbd5d755d373212165cec488",
+      "241b1d9c449309f5dd3c2189c32dce2585dd6baaeeeea4fd59c8b28ce1790392",
+      "250fe0a71d5a9519526f727a65f748a28ab848e3ad8706aba80e698aa0a3a043",
+      "2b5f3e26c6f8faa36a52c28f032b7909e935c5d1cdfae00b295a53f8d99f7142",
+      "2d7709ff0dc469c8af507c98ff50bd5619c0199a03b5b736cb62402f5113eadc",
+      "2df4225e5da8028cd03f1ad65ad5c756dcda77658f2910f6c6cfd52240fecb52",
+      "2eaaed129b98a6934a9555322bbca39ed3d6f516e9e952fb386a6df17102f925",
+      "372ed0f0bd9d5bb39f64bb84043806a91faa3618a79ea35c753a0a02a0ceda2b",
+      "4f1260f3632f9b64a9ac51075ae981740316a841a86f79e3e2815d2556bba840",
+      "569583b8ca7726cbb60c536ed43d518ecaf47f35e7b0b815be4d2e15ccf09f70",
+      "56d2117e0bc37f637fb86ca4149af0c1909a8820a93b9182bea1a71edfbb6a2d",
+      "5b9d35ab7f28995e76fd1131f74d22e44cbb9d1b56ac54714bad0d28c0417734",
+      "5c9561addb33dbeef4e3672c3d25f0069bd4611e9bfb9c489c548db199ac17cf",
+      "6ba6dac3d0d0b62e66b16f52572a83980e7395f670864c8d28ac3659a5bb81bc",
+      "765d9df58ff0adba3fa2740b06ae58ee85ae5bc867b3d49d39189498002675c6",
+      "76bf0a1d9a188a2ff090ed19dd19c7a6e88d55e1608541a3e0774a892a379f9e",
+      "807322621e1bb1bc752d0ee6d13a7fd5ddce3f3fe603f2f98fceaa33c713f7a2",
+      "807a4fbc9d5c0b03c3b39d45244b3b89a132daff1c964125e4b0a5d7f6c56859",
+      "83ccfdb8f93ef84de2e26be41c6a616adb751fa3f651e9f150030491109e9590",
+      "872b4ca311fbfa6cf9c30eb6f842615c01d6f6b5504be4268a834afbcde2a4ae",
+      "89d8c6f51bf8456e8984f63df7e6f5b82b9bcd00994829191394c61c8347fc74",
+      "9121363140629701e7f65b21715b1bf357e083a52ff361603545e039bf2c8d6d",
+      "9418e8f1f9264942cec4c4bf7fe4418a98cc2c25d125870346a8764ef62f4a14",
+      "9a24200db51d6c60a7b406f0f57223d08d1b48782f5036fa16ffdd4ff22ff03e",
+      "9fc1530c37859270936d4a79d37b1e8ee8c1d428ad44c7d33c2d2d2bcaf55f73",
+      "a9843cc8ddf34ecf5bf37320e618a1cafddfe2ed9cec1c6eac8745c9266fe992",
+      "b309129d016c3588cd79001bd686eddf2a9ef9910f46e7313e9a7f99c62bbbb5",
+      "bf9915aaabd64f87c5bdfba33c5aeddb2896b91554e2c8e4e0d3aeaa9c653edf",
+      "c32d46bf00d9fb04ad2eb9f5e51a99776ece8ebadb254341e1898a42b8c124a6",
+      "c3ff0afa5bed73cc175b7be4beb1af966c984191316f08bdfb09b6d960b3233d",
+      "c590c1503736bc7a46a135f604e91f78cf911e7acd615e4eeeb17504ae8b7565",
+      "c8c5966f599d20d8833c9e46d807ac9f505901ba65f6db7658511187422544c3",
+      "d271f6e881d97d1ff32861d50e2317de7cad1a48e85c1c74c57116af3768b4cb",
+      "d58e7b0bf58a38e849c47aa2f89392846cff1c332fc62a63382b56c5a4a6a0ea",
+      "d787cb74674f4f0a686b6b43f4e7a9bdddb44fd65821ec21b45543ecf209f1a4",
+      "dd9a9dc96fd6fcc51bfb3e006899f018a55304ad5620229902b94be767ac8955",
+      "dedc684752cb5d68008973d5387849f4efa96e18b8c4e6a595cc312e8246176d",
+      "e120b53724ae07cdd8367e6d827d13fa93208e8aeb70ef13a6177a46cd8f9bb5",
+      "e535158c9b0ab83acec2045581cf39abb01b61489149f4fdf47a484ae9a98f61",
+      "ef7f02b7232e7f10b15633afa5ca766a2d0effebb5ce5b5112f907b09ab4f769",
+      "f72e560cabc92bc5254aa2541fe7c1db7a7174ea12a50792d9571a07ad407e11",
+      "fecffc48bad82216b62abd0ccd4c0657d17514debd964d45acca32d4cc511db4"
+    ],
+    "station": [
+      "02095fd3dbcc70468a15196aa449d670b0f8e212b79f3fae5711e7a30e6eae96",
+      "178f41c2dc370dfe371a1ab4cdea4f817143cbc96ef0cd23cb1ad42a52dc3059",
+      "29f4c24a85365bbcb6149bdc78d3d3ebb16ea1eb0800c702fe4138cfe9d87333",
+      "38747c6a2a858789a772cbb05345386702fe4e6dea6299cc8c62c02915be93fc",
+      "508fdf309bb67925997d02e9dafb39f11561cc80b7b91858e3651c0896047983",
+      "5135d351870ca838c19ae1f6573060575004c31c37a21c64367069f057421d3a",
+      "520ad0095e11d278c8f16388d42d3d3ea91912be1013e0fae6866dc25aca728e",
+      "5a95f0592595fcde7881817113f237345a0b314a7f67bd484e06badb0b811471",
+      "7a3596c790320947fdb0a59d94d8b785063d713cffda219e0b552722f0ac2fa4",
+      "7d260f580a50067e208a9ca99e56cedcb20362b402d344f1ad2f7150603a47a5",
+      "800d5455182f4a95058ad09cae94dbfc618ef60492e22e9cab378fbc958727b7",
+      "8c61d930fe275bb18b633a3fab0536c86276445f8dd0ad5960a0d470eb4c372b",
+      "8dd8d9c6e9c37abf93b5c73ee652536ec825550124574f26d69452324be3f278",
+      "b582ad3327f5dce115d72b98743a08caff00a98460ec0c07edd04d0cb84d52e6",
+      "bb815816e5ce5d06c1377a912d9a1568c7c7a3365e95febcd9f7893d9d2d0e24",
+      "d3d90b50544d20bf455a97a25cc990191b9c89bb3c9cd9278b1ce04e4166cff4",
+      "d44f76dcdecdb65f5c9dc26db8059681268e7350e53e186bdc79a1461c58701f",
+      "dd21e4a1277f54c5393f6ae4a3d2cc43db86378091511dc850801420a5c2fac5",
+      "e27b924b63666bdbe7a9b371bed8b7bee5ad038685ef061a9b450b1aab3aaab5",
+      "fc22397abecd6193cc5ccd1b03209ca58d45cf4f7a5f4c358e7453d80935ea68"
+    ]
+  },
+  "bbox_local_ENU": {
+    "min": [
+      -663.639,
+      -645.883,
+      0
+    ],
+    "max": [
+      594.357,
+      699.564,
+      0
+    ]
+  },
+  "outputs": {
+    "geojson": {
+      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-2fff127bfa0a7a7add7e.geojson",
+      "sha256": "a2ff15d49332a649277d35a3dfca002bfaf05b3debf6023a746645cbb4859225",
+      "bytes": 42269
+    },
+    "glb": {
+      "store_path": "out/overlay-shinjuku-r700-origin-only-station-railway-2fff127bfa0a7a7add7e.glb",
+      "sha256": "486ff55fa5a5772123042f70aa7d3e0c0bc66c958542404e1eccbf12e0d19e95",
+      "bytes": 30924,
+      "nodes": [
+        "ctx_rail_all",
+        "ctx_station_all"
+      ],
+      "triangles": {
+        "ctx_rail_all": 360,
+        "ctx_station_all": 64
+      },
+      "readback": {
+        "status": "PASS",
+        "node_count": 2,
+        "triangle_count": 424,
+        "expected_triangle_count": 424,
+        "bbox_max_error_m": 0.000024986383550640312,
+        "tolerance_m": 0.001
+      },
+      "segments_skipped_zero_length": 0
+    }
+  },
+  "tool_input_sha256": "d9d46fffddd346e6b13fe668a0bffe706b2002980064dbccc6e28c3b5916bce6",
+  "tool_version": "0.1.0"
+}
