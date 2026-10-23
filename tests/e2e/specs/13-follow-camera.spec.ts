@@ -42,6 +42,11 @@ const CLAMP_RUN_MAX_MS = 1250;
 const FOV_JUMP_MAX_DEG = Number(process.env.GTEKI_FOV_JUMP_DEG ?? 5);
 /** Tolerance when comparing the measured FOV with the source's declared value (deg). */
 const FOV_TOL_DEG = 0.5;
+/** Window at the end of a lens event over which the avatar's vertical speed is measured (ms). */
+const VZ_WINDOW_MS = 300;
+/** Vertical speed that counts as climbing or descending for the stair/escalator lens excuse (m/s); the app widens
+ *  above 0.25 m/s of smoothed vertical speed, so this is deliberately lower to tolerate the smoothing lag. */
+const VZ_MOVING_MPS = 0.1;
 const MAX_SAVED_FRAMES = 12;
 
 test.use({ trace: "off" });
@@ -226,13 +231,16 @@ for (const key of STATIONS) {
     const wps = routeWaypoints(key, route.steps);
     const hud = (name: RegExp) => page.locator(".hud button").filter({ hasText: name }).first();
 
-    const events: (FovEase & { expectedFov: number | null; kind: "ease" | "snap-by-design"; end: Record<string, unknown>; windowMs: number; designSettleMs: number | null; wideCause: string | null; wideByDesign: boolean })[] = [];
+    const events: (FovEase & { expectedFov: number | null; kind: "ease" | "snap-by-design"; end: Record<string, unknown>; windowMs: number; designSettleMs: number | null; vzMps: number | null; wideCause: string | null; wideByDesign: boolean })[] = [];
     const declared = k.declaredFov;
     const run = async (event: string, act: () => Promise<void>, expectedFov: number | null, kind: "ease" | "snap-by-design" = "ease", settleMs = 900) => {
       await startFovRecorder(page);
       await page.waitForTimeout(200);
       await act();
-      await page.waitForTimeout(settleMs);
+      // The last VZ_WINDOW_MS of the window also measure the avatar's vertical speed (see wideCause).
+      await page.waitForTimeout(Math.max(0, settleMs - VZ_WINDOW_MS));
+      const zA = await hooks.avatar(page), tA = Date.now();
+      await page.waitForTimeout(Math.min(settleMs, VZ_WINDOW_MS));
       const rec = await stopFovRecorder(page);
       // End-of-window state: the app's own FOV/far (newer builds) and the canvas aspect, to tell a missing render from a stale aspect.
       const end = await page.evaluate(() => {
@@ -249,13 +257,18 @@ for (const key of STATIONS) {
       // hysteresis). Without one of these a wide follow lens is not excused.
       const cs = toSample({ t: 0, camera: end.camera as number[] | null, avatar: end.avatar as Vec3 | null, mode: end.mode as string | null, lens: null }, 0, k, wps);
       const sq = k.lensSqueeze;
-      const wideCause = cs?.stepMode === "stairs" || cs?.stepMode === "escalator" ? cs.stepMode
+      // The app widens on slopes from the smoothed vertical speed, not from the edge the avatar stands on, so a stair
+      // or escalator only excuses the wide lens while the avatar is actually climbing or descending (#318).
+      const zB = end.avatar as Vec3 | null;
+      const vzMps = zA && zB ? Math.round((Math.abs(zB.z - zA.z) / Math.max(0.05, (Date.now() - tA) / 1000)) * 100) / 100 : null;
+      const onSlope = (cs?.stepMode === "stairs" || cs?.stepMode === "escalator") && vzMps !== null && vzMps >= VZ_MOVING_MPS;
+      const wideCause = onSlope ? `${cs!.stepMode} (vz ${vzMps} m/s)`
         : cs && sq.comfortDistance !== null && cs.pivotDistanceEst > 0.05 && cs.pivotDistanceEst <= sq.comfortDistance + (sq.release ?? 0) ? `squeezed (pivot ${cs.pivotDistanceEst} m)` : null;
       // Decided here (not at the assertion) so the saved JSON carries it.
       const sceneFov = typeof end.sceneFov === "number" ? end.sceneFov : null;
       const wideByDesign = expectedFov === declared.follow && declared.firstPerson !== null && sceneFov !== null && wideCause !== null
         && a.endFov !== null && Math.abs(a.endFov - declared.firstPerson) <= FOV_TOL_DEG && Math.abs(sceneFov - a.endFov) <= FOV_TOL_DEG;
-      events.push({ ...a, expectedFov, kind, end, windowMs: settleMs, designSettleMs, wideCause, wideByDesign });
+      events.push({ ...a, expectedFov, kind, end, windowMs: settleMs, designSettleMs, vzMps, wideCause, wideByDesign });
     };
 
     // Start guide: overview 60 -> follow.
@@ -293,7 +306,7 @@ for (const key of STATIONS) {
       if (e.expectedFov === null) continue;
       // #136 widens the follow lens to the wide lens (declared.firstPerson, 60) on stairs/escalators and while walls
       // or ceilings squeeze the boom. A follow-mode end at exactly that wide lens passes only when the app's own
-      // sceneInfo().fov reports the same lens AND the avatar is on a stair/escalator or the boom is squeezed (wideCause);
+      // sceneInfo().fov reports the same lens AND the avatar is moving vertically on a stair/escalator or the boom is squeezed (wideCause);
       // any other end value (including a mid-ease one) still fails.
       if (!e.wideByDesign) expect.soft(Math.abs(e.endFov - e.expectedFov), `${e.event}: final FOV ${e.endFov} vs declared ${e.expectedFov}`).toBeLessThanOrEqual(FOV_TOL_DEG);
     }

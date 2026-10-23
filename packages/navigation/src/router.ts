@@ -3,8 +3,17 @@ import { isOpenAt, parseHm } from "@gteki/schema";
 import { DEFAULT_PROFILE, DEFAULT_STALE_AFTER_DAYS } from "./index.ts";
 import type { Router, RouteFailure, RouteProfile, RouteResult, RouteStep, RouteUnknown } from "./index.ts";
 
-const WALK_SPEED = 1.2;
-const ELEVATOR_SECONDS = 45;
+/**
+ * The pace `estimatedSeconds` assumes: walking and stairs in m/s, and lifts as a fixed ride. Exported so a
+ * client can state the assumption on the route card instead of copying the numbers (#203 B6).
+ */
+export const ROUTE_PACE = {
+  walkMps: 1.2,
+  stairsMps: 0.5,
+  escalatorMps: 0.75,
+  /** Lifts are a fixed ride, not a distance at a speed. */
+  elevatorSeconds: 45,
+} as const;
 const SLOPED_MODES = new Set(["stairs", "escalator", "ramp"]);
 /** Never step-free, whatever an edge's access flags say. */
 const NOT_STEP_FREE_MODES = new Set(["stairs", "escalator"]);
@@ -20,7 +29,7 @@ const WEEK: Weekday[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
 /** Travel time of one edge: lifts are a fixed ride, everything else length over the mode's speed. */
 function edgeSeconds(mode: Edge["mode"], lengthM: number): number {
-  return mode === "elevator" ? ELEVATOR_SECONDS : lengthM / (mode === "stairs" ? 0.5 : mode === "escalator" ? 0.75 : WALK_SPEED);
+  return mode === "elevator" ? ROUTE_PACE.elevatorSeconds : lengthM / (mode === "stairs" ? ROUTE_PACE.stairsMps : mode === "escalator" ? ROUTE_PACE.escalatorMps : ROUTE_PACE.walkMps);
 }
 
 /**
@@ -126,7 +135,7 @@ function measureEdge(rawEdge: Edge, from: Vec3N, to: Vec3N): Measurement | null 
   if (edge.mode === "elevator") {
     // A lift ride adds time, not walking distance: its length is the plan (x, y) walk in/out only.
     const walk = edge.lengthM ?? geometryLength(edge.geometry, true);
-    return walk === null ? null : { lengthM: walk, cost: ELEVATOR_SECONDS * WALK_SPEED };
+    return walk === null ? null : { lengthM: walk, cost: ROUTE_PACE.elevatorSeconds * ROUTE_PACE.walkMps };
   }
   if (edge.lengthM === null && SLOPED_MODES.has(edge.mode)) {
     // Stairs/escalators/ramps without a stated length need every geometry height known and
@@ -480,7 +489,8 @@ function buildRouter(bundle: StationBundle, unpruned: boolean): Router {
         timeRestricted.push(days ? { edgeId: edge.id, open, close, days } : { edgeId: edge.id, open, close });
       }
       if (access.paid === null) unknown("paid", edge.id);
-      if (access.wheelchair === null) unknown("wheelchair", edge.id);
+      // A known stairs edge is not an unknown step-free fact: the card says "stairs" there instead (#203 B8).
+      if (access.wheelchair === null && edge.mode !== "stairs") unknown("wheelchair", edge.id);
       if (access.steps === null) unknown("steps", edge.id);
       if (edge.accessEvidence === null) unknown("access_evidence", edge.id);
       // Hours evidence counts like geometry and access evidence: its sources are dependencies (an undated

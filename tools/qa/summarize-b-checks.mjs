@@ -111,21 +111,24 @@ cameraRow("C3 camera crowds avatar (#70)", "platform-exit2 walk, last 4 frames; 
 
 // ---- B2: near-black per walk frame ---------------------------------------------------------------
 {
+  // Both Shinjuku walks must contribute frame statistics: a missing walk (or one without stats) leaves the
+  // project undecided rather than letting the other walk alone pass it (#318).
+  const walkStats = (w, key) => (w.json?.frames ?? []).map((f) => f.stats?.[key]).filter((x) => typeof x === "number");
+  const missingWalks = perProject(PROJECTS, (p) => walks[p].filter((w) => !walkStats(w, "nearBlack").length).map((w) => w.label));
   const stat = (p, key) => {
-    const ws = walks[p].filter((w) => w.json);
-    if (!ws.length) return undefined;
-    const all = ws.flatMap((w) => w.json.frames.map((f) => f.stats?.[key])).filter((x) => typeof x === "number");
+    if (missingWalks[p].length) return undefined;
+    const all = walks[p].flatMap((w) => walkStats(w, key));
     return all.length ? Math.max(...all) : undefined;
   };
   const nb = perProject(PROJECTS, (p) => stat(p, "nearBlack"));
   const cw = perProject(PROJECTS, (p) => stat(p, "clippedWhite"));
-  const lacking = PROJECTS.filter((p) => nb[p] === undefined);
+  const lacking = PROJECTS.filter((p) => nb[p] === undefined).map((p) => `${p}: ${missingWalks[p].join(" + ")}`);
   const over = PROJECTS.filter((p) => nb[p] > NEAR_BLACK_MAX);
   row({
     item: "B2 black voids on descents", metric: "max near-black fraction over Shinjuku walk frames (03)",
     rule: `<= ${NEAR_BLACK_MAX.toFixed(2)} per frame (main: 0.686)`,
     values: perProject(PROJECTS, (p) => (nb[p] === undefined ? NOT_RUN : fmt(nb[p]))),
-    verdict: lacking.length ? `n/a (not run: ${lacking.join(", ")})` : over.length ? `FAIL (${over.map((p) => `${p} ${fmt(nb[p])}`).join(", ")})` : "PASS",
+    verdict: lacking.length ? `n/a (walk evidence missing: ${lacking.join("; ")})` : over.length ? `FAIL (${over.map((p) => `${p} ${fmt(nb[p])}`).join(", ")})` : "PASS",
   });
   row({
     item: "B2 clipped white", metric: "max clipped-white fraction over Shinjuku walk frames (03)", rule: "noted only",
@@ -229,10 +232,12 @@ probeRow("B7 second walkable surface", "S2 platform->exit2 step probe (08): wors
   const rule = `every wall-probe run: moved < ${WALL_RUN_MAX_M} m, inside scene bounds, and < ${MAX_OFF_NETWORK_M} m from a walkable edge or inside a mapped unrestricted space (04's own rule)`;
   if (!Array.isArray(wall) || !wall.length) row({ item: "B8 B3 containment", metric: "04 wall probe", projects: ["desktop-chromium"], rule, values: { "desktop-chromium": NOT_RUN }, verdict: NOT_RUN });
   else {
-    const bad = wall.filter((r) => !(r.moved < WALL_RUN_MAX_M && r.inBounds && (r.networkM < MAX_OFF_NETWORK_M || r.space)));
-    const viaSpace = wall.filter((r) => r.networkM >= MAX_OFF_NETWORK_M && r.space);
+    // 04 writes an unreachable network distance (Infinity) as null; null < x is true in JS, so check it is finite (#318).
+    const nearNet = (r) => typeof r.networkM === "number" && Number.isFinite(r.networkM) && r.networkM < MAX_OFF_NETWORK_M;
+    const bad = wall.filter((r) => !(r.moved < WALL_RUN_MAX_M && r.inBounds && (nearNet(r) || r.space)));
+    const viaSpace = wall.filter((r) => !nearNet(r) && r.space);
     const stuck = [...new Set(wall.map((r) => r.spawn))].filter((sp) => Math.max(...wall.filter((r) => r.spawn === sp).map((r) => r.moved)) <= 2);
-    const far = Math.max(...wall.map((r) => r.networkM));
+    const far = Math.max(...wall.map((r) => (typeof r.networkM === "number" ? r.networkM : Infinity)));
     row({
       item: "B8 B3 containment", metric: "04 wall probe: runs / contained via mapped space / max distance from network", projects: ["desktop-chromium"], rule,
       values: { "desktop-chromium": `${wall.length} runs, ${viaSpace.length} via mapped space${viaSpace.length ? ` (${viaSpace.map((r) => `${r.space.category}@${r.space.level}`).join(", ")})` : ""}, max ${fmt(far, 1)} m off network` },
