@@ -1,4 +1,4 @@
-/** pnpm exec tsx stations/shinjuku/test/helpers/scene-digest-fixture.ts  (captured at fe8d3b6 before #72 changes) */
+/** pnpm exec tsx stations/shinjuku/test/helpers/scene-digest-fixture.ts  (baseline origin fe8d3b6; intentional #49 / #342 visual additions) */
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { loadShinjukuBundle } from "../../data/bundle.ts";

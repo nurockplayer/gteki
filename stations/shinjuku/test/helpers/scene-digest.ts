@@ -1,7 +1,7 @@
 /**
  * Digests for #72: prove a load-cost change leaves every collision, wall, floor, fence, camera-blocker
  * and restricted-area buffer byte-identical, and every visual triangle identical as a set per material.
- * The fixture (test/fixtures/scene-digest.json) was captured from the unmodified code at fe8d3b6.
+ * The fixture began at fe8d3b6; #49 added render-only shells and #342 added identity signage.
  * Regenerate only on purpose: pnpm exec tsx stations/shinjuku/test/helpers/scene-digest-fixture.ts
  */
 import { createHash } from "node:crypto";

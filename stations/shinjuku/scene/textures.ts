@@ -4,6 +4,47 @@
 import * as THREE from "three";
 import { OEDO_MAGENTA } from "./palette.ts";
 
+// TODO(#342 Q0): switch the identity boards to the pinned Noto Sans JP family here.
+export const IDENTITY_FONT_STACK = "'Hiragino Sans','Noto Sans JP','Yu Gothic',sans-serif";
+
+/** Full-resolution canvas coordinates, also used by the CPU projection proxy.
+ * Conservative ink/cap-height assumptions: Japanese 0.80 em; Latin capitals 0.72 em.
+ * These are font-dependent assumptions, not a raster measurement of the fallback font.
+ */
+export const IDENTITY_ART = {
+  width: 1024, height: 512,
+  ja: { text: "新宿", x: 72, baseline: 198, fontSize: 184, capFraction: 0.80, inkWidth: 368 },
+  kana: { text: "しんじゅく", x: 76, baseline: 292, fontSize: 64 },
+  en: { text: "Shinjuku", x: 72, baseline: 405, fontSize: 112, capFraction: 0.72, inkWidth: 560 },
+  name: { left: 60, top: 40, right: 964, bottom: 432 },
+} as const;
+
+/** Original GTEki typography; plain code/line name, no operator badge or copied layout. */
+export function identityTexture(quality: "low" | "high") {
+  const scale = quality === "high" ? 1 : 0.5;
+  const [c, g] = canvas(IDENTITY_ART.width * scale, IDENTITY_ART.height * scale);
+  g.scale(scale, scale);
+  g.fillStyle = "#f6f2e9";
+  g.fillRect(0, 0, IDENTITY_ART.width, IDENTITY_ART.height);
+  g.fillStyle = OEDO_MAGENTA; // GTEki-defined, not official (OD-29); line text below.
+  g.fillRect(24, 48, 12, 380);
+  g.fillStyle = "#20242b";
+  g.textBaseline = "alphabetic";
+  for (const row of [IDENTITY_ART.ja, IDENTITY_ART.kana, IDENTITY_ART.en]) {
+    g.font = `700 ${row.fontSize}px ${IDENTITY_FONT_STACK}`;
+    g.fillText(row.text, row.x, row.baseline);
+  }
+  g.fillStyle = "#555961";
+  g.fillRect(72, 440, 880, 2);
+  g.font = `600 48px ${IDENTITY_FONT_STACK}`;
+  g.fillText("E27  都営大江戸線", 72, 493);
+  const texture = new THREE.CanvasTexture(c);
+  texture.name = "GTEki Shinjuku identity (original design)";
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = quality === "high" ? 8 : 4;
+  return texture;
+}
+
 function canvas(w: number, h: number) {
   const c = document.createElement("canvas");
   c.width = w;

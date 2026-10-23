@@ -1,0 +1,163 @@
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import * as THREE from "three";
+import { loadShinjukuBundle } from "../data/bundle.ts";
+import planJson from "../data/plan.json" with { type: "json" };
+import { buildStation, type BuiltStation } from "../scene/build.ts";
+import { pointInRings, soffitHeight, type Plan } from "../scene/layout.ts";
+import { IDENTITY_GENERATED, IDENTITY_SIZE, identityGlyphBox, type LocalBox } from "../scene/identity.ts";
+import { stationSpawn } from "../scene/spawn.ts";
+import { followCameraEnvironment, LANE_CAMERA, spawnView } from "../app/src/spawn-view.ts";
+import { Player } from "../app/src/player.ts";
+import { withCanvasStub } from "./helpers/scene-digest.ts";
+import { textureBudget } from "./helpers/texture-memory.ts";
+
+const { bundle } = loadShinjukuBundle();
+const plan = planJson as unknown as Plan;
+const corners = (box: LocalBox) => [box.min[0], box.max[0]].flatMap((x) =>
+  [box.min[1], box.max[1]].flatMap((y) => [box.min[2], box.max[2]].map((z) => new THREE.Vector3(x, y, z))));
+
+describe("#342 original Shinjuku identity recognition proxy (CPU only)", () => {
+  let station: BuiltStation;
+  beforeAll(() => {
+    station = withCanvasStub(() => buildStation(bundle, plan, { quality: "high" }));
+    station.root.updateMatrixWorld(true);
+  }, 60_000);
+  afterAll(() => station?.dispose());
+
+  it("tags both readable faces of every spawn/gate board with valid local name boxes", () => {
+    const boards = station.signs.filter((o) => o.name.startsWith("identity:"));
+    expect(boards.map((o) => o.name)).toEqual(["identity:spawn", ...bundle.pois.filter((p) => p.category === "ticket_gate").map((p) => `identity:gate:${p.id}`)]);
+    const tagged: THREE.Object3D[] = [];
+    station.root.traverse((o) => { if (o.userData.gteki_identity) tagged.push(o); });
+    expect(tagged).toHaveLength(boards.length * 2);
+    for (const board of tagged) {
+      expect(board.userData.generated).toBe(IDENTITY_GENERATED);
+      const tag = board.userData.gteki_identity;
+      expect(tag.front).toHaveLength(3);
+      expect(tag.front.every(Number.isFinite)).toBe(true);
+      expect(new THREE.Vector3(...tag.front as [number, number, number]).length()).toBeCloseTo(1);
+      expect(tag.regions).toHaveLength(1);
+      for (const region of tag.regions) {
+        expect(region.kind).toBe("name");
+        expect(region.min).toHaveLength(3);
+        expect(region.max).toHaveLength(3);
+        for (let axis = 0; axis < 3; axis++) {
+          expect(Number.isFinite(region.min[axis]) && Number.isFinite(region.max[axis])).toBe(true);
+          expect(region.min[axis]).toBeLessThan(region.max[axis]);
+        }
+        expect(Math.max(Math.abs(region.min[0]), Math.abs(region.max[0]))).toBeLessThanOrEqual(IDENTITY_SIZE.width / 2);
+        expect(Math.max(Math.abs(region.min[1]), Math.abs(region.max[1]))).toBeLessThanOrEqual(IDENTITY_SIZE.height / 2);
+      }
+    }
+  });
+
+  it("keeps every casing clear of walls/ceilings with at least 2.1 m headroom", () => {
+    const roofs = [...station.layout.levels.flatMap((lv) => lv.ceilings), ...station.layout.soffits];
+    for (const board of station.signs.filter((o) => o.name.startsWith("identity:"))) {
+      const nodeZ = station.layout.nodeZ.get(board.userData.nodeId)!;
+      const bottom = board.position.y - IDENTITY_SIZE.height / 2 - 0.02;
+      expect(bottom - nodeZ, board.name).toBeGreaterThanOrEqual(2.1 - 1e-9);
+      for (const y of [-IDENTITY_SIZE.height / 2 - 0.02, 0, IDENTITY_SIZE.height / 2 + 0.02]) {
+        const edges: THREE.Vector3[] = [];
+        for (const [x, z] of [[-0.9, -0.06], [0.9, -0.06], [0.9, 0.06], [-0.9, 0.06]]) {
+          edges.push(board.localToWorld(new THREE.Vector3(x, y, z)));
+        }
+        for (let i = 0; i < edges.length; i++) {
+          const a = edges[i]!, b = edges[(i + 1) % edges.length]!;
+          expect(station.world.firstWallHit({ x: a.x, y: -a.z }, { x: b.x, y: -b.z }, a.y), board.name).toBe(1);
+        }
+      }
+      // Sample the full upper casing plane, including the thin front/back clearance.
+      for (let i = 0; i <= 10; i++) for (const z of [-0.06, 0, 0.06]) {
+        const p = board.localToWorld(new THREE.Vector3(-0.9 + 1.8 * i / 10, IDENTITY_SIZE.height / 2 + 0.02, z));
+        const enu = { x: p.x, y: -p.z };
+        for (const roof of roofs) {
+          const h = soffitHeight(roof, enu);
+          if (pointInRings(enu, roof.rings) && h > nodeZ + 1.8) expect(h - p.y, board.name).toBeGreaterThanOrEqual(0.08);
+        }
+      }
+    }
+  });
+
+  it("has a direct static-geometry sightline to the spawn name block", () => {
+    const spawn = stationSpawn(bundle, station.layout.nodeZ, station.world);
+    const { eye } = spawnView(spawn.position, spawn.heading, followCameraEnvironment(station.layout, station.propWalls));
+    const origin = new THREE.Vector3(eye.x, eye.z, -eye.y);
+    const board = station.root.getObjectByName("identity:spawn")!;
+    const meshes: THREE.Mesh[] = [];
+    station.root.traverseVisible((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      const materials = Array.isArray(m.material) ? m.material : [m.material];
+      if (materials.some((material) => material.visible && !material.transparent)) meshes.push(m);
+    });
+    const ray = new THREE.Raycaster();
+    for (const kind of ["ja", "en"] as const) {
+      const box = identityGlyphBox(kind);
+      for (const x of [box.min[0], (box.min[0] + box.max[0]) / 2, box.max[0]]) {
+        for (const y of [box.min[1], box.max[1]]) {
+          const target = board.localToWorld(new THREE.Vector3(x, y, IDENTITY_SIZE.depth / 2 + 0.002));
+          const delta = target.clone().sub(origin);
+          ray.set(origin, delta.clone().normalize());
+          ray.far = delta.length() + 0.005;
+          expect(ray.intersectObjects(meshes, false)[0]?.object.name, `${kind} ${x},${y}`).toBe("identity-faces");
+        }
+      }
+    }
+  });
+
+  for (const [width, height] of [[393, 852], [412, 915], [1440, 900], [960, 600]]) {
+    it(`projects actual assumed ink/cap heights at normal spawn into ${width}x${height} CSS pixels`, () => {
+      const spawn = stationSpawn(bundle, station.layout.nodeZ, station.world);
+      const player = new Player(station.world, spawn.position);
+      player.heading = spawn.heading;
+      const { eye, look } = spawnView({ x: player.x, y: player.y, z: player.z }, player.heading, followCameraEnvironment(station.layout, station.propWalls));
+      const camera = new THREE.PerspectiveCamera(LANE_CAMERA.fov, width! / height!, LANE_CAMERA.near, 400);
+      camera.position.set(eye.x, eye.z, -eye.y);
+      camera.lookAt(look.x, look.z, -look.y);
+      camera.updateMatrixWorld(true);
+      const board = station.root.getObjectByName("identity:spawn")!;
+      const normal = new THREE.Vector3(...board.userData.gteki_identity.front as [number, number, number]).transformDirection(board.matrixWorld);
+      expect(normal.dot(camera.position.clone().sub(board.position).normalize())).toBeGreaterThan(0.8);
+      const project = (box: LocalBox) => corners(box).map((p) => board.localToWorld(p).project(camera));
+      const name = project(board.userData.gteki_identity.regions[0]);
+      for (const p of name) {
+        expect(Math.abs(p.x)).toBeLessThan(1);
+        expect(Math.abs(p.y)).toBeLessThan(1);
+        expect(p.z).toBeGreaterThan(-1);
+        expect(p.z).toBeLessThan(1);
+      }
+      // Same-z vertical edges, so a tilted board's depth/width cannot inflate glyph height.
+      const capHeight = (box: LocalBox) => Math.min(...[box.min[0], box.max[0]].flatMap((x) =>
+        [box.min[2], box.max[2]].map((z) => {
+          const a = board.localToWorld(new THREE.Vector3(x, box.min[1], z)).project(camera);
+          const b = board.localToWorld(new THREE.Vector3(x, box.max[1], z)).project(camera);
+          return Math.abs(b.y - a.y) * height! / 2;
+        })));
+      const ja = capHeight(identityGlyphBox("ja")), en = capHeight(identityGlyphBox("en"));
+      console.log(JSON.stringify({ viewport: `${width}x${height}`, jaCssPx: ja, enCssPx: en, nameNdc: { left: Math.min(...name.map((p) => p.x)), right: Math.max(...name.map((p) => p.x)), bottom: Math.min(...name.map((p) => p.y)), top: Math.max(...name.map((p) => p.y)) } }));
+      expect(ja).toBeGreaterThanOrEqual(18);
+      expect(en).toBeGreaterThanOrEqual(12);
+    });
+  }
+
+  for (const quality of ["low", "high"] as const) {
+    it(`reports the shared ${quality} identity texture and one added face draw`, () => {
+      const built = quality === "high" ? station : withCanvasStub(() => buildStation(bundle, plan, { quality }));
+      try {
+        const budget = textureBudget(built.root);
+        const entries = budget.entries.filter((e) => e.meshes.includes("identity-faces"));
+        expect(entries).toHaveLength(1);
+        const entry = entries[0]!;
+        expect(entry.category).toBe("signage");
+        expect([entry.width, entry.height]).toEqual(quality === "high" ? [1024, 512] : [512, 256]);
+        const faces = built.root.getObjectByName("identity-faces") as THREE.Mesh;
+        expect(faces.userData.faceCount).toBe(8);
+        expect(faces.geometry.index!.count / 3).toBe(16);
+        let draws = 0;
+        built.root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) draws += Array.isArray(m.material) ? m.material.length : 1; });
+        console.log(JSON.stringify({ quality, identityTexture: entry, totalTextureBytes: budget.totalBytes, meshMaterialDraws: draws }));
+      } finally { if (built !== station) built.dispose(); }
+    }, 60_000);
+  }
+});

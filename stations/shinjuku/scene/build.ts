@@ -18,6 +18,7 @@ import { withSurfaceMemo } from "./surface-layout.ts";
 import { surfaceSeed } from "./surface-bake.ts";
 
 import { OEDO_MAGENTA } from "./palette.ts";
+import { buildIdentityBoards } from "./identity.ts";
 export { OEDO_MAGENTA };
 
 const v3 = (p: XYZ) => new THREE.Vector3(p.x, p.z, -p.y);
@@ -951,8 +952,12 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
     }
   }
 
-  // ---- wayfinding signs from the verified graph
-  const signs = buildSigns(bundle, layout, root, track, opts.quality);
+  // ---- collision world (also supplies the app's normal spawn for identity placement)
+  const world = new WalkWorld(layout);
+  world.addWalls(propWalls);
+
+  // ---- wayfinding signs from the verified graph and original station identity
+  const signs = buildSigns(bundle, layout, world, root, track, opts.quality);
   addWallBackFaces(root, mat.wall, track);
   bakeFloorLightPools(layout, root, [mat.floor, mat.floorPaid, mat.floorPlatform], track);
   // Batch names say what is inside. The steel batch is the stair handrails and brackets, escalator trusses and
@@ -961,10 +966,6 @@ export function buildStation(bundle: StationBundle, plan: Plan, opts: BuildOptio
   mergeRootFinishes(root, [[mat.steel, "static-steel-finishes"], [mat.glass, "static-glass-finishes"]], track, true);
   mergeRootFinishes(root, [[mat.darkSteel, "static-dark-steel-finishes"], [mat.gateOk, "static-gate-ok-finishes"], [mat.accent, "static-accent-finishes"]], track);
   installTightCulling(root);
-
-  // ---- collision world
-  const world = new WalkWorld(layout);
-  world.addWalls(propWalls);
 
   // ---- platform edge helper
   function buildPlatformEdge(walls: WallSeg[], z: number, g: THREE.Group) {
@@ -1598,7 +1599,7 @@ function raySeg(o: XY, d: XY, a: XY, b: XY): number | null {
 }
 
 // ---------------------------------------------------------------- signs
-function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T, quality: BuildOptions["quality"]): THREE.Object3D[] {
+function buildSigns(bundle: StationBundle, layout: Layout, world: WalkWorld, root: THREE.Group, track: <T extends { dispose(): void }>(x: T) => T, quality: BuildOptions["quality"]): THREE.Object3D[] {
   const router = createRouter(bundle);
   const nodeById = new Map(bundle.nodes.map((n) => [n.id, n]));
   const adj = new Map<string, string[]>();
@@ -1777,6 +1778,7 @@ function buildSigns(bundle: StationBundle, layout: Layout, root: THREE.Group, tr
     mesh.userData.faceCount = page.rects.length;
     root.add(mesh);
   }
+  out.push(...buildIdentityBoards(bundle, layout, world, root, track, quality, caseGeos, rodGeos));
   for (const [geos, color, metalness] of [[caseGeos, "#2b2d30", 0.4], [rodGeos, "#888888", 0.8]] as const) {
     const geo = merged(geos);
     if (geo) { const m = new THREE.Mesh(track(geo), track(new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness }))); if (geos === caseGeos) m.name = "sign-cases"; root.add(m); }

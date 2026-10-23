@@ -9,7 +9,9 @@ import type { Floor, Poi, StationBundle } from "@gteki/schema";
 import { createRouter, routeBetween, type RouteEndpoint, type RouteProfile, type RouteResult } from "@gteki/navigation";
 import { createSearchIndex } from "@gteki/search";
 import { buildStation } from "../../scene/build.ts";
-import { pointInRings, WalkWorld, type Plan } from "../../scene/layout.ts";
+import { stationSpawn } from "../../scene/spawn.ts";
+import { followCameraEnvironment, spawnView, LANE_CAMERA } from "./spawn-view.ts";
+import { pointInRings, type Plan } from "../../scene/layout.ts";
 import { Player, PLAYER_RADIUS, sweepCamera, chooseFollowCamera, type GuidePoint, type MoveInput } from "./player.ts";
 import { floorLabel, narrate, summarizeRoute, routeMapFrame, nearbyExits, explainStepFreeFailure, UNKNOWN_LABELS, type Maneuver } from "./narrate.ts";
 import { createAvatar } from "./avatar.ts";
@@ -108,7 +110,7 @@ scene.add(new THREE.HemisphereLight("#fff6ea", "#4a4642", 0.85));
 const fill = new THREE.PointLight("#fff1dc", 1.2, 9, 2);
 scene.add(fill);
 
-const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.05, 400);
+const camera = new THREE.PerspectiveCamera(LANE_CAMERA.fov, innerWidth / innerHeight, LANE_CAMERA.near, 400);
 
 const station = startup.phase("station", () => buildStation(bundle, plan, { quality }));
 scene.add(station.root);
@@ -193,36 +195,17 @@ function nearestNode(p: { x: number; y: number; z: number }) {
 }
 
 // ------------------------------------------------------------ spawn
-const gatePoi = bundle.pois.find((p) => p.category === "ticket_gate");
-const spawnNode = nodeById.get(params.get("spawn") ?? "") ?? nodeById.get(gatePoi?.connectorNodeIds[0] ?? "") ?? bundle.nodes[0]!;
-let spawnPos = { x: spawnNode.position.x, y: spawnNode.position.y, z: nodeZ(spawnNode.id) };
-// step back from the gate line a few metres so the gates are in view
-if (gatePoi?.displayPosition) {
-  const gp = gatePoi.displayPosition;
-  const d = { x: spawnPos.x - gp.x, y: spawnPos.y - gp.y };
-  const L = Math.hypot(d.x, d.y) || 1;
-  const back = { x: spawnPos.x + (d.x / L) * 4, y: spawnPos.y + (d.y / L) * 4 };
-  const g = world.groundAt(back, spawnPos.z);
-  if (g !== null) spawnPos = { ...back, z: g };
-}
-const player = new Player(world, spawnPos);
-if (gatePoi?.displayPosition) player.heading = Math.atan2(gatePoi.displayPosition.x - spawnPos.x, gatePoi.displayPosition.y - spawnPos.y);
+const spawn = stationSpawn(bundle, layout.nodeZ, world, params.get("spawn") ?? undefined);
+const player = new Player(world, spawn.position);
+player.heading = spawn.heading;
 
-// The camera clears human-height props. Walker collision remains the complete world.
-// Full-height architecture and floor/ceiling slabs still constrain every camera candidate.
-const cameraWorld = new WalkWorld({ ...layout, runWalls: [], levels: layout.levels.map((level) => ({
-  ...level, railings: [], walls: level.walls.filter((wall) => wall.zMax - wall.zMin > 1.9),
-})) });
-cameraWorld.addWalls(station.propWalls.filter((wall) => wall.zMax - wall.zMin > 1.9));
-// Soffits (landing/shaft roofs, run undersides) too: without them the boom rose through a landing roof
-// and looked down on the station from above it.
-const cameraSurfaces = [...layout.levels.flatMap((l) => [...l.slabs, ...l.ceilings]), ...layout.pads, ...layout.streetPads, ...layout.soffits];
+// Architecture and floor/ceiling slabs constrain the follow camera, clearing human-height props.
+const { world: cameraWorld, surfaces: cameraSurfaces } = followCameraEnvironment(layout, station.propWalls);
 // Submit core geometry from the same safe spawn view and composer used in play.
 // This avoids compiling extra materials for a separate preview camera or pipeline.
-const previewHead = { x: player.x, y: player.y, z: player.z + 1.1 };
-const previewEye = chooseFollowCamera(previewHead, player.heading, -0.28, 3.6, cameraWorld, cameraSurfaces);
-camera.position.set(previewEye.x, previewEye.z, -previewEye.y);
-camera.lookAt(player.x + Math.sin(player.heading) * 1.15, previewHead.z + 0.15, -(player.y + Math.cos(player.heading) * 1.15));
+const preview = spawnView(spawn.position, player.heading, { world: cameraWorld, surfaces: cameraSurfaces });
+camera.position.set(preview.eye.x, preview.eye.z, -preview.eye.y);
+camera.lookAt(preview.look.x, preview.look.z, -preview.look.y);
 fill.position.set(player.x, player.z + 2.4, -player.y);
 station.setViewer?.({ x: camera.position.x, y: -camera.position.z, z: camera.position.y });
 renderer.info.reset();
@@ -246,7 +229,7 @@ await paintStartupFrame();
 startup.begin("surface-hooks");
 
 // ------------------------------------------------------------ camera rig
-const cam = { yaw: player.heading, pitch: -0.18, dist: 3.6, firstPerson: false, userTurnedAt: -10 };
+const cam = { yaw: player.heading, pitch: LANE_CAMERA.pitch as number, dist: LANE_CAMERA.distance as number, firstPerson: false, userTurnedAt: -10 };
 const camPos = new THREE.Vector3();
 const camTarget = new THREE.Vector3();
 let cameraDistance = cam.dist;
@@ -274,13 +257,13 @@ function updateCamera(dt: number, t: number) {
   const targetPitch = onRun ? -0.22 - Math.max(0, -player.climbing) * 0.06 : 0;
   stairPitch += (targetPitch - stairPitch) * (camInit ? 1 - Math.exp(-5 * dt) : 1);
   const bob = bobEnabled && !reducedMotion && !player.carriedByEscalator ? -Math.cos(player.stridePhase * 2) * 0.012 * Math.min(1, player.speed / 1.45) : 0;
-  const head = { x: player.x, y: player.y, z: player.z + (cam.firstPerson ? 1.62 : 1.1) + bob };
+  const head = { x: player.x, y: player.y, z: player.z + (cam.firstPerson ? 1.62 : LANE_CAMERA.headHeight) + bob };
   transitionFocus *= Math.exp(-3 * dt);
-  const pitch = cam.pitch - 0.1 + stairPitch - (reducedMotion ? 0 : transitionFocus * 0.04);
+  const pitch = cam.pitch + LANE_CAMERA.pitchBias + stairPitch - (reducedMotion ? 0 : transitionFocus * 0.04);
   const safe = cam.firstPerson ? head : chooseFollowCamera(head, cam.yaw, pitch, cam.dist, cameraWorld, cameraSurfaces);
   const want = new THREE.Vector3(safe.x, safe.z, -safe.y);
-  const lookAhead = cam.firstPerson ? 4 : 1.15;
-  const look = new THREE.Vector3(head.x + Math.sin(cam.yaw) * lookAhead, head.z + (cam.firstPerson ? Math.sin(cam.pitch) * 4 : 0.15), -(head.y + Math.cos(cam.yaw) * lookAhead));
+  const lookAhead = cam.firstPerson ? 4 : LANE_CAMERA.lookAhead;
+  const look = new THREE.Vector3(head.x + Math.sin(cam.yaw) * lookAhead, head.z + (cam.firstPerson ? Math.sin(cam.pitch) * 4 : LANE_CAMERA.lookRise), -(head.y + Math.cos(cam.yaw) * lookAhead));
   if (!camInit || reducedMotion || cam.firstPerson) {
     camPos.copy(want);
     camTarget.copy(look);

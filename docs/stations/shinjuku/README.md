@@ -4,6 +4,8 @@
 
 **Scope of this slice:** the Toei Oedo Line Shinjuku station (**E27**), using the extent of the published MLIT/Toei open dataset. The slice covers nine NWD levels, from street level (GL/1F) down to the B6 platform. JR, Keio, Odakyu, Toei Shinjuku Line, Tokyo Metro and Shinjuku-nishiguchi (E01) are **not** in this slice; see the Coverage section.
 
+Original station-name boards and CPU proxy evidence: [identity-boards.md](identity-boards.md) (#342 Q1a; GPU capture acceptance pending).
+
 ## How to run
 
 ```bash
