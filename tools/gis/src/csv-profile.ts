@@ -215,7 +215,13 @@ function visit(coords: unknown, fn: (lon: number, lat: number) => void): void {
 
 export function geojsonDetail(data: Buffer, windows: StationWindow[]): Record<string, unknown> {
   const doc = JSON.parse(data.toString('utf8')) as { type?: string; features?: Array<{ geometry?: { type?: string; coordinates?: unknown } | null }>; crs?: { properties?: { name?: string } } };
-  const features = doc.type === 'FeatureCollection' && Array.isArray(doc.features) ? doc.features : [];
+  // A standalone Feature or bare geometry is one feature; only a FeatureCollection carries a list.
+  const geometryTypes = ['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon'];
+  const features = doc.type === 'FeatureCollection' && Array.isArray(doc.features) ? doc.features
+    : doc.type === 'Feature' ? [doc as { geometry?: { type?: string; coordinates?: unknown } | null }]
+    : geometryTypes.includes(doc.type ?? '') ? [{ geometry: doc as { type?: string; coordinates?: unknown } }] : [];
+  // A GeometryCollection is recognised as GeoJSON but not walked here: report it unevaluated, not as zero coverage.
+  if (doc.type === 'GeometryCollection') return { features: 0, geometry_types: { GeometryCollection: 1 }, declared_crs_member: doc.crs?.properties?.name ?? null, window_evaluation: 'not evaluated: top-level GeometryCollection' };
   const types: Record<string, number> = {};
   // Segment- and containment-based: a road crossing a disc with both endpoints outside, or a polygon
   // enclosing a disc, still touches it (vertex inclusion alone missed both).

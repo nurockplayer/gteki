@@ -119,6 +119,17 @@ describe('csv-profile', () => {
     expect(verdictFor(inside, { ...pkg, terms_states_cc_by_4_0: false }).verdict).toBe('NOT_CLEAN');
   });
 
+  it('counts a standalone GeoJSON Feature or bare geometry like a one-feature collection', () => {
+    const point = { type: 'Point', coordinates: [139.7002, 35.7002] };
+    const wrapped = geojsonDetail(Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: point }] })), [STATION]);
+    expect(geojsonDetail(Buffer.from(JSON.stringify({ type: 'Feature', geometry: point })), [STATION]).features_touching_window).toEqual(wrapped.features_touching_window);
+    expect(geojsonDetail(Buffer.from(JSON.stringify(point)), [STATION]).features_touching_window).toEqual(wrapped.features_touching_window);
+    expect(Object.values(wrapped.features_touching_window as Record<string, number>)).toEqual([1]);
+    const collection = geojsonDetail(Buffer.from(JSON.stringify({ type: 'GeometryCollection', geometries: [point] })), [STATION]);
+    expect(collection.features_touching_window).toBeUndefined();
+    expect(collection.window_evaluation).toMatch(/^not evaluated/);
+  });
+
   it.each(['shp', 'geojson'])('requires evaluated %s window hits for a ZIP verdict, independently of CSV rows', (format) => {
     const pkg = { license_id: 'CC-BY-4.0', resource_licenses: [null], resources: 1, terms_sha256: 'x', terms_bytes: 1, terms_states_cc_by_4_0: true, terms_is_closure_notice: false, terms_has_exclusion_note_clause: true };
     const csv = profileCsv(Buffer.from('name,lat,lon\nA,35.7002,139.7002\n'), [STATION]);
