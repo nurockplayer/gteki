@@ -40,7 +40,7 @@ describe("label blocker classification", () => {
     refreshOccluders(this: Stand): void;
     labelOccluded(this: Stand, label: unknown): string;
   };
-  /** Camera at z = 10 looking down -z; the label at z = 0; `blockers` between. */
+  /** Camera at z = 10 looking down -z; the label at z = 0. */
   const classify = (blockers: THREE.Mesh[], signs: THREE.Mesh[], previous = "none") => {
     const scene = new THREE.Scene();
     const root = new THREE.Group().add(...blockers);
@@ -70,6 +70,19 @@ describe("label blocker classification", () => {
     const sign = quad(8);
     expect(classify([sign, quad(2)], [sign])).toBe("geometry");
     expect(classify([quad(2), sign], [sign])).toBe("geometry");
+  });
+
+  it.each([
+    [0.1, "sign"],
+    [-0.3, "sign"],
+    [-1, "none"],
+  ])("classifies a sign at z = %s as %s", (z, expected) => {
+    const sign = quad(z);
+    expect(classify([sign], [sign])).toBe(expected);
+  });
+
+  it.each([-0.3, 0.1])("ignores a wall at z = %s within or behind the anchor margin", (z) => {
+    expect(classify([quad(z)], [])).toBe("none");
   });
 
   it("ignores a sign the ray misses", () => {

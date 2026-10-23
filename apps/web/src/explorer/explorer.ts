@@ -32,7 +32,7 @@ import { contactShadow } from "./contactShadow.ts";
 import { buildGraphView, type GraphView } from "./graphView.ts";
 import { Input } from "./input.ts";
 import { DEFAULT_GROUND, acceptGround, angleDelta, cumulativeLengths, resolveWalls, samplePolyline, wallToRenderer, type Segment2 } from "./walker.ts";
-import { OcclusionSweep, labelState, onFocusFloor, type LabelOcclusion, type LabelState } from "./labelVisibility.ts";
+import { OcclusionSweep, SIGN_BACKDROP_M, labelState, onFocusFloor, type LabelOcclusion, type LabelState } from "./labelVisibility.ts";
 import { TriangleBvh, segmentHitsBox, type Cull } from "./triangleBvh.ts";
 import { cacheBvh, currentBvh, prepareRayTrees } from "./meshBvh.ts";
 import { occludedLineStyle, type OccludedLineStyle } from "./occludedLine.ts";
@@ -933,7 +933,8 @@ export class Explorer {
 
   /**
    * What blocks the camera's view of `label`: "geometry" when any non-sign occluder does, "sign" when only
-   * signs do (tested last, so one ray classifies it), else "none".
+   * signs do, including a backdrop within SIGN_BACKDROP_M behind the anchor or inside its 0.3 m margin,
+   * else "none". Signs are tested last, with the segment extended through and past the anchor.
    */
   private labelOccluded(label: PoiLabel): LabelOcclusion {
     if (this.occluders.length === 0) return "none";
@@ -944,10 +945,10 @@ export class Explorer {
     const from = this.camera.getWorldPosition(new THREE.Vector3());
     const dist = from.distanceTo(at);
     if (dist < 0.5) return "none";
-    // End just short of the label, so the surface right at its anchor does not count.
+    // Geometry ends just short of the label, so the surface right at its anchor does not count.
     const to = at.lerp(from, 0.3 / dist);
     const ray = new THREE.Ray(from, to.clone().sub(from).normalize());
-    const far = dist - 0.3;
+    let far = dist - 0.3;
     const entry = new THREE.Vector3();
     const toLocal = new THREE.Matrix4();
     const instance = new THREE.Matrix4();
@@ -962,7 +963,7 @@ export class Explorer {
     };
     // Sign materials the follow camera cuts open (cameraCut) only block where they are still drawn.
     const whole: [number, number][] = [[0, 1]];
-    const drawn = this.cameraCut.drawnSpans(from, to);
+    let drawn = this.cameraCut.drawnSpans(from, to);
     const blocks = (proxy: boolean, bvh: TriangleBvh, parts: MeshPart[], m: THREE.Matrix4, mirrored = false) =>
       parts.some((p) => (proxy || blocksView(p.material)) && (proxy || !this.cameraCut.cuts(p.material) ? whole : drawn).some(([t0, t1]) => {
         segmentIn(m, t0, t1);
@@ -970,6 +971,12 @@ export class Explorer {
       }));
     for (let pass = 0; pass < 2; pass++) {
       if (pass === 1 && this.signMeshes.size === 0) break;
+      if (pass === 1) {
+        // Same ray direction, extended through the anchor to include its sign backdrop.
+        far = dist + SIGN_BACKDROP_M;
+        to.copy(from).addScaledVector(ray.direction, far);
+        drawn = this.cameraCut.drawnSpans(from, to);
+      }
       for (const o of this.occluders) {
         if (this.signMeshes.has(o.mesh) !== (pass === 1)) continue;
         // World-box prefilter: skip meshes the segment does not reach.

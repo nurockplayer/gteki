@@ -2,7 +2,7 @@
  * POI label visibility, kept free of three.js so it can be unit-tested.
  *
  * A label is "shown", "faded" (occluded by nearby scene geometry, or a selected label on another floor) or
- * "hidden" (an unselected label on another floor than the walker's, behind a sign, or occluded and far).
+ * "hidden" (an unselected label on another floor than the walker's, behind a sign or with a sign backdrop, or occluded and far).
  * Occlusion is a raycast per label,
  * spread over frames by `OcclusionSweep` so phones pay only a few rays per frame, and none at rest.
  */
@@ -19,6 +19,9 @@ export function onFocusFloor(groundY: number, focusY: number | null): boolean {
 
 /** What stands between the camera and a label: nothing, scene geometry (walls, floors) or a sign. */
 export type LabelOcclusion = "none" | "geometry" | "sign";
+
+/** A sign this close behind a label's anchor (or within its 0.3 m anchor margin) is its backdrop, hiding the label as if behind it. */
+export const SIGN_BACKDROP_M = 0.5;
 
 /** An unselected label occluded and farther than this (m) from the camera hides rather than fades: far faded labels only add clutter. */
 export const OCCLUDED_FADE_MAX_M = 40;
