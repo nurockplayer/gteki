@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { Document, NodeIO } from '@gltf-transform/core';
 import { docsRoot, getStoredSource, getStoreRoot, repoRoot, writeJson, TOOL_VERSION } from './common.js';
 import { loadFrame, toGltf, fromGltf, type Point3 } from './crs.js';
-import { stationEnuProjector, stationHorizontal, isStationEnuFrame, type StationEnuFrame } from './station-enu.js';
+import { stationEnuProjector, stationHorizontal, stationOriginSha256, isStationEnuFrame, type StationEnuFrame } from './station-enu.js';
 import { buildContextWindow, type ContextWindow, type Disc } from './context-window.js';
 import { CONTEXT_ROLE, explorerRoleFromName, loadContextConfig, type StationContextConfig } from './context.js';
 import { toolFingerprint } from './provenance.js';
@@ -19,7 +19,7 @@ import { readZip } from './zip.js';
  * per-station constant from the overlay config, never draped on terrain and never lifted. Layers are grouped by source, so
  * each run's receipt, credit and leak guard cover exactly one source.
  */
-export const OVERLAY_POLICY_VERSION = 'context-overlay-v1';
+export const OVERLAY_POLICY_VERSION = 'context-overlay-v2';
 export type OverlayKind = 'station' | 'railway' | 'border';
 export const OVERLAY_KINDS: readonly OverlayKind[] = ['station', 'railway', 'border'];
 /** The only property keys any overlay feature may carry. */
@@ -445,18 +445,18 @@ async function overlayRun(station: string, config: StationContextConfig, overlay
     if (!o || o.lat !== frame.origin.lat || o.lon !== frame.origin.lon || o.hM !== frame.origin.hM || o.crs !== frame.origin.crs) throw new Error(`${frame.station_json_path} origin no longer matches frame ${frame.frame_id}; regenerate it with station-frame`);
     projection = { origin: { lat: frame.origin.lat, lon: frame.origin.lon }, project: (lat, lon) => stationHorizontal([lat, lon], frame as StationEnuFrame) };
     frameLabel = frame.frame_id;
-    frameFacts = { mode: 'station-enu-frame', frame_id: frame.frame_id, station_json_path: frame.station_json_path, station_json_sha256: sha256(stationBytes), origin_crs: frame.origin.crs };
+    frameFacts = { mode: 'station-enu-frame', frame_id: frame.frame_id, station_json_path: frame.station_json_path, station_origin_sha256: stationOriginSha256(o), origin_crs: frame.origin.crs };
   } else {
     const path = overlay.frame.station_json;
     if (path !== `stations/${station}/gteki/station.json`) throw new Error(`overlay.frame.station_json must be stations/${station}/gteki/station.json`);
     const bytes = await readFile(join(repoRoot, path));
-    const o = (JSON.parse(bytes.toString('utf8')) as { station?: { origin?: { lat?: unknown; lon?: unknown; crs?: unknown } } }).station?.origin;
+    const o = (JSON.parse(bytes.toString('utf8')) as { station?: { origin?: { lat?: unknown; lon?: unknown; hM?: unknown; crs?: unknown } } }).station?.origin;
     if (!o || !finite(o.lat) || !finite(o.lon)) throw new Error(`${path}: origin lat/lon must be finite numbers`);
     const origin = { lat: o.lat, lon: o.lon };
     const project = stationEnuProjector({ ...origin, hM: 0 });
     projection = { origin, project: (lat, lon) => { const p = project(lat, lon, 0); return [p[0], p[1]]; } };
     frameLabel = 'origin-only';
-    frameFacts = { mode: 'origin-only', note: 'horizontal ENU at the station.json origin (evaluated at height 0; no vertical anchor exists and none is asserted); same x/y as the station-enu frame would give to well under a millimetre', station_json_path: path, station_json_sha256: sha256(bytes), origin_crs: typeof o.crs === 'string' ? o.crs : 'unknown' };
+    frameFacts = { mode: 'origin-only', note: 'horizontal ENU at the station.json origin (evaluated at height 0; no vertical anchor exists and none is asserted); same x/y as the station-enu frame would give to well under a millimetre', station_json_path: path, station_origin_sha256: stationOriginSha256(o), origin_crs: typeof o.crs === 'string' ? o.crs : 'unknown' };
   }
 
   // z: a per-station constant that must equal the station lead's value in station.json (re-read now).
@@ -468,7 +468,8 @@ async function overlayRun(station: string, config: StationContextConfig, overlay
   if (options.clipRadiusM !== undefined && (!Number.isFinite(options.clipRadiusM) || options.clipRadiusM < 0)) throw new Error('clip radius must be a non-negative number of metres (0 disables clipping)');
   const clipRadius: number | null = options.clipRadiusM !== undefined ? (options.clipRadiusM === 0 ? null : options.clipRadiusM) : (overlay.clip?.radius_m ?? null);
   const clipFacts = { kind: clipRadius === null ? 'none' : 'origin_disc', radius_m: clipRadius };
-  const zFacts = { mode: 'constant', z_m: z, basis: overlay.z.basis, datum_asserted: false, drape: 'none', baked_offset_m: 0, evidence_path: overlay.z.check.path, evidence_sha256: sha256(zBytes), evidence_field: `floors[ordinal ${overlay.z.check.floor_ordinal}].${overlay.z.check.field}` };
+  const evidenceField = `floors[ordinal ${overlay.z.check.floor_ordinal}].${overlay.z.check.field}`;
+  const zFacts = { mode: 'constant', z_m: z, basis: overlay.z.basis, datum_asserted: false, drape: 'none', baked_offset_m: 0, evidence_path: overlay.z.check.path, evidence_value_sha256: sha256(JSON.stringify({ field: evidenceField, value: z })), evidence_field: evidenceField };
 
   // Selection window: the overlay's own origin disc when configured (the director's 700 m decision), else the building window.
   const window = overlay.window
